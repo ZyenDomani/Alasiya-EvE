@@ -280,25 +280,25 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         sDunDataMgr.AddDungeon(dungeon);
     } */
 
-        int16 x=0, y=0, z=0;
-        DunGroupData grp;
-        auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
-        for (auto it = roomRange.first; it != roomRange.second; ++it) {
-            x = it->second.x;
-            y = it->second.y;
-            z = it->second.z;
-            auto groupRange = sDunDataMgr.groups.equal_range(it->second.dunGroupID);
-            for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
-                grp.typeCatID = it2->second.typeCatID;
-                grp.typeGrpID = it2->second.typeGrpID;
-                grp.typeName = it2->second.typeName;
-                grp.typeID = it2->second.typeID;
-                grp.x = (x + it2->second.x);
-                grp.y = (y + it2->second.y);
-                grp.z = (z + it2->second.z);
-                m_anomalyItems.push_back(grp);
-            }
+    int16 x=0, y=0, z=0;
+    DunGroupData grp;
+    auto roomRange = sDunDataMgr.rooms.equal_range(roomID);
+    for (auto it = roomRange.first; it != roomRange.second; ++it) {
+        x = it->second.x;
+        y = it->second.y;
+        z = it->second.z;
+        auto groupRange = sDunDataMgr.groups.equal_range(it->second.dunGroupID);
+        for (auto it2 = groupRange.first; it2 != groupRange.second; ++it2) {
+            grp.typeCatID = it2->second.typeCatID;
+            grp.typeGrpID = it2->second.typeGrpID;
+            grp.typeName = it2->second.typeName;
+            grp.typeID = it2->second.typeID;
+            grp.x = (x + it2->second.x);
+            grp.y = (y + it2->second.y);
+            grp.z = (z + it2->second.z);
+            m_anomalyItems.push_back(grp);
         }
+    }
     if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
         // dungeon template for grav sites just give 'extra' roid data
         m_system->GetBeltMgr()->Create(sig, m_anomalyItems);
@@ -309,48 +309,47 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     // create deco items for this dungeon
     CreateDeco(templateID, sig);
 
-        /* item spawning method - just set up data and let SystemManager create and place the object */
-        uint32 systemID = m_system->GetID();
-        std::vector<uint32> items;
-        GPoint pos2(NULL_ORIGIN);
-        auto cur = m_anomalyItems.begin();
-        while (cur != m_anomalyItems.end()) {
-            pos2.x = sig.x + cur->x;
-            pos2.y = sig.y + cur->y;
-            pos2.z = sig.z + cur->z;
-            // typeID, ownerID, locationID, flag, name, &_position
-            ItemData iData(cur->typeID, sig.ownerID, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
+    /* item spawning method - just set up data and let SystemManager create and place the object */
+    uint32 systemID = m_system->GetID();
+    std::vector<uint32> items;
+    GPoint pos2(NULL_ORIGIN);
+    auto cur = m_anomalyItems.begin();
+    while (cur != m_anomalyItems.end()) {
+        pos2.x = sig.x + cur->x;
+        pos2.y = sig.y + cur->y;
+        pos2.z = sig.z + cur->z;
+        // typeID, ownerID, locationID, flag, name, &_position
+        ItemData iData(cur->typeID, sig.ownerID, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
+        /** @todo update this to use temp items */
+        InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+        if (item.get() == nullptr) // we'll survive...
+            continue;
 
-            /** @todo update this to use temp items */
-            InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
-            if (item.get() == nullptr) // we'll survive...
-                continue;
-
-            DBSystemDynamicEntity entity;
-                entity.categoryID = (EVEItemCategories)cur->typeCatID;
-                entity.groupID = cur->typeGrpID;
-                entity.itemID = item->itemID();
-                entity.itemName = cur->typeName;
-                entity.typeID = cur->typeID;
-                entity.x = pos2.x;
-                entity.y = pos2.y;
-                entity.z = pos2.z;
-                /** @todo  fix these... */
-                entity.ownerID = sig.ownerID;
-                entity.allianceID = -1;
-                entity.corporationID = sDataMgr.GetCorpID(sig.ownerID);
-            // do the spawn using SystemManager's BuildEntity:
-                /** @todo this is more shit that should NOT be in db */
-            m_system->BuildDynamicEntity(entity);
-            items.push_back(item->itemID());
-            ++cur;
-        }
-        _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
+        DBSystemDynamicEntity entity;
+            entity.categoryID = (EVEItemCategories)cur->typeCatID;
+            entity.groupID = cur->typeGrpID;
+            entity.itemID = item->itemID();
+            entity.itemName = cur->typeName;
+            entity.typeID = cur->typeID;
+            entity.x = pos2.x;
+            entity.y = pos2.y;
+            entity.z = pos2.z;
+            /** @todo  fix these... */
+            entity.ownerID = sig.ownerID;
+            entity.allianceID = -1;
+            entity.corporationID = sDataMgr.GetCorpID(sig.ownerID);
+        // do the spawn using SystemManager's BuildEntity:
+            /** @todo this is more shit that should NOT be in db */
+        m_system->BuildDynamicEntity(entity);
+        items.push_back(item->itemID());
+        ++cur;
+    }
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
               sig.sigItemID, m_anomalyItems.size(),sig.systemID, templateID);
 
-        m_anomalyItems.clear();
-        if (!items.empty())
-            m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
+    m_anomalyItems.clear();
+    if (!items.empty())
+        m_dungeonList.insert(std::make_pair(sig.sigItemID, items));
 
     return true;
 }

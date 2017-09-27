@@ -619,54 +619,72 @@ void ShipItem::SaveShip()
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 {
+    bool result = false;
     EvilNumber fitID = 0;
     uint16 groupID = m_pilot->GetShip()->groupID();
     // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
-    if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID))
+    if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
         if (fitID == groupID)
             return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup2, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup3, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup4, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup5, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup6, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup7, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipGroup8, fitID))
-        if (fitID == groupID)
-            return true;
+        if (iRef->HasAttribute(AttrCanFitShipGroup2, fitID)) {
+            if (fitID == groupID)
+                return true;
+            if (iRef->HasAttribute(AttrCanFitShipGroup3, fitID)) {
+                if (fitID == groupID)
+                    return true;
+                if (iRef->HasAttribute(AttrCanFitShipGroup4, fitID)) {
+                    if (fitID == groupID)
+                        return true;
+                    if (iRef->HasAttribute(AttrCanFitShipGroup5, fitID)) {
+                        if (fitID == groupID)
+                            return true;
+                        if (iRef->HasAttribute(AttrCanFitShipGroup6, fitID)) {
+                            if (fitID == groupID)
+                                return true;
+                            if (iRef->HasAttribute(AttrCanFitShipGroup7, fitID)) {
+                                if (fitID == groupID)
+                                    return true;
+                                if (iRef->HasAttribute(AttrCanFitShipGroup8, fitID)) {
+                                    if (fitID == groupID)
+                                        return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        result = true;
+    }
 
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Group Validation failed.");
+    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Group Validation returning %s.", (result ? "true" : "false"));
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
 
     uint16 typeID = m_pilot->GetShip()->typeID();
-    if (iRef->HasAttribute(AttrCanFitShipType1, fitID))
+    if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
+        result = false;
         if (fitID == groupID)
             return true;
-    if (iRef->HasAttribute(AttrCanFitShipType2, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipType3, fitID))
-        if (fitID == groupID)
-            return true;
-    if (iRef->HasAttribute(AttrCanFitShipType4, fitID))
-        if (fitID == groupID)
-            return true;
+        if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
+            if (fitID == groupID)
+                return true;
+            if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
+                if (fitID == groupID)
+                    return true;
+                if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
+                    if (fitID == groupID)
+                        return true;
+                }
+            }
+        }
+    } else {
+        result = true;
+    }
 
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation failed.");
-    return false;
+    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
+    return result;
 }
 
 void ShipItem::ProcessModules() {

@@ -186,6 +186,15 @@ void SpawnMgr::SpawnPopped(uint32 itemID)
 
 void SpawnMgr::DoSpawnForAnomaly(int32 spawnID)
 {
+    /*  this needs to deal with multiple things.
+     * 1- rat types for anomaly....
+     * 2- rat faction per dungeon template
+     * 3- waves per template.  how to do this???
+     * 4- unlocking warp gates when needed per wave
+     * 5- dropping loot according to (wave/dungeon/template)?
+     * 6- after last spawn, possible escelation per dungeon type?   this should signal anomaly mgr to create the escelation
+     * 7- more/others?
+     */
 
 }
 
