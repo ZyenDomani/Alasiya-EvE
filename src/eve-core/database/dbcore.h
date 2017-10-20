@@ -40,6 +40,7 @@ class DBerror
 {
 public:
     DBerror();
+    ~DBerror();
 
     uint32 GetErrNo() const { return mErrNo; }
     const char* GetError() const { return mErrStr.c_str(); }

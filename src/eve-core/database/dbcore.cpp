@@ -33,7 +33,7 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
-DBcore::DBcore(bool compress, bool ssl)
+DBcore::DBcore(bool compress/*false*/, bool ssl/*false*/)
 : pCompress(compress),
   pSSL(ssl)
 {
@@ -358,6 +358,11 @@ DBerror::DBerror()
 {
     ClearError();
 }
+DBerror::~DBerror()
+{
+
+}
+
 
 void DBerror::SetError( uint32 err, const char* str )
 {
@@ -367,7 +372,7 @@ void DBerror::SetError( uint32 err, const char* str )
 
 void DBerror::ClearError()
 {
-    mErrStr = "No Error";
+    mErrStr = "No Error";   // this gives mem leak.  not sure why yet...
     mErrNo = 0;
 }
 

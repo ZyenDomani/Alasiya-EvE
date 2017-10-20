@@ -65,8 +65,8 @@ class DBRowDescriptor;
 #define PyDecRef(op) (op)->DecRef()
 
 /* Macros to use in case the object pointer may be NULL */
-#define PySafeIncRef(op) if( op ) PyIncRef( op )
-#define PySafeDecRef(op) if( op ) PyDecRef( op )
+#define PySafeIncRef(op) if (op != nullptr) PyIncRef( op )
+#define PySafeDecRef(op) if (op != nullptr) PyDecRef( op )
 
 /**
  * @brief Base Python wire object

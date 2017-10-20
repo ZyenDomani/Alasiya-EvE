@@ -44,7 +44,7 @@ void StaticDataMgr::Clear()
     m_stationCount.clear();
     m_oreBySecClass.clear();
     for (auto cur : m_stationPyData)
-        PyDecRef(cur.second);
+        PySafeDecRef(cur.second);
     m_stationPyData.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();
@@ -207,7 +207,7 @@ void StaticDataMgr::Populate()
     res->Reset();
     m_sdb.GetStationIDs(*res);
     while (res->GetRow(row)) {
-        //SELECT stationID FROM staStations   (then convert it into Python Data...)
+        //SELECT stationID FROM staStations   (then convert it into Python Data for storage and faster retrieval...)
         m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Station data sets loaded in %.3fms.", (m_stationCount.size() + m_stationData.size() + m_stationPyData.size()), (GetTimeMSeconds() - start));

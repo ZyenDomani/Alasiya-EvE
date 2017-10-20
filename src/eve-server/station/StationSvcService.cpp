@@ -58,7 +58,7 @@ PyResult StationSvcService::Handle_GetSolarSystem(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     ObjectCachedMethodID method_id(GetName(), "GetSolarSystem");
@@ -76,7 +76,7 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return (new PyInt(0));
+        return nullptr;
     }
 
     return sDataMgr.GetStationData(arg.arg);
@@ -85,5 +85,5 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
 PyResult StationSvcService::Handle_GetAllianceSystems(PyCallArgs &call) {
   sLog.White( "StationSvcService::Handle_GetAllianceSystems()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    return NULL;
+    return nullptr;
 }
