@@ -32,8 +32,7 @@ PyCallable_Make_InnerDispatcher(MailingListMgrService)
 
 MailingListMgrService::MailingListMgrService(PyServiceMgr *mgr)
 : PyService(mgr, "mailingListsMgr"),
-    m_dispatch(new Dispatcher(this)),
-    m_db(new MailDB())
+    m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -68,8 +67,8 @@ PyResult MailingListMgrService::Handle_GetJoinedLists(PyCallArgs& call)
     // @TODO: Test
     // no args
     sLog.Debug("MailingListMgrService", "Called GetJoinedLists stub" );
-    
-    return m_db->GetJoinedMailingLists(call.client->GetCharacterID());
+
+    return m_db.GetJoinedMailingLists(call.client->GetCharacterID());
 }
 
 PyResult MailingListMgrService::Handle_Create(PyCallArgs& call)
@@ -82,7 +81,7 @@ PyResult MailingListMgrService::Handle_Create(PyCallArgs& call)
         codelog(CLIENT__ERROR, "Failed to decode Create(MailingList) args");
         return nullptr;
     }
-    uint32 r = m_db->CreateMailingList(call.client->GetCharacterID(), args.name, args.defaultAccess,
+    uint32 r = m_db.CreateMailingList(call.client->GetCharacterID(), args.name, args.defaultAccess,
                                    args.defaultMemberAccess, args.mailCost);
     if (r >= 0) {
         return new PyInt(r);
@@ -152,7 +151,7 @@ PyResult MailingListMgrService::Handle_KickMembers(PyCallArgs& call)
         PyRep *member = args.memberIDs->GetItem(i);
         member->Dump(SERVICE__ERROR, "member item");
     }
-    
+
     // no return values
     return nullptr;
 }
@@ -169,7 +168,7 @@ PyResult MailingListMgrService::Handle_GetMembers(PyCallArgs& call)
     }
 
     int listID = args.arg;
-    return m_db->GetMailingListMembers(listID);
+    return m_db.GetMailingListMembers(listID);
 }
 
 PyResult MailingListMgrService::Handle_SetEntityAccess(PyCallArgs& call)
@@ -251,10 +250,10 @@ PyResult MailingListMgrService::Handle_SetDefaultAccess(PyCallArgs& call)
     }
 
 
-    m_db->SetMailingListDefaultAccess(args.listID, args.defaultAccess,
+    m_db.SetMailingListDefaultAccess(args.listID, args.defaultAccess,
                                       args.defaultMemberAccess, args.mailCost);
-    
-    
+
+
     return nullptr;
 }
 
@@ -295,7 +294,7 @@ PyResult MailingListMgrService::Handle_GetSettings(PyCallArgs& call)
     // .defaultMemberAccess
 
     int listID = args.arg;
-    return m_db->MailingListGetSettings(listID);
+    return m_db.MailingListGetSettings(listID);
 }
 
 PyResult MailingListMgrService::Handle_GetWelcomeMail(PyCallArgs& call)

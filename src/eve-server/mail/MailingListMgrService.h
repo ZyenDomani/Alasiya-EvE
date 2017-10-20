@@ -39,7 +39,7 @@ public:
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-    MailDB *m_db;
+    MailDB m_db;
 
     PyCallable_DECL_CALL(GetJoinedLists);
     PyCallable_DECL_CALL(Create);
