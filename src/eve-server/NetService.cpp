@@ -50,9 +50,8 @@ NetService::~NetService() {
 PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyString* str = new PyString( "machoNet.serviceInfo" );
 
-    if(!m_manager->cache_service->IsCacheLoaded(str))
-    {
-        PyDict *dict = new PyDict;
+    if (!m_manager->cache_service->IsCacheLoaded(str)) {
+        PyDict *dict = new PyDict();
         /* ServiceCallGPCS.py:197
         where = self.machoNet.serviceInfo[service]
         if where:
@@ -168,8 +167,8 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyDict* initvals = new PyDict();
 
     PyTuple* result = new PyTuple( 2 );
-    result->SetItem( 0, serverinfo );
-    result->SetItem( 1, initvals );
+        result->SetItem( 0, serverinfo );
+        result->SetItem( 1, initvals );
     return result;
 }
 

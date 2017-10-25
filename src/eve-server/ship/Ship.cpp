@@ -454,13 +454,12 @@ PyDict* ShipItem::GetShipInfo()
         return nullptr;
     }
 
-    PyDict *result = new PyDict();
-    Rsp_CommonGetInfo_Entry entry;
-
     //first populate the ship.
+    Rsp_CommonGetInfo_Entry entry;
     if ( !Populate( entry ))
         return nullptr;
 
+    PyDict *result = new PyDict();
     result->SetItem(new PyInt( itemID()), new PyObject("util.KeyVal", entry.Encode()));
 
     //now encode contents...

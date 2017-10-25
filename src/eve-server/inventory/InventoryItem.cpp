@@ -692,8 +692,11 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
 }
 
 bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
-{/** @todo  this may need to be reworked once POS and Outposts are implemented. */
-    //invItem:
+{
+    /** @todo  this may need to be reworked once POS and Outposts are implemented. */
+
+    //make sure trash data is removed from &result
+    result.attributes.clear();
     PySafeDecRef( result.itemID );
     PySafeDecRef( result.invItem );
 
