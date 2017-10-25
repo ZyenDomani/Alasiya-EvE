@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.7
+    Log Version: 7.8
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -97,6 +97,10 @@ LOG_TYPE( COLLECT, CALLRSP_XML, DISABLED, "CallRspXML" )
 LOG_TYPE( COLLECT, NOTIFY_XML, DISABLED, "NotifyXML" )
 LOG_TYPE( COLLECT, MISC_XML, DISABLED, "MiscXML" )
 LOG_TYPE( COLLECT, CALLRSP_SQL, DISABLED, "CallRspSQL" )
+
+LOG_CATEGORY( REFPTR )
+LOG_TYPE( REFPTR, INC, DISABLED, "RefPtr::INC" )
+LOG_TYPE( REFPTR, DEC, DISABLED, "RefPtr::DEC" )
 
 LOG_CATEGORY( SERVICE )
 LOG_TYPE( SERVICE, ERROR, ENABLED, "SvcError" )

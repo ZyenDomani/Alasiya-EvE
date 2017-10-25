@@ -127,6 +127,8 @@ EVEServerConfig::EVEServerConfig()
     database.username = "eve";
     database.password = "eve";
     database.db = "evemu";
+    database.compress = false;
+    database.ssl = false;
 
     // files
     files.logDir = "../log/";
@@ -404,6 +406,8 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     AddValueParser( "username",         database.username );
     AddValueParser( "password",         database.password );
     AddValueParser( "db",               database.db );
+    AddValueParser( "compress",         database.compress );
+    AddValueParser( "ssl",              database.ssl );
 
     const bool result = ParseElementChildren( ele );
 
@@ -412,6 +416,8 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     RemoveParser( "username" );
     RemoveParser( "password" );
     RemoveParser( "db" );
+    RemoveParser( "compress" );
+    RemoveParser( "ssl" );
 
     return result;
 }

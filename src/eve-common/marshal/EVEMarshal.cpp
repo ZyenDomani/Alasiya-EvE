@@ -35,30 +35,34 @@
 
 bool Marshal( const PyRep* rep, Buffer& into )
 {
-    MarshalStream v;
-    return v.Save( rep, into );
+    MarshalStream* pMS = new MarshalStream();
+    bool ret = pMS->Save( rep, into );
+    SafeDelete(pMS);
+    return ret;
 }
 
 bool MarshalDeflate( const PyRep* rep, Buffer& into, const uint32 deflationLimit )
 {
-    Buffer data;
-    if( !Marshal( rep, data ) )
-        return false;
-
-    if( data.size() >= deflationLimit )
-        return DeflateData( data, into );
-    else
-    {
-        into.AppendSeq( data.begin<uint8>(), data.end<uint8>() );
-        return true;
+    Buffer* data = new Buffer();
+    bool ret = false;
+    if (Marshal(rep, *data)) {
+        if( data->size() >= deflationLimit )
+            ret = DeflateData( *data, into );
+        else {
+            into.AppendSeq( data->begin<uint8>(), data->end<uint8>() );
+            ret = true;
+        }
     }
+
+    SafeDelete(data);
+    return ret;
 }
 
 /************************************************************************/
 /* MarshalStream                                                        */
 /************************************************************************/
 MarshalStream::MarshalStream()
-: mBuffer( NULL )
+: mBuffer( nullptr )
 {
 }
 
@@ -66,14 +70,14 @@ bool MarshalStream::Save( const PyRep* rep, Buffer& into )
 {
     mBuffer = &into;
     bool res = SaveStream( rep );
-    mBuffer = NULL;
+    mBuffer = nullptr;
 
     return res;
 }
 
 bool MarshalStream::SaveStream( const PyRep* rep )
 {
-    if( rep == NULL )
+    if( rep == nullptr )
         return false;
 
     Put<uint8>( MarshalHeaderByte );
@@ -599,9 +603,9 @@ bool MarshalStream::VisitSubStream( const PySubStream* rep )
 {
     Put<uint8>(Op_PySubStream);
 
-    if(rep->data() == NULL)
+    if(rep->data() == nullptr)
     {
-        if(rep->decoded() == NULL)
+        if(rep->decoded() == nullptr)
         {
             Put<uint8>(0);
             return false;
@@ -610,7 +614,7 @@ bool MarshalStream::VisitSubStream( const PySubStream* rep )
         //unmarshaled stream
         //we have to marshal the substream.
         rep->EncodeData();
-        if( rep->data() == NULL )
+        if( rep->data() == nullptr )
         {
             Put<uint8>(0);
             return false;

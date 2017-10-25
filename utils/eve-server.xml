@@ -133,6 +133,8 @@
         <password>none</password>
         <db>Alasiya-EvE</db>
         <port>3306</port>
+        <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
+        <compress>false</compress><!-- bool   compressed protocol for client server communication -->
     </database>
 
     <files>

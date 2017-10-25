@@ -1,27 +1,27 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Zhur
-*/
+ *    ------------------------------------------------------------------------------------
+ *    LICENSE:
+ *    ------------------------------------------------------------------------------------
+ *    This file is part of EVEmu: EVE Online Server Emulator
+ *    Copyright 2006 - 2011 The EVEmu Team
+ *    For the latest information visit http://evemu.org
+ *    ------------------------------------------------------------------------------------
+ *    This program is free software; you can redistribute it and/or modify it under
+ *    the terms of the GNU Lesser General Public License as published by the Free Software
+ *    Foundation; either version 2 of the License, or (at your option) any later
+ *    version.
+ *
+ *    This program is distributed in the hope that it will be useful, but WITHOUT
+ *    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License along with
+ *    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ *    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+ *    http://www.gnu.org/copyleft/lesser.txt.
+ *    ------------------------------------------------------------------------------------
+ *    Author:     Zhur
+ */
 
 #include "eve-core.h"
 
@@ -33,22 +33,94 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
-DBcore::DBcore(bool compress/*false*/, bool ssl/*false*/)
-: pCompress(compress),
-  pSSL(ssl)
+// this is used to enable socket communication (may not be needed)
+enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
+
+DBcore::DBcore()
+: mysql(nullptr)
 {
-    mysql = new MYSQL;
-    mysql_init(mysql);
+    mysql_thread_init();
+    mysql = mysql_init(nullptr);
     pStatus = Closed;
 }
 
-DBcore::~DBcore() {
-    if (mysql != nullptr) {
-        mysql_close(mysql);
-        free(mysql);
-        SafeDelete(mysql);
-    } else
-        _log(DATABASE__MESSAGE, "DBcore D'tor called but mysql is already null.");
+void DBcore::Close() {
+    mysql_close(mysql);
+    mysql_library_end();
+    mysql_thread_end();
+}
+
+void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/, bool SSL/*false*/, int16 port/*3306*/)
+{
+    if (mysql == nullptr)
+        mysql = mysql_init(nullptr);    // try again
+        if (mysql == nullptr) {
+            sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned nullptr");
+            return;
+        }
+        if (pStatus == Connected)
+            return;
+
+        pHost = host;
+    pUser = user;
+    pPassword = password;
+    pDatabase = database;
+    pPort = port;
+    pSSL = SSL;
+    pCompress = compress;
+
+    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
+        return;
+    }
+
+    uint errnum = 0;
+    char errbuf[1024];
+    errbuf[0] = 0;
+
+    MutexLock lock(MDatabase);
+
+    Connect(&errnum, errbuf);
+    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
+}
+
+void DBcore::Connect(uint* errnum, char* errbuf)
+{
+    sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
+    sLog.Cyan("          DB User", " %s", pUser.c_str());
+    sLog.Cyan("         DataBase", " %s", pDatabase.c_str());
+
+    int32 flags = CLIENT_FOUND_ROWS; //2
+    if (pCompress)
+        flags |= CLIENT_COMPRESS; //32
+        // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
+        if (pSSL)
+            flags |= CLIENT_SSL;
+        if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
+            pStatus = Error;
+            *errnum = mysql_errno(mysql);
+            if (errbuf != nullptr)
+                snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
+            DBerror err;
+            err.SetError(*errnum, errbuf);
+            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+            return;
+        } else {
+            pStatus = Connected;
+        }
+
+        // Setup character set we wish to use
+        if (mysql_set_character_set(mysql, "utf8") != 0) {
+            pStatus = Error;
+            *errnum = mysql_errno(mysql);
+            if (errbuf != nullptr)
+                snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
+            DBerror err;
+            err.SetError(*errnum, errbuf);
+            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+        }
+
+        mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void *)&prot_type);
 }
 
 // Sends the MySQL server a ping
@@ -74,10 +146,11 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     if (!DoQuery_locked(into.error, query, querylen))
         return false;
 
-    uint32 col_count = mysql_field_count(mysql);
+    uint col_count = mysql_field_count(mysql);
     if (col_count == 0) {
         into.error.SetError(0xFFFF, "DBcore::RunQuery: No Result");
         codelog(DATABASE__ERROR, "DBCore Query: %s failed because did not return a result", query);
+        EvE::traceStack();
         return false;
     }
 
@@ -89,7 +162,7 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     return true;
 }
 
-//query which returns no information except error status
+//query which returns only error status
 bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
     MutexLock lock(MDatabase);
 
@@ -152,22 +225,25 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
 
 bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry)
 {
-    if (pStatus != Connected)
-        Open_locked();
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore Query - mysql = null");
         return false;
     }
 
+    if (pStatus != Connected) {
+        codelog(DATABASE__ERROR, "DBCore Query - DB Status != Connected");
+        return false;
+    }
+
     if (mysql_real_query(mysql, query, querylen)) {
-        int num = mysql_errno(mysql);
+        uint num = mysql_errno(mysql);
 
         if (num == CR_SERVER_GONE_ERROR)
             pStatus = Error;
 
         if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR))
-		{
+        {
             _log(DATABASE__MESSAGE, "DBCore Lost connection, attempting to recover....");
             return DoQuery_locked(err, query, querylen, false);
         }
@@ -184,7 +260,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
     return true;
 }
 
-
+// is this used?
 bool DBcore::RunQuery(const char* query, int32 querylen, char* errbuf, MYSQL_RES** result, int32* affected_rows, int32* last_insert_id, int32* errnum, bool retry) {
     if (errnum != nullptr)
         *errnum = 0;
@@ -249,105 +325,11 @@ void DBcore::DoEscapeString(std::string &to, const std::string &from)
 bool DBcore::IsSafeString(const char *str) {
     for(; *str != '\0'; str++) {
         switch(*str) {
-        case '\'':
-        case '\\':
-            return false;
+            case '\'':
+            case '\\':
+                return false;
         }
     }
-    return true;
-}
-
-bool DBcore::Open(const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase, int16 iPort, int32* errnum, char* errbuf, bool iCompress, bool iSSL) {
-    MutexLock lock(MDatabase);
-
-    pHost = iHost;
-    pUser = iUser;
-    pPassword = iPassword;
-    pDatabase = iDatabase;
-    pCompress = iCompress;
-    pPort = iPort;
-    pSSL = iSSL;
-
-    return Open_locked(errnum, errbuf);
-}
-
-bool DBcore::Open(DBerror &err, const char* iHost, const char* iUser, const char* iPassword, const char* iDatabase, int16 iPort, bool iCompress, bool iSSL) {
-    MutexLock lock(MDatabase);
-
-    pHost = iHost;
-    pUser = iUser;
-    pPassword = iPassword;
-    pDatabase = iDatabase;
-    pCompress = iCompress;
-    pPort = iPort;
-    pSSL = iSSL;
-
-    int32 errnum;
-    char errbuf[1024];
-
-    if (!Open_locked(&errnum, errbuf)) {
-        err.SetError(errnum, errbuf);
-        return false;
-    }
-
-    return true;
-}
-
-void DBcore::Close() {
-    if (mysql != nullptr) {
-        mysql_close(mysql);
-        SafeDelete(mysql);
-    } else
-        codelog(DATABASE__ERROR, "DBcore::Close() called but mysql is null.");
-}
-
-
-bool DBcore::Open_locked(int32* errnum, char* errbuf) {
-    if (errbuf != nullptr)
-        errbuf[0] = 0;
-    if (GetStatus() == Connected)
-        return true;
-    if (GetStatus() == Error)
-        mysql_close(mysql);    //do we need to call init again?
-    if (pHost.empty())
-        return false;
-
-    sLog.White("       ServerInit", "Connecting to");
-	sLog.White("        DB Server", " %s:%d", pHost.c_str(), pPort);
-	sLog.White("          DB User", " %s", pUser.c_str());
-	sLog.White("         DataBase", " %s", pDatabase.c_str());
-
-    /*
-    Quagmire - added CLIENT_FOUND_ROWS flag to the connect
-    otherwise DB update calls would say 0 rows affected when the value already equaled
-    what the function was trying to set it to, therefore the function would think it failed
-    */
-    int32 flags = CLIENT_FOUND_ROWS;
-    if (pCompress)
-        flags |= CLIENT_COMPRESS;
-    if (pSSL)
-        flags |= CLIENT_SSL;
-    if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags)) {
-        pStatus = Connected;
-    } else {
-        pStatus = Error;
-        if (errnum)
-            *errnum = mysql_errno(mysql);
-        if (errbuf != nullptr)
-            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
-        return false;
-    }
-
-    // Setup character set we wish to use
-    if (mysql_set_character_set(mysql, "utf8") != 0) {
-        pStatus = Error;
-        if (errnum)
-            *errnum = mysql_errno(mysql);
-        if (errbuf != nullptr)
-            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
-        return false;
-    }
-
     return true;
 }
 
@@ -358,13 +340,13 @@ DBerror::DBerror()
 {
     ClearError();
 }
+
 DBerror::~DBerror()
 {
-
+    mErrStr.clear();
 }
 
-
-void DBerror::SetError( uint32 err, const char* str )
+void DBerror::SetError( uint err, const char* str )
 {
     mErrStr = str;
     mErrNo = err;
@@ -381,7 +363,7 @@ void DBerror::ClearError()
 /************************************************************************/
 /* mysql to DBTYPE convention table */
 /* treating all strings as wide isn't probably the best solution but it's
-   the easiest one which preserves wide strings. */
+ *   the easiest one which preserves wide strings. */
 const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_SIGNED[] =
 {
     DBTYPE_ERROR,   //[ 0]MYSQL_TYPE_DECIMAL            /* DECIMAL or NUMERIC field */
@@ -446,8 +428,8 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_UNSIGNED[] =
 
 DBQueryResult::DBQueryResult()
 : mColumnCount(0),
-  mResult(nullptr),
-  mFields(nullptr)
+mResult(nullptr),
+mFields(nullptr)
 {
 }
 
@@ -461,15 +443,15 @@ DBQueryResult::~DBQueryResult()
 
 bool DBQueryResult::GetRow( DBResultRow& into )
 {
-    if (!mResult )
+    if (mResult == nullptr)
         return false;
 
     MYSQL_ROW row = mysql_fetch_row( mResult );
-    if (!row )
+    if (row == nullptr)
         return false;
 
     const unsigned long* lengths = mysql_fetch_lengths( mResult );
-    if (!lengths )
+    if (lengths == nullptr)
         return false;
 
     into.SetData( this, row, lengths );
@@ -552,8 +534,8 @@ void DBQueryResult::SetResult( MYSQL_RES** res, uint32 colCount )
 
 DBResultRow::DBResultRow()
 : mRow( nullptr ),
-  mLengths( nullptr ),
-  mResult( nullptr )
+mLengths( nullptr ),
+mResult( nullptr )
 {
 }
 
@@ -622,7 +604,7 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 uint64 DBResultRow::GetUInt64( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-		_log(DATABASE__ERROR,  "   DBCore GetUInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore GetUInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
         return 0;       //nothing better to do...
     }
@@ -659,4 +641,3 @@ void DBResultRow::SetData( DBQueryResult* res, MYSQL_ROW& row, const unsigned lo
     mResult = res;
     mLengths = lengths;
 }
-

@@ -26,6 +26,14 @@
 #ifndef __UTILS__REF_PTR_H__INCL__
 #define __UTILS__REF_PTR_H__INCL__
 
+
+//#define ENABLE_STD_OUT_REF_LOG
+#ifdef ENABLE_STD_OUT_REF_LOG
+    #include <cassert>
+    #include <cstdio>
+    #include <iostream>
+#endif
+
 /**
  * ENABLE_REF_TRACE
  * A way to trace deleted objects still beeing handled in the python layer.
@@ -88,6 +96,10 @@ protected:
     {
         REF_TRACE_MACRO();
         ++mRefCount;
+        _log(REFPTR__INC, "RefPtr::IncRef() at %u.", mRefCount);
+        #ifdef ENABLE_STD_OUT_REF_LOG
+            std::cout << std::endl << "IncRef() " << mRefCount;
+        #endif
     }
     /**
      * @brief Decrements reference count of object by one.
@@ -100,8 +112,12 @@ protected:
         REF_TRACE_MACRO();
         assert( mRefCount > 0 );
         --mRefCount;
+        _log(REFPTR__DEC, "RefPtr::DecRef() at %u.", mRefCount);
+        #ifdef ENABLE_STD_OUT_REF_LOG
+            std::cout << std::endl << "DecRef() " << mRefCount;
+        #endif
 
-        if( mRefCount <= 0 )
+        if( mRefCount < 1 )
             delete this;
     }
 

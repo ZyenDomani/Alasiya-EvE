@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    7.8
+    Version:    8.1
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -179,6 +179,8 @@ public:
         std::string password;
         /// A database to be used by server.
         std::string db;
+        bool compress;
+        bool ssl;
     } database;
 
     // From <files/>

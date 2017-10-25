@@ -1,28 +1,28 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:     Zhur, mmcs
-    Updates:    Allan
-*/
+ *    ------------------------------------------------------------------------------------
+ *    LICENSE:
+ *    ------------------------------------------------------------------------------------
+ *    This file is part of EVEmu: EVE Online Server Emulator
+ *    Copyright 2006 - 2011 The EVEmu Team
+ *    For the latest information visit http://evemu.org
+ *    ------------------------------------------------------------------------------------
+ *    This program is free software; you can redistribute it and/or modify it under
+ *    the terms of the GNU Lesser General Public License as published by the Free Software
+ *    Foundation; either version 2 of the License, or (at your option) any later
+ *    version.
+ *
+ *    This program is distributed in the hope that it will be useful, but WITHOUT
+ *    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ *    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public License along with
+ *    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ *    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+ *    http://www.gnu.org/copyleft/lesser.txt.
+ *    ------------------------------------------------------------------------------------
+ *    Author:     Zhur, mmcs
+ *    Updates:    Allan
+ */
 
 #include "eve-server.h"
 
@@ -180,7 +180,6 @@ int main( int argc, char* argv[] )
     if (!sConfig.ParseFile(SRV_CONFIG_FILE)) {
         printf("ERROR: Loading server configuration '%s' failed.", SRV_CONFIG_FILE );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
-        sConfig.~EVEServerConfig();
         return EXIT_FAILURE;
     }
 
@@ -192,7 +191,27 @@ int main( int argc, char* argv[] )
     sThread.Initialize();
     sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
-    sLog.White("       ServerInit", "Loading server");
+
+    sLog.White("", "");     // spacer
+
+    /* display server data */
+    sLog.White(" Supported Client"," %s", EVEProjectVersion);
+    sLog.White("   Client Version"," %.2f", EVEVersionNumber);
+    sLog.White("     Client Build"," %d", EVEBuildVersion);
+    sLog.White("         MachoNet"," %u", MachoNetVersion);
+    sLog.White("     Server Build", " %.2f", EVE_Build );
+    sLog.White("  Server Revision", " %s", EVEMU_REVISION );
+    sLog.White("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.White("   Config Version", " %.1f", Config_Version );
+    sLog.White("      Log Version", " %.1f", Log_Version );
+    sLog.White("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.White("    NC AI Version", " %.2f", Civilian_AI_Version );
+    sLog.White("Sentry AI Version", " %.2f", Sentry_AI_Version );
+    sLog.White("MarketBot Version", " %.2f", Bot_Version );
+
+    sLog.White("", "");     // spacer
+
+    sLog.Green("       ServerInit", "Loading server");
 
     sLog.White("", "");     // spacer
 
@@ -214,46 +233,38 @@ int main( int argc, char* argv[] )
     /* Start up the TCP server */
     EVETCPServer tcps;
     char errbuf[ TCPCONN_ERRBUF_SIZE ];
+    sLog.Green( "       ServerInit", "Starting TCP Server");
     if (tcps.Open(sConfig.net.port, errbuf)) {
-        sLog.Green( "       ServerInit", "TCP Listener started on port %u.", sConfig.net.port );
+        sLog.Blue( "    BaseTCPServer", "TCP Server started on port %u.", sConfig.net.port );
     } else {
-        sLog.Error( "       ServerInit", "Failed to start TCP listener on port %u: %s.", sConfig.net.port, errbuf );
+        sLog.Error( "    BaseTCPServer", "Error starting TCP Server: %s.", errbuf );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
     }
     Sleep(250);
 
-    sLog.White("", "");
-    sLog.White(" Supported Client"," %s", EVEProjectVersion);
-    sLog.White("   Client Version"," %.2f", EVEVersionNumber);
-    sLog.White("     Client Build"," %d", EVEBuildVersion);
-    sLog.White("         MachoNet"," %u", MachoNetVersion);
-    sLog.White("     Server Build", " %.2f", EVE_Build );
-    sLog.White("  Server Revision", " %s", EVEMU_REVISION );
-    sLog.White("       Build Date", " %s", EVEMU_BUILD_DATE );
-    sLog.White("   Config Version", " %.1f", Config_Version );
-    sLog.White("      Log Version", " %.1f", Log_Version );
-    sLog.White("   NPC AI Version", " %.2f", NPC_AI_Version );
-    sLog.White("    NC AI Version", " %.2f", Civilian_AI_Version );
-    sLog.White("Sentry AI Version", " %.2f", Sentry_AI_Version );
-    sLog.White("MarketBot Version", " %.2f", Bot_Version );
-
-    sLog.White("", "");     // spacer
-
     /* connect to the database */
-    DBerror err;
-    if ( !sDatabase.Open( err,
-        sConfig.database.host.c_str(),
-        sConfig.database.username.c_str(),
-        sConfig.database.password.c_str(),
-        sConfig.database.db.c_str(),
-        sConfig.database.port ) )
-    {
-        sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+    sLog.Green("       ServerInit", "Connecting to DataBase");
+    sDatabase.Initialize(sConfig.database.host,
+                         sConfig.database.username,
+                         sConfig.database.password,
+                         sConfig.database.db,
+                         sConfig.database.compress,
+                         sConfig.database.ssl,
+                         sConfig.database.port);
+    if (sDatabase.GetStatus() != DBcore::Connected) {
+        // error msg printed in DBcore::Initalize routine
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
     }
-    sLog.White("", "");     // spacer
+
+    // basic shit done.  begin loading server specifics...
+
+    // start up the image server
+    sLog.Green("       ServerInit", "Starting Image Server");
+    sImageServer.Run();
+    //  this gives the imageserver's server time to load so the dynamic database msgs are in order
+    Sleep(250);
 
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
@@ -266,6 +277,11 @@ int main( int argc, char* argv[] )
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
     PyServiceMgr pyServMgr( 888444, sEntityList, item_factory );
+
+    /* create a command dispatcher */
+    sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
+    CommandDispatcher command_dispatcher( pyServMgr );
+    RegisterAllCommands( command_dispatcher );
 
     /* create the WormholeMgr singleton */
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
@@ -282,11 +298,6 @@ int main( int argc, char* argv[] )
     /* create the MarketBot singleton */
     sLog.Green("       ServerInit", "Starting Market Bot Manager");
     sMktBotMgr.Initialize();
-
-    /* create a command dispatcher */
-    sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
-    CommandDispatcher command_dispatcher( pyServMgr );
-    RegisterAllCommands( command_dispatcher );
 
     /* create console command interperter singleton */
     sLog.Green("       ServerInit", "Starting Console Manager");
@@ -348,7 +359,8 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("lookupSvc", new LookupService(&pyServMgr));
     pyServMgr.RegisterService("LPSvc", new LPService(&pyServMgr));
     pyServMgr.RegisterService("storeServer", new LPStore(&pyServMgr));
-    pyServMgr.RegisterService("LSC", (pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher)));
+    pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher);
+    pyServMgr.RegisterService("LSC", pyServMgr.lsc_service);
     pyServMgr.RegisterService("mailMgr", new MailMgrService(&pyServMgr));
     pyServMgr.RegisterService("mailingListsMgr", new MailingListMgrService(&pyServMgr));
     pyServMgr.RegisterService("map", new MapService(&pyServMgr));
@@ -356,7 +368,8 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("missionMgr", new MissionMgrService(&pyServMgr));
     pyServMgr.RegisterService("machoNet", new NetService(&pyServMgr));
     pyServMgr.RegisterService("notificationMgr", new NotificationMgrService(&pyServMgr));
-    pyServMgr.RegisterService("objectCaching", (pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str())));
+    pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str());
+    pyServMgr.RegisterService("objectCaching", pyServMgr.cache_service);
     pyServMgr.RegisterService("onlineStatus", new OnlineStatusService(&pyServMgr));
     pyServMgr.RegisterService("paperDollServer", new PaperDollService(&pyServMgr));
     pyServMgr.RegisterService("petitioner", new PetitionerService(&pyServMgr));
@@ -388,12 +401,6 @@ int main( int argc, char* argv[] )
     /** @note  this is NOT used correctly yet...  */
     sLog.Green("       ServerInit", "Priming cached objects.");
     pyServMgr.cache_service->PrimeCache();
-
-    // start up the image server
-    sLog.Green("       ServerInit", "Starting Image Server");
-    sImageServer.Run();
-    //  this gives the imageserver's server time to load so the dynamic database msgs are in order
-    Sleep(250);
 
     // Create In-Memory Database Objects for Critical and HighUse Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
@@ -478,13 +485,13 @@ int main( int argc, char* argv[] )
         sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
     else
         sLog.Blue("      All Damages","Normal.");
-	if (sConfig.rates.missileRate != 1.0)
+    if (sConfig.rates.missileRate != 1.0)
         sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
-	else
+    else
         sLog.Blue("      Missile Dmg","Normal.");
-	if (sConfig.rates.missileTime != 1.0)
+    if (sConfig.rates.missileTime != 1.0)
         sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
-	else
+    else
         sLog.Blue("     Missile Time","Normal.");
     if (sConfig.rates.turretRate != 1.0)
         sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRate *100) );
@@ -562,7 +569,7 @@ int main( int argc, char* argv[] )
     //sConsole.Stop();
     /* Close the entity list */
     sEntityList.Close();
-	sLog.Warning("   ServerShutdown", "Saving Items." );
+    sLog.Warning("   ServerShutdown", "Saving Items." );
     /* Shut down the Item system */
     item_factory->SaveItems();
     sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
@@ -626,26 +633,26 @@ static void CatchSignal( int sig_num )
 }
 
 /*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occational freezes on main)  -allan 29Dec15
-void FreezeDetectorHandler(const boost::system::error_code& error)
-{
-    if (!error)
-    {
-        uint32 curtime = getMSTime();
-
-        uint32 worldLoopCounter = World::m_worldLoopCounter;
-        if (_worldLoopCounter != worldLoopCounter)
-        {
-            _lastChangeMsTime = curtime;
-            _worldLoopCounter = worldLoopCounter;
-        }
-        // possible freeze
-        else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
-        {
-            TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
-            ASSERT(false);
-        }
-
-        _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(1));
-        _freezeCheckTimer.async_wait(FreezeDetectorHandler);
-    }
-}  */
+ * void FreezeDetectorHandler(const boost::system::error_code& error)
+ * {
+ *    if (!error)
+ *    {
+ *        uint32 curtime = getMSTime();
+ *
+ *        uint32 worldLoopCounter = World::m_worldLoopCounter;
+ *        if (_worldLoopCounter != worldLoopCounter)
+ *        {
+ *            _lastChangeMsTime = curtime;
+ *            _worldLoopCounter = worldLoopCounter;
+ *        }
+ *        // possible freeze
+ *        else if (getMSTimeDiff(_lastChangeMsTime, curtime) > _maxCoreStuckTimeInMs)
+ *        {
+ *            TC_LOG_ERROR("server.worldserver", "World Thread hangs, kicking out server!");
+ *            ASSERT(false);
+ *        }
+ *
+ *        _freezeCheckTimer.expires_from_now(boost::posix_time::seconds(1));
+ *        _freezeCheckTimer.async_wait(FreezeDetectorHandler);
+ *    }
+ * }  */
