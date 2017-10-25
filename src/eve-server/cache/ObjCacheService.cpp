@@ -273,11 +273,11 @@ PyResult ObjCacheService::Handle_GetCachableObject(PyCallArgs &call) {
     if(!args.Decode(&call.tuple))
     {
         sLog.Error("Obj Cache Srv", "%s: Unable to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     if(!_LoadCachableObject(args.objectID))
-        return NULL;    //print done already
+        return nullptr;   //print done already
 
     //should we check their version? I am pretty sure they check it and only request what they want.
     //well, we want to do something like this, but this doesn't seem to be it. taken
@@ -329,14 +329,14 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
     //first try to generate it from the database...
     //we go to the DB with a string, not a rep
     PyRep *cache = m_db.GetCachableObject(objectID_string);
-    if(cache != NULL) {
+    if(cache != nullptr) {
         //we have generated the cache file in question, remember it
         m_cache.UpdateCache(objectID, &cache);
     } else {
         //failed to query from the database... fall back to old
         //hackish file loading.
         PySubStream* ss = m_cache.LoadCachedFile( objectID_string.c_str() );
-        if( ss == NULL )
+        if( ss == nullptr )
         {
             _log(CACHE__ERROR, "Failed to create or load cache file for '%s'", objectID_string.c_str());
             return false;
@@ -360,19 +360,19 @@ bool ObjCacheService::_LoadCachableObject(const PyRep *objectID) {
 
 PyRep *ObjCacheService::GetCacheHint(const PyRep* objectID) {
     if(!_LoadCachableObject(objectID))
-        return NULL;    //print done already
+        return nullptr;    //print done already
 
     PyObject *cache_hint = m_cache.MakeCacheHint(objectID);
-    if(cache_hint == NULL) {
+    if(cache_hint == nullptr) {
         _log(CACHE__ERROR, "Unable to build cache hint for object ID '%s' (h), skipping.", CachedObjectMgr::OIDToString(objectID).c_str());
-        return NULL;
+        return nullptr;
     }
 
     return(cache_hint);
 }
 
 void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
-    const char *const *objects = NULL;
+    const char *const *objects = nullptr;
     uint32 object_count = 0;
     switch(hset) {
     case hLoginCachables:
@@ -392,7 +392,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         object_count = CharCreateNewExtraCachableObjectCount;
         break;
     }
-    if(objects == NULL)
+    if(objects == nullptr)
         return;
     uint32 r;
     std::map<std::string, std::string>::const_iterator res;
@@ -409,7 +409,7 @@ void ObjCacheService::InsertCacheHints(hintSet hset, PyDict *into) {
         PyRep *cache_hint = GetCacheHint( str );
         PyDecRef( str );
 
-        if(cache_hint == NULL)
+        if(cache_hint == nullptr)
             continue;    //print already done.
 
         into->SetItemString(res->second.c_str(), cache_hint);
@@ -431,7 +431,7 @@ void ObjCacheService::GiveCache(const PyRep *objectID, PyRep **contents) {
 
 PyObject *ObjCacheService::MakeObjectCachedSessionMethodCallResult(const PyRep *objectID, const char *sessionInfoName, const char *clientWhen) {
     if(!IsCacheLoaded(objectID))
-        return NULL;
+        return nullptr;
 
     objectCaching_SessionCachedMethodCallResult_object c;
     c.clientWhen = clientWhen;
@@ -442,7 +442,7 @@ PyObject *ObjCacheService::MakeObjectCachedSessionMethodCallResult(const PyRep *
 
 PyObject *ObjCacheService::MakeObjectCachedMethodCallResult(const PyRep *objectID, const char *versionCheck) {
     if(!IsCacheLoaded(objectID))
-        return NULL;
+        return nullptr;
 
     objectCaching_CachedMethodCallResult_object c;
     c.versionCheck = versionCheck;

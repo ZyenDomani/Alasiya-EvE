@@ -172,7 +172,7 @@ PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_a
     PyRep *t = bind_args->Clone();
     if(!args.Decode(&t)) {
         codelog(INV__ERROR, "Failed to decode bind args from '%s'", c->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return new DogmaIMBound(m_manager, args.locationID, args.groupID);

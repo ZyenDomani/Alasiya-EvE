@@ -93,7 +93,7 @@ Socket* Socket::accept( sockaddr* addr, unsigned int* addrlen )
     if( sock != INVALID_SOCKET )
         return new Socket( sock );
     else
-        return NULL;
+        return nullptr;
 }
 
 int Socket::setopt( int level, int optname, const void* optval, unsigned int optlen )

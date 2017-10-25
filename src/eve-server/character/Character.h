@@ -143,19 +143,19 @@ protected:
         // check we are really loading a character type
         if( group.id() != EVEDB::invGroups::Character ) {
             sLog.Error("Character", "Load of character type %u requested, but it's %s.", typeID, group.name().c_str() );
-            return NULL;
+            return nullptr;
         }
 
         // query character type data
         uint32 bloodlineID;
         CharacterTypeData charData;
         if( !factory.db().GetCharacterType(typeID, bloodlineID, charData) )
-            return NULL;
+            return nullptr;
 
         // load ship type
         const ItemType* shipType = factory.GetType( charData.shipTypeID );
-        if( shipType == NULL )
-            return NULL;
+        if( shipType == nullptr )
+            return nullptr;
 
         return _Ty::template _LoadCharacterType<_Ty>( factory, typeID, bloodlineID, group, data, *shipType, charData );
     }

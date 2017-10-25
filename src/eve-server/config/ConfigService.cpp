@@ -74,7 +74,7 @@ PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiOwnersEx(arg.ints);
@@ -84,7 +84,7 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiAllianceShortNamesEx(arg.ints);
@@ -106,7 +106,7 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiLocationsEx(arg.ints);
@@ -119,7 +119,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return new PyNone();
@@ -130,7 +130,7 @@ PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiCorpTickerNamesEx(arg.ints);
@@ -141,7 +141,7 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiGraphicsEx(arg.ints);
@@ -155,7 +155,7 @@ PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMap(args.arg);
@@ -175,7 +175,7 @@ PyResult ConfigService::Handle_GetMapOffices(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMapOffices(args.arg);
@@ -185,7 +185,7 @@ PyResult ConfigService::Handle_GetMapObjects(PyCallArgs &call) {
   Call_GetMapObjects args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode arguments");
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMapObjects( args.systemID, args.reg, args.con, args.sys, args.sta);
@@ -199,7 +199,7 @@ PyResult ConfigService::Handle_GetMultiInvTypesEx(PyCallArgs &call) {
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetMultiInvTypesEx(arg.ints);
@@ -253,7 +253,7 @@ PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     // No idea what to return... yet...
@@ -265,7 +265,7 @@ PyResult ConfigService::Handle_GetCelestialStatistic(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetCelestialStatistic(arg.arg);
@@ -275,7 +275,7 @@ PyResult ConfigService::Handle_GetDynamicCelestials(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     if(IsSolarSystem(arg.arg)) {
@@ -305,6 +305,6 @@ PyResult ConfigService::Handle_SetMapLandmarks(PyCallArgs &call) {
   sLog.White( "MapService::Handle_SetMapLandmarks()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-        return NULL;
+        return nullptr;
 }
 
