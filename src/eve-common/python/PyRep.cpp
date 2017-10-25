@@ -34,41 +34,42 @@
 #include "python/PyRep.h"
 #include "utils/EVEUtils.h"
 
+/** Lookup table for PyRep type object type names. */
+const char* const s_mTypeString[] =
+{
+    "Min",
+    "Integer",          //1
+    "UInt",             //2
+    "Long",             //3
+    "ULong",            //4
+    "Real",             //5
+    "Boolean",          //6
+    "Buffer",           //7
+    "String",           //8
+    "WString",          //9
+    "Token",            //10
+    "Tuple",            //11
+    "List",             //12
+    "Dict",             //13
+    "None",             //14
+    "SubStruct",        //15
+    "SubStream",        //16
+    "ChecksumedStream", //17
+    "Object",           //18
+    "ObjectEx",         //19
+    "PackedRow",        //20
+    "Invalid Type"      //21
+};
+
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-const char* const PyRep::s_mTypeString[] =
-{
-    "Integer",          //0
-    "UInt",             //1
-    "Long",             //2
-    "ULong",            //3
-    "Real",             //4
-    "Boolean",          //5
-    "Buffer",           //6
-    "String",           //7
-    "WString",          //8
-    "Token",            //9
-    "Tuple",            //10
-    "List",             //11
-    "Dict",             //12
-    "None",             //13
-    "SubStruct",        //14
-    "SubStream",        //15
-    "ChecksumedStream", //16
-    "Object",           //17
-    "ObjectEx",         //18
-    "PackedRow",        //19
-    "Error",            //20
-    "UNKNOWN TYPE"      //21
-};
-
 PyRep::PyRep( PyType t ) : RefObject( 1 ), mType( t ) {}
 PyRep::~PyRep() {}
 
 const char* PyRep::TypeString() const
 {
-    if (mType >= 0 && mType < PyTypeMax )
+    if ((mType > PyTypeMin) and (mType < PyTypeError))
         return s_mTypeString[ mType ];
 
     return s_mTypeString[ PyTypeError ];
@@ -77,14 +78,12 @@ const char* PyRep::TypeString() const
 void PyRep::Dump( FILE* into, const char* pfx ) const
 {
     PyFileDumpVisitor dumper( into, pfx );
-
     visit( dumper );
 }
 
 void PyRep::Dump( LogType type, const char* pfx ) const
 {
     PyLogDumpVisitor dumper( type, type, pfx );
-
     visit( dumper );
 }
 
@@ -311,15 +310,14 @@ int32 PyFloat::hash() const
     fractpart = modf(v, &intpart);
     if (fractpart == 0.0) {
         /* This must return the same hash as an equal int or long. */
-        if (intpart > INT32_MAX || -intpart > INT32_MAX) {
+        if ((intpart > INT32_MAX) or (-intpart > INT32_MAX)) {
             /* Convert to long and use its hash. */
-            PyRep *plong;    /* converted to Python long */
             if (Py_IS_INFINITY(intpart))
                 /* can't convert to long int -- arbitrary */
                 v = v < 0 ? -271828.0 : 314159.0;
             //plong = PyLong_FromDouble(v);
 
-            plong = new PyLong( (int64)v ); // this is a hack
+            PyRep *plong = new PyLong( (int64)v ); // this is a hack
             if (plong == nullptr)
                 return -1;
             x = plong->hash();
@@ -755,53 +753,34 @@ PyRep* PyDict::GetItemString( const char* key ) const
 void PyDict::SetItem( PyRep* key, PyRep* value )
 {
     /* make sure we have valid arguments */
-    assert( key );
+    if ( key == nullptr )
+        return;
 
     /* note: add check if the key object is hashable
-     * if not ( it will return -1 then ) return false;
+     * if not ( it will return -1 ) return false;
      */
-
-    /* note: needs to be enabled when object reference is working.
-     */
-    PyIncRef( key );
-    PyIncRef( value );
+    if (key->hash() == -1)
+        return;
 
     /* check if we need to replace a dictionary entry */
     iterator itr = items.find( key );
-    if (itr == items.end() )
-    {
-        // Keep both key & value
+    if (itr == items.end()) {
+        // Keep both key & value  (make_pair makes copy of args passed)
         items.insert( std::make_pair( key, value ) );
-    }
-    else
-    {
-        // We don't need it anymore, we're using itr->first.
+    } else {
+        // We found 'key' in current dict, so use itr->first and decRef 'key'.
         PyDecRef( key );
-
-        // Replace itr->second with value.
+        // Replace itr->second with new value.
         PySafeDecRef( itr->second );
         itr->second = value;
     }
-}
-
-void PyDict::SetItem( const char* key, const char* value )
-{
-    SetItem(key, (PyRep*)new PyString(value));
-}
-
-
-void PyDict::SetItem( const char* key, PyRep* value )
-{
-    PyString *key_name = new PyString(key);
-    SetItem(key_name, value);
 }
 
 PyDict& PyDict::operator=( const PyDict& oth )
 {
     clear();
     const_iterator cur = oth.begin();
-    for (; cur != oth.end(); ++cur)
-    {
+    for (; cur != oth.end(); ++cur) {
         if (cur->second == nullptr )
             SetItem( cur->first->Clone(), nullptr );
         else
@@ -974,9 +953,9 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyDict* 
         body->SetItem( 1, args );
         if (body->size() > 2 )
             body->SetItem( 2, keywords );
-    if (enclosed) {
+    if (enclosed)
         codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
-    }
+
     return body;
 }
 
@@ -990,9 +969,9 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyList* 
         body->SetItem( 1, args );
     if (body->size() > 2 )
         body->SetItem( 2, keywords );
-    if (enclosed) {
+    if (enclosed)
         codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
-    }
+
     return body;
 }
 
@@ -1018,11 +997,10 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
     PyDict* kw = GetKeywords();
 
     PyDict::const_iterator cur = kw->begin();
-    for (; cur != kw->end(); ++cur) {
+    for (; cur != kw->end(); ++cur)
         if ( cur->first->IsString() )
             if ( cur->first->AsString()->content() == keyword )
                 return cur->second;
-    }
 
     return nullptr;
 }
@@ -1073,8 +1051,7 @@ bool PyPackedRow::visit( PyVisitor& v ) const
 
 bool PyPackedRow::SetField( uint32 index, PyRep* value )
 {
-    if (!header()->VerifyValue( index, value ) )
-    {
+    if (!header()->VerifyValue( index, value ) )  {
         PyDecRef( value );
         return false;
     }
@@ -1147,12 +1124,11 @@ bool PySubStream::visit( PyVisitor& v ) const
 
 void PySubStream::EncodeData() const
 {
-    if (decoded() == nullptr || data() != nullptr )
+    if ((decoded() == nullptr) or (data() != nullptr))
         return;
 
     Buffer* buf = new Buffer;
-    if (!Marshal( decoded(), *buf ) )
-    {
+    if (!Marshal( decoded(), *buf ) ) {
         sLog.Error( "Marshal", "Failed to marshal rep %p.", decoded() );
 
         SafeDelete( buf );
@@ -1165,7 +1141,7 @@ void PySubStream::EncodeData() const
 
 void PySubStream::DecodeData() const
 {
-    if (data() == nullptr || decoded() != nullptr )
+    if ((data() == nullptr) or (decoded() != nullptr))
         return;
 
     mDecoded = Unmarshal( data()->content() );
@@ -1198,17 +1174,15 @@ bool PyChecksumedStream::visit( PyVisitor& v ) const
 PyTuple * new_tuple(uint64 arg1)
 {
     PyTuple * res = new PyTuple(1);
-    res->SetItem(0, new PyULong(arg1));
-
+        res->SetItem(0, new PyULong(arg1));
     return res;
 }
 
 PyTuple * new_tuple(uint64 arg1, uint64 arg2)
 {
     PyTuple * res = new PyTuple(2);
-    res->SetItem(0, new PyULong(arg1));
-    res->SetItem(1, new PyULong(arg2));
-
+        res->SetItem(0, new PyULong(arg1));
+        res->SetItem(1, new PyULong(arg2));
     return res;
 }
 
@@ -1218,24 +1192,24 @@ PyTuple * new_tuple(uint64 arg1, uint64 arg2)
 PyTuple * new_tuple(const char* arg1)
 {
     PyTuple * res = new PyTuple(1);
-    res->SetItem(0, new PyString(arg1));
+        res->SetItem(0, new PyString(arg1));
     return res;
 }
 
 PyTuple * new_tuple(const char* arg1, const char* arg2)
 {
     PyTuple * res = new PyTuple(2);
-    res->SetItem(0, new PyString(arg1));
-    res->SetItem(1, new PyString(arg2));
+        res->SetItem(0, new PyString(arg1));
+        res->SetItem(1, new PyString(arg2));
     return res;
 }
 
 PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3)
 {
     PyTuple * res = new PyTuple(3);
-    res->SetItem(0, new PyString(arg1));
-    res->SetItem(1, new PyString(arg2));
-    res->SetItem(2, new PyString(arg3));
+        res->SetItem(0, new PyString(arg1));
+        res->SetItem(1, new PyString(arg2));
+        res->SetItem(2, new PyString(arg3));
     return res;
 }
 
@@ -1245,18 +1219,18 @@ PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3)
 PyTuple * new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 {
     PyTuple * res = new PyTuple(3);
-    res->SetItem(0, new PyString(arg1));
-    res->SetItem(1, new PyString(arg2));
-    res->SetItem(2, arg3);
+        res->SetItem(0, new PyString(arg1));
+        res->SetItem(1, new PyString(arg2));
+        res->SetItem(2, arg3);
     return res;
 }
 
 PyTuple * new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3)
 {
     PyTuple * res = new PyTuple(3);
-    res->SetItem(0, new PyString(arg1));
-    res->SetItem(1, arg2);
-    res->SetItem(2, arg3);
+        res->SetItem(0, new PyString(arg1));
+        res->SetItem(1, arg2);
+        res->SetItem(2, arg3);
     return res;
 }
 
@@ -1264,14 +1238,14 @@ PyTuple * new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3)
 PyTuple * new_tuple( PyRep* arg1, PyRep* arg2 )
 {
     PyTuple * res = new PyTuple(2);
-    res->SetItem(0, arg1);
-    res->SetItem(1, arg2);
+        res->SetItem(0, arg1);
+        res->SetItem(1, arg2);
     return res;
 }
 
 PyTuple * new_tuple( PyRep* arg1 )
 {
     PyTuple * res = new PyTuple(1);
-    res->SetItem(0, arg1);
+        res->SetItem(0, arg1);
     return res;
 }

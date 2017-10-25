@@ -79,27 +79,27 @@ public:
      */
     enum PyType
     {
-        PyTypeInt               = 0,
-        PyTypeUInt              = 1,
-        PyTypeLong              = 2,
-        PyTypeULong             = 3,
-        PyTypeFloat             = 4,
-        PyTypeBool              = 5,
-        PyTypeBuffer            = 6,
-        PyTypeString            = 7,
-        PyTypeWString           = 8,
-        PyTypeToken             = 9,
-        PyTypeTuple             = 10,
-        PyTypeList              = 11,
-        PyTypeDict              = 12,
-        PyTypeNone              = 13,
-        PyTypeSubStruct         = 14,
-        PyTypeSubStream         = 15,
-        PyTypeChecksumedStream  = 16,
-        PyTypeObject            = 17,
-        PyTypeObjectEx          = 18,
-        PyTypePackedRow         = 19,
-        PyTypeMax               = 20,
+        PyTypeMin               = 0,
+        PyTypeInt               = 1,
+        PyTypeUInt              = 2,
+        PyTypeLong              = 3,
+        PyTypeULong             = 4,
+        PyTypeFloat             = 5,
+        PyTypeBool              = 6,
+        PyTypeBuffer            = 7,
+        PyTypeString            = 8,
+        PyTypeWString           = 9,
+        PyTypeToken             = 10,
+        PyTypeTuple             = 11,
+        PyTypeList              = 12,
+        PyTypeDict              = 13,
+        PyTypeNone              = 14,
+        PyTypeSubStruct         = 15,
+        PyTypeSubStream         = 16,
+        PyTypeChecksumedStream  = 17,
+        PyTypeObject            = 18,
+        PyTypeObjectEx          = 19,
+        PyTypePackedRow         = 20,
         PyTypeError             = 21
     };
 
@@ -220,9 +220,6 @@ protected:
     virtual ~PyRep();
 
     const PyType mType;
-
-    /** Lookup table for PyRep type object type names. */
-    static const char* const s_mTypeString[];
 };
 
 /**
@@ -772,10 +769,10 @@ public:
      */
     void SetItem( PyRep* key, PyRep* value );
 
-    void SetItem( const char* key, PyRep* value );
+    void SetItem( const char* key, PyRep* value )    { SetItem(new PyString(key), value); }
 
-    void SetItem( const char* key, const char* value );
-
+    void SetItem( const char* key, const char* value )     { SetItem(new PyString(key), new PyString(value)); }
+    
     /**
      * @brief SetItemString adds or sets a database entry.
      *

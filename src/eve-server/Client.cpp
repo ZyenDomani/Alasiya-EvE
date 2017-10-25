@@ -1018,7 +1018,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 {
     m_services.item_factory->SetUsingClient(this);
     InventoryItemRef item = m_services.item_factory->GetItem(itemID);
-    if (!item) {
+    if (item.get() == nullptr) {
         _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->itemName().c_str(), itemID);
         return;
     }
@@ -1100,7 +1100,7 @@ void Client::OnCharNoLongerInStation() {
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
     for (auto cur : clients) {
-        if (!up)
+        if (up == nullptr)
             up = new PyTuple( *tmp );
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &up); //consumed
     }
@@ -1118,7 +1118,7 @@ void Client::OnCharNowInStation() {
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
     for (auto cur : clients) {
-        if (!up)
+        if (up == nullptr)
             up = new PyTuple( *tmp );
         cur->SendNotification("OnCharNowInStation", "stationid", &up);
     }
@@ -1192,14 +1192,14 @@ void Client::_UpdateSession(const CharacterConstRef& charRef)
 
 void Client::InitSession(uint32 characterID)
 {
-    if (!characterID) {
+    if (characterID < 0) {
         sLog.Error("Client::InitSession()", "characterID == 0");
         return;
     }
 
     std::map<std::string, uint64> characterDataMap;
     ((CharUnboundMgrService *)(m_services.LookupService("charUnboundMgr")))->GetCharacterData(characterID, characterDataMap);
-    if (!characterDataMap.size()) {
+    if (characterDataMap.size() < 1) {
         sLog.Error("Client::InitSession()", "characterDataMap.size() returned zero.");
         return;
     }
@@ -1253,7 +1253,7 @@ void Client::SendSessionChange()
 {
     if (!mSession.isDirty())
         return;
-    if (GetCharacterID() and (!m_locationID)) {
+    if (m_locationID == 0) {
         // this should never happen now.  -allan 3Aug16
         codelog(CLIENT__ERROR, "Session::LocationID == NULL for %s(%u)", GetCharacterName().c_str(), GetCharacterID());
         m_locationID = GetSystemID();
@@ -1531,10 +1531,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 {
     /* send passwordVersion required: 1=plain, 2=hashed */
     // TODO  look into using plain pass to facilitate forgotten-password retrieval from web.
-    PyRep* rsp = new PyInt(2);
-
-    mNet->QueueRep(rsp);
-    //PyDecRef(rsp);
+    mNet->QueueRep(new PyInt(2));
 
     std::string account_hash;
     std::string fail_msg = "LoginAuthFailed";
@@ -1621,6 +1618,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     /* send our handshake */
     CryptoServerHandshake server_shake;
+    //server_shake.context = ??
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(handshakeFunc, handshakeFunc + sizeof(handshakeFunc));
     server_shake.verification = new PyBool(false);
@@ -1638,10 +1636,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.boot_build = EVEBuildVersion;
     server_shake.boot_codename = EVEProjectCodename;
     server_shake.boot_region = EVEProjectRegion;
-
-    rsp = server_shake.Encode();
-    mNet->QueueRep(rsp);
-    PyDecRef(rsp);
+    mNet->QueueRep(server_shake.Encode());
 
     // Setup session, but don't send the change yet.
     mSession.SetString("address", EVEClientSession::GetAddress().c_str());
@@ -1687,7 +1682,8 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         /* the client creates and sends sessionID in the initial packet.  unknown how to get it yet. */
         //ack.sessionID = GetSessionID();
     PyRep* r = ack.Encode();
-    r->Dump(CLIENT__CALL_DUMP, "    ");
+    if (is_log_enabled(CLIENT__CALL_DUMP))
+        r->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(r, false);
     PyDecRef(r);
 
@@ -1721,7 +1717,8 @@ void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clie
         p->named_payload->SetItemString("channel", new PyString(channel));
     }
 
-    if (!p) return;     // in the case of empty return packets (segfault)
+    if (p == nullptr)
+        return;     // in the case of empty return packets (segfault)
 
     FastQueuePacket(&p);
 }
@@ -1848,7 +1845,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     PyCallable* dest(nullptr);
     if (packet->dest.service == "") {
         //bound object
-        uint32 nodeID, bindID;
+        uint32 nodeID = 0, bindID = 0;
         if (sscanf(req.remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
             sLog.Error("Client","Failed to parse bind string '%s'.", req.remoteObjectStr.c_str());
             return false;
@@ -1860,14 +1857,14 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         }
 
         dest = m_services.FindBoundObject(bindID);
-        if (!dest) {
+        if (dest == nullptr) {
             sLog.Error("Client", "Failed to find bound object %u.", bindID);
             return false;
         }
     } else {
         //service
         dest = m_services.LookupService(packet->dest.service);
-        if (!dest) {
+        if (dest == nullptr) {
             sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
             throw PyException(MakeUserError("ServiceNotFound"));
@@ -1893,6 +1890,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);
 
+    //PySafeDecRef(result.ssResult);
     return true;
 }
 

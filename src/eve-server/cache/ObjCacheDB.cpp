@@ -134,10 +134,9 @@ PyRep *ObjCacheDB::GetCachableObject(const std::string &type)
     std::map<std::string, genFunc>::const_iterator res;
     res = m_generators.find(type);
 
-    if(res == m_generators.end())
-    {
+    if (res == m_generators.end()) {
         _log(SERVICE__ERROR, "Unable to find cachable object generator for type '%s'", type.c_str());
-        return NULL;
+        return nullptr;
     }
 
     genFunc f = res->second;
@@ -149,10 +148,9 @@ PyRep *ObjCacheDB::Generate_CharNewExtraSpecialities()
 {
     DBQueryResult res;
     const char *q = "SELECT careerID, specialityID, specialityName, description, shortDescription, graphicID, iconID, dataID FROM specialities";
-    if (sDatabase.RunQuery(res, q) == false)
-    {
+    if (sDatabase.RunQuery(res, q) == false)   {
         _log(DATABASE__ERROR, "Error in query for cached object 'charNewExtraCreationInfo.specialities': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -164,7 +162,7 @@ PyRep *ObjCacheDB::Generate_CharNewExtraCareers()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charNewExtraCreationInfo.careers': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -176,7 +174,7 @@ PyRep *ObjCacheDB::Generate_CharNewExtraSpecialitySkills()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charNewExtraCreationInfo.specialityskills': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -188,7 +186,7 @@ PyRep *ObjCacheDB::Generate_CharNewExtraCareerSkills()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charNewExtraCreationInfo.careerskills': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -200,7 +198,7 @@ PyRep *ObjCacheDB::Generate_CharNewExtraRaceSkills()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charNewExtraCreationInfo.raceSkills': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -212,7 +210,7 @@ PyRep *ObjCacheDB::Generate_Icons()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.icons': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -224,7 +222,7 @@ PyRep *ObjCacheDB::Generate_Ownericons()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ownerIcons': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -236,7 +234,7 @@ PyRep *ObjCacheDB::Generate_Invtypematerials()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.invTypeMaterials': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -248,7 +246,7 @@ PyRep *ObjCacheDB::Generate_Sounds()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.sounds': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -260,7 +258,7 @@ PyRep *ObjCacheDB::Generate_Schematicstypemap()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.schematicsTypeMap': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -272,7 +270,7 @@ PyRep *ObjCacheDB::Generate_Schematics()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.schematics': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -284,7 +282,7 @@ PyRep *ObjCacheDB::Generate_OverviewDefaultGroups()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.overviewDefaultGroups': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -296,7 +294,7 @@ PyRep *ObjCacheDB::Generate_Schematicspinmap()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.schematicsPinMap': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -308,7 +306,7 @@ PyRep *ObjCacheDB::Generate_OverviewDefaults()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.overviewDefaults': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -320,7 +318,7 @@ PyRep *ObjCacheDB::Generate_Locationscenes()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.locationScenes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -332,7 +330,7 @@ PyRep *ObjCacheDB::Generate_BloodlineNames()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.bloodlineNames': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -344,7 +342,7 @@ PyRep *ObjCacheDB::Generate_PaperdollColors()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollColors': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -356,7 +354,7 @@ PyRep *ObjCacheDB::Generate_PaperdollColorRestrictions()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollColorRestrictions': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -368,7 +366,7 @@ PyRep *ObjCacheDB::Generate_PaperdollColorNames()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollColorNames': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -380,7 +378,7 @@ PyRep *ObjCacheDB::Generate_PaperdollSculptingLocations()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollSculptingLocations': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -392,7 +390,7 @@ PyRep *ObjCacheDB::Generate_PaperdollModifierLocations()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollModifierLocations': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -404,7 +402,7 @@ PyRep *ObjCacheDB::Generate_PaperdollResources()
     if (sDatabase.RunQuery(res, q) == false)
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.paperdollResources': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -416,7 +414,7 @@ PyRep *ObjCacheDB::Generate_BillTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.billtypes': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -428,7 +426,7 @@ PyRep *ObjCacheDB::Generate_AllianceShortnames()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.alliance_ShortNames': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -440,7 +438,7 @@ PyRep *ObjCacheDB::Generate_invCategories()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.categories': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -452,7 +450,7 @@ PyRep *ObjCacheDB::Generate_invTypeReactions()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.invtypereactions': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -464,7 +462,7 @@ PyRep *ObjCacheDB::Generate_dgmTypeAttribs()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmtypeattribs': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -476,7 +474,7 @@ PyRep *ObjCacheDB::Generate_dgmTypeEffects()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmtypeeffects': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -491,7 +489,7 @@ PyRep *ObjCacheDB::Generate_dgmEffects()
     "npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID, iconID, modifierInfo FROM dgmEffects"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmeffects': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -504,7 +502,7 @@ PyRep *ObjCacheDB::Generate_dgmAttribs()
         "chargeRechargeTimeID, defaultValue, published, unitID, displayName, displayNameID, stackable, highIsGood, iconID, dataID FROM dgmAttributeTypes"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmattribs': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -517,7 +515,7 @@ PyRep* ObjCacheDB::Generate_dgmExpressions()
         " FROM dgmExpressions"))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.dgmexpressions': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -529,7 +527,7 @@ PyRep *ObjCacheDB::Generate_invMetaGroups()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.metagroups': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -541,7 +539,7 @@ PyRep *ObjCacheDB::Generate_ramActivities()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramactivities': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -555,7 +553,7 @@ PyRep *ObjCacheDB::Generate_ramALTypeGroup()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramaltypesdetailpergroup': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -569,7 +567,7 @@ PyRep *ObjCacheDB::Generate_ramALTypeCategory()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramaltypesdetailpercategory': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -581,7 +579,7 @@ PyRep *ObjCacheDB::Generate_ramALTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramaltypes': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -593,7 +591,7 @@ PyRep *ObjCacheDB::Generate_ramCompletedStatuses()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramcompletedstatuses': %s",res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -605,7 +603,7 @@ PyRep *ObjCacheDB::Generate_ramTypeRequirements()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramtyperequirements': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -617,7 +615,7 @@ PyRep *ObjCacheDB::Generate_mapCelestialDescriptions()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.mapcelestialdescriptions': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -629,7 +627,7 @@ PyRep *ObjCacheDB::Generate_tickerNames()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.tickernames': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -641,7 +639,7 @@ PyRep *ObjCacheDB::Generate_invGroups()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.groups': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -653,7 +651,7 @@ PyRep *ObjCacheDB::Generate_certificates()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.certificates': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -665,7 +663,7 @@ PyRep *ObjCacheDB::Generate_certificateRelationships()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.certificaterelationships': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -677,7 +675,7 @@ PyRep *ObjCacheDB::Generate_invShipTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.shiptypes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -695,7 +693,7 @@ PyRep *ObjCacheDB::Generate_cacheLocations()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.locations': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -714,7 +712,7 @@ PyRep *ObjCacheDB::Generate_cacheOwners()  //  FIXME   add gender checks  -allan
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.owners': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -726,7 +724,7 @@ PyRep *ObjCacheDB::Generate_locationWormholeClasses()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.locationwormholeclasses': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -738,7 +736,7 @@ PyRep *ObjCacheDB::Generate_invBlueprintTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.bptypes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -750,7 +748,7 @@ PyRep *ObjCacheDB::Generate_eveGraphics()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.graphics': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -762,7 +760,7 @@ PyRep *ObjCacheDB::Generate_invTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.types': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -774,7 +772,7 @@ PyRep *ObjCacheDB::Generate_invMetaTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.invmetatypes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -786,7 +784,7 @@ PyRep *ObjCacheDB::Generate_chrBloodlines()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.Bloodlines': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToPackedRowList(res);
 }
@@ -798,7 +796,7 @@ PyRep *ObjCacheDB::Generate_eveUnits()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.Units': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToPackedRowList(res);
 }
@@ -810,7 +808,7 @@ PyRep *ObjCacheDB::Generate_eveBulkDataUnits()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.units': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -822,7 +820,7 @@ PyRep *ObjCacheDB::Generate_eveStaticOwners()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.StaticOwners': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -834,7 +832,7 @@ PyRep *ObjCacheDB::Generate_chrRaces()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.Races': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToPackedRowList(res);
 }
@@ -846,7 +844,7 @@ PyRep *ObjCacheDB::Generate_chrAttributes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.Attributes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToPackedRowList(res);
 }
@@ -858,7 +856,7 @@ PyRep *ObjCacheDB::Generate_invFlags()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.Flags': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToPackedRowList(res);
 }
@@ -870,7 +868,7 @@ PyRep *ObjCacheDB::Generate_eveStaticLocations()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.StaticLocations': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -882,7 +880,7 @@ PyRep *ObjCacheDB::Generate_invContrabandTypes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.InvContrabandTypes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -894,7 +892,7 @@ PyRep *ObjCacheDB::Generate_c_chrBloodlines()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bloodlines': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -906,7 +904,7 @@ PyRep *ObjCacheDB::Generate_c_chrRaces()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.races': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -918,7 +916,7 @@ PyRep *ObjCacheDB::Generate_c_chrAncestries()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.ancestries': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -931,7 +929,7 @@ PyRep *ObjCacheDB::Generate_c_chrSchools()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.schools': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -943,7 +941,7 @@ PyRep *ObjCacheDB::Generate_c_chrAttributes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.attributes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -955,7 +953,7 @@ PyRep *ObjCacheDB::Generate_bl_accessories()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_accessories': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -967,7 +965,7 @@ PyRep *ObjCacheDB::Generate_bl_lights()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_lights': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -979,7 +977,7 @@ PyRep *ObjCacheDB::Generate_bl_skins()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_skins': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -991,7 +989,7 @@ PyRep *ObjCacheDB::Generate_bl_beards()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_beards': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1003,7 +1001,7 @@ PyRep *ObjCacheDB::Generate_bl_eyes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_eyes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1015,7 +1013,7 @@ PyRep *ObjCacheDB::Generate_bl_lipsticks()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_lipsticks': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1027,7 +1025,7 @@ PyRep *ObjCacheDB::Generate_bl_makeups()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_makeups': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1039,7 +1037,7 @@ PyRep *ObjCacheDB::Generate_bl_hairs()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_hairs': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1051,7 +1049,7 @@ PyRep *ObjCacheDB::Generate_bl_backgrounds()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_backgrounds': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1063,7 +1061,7 @@ PyRep *ObjCacheDB::Generate_bl_decos()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_decos': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1075,7 +1073,7 @@ PyRep *ObjCacheDB::Generate_bl_eyebrows()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_eyebrows': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1087,7 +1085,7 @@ PyRep *ObjCacheDB::Generate_bl_costumes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.bl_costumes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1099,7 +1097,7 @@ PyRep *ObjCacheDB::Generate_a_eyebrows()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.eyebrows': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1111,7 +1109,7 @@ PyRep *ObjCacheDB::Generate_a_eyes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.eyes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1123,7 +1121,7 @@ PyRep *ObjCacheDB::Generate_a_decos()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.decos': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1135,7 +1133,7 @@ PyRep *ObjCacheDB::Generate_a_hairs()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.hairs': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1147,7 +1145,7 @@ PyRep *ObjCacheDB::Generate_a_backgrounds()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.backgrounds': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1159,7 +1157,7 @@ PyRep *ObjCacheDB::Generate_a_accessories()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.accessories': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1171,7 +1169,7 @@ PyRep *ObjCacheDB::Generate_a_lights()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.lights': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1183,7 +1181,7 @@ PyRep *ObjCacheDB::Generate_a_costumes()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.costumes': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1195,7 +1193,7 @@ PyRep *ObjCacheDB::Generate_a_makeups()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.makeups': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1207,7 +1205,7 @@ PyRep *ObjCacheDB::Generate_a_beards()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.beards': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1219,7 +1217,7 @@ PyRep *ObjCacheDB::Generate_a_skins()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.skins': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
@@ -1231,7 +1229,7 @@ PyRep *ObjCacheDB::Generate_a_lipsticks()
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'charCreationInfo.lipsticks': %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
     return DBResultToCRowset(res);
 }
