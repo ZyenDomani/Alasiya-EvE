@@ -216,7 +216,7 @@ void CachedObjectMgr::UpdateCache(const PyRep *objectID, PyRep **in_cached_data)
 
     Buffer* data = new Buffer();
     bool res = MarshalDeflate( cached_data, *data );
-    PyDecRef( cached_data );
+    //PyDecRef( cached_data );
 
     if( res ) {
         PyBuffer* buf = new PyBuffer( &data );

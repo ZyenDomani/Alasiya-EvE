@@ -1253,9 +1253,9 @@ void Client::SendSessionChange()
 {
     if (!mSession.isDirty())
         return;
-    if (m_locationID == 0) {
+    if ((GetCharacterID() > 0) and (m_locationID == 0)) {
         // this should never happen now.  -allan 3Aug16
-        codelog(CLIENT__ERROR, "Session::LocationID == NULL for %s(%u)", GetCharacterName().c_str(), GetCharacterID());
+        codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", GetCharacterName().c_str(), GetCharacterID());
         m_locationID = GetSystemID();
         if (IsDocked())
             m_locationID = GetStationID();
