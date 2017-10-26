@@ -78,7 +78,7 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -96,7 +96,7 @@ bool ClassEncodeGenerator::ProcessElement( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -121,7 +121,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -150,7 +150,7 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -180,7 +180,7 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessUInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -210,7 +210,7 @@ bool ClassEncodeGenerator::ProcessUInt( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -240,7 +240,7 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessULong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -270,7 +270,7 @@ bool ClassEncodeGenerator::ProcessULong( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -300,7 +300,7 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -328,7 +328,7 @@ bool ClassEncodeGenerator::ProcessNone( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -358,7 +358,7 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -406,7 +406,7 @@ bool ClassEncodeGenerator::ProcessStringInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -454,7 +454,7 @@ bool ClassEncodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -519,7 +519,7 @@ bool ClassEncodeGenerator::ProcessTokenInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -600,7 +600,7 @@ bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -652,7 +652,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -743,7 +743,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -833,7 +833,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -858,7 +858,7 @@ bool ClassEncodeGenerator::ProcessListInt( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -884,7 +884,7 @@ bool ClassEncodeGenerator::ProcessListLong( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -910,7 +910,7 @@ bool ClassEncodeGenerator::ProcessListStr( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -1034,7 +1034,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -1082,7 +1082,7 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -1112,7 +1112,7 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }

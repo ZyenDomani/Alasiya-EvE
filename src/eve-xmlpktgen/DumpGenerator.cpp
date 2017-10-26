@@ -47,7 +47,7 @@ void ClassDumpGenerator::RegisterProcessors()
 bool ClassDumpGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -74,7 +74,7 @@ bool ClassDumpGenerator::ProcessElementDef( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessElement( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -96,7 +96,7 @@ bool ClassDumpGenerator::ProcessElement( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -121,7 +121,7 @@ bool ClassDumpGenerator::ProcessElementPtr( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -146,7 +146,7 @@ bool ClassDumpGenerator::ProcessRaw( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -163,7 +163,7 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessUInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -180,7 +180,7 @@ bool ClassDumpGenerator::ProcessUInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -197,7 +197,7 @@ bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessULong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -214,7 +214,7 @@ bool ClassDumpGenerator::ProcessULong( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -231,7 +231,7 @@ bool ClassDumpGenerator::ProcessReal( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessBool( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -253,7 +253,7 @@ bool ClassDumpGenerator::ProcessNone( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -275,7 +275,7 @@ bool ClassDumpGenerator::ProcessBuffer( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -309,7 +309,7 @@ bool ClassDumpGenerator::ProcessStringInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessWString( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -343,7 +343,7 @@ bool ClassDumpGenerator::ProcessWStringInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -385,7 +385,7 @@ bool ClassDumpGenerator::ProcessTokenInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -421,7 +421,7 @@ bool ClassDumpGenerator::ProcessObjectInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -451,7 +451,7 @@ bool ClassDumpGenerator::ProcessObjectEx( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -482,7 +482,7 @@ bool ClassDumpGenerator::ProcessTupleInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -513,7 +513,7 @@ bool ClassDumpGenerator::ProcessListInline( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -534,7 +534,7 @@ bool ClassDumpGenerator::ProcessListInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -555,7 +555,7 @@ bool ClassDumpGenerator::ProcessListLong( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -578,7 +578,7 @@ bool ClassDumpGenerator::ProcessListStr( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -621,7 +621,7 @@ bool ClassDumpGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -666,7 +666,7 @@ bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -690,7 +690,7 @@ bool ClassDumpGenerator::ProcessDictInt( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (!name) {
+    if (name == nullptr) {
         std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
