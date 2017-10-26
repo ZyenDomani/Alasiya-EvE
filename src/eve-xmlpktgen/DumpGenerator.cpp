@@ -292,7 +292,7 @@ bool ClassDumpGenerator::ProcessString( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if (!value) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "string element at line " << field->Row() << " has no value attribute, skipping.";
         return false;
     }
@@ -326,7 +326,7 @@ bool ClassDumpGenerator::ProcessWString( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessWStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if (!value) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "wstring element at line " << field->Row() << " has no value attribute, skipping.";
         return false;
     }
@@ -368,7 +368,7 @@ bool ClassDumpGenerator::ProcessToken( const TiXmlElement* field )
 bool ClassDumpGenerator::ProcessTokenInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if (!value) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "token element at line " << field->Row() << " has no value attribute, skipping.";
         return false;
     }
@@ -426,7 +426,7 @@ bool ClassDumpGenerator::ProcessObjectEx( const TiXmlElement* field )
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if (!type) {
+    if (type == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
@@ -610,7 +610,7 @@ bool ClassDumpGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
 {
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
-    if (!key) {
+    if (key == nullptr) {
         std::cout << std::endl <<  "<dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
@@ -627,22 +627,22 @@ bool ClassDumpGenerator::ProcessDictRaw( const TiXmlElement* field )
     }
 
     const char* key = field->Attribute( "key" );
-    if (!key) {
+    if (key == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
     const char* pykey = field->Attribute( "pykey" );
-    if (!pykey) {
+    if (pykey == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the pykey attribute, skipping.";
         return false;
     }
     const char* value = field->Attribute( "value" );
-    if (!value) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the value attribute, skipping.";
         return false;
     }
     const char* pyvalue = field->Attribute( "pyvalue" );
-    if (!pyvalue) {
+    if (pyvalue == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
         return false;
     }

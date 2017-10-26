@@ -103,7 +103,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (%s)\n"
+        "    if (%s != nullptr)\n"
         "        %s = %s->Encode();\n"
         "    else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null. Encoding a PyNone\");\n"
@@ -128,7 +128,7 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (%s) {\n"
+        "    if (%s != nullptr) {\n"
         "        %s = %s;\n"
         "        PyIncRef(%s);\n"
         "    } else {\n"
@@ -335,7 +335,7 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (%s) {\n"
+        "    if (%s != nullptr) {\n"
         "        %s = %s;\n"
         "        PyIncRef(%s);\n"
         "    } else {\n"
@@ -467,7 +467,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
     const char* v = top();
     if (optional)
         fprintf( mOutputFile,
-            "    if (!%s)\n"
+            "    if (%s == nullptr)\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name,
@@ -475,7 +475,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
-            "    if (!%s) {\n"
+            "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -532,7 +532,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
     const char* v = top();
     if (optional)
         fprintf( mOutputFile,
-            "    if (!%s)\n"
+            "    if (%s == nullptr)\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name,
@@ -540,7 +540,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
-            "    if (!%s) {\n"
+            "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -618,7 +618,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     const char *v = top();
     if (optional)
         fprintf( mOutputFile,
-            "    if (!%s)\n"
+            "    if (%s == nullptr)\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name,
@@ -626,7 +626,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
-            "    if (!%s) {\n"
+            "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -664,7 +664,7 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (!%s) {\n"
+        "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty tuple.\");\n"
         "        %s = new PyTuple( 0 );\n"
         "    } else\n",
@@ -755,7 +755,7 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (!%s) {\n"
+        "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty list.\");\n"
         "        %s = new PyList();\n"
         "    } else\n",
@@ -922,7 +922,7 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    if (!%s) {\n"
+        "    if (%s == nullptr) {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty dict.\");\n"
         "        %s = new PyDict();\n"
         "    } else\n",

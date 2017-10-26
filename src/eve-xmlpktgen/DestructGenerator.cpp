@@ -313,7 +313,7 @@ bool ClassDestructGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
 {
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
-    if (!key) {
+    if (key == nullptr) {
         std::cout << std::endl <<  "<dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }

@@ -74,7 +74,7 @@ bool ClassCloneGenerator::ProcessElement( const TiXmlElement* field )
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if (!type) {
+    if (type == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
@@ -96,14 +96,14 @@ bool ClassCloneGenerator::ProcessElementPtr( const TiXmlElement* field )
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if (!type) {
+    if (type == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
     fprintf( mOutputFile,
         "    SafeDelete(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -130,7 +130,7 @@ bool ClassCloneGenerator::ProcessRaw( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -264,7 +264,7 @@ bool ClassCloneGenerator::ProcessBuffer( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -335,7 +335,7 @@ bool ClassCloneGenerator::ProcessToken( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -367,7 +367,7 @@ bool ClassCloneGenerator::ProcessObject( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -397,14 +397,14 @@ bool ClassCloneGenerator::ProcessObjectEx( const TiXmlElement* field )
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if (!type) {
+    if (type == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -430,7 +430,7 @@ bool ClassCloneGenerator::ProcessTuple( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -462,7 +462,7 @@ bool ClassCloneGenerator::ProcessList( const TiXmlElement* field )
 
     fprintf( mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -545,7 +545,7 @@ bool ClassCloneGenerator::ProcessDict( const TiXmlElement* field )
 
     fprintf(mOutputFile,
         "    PySafeDecRef(%s);\n"
-        "    if (!oth.%s) {\n"
+        "    if (oth.%s == nullptr) {\n"
         "        %s = nullptr;\n"
         "        _log(NET__PACKET_WARNING, \"oth.%s is null.  %s = nullptr \");\n"
         "    } else\n"
@@ -571,7 +571,7 @@ bool ClassCloneGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
 {
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
-    if (!key) {
+    if (key == nullptr) {
         std::cout << std::endl <<  "<dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
