@@ -96,7 +96,7 @@ protected:
     {
         REF_TRACE_MACRO();
         ++mRefCount;
-        _log(REFPTR__INC, "RefPtr::IncRef() is %u.", mRefCount);
+        _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
         #ifdef ENABLE_STD_OUT_REF_LOG
             std::cout << std::endl << "IncRef() " << mRefCount;
         #endif
@@ -112,7 +112,7 @@ protected:
         REF_TRACE_MACRO();
         assert( mRefCount > 0 );
         --mRefCount;
-        _log(REFPTR__DEC, "RefPtr::DecRef() is %u.", mRefCount);
+        _log(REFPTR__DEC, "DecRef() is %u.", mRefCount);
         #ifdef ENABLE_STD_OUT_REF_LOG
             std::cout << std::endl << "DecRef() " << mRefCount;
         #endif
