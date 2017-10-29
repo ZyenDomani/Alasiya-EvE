@@ -44,7 +44,7 @@ bool ClassDestructGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "<element> at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: <element> at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -74,7 +74,7 @@ bool ClassDestructGenerator::ProcessElementPtr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -90,7 +90,7 @@ bool ClassDestructGenerator::ProcessRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -141,7 +141,7 @@ bool ClassDestructGenerator::ProcessBuffer( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -177,7 +177,7 @@ bool ClassDestructGenerator::ProcessToken( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -198,7 +198,7 @@ bool ClassDestructGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -220,7 +220,7 @@ bool ClassDestructGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -236,7 +236,7 @@ bool ClassDestructGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -257,7 +257,7 @@ bool ClassDestructGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -292,7 +292,7 @@ bool ClassDestructGenerator::ProcessDict( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -314,7 +314,7 @@ bool ClassDestructGenerator::ProcessDictInlineEntry( const TiXmlElement* field )
     //we dont really even care about this...
     const char* key = field->Attribute( "key" );
     if (key == nullptr) {
-        std::cout << std::endl <<  "<dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: <dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
 
@@ -330,7 +330,7 @@ bool ClassDestructGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr)  {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -351,7 +351,7 @@ bool ClassDestructGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassDestructGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
