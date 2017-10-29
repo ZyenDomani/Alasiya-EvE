@@ -1934,7 +1934,7 @@ bool Client::Handle_Notify(PyPacket* packet)
         return false;
     }
 
-    SendSessionChange();  //just for good measure...
+    //SendSessionChange();  //just for good measure...
     return true;
 }
 
