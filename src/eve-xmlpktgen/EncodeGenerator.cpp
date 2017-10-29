@@ -993,7 +993,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             ++count;
 
             fprintf( mOutputFile,
-                "    PyRep* %s;\n",
+                "    PyRep* %s(nullptr);\n",
                 vname
             );
             push( vname );
@@ -1006,15 +1006,17 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             //taking the keyType into account
             if( keyTypeInt )
                 fprintf( mOutputFile,
-                    "    %s->SetItem(new PyInt( %s ), %s);\n",
-                    iname,
-                        key, vname
+                         "    %s->SetItem(new PyInt( %s ), %s);\n"
+                         "    PyIncRef(%s);\n",
+                         iname, key, vname,
+                         vname
                 );
             else
                 fprintf( mOutputFile,
-                     "    %s->SetItemString(\"%s\", %s);\n",
-                     iname,
-                        key, vname
+                         "    %s->SetItemString(\"%s\", %s);\n"
+                         "    PyIncRef(%s);\n",
+                         iname, key, vname,
+                         vname
                 );
         }
     }
