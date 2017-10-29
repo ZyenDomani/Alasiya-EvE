@@ -84,7 +84,7 @@ public:
      *
      * @param[in] p Packed to be queued.
      */
-    void FastQueuePacket( PyPacket** p );
+    void FastQueuePacket( PyPacket* p );
 
     /**
      * @brief Pops new packet from queue.

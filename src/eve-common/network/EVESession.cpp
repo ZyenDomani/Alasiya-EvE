@@ -74,23 +74,23 @@ void EVEClientSession::QueuePacket( const PyPacket* p ) {
         return;
     }
 
-    FastQueuePacket( &packet );
+    FastQueuePacket(packet);
 }
 
-void EVEClientSession::FastQueuePacket( PyPacket** p ) {
-    if ((p == nullptr) or ((*p) == nullptr))
+void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
+    if (packet == nullptr)
         return;
 
-    PyRep* r = (*p)->Encode();
+    PyRep* res = packet->Encode();
     // maybe change PyPacket to a object with a reference..
-    SafeDelete( *p );
-    if (r == nullptr) {
+    //SafeDelete(packet);
+    if (res == nullptr) {
         sLog.Error("Network", "%s: Failed to encode a Fast queue packet.", GetAddress().c_str());
         return;
     }
 
-    mNet->QueueRep( r );
-    PyDecRef( r );
+    mNet->QueueRep( res );
+    PyDecRef( res );
 }
 
 PyPacket* EVEClientSession::PopPacket() {

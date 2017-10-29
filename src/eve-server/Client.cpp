@@ -1283,33 +1283,33 @@ void Client::SendSessionChange()
     //scn.nodesOfInterest.push_back(m_services.GetNodeID());
 
     //build the packet:
-    PyPacket* p = new PyPacket();
-    p->type_string = "macho.SessionChangeNotification";
-    p->type = SESSIONCHANGENOTIFICATION;
+    PyPacket* packet = new PyPacket();
+    packet->type_string = "macho.SessionChangeNotification";
+    packet->type = SESSIONCHANGENOTIFICATION;
 
-    p->source.type = PyAddress::Node;
-    p->source.objectID = m_services.GetNodeID();
-    p->source.callID = 0;
+    packet->source.type = PyAddress::Node;
+    packet->source.objectID = m_services.GetNodeID();
+    packet->source.callID = 0;
 
-    p->dest.type = PyAddress::Client;
-    p->dest.objectID = GetClientID();
-    p->dest.callID = 0;
+    packet->dest.type = PyAddress::Client;
+    packet->dest.objectID = GetClientID();
+    packet->dest.callID = 0;
 
-    p->userid = GetUserID();
+    packet->userid = GetUserID();
 
-    p->payload = scn.Encode();
+    packet->payload = scn.Encode();
 
-    p->named_payload = nullptr;
+    packet->named_payload = nullptr;
     //p->named_payload = new PyDict();
     //p->named_payload->SetItemString("channel", new PyString("sessionchange"));
 
     if (is_log_enabled(CLIENT__OUT_ALL)) {
         _log(CLIENT__OUT_ALL, "Sending Session packet:");
         PyLogDumpVisitor dumper(CLIENT__OUT_ALL, CLIENT__OUT_ALL);
-        p->Dump(CLIENT__OUT_ALL, dumper);
+        packet->Dump(CLIENT__OUT_ALL, dumper);
     }
 
-    FastQueuePacket(&p);
+    FastQueuePacket(packet);
 }
 
 void Client::FlushQueue() {
@@ -1418,31 +1418,31 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
 
 void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq/*true*/) {
     //build the packet:
-    PyPacket *p = new PyPacket();
-    p->type_string = "macho.Notification";
-    p->type = NOTIFICATION;
+    PyPacket *packet = new PyPacket();
+    packet->type_string = "macho.Notification";
+    packet->type = NOTIFICATION;
 
-    p->source.type = PyAddress::Node;
-    p->source.objectID = m_services.GetNodeID();
+    packet->source.type = PyAddress::Node;
+    packet->source.objectID = m_services.GetNodeID();
 
-    p->dest = dest;
+    packet->dest = dest;
 
-    p->userid = GetUserID();
+    packet->userid = GetUserID();
 
-    p->payload = noti.Encode();
+    packet->payload = noti.Encode();
 
     if (seq) {
-        p->named_payload = new PyDict();
-        p->named_payload->SetItemString("sn", new PyInt(++m_nextNotifySequence));
+        packet->named_payload = new PyDict();
+        packet->named_payload->SetItemString("sn", new PyInt(++m_nextNotifySequence));
     }
 
     _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
         PyLogDumpVisitor dumper(CLIENT__NOTIFY_REP, CLIENT__NOTIFY_DUMP, "", true, true);
-        p->Dump(CLIENT__NOTIFY_DUMP, dumper);
+        packet->Dump(CLIENT__NOTIFY_DUMP, dumper);
     }
 
-    FastQueuePacket(&p);
+    FastQueuePacket(packet);
 }
 
 /************************************************************************/
@@ -1696,47 +1696,47 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
 void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel)
 {
     //build the packet:
-    PyPacket* p = new PyPacket();
-    p->type_string = "macho.CallRsp";
-    p->type = CALL_RSP;
+    PyPacket* packet = new PyPacket();
+    packet->type_string = "macho.CallRsp";
+    packet->type = CALL_RSP;
 
-    p->source = source;     /* address should be 'ship' for warpto response */
+    packet->source = source;     /* address should be 'ship' for warpto response */
 
-    p->dest.type = PyAddress::Client;
-    p->dest.objectID = clientID;
-    p->dest.callID = callID;
+    packet->dest.type = PyAddress::Client;
+    packet->dest.objectID = clientID;
+    packet->dest.callID = callID;
 
-    p->userid = GetUserID();
+    packet->userid = GetUserID();
 
-    p->payload = new PyTuple(1);
-    p->payload->SetItem(0, new PySubStream(*return_value));
+    packet->payload = new PyTuple(1);
+    packet->payload->SetItem(0, new PySubStream(*return_value));
     *return_value = nullptr;   //consumed
 
     if (channel != nullptr) {
-        p->named_payload = new PyDict();
-        p->named_payload->SetItemString("channel", new PyString(channel));
+        packet->named_payload = new PyDict();
+        packet->named_payload->SetItemString("channel", new PyString(channel));
     }
 
-    if (p == nullptr)
+    if (packet == nullptr)
         return;     // in the case of empty return packets (segfault)
 
-    FastQueuePacket(&p);
+    FastQueuePacket(packet);
 }
 
 void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
 {
     //build the packet:
-    PyPacket* p = new PyPacket();
-    p->type_string = "macho.ErrorResponse";
-    p->type = ERRORRESPONSE;
+    PyPacket* packet = new PyPacket();
+    packet->type_string = "macho.ErrorResponse";
+    packet->type = ERRORRESPONSE;
 
-    p->source = source;
+    packet->source = source;
 
-    p->dest.type = PyAddress::Client;
-    p->dest.objectID = GetClientID();
-    p->dest.callID = callID;
+    packet->dest.type = PyAddress::Client;
+    packet->dest.objectID = GetClientID();
+    packet->dest.callID = callID;
 
-    p->userid = GetUserID();
+    packet->userid = GetUserID();
 
     ErrorResponse e;
     e.MsgType = msgType;
@@ -1744,47 +1744,47 @@ void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_
     e.payload = *payload;   //consumed
     *payload = nullptr;
 
-    p->payload = e.Encode();
-    FastQueuePacket(&p);
+    packet->payload = e.Encode();
+    FastQueuePacket(packet);
 }
 
 void Client::_SendPingRequest()
 {
-    PyPacket *ping_req = new PyPacket();
+    PyPacket *packet = new PyPacket();
 
-    ping_req->type = PING_REQ;
-    ping_req->type_string = "macho.PingReq";
+    packet->type = PING_REQ;
+    packet->type_string = "macho.PingReq";
 
-    ping_req->source.type = PyAddress::Node;
-    ping_req->source.objectID = m_services.GetNodeID();
-    ping_req->source.service = "ping";
-    ping_req->source.callID = 0;
+    packet->source.type = PyAddress::Node;
+    packet->source.objectID = m_services.GetNodeID();
+    packet->source.service = "ping";
+    packet->source.callID = 0;
 
-    ping_req->dest.type = PyAddress::Client;
-    ping_req->dest.objectID = GetClientID();
-    ping_req->dest.callID = 0;
+    packet->dest.type = PyAddress::Client;
+    packet->dest.objectID = GetClientID();
+    packet->dest.callID = 0;
 
-    ping_req->userid = GetUserID();
+    packet->userid = GetUserID();
 
-    ping_req->payload = new_tuple(new PyList()); //times
-    ping_req->named_payload = new PyDict();
+    packet->payload = new_tuple(new PyList()); //times
+    packet->named_payload = new PyDict();
 
-    FastQueuePacket(&ping_req);
+    FastQueuePacket(packet);
 }
 
 void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
 {
-    PyPacket* ret = new PyPacket();
-    ret->type = PING_RSP;
-    ret->type_string = "macho.PingRsp";
+    PyPacket* packet = new PyPacket();
+    packet->type = PING_RSP;
+    packet->type_string = "macho.PingRsp";
 
-    ret->source = source;
+    packet->source = source;
 
-    ret->dest.type = PyAddress::Client;
-    ret->dest.objectID = GetClientID();
-    ret->dest.callID = callID;
+    packet->dest.type = PyAddress::Client;
+    packet->dest.objectID = GetClientID();
+    packet->dest.callID = callID;
 
-    ret->userid = GetUserID();
+    packet->userid = GetUserID();
 
     /*  Here the hacking begins, the ping packet handles the timestamps of various packet handling steps.
      *        To really simulate/emulate that we need the various packet handlers which in fact we don't have (:P).
@@ -1830,11 +1830,11 @@ void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
     pingList->AddItem(pingTuple);
 
     // Set payload
-    ret->payload = new PyTuple(1);
-    ret->payload->SetItem(0, pingList);
+    packet->payload = new PyTuple(1);
+    packet->payload->SetItem(0, pingList);
 
     // Don't clone so it eats the ret object upon sending.
-    FastQueuePacket(&ret);
+    FastQueuePacket(packet);
 }
 
 /************************************************************************/
