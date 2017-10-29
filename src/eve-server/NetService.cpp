@@ -173,7 +173,7 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 }
 
 PyResult NetService::Handle_GetTime(PyCallArgs &call) {
-    return(new PyLong(Win32TimeNow()));
+    return new PyLong(Win32TimeNow());
 }
 
 PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {

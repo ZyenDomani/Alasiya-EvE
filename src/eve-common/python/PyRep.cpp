@@ -593,8 +593,7 @@ bool PyTuple::visit( PyVisitor& v ) const
 
 void PyTuple::clear()
 {
-    iterator cur;
-    cur = items.begin();
+    iterator cur = items.begin();
     for (; cur != items.end(); ++cur)
         PySafeDecRef( *cur );
 

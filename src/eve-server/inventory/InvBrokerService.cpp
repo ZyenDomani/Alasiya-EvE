@@ -151,7 +151,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
     }
 
     InventoryItemRef item = m_manager->item_factory->GetInventoryItemFromID( args.arg1 );
-    if (!item) {
+    if (item.get() == nullptr) {
         _log(INV__ERROR, "%s: Unable to load inventory for itemID %u in locationID %u", call.client->GetName(), args.arg1, args.arg2);
         return nullptr;
     }
@@ -201,7 +201,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     // by having a switch that acts differently based on either categoryID or groupID or both:
     InventoryItemRef item = m_manager->item_factory->GetInventoryItemFromID( args.arg1 );
     m_manager->item_factory->UnsetUsingClient();
-    if (!item) {
+    if (item.get() == nullptr) {
         _log(INV__ERROR, "%s: Unable to load inventory for itemID %u", call.client->GetName(), args.arg1);
         return nullptr;
     }
@@ -238,7 +238,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         item = m_manager->item_factory->/*GetInventoryItemFromID*/GetItem(m_locationID);
         m_manager->item_factory->UnsetUsingClient();
     }
-    if (!item) {
+    if (item.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u for flag %u", call.client->GetName(), m_locationID, args.container);
         return nullptr;
     }
@@ -295,7 +295,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
 
     m_manager->item_factory->SetUsingClient( call.client );
     InventoryItemRef item = m_manager->item_factory->GetItem( args.itemID );
-    if( !item ) {
+    if (item.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
         return nullptr;
     }
@@ -333,7 +333,7 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     std::vector<int32>::const_iterator cur = args.items.begin();
     for(; cur != args.items.end(); cur++) {
         InventoryItemRef item = m_manager->item_factory->GetItem( *cur );
-        if (!item) {
+        if (item.get() == nullptr) {
             _log(INV__ERROR, "%s: Unable to load item %u to delete it. Skipping.", call.client->GetName(), *cur);
         } else if (call.client->GetCharacterID() != item->ownerID()) {
             _log(INV__ERROR, "%s: Tried to trash item %u which is not yours. Skipping.", call.client->GetName(), *cur);
