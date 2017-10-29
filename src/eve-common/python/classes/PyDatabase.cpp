@@ -140,7 +140,7 @@ CRowSet::CRowSet( DBRowDescriptor** rowDesc )
 PyPackedRow* CRowSet::NewRow()
 {
     DBRowDescriptor* rowDesc = _GetRowDesc();
-    PyIncRef( rowDesc );
+    //PyIncRef( rowDesc );
 
     PyPackedRow* row = new PyPackedRow( rowDesc );
 
@@ -201,7 +201,7 @@ CIndexedRowSet::CIndexedRowSet( DBRowDescriptor** rowDesc )
 PyPackedRow* CIndexedRowSet::NewRow( PyRep* key )
 {
     DBRowDescriptor* rowDesc = _GetRowDesc();
-    PyIncRef( rowDesc );
+    //PyIncRef( rowDesc );
 
     PyPackedRow* row = new PyPackedRow( rowDesc );
 
@@ -247,12 +247,12 @@ CFilterRowSet::CFilterRowSet( DBRowDescriptor** rowDesc )
     *rowDesc = NULL;
 }
 
-	
+
 
 CRowSet* CFilterRowSet::NewRowset( PyRep* key )
 {
     DBRowDescriptor* rowDesc = _GetRowDesc();
-    PyIncRef( rowDesc );
+    //PyIncRef( rowDesc );
 
     CRowSet* row = new CRowSet( &rowDesc );
 
