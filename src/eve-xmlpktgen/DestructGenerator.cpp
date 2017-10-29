@@ -95,7 +95,7 @@ bool ClassDestructGenerator::ProcessRaw( const TiXmlElement* field )
     }
 
     fprintf( mOutputFile,
-        "    //PySafeDecRef( %s );\n",
+        "    PySafeDecRef( %s );\n",
         name
     );
 

@@ -38,13 +38,13 @@ ClassEncodeGenerator::ClassEncodeGenerator( FILE* outputFile )
 bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
 {
     mName = field->Attribute( "name" );
-    if (!mName) {
+    if (mName == nullptr) {
         std::cout << std::endl <<  "<element> at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     const TiXmlElement* main = field->FirstChildElement();
-    if (main->NextSiblingElement()) {
+    if (main->NextSiblingElement() == nullptr) {
         std::cout << std::endl <<  "<element> at line " << field->Row() << " contains more than one root element, skipping.";
         return false;
     }
@@ -387,8 +387,7 @@ bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
-    {
+    if (value == nullptr) {
         std::cout << std::endl <<  "String element at line " << field->Row() << " has no value attribute, skipping.";
         return false;
     }
@@ -435,8 +434,7 @@ bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value )
-    {
+    if (value == nullptr) {
         std::cout << std::endl <<  "WString element at line " << field->Row() << " has no value attribute, skipping.";
         return false;
     }
@@ -475,7 +473,11 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
+
             "    if (%s == nullptr) {\n"
+
+            "    if (!%s) {\n"
+
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -501,7 +503,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessTokenInline( const TiXmlElement* field )
 {
     const char* value = field->Attribute( "value" );
-    if( nullptr == value ) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "Token element at line " << field->Row() << " has no type attribute, skipping.";
         return false;
     }
@@ -540,7 +542,11 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
+
             "    if (%s == nullptr) {\n"
+
+            "    if (!%s) {\n"
+
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -605,18 +611,18 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         return false;
     }
     const char* type = field->Attribute( "type" );
-    if (!type) {
+    if (type == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if (optional_str)
+    if (optional_str != nullptr)
         optional = str2<bool>( optional_str );
 
     const char *v = top();
-    if (optional)
+    if (optional != nullptr)
         fprintf( mOutputFile,
             "    if (%s == nullptr)\n"
             "        %s = new PyNone();\n"
@@ -626,7 +632,11 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         );
     else
         fprintf( mOutputFile,
+
             "    if (%s == nullptr) {\n"
+
+            "    if (!%s) {\n"
+
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
             "        %s = new PyNone();\n"
             "    } else\n",
@@ -664,7 +674,11 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
+
         "    if (%s == nullptr) {\n"
+
+        "    if (!%s) {\n"
+
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty tuple.\");\n"
         "        %s = new PyTuple( 0 );\n"
         "    } else\n",
@@ -755,7 +769,11 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
+
         "    if (%s == nullptr) {\n"
+
+        "    if (!%s) {\n"
+
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty list.\");\n"
         "        %s = new PyList();\n"
         "    } else\n",
@@ -922,7 +940,11 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
+
         "    if (%s == nullptr) {\n"
+
+        "    if (!%s) {\n"
+
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding an empty dict.\");\n"
         "        %s = new PyDict();\n"
         "    } else\n",
@@ -1038,24 +1060,23 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
-
     const char* key = field->Attribute( "key" );
-    if (!key) {
+    if (key == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
     const char* pykey = field->Attribute( "pykey" );
-    if (!pykey) {
+    if (pykey == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the pykey attribute, skipping.";
         return false;
     }
     const char* value = field->Attribute( "value" );
-    if (!value) {
+    if (value == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the value attribute, skipping.";
         return false;
     }
     const char* pyvalue = field->Attribute( "pyvalue" );
-    if (!pyvalue) {
+    if (pyvalue == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
         return false;
     }

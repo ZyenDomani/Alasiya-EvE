@@ -113,7 +113,6 @@ bool ClassCloneGenerator::ProcessElementPtr( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, type, name
     );
 
@@ -140,7 +139,6 @@ bool ClassCloneGenerator::ProcessRaw( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -274,7 +272,6 @@ bool ClassCloneGenerator::ProcessBuffer( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -345,7 +342,6 @@ bool ClassCloneGenerator::ProcessToken( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -377,7 +373,6 @@ bool ClassCloneGenerator::ProcessObject( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -413,7 +408,6 @@ bool ClassCloneGenerator::ProcessObjectEx( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, type, name
     );
 
@@ -440,7 +434,6 @@ bool ClassCloneGenerator::ProcessTuple( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -472,7 +465,6 @@ bool ClassCloneGenerator::ProcessList( const TiXmlElement* field )
         name,
             name,
             name, name,
-
             name, name
     );
 
@@ -599,6 +591,7 @@ bool ClassCloneGenerator::ProcessDictRaw( const TiXmlElement* field )
 bool ClassCloneGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
+
     if (name == nullptr) {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
@@ -616,11 +609,9 @@ bool ClassCloneGenerator::ProcessDictInt( const TiXmlElement* field )
             "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
             "\n",
             name, name,
-
             name, name, name,
                 name,
             name,
-
             name, name, name, name, name,
                 name, name, name
     );
@@ -631,8 +622,7 @@ bool ClassCloneGenerator::ProcessDictInt( const TiXmlElement* field )
 bool ClassCloneGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
-    if (name == nullptr)
-    {
+    if (name == nullptr)  {
         std::cout << std::endl <<  "field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
@@ -649,11 +639,9 @@ bool ClassCloneGenerator::ProcessDictStr( const TiXmlElement* field )
             "        %s[ %s_cur->first ] = %s_cur->second->Clone();\n"
             "\n",
             name, name,
-
             name, name, name,
                 name,
             name,
-
             name, name, name, name, name,
                 name, name, name
     );
