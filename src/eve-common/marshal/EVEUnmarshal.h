@@ -54,9 +54,11 @@ class UnmarshalStream
 {
 public:
     UnmarshalStream()
-    : mStoredObjects( NULL )
+    : mStoredObjects( nullptr )
     {
     }
+
+    ~UnmarshalStream();
 
     /**
      * @brief Loads Python object from given bytecode.

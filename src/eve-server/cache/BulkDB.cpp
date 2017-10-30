@@ -25,7 +25,7 @@ BulkDB::BulkDB()
 
 BulkDB::~BulkDB()
 {
-    Close();
+    //Close();
 }
 
 void BulkDB::Close()

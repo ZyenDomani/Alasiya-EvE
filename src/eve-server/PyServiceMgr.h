@@ -78,7 +78,7 @@ protected:
     std::map<std::string, PyService*> m_svcList;    //we own these pointers.
 
     uint32 m_nextBindID;
-    uint32 _GetBindID()                                 { return ++m_nextBindID; }
+    uint32 GetBindID()                                 { return ++m_nextBindID; }
 
     struct BoundObject
     {

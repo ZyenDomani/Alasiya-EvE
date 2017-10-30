@@ -22,7 +22,7 @@ StaticDataMgr::StaticDataMgr()
 
 StaticDataMgr::~StaticDataMgr()
 {
-    Clear();
+    //Clear();
 }
 
 int StaticDataMgr::Initialize()

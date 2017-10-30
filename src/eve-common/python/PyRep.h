@@ -591,6 +591,7 @@ public:
 
         PySafeDecRef( *rep );
         *rep = object;
+        PyIncRef( *rep );
     }
 
     /**
@@ -656,6 +657,7 @@ public:
 
         PySafeDecRef( *rep );
         *rep = object;
+        PyIncRef( *rep );
     }
     /**
      * @brief Stores Python string.
@@ -772,7 +774,7 @@ public:
     void SetItem( const char* key, PyRep* value )    { SetItem(new PyString(key), value); }
 
     void SetItem( const char* key, const char* value )     { SetItem(new PyString(key), new PyString(value)); }
-    
+
     /**
      * @brief SetItemString adds or sets a database entry.
      *

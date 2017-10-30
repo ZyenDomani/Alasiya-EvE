@@ -35,6 +35,7 @@ public:
     int                 Initialize();
 
     void                Clear();
+    void                Close()                         { Clear(); }
     void                GetInfo();
 
     void                GetMoonResouces(std::map<uint16, uint8>& data);

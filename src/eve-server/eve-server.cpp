@@ -554,6 +554,9 @@ int main( int argc, char* argv[] )
      *  at this point, server has been killed, and these are cleanup methods below here
      */
 
+    /** @todo  update this to have a ShutDown() method, with these items.
+     * also look into calling it when a signal is caught, for cleanup.
+     */
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
     ServiceDB::SetServerOnlineStatus(false);
 
@@ -579,6 +582,9 @@ int main( int argc, char* argv[] )
     /* Close the bulk data manager */
     sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
+    /* Close the static data manager */
+    sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
+    sDataMgr.Close();
     /* close the db handler */
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */

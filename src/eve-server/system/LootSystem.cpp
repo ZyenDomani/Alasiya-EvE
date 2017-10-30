@@ -137,7 +137,8 @@ void DGM_Loot_Groups_Table::_Populate()
 
 void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling) profileStartTime = GetTimeUSeconds();
+    if (sConfig.server.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
 
     double randChance = 0.0;
     uint8 metaLevel = 0;
@@ -166,10 +167,9 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
             */
 
             auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
-            for (auto it2 = range2.first; it2 != range2.second; ++it2) {
+            for (auto it2 = range2.first; it2 != range2.second; ++it2)
                 if (it2->second.metaLevel == metaLevel)
                     loot_group_list.push_back(it2->second);
-            }
 
             if (!loot_group_list.empty()) {
                 uint16 i = MakeRandomInt(0, loot_group_list.size());
@@ -182,7 +182,8 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
         }
     }
 
-    if (sConfig.server.UseProfiling) sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
+    if (sConfig.server.UseProfiling)
+        sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 // ////////////////////// DGM_Salvage_Table Class ////////////////////////////
@@ -212,9 +213,8 @@ void DGM_Salvage_Table::_Populate()
     //get all groups from salvage table
     m_db.GetSalvageGroups(*res);
     DBResultRow row;
-    while( res->GetRow(row) ) {
+    while( res->GetRow(row) )
         m_SalvageMap.emplace(row.GetInt(0), row.GetInt(1));
-    }
 
     //cleanup
     SafeDelete(res);
@@ -226,9 +226,8 @@ void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemLi
     double randChance = 0.0;
 
     auto itr = m_SalvageMap.equal_range(factionID);
-    for (auto it = itr.first; it != itr.second; ++it) {
+    for (auto it = itr.first; it != itr.second; ++it)
         itemList.push_back(it->second);
-    }
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - start);

@@ -644,6 +644,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     PyTuple *payload2 = (PyTuple *) payload->items[0];
+    PySafeIncRef(payload2);
     if (payload2->items.size() != 2) {
         codelog(NET__PACKET_ERROR, "invalid tuple2 length %lu", payload2->items.size());
         PyDecRef(payload);
@@ -657,8 +658,9 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
         PyDecRef(payload);
         return false;
     }
-    PySubStream *ss = (PySubStream *) payload2->items[1];
 
+    PySubStream *ss = (PySubStream *) payload2->items[1];
+    PySafeIncRef(ss);
     ss->DecodeData();
     if (ss->decoded() == nullptr) {
         codelog(NET__PACKET_ERROR, "Unable to decode call stream");
@@ -673,6 +675,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     PyTuple *maint = (PyTuple *) ss->decoded();
+    PySafeIncRef(maint);
     if (maint->items.size() != 4) {
         codelog(NET__PACKET_ERROR, "packet body has %lu elements, expected %d", maint->items.size(), 4);
         PyDecRef(payload);
@@ -682,10 +685,12 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     //parse first tuple element, unknown
     if (maint->items[0]->IsInt()) {
         PyInt *tuple0 = (PyInt *) maint->items[0];
+        PySafeIncRef(tuple0);
         remoteObject = tuple0->value();
         remoteObjectStr = "";
     } else if (maint->items[0]->IsString()) {
         PyString *tuple0 = (PyString *) maint->items[0];
+        PySafeIncRef(tuple0);
         remoteObject = 0;
         remoteObjectStr = tuple0->content();
     } else {
@@ -699,6 +704,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     //parse tuple[1]: method name
     if (maint->items[1]->IsString()) {
         PyString *i = (PyString *) maint->items[1];
+        PySafeIncRef(i);
         method = i->content();
     } else {
         codelog(NET__PACKET_ERROR, "tuple[1] has non-string type");
@@ -720,14 +726,15 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
     arg_tuple = (PyTuple *) maint->items[2];
     PySafeIncRef(arg_tuple);
-    maint->items[2] = nullptr; //we keep this one
+    //maint->items[2] = nullptr; //we keep this one
 
     //options dict
     if (maint->items[3]->IsNone()) {
         arg_dict = nullptr;
     } else if (maint->items[3]->IsDict()) {
         arg_dict = (PyDict *) maint->items[3];
-        maint->items[3] = nullptr; //we keep this too.
+        PySafeIncRef(arg_dict);
+        //maint->items[3] = nullptr; //we keep this too.
     } else {
         codelog(NET__PACKET_ERROR, "tuple[3] has non-dict type");
         maint->items[3]->Dump(NET__PACKET_ERROR, " --> ");
@@ -737,7 +744,7 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
         return false;
     }
 
-    PyDecRef(payload);
+    //PyDecRef(payload);
     return true;
 }
 

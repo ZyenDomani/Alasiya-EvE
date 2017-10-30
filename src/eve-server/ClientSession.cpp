@@ -33,16 +33,18 @@
         * SESSIONCHANGEDELAY = (30 * 10000000L)
 */
 
-ClientSession::ClientSession() : mSession( new PyDict ), mDirty( false )
+ClientSession::ClientSession()
+: mSession( new PyDict()),
+mDirty( false)
 {
     /* default value of attribute */
-    PyTuple* v = new_tuple(new PyNone(), new PyLong(0x4000000000000000LL));
-    mSession->SetItemString( "role", v );
+    PyTuple* tuple = new_tuple(new PyNone(), new PyLong(ROLE_PLAYER | ROLE_NEWBIE));
+    mSession->SetItemString( "role", tuple);
 }
 
 ClientSession::~ClientSession()
 {
-    PyDecRef( mSession );
+    PyDecRef( mSession);
 }
 
 int64 ClientSession::CreateSessionID() {
@@ -55,229 +57,221 @@ int64 ClientSession::CreateSessionID() {
     return m_sessionID;
 }
 
-int32 ClientSession::GetLastInt( const char* name ) const
+// note:  cannot destroy these Py* objects here.  
+int32 ClientSession::GetLastInt( const char* name) const
 {
-    PyRep* v = _GetLast( name );
-    if( v == NULL )
+    PyRep* value = _GetLast( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsInt() )
+    if (!value->IsInt())
         return 0;
 
-    return v->AsInt()->value();
+    return value->AsInt()->value();
 }
 
-int32 ClientSession::GetCurrentInt( const char* name ) const
+int32 ClientSession::GetCurrentInt( const char* name) const
 {
-    PyRep* v = _GetCurrent( name );
-    if( v == NULL )
+    PyRep* value = _GetCurrent( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsInt() )
+    if (!value->IsInt())
         return 0;
 
-    return v->AsInt()->value();
+    return value->AsInt()->value();
 }
 
-void ClientSession::SetInt( const char* name, int32 value )
+void ClientSession::SetInt( const char* name, int32 value)
 {
-    _Set( name, new PyInt( value ) );
+    _Set( name, new PyInt( value));
 }
 
-uint32 ClientSession::GetLastUInt( const char* name ) const
+uint32 ClientSession::GetLastUInt( const char* name) const
 {
-    PyRep* v = _GetLast( name );
-    if( v == NULL )
+    PyRep* value = _GetLast( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsUInt() )
+    if (!value->IsUInt())
         return 0;
 
-    return v->AsUInt()->value();
+    return value->AsUInt()->value();
 }
 
-uint32 ClientSession::GetCurrentUInt( const char* name ) const
+uint32 ClientSession::GetCurrentUInt( const char* name) const
 {
-    PyRep* v = _GetCurrent( name );
-    if( v == NULL )
+    PyRep* value = _GetCurrent( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsUInt() )
+    if (!value->IsUInt())
         return 0;
 
-    return v->AsUInt()->value();
+    return value->AsUInt()->value();
 }
 
-void ClientSession::SetUInt( const char* name, uint32 value )
+void ClientSession::SetUInt( const char* name, uint32 value)
 {
-    _Set( name, new PyUInt( value ) );
+    _Set( name, new PyUInt( value));
 }
 
-int64 ClientSession::GetLastLong( const char* name ) const
+int64 ClientSession::GetLastLong( const char* name) const
 {
-    PyRep* v = _GetLast( name );
-    if( v == NULL )
+    PyRep* value = _GetLast( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsLong() )
+    if (!value->IsLong())
         return 0;
 
-    return v->AsLong()->value();
+    return value->AsLong()->value();
 }
 
-int64 ClientSession::GetCurrentLong( const char* name ) const
+int64 ClientSession::GetCurrentLong( const char* name) const
 {
-    PyRep* v = _GetCurrent( name );
-    if( v == NULL )
+    PyRep* value = _GetCurrent( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsLong() )
+    if (!value->IsLong())
         return 0;
 
-    return v->AsLong()->value();
+    return value->AsLong()->value();
 }
 
-void ClientSession::SetLong( const char* name, int64 value )
+void ClientSession::SetLong( const char* name, int64 value)
 {
-    _Set( name, new PyLong( value ) );
+    _Set( name, new PyLong( value));
 }
 
-uint64 ClientSession::GetLastULong( const char* name ) const
+uint64 ClientSession::GetLastULong( const char* name) const
 {
-    PyRep* v = _GetLast( name );
-    if( v == NULL )
+    PyRep* value = _GetLast( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsULong() )
+    if (!value->IsULong())
         return 0;
 
-    return v->AsULong()->value();
+    return value->AsULong()->value();
 }
 
-uint64 ClientSession::GetCurrentULong( const char* name ) const
+uint64 ClientSession::GetCurrentULong( const char* name) const
 {
-    PyRep* v = _GetCurrent( name );
-    if( v == NULL )
+    PyRep* value = _GetCurrent( name);
+    if (value == nullptr)
         return 0;
 
-    if( !v->IsULong() )
+    if (!value->IsULong())
         return 0;
 
-    return v->AsULong()->value();
+    return value->AsULong()->value();
 }
 
-void ClientSession::SetULong( const char* name, uint64 value )
+void ClientSession::SetULong( const char* name, uint64 value)
 {
-    _Set( name, new PyULong( value ) );
+    _Set( name, new PyULong( value));
 }
 
-std::string ClientSession::GetLastString( const char* name ) const
+std::string ClientSession::GetLastString( const char* name) const
 {
-    PyRep* v = _GetLast( name );
-    if( v == NULL )
+    PyRep* value = _GetLast( name);
+    if (value == nullptr)
         return std::string();
 
-    if( !v->IsString() )
+    if (!value->IsString())
         return std::string();
 
-    return v->AsString()->content();
+    return value->AsString()->content();
 }
 
-std::string ClientSession::GetCurrentString( const char* name ) const
+std::string ClientSession::GetCurrentString( const char* name) const
 {
-    PyRep* v = _GetCurrent( name );
-    if( v == NULL )
+    PyRep* value = _GetCurrent( name);
+    if (value == nullptr)
         return std::string();
 
-    if( !v->IsString() )
+    if (!value->IsString())
         return std::string();
 
-    return v->AsString()->content();
+    return value->AsString()->content();
 }
 
-void ClientSession::SetString( const char* name, const char* value )
+void ClientSession::SetString( const char* name, const char* value)
 {
-    _Set( name, new PyString( value ) );
+    _Set( name, new PyString( value));
 }
 
-void ClientSession::Clear( const char* name )
+void ClientSession::Clear( const char* name)
 {
-    _Set( name, new PyNone() );
+    _Set( name, new PyNone());
 }
 
-void ClientSession::EncodeChanges( PyDict* into )
+void ClientSession::EncodeChanges( PyDict* into)
 {
     PyDict::const_iterator cur = mSession->begin();
-    for(; cur != mSession->end(); cur++)
-    {
+    for (; cur != mSession->end(); ++cur) {
         PyString* str = cur->first->AsString();
         PyTuple* value = cur->second->AsTuple();
+        PyRep* last = value->GetItem( 0);
+        PyRep* current = value->GetItem( 1);
 
-        PyRep* last = value->GetItem( 0 );
-        PyRep* current = value->GetItem( 1 );
-
-        if( last->hash() != current->hash() )
-        {
+        if (last->hash() != current->hash()) {
             // Duplicate tuple
-            PyTuple* t = new PyTuple( 2 );
-            t->SetItem( 0, last ); PyIncRef( last );
-            t->SetItem( 1, current ); PyIncRef( current );
-            into->SetItem( str, t ); PyIncRef( str );
-
+            PyTuple* t = new PyTuple( 2);
+            t->SetItem( 0, last); PyIncRef( last);
+            t->SetItem( 1, current); PyIncRef( current);
+            into->SetItem( str, t); PyIncRef( str);
             // Update our tuple
-            value->SetItem( 0, current ); PyIncRef( current );
+            value->SetItem( 0, current); PyIncRef( current);
         }
     }
 
     mDirty = false;
 }
 
-PyTuple* ClientSession::_GetValueTuple( const char* name ) const
+PyTuple* ClientSession::_GetValueTuple( const char* name) const
 {
-    PyRep* v = mSession->GetItemString( name );
-    if( v == NULL )
-        return NULL;
-    return v->AsTuple();
+    PyRep* value = mSession->GetItemString( name);
+    if (value == nullptr)
+        return nullptr;
+    return value->AsTuple();
 }
 
-PyRep* ClientSession::_GetLast( const char* name ) const
+PyRep* ClientSession::_GetLast( const char* name) const
 {
-    PyTuple* v = _GetValueTuple( name );
-    if( v == NULL )
-        return NULL;
-    return v->GetItem( 0 );
+    PyTuple* tuple = _GetValueTuple( name);
+    if (tuple == nullptr)
+        return nullptr;
+    return tuple->GetItem( 0);
 }
 
-PyRep* ClientSession::_GetCurrent( const char* name ) const
+PyRep* ClientSession::_GetCurrent( const char* name) const
 {
-    PyTuple* v = _GetValueTuple( name );
-    if( v == NULL )
-        return NULL;
-    return v->GetItem( 1 );
+    PyTuple* tuple = _GetValueTuple( name);
+    if (tuple == nullptr)
+        return nullptr;
+    return tuple->GetItem( 1);
 }
 
-void ClientSession::_Set( const char* name, PyRep* value )
+void ClientSession::_Set( const char* name, PyRep* value)
 {
-    PyTuple* v = _GetValueTuple( name );
-    if( v == NULL )
-    {
-        v = new PyTuple( 2 );
-        v->SetItem( 0, new PyNone() );
-        v->SetItem( 1, new PyNone() );
-        mSession->SetItemString( name, v );
+    PyTuple* tuple = _GetValueTuple( name);
+    if (tuple == nullptr) {
+        tuple = new PyTuple( 2);
+        tuple->SetItem( 0, new PyNone());
+        tuple->SetItem( 1, new PyNone());
+        mSession->SetItemString( name, tuple);
     }
 
-    PyRep* current = v->GetItem( 1 );
-    if( value->hash() != current->hash() )
-    {
-        //v->SetItem( 0, current ); /* didn't the session need to store the old value to? */
-        v->SetItem( 1, value );
+    PyRep* current = tuple->GetItem( 1);
+    if (value->hash() != current->hash()) {
+        //v->SetItem( 0, current); /* didn't the session need to store the old value to? */
+        tuple->SetItem( 1, value);
 
         mDirty = true;
-    }
-    else
-    {
-        PyDecRef( value );
-    }
+    } else
+        PyDecRef( value);
 }
 

@@ -37,22 +37,27 @@
 
 PyRep* Unmarshal( const Buffer& data )
 {
-    UnmarshalStream v;
-    return v.Load( data );
+    UnmarshalStream* pUMS = new UnmarshalStream();
+    PyRep* res = pUMS->Load( data );
+    SafeDelete(pUMS);
+    return res;
 }
 
 PyRep* InflateUnmarshal( const Buffer& data )
 {
-    if( IsDeflated( data ) )
-    {
+    if (IsDeflated(data)) {
         Buffer inflatedData;
-        if( !InflateData( data, inflatedData ) )
+        if (!InflateData(data, inflatedData))
             return nullptr;
-
-        return Unmarshal( inflatedData );
+        return Unmarshal(inflatedData);
     }
-    else
-        return Unmarshal( data );
+
+    return Unmarshal(data);
+}
+
+UnmarshalStream::~UnmarshalStream()
+{
+    PySafeDecRef(mStoredObjects);
 }
 
 /************************************************************************/
@@ -138,8 +143,7 @@ PyRep* UnmarshalStream::Load( const Buffer& data )
 PyRep* UnmarshalStream::LoadStream( size_t streamLength )
 {
     const uint8 header = Read<uint8>();
-    if( MarshalHeaderByte != header )
-    {
+    if (MarshalHeaderByte != header) {
         sLog.Error( "Unmarshal", "Invalid stream received (header byte 0x%X).", header );
         return nullptr;
     }
@@ -736,14 +740,11 @@ bool UnmarshalStream::LoadZeroCompressed( Buffer& into )
         ++cur;
 
 #   define OPCODE_DECODE( opIsZero, opLen )     \
-        if( opIsZero )                          \
-        {                                       \
+        if (opIsZero) {                        \
             uint8 len = opLen + 1;              \
-            while( 0 < len-- )                  \
+            while (0 < --len)                   \
                 into.Append<uint8>( 0 );        \
-        }                                       \
-        else                                    \
-        {                                       \
+        } else {                                \
             const Buffer::const_iterator<uint8> \
                 dataEnd = 8 - opLen < end - cur \
                           ? cur + ( 8 - opLen ) \

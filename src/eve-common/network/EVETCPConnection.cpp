@@ -68,8 +68,9 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
     else
         success = MarshalDeflate(rep, *pBuffer, PACKET_SIZE_LIMIT);
 
-    if (success){
-        //DumpBuffer( buf, PACKET_OUTBOUND );
+    if (success) {
+        if (is_log_enabled(DEBUG__DEBUG))
+            DumpBuffer( pBuffer, PACKET_OUTBOUND );
         // write length
         *bufLen = ( pBuffer->size() - sizeof( uint32 ) );
         Send( &pBuffer );
@@ -86,14 +87,14 @@ PyRep* EVETCPConnection::PopRep()
     MutexLock lock( mMInQueue );
     Buffer* packet = mInQueue.PopPacket();
 
-    if (packet) {
-        if( PACKET_SIZE_LIMIT < packet->size() )
+    if (packet != nullptr)
+        if ( PACKET_SIZE_LIMIT < packet->size() ) {
             sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", packet->size(), PACKET_SIZE_LIMIT );
-        else {
-            //DumpBuffer( packet, PACKET_INBOUND );
+        } else {
+            if (is_log_enabled(DEBUG__DEBUG))
+                DumpBuffer( packet, PACKET_INBOUND );
             res = InflateUnmarshal( *packet );
         }
-    }
 
     SafeDelete( packet );
     return res;
@@ -101,7 +102,7 @@ PyRep* EVETCPConnection::PopRep()
 
 bool EVETCPConnection::ProcessReceivedData( char* errbuf )
 {
-    if( errbuf )
+    if (errbuf != nullptr)
         errbuf[0] = 0;
 
     MutexLock lock( mMInQueue );
@@ -122,7 +123,7 @@ bool EVETCPConnection::RecvData( char* errbuf )
 
     if( mTimeoutTimer.Check() )
     {
-        if( errbuf )
+        if (errbuf != nullptr)
             snprintf( errbuf, TCPCONN_ERRBUF_SIZE, "Connection timeout" );
         return false;
     }
@@ -154,8 +155,6 @@ void EVETCPConnection::DumpBuffer( Buffer* buf, packet_direction packet_directio
         fputs(packet->Get(index), logpacket);
     }
     */
-    if (!is_log_enabled(DEBUG__DEBUG))
-        return;
 
     FILE *logpacket;
     char timestamp[16];
