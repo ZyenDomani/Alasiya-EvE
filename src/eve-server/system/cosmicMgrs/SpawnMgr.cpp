@@ -54,7 +54,7 @@ bool SpawnMgr::Init()
 {
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
         _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initalizing Spawn Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
-        return m_initalized;
+        return true;
     }
 
     _log(COSMIC_MGR__MESSAGE, "SpawnMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
