@@ -199,7 +199,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     /** @todo any 'return false' will need to remove client from sysMgr to avoid segfault when sEntityList.ProcessClient() is called on it.  */
 
     if (m_system == nullptr) {
-        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
+        sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %u.", m_SystemData.systemID, char_id);
         SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
         return false;
     }
