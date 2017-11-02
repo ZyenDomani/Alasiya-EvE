@@ -55,6 +55,11 @@ SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
         return SkillRef();
 
     SkillRef skillRef = Skill::Load( factory, skillID );
+    if (skillRef.get() == nullptr) {
+        // make error msg here for failure to load skill?
+        return SkillRef();
+    }
+
     skillRef->SaveItem();
     return skillRef;
 }
@@ -73,48 +78,61 @@ void Skill::VerifySP()
     EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
     EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
     if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
-        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), spThisLevel.get_float());
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), (spThisLevel.get_float() + 0.01));
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
 }
 
-
 bool Skill::SkillPrereqsComplete(Character &ch) {
-    EvilNumber skillID;
-    if (HasAttribute(AttrRequiredSkill1, skillID))
-        if ( GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_int()))
-            return false;
-    if (HasAttribute(AttrRequiredSkill2, skillID))
-        if ( GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_int()))
-            return false;
-    if (HasAttribute(AttrRequiredSkill3, skillID))
-        if ( GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_int()))
-            return false;
-    if (HasAttribute(AttrRequiredSkill4, skillID))
-        if ( GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_int()))
-            return false;
-    return true;
+    bool test = true;
+    EvilNumber skillID = 0;
+    if (HasAttribute(AttrRequiredSkill1, skillID)) {
+        if (GetAttribute(AttrRequiredSkill1Level) > ch.GetSkillLevel(skillID.get_int()))
+            test = false;
+        if (HasAttribute(AttrRequiredSkill2, skillID)) {
+            if (GetAttribute(AttrRequiredSkill2Level) > ch.GetSkillLevel(skillID.get_int()))
+                test = false;
+            if (HasAttribute(AttrRequiredSkill3, skillID)) {
+                if (GetAttribute(AttrRequiredSkill3Level) > ch.GetSkillLevel(skillID.get_int()))
+                    test = false;
+                if (HasAttribute(AttrRequiredSkill4, skillID)) {
+                    if (GetAttribute(AttrRequiredSkill4Level) > ch.GetSkillLevel(skillID.get_int()))
+                        test = false;
+                }
+            }
+        }
+    }
+
+    return test;
 }
 
-bool Skill::FitModuleSkillCheck(InventoryItemRef item, CharacterRef cRef) {
-    EvilNumber skillID;
-    if (item->HasAttribute(AttrRequiredSkill1, skillID)) //Primary Skill
-        if ( item->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    if (item->HasAttribute(AttrRequiredSkill2, skillID)) //Secondary Skill
-        if ( item->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    if (item->HasAttribute(AttrRequiredSkill3, skillID)) //Tertiary Skill
-        if ( item->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    if (item->HasAttribute(AttrRequiredSkill4, skillID)) //Quarternary Skill
-        if ( item->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    if (item->HasAttribute(AttrRequiredSkill5, skillID)) //Quinary Skill
-        if ( item->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    if (item->HasAttribute(AttrRequiredSkill6, skillID)) //Senary Skill
-        if ( item->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_int()))
-            return false;
-    return true;
+bool Skill::FitModuleSkillCheck(InventoryItemRef iRef, CharacterRef cRef) {
+    bool test = true;
+    EvilNumber skillID = 0;
+    if (iRef->HasAttribute(AttrRequiredSkill1, skillID)) {//Primary Skill
+        if ( iRef->GetAttribute(AttrRequiredSkill1Level) > cRef->GetSkillLevel(skillID.get_int()))
+            test = false;
+        if (iRef->HasAttribute(AttrRequiredSkill2, skillID)) {//Secondary Skill
+            if ( iRef->GetAttribute(AttrRequiredSkill2Level) > cRef->GetSkillLevel(skillID.get_int()))
+                test = false;
+            if (iRef->HasAttribute(AttrRequiredSkill3, skillID)) {//Tertiary Skill
+                if ( iRef->GetAttribute(AttrRequiredSkill3Level) > cRef->GetSkillLevel(skillID.get_int()))
+                    test = false;
+                if (iRef->HasAttribute(AttrRequiredSkill4, skillID)) {//Quarternary Skill
+                    if ( iRef->GetAttribute(AttrRequiredSkill4Level) > cRef->GetSkillLevel(skillID.get_int()))
+                        test = false;
+                    if (iRef->HasAttribute(AttrRequiredSkill5, skillID)) {//Quinary Skill
+                        if ( iRef->GetAttribute(AttrRequiredSkill5Level) > cRef->GetSkillLevel(skillID.get_int()))
+                            test = false;
+                        if (iRef->HasAttribute(AttrRequiredSkill6, skillID)) {//Senary Skill
+                            if ( iRef->GetAttribute(AttrRequiredSkill6Level) > cRef->GetSkillLevel(skillID.get_int()))
+                                test = false;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return test;
 }
