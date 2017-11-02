@@ -159,7 +159,7 @@
     </threads>
 
     <cosmic>
-        <EnablePI>false</EnablePI><!-- bool -->
+        <PIEnabled>false</PIEnabled><!-- bool -->
         <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
         <DungeonEnabled>false</DungeonEnabled><!-- bool -->
         <BeltEnabled>false</BeltEnabled><!-- bool -->

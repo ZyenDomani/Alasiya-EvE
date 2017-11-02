@@ -149,7 +149,7 @@ EVEServerConfig::EVEServerConfig()
     threads.WorldThreads = 2;//N
 
     // cosmic
-    cosmic.EnablePI = false;
+    cosmic.PIEnabled = false;
     cosmic.AnomalyEnabled = false;
     cosmic.DungeonEnabled = false;
     cosmic.BeltEnabled = false;
@@ -217,7 +217,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "UseProfiling",         server.UseProfiling );
     AddValueParser( "UseShipTracking",      server.UseShipTracking );
     AddValueParser( "NoobShipCheck",        server.NoobShipCheck );
-    AddValueParser( "StackTrace",        server.StackTrace );
+    AddValueParser( "StackTrace",           server.StackTrace );
     AddValueParser( "PositionHack",         server.PositionHack );
     AddValueParser( "DeleteTrackingCans",   server.DeleteTrackingCans );
     AddValueParser( "UseStackTrace",        server.UseStackTrace );
@@ -475,7 +475,7 @@ bool EVEServerConfig::ProcessThreads( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 {
-    AddValueParser( "EnablePI",             cosmic.EnablePI );
+    AddValueParser( "PIEnabled",             cosmic.PIEnabled );
     AddValueParser( "AnomalyEnabled",       cosmic.AnomalyEnabled );
     AddValueParser( "DungeonEnabled",       cosmic.DungeonEnabled );
     AddValueParser( "BeltEnabled",          cosmic.BeltEnabled );
@@ -487,7 +487,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 
     const bool result = ParseElementChildren( ele );
 
-    RemoveParser( "EnablePI" );
+    RemoveParser( "PIEnabled" );
     RemoveParser( "AnomalyEnabled" );
     RemoveParser( "DungeonEnabled" );
     RemoveParser( "BeltEnabled" );

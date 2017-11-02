@@ -868,7 +868,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
-        if (!charResult ) {
+        if (charResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
             return new PyNone();
         }
@@ -879,7 +879,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 	/* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
 	if (args.arg2) {
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
-        if (!shipResult ) {
+        if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
             return new PyNone();
         }

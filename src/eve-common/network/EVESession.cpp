@@ -94,17 +94,17 @@ void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
 }
 
 PyPacket* EVEClientSession::PopPacket() {
-    PyRep* r = mNet->PopRep();
-    if (r == nullptr)
+    PyRep* rep = mNet->PopRep();
+    if (rep == nullptr)
         return nullptr;
 
     if (is_log_enabled(NET__PRES_REP)) {
         _log(NET__PRES_REP, "%s: Raw Rep Dump:", GetAddress().c_str());
-        r->Dump(NET__PRES_REP, "    ");
+        rep->Dump(NET__PRES_REP, "    ");
     }
 
     assert( mPacketHandler );
-    return ( this->*mPacketHandler )( r );
+    return ( this->*mPacketHandler )( rep );
 }
 
 PyPacket* EVEClientSession::_HandleVersion( PyRep* rep ) {

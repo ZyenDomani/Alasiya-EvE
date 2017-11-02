@@ -169,7 +169,7 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
-    if (sConfig.cosmic.EnablePI)
+    if (sConfig.cosmic.PIEnabled)
         return m_planet->GetPlanetResourceInfo();
 
     call.client->SendErrorMsg("The PI system is currently disabled.");
@@ -180,7 +180,7 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    if (!sConfig.cosmic.EnablePI)
+    if (!sConfig.cosmic.PIEnabled)
         call.client->SendErrorMsg("The PI system is currently disabled.");
     return m_planet->GetPlanetInfo(m_colony);
 }
@@ -205,7 +205,7 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (sConfig.cosmic.EnablePI)
+    if (sConfig.cosmic.PIEnabled)
         return m_planetMgr->UpdateNetwork(uuncl);
     else {
         call.client->SendErrorMsg("The PI system is currently disabled.");

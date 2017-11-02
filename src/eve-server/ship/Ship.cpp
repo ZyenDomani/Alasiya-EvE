@@ -563,10 +563,9 @@ PyDict* ShipItem::GetChargeState() {
     }
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
-    uint32 shipID = itemID();
     PyDict* chargeDict = new PyDict();
     for (auto cur : charges)
-        chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(shipID));
+        chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(itemID()));
 
     PyDict *result = new PyDict();
     result->SetItem(new PyInt(itemID()), chargeDict);
@@ -722,7 +721,7 @@ void ShipItem::Undock() {
         // Heal Ship completely on test server
         Heal();
     } else {
-        // live server will Recharge shields and cap if session change isnt active
+        // live server will Recharge shields and cap if session change isnt active (undocking too fast)
         if (!m_pilot->IsSessionChange()) {
             SetShipShield(1.0);
             SetShipCapacitorLevel(1.0);

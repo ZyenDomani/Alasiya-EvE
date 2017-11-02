@@ -220,7 +220,7 @@ public:
     // From <cosmic/>
     struct
     {
-        bool EnablePI;
+        bool PIEnabled;
         bool AnomalyEnabled;
         bool DungeonEnabled;
         bool BeltEnabled;

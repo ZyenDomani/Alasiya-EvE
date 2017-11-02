@@ -48,14 +48,14 @@ Inventory::Inventory(InventoryItemRef item)
 }
 
 Inventory* Inventory::Cast(InventoryItemRef item) {
-    if (!item)
+    if (item.get() == nullptr)
         return nullptr;
     return this;
 }
 
 void Inventory::Reset(ItemFactory* factory)
 {
-    mContentsLoaded = false;
+    Unload();
     LoadContents(factory);
 }
 
@@ -149,12 +149,12 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     for (auto cur : items) {
         if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_inventoryID))
             continue;
-        InventoryItemRef i = factory->GetItem(cur);
-        if (!i) {
+        InventoryItemRef iRef = factory->GetItem(cur);
+        if (iRef.get() == nullptr) {
             _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_inventoryID);
             continue;
         } else
-            AddItem(i);
+            AddItem(iRef);
     }
 
     if (sConfig.server.UseProfiling)
@@ -163,40 +163,41 @@ bool Inventory::LoadContents(ItemFactory* factory) {
     return (mContentsLoaded = true);
 }
 
-void Inventory::AddItem(InventoryItemRef item) {
-    if (item.get() == nullptr)
+void Inventory::AddItem(InventoryItemRef iRef) {
+    if (iRef.get() == nullptr)
         return;    //segfault check
-    std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
+    std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     std::pair <std::_Rb_tree_iterator <std::pair <const uint32, InventoryItemRef > >, bool > test;
-    if (res == mContents.end())
-        test = mContents.insert(std::make_pair(item->itemID(), item));
+    if (itr == mContents.end())
+        test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
 
     if (test.second)
-        _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %d.", m_inventoryID, this, item->itemID(), (int)item->flag());
+        _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %d.", m_inventoryID, this, iRef->itemID(), (int)iRef->flag());
     else
-        _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %d.", m_inventoryID, item->itemID(), (int)item->flag());
+        _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %d.", m_inventoryID, iRef->itemID(), (int)iRef->flag());
 }
 
-void Inventory::RemoveItem(InventoryItemRef item) {
-    if (item.get() == nullptr)
+void Inventory::RemoveItem(InventoryItemRef iRef) {
+    if (iRef.get() == nullptr)
         return;    //segfault check
-    std::map<uint32, InventoryItemRef>::iterator res = mContents.find(item->itemID());
-    if (res != mContents.end()) {
-        mContents.erase(res->first);
-        _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_inventoryID, this, item->itemID());
+    std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
+    if (itr != mContents.end()) {
+        mContents.erase(itr->first);
+        _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_inventoryID, this, iRef->itemID());
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_inventoryID, item->itemID());
+        _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_inventoryID, iRef->itemID());
 }
 
 void Inventory::DeleteContents()
 {
-    if (!mContentsLoaded) return;
-
+    if (!mContentsLoaded)
+        return;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
     while (cur != mContents.end()) {
-        InventoryItemRef i = cur->second;
+        iRef = cur->second;
         ++cur;
-        i->Delete();
+        iRef->Delete();
     }
 
     mContents.clear();
@@ -226,9 +227,9 @@ CRowSet* Inventory::List(EVEItemFlags flag, uint32 forOwner/*0*/) const
 void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 forOwner) const {
     //there has to be a better way to build this...
     /** @todo  need to verify changing owners when trading non-empty containers */
-    PyPackedRow* row = nullptr;
+    PyPackedRow* row(nullptr);
     for (auto cur : mContents) {
-        if (  (cur.second->flag() == flag        || flag == flagAnywhere)
+        if (   (cur.second->flag() == flag        || flag == flagAnywhere)
             && (cur.second->ownerID() == forOwner || forOwner == 0))
         {
             row = into->NewRow();
@@ -387,24 +388,23 @@ uint32 Inventory::FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<Invent
 
 void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
 {
-    InventoryItemRef i;
+    InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef> types;
 
     std::map<uint32, InventoryItemRef>::const_iterator cur = mContents.begin();
     while (cur != mContents.end()) {
-        // Iterator becomes invalid when the item
-        // is moved out; we have to increment before
-        // calling Merge().
-        i = cur->second;
+        // Iterator becomes invalid when the item is moved out;
+        // we have to increment before calling Merge().
+        iRef = cur->second;
         ++cur;
-        if (IsModuleSlot(i->flag()))    // check to avoid removing loaded modules from ship
+        if (IsModuleSlot(iRef->flag()))    // check to avoid removing loaded modules from ship
             continue;
-        if ((!i->singleton()) && (forOwner == 0 || forOwner == i->ownerID())) {
-            std::map<uint32, InventoryItemRef>::iterator res = types.find(i->typeID());
-            if (res == types.end())
-                types.insert(std::make_pair(i->typeID(), i));
+        if ((!iRef->singleton()) and ((forOwner == 0) or (forOwner == iRef->ownerID()))) {
+            std::map<uint32, InventoryItemRef>::iterator itr = types.find(iRef->typeID());
+            if (itr == types.end())
+                types.insert(std::make_pair(iRef->typeID(), iRef));
             else
-                res->second->Merge(i);
+                itr->second->Merge(iRef);
         }
     }
 }
@@ -427,7 +427,7 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
         Client* pClient = m_factory->GetUsingClient();
-        if (pClient and pClient->CanThrow()) {
+        if ((pClient != nullptr) and pClient->CanThrow()) {
             std::map<std::string, PyRep *> args;
             args["available"] = new PyFloat(capacity);
             args["volume"] = new PyFloat(volume);

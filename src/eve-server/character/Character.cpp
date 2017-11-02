@@ -949,13 +949,13 @@ PyDict *Character::GetCharInfo() {
     /** @todo  get implants and boosters here once implemented */
 
     //encode an entry for each one.
-    Rsp_CommonGetInfo_Entry entry;
     std::vector<InventoryItemRef>::iterator cur = skills.begin();
     for (; cur != skills.end(); cur++) {
-        if (!(*cur)->Populate(entry))
-            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", m_itemName.c_str(), m_itemID, (*cur)->itemID());
-        else
+        Rsp_CommonGetInfo_Entry entry;
+        if ((*cur)->Populate(entry))
             result->SetItem(new PyInt((*cur)->itemID()), new PyObject("util.KeyVal", entry.Encode()));
+        else
+            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", m_itemName.c_str(), m_itemID, (*cur)->itemID());
     }
 
     /** @todo i dont know how boosters and implants work yet, so may have to set item different for them.  */
