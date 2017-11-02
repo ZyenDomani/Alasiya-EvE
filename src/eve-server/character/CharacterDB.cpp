@@ -526,104 +526,6 @@ void CharacterDB::SetCurrentPod(uint32 charID, uint32 podID)
 
 }
 
-bool CharacterDB::LoadCertificates( uint32 characterID, Certificates &into )
-{
-    DBQueryResult res;
-
-    if ( !sDatabase.RunQuery( res,
-        "SELECT"
-        "  certificateID,"
-        "  grantDate,"
-        "  visibilityFlags"
-        " FROM chrCertificates"
-        " WHERE characterID=%u",
-        characterID ))
-    {
-        _log(DATABASE__ERROR, "Failed to query certificates of character %u: %s", characterID, res.error.c_str() );
-        return false;
-    }
-
-    DBResultRow row;
-    while(res.GetRow(row)) {
-        CharCerts cert;
-            cert.certificateID     = row.GetUInt( 0 );
-            cert.grantDate         = row.GetUInt64( 1 );
-            cert.visibilityFlags   = row.GetUInt( 2 );
-        into.push_back( cert );
-    }
-
-    return true;
-}
-
-/** @todo  these need to be updated to new version.  see /eve/Alasiya-EvE code */
-bool CharacterDB::SaveCertificates( uint32 characterID, const Certificates &from )
-{
-    DBerror err;
-
-    if ( !sDatabase.RunQuery( err,
-        "DELETE FROM chrCertificates"
-        " WHERE characterID = %u",
-        characterID ))
-    {
-        _log(DATABASE__ERROR, "Failed to delete certificates of character %u: %s", characterID, err.c_str() );
-        return false;
-    }
-
-    if ( from.empty( ) )
-        return true;
-
-    std::string query;
-
-    for(size_t i = 0; i < from.size(); i++)
-    {
-        const CharCerts &im = from[ i ];
-
-        char buf[ 64 ];
-        snprintf( buf, 64, "(NULL, %u, %u, %" PRIu64 ", %u)", characterID, im.certificateID, im.grantDate, im.visibilityFlags );
-        if ( i != 0 )
-            query += ',';
-        query += buf;
-
-    }
-
-    if ( !sDatabase.RunQuery( err,
-        "INSERT"
-        " INTO chrCertificates (id, characterID, certificateID, grantDate, visibilityFlags)"
-        " VALUES %s",
-        query.c_str() ))
-    {
-        _log(DATABASE__ERROR, "Failed to insert certificates of character %u: %s", characterID, err.c_str() );
-        return false;
-    }
-
-    return true;
-}
-
-void CharacterDB::AddCertificate(uint32 charID, CharCerts cert) {
-    DBerror err;
-
-    if (!sDatabase.RunQuery( err,
-        "INSERT"
-        " INTO chrCertificates (characterID, certificateID, grantDate, visibilityFlags)"
-        " VALUES (%u, %u, %" PRIu64 ", %u)",
-        charID, cert.certificateID, cert.grantDate, (cert.visibilityFlags ? 1 : 0) ))
-    {
-        _log(DATABASE__ERROR, "Failed to insert certificates of character %u: %s", charID, err.c_str() );
-        return;
-    }
-}
-
-void CharacterDB::UpdateCertificate ( uint32 charID, uint32 certificateID, bool pub ) {
-    DBerror err;
-    if (!sDatabase.RunQuery( err,
-        "UPDATE chrCertificates SET visibilityFlags = %u WHERE characterID = %u AND certificateID = %u",
-        (pub ? 1 : 0), charID, certificateID))
-    {
-        _log(DATABASE__ERROR, "Failed to insert certificates of character %u: %s", charID, err.c_str() );
-        return;
-    }
-}
-
 //returns a list of the itemID for all the clones belonging to the character
 bool CharacterDB::GetCharClones(uint32 characterID, std::vector<uint32> &into) {
     DBQueryResult res;
@@ -1296,28 +1198,19 @@ bool CharacterDB::del_name_validation_set( uint32 characterID )
     }
 }
 
+/** @todo update this fucking shit..... */
 bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
-
-    if( !sDatabase.RunQuery( res,
-        "SELECT"
-        "  typeID, level"
-        " FROM chrSkillQueue"
-        " WHERE characterID = %u"
-        " ORDER BY orderIndex ASC",
-        characterID ) )
-    {
+    if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
         _log(DATABASE__ERROR, "Failed to query skill queue of character %u: %s.", characterID, res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    while( res.GetRow( row ) )
-    {
+    while (res.GetRow(row)) {
         QueuedSkill qs;
-        qs.typeID = row.GetUInt( 0 );
-        qs.level = row.GetUInt( 1 );
-
+            qs.typeID = row.GetUInt( 0 );
+            qs.level = row.GetUInt( 1 );
         into.push_back( qs );
     }
 
@@ -1326,36 +1219,22 @@ bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
 
 bool CharacterDB::LoadPausedSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
-
-    if( !sDatabase.RunQuery( res,
-        "SELECT"
-        "  typeID, level"
-        " FROM chrPausedSkillQueue"
-        " WHERE characterID = %u"
-        " ORDER BY orderIndex ASC",
-        characterID ) )
-    {
-        _log(DATABASE__ERROR, "Failed to query skill queue of character %u: %s.", characterID, res.error.c_str());
+    if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrPausedSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
+        _log(DATABASE__ERROR, "Failed to query paused skill queue of character %u: %s.", characterID, res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    while( res.GetRow( row ) )
-    {
+    while (res.GetRow(row)) {
         QueuedSkill qs;
-        qs.typeID = row.GetUInt( 0 );
-        qs.level = row.GetUInt( 1 );
-
+            qs.typeID = row.GetUInt( 0 );
+            qs.level = row.GetUInt( 1 );
         into.push_back( qs );
     }
 
     // now, delete paused queue because subsquent pressess of 'apply' button will add paused queue again, and again, etc...
     DBerror err;
-    if( !sDatabase.RunQuery( err,
-        "DELETE FROM chrPausedSkillQueue"
-        " WHERE characterID = %u",
-        characterID ) )
-    {
+    if (!sDatabase.RunQuery(err,"DELETE FROM chrPausedSkillQueue WHERE characterID = %u", characterID)) {
         _log(DATABASE__ERROR, "Failed to delete skill queue of character %u: %s.", characterID, err.c_str());
         return false;
     }
@@ -1363,89 +1242,63 @@ bool CharacterDB::LoadPausedSkillQueue(uint32 characterID, SkillQueue &into) {
     return true;
 }
 
-bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &queue) {
+bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
     DBerror err;
-
-    if( !sDatabase.RunQuery( err,
-        "DELETE FROM chrSkillQueue"
-        " WHERE characterID = %u",
-        characterID ) )
-    {
+    if (!sDatabase.RunQuery(err, "DELETE FROM chrSkillQueue WHERE characterID = %u", characterID)) {
         _log(DATABASE__ERROR, "Failed to delete skill queue of character %u: %s.", characterID, err.c_str());
         return false;
     }
 
-    if( queue.empty() )
-        // nothing else to do
-        return true;
-
-    // now build insert query:
-    std::string query;
-
-    for(uint8 i = 0; i < queue.size(); i++)
-    {
-        const QueuedSkill &qs = queue[ i ];
-
-        char buf[ 64 ];
-        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
-
-        if( i != 0 )
-            query += ',';
-        query += buf;
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO chrSkillQueue";
+    Inserts << " (characterID, orderIndex, typeID, level)";
+    bool first = true;
+    uint8 count = 0;
+    for (auto cur : data) {
+        ++count;
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << characterID << ", " << count << ", " << cur.typeID << ", " << cur.level << ")";
     }
 
-    if( !sDatabase.RunQuery( err,
-        "INSERT"
-        " INTO chrSkillQueue (characterID, orderIndex, typeID, level)"
-        " VALUES %s",
-        query.c_str() ) )
-    {
-        _log(DATABASE__ERROR, "Failed to insert skill queue of character %u: %s.", characterID, err.c_str());
-        return false;
+    if (!first) {
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveSkillQueue - unable to save data - %s", err.c_str());
     }
-
     return true;
 }
 
-bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &queue) {
+bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
     DBerror err;
-
-    if( !sDatabase.RunQuery( err,
-        "DELETE FROM chrPausedSkillQueue"
-        " WHERE characterID = %u",
-        characterID ) )
-    {
-        _log(DATABASE__ERROR, "Failed to delete skill queue of character %u: %s.", characterID, err.c_str());
+    if (!sDatabase.RunQuery(err, "DELETE FROM chrPausedSkillQueue WHERE characterID = %u", characterID)) {
+        _log(DATABASE__ERROR, "Failed to delete paused skill queue of character %u: %s.", characterID, err.c_str());
         return false;
     }
 
-    if( queue.empty() )
-        // nothing else to do
-        return true;
-
-    std::stringstream query;
-
-    for(size_t i = 0; i < queue.size(); i++)
-    {
-        const QueuedSkill &qs = queue[ i ];
-
-        char buf[ 64 ];
-        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, (uint8)i, qs.typeID, qs.level );
-
-        if (i) query << ',';
-        query << buf;
+    std::ostringstream Inserts;
+    // start the insert into command.
+    Inserts << "INSERT INTO chrPausedSkillQueue";
+    Inserts << " (characterID, orderIndex, typeID, level)";
+    bool first = true;
+    uint8 count = 0;
+    for (auto cur : data) {
+        ++count;
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << characterID << ", " << count << ", " << cur.typeID << ", " << cur.level << ")";
     }
 
-    if( !sDatabase.RunQuery( err,
-        "INSERT"
-        " INTO chrPausedSkillQueue (characterID, orderIndex, typeID, level)"
-        " VALUES %s",
-        query.str().c_str() ) )
-    {
-        _log(DATABASE__ERROR, "Failed to insert paused skill queue of character %u: %s.", characterID, err.c_str());
-        return false;
+    if (!first) {
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SavePausedSkillQueue - unable to save data - %s", err.c_str());
     }
-
     return true;
 }
 

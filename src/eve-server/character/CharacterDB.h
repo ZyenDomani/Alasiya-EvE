@@ -145,13 +145,6 @@ public:
     bool ReportRespec(uint32 characterId);
     bool GetRespecInfo(uint32 characterId, uint32& out_freeRespecs, uint64& out_lastRespec, uint64& out_nextRespec);
 
-    // Skill queue:
-    struct QueuedSkill {
-        uint32 typeID;
-        uint8 level;
-    };
-    typedef std::vector<QueuedSkill> SkillQueue;
-
     /**
      * Loads skill queue.
      *
@@ -173,18 +166,6 @@ public:
     void        SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
     PyRep*      GetSkillHistory(uint32 characterID);
     void        UpdateSkillQueueEndTime(uint64 endtime, uint32 charID);
-
-    /** Certificates */
-    struct CharCerts {
-        uint32 certificateID;
-        uint64 grantDate;
-        bool visibilityFlags;
-    };
-    typedef std::vector<CharCerts> Certificates;
-    bool LoadCertificates( uint32 characterID, Certificates &into );
-    bool SaveCertificates( uint32 characterID, const Certificates &from );
-    void AddCertificate(uint32 charID, CharCerts cert);
-    void UpdateCertificate(uint32 charID, uint32 certificateID, bool pub);
 
 	bool 		isOffline(uint32 characterID);
 

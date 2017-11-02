@@ -10,6 +10,21 @@
 #include "eve-server.h"
 
 
+/* POD structure for certificate data */
+struct CharCerts {
+    uint32 certificateID;
+    uint64 grantDate;
+    uint8 visibilityFlags;
+};
+typedef std::vector<CharCerts> CertVector;
+
+/* POD structure for skills in queue */
+struct QueuedSkill {
+    uint32 typeID;
+    uint8 level;
+};
+typedef std::vector<QueuedSkill> SkillQueue;
+
 /* POD structure for saving attribute data */
 struct AttrData {
     uint32 itemID;

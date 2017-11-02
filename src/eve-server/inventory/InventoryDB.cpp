@@ -557,7 +557,6 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
             _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
     }
-
 }
 
 void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
@@ -588,7 +587,6 @@ void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
         if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
             _log(DATABASE__ERROR, "SaveItems - unable to save data - %s", err.c_str());
     }
-
 }
 
 
@@ -599,22 +597,12 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
     }
 
     DBerror err;
-    if (!sDatabase.RunQuery(err,
-        "DELETE"
-        " FROM entity"
-        " WHERE itemID=%u",
-        itemID))
-    {
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID=%u", itemID)) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
         return false;
     }
 
-    if (!sDatabase.RunQuery(err,
-        "DELETE"
-        " FROM entity_attributes"
-        " WHERE itemID=%u",
-        itemID))
-    {
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID=%u", itemID)) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
         return false;
     }
@@ -622,9 +610,8 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
 }
 
 /* this is only called by Inventory::LoadContents()
- * it is optimized for specific calling objects, to avoid multiple db hits
- * while loading, and to load only things needed for this object
- * at the time of the call.
+ * it is optimized for specific calling objects, to avoid multiple db hits while loading,
+ * and to load only things needed for this object at the time of the call.
  */
 bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     std::stringstream query;

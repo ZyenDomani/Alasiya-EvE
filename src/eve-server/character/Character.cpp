@@ -366,11 +366,11 @@ bool Character::_Load() {
 
     // Update Skill Queue and Total Skill Points Trained:
     if (m_loaded) {
-        VerifySP();
         if (GetSkillInTraining())
             UpdateSkillQueue();
+        VerifySP();
         m_certificates.clear();
-        if (!m_db.LoadCertificates(m_itemID, m_certificates)) {
+        if (!m_cdb.LoadCertificates(m_itemID, m_certificates)) {
             sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
             return (m_loaded = false);
         }
@@ -390,10 +390,8 @@ void Character::VerifySP()
 {
     std::vector<InventoryItemRef> skillList;
     GetSkillsList(skillList);
-    SkillRef sRef(nullptr);
     for (auto cur : skillList) {
-        sRef = SkillRef::StaticCast(cur);
-        sRef->VerifySP();
+        SkillRef::StaticCast(cur)->VerifySP();
     }
 }
 
@@ -540,39 +538,10 @@ bool Character::HasSkillTrainedToLevel(uint32 skillTypeID, uint32 skillLevel) co
     return true;
 }
 
-bool Character::GrantCertificate( uint32 certificateID )
-{
-    cCertificates cert;
-        cert.certificateID = certificateID;
-        cert.grantDate = Win32TimeNow();
-        cert.visibilityFlags = true;
-    m_certificates.push_back(cert);
-
-    m_db.AddCertificate(m_itemID, cert);
-
-    return true;
-}
-
-void Character::UpdateCertificate( uint32 certificateID, bool pub ) {
-    m_db.UpdateCertificate(m_itemID, certificateID, pub);
-}
-
-void Character::GetCertificates( Certificates &crt ) {
-    crt = m_certificates;
-}
-
-bool Character::HasCertificate( uint32 certificateID ) const {
-    for (uint32 i = 0; i < m_certificates.size(); i++) {
-        if (m_certificates.at( i ).certificateID == certificateID)
-            return true;
-    }
-    return false;
-}
-
 SkillRef Character::GetSkill(uint32 skillTypeID) const
 {
     InventoryItemRef skill = m_inventory->GetByTypeFlag( skillTypeID, flagSkill );
-    if (!skill)
+    if (skill.get() == nullptr)
         skill = m_inventory->GetByTypeFlag( skillTypeID, flagSkillInTraining );
 
     return SkillRef::StaticCast( skill );
@@ -581,7 +550,8 @@ SkillRef Character::GetSkill(uint32 skillTypeID) const
 int8 Character::GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected /*true*/) const {
     SkillRef requiredSkill = GetSkill( skillTypeID );
     // First, check for existence of skill trained or in training:
-    if (!requiredSkill) return (zeroForNotInjected ? 0 : -1);
+    if (requiredSkill.get() == nullptr)
+        return (zeroForNotInjected ? 0 : -1);
     return (int8)requiredSkill->GetAttribute(AttrSkillLevel).get_int() ;
 }
 
@@ -1101,11 +1071,6 @@ void Character::SaveSkillQueue() {
     m_db.SaveSkillQueue( m_itemID, m_skillQueue );
 }
 
-void Character::SaveCertificates() {
-    _log( CHARACTER__INFO, "Saving Certificates of character %u", m_itemID );
-    m_db.SaveCertificates( m_itemID, m_certificates );
-}
-
 EvilNumber Character::GetTotalSP() {
     // Loop through all skills trained and calculate total SP this character has trained so far
     EvilNumber totalSP = 0.0f;
@@ -1152,6 +1117,38 @@ bool Character::isOffline(uint32 charID) {
 		return false;
 	else
 		return true;
+}
+
+// certificate system
+bool Character::HasCertificate( uint32 certificateID ) const {
+    for (auto cur : m_certificates)
+        if (cur.certificateID == certificateID)
+            return true;
+
+        return false;
+}
+
+void Character::GetCertificates( CertVector &crt ) {
+    crt = m_certificates;
+}
+
+void Character::GrantCertificate( uint32 certificateID )
+{
+    CharCerts cert;
+        cert.certificateID = certificateID;
+        cert.grantDate = Win32TimeNow();
+        cert.visibilityFlags = 0;
+    m_certificates.push_back(cert);
+    m_cdb.AddCertificate(m_itemID, cert);
+}
+
+void Character::UpdateCertificate( uint32 certificateID, bool pub ) {
+    m_cdb.UpdateCertificate(m_itemID, certificateID, pub);
+}
+
+void Character::SaveCertificates() {
+    _log( CHARACTER__INFO, "Saving Certificates of character %u", m_itemID );
+    m_cdb.SaveCertificates( m_itemID, m_certificates );
 }
 
 // functions and methods for standings system

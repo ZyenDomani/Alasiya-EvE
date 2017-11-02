@@ -38,6 +38,12 @@ public:
     PyRep *GetCertificateCategories();
     PyRep *GetAllShipCertificateRecommendations();
     PyRep *GetCertificateClasses();
+
+    bool LoadCertificates( uint32 characterID, CertVector &into );
+    bool SaveCertificates( uint32 characterID, const CertVector& from );
+    void AddCertificate(uint32 charID, CharCerts cert);
+    void UpdateCertificate(uint32 charID, uint32 certificateID, bool pub=false);
+
 };
 
 #endif /* __CERTIFICATE_MGR_DB__H__INCL__ */

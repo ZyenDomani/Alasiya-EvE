@@ -27,6 +27,7 @@
 #ifndef __CHARACTER__H__INCL__
 #define __CHARACTER__H__INCL__
 
+#include "character/CertificateMgrService.h"
 #include "character/CharacterDB.h"
 #include "character/Skill.h"
 #include "inventory/ItemType.h"
@@ -356,10 +357,6 @@ public:
     void SetClient(Client* pClient)                     { m_pClient = pClient; }
     Client* GetClient()                                 { return m_pClient; }
 
-    /** @todo  update skillqueue data */
-    typedef CharacterDB::QueuedSkill QueuedSkill;   // structure of <uint32 typeID, uint8 level>
-    typedef CharacterDB::SkillQueue SkillQueue;     // vector of QueuedSkill
-
     void AddItem(InventoryItemRef item);
 
     /**
@@ -475,25 +472,12 @@ public:
     PyRep* GetSkillHistory();
 	EvilNumber      GetTotalSP();
 
-    // Certificates:
-    /** @todo  this whole certificate thing needs to be updated */
-    /*
-    struct CharCerts {
-        uint32 certificateID;
-        uint64 grantDate;
-        bool visibilityFlags;
-    };
-    typedef std::vector<CharCerts> Certificates;
-    */
-    typedef CharacterDB::CharCerts cCertificates;   //structure of CharCerts<uint32 certificateID, uint64 grantDate, bool visibilityFlags>
-    typedef CharacterDB::Certificates Certificates; // vector of CharCerts
-
     /* GrantCertificate( uint32 certificateID )
      *
      * This will add a certificate into the character
      * @author almamu
      */
-    bool GrantCertificate( uint32 certificateID );
+    void GrantCertificate( uint32 certificateID );
     /* UpdateCertificate( uint32 certificateID, bool pub )
      *
      * This will change the public status of the certificate
@@ -511,7 +495,7 @@ public:
      * This will get the char's certificates
      * @author almamu
      */
-    void GetCertificates( Certificates& crt );
+    void GetCertificates( CertVector& crt );
 
     /*
      * Primary public packet builders:
@@ -765,8 +749,9 @@ private:
     EvilNumber m_totalSPtrained;
     uint32 m_freePoints;
 
-    Certificates m_certificates;
+    CertVector m_certificates;
 
+    CertificateMgrDB m_cdb;
 	CharacterDB m_db;
     StandingDB s_db;
 
