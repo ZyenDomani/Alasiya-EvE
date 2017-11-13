@@ -78,22 +78,22 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_spawnMgr = spawnMgr;
 
     if (m_beltMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. beltMgr == nullptr.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. beltMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
     }
 
     if (m_dungMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. dungMgr == nullptr.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. dungMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
     }
 
     if (m_spawnMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return m_initalized;
     }
 
     if (!sConfig.cosmic.AnomalyEnabled) {
-         _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+         _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return true;
     }
     if (!sConfig.cosmic.DungeonEnabled){
@@ -102,12 +102,12 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     }
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return true;
     }
 
     if (!sConfig.cosmic.BeltEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initalizing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return true;
     }
 

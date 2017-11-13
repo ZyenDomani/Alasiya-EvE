@@ -900,10 +900,9 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     }
 
     into.destiny_state = new PyBuffer( &stateBuffer );
-    SafeDelete( stateBuffer );
+    //SafeDelete( stateBuffer );
 
-    SystemDB m_db;
-    into.droneState = m_db.GetSolDroneState( m_data.systemID );
+    into.droneState = SystemDB::GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
     DBRowDescriptor* header = new DBRowDescriptor;

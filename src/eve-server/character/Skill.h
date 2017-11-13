@@ -48,6 +48,8 @@ class Skill
 {
     friend class InventoryItem;
 public:
+    virtual ~Skill() { /* do nothing here */ }
+    
     /**
      * Loads skill.
      *
@@ -121,12 +123,6 @@ protected:
     }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
-};
-
-class Certificate
-: public InventoryItem
-{
-    friend class InventoryItem;
 };
 
 #endif /* !__SKILL__H__INCL__ */

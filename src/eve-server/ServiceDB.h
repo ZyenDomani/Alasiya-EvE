@@ -51,7 +51,7 @@ public:
     static void SaveKillOrLoss(CharKillData& data);
 
     //destiny setstate stuff:
-    PyObject *GetSolDroneState(uint32 systemID) const;
+    static PyObject *GetSolDroneState(uint32 systemID);
 
     uint32 GetStationOwner(uint32 stationID);
 

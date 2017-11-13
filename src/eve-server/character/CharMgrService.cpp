@@ -64,6 +64,7 @@ protected:
     uint32 m_characterID;
 };
 
+/** @todo remove these db calls and put into approprate file  */
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {
     /** @todo really query the database directly? */
@@ -343,6 +344,8 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     bool afk = (args.arg1 ? true : false);
     uint16 time = args.arg2;
     sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%u.", call.client->GetName(), call.client->GetCharacterID(), (afk ? "true" : "false"), time);
+
+    // call code here to set an AFK watchdog?  config option?
 
     return new PyNone();
 }

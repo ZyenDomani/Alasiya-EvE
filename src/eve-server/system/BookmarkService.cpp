@@ -69,7 +69,7 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
     PyTuple* result = new PyTuple(2);
         result->SetItem(0, m_db.GetBookmarks(call.client->GetCharacterID()));
         result->SetItem(1, m_db.GetFolders(call.client->GetCharacterID()));
-    //result->Dump(COMMON__INFO, "    ");
+    result->Dump(COMMON__INFO, "    ");
     return result;
 }
 
@@ -160,21 +160,19 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     GPoint point(NULL_ORIGIN);
 
 	// Check for presence of folderID in the packet
-	if (call.byname.find("folderID") != call.byname.cend()) {
-        if ( !(call.byname.find("folderID")->second->IsNone()) ) {
+	if (call.byname.find("folderID") != call.byname.cend())
+        if ( !(call.byname.find("folderID")->second->IsNone()) )
             folderID = call.byname.find("folderID")->second->AsInt()->value();
-        }
-    }
 
     if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
-        typeID = 5;
+        typeID = EVEDB::invTypes::typeSolarSystem;
         point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         locationID = call.client->GetLocationID();       // locationID of bm is current sol system
-        itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
+        itemID = locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
     } else if (IsStation(args.itemID)) {  // not player-owned, check for station.
         SystemEntity* pSE = call.client->SystemMgr()->GetSE(args.itemID);
-        if (!pSE) {
-            // make error here
+        if (pSE == nullptr) {
+            // send player error also
             return nullptr;
         }
         typeID = pSE->GetTypeID();
@@ -182,13 +180,13 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         locationID = call.client->GetSystemID();       // get sol system of current station
     } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
         if (IsRegion(args.itemID))
-            typeID = 3;
+            typeID = EVEDB::invTypes::typeRegion;
         else if (IsConstellation(args.itemID))
-            typeID = 4;
+            typeID = EVEDB::invTypes::typeConstellation;
         else if (IsSolarSystem(args.itemID))
-            typeID = 5;
+            typeID = EVEDB::invTypes::typeSolarSystem;
         locationID = args.itemID;  // this is systemID from map
-        itemID = locationID;      //  locationID = itemID for coord bm.  shows jumps, s/c/r in bm window, green in system
+        itemID = locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }
 
     std::string memo = "";
@@ -197,6 +195,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     else if ( args.memo->IsWString() )
         memo = args.memo->AsWString()->content();
     else {
+        // send player error also
         sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.memo is of the wrong type: '%s'.  Expected PyString or PyWString.", args.memo->TypeString() );
         return nullptr;
     }
@@ -207,6 +206,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     else if ( args.comment->IsWString() )
         comment = args.comment->AsWString()->content();
     else {
+        // send player error also
         sLog.Error( "BookmarkService::Handle_BookmarkLocation()", "args.comment is of the wrong type: '%s'.  Expected PyString or PyWString.", args.comment->TypeString() );
         return nullptr;
     }
@@ -216,12 +216,13 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = new PyNone();     // unsure if/when this is populated
+        result.itemID      = (typeID == 5 ? 0 : itemID);     // 0 when typeID is 5 (typeSolarSystem)
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;
         result.z           = point.z;
         result.locationID  = locationID;
+
     return result.Encode();
 }
 
@@ -239,7 +240,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     * 22:25:58 [SvcCallDump]         [ 3] String: 'XIG-040'
     * 22:25:58 [SvcCallDump]         [ 4] Integer field: 140000000
     */
-    uint32 typeID = 5, folderID = 0;
+    uint32 typeID = EVEDB::invTypes::typeSolarSystem, folderID = 0;
 
     // Check for presence of folderID in the packet
     if (call.byname.find("folderID") != call.byname.cend()) {
@@ -268,15 +269,14 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
         return nullptr;
     }
 
-    ManagerDB a_db;
-    GPoint point(a_db.GetAnomalyPos(args.scanID));
+    GPoint point(ManagerDB::GetAnomalyPos(args.scanID));
 
     uint32 bookmarkID = m_db.SaveNewBookmarkToDatabase(args.ownerID, args.locationID, typeID, memo, point, args.locationID, comment, call.client->GetCharacterID(), folderID );
 
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = new PyNone();     // unsure if/when this is populated
+        result.itemID      = 0; 
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;
@@ -291,6 +291,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
+    args.Dump(COMMON__INFO, "    ");
 
     if (args.object->IsNone())
         return new PyNone();

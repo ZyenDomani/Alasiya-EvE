@@ -51,7 +51,7 @@ SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
 SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
 {
     uint32 skillID = CreateItemID( factory, data );
-    if( skillID == 0 )
+    if ( skillID == 0 )
         return SkillRef();
 
     SkillRef skillRef = Skill::Load( factory, skillID );
@@ -78,7 +78,7 @@ void Skill::VerifySP()
     EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
     EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
     if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
-        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), (spThisLevel.get_float() + 0.01));
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), (spThisLevel.get_float() + 0.0001));
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
 }

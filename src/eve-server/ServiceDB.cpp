@@ -163,7 +163,7 @@ void ServiceDB::SaveKillOrLoss(CharKillData &data) {
 /** @todo  all of the following bullshit needs to be checked/updated/deleted as appropriate */
 //this function is temporary, I dont plan to keep this crap in the DB.
 //   will make mem object for droneState later...   test with this.
-PyObject *ServiceDB::GetSolDroneState(uint32 systemID) const {
+PyObject *ServiceDB::GetSolDroneState(uint32 systemID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
