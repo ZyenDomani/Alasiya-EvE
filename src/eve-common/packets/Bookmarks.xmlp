@@ -19,7 +19,7 @@
   <elementDef name="Rsp_BookmarkLocation">
     <tupleInline>
         <int name="bookmarkID" />
-        <raw name="itemID" />
+        <int name="itemID" />
         <int name="typeID" />
         <real name="x" />
         <real name="y" />
