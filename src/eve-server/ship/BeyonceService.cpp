@@ -560,7 +560,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
          */
     if (pSE != nullptr) {
         radius = pSE->GetRadius();
-        // this will need adjustment for warping to bookmarks 
+        // this will need adjustment for warping to bookmarks
         warpToPoint = pSE->GetPosition();
         if (pSE->IsPlanetSE()) {
             srandom(toID);  //this is the only place random() is used....other random functions use rand() as it's non-repeatable.
@@ -760,7 +760,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 }
 
 PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
-    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest! that means we messed up pretty bad.", call.client->GetName());
+    codelog(CLIENT__ERROR, "%s: Client sent UpdateStateRequest. Previous call generated a bad return.  Check Logs.", call.client->GetName());
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -771,6 +771,7 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
         return new PyNone();
     }
 
+    call.client->SetStateSent(false);
     pDestiny->SendSetState();
 
     return new PyNone();

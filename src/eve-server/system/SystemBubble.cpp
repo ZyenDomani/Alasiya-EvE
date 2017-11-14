@@ -449,8 +449,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     if (is_log_enabled(DESTINY__BALL_DECODE))
         Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
     PyTuple* t = addballs.Encode();
-    pClient->QueueDestinyUpdate( &t );    //may consume, may not.
-    PySafeDecRef( t );
+    pClient->QueueDestinyUpdate( &t );    //consumed
 }
 
 void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
@@ -577,8 +576,8 @@ void SystemBubble::RemoveBall(SystemEntity *about_who) {
         removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple *tmp = removeball.Encode();
-	BubblecastDestinyUpdate(&tmp, "RemoveBall");    //consumed
-	PySafeDecRef( tmp );
+    BubblecastDestinyUpdate(&tmp, "RemoveBall");
+    PySafeDecRef( tmp );
 }
 
 
@@ -594,7 +593,7 @@ void SystemBubble::RemoveBallExclusive(SystemEntity *about_who) {
         removeball.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple *tmp = removeball.Encode();
-	BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", about_who);    //consumed
+	BubblecastDestinyUpdateExclusive(&tmp, "RemoveBall", about_who);
 	PySafeDecRef( tmp );
 }
 
@@ -622,8 +621,7 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
         remove_balls.Dump( DESTINY__BALL_DUMP, "    " );
 
     PyTuple* tmp = remove_balls.Encode();
-    pClient->QueueDestinyUpdate( &tmp );    //may consume, but may not.
-    PySafeDecRef( tmp );
+    pClient->QueueDestinyUpdate( &tmp );
 }
 
 //send a set of destiny events and updates to every client in the bubble.
@@ -637,100 +635,69 @@ void SystemBubble::BubblecastDestiny(std::vector<PyTuple *> &updates, std::vecto
 
 //send a set of destiny updates to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate(std::vector<PyTuple *> &updates, const char *desc) const {
-    std::vector<PyTuple *>::iterator cur = updates.begin();
-    for (; cur != updates.end(); ++cur) {
-        PyTuple *up = *cur;
-        BubblecastDestinyUpdate(&up, desc); //update is consumed.
+    for (std::vector<PyTuple *>::iterator cur = updates.begin(); cur != updates.end(); ++cur) {
+        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+            (*cur)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+        BubblecastDestinyUpdate(&(*cur), desc);
     }
+
     updates.clear();
 }
 
 //send a set of destiny events to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const char *desc) const {
-    std::vector<PyTuple *>::iterator cur = events.begin();
-    for (; cur != events.end(); ++cur) {
-        PyTuple *ev = *cur;
-        BubblecastDestinyEvent(&ev, desc); //event is consumed.
+    for (std::vector<PyTuple *>::iterator cur = events.begin(); cur != events.end(); ++cur) {
+        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
+            (*cur)->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
+        BubblecastDestinyEvent(&(*cur), desc);
     }
+
     events.clear();
 }
 
 //send a destiny update to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
-    PyTuple* up = *payload;
-    *payload = nullptr;    //could optimize out one of the Clones in here...
-    PyTuple* up_dup(nullptr);
-
     for (auto cur : m_players) {
-        if (up_dup == nullptr)
-            up_dup = new PyTuple( *up );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
-        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-            up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur.second->QueueDestinyUpdate( &up_dup );
+        PyIncRef(*payload);
+        cur.second->QueueDestinyUpdate(payload);
     }
-
-    PySafeDecRef( up_dup );
-    PyDecRef( up );
+    //PySafeDecRef(*payload);
 }
 
 //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE':
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
 {
-    PyTuple* up = *payload;
-    *payload = nullptr;    //could optimize out one of the Clones in here...
-    PyTuple* up_dup(nullptr);
-
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
         if (cur.second->GetShipSE() != pSE) {
-            if (up_dup == nullptr)
-                up_dup = new PyTuple( *up );
             _log( DESTINY__BUBBLECAST, "Exclusive Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
-            if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-                up_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-            cur.second->QueueDestinyUpdate( &up_dup );
+            PyIncRef(*payload);
+            cur.second->QueueDestinyUpdate(payload);
         }
     }
-
-    PySafeDecRef( up_dup );
-    PyDecRef( up );
+    //PySafeDecRef(*payload);
 }
 
 //send a destiny event to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
-    PyTuple* ev = *payload;
-    *payload = nullptr;    //could optimize out one of the Clones in here...
-    PyTuple* ev_dup(nullptr);
-
     for (auto cur : m_players) {
-        if (ev_dup == nullptr)
-            ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
-        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-            ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur.second->QueueDestinyEvent( &ev_dup );
+        PyIncRef(*payload);
+        cur.second->QueueDestinyEvent(payload);
     }
-
-    PySafeDecRef( ev_dup );
-    PyDecRef( ev );
+    //PySafeDecRef(*payload);
 }
 
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
 {
-    PyTuple* ev = *payload;
-    *payload = nullptr;    //could optimize out one of the Clones in here...
-    PyTuple* ev_dup(nullptr);
-
     for (auto cur : m_players) {
-        if (ev_dup == nullptr)
-            ev_dup = new PyTuple( *ev );
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
-        if (is_log_enabled(DESTINY__BUBBLECAST_DUMP))
-            ev_dup->Dump(DESTINY__BUBBLECAST_DUMP, "    ");
-        cur.second->SendNotification( notifyType, idType, &ev_dup, seq );
+        PyIncRef(*payload);
+        cur.second->SendNotification( notifyType, idType, payload, seq );
     }
+    //PySafeDecRef(*payload);
 }

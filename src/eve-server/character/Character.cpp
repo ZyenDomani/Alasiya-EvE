@@ -739,7 +739,8 @@ void Character::UpdateSkillQueue() {
                 osst.itemID = currentTraining->itemID();
                 osst.silent = 0;    //look into this...why would it be silent?
             PyTuple* tmp = osst.Encode();
-            m_pClient->QueueDestinyEvent(&tmp); // consumed
+            m_pClient->QueueDestinyEvent(&tmp);
+            PyDecRef(tmp);
 
             SaveSkillHistory(skillEventTrainingCancelled, EvilTimeNow(), m_itemID, currentTraining->typeID(), oldLevel, skillPointsTrained.get_double(), GetTotalSP().get_double() );
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.1f", \
@@ -788,7 +789,8 @@ void Character::UpdateSkillQueue() {
 				osst.itemID = currentTraining->itemID();
                 osst.endOfTraining = trainingEndTime.get_double();
             PyTuple* tmp = osst.Encode();
-            m_pClient->QueueDestinyEvent(&tmp); // consumed
+            m_pClient->QueueDestinyEvent(&tmp);
+            PyDecRef(tmp);
             break;
         }
 
@@ -807,7 +809,8 @@ void Character::UpdateSkillQueue() {
             OnSkillTrained ost;
                 ost.itemID = currentTraining->itemID();
             PyTuple* tmp = ost.Encode();
-            m_pClient->QueueDestinyEvent(&tmp); // consumed
+            m_pClient->QueueDestinyEvent(&tmp);
+            PyDecRef(tmp);
 
             currentTraining->SetAttribute(AttrSkillLevel, level );
             currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
@@ -850,7 +853,8 @@ void Character::UpdateSkillQueue() {
                 osst.itemID = currentTraining->itemID();
                 osst.endOfTraining = trainingEndTime.get_double();
             PyTuple *tmp2 = osst.Encode();
-            m_pClient->QueueDestinyEvent(&tmp2); // consumed
+            m_pClient->QueueDestinyEvent(&tmp2);
+            PyDecRef(tmp2);
         } else
             break;
     }

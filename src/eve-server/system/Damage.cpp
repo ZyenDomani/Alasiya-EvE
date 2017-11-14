@@ -305,6 +305,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         up = ondamo.Encode();
         d.srcSE->GetPilot()->QueueDestinyEvent(&up);
     }
+    PyDecRef(up);
 
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());

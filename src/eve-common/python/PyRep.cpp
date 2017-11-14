@@ -85,6 +85,7 @@ void PyRep::Dump( LogType type, const char* pfx ) const
 {
     PyLogDumpVisitor dumper( type, type, pfx );
     visit( dumper );
+    //SafeDelete(dumper);
 }
 
 int32 PyRep::hash() const
@@ -578,7 +579,7 @@ PyTuple::PyTuple( const PyTuple& oth ) : PyRep( PyRep::PyTypeTuple ), items()
 
 PyTuple::~PyTuple()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyTuple::Clone() const
@@ -650,7 +651,7 @@ PyList::PyList( const PyList& oth ) : PyRep( PyRep::PyTypeList ), items()
 
 PyList::~PyList()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyList::Clone() const
@@ -701,7 +702,7 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items()
 
 PyDict::~PyDict()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyDict::Clone() const

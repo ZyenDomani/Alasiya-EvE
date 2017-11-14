@@ -28,27 +28,11 @@
 
 
 //#define ENABLE_STD_OUT_REF_LOG
-#ifdef ENABLE_STD_OUT_REF_LOG
+//#ifdef ENABLE_STD_OUT_REF_LOG
     #include <cassert>
     #include <cstdio>
     #include <iostream>
-#endif
-
-/**
- * ENABLE_REF_TRACE
- * A way to trace deleted objects still beeing handled in the python layer.
- *
- * As I remember Linux doesn't clear the deleted memory so this would work.
- * Same goes for windows which does clear the memory but set it to 0xDEADBEEF or something.
- * That way the assert will trigger a crash when the object is still being handled but in
- * reality its already deleted.
- */
-#define ENABLE_REF_TRACE
-#ifdef ENABLE_REF_TRACE
-#  define REF_TRACE_MACRO() do { assert( mDeleted == false ); } while (0)
-#else
-#  define REF_TRACE_MACRO() do {} while (0)
-#endif
+//#endif
 
 /**
  * @brief A reference-counted object.
@@ -84,8 +68,8 @@ public:
      */
     virtual ~RefObject()
     {
-        mDeleted = true;
         assert( mRefCount == 0);
+        mDeleted = true;
     }
 
 protected:
@@ -94,12 +78,10 @@ protected:
      */
     void IncRef() const
     {
-        REF_TRACE_MACRO();
+        assert( mDeleted == false );
+        //assert( mRefCount > 0 );  //inventoryItem objects are created with a ref count of 0, then incremented during RefPtr c'tor
         ++mRefCount;
         _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
-        #ifdef ENABLE_STD_OUT_REF_LOG
-            std::cout << std::endl << "IncRef() " << mRefCount;
-        #endif
     }
     /**
      * @brief Decrements reference count of object by one.
@@ -109,13 +91,17 @@ protected:
      */
     void DecRef() const
     {
-        REF_TRACE_MACRO();
+        if (mDeleted) {
+            // make error for this shit?
+            _log(REFPTR__ERROR, "mDeleted = true.");
+            //EvE::traceStack();
+            //return;
+        }
+
+        assert( mDeleted == false );
         assert( mRefCount > 0 );
         --mRefCount;
         _log(REFPTR__DEC, "DecRef() is %u.", mRefCount);
-        #ifdef ENABLE_STD_OUT_REF_LOG
-            std::cout << std::endl << "DecRef() " << mRefCount;
-        #endif
 
         if (mRefCount < 1)
             delete this;

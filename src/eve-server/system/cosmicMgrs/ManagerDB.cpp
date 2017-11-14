@@ -15,21 +15,34 @@
 
 void ManagerDB::GetSkillList(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)")) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)"))
         codelog(DATABASE__ERROR, "Error in GetSkillList query: %s", res.error.c_str());
-    }
+
 }
 
 void ManagerDB::GetTypeAttributes(DBQueryResult& res)
 {
-    if( !sDatabase.RunQuery(res, "SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes")) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes"))
         codelog(DATABASE__ERROR, "Error in GetTypeAttributes query: %s", res.error.c_str());
+}
+
+PyObjectEx *ManagerDB::GetOperands() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT operandID, operandKey, description, format, arg1categoryID, arg2categoryID, resultCategoryID, pythonFormat FROM dgmOperands" )) {
+        codelog(DATABASE__ERROR, "Error in GetOperands query: %s.", res.error.c_str());
+        return nullptr;
     }
+
+    _log(DATABASE__RESULTS, "GetOperands returned %u items", res.GetRowCount());
+
+    return DBResultToCIndexedRowset(res, "operandID");
 }
 
 
+
 void ManagerDB::GetBlueprintType(DBQueryResult& res) {
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  blueprintTypeID,"
         "  parentBlueprintTypeID,"
@@ -53,69 +66,60 @@ void ManagerDB::GetBlueprintType(DBQueryResult& res) {
 
 void ManagerDB::GetRAMMaterials(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials")) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, materialTypeID, quantity FROM invTypeMaterials"))
         codelog(DATABASE__ERROR, "Error in GetRAMMaterials query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetRAMRequirements(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements")) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements"))
         codelog(DATABASE__ERROR, "Error in GetRAMRequirements query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetOreBySSC(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT systemSec, roidID, percent FROM roidDistribution")) {
+    if (!sDatabase.RunQuery(res, "SELECT systemSec, roidID, percent FROM roidDistribution"))
         codelog(DATABASE__ERROR, "Error in GetRoidDist query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetSystemData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems")) {
+        "SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems"))
         codelog(DATABASE__ERROR, "Error in GetSystemInfo query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetStaticData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL")) {
+        "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL"))
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetStationInfo(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
         "SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations AS s"
-        " LEFT JOIN staStationTypes AS st USING (stationTypeID)")) {
+        " LEFT JOIN staStationTypes AS st USING (stationTypeID)"))
         codelog(DATABASE__ERROR, "Error in GetStationInfo query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetStationSystem(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations")) {
+    if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations"))
         codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetStationRegion(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations")) {
+    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations"))
         codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetMoonResouces(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID,volume FROM invTypes WHERE groupID = %u", EVEDB::invGroups::Moon_Materials)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID,volume FROM invTypes WHERE groupID = %u", EVEDB::invGroups::Moon_Materials))
         codelog(DATABASE__ERROR, "Error in GetMoonResouces query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::SaveAnomaly(CosmicSignature& sig)
@@ -144,9 +148,9 @@ void ManagerDB::GetAnomalyList(DBQueryResult& res)
 GPoint ManagerDB::GetAnomalyPos(std::string& string)
 {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT x,y,z FROM sysSignatures WHERE sigID = '%s'", string.c_str())) {
+    if (!sDatabase.RunQuery(res, "SELECT x,y,z FROM sysSignatures WHERE sigID = '%s'", string.c_str()))
         _log(DATABASE__ERROR, "Error in GetAnomalyPos query: %s", res.error.c_str());
-    }
+
     DBResultRow row;
     if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "GetAnomalyPos query returned no items");
@@ -173,33 +177,28 @@ void ManagerDB::GetSystemAnomalies(uint32 systemID, std::vector< CosmicSignature
 }
 
 void ManagerDB::GetRegionFaction(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT regionID, factionID FROM mapRegions WHERE factionID != 0")) {
+    if (!sDatabase.RunQuery(res, "SELECT regionID, factionID FROM mapRegions WHERE factionID != 0"))
         _log(DATABASE__ERROR, "Error in GetRegionFactionInfo query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetRegionRatFaction(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0")) {
+    if (!sDatabase.RunQuery(res, "SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0"))
         _log(DATABASE__ERROR, "Error in GetRegionFactionInfo query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetFactionGroups(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup")) {
+    if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup"))
         _log(DATABASE__ERROR, "Error in GetFactionGroups query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass")) {
+    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass"))
         _log(DATABASE__ERROR, "Error in GetSpawnClasses query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10", groupID)) {
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10", groupID))
         _log(DATABASE__ERROR, "Error in GetGroupTypeIDs query: %s", res.error.c_str());
-    }
 }
 
 void ManagerDB::DeleteSpawnedRats()
@@ -336,7 +335,7 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
 {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT systemID, state, dunTemplateID, dunExpiryTime, xpos, ypos, zpos"
         " FROM dunActive"   //Active Dungeons
         " WHERE systemID = %u", systemID)) {

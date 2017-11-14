@@ -33,6 +33,8 @@ public:
     void GetStationRegion(DBQueryResult& res);
     void GetTypeAttributes(DBQueryResult& res);
     void GetRAMRequirements(DBQueryResult& res);
+    
+    PyObjectEx* GetOperands();
 
     /* belt manager */
     void SaveRoid(AsteroidData& data);

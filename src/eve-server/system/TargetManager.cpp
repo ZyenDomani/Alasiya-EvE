@@ -483,32 +483,37 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
             - StoppedTargeting
 */
 void TargetManager::TargetTry(SystemEntity *who) {
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     Notify_OnTarget te;
         te.mode = "try";
         te.targetID = who->GetID();
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
+    PyTuple* tmp = multi.Encode();
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
+    PySafeDecRef(tmp);
 }
 
 bool TargetManager::TargetFail(SystemEntity* who) {
-    if (!mySE->HasPilot()) return false;
+    if (!mySE->HasPilot())
+        return false;
     Notify_OnTarget te;
         te.mode = "fail";
         te.targetID = who->GetID();
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
+    PyTuple* tmp = multi.Encode();
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
+    PySafeDecRef(tmp);
     return false;
 }
 
 void TargetManager::TargetAdded(SystemEntity* who) {
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     PyTuple* up(nullptr);
     DoDestiny_OnDamageStateChange odsc;
         odsc.entityID = who->GetID();
@@ -533,8 +538,9 @@ void TargetManager::TargetedAdd(SystemEntity *who) {
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
+    PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    PySafeDecRef(tmp);
 }
 
 void TargetManager::TargetedLost(SystemEntity *who) {
@@ -547,8 +553,9 @@ void TargetManager::TargetedLost(SystemEntity *who) {
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
+    PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    PySafeDecRef(tmp);
 }
 
 void TargetManager::TargetsCleared() {
@@ -559,48 +566,25 @@ void TargetManager::TargetsCleared() {
     Notify_OnMultiEvent multi;
         multi.events = new PyList;
         multi.events->AddItem(te.Encode());
-    PyTuple* tmp = multi.Encode();   //this is consumed below
+    PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
+    PySafeDecRef(tmp);
 }
 
-void TargetManager::QueueTBDestinyEvent( PyTuple** up_in ) const
+void TargetManager::QueueTBDestinyEvent( PyTuple** event ) const
 {
-    PyTuple* up = *up_in;
-    *up_in = nullptr;    //could optimize out one of the Clones in here...
-
-    PyTuple* up_dup(nullptr);
-
-    for (auto cur : m_targetedBy) {
-        if (cur.first->HasPilot()) {
-            if (!up_dup)
-                up_dup = new PyTuple( *up );
-
-            cur.first->GetPilot()->QueueDestinyEvent( &up_dup );
-        }
-    }
-
-    PySafeDecRef( up_dup );
-    PyDecRef( up );
+    for (auto cur : m_targetedBy)
+        if (cur.first->HasPilot())
+            cur.first->GetPilot()->QueueDestinyEvent(event);
 }
 
-void TargetManager::QueueTBDestinyUpdate( PyTuple** up_in ) const
+void TargetManager::QueueTBDestinyUpdate( PyTuple** update ) const
 {
-    PyTuple* up = *up_in;
-    *up_in = nullptr;    //could optimize out one of the Clones in here...
-
-    PyTuple* up_dup(nullptr);
-
-    for (auto cur : m_targetedBy) {
+    for (auto cur : m_targetedBy)
         if (cur.first->HasPilot()) {
-            if (!up_dup)
-                up_dup = new PyTuple( *up );
-
-            cur.first->GetPilot()->QueueDestinyUpdate( &up_dup );
+            PyIncRef(*update);
+            cur.first->GetPilot()->QueueDestinyUpdate(update);
         }
-    }
-
-    PySafeDecRef( up_dup );
-    PyDecRef( up );
 }
 
 /* debugging methods */

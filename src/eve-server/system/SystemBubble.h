@@ -87,6 +87,7 @@ public:
     void RemoveExclusive(SystemEntity* pSE);
     void AddBallExclusive(SystemEntity* about_who);
 
+    //consumes updates and events
 	void BubblecastDestiny(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, const char* desc) const;
 	void BubblecastDestinyUpdate(std::vector<PyTuple*> &updates, const char* desc) const;
 	void BubblecastDestinyEvent(std::vector<PyTuple*> &events, const char* desc) const;

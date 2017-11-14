@@ -250,13 +250,13 @@ PyRep *PyPacket::Encode() {
     //payload
     //TODO: we don't really need to clone this if we can figure out a way to say "this is read only"
     //or if we can change this encode method to consume the PyPacket (which will almost always be the case)
-    arg_tuple->items[4] = payload->Clone();
+    arg_tuple->items[4] = payload; //->Clone();
 
     //named arguments
     if (named_payload == nullptr)
         arg_tuple->items[5] = new PyNone();
     else
-        arg_tuple->items[5] = named_payload->Clone();
+        arg_tuple->items[5] = named_payload; //->Clone();
 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
     arg_tuple->items[6] = new PyNone();
@@ -279,10 +279,10 @@ void PyAddress::Dump(FILE *into, const char *pfx) const {
             fprintf(into, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
         break;
         case Node:
-            fprintf(into, "%sNode: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sNode: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            fprintf(into, "%sClient: node=0x% service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            fprintf(into, "%sClient: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             fprintf(into, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());
@@ -299,10 +299,10 @@ void PyAddress::Dump(LogType ltype, const char *pfx) const {
             _log(ltype, "%sAny: service='%s' callID=%" PRIu64, pfx, service.c_str(), callID);
         break;
         case Node:
-            _log(ltype, "%sNode: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sNode: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
         case Client:
-            _log(ltype, "%sClient: node=0x%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
+            _log(ltype, "%sClient: node=%p service='%s' callID=%" PRIu64, pfx, objectID, service.c_str(), callID);
         break;
         case Broadcast:
             _log(ltype, "%sBroadcast: broadcastID='%s' narrowcast=(not decoded yet) idtype='%s'", pfx, service.c_str(), bcast_idtype.c_str());

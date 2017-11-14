@@ -16,6 +16,7 @@
 
 
 StaticDataMgr::StaticDataMgr()
+: m_operands(nullptr)
 {
     Clear();
 }
@@ -48,11 +49,18 @@ void StaticDataMgr::Clear()
     m_stationPyData.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();
+
+    PySafeDecRef(m_operands);
 }
 
 void StaticDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
+
+    m_operands = m_db.GetOperands();
+    if (m_operands == nullptr)
+        sLog.Error("    StaticDataMgr", "m_operands is null");
+
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 

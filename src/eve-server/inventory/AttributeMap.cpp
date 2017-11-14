@@ -88,7 +88,7 @@ bool AttributeMap::Save() {
      */
     if (mItem.itemID() >= EVEMU_NPC_ID)    // not saving npc attribs
         return true;
-    else if (mItem.itemID() < EVEMU_MINIMUM_DYNAMIC_ID)  // not saving static object attribs
+    if (mItem.itemID() < EVEMU_MINIMUM_DYNAMIC_ID)  // not saving static object attribs
         return true;
 
     bool skill = false, damage = false, owner = false;
@@ -227,7 +227,8 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
 }
 
 bool AttributeMap::SendChanges( PyTuple* attrChange ) {
-    if (!attrChange) return true;
+    if (attrChange == nullptr)
+        return true;
     Client* pClient(nullptr);
 
     if (IsCharType(mItem.typeID()))
@@ -268,7 +269,8 @@ void AttributeMap::SaveShipState()
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
     bool shield = false, armor = false, hull = false;
     AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
-    if (cur != mAttributes.end()) shield = true;
+    if (cur != mAttributes.end())
+        shield = true;
     if (shield) {
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
@@ -278,7 +280,8 @@ void AttributeMap::SaveShipState()
         }
     }
     cur = mAttributes.find(AttrArmorDamage);
-    if (cur != mAttributes.end()) armor = true;
+    if (cur != mAttributes.end())
+        armor = true;
     if (armor) {
         if (shield) Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
@@ -289,7 +292,8 @@ void AttributeMap::SaveShipState()
         }
     }
     cur = mAttributes.find(AttrDamage);
-    if (cur != mAttributes.end()) hull = true;
+    if (cur != mAttributes.end())
+        hull = true;
     if (hull) {
         if (shield or armor) Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";

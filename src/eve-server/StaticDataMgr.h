@@ -38,6 +38,8 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
+    PyObjectEx*         GetOperands()                   { PyIncRef(m_operands); return m_operands; }
+
     void                GetMoonResouces(std::map<uint16, uint8>& data);
 
     bool                IsSkillTypeID(uint16 typeID);
@@ -104,6 +106,8 @@ public:
     std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
 
 private:
+    PyObjectEx*                                         m_operands;
+
     std::map<uint32, PyObject*>                         m_stationPyData;    // stationID/data
 
     /* map data */

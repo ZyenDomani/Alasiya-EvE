@@ -185,7 +185,7 @@ bool Client::ProcessNet()
         SafeDelete(p);
     }
 
-    // send queued updates
+    // send queue
     _SendQueuedUpdates();
 
     return true;
@@ -195,8 +195,6 @@ bool Client::SelectCharacter(uint32 char_id) {
     InitSession(char_id);
 
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
-
-    /** @todo any 'return false' will need to remove client from sysMgr to avoid segfault when sEntityList.ProcessClient() is called on it.  */
 
     if (m_system == nullptr) {
         sLog.Error("Client::LoginToSystem()", "Failed to boot system %u for char %u.", m_SystemData.systemID, char_id);
@@ -1076,6 +1074,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.targetID = 0;
     PyTuple* up = du.Encode();
     pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
+    PyDecRef(up);
 
     pDrone->DestinyMgr()->Orbit(pShipSE, 800);  //FIXME
     pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
@@ -1318,9 +1317,11 @@ void Client::FlushQueue() {
         _SendQueuedUpdates();
 }
 
-void Client::QueueDestinyEvent(PyTuple** multiEvent) {
-    m_destinyEventQueue->AddItem(*multiEvent);
-    *multiEvent = nullptr;
+void Client::QueueDestinyEvent(PyTuple** event) {
+    if ((event == nullptr) or ((*event) == nullptr))
+        return;
+    m_destinyEventQueue->AddItem(*event);
+    //PyDecRef(*event);
 }
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
@@ -1337,10 +1338,8 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             //   a single PackagedAction packet, which is then inserted into the DoDestinyAction packet.
             PyList* paList = new PyList();
                 paList->AddItem(*update);
-                if (!m_destinyUpdateQueue->empty()) {
-                    PyIncRef(m_destinyUpdateQueue);
-                    paList->AddItem(m_destinyUpdateQueue);
-                }
+            if (!m_destinyUpdateQueue->empty())
+                paList->AddItem(m_destinyUpdateQueue);
             PackagedAction pa;
                 pa.substream = new PySubStream(paList);
             act.update = pa.Encode();
@@ -1355,41 +1354,45 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         if (is_log_enabled(CLIENT__QUEUE_DUMP))
             t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("DoDestinyUpdate", "clientID", &t, false);
+        PyDecRef(t);
     } else {
         act.update = *update;
         m_packaged = true;
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
-    update = nullptr;
+    //PyDecRef(*update);
 }
 
 void Client::_SendQueuedUpdates() {
     if (!m_destinyUpdateQueue->empty()) {
-        if (0 and m_destinyEventQueue->empty()) {
+        if (m_destinyEventQueue->empty()) {
             DoDestinyUpdateMain_2 dum;
                 dum.updates = m_destinyUpdateQueue;
                 dum.waitForBubble = m_bubbleWait; /*false*/
-            PyTuple* t(dum.Encode());
+            PyTuple* t = dum.Encode();
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
+            PyDecRef(t);
         } else {
             DoDestinyUpdateMain dum;
                 dum.updates = m_destinyUpdateQueue;
                 dum.events = m_destinyEventQueue;
                 dum.waitForBubble = m_bubbleWait; /*false*/
-            PyTuple* t(dum.Encode());
+            PyTuple* t = dum.Encode();
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
             SendNotification("DoDestinyUpdate", "clientID", &t);
+            PyDecRef(t);
         }
     } else if (!m_destinyEventQueue->empty()) {
         Notify_OnMultiEvent nom;
             nom.events = m_destinyEventQueue;
-        PyTuple* t(nom.Encode());   //this is consumed below
+        PyTuple* t = nom.Encode();
         if (is_log_enabled(CLIENT__QUEUE_DUMP))
             t->Dump(CLIENT__QUEUE_DUMP, "");
         SendNotification("OnMultiEvent", "charid", &t);
+        PyDecRef(t);
     } //else nothing to be sent ...
 
     // clear the queues now, after the packets have been sent
@@ -1403,9 +1406,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
     EVENotificationStream notify;
         notify.notifyType = notifyType;
         notify.remoteObject = 1;
-        notify.args = (PyTuple*)(*payload)->Clone();    //consumed
-    PySafeDecRef(*payload);
-    payload = nullptr;
+        notify.args = (*payload);
 
     PyAddress dest;
         dest.type = PyAddress::Broadcast;
@@ -1414,6 +1415,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
 
     //now send it to the client
     SendNotification(dest, notify, seq);
+    //PyDecRef(*payload);
 }
 
 void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq/*true*/) {
@@ -1888,7 +1890,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     SendSessionChange();  //send out the session change before the return.
     if (is_log_enabled(CLIENT__OUT_ALL))
         result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
-    _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);
+    _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);  //ssResult is consumed here
 
     //PySafeDecRef(result.ssResult);
     return true;
