@@ -12,7 +12,6 @@
 #ifndef _EVE_FX_PROC_DATAMGR_H__
 #define _EVE_FX_PROC_DATAMGR_H__
 
-#include <unordered_map>
 #include "effects/EffectsData.h"
 
 class FxDataMgr

@@ -16,8 +16,6 @@
 #define _EVE_SERVER_STATIC_DATAMANAGER_H__
 
 
-#include <unordered_map>
-
 #include "eve-server.h"
 #include "POD_containers.h"
 
@@ -45,8 +43,12 @@ public:
     bool                IsSkillTypeID(uint16 typeID);
     bool                GetSkillName(uint16 skillID, std::string& name);
 
-    bool                GetRamMaterials(uint16 typeID, std::vector<ramMaterials>& ramMatls);
-    bool                GetRamRequirements(uint16 typeID, std::vector<ramRequirements>& ramReqs);
+    bool                GetRatTypes(uint32 groupID, std::vector<uint32>& typeVec);
+    bool                GetRatGroups(uint32 factionID, std::map<uint8, uint32>& groupMap);
+    bool                GetRatClasses(uint8 typeID, std::vector<RatSpawnClass>& classMap);
+
+    void                GetRamMaterials(uint16 typeID, std::vector<ramMaterials>& ramMatls);
+    void                GetRamRequirements(uint16 typeID, std::vector< ramRequirements >& ramReqs);
 
     bool                GetStaticInfo(uint32 itemID, StaticData& data);
     bool                GetStationInfo(uint32 stationID, StationData& data);
@@ -82,12 +84,17 @@ private:
     ManagerDB           m_db;
     StationDB           m_sdb;
 
+    PyObjectEx*                                         m_operands;
+
+    std::map<uint32, uint8>                             m_stationCount;     // systemID/count
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint32, uint8>                             m_whRegions;        // regionID/classID
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
+    std::map<uint32, PyObject*>                         m_stationPyData;    // stationID/data
+    std::map<uint16, BlueprintTypeData>                 m_bpTypeData;       // bpTypeID/data
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
     std::map<uint32, StaticData>                        m_staticData;       // itemID/data
     std::map<uint32, StationData>                       m_stationData;      // stationID/data
@@ -99,22 +106,11 @@ private:
 
     std::unordered_multimap<uint16, DmgTypeAttribute>   m_typeAttrMap;      // typeID/data<attrID, value>
 
-public:
     /* spawn data */
     std::unordered_multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
     std::unordered_multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
     std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
 
-private:
-    PyObjectEx*                                         m_operands;
-
-    std::map<uint32, PyObject*>                         m_stationPyData;    // stationID/data
-
-    /* map data */
-    std::map<uint32, uint8>                             m_stationCount;
-
-    /* bp data */
-    std::map<uint16, BlueprintTypeData>                 m_bpTypeData;
 };
 
 //Singleton

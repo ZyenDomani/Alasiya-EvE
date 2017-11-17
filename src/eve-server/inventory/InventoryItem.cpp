@@ -26,6 +26,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "EntityList.h"
 #include "effects/EffectsProcessor.h"
 #include "character/Skill.h"
@@ -1015,6 +1016,8 @@ void InventoryItem::SaveItem() {
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
     if (IsNPCCorp(toID) or (toID == 1))
+        return;
+    if (sConsole.IsShutdown())
         return;
     //TODO: figure out the appropriate list of interested people...
     Client* pClient = sEntityList.FindClientByCharID(toID);

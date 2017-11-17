@@ -28,13 +28,14 @@ public:
     bool Init();
 
     void Process();
-    void DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);
+    bool DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);
     void DoSpawnForAnomaly(int32 spawnID);
 
     void SpawnPopped(uint32 itemID);
     void SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID);
 
     void StartMainTimer();
+    void StopMainTimer()                                { m_mainTimer.Disable(); }
 
     bool IsEnabled()                                    { return m_enabled; }
     bool IsInitialized()                                { return m_initalized; }
@@ -42,8 +43,8 @@ public:
 
 
 protected:
-    bool _FindSpawnForBubble(uint16 itemID);
-    void PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
+    bool FindSpawnForBubble(uint16 itemID);
+    bool PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
     void MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype);
     void ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry);
     void RemoveSpawn(uint32 bubbleID, uint32 itemID);

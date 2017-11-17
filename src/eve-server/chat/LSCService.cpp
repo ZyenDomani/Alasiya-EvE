@@ -835,13 +835,13 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
     // packet sent back to the client?
     // **************************
 
+    // Now, remove the channel from the database:
+    m_db->DeleteChannel(itr->second->GetChannelID());
+
     // Finally, remove the channel from the server dynamic objects:
     itr->second->Evacuate(call.client);
     SafeDelete(itr->second);
     m_channels.erase(itr);
-
-    // Now, remove the channel from the database:
-    m_db->DeleteChannel(itr->second->GetChannelID());
 
     return new PyNone();
 }

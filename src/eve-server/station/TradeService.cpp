@@ -320,8 +320,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
      */
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        Handle_Abort(call);
-        return new PyNone();
+        return Handle_Abort(call);
     }
     InventoryItemRef itemRef = call.client->services().item_factory->GetItem(args.arg1);
     if (!itemRef)  {
@@ -412,8 +411,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
      */
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        Handle_Abort(call);
-        return new PyNone();
+        return Handle_Abort(call);
     }
     uint32 flag = 0;
     if (call.byname.find("flag") != call.byname.cend())

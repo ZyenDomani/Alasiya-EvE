@@ -58,8 +58,7 @@ EntityList::~EntityList() {
 void EntityList::Initialize() {
     /* start the timer */
     m_stampTimer.Start(1000);
-    ServiceDB m_db;
-    m_clientSeedID = m_db.SetClientSeed();
+    m_clientSeedID = ServiceDB::SetClientSeed();
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
 }
@@ -105,12 +104,13 @@ void EntityList::Add( Client* client ) {
 }
 
 void EntityList::Remove(Client* client) {
-    /*  this has to use a 'real' iterator for erase() to work. */
 	/* note:  will get expensive for many clients  */
-    std::vector<Client*>::iterator cur = m_clients.begin(), end = m_clients.end();
-    for (; cur != end; ++cur)
-        if ((*cur) == client)
-            m_clients.erase(cur);
+    std::vector<Client*>::iterator itr = m_clients.begin();
+    for (; itr != m_clients.end(); ++itr)
+        if ((*itr) == client) {
+            m_clients.erase(itr);
+            return;
+        }
 }
 
 void EntityList::Process() {
@@ -119,15 +119,14 @@ void EntityList::Process() {
         profileStartTime = GetTimeUSeconds();
 
     Client* pClient(nullptr);
-    std::vector<Client*>::iterator cur_client = m_clients.begin();
-    while (cur_client != m_clients.end()) {
-        if ((*cur_client)->ProcessNet())
-            ++cur_client;
+    std::vector<Client*>::iterator itr = m_clients.begin();
+    while (itr != m_clients.end()) {
+        if ((*itr)->ProcessNet())
+            ++itr;
         else {
-            pClient = *cur_client;
-            cur_client = m_clients.erase(cur_client);
-            if (pClient != nullptr)
-                SafeDelete(pClient);
+            pClient = *itr;
+            itr = m_clients.erase(itr);
+            SafeDelete(pClient);
         }
     }
 
@@ -139,6 +138,7 @@ void EntityList::Process() {
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
         ++m_stamp;
+        //sLog.White("time check", "(%u) - ms: %f, win32: %" PRIu64 ", file: %.4f", m_stamp, GetTimeMSeconds(), Win32TimeNow(), GetFileTimeNow());
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();
@@ -152,7 +152,6 @@ void EntityList::Process() {
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
-                SafeDelete(itr->second);
                 itr = m_systems.erase(itr);
                 continue;
             } else if (!itr->second->ProcessTic()) {    /* Process each loaded system */
@@ -648,7 +647,7 @@ uint32 EntityList::GetWreckFaction(uint32 typeID)
         case 26594:  //   Rogue Elite Small Wreck
         case 26595:  //   Rogue Elite Medium Wreck
         case 26596:  //   Rogue Officer Wreck
-        case 28221:  //    Rogue Large Commander Wreck
+        case 28221:  //   Rogue Large Commander Wreck
         case 28222:  //   Rogue Medium Commander Wreck
         case 28223: { //   Rogue Small Commander Wreck
             return factionRogueDrones;
@@ -656,25 +655,21 @@ uint32 EntityList::GetWreckFaction(uint32 typeID)
 
         // generic wrecks
         case 26468:  //   Capsule Wreck
-        case 26557:  //    Frigate Wreck
-        case 26558:  //    Cruiser Wreck
-        case 26559: { //    Battleship Wreck
+        case 26557:  //   Frigate Wreck
+        case 26558:  //   Cruiser Wreck
+        case 26559:  //   Battleship Wreck
+        case 26918:  //   Overseer Frigate Wreck
+        case 26919:  //   Overseer Cruiser Wreck
+        case 26920:  //   Overseer Battleship Wreck
+        case 27202:  //   Convoy Wreck
+        case 27286:  //   Pirate Drone Wreck
+        case 26560: { //   Pirate Wreck
             return factionUnknown;
         } break;
 
     }
 
     /*
-     *    26557:  //    Frigate Wreck
-     *    26558:  //    Cruiser Wreck
-     *    26559:  //    Battleship Wreck
-     *    26918:  //    Overseer Frigate Wreck
-     *    26919:  //    Overseer Cruiser Wreck
-     *    26920:  //    Overseer Battleship Wreck
-     *
-     *    27202:  //    Convoy Wreck
-     *    27286 :  //   Pirate Drone Wreck
-     *    26560:  //    Pirate Wreck
      *    28255 :  //   Mission Faction Freighter Wreck
      *    29036 :  //   Minmatar Elite Freighter Wreck
      *    29347:  //    Mission Faction Vessels Wreck

@@ -308,8 +308,8 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", '%s', %i, %d, 0, %u, %i)",
-        ownerID, installerID, assemblyLineID, installedItemID, Win32TimeNow(), beginProductionTime, endProductionTime, description,
+        " (%u, %u, %u, %u, %f, %" PRIu64 ", %" PRIu64 ", '%s', %i, %d, 0, %u, %i)",
+        ownerID, installerID, assemblyLineID, installedItemID, GetFileTimeNow(), beginProductionTime, endProductionTime, description,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {
         _log(DATABASE__ERROR, "Failed to insert new job to database: %s.", err.c_str());

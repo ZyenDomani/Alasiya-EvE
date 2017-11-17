@@ -62,7 +62,7 @@ void Scan::RequestScans(PyDict* dict) {
 
     uint32 scanTimer = m_client->GetShip()->GetAttribute(AttrScanSpeed).get_int();  // attrib 1123
     OnSystemScanStarted ossst;
-        ossst.timestamp = Win32TimeNow();
+        ossst.timestamp = GetFileTimeNow();
         ossst.duration = scanTimer;
         ossst.scanProbesDict = new PyDict();
     PyTuple* ev = ossst.Encode();

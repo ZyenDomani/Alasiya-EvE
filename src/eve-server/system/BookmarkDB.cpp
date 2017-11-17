@@ -38,7 +38,7 @@ PyRep* BookmarkDB::GetBMData(uint32 folderID)
         "  ownerID,"
         "  memo,"
         "  note,"
-        "  folderID"
+        "  NULLIF(folderID,0) AS folderID" // CASE WHEN expr1 = expr2 THEN NULL ELSE expr1 END.
         " FROM bookmarks"
         " WHERE folderID = %u",
         folderID))
@@ -83,7 +83,7 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
         "  locationID,"
         "  note,"
         "  creatorID,"
-        "  folderID"
+        "  NULLIF(folderID,0) AS folderID"
         " FROM bookmarks"
         " WHERE ownerID = %u",
         ownerID))
@@ -123,7 +123,6 @@ PyRep *BookmarkDB::GetFolders(uint32 ownerID) {
 bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z)
 {
     DBQueryResult res;
-    DBResultRow row;
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "  itemID,"
@@ -138,6 +137,7 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint3
     }
 
     // Query went through, but check to see if there were zero rows, ie bookmarkID was invalid:
+    DBResultRow row;
     if (!res.GetRow(row))
         return false;
 
@@ -155,10 +155,11 @@ bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint3
 
 uint32 BookmarkDB::SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID)
 {
-    DBerror err;
     std::string memo_fixed = "";
     sDatabase.DoEscapeString(memo_fixed, memo.c_str());
     uint32 bookmarkID = 0;
+
+    DBerror err;
     if (!sDatabase.RunQueryLID(err, bookmarkID,
         " INSERT INTO bookmarks "
         " (ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID, folderID)"
@@ -214,10 +215,10 @@ bool BookmarkDB::DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList)
 
 bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID)
 {
-    DBerror err;
     std::string memo_fixed = "";
     sDatabase.DoEscapeString(memo_fixed, memo.c_str());
 
+    DBerror err;
     if (!sDatabase.RunQuery(err,
         " UPDATE bookmarks "
         " SET "
@@ -235,10 +236,11 @@ bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std
 
 uint32 BookmarkDB::SaveNewFolderToDatabase(std::string folderName, uint32 ownerID)
 {
-    DBerror err;
     uint32 folderID = 0;
     std::string folderName_fixed = "";
     sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());
+
+    DBerror err;
     if (!sDatabase.RunQueryLID(err, folderID,
         " INSERT INTO bookmarkFolders"
         " (folderName, ownerID, creatorID)"
@@ -254,9 +256,10 @@ uint32 BookmarkDB::SaveNewFolderToDatabase(std::string folderName, uint32 ownerI
 
 bool BookmarkDB::UpdateFolderInDatabase(int32 folderID, std::string& folderName)
 {
-    DBerror err;
     std::string folderName_fixed = "";
     sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());
+
+    DBerror err;
     if (!sDatabase.RunQuery(err,
         " UPDATE bookmarkFolders"
         "  SET  folderName = '%s'"

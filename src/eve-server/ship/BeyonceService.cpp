@@ -453,7 +453,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (type == "item" ) {
 		pSE = pSystem->GetSE(toID);
         if (pSE == nullptr) {
-            codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
+            codelog(CLIENT__ERROR, "%s: unable to find item location %d", call.client->GetName(), toID);
 			return new PyNone();
 		}
     } else if (type == "bookmark" ) {
@@ -480,7 +480,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSystem->GetSE( toID );
             if (pSE == nullptr) {
-                codelog(CLIENT__ERROR, "%s: unable to find location %d", call.client->GetName(), toID);
+                codelog(CLIENT__ERROR, "%s: unable to find bookmark location %d", call.client->GetName(), toID);
                 return new PyNone();
             }
         }
@@ -602,7 +602,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         }
     } else {
         // pSE is null....make error and return
-        codelog(CLIENT__ERROR, "%s: unable to find location for %s", call.client->GetName(), type.c_str());
+        codelog(CLIENT__ERROR, "%s: pSE = null.  cannot find location for '%s'", call.client->GetName(), type.c_str());
         call.client->SendErrorMsg("WarpTo: item not found.");
         return new PyNone();
     }

@@ -306,7 +306,7 @@ protected:
     std::set<LSCChannel*>   m_channels;    //we do not own these.
     std::map<uint32, bool>  m_hangarLoaded;
 
-    EvilNumber              m_timeEndTrain;
+    double                  m_timeEndTrain;
 
     ClientState             m_clientState;
 

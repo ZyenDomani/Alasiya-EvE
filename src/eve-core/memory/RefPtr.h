@@ -95,7 +95,7 @@ protected:
             // make error for this shit?
             _log(REFPTR__ERROR, "mDeleted = true.");
             //EvE::traceStack();
-            //return;
+            return;
         }
 
         assert( mDeleted == false );

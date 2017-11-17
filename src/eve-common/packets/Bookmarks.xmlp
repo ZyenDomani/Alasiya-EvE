@@ -36,8 +36,8 @@
 
   <elementDef name="Call_MoveBookmarksToFolder">
     <tupleInline>
-      <int name="folderID" />
-        <objectEx name="object" type="PyObjectEx" optional="true" />
+      <int name="folderID" none_marker="0"/>
+      <objectEx name="object" type="PyObjectEx" optional="true" />
     </tupleInline>
   </elementDef>
 
@@ -47,13 +47,13 @@
         <int name="ownerID" />
         <raw name="memo" />
         <raw name="comment" />
-        <int name="folderID" />
+        <int name="folderID"  none_marker="0"/>
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_UpdateFolder">
     <tupleInline>
-        <int name="folderID" />
+        <int name="folderID"  none_marker="0"/>
         <raw name="folderName" />
     </tupleInline>
   </elementDef>
@@ -76,7 +76,7 @@
           <int name="ownerID" />
         </dictInlineEntry>
         <dictInlineEntry key="folderID">
-          <int name="folderID" />
+          <int name="folderID"  none_marker="0"/>
         </dictInlineEntry>
         <dictInlineEntry key="folderName">
           <string name="folderName" />
@@ -105,7 +105,7 @@
           <string name="comment" />
         </dictInlineEntry>
         <dictInlineEntry key="folderID">
-          <int name="folderID" />
+          <int name="folderID"  none_marker="0"/>
         </dictInlineEntry>
       </dictInline>
     </objectInline>

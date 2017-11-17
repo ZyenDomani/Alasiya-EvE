@@ -90,8 +90,7 @@ private:
     /* map of bubbleID, spawnID */
     std::map<uint16, uint32> m_spawnIDs;
 
-    //dumb storage for now:
-    std::vector<SystemBubble*> m_bubbles;    //we own these. Dynamic only because I am afraid of copy activities.
+    std::list<SystemBubble*> m_bubbles;    //we own these.
     std::vector<SystemEntity*> m_wanderers;    //create space for them here, so they're not created upon every call.
 
     std::unordered_multimap<uint32, SystemBubble*> m_bubbleMap;  // systemID is key.

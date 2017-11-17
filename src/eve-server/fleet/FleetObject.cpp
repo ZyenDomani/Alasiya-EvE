@@ -149,7 +149,7 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
   </elementDef>
 */
     //response should be node data and timestamp
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {

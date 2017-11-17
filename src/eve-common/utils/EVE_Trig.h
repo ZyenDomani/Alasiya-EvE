@@ -7,6 +7,8 @@
   */
 
 
+
+const double EvE_E = 2.71828182845904523536;
 const double EvE_Pi = 3.14159265358979323846;
 const double EvE_RadiansInDegrees = 0.01745329251;    //  pi/180
 const double EvE_DegreesInRadians = 57.2957795131;   //  180/pi

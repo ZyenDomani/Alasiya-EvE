@@ -386,7 +386,7 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
 
     // dummy right now, don't have any meaningful packet logs
     //response should be node data and timestamp
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
@@ -448,7 +448,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 	pClient->GetShip()->Online(args.arg2);
 
     //response should be node data and timestamp
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
@@ -475,7 +475,7 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 	pClient->GetShip()->Offline(args.arg2);
 
     //response should be node data and timestamp
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
@@ -750,7 +750,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         }
     }
 
-    if (!pClient->GetShipSE()->TargetMgr())
+    if (pClient->GetShipSE()->TargetMgr() == nullptr)
         return rsp.Encode();
 
     SystemManager* pSysMgr = pClient->SystemMgr();

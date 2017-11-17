@@ -51,7 +51,7 @@ m_spawnTimer(sConfig.npc.RoamingTimer)
     m_spawnTimer.Disable();
     m_systemID = pSystem->GetID();
 	m_bubbleID = sBubbleMgr.GetBubbleID();
-	_log(DESTINY__BUBBLE_TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f).",\
+	_log(DESTINY__BUBBLE_TRACE, "SystemBubble::Constructor - Created new bubble %u(%p) at (%.2f,%.2f,%.2f)[%.1f].",\
 	     m_bubbleID, this, m_center.x, m_center.y, m_center.z, m_radius);
 }
 
@@ -139,6 +139,9 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         ++itr;
 	}
     pDSE = nullptr;
+
+    if (HasPlayers() and (!m_spawned))
+        ResetBubbleRatSpawn();
 }
 
 void SystemBubble::Add(SystemEntity* pSE) {

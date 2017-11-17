@@ -110,7 +110,7 @@ void NPC::Process() {
 }
 
 void NPC::Orbit(SystemEntity *who) {
-    if (!who)
+    if (who == nullptr)
         m_orbitingID = 0;
     else
         m_orbitingID = who->GetID();
@@ -289,16 +289,17 @@ void NPC::SetResists() {
 }
 
 void NPC::Killed(Damage &fatal_blow) {
-    if (!m_bubble or !m_destiny) return;
+    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+        return;
 
     //notify our spawn manager that we are gone.
-    if ((m_spawnMgr) and (m_bubble) and (m_self))
+    if ((m_spawnMgr != nullptr) and (m_bubble != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
 
     m_destiny->Halt();
 
-    SystemEntity *killer = fatal_blow.srcSE;
-    Client* pClient = nullptr;
+    SystemEntity *killer(fatal_blow.srcSE);
+    Client* pClient(nullptr);
     uint32 killerID = 0;
 
     if (killer->HasPilot()) {
@@ -306,7 +307,7 @@ void NPC::Killed(Damage &fatal_blow) {
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
-        if (!pClient ) {
+        if (pClient == nullptr) {
             sLog.Error("NPC::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
@@ -317,7 +318,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     GPoint deadNPCPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
-    if (!wreckTypeID) {
+    if (wreckTypeID < 1) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
@@ -327,7 +328,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    const char* faction = itoa(m_allyID);
+    const char* faction = itoa(m_warID);
 
     ItemData wreckItemData(
         wreckTypeID,
@@ -335,17 +336,17 @@ void NPC::Killed(Damage &fatal_blow) {
         locationID,
         flagAutoFit,
         wreck_name.c_str(),
-                           deadNPCPosition,
-                           faction
+        deadNPCPosition,
+        faction
     );
 
     WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
-    if (!wreckItemRef) {
+    if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
     }
 
-    if ( pClient ) {
+    if (pClient != nullptr) {
         DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
         //award kill bounty.
         AwardBounty( pClient );
@@ -360,19 +361,18 @@ void NPC::Killed(Damage &fatal_blow) {
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
-    wreckEntity.allianceID = killer->GetAllianceID();
-    wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-    wreckEntity.corporationID = killer->GetCorporationID();
-    wreckEntity.factionID = m_warID;
-    wreckEntity.groupID = EVEDB::invGroups::Wreck;
-    wreckEntity.itemID = wreckItemRef->itemID();
-    wreckEntity.itemName = wreck_name;
-    wreckEntity.ownerID = killerID;
-    wreckEntity.typeID = wreckTypeID;
-    wreckEntity.x = deadNPCPosition.x;
-    wreckEntity.y = deadNPCPosition.y;
-    wreckEntity.z = deadNPCPosition.z;
-
+        wreckEntity.allianceID = killer->GetAllianceID();
+        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+        wreckEntity.corporationID = killer->GetCorporationID();
+        wreckEntity.factionID = killer->GetWarFactionID();
+        wreckEntity.groupID = EVEDB::invGroups::Wreck;
+        wreckEntity.itemID = wreckItemRef->itemID();
+        wreckEntity.itemName = wreck_name;
+        wreckEntity.ownerID = killerID;
+        wreckEntity.typeID = wreckTypeID;
+        wreckEntity.x = deadNPCPosition.x;
+        wreckEntity.y = deadNPCPosition.y;
+        wreckEntity.z = deadNPCPosition.z;
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         return;

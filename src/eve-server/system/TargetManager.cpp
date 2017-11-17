@@ -41,31 +41,10 @@
 #include <npc/NPCAI.h>
 
 TargetManager::TargetManager(SystemEntity *self)
-: m_destroyed(false),
-  mySE(self)
+: mySE(self)
 {
     m_canAttack = false;
     _log(TARGET__INFO, "Created TargMgr %p for %s(%u)", this, self->GetName(), self->GetID());
-}
-
-TargetManager::~TargetManager() {
-    //DO NOT call DoDestruction here! it calls virtuals!
-}
-
-//I am not happy with this:
-//this function exists to deal with a specific problem with the
-// destruction chain where we reference a SystemEntity (mySE), which
-// also contains their TargetManager. The TargetManager object is
-// not destroyed until the base SystemEntity is destroyed, but
-// the SystemEntity pointer itself becomes invalid as soon as the
-// first child class in its hierarchy (such as Client or NPC) are
-// destroyed. Thus, all terminal children of SystemEntity must call
-// this from their destructor.
-void TargetManager::DoDestruction() {
-    if (!m_destroyed && mySE) {
-        ClearAllTargets();
-    }
-    m_destroyed = true;
 }
 
 void TargetManager::Process() {
@@ -73,31 +52,32 @@ void TargetManager::Process() {
      if (sConfig.server.UseProfiling)
          profileStartTime = GetTimeUSeconds();
 
-    //process outgoing targeting
-    std::map<SystemEntity*, TargetEntry*>::iterator cur = m_targets.begin();
-    while (cur != m_targets.end()) {
-        if (m_targets.empty() || (!cur->first)) return;
-        switch (cur->second->state) {
+    //process outgoing targeting (outgoing will call incomming as needed)
+    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin();
+    while (itr != m_targets.end()) {
+        if ((itr->first == nullptr) or (itr->second == nullptr)) {
+            itr = m_targets.erase(itr);
+            continue;
+        }
+        switch (itr->second->state) {
             case TargetEntry::Idle:
             case TargetEntry::Locked:{          //do nothing
                 } break;
             case TargetEntry::PassiveLocking:   // this will be used with stealth modules (which, ofc, are not written yet)
             case TargetEntry::Locking: {
-                    if (cur->second->timer.Check(false)) {
-                        cur->second->timer.Disable();
-                        cur->second->state = TargetEntry::Locked;
+                    if (itr->second->timer.Check(false)) {
+                        itr->second->timer.Disable();
+                        itr->second->state = TargetEntry::Locked;
                         _log(TARGET__TRACE, "%s(%u) has finished locking %s(%u)", \
-                                    mySE->GetName(), mySE->GetID(), cur->first->GetName(), cur->first->GetID());
-                        TargetAdded(cur->first);
-                        cur->first->TargetMgr()->TargetedByLocked(mySE);
+                                    mySE->GetName(), mySE->GetID(), itr->first->GetName(), itr->first->GetID());
+                        TargetAdded(itr->first);
+                        itr->first->TargetMgr()->TargetedByLocked(mySE);
                         m_canAttack = true;
                     }
                 } break;
         }
-        ++cur;
+        ++itr;
     }
-
-    //nothing else to do right now...check target distances maybe?
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_targetsProfile, GetTimeUSeconds() - profileStartTime);
@@ -114,13 +94,13 @@ void TargetManager::ClearTarget(SystemEntity *who) {
                     mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
 }
 
-void TargetManager::ClearAllTargets(bool notify_self) {
+void TargetManager::ClearAllTargets(bool notify_self/*true*/) {
     ClearTargets(notify_self);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", mySE->GetName(), mySE->GetID());
 }
 
-void TargetManager::ClearTargets(bool notify_self) {
+void TargetManager::ClearTargets(bool notify_self/*true*/) {
     if (m_targets.empty()) {
         m_canAttack = false;
         return;
@@ -141,11 +121,10 @@ void TargetManager::ClearTargets(bool notify_self) {
 }
 
 void TargetManager::ClearFromTargets() {
-    if (m_targetedBy.empty()) return;
+    if (m_targetedBy.empty())
+        return;
 
     std::vector<SystemEntity *> ToNotify;
-
-    //first, clean up our internal structure.
     std::map<SystemEntity*, TargetedByEntry*>::iterator cur = m_targetedBy.begin();
     for (; cur != m_targetedBy.end(); ++cur) {
         //do not notify until we clear our target list! otherwise bad things happen.
@@ -157,7 +136,7 @@ void TargetManager::ClearFromTargets() {
     m_targetedBy.clear();
 
     for (auto cur : ToNotify)
-        if (cur->TargetMgr())
+        if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->TargetLost(mySE);
 }
 
@@ -228,10 +207,9 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     _log(TARGET__INFO, "Pilot %s(%u) started targeting %s(%u) (%.2fs lock time)", \
                 mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID(), lockTime);
 
-    if (sConfig.server.IsTestServer or is_log_enabled(TARGET__DUMP))
+    if (is_log_enabled(TARGET__DUMP))
         Dump();
 
-    m_destroyed = false;
     return true;
 }
 
@@ -284,20 +262,19 @@ bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint8 maxL
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID(), (lockTime /1000));
 
-    if (sConfig.server.IsTestServer or is_log_enabled(TARGET__DUMP))
+    if (is_log_enabled(TARGET__DUMP))
         Dump();
 
-    m_destroyed = false;
     return true;
 }
 
 void TargetManager::TargetLost(SystemEntity *who) {
-    std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
-    if (res == m_targets.end())
+    std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.find(who);
+    if (itr == m_targets.end())
         return;
 
-    SafeDelete(res->second);
-    m_targets.erase(res);
+    SafeDelete(itr->second);
+    m_targets.erase(itr);
 
     _log(TARGET__INFO, "%s(%u) has lost lock on %s(%u)",
          mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
@@ -323,10 +300,10 @@ void TargetManager::TargetLost(SystemEntity *who) {
 
 void TargetManager::TargetedByLocked(SystemEntity *from_who) {
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetedByEntry *>::iterator res = m_targetedBy.find(from_who);
-    if (res != m_targetedBy.end()) {
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(from_who);
+    if (itr != m_targetedBy.end()) {
         //just re-use the old entry...
-        res->second->state = TargetedByEntry::Locked;
+        itr->second->state = TargetedByEntry::Locked;
         return;
     } else {
         //new entry.
@@ -340,23 +317,23 @@ void TargetManager::TargetedByLocked(SystemEntity *from_who) {
 }
 
 void TargetManager::TargetedByLost(SystemEntity *from_who) {
-    std::map<SystemEntity *, TargetedByEntry *>::iterator res = m_targetedBy.find(from_who);
-    if (res != m_targetedBy.end()) {
-        SafeDelete(res->second);
-        m_targetedBy.erase(res);
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(from_who);
+    if (itr != m_targetedBy.end()) {
+        SafeDelete(itr->second);
+        m_targetedBy.erase(itr);
         TargetedLost(from_who);
         _log(TARGET__INFO, "%s(%u) is no longer locked by %s(%u)",
              mySE->GetName(), mySE->GetID(), from_who->GetName(), from_who->GetID());
     } else {
-        _log(TARGET__DEBUG, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted in the first place.",
+        _log(TARGET__DEBUG, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted.",
              mySE->GetName(), mySE->GetID(), from_who->GetName(), from_who->GetID());
     }
 }
 
 bool TargetManager::IsTargetedBy(SystemEntity* pSE)
 {
-    std::map<SystemEntity *, TargetedByEntry *>::iterator res = m_targetedBy.find(pSE);
-    if (res != m_targetedBy.end())
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
+    if (itr != m_targetedBy.end())
         return true;
     return false;
 }
@@ -365,15 +342,13 @@ SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
     if (m_targets.empty())
         return nullptr;
 
-    if (!need_locked) {
-        //we know there is at least one entry here...
-        return (m_targets.begin()->first);
-    }
+    if (!need_locked)
+        return m_targets.begin()->first;
 
-    std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); ++cur)
-        if (cur->second->state == TargetEntry::Locked)
-            return(cur->first);
+    std::map<SystemEntity *, TargetEntry *>::iterator itr = m_targets.begin();
+    for (; itr != m_targets.end(); ++itr)
+        if (itr->second->state == TargetEntry::Locked)
+            return itr->first;
 
     return nullptr;
 }
@@ -383,9 +358,9 @@ PyList* TargetManager::GetTargets() const {
     if (m_targets.empty())
         return result;
 
-    std::map<SystemEntity *, TargetEntry *>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); ++cur)
-        result->AddItemInt( cur->first->GetID() );
+    std::map<SystemEntity *, TargetEntry *>::const_iterator itr = m_targets.begin();
+    for (; itr != m_targets.end(); ++itr)
+        result->AddItemInt( itr->first->GetID() );
 
     return result;
 }
@@ -394,17 +369,17 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
     if (m_targets.empty())
         return nullptr;
 
-    std::map<SystemEntity*, TargetEntry*>::const_iterator cur = m_targets.begin();
-    for (; cur != m_targets.end(); ++cur) {
-        if (cur->first->GetID() != targetID)
+    std::map<SystemEntity*, TargetEntry*>::const_iterator itr = m_targets.begin();
+    for (; itr != m_targets.end(); ++itr) {
+        if (itr->first->GetID() != targetID)
             continue;
         //found it...
-        if (need_locked && cur->second->state != TargetEntry::Locked) {
+        if (need_locked and (itr->second->state != TargetEntry::Locked)) {
             _log(TARGET__WARNING, "Found target %u, but it is not locked.", targetID);
             continue;
         }
-        _log(TARGET__INFO, "Found target %u: %s (nl? %s)", targetID, cur->first->GetName(), need_locked?"yes":"no");
-        return(cur->first);
+        _log(TARGET__INFO, "Found target %u: %s (nl? %s)", targetID, itr->first->GetName(), need_locked?"yes":"no");
+        return itr->first;
     }
     _log(TARGET__WARNING, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
     return nullptr;    //not found.
@@ -415,9 +390,9 @@ PyList* TargetManager::GetTargeters() const {
     if (m_targetedBy.empty())
         return result;
 
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator cur = m_targetedBy.begin();
-    for(; cur != m_targetedBy.end(); ++cur)
-        result->AddItemInt( cur->first->GetID() );
+    std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
+    for(; itr != m_targetedBy.end(); ++itr)
+        result->AddItemInt( itr->first->GetID() );
 
     return result;
 }
@@ -431,7 +406,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
     uint32 scanRes = ship->GetAttribute(AttrScanResolution).get_int();
     uint32 sigRad = 25; // set base as capsule with 25m signature radius
 
-	if ( target->GetSelf() )
+	if ( target->GetSelf().get() != nullptr )
         if ( target->GetSelf()->HasAttribute(AttrSignatureRadius) )
             sigRad = target->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
 
@@ -493,7 +468,7 @@ void TargetManager::TargetTry(SystemEntity *who) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
-    PySafeDecRef(tmp);
+    //PySafeDecRef(tmp);
 }
 
 bool TargetManager::TargetFail(SystemEntity* who) {
@@ -507,7 +482,7 @@ bool TargetManager::TargetFail(SystemEntity* who) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();
     mySE->SysBubble()->BubblecastSendNotification("OnMultiEvent", "clientID", &tmp, false);
-    PySafeDecRef(tmp);
+    //PySafeDecRef(tmp);
     return false;
 }
 
@@ -525,13 +500,14 @@ void TargetManager::TargetAdded(SystemEntity* who) {
         te.targetID = who->GetID();
     up = te.Encode();
     mySE->GetPilot()->QueueDestinyEvent(&up);
-    PySafeDecRef(up);
+    //PySafeDecRef(up);
 }
 
 void TargetManager::TargetedAdd(SystemEntity *who) {
     if (mySE->IsNPCSE())
         mySE->GetNPCSE()->TargetedAdd(who);
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     Notify_OnTarget te;
         te.mode = "otheradd";
         te.targetID = who->GetID();
@@ -540,11 +516,12 @@ void TargetManager::TargetedAdd(SystemEntity *who) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
-    PySafeDecRef(tmp);
+    //PySafeDecRef(tmp);
 }
 
 void TargetManager::TargetedLost(SystemEntity *who) {
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     Notify_OnTarget te;
         te.mode = "otherlost";
         te.targetID = who->GetID();
@@ -555,11 +532,12 @@ void TargetManager::TargetedLost(SystemEntity *who) {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
-    PySafeDecRef(tmp);
+    //PySafeDecRef(tmp);
 }
 
 void TargetManager::TargetsCleared() {
-    if (!mySE->HasPilot()) return;
+    if (!mySE->HasPilot())
+        return;
     Notify_OnTarget te;
         te.mode = "clear";
         te.targetID = 0;
@@ -568,23 +546,25 @@ void TargetManager::TargetsCleared() {
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
-    PySafeDecRef(tmp);
+    //PySafeDecRef(tmp);
 }
 
 void TargetManager::QueueTBDestinyEvent( PyTuple** event ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto cur : m_targetedBy) {
         if (cur.first->HasPilot())
             cur.first->GetPilot()->QueueDestinyEvent(event);
+    }
 }
 
 void TargetManager::QueueTBDestinyUpdate( PyTuple** update ) const
 {
-    for (auto cur : m_targetedBy)
+    for (auto cur : m_targetedBy) {
         if (cur.first->HasPilot()) {
             PyIncRef(*update);
             cur.first->GetPilot()->QueueDestinyUpdate(update);
         }
+    }
 }
 
 /* debugging methods */

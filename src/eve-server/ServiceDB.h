@@ -69,7 +69,7 @@ public:
     static void SetAccountBanStatus(uint32 accountID, bool banned);
     static void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles);
 
-    uint32 SetClientSeed();
+    static uint32 SetClientSeed();
 
 protected:
     void ProcessStringChange(const char * key, const std::string & oldValue, const std::string & newValue, PyDict * notif, std::vector<std::string> & dbQ);

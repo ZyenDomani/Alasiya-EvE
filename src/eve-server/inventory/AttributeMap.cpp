@@ -63,9 +63,12 @@ bool AttributeMap::Load(bool reset/*false*/) {
     DBResultRow row;
     EvilNumber value = 0;
     while (res.GetRow(row)) {
-        if (row.IsNull(1))
-            value = row.GetDouble(2);
-        else
+        if (row.IsNull(1)) {
+            if (row.IsNull(2))
+                value = 0;
+            else
+                value = row.GetDouble(2);
+        } else
             value = row.GetInt64(1);
         SetAttribute(row.GetUInt(0), value, false);
     }
@@ -82,7 +85,7 @@ bool AttributeMap::Save() {
     /** @note
      * we are saving:
      *   all attribs for characters
-     *   level and sp attribs for skills
+     *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
      *   damage for modules/charges, where applicable (ship damage saved separately)
      */
@@ -209,7 +212,7 @@ bool AttributeMap::Change( uint16 attrID, EvilNumber& old_val, EvilNumber& new_v
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
         modChange.attributeID = attrID;
-        modChange.time = Win32TimeNow();
+        modChange.time = GetFileTimeNow();
         modChange.newValue = new_val.GetPyObject();
         modChange.oldValue = old_val.GetPyObject();
 	return SendChanges(modChange.Encode());
@@ -220,7 +223,7 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
         modChange.attributeID = attrID;
-        modChange.time = Win32TimeNow();
+        modChange.time = GetFileTimeNow();
         modChange.newValue = num.GetPyObject();
         modChange.oldValue = new PyNone();
     return SendChanges(modChange.Encode());
@@ -229,12 +232,12 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
 bool AttributeMap::SendChanges( PyTuple* attrChange ) {
     if (attrChange == nullptr)
         return true;
-    Client* pClient(nullptr);
+    if ((mItem.ownerID() == 1) or IsNPCCorp(mItem.ownerID()))
+        return true;
 
+    Client* pClient(nullptr);
     if (IsCharType(mItem.typeID()))
         pClient = sEntityList.FindClientByCharID(mItem.itemID());
-    else if ((mItem.ownerID() == 1) || IsNPCCorp(mItem.ownerID()))
-        return true;
     else
         pClient = sEntityList.FindClientByCharID(mItem.ownerID());
 
@@ -283,7 +286,8 @@ void AttributeMap::SaveShipState()
     if (cur != mAttributes.end())
         armor = true;
     if (armor) {
-        if (shield) Inserts << ",";
+        if (shield)
+            Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -295,7 +299,8 @@ void AttributeMap::SaveShipState()
     if (cur != mAttributes.end())
         hull = true;
     if (hull) {
-        if (shield or armor) Inserts << ",";
+        if (shield or armor)
+            Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -319,7 +324,7 @@ void AttributeMap::Delete() {
 
 void AttributeMap::DeleteAttribute(uint16 attrID) {
     AttrMapItr itr = mAttributes.find(attrID);
-    if (itr != end())
+    if (itr != mAttributes.end())
         mAttributes.erase(itr);
 }
 

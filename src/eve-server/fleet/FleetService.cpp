@@ -78,7 +78,7 @@ int64 FleetService::CreateFleet(Client *pClient)
         dict->SetItemString( "role", new PyInt(fleet.fleetRole) );
         dict->SetItemString( "job", new PyInt(fleet.fleetJob) );
         //dict->SetItemString( "clientID", new PyInt(pClient->GetCharacterID()) );
-        dict->SetItemString( "timestamp", new PyLong(Win32TimeNow()) );
+        dict->SetItemString( "timestamp", new PyLong(GetFileTimeNow()) );
         dict->SetItemString( "wingID", new PyInt(fleet.wingID) );
         dict->SetItemString( "squadID", new PyInt(fleet.squadID) );
         dict->SetItemString( "roleBooster", new PyInt(fleet.fleetBooster) );

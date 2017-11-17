@@ -222,7 +222,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.securityRating = sConfig.character.startSecRating;
         cdata.logonMinutes = 0;
         cdata.title = "No Title";
-        cdata.createDateTime = Win32TimeNow();
+        cdata.createDateTime = GetFileTimeNow();
         cdata.startDateTime = cdata.createDateTime;
 
 
@@ -351,7 +351,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skill->SaveItem();
         totalPoints += skillPoints;
         charRef->SaveSkillHistory(skillEventCharCreation, // this shows as "Unknown" in PD>Skill>History
-                                    Win32TimeNow(),
+                                  GetFileTimeNow(),
                                     charRef->itemID(),
                                     cur.first,
                                     skillLevel,

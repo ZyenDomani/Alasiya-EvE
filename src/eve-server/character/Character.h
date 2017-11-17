@@ -425,11 +425,11 @@ public:
      * @param[in] skill Skill for which the rate is calculated.
      * @return Skillpoints per minute rate.
      */
-    EvilNumber      GetSPPerMin(SkillRef skill);
+    EvilNumber      GetSPPerMin(Skill* skill);
     /**
      * @return Timestamp at which current skill training finishes.
      */
-    int64           GetEndOfTraining() const;
+    double GetEndOfTraining() const;
 
     /* InjectSkillIntoBrain(InventoryItem* skill)
      *
@@ -586,11 +586,12 @@ public:
 
     //  saves
     void                    LogOut();
+    void                    SaveBookMarks();
     void                    SaveCharacter();
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint8 eventID, EvilNumber logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
+    void                    SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
 
     bool                    isOffline(uint32 online);
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
@@ -648,6 +649,8 @@ protected:
     virtual ~Character();
 
     void VerifySP();
+
+    void LoadBookmarks();
 
     /*
      * Member functions:

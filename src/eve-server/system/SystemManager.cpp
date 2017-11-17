@@ -215,7 +215,7 @@ void SystemManager::UnloadSystem() {
             }
             sBubbleMgr.Remove(itr->second);
             if (itr->second->TargetMgr() != nullptr)
-                itr->second->TargetMgr()->DoDestruction();
+                itr->second->TargetMgr()->ClearAllTargets(false);
             m_solarSystemRef->RemoveItemFromInventory( itr->second->GetSelf() );
         }
 
@@ -513,7 +513,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, ItemFacto
                     if (wreck.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
-                    data.factionID = sEntityList.GetWreckFaction(entity.typeID);
                     WreckSE* wSE = new WreckSE(wreck, *(system.GetServiceMgr()), &system, data);
                     wreck->GetMyInventory()->LoadContents(factory);
                     wreck->SetMySE(wSE);
@@ -781,7 +780,7 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     auto itr = m_entities.find(who->GetID());
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-        who->TargetMgr()->DoDestruction();
+        who->TargetMgr()->ClearAllTargets(false);
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
@@ -806,9 +805,13 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     uint8 count = m_beltCount;
     if (count > 7) count -= 2;
     if (m_activeRatSpawns < count ) {
-        m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating);
-        m_ratBubbles.push_back(pSysBubble->GetID());
-        _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
+        if (m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating)) {
+            m_ratBubbles.push_back(pSysBubble->GetID());
+            _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
+        } else {
+            m_spawnMgr->StopMainTimer();
+            _log(SPAWN__ERROR, "DoSpawnForBubble() returned false for bubble %u.", pSysBubble->GetID());
+        }
     }
 }
 
@@ -900,8 +903,6 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     }
 
     into.destiny_state = new PyBuffer( &stateBuffer );
-    //SafeDelete( stateBuffer );
-
     into.droneState = SystemDB::GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
@@ -982,7 +983,7 @@ StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
     return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
 }
 
-uint32 SystemManager::GetNearestPlanet(const GPoint& myPos)
+uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
     for (auto cur : m_planetMap) {
@@ -993,7 +994,7 @@ uint32 SystemManager::GetNearestPlanet(const GPoint& myPos)
     return itr->second->GetID();
 }
 
-SystemEntity* SystemManager::GetNearestMoon(const GPoint& myPos)
+SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
     for (auto cur : m_moonMap) {

@@ -36,7 +36,6 @@ class DestinyManager;
 class InventoryItem;
 class NPCAIMgr;
 class SystemManager;
-class ServiceDB;
 
 class NPC
 : public DynamicSystemEntity
@@ -83,17 +82,17 @@ protected:
     SpawnMgr* m_spawnMgr;
 
 private:
-    uint32 m_orbitingID = 0;
+    uint32 m_orbitingID;
 
-    float m_orbitRange = 0;
-    float m_emDamage = 0;
-    float m_expDamage = 0;
-    float m_kinDamage = 0;
-    float m_therDamage = 0;
-    float m_hullDamage = 0;
-    float m_armorDamage = 0;
-    float m_shieldCharge = 0;
-    float m_shieldCapacity = 0;
+    float m_orbitRange;
+    float m_emDamage;
+    float m_expDamage;
+    float m_kinDamage;
+    float m_therDamage;
+    float m_hullDamage;
+    float m_armorDamage;
+    float m_shieldCharge;
+    float m_shieldCapacity;
 };
 
 #endif

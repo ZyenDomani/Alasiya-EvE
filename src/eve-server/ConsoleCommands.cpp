@@ -72,7 +72,8 @@ bool ConsoleCommand::Process() {
 		buf = (char*) malloc (BUFLEN);
 	    if (fgets(buf, BUFLEN, stdin)) {
 			if (strncmp(buf, "x", 1) == 0) {
-				sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Breaking out of Main Loop.");
+                sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Breaking out of Main Loop.");
+                m_haltServer = true;
 				free (buf);
 				return false;
 			} else if (strncmp(buf, "h", 1) == 0) {
@@ -107,7 +108,7 @@ bool ConsoleCommand::Process() {
 					std::vector<Client*> list;
 					sEntityList.GetClients(list);
 					for (auto cur : list) {
-                        if (!cur->GetChar().get()) {
+                        if (cur->GetChar().get() == nullptr) {
                             sLog.Magenta("      Connections", " Account %u Connected, but no character selected yet.", cur->GetUserID() );
                             continue;
                         } else

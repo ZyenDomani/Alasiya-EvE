@@ -492,9 +492,4 @@ extern const EvilNumber EvilTime_Day;
 extern const EvilNumber EvilTime_Month;
 extern const EvilNumber EvilTime_Year;
 
-extern const EvilNumber EvilPI;
-extern const EvilNumber EvilE;
-
-extern EvilNumber EvilTimeNow();
-
 #endif // EvilNumber_h__

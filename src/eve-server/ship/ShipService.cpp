@@ -567,7 +567,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             entity.groupID = itemRef->groupID();
             entity.categoryID = itemRef->categoryID();
             if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-                entity.planetID = pSystem->GetNearestPlanet(location);
+                entity.planetID = pSystem->GetClosestPlanetID(location);
             entity.x = itemRef->position().x;
             entity.y = itemRef->position().y;
             entity.z = itemRef->position().z;

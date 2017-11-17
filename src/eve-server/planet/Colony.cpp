@@ -212,7 +212,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
     ccPin->ccPinID = itemID;
     m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
     ccPin->level = PinLevel0;
-    ccPin->currentSimTime = Win32TimeNow();
+    ccPin->currentSimTime = GetFileTimeNow();
     CreatePin(EVEDB::invGroups::Command_Centers, itemID, typeID, latitude, longitude);
     m_db.SavePins(ccPin);
 }
@@ -456,9 +456,9 @@ void Colony::RemoveLink(uint32 src, uint32 dest)
     for (; itr != ccPin->links.end(); ++itr) {
         if (itr->second.endpoint1 == src) {
             if (itr->second.endpoint2 == dest) {
-                ccPin->links.erase(itr);
+                _log(PLANET__TRACE, "Colony::RemoveLink() - Removing linkID %u - src: %u, dest: %u", itr->first, src, dest);
                 m_db.RemoveLink(itr->first);
-                _log(PLANET__TRACE, "Colony::RemoveLink() - Removed linkID %u - src: %u, dest: %u", itr->first, src, dest);
+                ccPin->links.erase(itr);
                 return;
             }
         }
@@ -529,11 +529,11 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
             itr->second.state = PINSTATE_IDLE;
             itr->second.order = GetProductLevel(itr->second.data.outputType);
             itr->second.cycleTime = itr->second.data.cycleTime * 10000000L;
-            itr->second.installTime = Win32TimeNow();
+            itr->second.installTime = GetFileTimeNow();
             itr->second.expiryTime = itr->second.data.cycleTime + itr->second.installTime;
             itr->second.qtyPerCycle = itr->second.data.outputQty;
             itr->second.schematicID = schematicID;
-            itr->second.lastRunTime = Win32TimeNow();
+            itr->second.lastRunTime = GetFileTimeNow();
             itr->second.hasReceivedInputs = false;
             itr->second.receivedInputsLastCycle = false;
             m_pLevel = (uint8)EvE::min(m_pLevel, itr->second.order);
@@ -574,8 +574,8 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius)
                 cur.second.typeID = 0;
         } else {
             itr->second.headRadius = headRadius;
-            itr->second.installTime = Win32TimeNow();
-            itr->second.lastRunTime = Win32TimeNow();
+            itr->second.installTime = GetFileTimeNow();
+            itr->second.lastRunTime = GetFileTimeNow();
         }
     } else
         _log(PLANET__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccPin.pins map", ecuID);
@@ -587,7 +587,7 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, fl
     if (itr != ccPin->pins.end()) {
         itr->second.cycleTime = (cycleTime * 60 * 60 * 10000000L);
         itr->second.programType = typeID;
-        itr->second.expiryTime = ((cycleTime * numCycles) * 60 * 60 * 10000000L) + Win32TimeNow();
+        itr->second.expiryTime = ((cycleTime * numCycles) * 60 * 60 * 10000000L) + GetFileTimeNow();
         itr->second.headRadius = headRadius;
         if (itr->second.qtyPerCycle < 1) {
             InventoryItemRef iRef = m_svcMgr->item_factory->GetItem(ecuID);
@@ -628,11 +628,11 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
     if (update)
         m_db.UpdatePinTimes(ccPin);
 
-    ccPin->currentSimTime = Win32TimeNow();
+    ccPin->currentSimTime = GetFileTimeNow();
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args(new PyDict());
     args->SetItem("simTime", new PyULong(ccPin->currentSimTime));
-    src->second.lastRunTime = Win32TimeNow() + (Win32Time_Minute * 15);  // arbitrary 15 minute delivery time
+    src->second.lastRunTime = GetFileTimeNow() + (Win32Time_Minute * 15);  // arbitrary 15 minute delivery time
     args->SetItem("sourceRunTime", new PyULong(src->second.lastRunTime));
 
     return args;
@@ -704,7 +704,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
         }
         m_client->AddBalance(-cost);
         contRef->SaveItem();
-        pin->second.lastLaunchTime = Win32TimeNow();
+        pin->second.lastLaunchTime = GetFileTimeNow();
 
         // third - create db entry for launch
         m_db.SaveLaunch(contRef->itemID(), m_client->GetCharacterID(), pSysMgr->GetID(), m_pSE->GetID(), location);
@@ -876,7 +876,7 @@ void Colony::Update(bool updateTimes/*false*/)
     //if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
-    m_procTime = Win32TimeNow();
+    m_procTime = GetFileTimeNow();
     /* loop thru process calls to update each pin to simulate production and logistics
      *  this will have to be fast, as there may/will be large time deltas between updates
      *  can loop each item to process for each time step (like i do for skill training)
@@ -889,7 +889,7 @@ void Colony::Update(bool updateTimes/*false*/)
     m_procTime = 0;
 
     // update colony time to current time (based on this update, prior to sending out current colony status)
-    ccPin->currentSimTime = Win32TimeNow();
+    ccPin->currentSimTime = GetFileTimeNow();
 
     // update current pin times
     if (updateTimes)

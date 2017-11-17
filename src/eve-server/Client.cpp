@@ -281,8 +281,9 @@ void Client::ProcessClient() {
         m_char->SetLogonMinutes();
     }
 
-    if ((m_timeEndTrain > 0) and (m_timeEndTrain < EvilTimeNow()))
-        m_char->UpdateSkillQueue();
+    if (m_timeEndTrain > 0)
+        if (m_timeEndTrain < GetFileTimeNow())
+            m_char->UpdateSkillQueue();
 
     if (m_sessionTimer.Check(false)) {
         _log(CLIENT__TIMER, "Client::ProcessClient():  SetSessionChange to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
@@ -438,7 +439,7 @@ void Client::WarpIn() {
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
-    pShipSE->DestinyMgr()->SetPosition(warpFromPoint, false);
+    pShipSE->DestinyMgr()->SetPosition(warpFromPoint);
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
 }
 
@@ -449,6 +450,8 @@ void Client::WarpOut() {
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagShipOffline);
+    pShipSE->SetPosition(m_ship->position());
+    pShipSE->GetSelf()->SaveItem();
     DestroyShipSE();
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);

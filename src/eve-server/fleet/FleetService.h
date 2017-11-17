@@ -26,7 +26,6 @@
 #ifndef EVEMU_SHIP_FLEETSVC_H_
 #define EVEMU_SHIP_FLEETSVC_H_
 
-#include <unordered_map>
 #include "eve-common.h"
 
 #include "Client.h"

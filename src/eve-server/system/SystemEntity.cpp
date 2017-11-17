@@ -67,7 +67,7 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 SystemEntity::~SystemEntity()
 {
     if (m_targMgr != nullptr)
-        m_targMgr->DoDestruction();
+        m_targMgr->ClearAllTargets(false);
     SafeDelete(m_targMgr);
 }
 

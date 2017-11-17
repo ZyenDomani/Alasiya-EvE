@@ -1264,7 +1264,6 @@ m_processTimer(m_processTimerTick)
 }
 
 Ship::~Ship() {
-    m_targMgr->DoDestruction();
     SafeDelete(m_destiny);
 }
 
@@ -1499,7 +1498,7 @@ PyDict* Ship::MakeSlimItem() {
         }
 
         slim->SetItemString("modules", l);
-        PySafeDecRef(l);
+        //PySafeDecRef(l);
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {

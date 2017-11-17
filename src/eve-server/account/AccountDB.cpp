@@ -134,8 +134,8 @@ bool ServiceDB::GiveCash( uint32 characterID, JournalRefType refTypeID, uint32 o
 
     if(!sDatabase.RunQuery(err,
         "INSERT INTO market_journal(characterID,refID,transDate,refTypeID,ownerID1,ownerID2,argID1,accountID,accountKey,amount,balance,reason) "
-        "VALUES (%u,NULL,%" PRIu64 ",%u,%u,%u,\"%s\",%u,%u,%.2f,%.2f,\"%s\")",
-        characterID, Win32TimeNow(), refTypeID, ownerFromID, ownerToID, eArg1.c_str(), accountID, accountKey, amount, balance, eReason.c_str()))
+        "VALUES (%u,NULL,%f,%u,%u,%u,\"%s\",%u,%u,%.2f,%.2f,\"%s\")",
+        characterID, GetFileTimeNow(), refTypeID, ownerFromID, ownerToID, eArg1.c_str(), accountID, accountKey, amount, balance, eReason.c_str()))
     {
         sLog.Error("Service DB", "Error in query : %s", err.c_str());
         return false;

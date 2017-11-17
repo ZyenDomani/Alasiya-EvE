@@ -198,28 +198,32 @@ void SpawnMgr::DoSpawnForAnomaly(int32 spawnID)
 
 }
 
-void SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
+bool SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     if (!m_enabled)
-        return;
+        return false;
     if (pSysBubble == nullptr)
-        return;
+        return false;
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    if (!_FindSpawnForBubble(pSysBubble->GetID())) {
+    if (!FindSpawnForBubble(pSysBubble->GetID())) {
         sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f).",
                      pSysBubble->GetID(), sBubbleMgr.GetBeltID(pSysBubble->GetID()), m_system->GetName().c_str(), m_system->GetID(), secRating);
-        PrepSpawn(pSysBubble, regionID, secRating);
-        pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
+        if (PrepSpawn(pSysBubble, regionID, secRating)) {
+            pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
+        } else {
+            return false;
+        }
     }
 
     /* this will throw off the accuracy of the profile, as this and Process() use the same data container */
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
+    return true;
 }
 
-bool SpawnMgr::_FindSpawnForBubble(uint16 itemID) {
+bool SpawnMgr::FindSpawnForBubble(uint16 itemID) {
     SpawnEntryDef::iterator itr = m_spawns.find(itemID);
     if (itr != m_spawns.end())
         return true;
@@ -241,25 +245,26 @@ struct SpawnEntry { // notes for me while creating/writing/testing
     uint32 time;    // spawn group timer run time
 };
 */
-void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating)
+bool SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating)
 {
     if (pSysBubble == nullptr)
-        return;
+        return false;
     // get faction for this region
     uint32 factionID = factionRogueDrones; // default to rogue drones.  this is my internal rogue drone factionID.
     if (sConfig.npc.RatFaction)
         factionID = sConfig.npc.RatFaction;
     else if (MakeRandomFloat() > 0.15) // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
-        factionID = sDataMgr.GetRegionFaction(regionID);
+        factionID = sDataMgr.GetRegionRatFaction(regionID);
 
     _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - factionID is %u for region %u. (config set %s)", factionID, regionID, (sConfig.npc.RatFaction?"true":"false"));
 
     // get faction's ship typeclass and groupID map
-    auto groupRange = sDataMgr.m_groups.equal_range(factionID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it) {
-        m_factionGroups.insert(std::pair<uint8, uint32>(it->second.shipClass, it->second.groupID));
+    if (sDataMgr.GetRatGroups(factionID, m_factionGroups)) {
+        _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 12
+    } else {
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatFaction data for faction %u.  Cancelling spawn.", factionID);
+        return false;
     }
-    _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 12
 
     /*spawn class is type of spawn based on system security rating
      * 1-7 are 'normal' roid rat spawns
@@ -274,14 +279,15 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     if ((secRating < 0) && pSysBubble->IsBelt()) {   // check for hauler, commander, officer spawn, but ONLY in a belt
         //NOTE  random checks here are for TESTING only....all rates are high.  make config option later
         double rand = MakeRandomFloat();
-        if (rand < 0.1)  //check for officer spawn
+        if (rand < 0.1) { //check for officer spawn
             if (factionID != factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn
                 type = 10;
-        else if (rand < 0.15) //check for commander spawn
+        } else if (rand < 0.15) { //check for commander spawn
             type = 9;
-        else if (rand < 0.25) //check for hauler spawn   TODO this needs work.  haulers are subclassed by size in db under same groupID.
+        } else if (rand < 0.25) { //check for hauler spawn   TODO this needs work.  haulers are subclassed by size in db under same groupID.
             if (factionID != factionRogueDrones)    // hauler spawn for drones already set above...negate this one.
                 type = 8;
+        }
     }
     if ((type == 0) && pSysBubble->IsBelt()) {  // gonna be a 'regular' trusec-based spawn in a belt.
         if (secRating < -0.8)  type = 7;
@@ -296,30 +302,11 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     /** @todo write code to spawn smaller groups on gates */
 
     RatSpawnClassVec spawnEntry;
-    RatSpawnClass spawnClass;
-    auto classRange = sDataMgr.m_classes.equal_range(type);
-    for (auto it = classRange.first; it != classRange.second; ++it) {
-        spawnClass.type = it->second.type;
-        spawnClass.sub = it->second.sub;
-        spawnClass.f = it->second.f;
-        spawnClass.d = it->second.d;
-        spawnClass.c = it->second.c;
-        spawnClass.bc = it->second.bc;
-        spawnClass.bs = it->second.bs;
-        spawnClass.h = it->second.h;
-        spawnClass.o = it->second.o;
-        spawnClass.cf = it->second.cf;
-        spawnClass.cd = it->second.cd;
-        spawnClass.cc = it->second.cc;
-        spawnClass.cbc = it->second.cbc;
-        spawnClass.cbs = it->second.cbs;
-        spawnEntry.push_back(spawnClass);
-    }
-    if (spawnEntry.size() > 0) {
+    if (sDataMgr.GetRatClasses(type, spawnEntry)) {
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry size is %u.", spawnEntry.size());    //variable
     } else {
-        _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry size is 0.");
-        return;
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatClass data for class %u.  Cancelling spawn.", type);
+        return false;
     }
 
     // get ship class data from spawnEntry.at(subtype)
@@ -412,8 +399,14 @@ void SpawnMgr::PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRa
     //cleanup
     m_factionGroups.clear();
 
-    _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_toSpawn size is %u.", m_toSpawn.size());    //variable
-    MakeSpawn(pSysBubble, factionID, type, subtype);
+    if (m_toSpawn.size() > 0) {
+        _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %u.", m_toSpawn.size());    //variable
+        MakeSpawn(pSysBubble, factionID, type, subtype);
+        return true;
+    } else
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - Nothing to spawn.");
+
+    return false;
 }
 
 uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
@@ -430,11 +423,10 @@ uint32 SpawnMgr::GetRandTypeID(uint32 shipClass)
    //get typeIDs for this groupID from m_types and return only one for spawning
    /** @todo  will need to check typeIDs here for higher-level ships in hi-sec systems */
     std::vector<uint32> typeVec;
-    auto typeRange = sDataMgr.m_types.equal_range(groupID); //groupID is key, typeID is value
-    for (auto it = typeRange.first; it != typeRange.second; ++it)
-        typeVec.push_back(it->second);
-
-    return typeVec.at(MakeRandomInt(0, typeVec.size()));
+    if (sDataMgr.GetRatTypes(groupID, typeVec))  //groupID is key, typeID is value
+        return typeVec.at(MakeRandomInt(0, typeVec.size()));
+    else
+        return 0;
 }
 
 /*
@@ -497,7 +489,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
 
 void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype)
 {
-    NPC* npc;
+    NPC* npc(nullptr);
     SpawnEntry se;
 
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
@@ -523,6 +515,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         data.ownerID = corpID;
 
     while (cur != m_toSpawn.end()) {
+        if (cur->typeID == 0)
+            return; // this is an error.
         /*
         ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
                   const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
@@ -536,7 +530,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
                 continue;
             }
 
-            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC %u", iRef->itemID());
+            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC type %u (%u)", cur->typeID, iRef->itemID());
 
             npc = new NPC(iRef, m_services, m_system, data, this);
 
@@ -546,10 +540,12 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
                 SafeDelete(npc);
                 continue;
             }
-            //drop this npc into system, and begin warp.  this may have to be looked into later for timing of large spawns (>6)
+
             m_system->AddNPC(npc);
+
             //startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
-            //npc->DestinyMgr()->SetPosition(startPos);
+            npc->DestinyMgr()->SetPosition(startPos);
+            //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             npc->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
             se.enabled = false;

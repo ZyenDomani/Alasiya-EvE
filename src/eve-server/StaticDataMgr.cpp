@@ -74,7 +74,7 @@ void StaticDataMgr::Populate()
         else
             typeAttr.value = row.GetInt(2);
 
-        m_typeAttrMap.insert(std::pair<uint16, DmgTypeAttribute>(row.GetUInt(0), typeAttr));
+        m_typeAttrMap.emplace(row.GetUInt(0), typeAttr);
     }
     sLog.Cyan("    StaticDataMgr", "%u Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - start));
 
@@ -87,7 +87,7 @@ void StaticDataMgr::Populate()
         //SELECT systemSec, roidID, percent FROM roidDistribution
         oreChance.typeID  = row.GetInt(1);
         oreChance.chance  = row.GetFloat(2);
-        m_oreBySecClass.insert(std::pair<std::string, OreTypeChance>(row.GetText(0), oreChance));
+        m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
     sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - start));
 
@@ -127,7 +127,7 @@ void StaticDataMgr::Populate()
         ramReq.quantity         = row.GetInt(3);
         ramReq.damagePerJob     = row.GetFloat(4);
         ramReq.recycle          = (row.GetInt(5) ? true : false);
-        m_ramReq.insert(std::pair<uint16, ramRequirements>(row.GetInt(0), ramReq));
+        m_ramReq.emplace(row.GetInt(0), ramReq);
     }
 
     res->Reset();
@@ -138,7 +138,7 @@ void StaticDataMgr::Populate()
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
         ramMatls.quantity = row.GetInt(2);
         ramMatls.materialTypeID = row.GetInt(1);
-        m_ramMatl.insert(std::pair<uint16, ramMaterials>(row.GetInt(0), ramMatls));
+        m_ramMatl.emplace(row.GetInt(0), ramMatls);
     }
     sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - start));
 
@@ -178,9 +178,9 @@ void StaticDataMgr::Populate()
     res->Reset();
     start = GetTimeMSeconds();
     m_db.GetStaticData(*res);
-    StaticData staticData;
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize
+        StaticData staticData;
         staticData.itemID          = row.GetUInt(0);
         staticData.regionID        = row.GetUInt(1);
         staticData.constellationID = row.GetUInt(2);
@@ -200,9 +200,9 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     m_db.GetStationInfo(*res);
-    StationData staData;
     while (res->GetRow(row)) {
         //SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations
+        StationData staData;
         staData.stationID       = row.GetUInt(0);
         staData.position        = GPoint(row.GetDouble(1),row.GetDouble(2),row.GetDouble(3));
         staData.dockPosition    = GPoint(row.GetDouble(4) + row.GetDouble(1),
@@ -236,15 +236,14 @@ void StaticDataMgr::Populate()
         //SELECT regionID, factionID FROM mapRegions
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Region Factions loaded in %.3fms.", m_regions.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
-    start = GetTimeMSeconds();
     m_db.GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
         m_ratRegions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
+    sLog.Cyan("    StaticDataMgr", "%u Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
@@ -260,9 +259,9 @@ void StaticDataMgr::Populate()
     m_db.GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
-    RatFactionGroups factionGroup;
     while (res->GetRow(row)) {
         //SELECT shipClass, groupID, factionID FROM roidRatClassGroup
+        RatFactionGroups factionGroup;
         factionGroup.shipClass = row.GetInt(0);
         factionGroup.groupID = row.GetInt(1);
         m_groups.emplace(row.GetInt(2), factionGroup);
@@ -272,13 +271,14 @@ void StaticDataMgr::Populate()
             //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
             m_types.emplace(row.GetInt(1), row2.GetInt(0));
         }
+        res2->Reset();
     }
 
     res->Reset();
     m_db.GetSpawnClasses(*res);
-    RatSpawnClass spawnClass;
     while (res->GetRow(row)) {
         //SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
+        RatSpawnClass spawnClass;
         spawnClass.type = row.GetInt(0);
         spawnClass.sub = row.GetInt(1);
         spawnClass.f = row.GetInt(2);
@@ -296,8 +296,8 @@ void StaticDataMgr::Populate()
         m_classes.emplace(row.GetInt(0), spawnClass);
     }
 
-    sLog.Cyan("    StaticDataMgr", "%u Rat Groups in %u buckets, %u Rat Classes in %u buckets, and %u Rat Types for %u regions loaded in %.3fms.",
-              m_groups.size(), m_groups.bucket_count(), m_classes.size(), m_classes.bucket_count(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",
+              m_groups.size(), m_classes.size(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
 
 
     res->Reset();
@@ -325,6 +325,17 @@ void StaticDataMgr::GetInfo()
      * m_stationData;
      *
      */
+}
+
+
+bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
+    auto groupRange = m_oreBySecClass.equal_range(secClass);
+    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+        _log(COSMIC_MGR__MESSAGE, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
+        roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
+    }
+
+    return !roids.empty();
 }
 
 void StaticDataMgr::GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribute >& typeAttrVec)
@@ -359,6 +370,51 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
         data.insert(std::pair<uint16, uint8>(cur.first, cur.second));
 }
 
+bool StaticDataMgr::GetRatTypes(uint32 groupID, std::vector<uint32>& typeVec)
+{
+    auto groupRange = m_types.equal_range(groupID);
+    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+        typeVec.push_back(it->second);
+    }
+
+    return !typeVec.empty();
+}
+
+bool StaticDataMgr::GetRatGroups(uint32 factionID, std::map<uint8, uint32>& groupMap)
+{
+    auto groupRange = m_groups.equal_range(factionID);
+    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+        groupMap.insert(std::pair<uint8, uint32>(it->second.shipClass, it->second.groupID));
+    }
+
+    return !groupMap.empty();
+}
+
+bool StaticDataMgr::GetRatClasses(uint8 typeID, std::vector<RatSpawnClass>& classMap)
+{
+    auto classRange = m_classes.equal_range(typeID);
+    for (auto it = classRange.first; it != classRange.second; ++it) {
+        RatSpawnClass spawnClass;
+        spawnClass.type = it->second.type;
+        spawnClass.sub = it->second.sub;
+        spawnClass.f = it->second.f;
+        spawnClass.d = it->second.d;
+        spawnClass.c = it->second.c;
+        spawnClass.bc = it->second.bc;
+        spawnClass.bs = it->second.bs;
+        spawnClass.h = it->second.h;
+        spawnClass.o = it->second.o;
+        spawnClass.cf = it->second.cf;
+        spawnClass.cd = it->second.cd;
+        spawnClass.cc = it->second.cc;
+        spawnClass.cbc = it->second.cbc;
+        spawnClass.cbs = it->second.cbs;
+        classMap.push_back(spawnClass);
+    }
+
+    return !classMap.empty();
+}
+
 void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
 {
     std::map<uint16, BlueprintTypeData>::iterator itr = m_bpTypeData.find(typeID);
@@ -368,14 +424,14 @@ void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)
         _log(DATABASE__MESSAGE, "Failed to query info for bpType %u: Type not found.", typeID);
 }
 
-bool StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)
+void StaticDataMgr::GetRamMaterials(uint16 typeID, std::vector< ramMaterials >& ramMatls)
 {
     auto itr = m_ramMatl.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
         ramMatls.push_back(it->second);
 }
 
-bool StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequirements >& ramReqs)
+void StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< ramRequirements >& ramReqs)
 {
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
@@ -511,19 +567,19 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
     switch (factionID) {
         case factionCaldari:        //Caldari State
         case factionGuristas:       //Guristas Pirates
-            return 1; break;
+            return 1;
         case factionMinmatar:       //Minmatar Republic
         case factionAngel:          //Angel Cartel
-            return 2; break;
+            return 2;
         case factionAmarr:          //Amarr Empire
         case factionAmmatar:        //Ammatar Mandate
         case factionKhanid:         //Khanid Kingdom
         case factionBloodRaider:    //Blood Raider Covenant
         case factionSanshas:        //Sansha's Nation
-            return 3; break;
+            return 3;
         case factionGallente:       //Gallente Federation
         case factionSerpentis:      //Serpentis
-            return 4; break;
+            return 4;
         case factionJove:           //Jove Empire
         case factionCONCORD:        //CONCORD Assembly
         case factionSyndicate:      //The Syndicate
@@ -533,7 +589,7 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
         case factionSistersOfEVE:   //Servant Sisters of EVE
         case factionSociety:        //The Society of Conscious Thought
         case factionMordusLegion:   //Mordu's Legion Command
-            return 5; break;
+            return 5;
     }
 }
 
@@ -552,12 +608,12 @@ uint32 StaticDataMgr::GetCorpID(uint32 factionID)
 std::string StaticDataMgr::GetCorpName(uint32 corpID)
 {
     switch (corpID) {
-        case corpAngel:          return "Angel";
-        case corpSanshas:        return "Sansha";
-        case corpBloodRaider:    return "Blood";
-        case corpGuristas:       return "Guristas";
-        case corpSerpentis:      return "Serpentis";
-        case corpRogueDrones:    return "Drone";
+        case corpAngel:             return "Angel";
+        case corpSanshas:           return "Sansha";
+        case corpBloodRaider:       return "Blood";
+        case corpGuristas:          return "Guristas";
+        case corpSerpentis:         return "Serpentis";
+        case corpRogueDrones:       return "Drone";
     }
 }
 
@@ -573,14 +629,3 @@ std::string StaticDataMgr::GetFactionName(uint32 factionID)
     }
 }
 
-
-
-bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
-    auto groupRange = m_oreBySecClass.equal_range(secClass);
-    for (auto it = groupRange.first; it != groupRange.second; ++it) {
-        _log(COSMIC_MGR__MESSAGE, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
-        roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
-    }
-
-    return !roids.empty();
-}

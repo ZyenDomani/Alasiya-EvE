@@ -37,9 +37,7 @@ class PyTuple;
 class TargetManager {
 public:
     TargetManager(SystemEntity* self);
-    virtual ~TargetManager();
-
-    void                DoDestruction();
+    virtual ~TargetManager()                            { /* do nothing here */ }
 
     void                Process();
 
@@ -129,7 +127,6 @@ protected:
 private:
     SystemEntity* mySE;    //we do not own this.
 
-    bool m_destroyed;    //true if we have already taken care of destruction logic.
     bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
 
     std::map<SystemEntity*, TargetEntry*> m_targets;    //we own these values, not the keys

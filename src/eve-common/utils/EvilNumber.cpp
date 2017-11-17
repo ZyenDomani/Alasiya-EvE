@@ -35,9 +35,6 @@ const EvilNumber EvilTime_Day = EvilTime_Hour * 24;
 const EvilNumber EvilTime_Month = EvilTime_Day * 30;
 const EvilNumber EvilTime_Year = EvilTime_Month * 12 + 5;
 
-const EvilNumber EvilPI = 3.14159265358979323846;
-const EvilNumber EvilE = 2.71828182845904523536;
-
 
 // CONSTRUCTORS:
 
@@ -691,8 +688,4 @@ EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2)
     EvilNumber result = val;
     result = result % val2;
     return result;
-}
-
-EvilNumber EvilTimeNow(){
-    return EvilNumber(Win32TimeNow());
 }

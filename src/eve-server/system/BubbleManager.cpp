@@ -36,16 +36,6 @@
 #include "Client.h"
 
 
-struct bubbleDeleter {
-    void operator()(SystemBubble*& bRef) { // take pointer by reference
-        if (bRef->IsEmpty()) {
-            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", bRef->GetID() );
-            sBubbleMgr.RemoveBubble(bRef->GetSystem()->GetID(), bRef);
-            //SafeDelete(bRef);
-        }
-    }
-};
-
 BubbleManager::BubbleManager()
 : m_wanderTimer(30000),
   m_emptyTimer(60000)
@@ -79,32 +69,13 @@ void BubbleManager::Process() {
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // process each belt and gate bubble for spawns
-    for (auto cur : m_bubbleMap)
-        if (cur.second->IsBelt() or cur.second->IsGate())
-            cur.second->Process();
+    for (auto cur : m_bubbles)
+        if (cur->IsBelt() or cur->IsGate())
+            cur->Process();
 
-    if (m_emptyTimer.Check()) {
-        std::for_each(m_bubbles.begin(), m_bubbles.end(), bubbleDeleter());
-        std::remove(m_bubbles.begin(), m_bubbles.end(), static_cast<SystemBubble*>(nullptr));
-        std::vector<SystemBubble*>::iterator itr = m_bubbles.begin();
-        while (itr != m_bubbles.end()) {
-            if (*itr == nullptr)
-                itr = m_bubbles.erase(itr);
-            else
-                ++itr;
-        }
-    }
-
-    // run wander check every 30 sec for all active bubbles
-    if (m_wanderTimer.Check()) {
-        /*
-        // STL-friendly pointer deleter and remover   - clever code here.  i dont think it works right....have trash data in bubble vector
-        std::for_each(m_bubbles.begin(), m_bubbles.end(), bubbleDeleter());
-        std::vector<SystemBubble*>::iterator new_end = std::remove(m_bubbles.begin(), m_bubbles.end(), static_cast<SystemBubble*>(nullptr));
-        */
-
+    if (m_wanderTimer.Check()) {    //30s
         m_wanderers.clear();
-        std::vector<SystemBubble*>::iterator itr = m_bubbles.begin();
+        std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
         while (itr != m_bubbles.end()) {
             if (*itr == nullptr) {
                 itr = m_bubbles.erase(itr);
@@ -124,6 +95,10 @@ void BubbleManager::Process() {
             m_wanderers.clear();
         }
     }
+
+    if (m_emptyTimer.Check())   //60s
+        RemoveEmpty();
+
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
@@ -150,19 +125,15 @@ void BubbleManager::CheckBubble(SystemEntity *pSE) {
 
 void BubbleManager::RemoveEmpty()
 {
-    SystemBubble* pDelete(nullptr);
-    std::vector<SystemBubble*>::iterator itr = m_bubbles.begin(), end = m_bubbles.end();
-    while (itr != end) {
+    std::list<SystemBubble*>::iterator itr = m_bubbles.begin();
+    while (itr != m_bubbles.end()) {
         if ((*itr)->IsEmpty()) {
-            pDelete = *itr;
+            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::RemoveEmpty() - Bubble %u is empty and is being deleted from the system.", (*itr)->GetID() );
+            RemoveBubble((*itr)->GetSystem()->GetID(), (*itr));
             itr = m_bubbles.erase(itr);
-            _log(DESTINY__BUBBLE_DEBUG, "BubbleManager::Process() - Bubble %u is empty and is being deleted from the system.", pDelete->GetID() );
-            sBubbleMgr.RemoveBubble(pDelete->GetSystem()->GetID(), pDelete);
-            //SafeDelete(pDelete);
         } else
             ++itr;
     }
-    pDelete = nullptr;
 }
 
 void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
@@ -194,7 +165,6 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     // TODO check edges of bubbles....should NOT overlap.
     pBubble = new SystemBubble(pSE->SystemMgr(), newCenter, BUBBLE_RADIUS_METERS);
     m_bubbles.push_back(pBubble);
-    // testing....W.I.P.
     m_bubbleMap.emplace(pSE->SystemMgr()->GetID(), pBubble);
 
     _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to NEW Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
@@ -211,10 +181,9 @@ void BubbleManager::Remove(SystemEntity *ent) {
     // planets and moons arent in bubbles
     if (ent->IsPlanetSE() or ent->IsMoonSE())
         return;
-    SystemBubble *pBubble = ent->SysBubble();
-    if (pBubble != nullptr) {
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity %s(%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), pBubble->GetID() );
-        pBubble->Remove(ent);
+    if (ent->SysBubble() != nullptr) {
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity %s(%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), ent->SysBubble()->GetID() );
+        ent->SysBubble()->Remove(ent);
     }
 }
 
@@ -259,6 +228,10 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 
 void BubbleManager::ClearSystemBubbles(uint32 systemID)
 {
+    auto range = m_bubbleMap.equal_range(systemID);
+    for ( auto itr = range.first; itr != range.second; ++itr)
+        m_bubbles.remove(itr->second);
+
     m_bubbleMap.erase(systemID);
 }
 
@@ -280,6 +253,7 @@ void BubbleManager::AddSpawnID(uint16 bubbleID, uint32 spawnID)
 
 void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
 {
+    // is this right??
     auto range = m_spawnIDs.equal_range(bubbleID);
     for ( auto itr = range.first; itr != range.second; ++itr )
         if (itr->second = spawnID) {

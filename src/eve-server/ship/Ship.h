@@ -28,8 +28,6 @@
 #define __SHIP__H__INCL__
 
 
-#include <unordered_map>
-
 #include "effects/EffectsData.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"

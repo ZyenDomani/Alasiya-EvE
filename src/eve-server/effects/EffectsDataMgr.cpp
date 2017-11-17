@@ -264,7 +264,7 @@ bool FxDataMgr::isAssistance(uint16 eID)
 uint16 FxDataMgr::GetEffectID(std::string effectName)
 {
     std::map<std::string, uint16>::const_iterator itr = m_effectName.find(effectName);
-    for (; itr != m_effectName.end(); ++itr)
+    if (itr != m_effectName.end())
         return itr->second;
     return 0;
 }

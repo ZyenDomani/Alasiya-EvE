@@ -46,6 +46,8 @@ extern uint64 Win32TimeNow();
 extern void Win32TimeToUnixTime( uint64 win32t, time_t &unix_time, uint32 &nsec );
 extern std::string Win32TimeToString(uint64 win32t);
 
+// this returns 100 nanosecond resolution in filetime format
+double GetFileTimeNow();
 //  this returns milliseconds in microsecond resolution
 double GetTimeMSeconds();
 //  this returns microseconds in nanosecond resolution

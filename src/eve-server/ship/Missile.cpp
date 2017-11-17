@@ -213,8 +213,8 @@ void Missile::EndOfLife() {
 
 void Missile::Delete() {
     //  cleanup here
-    if (m_alive) return;
-    m_targMgr->DoDestruction();
+    if (m_alive)
+        return;
     m_system->RemoveEntity(this);
     m_self->Delete();
     // do we need to do anything else here?

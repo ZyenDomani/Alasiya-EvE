@@ -40,13 +40,13 @@ TowerSE::TowerSE(StructureItemRef structure, PyServiceMgr& services, SystemManag
     data.sendFuelNotifications = false;
 
     /** @todo  may need to save this itemID, instead of calculating every time. */
-    m_moonSE = m_system->GetNearestMoon(GetPosition());
+    m_moonSE = m_system->GetClosestMoonSE(GetPosition());
 }
 
 void TowerSE::Init(StructureItemRef structure)
 {
     // may need to do more shit here...
-    
+
     if (m_harmonic == EVEPOS::ForceField::online) {
         // create and add force field to tower
         ItemData idata(EVEDB::invTypes::typeForceField, m_corpID, m_system->GetID(), flagAutoFit, m_ownerID);

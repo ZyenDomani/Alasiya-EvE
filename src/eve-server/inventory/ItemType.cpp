@@ -325,12 +325,9 @@ bool ItemType::HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const
     std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
     if (itr != m_reqSkillMap.end())
         return true;
-    for (auto cur : m_reqSkillMap) {
+    for (auto cur : m_reqSkillMap)
         if (m_factory.GetType(cur.first)->HasReqSkill(skillID, m_factory))
             return true;
-        else
-            return false;
-    }
     return false;
 }
 

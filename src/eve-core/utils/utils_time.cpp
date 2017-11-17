@@ -53,24 +53,28 @@ void Win32TimeToUnixTime( uint64 win32t, time_t &unix_time, uint32 &nsec ) {
 }
 
 std::string Win32TimeToString(uint64 win32t) {
-    time_t unix_time;
-    uint32 nsec;
+    std::time_t unix_time;
+    uint32 nsec = 0;
     Win32TimeToUnixTime(win32t, unix_time, nsec);
 
     char buf[256];
-    strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", localtime(&unix_time));
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&unix_time));
 
     return(buf);
 }
 
 uint64 Win32TimeNow() {
-#ifdef HAVE_WINDOWS_H
-    FILETIME ft;
-    GetSystemTimeAsFileTime(&ft);
-    return((uint64(ft.dwHighDateTime) << 32) | uint64(ft.dwLowDateTime));
-#else /* !HAVE_WINDOWS_H */
-    return(UnixTimeToWin32Time(time(NULL), 0));
-#endif /* !HAVE_WINDOWS_H */
+    return UnixTimeToWin32Time(std::time(NULL), 0);
+}
+
+double GetFileTimeNow()
+{
+    // convert system time to filetime.
+    double time = GetTimeMSeconds();
+    time /= 1000;
+    time += 11644473600;
+    time *= 10000000;
+    return time;
 }
 
 double GetTimeMSeconds() {  // -allan
@@ -100,13 +104,13 @@ double GetTimeUSeconds() {  // -allan
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string currentDateTime() {
-    time_t     now = time(0);
+    time_t     now = std::time(0);
     struct tm  tstruct;
     char       buf[80];
-    tstruct = *localtime(&now);
+    tstruct = *std::localtime(&now);
     // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
     // for more information about date/time format
-    strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
+    std::strftime(buf, sizeof(buf), "%Y-%m-%d.%X", &tstruct);
 
     return buf;
 }

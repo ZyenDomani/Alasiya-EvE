@@ -220,7 +220,6 @@ void ContainerSE::Process() {
 
 void ContainerSE::Delete()
 {
-    m_targMgr->DoDestruction();
     m_system->RemoveEntity(this);
     SystemEntity::Delete();
 }
@@ -450,18 +449,15 @@ void WreckSE::Process() {
 
 void WreckSE::Delete()
 {
-    SystemEntity::Delete();
-    m_targMgr->DoDestruction();
     m_system->RemoveEntity(this);
+    SystemEntity::Delete();
 }
 
 void WreckSE::Abandon()
 {
     SystemEntity::Abandon();
-
     m_abandoned = true;
 }
-
 
 void WreckSE::EncodeDestiny( Buffer& into )
 {

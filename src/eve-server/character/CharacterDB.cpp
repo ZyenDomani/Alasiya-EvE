@@ -1249,25 +1249,26 @@ bool CharacterDB::SaveSkillQueue(uint32 characterID, SkillQueue &data) {
         return false;
     }
 
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "INSERT INTO chrSkillQueue";
-    Inserts << " (characterID, orderIndex, typeID, level)";
-    bool first = true;
-    uint8 count = 0;
-    for (auto cur : data) {
-        ++count;
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else
-            Inserts << ", ";
-        Inserts << "(" << characterID << ", " << count << ", " << cur.typeID << ", " << cur.level << ")";
+    if (data.empty())
+        return true;
+
+    std::string query;
+
+    for (uint8 i = 0; i < data.size(); i++) {
+        const QueuedSkill &qs = data[ i ];
+        char buf[ 64 ];
+        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
+
+        if (i > 0)
+            query += ',';
+        query += buf;
     }
 
-    if (!first) {
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-            _log(DATABASE__ERROR, "SaveSkillQueue - unable to save data - %s", err.c_str());
+    if( !sDatabase.RunQuery( err,
+        "INSERT INTO chrSkillQueue (characterID, orderIndex, typeID, level)"
+        " VALUES %s",query.c_str()))
+    {
+        _log(DATABASE__ERROR, "SaveSkillQueue - unable to save data - %s", err.c_str());
     }
     return true;
 }
@@ -1279,26 +1280,28 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
         return false;
     }
 
-    std::ostringstream Inserts;
-    // start the insert into command.
-    Inserts << "INSERT INTO chrPausedSkillQueue";
-    Inserts << " (characterID, orderIndex, typeID, level)";
-    bool first = true;
-    uint8 count = 0;
-    for (auto cur : data) {
-        ++count;
-        if (first) {
-            Inserts << " VALUES ";
-            first = false;
-        } else
-            Inserts << ", ";
-        Inserts << "(" << characterID << ", " << count << ", " << cur.typeID << ", " << cur.level << ")";
+    if (data.empty())
+        return true;
+
+    std::string query;
+
+    for (uint8 i = 0; i < data.size(); i++) {
+        const QueuedSkill &qs = data[ i ];
+        char buf[ 64 ];
+        snprintf( buf, 64, "(%u, %u, %u, %u)", characterID, i, qs.typeID, qs.level );
+
+        if (i > 0)
+            query += ',';
+        query += buf;
     }
 
-    if (!first) {
-        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
-            _log(DATABASE__ERROR, "SavePausedSkillQueue - unable to save data - %s", err.c_str());
+    if( !sDatabase.RunQuery( err,
+        "INSERT INTO chrPausedSkillQueue (characterID, orderIndex, typeID, level)"
+        " VALUES %s",query.c_str()))
+    {
+        _log(DATABASE__ERROR, "SavePausedSkillQueue - unable to save data - %s", err.c_str());
     }
+
     return true;
 }
 

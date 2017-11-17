@@ -92,7 +92,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             } */
         } break;
         case operandDEFASSOCIATION: { //21
-            data.math = sFxProc.GetAssociationEnum(expression.expressionValue);
+            data.math = GetAssociationEnum(expression.expressionValue);
             if (data.math > MaxMathMethod) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range mathOp: %s(%i) for operand %u (%s).", \
@@ -100,7 +100,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             }
         } break;
         case operandDEFENVIDX: {     //24
-            data.targLoc = sFxProc.GetEnvironmentEnum(expression.expressionValue);
+            data.targLoc = GetEnvironmentEnum(expression.expressionValue);
             if (data.targLoc > MaxTargLocation) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range targLoc: %i for operand %u (%s).", \
@@ -334,12 +334,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 
         } break;
         */
-        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)se
-        //17:53:15 E FxProc::ParseExpression: *** ERROR ***  Operand id:4 key:OR - should be added as %(arg1)s OR %(arg2)s
-
 
         case operandUE: {   //73    UserError(%(arg1)s)
-
+            // not using this yet.
         } break;
         case operandSKILLCHECK: {   //67    SkillCheck(%(arg1)s)
             //data.result = true;
@@ -367,21 +364,24 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             data.action = expression.operandID;
            // pItem->AddModifier(data);
         } break;
-        default: {              // in case the op hasnt been defined, make a note here (should not hit)
+        default: {              // in case the op hasnt been defined, make a note here
+            if (is_log_enabled(EFFECTS__UNDEFINED)) {
             std::ostringstream ret;
             Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-            ret << "*** ERROR ***  Operand id:" << expression.operandID << " key:" << operand.operandKey;
+            ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
             if (operand.format == "")
                 ret << " - has not been defined.";
             else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
                 ret << " - should be added as " << operand.format.c_str();
-                _log(EFFECTS__WARNING, "FxProc::ParseExpression() - %s", ret.str().c_str());
+                _log(EFFECTS__UNDEFINED, "FxProc::ParseExpression() - %s", ret.str().c_str());
+            }
         } break;
     }
     /*
      * 22:32:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:69 key:SURVEYSCAN - should be added as SurveyScan()
-     * 21:51:29 [FxWarning] FxProc::ParseExpression() - *** ERROR ***  Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup()
-     *
+     * 21:51:29 [FxWarning] FxProc::ParseExpression() - *** ERROR ***  Operand id:J key:VERIFYTARGETGROUP - should be added as VerifyTargetGroup().
+     * 12:21:02 [FxWarning] FxProc::ParseExpression() - *** ERROR ***  Operand id:4 key:OR - should be added as %(arg1)s OR %(arg2)s
+     *        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)se
      */
 }
 
@@ -482,7 +482,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case dgmTargLocTarget: {
                         // ...current target (focused)
-                        // will need more testing to verify this. (disruptor works)
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case dgmTargLocInvalid: {   // null
@@ -500,7 +499,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case dgmTargLocShip:  {
                         // ....the ship the calling item is located in/on
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
-                        //}
                     } break;
                     case dgmTargLocSelf: {
                         // ....item itself
@@ -516,7 +514,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case dgmTargLocTarget: {
                         // ...current target (focused)
-                        // will need more testing to verify this. (target painter works)
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     default: {
@@ -526,11 +523,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             } break;
             case dgmSrcShip: {      // source is a subsystem
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
-                //_log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling ship target.");
             } break;
             case dgmSrcGang: {      // source is a gang leader skill
                 ;   //dgmTargLocSelf is ship of gang member to apply leader's skill bonuses to
-                //_log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling target.");
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling gang target.");
             } break;
             case dgmSrcInvalid: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location invalid.");
@@ -539,6 +536,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // these are not used (not coded)
             case dgmSrcTarget:
             case dgmSrcOwner: {
+                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location not coded.");
                 continue;
             } break;
         }
@@ -555,17 +553,20 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         EvilNumber targValue = 0;
         int8 opID = cur.first;
         for (auto item : itemRefVec) {
-            if (!item)  // not sure why i need this, but have seen nulls in the vector (segfaults)
+            if (item.get() == nullptr)  // not sure why i need this, but have seen nulls in the vector (segfaults)
                 continue;
             // get targAttr
             targValue = item->GetAttribute(cur.second.targAttr);
             switch (opID) {
                 case dgmMathPreDiv:
-                case dgmMathPreMul:
-                case dgmMathPostDiv:
-                case dgmMathPostMul: {
+                case dgmMathPostDiv:{
                     if (targValue == 0)
                         targValue = 1;
+                } break;
+                case dgmMathPreMul:
+                case dgmMathPostMul: {
+                    if (targValue < 0.01)
+                        targValue = 0.01;
                 } break;
             }
 
@@ -595,8 +596,6 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
         return val1;
     using namespace Effects;
     switch (method) {
-        case dgmMathInvalid:
-            _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
         case dgmMathSkillCheck:
         case dgmMathPreAssignment:
         case dgmMathPostAssignment:
@@ -615,6 +614,9 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
             return val1 * (1 + (val2 / 100));
         case dgmMathRevPostPercent:
             return val1 / (1 + (val2 / 100));
+        case dgmMathInvalid:
+            _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
+            return val1;
     }
     _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)method);
     return 0;

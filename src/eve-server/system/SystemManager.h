@@ -78,8 +78,8 @@ public:
 
     bool IsLoaded()                                     { return m_loaded; }
 
-    uint32 GetNearestPlanet(const GPoint& myPos);
-    SystemEntity* GetNearestMoon(const GPoint& myPos);
+    uint32 GetClosestPlanetID(const GPoint& myPos);
+    SystemEntity* GetClosestMoonSE(const GPoint& myPos);
 
     uint32 GetID() const                                { return m_data.systemID; }
     uint32 GetRegionID()                                { return m_data.regionID; }

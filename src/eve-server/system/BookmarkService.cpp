@@ -24,6 +24,12 @@
     Updates:    Allan
 */
 
+/** @todo  this class is db-heavy.
+ * all bm returns use python db structures
+ * need to create mem objects in character.cpp for all bm/folder data
+ * then create packet structure for sending data to client to avoid db hits
+ */
+
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
@@ -90,8 +96,9 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return new PyBool(false);
     }
+    args.Dump(COMMON__INFO, "    ");
 
     std::string folderName = "";
     if ( args.folderName->IsString() )
@@ -100,18 +107,20 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
         folderName = args.folderName->AsWString()->content();
     else {
         sLog.Error( "BookmarkService::Handle_UpdateFolder()", "args.folderName is of the wrong type: '%s'.  Expected PyString or PyWString.", args.folderName->TypeString() );
-        return nullptr;
+        return new PyBool(false);
     }
 
     if (!m_db.UpdateFolderInDatabase(args.folderID, folderName))
-        ; // make client error here to let them know updating failed
+        return new PyBool(false); // make client error here to let them know updating failed
 
-        return new PyNone();
+    return new PyBool(true);
 }
 
 PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     // this also deletes ALL bookmarks in the folder to be deleted.
     //   this returns bm data for bookmarks deleted with this folder, if any
+
+    call.Dump(COMMON__INFO);
 
     if (!m_db.DeleteFolderFromDatabase(call.tuple->GetItem( 0 )->AsInt()->value()))
         return nullptr;   // make client error here to let them know deltion failed
@@ -133,7 +142,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     }
 
     PyTuple* result = new PyTuple(bmIDs.size());
-    for (size_t i; i < bmIDs.size(); i++) {
+    for (size_t i = 0; i < bmIDs.size(); ++i) {
         Rsp_BMData data;
             data.bookmarkID = bmIDs.at(i);
             data.ownerID = 0;
@@ -232,6 +241,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
+    args.Dump(COMMON__INFO, "    ");
     /*
     * 22:25:58 [SvcCallDump]       Tuple: 5 elements
     * 22:25:58 [SvcCallDump]         [ 0] Integer field: 30000053
@@ -276,7 +286,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = 0; 
+        result.itemID      = 0;
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;
@@ -313,7 +323,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
 23:39:40 E BookmarkService::Handle_MoveBookmarksToFolder(): Service is not handled yet.  Returning NULL.
 23:39:40 [SvcCall]   Call Arguments:
 23:39:40 [SvcCall]       Tuple: 2 elements
-23:39:40 [SvcCall]         [ 0] Integer field: 2  <-folderID
+23:39:40 [SvcCall]         [ 0] Integer field: 2  <-folderID  can be PyNone for root folder
 23:39:40 [SvcCall]         [ 1] ObjectEx:
 23:39:40 [SvcCall]         [ 1] Header:
 23:39:40 [SvcCall]         [ 1]   Tuple: 2 elements
@@ -332,6 +342,7 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
+    args.Dump(COMMON__INFO, "    ");
 
     if (args.object->IsNone())
         return new PyNone();

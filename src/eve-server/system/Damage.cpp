@@ -305,7 +305,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         up = ondamo.Encode();
         d.srcSE->GetPilot()->QueueDestinyEvent(&up);
     }
-    PyDecRef(up);
 
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
@@ -489,8 +488,6 @@ void Ship::Killed(Damage &fatal_blow) {
          */
 
         AbortCycle();  /* this will cancel all active modules ...works */
-        m_targMgr->DoDestruction();
-
         PayInsurance();
 
         GPoint capsulePosition = GetPosition();
@@ -522,8 +519,8 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
         if (!wreckTypeID) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-            // default to generic frigate wreck till i get better checks and/or complete wreck data
-            wreckTypeID = 26557;
+            // default to generic wreck till i get better checks and/or complete wreck data
+            wreckTypeID = 26468;
         }
         std::string wreck_name = pPilot->GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";

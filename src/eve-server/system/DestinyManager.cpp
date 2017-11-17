@@ -1733,7 +1733,6 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
     if (mySE->IsNPCSE()) {
         State = Destiny::BallMode::DSTBALL_WARP;
 
-        // send client updates
         std::vector<PyTuple*> updates;
         DoDestiny_CmdWarpTo wt;
             wt.entityID = mySE->GetID();
@@ -2790,12 +2789,12 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
                     sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator cur = updates.begin(); cur != updates.end(); ++cur) {
-            PyIncRef(*cur);
+            //PyIncRef(*cur);
             mySE->GetPilot()->QueueDestinyUpdate(&(*cur));
         }
 
         for (std::vector<PyTuple*>::iterator cur = events.begin(); cur != events.end(); ++cur) {
-            PyIncRef(*cur);
+            //PyIncRef(*cur);
             mySE->GetPilot()->QueueDestinyEvent(&(*cur));
         }
 
