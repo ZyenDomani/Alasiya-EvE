@@ -3,12 +3,12 @@
 <table style="background: transparent; width:100%"><tr>
 <td style="text-align: center;">Estimated Overall Progress&#160;&#160;</td></tr></table><div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:62.8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
+<table style="background: #2222EE; width:64%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
 <table style="background: transparent; width:100%"><tr><td style="text-align: center;">
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:62.8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>62.8</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:64%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>63.9</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
@@ -18,7 +18,7 @@ Items with date style DayMonthYear as last line in comments are accurate for Ala
 Please Note: This page is in the process of being updated for Alasiya's Code Status.<BR>
 Please Also Note:  Items listed as "NOT IMPLEMENTED" means there is no code written for that particular system, and the server will not respond to requests for that system.<BR>
 Items listed as "Skeleton Framework Only" has basic code, with limited or no processing and/or returns, and the server will not respond, or only partially respond to these requests.<BR><BR>
-Last Update: <font color="green">27 June 2017</font><BR>
+Last Update: <font color="green">17 November 2017</font><BR>
 Page Status: <font color="green">Current</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
@@ -94,11 +94,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="General_Interface_Features"> General Interface Features </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:69.2%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:69.2%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>69.2</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>73.5</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -106,16 +106,16 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Get Item Info</td><td class="working">85%
+<tr><td> - Get Item Info</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Most Items Working<BR>7Sep14</td></tr>
-<tr><td> - Get Ship Info</td><td class="working">90%
+<td>Final Testing<BR>17Nov17</td></tr>
+<tr><td> - Get Ship Info</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Most Ships Working<BR>7Sep14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - Get Skill Info</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -126,11 +126,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>27July15</td></tr>
-<tr><td> - Get Character Info</td><td class="working">80%
+<tr><td> - Get Character Info</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table>
-<td>In Progress<BR>7Sep14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - Get NPC Corporation Info</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
@@ -145,11 +145,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Account_and_Character_Management"> Account and Character Management </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table></div></div>
+<table style="background: #2222EE; width:96%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table></div></div>
 <div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td><table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>95.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<tr><td><table style="background: transparent; width:96%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>96.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -182,11 +182,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>1Feb14</td></tr>
-<tr><td> - Character Window</td><td class="working">80%
+<tr><td> - Character Window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Working - Most tabs work<BR>30Dec14</td></tr>
+<td>COMPLETE<BR>17Nov17</td></tr>
 <tr><td> - Open Skills Window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -253,14 +253,14 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE - Combat Log not Implemented<BR>27July15</td></tr></table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Skills_-_Certificates_-_Implants_-_Clones"> Skills &amp; Certificates </span></h2>
+<h2> <span class="mw-headline" id="Skills_-_Certificates"> Skills &amp; Certificates </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:98.8%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>98.8</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>&nbsp;</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -293,11 +293,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<br>6Mar14</td></tr>
-<tr><td> - Re-Start skill queue after pause</td><td class="working">90%
+<tr><td> - Re-Start skill queue after pause</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Working.  Couple bugs left to squash.<br>6Mar14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - Skill training time</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -645,11 +645,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Item_Properties_Window"> Item Properties Window </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:90%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>90.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:95%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>95.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -657,16 +657,16 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - View item properties</td><td class="working">90%
+<tr><td> - View item properties</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>BP do not show manufacturing info<BR>7Sep14</td></tr>
-<tr><td> - View item picture (orange eye button)</td><td class="working">90%
+<td>Final Testing<BR>17Nov17</td></tr>
+<tr><td> - View item picture (orange eye button)</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Working for Most Items<BR>7Sep14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Market_Details"> Market Details </span></h2>
@@ -951,11 +951,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Bookmark_System"> Bookmark System </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:75%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:92%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:75%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>75.0</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:92%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>92.2</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
@@ -964,11 +964,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="width: 70&amp;;">Service/Something</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Bookmark system</td><td class="working">70%
+<tr><td> - Bookmark system</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working<BR>6Mar14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - Bookmarks loaded from database at character login</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1010,16 +1010,16 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>30Dec14</td></tr>
-<tr><td> - Delete a Bookmark Folder</td><td class="working">30%
+<tr><td> - Delete a Bookmark Folder</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Implemented, but *I* haven't been able to decode the Python from client.<BR>6Mar14</td></tr>
-<tr><td> - Move Bookmark to a Bookmark Folder</td><td class="working">30%
+<td>Final Testing<BR>17Nov17</td></tr>
+<tr><td> - Move Bookmark to a Bookmark Folder</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Implemented, but *I* haven't been able to decode the Python from client.<BR>6Mar14</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Overview"> Overview </span></h2>
@@ -1212,11 +1212,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Ship_Combat_in_Space"> Ship Combat </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:98%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:98%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>98.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:97%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>99.2</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1239,11 +1239,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>27Jun17</td></tr>
-<tr><td> - Can Orbit target</td><td class="working">90%
+<tr><td> - Can Orbit target</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Working - minor bugs<BR>27July15</td></tr>
+<td>Hacked - Working very well<BR>15Jul16</td></tr>
 <tr><td> - Can Follow target</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1330,7 +1330,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: transparent; width:87%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>86.9</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<td> &#160;<font color="red"><b>87.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1383,11 +1383,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>27Jun17</td></tr>
-<tr><td> - Propulsion</td><td class="working">90%
+<tr><td> - Propulsion</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete - Testing<BR>10Aug16</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - Mining</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1397,7 +1397,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Code Only - Not Implemented<BR>10Aug16</td></tr>
+<td>Skeleton Code Only - Fleets Not Implemented<BR>10Aug16</td></tr>
 <tr><td> - Rigs</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1542,11 +1542,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science and Industry </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:41.6%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:45%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:41.6%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>41.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:45%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>45.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1593,7 +1593,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final Testing phase.<BR>21May16</td></tr>
+<td>Final Testing<BR>17Nov17</td></tr>
 <tr><td> - R&amp;D using Agents</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
