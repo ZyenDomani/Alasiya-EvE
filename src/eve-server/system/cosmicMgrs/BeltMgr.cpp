@@ -414,7 +414,8 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
             continue;
         }
     }
-
+    m_db.RemoveAsteroid(pASE->GetID());
+/*
     if (m_asteroids.count(beltID)) {
         std::map<uint32, bool>::iterator itr =  m_spawned.find(beltID);
         if (itr != m_spawned.end())
@@ -422,7 +423,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
         else
             m_spawned.insert(std::pair<uint32, bool>(beltID, false));
     }
-
+*/
 }
 
 void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap< float, uint32 >& roidDist)
