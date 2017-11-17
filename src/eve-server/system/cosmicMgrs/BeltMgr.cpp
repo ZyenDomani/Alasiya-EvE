@@ -91,7 +91,6 @@ bool BeltMgr::CheckSpawn(uint16 bubbleID)
     if (IsSpawned(bubbleID))
         return true;
     /*  if there are already roids created for this belt, they will be loaded in Load()
-     * and NOT LOADED in loadsystemdynamics from SystemManager.
      * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
      */
     if (!Load(bubbleID)) {
@@ -141,9 +140,6 @@ void BeltMgr::Process() {
 }
 
 bool BeltMgr::Load(uint16 bubbleID) {
-    // negate this for now.....see notes above
-    return false;
-
     std::vector<AsteroidData> entities;
     entities.clear();
     uint32 beltID = sBubbleMgr.GetBeltID(bubbleID);
@@ -153,7 +149,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
         return false;
 
     for (auto entity : entities) {
-        InventoryItemRef itemRef = m_system->itemFactory()->GetItem(entity.itemID);
+        AsteroidItemRef itemRef = m_system->itemFactory()->GetAsteroid(entity.itemID);
         if (itemRef.get() == nullptr) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
@@ -375,10 +371,7 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
 void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice/*false*/) {
     if (typeID == 0)
         return;
-    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
-    InventoryItemRef itemRef = m_system->itemFactory()->SpawnItem(idata);
-    if (itemRef.get() == nullptr)
-        return;
+
     double quantity = 0;
     if (ice) {
         quantity = radius * 2;
@@ -388,10 +381,19 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         quantity = ((25000 * log(radius)) - 112404.8);
     }
 
-    itemRef->SetAttribute(AttrRadius,    itemRef->type().radius() * radius); // Radius
-    itemRef->SetAttribute(AttrQuantity,  quantity);                          // Quantity
-    itemRef->SetAttribute(AttrVolume,    itemRef->type().volume());          // Volume
-    itemRef->SetAttribute(AttrMass,      itemRef->type().mass() * quantity); // Mass
+    AsteroidData adata;
+        adata.beltID = beltID;
+        adata.systemID = m_systemID;
+        adata.typeID = typeID;
+        adata.quantity = quantity;
+        adata.radius = radius;
+        adata.x = position.x;
+        adata.y = position.y;
+        adata.z = position.z;
+    ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
+    InventoryItemRef itemRef = m_system->itemFactory()->SpawnAsteroid(idata, adata);
+    if (itemRef.get() == nullptr)
+        return;
 
     AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
     if (pASE == nullptr)
@@ -400,22 +402,6 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
     m_asteroids.emplace(std::pair<uint32, AsteroidSE*>(beltID, pASE));
     pASE->SetMgr(this, beltID);
     m_system->AddEntity(pASE);
-
-    // we are not saving roids at this time.....see notes above
-    /*
-    AsteroidData adata;
-        adata.beltID = beltID;
-        adata.itemName = itemRef->itemName();
-        adata.itemID = itemRef->itemID();
-        adata.systemID = m_systemID;
-        adata.typeID = typeID;
-        adata.quantity = quantity;
-        adata.radius = radius;
-        adata.x = position.x;
-        adata.y = position.y;
-        adata.z = position.z;
-    m_db.SaveRoid(adata);
-    */
 }
 
 void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)

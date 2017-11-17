@@ -15,6 +15,7 @@
 #include "POD_containers.h"
 #include "system/SystemDB.h"
 
+class ItemData;
 
 class ManagerDB {
 public:
@@ -33,14 +34,17 @@ public:
     void GetStationRegion(DBQueryResult& res);
     void GetTypeAttributes(DBQueryResult& res);
     void GetRAMRequirements(DBQueryResult& res);
-    
+
     PyObjectEx* GetOperands();
 
     /* belt manager */
+    void ClearAsteroids();
     void SaveRoid(AsteroidData& data);
     void SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids);
     void GetRegionFaction(DBQueryResult& res);
+    static bool GetAsteroidData(uint32 asteroidID, AsteroidData& dbData);
     bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
+    static uint32 CreateRoidItemID(ItemData& idata, AsteroidData& adata);
 
     /* spawn manager */
     void DeleteSpawnedRats();
@@ -74,7 +78,6 @@ public:
 protected:
 
 private:
-
 
 };
 

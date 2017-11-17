@@ -75,6 +75,7 @@
 #define minAlliance             99000000
 #define maxAlliance             99999999
 #define minPlayerItem           100000000
+#define minAsteroidItem         450000000
 #define minPCCorporation        1600000000
 #define maxEveItem              2147483647      // max short int32
 #define maxPlayerItem           10000000000
@@ -106,7 +107,6 @@ maxDustCharacter = 2130000000
 #define EVEMU_TEMP_ENTITY_ID          110000000
 #define EVEMU_PLANET_PIN_ID           130000000
 #define EVEMU_MINIMUM_DYNAMIC_ID      140000000
-#define EVEMU_ASTEROID_ID             450000000
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
 #define EVEMU_MISSILE_ID             1000000000
@@ -194,6 +194,9 @@ maxDustCharacter = 2130000000
 
 #define IsFactoryFolder(itemID) \
 ((itemID >= minFactoryFolder) && (itemID < minUniverseAsteroid))
+
+#define IsAsteroid(itemID) \
+((itemID >= minAsteroidItem) && (itemID < EVEMU_DRONE_ID))
 
 #define IsUniverseAsteroid(itemID) \
 ((itemID >= minUniverseAsteroid) && (itemID < minControlBunker))

@@ -92,7 +92,7 @@ public:
     BlueprintRef            GetBlueprint(uint32 blueprintID);
     CharacterRef            GetCharacter(uint32 characterID);
     SolarSystemRef          GetSolarSystem(uint32 solarSystemID);
-    //AsteroidItemRef         GetAsteroid(uint32 asteroidID);
+    AsteroidItemRef         GetAsteroid(uint32 asteroidID);
     StructureItemRef        GetStructure(uint32 structureID);
     InventoryItemRef        GetItem(uint32 itemID);
     InventoryItemRef        GetItemContainer(uint32 itemID, bool load=true);
@@ -116,7 +116,7 @@ public:
     CharacterRef            SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData);
     BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
     InventoryItemRef        SpawnItem(ItemData &data);
-    //AsteroidItemRef         SpawnAsteroid(ItemData &idata, AsteroidData& aData);
+    AsteroidItemRef         SpawnAsteroid(ItemData& idata, AsteroidData& adata);
     StructureItemRef        SpawnStructure(ItemData &data);
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
     WreckContainerRef       SpawnWreckContainer(ItemData &data);
@@ -128,7 +128,6 @@ public:
     uint32                  GetNextNPCID();
     uint32                  GetNextTempID();
     uint32                  GetNextMissileID();
-    uint32                  GetNextAsteroidID();
     uint32                  GetNextPlanetPinID();
 
 
@@ -155,7 +154,6 @@ private:
     static uint32 m_nextNPCID;
     static uint32 m_nextTempID;
     static uint32 m_nextMissileID;
-    static uint32 m_nextAsteroidID;
     static uint32 m_nextPlanetPinID;
 
     //item to hold current number of currently loaded items

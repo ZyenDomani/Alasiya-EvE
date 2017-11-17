@@ -135,12 +135,10 @@ uint32 InventoryItem::CreateTempItemID(ItemFactory &factory, ItemData &data) {
     // Get a new Entity ID from ItemFactory's ID Authority:
     if (iType->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's use this method
         return factory.GetNextNPCID();
-    if (iType->categoryID() == EVEDB::invCategories::Asteroid)
-        return factory.GetNextAsteroidID();
-    else if (data.flag == EVEItemFlags::flagMissile)
+    if (data.flag == EVEItemFlags::flagMissile)
         return factory.GetNextMissileID();
-    else
-        return factory.GetNextTempID();
+
+    return factory.GetNextTempID();
 }
 
 bool InventoryItem::_Load() {
@@ -171,10 +169,9 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Accessories:
             */
-            /** @todo (Allan) these need work ...for now, load default item
-             *        case EVEDB::invCategories::Asteroid:
-             *            return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
-             */
+            case EVEDB::invCategories::Asteroid: {
+                return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
+            }
             case EVEDB::invCategories::Orbitals:
             case EVEDB::invCategories::Structure: {  // this is for all Orbital structure types (POS, customs offices, etc)
                 return StructureItem::_LoadItem<StructureItem>( factory, itemID, type, data );
@@ -269,7 +266,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
                     return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
             }
             default:
-                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) is not handled in  InventoryItem::_LoadItem.", itemID, type.id(), type.categoryID());
+                _log(ITEM__MESSAGE, "item %u (type %u, cat %u) is not handled in InventoryItem::_LoadItem.", itemID, type.id(), type.categoryID());
                 break;
     }
     // Generic item, create one:
@@ -294,8 +291,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::Reaction:
-            break;
+        case EVEDB::invCategories::Asteroid:
+        case EVEDB::invCategories::Reaction: {
+            _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
+        } break;
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn( factory, data );
         }
@@ -318,19 +317,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 bpData.mLevel = 0;
                 bpData.pLevel = 0;
             return Blueprint::Spawn( factory, data, bpData );
-        }
-        case EVEDB::invCategories::Asteroid: {
-            uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            if (!itemID)
-                return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-            if (itemRef.get() == nullptr)
-                return InventoryItemRef();
-            // THESE SHOULD BE MOVED INTO AN Asteroid::Spawn() function that does not exist yet
-            // Create default dynamic attributes in the AttributeMap:
-            itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
-            itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            return itemRef;
         }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:

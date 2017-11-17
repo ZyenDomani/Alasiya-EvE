@@ -42,7 +42,6 @@
 
 // Initialize ID Authority variables:
 uint32 ItemFactory::m_nextTempID = EVEMU_TEMP_ENTITY_ID;
-uint32 ItemFactory::m_nextAsteroidID = EVEMU_ASTEROID_ID;
 uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
 uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
 uint32 ItemFactory::m_nextPlanetPinID = EVEMU_PLANET_PIN_ID;
@@ -84,6 +83,8 @@ void ItemFactory::SaveItems() {
     items.clear();
     for (auto cur : m_items) {
         if (cur.second->quantity() < 1)
+            continue;
+        if (IsAsteroid(cur.first))
             continue;
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             SaveData data;
@@ -334,12 +335,12 @@ SkillRef ItemFactory::GetSkill(uint32 skillID)
 {
     return _GetItem<Skill>( skillID );
 }
-/*
+
 AsteroidItemRef ItemFactory::GetAsteroid(uint32 asteroidID)
 {
     return _GetItem<AsteroidItem>( asteroidID );
 }
-*/
+
 StructureItemRef ItemFactory::GetStructure(uint32 structureID)
 {
     return _GetItem<StructureItem>( structureID );
@@ -418,7 +419,7 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
     ++m_itemCount;
     return iRef;
 }
-/*
+
 AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
     AsteroidItemRef iRef = AsteroidItem::Spawn( *this, idata, adata );
@@ -429,7 +430,7 @@ AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
     ++m_itemCount;
     return iRef;
 }
-*/
+
 CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 {
     /*  this is supposed to create a jetcan for ship tracking as a temp item.
@@ -474,11 +475,6 @@ uint32 ItemFactory::GetNextTempID()
         m_nextTempID = EVEMU_TEMP_ENTITY_ID;
 
 	return m_nextTempID;
-}
-
-uint32 ItemFactory::GetNextAsteroidID()
-{
-    return ++m_nextAsteroidID;
 }
 
 uint32 ItemFactory::GetNextMissileID()

@@ -100,9 +100,9 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
 23:23:57 [SvcCall]         [ 0]   [ 0] Integer field: 140000725
 23:23:57 [SvcCall]         [ 0]   [ 1] Integer field: 140001260
 
+*/
   sLog.White( "ConfigService", "Handle_GetMultiLocationsEx" );
   call.Dump(SERVICE__CALL_DUMP);
-*/
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());

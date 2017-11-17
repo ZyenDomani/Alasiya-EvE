@@ -27,12 +27,14 @@
 #ifndef __ASTEROID_H_INCL__
 #define __ASTEROID_H_INCL__
 
+#include "EVEServerConfig.h"
 #include "system/SystemEntity.h"
+#include "system/cosmicMgrs/ManagerDB.h"
 
 /** @todo  finish this to completely remove roids from entity table.
  * InventoryItem for asteroid item....didnt work.  revert to default item
  */
-#if (0)
+
 class AsteroidItem
 : public InventoryItem
 {
@@ -44,6 +46,7 @@ public:
     static AsteroidItemRef Load(ItemFactory &factory, uint32 asteroidID);
     static AsteroidItemRef Spawn(ItemFactory& factory, ItemData &idata, AsteroidData& adata);
 
+    double      radius() const                          { return m_data.radius; }
 
 protected:
     using InventoryItem::_Load;
@@ -60,7 +63,7 @@ protected:
         }
 
         AsteroidData dbData;
-        if ( !factory.db().GetAsteroid( asteroidID, dbData ) )
+        if ( !ManagerDB::GetAsteroidData( asteroidID, dbData ) )
             return RefPtr<_Ty>();
 
         return _Ty::template _LoadAsteroid<_Ty>( factory, asteroidID, type, data, dbData );
@@ -74,10 +77,9 @@ protected:
     }
 
 private:
-    AsteroidData m_dbData;
+    AsteroidData m_data;
 };
 
-#endif
 
 /**
  * ObjectSystemEntity which represents asteroid object in space

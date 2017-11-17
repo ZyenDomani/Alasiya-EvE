@@ -32,14 +32,10 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/SystemBubble.h"
 
-/*
- * AsteroidItem
- */
-/** @todo  this needs more work to complete.  should be self-conatined creation and loading, and NOT use InventoryItem
- *
+
 AsteroidItem::AsteroidItem(ItemFactory& _factory, uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
-: InventoryItem(_factory, _asteroidID, _type, _idata, _adata),
-m_dbData(_adata)
+: InventoryItem(_factory, _asteroidID, _type, _idata),
+m_data(_adata)
 {
     _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", _idata.name.c_str(), _asteroidID);
 }
@@ -54,18 +50,20 @@ AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, Aster
     if (type == nullptr)
         return AsteroidItemRef();
 
-    uint32 asteroidID = InventoryItem::CreateTempItemID(factory, idata);
+    adata.itemName = type->name();
+
+    uint32 asteroidID = ManagerDB::CreateRoidItemID(idata, adata);
     if (asteroidID == 0)
         return AsteroidItemRef();
 
     AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem( factory, asteroidID, *type, idata, adata));
-    roidRef->SetAttribute(AttrQuantity,  adata.quantity);   // quantity in m^3
-    roidRef->SetAttribute(AttrRadius, (adata.radius));  // Radius
-    roidRef->SetAttribute(AttrMass, (roidRef->type().mass() * adata.quantity));      // Mass
+    roidRef->SetAttribute(AttrRadius,    adata.radius);
+    roidRef->SetAttribute(AttrQuantity,  adata.quantity);
+    roidRef->SetAttribute(AttrVolume,    type->volume());
+    roidRef->SetAttribute(AttrMass,      type->mass() * adata.quantity);
 
     return roidRef;
 }
-*/
 
 AsteroidSE::AsteroidSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system)
 : ObjectSystemEntity(self, services, system),

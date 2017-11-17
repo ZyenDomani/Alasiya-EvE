@@ -208,6 +208,50 @@ void ManagerDB::DeleteSpawnedRats()
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
 }
 
+uint32 ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)
+{
+    DBerror err;
+    uint32 uid = 0;
+    if (!sDatabase.RunQueryLID(err, uid,
+        "INSERT INTO sysAsteroids (itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
+        " VALUES ('%s', %u, %u, %u, %f, %f, %f, %f, %f)",
+                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z )) {
+        codelog(DATABASE__ERROR, "Failed to insert new asteroid entity: %s", err.c_str());
+        return 0;
+    }
+
+    return (adata.itemID = uid);
+}
+
+bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
+{
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT itemName, typeID, systemID, beltID, quantity, radius, x, y, z"
+        " FROM sysAsteroids"
+        " WHERE itemID = %u", asteroidID)) {
+        _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
+            return false;
+    }
+
+    DBResultRow row;
+    if (res.GetRow(row)) {
+        dbData.itemID = asteroidID;
+        dbData.itemName = row.GetText(0);
+        dbData.typeID = row.GetInt(1);
+        dbData.systemID = row.GetInt(2);
+        dbData.beltID = row.GetInt(3);
+        dbData.quantity = row.GetDouble(4);
+        dbData.radius = row.GetDouble(5);
+        dbData.x = row.GetDouble(6);
+        dbData.y = row.GetDouble(7);
+        dbData.z = row.GetDouble(8);
+        return true;
+    }
+
+    return false;
+}
+
 bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into)
 {
     DBQueryResult res;
@@ -237,7 +281,13 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
         into.push_back(entry);
     }
 
-    return into.empty();
+    return !into.empty();
+}
+
+void ManagerDB::ClearAsteroids()
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM sysAsteroids WHERE 1");
 }
 
 void ManagerDB::SaveRoid(AsteroidData& data)

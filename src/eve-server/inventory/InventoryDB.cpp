@@ -413,6 +413,18 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for universe celestial %u: %s", itemID, res.error.c_str());
             return false;
         }
+    } else if (IsAsteroid(itemID)) {
+        //use sysAsteroids
+        if (!sDatabase.RunQuery(res,
+            "SELECT"
+            "  itemName, typeID, 1 AS ownerID, systemID, 0 AS flag, 0 AS contraband,"
+            "  1 AS singleton, quantity, x, y, z, '' AS customInfo"
+            " FROM sysAsteroids"
+            " WHERE itemID=%u", itemID))
+        {
+            codelog(DATABASE__ERROR, "Error in query for asteroid %u: %s", itemID, res.error.c_str());
+            return false;
+        }
     } else {
         //fallback to entity
         if (!sDatabase.RunQuery(res,

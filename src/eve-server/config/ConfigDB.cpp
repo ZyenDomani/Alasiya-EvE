@@ -124,22 +124,24 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
-    std::vector<int32> staticItem, dynamicItem;
-    staticItem.clear();
-    dynamicItem.clear();
+    std::vector<int32> staticItems, dynamicItems, asteroidItems;
+    staticItems.clear();
+    dynamicItems.clear();
 
     for (auto cur : entityIDs) {
         if (IsStaticMapItem(cur) or (cur == 0))
-            staticItem.push_back(cur);
+            staticItems.push_back(cur);
+        else if (IsAsteroid(cur))
+            asteroidItems.push_back(cur);
         else
-            dynamicItem.push_back(cur);
+            dynamicItems.push_back(cur);
     }
 
     DBQueryResult res;
     std::string ids = "";
 
-    if (staticItem.size()) {
-        ListToINString(staticItem, ids, "0");
+    if (staticItems.size()) {
+        ListToINString(staticItems, ids, "0");
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"
@@ -154,16 +156,32 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
         ids = "";
     }
 
-    if (dynamicItem.size()) {
-        ListToINString(dynamicItem, ids, "0");
+    if (dynamicItems.size()) {
+        ListToINString(dynamicItems, ids, "0");
         if (!sDatabase.RunQuery(res,
-                "SELECT "
-                " itemID AS locationID,"
-                " itemName AS locationName,"
-                " x, y, z,"
-                " NULL AS locationNameID"
-                " FROM entity"
-                " WHERE itemID in (%s)", ids.c_str()))
+            "SELECT "
+            " itemID AS locationID,"
+            " itemName AS locationName,"
+            " x, y, z,"
+            " NULL AS locationNameID"
+            " FROM entity"
+            " WHERE itemID in (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
+        }
+        ids = "";
+    }
+    
+    if (asteroidItems.size()) {
+        ListToINString(asteroidItems, ids, "0");
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            " itemID AS locationID,"
+            " itemName AS locationName,"
+            " x, y, z,"
+            " NULL AS locationNameID"
+            " FROM sysAsteroids"
+            " WHERE itemID in (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in GetMultiLocationsEx query: %s", res.error.c_str());
         }
