@@ -780,7 +780,10 @@ void Character::UpdateSkillQueue() {
             nextLevelSP = currentTraining->GetSPForLevel(level);
             CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
             if (CurrentSP >= nextLevelSP) {
-                currentTraining->SetAttribute(AttrExpiryTime, 0);
+                if (level == 5)
+                    currentTraining->DeleteAttribute(AttrExpiryTime);
+                else
+                    currentTraining->SetAttribute(AttrExpiryTime, 0);
                 currentTraining->SetFlag(flagSkill, true);
                 currentTraining = nullptr;
                 m_skillQueue.erase( m_skillQueue.begin() );
@@ -825,7 +828,10 @@ void Character::UpdateSkillQueue() {
 
             currentTraining->SetAttribute(AttrSkillLevel, level );
             currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
-            currentTraining->SetAttribute(AttrExpiryTime, 0);
+            if (level == 5)
+                currentTraining->DeleteAttribute(AttrExpiryTime);
+            else
+                currentTraining->SetAttribute(AttrExpiryTime, 0);
             currentTraining->SetFlag(flagSkill, true);
             m_skillQueue.erase( m_skillQueue.begin() );
 
@@ -863,7 +869,10 @@ void Character::UpdateSkillQueue() {
             nextLevelSP = currentTraining->GetSPForLevel(level);
             CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
             if (CurrentSP >= nextLevelSP) {
-                currentTraining->SetAttribute(AttrExpiryTime, 0);
+                if (level == 5)
+                    currentTraining->DeleteAttribute(AttrExpiryTime);
+                else
+                    currentTraining->SetAttribute(AttrExpiryTime, 0);
                 currentTraining->SetFlag(flagSkill, true);
                 currentTraining = nullptr;
                 m_skillQueue.erase( m_skillQueue.begin() );

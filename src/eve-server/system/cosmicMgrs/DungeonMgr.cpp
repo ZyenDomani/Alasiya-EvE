@@ -139,15 +139,10 @@ m_spawnMgr(nullptr)
 
 DungeonMgr::~DungeonMgr()
 {
-    /*  this may be hanging system unloading...
     //for now we're deleting everything till i can write proper item handling code
-    std::map<uint32, std::vector<uint32>>::iterator itr = m_dungeonList.begin();
-    while (itr != m_dungeonList.end()) {
-        std::vector<uint32>::iterator itr2 = itr->second.begin();
-        while (itr2 != itr->second.end())
-            InventoryDB::DeleteItem(*itr2);
-    }
-*/
+    for (auto cur : m_dungeonList)
+        for (auto item : cur.second)
+            InventoryDB::DeleteItem(item);
 }
 
 bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)

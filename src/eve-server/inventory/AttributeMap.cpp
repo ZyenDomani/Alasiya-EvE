@@ -122,8 +122,8 @@ bool AttributeMap::Save() {
             damage = true;
         } break;
     }
-    EvilNumber zero = 0;
-    bool first = true, save = false;
+
+    bool save = false;
     std::vector<AttrData> items;
     items.clear();
     AttrMapItr itr = mAttributes.begin();
@@ -137,24 +137,22 @@ bool AttributeMap::Save() {
                 save = true;
         if (owner)
             save = true;
-        if (save)
-            if (itr->second != zero) {
-                AttrData data;
-                data.itemID = mItem.itemID();
-                data.attrID = itr->first;
-                if ( itr->second.get_type() == evil_number_int ) {
-                    data.valueInt = itr->second.get_int();
-                    data.valueFloat = 0;
-                } else {
-                    data.valueInt = 0;
-                    data.valueFloat = itr->second.get_double();
-                }
-                items.push_back(data);
+        if (save) {
+            AttrData data;
+            data.itemID = mItem.itemID();
+            data.attrID = itr->first;
+            if ( itr->second.get_type() == evil_number_int ) {
+                data.valueInt = itr->second.get_int();
+                data.valueFloat = 0;
+            } else {
+                data.valueInt = 0;
+                data.valueFloat = itr->second.get_double();
             }
+            items.push_back(data);
+        }
     }
 
     m_db.SaveAttributes(items);
-
     return true;
 }
 
@@ -162,7 +160,6 @@ bool AttributeMap::Save() {
 void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
 {
     AttrMapItr itr = mAttributes.find(attrID);
-
     if (itr == mAttributes.end()) {
         mAttributes.insert(std::make_pair(attrID, num));
         if (nofity)
@@ -272,9 +269,8 @@ void AttributeMap::SaveShipState()
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
     bool shield = false, armor = false, hull = false;
     AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
-    if (cur != mAttributes.end())
+    if (cur != mAttributes.end()) {
         shield = true;
-    if (shield) {
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
         if ( cur->second.get_type() == evil_number_int ) {
             Inserts << cur->second.get_int() << ", NULL)";
@@ -283,9 +279,8 @@ void AttributeMap::SaveShipState()
         }
     }
     cur = mAttributes.find(AttrArmorDamage);
-    if (cur != mAttributes.end())
+    if (cur != mAttributes.end()) {
         armor = true;
-    if (armor) {
         if (shield)
             Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
@@ -296,9 +291,8 @@ void AttributeMap::SaveShipState()
         }
     }
     cur = mAttributes.find(AttrDamage);
-    if (cur != mAttributes.end())
+    if (cur != mAttributes.end()) {
         hull = true;
-    if (hull) {
         if (shield or armor)
             Inserts << ",";
         Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
@@ -326,6 +320,10 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         mAttributes.erase(itr);
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
+        _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+    }
 }
 
 AttrMapItr AttributeMap::begin() {

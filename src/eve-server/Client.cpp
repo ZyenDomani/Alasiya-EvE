@@ -604,8 +604,6 @@ void Client::UndockFromStation() {
 void Client::DockToStation() {
     m_clientState = ClientState::csIdle;
     pShipSE->DestinyMgr()->Dock();
-    m_ship->SaveShip();
-
     SetAutoPilot(false);
 
     m_ship->Dock();
