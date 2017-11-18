@@ -600,10 +600,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             GPoint stopPoint = (vectorFromOrigin * -radius);
             warpToPoint -= stopPoint;
         }
-    } else {
+    }
+    if (warpToPoint.isZero()) {
         // pSE is null....make error and return
-        codelog(CLIENT__ERROR, "%s: pSE = null.  cannot find location for '%s'", call.client->GetName(), type.c_str());
-        call.client->SendErrorMsg("WarpTo: item not found.");
+        codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location for '%s'", call.client->GetName(), type.c_str());
+        call.client->SendErrorMsg("WarpTo: Item location not found.");
         return new PyNone();
     }
 
