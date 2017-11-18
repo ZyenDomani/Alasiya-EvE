@@ -300,8 +300,8 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("nameID",       new PyNone());
         slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyNone()/*PyInt(m_allyID)*/);
-        slim->SetItemString("warFactionID", new PyNone()/*PyInt(m_warID)*/);
+        slim->SetItemString("allianceID",   new PyInt(m_allyID));
+        slim->SetItemString("warFactionID", new PyInt(m_warID));
     return slim;
 }
 
@@ -500,17 +500,17 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        if (!m_abandoned) { // this is ONLY for wrecks
+        if (m_abandoned or (m_fleetID != 0)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
             PyTuple* tuple1 = new PyTuple(4);
-                tuple1->SetItem(0, new PyInt(m_self->ownerID()));
-                tuple1->SetItem(1, new PyInt(m_corpID));
-                tuple1->SetItem(2, new PyNone());  // should be fleetID OR PyNone
-                tuple1->SetItem(3, new PyBool(false));
-            slim->SetItemString("lootRights",       tuple1);
+                tuple1->SetItem(0,              new PyInt(m_self->ownerID()));
+                tuple1->SetItem(1,              new PyInt(m_corpID));
+                tuple1->SetItem(2,              new PyInt(m_fleetID));
+                tuple1->SetItem(3,              new PyBool(m_abandoned));
+            slim->SetItemString("lootRights",   tuple1);
         }
         slim->SetItemString("corpID",           new PyInt(m_corpID));
-        slim->SetItemString("allianceID",       new PyLong(m_allyID));
-        slim->SetItemString("isEmpty",          new PyBool(IsEmpty()));
+        slim->SetItemString("allianceID",       new PyInt(m_allyID));
+        slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
         slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
@@ -522,45 +522,10 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("nameID",           tuple2);
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
 
+    if (is_log_enabled(DESTINY__DEBUG)) {
+        _log( DESTINY__DEBUG, "WreckSE::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        slim->Dump(DESTINY__DEBUG, "     ");
+    }
+
     return slim;
 }
-/*
-                                    [PyTuple 2 items]
-                                      [PyDict 12 kvp]
-                                        [PyString "itemID"]
-                                        [PyIntegerVar 9000000000000191669]
-                                        [PyString "typeID"]
-                                        [PyInt 26593]
-                                        [PyString "name"]
-                                        [PyString "Matriarch Alvus Wreck"]
-                                        [PyString "lootRights"]
-                                        [PyTuple 4 items]
-                                          [PyInt 90752035]              << ownerID
-                                          [PyInt 506478887]             << owners corpID
-                                          [PyIntegerVar 1306510806464]  << fleetID
-                                          [PyBool False]                << dunno
-                                        [PyString "corpID"]
-                                        [PyInt 506478887]
-                                        [PyString "allianceID"]
-                                        [PyInt 99001691]
-                                        [PyString "isEmpty"]
-                                        [PyBool True]
-                                        [PyString "launcherID"]
-                                        [PyIntegerVar 9000000000000163208]
-                                        [PyString "securityStatus"]
-                                        [PyFloat 1.30297432546709]
-                                        [PyString "ownerID"]
-                                        [PyInt 90752035]
-                                        [PyString "nameID"]
-                                        [PyTuple 2 items]
-                                          [PyString "UI/Inflight/WreckNameTypeID"]
-                                          [PyDict 1 kvp]
-                                            [PyString "WreckTypeID"]
-                                            [PyInt 23504]
-                                        [PyString "warFactionID"]
-                                        [PyNone]
-                                      [PyList 3 items]
-                                        [PyFloat 0]
-                                        [PyFloat 0]
-                                        [PyFloat 1]
-                            */

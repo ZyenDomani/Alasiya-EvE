@@ -246,6 +246,7 @@ protected:
     uint32                      m_warID;
     uint32                      m_corpID;
     uint32                      m_allyID;
+    uint32                      m_fleetID;
     uint32                      m_ownerID;
 
 };

@@ -208,6 +208,7 @@ void SystemEntity::Abandon()
     m_warID = 0;
     m_allyID = 0;
     m_corpID = 0;
+    m_fleetID = 0;
     m_ownerID = 0;
 }
 
