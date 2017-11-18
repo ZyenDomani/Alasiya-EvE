@@ -74,8 +74,8 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     }
 
     // Argument Discovery
-    Client * p_targetClient = nullptr;
-    SystemEntity * destinationEntity = nullptr;
+    Client* p_targetClient(nullptr);
+    SystemEntity* destinationEntity(nullptr);
     int locationID = 0, trMode = 0;
     GPoint destinationPoint(NULL_ORIGIN);
     uint32 argsCount = args.argCount();
@@ -101,22 +101,18 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     isFirstArgName = args.isNumber(1) ? false : true;
 
     // First, determine nature of First argument
-    if (isFirstArgName)
-    {
+    if (isFirstArgName) {
         // First argument is a string, find out if it's a character or solar system:
         if ((name1 == "me") && (argsCount < 3))
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>FIRST ARGUMENT WAS 'me' BUT MISSING SECOND ARGUMENT!").c_str()));
 
         if (name1 == "me")
             p_targetClient = who;
-        else
-        {
+        else {
             // First argument is a string of a character or solar system:
             //TODO
         }
-    }
-    else
-    {
+    } else {
         // First argument is a number, find out if it's a character, ship, NPC, station, belt, stargate, or solar system:
         //TODO
         p_targetClient = who;
@@ -137,29 +133,24 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         throw PyException(MakeCustomError(std::string(usageString+"<br><br>UNABLE TO DETERMINE FORMAT OF ARGUMENTS 1 and 2!").c_str()));
 
 
-    if (argsCount == 3)
-    {
+    if (argsCount == 3) {
         // We are transporting either THIS client 'who' or some other entity or character to somewhere:
         name2 = args.arg(2);
         isSecondArgName = args.isNumber(2) ? false : true;
 
         // Determine nature of Second argument
-        if (isSecondArgName)
-        {
+        if (isSecondArgName) {
             // Second argument is a string, find out if it's a character or solar system:
             //TODO
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>NOT SUPPORTED YET!").c_str()));
-        }
-        else
-        {
+        } else {
             // Second argument is a number, find out if it's a character, ship, NPC, station, belt, stargate, or solar system:
             //TODO
             throw PyException(MakeCustomError(std::string(usageString+"<br><br>NOT SUPPORTED YET!").c_str()));
         }
     }
 
-    if (argsCount == 4)
-    {
+    if (argsCount == 4) {
         // SPECIAL CASE:  We are transporting ourselves to a specific (x,y,z) coordinate in the current solar system:
         p_targetClient = who;
         locationID = who->GetLocationID();
@@ -229,7 +220,7 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
     );
 
     InventoryItemRef i = services->item_factory->SpawnItem(idata);
-    if (!i)
+    if (i.get() == nullptr)
         throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
 
     //Move to location
@@ -242,9 +233,8 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
 }
 
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 2) {
+    if (args.argCount() < 2)
         throw PyException(MakeCustomError("Correct Usage: /create [typeID]"));
-    }
 
     //basically, a copy/paste from Command_create. The client seems to call this multiple times,
     //each time it creates an item
@@ -281,7 +271,7 @@ PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, 
     );
 
     InventoryItemRef i = services->item_factory->SpawnItem(idata);
-    if (!i)
+    if (i.get() == nullptr)
         throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
 
     //Move to location
@@ -304,13 +294,13 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
             throw PyException(MakeCustomError("/kill NOT supported on non-ship types at this time"));
 
         SystemEntity* shipEntity = who->SystemMgr()->GetSE(entity);
-        if (!shipEntity) {
+        if (shipEntity == nullptr) {
             throw PyException(MakeCustomError("/kill cannot process this object"));
             sLog.Error("GMCommands - Command_kill()", "Cannot process this object, aborting kill: %s [%u]", itemRef->itemName().c_str(), itemRef->itemID());
         } else {
             who->SystemMgr()->RemoveEntity(shipEntity);
             if (shipEntity->IsNPCSE()) {
-                NPC * npcEntity = shipEntity->GetNPCSE();
+                NPC* npcEntity = shipEntity->GetNPCSE();
                 Damage fatal_blow(who->GetShipSE(),true);
                 npcEntity->Killed(fatal_blow);
                 delete npcEntity;
@@ -323,20 +313,19 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
     } else
         throw PyException(MakeCustomError("Correct Usage: /kill <entityID>"));
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult Command_killallnpcs(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (args.argCount() == 1)
-    {
+    if (args.argCount() == 1) {
         if (!who->GetShipSE()->SysBubble())
             who->EnterSystem(who->GetSystemID());
 
         std::vector<SystemEntity *> whosBubbleEntityList;
         who->GetShipSE()->SysBubble()->GetEntities(whosBubbleEntityList);
         std::vector<SystemEntity *>::const_iterator cur = whosBubbleEntityList.begin();
-        for(; cur != whosBubbleEntityList.end(); cur++) {
+        for (; cur != whosBubbleEntityList.end(); cur++) {
             if ((*cur)->IsNPCSE()) {
                 Damage fatal_blow(who->GetShipSE(),true);
                 (*cur)->GetNPCSE()->Killed(fatal_blow);
@@ -345,7 +334,7 @@ PyResult Command_killallnpcs(Client* who, CommandDB* db, PyServiceMgr* services,
     } else
         throw PyException(MakeCustomError("Correct Usage: /killallnpcs"));
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
@@ -366,7 +355,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
     SystemEntity* pSE = who->SystemMgr()->GetSE(itemID);
 
     // Actually do the unspawn using SystemManager's RemoveEntity:
-    if (!pSE) {
+    if (pSE == nullptr) {
         throw PyException(MakeCustomError("Un-Spawn Failed: itemID %u not found.", itemID));
     } else {
         who->SystemMgr()->RemoveEntity(pSE);
@@ -382,14 +371,18 @@ PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, co
 {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
     DestinyManager *dm = who->GetShipSE()->DestinyMgr();
-    SystemBubble *b = who->GetShipSE()->SysBubble();
-    uint16 bubble = b->GetID();
+    SystemBubble *pBubble = who->GetShipSE()->SysBubble();
+    if (pBubble == nullptr) {
+        sBubbleMgr.Add(who->GetShipSE());
+        pBubble = who->GetShipSE()->SysBubble();
+    }
+    uint16 bubble = pBubble->GetID();
 
     const GPoint &loc = dm->GetPosition();
     const GVector &vel = dm->GetVelocity();
@@ -415,9 +408,9 @@ PyResult Command_syncloc(Client* who, CommandDB* db, PyServiceMgr* services, con
 {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
     who->GetShipSE()->DestinyMgr()->SetPosition(who->GetShipSE()->GetPosition(), true);
@@ -428,15 +421,19 @@ PyResult Command_syncloc(Client* who, CommandDB* db, PyServiceMgr* services, con
 PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
     who->GetShipSE()->DestinyMgr()->SetPosition(who->GetShipSE()->GetPosition(), true);
 
-    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
-    m_bubble->SendAddBalls(who->GetShipSE());
+    SystemBubble *pBubble = who->GetShipSE()->SysBubble();
+    if (pBubble == nullptr) {
+        sBubbleMgr.Add(who->GetShipSE());
+        pBubble = who->GetShipSE()->SysBubble();
+    }
+    pBubble->SendAddBalls(who->GetShipSE());
 
     who->SetStateSent(false);
     who->GetShipSE()->DestinyMgr()->SendSetState();
@@ -446,9 +443,9 @@ PyResult Command_update(Client *who, CommandDB *db, PyServiceMgr *services, cons
 PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
     who->SetStateSent(false);
@@ -459,13 +456,17 @@ PyResult Command_sendstate(Client *who, CommandDB *db, PyServiceMgr *services, c
 PyResult Command_addball(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
-    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
-    m_bubble->SendAddBalls(who->GetShipSE());
+    SystemBubble *pBubble = who->GetShipSE()->SysBubble();
+    if (pBubble == nullptr) {
+        sBubbleMgr.Add(who->GetShipSE());
+        pBubble = who->GetShipSE()->SysBubble();
+    }
+    pBubble->SendAddBalls(who->GetShipSE());
 
     return new PyString("Update sent.");
 }
@@ -473,13 +474,17 @@ PyResult Command_addball(Client *who, CommandDB *db, PyServiceMgr *services, con
 PyResult Command_addball2(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
     if (!who->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (who->GetShipSE()->DestinyMgr() == nullptr)
         who->SetDestiny(NULL_ORIGIN);
-    if (!who->GetShipSE()->SysBubble())
+    if (who->GetShipSE()->SysBubble() == nullptr)
         who->EnterSystem(who->GetSystemID());
 
-    SystemBubble *m_bubble = who->GetShipSE()->SysBubble();
-    m_bubble->SendAddBalls2(who->GetShipSE());
+    SystemBubble *pBubble = who->GetShipSE()->SysBubble();
+    if (pBubble == nullptr) {
+        sBubbleMgr.Add(who->GetShipSE());
+        pBubble = who->GetShipSE()->SysBubble();
+    }
+    pBubble->SendAddBalls2(who->GetShipSE());
 
     return new PyString("Update sent.");
 }
@@ -497,14 +502,14 @@ PyResult Command_cloak(Client* who, CommandDB* db, PyServiceMgr* services, const
     } else
         throw PyException(MakeCustomError("Correct Usage: /cloak"));
 
-    return NULL;
+    return nullptr;
 }
 
 PyResult Command_hop(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /*22:49:01 W GMCommands: Command_hop(): This command passes args.argCount() = 1.
      * sm.RemoteSvc('slash').SlashCmd('/hop %s' % distance)
      */
-    return NULL;
+    return nullptr;
 }
 
 //13:54:11 W GMCommands: Command_sov(): This command passes args.argCount() = 3.
@@ -518,7 +523,7 @@ PyResult Command_sov(Client* who, CommandDB* db, PyServiceMgr* services, const S
      * 16:40:32 [CmdDump]       Tuple: 1 elements
      * 16:40:32 [CmdDump]         [ 0] String: '/sov complete 140035963'
      */
-    return NULL;
+    return nullptr;
 }
 
 //13:54:11 W GMCommands: Command_pos(): This command passes args.argCount() = 3.
@@ -537,5 +542,5 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      * 16:39:26 [CmdDump]       Tuple: 1 elements
      * 16:39:26 [CmdDump]         [ 0] String: '/pos offline 140035963'
      */
-    return NULL;
+    return nullptr;
 }
