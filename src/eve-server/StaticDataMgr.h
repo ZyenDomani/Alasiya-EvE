@@ -100,17 +100,16 @@ private:
     std::map<uint32, StationData>                       m_stationData;      // stationID/data
     std::map<uint16, std::string>                       m_skills;           // typeID/name
 
-    std::unordered_multimap<uint16, ramMaterials>       m_ramMatl;          // itemTypeID/data
-    std::unordered_multimap<uint16, ramRequirements>    m_ramReq;           // bpTypeID/data
-    std::unordered_multimap<std::string, OreTypeChance> m_oreBySecClass;    // systemSecClass/data
+    std::multimap<uint16, ramMaterials>       m_ramMatl;          // itemTypeID/data
+    std::multimap<uint16, ramRequirements>    m_ramReq;           // bpTypeID/data
+    std::multimap<std::string, OreTypeChance> m_oreBySecClass;    // systemSecClass/data
 
-    std::unordered_multimap<uint16, DmgTypeAttribute>   m_typeAttrMap;      // typeID/data<attrID, value>
+    std::multimap<uint16, DmgTypeAttribute>   m_typeAttrMap;      // typeID/data<attrID, value>
 
     /* spawn data */
-    std::unordered_multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
-    std::unordered_multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
-    std::unordered_multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
-
+    std::multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
+    std::multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
+    std::multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
 };
 
 //Singleton
