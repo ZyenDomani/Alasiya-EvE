@@ -1475,18 +1475,19 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
         if (!mySE->SysBubble()->InBubble(m_position)) {
             _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Remove() .", \
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-            sBubbleMgr.Remove(mySE);
+            mySE->SysBubble()->Remove(mySE);
             m_inBubble = false;
         }
     }
     if (m_warpState->decel) {
-        if ((!m_inBubble) and (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000))) {    //this assumes target is center of bubble.  will have to fix one day.
-            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
+        if (!m_inBubble)
+            if (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000)) {    //this assumes target is center of bubble.  will have to fix one day.
+                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
                     mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-            sBubbleMgr.Add(mySE, true);
-            SetPosition(m_position, true);
-            m_inBubble = true;
-        }
+                sBubbleMgr.Add(mySE, true);
+                SetPosition(m_position, true);
+                m_inBubble = true;
+            }
     }
 }
 
