@@ -756,16 +756,19 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 
 	SystemEntity* pSE(nullptr);
 	SystemManager* pSysMgr = call.client->SystemMgr();
-    PyList* list = new PyList();
 	for (auto cur : arg.ints) {
         pSE = pSysMgr->GetSE(cur);
         if (pSE == nullptr)
             continue;
+        PyList* list = new PyList();
         pSE->Abandon();
         list->AddItem( new PyObject("foo.SlimItem", pSE->MakeSlimItem()));
+        PyTuple* tuple = new PyTuple(1);
+            tuple->SetItem(0, list);
+        pSE->DestinyMgr()->SendSingleDestinyUpdate(&tuple);
     }
 
-    return list;
+    return new PyNone();
 }
 
 PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
