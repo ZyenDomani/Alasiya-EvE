@@ -66,13 +66,6 @@ protected:
         if ( !ManagerDB::GetAsteroidData( asteroidID, dbData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadAsteroid<_Ty>( factory, asteroidID, type, data, dbData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadAsteroid(ItemFactory& factory, uint32 asteroidID, const ItemType& type, const ItemData& data, const AsteroidData& dbData)
-    {
         return AsteroidItemRef( new AsteroidItem( factory, asteroidID, type, data, dbData ) );
     }
 

@@ -361,10 +361,10 @@ void NPC::Killed(Damage &fatal_blow) {
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
-        wreckEntity.allianceID = killer->GetAllianceID();
+    wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
         wreckEntity.corporationID = killer->GetCorporationID();
-        wreckEntity.factionID = killer->GetWarFactionID();
+        wreckEntity.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
         wreckEntity.groupID = EVEDB::invGroups::Wreck;
         wreckEntity.itemID = wreckItemRef->itemID();
         wreckEntity.itemName = wreck_name;
