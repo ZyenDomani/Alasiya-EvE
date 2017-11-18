@@ -58,7 +58,7 @@ protected:
     typedef std::vector<RatSpawnClass> RatSpawnClassVec;
     typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
     typedef std::map<uint8, uint32> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
-    typedef std::unordered_multimap<uint16, SpawnEntry> SpawnEntryDef;    //bubbleID is key
+    typedef std::multimap<uint16, SpawnEntry> SpawnEntryDef;    //bubbleID is key
     //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 
 private:

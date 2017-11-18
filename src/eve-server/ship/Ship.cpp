@@ -175,6 +175,8 @@ void ShipItem::LogOut()
     // reset ship effects and save ship data
     //ProcessEffects();
 
+    SaveShip();
+
     // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
     m_factory.RemoveItem(m_itemID);
 

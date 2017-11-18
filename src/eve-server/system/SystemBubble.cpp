@@ -140,7 +140,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	}
     pDSE = nullptr;
 
-    if (HasPlayers() and (!m_spawned))
+    if (HasPlayers() and (m_spawned))
         ResetBubbleRatSpawn();
 }
 
@@ -151,6 +151,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
 		     pSE->GetID(), GetID());
 		return;
 	}
+
+    pSE->m_bubble = this;
 
 	if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
@@ -168,8 +170,6 @@ void SystemBubble::Add(SystemEntity* pSE) {
         if (sConfig.server.StackTrace)
             EvE::traceStack();
     }
-
-	pSE->m_bubble = this;
 
 	//insert the global entitys into their own list
 	if (pSE->IsStaticEntity()) {
@@ -357,9 +357,7 @@ uint32 SystemBubble::CountNPCs() {
 
 bool SystemBubble::InBubble(const GPoint& pt) const
 {
-	if (m_center.distance(pt) < m_radius_hysteresis)
-		return true;
-	return false;
+    return (m_center.distance(pt) < m_radius_hysteresis);
 }
 
 void SystemBubble::PrintEntityList() {

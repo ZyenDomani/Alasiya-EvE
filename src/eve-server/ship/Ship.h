@@ -446,6 +446,7 @@ public:
 
     /* specific functions handled here. */
     void PayInsurance();
+    void SaveShip()                                     { m_shipRef->SaveShip(); }
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
 
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }

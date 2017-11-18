@@ -55,7 +55,7 @@ public:
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }
     bool IsSpawned()                                    { return m_spawned; }
-    void SetSpawned(bool set)                           { m_spawned = set; }
+    void SetSpawned(bool set=true)                      { m_spawned = set; }
     void SetSpawnTimer(bool isBelt=false);
 
     /* various count queries */

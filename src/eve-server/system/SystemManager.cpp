@@ -807,10 +807,10 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
     if (m_activeRatSpawns < count ) {
         if (m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating)) {
             m_ratBubbles.push_back(pSysBubble->GetID());
-            _log(SPAWN__TRACE, "DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
+            _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
         } else {
             m_spawnMgr->StopMainTimer();
-            _log(SPAWN__ERROR, "DoSpawnForBubble() returned false for bubble %u.", pSysBubble->GetID());
+            _log(SPAWN__ERROR, "SystemManager::DoSpawnForBubble() returned false for bubble %u.", pSysBubble->GetID());
         }
     }
 }

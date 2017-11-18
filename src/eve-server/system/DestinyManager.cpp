@@ -1412,7 +1412,6 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
      * speed = k*e^(k*s)
      */
     double currentDistance = exp(3 * sec_into_warp);
-    double currentShipSpeed = (3 * exp(3 * sec_into_warp));
 
     if (currentDistance > m_warpState->accelDist) {
         currentDistance = m_warpState->accelDist;
@@ -1424,6 +1423,7 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
     }
     m_targetDistance -= currentDistance;
 
+    double currentShipSpeed = (3 * currentDistance);
     _WarpUpdate(currentShipSpeed);
 
     _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f.", \
@@ -1455,44 +1455,37 @@ void DestinyManager::_WarpDecel(uint16 sec_into_warp) {
     m_targetDistance = (m_warpState->total_distance - currentDistance);
     double currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
 
-    if (currentShipSpeed <= m_speedToLeaveWarp) {
-        // stop warp, and return to normal(stop) mode
-        _WarpUpdate(currentShipSpeed);
-        _WarpStop(currentShipSpeed);
-        return;
-    }
     _WarpUpdate(currentShipSpeed);
-
     _log(DESTINY__WARP_TRACE, "Destiny::_WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
              mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
+
+    if (currentShipSpeed <= m_speedToLeaveWarp)
+        _WarpStop(currentShipSpeed);
 }
 
 void DestinyManager::_WarpUpdate(double currentShipSpeed) {
     //  update position and velocity for all stages.
     //  this method is ~1000m off actual.  could be due to rounding.   -allan 9Jan15
-    m_position = (m_targetPoint - (m_warpState->warp_vector * m_targetDistance));
     m_velocity = (m_warpState->warp_vector * currentShipSpeed);
-
-    SetPosition(m_position);
+    SetPosition(m_targetPoint - (m_warpState->warp_vector * m_targetDistance));
 
     if (m_inBubble) {
-        if (m_warpState->accel) {
-            if (!mySE->SysBubble()->InBubble(m_position)) {
-                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Remove() .", \
-                        mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-                sBubbleMgr.Remove(mySE);
-                m_inBubble = false;
-            }
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship is %f from center of bubble %u.",\
+                mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetCenter().distance(m_position), mySE->SysBubble()->GetID());
+        if (!mySE->SysBubble()->InBubble(m_position)) {
+            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Remove() .", \
+                    mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
+            sBubbleMgr.Remove(mySE);
+            m_inBubble = false;
         }
-    } else if (m_warpState->decel) {
-        if (!m_inBubble) {
-            if (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000)) {    //this assumes target is center of bubble.  will have to fix one day.
-                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
-                        mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-                sBubbleMgr.Add(mySE, true);
-                SetPosition(m_position, true);
-                m_inBubble = true;
-            }
+    }
+    if (m_warpState->decel) {
+        if ((!m_inBubble) and (m_targetDistance < (BUBBLE_RADIUS_METERS + 20000))) {    //this assumes target is center of bubble.  will have to fix one day.
+            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
+                    mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
+            sBubbleMgr.Add(mySE, true);
+            SetPosition(m_position, true);
+            m_inBubble = true;
         }
     }
 }

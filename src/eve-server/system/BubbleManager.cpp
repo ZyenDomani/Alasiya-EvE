@@ -139,23 +139,32 @@ void BubbleManager::RemoveEmpty()
 void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     if (pSE == nullptr)
         return;
-    const GPoint &pos(pSE->GetPosition());
-    if (pos.isZero())
+
+    if (pSE->GetPosition().isZero())
         ; /** @todo do something constructive here */
 
     SystemBubble* pBubble(nullptr);
-    GPoint newCenter(pos);
+    GPoint center(pSE->GetPosition());
     if (isPostWarp) {
         // Calculate new bubble's center based on entity's velocity and current position
-        NewBubbleCenter( pSE->GetVelocity(), newCenter );
+        NewBubbleCenter( pSE->GetVelocity(), center );
     }
 
-    pBubble = FindBubble(pSE->SystemMgr()->GetID(), newCenter);
+    pBubble = FindBubble(pSE->SystemMgr()->GetID(), center);
     if (pBubble != nullptr) {
         if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
             // this is an error.  bad bubble
             _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
             pBubble->Remove(pSE);
+        }
+        if (pSE->SysBubble() != nullptr) {
+            if (pSE->SysBubble() != pBubble) {
+                _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubbleID %u != pSE bubbleID %u", pBubble->GetID(), pSE->SysBubble()->GetID() );
+                pSE->SysBubble()->Remove(pSE);
+            } else if (pSE->SysBubble()->InBubble(pSE->GetPosition()))  {
+                _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) still in Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+                return;
+            }
         }
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to existing Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
         pBubble->Add(pSE);
@@ -163,7 +172,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
     }
     // this System Entity is not in any existing bubble, so let's make a new bubble
     // TODO check edges of bubbles....should NOT overlap.
-    pBubble = new SystemBubble(pSE->SystemMgr(), newCenter, BUBBLE_RADIUS_METERS);
+    pBubble = new SystemBubble(pSE->SystemMgr(), center, BUBBLE_RADIUS_METERS);
     m_bubbles.push_back(pBubble);
     m_bubbleMap.emplace(pSE->SystemMgr()->GetID(), pBubble);
 

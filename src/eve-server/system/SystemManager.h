@@ -106,6 +106,10 @@ public:
     typedef std::vector<uint32> SpawnBubbleVec;
     void RemoveSpawnBubble();
     void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
+    void IncRatSpawnCount()                             { ++m_activeRatSpawns; }
+    void DecRatSpawnCount()                             { --m_activeRatSpawns; }
+    void IncRoidSpawnCount()                            { ++m_activeRoidSpawns; }
+    void DecRoidSpawnCount()                            { --m_activeRoidSpawns; }
     uint8 BeltCount()                                   { return m_beltCount; }
     uint8 GetRatSpawnCount()                            { return m_activeRatSpawns; }
     uint16 GetRoidSpawnCount()                          { return m_activeRoidSpawns; }

@@ -133,14 +133,12 @@ Client::~Client() {
         if (pShipSE != nullptr)
             WarpOut();
 
-        if (!sConsole.IsShutdown()) {
-            m_char->LogOut();
-            // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
-            m_ship->LogOut();
-        }
-
         // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
+
+        m_char->LogOut();
+        // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
+        m_ship->LogOut();
 
         ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
         ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
@@ -451,7 +449,6 @@ void Client::WarpOut() {
     if (!InPod())
         m_ship->SetFlag(flagShipOffline);
     pShipSE->SetPosition(m_ship->position());
-    pShipSE->GetSelf()->SaveItem();
     DestroyShipSE();
     return;
     m_invulTimer.Start(ClientTimers::WarpOutInvul);

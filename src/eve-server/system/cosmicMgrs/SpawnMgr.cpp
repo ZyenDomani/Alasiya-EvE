@@ -106,8 +106,8 @@ void SpawnMgr::Process() {
     if (m_groupTimer.Enabled()) {
         if (m_groupTimer.Check()) {
             bool killTimer = true;
-            RatBubbleVec::iterator curBubbleItr = m_bubbles.begin(), end = m_bubbles.end();
-            while (curBubbleItr != end) {
+            RatBubbleVec::iterator curBubbleItr = m_bubbles.begin();
+            while (curBubbleItr != m_bubbles.end()) {
                 auto curSpawnItr = m_spawns.equal_range((*curBubbleItr)->GetID());
                 for (auto it = curSpawnItr.first; it != curSpawnItr.second; ++it) {
                     if (it->second.enabled) {
@@ -176,6 +176,7 @@ void SpawnMgr::SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID)
         //there is no SpawnEntry for this bubble (no spawns left here).  delete from the spawned list and reset bubble checks.
         m_bubbles.erase(std::find(m_bubbles.begin(), m_bubbles.end(), pSysBubble));
         pSysBubble->ResetBubbleRatSpawn();
+        m_system->DecRatSpawnCount();
     }
 }
 
@@ -207,15 +208,22 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     double profileStartTime = 0.0;
     if (sConfig.server.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    if (!FindSpawnForBubble(pSysBubble->GetID())) {
+    if (FindSpawnForBubble(pSysBubble->GetID())) {
+        _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pSysBubble->GetID());
+        pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
+        return false;
+    } else {
         sLog.Green("SpawnMgr", "DoSpawnForBubble called for bubble %u(%u) in %s(%u)(%.4f).",
                      pSysBubble->GetID(), sBubbleMgr.GetBeltID(pSysBubble->GetID()), m_system->GetName().c_str(), m_system->GetID(), secRating);
         if (PrepSpawn(pSysBubble, regionID, secRating)) {
             pSysBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
         } else {
+            _log(SPAWN__TRACE, "SpawnMgr::PrepSpawn() returned false for bubble %u.", pSysBubble->GetID());
             return false;
         }
     }
+
+    m_system->IncRatSpawnCount();
 
     /* this will throw off the accuracy of the profile, as this and Process() use the same data container */
     if (sConfig.server.UseProfiling)
@@ -509,7 +517,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
     RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
 
     FactionData data;
-        data.allianceID = 0;
+        data.allianceID = factionID;
         data.corporationID = corpID;
         data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
         data.ownerID = corpID;
@@ -560,7 +568,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
             se.type = type;
             se.sub = subtype;
             se.time = (sConfig.npc.RoamingTimer *60 *1000);
-            m_spawns.insert(std::pair<uint32, SpawnEntry>(pSysBubble->GetID(), se));
+            m_spawns.emplace(pSysBubble->GetID(), se);
             _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns.", se.spawnID);
         }
         ++cur;
@@ -578,22 +586,15 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
 
 void SpawnMgr::RemoveSpawn(uint32 bubbleID, uint32 itemID)
 {
-    uint32 count = sBubbleMgr.Count();
-    auto itr = m_spawns.equal_range(bubbleID);
-    auto cur = itr.first;
-    while (cur != itr.second) {
-        if (cur->first < count) {  // this should not be needed
-            if (cur->second.itemID == itemID) {
-                _log(SPAWN__TRACE, "RemoveSpawn() found item %u in spawnID %u and removed it.", itemID, cur->second.spawnID);
-                m_spawns.erase(cur);
-                return;
-            }
-        } else {
-            _log(SPAWN__TRACE, "RemoveSpawn()   cur.first > sBubbleMgr.Count().");
-            cur = m_spawns.erase(cur);
-            continue;
+    auto range = m_spawns.equal_range(bubbleID);
+    auto itr = range.first;
+    while (itr != range.second) {
+        if (itr->second.itemID == itemID) {
+            _log(SPAWN__TRACE, "RemoveSpawn() found item %u in spawnID %u and removed it.", itemID, itr->second.spawnID);
+            m_spawns.erase(itr);
+            return;
         }
-        ++cur;
+        ++itr;
     }
 
     _log(SPAWN__TRACE, "RemoveSpawn() did not find item %u in bubble %u, out of %u total spawns in the map.", itemID, bubbleID, m_spawns.size());
