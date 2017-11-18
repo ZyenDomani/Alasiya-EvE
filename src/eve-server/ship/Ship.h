@@ -136,15 +136,6 @@ protected:
                 return NULL;
         }
 
-        // continue with load
-        return _Ty::template _LoadShipType<_Ty>( factory, shipTypeID, group, data, weaponType, miningType, skillType, stData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static _Ty *_LoadShipType(ItemFactory &factory, uint32 shipTypeID, const ItemGroup &group, const TypeData &data,
-        const ItemType *weaponType, const ItemType *miningType, const ItemType *skillType, const ShipTypeData &stData)
-    {
         return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
     }
 
@@ -365,13 +356,6 @@ protected:
         }
 
         const ShipType &shipType = static_cast<const ShipType &>( type );
-        return _Ty::template _LoadShip<_Ty>( factory, shipID, shipType, data );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadShip(ItemFactory &factory, uint32 shipID, const ShipType &shipType, const ItemData &data)
-    {
         return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
     }
 

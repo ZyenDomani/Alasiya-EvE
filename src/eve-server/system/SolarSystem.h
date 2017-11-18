@@ -160,17 +160,8 @@ protected:
         if( !factory.db().GetSolarSystem( solarSystemID, ssData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadSolarSystem<_Ty>( factory, solarSystemID, type, data, cData, ssData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadSolarSystem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data,
-                    const CelestialObjectData &cData, const SolarSystemData &ssData)
-    {
         return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, ssData ) );
     }
-
 
     /*
      * Data members:

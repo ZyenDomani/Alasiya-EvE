@@ -154,19 +154,11 @@ protected:
             return nullptr;
 
         // load ship type
-        const ItemType* shipType = factory.GetType( charData.shipTypeID );
-        if( shipType == nullptr )
+        const ItemType* type = factory.GetType( charData.shipTypeID );
+        if( type == nullptr )
             return nullptr;
 
-        return _Ty::template _LoadCharacterType<_Ty>( factory, typeID, bloodlineID, group, data, *shipType, charData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static _Ty* _LoadCharacterType(ItemFactory& factory, uint32 typeID, uint8 bloodlineID, const ItemGroup& group, const TypeData& data,
-        const ItemType& shipType, const CharacterTypeData& charData)
-    {
-        return new CharacterType( typeID, bloodlineID, group, data, shipType, charData );
+        return new CharacterType( typeID, bloodlineID, group, data, *type, charData );
     }
 
     /*

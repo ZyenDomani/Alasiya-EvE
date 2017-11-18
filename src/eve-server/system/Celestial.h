@@ -91,13 +91,6 @@ protected:
         if (!factory.db().GetCelestialObject(celestialID, cData))
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadCelestialObject<_Ty>( factory, celestialID, type, data, cData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadCelestialObject(ItemFactory &factory, uint32 celestialID, const ItemType &type, const ItemData &data, const CelestialObjectData &cData)
-    {
         return CelestialObjectRef( new CelestialObject( factory, celestialID, type, data, cData ) );
     }
 

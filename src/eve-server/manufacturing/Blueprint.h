@@ -94,16 +94,7 @@ protected:
         if (!productType)
             return nullptr;
 
-        // create blueprint type
-        return _Ty::template _LoadBlueprintType<_Ty>( factory, typeID, group, data, parentBlueprintType, *productType, bpData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static _Ty *_LoadBlueprintType(ItemFactory& factory, uint32 typeID, const ItemGroup& group, const TypeData& data,
-        const BlueprintType *parentBlueprintType, const ItemType& productType, const BlueprintTypeData& bpData)
-    {
-        return new BlueprintType(typeID, group, data, parentBlueprintType, productType, bpData );
+        return new BlueprintType(typeID, group, data, parentBlueprintType, *productType, bpData );
     }
 
     /*
@@ -202,13 +193,6 @@ protected:
         if (!mdb.GetBlueprint( blueprintID, bpData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadBlueprint<_Ty>( factory, blueprintID, bpType, data, bpData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadBlueprint(ItemFactory& factory, uint32 blueprintID, const BlueprintType& bpType, const ItemData& data, BlueprintData& bpData)
-    {
         return BlueprintRef( new Blueprint( factory, blueprintID, bpType, data, bpData ) );
     }
 

@@ -120,14 +120,6 @@ protected:
         if( !factory.db().GetStationType(stationTypeID, stData) )
             return nullptr;
 
-        return _Ty::template _LoadStationType<_Ty>( factory, stationTypeID, group, data, stData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static _Ty *_LoadStationType(ItemFactory &factory, uint32 stationTypeID, const ItemGroup &group, const TypeData &data, const StationTypeData &stData)
-    {
-        // ready to create
         return new StationType( stationTypeID, group, data, stData );
     }
 
@@ -251,16 +243,7 @@ protected:
         if( !factory.db().GetStation( stationID, stData ) )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadStation<_Ty>( factory, stationID, stType, data, cData, stData );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadStation(ItemFactory &factory, uint32 stationID, const StationType &type, const ItemData &data,
-        const CelestialObjectData &cData, const StationInfo &stData)
-    {
-        // ready to create
-        return StationItemRef( new StationItem( factory, stationID, type, data, cData, stData ) );
+        return StationItemRef( new StationItem( factory, stationID, stType, data, cData, stData ) );
     }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);

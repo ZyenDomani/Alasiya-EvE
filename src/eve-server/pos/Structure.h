@@ -100,18 +100,10 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        return _Ty::template _LoadStructure<_Ty>( factory, structureID, type, data );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadStructure(ItemFactory &factory, uint32 structureID, const ItemType &itemType, const ItemData &data)
-    {
-        return StructureItemRef( new StructureItem( factory, structureID, itemType, data ) );
+        return StructureItemRef( new StructureItem( factory, structureID, type, data ) );
     }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
-
 };
 
 

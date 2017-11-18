@@ -49,7 +49,7 @@ class Skill
     friend class InventoryItem;
 public:
     virtual ~Skill() { /* do nothing here */ }
-    
+
     /**
      * Loads skill.
      *
@@ -112,13 +112,6 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        return _Ty::template _LoadSkill<_Ty>( factory, skillID, type, data );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadSkill(ItemFactory &factory, uint32 skillID, const ItemType &type, const ItemData &data)
-    {
         return SkillRef( new Skill( factory, skillID, type, data ) );
     }
 

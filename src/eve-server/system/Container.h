@@ -121,14 +121,7 @@ protected:
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        return _Ty::template _LoadCargoContainer<_Ty>( factory, containerID, type, data );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadCargoContainer(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data)
-    {
-        return CargoContainerRef( new CargoContainer( factory, containerID, itemType, data ) );
+        return CargoContainerRef( new CargoContainer( factory, containerID, type, data ) );
     }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
@@ -262,14 +255,7 @@ protected:
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        return _Ty::template _LoadWreck<_Ty>( factory, containerID, type, data );
-    }
-
-    // Actual loading stuff:
-    template<class _Ty>
-    static RefPtr<_Ty> _LoadWreck(ItemFactory &factory, uint32 containerID, const ItemType &itemType, const ItemData &data )
-    {
-        return WreckContainerRef( new WreckContainer( factory, containerID, itemType, data ) );
+        return WreckContainerRef( new WreckContainer( factory, containerID, type, data ) );
     }
 
     static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
