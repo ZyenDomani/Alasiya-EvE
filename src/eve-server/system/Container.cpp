@@ -487,10 +487,8 @@ void WreckSE::EncodeDestiny( Buffer& into )
     _log(SE__DESTINY, "WreckSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
-
 PyDict *WreckSE::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for WreckSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-// NOTE  commented items i havent figured out yet...  -allan 9Dec15
     PyTuple* nameID = new PyTuple(2);
         nameID->SetItem(0,  new PyString("UI/Inflight/WreckNameShipName"));
     PyDict* shipName = new PyDict;
@@ -500,12 +498,13 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
+        /* this needs more work.... */
         if (m_abandoned or (m_fleetID != 0)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
             PyTuple* tuple1 = new PyTuple(4);
                 tuple1->SetItem(0,              new PyInt(m_self->ownerID()));
                 tuple1->SetItem(1,              new PyInt(m_corpID));
-                tuple1->SetItem(2,              new PyInt(m_fleetID));
-                tuple1->SetItem(3,              new PyBool(m_abandoned));
+                tuple1->SetItem(2,              new PyNone()); //PyInt(m_fleetID));
+                tuple1->SetItem(3,              new PyBool(false));
             slim->SetItemString("lootRights",   tuple1);
         }
         slim->SetItemString("corpID",           new PyInt(m_corpID));

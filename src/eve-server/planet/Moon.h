@@ -38,7 +38,7 @@ public:
     virtual bool IsMoonSE()                             { return true; }
 
     /* virtual functions default to base class and overridden as needed */
-    virtual bool LoadExtras(SystemDB *db);
+    virtual bool LoadExtras();
 
 
     /* specific functions handled in this class. */

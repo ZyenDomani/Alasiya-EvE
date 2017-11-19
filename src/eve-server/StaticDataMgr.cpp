@@ -40,6 +40,7 @@ void StaticDataMgr::Clear()
     m_regions.clear();
     m_systemData.clear();
     m_staticData.clear();
+    m_salvageMap.clear();
     m_stationData.clear();
     m_typeAttrMap.clear();
     m_stationCount.clear();
@@ -57,14 +58,22 @@ void StaticDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
 
-    m_operands = m_db.GetOperands();
+    m_operands = ManagerDB::GetOperands();
     if (m_operands == nullptr)
         sLog.Error("    StaticDataMgr", "m_operands is null");
 
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
-    m_db.GetTypeAttributes(*res);
+    //get all groups from salvage table
+    ManagerDB::GetSalvageGroups(*res);
+    while( res->GetRow(row) )
+        m_salvageMap.emplace(row.GetInt(0), row.GetInt(1));
+    sLog.Cyan("    StaticDataMgr", "%u salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    ManagerDB::GetTypeAttributes(*res);
     DmgTypeAttribute typeAttr;
     while (res->GetRow(row)) {
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
@@ -80,7 +89,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetOreBySSC(*res);
+    ManagerDB::GetOreBySSC(*res);
     OreTypeChance oreChance;
     oreChance.typeID = oreChance.chance  = 0;
     while (res->GetRow(row)) {
@@ -93,7 +102,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetBlueprintType(*res);
+    ManagerDB::GetBlueprintType(*res);
     BlueprintTypeData bpTypeData;
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
@@ -117,7 +126,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetRAMRequirements(*res);
+    ManagerDB::GetRAMRequirements(*res);
     ramRequirements ramReq;
     ramReq.activityID = ramReq.requiredTypeID = ramReq.quantity = ramReq.damagePerJob = ramReq.recycle = 0;
     while (res->GetRow(row)) {
@@ -131,7 +140,7 @@ void StaticDataMgr::Populate()
     }
 
     res->Reset();
-    m_db.GetRAMMaterials(*res);
+    ManagerDB::GetRAMMaterials(*res);
     ramMaterials ramMatls;
     ramMatls.quantity = ramMatls.materialTypeID = 0;
     while (res->GetRow(row)) {
@@ -144,7 +153,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetSystemData(*res);
+    ManagerDB::GetSystemData(*res);
     SystemData sysData;
     while (res->GetRow(row)) {
         //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
@@ -161,14 +170,14 @@ void StaticDataMgr::Populate()
     }
 
     res->Reset();
-    m_db.GetStationRegion(*res);
+    ManagerDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
         m_stationRegion.insert(std::pair<uint32, uint32>(row.GetUInt(0), row.GetUInt(1)));
     }
 
     res->Reset();
-    m_db.GetStationSystem(*res);
+    ManagerDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
         m_stationSystem.insert(std::pair<uint32, uint32>(row.GetUInt(0), row.GetUInt(1)));
@@ -177,7 +186,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetStaticData(*res);
+    ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize
         StaticData staticData;
@@ -192,14 +201,14 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_mdb.GetStationCount(*res);
+    MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
         m_stationCount.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
     }
 
     res->Reset();
-    m_db.GetStationInfo(*res);
+    ManagerDB::GetStationInfo(*res);
     while (res->GetRow(row)) {
         //SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations
         StationData staData;
@@ -213,16 +222,16 @@ void StaticDataMgr::Populate()
     }
 
     res->Reset();
-    m_sdb.GetStationIDs(*res);
+    StationDB::GetStationIDs(*res);
     while (res->GetRow(row)) {
         //SELECT stationID FROM staStations   (then convert it into Python Data for storage and faster retrieval...)
-        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), m_sdb.DoGetStation(row.GetInt(0))));
+        m_stationPyData.insert(std::pair<uint32, PyObject*>(row.GetInt(0), StationDB::DoGetStation(row.GetInt(0))));
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Station data sets loaded in %.3fms.", (m_stationCount.size() + m_stationData.size() + m_stationPyData.size()), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetMoonResouces(*res);
+    ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
         m_moonGoo.insert(std::pair<uint16, uint8>(row.GetInt(0), (uint8)(row.GetFloat(1) *10)));
@@ -231,14 +240,14 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetRegionFaction(*res);
+    ManagerDB::GetRegionFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, factionID FROM mapRegions
         m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
 
     res->Reset();
-    m_db.GetRegionRatFaction(*res);
+    ManagerDB::GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
         m_ratRegions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
@@ -247,7 +256,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetSkillList(*res);
+    ManagerDB::GetSkillList(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
         m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
@@ -256,7 +265,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetFactionGroups(*res);
+    ManagerDB::GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
     while (res->GetRow(row)) {
@@ -266,7 +275,7 @@ void StaticDataMgr::Populate()
         factionGroup.groupID = row.GetInt(1);
         m_groups.emplace(row.GetInt(2), factionGroup);
 
-        m_db.GetGroupTypeIDs(row.GetInt(1), *res2);
+        ManagerDB::GetGroupTypeIDs(row.GetInt(1), *res2);
         while (res2->GetRow(row2)) {
             //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
             m_types.emplace(row.GetInt(1), row2.GetInt(0));
@@ -275,7 +284,7 @@ void StaticDataMgr::Populate()
     }
 
     res->Reset();
-    m_db.GetSpawnClasses(*res);
+    ManagerDB::GetSpawnClasses(*res);
     while (res->GetRow(row)) {
         //SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
         RatSpawnClass spawnClass;
@@ -302,7 +311,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    m_db.GetWHSystemClass(*res);
+    ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
         m_whRegions.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
@@ -327,6 +336,12 @@ void StaticDataMgr::GetInfo()
      */
 }
 
+void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
+    double randChance = 0.0;
+    auto itr = m_salvageMap.equal_range(factionID);
+    for (auto it = itr.first; it != itr.second; ++it)
+        itemList.push_back(it->second);
+}
 
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);

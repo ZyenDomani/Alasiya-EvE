@@ -10,10 +10,6 @@ COMMAND( translocate, ROLE_VIP,
          "(entityID) - Translocate to the specified entity" )
 COMMAND( tr, ROLE_VIP,
          "(who) (entityID) - Translocate the specified person to the specified entity" )
-COMMAND( spawnn, ROLE_SPAWN,
-         "(typeID) - Spawn an NPC with the specified type." )
-COMMAND( spawn, ROLE_SPAWN,
-         "(typeID) - Spawn an NPC with the specified type." )
 COMMAND( halt, ROLE_VIP,
          "- Immediatly stops ship, setting Destiny::State = dstball_halt.")
 COMMAND( location, ROLE_PLAYER,

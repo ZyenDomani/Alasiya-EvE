@@ -7,9 +7,9 @@
   */
 
 
+#include "StaticDataMgr.h"
 #include "ship/modules/Salvager.h"
 #include "system/Container.h"
-#include "system/LootSystem.h"
 #include "system/SystemManager.h"
 
 /* this class is for all salvage and data mining types */
@@ -107,7 +107,7 @@ void Salvager::CheckSuccess()
 void Salvager::DropSalvage()
 {
     std::vector<uint32> list;
-    sDGM_Salvage_Table.GetSalvage(m_targetSE->GetWarFactionID(), list);
+    sDataMgr.GetSalvage(m_targetSE->GetWarFactionID(), list);
     uint8 drop = 0;
     switch (m_accessChance) {       // drop qty * rate in config
         case  30: drop = 1; break;  //  1 to 3

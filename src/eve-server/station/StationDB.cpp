@@ -30,7 +30,7 @@
 /** @todo this needs updating and optimizing and put into staticdata.  --in progress 1Jan17  -allan */
 
 
-PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
+PyPackedRow *StationDB::GetSolarSystem(uint32 ssid) {
     /** @note wtf is this doing here?  */
     DBQueryResult res;
 
@@ -48,7 +48,7 @@ PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
         " mlwc.wormholeClassID"
         " FROM mapSolarSystems AS mss"
         " LEFT JOIN mapLocationWormholeClasses AS mlwc ON mlwc.locationID = mss.regionID"
-        " WHERE solarSystemID=%u", solarSystemID ))
+        " WHERE solarSystemID=%u", ssid ))
     {
         codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
         return NULL;
@@ -56,7 +56,7 @@ PyPackedRow *StationDB::GetSolarSystem(uint32 solarSystemID) {
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", solarSystemID);
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", ssid);
         return NULL;
     }
 

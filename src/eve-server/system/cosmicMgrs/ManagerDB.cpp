@@ -40,6 +40,13 @@ PyObjectEx *ManagerDB::GetOperands() {
 }
 
 
+void ManagerDB::GetSalvageGroups(DBQueryResult& res) {
+    //`factionSalvage` (`factionID`,`itemID`,`itemName`)
+    if (!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM factionSalvage")) {
+        codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
+        return;
+    }
+}
 
 void ManagerDB::GetBlueprintType(DBQueryResult& res) {
     if (!sDatabase.RunQuery(res,

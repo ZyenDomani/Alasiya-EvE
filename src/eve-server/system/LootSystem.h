@@ -95,9 +95,9 @@ class DGM_Loot_Groups_Table
       typedef std::vector<DBLootGroupType> LootGroupTypeVec;
       typedef std::vector<DBLootGroupType>::iterator LootGroupTypeVecItr;
 
-      typedef std::unordered_multimap<uint32, DBLootGroup> LootGroupDef;    /* npcGroupID is key */
-      typedef std::unordered_multimap<uint32, DBLootGroupType> LootGroupTypeMap;    /* itemGroupID is key */
-      typedef std::unordered_multimap<uint32, DBLootGroupType>::iterator LootGroupTypeMapItr;    /* itemGroupID is key */
+      typedef std::multimap<uint32, DBLootGroup> LootGroupDef;    /* npcGroupID is key */
+      typedef std::multimap<uint32, DBLootGroupType> LootGroupTypeMap;    /* itemGroupID is key */
+      typedef std::multimap<uint32, DBLootGroupType>::iterator LootGroupTypeMapItr;    /* itemGroupID is key */
 
   public:
       DGM_Loot_Groups_Table();
@@ -120,37 +120,5 @@ class DGM_Loot_Groups_Table
 #define sDGM_Loot_Groups_Table \
 ( DGM_Loot_Groups_Table::get() )
 //////////////////////////////////////////////////////////////////////////
-
-// This class is a singleton object, containing all salvage items/defs loaded from wrecksToSalvage table
-//  Allan 30Nov14
-class DGM_Salvage_Table
-: public Singleton< DGM_Salvage_Table >
-{
-protected:
-    void _Populate();
-
-    typedef std::unordered_multimap<uint32, uint32> SalvageDef;     /* factionID is key, itemID is value */
-
-    SalvageDef m_SalvageMap;
-
-public:
-    DGM_Salvage_Table();
-    ~DGM_Salvage_Table();
-
-    // Initializes the Table:
-    int Initialize();
-
-    // Returns vector of itemIDs
-    //  0 if no match
-    void GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
-
-private:
-    SystemDB m_db;
-};
-
-#define sDGM_Salvage_Table \
-( DGM_Salvage_Table::get() )
-//////////////////////////////////////////////////////////////////////////
-
 
 #endif

@@ -43,7 +43,7 @@ public:
     PyObject *GetSolSystemVisits(uint32);
     PyRep *GetDynamicData(uint8 type, uint8 time);
 
-    void GetStationCount(DBQueryResult& res);
+    static void GetStationCount(DBQueryResult& res);
 };
 
 #endif

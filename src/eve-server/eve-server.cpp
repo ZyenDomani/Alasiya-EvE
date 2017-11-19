@@ -415,8 +415,6 @@ int main( int argc, char* argv[] )
     sDGM_Types_to_Wrecks_Table.Initialize();
     sLog.Green("       ServerInit", "Loot Data");
     sDGM_Loot_Groups_Table.Initialize();
-    sLog.Green("       ServerInit", "Salvage Data");
-    sDGM_Salvage_Table.Initialize();
     sLog.Green("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
     sLog.Green("       ServerInit", "Planet Data");

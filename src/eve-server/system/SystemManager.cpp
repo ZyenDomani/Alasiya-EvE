@@ -263,8 +263,7 @@ bool SystemManager::LoadSystemStatics() {
     std::vector<DBSystemEntity> entities;
     entities.clear();
     m_entities.clear();
-    SystemDB m_db;
-    if (!m_db.LoadSystemStaticEntities(m_data.systemID, entities)) {
+    if (!SystemDB::LoadSystemStaticEntities(m_data.systemID, entities)) {
         _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_data.systemID);
         return false;
     }
@@ -326,7 +325,7 @@ bool SystemManager::LoadSystemStatics() {
             sBubbleMgr.Add(pSE);
             m_beltVector.push_back(cur.itemID);
         }
-        if (!pSE->LoadExtras(&m_db))
+        if (!pSE->LoadExtras())
             _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
 
         m_entities[cur.itemID] = pSE;
@@ -343,8 +342,8 @@ bool SystemManager::LoadSystemStatics() {
 
 bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
-    SystemDB m_db;
-    if (!m_db.LoadSystemDynamicEntities(m_data.systemID, entities)) {
+    entities.clear();
+    if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entities)) {
         _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
         return false;
     }
@@ -365,8 +364,8 @@ bool SystemManager::LoadSystemDynamics() {
 
 bool SystemManager::LoadPlayerDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
-    SystemDB m_db;
-    if (!m_db.LoadPlayerDynamicEntities(m_data.systemID, entities)) {
+    entities.clear();
+    if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entities)) {
         _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_data.systemID);
         return false;
     }

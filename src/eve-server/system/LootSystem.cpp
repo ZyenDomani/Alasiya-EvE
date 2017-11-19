@@ -129,10 +129,8 @@ void DGM_Loot_Groups_Table::_Populate()
     //cleanup
     SafeDelete(res);
 
-    sLog.Cyan("       Loot Table", "%u loot group buckets and %u definitions loaded in %.3fms.",
-             (m_LootGroupMap.bucket_count() + m_LootGroupTypeMap.bucket_count()),
-             (m_LootGroupMap.size() + m_LootGroupTypeMap.size()),
-              (GetTimeMSeconds() - start));
+    sLog.Cyan("       Loot Table", "%u loot groups and %u loot group types loaded in %.3fms.",
+             m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - start));
 }
 
 void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
@@ -184,51 +182,4 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
-}
-
-// ////////////////////// DGM_Salvage_Table Class ////////////////////////////
-//  Author:     Allan
-
-DGM_Salvage_Table::DGM_Salvage_Table()
-{
-    m_SalvageMap.clear();
-}
-
-DGM_Salvage_Table::~DGM_Salvage_Table()
-{
-    m_SalvageMap.clear();
-}
-
-int DGM_Salvage_Table::Initialize()
-{
-    _Populate();
-    return 1;
-}
-
-void DGM_Salvage_Table::_Populate()
-{
-    double start = GetTimeMSeconds();
-    DBQueryResult* res = new DBQueryResult();
-
-    //get all groups from salvage table
-    m_db.GetSalvageGroups(*res);
-    DBResultRow row;
-    while( res->GetRow(row) )
-        m_SalvageMap.emplace(row.GetInt(0), row.GetInt(1));
-
-    //cleanup
-    SafeDelete(res);
-    sLog.Cyan("    Salvage Table", "%u salvage definitions loaded in %.3fms.", m_SalvageMap.size(), (GetTimeMSeconds() - start));
-}
-
-void DGM_Salvage_Table::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
-    double start = GetTimeUSeconds();
-    double randChance = 0.0;
-
-    auto itr = m_SalvageMap.equal_range(factionID);
-    for (auto it = itr.first; it != itr.second; ++it)
-        itemList.push_back(it->second);
-
-    if (sConfig.server.UseProfiling)
-        sProfile.AddTime(_salvageProfile, GetTimeUSeconds() - start);
 }

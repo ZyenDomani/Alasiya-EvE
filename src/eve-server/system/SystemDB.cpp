@@ -285,14 +285,6 @@ void SystemDB::GetLootGroupTypes(DBQueryResult& res) {
     }
 }
 
-void SystemDB::GetSalvageGroups(DBQueryResult& res) {
-    //`factionSalvage` (`factionID`,`itemID`,`itemName`)
-    if(!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM factionSalvage")) {
-        codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
-        return;
-    }
-}
-
 void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetIDs, uint8 &total) {
 // groupID = 7
     DBQueryResult res;

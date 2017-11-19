@@ -124,8 +124,8 @@ MoonSE::MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
                 */
 }
 
-bool MoonSE::LoadExtras(SystemDB *db) {
-    if (!StaticSystemEntity::LoadExtras(db))
+bool MoonSE::LoadExtras() {
+    if (!StaticSystemEntity::LoadExtras())
         return false;
 
     /** @todo use this to initialize moongoo data, create planet manager for moon, or whatever else

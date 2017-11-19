@@ -1,6 +1,10 @@
 //no macroguard on purpose
 
 
+COMMAND( spawnn, ROLE_SPAWN,
+         "(typeID) - Spawn an NPC with the specified type." )
+COMMAND( spawn, ROLE_SPAWN,
+         "(typeID) - Spawn an NPC with the specified type." )
 COMMAND( search, ROLE_VIP,
          "(text) - Search for items matching the specified query" )
 COMMAND( giveisk, ROLE_GMH,

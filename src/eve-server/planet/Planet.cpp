@@ -41,8 +41,8 @@ PlanetSE::~PlanetSE()
     }
 }
 
-bool PlanetSE::LoadExtras(SystemDB* db) {
-    if (!StaticSystemEntity::LoadExtras(db))
+bool PlanetSE::LoadExtras() {
+    if (!StaticSystemEntity::LoadExtras())
         return false;
 
     /** @todo use this to initialize planet data, create planet manager, or whatever else i decide is needed for planet management

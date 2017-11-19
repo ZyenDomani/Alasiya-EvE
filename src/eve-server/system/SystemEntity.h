@@ -219,7 +219,7 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void                UpdateDamage()          { /* Do nothing here */ }
-    virtual bool                LoadExtras(SystemDB *db){ return true; }
+    virtual bool                LoadExtras()            { return true; }
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
@@ -272,7 +272,7 @@ public:
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
-    virtual bool                LoadExtras(SystemDB *db);
+    virtual bool                LoadExtras();
 
 };
 
@@ -289,7 +289,7 @@ public:
     virtual bool                IsBeltSE()              { return true; }
 
     /* virtual functions to be overridden in derived classes */
-    virtual bool                LoadExtras(SystemDB *db);
+    virtual bool                LoadExtras();
 
     /* generic access functions handled here */
     BeltMgr*                    GetBeltMgr()            { return m_beltMgr; }
@@ -318,7 +318,7 @@ public:
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions to be overridden in derived classes */
-    virtual bool                LoadExtras(SystemDB *db);
+    virtual bool                LoadExtras();
 
 protected:
     PyRep*                      m_jumps;

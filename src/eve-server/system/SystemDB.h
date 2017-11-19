@@ -34,28 +34,26 @@ class SystemDB
 {
 public:
     PyObject* ListFactions();
-    PyObject* ListJumps(uint32);
+    static PyObject* ListJumps(uint32);
 
     void GetGates(uint32 systemID, std::vector< DBGPointEntity >& gateIDs, uint8& total);
     void GetBelts(uint32 systemID, std::vector< DBGPointEntity >& beltIDs, uint8& total);
     void GetMoons(uint32 systemID, std::vector< DBGPointEntity >& moonIDs, uint8& total);
     void GetPlanets(uint32 systemID, std::vector<DBGPointEntity>& planetIDs, uint8& total);
-    
+
     static bool GetWrecksToTypes(DBQueryResult& res);
 
     static void GetLootGroups(DBQueryResult& res);
     static void GetLootGroupTypes(DBQueryResult& res);
-    static void GetSalvageGroups(DBQueryResult& res);
 
     static uint32 GetObjectLocationID( uint32 itemID );
 
     double GetItemTypeRadius( uint32 typeID );
     double GetCelestialRadius(uint32 itemID);
 
-    bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
-    bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
-    bool LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
-
+    static bool LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into);
+    static bool LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
+    static bool LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into);
 };
 
 

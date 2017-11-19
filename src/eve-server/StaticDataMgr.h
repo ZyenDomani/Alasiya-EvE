@@ -74,16 +74,14 @@ public:
     std::string         GetCorpName(uint32 corpID);
     std::string         GetFactionName(uint32 factionID);
 
+    void                GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
+
 protected:
     void                Populate();
 
     std::vector<uint16> m_items;
 
 private:
-    MapDB               m_mdb;
-    ManagerDB           m_db;
-    StationDB           m_sdb;
-
     PyObjectEx*                                         m_operands;
 
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
@@ -100,16 +98,20 @@ private:
     std::map<uint32, StationData>                       m_stationData;      // stationID/data
     std::map<uint16, std::string>                       m_skills;           // typeID/name
 
-    std::multimap<uint16, ramMaterials>       m_ramMatl;          // itemTypeID/data
-    std::multimap<uint16, ramRequirements>    m_ramReq;           // bpTypeID/data
-    std::multimap<std::string, OreTypeChance> m_oreBySecClass;    // systemSecClass/data
+    std::multimap<uint16, ramMaterials>                 m_ramMatl;          // itemTypeID/data
+    std::multimap<uint16, ramRequirements>              m_ramReq;           // bpTypeID/data
+    std::multimap<std::string, OreTypeChance>           m_oreBySecClass;    // systemSecClass/data
 
-    std::multimap<uint16, DmgTypeAttribute>   m_typeAttrMap;      // typeID/data<attrID, value>
+    std::multimap<uint16, DmgTypeAttribute>             m_typeAttrMap;      // typeID/data<attrID, value>
 
     /* spawn data */
-    std::multimap<uint32, uint32>             m_types;            // ratGroupID/ratTypeID
-    std::multimap<uint8, RatSpawnClass>       m_classes;          // spawnType/data
-    std::multimap<uint32, RatFactionGroups>   m_groups;           // factionID/data
+    std::multimap<uint32, uint32>                       m_types;            // ratGroupID/ratTypeID
+    std::multimap<uint8, RatSpawnClass>                 m_classes;          // spawnType/data
+    std::multimap<uint32, RatFactionGroups>             m_groups;           // factionID/data
+
+    /* salvage data */
+    std::multimap<uint32, uint32>                       m_salvageMap; // factionID/itemID
+
 };
 
 //Singleton

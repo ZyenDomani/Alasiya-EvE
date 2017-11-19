@@ -218,7 +218,7 @@ StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &serv
 {
 }
 
-bool StaticSystemEntity::LoadExtras(SystemDB *db) {
+bool StaticSystemEntity::LoadExtras() {
     return true;
 }
 
@@ -258,8 +258,8 @@ BeltSE::BeltSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* sys
 {
 }
 
-bool BeltSE::LoadExtras(SystemDB *db) {
-    if (!StaticSystemEntity::LoadExtras(db))
+bool BeltSE::LoadExtras() {
+    if (!StaticSystemEntity::LoadExtras())
         return false;
 
     if (m_bubble == nullptr)
@@ -275,8 +275,8 @@ StargateSE::StargateSE(InventoryItemRef self, PyServiceMgr &services, SystemMana
 {
 }
 
-bool StargateSE::LoadExtras(SystemDB *db) {
-    if (!StaticSystemEntity::LoadExtras(db))
+bool StargateSE::LoadExtras() {
+    if (!StaticSystemEntity::LoadExtras())
         return false;
 
     if (m_bubble == nullptr)
@@ -284,7 +284,7 @@ bool StargateSE::LoadExtras(SystemDB *db) {
 
     m_bubble->SetGate(true);
     _log(DESTINY__BUBBLE_DEBUG, "StargateSE::LoadExtras() - IsGate set to true for bubble %u.", m_bubble->GetID() );
-    m_jumps = db->ListJumps(m_self->itemID());
+    m_jumps = SystemDB::ListJumps(m_self->itemID());
     if (m_jumps != nullptr)
         return true;
 

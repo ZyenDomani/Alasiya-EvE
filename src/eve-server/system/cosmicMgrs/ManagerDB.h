@@ -22,37 +22,38 @@ public:
     /* db methods for... */
 
     /* data manager */
-    void GetOreBySSC(DBQueryResult& res);
-    void GetSkillList(DBQueryResult& res);
-    void GetSystemData(DBQueryResult& res);
-    void GetStaticData(DBQueryResult& res); // static items in a solar system
-    void GetStationInfo(DBQueryResult& res);
-    void GetMoonResouces(DBQueryResult& res);
-    void GetRAMMaterials(DBQueryResult& res);
-    void GetBlueprintType(DBQueryResult& res);
-    void GetStationSystem(DBQueryResult& res);
-    void GetStationRegion(DBQueryResult& res);
-    void GetTypeAttributes(DBQueryResult& res);
-    void GetRAMRequirements(DBQueryResult& res);
+    static void GetOreBySSC(DBQueryResult& res);
+    static void GetSkillList(DBQueryResult& res);
+    static void GetSystemData(DBQueryResult& res);
+    static void GetStaticData(DBQueryResult& res); // static items in a solar system
+    static void GetStationInfo(DBQueryResult& res);
+    static void GetMoonResouces(DBQueryResult& res);
+    static void GetRAMMaterials(DBQueryResult& res);
+    static void GetSalvageGroups(DBQueryResult& res);
+    static void GetBlueprintType(DBQueryResult& res);
+    static void GetStationSystem(DBQueryResult& res);
+    static void GetStationRegion(DBQueryResult& res);
+    static void GetTypeAttributes(DBQueryResult& res);
+    static void GetRAMRequirements(DBQueryResult& res);
 
-    PyObjectEx* GetOperands();
+    static PyObjectEx* GetOperands();
 
     /* belt manager */
     void ClearAsteroids();
     void SaveRoid(AsteroidData& data);
     void SaveSystemRoids(uint32 systemID, std::vector< AsteroidData >& roids);
-    void GetRegionFaction(DBQueryResult& res);
+    static void GetRegionFaction(DBQueryResult& res);
     bool RemoveAsteroid(uint32 asteroidID);
     static bool GetAsteroidData(uint32 asteroidID, AsteroidData& dbData);
     bool LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< AsteroidData >& into);
     static uint32 CreateRoidItemID(ItemData& idata, AsteroidData& adata);
 
     /* spawn manager */
-    void DeleteSpawnedRats();
-    void GetSpawnClasses(DBQueryResult& res);
-    void GetFactionGroups(DBQueryResult& res);
-    void GetRegionRatFaction(DBQueryResult& res);
-    void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
+    static void DeleteSpawnedRats();
+    static void GetSpawnClasses(DBQueryResult& res);
+    static void GetFactionGroups(DBQueryResult& res);
+    static void GetRegionRatFaction(DBQueryResult& res);
+    static void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
 
     /* dungeon manager */
     void GetDunRoomData(DBQueryResult& res);
@@ -73,7 +74,7 @@ public:
     static GPoint GetAnomalyPos(std::string& string);
 
     /* wormhole manager */
-    void GetWHSystemClass(DBQueryResult& res);
+    static void GetWHSystemClass(DBQueryResult& res);
 
 
 protected:
