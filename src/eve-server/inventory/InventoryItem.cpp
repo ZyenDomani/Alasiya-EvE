@@ -247,31 +247,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
         } break;
-        /*
-        case EVEDB::invCategories::Skill: {
-            return Skill::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Owner: {
-            return Character::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Ship: {
-            return ShipItem::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Structure:
-        case EVEDB::invCategories::SovereigntyStructure: {
-            //  this is for all Orbital and Structure items
-            return StructureItem::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Blueprint: {
-            BlueprintData bpData;
-                bpData.runs = -1;
-                bpData.copy = false;
-                bpData.mLevel = 0;
-                bpData.pLevel = 0;
-            return Blueprint::Spawn( factory, data, bpData );
-        }
-        */
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Deployable: {
@@ -283,10 +258,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             if (itemRef.get() == nullptr)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
-            itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
-            itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
-            itemRef->SetAttribute(AttrVolume,         itemRef->type().volume());       // Volume
-            itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
+            itemRef->SetAttribute(AttrMass,           iType->mass());           // Mass
+            itemRef->SetAttribute(AttrRadius,         iType->radius());       // Radius
+            itemRef->SetAttribute(AttrVolume,         iType->volume());       // Volume
+            itemRef->SetAttribute(AttrCapacity,       iType->capacity());   // Capacity
             return itemRef;
         }
         case EVEDB::invCategories::Charge: {
@@ -309,10 +284,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 }
                 if (itemRef.get() == nullptr)
                     return InventoryItemRef();
-                itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
-                itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
-                itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
-                itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
+                itemRef->SetAttribute(AttrMass,       iType->mass());           // Mass
+                itemRef->SetAttribute(AttrRadius,     iType->radius());       // Radius
+                itemRef->SetAttribute(AttrVolume,     iType->volume());       // Volume
+                itemRef->SetAttribute(AttrCapacity,   iType->capacity());   // Capacity
                 return itemRef;
             }
             _log(ITEM__ERROR, "Unhandled charge spawn");
@@ -336,10 +311,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
             stationRef->SetAttribute(AttrArmorDamage,   0.0);                                         // Armor Damage
-            stationRef->SetAttribute(AttrMass,          stationRef->type().mass());           // Mass
-            stationRef->SetAttribute(AttrRadius,        stationRef->type().radius());       // Radius
-            stationRef->SetAttribute(AttrVolume,        stationRef->type().volume());       // Volume
-            stationRef->SetAttribute(AttrCapacity,      stationRef->type().capacity());   // Capacity
+            stationRef->SetAttribute(AttrMass,          iType->mass());           // Mass
+            stationRef->SetAttribute(AttrRadius,        iType->radius());       // Radius
+            stationRef->SetAttribute(AttrVolume,        iType->volume());       // Volume
+            stationRef->SetAttribute(AttrCapacity,      iType->capacity());   // Capacity
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
@@ -360,10 +335,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 // THESE SHOULD BE MOVED INTO A CargoContainer::Spawn() function that does not exist yet
                 cargoRef->SetAttribute(AttrShieldCharge,  cargoRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
                 cargoRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-                cargoRef->SetAttribute(AttrMass,          cargoRef->type().mass());          // Mass
-                cargoRef->SetAttribute(AttrRadius,        cargoRef->type().radius());        // Radius
+                cargoRef->SetAttribute(AttrMass,          iType->mass());          // Mass
+                cargoRef->SetAttribute(AttrRadius,        iType->radius());        // Radius
                 cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
-                cargoRef->SetAttribute(AttrCapacity,      cargoRef->type().capacity());      // Capacity
+                cargoRef->SetAttribute(AttrCapacity,      iType->capacity());      // Capacity
                 return cargoRef;
             } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
                 // Spawn new Wreck Container
@@ -376,10 +351,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 // THESE SHOULD BE MOVED INTO A WreckContainer::Spawn() function that does not exist yet
                 wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
                 wreckRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-                wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass());          // Mass
-                wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
-                wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
-                wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
+                wreckRef->SetAttribute(AttrMass,          iType->mass());          // Mass
+                wreckRef->SetAttribute(AttrRadius,        iType->radius());        // Radius
+                wreckRef->SetAttribute(AttrVolume,        iType->volume());        // Volume
+                wreckRef->SetAttribute(AttrCapacity,      iType->capacity());      // Capacity
                 return wreckRef;
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
@@ -410,10 +385,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
     if (itemRef.get() == nullptr)
         return InventoryItemRef();
-    itemRef->SetAttribute(AttrMass,           itemRef->type().mass());           // Mass
-    itemRef->SetAttribute(AttrRadius,         itemRef->type().radius());       // Radius
+    itemRef->SetAttribute(AttrMass,           iType->mass());           // Mass
+    itemRef->SetAttribute(AttrRadius,         iType->radius());       // Radius
     itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
-    itemRef->SetAttribute(AttrCapacity,       itemRef->type().capacity());   // Capacity
+    itemRef->SetAttribute(AttrCapacity,       iType->capacity());   // Capacity
     return itemRef;
 }
 
