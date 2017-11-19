@@ -30,39 +30,6 @@
 /** @todo this needs updating and optimizing and put into staticdata.  --in progress 1Jan17  -allan */
 
 
-PyPackedRow *StationDB::GetSolarSystem(uint32 ssid) {
-    /** @note wtf is this doing here?  */
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT "
-        " mss.solarSystemID,"            // nr
-        " mss.solarSystemName,"            // string
-        " mss.x, mss.y, mss.z,"                    // double
-        " mss.radius,"                    // double
-        " mss.security,"                // double
-        " mss.constellationID,"            // nr
-        " mss.factionID,"                // nr
-        " mss.sunTypeID,"                // nr
-        " mss.regionID,"
-        " mlwc.wormholeClassID"
-        " FROM mapSolarSystems AS mss"
-        " LEFT JOIN mapLocationWormholeClasses AS mlwc ON mlwc.locationID = mss.regionID"
-        " WHERE solarSystemID=%u", ssid ))
-    {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
-        return NULL;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", ssid);
-        return NULL;
-    }
-
-    return DBRowToPackedRow(row);
-}
-
 void StationDB::GetStationIDs(DBQueryResult& res)
 {
     sDatabase.RunQuery(res, "SELECT stationID FROM staStations");

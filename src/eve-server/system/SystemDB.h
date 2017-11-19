@@ -35,6 +35,7 @@ class SystemDB
 public:
     PyObject* ListFactions();
     static PyObject* ListJumps(uint32);
+    static PyPackedRow* GetSolarSystem(uint32 ssid);
 
     void GetGates(uint32 systemID, std::vector< DBGPointEntity >& gateIDs, uint8& total);
     void GetBelts(uint32 systemID, std::vector< DBGPointEntity >& beltIDs, uint8& total);

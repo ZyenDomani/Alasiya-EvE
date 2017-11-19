@@ -34,8 +34,6 @@
 class StationDB : public ServiceDB
 {
 public:
-
-    PyPackedRow *GetSolarSystem(uint32 ssid);
     static PyObject* DoGetStation(uint32 stationID);
     PyRep *GetStationItemBits(uint32 stationID);
 

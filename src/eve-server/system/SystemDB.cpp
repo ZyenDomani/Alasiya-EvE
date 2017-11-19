@@ -55,6 +55,37 @@ PyObject* SystemDB::ListJumps(uint32 stargateID) {
     return DBResultToRowset(res);
 }
 
+PyPackedRow* SystemDB::GetSolarSystem(uint32 ssid) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        " mss.solarSystemID,"
+        " mss.solarSystemName,"
+        " mss.x, mss.y, mss.z,"
+        " mss.radius,"
+        " mss.security,"
+        " mss.constellationID,"
+        " mss.factionID,"
+        " mss.sunTypeID,"
+        " mss.regionID,"
+        " mlwc.wormholeClassID"
+        " FROM mapSolarSystems AS mss"
+        " LEFT JOIN mapLocationWormholeClasses AS mlwc ON mlwc.locationID = mss.regionID"
+        " WHERE solarSystemID=%u", ssid ))
+    {
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    DBResultRow row;
+    if(!res.GetRow(row)) {
+        codelog(DATABASE__ERROR, "Error in GetSolarSystem query: no solarsystem for id %d", ssid);
+        return nullptr;
+    }
+
+    return DBRowToPackedRow(row);
+}
+
 bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
     std::stringstream query;
     query << "SELECT itemID,typeID,groupID,radius";
