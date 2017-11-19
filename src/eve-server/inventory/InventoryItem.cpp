@@ -41,11 +41,7 @@
 /*
  * InventoryItem
  */
-InventoryItem::InventoryItem(
-    ItemFactory &_factory,
-    uint32 _itemID,
-    const ItemType &_type,
-    const ItemData &_data)
+InventoryItem::InventoryItem(ItemFactory &_factory, uint32 _itemID, const ItemType &_type, const ItemData &_data)
 : RefObject( 0 ),
   mAttributeMap(*this),
   m_inventory(nullptr),
@@ -76,7 +72,7 @@ InventoryItem::InventoryItem(
 InventoryItem::~InventoryItem()
 {
     // item should call save before object is removed.
-    // if item is being removed during shutdow, item factory is responsible for saving loaded items
+    // if item is being removed during shutdown, item factory is responsible for saving loaded items
 }
 
 InventoryItemRef InventoryItem::Load(ItemFactory &factory, uint32 itemID)
@@ -90,8 +86,8 @@ InventoryItemRef InventoryItem::SpawnItem(ItemFactory &factory, uint32 itemID, c
     InventoryItemRef itemRef = InventoryItemRef( new InventoryItem(factory, itemID, *iType, data) );
     if (itemRef.get() == nullptr)
         InventoryItemRef();
-    else
-        itemRef->_Load();
+
+    itemRef->_Load();
 	return itemRef;
 }
 
@@ -152,58 +148,7 @@ bool InventoryItem::_Load() {
 
 template<class _Ty>
 RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const ItemType &type, const ItemData &data) {
-    // See what to do next:
     switch( type.categoryID() ) {
-        /* not handled yet...
-        case EVEDB::invCategories::Material:
-        case EVEDB::invCategories::Module:
-        case EVEDB::invCategories::Charge:
-        case EVEDB::invCategories::Trading:
-        case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Commodity:
-        case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::Deployable:
-        case EVEDB::invCategories::Reaction:
-            not needed...
-        case EVEDB::invCategories::_System:
-        case EVEDB::invCategories::Drone:
-        case EVEDB::invCategories::Accessories:
-            */
-            case EVEDB::invCategories::Asteroid: {
-                return AsteroidItem::_LoadItem<AsteroidItem>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Orbitals:
-            case EVEDB::invCategories::Structure: {  // this is for all Orbital structure types (POS, customs offices, etc)
-                return StructureItem::_LoadItem<StructureItem>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Station: {
-                return StationItem::_LoadItem<StationItem>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Blueprint: {
-                return Blueprint::_LoadItem<Blueprint>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Ship: {
-                return ShipItem::_LoadItem<ShipItem>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Skill: {
-                return Skill::_LoadItem<Skill>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Owner: {
-                return Character::_LoadItem<Character>( factory, itemID, type, data );
-            }
-            case EVEDB::invCategories::Celestial: {
-                if (type.groupID() == EVEDB::invGroups::Wreck)
-                    return WreckContainer::_LoadItem<WreckContainer>( factory, itemID, type, data );
-                else if ((type.groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-                    or (type.groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                    or (type.groupID() == EVEDB::invGroups::Freight_Container)
-                    or (type.groupID() == EVEDB::invGroups::Cargo_Container) )
-                    return CargoContainer::_LoadItem<CargoContainer>( factory, itemID, type, data );
-                else if (type.groupID() == EVEDB::invGroups::Force_Field)   // POS force fields  - not sure if these need their own class
-                    return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
-                else
-                    return CelestialObject::_LoadItem<CelestialObject>( factory, itemID, type, data );
-            }
             case EVEDB::invCategories::Entity: {
                 //  added checks for all npc's   -allan 26Dec14
                 if ((type.groupID() == EVEDB::invGroups::Police_Drone)
@@ -292,9 +237,17 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Asteroid:
+        case EVEDB::invCategories::Skill:
+        case EVEDB::invCategories::Owner:
+        case EVEDB::invCategories::Ship:
+        case EVEDB::invCategories::Blueprint:
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::SovereigntyStructure:
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
         } break;
+        /*
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn( factory, data );
         }
@@ -307,7 +260,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::SovereigntyStructure: {
-            /*  this is for all Orbital and Structure items */
+            //  this is for all Orbital and Structure items
             return StructureItem::Spawn( factory, data );
         }
         case EVEDB::invCategories::Blueprint: {
@@ -318,6 +271,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 bpData.pLevel = 0;
             return Blueprint::Spawn( factory, data, bpData );
         }
+        */
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Deployable: {
@@ -336,39 +290,30 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             return itemRef;
         }
         case EVEDB::invCategories::Charge: {
+            uint32 itemID = 0;
+            InventoryItemRef itemRef;
             switch (data.flag) {
                 case EVEItemFlags::flagMissile: {
                     // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
-                    uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
+                    itemID = InventoryItem::CreateTempItemID( factory, data );
                     if (!itemID)
                         return InventoryItemRef();
-
-                    InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-                    if (itemRef.get() == nullptr)
-                        return InventoryItemRef();
-                    // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
-                    itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
-                    itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
-                    itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
-                    itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    return itemRef;
+                    itemRef = InventoryItem::SpawnItem( factory, itemID, data );
                 }
                 default: {
                     // Spawn generic item:
-                    uint32 itemID = InventoryItem::CreateItemID( factory, data );
+                    itemID = InventoryItem::CreateItemID( factory, data );
                     if (!itemID)
                         return InventoryItemRef();
-
-                    InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-                    if (itemRef.get() == nullptr)
-                        return InventoryItemRef();
-                    // THESE SHOULD BE MOVED INTO A Charge::Spawn() function that does not exist yet
-                    itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
-                    itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
-                    itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
-                    itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
-                    return itemRef;
+                    itemRef = InventoryItem::Load( factory, itemID );
                 }
+                if (itemRef.get() == nullptr)
+                    return InventoryItemRef();
+                itemRef->SetAttribute(AttrMass,       itemRef->type().mass());           // Mass
+                itemRef->SetAttribute(AttrRadius,     itemRef->type().radius());       // Radius
+                itemRef->SetAttribute(AttrVolume,     itemRef->type().volume());       // Volume
+                itemRef->SetAttribute(AttrCapacity,   itemRef->type().capacity());   // Capacity
+                return itemRef;
             }
             _log(ITEM__ERROR, "Unhandled charge spawn");
         }
@@ -378,9 +323,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             //uint32 itemID = InventoryItem::CreateTempItemID( factory, data );		// Use this to prevent entity from being stored in DB
 			if (!itemID)
 				return InventoryItemRef();
-			 InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-            if (itemRef.get() == nullptr)
-                return InventoryItemRef();
+            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
 			return itemRef;
         }
         case EVEDB::invCategories::Station: {
@@ -393,10 +336,10 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
             stationRef->SetAttribute(AttrArmorDamage,   0.0);                                         // Armor Damage
-            stationRef->SetAttribute(AttrMass,           stationRef->type().mass());           // Mass
-            stationRef->SetAttribute(AttrRadius,         stationRef->type().radius());       // Radius
-            stationRef->SetAttribute(AttrVolume,         stationRef->type().volume());       // Volume
-            stationRef->SetAttribute(AttrCapacity,       stationRef->type().capacity());   // Capacity
+            stationRef->SetAttribute(AttrMass,          stationRef->type().mass());           // Mass
+            stationRef->SetAttribute(AttrRadius,        stationRef->type().radius());       // Radius
+            stationRef->SetAttribute(AttrVolume,        stationRef->type().volume());       // Volume
+            stationRef->SetAttribute(AttrCapacity,      stationRef->type().capacity());   // Capacity
             return stationRef;
         }
         case EVEDB::invCategories::Celestial: {
@@ -444,8 +387,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 if (!itemID)
                     return InventoryItemRef();
                 InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-                if (itemRef.get() == nullptr)
-                    return InventoryItemRef();
                 return itemRef;
             } else {
                 // Spawn new Celestial Object
@@ -881,27 +822,6 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
 }
 
 bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
-    /*[00m14:51:55 [Error] Metal Scraps (140000072) in location 60014809, flag 4: Asked to merge with item 140000087 in location 60014809, flag 4.
-     * 14:51:55 [Error] EMP S (140000108) in location 60014809, flag 4: Asked to merge with item 140000109 in location 60014809, flag 4.
-     * 14:51:55 [Error] EMP S (140000108) in location 60014809, flag 4: Asked to merge with item 140000129 in location 60014809, flag 4.
-     * 14:51:55 [Error] Tritanium (140000067) in location 60014809, flag 4: Asked to merge with item 140000131 in location 60014809, flag 4.
-     */
-    /*
-    if (locationID() != to_merge->locationID()) {
-        if (! (flag() == flagHangar) and ( (to_merge->flag() >= flagHiSlot0) or (to_merge->flag() <= flagHiSlot7) )) {
-            _log(ITEM__ERROR, "%s (%u) in location %u asked to merge with item %u in location %u.", itemName().c_str(), itemID(), locationID(), to_merge->itemID(), to_merge->locationID());
-            // remove item from SystemManager
-            return false;
-        }
-    }
-    if (locationID() == to_merge->locationID()) {
-        if ((!( (flag() == flagCargoHold) and ( (to_merge->flag() >= flagHiSlot0) or (to_merge->flag() <= flagHiSlot7) ))) or \
-            (!( (flag() == flagHangar) and (to_merge->flag() == flagHangar) ))) {
-            _log(ITEM__ERROR, "%s (%u) in location %u, flag %u: Asked to merge with item %u in location %u, flag %u.", itemName().c_str(), itemID(), locationID(), flag(), to_merge->itemID(), to_merge->locationID(), to_merge->flag());
-            return false;
-        }
-    }
-    */
     if (singleton() or to_merge->singleton()) {
         throw PyException( MakeCustomError("You cannot stack assembled items."));
     }

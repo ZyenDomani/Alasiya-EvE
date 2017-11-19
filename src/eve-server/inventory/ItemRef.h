@@ -37,7 +37,6 @@ class Skill;
 class Certificate;
 class StructureItem;
 class CargoContainer;
-class SystemEntity;
 class WreckContainer;
 class Character;
 class SolarSystem;
@@ -47,31 +46,19 @@ class StationItem;
  * Typedefs for all item classes we have:
  */
 typedef RefPtr<AsteroidItem>             AsteroidItemRef;
-typedef RefPtr<const AsteroidItem>       AsteroidItemConstRef;
 typedef RefPtr<InventoryItem>            InventoryItemRef;
-typedef RefPtr<const InventoryItem>      InventoryItemConstRef;
 typedef RefPtr<Blueprint>                BlueprintRef;
-typedef RefPtr<const Blueprint>          BlueprintConstRef;
 typedef RefPtr<ShipItem>                 ShipItemRef;
-typedef RefPtr<const ShipItem>           ShipItemConstRef;
 typedef RefPtr<CelestialObject>          CelestialObjectRef;
-typedef RefPtr<const CelestialObject>    CelestialObjectConstRef;
 typedef RefPtr<Skill>                    SkillRef;
-typedef RefPtr<const Skill>              SkillConstRef;
 typedef RefPtr<Certificate>              CertificateRef;
-typedef RefPtr<const Certificate>        CertificateConstRef;
 typedef RefPtr<StructureItem>            StructureItemRef;
-typedef RefPtr<const StructureItem>      StructureItemConstRef;
 typedef RefPtr<CargoContainer>           CargoContainerRef;
-typedef RefPtr<const CargoContainer>     CargoContainerConstRef;
 typedef RefPtr<WreckContainer>           WreckContainerRef;
-typedef RefPtr<const WreckContainer>     WreckContainerConstRef;
 typedef RefPtr<Character>                CharacterRef;
 typedef RefPtr<const Character>          CharacterConstRef;
 typedef RefPtr<SolarSystem>              SolarSystemRef;
-typedef RefPtr<const SolarSystem>        SolarSystemConstRef;
 typedef RefPtr<StationItem>              StationItemRef;
-typedef RefPtr<const StationItem>        StationItemConstRef;
 
 #endif /* !__ITEM_REF__H__INCL__ */
 
