@@ -120,6 +120,28 @@ PyRep *BookmarkDB::GetFolders(uint32 ownerID) {
         return DBResultToCRowset(res);
 }
 
+const char* BookmarkDB::GetBookmarkName(uint32 bookmarkID)
+{
+
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  memo"
+        " FROM bookmarks"
+        " WHERE bookmarkID = %u",
+        bookmarkID))
+    {
+        sLog.Error( "BookmarkDB::GetBookmarkName()", "Failed to query bookmarkID %u: %s.", bookmarkID, res.error.c_str() );
+        return nullptr;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return nullptr;
+
+    return row.GetText(0);
+}
+
 bool BookmarkDB::GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z)
 {
     DBQueryResult res;

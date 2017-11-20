@@ -54,10 +54,9 @@ BookmarkService::BookmarkService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(BookmarkService, DeleteFolder);
     PyCallable_REG_CALL(BookmarkService, BookmarkLocation);
     PyCallable_REG_CALL(BookmarkService, BookmarkScanResult);
-
-    /*  NOT WORKING YET  */
     PyCallable_REG_CALL(BookmarkService, DeleteBookmarks);
     PyCallable_REG_CALL(BookmarkService, MoveBookmarksToFolder);
+    /*  NOT WORKING YET  */
     PyCallable_REG_CALL(BookmarkService, CopyBookmarks);
     PyCallable_REG_CALL(BookmarkService, AddBookmarkFromVoucher);
 
@@ -317,26 +316,6 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 
 
 PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
-  /**
-            rows = bookmarkMgr.MoveBookmarksToFolder(folderID, bookmarkIDs)
-
-23:39:40 E BookmarkService::Handle_MoveBookmarksToFolder(): Service is not handled yet.  Returning NULL.
-23:39:40 [SvcCall]   Call Arguments:
-23:39:40 [SvcCall]       Tuple: 2 elements
-23:39:40 [SvcCall]         [ 0] Integer field: 2  <-folderID  can be PyNone for root folder
-23:39:40 [SvcCall]         [ 1] ObjectEx:
-23:39:40 [SvcCall]         [ 1] Header:
-23:39:40 [SvcCall]         [ 1]   Tuple: 2 elements
-23:39:40 [SvcCall]         [ 1]     [ 0] Token: '__builtin__.set'
-23:39:40 [SvcCall]         [ 1]     [ 1] Tuple: 1 elements
-23:39:40 [SvcCall]         [ 1]     [ 1]   [ 0] List: 1 elements  <-bookmarkIDs as list
-23:39:40 [SvcCall]         [ 1]     [ 1]   [ 0]   [ 0] Integer field: 13
-23:39:40 [SvcCall]         [ 1] List data:
-23:39:40 [SvcCall]         [ 1]   Empty
-23:39:40 [SvcCall]         [ 1] Dict data:
-23:39:40 [SvcCall]         [ 1]   Empty
-*/
-
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());

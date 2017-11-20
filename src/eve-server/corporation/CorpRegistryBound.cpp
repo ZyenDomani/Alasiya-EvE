@@ -477,7 +477,7 @@ PyResult CorpRegistryBound::Handle_GetLockedItemLocations( PyCallArgs& call )
     call.Dump(CORP__CALL_DUMP);
 
     //this returns an empty list for me on live.
-    return new PyList;
+    return new PyList();
 }
 
 PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
@@ -487,7 +487,7 @@ PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
         return nullptr;
     }
 
-    PyList * result = new PyList;
+    PyList * result = new PyList();
     Item_GetSuggestedTickerNames sTN;
     sTN.tN = "";
     uint32 cnLen = args.arg.length();
@@ -503,9 +503,6 @@ PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetStations(PyCallArgs &call) {
-    // No param
-
-    // Need to fetch stations of current corporation...
     return m_db.GetStations(call.client->GetCorporationID());
 }
 

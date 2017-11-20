@@ -231,7 +231,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         //! TODO not handled.
         case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Material:
-        case EVEDB::invCategories::Accessories:
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Commodity:
@@ -247,6 +246,14 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
         } break;
+        case EVEDB::invCategories::Accessories: { // this is for bookmark vouchers
+            // Spawn generic item:
+            uint32 itemID = InventoryItem::CreateItemID( factory, data );
+            if (!itemID)
+                return InventoryItemRef();
+            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
+            return itemRef;
+        }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Deployable: {
@@ -254,7 +261,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
             if (!itemID)
                 return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
             if (itemRef.get() == nullptr)
                 return InventoryItemRef();
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
@@ -280,7 +287,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                     itemID = InventoryItem::CreateItemID( factory, data );
                     if (!itemID)
                         return InventoryItemRef();
-                    itemRef = InventoryItem::Load( factory, itemID );
+                    itemRef = InventoryItem::SpawnItem( factory, itemID, data );
                 }
                 if (itemRef.get() == nullptr)
                     return InventoryItemRef();
@@ -382,7 +389,7 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     uint32 itemID = InventoryItem::CreateItemID( factory, data );
     if (!itemID)
         return InventoryItemRef();
-    InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
+    InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
     if (itemRef.get() == nullptr)
         return InventoryItemRef();
     itemRef->SetAttribute(AttrMass,           iType->mass());           // Mass
@@ -638,8 +645,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         result.attributes[AttrSkillPoints] = new PyInt(mAttributeMap.GetAttribute(AttrSkillPoints).get_int());
         result.attributes[AttrSkillLevel] = new PyInt(mAttributeMap.GetAttribute(AttrSkillLevel).get_int());
     } else {
-        AttrMapItr itr = mAttributeMap.begin();
-        for (; itr != mAttributeMap.end(); itr++) {
+        for (AttrMapItr itr = mAttributeMap.begin(); itr != mAttributeMap.end(); ++itr) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
                 result.attributes[(*itr).first] = new PyFloat(mAttributeMap.GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
@@ -648,7 +654,10 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         }
     }
 
-    result.time = Win32TimeNow();
+    if (typeID() == 51)
+        result.description = m_itemName;
+
+    result.time = GetFileTimeNow();
     return true;
 }
 
@@ -662,10 +671,21 @@ PyList* InventoryItem::GetItemInfo() const
 
 PyObject* InventoryItem::ItemGetInfo()
 {
+    /*
     Rsp_ItemGetInfo result;
-
     if (!Populate(result.entry))
+        return nullptr;
+    */
+    Rsp_CommonGetInfo result;
+    Rsp_CommonGetInfo_Entry entry;
+
+    if (!Populate(entry))
         return NULL;
+
+    result.items[ itemID() ] = entry.Encode();
+
+    if (typeID() == 51)
+        result.description = m_itemName;
 
     return result.Encode();
 }
@@ -1014,6 +1034,11 @@ void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/
 {
     EvilNumber eNum(num);
     mAttributeMap.SetAttribute(attrID, eNum, notify);
+}
+
+void InventoryItem::ReloadAttributes()
+{
+
 }
 
 // new effects system  -allan 4Feb17

@@ -117,6 +117,14 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Call_CreateVouchers">
+    <tupleInline>
+        <list name="bmIDs" />
+        <int name="flag" />
+        <bool name="isMove" />
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="EntityEffectState">
     <listInline>
       <!--
@@ -166,6 +174,9 @@
         <!-- maps attribute ID to it's value, which may be int or real -->
         <dictInt name="attributes" />
       </dictInlineEntry>
+      <dictInlineEntry key="description">
+        <string name="description" />
+      </dictInlineEntry>
       <dictInlineEntry key="time">
         <long name="time" />
       </dictInlineEntry>
@@ -190,17 +201,20 @@
                 <stringInline value="invItem" />
                 <stringInline value="activeEffects" />
                 <stringInline value="time" />
-          </listInline>
+              </listInline>
           </dictInlineEntry>
           <dictInlineEntry key="RowClass">
-          <tokenInline value="util.Row" />
+            <tokenInline value="util.Row" />
           </dictInlineEntry>
           <dictInlineEntry key="idName">
               <stringInline value="itemID" />
           </dictInlineEntry>
-          <dictInlineEntry key="items">
-          <!-- For ShipGetInfo: contains a single Rsp_CommonGetInfo_Entry for the ship -->
-          <!-- For CharGetInfo: contains an Rsp_CommonGetInfo_Entry for the char and each of their skills (and implants?) -->
+          <dictInlineEntry key="description">
+                <string name="description" />
+          </dictInlineEntry>
+          <dictInlineEntry key="data">
+              <!-- For ShipGetInfo: contains a single Rsp_CommonGetInfo_Entry for the ship -->
+              <!-- For CharGetInfo: contains an Rsp_CommonGetInfo_Entry for the char and each of their skills (and implants?) -->
               <dictInt name="items" />
           </dictInlineEntry>
         </dictInline>

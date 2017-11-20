@@ -30,6 +30,7 @@
 #include "EVEServerConfig.h"
 #include "inventory/InventoryBound.h"
 #include "pos/Structure.h"
+#include "system/BookmarkDB.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
 
@@ -148,10 +149,18 @@ PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
     return rowset.Encode();
 }
 
-//01:10:27 L InventoryBound::Handle_CreateBookmarkVouchers(): size= 3, 0 = List, 1 = Integer, 2 = Boolean
-// size,       bmID,     flag,        ismove
 PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::CreateBookmarkVouchers() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    /*
+    bookmarksDeleted, newVouchers = self.CreateBookmarkVouchers(bookmarkIDs, flag, isMove)
+    */
+    sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
+    Call_CreateVouchers args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+    args.Dump(COMMON__INFO);
+
     /**
      * 00:39:12 [SvcCall]   Call Arguments:
      * 00:39:12 [SvcCall]       Tuple: 3 elements
@@ -178,49 +187,43 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
      * 00:43:37 [SvcCall]     Argument 'machoVersion':
      * 00:43:37 [SvcCall]         Integer field: 1
      * 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
-     *
-     *  sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
-     *  call.Dump(SERVICE__CALL_DUMP);
-     *
-     *      PyList *list = call.tuple->GetItem( 0 )->AsList();
-     *      uint32 bookmarkID;
-     *      char ci[3];
-     *
-     *      DBQueryResult res;
-     *      DBResultRow row;
-     *
-     * /** @todo this needs work......vouchers in hangar will not show contents of hangar, but item count works. */
-     /*
-      *      if ( list->size() > 0 ) {
-      *          for (uint8 i = 0; i < (list->size()); i++) {
-      *              bookmarkID = call.tuple->GetItem( 0 )->AsList()->GetItem(i)->AsInt()->value();
-      *                              //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-      *              ItemData itemBookmarkVoucher( 51, call.client->GetCharacterID(), call.client->GetLocationID(), flagHangar, 1 );
-      *              InventoryItemRef i = m_manager->item_factory->SpawnItem( itemBookmarkVoucher );
-      *
-      *              if ( !i ) {
-      *                  codelog(CLIENT__ERROR, "%s: Failed to spawn bookmark voucher for %u", call.client->GetName(), bookmarkID);
-      *                  break;
-}
-sDatabase.RunQuery(res, "SELECT memo FROM bookmarks WHERE bookmarkID = %u", bookmarkID);
-res.GetRow(row);
-i->Rename(row.GetText(0));
-snprintf(ci, sizeof(ci), "%u", bookmarkID);
-i->SetCustomInfo(ci);  //<- use this to set bookmarkID to DB.entity.customInfo
-}
-sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "%u Vouchers created", list->size() );
-//  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
-} else {
-    sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: call.tuple->GetItem( 0 )->AsList()->size() == 0.  Expected size > 0.", call.client->GetName() );
-    return nullptr;
-}
+     */
 
-/** @todo (allan) need to put check in here for isMove bool.  true=remove from PnP->bookmarks tab....false = leave
- *
- *      /** @todo (allan) need to reload hangar to show newly created BM item.
- *       *  no....call item->Move() to update hangar
- */
- return new PyInt( 0 );
+    PyList* vouchers = new PyList();
+    PyList* deletedIDs = new PyList();
+
+    uint32 locationID = call.client->GetLocationID();
+    if (args.flag == flagCargoHold)
+        locationID = call.client->GetShipID();
+
+    if ( args.bmIDs->size() < 1 ) {
+        sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
+    } else {
+        PyList::const_iterator itr = args.bmIDs->begin();
+        for (; itr != args.bmIDs->end(); ++itr) {
+            //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
+            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa((*itr)->AsInt()->value()));
+            InventoryItemRef iRef = m_manager->item_factory->SpawnItem( iData );
+            if (iRef.get() == nullptr) {
+                codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
+                continue;
+            }
+            iRef->Rename(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value()));
+            iRef->Move(locationID, (EVEItemFlags)args.flag, true);
+            vouchers->AddItem(iRef->ItemGetInfo());
+            if (args.isMove)
+                deletedIDs->AddItem(new PyInt((*itr)->AsInt()->value()));
+        }
+    }
+
+    //  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
+
+    call.client->SendInfoModalMsg("Creating Vouchers from Bookmarks isn't complete.  You will have to dock or relog to show the container inventory.");
+
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, deletedIDs);
+        tuple->SetItem(1, vouchers);
+    return tuple;
 }
 
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){

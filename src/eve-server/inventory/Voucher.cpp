@@ -37,7 +37,6 @@ VoucherService::VoucherService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(VoucherService, GetObject);
-
 }
 
 VoucherService::~VoucherService() {
@@ -46,50 +45,35 @@ VoucherService::~VoucherService() {
 
 PyResult VoucherService::Handle_GetObject( PyCallArgs& call ) {
   /**
-            voucher = self.GetVoucherSvc().GetObject(voucherID)
-            if voucher is None:
-                return
-            self.data[voucherID] = voucher
-            */
-  /*
-23:33:00 L VoucherService::Handle_GetObject(): size= 1
-23:33:00 [SvcCall]   Call Arguments:
-23:33:00 [SvcCall]       Tuple: 1 elements
-23:33:00 [SvcCall]         [ 0] Integer field: 140000575
+    voucher = self.GetVoucherSvc().GetObject(voucherID)
+    if voucher is None:
+        return
+    self.data[voucherID] = voucher
+    */
+    return nullptr;
+    // this isnt working right....return doesnt make a "voucher" object in client, so subsquent call to "voucher.GetDescription" returns error.
+    /*
+     * /client/script/ui/util/uix.py(283) GetItemName
+     *        invItem = <DBRow object [140006619L, 51, 140000000, 140005905, 5, 1, 24, 5, '2', 1, 0]>
+     *        data = None
+     *        voucher = <util.IndexRowset instance at 0x4B035E40>
+     *        name = u'Bookmark'
+     * AttributeError: IndexRowset instance has no attribute 'GetDescription'
+     */
 
-NOTE:  this function sends bookmark voucher itemID.
-will need to figure out how to save BM with copied original bmID, then get info from original via this voucher using db calls...done 20April
-//not sure what the return is yet.
-AttributeError: Rowset instance has no attribute 'GetDescription'
+    _log(COMMON__INFO,  "VoucherService::Handle_GetObject", "size= %u", call.tuple->size() );
+    call.Dump(COMMON__INFO);
 
-  sLog.White( "VoucherService::Handle_GetObject_1", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-*/
-    DBQueryResult res;
-    DBResultRow row;
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+    InventoryItemRef iRef = m_manager->item_factory->GetItem(arg.arg);
+    if (iRef.get() == nullptr) {
+        codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), arg.arg);
+        return nullptr;
+    }
 
-    uint32 voucherID = call.tuple->GetItem( 0 )->AsInt()->value();
-    sDatabase.RunQuery(res, "SELECT customInfo FROM entity WHERE itemID = %u", voucherID);
-    res.GetRow(row);
-  sLog.White( "VoucherService::Handle_GetObject_2", "customInfo= %s", row.GetText(0) );
-    std::stringstream convert(row.GetText(0));
-    uint32 bookmarkID;
-    convert >> bookmarkID;
-  sLog.White( "VoucherService::Handle_GetObject_3", "bookmarkID= %u", bookmarkID );
-    res.Reset();
-    sDatabase.RunQuery(res, "SELECT memo FROM bookmarks WHERE bookmarkID = %u", bookmarkID);
-    res.GetRow(row);
-  sLog.White( "VoucherService::Handle_GetObject_4", "memo= %s", row.GetText(0) );
-
-    return new PyString(row.GetText(0));
-    //return DBResultToRowset(res);
-    //return new PyNone();
-/*
-    PyTuple* tuple = new PyTuple( 2 );
-
-    tuple->items[ 0 ] = new PyString( "GetDescription" );
-    tuple->items[ 1 ] = new PyString( row.GetText(0) );
-
-    return tuple;
-	*/
+    return iRef->ItemGetInfo();
 }

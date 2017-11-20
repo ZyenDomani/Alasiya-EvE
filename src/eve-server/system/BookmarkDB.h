@@ -33,10 +33,11 @@ class BookmarkDB
 : public ServiceDB
 {
 public:
-    PyRep* GetBMData(uint32 ownerID);
+    PyRep* GetBMData(uint32 folderID);
     PyRep* GetBookmarks(uint32 ownerID);
     PyRep* GetFolders(uint32 ownerID);
 
+    static const char* GetBookmarkName(uint32 bookmarkID);
     bool GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z);
 
     bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID);
