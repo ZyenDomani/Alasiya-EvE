@@ -111,7 +111,7 @@ ShipService::~ShipService() {
 
 PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
     _log(CLIENT__MESSAGE, "ShipService bind request");
-    bind_args->Dump(COLLECT__OTHER_DUMP, "    ");
+    bind_args->Dump(CLIENT__MESSAGE, "    ");
     return new ShipBound(m_manager, m_db);
 }
 

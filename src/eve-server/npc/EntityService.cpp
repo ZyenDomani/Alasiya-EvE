@@ -45,8 +45,8 @@ EntityService::~EntityService() {
 
 /** @todo  will need to make sure this object is deleted when changing systems  */
 PyBoundObject *EntityService::_CreateBoundObject(Client* pClient, const PyRep* bind_args) {
-    _log(CLIENT__MESSAGE, "EntityService bind request");
-    bind_args->Dump(COLLECT__OTHER_DUMP, "    ");
+    _log(NPC__INFO, "EntityService bind request");
+    bind_args->Dump(NPC__INFO, "    ");
     return new EntityBound(m_manager, pClient->SystemMgr(), bind_args->AsTuple()->GetItem(0)->AsInt()->value(), bind_args->AsTuple()->GetItem(1)->AsInt()->value());
 }
 

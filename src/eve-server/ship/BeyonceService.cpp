@@ -133,9 +133,9 @@ BeyonceService::~BeyonceService() {
 
 PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_args )
 {
-    if (is_log_enabled(COLLECT__OTHER_DUMP)) {
+    if (is_log_enabled(CLIENT__MESSAGE)) {
         _log( CLIENT__MESSAGE, "BeyonceService bind request for:" );
-        bind_args->Dump( COLLECT__OTHER_DUMP, "    " );
+        bind_args->Dump( CLIENT__MESSAGE, "    " );
     }
     /*
      * 18:26:29 [ClientMessage] BeyonceService bind request for:
