@@ -1392,7 +1392,7 @@ void Ship::DamageRandModule(float chance)
 {
     if (chance == 0)
         return;
-    if (chance < MakeRandomFloat())
+    if (chance > MakeRandomFloat())
         m_shipRef->DamageRandModule();
 }
 
