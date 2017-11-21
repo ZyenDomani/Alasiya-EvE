@@ -319,7 +319,7 @@ public:
     void SetUndocking(bool set=false)                   { m_isUndocking = set; }
     InventoryItemRef GetTargetRef()                     { return m_targetRef; }
     void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }
-    void DamageModule(uint32 itemID)                    { m_ModuleManager->DamageModule(itemID, (EvilNumber)1); }
+    void DamageModule(uint32 itemID)                    { m_ModuleManager->DamageModule(itemID, 1); }
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
 
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);

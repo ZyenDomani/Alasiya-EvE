@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    7.8
+    Version:    8.2
 */
 
 
@@ -59,6 +59,7 @@ EVEServerConfig::EVEServerConfig()
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
     server.MaxThreadReport = 20;
+    server.ModuleDamageChance = 0.35;
 
     // world
     world.chatLogs = false;//N
@@ -225,6 +226,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
     AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
+    AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -243,6 +245,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
     RemoveParser( "MaxThreadReport" );
+    RemoveParser( "ModuleDamageChance" );
 
     return result;
 }

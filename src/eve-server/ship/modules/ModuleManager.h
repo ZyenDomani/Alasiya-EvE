@@ -199,7 +199,8 @@ public:
     void DeactivateAllModules();
     void Overload(EVEItemFlags flag);
     void DeOverload(EVEItemFlags flag);
-    void DamageModule(uint32 itemID, EvilNumber amount);
+    void DamageModule(uint32 itemID, uint8 amount);
+    void DamageModule(GenericModule* pMod, uint8 amount);
     void DamageRandModule();
     void RepairModule(uint32 itemID, EvilNumber amount);
     void RepairModule(GenericModule* pMod, EvilNumber amount);

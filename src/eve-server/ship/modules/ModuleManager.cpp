@@ -291,7 +291,8 @@ GenericModule* ModuleContainer::GetRandModule()
                 modVec.push_back(itr->second);
         }
     }
-    // finish this
+
+    return modVec.at(MakeRandomInt(0, modVec.size()));  // initial implementation will use .at() as a safety
 }
 
 void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList)
@@ -758,22 +759,34 @@ void ModuleManager::DeOverload(EVEItemFlags flag)
     _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", pMod->getItem()->itemName().c_str());
 }
 
-void ModuleManager::DamageModule(uint32 itemID, EvilNumber amount)
+void ModuleManager::DamageModule(uint32 itemID, uint8 amount)
 {
     GenericModule* pMod = m_Modules->GetModule(itemID);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
+        _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Called on module %u that is not loaded.", itemID );
         return;
     }
     pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
-    _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", pMod->getItem()->itemName().c_str(), amount.get_float());
+    _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %u damage.", pMod->getItem()->itemName().c_str(), amount);
+    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
+        pMod->Offline();
+}
+
+void ModuleManager::DamageModule(GenericModule* pMod, uint8 amount)
+{
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Module not found.");
+        return;
+    }
+    pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
+    _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %u damage.", pMod->getItem()->itemName().c_str(), amount);
     if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
         pMod->Offline();
 }
 
 void ModuleManager::DamageRandModule()
 {
-    /** @todo figure out how to do this and implement it */
+    DamageModule(m_Modules->GetRandModule(), 1);
 }
 
 void ModuleManager::RepairModule(uint32 itemID, EvilNumber amount)

@@ -205,6 +205,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             m_self->GetAttribute(AttrArmorEmDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorExplosiveDamageResonance).get_float() );
 
+        if (HasPilot())
+            GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
+
         float armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
             if (HasPilot()) {

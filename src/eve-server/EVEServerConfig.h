@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.1
+    Version:    8.2
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -66,6 +66,7 @@ public:
         uint8 MaxThreadReport;
         uint16 idleSleepTime;
         uint16 maxPlayers;
+        float ModuleDamageChance;
     } server;
 
     // From <world/>
@@ -74,7 +75,7 @@ public:
         bool chatLogs;
         bool globalChat;
         bool gridUnload;
-        uint gridUnloadTime;
+        uint16 gridUnloadTime;
         bool loginInfo;
         bool loginMsg;
         uint8 mailDelay;
