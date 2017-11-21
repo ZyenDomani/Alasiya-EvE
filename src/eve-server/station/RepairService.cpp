@@ -98,6 +98,7 @@ PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
     /*    itemIDAndAmountOfDamageList.append((item.itemID, amount))
      *    self.repairSvc.DamageModules(itemIDAndAmountOfDamageList)
      */
+    // note....cant find a call to this method in client
     sLog.White( "RepairSvcBound::Handle_DamageModules()", "size= %u", call.tuple->size() );
     call.Dump(PHYSICS__INFO);
 
@@ -243,7 +244,7 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
         rid.maxHealth                  = cur->GetAttribute(AttrHP).get_int();
         // not sure how to find this data
         rid.repairable                 = 1;
-        if (cur->IsShipItem()) {
+        if (cur->IsShipItem()) {    // have to check for drone here, also
             rid.damage                 += cur->GetAttribute(AttrArmorDamage).get_int();
             rid.maxHealth              += cur->GetAttribute(AttrArmorHP).get_int();
             // ship is (basePrice)*7.5e-10
@@ -260,99 +261,78 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
 PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
     /**
      *                sm.RemoteSvc('repairSvc').UnasembleItems(dict(validIDsByStationID), skipChecks)
-     *
-     * repackableCategorys = (categoryStructure,
-     * categoryShip,
-     * categoryDrone,
-     * categoryModule,
-     * categorySubSystem,
-     * categorySovereigntyStructure)
-     * repackableGroups = (groupCargoContainer,
-     * groupSecureCargoContainer,
-     * groupAuditLogSecureContainer,
-     * groupFreightContainer,
-     * groupTool,
-     * groupMobileWarpDisruptor)
      */
 
     /*
-     * 19:49:29 L RepairService::Handle_UnasembleItems: Called UnasembleItems stub.
-     * 19:49:29 [SvcCall]   Call Arguments:
-     * 19:49:29 [SvcCall]       Tuple: 2 elements
-     * 19:49:29 [SvcCall]         [ 0] Dictionary: 1 entries
-     * 19:49:29 [SvcCall]         [ 0]   [ 0] Key: Integer field: 60004450
-     * 19:49:29 [SvcCall]         [ 0]   [ 0] Value: List: 1 elements
-     * 19:49:29 [SvcCall]         [ 0]   [ 0] Value:   [ 0] Tuple: 2 elements
-     * 19:49:29 [SvcCall]         [ 0]   [ 0] Value:   [ 0]   [ 0] Integer field: 140001999
-     * 19:49:29 [SvcCall]         [ 0]   [ 0] Value:   [ 0]   [ 1] Integer field: 60004450
-     * 19:49:29 [SvcCall]         [ 1] List: Empty
+     * 15:17:44 [PhysicsInfo]  Call_UnasembleItems
+     * 15:17:44 [PhysicsInfo]  dict:
+     * 15:17:44 [PhysicsInfo]      Dictionary: 2 entries
+     * 15:17:44 [PhysicsInfo]        [ 0] Key: Integer field: 60004591     <-- stationID
+     * 15:17:44 [PhysicsInfo]        [ 0] Value: List: 3 elements          <-- list of 2 element tuples
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 0] Tuple: 2 elements  <-- tuple of itemID/stationID
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 0]   [ 0] Integer field: 140006472
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 0]   [ 1] Integer field: 60004591
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 1] Tuple: 2 elements  <-- tuple of itemID/stationID
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 1]   [ 0] Integer field: 140006477
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 1]   [ 1] Integer field: 60004591
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 2] Tuple: 2 elements  <-- tuple of itemID/stationID
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 2]   [ 0] Integer field: 140006476
+     * 15:17:44 [PhysicsInfo]        [ 0] Value:   [ 2]   [ 1] Integer field: 60004591
+     * 15:17:44 [PhysicsInfo]        [ 1] Key: Integer field: 60014137     <-- stationID
+     * 15:17:44 [PhysicsInfo]        [ 1] Value: List: 1 elements          <-- list of 2 element tuples
+     * 15:17:44 [PhysicsInfo]        [ 1] Value:   [ 0] Tuple: 2 elements  <-- tuple of itemID/stationID
+     * 15:17:44 [PhysicsInfo]        [ 1] Value:   [ 0]   [ 0] Integer field: 140000028
+     * 15:17:44 [PhysicsInfo]        [ 1] Value:   [ 0]   [ 1] Integer field: 60014137
+     * 15:17:44 [PhysicsInfo]  list:
+     * 15:17:44 [PhysicsInfo]      List: Empty                             <-- skipChecks, not sure what this is for
      */
 
-    /*
-    [PyTuple 1 items]
-      [PyTuple 2 items]
-        [PyInt 0]
-        [PySubStream 55 bytes]
-          [PyTuple 4 items]
-            [PyInt 1]
-            [PyString "UnasembleItems"]
-            [PyTuple 2 items]
-              [PyDict 1 kvp]
-                [PyIntegerVar 61000533]
-                [PyList 1 items]
-                  [PyTuple 2 items]
-                    [PyIntegerVar 1005888156061]
-                    [PyIntegerVar 61000533]
-              [PyList 0 items]
-    */
-    /** @todo verify and update this... */
-    /** @todo  check if this is container, and remove items BEFORE repacking!!  */
-    if (call.tuple->size() == 2)
-    {
-        bool repackDamaged = false;
-        ItemFactory* factory = call.client->services().item_factory;
-        // Call contains dictionary and empty list, get the dictionary.
-        PyDict *dict = call.tuple->GetItem(0)->AsDict();
-        PyDict::const_iterator cur = dict->begin();
-        for (; cur != dict->end(); cur++) {
-            // Dictionary is of Int as a locationID and list of item entries.
-            //PyInt *pInt = cur->first->AsInt();
-            // Location is irrelevant so get list.
-            PyList *pList = cur->second->AsList();
-            if (pList != nullptr) {
-                //uint32 locationID = pInt->value();
-                // Iterate through list.
-                PyList::const_iterator itemItr = pList->begin();
-                for (; itemItr != pList->end(); itemItr++) {
-                    // List is tuples of itemID, LocationID pairs.
-                    PyTuple *tuple = (*itemItr)->AsTuple();
-                    if (tuple != nullptr) {
-                        // Get the itemID.
-                        PyInt *itemInt = tuple->GetItem(0)->AsInt();
-                        //PyInt *itemLocation = tuple->GetItem(1)->AsInt();
-                        if (itemInt != nullptr) {
-                            // Get the item itself.
-                            InventoryItemRef item = factory->GetItem(itemInt->value());
-                            if (item.get() != nullptr) {
-                                // Add type exceptions here.
-                                if (item->categoryID() == EVEDB::invCategories::Blueprint
-                                    or item->categoryID() == EVEDB::invCategories::Skill
-                                    or item->categoryID() == EVEDB::invCategories::Material) {
-                                    // Item cannot be repackaged once used!
-                                    continue;
-                                    }
-                                    if (item->GetAttribute(AttrDamage) == 0)
-                                        item->ChangeSingleton(false);
-                                    else
-                                        repackDamaged = true;
+    Call_UnasembleItems args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
+        return nullptr;
+    }
+    args.Dump(PHYSICS__INFO);
+
+    PyList *pList(nullptr);
+    PyTuple *tuple(nullptr);
+    InventoryItemRef iRef;
+    uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
+    ItemFactory* factory = call.client->services().item_factory;
+
+    if (args.list->size() > 0)
+        ;  // skipChecks is populated....do something constructive here
+
+    /** @todo  may have to switch to station inventory to get item to check if this is container, and remove items BEFORE repacking!!  */
+    PyList::const_iterator listItr;
+    PyDict::const_iterator dictItr = args.dict->begin();
+    for (; dictItr != args.dict->end(); ++dictItr) {
+        // Dictionary key is LocationID, value is tuple of itemID/item locationID
+        //locationID = dictItr->first->AsInt()->value();
+        pList = dictItr->second->AsList();
+        if (pList != nullptr) {
+            // Iterate through list.
+            for (listItr = pList->begin(); listItr != pList->end(); listItr++) {
+                // List is tuples of itemID, LocationID pairs.
+                tuple = (*listItr)->AsTuple();
+                if (tuple != nullptr) {
+                    // Get the itemID.
+                    itemID = tuple->GetItem(0)->AsInt()->value();
+                    //itemLoc = tuple->GetItem(1)->AsInt()->value();
+                    iRef = factory->GetItem(itemID);
+                    if (iRef.get() != nullptr) {
+                        // Add type exceptions here.
+                        if (iRef->categoryID() == EVEDB::invCategories::Blueprint
+                            or iRef->categoryID() == EVEDB::invCategories::Skill
+                            or iRef->categoryID() == EVEDB::invCategories::Material) {
+                            // Item cannot be repackaged once used!
+                            continue;
                             }
-                        }
+                        iRef->ChangeSingleton(false, true);
                     }
                 }
             }
         }
-        if (repackDamaged)
-            throw PyException(MakeCustomError("Cannot repackage damaged items."));
     }
 
     return new PyNone();

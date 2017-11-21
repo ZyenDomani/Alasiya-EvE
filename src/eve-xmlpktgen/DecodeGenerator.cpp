@@ -1384,7 +1384,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
                     continue;
                 }
                 const char* key = ele->Attribute("key");
-                if (!key) {
+                if (key == nullptr) {
                     _log(COMMON__ERROR, "<dictInlineEntry> at line %d lacks a key attribute", ele->Row());
                     return false;
                 }
@@ -1445,7 +1445,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
                     continue;
                 }
                 const char* key = ele->Attribute("key");
-                if (!key) {
+                if (key == nullptr) {
                     _log(COMMON__ERROR, "<dictInlineEntry> at line %d lacks a key attribute", ele->Row());
                     return false;
                 }
@@ -1481,14 +1481,14 @@ bool ClassDecodeGenerator::ProcessDictRaw(const TiXmlElement* field)
         std::cout << std::endl <<  "ClassDecodeGenerator:: field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
-    const char* pykey = field->Attribute("pykey");
-    if (pykey == nullptr) {
-        std::cout << std::endl <<  "ClassDecodeGenerator:: field at line " << field->Row() << " is missing the pykey attribute, skipping.";
-        return false;
-    }
     const char* value = field->Attribute("value");
     if (value == nullptr) {
         std::cout << std::endl <<  "ClassDecodeGenerator:: field at line " << field->Row() << " is missing the value attribute, skipping.";
+        return false;
+    }
+    const char* pykey = field->Attribute("pykey");
+    if (pykey == nullptr) {
+        std::cout << std::endl <<  "ClassDecodeGenerator:: field at line " << field->Row() << " is missing the pykey attribute, skipping.";
         return false;
     }
     const char* pyvalue = field->Attribute("pyvalue");

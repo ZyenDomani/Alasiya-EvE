@@ -66,8 +66,8 @@
 
   <elementDef name="Call_UnasembleItems">
     <tupleInline>
-      <dictRaw name="items" key="uint32" pykey="Int" value="uint32" pyvalue="Int" />
-      <listRaw name="list" />
+      <dict name="dict" />
+      <list name="list" />
     </tupleInline>
   </elementDef>
 
