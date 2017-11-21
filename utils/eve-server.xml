@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.0 -->
+     Version: 8.2 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -50,6 +50,7 @@
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>true</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
+        <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
     </server>
 
     <world>
@@ -67,12 +68,12 @@
 
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
-        <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
-        <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
-        <turretRate>1.0</turretRate><!-- PC turrets. only used if != 1.0 -->
-        <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
-        <turretRoF>1.0</turretRoF><!-- PC turrets. only used if != 1.0 -->
+        <damageRate>1.0</damageRate><!-- ALL damage multiplier.  DO NOT USE 0.0 -->
+        <missileRate>1.0</missileRate><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <turretRate>1.0</turretRate><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
+        <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
@@ -123,9 +124,38 @@
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
+        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
         <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>false</EnableDrones><!-- bool -->
     </npc>
+
+    <cosmic>
+        <PIEnabled>false</PIEnabled><!-- bool -->
+        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>false</DungeonEnabled><!-- bool -->
+        <BeltEnabled>false</BeltEnabled><!-- bool -->
+        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
+        <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
+        <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
+        <BumpEnabled>false</BumpEnabled><!-- bool -->
+        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
+    </cosmic>
+
+    <crime><!-- not implemented yet -->
+        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
+        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
+        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
+        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
+        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
+    </crime>
+
+    <threads><!-- not implemented yet -->
+        <NetworkThreads>2</NetworkThreads>
+        <DatabaseThreads>2</DatabaseThreads>
+        <WorldThreads>2</WorldThreads>
+        <ImageServerThreads>1</ImageServerThreads>
+        <ConsoleThreads>1</ConsoleThreads>
+    </threads>
 
     <database>
         <host>localhost</host>
@@ -149,33 +179,5 @@
         <imageServer>192.168.1.13</imageServer>
         <imageServerPort>26001</imageServerPort>
     </net>
-
-    <threads><!-- not implemented yet -->
-        <NetworkThreads>2</NetworkThreads>
-        <DatabaseThreads>2</DatabaseThreads>
-        <WorldThreads>2</WorldThreads>
-        <ImageServerThreads>1</ImageServerThreads>
-        <ConsoleThreads>1</ConsoleThreads>
-    </threads>
-
-    <cosmic>
-        <PIEnabled>false</PIEnabled><!-- bool -->
-        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
-        <DungeonEnabled>false</DungeonEnabled><!-- bool -->
-        <BeltEnabled>false</BeltEnabled><!-- bool -->
-        <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
-        <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
-        <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
-        <BumpEnabled>false</BumpEnabled><!-- bool -->
-        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
-    </cosmic>
-
-    <crime><!-- not implemented yet -->
-        <CrimFlagTime>900</CrimFlagTime> <!-- seconds  (15m default) -->
-        <AggFlagTime>900</AggFlagTime> <!-- seconds (15m default) -->
-        <WeaponFlagTime>60</WeaponFlagTime> <!-- seconds (60s default) -->
-        <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
-        <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
-    </crime>
 
 </eve-server>
