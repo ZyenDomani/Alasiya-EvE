@@ -28,6 +28,7 @@
 #include "python/PyRep.h"
 #include "utils/EvilNumber.h"
 
+EvilNumber EvilZero = 0;
 const EvilNumber EvilTime_Second = 10000000;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;

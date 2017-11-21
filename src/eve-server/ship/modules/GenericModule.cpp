@@ -231,6 +231,16 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
     }
 }
 
+void GenericModule::Repair(EvilNumber amount)
+{
+    if (m_modRef->GetAttribute(AttrDamage) > 0) {
+        EvilNumber newAmount = m_modRef->GetAttribute(AttrDamage) - amount;
+        if (newAmount < 0)
+            newAmount = 0;
+        m_modRef->SetAttribute(AttrDamage, newAmount);
+    }
+}
+
 std::string GenericModule::GetChargeStateName(ModStates::ChargeStates state)
 {
     switch(state) {

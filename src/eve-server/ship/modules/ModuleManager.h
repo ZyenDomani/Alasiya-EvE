@@ -80,7 +80,7 @@ class ModuleManager;
 //////////////////////////////////////////////////////////////////////////////////
 
 /** @todo
- * update these notes with my updates and corrections
+ * update these notes with my updates, corrections and rewrites
  * -allan
  */
 
@@ -112,6 +112,7 @@ public:
     void OnlineAll();
     void DeactivateAll();
     void UnloadAll();
+    void RepairAll();
 
     //useful accessors
 	bool isSlotOccupied(EVEItemFlags flag);
@@ -124,6 +125,7 @@ public:
 
     uint8 GetFittedModuleCountByGroup(uint16 groupID);
 
+    GenericModule* GetRandModule();
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
     void SaveModules();
@@ -197,8 +199,11 @@ public:
     void DeactivateAllModules();
     void Overload(EVEItemFlags flag);
     void DeOverload(EVEItemFlags flag);
-    void DamageModule(uint32 itemID, EvilNumber val);
-    void RepairModule(uint32 itemID);
+    void DamageModule(uint32 itemID, EvilNumber amount);
+    void DamageRandModule();
+    void RepairModule(uint32 itemID, EvilNumber amount);
+    void RepairModule(GenericModule* pMod, EvilNumber amount);
+    void RepairModules();
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
     void UnloadCharge(EVEItemFlags flag);
     void UnloadAllModules();

@@ -485,6 +485,7 @@ EvilNumber operator*(const EvilNumber& val, const EvilNumber& val2);
 EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2);
 EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2);
 
+extern EvilNumber EvilZero;
 extern const EvilNumber EvilTime_Second;
 extern const EvilNumber EvilTime_Minute;
 extern const EvilNumber EvilTime_Hour;

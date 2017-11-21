@@ -285,6 +285,8 @@ public:
     void Undock();
     void AddModuleToOnlineVec(uint32 moduleID);
 
+    void RepairShip(float fraction);
+
     /* begin new module manager interface */
     void ProcessModules();
     void Online(uint32 moduleID);
@@ -305,16 +307,22 @@ public:
     void UnloadModule(uint32 itemID);
     void UnloadAllModules();
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
-    void RepairModules();
     void StripFitting();
 
-    void AbortCycle()                                        { m_ModuleManager->AbortCycle(); }
-    bool IsDocking()                                         { return m_isDocking; }
-    bool IsUndocking()                                       { return m_isUndocking; }
-    void SetUndocking(bool set=false)                        { m_isUndocking = set; }
-    InventoryItemRef GetTargetRef()                          { return m_targetRef; }
-    void ClearTargetRef()                                    { m_targetRef = InventoryItemRef(); }
+    void RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction);
 
+    void RepairModules()                                { m_ModuleManager->RepairModules(); }
+
+    void AbortCycle()                                   { m_ModuleManager->AbortCycle(); }
+    bool IsDocking()                                    { return m_isDocking; }
+    bool IsUndocking()                                  { return m_isUndocking; }
+    void SetUndocking(bool set=false)                   { m_isUndocking = set; }
+    InventoryItemRef GetTargetRef()                     { return m_targetRef; }
+    void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }
+    void DamageModule(uint32 itemID)                    { m_ModuleManager->DamageModule(itemID, (EvilNumber)1); }
+    void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
+
+    void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 itemID);
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
@@ -425,10 +433,12 @@ public:
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);
-    virtual bool HasPilot()                             { return (m_shipRef ? m_shipRef->HasPilot() : false); }
-    virtual Client* GetPilot()                          { return (m_shipRef ? m_shipRef->GetPilot() : nullptr); }
+    virtual bool HasPilot()                             { return ((m_shipRef.get() == nullptr) ? false : m_shipRef->HasPilot()); }
+    virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
     /* specific functions handled here. */
+    void DamageModule(uint32 itemID)                    { m_shipRef->DamageModule(itemID); }
+    void DamageRandModule(float chance);
     void PayInsurance();
     void SaveShip()                                     { m_shipRef->SaveShip(); }
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.

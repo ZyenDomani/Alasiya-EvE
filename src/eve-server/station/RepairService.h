@@ -29,13 +29,14 @@
 #include "PyService.h"
 
 class Client;
+class Inventory;
 
 class RepairService: public PyService {
 public:
     RepairService(PyServiceMgr* mgr);
     virtual ~RepairService();
 
-    PyObject* GetDamageReports(Client* pClient, uint32 stationID, uint32 itemID);
+    static void GetDamageReports(uint32 itemID, Inventory* pInv, PyList* list);
 
 protected:
     class Dispatcher;
@@ -45,8 +46,6 @@ protected:
 
     PyCallable_DECL_CALL(UnasembleItems);
 
-private:
-    DBRowDescriptor* CreateHeader();
 };
 
 #endif

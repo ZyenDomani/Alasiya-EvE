@@ -31,8 +31,8 @@
 #include "Client.h"
 #include "packets/Repair.h"
 #include "station/RepairService.h"
-#include "Station.h"
-#include <system/SystemManager.h>
+#include "station/Station.h"
+#include "system/SystemManager.h"
 
 class RepairSvcBound
 : public PyBoundObject
@@ -67,7 +67,7 @@ public:
 
 protected:
     Dispatcher* const m_dispatch;
-    RepairService* m_rs;
+    ItemFactory m_ifac;
 
     uint32 m_locationID;
 };
@@ -94,40 +94,93 @@ PyBoundObject* RepairService::_CreateBoundObject(Client* c, const PyRep* bind_ar
     return new RepairSvcBound(m_manager, bind_args->AsInt()->value());
 }
 
-PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
-    //  self.repairSvc.RepairItems(itemIDs, amount['qty'])
-
-    sLog.White( "RepairSvcBound::Handle_RepairItems()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    Call_SingleIntList args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
-        return nullptr;
-    }
-
-    /** @todo loop here for each item in repair list */
-    PyDict* dict = new PyDict();
-    return dict;
-}
-
 PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
     /*    itemIDAndAmountOfDamageList.append((item.itemID, amount))
      *    self.repairSvc.DamageModules(itemIDAndAmountOfDamageList)
      */
-
     sLog.White( "RepairSvcBound::Handle_DamageModules()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(PHYSICS__INFO);
 
     Call_SingleIntList args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
         return nullptr;
     }
 
-    /** @todo loop here for each item in repair list */
-    PyDict* dict = new PyDict();
-    return dict;
+    return new PyNone();
+}
+
+PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
+    //  self.repairSvc.RepairItems(itemIDs, amount['qty'])
+    /*
+     * 00:18:28 W RepairSvcBound::Handle_RepairItems(): size= 2
+     * 00:18:28 [PhysicsInfo]   Call Arguments:
+     * 00:18:28 [PhysicsInfo]       Tuple: 2 elements
+     * 00:18:28 [PhysicsInfo]         [ 0] List: 1 elements                 <-- list of itemIDs to repair
+     * 00:18:28 [PhysicsInfo]         [ 0]   [ 0] Integer field: 140005905  <-- itemID
+     * 00:18:28 [PhysicsInfo]         [ 1] Real field: 112500.000000        <-- isk amount to spend on repairs.
+     */
+
+    Call_RepairItems args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
+        return nullptr;
+    }
+    if (args.iskAmount < 0.01)
+        return nullptr;
+
+    /* itemIDs is list of itemIDs to repair.
+     * iskAmount is how much to spend on repairs.
+     *  - this needs to be checked against total repair amount, and use fraction to reduce damage for all items in list
+     */
+
+    std::vector<InventoryItemRef> itemRefVec;
+    Inventory* pInv = call.client->SystemMgr()->GetStationFromInventory(m_locationID)->GetMyInventory();
+    ShipItem* pShip(nullptr);
+    InventoryItemRef iRef;
+    float fraction = 1.0;
+    double cost = 0, total = 0;
+    uint32 damage = 0, hp = 0, delta = 0;
+    PyList::const_iterator itr = args.itemIDs->begin();
+    for (; itr != args.itemIDs->end(); ++itr) {
+        hp = 0;
+        cost = 0;
+        delta = 0;
+        damage = 0;
+        iRef = pInv->GetByID((*itr)->AsInt()->value());
+        if (iRef.get() == nullptr) {
+            iRef = m_ifac.GetItem((*itr)->AsInt()->value());
+            if (iRef.get() == nullptr)
+                continue;
+        }
+        hp         = iRef->GetAttribute(AttrHP).get_int();
+        damage     = iRef->GetAttribute(AttrDamage).get_int();
+        if (iRef->IsShipItem()) {
+            if ((pShip != nullptr) and (pShip != iRef->GetShipItem())) {
+                codelog(ITEM__ERROR, "Got a new ship item here.  Rework this code!");
+                return new PyNone();
+            }
+            pShip = iRef->GetShipItem();
+            hp     += iRef->GetAttribute(AttrArmorHP).get_int();
+            damage += iRef->GetAttribute(AttrArmorDamage).get_int();
+            // ship is (basePrice)*7.5e-10
+            cost   = (iRef->type().basePrice() * 0.00000000075);
+        } else {
+            itemRefVec.push_back(iRef);
+            // modules are (basePrice)*1.25e-6
+            cost   = (iRef->type().basePrice() * 0.00000125);
+        }
+        delta = hp - damage;
+        total += delta * cost;
+    }
+
+    if (args.iskAmount < total)
+        fraction = total / args.iskAmount;
+
+    pShip->RepairShip(fraction);
+    pShip->RepairModules(itemRefVec, fraction);
+
+    return new PyNone();
 }
 
 PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
@@ -138,87 +191,70 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
      * 20:39:30 [SvcCallDump]         [ 0] List: 1 elements
      * 20:39:30 [SvcCallDump]         [ 0]   [ 0] Integer field: 140012041
      */
-    sLog.White( "RepairSvcBound::Handle_GetDamageReports()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
     Call_SingleIntList args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", call.client->GetName());
         return nullptr;
     }
 
     PyDict* dict = new PyDict();
-    for (auto cur : args.ints)
-        dict->SetItem(new PyInt(cur), m_rs->GetDamageReports(call.client, m_locationID, cur));
+    Client* pClient = call.client;
+    StationItemRef sRef = pClient->SystemMgr()->GetStationFromInventory(m_locationID);
+    Inventory* pInv = sRef->GetMyInventory();
+    float standing = 0;
+    // standing system isnt complete, but this is the correct data methods for station standing checks
+    if (IsNPCCorp(sRef->ownerID()))
+        standing = pClient->GetChar()->GetNPCCorpStanding(pClient->GetCharacterID(), sRef->ownerID());
+    else
+        standing = pClient->GetChar()->GetCorpStanding(pClient->GetCharacterID(), sRef->ownerID());
 
-    if (is_log_enabled(CLIENT__CALL_REP))
-        dict->Dump(CLIENT__CALL_REP, "   ");
+    for (auto cur : args.ints) {
+        RepairListRsp rlr;
+            rlr.discount       = "0%";  // not sure....seen 0% and 100% in packets
+            rlr.serviceCharge  = "0%";  // not sure....seen 0% in packets
+            rlr.playerStanding = standing;
+            rlr.lines = new PyList();
+            RepairService::GetDamageReports(cur, pInv, rlr.lines);
+        dict->SetItem(new PyInt(cur), rlr.Encode());
+    }
 
     return dict;
 }
 
-PyObject* RepairService::GetDamageReports(Client* pClient, uint32 stationID, uint32 itemID) {
-    PyDict* data = new PyDict();
-        data->SetItemString("RowClass", new PyToken("util.Row"));
-    PyList* headerList = new PyList(7);
-        headerList->SetItem(0, new PyString("itemID"));
-        headerList->SetItem(1, new PyString("typeID"));
-        headerList->SetItem(2, new PyString("groupID"));
-        headerList->SetItem(3, new PyString("damage"));
-        headerList->SetItem(4, new PyString("maxHealth"));
-        headerList->SetItem(5, new PyString("repairable"));
-        headerList->SetItem(6, new PyString("costToRepairOneUnitOfDamage"));
-    data->SetItemString("header", headerList);
-
-    InventoryItemRef itemRef = pClient->SystemMgr()->GetStationFromInventory(stationID)->GetMyInventory()->GetByID(itemID);
-    RepairListItemData rlid;
-        rlid.itemID                      = itemID;
-        rlid.typeID                      = itemRef->typeID();
-        rlid.groupID                     = itemRef->groupID();
-        // these should be total damage for ships
-        if (itemRef->IsShipItem()) {
-            rlid.damage                  = itemRef->GetAttribute(AttrDamage).get_int();
-            rlid.maxHealth               = itemRef->GetAttribute(AttrHP).get_int();
-            rlid.damage                 += itemRef->GetAttribute(AttrArmorDamage).get_int();
-            rlid.maxHealth              += itemRef->GetAttribute(AttrArmorHP).get_int();
-        } else {
-            rlid.damage                  = itemRef->GetAttribute(AttrDamage).get_int();
-            rlid.maxHealth               = itemRef->GetAttribute(AttrHP).get_int();
-        }
-        // not sure how to find this data
-        rlid.repairable                  = 1;
-        // not sure how to do this one yet
-        rlid.costToRepairOneUnitOfDamage = 450;
-    data->SetItemString("line", rlid.Encode());
-
-    if (itemRef->IsShipItem()) {
-        ShipItem* shipItem = itemRef->GetShipItem();
-
+void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* list) {
+    ItemFactory m_ifac;
+    std::vector<InventoryItemRef> itemRefVec;
+    InventoryItemRef iRef = pInv->GetByID(itemID);
+    if (iRef.get() == nullptr) {
+        iRef = m_ifac.GetItem(itemID);
+        if (iRef.get() == nullptr)
+            return;
     }
+    itemRefVec.push_back(iRef);
+    if (iRef->IsShipItem())
+        iRef->GetShipItem()->GetModuleRefVec(itemRefVec);
 
-    RepairListData rld;
-        rld.playerStanding = pClient->GetSecurityRating();  // testing...fix later
-        rld.serviceCharge  = "0%";
-        rld.discount       = "0%";
-        rld.quote          = new PyObject("util.Row", data);
-    PyList* itemNames = new PyList(4);
-        itemNames->SetItem(0, new PyString("playerStanding"));
-        itemNames->SetItem(1, new PyString("serviceCharge"));
-        itemNames->SetItem(2, new PyString("discount"));
-        itemNames->SetItem(3, new PyString("quote"));
-    RepairListRsp rlr;
-        rlr.header  = itemNames;
-        rlr.line    = rld.Encode();
-    return rlr.Encode();
-}
+    for (auto cur : itemRefVec) {
+        RepairItemData rid;
+        rid.itemID                     = cur->itemID();
+        rid.typeID                     = cur->typeID();
+        rid.groupID                    = cur->groupID();
+        rid.damage                     = cur->GetAttribute(AttrDamage).get_int();
+        rid.maxHealth                  = cur->GetAttribute(AttrHP).get_int();
+        // not sure how to find this data
+        rid.repairable                 = 1;
+        if (cur->IsShipItem()) {
+            rid.damage                 += cur->GetAttribute(AttrArmorDamage).get_int();
+            rid.maxHealth              += cur->GetAttribute(AttrArmorHP).get_int();
+            // ship is (basePrice)*7.5e-10
+            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * 0.00000000075);
+        } else {
+            // modules are (basePrice)*1.25e-6
+            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * 0.00000125);
+        }
 
-DBRowDescriptor* RepairService::CreateHeader() {
-    DBRowDescriptor* header = new DBRowDescriptor;
-    header->AddColumn( "playerStanding", DBTYPE_R4 );
-    header->AddColumn( "serviceCharge",  DBTYPE_STR );
-    header->AddColumn( "discount",       DBTYPE_STR );
-    header->AddColumn( "quote",          DBTYPE_I8 );
-    return header;
+        list->AddItem(rid.Encode());
+    }
 }
 
 PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
@@ -252,6 +288,23 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
      * 19:49:29 [SvcCall]         [ 1] List: Empty
      */
 
+    /*
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 55 bytes]
+          [PyTuple 4 items]
+            [PyInt 1]
+            [PyString "UnasembleItems"]
+            [PyTuple 2 items]
+              [PyDict 1 kvp]
+                [PyIntegerVar 61000533]
+                [PyList 1 items]
+                  [PyTuple 2 items]
+                    [PyIntegerVar 1005888156061]
+                    [PyIntegerVar 61000533]
+              [PyList 0 items]
+    */
     /** @todo verify and update this... */
     /** @todo  check if this is container, and remove items BEFORE repacking!!  */
     if (call.tuple->size() == 2)

@@ -830,6 +830,12 @@ void ShipItem::SetShipHull(double fraction)
 }
 
 /* Begin new Module Manager Interface */
+void ShipItem::GetModuleRefVec(std::vector< InventoryItemRef >& iRefVec)
+{
+    if (m_ModuleManager != nullptr)
+        m_ModuleManager->GetModuleListOfRefsAsc(&iRefVec);
+}
+
 InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
     if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(flag) )
@@ -1008,11 +1014,52 @@ void ShipItem::UnloadAllModules()
     m_ModuleManager->UnloadAllModules();
 }
 
-void ShipItem::RepairModules()
+void ShipItem::RepairShip(float fraction)
 {
-    // FIXME TODO get module IDs and send to function
-    uint32 modID = 0;
-    m_ModuleManager->RepairModule(modID);
+    if (fraction > 1)
+        fraction = 1;
+
+    if (fraction == 1) {
+        mAttributeMap.SetAttribute(AttrDamage, EvilZero);
+        mAttributeMap.SetAttribute(AttrArmorDamage, EvilZero);
+        return;
+    }
+
+    uint32 cHull = mAttributeMap.GetAttribute(AttrDamage).get_int();
+    uint32 cArmor = mAttributeMap.GetAttribute(AttrArmorDamage).get_int();
+    uint32 damage = cHull + cArmor;
+
+    EvilNumber amount = damage * fraction;
+    // this will repair hull first, then armor
+    if (amount > cHull) {
+        amount -= cHull;
+        mAttributeMap.SetAttribute(AttrDamage, EvilZero);
+        if (amount >= cArmor) {
+            mAttributeMap.SetAttribute(AttrArmorDamage, EvilZero);
+        } else {
+            amount = cArmor - amount;
+            mAttributeMap.SetAttribute(AttrArmorDamage, amount);
+        }
+    } else
+        mAttributeMap.SetAttribute(AttrDamage, amount);
+
+}
+
+void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction)
+{
+    EvilNumber amount = 0, damage = 0;
+    InventoryItem* pItem;
+    for (auto cur : itemRefVec) {
+        damage = cur->GetAttribute(AttrDamage);
+        if (damage < 0.01)
+            continue;
+        amount = cur->GetAttribute(AttrDamage);
+        if ((amount / cur->GetAttribute(AttrHP)) > fraction)
+            amount = cur->GetAttribute(AttrHP) *  fraction;
+        else
+            amount = 1;
+        m_ModuleManager->RepairModule(cur->itemID(), amount);
+    }
 }
 
 void ShipItem::Online (uint32 moduleID)
@@ -1339,6 +1386,14 @@ void Ship::Process() {
 
     // now, process the modules.
     m_shipRef->ProcessModules();
+}
+
+void Ship::DamageRandModule(float chance)
+{
+    if (chance == 0)
+        return;
+    if (chance < MakeRandomFloat())
+        m_shipRef->DamageRandModule();
 }
 
 void Ship::PayInsurance() {

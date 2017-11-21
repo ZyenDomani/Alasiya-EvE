@@ -32,8 +32,8 @@ public:
 
     void ProcessEffects(Effects::State state, bool online = false);
 
-    void Repair()                                       { m_modRef->ResetAttribute(AttrHP, true); }
-    void Repair(EvilNumber amount)                      { m_modRef->SetAttribute(AttrHP, m_modRef->GetAttribute(AttrHP) + amount); }
+    void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }
+    void Repair(EvilNumber amount);
 
     bool HasAttribute(uint32 attrID)                    { return m_modRef->HasAttribute(attrID); }
     void SetAttribute(uint32 attrID, EvilNumber val, bool update=true) { m_modRef->SetAttribute(attrID, val, update); }

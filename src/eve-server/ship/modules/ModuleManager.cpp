@@ -168,6 +168,16 @@ void ModuleContainer::UnloadAll() {
     process(typeUnloadAll);
 }
 
+void ModuleContainer::RepairAll()
+{
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        if (itr->second != nullptr)
+            itr->second->Repair();
+        ++itr;
+    }
+}
+
 void ModuleContainer::process(processType p)
 {
     switch(p) {
@@ -268,6 +278,20 @@ uint8 ModuleContainer::GetFittedModuleCountByGroup(uint16 groupID)
         return 0;
     else
         return m_ModulesFittedByGroupID.find(groupID)->second;
+}
+
+GenericModule* ModuleContainer::GetRandModule()
+{
+    std::vector<GenericModule*> modVec;
+    std::map<uint8, GenericModule*>::iterator itr;
+    for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag) {
+        itr = m_modules.find(flag);
+        if (itr != m_modules.end()) {
+            if (itr->second != nullptr)
+                modVec.push_back(itr->second);
+        }
+    }
+    // finish this
 }
 
 void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList)
@@ -546,6 +570,10 @@ bool ModuleManager::OnlineCheck(GenericModule* pMod)
 {
     if (pMod->isRig() or pMod->isSubSystem())
         return true;
+    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP)) {
+        // make error here
+        return false;
+    }
     // check PG and CPU usage to see if we have enough to online this module
     EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + pMod->GetAttribute(AttrCpu));
     if (cpuNeed  > m_Ship->GetAttribute(AttrCpuOutput)) {
@@ -711,40 +739,65 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 void ModuleManager::Overload(EVEItemFlags flag)
 {
     GenericModule* pMod = m_Modules->GetModule(flag);
-    if (pMod != nullptr) {
-        pMod->Overload();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", pMod->getItem()->itemName().c_str());
-    } else
+    if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Overload() - Called on module that is not loaded at slot %i.", (int8)flag );
+        return;
+    }
+    pMod->Overload();
+    _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", pMod->getItem()->itemName().c_str());
 }
 
 void ModuleManager::DeOverload(EVEItemFlags flag)
 {
     GenericModule* pMod = m_Modules->GetModule(flag);
-    if (pMod != nullptr) {
-        pMod->DeOverload();
-        _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", pMod->getItem()->itemName().c_str());
-    } else
+    if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::DeOverload() - Called on module that is not loaded at slot %i.", (int8)flag);
+        return;
+    }
+    pMod->DeOverload();
+    _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", pMod->getItem()->itemName().c_str());
 }
 
-void ModuleManager::DamageModule(uint32 itemID, EvilNumber val)
+void ModuleManager::DamageModule(uint32 itemID, EvilNumber amount)
 {
     GenericModule* pMod = m_Modules->GetModule(itemID);
-    if (pMod != nullptr) {
-        pMod->SetAttribute(AttrHP, val);
-        _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", pMod->getItem()->itemName().c_str(), val.get_float());
-    } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Called on module %u that is not loaded.", itemID );
-}
-
-void ModuleManager::RepairModule(uint32 itemID)
-{
-    GenericModule* pMod = m_Modules->GetModule(itemID);
-    if (pMod != nullptr)
-        pMod->Repair();
-    else
+    if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
+        return;
+    }
+    pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
+    _log(SHIP__MODULE_TRACE, "ModuleManager::DamageModule() - %s taking %f damage.", pMod->getItem()->itemName().c_str(), amount.get_float());
+    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
+        pMod->Offline();
+}
+
+void ModuleManager::DamageRandModule()
+{
+    /** @todo figure out how to do this and implement it */
+}
+
+void ModuleManager::RepairModule(uint32 itemID, EvilNumber amount)
+{
+    GenericModule* pMod = m_Modules->GetModule(itemID);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
+        return;
+    }
+    pMod->Repair(amount);
+}
+
+void ModuleManager::RepairModule(GenericModule* pMod, EvilNumber amount)
+{
+    if (pMod != nullptr){
+        _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module that is not loaded.");
+        return;
+    }
+    pMod->Repair(amount);
+}
+
+void ModuleManager::RepairModules()
+{
+    m_Modules->RepairAll();
 }
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
