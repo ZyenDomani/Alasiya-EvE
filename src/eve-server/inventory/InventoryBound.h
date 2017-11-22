@@ -34,7 +34,7 @@ class InventoryBound
 {
 public:
     InventoryBound(PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag);
-    ~InventoryBound();
+    virtual ~InventoryBound();
 
     virtual void Release() {
         //I hate this statement

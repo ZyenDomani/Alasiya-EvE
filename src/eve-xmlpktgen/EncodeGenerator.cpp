@@ -972,20 +972,19 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             const TiXmlElement* ele = i->ToElement();
 
             //we only handle dictInlineEntry elements
-            if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )
-            {
-                std::cout << std::endl <<  "ClassEncodeGenerator:: non-dictInlineEntry in <dictInline> at line " << field->Row() << ", ignoring.";
+            if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )            {
+                std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictInline non-dictInlineEntry in <dictInline> at line " << field->Row() << ", ignoring.";
                 continue;
             }
             const char* key = ele->Attribute( "key" );
-            if (!key) {
-                std::cout << std::endl <<  "ClassEncodeGenerator:: <dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
+            if (key == nullptr) {
+                std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictInline <dictInlineEntry> at line " << field->Row() << " is missing the key attribute, skipping.";
                 return false;
             }
 
             bool keyTypeInt = false;
             const char* keyType = ele->Attribute( "key_type" );
-            if (keyType)
+            if (keyType != nullptr)
                 keyTypeInt = ( strcmp( keyType, "int" ) == 0 );
 
             char vname[32];
@@ -1035,27 +1034,27 @@ bool ClassEncodeGenerator::ProcessDictRaw( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictRaw field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* key = field->Attribute( "key" );
     if (key == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the key attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictRaw field at line " << field->Row() << " is missing the key attribute, skipping.";
         return false;
     }
     const char* pykey = field->Attribute( "pykey" );
     if (pykey == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the pykey attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictRaw field at line " << field->Row() << " is missing the pykey attribute, skipping.";
         return false;
     }
     const char* value = field->Attribute( "value" );
     if (value == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the value attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictRaw field at line " << field->Row() << " is missing the value attribute, skipping.";
         return false;
     }
     const char* pyvalue = field->Attribute( "pyvalue" );
     if (pyvalue == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictRaw field at line " << field->Row() << " is missing the pyvalue attribute, skipping.";
         return false;
     }
 
@@ -1082,7 +1081,7 @@ bool ClassEncodeGenerator::ProcessDictInt( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictInt field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
@@ -1112,7 +1111,7 @@ bool ClassEncodeGenerator::ProcessDictStr( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictStr field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
