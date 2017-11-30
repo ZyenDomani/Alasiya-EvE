@@ -110,6 +110,12 @@ PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
 }
 
 /*
+ * /client/script/ui/shared/comtool/onlinestatus.py(58) GetOnlineStatus
+ *        self = <svc.OnlineStatus instance at 0x0BDBAC38>
+ *        fetch = True
+ *        charID = 140000000
+ * TypeError: an integer is required
+ * 
 ==================== Sent from Server 81 bytes
 
 [PyObjectData Name: macho.Notification]

@@ -51,36 +51,16 @@ AuthService::~AuthService() {
 
 
 PyResult AuthService::Handle_Ping(PyCallArgs &call) {
-    return new PyLong(Win32TimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
 {
-    if( !sConfig.account.loginMessage.empty() )
-    {
-        PyDict* args = new PyDict;
-        args->SetItemString( "message", new PyString( sConfig.account.loginMessage ) );
-
-        return new PyObject( "util.KeyVal", args );
-    }
-    else
+    if (sConfig.account.loginMessage.empty())
         return new PyNone();
+
+    PyDict* args = new PyDict;
+        args->SetItemString( "message", new PyString( sConfig.account.loginMessage ) );
+    return new PyObject( "util.KeyVal", args );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -571,21 +571,21 @@ void TargetManager::QueueTBDestinyUpdate( PyTuple** update ) const
 std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
     std::ostringstream str;
     if (!m_targets.empty()) {
-        str << "Targets: \n";
+        str << "Targets: <br>";
         length += 11;
         for (auto cur : m_targets) {
             str << "  " << cur.second->who->GetSelf()->itemName();
-            str << " (" << cur.second->who->GetID() << ") \n";
+            str << " (" << cur.second->who->GetID() << ") <br>";
             length += 35;
             ++count;
         }
     }
     if (!m_targetedBy.empty()) {
-        str << "Targeted by: \n";
+        str << "Targeted by: <br>";
         length += 15;
         for (auto cur : m_targetedBy) {
             str << "  " << cur.second->who->GetSelf()->itemName();
-            str << " (" << cur.second->who->GetID() << ") \n";
+            str << " (" << cur.second->who->GetID() << ") <br>";
             length += 35;
             ++count;
         }

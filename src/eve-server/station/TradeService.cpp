@@ -113,7 +113,7 @@ PyBoundObject* TradeService::_CreateBoundObject(Client* pClient, const PyRep *bi
     Trade_BindArgs args;
     //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
-    if(!args.Decode(&t)) {
+    if (!args.Decode(&t)) {
         codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
         return nullptr;
     }

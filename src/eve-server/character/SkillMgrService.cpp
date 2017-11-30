@@ -263,14 +263,14 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 
     for (auto cur : args.skills)  {
         SkillRef skill = m_manager->item_factory->GetSkill(cur);
-        if (!skill) {
+        if (skill.get() == nullptr) {
             codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), cur );
             continue;
         }
 
         if (!ch->InjectSkillIntoBrain(skill)) {
             /** @todo build and send UserError about injection failure. */
-            codelog(ITEM__ERROR, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
+            _log(ITEM__WARNING, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }
     }
 

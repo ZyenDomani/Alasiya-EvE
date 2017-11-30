@@ -27,12 +27,11 @@
 #define __UTILS__REF_PTR_H__INCL__
 
 
-//#define ENABLE_STD_OUT_REF_LOG
-//#ifdef ENABLE_STD_OUT_REF_LOG
-    #include <cassert>
-    #include <cstdio>
-    #include <iostream>
-//#endif
+#include <cassert>
+#include <cstdio>
+#include <iostream>
+
+#include "utils/misc.h"
 
 /**
  * @brief A reference-counted object.
@@ -78,7 +77,13 @@ protected:
      */
     void IncRef() const
     {
-        assert( mDeleted == false );
+        if (mDeleted) {
+            // make error for this shit?
+            _log(REFPTR__ERROR, "mDeleted = true.");
+            EvE::traceStack();
+            return;
+        }
+        //assert( mDeleted == false );
         //assert( mRefCount > 0 );  //inventoryItem objects are created with a ref count of 0, then incremented during RefPtr c'tor
         ++mRefCount;
         _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
@@ -94,7 +99,7 @@ protected:
         if (mDeleted) {
             // make error for this shit?
             _log(REFPTR__ERROR, "mDeleted = true.");
-            //EvE::traceStack();
+            EvE::traceStack();
             return;
         }
 

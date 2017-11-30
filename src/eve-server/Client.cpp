@@ -127,7 +127,8 @@ Client::~Client() {
                 TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
                 mts->CancelTrade(this);
             }
-            OnCharNoLongerInStation();
+            if (!sConsole.IsShutdown())
+                OnCharNoLongerInStation();
         }
 
         if (pShipSE != nullptr)
@@ -143,9 +144,9 @@ Client::~Client() {
         ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
         ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
         // LSC logout
-        std::set<LSCChannel*> channels = m_channels;
-        for (auto cur : channels)
-            cur->LeaveChannel(this);
+        if (!sConsole.IsShutdown())
+            for (auto cur : m_channels)
+                cur->LeaveChannel(this);
         m_services.ClearBoundObjects(this);
 
         m_TS = nullptr;
@@ -210,6 +211,18 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     m_char->SetClient(this);
     m_char->UpdateSkillQueue();
+    /*
+    // this will eventually check for d/c timer and rejoin existing fleet if applicable
+    CharFleetData fleet;
+        fleet.wingID = 0;
+        fleet.fleetID = 0;
+        fleet.squadID = 0;
+        fleet.fleetJob = 0;
+        fleet.joinTime = 0;
+        fleet.fleetRole = 0;
+        fleet.fleetBooster = 0;
+    m_char->SetFleetData(fleet);
+    */
 
     SetPodItem();
 
@@ -1145,9 +1158,10 @@ void Client::UpdateFleetSession(Character* pChar)
 {
     if (pChar == nullptr)
         return;
-    mSession.SetLong("fleetid", pChar->fleetID());
+    mSession.SetInt("fleetjob", pChar->fleetJob());
     mSession.SetInt("fleetrole", pChar->fleetRole());
     mSession.SetInt("fleetbooster", pChar->fleetBooster());
+    mSession.SetInt("fleetid", pChar->fleetID());
     mSession.SetInt("wingid", pChar->wingID());
     mSession.SetInt("squadid", pChar->squadID());
     SendSessionChange();
@@ -1399,6 +1413,23 @@ void Client::_SendQueuedUpdates() {
     m_packaged = false;
 }
 
+void Client::SendNotification(const char *notifyType, const char *idType, PyTuple *payload, bool seq /*true*/) {
+    //build a little notification out of it.
+    EVENotificationStream notify;
+    notify.notifyType = notifyType;
+    notify.remoteObject = 1;
+    notify.args = payload;
+
+    PyAddress dest;
+    dest.type = PyAddress::Broadcast;
+    dest.service = notifyType;
+    dest.bcast_idtype = idType;
+
+    //now send it to the client
+    SendNotification(dest, notify, seq);
+    //PyDecRef(*payload);
+}
+
 void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq /*true*/) {
     //build a little notification out of it.
     EVENotificationStream notify;
@@ -1438,7 +1469,7 @@ void Client::SendNotification(const PyAddress &dest, EVENotificationStream &noti
 
     _log(CLIENT__NOTIFY_REP, "Sending notify of type %s with ID type %s to %s", dest.service.c_str(), dest.bcast_idtype.c_str(), GetName());
     if (is_log_enabled(CLIENT__NOTIFY_DUMP)) {
-        PyLogDumpVisitor dumper(CLIENT__NOTIFY_REP, CLIENT__NOTIFY_DUMP, "", true, true);
+        PyLogDumpVisitor dumper(CLIENT__NOTIFY_DUMP, CLIENT__NOTIFY_REP, "", true, true);
         packet->Dump(CLIENT__NOTIFY_DUMP, dumper);
     }
 
@@ -1601,7 +1632,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
      */
 
     if (isOnline)
-        if (sEntityList.FindClientByAccount(account_info.id)) {
+        if (sEntityList.FindClientByAccount(account_info.id) != nullptr) {
         	   fail_msg = "This account is being used right now. Try logging in again later.";
         	// If user logs-out while on the login screen, the online status will stay True until the server gets restarted.
         	// So disconnecting the parent client is a neccessary measure to make sure user can log in after that.
@@ -1645,7 +1676,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //user type 30 is normal user, type 23 is a trial account user.
     mSession.SetInt("userType", userTypeMammon);
     mSession.SetInt("userid", account_info.id);
-    mSession.SetInt("clientID", 0/*account_info.clientID*/);   /* this causes errors in client log when !=0.  no clue why yet.  */
+    mSession.SetLong("clientID", 10000000000L * account_info.clientID + 888444);   /* this causes errors in client log when !=0.  no clue why yet.  */
     mSession.SetULong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 
@@ -1669,7 +1700,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     //send this before session change
     CryptoHandshakeAck ack;
         ack.jit = GetLanguageID();
-        ack.userid = GetUserID();
+        ack.userid = GetUserID();   //5654387 accountID?
         ack.maxSessionTime = new PyNone();
         ack.userType = 1;
         ack.role = ROLE_PLAYER | ROLE_NEWBIE; /* account role is not defined yet.  live returns these */
@@ -1677,10 +1708,10 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.inDetention = new PyNone();
     // no client update available
         ack.client_hash = new PyNone();
-        ack.user_clientid = GetClientID();
+        ack.user_clientid = GetClientID();  //241241000001103
         ack.live_updates = sLiveUpdateDB.GetUpdates();
         /* the client creates and sends sessionID in the initial packet.  unknown how to get it yet. */
-        //ack.sessionID = GetSessionID();
+        //ack.sessionID = GetSessionID();   //398773966249980114
     PyRep* r = ack.Encode();
     if (is_log_enabled(CLIENT__CALL_DUMP))
         r->Dump(CLIENT__CALL_DUMP, "    ");
@@ -1693,7 +1724,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     return true;
 }
 
-void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel)
+void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint64 clientID, PyRep** return_value, const char* channel)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -1914,7 +1945,7 @@ bool Client::Handle_Notify(PyPacket* packet)
                 continue;
             }
 
-            uint32 nodeID, bindID;
+            uint32 nodeID = 0, bindID = 0;
             if (sscanf(element.boundID.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
                 sLog.Error("Client","Notification '%s' from %s: Failed to parse bind string '%s'. Skipping.", \
                            notify.method.c_str(), m_char->itemName().c_str(), element.boundID.c_str());

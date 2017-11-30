@@ -29,6 +29,7 @@
 
 #include "ServiceDB.h"
 
+class Client;
 class LSCService;
 class LSCChannel;
 

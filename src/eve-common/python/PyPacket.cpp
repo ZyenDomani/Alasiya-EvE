@@ -499,13 +499,6 @@ PyRep *PyAddress::Encode() {
         break;
 
     case Broadcast:
-        /** @todo  fix for fleet shit...
-        [PyInt 4]
-        [PyString "OnFleetJoin"]
-        [PyTuple 1 items]
-          [PyIntegerVar 1246810806465]
-        [PyString "*fleetid"]
-        */
         t = new PyTuple(4);
         t->items[0] = new PyInt((int)type);
         //broadcastID

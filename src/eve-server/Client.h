@@ -84,7 +84,7 @@ public:
 
     uint32 GetAccountType() const                       { return mSession.GetCurrentInt( "userType" ); }
     uint64 GetAccountRole() const                       { return mSession.GetCurrentULong( "role" ); }
-    uint32 GetClientID() const                          { return mSession.GetCurrentInt( "clientid" ); }
+    int64 GetClientID() const                           { return mSession.GetCurrentLong( "clientid" ); }
     uint32 GetUserID() const                            { return mSession.GetCurrentInt( "userid" ); }
     int64 GetSessionID()                                { return mSession.GetCurrentLong( "sessionID" ); }
 
@@ -109,7 +109,8 @@ public:
     uint64 GetRolesAtOther() const                      { return mSession.GetCurrentULong( "rolesAtOther" ); }
 
     uint32 GetGangRole() const                          { return mSession.GetCurrentInt( "gangrole" ); }
-    uint8 GetFleetRole() const                          { return mSession.GetCurrentInt( "fleetrole" ); }
+    int8 GetFleetRole() const                           { return mSession.GetCurrentInt( "fleetrole" ); }
+
     /** @todo need to add gang and fleet session data here */
 
     //  public functions to update client session when char's roles are changed
@@ -333,6 +334,7 @@ protected:
 public:
     void SendSessionChange();
     void SendNotification(const PyAddress &dest, EVENotificationStream &noti, bool seq=true);
+    void SendNotification(const char *notifyType, const char *idType, PyTuple *payload, bool seq=true);
     void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
 
     // this is to check/enable Python Throw keyword, to avoid throws/segfault when not applicable
@@ -344,7 +346,7 @@ protected:
     void _SendPingRequest();
     void _UpdateSession( const CharacterConstRef& character );
     void _SendException( const PyAddress& source, uint64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
-    void _SendCallReturn( const PyAddress& source, uint64 callID, uint32 clientID, PyRep** return_value, const char* channel = NULL );
+    void _SendCallReturn( const PyAddress& source, uint64 callID, uint64 clientID, PyRep** return_value, const char* channel = 0 );
     void _SendPingResponse( const PyAddress& source, uint64 callID );
 
     bool Handle_CallReq( PyPacket* packet, PyCallStream& req );

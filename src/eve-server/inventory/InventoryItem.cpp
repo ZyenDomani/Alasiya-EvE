@@ -628,7 +628,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_itemID = m_itemID;
                 es.env_charID = m_ownerID;  //may not be quite right...
                 es.env_shipID = m_locationID;
-                es.env_target = 0;
+                es.env_target = 0;  //may not be quite right...
                 es.env_other = new PyNone();
                 es.env_area = new PyNone();
                 es.env_effectID = 16;
@@ -654,10 +654,11 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         }
     }
 
+    // for vouchers
     if (typeID() == 51)
         result.description = m_itemName;
 
-    result.time = GetFileTimeNow();
+    result.time = Win32TimeNow();
     return true;
 }
 
@@ -671,22 +672,10 @@ PyList* InventoryItem::GetItemInfo() const
 
 PyObject* InventoryItem::ItemGetInfo()
 {
-    /*
     Rsp_ItemGetInfo result;
     if (!Populate(result.entry))
         return nullptr;
-    */
-    Rsp_CommonGetInfo result;
-    Rsp_CommonGetInfo_Entry entry;
-
-    if (!Populate(entry))
-        return NULL;
-
-    result.items[ itemID() ] = entry.Encode();
-
-    if (typeID() == 51)
-        result.description = m_itemName;
-
+    
     return result.Encode();
 }
 

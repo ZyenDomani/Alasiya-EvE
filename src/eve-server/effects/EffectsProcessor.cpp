@@ -383,7 +383,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
      * 12:21:02 [FxWarning] FxProc::ParseExpression() - *** ERROR ***  Operand id:4 key:OR - should be added as %(arg1)s OR %(arg2)s
      *        //02:48:33 E FxProc::ParseExpression: *** ERROR ***  Operand id:* key:INC - should be added as %(arg1)s+=self.%(arg2)se
      * 23:14:11 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue     None called by     None
-     * 
+     *
      */
 }
 
