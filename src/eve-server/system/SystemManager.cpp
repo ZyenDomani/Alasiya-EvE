@@ -856,7 +856,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble, DoDestiny_SetState&
     into.effectStates = new PyList();
     into.effectStates->clear();
     into.allianceBridges = new PyList();
-    into.allianceBridges->clear();
+    into.allianceBridges->clear();  //activeBeacon and activeBridge data found in fleetSvc.py
 
     //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {

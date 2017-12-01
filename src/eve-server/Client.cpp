@@ -137,6 +137,7 @@ Client::~Client() {
         // remove ship and char memory objects from running server
         m_system->RemoveClient(this, IsDocked(), true);
 
+        // char logout removed fleet data, if any
         m_char->LogOut();
         // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
         m_ship->LogOut();
