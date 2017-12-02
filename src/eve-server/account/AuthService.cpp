@@ -39,10 +39,10 @@ m_dispatch(new Dispatcher(this))
 
     PyCallable_REG_CALL(AuthService, Ping);
     PyCallable_REG_CALL(AuthService, GetPostAuthenticationMessage);
-	/*
-    return sm.RemoteSvc('authentication').AmUnderage()
-    return sm.RemoteSvc('authentication').AccruedTime()
-    */
+    PyCallable_REG_CALL(AuthService, AmUnderage);
+    PyCallable_REG_CALL(AuthService, AccruedTime);
+    PyCallable_REG_CALL(AuthService, SetLanguageID);
+
 }
 
 AuthService::~AuthService() {
@@ -64,3 +64,31 @@ PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
     return new PyObject( "util.KeyVal", args );
 }
 
+
+PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
+{
+    //  return sm.RemoteSvc('authentication').AmUnderage()
+    sLog.White("AuthService", "Handle_AmUnderage() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    // return true/false
+    return new PyBool(false);
+}
+
+PyResult AuthService::Handle_AccruedTime(PyCallArgs &call)
+{
+    // return sm.RemoteSvc('authentication').AccruedTime()
+    sLog.White("AuthService", "Handle_AccruedTime() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult AuthService::Handle_SetLanguageID(PyCallArgs &call)
+{
+    //sm.RemoteSvc('authentication').SetLanguageID(setlanguageID)
+    sLog.White("AuthService", "Handle_SetLanguageID() size=%u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}

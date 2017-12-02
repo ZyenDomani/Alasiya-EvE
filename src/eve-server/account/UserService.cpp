@@ -39,6 +39,8 @@ UserService::UserService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(UserService, GetRedeemTokens);
     PyCallable_REG_CALL(UserService, GetCreateDate);
     PyCallable_REG_CALL(UserService, ReportISKSpammer);
+    PyCallable_REG_CALL(UserService, ReportBot);
+    PyCallable_REG_CALL(UserService, ApplyPilotLicence);
 }
 
 UserService::~UserService() {
@@ -164,8 +166,22 @@ PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
         sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
         */
 
-    return NULL;
+    return nullptr;
 }
 
+PyResult UserService::Handle_ReportBot( PyCallArgs& call )
+{
+    sLog.White( "UserService", "Handle_ReportBot" );
+    call.Dump(CHARACTER__DEBUG);
 
+    return nullptr;
+}
+
+PyResult UserService::Handle_ApplyPilotLicence( PyCallArgs& call )
+{
             //sm.RemoteSvc('userSvc').ApplyPilotLicence(itemID, justQuery=True)
+    sLog.White( "UserService", "Handle_ApplyPilotLicence" );
+    call.Dump(CHARACTER__DEBUG);
+
+    return nullptr;
+}

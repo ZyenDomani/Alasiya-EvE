@@ -42,6 +42,8 @@ protected:
     PyCallable_DECL_CALL(GetRedeemTokens);
     PyCallable_DECL_CALL(GetCreateDate);
     PyCallable_DECL_CALL(ReportISKSpammer);
+    PyCallable_DECL_CALL(ReportBot);
+    PyCallable_DECL_CALL(ApplyPilotLicence);
 };
 
 #endif /* __USER_SERVICE__H__INCL__ */

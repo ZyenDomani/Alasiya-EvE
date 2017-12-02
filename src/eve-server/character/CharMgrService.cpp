@@ -749,9 +749,7 @@ PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
 {
-  /*
-        sm.RemoteSvc('charMgr').BlockOwners([ownerID])
- */
+  //        sm.RemoteSvc('charMgr').BlockOwners([ownerID])
   sLog.White( "CharMgrService::Handle_BlockOwners()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 
@@ -760,9 +758,7 @@ PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_UnblockOwners( PyCallArgs& call )
 {
-  /*
-            sm.RemoteSvc('charMgr').UnblockOwners(blocked)
- */
+  //            sm.RemoteSvc('charMgr').UnblockOwners(blocked)
   sLog.White( "CharMgrService::Handle_UnblockOwners()", "size=%u ", call.tuple->size());
   call.Dump(SERVICE__CALL_DUMP);
 

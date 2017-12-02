@@ -55,7 +55,20 @@ CorporationService::~CorporationService() {
 }
 
 PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
-
+    /*self.factionIDbyNPCCorpID, self.factionRegions, self.factionConstellations, self.factionSolarSystems,
+     * self.factionRaces, self.factionStationCount, self.factionSolarSystemCount, self.npcCorpInfo = sm.RemoteSvc('corporationSvc').GetFactionInfo()
+     *        for corpID, factionID in self.factionIDbyNPCCorpID.iteritems():
+     *            if factionID not in self.corpsByFactionID:
+     *                self.corpsByFactionID[factionID] = []
+     *            if corpID not in self.corpsByFactionID[factionID]:
+     *                self.corpsByFactionID[factionID].append(corpID)
+     *
+     *        owners = {}
+     *        for k, v in self.factionIDbyNPCCorpID.iteritems():
+     *            owners[k] = 0
+     *            owners[v] = 0
+     */
+    /** @todo  load and store thie entire PyRep* in static data.. */
     GetFactionInfoRsp rsp;
 
     if (!m_db.ListAllCorpFactions(rsp.factionIDbyNPCCorpID)) {
@@ -124,13 +137,26 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
 }
 
 PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
+    //corpmktinfo = sm.RemoteSvc('corporationSvc').GetCorpInfo(itemID)
+    // this wants corp market info
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return (NULL);
     }
+    /*for each in corpmktinfo:
+            each.typeID
+            each.sellPrice,
+            each.sellQuantity,
+            each.sellDate,
+            each.sellStationID
+            each.buyPrice,
+            each.buyQuantity,
+            each.buyDate,
+            each.buyStationID
+            */
 
-    return m_db.GetCorpInfo(args.arg);
+    return nullptr; //m_db.GetCorpInfo(args.arg);
 }
 
 

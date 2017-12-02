@@ -171,7 +171,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
         }
         ids = "";
     }
-    
+
     if (asteroidItems.size()) {
         ListToINString(asteroidItems, ids, "0");
         if (!sDatabase.RunQuery(res,
@@ -352,11 +352,10 @@ PyRep *ConfigDB::GetStationSolarSystemsByOwner(uint32 ownerID) {
         " SELECT "
         " stationID, solarSystemID "
         " FROM staStations "
-        " WHERE corporationID = %u ", ownerID
-        ))
+        " WHERE corporationID = %u ", ownerID))
     {
         codelog(DATABASE__ERROR, "Error in GetStationSolarSystemsByOwner query: %s", res.error.c_str());
-        return new PyInt(0);
+        return nullptr;
     }
 
     return DBResultToRowset(res);

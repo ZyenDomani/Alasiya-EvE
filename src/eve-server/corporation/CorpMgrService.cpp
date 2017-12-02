@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -51,52 +52,29 @@ CorpMgrService::~CorpMgrService() {
 
 
 PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
-  /*
-14:12:47 [SvcCall] Service corpmgr: calling GetPublicInfo
-14:12:47 W Client::BeanCount: BeanCount error reporting and handling is not implemented yet.
-14:12:47 [SvcCall] Service alert: calling BeanCount
-14:12:47 [SvcCall] Service alert: calling SendClientStackTraceAlert
-EXCEPTION #13 logged at  07/27/2014 14:12:47 Unhandled exception in <TaskletExt object at 2f7882f0, abps=1001, ctxt="<NO CONTEXT>^<bound method InfoWindow.LoadData of form.infowindow object at (snip)f3d6090, name=('infowindow', 130509619634265564L), destroyed=False>>">
-Caught at:
-/common/lib/bluepy.py(98) CallWrapper
-Thrown at:
-/common/lib/bluepy.py(86) CallWrapper
-/client/script/ui/services/infosvc.py(3231) LoadData
-/client/script/ui/services/infosvc.py(3296) _LoadInfoWindow
-/client/script/ui/services/infosvc.py(4109) GetNameAndDescription
-        itemID = 1000123
-        typeID = 2
-        invtype = <Instance of class sys.InvType>
-                       typeID:                 2
-                       groupID:                2
-                       typeName:               Corporation
-                       ...
-        capt = u'Corporation'
-        self = form.infowindow object at 0x2f3d6090, name=('infowindow', 130509619634265564L), destroyed=False>
-        label = ''
-        desc = ''
-AttributeError: Rowset instance has no attribute 'corporationID'
-*/
-    Call_SingleIntegerArg corpID;
-    if (!corpID.Decode(&call.tuple)) {
+    sLog.White("CorpMgrService", "Handle_GetPublicInfo() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
 
-    //if(corpID.arg < 1001000)    //is NPCCorp
-    //    return m_db.GetCorpInfo(corpID.arg);
-    //else
-        return m_db.GetCorporation(corpID.arg);
+    return m_db.GetCorpInfo(arg.arg);
 }
 
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
-  Call_SingleIntegerArg corpID;
-  if (!corpID.Decode(&call.tuple)) {
+    sLog.White("CorpMgrService", "Handle_GetPublicInfo() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+  Call_SingleIntegerArg arg;
+  if (!arg.Decode(&call.tuple)) {
       codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
       return NULL;
   }
 
-  return m_db.GetCorporations(corpID.arg);
+  return m_db.GetCorporations(arg.arg);
 }
 
 //  started...still needs work
@@ -109,7 +87,7 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
      *
      *
      *  sLog.White( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
-     *  call.Dump(SERVICE__CALL_DUMP);
+     *  call.Dump(CORP__CALL_DUMP);
      */
     Call_GetAssetInventory args;
 
@@ -140,7 +118,7 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
 */
 
   sLog.White( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CORP__CALL_DUMP);
 
     return NULL;
 }
@@ -149,7 +127,7 @@ PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
 /**        returns corpID for given charID  */
 
   sLog.White( "CorpMgrService::Handle_GetCorporationIDForCharacter()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CORP__CALL_DUMP);
 
     return NULL;
 }
@@ -160,7 +138,7 @@ PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
     */
 
 sLog.White( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CORP__CALL_DUMP);
 
     return NULL;
 }
@@ -171,7 +149,7 @@ PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
      */
 
     sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(CORP__CALL_DUMP);
 
     return NULL;
 }

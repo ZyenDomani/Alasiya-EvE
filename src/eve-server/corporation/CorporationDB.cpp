@@ -140,27 +140,22 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
 }
 
 PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
-  /**
-                parallelCalls.append((sm.RemoteSvc('corporationSvc').GetCorpInfo, (itemID,)))
-            systems, agents, corpmktinfo, npcCorpInfo = uthread.parallel(parallelCalls)
+  /*
+            sr.corpinfo.corporationID
+            sr.corpinfo.allianceID
+            sr.corpinfo.stationID
+            sr.corpinfo.description
+            sr.corpinfo.deleted
+            sr.corpinfo.creatorID
+            sr.corpinfo.ceoID
+            sr.corpinfo.url
+            sr.corpinfo.corporationName
             */
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "   corporationName,"
-        "   corporationID,"
-        "   size,extent,solarSystemID,investorID1,investorShares1,"
-        "   investorID2, investorShares2, investorID3,investorShares3,"
-        "   investorID4,investorShares4,"
-        "   friendID,enemyID,publicShares,initialPrice,"
-        "   minSecurity,scattered,fringe,corridor,hub,border,"
-        "   factionID,sizeFactor,stationCount,stationSystemCount,"
-        "   stationID,ceoID,entity.itemName AS ceoName"
-        " FROM crpNPCCorporations"
-        " JOIN corporation USING (corporationID)"
-        "   LEFT JOIN entity ON ceoID=entity.itemID"
-        " WHERE corporationID = %u", corpID))
+        "SELECT corporationID, corporationName, description, creatorID, url, allianceID, deleted, stationID, ceoID"
+        " FROM corporation WHERE corporationID = %u", corpID))
     {
         codelog(DATABASE__ERROR, "Error in retrieving corporation's data (%u)", corpID);
         return nullptr;
@@ -172,7 +167,8 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
         return nullptr;
     }
 
-    return (DBResultToRowset(res));
+    //return DBResultToRowset(res);
+    return DBRowToKeyVal(row);
 }
 
 PyObject *CorporationDB::GetCorporation(uint32 corpID) {
@@ -240,11 +236,7 @@ PyDict *CorporationDB::ListAllCorpInfo() {
         "SELECT "
         "   corporationName,"
         "   corporationID,"
-        "   size,extent,solarSystemID,investorID1,investorShares1,"
-        "   investorID2, investorShares2, investorID3,investorShares3,"
-        "   investorID4,investorShares4,"
-        "   friendID,enemyID,publicShares,initialPrice,"
-        "   minSecurity,scattered,fringe,corridor,hub,border,"
+        "   size,extent,solarSystemID,"
         "   factionID,sizeFactor,stationCount,stationSystemCount,"
         "   stationID,ceoID,entity.itemName AS ceoName"
         " FROM crpNPCCorporations"
@@ -256,7 +248,7 @@ PyDict *CorporationDB::ListAllCorpInfo() {
         return nullptr;
     }
 
-    return(DBResultToIntRowDict(res, 1));
+    return (DBResultToIntRowDict(res, 1));
 }
 
 bool CorporationDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {

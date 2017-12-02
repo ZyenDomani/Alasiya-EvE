@@ -68,14 +68,13 @@ namespace LSC {
     */
 
     // type designations are internal-use only (client works on strings)
-    // need to define when these are used (i.e.  difference between solarsystem and solarsystem2)
     enum Type{
         global          = 1,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
         corp            = 2,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless
         region          = 3,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
         constellation   = 4,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space
         solarsystem     = 5,    // send channelID as tuple(id, desc)  used in w-space, memberless, changes chat window title from "Local" to "System"
-        solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space Local channel)
+        solarsystem2    = 6,    // send channelID as tuple(id, desc)  uses full memberlist, never memberless, not used in w-space (k-space "Local" channel)
         // end of static channels
         character       = 7,    // for mailing lists using channelID = charID
         // begin dynamic channels
@@ -90,12 +89,14 @@ namespace LSC {
     };
 
     enum Mode {
-        chCreator = 15,
-        chOperator = 7,
-        chConversationalist = 3,
-        chSpeaker = 2,
+        chDisallowed = -2,
+        chUnspecified = -1,
+        chNone = 0,
         chListener = 1,
-        chNone = 0
+        chSpeaker = 2,
+        chConversationalist = 3,
+        chOperator = 7,
+        chCreator = 15
     };
 
     enum Error {

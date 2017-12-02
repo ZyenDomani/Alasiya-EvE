@@ -40,6 +40,10 @@ protected:
 
     PyCallable_DECL_CALL(Ping);
     PyCallable_DECL_CALL(GetPostAuthenticationMessage);
+    PyCallable_DECL_CALL(AmUnderage);
+    PyCallable_DECL_CALL(AccruedTime);
+    PyCallable_DECL_CALL(SetLanguageID);
+    
 };
 
 #endif

@@ -227,27 +227,8 @@ PyResult ConfigService::Handle_GetMapConnections(PyCallArgs &call) {
 }
 
 PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
-  /*
-18:22:36 L ConfigService::Handle_GetStationSolarSystemsByOwner(): size= 1
-18:22:36 [SvcCall]   Call Arguments:
-18:22:36 [SvcCall]       Tuple: 1 elements
-18:22:36 [SvcCall]         [ 0] Integer field: 1000084
-18:22:36 [SvcCallTrace] Call GetStationSolarSystemsByOwner returned:
-18:22:36 [SvcCallTrace]       Object:
-18:22:36 [SvcCallTrace]         Type: String: 'util.Rowset'
-18:22:36 [SvcCallTrace]         Args: Dictionary: 3 entries
-18:22:36 [SvcCallTrace]         Args:   [ 0] Key: String: 'lines'
-18:22:36 [SvcCallTrace]         Args:   [ 0] Value: List: 42 elements
-18:22:36 [SvcCallTrace]         Args:   [ 0] Value:   [ 0] List: 2 elements
-18:22:36 [SvcCallTrace]         Args:   [ 0] Value:   [ 0]   [ 0] Integer field: 1000084
-18:22:36 [SvcCallTrace]         Args:   [ 0] Value:   [ 0]   [ 1] Integer field: 30002279
-18:22:36 [SvcCallTrace]         Args:   [ 1] Key: String: 'RowClass'
-18:22:36 [SvcCallTrace]         Args:   [ 1] Value: Token: 'util.Row'
-18:22:36 [SvcCallTrace]         Args:   [ 2] Key: String: 'header'
-18:22:36 [SvcCallTrace]         Args:   [ 2] Value: List: 2 elements
-18:22:36 [SvcCallTrace]         Args:   [ 2] Value:   [ 0] String: 'corporationID'
-18:22:36 [SvcCallTrace]         Args:   [ 2] Value:   [ 1] String: 'solarSystemID'
-*/
+  // solorSys = sm.RemoteSvc('config').GetStationSolarSystemsByOwner(itemID)
+  // solarSys.solarSystemID
   sLog.White( "ConfigService::Handle_GetStationSolarSystemsByOwner()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntegerArg arg;
@@ -256,8 +237,7 @@ PyResult ConfigService::Handle_GetStationSolarSystemsByOwner(PyCallArgs &call) {
         return nullptr;
     }
 
-    // No idea what to return... yet...
-    // Similar to GetCorpInfo(corpID) / corpSvc
+    // this seems to ONLY return solarSystemIDs
     return m_db.GetStationSolarSystemsByOwner(arg.arg);
 }
 
