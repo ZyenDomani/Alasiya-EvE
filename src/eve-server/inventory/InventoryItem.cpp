@@ -218,6 +218,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem(ItemFactory &factory, uint32 itemID, const 
     return InventoryItemRef( new InventoryItem( factory, itemID, type, data ) );
 }
 
+// called from generic SpawnItem()
 InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
 {
     // obtain type of new item
@@ -236,7 +237,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Asteroid:
-        case EVEDB::invCategories::Skill:
         case EVEDB::invCategories::Owner:
         case EVEDB::invCategories::Ship:
         case EVEDB::invCategories::Blueprint:
@@ -253,6 +253,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 return InventoryItemRef();
             InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
             return itemRef;
+        }
+        case EVEDB::invCategories::Skill: {
+            return Skill::Spawn( factory, data );
         }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
@@ -675,7 +678,7 @@ PyObject* InventoryItem::ItemGetInfo()
     Rsp_ItemGetInfo result;
     if (!Populate(result.entry))
         return nullptr;
-    
+
     return result.Encode();
 }
 
