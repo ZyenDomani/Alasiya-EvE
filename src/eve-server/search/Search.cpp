@@ -55,7 +55,7 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
     std::string str = args.str;
     Replace(str);
 
-    return (m_db->Query( str, &args.ids, call.client->GetCharacterID() ));
+    return m_db->Query( str, &args.ids, call.client->GetCharacterID() );
 }
 
 
@@ -84,7 +84,7 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
     else if (call.byname.find("onlyAltName")->second->IsInt())
         onlyAltName = call.byname.find("onlyAltName")->second->AsInt()->value();
 
-    return (m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName ));
+    return m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);
 }
 
 void Search::Replace(std::string &s) {
