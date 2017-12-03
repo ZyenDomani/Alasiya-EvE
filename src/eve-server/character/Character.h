@@ -342,7 +342,7 @@ public:
 	void JoinCorporation(uint32 corporationID, const CorpData& roles);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
-    void SetFleetData(FleetData& fleet);
+    void SetFleetData(CharFleetData& fleet);
     uint32 PickAlternateShip(uint32 locationID);
 
     virtual void Delete();
@@ -543,12 +543,13 @@ public:
     uint64                  rolesAtOther() const                { return m_rolesAtOther; }
 
     // Fleet:
-    uint32                  fleetID() const                     { return /*m_fleetID*/0; }
-    uint32                  wingID() const                      { return m_wingID; }
-    uint32                  squadID() const                     { return m_squadID; }
-    uint8                   fleetRole() const                   { return m_fleetRole; }
-    uint8                   fleetBooster() const                { return m_fleetBooster; }
-    uint8                   fleetJob() const                    { return m_fleetJob; }
+    int64                   fleetJoinTime()                     { return m_fleetJoinTime; }
+    int32                   fleetID() const                     { return m_fleetID; }
+    int32                   wingID() const                      { return m_wingID; }
+    int32                   squadID() const                     { return m_squadID; }
+    int8                    fleetRole() const                   { return m_fleetRole; }
+    int8                    fleetBooster() const                { return m_fleetBooster; }
+    int8                    fleetJob() const                    { return m_fleetJob; }
 
     // Current location:
     uint32                  stationID() const                   { return m_stationID; }
@@ -713,12 +714,13 @@ private:
     uint64 m_rolesAtOther;
 
     /** @todo  use fleetData.* and remove these */
-    uint32 m_fleetID;
-    uint32 m_wingID;
-    uint32 m_squadID;
-    uint8 m_fleetRole;
-    uint8 m_fleetBooster;
-    uint8 m_fleetJob;
+    int64 m_fleetJoinTime;
+    int32 m_fleetID;
+    int32 m_wingID;
+    int32 m_squadID;
+    int8 m_fleetRole;
+    int8 m_fleetBooster;
+    int8 m_fleetJob;
 
     uint32 m_stationID;
     uint32 m_solarSystemID;

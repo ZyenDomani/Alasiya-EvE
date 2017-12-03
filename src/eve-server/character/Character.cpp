@@ -27,9 +27,11 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "EntityList.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
+#include "fleet/FleetService.h"
 #include "inventory/AttributeEnum.h"
 #include "ship/Ship.h"
 
@@ -325,12 +327,20 @@ Character::Character(
   m_capsuleID(_charData.capsuleID),
   m_pClient(nullptr)
 {
-    m_loaded = false;
-    m_freePoints = 0;
     // allow characters to be only singletons
     assert(singleton());
 
+    m_loaded = false;
+
     if (!IsAgent(m_itemID)) {
+        m_fleetID = 0;
+        m_wingID = 0;
+        m_squadID = 0;
+        m_fleetJob = 0;
+        m_fleetRole = 0;
+        m_fleetBooster = 0;
+        m_fleetJoinTime = 0;
+        m_freePoints = 0;
         m_loginTime = sEntityList.GetStamp();
         m_inventory = new Inventory(InventoryItemRef(this));
     }
@@ -440,6 +450,10 @@ CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterDat
 
 void Character::LogOut()
 {
+    if (!sConsole.IsShutdown())
+        if (IsFleet(m_fleetID))
+            sFltSvc.LeaveFleet(m_pClient);
+
     m_factory.RemoveItem(m_itemID);
     // remove char from station inventory, if docked
     /*
@@ -495,7 +509,7 @@ void Character::JoinCorporation(uint32 corporationID, const CorpData &roles) {
 	m_rolesAtOther = roles.rolesAtOther;
     // Add new employment history record    -allan  25Mar14   update 20Jan15
     m_db.UpdateCharCorpRecords(m_itemID, corporationID);
-    m_pClient->UpdateCorpSession(this);
+    m_pClient->UpdateCorpSession();
     SaveCharacter();
 }
 
@@ -507,7 +521,7 @@ void Character::SetDescription(const char *newDescription) {
 void Character::SetAccountKey(int32 accountKey)
 {
     m_corpAccountKey = accountKey;
-    m_pClient->UpdateCorpSession(this);
+    m_pClient->UpdateCorpSession();
 
     SaveCharacter();
 }
@@ -517,15 +531,27 @@ uint32 Character::PickAlternateShip(uint32 locationID)
     return m_db.PickAlternateShip(m_itemID, locationID);
 }
 
-void Character::SetFleetData(FleetData &fleet)
+void Character::SetFleetData(CharFleetData &fleet)
 {
-    m_fleetID = fleet.fleetID;
-    m_wingID = fleet.wingID;
-    m_squadID = fleet.squadID;
-    m_fleetRole = fleet.fleetRole;
-    m_fleetBooster = fleet.fleetBooster;
-    m_fleetJob = fleet.fleetJob;
-    m_pClient->UpdateFleetSession(this);
+    if (fleet.fleetID == 0) {
+        m_fleetID = 0;
+        m_wingID = 0;
+        m_squadID = 0;
+        m_fleetJob = 0;
+        m_fleetRole = 0;
+        m_fleetBooster = 0;
+        m_fleetJoinTime = 0;
+    } else {
+        m_fleetID = fleet.fleetID;
+        m_wingID = fleet.wingID;
+        m_squadID = fleet.squadID;
+        m_fleetRole = fleet.fleetRole;
+        m_fleetBooster = fleet.fleetBooster;
+        m_fleetJob = fleet.fleetJob;
+        if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
+            m_fleetJoinTime = fleet.joinTime;
+    }
+    m_pClient->UpdateFleetSession();
 }
 
 

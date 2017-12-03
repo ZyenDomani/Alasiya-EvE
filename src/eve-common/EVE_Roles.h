@@ -86,12 +86,6 @@ enum:uint64_t {
      */
 };
 
-enum {
-    corpRoleLocationTypeHQ = 1,
-    corpRoleLocationTypeBase = 2,
-    corpRoleLocationTypeOther = 3
-};
-
 enum:uint64_t {
     corpRoleDirector                        = 1,
     corpRolePersonnelManager                = 128,
@@ -141,6 +135,7 @@ enum:uint64_t {
     corpRoleInfrastructureTacticalOfficer   = 144115188075855872L,
     corpRoleStarbaseCaretaker               = 288230376151711744L,
     corpRoleFittingManager                  = 576460752303423488L,
+    corpRoleMissing                         = 3458764513820540928L, //   0x3000000000000000
 
     //Some Combos
     corpRoleAllHangar   = corpRoleHangarCanTake1|corpRoleHangarCanTake2|corpRoleHangarCanTake3|corpRoleHangarCanTake4|corpRoleHangarCanTake5|corpRoleHangarCanTake6|corpRoleHangarCanTake7|corpRoleHangarCanQuery1|corpRoleHangarCanQuery2|corpRoleHangarCanQuery3|corpRoleHangarCanQuery4|corpRoleHangarCanQuery5|corpRoleHangarCanQuery6|corpRoleHangarCanQuery7,
@@ -151,7 +146,8 @@ enum:uint64_t {
     corpRoleAllManager  = corpRolePersonnelManager|corpRoleStationManager|corpRoleFactoryManager|corpRoleChatManager|corpRoleContractManager|corpRoleFittingManager,
 
     corpRoleAll         = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleAllManager|corpRoleAuditor|corpRoleDiplomat,
-    corpRoleAdmin       = corpRoleAll|corpRoleTrader|corpRoleSecurityOfficer|corpRoleDirector
+    corpRoleAdmin       = corpRoleAll|corpRoleTrader|corpRoleSecurityOfficer|corpRoleDirector|corpRoleMissing
+
     /* 18:05:31 G   Alasiya's EvEMu: Common Corp Roles:
      * 18:37:16 W          Role_All:  1134904941433847168(0xfbffe07fffffd80)
      * 18:37:16 W         Role_Cont:  558551906910208(0x1fc0000000000)
@@ -161,28 +157,5 @@ enum:uint64_t {
      * 18:37:16 W     Role_Starbase:  441352763482308608(0x620000000000000)
      */
 };
-
-//  -allan 5Aug14
-typedef enum {
-    fleetJobNone        = 0,
-    fleetJobScout       = 1,
-    fleetJobCreator     = 2
-} FleetJobs;
-
-//  -allan 5Aug14
-typedef enum {
-    fleetRoleLeader     = 1,
-    fleetRoleWingCmdr   = 2,
-    fleetRoleSquadCmdr  = 3,
-    fleetRoleMember     = 4
-} FleetRoles;
-
-//  -allan 5Aug14
-typedef enum {
-    fleetBoosterNone    = 0,
-    fleetBoosterFleet   = 1,
-    fleetBoosterWing    = 2,
-    fleetBoosterSquad   = 3
-} FleetBoosters;
 
 #endif  //EVE_ROLES_H

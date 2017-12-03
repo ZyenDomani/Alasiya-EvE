@@ -48,7 +48,7 @@ PyRep *LSCChannelChar::Encode() const {
     rs.line = new PyList();
     rs.line->AddItemInt( m_charID );
     rs.line->AddItemString( m_charName.c_str() );
-    rs.line->AddItemInt( 1378 );    // fix this
+    rs.line->AddItemInt( 1378 );    // fix this ... wtf is this??
     line.extra = rs.Encode();//m_extra;
 
     return line.Encode();
@@ -220,27 +220,23 @@ void LSCChannel::UpdateConfig()
 
 OnLSC_SenderInfo *LSCChannel::_MakeSenderInfo(Client *c) {
     OnLSC_SenderInfo *sender = new OnLSC_SenderInfo;
-
-    sender->senderID = c->GetCharacterID();
-    sender->senderName = c->GetName();
-    sender->senderType = c->GetChar()->typeID();
-    sender->corpID = c->GetCorporationID();
-    sender->role = c->GetAccountRole();
-    sender->corp_role = c->GetCorpRole();
-
-    return(sender);
+        sender->senderID = c->GetCharacterID();
+        sender->senderName = c->GetName();
+        sender->senderType = c->GetChar()->typeID();
+        sender->corpID = c->GetCorporationID();
+        sender->role = c->GetAccountRole();
+        sender->corp_role = c->GetCorpRole();
+    return sender;
 }
 
 OnLSC_SenderInfo *LSCChannel::_FakeSenderInfo() {
     OnLSC_SenderInfo *sender = new OnLSC_SenderInfo();
-
-    sender->senderID = 1;
-    sender->senderName = "EVE System";
-    sender->senderType = 1;
-    sender->corpID = 1;
-    sender->role = 1;
-    sender->corp_role = 1;
-
+        sender->senderID = 1;
+        sender->senderName = "EVE System";
+        sender->senderType = 1;
+        sender->corpID = 1;
+        sender->role = 1;
+        sender->corp_role = 1;
     return sender;
 }
 
@@ -251,16 +247,17 @@ PyRep *LSCChannel::EncodeID() {
         case LSC::Type::region:
         case LSC::Type::constellation:
         case LSC::Type::solarsystem:
-        case LSC::Type::solarsystem2: {
+        case LSC::Type::solarsystem2:
+        case LSC::Type::fleet:
+        case LSC::Type::wing:
+        case LSC::Type::squad: {
             LSCChannelMultiDesc desc;
                 desc.type = GetTypeString();
                 desc.id = m_channelID;
             return desc.Encode();
         }
-        default: {
-            return (new PyInt(m_channelID));
-        }
     }
+    return new PyInt(m_channelID);
 }
 
 PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
@@ -278,10 +275,10 @@ PyRep *LSCChannel::EncodeStaticChannel(uint32 charID) {
         line.languageRestriction = m_languageRestriction;
         line.mode = (int8)m_mode;   // determine calling char's mode for this channel
         //HACK auto-subscribe to system channels.  TODO determine if calling char is subscribed to this channel
-        line.subscribed = (((m_channelID > 0) and (m_channelID < maxStaticChannel)) ? true : false);
-        line.groupMessageID = ((m_groupMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_groupMessageID)));
-        line.channelMessageID = ((m_channelMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_channelMessageID)));
-        line.estimatedMemberCount = (int32)m_chars.size();
+        line.subscribed = IsStaticChannel(m_channelID);
+        line.groupMessageID = m_groupMessageID;
+        line.channelMessageID = m_channelMessageID;
+        line.estimatedMemberCount = m_chars.size();
     return line.Encode();
 }
 
@@ -295,15 +292,15 @@ PyRep *LSCChannel::EncodeDynamicChannel(uint32 charID) {
         info.memberless = m_memberless;
         info.motd = m_motd;
         info.ownerID = m_ownerID;
-        info.password = (m_password.empty() ? (PyRep*)new PyNone() : (PyRep*)new PyString(m_password));
+        info.password = m_password;
         //HACK auto-subscribe to system channels.  TODO determine if calling char is subscribed to this channel
-        info.subscribed = (((m_channelID > 0) and (m_channelID < maxStaticChannel)) ? true : false);
+        info.subscribed = IsStaticChannel(m_channelID);
         info.temporary = m_temporary;
         info.mode = (int8)m_mode;   // determine calling char's mode for this channel
         info.languageRestriction = m_languageRestriction;
-        info.groupMessageID = ((m_groupMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_groupMessageID)));
-        info.channelMessageID = ((m_channelMessageID == 0) ? static_cast<PyRep*>(new PyNone()) : static_cast<PyRep*>(new PyInt(m_channelMessageID)));
-        info.estimatedMemberCount = (int32)m_chars.size();
+        info.groupMessageID = m_groupMessageID;
+        info.channelMessageID = m_channelMessageID;
+        info.estimatedMemberCount = m_chars.size();
     return info.Encode();
 }
 

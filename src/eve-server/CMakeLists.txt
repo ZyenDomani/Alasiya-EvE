@@ -235,12 +235,24 @@ SET( explore_SOURCE
      "${TARGET_SOURCE_DIR}/exploration/ScanMgrService.cpp"
      "${TARGET_SOURCE_DIR}/exploration/ScanningDB.cpp")
 
+SET( faction_INCLUDE
+     "${TARGET_INCLUDE_DIR}/faction/FactionWarMgrDB.h"
+     "${TARGET_INCLUDE_DIR}/faction/FactionWarMgrService.h"
+     "${TARGET_INCLUDE_DIR}/faction/WarRegistryService.h" )
+SET( faction_SOURCE
+     "${TARGET_SOURCE_DIR}/faction/FactionWarMgrDB.cpp"
+     "${TARGET_SOURCE_DIR}/faction/FactionWarMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/faction/WarRegistryService.cpp")
+
 SET( fleet_INCLUDE
+     "${TARGET_INCLUDE_DIR}/fleet/FleetBound.h"
+     "${TARGET_INCLUDE_DIR}/fleet/FleetData.h"
      "${TARGET_INCLUDE_DIR}/fleet/FleetManager.h"
      "${TARGET_INCLUDE_DIR}/fleet/FleetObject.h"
      "${TARGET_INCLUDE_DIR}/fleet/FleetProxy.h"
      "${TARGET_INCLUDE_DIR}/fleet/FleetService.h")
 SET( fleet_SOURCE
+     "${TARGET_SOURCE_DIR}/fleet/FleetBound.cpp"
      "${TARGET_SOURCE_DIR}/fleet/FleetManager.cpp"
      "${TARGET_SOURCE_DIR}/fleet/FleetObject.cpp"
      "${TARGET_SOURCE_DIR}/fleet/FleetProxy.cpp"
@@ -436,17 +448,11 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/TurretModule.cpp" )
 
 SET( standing_INCLUDE
-     "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrDB.h"
-     "${TARGET_INCLUDE_DIR}/standing/FactionWarMgrService.h"
      "${TARGET_INCLUDE_DIR}/standing/Standing.h"
-     "${TARGET_INCLUDE_DIR}/standing/StandingDB.h"
-     "${TARGET_INCLUDE_DIR}/standing/WarRegistryService.h" )
+     "${TARGET_INCLUDE_DIR}/standing/StandingDB.h")
 SET( standing_SOURCE
-     "${TARGET_SOURCE_DIR}/standing/FactionWarMgrDB.cpp"
-     "${TARGET_SOURCE_DIR}/standing/FactionWarMgrService.cpp"
      "${TARGET_SOURCE_DIR}/standing/Standing.cpp"
-     "${TARGET_SOURCE_DIR}/standing/StandingDB.cpp"
-     "${TARGET_SOURCE_DIR}/standing/WarRegistryService.cpp" )
+     "${TARGET_SOURCE_DIR}/standing/StandingDB.cpp" )
 
 SET( station_INCLUDE
      "${TARGET_INCLUDE_DIR}/station/HoloscreenMgrService.h"
@@ -561,6 +567,7 @@ SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_INCLUDE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_INCLUDE} )
 SOURCE_GROUP( "src\\effects"       FILES ${effects_INCLUDE} )
 SOURCE_GROUP( "src\\exploration"   FILES ${explore_INCLUDE} )
+SOURCE_GROUP( "src\\faction"       FILES ${faction_INCLUDE} )
 SOURCE_GROUP( "src\\fleet"         FILES ${fleet_INCLUDE} )
 SOURCE_GROUP( "src\\imageserver"   FILES ${imageserver_INCLUDE} )
 SOURCE_GROUP( "src\\inventory"     FILES ${inventory_INCLUDE} )
@@ -593,6 +600,7 @@ SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_SOURCE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_SOURCE} )
 SOURCE_GROUP( "src\\effects"       FILES ${effects_SOURCE} )
 SOURCE_GROUP( "src\\exploration"   FILES ${explore_SOURCE} )
+SOURCE_GROUP( "src\\faction"       FILES ${faction_SOURCE} )
 SOURCE_GROUP( "src\\fleet"         FILES ${fleet_SOURCE} )
 SOURCE_GROUP( "src\\imageserver"   FILES ${imageserver_SOURCE} )
 SOURCE_GROUP( "src\\inventory"     FILES ${inventory_SOURCE} )
@@ -626,6 +634,7 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${dungeon_INCLUDE}        ${dungeon_SOURCE}
                 ${effects_INCLUDE}        ${effects_SOURCE}
                 ${explore_INCLUDE}        ${explore_SOURCE}
+                ${faction_INCLUDE}        ${faction_SOURCE}
                 ${fleet_INCLUDE}          ${fleet_SOURCE}
                 ${imageserver_INCLUDE}    ${imageserver_SOURCE}
                 ${inventory_INCLUDE}      ${inventory_SOURCE}

@@ -129,6 +129,14 @@
         <EnableDrones>false</EnableDrones><!-- bool -->
     </npc>
 
+    <chat>
+        <EnableFleetChat>true</EnableFleetChat><!-- bool -->
+        <EnableWingChat>false</EnableWingChat><!-- bool -->
+        <EnableSquadChat>false</EnableSquadChat><!-- bool -->
+        <EnableVoiceChat>false</EnableVoiceChat><!-- bool -->
+        <EnforceRookieInHelp>false</EnforceRookieInHelp><!-- bool -->
+    </chat>
+
     <cosmic>
         <PIEnabled>false</PIEnabled><!-- bool -->
         <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->

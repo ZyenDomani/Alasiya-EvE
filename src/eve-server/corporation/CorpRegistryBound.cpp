@@ -1,7 +1,13 @@
+/*
+ *
+ *
+ *
+ */
 
 
 
 
+#include "EVE_Corp.h"
 #include "cache/ObjCacheService.h"
 #include "chat/LSCService.h"
 #include "corporation/CorpRegistryBound.h"
@@ -451,6 +457,18 @@ PyResult CorpRegistryBound::Handle_RemoveCorporateContacts(PyCallArgs &call) {
 
 
 PyResult CorpRegistryBound::Handle_GetRecentKillsAndLosses(PyCallArgs &call) {
+    /*
+     * 01:10:46 W CorpRegistryBound::Handle_GetRecentKillsAndLosses(): size= 2
+     * 01:10:46 [CorpCallDump]   Call Arguments:
+     * 01:10:46 [CorpCallDump]       Tuple: 2 elements
+     * 01:10:46 [CorpCallDump]         [ 0] Integer field: 25
+     * 01:10:46 [CorpCallDump]         [ 1] (None)
+     */
+    /*   can get the rest of this from char shipKills
+        shipKills = self.GetCorpRegistry().GetRecentKillsAndLosses(num, offset)
+        shipKills.finalCorporationID
+        shipKills.victimCorporationID
+        */
     sLog.White( "CorpRegistryBound::Handle_GetRecentKillsAndLosses()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
     return nullptr;
@@ -507,6 +525,9 @@ PyResult CorpRegistryBound::Handle_GetStations(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound", "Handle_GetOffices() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     PyBoundObject *bObj;
     bObj = new SparseCorpOfficeListBound(m_manager, m_db);
     if (bObj == NULL) {
@@ -563,9 +584,15 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetMyApplications(PyCallArgs &call) {
-    /// We have a dict
-    /// With an STI and an integer
-    /// Ignore them for now
+    //self.myApplications = self.GetCorpRegistry().GetMyApplications().Index('corporationID.characterID')
+    /*
+     *        header = ['corporationID', 'characterID', 'applicationText', 'roles', 'grantableRoles', 'status', 'applicationDateTime', 'deleted', 'lastCorpUpdaterID']
+     *        dict = None
+     * ValueError: 'corporationID.characterID' is not in list
+     */
+    sLog.White( "CorpRegistryBound", "Handle_GetMyApplications() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     return m_db.GetMyApplications(call.client->GetCharacterID());
 }
 
@@ -574,6 +601,9 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call) {
      *  Integer: 777777777 <- corp id
      *  String: "Ignore me" <- text that was entered into the box
      */
+
+    sLog.White( "CorpRegistryBound", "Handle_InsertApplication() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
     Call_InsertApplication res;
     if (!res.Decode(&call.tuple)) {
@@ -684,24 +714,6 @@ PyResult CorpRegistryBound::Handle_GetApplications(PyCallArgs &call) {
     return m_db.GetApplications(call.client->GetCorporationID());
 }
 
-/** AppInfo:
- *  status / corp side / user side
- *    0        new         applied
- *    1        update      reneg
- *    2        accepted    accepted
- *    4        error       reject
- *    6        offer       offer
- */
-typedef enum {  //from eveConstants
-    crpApplicationAppliedByCharacter = 0,
-    crpApplicationRenegotiatedByCharacter = 1,
-    crpApplicationAcceptedByCharacter = 2,
-    crpApplicationRejectedByCharacter = 3,
-    crpApplicationRejectedByCorporation = 4,
-    crpApplicationRenegotiatedByCorporation = 5,
-    crpApplicationAcceptedByCorporation = 6
-} CorpApplicationStatus;
-
 PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
     sLog.White( "CorpRegistryBound::Handle_UpdateApplicationOffer()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
@@ -728,7 +740,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
 
     switch (args.newStatus) {
-        case crpApplicationRejectedByCorporation:
+        case EveCorp::AppStatus::rejectedByCorporation:
         {
             ApplicationInfo newInfo(true);
             ApplicationInfo oldInfo(true);
@@ -740,7 +752,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 return new PyNone();
             }
             newInfo = oldInfo;
-            newInfo.status = crpApplicationRejectedByCorporation;
+            newInfo.status = EveCorp::AppStatus::rejectedByCorporation;
             newInfo.lastCID = call.client->GetCharacterID();
 
             if (!m_db.UpdateApplication(newInfo)) {
@@ -762,7 +774,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 "*corpid&corprole", &answer,
                 NOTIF_DEST__CORPORATION, OCAC.corpID);
         } break;
-        case crpApplicationAcceptedByCorporation: /// accepted
+        case EveCorp::AppStatus::acceptedByCorporation: /// accepted
         {
             // the acceptor corporation MUST have free space!!
             /// OnCorporationApplicationChanged
@@ -775,7 +787,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 return nullptr;
             }
             newInfo = oldInfo;
-            newInfo.status = crpApplicationAcceptedByCharacter;
+            newInfo.status = EveCorp::AppStatus::acceptedByCorporation;
             newInfo.lastCID = call.client->GetCharacterID();
 
             if (!m_db.UpdateApplication(newInfo)) {
@@ -856,6 +868,9 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
     /** Incoming:
      *  tuple of 2 elements, corpID and charID
      */
+    sLog.White( "CorpRegistryBound", "Handle_GetFactionInfo() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -892,6 +907,9 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
 }
 
 PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound", "Handle_UpdateApplication() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     Call_UpdateApplication args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -934,6 +952,9 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound", "Handle_UpdateDivisionNames() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     Call_UpdateDivisionNames args;
 
     if (!args.Decode(&call.tuple)) {
@@ -961,6 +982,9 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound", "Handle_UpdateCorporation() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     Call_UpdateCorporation upd;
 
     if (!upd.Decode(&call.tuple)) {
@@ -1146,7 +1170,12 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
 //21:59:20 L CorpRegistryBound::Handle_GetVoteCasesByCorporation(): size= 1
 PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
     /*
-     2 *2:47:43 L CorpRegistryBound::Handle_GetVoteCasesByCorporation(): size= 3
+     * 01:16:37 W CorpRegistryBound::Handle_GetVoteCasesByCorporation(): size= 1
+     * 01:16:37 [CorpCallDump]   Call Arguments:
+     * 01:16:37 [CorpCallDump]       Tuple: 1 elements
+     * 01:16:37 [CorpCallDump]         [ 0] Integer field: 1000183
+     *
+     22:47:43 L CorpRegistryBound::Handle_GetVoteCasesByCorporation(): size= 3
      22:47:43 [SvcCall]   Call Arguments:
      22:47:43 [SvcCall]       Tuple: 3 elements
      22:47:43 [SvcCall]         [ 0] Integer field: 1001002
@@ -1154,7 +1183,8 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
      22:47:43 [SvcCall]         [ 2] Integer field: 0
      */
     sLog.White( "CorpRegistryBound::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
-
     call.Dump(CORP__CALL_DUMP);
+
     return nullptr;
 }
+

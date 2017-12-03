@@ -30,6 +30,7 @@
 #ifndef EVE_PACKET_TYPES_H
 #define EVE_PACKET_TYPES_H
 
+#include "../EVE_Corp.h"
 #include "../EVE_Consts.h"
 #include "../EVE_Defines.h"
 #include "../EVE_Dungeon.h"

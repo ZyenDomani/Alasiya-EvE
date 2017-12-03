@@ -146,6 +146,16 @@ sLog.White( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u",
 PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
     /**
      * logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
+     *
+        logItems.sort(lambda x, y: cmp(y.eventDateTime, x.eventDateTime))
+        logItem.corporationID
+
+        roleItems.sort(lambda x, y: cmp(y.changeTime, x.changeTime))
+        roleItem.oldRoles
+        roleItem.newRoles
+        roleItem.issuerID
+        roleItem.grantable
+        roleItem.corporationID
      */
 
     sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );

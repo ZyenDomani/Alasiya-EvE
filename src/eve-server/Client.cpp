@@ -35,6 +35,7 @@
 #include "chat/LSCService.h"
 #include "character/CharUnboundMgrService.h"
 #include "corporation/CorporationDB.h"
+#include "fleet/FleetService.h"
 #include "imageserver/ImageServer.h"
 #include "npc/NPC.h"
 #include "npc/Drone.h"
@@ -63,6 +64,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_pingTimer(PING_INTERVAL_MS),
   m_scanTimer(ClientTimers::ScanningTimer),
   m_cloakTimer(ClientTimers::LoginCloak),
+  m_fleetTimer(ClientTimers::FleetTimer),
   m_invulTimer(ClientTimers::RestoringInvul),
   m_clientTimer(ClientTimers::ProcTimer),
   m_logoutTimer(ClientTimers::LogoutTimer),
@@ -80,6 +82,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_stateTimer.Disable();
     m_scanTimer.Disable();
     m_cloakTimer.Disable();
+    m_fleetTimer.Disable();
     m_invulTimer.Disable();
     m_clientTimer.Disable();
     m_logoutTimer.Disable();
@@ -88,6 +91,9 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 
     m_login = true;
     m_invul = true;
+    m_wing = false;
+    m_fleet = false;
+    m_squad = false;
     m_undock = false;
     m_beyonce = false;
     m_canThrow = false;
@@ -322,77 +328,122 @@ void Client::ProcessClient() {
         return;
     }
 
-    if (m_invul and m_invulTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_invulTimer.Disable();
-        SetInvul(false);
-        SetUndock(false);
-    }
-
-    if (m_scanTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
-        m_scanTimer.Disable();
-        m_scan->ScanResult();
-    }
-
-    if (m_jumpTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
-        m_jumpTimer.Disable();
-        SetBallPark();
-        pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
-        m_toGate = 0;
-        SetJumpTimers();
-    }
-
-    if (pShipSE->DestinyMgr()->IsCloaked() and m_cloakTimer.Check(false)) {
-        _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-        m_cloakTimer.Disable();
-        pShipSE->DestinyMgr()->UnCloak();
-    }
-
-    if (m_stateTimer.Check(false)) {
-        m_stateTimer.Disable();
-        switch (m_clientState) {
-            case ClientState::csDock: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
-                DockToStation();
-            } break;
-            case ClientState::csUndock: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
-                SetBallPark();
-            } break;
-            case ClientState::csKilled: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
-                // check this, too.  fairly sure live does NOT resend destiny state when killed.  see csBoard notes.
-                m_setStateSent = false;
-                SetBallPark();
-            } break;
-            case ClientState::csBoard: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
-                // this shit isnt right.  check/correct per packet logs.  live DOES NOT resend destiny state!
-                m_setStateSent = false;
-                SetBallPark();
-            } break;
-            case ClientState::csLogin: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
-                SetBallPark();
-            } break;
-            case ClientState::csJump: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
-                ExecuteJump();
-            } break;
-            case ClientState::csIdle: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
-            } break;
-            case ClientState::csLogout: {
-                _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
-            } break;
-            default: {
-                sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
-                //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
-            } break;
+    if (m_invul)
+        if (m_invulTimer.Check(false)) {
+            _log(CLIENT__TIMER, "Client::ProcessClient():  SetInvul to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            m_invulTimer.Disable();
+            SetInvul(false);
+            SetUndock(false);
         }
-    }
+
+    if (m_scanTimer.Enabled())
+        if (m_scanTimer.Check(false)) {
+            _log(CLIENT__TIMER, "Client::ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            m_scanTimer.Disable();
+            m_scan->ScanResult();
+        }
+
+    if (m_jumpTimer.Enabled())
+        if (m_jumpTimer.Check(false)) {
+            _log(CLIENT__TIMER, "Client::ProcessClient():  Jump Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
+            m_jumpTimer.Disable();
+            SetBallPark();
+            pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
+            m_toGate = 0;
+            SetJumpTimers();
+        }
+
+    if (pShipSE->DestinyMgr()->IsCloaked())
+        if (m_cloakTimer.Check(false)) {
+            _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            m_cloakTimer.Disable();
+            pShipSE->DestinyMgr()->UnCloak();
+        }
+
+    if (m_stateTimer.Enabled())
+        if (m_stateTimer.Check(false)) {
+            m_stateTimer.Disable();
+            switch (m_clientState) {
+                case ClientState::csDock: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
+                    DockToStation();
+                } break;
+                case ClientState::csUndock: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
+                    SetBallPark();
+                } break;
+                case ClientState::csKilled: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
+                    // check this, too.  fairly sure live does NOT resend destiny state when killed.  see csBoard notes.
+                    m_setStateSent = false;
+                    SetBallPark();
+                } break;
+                case ClientState::csBoard: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
+                    // this shit isnt right.  check/correct per packet logs.  live DOES NOT resend destiny state!
+                    m_setStateSent = false;
+                    SetBallPark();
+                } break;
+                case ClientState::csLogin: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
+                    SetBallPark();
+                } break;
+                case ClientState::csJump: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
+                    ExecuteJump();
+                } break;
+                case ClientState::csIdle: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
+
+                } break;
+                case ClientState::csLogout: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
+                } break;
+                default: {
+                    sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
+                    //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
+                } break;
+            }
+        }
+
+    // only set for location change
+    if (m_fleetTimer.Enabled())
+        if (m_fleetTimer.Check(false)) {
+            m_fleetTimer.Disable();
+            BoostData data;
+            data.armored = 0;
+            data.info = 0;
+            data.leader = 0;
+            data.mining = 0;
+            data.siege = 0;
+            data.skirmish = 0;
+            if (IsSquad(m_squad)) {
+                SquadData sData;
+                sFltSvc.GetSquadData(m_squad, sData);
+                if ((sData.leader != nullptr) and (sData.booster != nullptr))
+                    if ((sData.leader->IsInSpace()) and (sData.booster->IsInSpace()))
+                        data = sData.boost;
+            } else if (IsWing(m_wing)) {
+                WingData wData;
+                sFltSvc.GetWingData(m_wing, wData);
+                if ((wData.leader != nullptr) and (wData.booster != nullptr))
+                    if ((wData.leader->IsInSpace()) and (wData.booster->IsInSpace()))
+                        data = wData.boost;
+            } else if (IsFleet(m_fleet)) {
+                FleetData fData;
+                sFltSvc.GetFleetData(m_fleet, fData);
+                if ((fData.leader != nullptr) and (fData.booster != nullptr))
+                    if ((fData.leader->IsInSpace()) and (fData.booster->IsInSpace())) {
+                        data.leader    = m_char->GetSkillLevel(skillLeadership);
+                        data.armored   = fData.booster->GetChar()->GetSkillLevel(skillArmoredWarfare);
+                        data.info      = fData.booster->GetChar()->GetSkillLevel(skillInformationWarfare);
+                        data.mining    = fData.booster->GetChar()->GetSkillLevel(skillMiningForeman);
+                        data.siege     = fData.booster->GetChar()->GetSkillLevel(skillSiegeWarfare);
+                        data.skirmish  = fData.booster->GetChar()->GetSkillLevel(skillSkirmishWarfare);
+                    }
+            }
+            pShipSE->ApplyBoost(data);
+        }
 
     if (sConfig.server.UseProfiling)
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -411,7 +462,7 @@ void Client::SetDestiny(const GPoint& pt, bool count) {
         } else
             pShipSE->DestinyMgr()->SetPosition(pt, false);
         if (count and !m_login)
-            pShipSE->GetShipSE()->ResetShipSystemMgr(m_system);
+            pShipSE->ResetShipSystemMgr(m_system);
         m_bubbleWait = false;
         m_setStateSent = false;
         if (m_beyonce)
@@ -558,6 +609,9 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
 
+        if (IsFleet(m_fleet))
+            m_fleetTimer.Start(ClientTimers::FleetTimer);
+
         if (InPod()) {
             m_ship->Move(locationID, flagCapsule, true);
         } else {
@@ -574,7 +628,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_ship->SetCustomInfo(ci);
     m_ship->SaveShip();
 
-    _UpdateSession(m_char);
+    _UpdateSession();
     SendSessionChange();
 }
 
@@ -697,11 +751,11 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule, true);
             CreateShipSE();
-            pShipSE->GetShipSE()->SetPodShipID(m_shipId);
+            pShipSE->SetPodShipID(m_shipId);
             m_system->AddEntity(pShipSE);
         } else {
             m_ship->SetFlag(flagAutoFit);
-            pShipSE = m_system->GetSE(m_shipId);
+            pShipSE = m_system->GetSE(m_shipId)->GetShipSE();
             if (pShipSE == nullptr) {
                 //  cant find ship.  put player back in pod and send error.
                 if (m_pod.get() == nullptr)
@@ -709,7 +763,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
                 SetShip(m_pod);
                 m_ship->Move(m_locationID, flagCapsule, true);
                 CreateShipSE();
-                pShipSE->GetShipSE()->SetPodShipID(m_shipId);
+                pShipSE->SetPodShipID(m_shipId);
                 m_system->AddEntity(pShipSE);
             }
         }
@@ -990,7 +1044,7 @@ void Client::ResetAfterPodded() {
     m_char->ResetClone();
     m_char->SaveCharacter();
     //update session with new values
-    _UpdateSession(m_char);
+    _UpdateSession();
     SendSessionChange();
 }
 
@@ -1140,40 +1194,40 @@ void Client::UpdateSessionInt(const char *sessionType, int value)
     mSession.SetInt(sessionType, value);
 }
 
-void Client::UpdateCorpSession(Character* pChar)
+void Client::UpdateCorpSession()
 {
-    if (pChar == nullptr)
-        return;
-    mSession.SetInt("corpid", pChar->corporationID());
-    mSession.SetInt("hqID", pChar->corporationHQ());
-    mSession.SetInt("corpAccountKey", pChar->corpAccountKey());
-    mSession.SetULong("corpRole", pChar->corpRole());
-    mSession.SetULong("rolesAtAll", pChar->rolesAtAll());
-    mSession.SetULong("rolesAtBase", pChar->rolesAtBase());
-    mSession.SetULong("rolesAtHQ", pChar->rolesAtHQ());
-    mSession.SetULong("rolesAtOther", pChar->rolesAtOther());
+    mSession.SetInt("corpid", m_char->corporationID());
+    mSession.SetInt("hqID", m_char->corporationHQ());
+    mSession.SetInt("corpAccountKey", m_char->corpAccountKey());
+    mSession.SetULong("corpRole", m_char->corpRole());
+    mSession.SetULong("rolesAtAll", m_char->rolesAtAll());
+    mSession.SetULong("rolesAtBase", m_char->rolesAtBase());
+    mSession.SetULong("rolesAtHQ", m_char->rolesAtHQ());
+    mSession.SetULong("rolesAtOther", m_char->rolesAtOther());
     SendSessionChange();
 }
 
-void Client::UpdateFleetSession(Character* pChar)
+void Client::UpdateFleetSession()
 {
-    if (pChar == nullptr)
-        return;
-    mSession.SetInt("fleetjob", pChar->fleetJob());
-    mSession.SetInt("fleetrole", pChar->fleetRole());
-    mSession.SetInt("fleetbooster", pChar->fleetBooster());
-    mSession.SetInt("fleetid", pChar->fleetID());
-    mSession.SetInt("wingid", pChar->wingID());
-    mSession.SetInt("squadid", pChar->squadID());
+    m_fleet = m_char->fleetID();
+    m_wing = m_char->wingID();
+    m_squad = m_char->squadID();
+
+    mSession.SetInt("fleetjob", m_char->fleetJob());
+    mSession.SetInt("fleetrole", m_char->fleetRole());
+    mSession.SetInt("fleetbooster", m_char->fleetBooster());
+    mSession.SetInt("fleetid", m_fleet);
+    mSession.SetInt("wingid", m_wing);
+    mSession.SetInt("squadid", m_squad);
     SendSessionChange();
 }
 
-void Client::_UpdateSession(const CharacterConstRef& charRef)
+void Client::_UpdateSession()
 {
-    if (charRef.get() == nullptr)
+    if (m_char.get() == nullptr)
         return;
-    uint32 stationID = charRef->stationID();
-    uint32 solarsystemID = charRef->solarSystemID();
+    uint32 stationID = m_char->stationID();
+    uint32 solarsystemID = m_char->solarSystemID();
     if (stationID) {
         mSession.Clear("solarsystemid");    //must be 0 in station
         mSession.Clear("shipid");    //must be 0 in station
@@ -1193,13 +1247,13 @@ void Client::_UpdateSession(const CharacterConstRef& charRef)
         mSession.SetInt("shipid", m_shipId);
     }
 
-    mSession.SetInt("charid", charRef->itemID());
-    mSession.SetString("charname", charRef->itemName().c_str());
-    mSession.SetInt("corpid", charRef->corporationID());
+    mSession.SetInt("charid", m_char->itemID());
+    mSession.SetString("charname", m_char->itemName().c_str());
+    mSession.SetInt("corpid", m_char->corporationID());
     // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
     mSession.SetInt("solarsystemid2", solarsystemID);
-    mSession.SetInt("constellationid", charRef->constellationID());
-    mSession.SetInt("regionid", charRef->regionID());
+    mSession.SetInt("constellationid", m_char->constellationID());
+    mSession.SetInt("regionid", m_char->regionID());
 }
 
 void Client::InitSession(uint32 characterID)

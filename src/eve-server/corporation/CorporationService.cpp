@@ -55,6 +55,9 @@ CorporationService::~CorporationService() {
 }
 
 PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
+    sLog.White( "CorporationService", "Handle_GetFactionInfo() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
     /*self.factionIDbyNPCCorpID, self.factionRegions, self.factionConstellations, self.factionSolarSystems,
      * self.factionRaces, self.factionStationCount, self.factionSolarSystemCount, self.npcCorpInfo = sm.RemoteSvc('corporationSvc').GetFactionInfo()
      *        for corpID, factionID in self.factionIDbyNPCCorpID.iteritems():
@@ -175,6 +178,8 @@ PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
 }
 
 PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
+    sLog.White( "CorporationService", "Handle_GetMedalsReceived() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
     Call_SingleIntegerArg arg;
 
     if (!arg.Decode(&call.tuple)) {
@@ -189,6 +194,8 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
 }
 
 PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
+    sLog.White( "CorporationService", "Handle_GetMedalDetails() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
     Call_SingleIntegerArg arg;
 
     if (!arg.Decode(&call.tuple)) {
@@ -204,7 +211,9 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
 
 PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
 {
-    //arg is corporationID
+    // medals, medalDetails = sm.RemoteSvc('corporationSvc').GetAllCorpMedals(corpID)
+    sLog.White( "CorporationService", "Handle_GetAllCorpMedals() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
     Call_SingleIntegerArg arg;
     if ( !arg.Decode( &call.tuple ) )
     {
@@ -241,9 +250,9 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
 
 PyResult CorporationService::Handle_GetRecruitmentAdTypes( PyCallArgs& call )
 {
-    //no args
-
-    sLog.White( "CorporationService", "Called GetRecruitmentAdTypes stub." );
+    // self.advertTypes = self.corpSvc.GetRecruitmentAdTypes()
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdTypes() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
     util_Rowset rs;
 
@@ -261,16 +270,14 @@ PyResult CorporationService::Handle_GetRecruitmentAdTypes( PyCallArgs& call )
 
 PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& call )
 {
-    //this is cached on live with check "5 minutes"
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdsByCriteria() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
     Call_GetRecruitmentAdsByCriteria args;
-    if ( !args.Decode( &call.tuple ) )
-    {
+    if ( !args.Decode( &call.tuple ) )   {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
-
-    sLog.White( "CorporationService", "Called GetRecruitmentAdsByCriteria stub." );
 
     util_Rowset rs;
 
@@ -293,13 +300,25 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
 /** not handled */
 //22:47:33 L CorporationService::Handle_GetRecruitmentAdRegistryData(): size= 0
 PyResult CorporationService::Handle_GetRecruitmentAdRegistryData(PyCallArgs &call) {
+    /*
+     *        data = sm.RemoteSvc('corporationSvc').GetRecruitmentAdRegistryData()
+     *        for row in data.types:
+     *            row.typeName = localization.GetByMessageID(row.typeNameID)
+     *            row.description = localization.GetByMessageID(row.descriptionID)
+     *
+     *        for row in data.groups:
+     *            row.groupName = localization.GetByMessageID(row.groupNameID)
+     *            row.description = localization.GetByMessageID(row.descriptionID)
+     */
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdRegistryData() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
   return nullptr;
 }
 
 PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
 {
-      sLog.White( "CorporationService::Handle_IsEnemyFaction()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+    sLog.White( "CorporationService", "Handle_IsEnemyFaction() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }
@@ -316,8 +335,8 @@ PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) 
 22:47:43 [SvcCall]     Argument 'machoVersion':
 22:47:43 [SvcCall]         Integer field: 1
 */
-      sLog.White( "CorporationService::Handle_GetVoteCasesByCorporation()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+  sLog.White( "CorporationService", "Handle_GetVoteCasesByCorporation() size=%u", call.tuple->size() );
+  call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
 }

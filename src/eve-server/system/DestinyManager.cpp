@@ -1633,16 +1633,17 @@ void DestinyManager::Follow(SystemEntity* pSE, double distance) {
 
     State = Destiny::BallMode::DSTBALL_FOLLOW;
     m_targetPoint = pSE->GetPosition();
+
+    if (pSE->IsStationSE()) {
+        // this makes ship approach station dock elevation (y), instead of approaching to stations "center point" position (where icon is)
+        StationData data;
+        sDataMgr.GetStationInfo(pSE->GetID(), data);
+        m_targetPoint.y = data.dockPosition.y;
+    }
+
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_followDistance = distance;
-    /*  the client doesnt follow this....may fix later.
-    if (pSE->IsStationSE()) {
-        // set target position to dock of station....NOT in the middle of the fucking thing.
-        StationData sData;
-        sDataMgr.GetStationInfo(pSE->GetID(), sData);
-        m_targetPoint = sData.dockPosition;
-    } */
     _BeginMovement();
 
     DoDestiny_CmdFollowBall du;

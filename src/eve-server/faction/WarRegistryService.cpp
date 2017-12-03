@@ -27,7 +27,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
-#include "standing/WarRegistryService.h"
+#include "faction/WarRegistryService.h"
 
 class WarRegistryBound
 : public PyBoundObject

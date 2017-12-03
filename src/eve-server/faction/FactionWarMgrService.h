@@ -26,7 +26,7 @@
 #ifndef __FACTION_WAR_MGR__H__INCL__
 #define __FACTION_WAR_MGR__H__INCL__
 
-#include "standing/FactionWarMgrDB.h"
+#include "faction/FactionWarMgrDB.h"
 #include "PyService.h"
 
 class FactionWarMgrService : public PyService

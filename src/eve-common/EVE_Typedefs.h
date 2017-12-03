@@ -124,44 +124,6 @@ typedef enum {
     //anything up until 500 is 'Standing Change'
 } EVEStandingEventTypeID;
 
-/*
- * corpactivityEducation = 18
- * corpactivityEntertainment = 8
- * corpactivityMilitary = 5
- * corpactivitySecurity = 16
- * corpactivityTrading = 12
- * corpactivityWarehouse = 10
- * corpDivisionDistribution = 22
- * corpDivisionMining = 23
- * corpDivisionSecurity = 24
- */
-
-/*
- * allianceApplicationAccepted = 2
- * allianceApplicationEffective = 3
- * allianceApplicationNew = 1
- * allianceApplicationRejected = 4
- * allianceCreationCost = 1000000000
- * allianceMembershipCost = 2000000
- * allianceRelationshipCompetitor = 3
- * allianceRelationshipEnemy = 4
- * allianceRelationshipFriend = 2
- * allianceRelationshipNAP = 1
- */
-
-/*
- * facwarCorporationJoining = 0
- * facwarCorporationActive = 1
- * facwarCorporationLeaving = 2
- * facwarStandingPerVictoryPoint = 0.0015
- * facwarWarningStandingCharacter = 0
- * facwarWarningStandingCorporation = 1
- * facwarOccupierVictoryPointBonus = 0.1
- * facwarMinStandingsToJoin = 0.5
- * facwarStatTypeKill = 0
- * facwarStatTypeLoss = 1
- */
-
 //from market_keyMap
 typedef enum {
     accountingKeyCash           = 1000,
@@ -425,6 +387,7 @@ enum ClientTimers {
     LoginTimer       = 2000,
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
     DockInvul        = 3000,
+    FleetTimer       = 1500,
     JumpInvul        = 5000,
     WarpOutInvul     = 5000,
     WarpInInvul      = 18000,   // increased from 10s

@@ -94,9 +94,13 @@
 #include "npc/EntityService.h"
 // exploration services
 #include "exploration/ScanMgrService.h"
+// faction services
+#include "faction/FactionWarMgrService.h"
+#include "faction/WarRegistryService.h"
 // fleet services
 #include "fleet/FleetObject.h"
 #include "fleet/FleetProxy.h"
+#include "fleet/FleetService.h"
 // imageserver services
 #include "imageserver/ImageServer.h"
 // development index service
@@ -135,9 +139,7 @@
 #include "ship/BeyonceService.h"
 #include "ship/ShipService.h"
 // standing services
-#include "standing/FactionWarMgrService.h"
 #include "standing/Standing.h"
-#include "standing/WarRegistryService.h"
 // station services
 #include "station/HoloscreenMgrService.h"
 #include "station/InsuranceService.h"
@@ -287,13 +289,17 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Starting Wormhole Manager");
     sWHMgr.Initialize(&pyServMgr);
 
-    /* create the CivilianMgr singleton */
-    sLog.Green("       ServerInit", "Starting Civilian Manager");
-    sCivMgr.Initialize(&pyServMgr);
-
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");
     sBubbleMgr.Initialize();
+
+    /* create the FleetService singleton */
+    sLog.Green("       ServerInit", "Starting Fleet Services");
+    sFltSvc.Initialize(&pyServMgr);
+
+    /* create the CivilianMgr singleton */
+    sLog.Green("       ServerInit", "Starting Civilian Manager");
+    sCivMgr.Initialize(&pyServMgr);
 
     /* create the MarketBot singleton */
     sLog.Green("       ServerInit", "Starting Market Bot Manager");
@@ -346,7 +352,7 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("factory", new FactoryService(&pyServMgr));
     pyServMgr.RegisterService("fleetMgr", new FleetManager(&pyServMgr));
     pyServMgr.RegisterService("fleetObjectHandler", new FleetObject(&pyServMgr));
-    pyServMgr.RegisterService("fleetProxy", new FleetProxyService(&pyServMgr));
+    pyServMgr.RegisterService("fleetProxy", new FleetProxy(&pyServMgr));
     pyServMgr.RegisterService("holoscreenMgr", new HoloscreenMgrService(&pyServMgr));
     pyServMgr.RegisterService("devIndexManager", new IndexManager(&pyServMgr));
     pyServMgr.RegisterService("infoGatheringMgr", new InfoGatheringMgr(&pyServMgr));
@@ -564,10 +570,6 @@ int main( int argc, char* argv[] )
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-    /* Close the command dispatcher */
-    command_dispatcher.Close();
-    /* Stop Console Command Interperter */
-    //sConsole.Stop();
     /* Close the entity list */
     sEntityList.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
@@ -583,6 +585,10 @@ int main( int argc, char* argv[] )
     /* Close the static data manager */
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();
+    /* Close the command dispatcher */
+    command_dispatcher.Close();
+    /* Stop Console Command Interperter */
+    //sConsole.Stop();
     /* close the db handler */
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */

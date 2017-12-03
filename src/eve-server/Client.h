@@ -108,20 +108,21 @@ public:
     uint64 GetRolesAtHQ() const                         { return mSession.GetCurrentULong( "rolesAtHQ" ); }
     uint64 GetRolesAtOther() const                      { return mSession.GetCurrentULong( "rolesAtOther" ); }
 
-    uint32 GetGangRole() const                          { return mSession.GetCurrentInt( "gangrole" ); }
-    int8 GetFleetRole() const                           { return mSession.GetCurrentInt( "fleetrole" ); }
-
-    /** @todo need to add gang and fleet session data here */
+    // fleet data
+    bool InFleet()                                      { return (IsFleet(m_fleet) ? true : false); }
+    int32 GetFleetID() const                            { return m_fleet; }
+    int32 GetWingID() const                             { return m_wing; }
+    int32 GetSquadID() const                            { return m_squad; }
 
     //  public functions to update client session when char's roles are changed
-    void UpdateCorpSession(Character* pChar);
-    void UpdateFleetSession(Character* pChar);
+    void UpdateCorpSession();
+    void UpdateFleetSession();
 
     // character data
     void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used in char creation
     CharacterRef GetChar() const                        { return m_char; }
     ShipItemRef GetShip() const                         { return m_ship; }
-    SystemEntity* GetShipSE()                           { return pShipSE; }
+    Ship* GetShipSE()                                   { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
     uint32 GetPodID() const                             { return m_char->capsuleID(); }
     uint32 GetAllianceID() const                        { return m_char->allianceID(); }
@@ -262,7 +263,7 @@ protected:
     CharacterRef m_char;
     PyServiceMgr& m_services;
     SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
-    SystemEntity* pShipSE;
+    Ship* pShipSE;
     TradeSession* m_TS;
     ClientSession mSession;
     SystemManager* m_system;    //we do not own this
@@ -284,6 +285,10 @@ protected:
     bool m_setStateSent;
     bool m_sessionChangeActive; // used to delay actions requiring destiny updates
 
+    int32 m_wing;
+    int32 m_squad;
+
+    uint32 m_fleet;
     uint32 m_shipId;
     uint32 m_toGate;
     uint32 m_locationID;
@@ -296,6 +301,7 @@ protected:
     Timer m_scanTimer;       // used to delay scan results based on skills, items, and other shit
     Timer m_cloakTimer;
     Timer m_invulTimer;
+    Timer m_fleetTimer;      // used to apply fleet boost on undock and jump when applicable
     Timer m_clientTimer;     // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     Timer m_jetcanTimer;     // used to delay jetcan creation.  3min default
     Timer m_logoutTimer;     // used to hold client object until WarpOut finishes
@@ -339,12 +345,13 @@ public:
 
     // this is to check/enable Python Throw keyword, to avoid throws/segfault when not applicable
     bool CanThrow()                                     { return m_canThrow; }
+
 private:
     bool m_canThrow;
 
 protected:
     void _SendPingRequest();
-    void _UpdateSession( const CharacterConstRef& character );
+    void _UpdateSession();
     void _SendException( const PyAddress& source, uint64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
     void _SendCallReturn( const PyAddress& source, uint64 callID, uint64 clientID, PyRep** return_value, const char* channel = 0 );
     void _SendPingResponse( const PyAddress& source, uint64 callID );

@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, Aknor Jaden
+    Updates:    Allan
 */
 
 #include <boost/algorithm/string.hpp>
@@ -31,6 +32,7 @@
 #include "admin/CommandDispatcher.h"
 #include "admin/SlashService.h"
 #include "chat/LSCService.h"
+#include "fleet/FleetService.h"
 
 /** @todo
  * LSC system todo list...
@@ -42,6 +44,10 @@
  * to fix...
  *   channelID system
  *   *more*
+ *
+ * fleet shit...
+ *BOSS/FC/WC/SC should be able to moderate text in their respective fleet chat as needed.
+ * They should have the power to dictate text color of their type, and silence people who shouldn't be talking..
  *
  */
 
@@ -280,10 +286,8 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
 
     std::set<int32> toJoin;
 
-    PyList::const_iterator cur, end;
-    cur = args.channels->begin();
-    end = args.channels->end();
-    for (; cur != end; cur++) {
+    PyList::const_iterator cur = args.channels->begin();
+    for (; cur != args.channels->end(); cur++) {
         if ((*cur)->IsInt())
             toJoin.insert((*cur)->AsInt()->value());
         else if ((*cur)->IsTuple()) {
@@ -308,21 +312,19 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
     PyList *ml = new PyList();
     LSCChannel* channel(nullptr);
     uint32 charID = call.client->GetCharacterID();
-    // use args.role to test channel privs?
-    const bool isRookie = ((args.role & ROLE_NEWBIE) ? true : false);
 
-    std::set<int32>::iterator curs, ends;
-    curs = toJoin.begin();
-    ends = toJoin.end();
-    for (; curs != ends; curs++) {
+    std::set<int32>::iterator curs = toJoin.begin();
+    for (; curs != toJoin.end(); curs++) {
         int32 channelID = *curs;
         if (channelID == 0)
             continue;
-        //else if (((channelID == 1) or (channelID == 2)) and !isRookie)
-        //    continue;
+        if (sConfig.chat.EnforceRookieInHelp)
+            if ((channelID == 1) or (channelID == 2))
+                if (!(args.role & ROLE_NEWBIE) or !(args.role & ROLE_ELEVATEDPLAYER))
+                    continue;
 
         channel = GetChannelByID(channelID);
-        if (!channel)
+        if (channel == nullptr)
             continue;
         ChannelJoinReply chjr;
             chjr.ChannelID = channel->EncodeID();
@@ -992,9 +994,28 @@ void LSCService::CreateSystemChannel(int32 channelID)
         messageID = 0;
     } else if (IsFleet(channelID)) {
         type = LSC::Type::fleet;
-        name = "Fleet";
+        name = sFltSvc.GetFleetName(channelID);
+        motd = sFltSvc.GetFleetDescription(channelID);
         messageID = 0;
-        ownerID = channelID;    // change to fleet creator
+        ownerID = sFltSvc.GetFleetLeaderID(channelID);
+    } else if (IsWing(channelID)) {
+        type = LSC::Type::wing;
+        name = sFltSvc.GetWingName(channelID);
+        motd = name;
+        motd += "<br>";
+        motd += sFltSvc.GetFleetDescription(channelID);
+        messageID = 0;
+        //ownerID = sFltSvc.GetWingLeaderID(channelID);
+        ownerID = sFltSvc.GetFleetLeaderID(channelID);
+    } else if (IsSquad(channelID)) {
+        type = LSC::Type::squad;
+        name = sFltSvc.GetSquadName(channelID);
+        motd = name;
+        motd += "<br>";
+        motd += sFltSvc.GetFleetDescription(channelID);
+        messageID = 0;
+        //ownerID = sFltSvc.GetSquadLeaderID(channelID);
+        ownerID = sFltSvc.GetFleetLeaderID(channelID);
     } else {
         // not sure what to do here....should never hit
     }
@@ -1015,7 +1036,7 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xff00ff00><b>Topic:</b></color>  ";
     str << "<color=0xffffffff>EVE-Online related rookie help.</color><br><br>";
     str << "<color=0xff00ff00><b>Rules:</b></color>  ";
-    str << "<color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
+    str << "<color=0xffffffff>No WTB, WTS, WTT, PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
     str << "No CAPS or text-decoration.</color><br><br>";
     str << "<color=0xff00ff00><b>Language:</b></color>  ";
     str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";
@@ -1034,7 +1055,7 @@ void LSCService::CreateStaticChannels() {
     str << "<color=0xff00ff00><b>Topic:</b></color>  ";
     str << "<color=0xffffffff>EVE-Online related help.</color><br><br>";
     str << "<color=0xff00ff00><b>Rules:</b></color>  ";
-    str << "<color=0xffffffff>No WTB, WTS, WTT (aka trading, selling, w.e.), PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
+    str << "<color=0xffffffff>No WTB, WTS, WTT, PC, advertising, recruiting, scamming, offering private help in any form or begging in this channel.<br>";
     str << "No CAPS or text-decoration.</color><br><br>";
     str << "<color=0xff00ff00><b>Language:</b></color>  ";
     str << "<color=0xffffffff>This channel is ENGLISH ONLY.</color><br><br>";

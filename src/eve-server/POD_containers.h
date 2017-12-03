@@ -38,7 +38,7 @@ struct AccountData {
     int32 id;
     uint64 role;
     int32 visits;
-    int32 clientID;
+    uint64 clientID;
     std::string name;
     std::string hash;
     std::string password;
@@ -48,13 +48,14 @@ struct AccountData {
 };
 
 /* POD structure for fleet data    -allan 31Jul14 */
-struct FleetData {
-    uint8 fleetRole;
-    uint8 fleetBooster;
-    uint8 fleetJob;
-    uint32 fleetID;
-    uint32 wingID;
-    uint32 squadID;
+struct CharFleetData {
+    int8 fleetRole;
+    int8 fleetBooster;
+    int8 fleetJob;
+    int32 fleetID;
+    int32 wingID;
+    int32 squadID;
+    int64 joinTime;
 };
 
 /* POD structure for blueprint data */

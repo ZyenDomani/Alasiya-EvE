@@ -1198,6 +1198,7 @@ uint32 CorporationDB::GetStationOwner(uint32 stationID) {
 }
 
 PyRep *CorporationDB::GetMyApplications(uint32 charID) {
+    //    header = ['corporationID', 'characterID', 'applicationText', 'roles', 'grantableRoles', 'status', 'applicationDateTime', 'deleted', 'lastCorpUpdaterID']
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT corporationID, characterID, applicationText, roles, grantableRoles, "
@@ -1208,7 +1209,7 @@ PyRep *CorporationDB::GetMyApplications(uint32 charID) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    return DBResultToRowset(res);
+    return DBResultToCRowset(res);
 }
 bool CorporationDB::InsertApplication(const ApplicationInfo & aInfo) {
     if (!aInfo.valid) {

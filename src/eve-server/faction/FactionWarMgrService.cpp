@@ -27,7 +27,7 @@
 
 #include "PyServiceCD.h"
 #include "cache/ObjCacheService.h"
-#include "standing/FactionWarMgrService.h"
+#include "faction/FactionWarMgrService.h"
 
 PyCallable_Make_InnerDispatcher(FactionWarMgrService)
 

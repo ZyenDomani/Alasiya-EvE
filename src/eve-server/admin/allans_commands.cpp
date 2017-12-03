@@ -1,5 +1,6 @@
 
 
+#include <stdio.h>
 #include "eve-server.h"
 
 #include "Client.h"
@@ -8,6 +9,7 @@
 #include "npc/NPCAI.h"
 #include "admin/AllCommands.h"
 #include "admin/CommandDB.h"
+#include "fleet/FleetService.h"
 #include "inventory/AttributeEnum.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
@@ -59,13 +61,14 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
     /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
      *   will list currently active dungeons, by systemID.
      */
-    
+
     std::vector<CosmicSignature> sig;
     who->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
 
     int count = sig.size();
 
     std::ostringstream str;
+    str.clear();
     str << "There are currently %u active dungeons<br>"; //50
     str << "LocationID aID iID 'Name'<br>"; //30
 
@@ -159,6 +162,7 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
     b->GetEntities(into);
 
     std::ostringstream str;
+    str.clear();
     str << "Bubble: %u<br>"; //22
     str << "Dynamics: %u<br>"; //19
     str << "NPCs: %u<br>"; //18
@@ -223,6 +227,7 @@ PyResult Command_bubblelist(Client* who, CommandDB* db, PyServiceMgr* services, 
     b->GetEntities(into);
 
     std::ostringstream str;
+    str.clear();
     str << "Bubble: %u<br>"; //22
     str << "Dynamics: %u<br>"; //19
     str << "NPCs: %u<br>"; //18
@@ -389,12 +394,13 @@ PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     belt->GetList(beltID, invMap);
 
     std::ostringstream str;
+    str.clear();
     str << "BeltID %u has %u roids in it.<br><br>"; //40
 
     for (auto cur : invMap)
         str << cur->GetName() << ": " << cur->GetID() << "<br>"; // 20 + 40 for name (60)
 
-        int count = invMap.size();
+    int count = invMap.size();
     int size = count * 60;
     size += 50;
     char reply[size];
@@ -431,6 +437,7 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
     }
 
     std::ostringstream str;
+    str.clear();
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     for (auto cur : invMap)
@@ -459,6 +466,7 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
+    str.clear();
     str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
 
     for (auto cur : invMap)
@@ -486,6 +494,7 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
+    str.clear();
     str << "InventoryID %u(%p) (%s) has %u skills.<br><br>"; //80
 
     for (auto cur : invMap) {
@@ -527,6 +536,7 @@ PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     iRef->GetAttributeMap().CopyAttributes(attrMap);
 
     std::ostringstream str;
+    str.clear();
     str << "%u(%s) has %u attributes.<br><br>"; //70
 
     for (auto cur : attrMap) {
@@ -551,10 +561,11 @@ PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, co
 PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
 
     std::ostringstream str;
+    str.clear();
     str << "Current Session Values.<br><br>"; //32
 
     str << "charid: %i <br>"; //14+10
-    str << "charname: %s <br>"; //16+10
+    str << "charname: %s <br>"; //16+20
     str << "shipid: %i <br>"; //14+10
     str << "cloneStationID: %i <br>"; //21+10
 
@@ -578,19 +589,27 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
     str << "rolesAtHQ: %lu <br>"; //18+20
     str << "rolesAtOther: %lu <br>"; //21+20
 
-    str << "gangrole: %i <br>"; //16+10
-    str << "fleetrole: %i <br>"; //17+10
+    str << "fleetID: %i <br>"; //14+10
+    str << "wingID: %i <br>"; //13+10
+    str << "squadID: %i <br>"; //14+10
+    str << "job: %s <br>"; //10+10
+    str << "role: %s <br>"; //11+10
+    str << "booster: %s <br>"; //14+10
+    str << "joinTime: %lu <br>"; //16+20
 
     int size = 32;  // header
-    size += 400;    // text
-    size += 160;    // %i
-    size += 120;    // %lu
+    size += 445;    // text
+    size += 170;    // %i
+    size += 140;    // %l*
+    size += 50;     // %s
     char reply[size];
     snprintf(reply, size, str.str().c_str(),
              who->GetCharacterID(), who->GetName(), who->GetShipID(), who->GetCloneStationID(), who->GetClientID(), who->GetUserID(),
              who->GetSessionID(), who->GetLocationID(), who->GetStationID(), who->GetStationID2(), who->GetSystemID(), who->GetConstellationID(),
              who->GetRegionID(), who->GetCorporationID(), who->GetCorpHQ(), who->GetCorpAccountKey(), who->GetCorpRole(), who->GetRolesAtAll(),
-             who->GetRolesAtBase(), who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetGangRole(),who->GetFleetRole() );
+             who->GetRolesAtBase(), who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetChar()->fleetID(), who->GetChar()->wingID(),
+             who->GetChar()->squadID(), sFltSvc.GetJobName(who->GetChar()->fleetJob()).c_str(), sFltSvc.GetRoleName(who->GetChar()->fleetRole()).c_str(),
+             sFltSvc.GetBoosterName(who->GetChar()->fleetBooster()).c_str(),who->GetChar()->fleetJoinTime());
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -607,10 +626,16 @@ PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
+    if (!who->IsInSpace()) {
+        who->SendInfoModalMsg("You are not in Space.");
+        return nullptr;
+    }
+
     uint16 length = 1, count = 0;
     std::string into = who->GetShipSE()->TargetMgr()->TargetList(length, count);
 
     std::ostringstream str;
+    str.clear();
     str << "Target List for %s in shipID %u<br>"; //30+30
     str << "    %u entries in list<br>";   //30
     str << "%s"; //length
@@ -678,6 +703,33 @@ PyResult Command_entityspawn(Client* who, CommandDB* db, PyServiceMgr* services,
 
     char reply[55];
     snprintf(reply, 55, "Command Unfinished.\nShip Halted.");
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_fleetboost(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    uint32 fleetID = who->GetChar()->fleetID();
+
+    if (fleetID == 0) {
+        who->SendInfoModalMsg("You are not in a fleet");
+        return nullptr;
+    }
+
+    uint16 length = 1;
+    std::string into = sFltSvc.GetBoosterData(fleetID, length);
+
+    std::ostringstream str;
+    str.clear();
+    str << "<color=aqua>FleetID %u Command and Boost Data Window.</color><br><br>";   //77
+    str << "%s"; //length
+
+    int size = 77;  // header
+    size += length;
+
+    char reply[size];
+    snprintf(reply, size, str.str().c_str(), fleetID, into.c_str());
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);

@@ -208,7 +208,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
         _log(CLIENT__ERROR, "%s: Unable to find entity %u to Follow/Approach.", call.client->GetName(), args.ballID);
         return new PyNone();
     }
-
+    
     call.client->SetInvul(false);
     call.client->SetUndock(false);
 

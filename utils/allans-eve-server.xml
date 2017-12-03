@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.0 -->
+     Version: 8.3 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -44,39 +44,40 @@
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <NoobShipCheck>false</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
-        <StackTrace>false</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on certain errors -->
+        <StackTrace>false</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
         <maxPlayers>2500</maxPlayers>
         <MaxThreadReport>20</MaxThreadReport>
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
+        <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
     </server>
 
     <world>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
+        <gridUnload>true</gridUnload><!-- bool -->
+        <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
         <!-- not implemented yet -->
         <chatLogs>false</chatLogs><!-- bool -->
         <globalChat>true</globalChat><!-- bool -->
-        <gridUnload>true</gridUnload><!-- bool -->
-        <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
-        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
-        <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
     </world>
 
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
-        <damageRate>1.0</damageRate><!-- ALL damage. only used if != 1.0 -->
-        <missileRate>1.0</missileRate><!-- ALL missiles. only used if != 1.0 -->
-        <missileTime>1.0</missileTime><!--  ALL missiles. only used if != 1.0 -->
-        <missileRoF>1.0</missileRoF><!-- ALL missiles. only used if != 1.0 -->
-        <turretRate>1.0</turretRate><!-- PC turrets. only used if != 1.0 -->
-        <turretRoF>1.0</turretRoF><!-- PC turrets. only used if != 1.0 -->
+        <damageRate>1.0</damageRate><!-- ALL damage multiplier.  DO NOT USE 0.0 -->
+        <missileRate>1.0</missileRate><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <turretRate>1.0</turretRate><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
+        <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
-        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
+        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- implemented only for salvage max items -->
@@ -121,27 +122,28 @@
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
+        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
         <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>true</EnableDrones><!-- bool -->
     </npc>
 
-    <threads><!-- not implemented yet -->
-        <NetworkThreads>2</NetworkThreads>
-        <DatabaseThreads>2</DatabaseThreads>
-        <WorldThreads>2</WorldThreads>
-        <ImageServerThreads>1</ImageServerThreads>
-        <ConsoleThreads>1</ConsoleThreads>
-    </threads>
+    <chat>
+        <EnableFleetChat>true</EnableFleetChat><!-- bool -->
+        <EnableWingChat>false</EnableWingChat><!-- bool -->
+        <EnableSquadChat>false</EnableSquadChat><!-- bool -->
+        <EnableVoiceChat>false</EnableVoiceChat><!-- bool -->
+        <EnforceRookieInHelp>false</EnforceRookieInHelp><!-- bool -->
+    </chat>
 
     <cosmic>
-        <EnablePI>true</EnablePI><!-- bool -->
-        <AnomalyEnabled>true</AnomalyEnabled><!-- bool -->
-        <DungeonEnabled>true</DungeonEnabled><!-- bool -->
+        <PIEnabled>true</PIEnabled><!-- bool -->
+        <AnomalyEnabled>false</AnomalyEnabled><!-- bool -->
+        <DungeonEnabled>false</DungeonEnabled><!-- bool -->
         <BeltEnabled>true</BeltEnabled><!-- bool -->
         <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
-        <WormHoleEnabled>true</WormHoleEnabled><!-- bool -->
-        <CiviliansEnabled>true</CiviliansEnabled><!-- bool -->
+        <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
+        <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
         <BumpEnabled>false</BumpEnabled><!-- bool -->
     </cosmic>
 
@@ -153,12 +155,22 @@
         <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
     </crime>
 
+    <threads><!-- not implemented yet -->
+        <NetworkThreads>2</NetworkThreads>
+        <DatabaseThreads>2</DatabaseThreads>
+        <WorldThreads>2</WorldThreads>
+        <ImageServerThreads>1</ImageServerThreads>
+        <ConsoleThreads>1</ConsoleThreads>
+    </threads>
+
     <database>
         <host>localhost</host>
         <username>allan</username>
         <password>none</password>
         <db>alasiya-new</db>
-        <port>3306</port>
+        <port>3306</port><!-- 3306 default -->
+        <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
+        <compress>false</compress><!-- bool   compressed protocol for client server communication -->
     </database>
 
     <files>
