@@ -108,7 +108,7 @@
 
     <elementDef name="CallCreateCharacterWithDoll">
     <tupleInline>
-      <wstring name="name" />
+      <raw name="name" />
       <int name="bloodlineID" />
       <int name="genderID" />
       <int name="ancestryID" />

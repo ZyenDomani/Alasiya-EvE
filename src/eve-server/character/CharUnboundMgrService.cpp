@@ -275,10 +275,16 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
             _log(CLIENT__MESSAGE, "Could not find data for stationID %u.  Using Corp Default.", stationID);
     }
 
+    std::string name = "";
+    if (arg.name->IsWString())
+        name = arg.name->AsWString()->content();
+    else if (arg.name->IsString())
+        name = arg.name->AsString()->content();
+
     //now we have (almost) all the data we need, so spawn the char item
     ItemData idata;
         idata.typeID = char_type->id();
-        idata.name = arg.name;
+        idata.name = name;
         idata.ownerID = 1; // EVE System
         idata.quantity = 1;
         idata.singleton = true;

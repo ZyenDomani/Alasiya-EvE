@@ -84,6 +84,7 @@ protected:
 
 private:
     std::set<std::string> mNamesUsed;
+    
 };
 
 #endif
