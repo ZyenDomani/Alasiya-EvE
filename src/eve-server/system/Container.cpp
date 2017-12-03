@@ -71,13 +71,12 @@ CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
     CargoContainerRef containerRef = CargoContainer::Load( factory, containerID );
 
     // Create default dynamic attributes in the AttributeMap:
-    containerRef->SetAttribute(AttrRadius,          containerRef->type().radius());			// Radius
-
-    // Check for existence of some attributes that may or may not have already been loaded and set them
-    // to default values:
-	// Hull Damage
-	if (!(containerRef->HasAttribute(AttrDamage)) )
-        containerRef->SetAttribute(AttrDamage, 0);
+    containerRef->SetAttribute(AttrRadius,        containerRef->type().radius());			// Radius
+    containerRef->SetAttribute(AttrShieldCharge,  containerRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
+    containerRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
+    containerRef->SetAttribute(AttrMass,          containerRef->type().mass());          // Mass
+    containerRef->SetAttribute(AttrVolume,        containerRef->GetPackagedVolume());        // Volume
+    containerRef->SetAttribute(AttrCapacity,      containerRef->type().capacity());      // Capacity
 
 	return containerRef;
 }
@@ -307,7 +306,7 @@ PyDict *ContainerSE::MakeSlimItem() {
         _log( DESTINY__DEBUG, "ContainerSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(DESTINY__DEBUG, "     ");
     }
-    
+
     return slim;
 }
 
@@ -342,12 +341,17 @@ WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
     uint32 containerID = WreckContainer::CreateItemID( factory, data );
     if (containerID == 0 )
         return WreckContainerRef();
-    WreckContainerRef containerRef = WreckContainer::Load( factory, containerID );
+    WreckContainerRef wreckRef = WreckContainer::Load( factory, containerID );
 
     // Create default dynamic attributes in the AttributeMap:
-    containerRef->SetAttribute(AttrRadius,          containerRef->type().radius(), true);           // Radius
+    wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
+    wreckRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
+    wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass());          // Mass
+    wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
+    wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
+    wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
 
-    return containerRef;
+    return wreckRef;
 }
 
 uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data)

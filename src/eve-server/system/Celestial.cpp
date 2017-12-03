@@ -86,9 +86,15 @@ CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialI
 
 CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) {
     uint32 celestialID = CelestialObject::CreateItemID( factory, data );
-    if (celestialID)
-        return CelestialObject::Load( factory, celestialID );
-    return CelestialObjectRef();
+    if (celestialID == 0 )
+        return CelestialObjectRef();
+
+    CelestialObjectRef celestialRef = CelestialObject::Load( factory, celestialID );
+
+    if ((celestialRef->type().groupID() == EVEDB::invGroups::Beacon) or (celestialRef->type().groupID() == EVEDB::invGroups::Effect_Beacon))
+        celestialRef->SetAttribute(AttrIsGlobal, 1);
+
+    return celestialRef;
 }
 
 uint32 CelestialObject::CreateItemID(ItemFactory &factory, ItemData &data) {

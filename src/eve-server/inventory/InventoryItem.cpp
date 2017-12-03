@@ -234,18 +234,34 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Material:
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
+        case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::Asteroid:
-        case EVEDB::invCategories::Owner:
-        case EVEDB::invCategories::Ship:
-        case EVEDB::invCategories::Blueprint:
-        case EVEDB::invCategories::Orbitals:
-        case EVEDB::invCategories::Structure:
-        case EVEDB::invCategories::SovereigntyStructure:
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
         } break;
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::SovereigntyStructure: {
+            return StructureItem::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Blueprint: {
+            BlueprintData bpData;
+                bpData.runs = -1;
+                bpData.copy = false;
+                bpData.mLevel = 0;
+                bpData.pLevel = 0;
+            return Blueprint::Spawn( factory, data, bpData );
+        }
+        case EVEDB::invCategories::Skill: {
+            return Skill::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Owner: {
+            return Character::Spawn( factory, data );
+        }
+        case EVEDB::invCategories::Ship: {
+            return ShipItem::Spawn( factory, data );
+        }
         case EVEDB::invCategories::Accessories: { // this is for bookmark vouchers
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
@@ -254,11 +270,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
             return itemRef;
         }
-        case EVEDB::invCategories::Skill: {
-            return Skill::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Entity:
+        case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID( factory, data );
@@ -302,15 +316,6 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
             }
             _log(ITEM__ERROR, "Unhandled charge spawn");
         }
-        case EVEDB::invCategories::Entity: {
-			// Spawn generic item for Entities at this time:
-            uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            //uint32 itemID = InventoryItem::CreateTempItemID( factory, data );		// Use this to prevent entity from being stored in DB
-			if (!itemID)
-				return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::Load( factory, itemID );
-			return itemRef;
-        }
         case EVEDB::invCategories::Station: {
             uint32 itemID = StationItem::CreateItemID( factory, data );
             if (!itemID)
@@ -335,37 +340,9 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 or (iType->groupID() == EVEDB::invGroups::Spawn_Container)
                 or (iType->groupID() == EVEDB::invGroups::Mission_Container))
             {
-                // Spawn new Cargo Container
-                uint32 itemID = CargoContainer::CreateItemID( factory, data );
-                if (!itemID)
-                    return CargoContainerRef();
-                CargoContainerRef cargoRef = CargoContainer::Load( factory, itemID );
-                if (cargoRef.get() == nullptr)
-                    return CargoContainerRef();
-                // THESE SHOULD BE MOVED INTO A CargoContainer::Spawn() function that does not exist yet
-                cargoRef->SetAttribute(AttrShieldCharge,  cargoRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
-                cargoRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-                cargoRef->SetAttribute(AttrMass,          iType->mass());          // Mass
-                cargoRef->SetAttribute(AttrRadius,        iType->radius());        // Radius
-                cargoRef->SetAttribute(AttrVolume,        cargoRef->GetPackagedVolume());        // Volume
-                cargoRef->SetAttribute(AttrCapacity,      iType->capacity());      // Capacity
-                return cargoRef;
+                return CargoContainer::Spawn(factory, data);
             } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
-                // Spawn new Wreck Container
-                uint32 itemID = WreckContainer::CreateItemID( factory, data );
-                if (!itemID)
-                    return WreckContainerRef();
-                WreckContainerRef wreckRef = WreckContainer::Load( factory, itemID );
-                if (wreckRef.get() == nullptr)
-                    return WreckContainerRef();
-                // THESE SHOULD BE MOVED INTO A WreckContainer::Spawn() function that does not exist yet
-                wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
-                wreckRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-                wreckRef->SetAttribute(AttrMass,          iType->mass());          // Mass
-                wreckRef->SetAttribute(AttrRadius,        iType->radius());        // Radius
-                wreckRef->SetAttribute(AttrVolume,        iType->volume());        // Volume
-                wreckRef->SetAttribute(AttrCapacity,      iType->capacity());      // Capacity
-                return wreckRef;
+                return WreckContainer::Spawn( factory, data );
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID( factory, data );
@@ -375,31 +352,13 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
                 return itemRef;
             } else {
                 // Spawn new Celestial Object
-                uint32 itemID = CelestialObject::CreateItemID( factory, data );
-                if (!itemID)
-                    return CelestialObjectRef();
-                CelestialObjectRef celestialRef = CelestialObject::Load( factory, itemID );
-                if (celestialRef.get() == nullptr)
-                    return CelestialObjectRef();
-                if ((iType->groupID() == EVEDB::invGroups::Beacon) or (iType->groupID() == EVEDB::invGroups::Effect_Beacon))
-                    celestialRef->SetAttribute(AttrIsGlobal, 1);
-                return celestialRef;
+                return CelestialObject::Spawn( factory, data );
             }
         }
     }
 
-    // Spawn generic item:
-    uint32 itemID = InventoryItem::CreateItemID( factory, data );
-    if (!itemID)
-        return InventoryItemRef();
-    InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-    if (itemRef.get() == nullptr)
-        return InventoryItemRef();
-    itemRef->SetAttribute(AttrMass,           iType->mass());           // Mass
-    itemRef->SetAttribute(AttrRadius,         iType->radius());       // Radius
-    itemRef->SetAttribute(AttrVolume,         itemRef->GetPackagedVolume());       // Volume
-    itemRef->SetAttribute(AttrCapacity,       iType->capacity());   // Capacity
-    return itemRef;
+    // return nullref for items not handled here
+    return InventoryItemRef();
 }
 
 uint32 InventoryItem::GetPackagedVolume()
