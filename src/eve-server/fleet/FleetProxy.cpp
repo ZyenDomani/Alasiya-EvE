@@ -69,8 +69,8 @@ PyResult FleetProxy::Handle_ApplyToJoinFleet(PyCallArgs &call) {
     // this is also used to update advert info
 PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
  //  sm.ProxySvc('fleetProxy').AddFleetFinderAdvert(info)
-    //sLog.White("FleetProxy", "Handle_AddFleetFinderAdvert() size=%u", call.tuple->size() );
-   // call.Dump(FLEET__DUMP);
+    sLog.White("FleetProxy", "Handle_AddFleetFinderAdvert() size=%u", call.tuple->size() );
+    call.Dump(FLEET__DUMP);
 
     FleetAdvertCall args;
     if (!args.Decode(call.tuple)) {

@@ -230,7 +230,15 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
 
 void FleetService::CreateFleetAdvert(uint32 fleetID, FleetAdvert data)
 {
-    _log(FLEET__INFO, "CreateFleetAdvert for FleetID: %i", fleetID);
+
+    std::map<uint32, FleetAdvert>::iterator itr = m_fleetAdvertMap.find(fleetID);
+    if (itr != m_fleetAdvertMap.end()) {
+        m_fleetAdvertMap.erase(fleetID);
+        _log(FLEET__INFO, "CreateFleetAdvert()  Updating Advert for FleetID: %u, Scope: %u", fleetID, data.inviteScope);
+    } else {
+        _log(FLEET__INFO, "CreateFleetAdvert()  Creating Advert for FleetID: %u, Scope: %u", fleetID, data.inviteScope);
+    }
+
     m_fleetAdvertMap.emplace(fleetID, data);
     std::map<uint32, FleetData>::iterator fItr = m_fleetDataMap.find(fleetID);
     if (fItr != m_fleetDataMap.end())
@@ -954,7 +962,7 @@ PyRep* FleetService::GetFleetAdvert(uint32 fleetID)
 
     PyTuple* localTuple = new PyTuple(1);
     PyList* localList = new PyList();
-    for (auto cur1 : itr->second.local_allowedEntities)
+    for (auto cur1 : itr->second.local_allowedEntities) // corpID, allianceID, militiaID - if applicable
         localList->AddItemInt(cur1);
     localTuple->SetItem(0, localList);
     PyToken* token = new PyToken("__builtin__.set");
@@ -965,7 +973,7 @@ PyRep* FleetService::GetFleetAdvert(uint32 fleetID)
 
     PyTuple* publicTuple = new PyTuple(1);
     PyList* publicList = new PyList();
-    for (auto cur2 : itr->second.public_allowedEntities)
+    for (auto cur2 : itr->second.public_allowedEntities)    // searches creator's addy book and addes charIDs based on standings
         publicList->AddItemInt(cur2);
         publicTuple->SetItem(0, publicList);
     PyTuple* publicTuple2 = new PyTuple(2);
