@@ -582,19 +582,21 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     if (fItr != m_fleetDataMap.end()) {
         // set base boost data from FB
         if ((fItr->second.leader != nullptr) and (m_fleetWings.count(fleetID) <= fItr->second.leader->GetChar()->GetSkillLevel(skillFleetCommand)))
-            if ((fItr->second.booster != nullptr) and (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1))) {
+            if (fItr->second.booster != nullptr) {
                 pChar = fItr->second.booster->GetChar().get();
                 if (pChar != nullptr) {
-                    fData.leader    = fItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);    // this applies ONLY to self
-                    fData.armored   = pChar->GetSkillLevel(skillArmoredWarfare);
-                    fData.info      = pChar->GetSkillLevel(skillInformationWarfare);
-                    fData.mining    = pChar->GetSkillLevel(skillMiningForeman);
-                    fData.siege     = pChar->GetSkillLevel(skillSiegeWarfare);
-                    fData.skirmish  = pChar->GetSkillLevel(skillSkirmishWarfare);
+                    if ((pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                    or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                    or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1))) {
+                        fData.leader    = fItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);    // this applies ONLY to self
+                        fData.armored   = pChar->GetSkillLevel(skillArmoredWarfare);
+                        fData.info      = pChar->GetSkillLevel(skillInformationWarfare);
+                        fData.mining    = pChar->GetSkillLevel(skillMiningForeman);
+                        fData.siege     = pChar->GetSkillLevel(skillSiegeWarfare);
+                        fData.skirmish  = pChar->GetSkillLevel(skillSkirmishWarfare);
+                        fBoost = true;
+                    }
                 }
-                fBoost = true;
             }
     }
 
@@ -733,32 +735,37 @@ void FleetService::SetWingBoostData(uint32 wingID, BoostData& bData)
         if (wItr->second.booster != nullptr) {
             pChar = wItr->second.booster->GetChar().get();
             if (pChar != nullptr) {
-                leader      = wItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);    // this applies ONLY to self
-                armored     = pChar->GetSkillLevel(skillArmoredWarfare);
-                info        = pChar->GetSkillLevel(skillInformationWarfare);
-                mining      = pChar->GetSkillLevel(skillMiningForeman);
-                siege       = pChar->GetSkillLevel(skillSiegeWarfare);
-                skirmish    = pChar->GetSkillLevel(skillSkirmishWarfare);
+                if ((pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1))) {
+                    leader      = wItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);    // this applies ONLY to self
+                    armored     = pChar->GetSkillLevel(skillArmoredWarfare);
+                    info        = pChar->GetSkillLevel(skillInformationWarfare);
+                    mining      = pChar->GetSkillLevel(skillMiningForeman);
+                    siege       = pChar->GetSkillLevel(skillSiegeWarfare);
+                    skirmish    = pChar->GetSkillLevel(skillSkirmishWarfare);
+                }
             }
+            wItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
+            wItr->second.boost.info     = ((info < bData.info)         ? bData.info      : info);
+            wItr->second.boost.mining   = ((mining < bData.mining)     ? bData.mining    : mining);
+            wItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
+            wItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
+            wItr->second.boost.leader   = leader;
+            _log( FLEET__TRACE, "FleetService::SetWingBoostData() - WingID: %i  Data: true", wingID);
+        } else {
+            wItr->second.boost.armored  = 0;
+            wItr->second.boost.info     = 0;
+            wItr->second.boost.leader   = 0;
+            wItr->second.boost.mining   = 0;
+            wItr->second.boost.siege    = 0;
+            wItr->second.boost.skirmish = 0;
+            _log( FLEET__TRACE, "FleetService::SetWingBoostData() - WingID: %i  Data: false", wingID);
         }
-        wItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
-        wItr->second.boost.info     = ((info < bData.info)         ? bData.info      : info);
-        wItr->second.boost.mining   = ((mining < bData.mining)     ? bData.mining    : mining);
-        wItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
-        wItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
-        wItr->second.boost.leader   = leader;
-        _log( FLEET__TRACE, "FleetService::SetWingBoostData() - WingID: %i  Data: true", wingID);
-    } else {
-        wItr->second.boost.armored  = 0;
-        wItr->second.boost.info     = 0;
-        wItr->second.boost.leader   = 0;
-        wItr->second.boost.mining   = 0;
-        wItr->second.boost.siege    = 0;
-        wItr->second.boost.skirmish = 0;
-        _log( FLEET__TRACE, "FleetService::SetWingBoostData() - WingID: %i  Data: false", wingID);
     }
     sLog.Cyan("SetWingBoostData", "wingID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
-            wingID, leader, armored, info, siege, skirmish, mining);
+            wingID, wItr->second.boost.leader, wItr->second.boost.armored, wItr->second.boost.info, \
+            wItr->second.boost.siege, wItr->second.boost.skirmish, wItr->second.boost.mining);
 }
 
 void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData)
@@ -772,29 +779,33 @@ void FleetService::SetSquadBoostData(uint32 squadID, BoostData bData)
         if (sItr->second.booster != nullptr) {
             pChar = sItr->second.booster->GetChar().get();
             if (pChar != nullptr) {
-                leader      = sItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);
-                armored     = pChar->GetSkillLevel(skillArmoredWarfare);
-                info        = pChar->GetSkillLevel(skillInformationWarfare);
-                mining      = pChar->GetSkillLevel(skillMiningForeman);
-                siege       = pChar->GetSkillLevel(skillSiegeWarfare);
-                skirmish    = pChar->GetSkillLevel(skillSkirmishWarfare);
+                if ((pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1))) {
+                    leader      = sItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);
+                    armored     = pChar->GetSkillLevel(skillArmoredWarfare);
+                    info        = pChar->GetSkillLevel(skillInformationWarfare);
+                    mining      = pChar->GetSkillLevel(skillMiningForeman);
+                    siege       = pChar->GetSkillLevel(skillSiegeWarfare);
+                    skirmish    = pChar->GetSkillLevel(skillSkirmishWarfare);
+                }
             }
+            sItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
+            sItr->second.boost.info     = ((info < bData.info)         ? bData.info      : info);
+            sItr->second.boost.mining   = ((mining < bData.mining)     ? bData.mining    : mining);
+            sItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
+            sItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
+            sItr->second.boost.leader   = leader;
+            _log( FLEET__TRACE, "FleetService::SetSquadBoostData() - SquadID: %i  Data: true", squadID);
+        } else {
+            sItr->second.boost.armored  = 0;
+            sItr->second.boost.info     = 0;
+            sItr->second.boost.leader   = 0;
+            sItr->second.boost.mining   = 0;
+            sItr->second.boost.siege    = 0;
+            sItr->second.boost.skirmish = 0;
+            _log( FLEET__TRACE, "FleetService::SetSquadBoostData() - SquadID: %i  Data: false", squadID);
         }
-        sItr->second.boost.armored  = ((armored < bData.armored)   ? bData.armored   : armored);
-        sItr->second.boost.info     = ((info < bData.info)         ? bData.info      : info);
-        sItr->second.boost.mining   = ((mining < bData.mining)     ? bData.mining    : mining);
-        sItr->second.boost.siege    = ((siege < bData.siege)       ? bData.siege     : siege);
-        sItr->second.boost.skirmish = ((skirmish < bData.skirmish) ? bData.skirmish  : skirmish);
-        sItr->second.boost.leader   = leader;
-        _log( FLEET__TRACE, "FleetService::SetSquadBoostData() - SquadID: %i  Data: true", squadID);
-    } else {
-        sItr->second.boost.armored  = 0;
-        sItr->second.boost.info     = 0;
-        sItr->second.boost.leader   = 0;
-        sItr->second.boost.mining   = 0;
-        sItr->second.boost.siege    = 0;
-        sItr->second.boost.skirmish = 0;
-        _log( FLEET__TRACE, "FleetService::SetSquadBoostData() - SquadID: %i  Data: false", squadID);
     }
     sLog.Cyan("SetSquadBoostData", "squadID: %u - leader: %i, armored: %i, info: %i, siege: %i, skirmish: %i, mining: %i", \
             squadID, sItr->second.boost.leader, sItr->second.boost.armored, sItr->second.boost.info, \
