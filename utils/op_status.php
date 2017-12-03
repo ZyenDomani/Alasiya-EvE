@@ -18,7 +18,7 @@ Items with date style DayMonthYear as last line in comments are accurate for Ala
 Please Note: This page is in the process of being updated for Alasiya's Code Status.<BR>
 Please Also Note:  Items listed as "NOT IMPLEMENTED" means there is no code written for that particular system, and the server will not respond to requests for that system.<BR>
 Items listed as "Skeleton Framework Only" has basic code, with limited or no processing and/or returns, and the server will not respond, or only partially respond to these requests.<BR><BR>
-Last Update: <font color="green">17 November 2017</font><BR>
+Last Update: <font color="green">1 December 2017</font><BR>
 Page Status: <font color="green">Current</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
@@ -33,7 +33,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
-<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Something</td>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
 <tr><td> - Stable, Efficient Server Code</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
@@ -103,7 +103,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Get Item Info</td><td class="working">95%
@@ -154,7 +154,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Account Login</td><td class="working">100%
@@ -265,7 +265,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Browse Skills to train</td><td class="working">100%
@@ -327,7 +327,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Right-click Menu in Station</td><td class="working">100%
@@ -454,7 +454,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Agents Tab</td><td class="working">90%
@@ -500,7 +500,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Open/View Static Server Channels</td><td class="working">100%
@@ -518,11 +518,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>27Jun17</td></tr>
-<tr><td> - Characters show up in Local</td><td class="working">80%
+<tr><td> - Characters show up in Local</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Existing Players do not get updated for subsequent character joins.<BR>27Jun17</td></tr>
+<td>Mostly Working - Still Testing.<BR>24Nov17</td></tr>
 <tr><td> - Chat in Local</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -532,12 +532,12 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Existing Players do not get updated for subsequent character joins.<BR>27Jun17</td></tr>
+<td>Mostly Working - Still Testing.<BR>24Nov17</td></tr>
 <tr><td> - Chat in Corp</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Existing Players do not get updated for subsequent character joins.<BR>27Jun17</td></tr>
+<td>Mostly Working<BR>24Nov17</td></tr>
 <tr><td> - Initiate Private Conversation Chat</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
@@ -597,7 +597,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Can Send Eve-mails</td><td class="working">80%
@@ -654,7 +654,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - View item properties</td><td class="working">95%
@@ -681,7 +681,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Placing Sell Orders</td><td class="working">80%
@@ -727,7 +727,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - All Assets View</td><td class="working">100%
@@ -774,7 +774,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - View Journal Entries</td><td class="broken">10%
@@ -811,7 +811,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Start Page</td><td class="working">40%
@@ -859,7 +859,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Can show Solar System map</td><td class="working">100%
@@ -961,7 +961,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Bookmark system</td><td class="working">95%
@@ -1034,7 +1034,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Selected Item Window</td><td class="working">100%
@@ -1061,7 +1061,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Can Jettison items into space</td><td class="working">100%
@@ -1139,7 +1139,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Stargate Jump</td><td class="working">100%
@@ -1221,7 +1221,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Can Lock Target</td><td class="working">100%
@@ -1268,7 +1268,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>&nbsp;</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Can drop modules on center of Fitting window (auto-insert into slots)</td><td class="working">100%
@@ -1417,7 +1417,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Launch Drones</td><td class="working">95%
@@ -1494,7 +1494,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - NPC look for targets</td><td class="working">100%
@@ -1551,7 +1551,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Research</td><td class="working">80%
@@ -1613,7 +1613,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - System Scanning using Ship Sensors (Without Probes)</td><td class="working">100%
@@ -1651,78 +1651,153 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <h2> <span class="mw-headline" id="Fleet_System"> Fleet </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:10%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:94%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:10%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>10.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:94%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>94.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - View Availible Fleets</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Create Fleet</td><td class="broken">10%
+<tr><td> - Create Fleet</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Advertise Fleet</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Fleet management window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Name Fleet</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Set Fleet MOTD</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Final Testing<BR>1Dec17</td></tr>
+<tr><td> - Fleet Warp</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Not Coded<BR>23Nov17</td></tr>
+<tr><td> - View Fleet Composition</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Create/Delete Wings and Squads</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Invite to Fleet</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Name Wings and Squads</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Invite to Fleet</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Fleet chat window</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Accept Fleet Invite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Fleet management window</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Reject Fleet Invite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Move members between wings and squads</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Leave Fleet</td><td class="working">85%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Working, but cannot rejoin or create fleet after leave<BR>1Dec17</td></tr>
+<tr><td> - Kick Member</td><td class="working">85%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Working, but cannot rejoin or create fleet after leave<BR>1Dec17</td></tr>
+<tr><td> - Move fleet members</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Set fleet/wing/squad commanders</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Set commanders</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Set fleet/wing/squad boosters</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Set boosters</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Set fleet/wing/squad bosses</td><td class="broken">10%
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Commanders provide bonuses to their members</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
-<tr><td> - Broadcast fleet notifications</td><td class="broken">10%
+<td>Final Testing<BR>1Dec17</td></tr>
+<tr><td> - Boosters provide bonuses to their members</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Skeleton Framework Only<BR>6Mar15</td></tr>
+<td>Final Testing<BR>1Dec17</td></tr>
+<tr><td> - Broadcast to fleet</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Broadcast to system</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Broadcast to bubble</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Add Member to watch list</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Final Testing<BR>1Dec17</td></tr>
+<tr><td> - Remove Member from watch list</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Final Testing<BR>1Dec17</td></tr>
+<tr><td> - Fleet chat window</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Advertise Fleet</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - View Availible Fleets</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - Apply to Advertised Fleet</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>COMPLETE<BR>1Dec17</td></tr>
+<tr><td> - View Fleet Applications</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>Final Testing<BR>1Dec17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Planetary_Interaction"> Planetary Interaction System </span></h2>
@@ -1737,7 +1812,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Planet Search</td><td class="broken">30%
@@ -1814,7 +1889,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Create a corporation</td><td class="working">80%
@@ -1866,7 +1941,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Creating Alliance</td><td class="broken">0%
@@ -1888,7 +1963,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Deploying Station Structures</td><td class="working">100%
@@ -1965,7 +2040,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
-<tr><td style="width: 70&amp;;">Service/Something</td>
+<tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
 <tr><td> - Outposts</td><td class="broken">0%
