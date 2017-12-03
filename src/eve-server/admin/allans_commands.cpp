@@ -735,6 +735,20 @@ PyResult Command_fleetboost(Client* who, CommandDB* db, PyServiceMgr* services, 
     return new PyString(reply);
 }
 
+PyResult Command_fleetinvite(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->InFleet())
+        throw PyException(MakeCustomError("You're not in a fleet."));
+    if (!who->IsFleetBoss())
+        throw PyException(MakeCustomError("You're not fleet boss."));
+    
+    char reply[55];
+    snprintf(reply, 55, "Command Unfinished.");
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]
  * then sends ScatterEvent OnRefreshModuleBanks after successful call.

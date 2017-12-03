@@ -48,3 +48,5 @@
           " - warp to an object using its itemID." )
  COMMAND( fleetboost, ROLE_PLAYER,
           " - note giving you detailed fleet boost information")
+ COMMAND( fleetinvite, ROLE_PLAYER,
+          " - sets fleet invite scope to <arg> or none")

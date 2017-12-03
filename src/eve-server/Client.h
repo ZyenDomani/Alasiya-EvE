@@ -110,9 +110,11 @@ public:
 
     // fleet data
     bool InFleet()                                      { return (IsFleet(m_fleet) ? true : false); }
+    bool IsFleetBoss()                                  { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
     int32 GetFleetID() const                            { return m_fleet; }
     int32 GetWingID() const                             { return m_wing; }
     int32 GetSquadID() const                            { return m_squad; }
+    int8 GetFleetRole()                                 { return mSession.GetCurrentInt("fleetrole"); }
 
     //  public functions to update client session when char's roles are changed
     void UpdateCorpSession();
