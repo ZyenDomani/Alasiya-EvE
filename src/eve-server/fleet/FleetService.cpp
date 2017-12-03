@@ -170,9 +170,14 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
     if (sConfig.chat.EnableWingChat)
         m_services->lsc_service->CreateSystemChannel(m_wingID);
 
+    std::list<int32> wing, squad;
+    wing.clear();
+    squad.clear();
+    wing.emplace(wing.end(), m_wingID);
+    UpdateBoost(fleetID, true, wing, squad);
+
     PyInt* res = new PyInt(m_wingID);
     ++m_wingID;
-    ++m_squadID;
     return res;
 }
 
@@ -212,6 +217,13 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
 
     if (sConfig.chat.EnableSquadChat)
         m_services->lsc_service->CreateSystemChannel(m_squadID);
+
+    std::list<int32> wing, squad;
+    wing.clear();
+    wing.emplace(wing.end(), wingID);
+    squad.clear();
+    squad.emplace(squad.end(), m_squadID);
+    UpdateBoost(fleetID, true, wing, squad);
 
     ++m_squadID;
 }
