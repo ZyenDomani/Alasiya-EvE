@@ -844,7 +844,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
             Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);
             if (recruit)
-                recruit->UpdateCorpSession(recruit->GetChar().get());
+                recruit->UpdateCorpSession();
 
         } break;
     }

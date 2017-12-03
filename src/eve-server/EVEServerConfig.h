@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.2
+    Version:    8.3
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -41,15 +41,11 @@ class EVEServerConfig
   public Singleton< EVEServerConfig >
 {
 public:
-    /**
-     * @brief Primary constructor; initializes the object with default values.
-     */
     EVEServerConfig();
-    ~EVEServerConfig()          { /* do nothing here */}
+    ~EVEServerConfig()                                  { /* do nothing here */}
 
     // From <server/>
-    struct
-    {
+    struct {
         bool UseBeanCount;
         bool UseMarketBot;
         bool UseProfiling;
@@ -70,8 +66,7 @@ public:
     } server;
 
     // From <world/>
-    struct
-    {
+    struct {
         bool chatLogs;
         bool globalChat;
         bool gridUnload;
@@ -83,8 +78,7 @@ public:
     } world;
 
     // From <rates/>
-    struct
-    {
+    struct {
         /// Modifier for security rating changes. Changes how fast it goes up/down based on actions
         double secRate;
         /// Modifier for npc bounties automatically awarded for shooting down npc enemies.
@@ -112,8 +106,7 @@ public:
     } rates;
 
     // From <bpTimes/>
-    struct
-    {
+    struct {
         float ProdTime;
         float ProdMod;
         float MatMod;
@@ -125,8 +118,7 @@ public:
     } bpTimes;
 
     // From <account/>
-    struct
-    {
+    struct {
         /// Role to assign to auto created account; set to 0 to disable auto account creation.
         uint64 autoAccountRole;
         /// A message shown to every client on login (if enabled in <World><LoginMsg>).
@@ -134,8 +126,7 @@ public:
     } account;
 
     // From <character/>
-    struct
-    {
+    struct {
         /// Money balance of new created characters.
         double startBalance;
         /// Aura balance of new created characters.   -allan 01/10/14
@@ -152,8 +143,7 @@ public:
     } character;
 
     // From <NPC/>
-    struct
-    {
+    struct {
         bool IdleWander;
         uint16 WarpOut;
         bool RoamingSpawns;
@@ -168,8 +158,7 @@ public:
     } npc;
 
     // From <database/>
-    struct
-    {
+    struct {
         /// Hostname of database server.
         std::string host;
         /// A port at which the database server listens.
@@ -185,8 +174,7 @@ public:
     } database;
 
     // From <files/>
-    struct
-    {
+    struct {
         /// A directory in which the log files are stored
         std::string logDir;
         /// A log configuration file.
@@ -198,8 +186,7 @@ public:
     } files;
 
     // From <net/>
-    struct
-    {
+    struct {
         /// Port at which the server should listen.
         uint16 port;
         /// Port at which the imageServer should listen.
@@ -209,8 +196,7 @@ public:
     } net;
 
     // From <thread/>
-    struct
-    {
+    struct {
         uint8 NetworkThreads;
         uint8 DatabaseThreads;
         uint8 WorldThreads;
@@ -219,8 +205,7 @@ public:
     } threads;
 
     // From <cosmic/>
-    struct
-    {
+    struct {
         bool PIEnabled;
         bool AnomalyEnabled;
         bool DungeonEnabled;
@@ -233,9 +218,17 @@ public:
         bool BumpEnabled;
     } cosmic;
 
+    // From <chat/>
+    struct {
+        bool EnableFleetChat;
+        bool EnableWingChat;
+        bool EnableSquadChat;
+        bool EnableVoiceChat;
+        bool EnforceRookieInHelp;
+    } chat;
+
     // From <crime/>
-    struct
-    {
+    struct {
         uint8 CWSessionTime;
         uint8 WeaponFlagTime;
         uint16 KillRightTime;
@@ -256,6 +249,7 @@ protected:
     bool ProcessNet( const TiXmlElement* ele );
     bool ProcessThreads( const TiXmlElement* ele );
     bool ProcessCosmic( const TiXmlElement* ele );
+    bool ProcessChat( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
     bool ProcessBPTimes( const TiXmlElement* ele );
 };

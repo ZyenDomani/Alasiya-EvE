@@ -132,6 +132,12 @@ void MiningLaser::ProcessCycle(bool partial)
         if (m_targetSE->GetGroupID() == m_crystalRoidGrp)
             cycleVol = GetAttribute(AttrSpecialtyMiningAmount).get_float();
 
+    // fleet invlovement enhances targeting range using InformationWarfare of highest member (2%/lvl)
+    Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
+    if (pShip != nullptr)
+        if (pShip->IsBoosted())
+            cycleVol *= (1 + (0.02 * pShip->GetMiningBoostAmount())); // 2% increase/level
+
 	InventoryItemRef roidRef = m_targetSE->GetSelf();
 	// verify gas clouds have volume attr.
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();

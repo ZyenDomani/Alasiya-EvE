@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    8.2
+    Version:    8.3
 */
 
 
@@ -161,6 +161,13 @@ EVEServerConfig::EVEServerConfig()
     cosmic.CiviliansEnabled = false;
     cosmic.BumpEnabled = false;
 
+    // chat
+    chat.EnableFleetChat = true;
+    chat.EnableWingChat = false;
+    chat.EnableSquadChat = false;
+    chat.EnableVoiceChat = false;
+    chat.EnforceRookieInHelp = false;
+
     // crime
     crime.AggFlagTime = 900 /*s*/;//N
     crime.CrimFlagTime = 900 /*s*/;//N
@@ -185,6 +192,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
     AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
     AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
+    AddMemberParser( "chat",        &EVEServerConfig::ProcessChat );
 
     // parse the element
     const bool result = ParseElementChildren( ele );
@@ -203,6 +211,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "threads" );
     RemoveParser( "cosmic" );
     RemoveParser( "crime" );
+    RemoveParser( "chat" );
 
     // return status of parsing
     return result;
@@ -502,6 +511,26 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
 
     return result;
 }
+
+bool EVEServerConfig::ProcessChat(const TiXmlElement* ele)
+{
+    AddValueParser( "EnableFleetChat",      chat.EnableFleetChat );
+    AddValueParser( "EnableWingChat",       chat.EnableWingChat );
+    AddValueParser( "EnableSquadChat",      chat.EnableSquadChat );
+    AddValueParser( "EnableVoiceChat",      chat.EnableVoiceChat );
+    AddValueParser( "EnforceRookieInHelp",  chat.EnforceRookieInHelp );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "EnableFleetChat" );
+    RemoveParser( "EnableWingChat" );
+    RemoveParser( "EnableSquadChat" );
+    RemoveParser( "EnableVoiceChat" );
+    RemoveParser( "EnforceRookieInHelp" );
+
+    return result;
+}
+
 
 bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 {

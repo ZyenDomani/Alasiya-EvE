@@ -302,6 +302,12 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("corpID",       new PyInt(m_corpID));
         slim->SetItemString("allianceID",   new PyInt(m_allyID));
         slim->SetItemString("warFactionID", new PyInt(m_warID));
+
+    if (is_log_enabled(DESTINY__DEBUG)) {
+        _log( DESTINY__DEBUG, "ContainerSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
+        slim->Dump(DESTINY__DEBUG, "     ");
+    }
+    
     return slim;
 }
 
@@ -522,7 +528,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
 
     if (is_log_enabled(DESTINY__DEBUG)) {
-        _log( DESTINY__DEBUG, "WreckSE::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        _log( DESTINY__DEBUG, "WreckSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(DESTINY__DEBUG, "     ");
     }
 

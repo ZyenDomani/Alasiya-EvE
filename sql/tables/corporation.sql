@@ -3,7 +3,7 @@
 -- http://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 02, 2017 at 12:54 AM
+-- Generation Time: Dec 02, 2017 at 09:50 PM
 -- Server version: 10.0.24-MariaDB
 -- PHP Version: 5.6.30
 
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS `corporation` (
   `deleted` tinyint(4) NOT NULL DEFAULT '0',
   `isRecruiting` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `warFactionID` int(10) unsigned NOT NULL DEFAULT '0'
-) ENGINE=InnoDB AUTO_INCREMENT=1001000 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1000183 DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `corporation`
@@ -279,7 +279,7 @@ ALTER TABLE `corporation`
 -- AUTO_INCREMENT for table `corporation`
 --
 ALTER TABLE `corporation`
-  MODIFY `corporationID` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1001000;
+  MODIFY `corporationID` int(10) unsigned NOT NULL AUTO_INCREMENT,AUTO_INCREMENT=1000183;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

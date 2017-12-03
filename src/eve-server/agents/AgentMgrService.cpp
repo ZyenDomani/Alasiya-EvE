@@ -177,7 +177,7 @@ PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
     return result;
 }
 
-///  this really needs to be a cached object....
+///  this really needs to be a cached object....load/save in an agent data mgr singleton?
 PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 {/*
   uint8 size = call.tuple->size();

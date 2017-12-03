@@ -90,7 +90,7 @@ PyDict* TowerSE::MakeSlimItem()
         slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
 
     if (is_log_enabled(POS__DEBUG)) {
-        _log( POS__DEBUG, "TowerSE::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        _log( POS__DEBUG, "TowerSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(POS__DEBUG, "     ");
     }
     return slim;

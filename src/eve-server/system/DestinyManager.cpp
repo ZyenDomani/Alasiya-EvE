@@ -2234,7 +2234,9 @@ Battleships 0.155
 */
     /* this sets variables needed for correct movement math.
      *  these attribs are set from ship item when shipSE created.  DO NOT modify anything here
+     * this is also called when fleet boosts are updated.
      */
+    /** @todo check for movemement when fleet boosts are applied and this is called */
     m_mass = ship->GetAttribute(AttrMass).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 

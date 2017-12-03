@@ -41,8 +41,7 @@ public:
     PyObjectEx *GetAgents();
     bool LoadAgentActions(uint32 agentID, std::map<uint32, AgentActions *> &into);
 
- 	bool LoadAgentLocation(uint32 agentID, uint32 &locationID,
- 	uint32 &locationType, uint32 &solarSystemID);
+ 	bool LoadAgentLocation(uint32 agentID, uint32& locationID, uint32& locationType);
 
     PyRep *GetAgentSolarSystem(uint32 AgentID);
 

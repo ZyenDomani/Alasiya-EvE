@@ -553,7 +553,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 /*
     if (is_log_enabled(POS__DEBUG)) {
-        _log( POS__DEBUG, "StructureSE::EncodeDestiny()", "%s(%u)", GetName(), GetID());
+        _log( POS__DEBUG, "StructureSE::EncodeDestiny() - %s(%u)", GetName(), GetID());
         uint8* data(into.Get<uint8*>(0));
         Destiny::DumpUpdate( POS__DEBUG, data, (uint32)into.size());    <<-- this doesnt work right....dunno why
     } */
@@ -605,7 +605,7 @@ PyDict *StructureSE::MakeSlimItem() {
         }
 
     if (is_log_enabled(POS__DEBUG)) {
-        _log( POS__DEBUG, "StructureSE::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        _log( POS__DEBUG, "StructureSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(POS__DEBUG, "     ");
     }
     return slim;

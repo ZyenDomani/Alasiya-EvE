@@ -140,7 +140,7 @@ void TargetManager::ClearFromTargets() {
             cur->TargetMgr()->TargetLost(mySE);
 }
 
-bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
+bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
 {       // NOTE this is for players
     TargetTry(who);
     if (!mySE->HasPilot()) {
@@ -171,7 +171,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
         return TargetFail(who);
     }
 
-	uint8 maxLockedTargets = (uint8)ship->GetAttribute(AttrMaxLockedTargets).get_int();
+	uint8 maxLockedTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_int();
     if (maxLockedTargets < 1)
         maxLockedTargets = 1;
     if (GetTotalTargets() >= maxLockedTargets) {
@@ -180,8 +180,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
              mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
         return TargetFail(who);
     }
-    // Check against max locked target range
-	double maxTargetRange = ship->GetAttribute(AttrMaxTargetRange).get_double();
+    // Check against max target range
+    double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
     GVector rangeToTarget( mySE->GetPosition(), who->GetPosition() );
     // adjust for target radius, in case of ice or other large objects..
     double targetDistance = rangeToTarget.length();
@@ -196,7 +196,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef ship)
     }
 
     // Calculate Time to Lock target:
-    float lockTime = TimeToLock( ship, who );
+    float lockTime = TimeToLock( sRef, who );
 
     TargetEntry *te = new TargetEntry(who);
         te->state = TargetEntry::Locking;
@@ -398,8 +398,8 @@ PyList* TargetManager::GetTargeters() const {
 }
 
 float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
-    if ( (target->IsAsteroidSE()) || (target->IsDeployableSE()) || (target->IsWreckSE())
-        || (target->IsContainerSE()) || (target->IsInanimateSE()) || (target->IsStaticEntity()) )
+    if ( (target->IsAsteroidSE()) or (target->IsDeployableSE()) or (target->IsWreckSE())
+        or (target->IsContainerSE()) or (target->IsInanimateSE()) or (target->IsStaticEntity()) )
         return 2.0;
 
     //  fixed lock time  -allan 24Dec14  -updated 26May15   -revisited after new effects system implementation 25Mar17
@@ -412,16 +412,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
 
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
-    float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));
-
-    if (mySE->HasPilot()) {
-        Character* pChar = mySE->GetPilot()->GetChar().get();
-        // fleet invlovement enhances targeting speed using leadership of highest member (2%/lvl)
-        if (pChar->fleetID()) { /** @todo  always returns 0 until fleets are implemented */
-            //Character* pLeader = pChar->GetFleetLeader;   /** @todo this needs to be written */
-            time *= (1 - (0.02 * pChar->GetSkillLevel(skillLeadership))); // 2% decrease/level
-        }
-    }
+    float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
     /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
      *  +0.1s for each 10k distance
@@ -431,6 +422,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
      */
     double distance = ship->position().distance(target->GetPosition());
     // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
+    // should we check LDT skill for pilots to modify this?  yes....not sure how
     //if (mySE->IsNPCSE())      // not all snipers are npc
         if (distance > 85000)
             distance -= 75000;

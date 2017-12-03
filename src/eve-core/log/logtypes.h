@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 7.9
+    Log Version: 8.1
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -162,7 +162,9 @@ LOG_TYPE( FLEET, DEBUG, DISABLED, "FleetDebug" )
 LOG_TYPE( FLEET, INFO, DISABLED, "FleetInfo" )
 LOG_TYPE( FLEET, TRACE, DISABLED, "FleetTrace" )
 LOG_TYPE( FLEET, DUMP, DISABLED, "FleetDump" )
-LOG_TYPE( FLEET, BIND_DUMP, DISABLED, "FleetBindDump" )
+LOG_TYPE( FLEET, BIND_DUMP, DISABLED, "FleetBind" )
+LOG_TYPE( FLEET, BCAST_DUMP, DISABLED, "FleetBCast" )
+LOG_TYPE( FLEET, UPDATE_DUMP, DISABLED, "FleetUpdate" )
 
 LOG_CATEGORY( CACHE )
 LOG_TYPE( CACHE, ERROR,   ENABLED, "CacheError" )

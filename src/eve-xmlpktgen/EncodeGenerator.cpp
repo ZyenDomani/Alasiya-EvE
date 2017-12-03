@@ -63,7 +63,7 @@ bool ClassEncodeGenerator::ProcessElementDef( const TiXmlElement* field )
     clear();
 
     push( "res" );
-    if( !ParseElement( main ) )
+    if (!ParseElement( main ) )
         return false;
 
     fprintf( mOutputFile,
@@ -157,11 +157,12 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
 
     //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr)
         fprintf( mOutputFile,
-            "    if( %s == %s )\n"
+            "    if (%s == %s )\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
@@ -187,11 +188,12 @@ bool ClassEncodeGenerator::ProcessUInt( const TiXmlElement* field )
 
     //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-                 "    if( %s == %s )\n"
+                 "    if (%s == %s )\n"
                  "        %s = new PyNone();\n"
                  "    else\n",
                  name, none_marker,
@@ -217,11 +219,12 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 
     //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-                 "    if( %s == %s )\n"
+                 "    if (%s == %s )\n"
                  "        %s = new PyNone();\n"
                  "    else\n",
                  name, none_marker,
@@ -247,11 +250,12 @@ bool ClassEncodeGenerator::ProcessULong( const TiXmlElement* field )
 
     //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-                 "    if( %s == %s )\n"
+                 "    if (%s == %s )\n"
                  "        %s = new PyNone();\n"
                  "    else\n",
                  name, none_marker,
@@ -277,11 +281,12 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
 
     //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s == %s )\n"
+            "    if (%s == %s )\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
@@ -364,11 +369,12 @@ bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
     }
 
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s == \"%s\" )\n"
+            "    if (%s == \"%s\" )\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
@@ -411,11 +417,12 @@ bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
     }
 
     const char* none_marker = field->Attribute( "none_marker" );
+    const char* default_marker = field->Attribute( "default" );
 
     const char* v = top();
-    if( none_marker != nullptr )
+    if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if( %s == \"%s\" )\n"
+            "    if (%s == \"%s\" )\n"
             "        %s = new PyNone();\n"
             "    else\n",
             name, none_marker,
@@ -459,7 +466,7 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute("optional");
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     const char* v = top();
@@ -518,13 +525,13 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObject field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     const char* v = top();
@@ -582,7 +589,7 @@ bool ClassEncodeGenerator::ProcessObjectInline( const TiXmlElement* field )
     push( aname );
     push( tname );
 
-    if( !ParseElementChildren( field, 2 ) )
+    if (!ParseElementChildren( field, 2 ) )
         return false;
 
     const char* v = top();
@@ -599,12 +606,12 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
     const char* type = field->Attribute( "type" );
     if (type == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the type attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessObjectEx field at line " << field->Row() << " is missing the type attribute, skipping.";
         return false;
     }
 
@@ -651,13 +658,13 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessTuple field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     bool optional = false;
     const char* optional_str = field->Attribute("optional");
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     const char* v = top();
@@ -702,7 +709,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) )
     {
-        if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
             count++;
     }
 
@@ -724,7 +731,7 @@ bool ClassEncodeGenerator::ProcessTupleInline( const TiXmlElement* field )
         push( varname );
     }
 
-    if( !ParseElementChildren( field ) )
+    if (!ParseElementChildren( field ) )
         return false;
 
     fprintf( mOutputFile,
@@ -742,13 +749,13 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
+        std::cout << std::endl <<  "ClassEncodeGenerator::ProcessList field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 
     bool optional = false;
     const char* optional_str = field->Attribute( "optional" );
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     const char* v = top();
@@ -793,7 +800,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
     uint32 count = 0;
     while( ( i = field->IterateChildren( i ) ) )
     {
-        if( i->Type() == TiXmlNode::TINYXML_ELEMENT )
+        if (i->Type() == TiXmlNode::TINYXML_ELEMENT )
             count++;
     }
 
@@ -815,7 +822,7 @@ bool ClassEncodeGenerator::ProcessListInline( const TiXmlElement* field )
         push( varname );
     }
 
-    if( !ParseElementChildren( field ))
+    if (!ParseElementChildren( field ))
         return false;
 
     fprintf( mOutputFile,
@@ -915,7 +922,7 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
 
     bool optional = false;
     const char* optional_str = field->Attribute("optional");
-    if( optional_str != nullptr )
+    if (optional_str != nullptr )
         optional = str2<bool>( optional_str );
 
     const char* v = top();
@@ -972,7 +979,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             const TiXmlElement* ele = i->ToElement();
 
             //we only handle dictInlineEntry elements
-            if( strcmp( ele->Value(), "dictInlineEntry" ) != 0 )            {
+            if (strcmp( ele->Value(), "dictInlineEntry" ) != 0 )            {
                 std::cout << std::endl <<  "ClassEncodeGenerator::ProcessDictInline non-dictInlineEntry in <dictInline> at line " << field->Row() << ", ignoring.";
                 continue;
             }
@@ -982,10 +989,12 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
                 return false;
             }
 
-            bool keyTypeInt = false;
+            bool keyTypeInt = false, keyTypeLong = false;
             const char* keyType = ele->Attribute( "key_type" );
-            if (keyType != nullptr)
+            if (keyType != nullptr) {
                 keyTypeInt = ( strcmp( keyType, "int" ) == 0 );
+                keyTypeLong = ( strcmp( keyType, "long" ) == 0 );
+            }
 
             char vname[32];
             snprintf( vname, sizeof( vname ), "%s_%u", iname, count );
@@ -998,18 +1007,25 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
             push( vname );
 
             //now process the data part, putting the value into `varname`
-            if( !ParseElementChildren( ele, 1 ) )
+            if (!ParseElementChildren( ele, 1 ) )
                 return false;
 
             //now store the result in the dict:
             //taking the keyType into account
-            if( keyTypeInt )
+            if (keyTypeInt )
                 fprintf( mOutputFile,
                          "    %s->SetItem(new PyInt( %s ), %s);\n"
                          "    PyIncRef(%s);\n",
                          iname, key, vname,
                          vname
                 );
+            else if (keyTypeLong )
+                    fprintf( mOutputFile,
+                             "    %s->SetItem(new PyLong( %s ), %s);\n"
+                             "    PyIncRef(%s);\n",
+                             iname, key, vname,
+                             vname
+                    );
             else
                 fprintf( mOutputFile,
                          "    %s->SetItemString(\"%s\", %s);\n"
@@ -1149,7 +1165,7 @@ bool ClassEncodeGenerator::ProcessSubStreamInline( const TiXmlElement* field )
     );
 
     push( varname );
-    if( !ParseElementChildren( field, 1 ) )
+    if (!ParseElementChildren( field, 1 ) )
         return false;
 
     //now make a substream from the temp at store it where it is needed
@@ -1174,7 +1190,7 @@ bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
     );
 
     push( varname );
-    if( !ParseElementChildren( field, 1 ) )
+    if (!ParseElementChildren( field, 1 ) )
         return false;
 
     //now make a substream from the temp at store it where it is needed
@@ -1186,3 +1202,4 @@ bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
     pop();
     return true;
 }
+

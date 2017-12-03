@@ -24,6 +24,8 @@
     Updates:    Allan
 */
 
+/** @todo  fix this....not all agents have an entry in chrNPCCharacters table.  */
+
 #include "eve-server.h"
 
 #include "agents/AgentDB.h"
@@ -55,28 +57,25 @@ PyObjectEx *AgentDB::GetAgents() {
     return DBResultToCRowset(res);
 }
 
-bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType, uint32 &solarSystemID) {
+bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT "
         "   agt.locationID, "
-        "   chr.solarSystemID, "
         "   itm.typeID "
         " FROM agtAgents AS agt"
-        " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
         " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
-        " WHERE agt.agentID=%d", agentID
-    ))
+        " WHERE agt.agentID=%u", agentID))
     {
         codelog(DATABASE__ERROR, "Error in LoadAgentLocation query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    res.GetRow(row);
+    if (!res.GetRow(row))
+        return false;
     locationID = row.GetUInt(0);
-    solarSystemID = row.GetUInt(1);
-    locationType = row.GetUInt(2);
+    locationType = row.GetUInt(1);
     return true;
 }
 

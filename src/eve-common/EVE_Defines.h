@@ -33,7 +33,7 @@
 #define minFaction              500000
 #define maxFaction              999999
 #define minNPCCorporation       1000000
-#define maxNPCCorporation       1000999
+#define maxNPCCorporation       1100000
 #define minAgent                3000000
 #define maxAgent                3999999
 #define minRegion               10000000
@@ -65,7 +65,7 @@
 #define maxOfficeFolder         67999999
 #define minFactoryFolder        68000000
 #define maxFactoryFolder        69999999
-#define minUniverseAsteroid     70000000        // deco only
+#define minUniverseAsteroid     70000000        // deco only - not targettable, no bracket in overview
 #define maxUniverseAsteroid     79999999
 #define minControlBunker        80000000
 #define maxControlBunker        80099999
@@ -76,11 +76,16 @@
 #define maxAlliance             99999999
 #define minPlayerItem           100000000
 #define minAsteroidItem         450000000
+#define minFleet                950000000
+#define maxFleet                959000000
+#define minWing                 960000000
+#define maxWing                 969000000
+#define minSquad                970000000
+#define maxSquad                979000000
+#define maxPlayerItem           1000000000
+#define minDungeon              1200000000
 #define minPCCorporation        1600000000
-#define maxEveItem              2147483647      // max short int32
-#define maxPlayerItem           10000000000
-#define minFleet                1000000888444
-#define maxFleet                1990000888444
+#define maxEveItem              2147483647      // max int32
 
 #define minFakeItem             9000000000000000000
 
@@ -109,17 +114,20 @@ maxDustCharacter = 2130000000
 #define EVEMU_MINIMUM_DYNAMIC_ID      140000000
 #define EVEMU_DRONE_ID                500000000
 #define EVEMU_NPC_ID                  750000000
+#define EVEMU_FLEET_ID                950000000
+#define EVEMU_WING_ID                 960000000
+#define EVEMU_SQUAD_ID                970000000
 #define EVEMU_MISSILE_ID             1000000000
 #define EVEMU_DUNGEON_ID             1200000000
 #define EVEMU_PLAYER_CORP_ID         1600000000
 #define EVEMU_MAX_SHORT_ID           2147483647
-#define EVEMU_FLEET_ID            1000000888444
-#define EVEMU_WING_ID             2000000888444
-#define EVEMU_SQUAD_ID            3000000888444
-#define EVEMU_MAX_LONG_ID   9223372036854775807     //this is max for a SIGNED int64.
+#define EVEMU_MAX_LONG_ID   9223372036854775807     // max int64.
 
 #define IsTempPinID(pinID) \
  (pinID < 1000)
+
+#define IsStaticChannel(itemID) \
+ ((itemID > 0) && (itemID < maxStaticChannel))
 
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
@@ -131,7 +139,13 @@ maxDustCharacter = 2130000000
  (itemID >= minValidShipLocation)
 
 #define IsFleet(itemID) \
-((itemID >= minFleet) && (itemID <= maxFleet))
+((itemID >= minFleet) && (itemID < maxFleet))
+
+#define IsWing(itemID) \
+((itemID >= minWing) && (itemID < maxWing))
+
+#define IsSquad(itemID) \
+((itemID >= minSquad) && (itemID < maxSquad))
 
 #define IsCorp(itemID) \
 ((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation) \

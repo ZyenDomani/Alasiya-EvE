@@ -25,23 +25,32 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
 
 Agent::Agent(uint32 id)
-: m_agentID(id), m_locationID(0)
+: m_agentID(id),
+m_locationID(0)
 {
 }
 
 Agent::~Agent() {
+    /*
     std::map<uint32, AgentActions *>::iterator cur = m_actions.begin();
     for(; cur != m_actions.end(); cur++) {
         delete cur->second;
     }
+    */
 }
 
 bool Agent::Load(AgentDB *from) {
-    return from->LoadAgentLocation(m_agentID, m_locationID, m_locationType, m_solarSystemID);
+    bool ret = from->LoadAgentLocation(m_agentID, m_locationID, m_locationType);
+    if (IsStation(m_locationID))
+        m_solarSystemID = sDataMgr.GetStationSystem(m_locationID);
+    else
+        m_solarSystemID = m_locationID;
+    return ret;
 }
 
 

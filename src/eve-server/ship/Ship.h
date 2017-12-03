@@ -29,6 +29,7 @@
 
 
 #include "effects/EffectsData.h"
+#include "fleet/FleetData.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
 #include "ship/ShipDB.h"
@@ -429,7 +430,7 @@ public:
     virtual PyDict *MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void Killed(Damage &fatal_blow);    /* This method is defined in Damage.cpp */
+    virtual void Killed(Damage &fatal_blow);            /* This method is defined in Damage.cpp */
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);
@@ -437,6 +438,15 @@ public:
     virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
     /* specific functions handled here. */
+    // fleet
+    void ClearBoostData();
+    bool IsBoosted()                                    { return m_boosted; }
+    void SetBoost(bool set=false)                       { m_boosted = set; }
+    void RemoveBoost();
+    void ApplyBoost(BoostData& bData);
+    uint8 GetMiningBoostAmount()                        { return m_boost.mining; }
+
+    // misc
     void DamageModule(uint32 itemID)                    { m_shipRef->DamageModule(itemID); }
     void DamageRandModule(float chance);
     void PayInsurance();
@@ -445,7 +455,6 @@ public:
 
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
-
 
     ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 
@@ -460,10 +469,20 @@ protected:
 
 private:
     ShipDB m_db;
+    BoostData m_boost;       // for fleet boosts
 
     Timer m_processTimer;
 
+    bool m_boosted;         // for fleet boosts
+
     uint32 m_podShipID;
+
+    uint16 m_oldArmor;
+    uint16 m_oldShield;
+    uint16 m_oldScanRes;
+    uint32 m_oldTargetRange;
+
+    double m_oldInertia;
 
 };
 

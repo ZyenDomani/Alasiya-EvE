@@ -1307,6 +1307,9 @@ m_processTimer(m_processTimerTick)
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
+
+    ClearBoostData();
+
     m_podShipID = 0;
     m_processTimer.Start(m_processTimerTick);
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
@@ -1559,8 +1562,74 @@ PyDict* Ship::MakeSlimItem() {
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {
-        _log( DESTINY__DEBUG, "Ship::MakeSlimItem()", "%s(%u)", GetName(), GetID());
+        _log( DESTINY__DEBUG, "Ship::MakeSlimItem() - %s(%u)", GetName(), GetID());
         slim->Dump(DESTINY__DEBUG, "     ");
     }
     return slim;
 }
+
+void Ship::ClearBoostData()
+{
+    m_oldArmor       = 0;
+    m_oldShield      = 0;
+    m_oldScanRes     = 0;
+    m_oldInertia     = 0;
+    m_oldTargetRange = 0;
+
+    m_boost.armored  = 0; // armor hit points
+    m_boost.info     = 0; // targeting range
+    m_boost.leader   = 0; // targeting speed
+    m_boost.mining   = 0; // mining yield
+    m_boost.siege    = 0; // shield capacity
+    m_boost.skirmish = 0; // agility
+
+    m_boosted = false;
+}
+
+void Ship::RemoveBoost()
+{
+    _log( FLEET__TRACE, "Ship::RemoveBoost() - %s(%u)", GetName(), GetID());
+
+    m_shipRef->SetAttribute(AttrArmorHP, m_oldArmor);
+    m_shipRef->SetAttribute(AttrInetia, m_oldInertia);
+    m_shipRef->SetAttribute(AttrShieldCapacity, m_oldShield);
+
+    m_destiny->SetShipCapabilities(m_shipRef);
+
+    ClearBoostData();
+}
+
+void Ship::ApplyBoost(BoostData& bData)
+{
+    // note:  mining boost applied in mining module code
+
+    // remove existing boost
+    if (m_boosted)
+        RemoveBoost();
+
+    _log( FLEET__TRACE, "Ship::ApplyBoost() - %s(%u)", GetName(), GetID());
+
+    m_boost = bData;
+    m_oldArmor = m_shipRef->GetAttribute(AttrArmorHP).get_int();
+    m_oldInertia = m_shipRef->GetAttribute(AttrInetia).get_float();
+    m_oldShield = m_shipRef->GetAttribute(AttrShieldCapacity).get_int();
+    m_oldScanRes = m_shipRef->GetAttribute(AttrScanResolution).get_int();
+    m_oldTargetRange = m_shipRef->GetAttribute(AttrMaxTargetRange).get_int();
+
+    uint16 armorHP = m_oldArmor * (1 + (0.02 * m_boost.armored)); // 2% increase/level
+    uint16 shieldHP = m_oldShield * (1 + (0.02 *  m_boost.siege));// 2% increase/level
+    uint16 scanRes = m_oldScanRes * (1 + (0.02 *  m_boost.leader));// 2% increase/level
+    uint32 targRange = m_oldTargetRange * (1 + (0.02 *  m_boost.info));// 2% increase/level
+    double inertia = m_oldInertia * (1 - (0.02 *  m_boost.skirmish));// 2% decrease/level
+
+    m_shipRef->SetAttribute(AttrInetia, inertia);   // lower inertia = lower agility = faster ship
+    m_shipRef->SetAttribute(AttrArmorHP, armorHP);
+    m_shipRef->SetAttribute(AttrScanResolution, scanRes);  // higher scanRes = faster targeting
+    m_shipRef->SetAttribute(AttrShieldCapacity, shieldHP);
+    m_shipRef->SetAttribute(AttrMaxTargetRange, targRange);
+
+    m_destiny->SetShipCapabilities(m_shipRef);
+
+    m_boosted = true;
+}
+
