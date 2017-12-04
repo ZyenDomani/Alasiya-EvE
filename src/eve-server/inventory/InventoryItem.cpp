@@ -643,7 +643,7 @@ PyObject* InventoryItem::ItemGetInfo()
 
 void InventoryItem::Rename(std::string name)
 {
-    m_itemName = to;
+    m_itemName = name;
     SaveItem();
 }
 
