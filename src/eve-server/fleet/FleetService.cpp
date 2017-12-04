@@ -602,7 +602,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 // this is for FC only.  will always get own skill, and here they get their fleet boost, also
                 fData.leader = fItr->second.leader->GetChar()->GetSkillLevel(skillLeadership);
                 if (fItr->second.leader->IsInSpace())
-                    fItr->second.leader->GetShipSE()->ApplyBoost(wItr->second.boost);
+                    fItr->second.leader->GetShipSE()->ApplyBoost(fData);
             }
     }
 
