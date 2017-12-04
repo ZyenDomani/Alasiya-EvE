@@ -28,6 +28,29 @@
 #include "PyServiceCD.h"
 #include "account/UserService.h"
 
+PyCallable_Make_InnerDispatcher(MovementService)
+
+MovementService::MovementService(PyServiceMgr *mgr)
+: PyService(mgr, "movementServer"),
+m_dispatch(new Dispatcher(this))
+{
+    _SetCallDispatcher(m_dispatch);
+
+    PyCallable_REG_CALL(MovementService, ResolveNodeID);
+}
+
+MovementService::~MovementService() {
+    delete m_dispatch;
+}
+
+PyResult MovementService::Handle_ResolveNodeID( PyCallArgs& call )
+{
+    sLog.White( "MovementService", "Handle_ResolveNodeID" );
+    call.Dump(CHARACTER__DEBUG);
+
+    return new PyInt(888444);
+}
+
 PyCallable_Make_InnerDispatcher(UserService)
 
 UserService::UserService(PyServiceMgr *mgr)

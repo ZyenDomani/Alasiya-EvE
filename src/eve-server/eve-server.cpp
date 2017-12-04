@@ -367,12 +367,13 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("storeServer", new LPStore(&pyServMgr));
     pyServMgr.lsc_service = new LSCService(&pyServMgr, &command_dispatcher);
     pyServMgr.RegisterService("LSC", pyServMgr.lsc_service);
+    pyServMgr.RegisterService("machoNet", new NetService(&pyServMgr));
     pyServMgr.RegisterService("mailMgr", new MailMgrService(&pyServMgr));
     pyServMgr.RegisterService("mailingListsMgr", new MailingListMgrService(&pyServMgr));
     pyServMgr.RegisterService("map", new MapService(&pyServMgr));
     pyServMgr.RegisterService("marketProxy", new MarketProxyService(&pyServMgr));
     pyServMgr.RegisterService("missionMgr", new MissionMgrService(&pyServMgr));
-    pyServMgr.RegisterService("machoNet", new NetService(&pyServMgr));
+    pyServMgr.RegisterService("movementServer", new MovementService(&pyServMgr));
     pyServMgr.RegisterService("notificationMgr", new NotificationMgrService(&pyServMgr));
     pyServMgr.cache_service = new ObjCacheService(&pyServMgr, sConfig.files.cacheDir.c_str());
     pyServMgr.RegisterService("objectCaching", pyServMgr.cache_service);

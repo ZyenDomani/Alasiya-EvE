@@ -46,6 +46,18 @@ protected:
     PyCallable_DECL_CALL(ApplyPilotLicence);
 };
 
+class MovementService
+: public PyService
+{
+public:
+    MovementService(PyServiceMgr *mgr);
+    ~MovementService();
+
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
+
+    PyCallable_DECL_CALL(ResolveNodeID);
+};
+
 #endif /* __USER_SERVICE__H__INCL__ */
-
-
