@@ -189,6 +189,9 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Propulsion_Systems:                      return (new SubSystemModule(item, ship));
             case EVEDB::invGroups::Engineering_Systems:                     return (new SubSystemModule(item, ship));
 
+            // may need specific code for these gm modules
+            case EVEDB::invGroups::Cheat_Module_Group:                      return (new ActiveModule(item, ship));
+
             // Uncategorized and Unknown Modules Groups (some of these groups contain NO REAL typeIDs in the 'invTypes' table:
             /**  @note  let these make an error to show they are used
             case EVEDB::invGroups::Computer_Interface_Node:
@@ -202,7 +205,6 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Anti_Cloaking_Pulse:
             case EVEDB::invGroups::Signature_Scrambling:
             case EVEDB::invGroups::Energy_Vampire_Slayer:
-            case EVEDB::invGroups::Cheat_Module_Group:
             case EVEDB::invGroups::Autopilot:
             case EVEDB::invGroups::DroneBayExpander:
             case EVEDB::invGroups::Drone_Modules:
