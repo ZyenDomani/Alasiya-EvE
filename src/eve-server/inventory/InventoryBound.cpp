@@ -408,12 +408,14 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         /* check for avalible capy vs item volume
          *  this will avoid an unnecessary call to _ExecAdd() if there's no room in dest container.
          */
-        if (capacity) {
-            InventoryItemRef item = m_manager->item_factory->GetItem(args.itemID);
+        InventoryItemRef iRef = m_manager->item_factory->GetItem(args.itemID);
+        if (IsModuleSlot(flag) and (iRef->categoryID() == EVEDB::invCategories::Module)) {
+            quantity = 1;
+        } else if (capacity) {
             if (!quantity)
-                quantity = item->quantity();    // assume all.
+                quantity = iRef->quantity();    // assume all.
 
-            float volume = quantity * item->GetAttribute(AttrVolume).get_float();
+            float volume = quantity * iRef->GetAttribute(AttrVolume).get_float();
             if (volume > capacity) {
                 std::map<std::string, PyRep *> args;
                 args["available"] = new PyFloat(capacity);
@@ -425,9 +427,10 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
             }
         }
 
-        // TODO  check for 'dividing' byname bool...this means "DivideItemStack" (split stack)
-        if (call.byname.find("dividing") != call.byname.end())
+        if (call.byname.find("dividing") != call.byname.end()) {
             _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u(flag %u) to inventoryID %u", args.itemID, flag, args.inventoryID);
+            quantity = -1; //special value here to hit tests in _ExecAdd
+        }
 
         std::vector<int32> items;
         items.push_back(args.itemID);
@@ -463,48 +466,46 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
      * 23:57:53 [BindDump]     Argument 'qty':
      * 23:57:53 [BindDump]         (None)                                  << means "all"
      */
-    if ( call.tuple->items.size() == 2 ) {
-        Call_MultiAdd_2 args;
-        if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return nullptr;
-        }
-
-        uint32 flag = flagAutoFit;
-        if ((call.byname.find("flag") == call.byname.end()) or (call.byname.find("flag")->second->IsNone())) {
-            if (IsStation(call.client->GetLocationID()))
-                flag = flagHangar;
-            else {
-
-                flag = flagCargoHold;
-            }
-        } else {
-            if (call.byname.find("flag")->second->IsInt())
-                flag = call.byname.find("flag")->second->AsInt()->value();
-            else if (call.byname.find("flag")->second->IsFloat())
-                flag = call.byname.find("flag")->second->AsFloat()->value();
-            else
-                ; // make error here.  should never hit.
-        }
-
-        if (flag == flagLocked)
-            flag = flagCargoHold;
-
-        int32 quantity = 0;
-        if (call.byname.find("qty") != call.byname.end())
-            if (!call.byname.find("qty")->second->IsNone())
-                quantity = call.byname.find("qty")->second->AsInt()->value();
-
-        //bool byname(fromManyFlags):true == unload charges from module referenced
-        if (call.byname.find("fromManyFlags") != call.byname.end())
-            if (!call.byname.find("fromManyFlags")->second->IsNone())
-                quantity = -1; //special value here to hit tests in _ExecAdd
-
-        return ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
-    } else {
-        _log(INV__ERROR, "[MultiAdd] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
+    if ( call.tuple->items.size() != 2 ) {
+        _log(INV__ERROR, "InventoryBound::Handle_MultiAdd()  Unexpected number of elements in a tuple: %u (should be 2).", call.tuple->items.size() );
         return nullptr;
     }
+
+     Call_MultiAdd_2 args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint32 flag = flagAutoFit;
+    if ((call.byname.find("flag") == call.byname.end()) or (call.byname.find("flag")->second->IsNone())) {
+        if (IsStation(call.client->GetLocationID()))
+            flag = flagHangar;
+        else
+            flag = flagCargoHold;
+    } else {
+        if (call.byname.find("flag")->second->IsInt())
+            flag = call.byname.find("flag")->second->AsInt()->value();
+        else if (call.byname.find("flag")->second->IsFloat())
+            flag = call.byname.find("flag")->second->AsFloat()->value();
+        else
+            _log(INV__ERROR, "InventoryBound::Handle_MultiAdd() - flag neither Int nor Float.  %s", call.byname.find("flag")->second->TypeString() );
+    }
+
+    if (flag == flagLocked)
+        flag = flagCargoHold;
+
+    int32 quantity = 0;
+    if (call.byname.find("qty") != call.byname.end())
+        if (!call.byname.find("qty")->second->IsNone())
+            quantity = call.byname.find("qty")->second->AsInt()->value();
+
+    //bool byname(fromManyFlags):true == unload charges from module referenced
+    if (call.byname.find("fromManyFlags") != call.byname.end())
+        if (!call.byname.find("fromManyFlags")->second->IsNone())
+            quantity = -1; //special value here to hit tests in _ExecAdd
+
+    return ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
 }
 
 PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
@@ -555,7 +556,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
         }
 
         // trying to fit a module from a stack.  make it check qty and split if needed.
-        if ((flag == flagAutoFit) and (m_self->itemID() == pShip->itemID()))
+        if ((IsModuleSlot(flag) or (flag == flagAutoFit)) and (m_self->itemID() == pShip->itemID()))
             quantity = 1;
 
         // the following conditionals are logic for splitting stacks
@@ -569,7 +570,7 @@ PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& item
         } else if (quantity != itemRef->quantity()) {
             // at this point, item is in stack, so split off quantity and create new item to move.
             InventoryItemRef newItem = itemRef->Split(quantity);
-            if (!newItem) {
+            if (newItem.get() == nullptr) {
                 sLog.Error("ExecAdd", "Error splitting item %u. Skipping.", itemRef->itemID());
                 return nullptr;
             }
