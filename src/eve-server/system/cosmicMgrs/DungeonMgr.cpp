@@ -331,7 +331,9 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         // typeID, ownerID, locationID, flag, name, &_position
         ItemData iData(cur->typeID, sig.ownerID, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
         /** @todo update this to use temp items */
-        InventoryItemRef item = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+        // not sure how well generic spawn will work here...it doesnt!  fix this shit
+        // asteroids MUST be created using BeltMgr/AsteroidItem....CANNOT use generic spawn
+        InventoryItemRef item = m_services.item_factory->SpawnItem(iData);
         if (item.get() == nullptr) // we'll survive...
             continue;
 
