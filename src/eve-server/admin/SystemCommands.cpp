@@ -318,21 +318,26 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
 
 PyResult Command_killallnpcs(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (args.argCount() == 1) {
-        if (!who->GetShipSE()->SysBubble())
-            who->EnterSystem(who->GetSystemID());
-
-        std::vector<SystemEntity *> whosBubbleEntityList;
-        who->GetShipSE()->SysBubble()->GetEntities(whosBubbleEntityList);
-        std::vector<SystemEntity *>::const_iterator cur = whosBubbleEntityList.begin();
-        for (; cur != whosBubbleEntityList.end(); cur++) {
-            if ((*cur)->IsNPCSE()) {
-                Damage fatal_blow(who->GetShipSE(),true);
-                (*cur)->GetNPCSE()->Killed(fatal_blow);
-            }
-        }
-    } else
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (args.argCount() != 1)
         throw PyException(MakeCustomError("Correct Usage: /killallnpcs"));
+    if (who->GetShipSE() == nullptr)
+        throw PyException(MakeCustomError("ShipSE invalid."));
+    if (who->GetShipSE()->SysBubble() == nullptr)
+        throw PyException(MakeCustomError("SysBubble invalid."));
+
+    std::vector<SystemEntity *> entityVec;
+    who->GetShipSE()->SysBubble()->GetEntities(entityVec);
+    std::vector<SystemEntity *>::const_iterator cur = entityVec.begin();
+    for (; cur != entityVec.end(); ++cur) {
+        if (*cur == nullptr)
+            continue;
+        if ((*cur)->IsNPCSE()) {
+            Damage fatal_blow(who->GetShipSE(),true);
+            (*cur)->GetNPCSE()->Killed(fatal_blow);
+        }
+    }
 
     return nullptr;
 }
