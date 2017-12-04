@@ -114,7 +114,7 @@ protected:
     void DecFleetSquads(uint32 fleetID, uint32 wingID);
 
     void SetWingBoostData(uint32 wingID, BoostData& bData);
-    void SetSquadBoostData(uint32 squadID, BoostData bData);
+    void SetSquadBoostData(uint32 squadID, BoostData bData, bool& sboost);
 
     uint32 m_fleetID;
     uint32 m_wingID;

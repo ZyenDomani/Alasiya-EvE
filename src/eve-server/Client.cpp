@@ -601,6 +601,18 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->Move(locationID, flagHangar, true);
         m_ship->Relocate(pt);
         m_ship->Dock();
+
+        if (IsFleetBooster()) {
+            std::list<int32> wing, squad;
+            wing.clear();
+            squad.clear();
+            if (IsSquad(m_squad))
+                squad.emplace(squad.end(), m_squad);
+            else if (IsWing(m_wing))
+                wing.emplace(wing.end(), m_wing);
+            sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+        }
+
         if (!IsHangarLoaded(locationID))
             LoadStationHangar(locationID);
         OnCharNowInStation();
@@ -609,8 +621,19 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
 
-        if (IsFleet(m_fleet))
+        if (IsFleet(m_fleet)) {
             m_fleetTimer.Start(ClientTimers::FleetTimer);
+            if (IsFleetBooster()) {
+                std::list<int32> wing, squad;
+                wing.clear();
+                squad.clear();
+                if (IsSquad(m_squad))
+                    squad.emplace(squad.end(), m_squad);
+                else if (IsWing(m_wing))
+                    wing.emplace(wing.end(), m_wing);
+                sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+            }
+        }
 
         if (InPod()) {
             m_ship->Move(locationID, flagCapsule, true);
