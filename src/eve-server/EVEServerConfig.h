@@ -140,6 +140,7 @@ public:
         /// Delay for terminating a character in seconds
         uint32 terminationDelay;
         uint8 statMultiplier;
+        bool allow3edChar;
     } character;
 
     // From <NPC/>

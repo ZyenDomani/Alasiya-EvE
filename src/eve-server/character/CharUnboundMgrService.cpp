@@ -69,7 +69,9 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
      * returning true will disable creating a 3ed character.
      * returning false will allow creating a 3ed character.
      */
-    return new PyBool(false);
+    if (sConfig.character.allow3edChar)
+        return new PyBool(false);
+    return new PyBool(true);
 }
 
 PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)

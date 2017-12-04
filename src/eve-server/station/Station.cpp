@@ -33,6 +33,7 @@
 /*
  * StationTypeData
  */
+// NOTE: each station can only have 24 offices
 StationTypeData::StationTypeData(
     uint32 _dockingBayGraphicID,
     uint32 _hangarGraphicID,

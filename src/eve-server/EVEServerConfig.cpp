@@ -108,6 +108,7 @@ EVEServerConfig::EVEServerConfig()
     character.startCorporation = 0;
     character.terminationDelay = 180 /*s*/;
     character.statMultiplier = 1;
+    character.allow3edChar = false;
 
     // npc
     npc.IdleWander = false;//P
@@ -366,6 +367,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     AddValueParser( "startCorporation", character.startCorporation );
     AddValueParser( "terminationDelay", character.terminationDelay );
     AddValueParser( "statMultiplier",   character.statMultiplier );
+    AddValueParser( "allow3edChar",     character.allow3edChar );
 
     const bool result = ParseElementChildren( ele );
 
@@ -376,6 +378,7 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
     RemoveParser( "startCorporation" );
     RemoveParser( "terminationDelay" );
     RemoveParser( "statMultiplier" );
+    RemoveParser( "allow3edChar" );
 
     return result;
 }
