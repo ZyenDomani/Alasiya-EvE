@@ -102,7 +102,7 @@ public:
     bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? true : false); }
 
     /* public-access generic functions handled in base class. */
-    void                    Rename(const char *to);
+    void                    Rename(std::string name);
     void                    Relocate(const GPoint &pos);
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);

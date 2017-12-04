@@ -641,7 +641,7 @@ PyObject* InventoryItem::ItemGetInfo()
     return result.Encode();
 }
 
-void InventoryItem::Rename(const char *to)
+void InventoryItem::Rename(std::string name)
 {
     m_itemName = to;
     SaveItem();

@@ -5,7 +5,7 @@
   <elementDef name="CallSetLabel">
     <tupleInline>
       <int name="itemID" />
-      <wstring name="itemName" />
+      <raw name="itemName" />
     </tupleInline>
   </elementDef>
 

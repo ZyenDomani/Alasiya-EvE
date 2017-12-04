@@ -208,7 +208,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
                 continue;
             }
-            iRef->Rename(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value()));
+            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value())));
             iRef->Move(locationID, (EVEItemFlags)args.flag, true);
             vouchers->AddItem(iRef->ItemGetInfo());
             if (args.isMove)
