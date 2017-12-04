@@ -229,12 +229,14 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     }
 
     switch( iType->categoryID() ) {
+        case EVEDB::invCategories::Asteroid: {
+            assert(0);  // this needs to make a serious error here....this CANNOT be called from here using the generic InventoryItem::Spawn() method
+        } break;
         //! TODO not handled.
         case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Material:
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Reaction: {
