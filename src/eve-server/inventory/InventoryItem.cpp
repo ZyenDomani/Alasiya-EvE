@@ -229,18 +229,26 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
     }
 
     switch( iType->categoryID() ) {
+        case EVEDB::invCategories::Owner:
         case EVEDB::invCategories::Asteroid: {
-            assert(0);  // this needs to make a serious error here....this CANNOT be called from here using the generic InventoryItem::Spawn() method
+            assert(0);  // this needs to make a serious error here....these CANNOT be called from here using the generic InventoryItem::Spawn() method
         } break;
         //! TODO not handled.
         case EVEDB::invCategories::_System:
-        case EVEDB::invCategories::Material:
+        case EVEDB::invCategories::Material:    // includes minerals
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
         case EVEDB::invCategories::Reaction: {
-            _log(ITEM__WARNING, "item (type %u, cat %u) is not handled in InventoryItem::Spawn.", iType->id(), iType->categoryID());
+            _log(ITEM__WARNING, "InventoryItem::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
+            // Spawn generic item:
+            uint32 itemID = InventoryItem::CreateItemID( factory, data );
+            if (!itemID)
+                return InventoryItemRef();
+            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
+            return itemRef;
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -258,19 +266,8 @@ InventoryItemRef InventoryItem::Spawn(ItemFactory &factory, ItemData &data)
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn( factory, data );
         }
-        case EVEDB::invCategories::Owner: {
-            return Character::Spawn( factory, data );
-        }
         case EVEDB::invCategories::Ship: {
             return ShipItem::Spawn( factory, data );
-        }
-        case EVEDB::invCategories::Accessories: { // this is for bookmark vouchers
-            // Spawn generic item:
-            uint32 itemID = InventoryItem::CreateItemID( factory, data );
-            if (!itemID)
-                return InventoryItemRef();
-            InventoryItemRef itemRef = InventoryItem::SpawnItem( factory, itemID, data );
-            return itemRef;
         }
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Entity:

@@ -214,13 +214,13 @@ protected:
 
         // obtain type
         const ItemType *type = factory.GetType( data.typeID );
-        if( type == NULL )
+        if( type == nullptr )
             return RefPtr<_Ty>();
 
         return _Ty::template _LoadItem<_Ty>( factory, itemID, *type, data );
     }
 
-    /* template class _LoadItem.  defined in derived class */
+    /* template class _LoadItem.  defined in derived class. calls class c'tor */
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 itemID, const ItemType &type, const ItemData &data);
 
