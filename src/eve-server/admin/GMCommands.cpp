@@ -517,8 +517,8 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
         ItemData idata(
                        typeID,
                        who->GetCharacterID(),
-                       0, //temp location
-                       flag,
+                       30002187, //temp location
+                       flagHangar,
                        1
                        );
 
@@ -527,10 +527,15 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
             throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
         }
 
-        who->MoveItem(i->itemID(), itemID, flag);
+        //ShipItemRef ship = services->item_factory->GetShip(itemID);
+        //who->MoveItem(i->itemID(), itemID, flag);
+        //i->Move(itemID, flag);
+        //ship->AddItem(i);
 
-        return new PyString("Creation successful.");
+        //return new PyBool(true);
     }
+    //return new PyBool(false);
+    return new PyInt(1);
 }
 PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     uint8 level = 5;            // Ensure that ALL skills are trained to level 5

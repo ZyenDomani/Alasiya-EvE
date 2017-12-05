@@ -182,14 +182,43 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     return new PyString("Translocation successful.");
 }
 
-PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 2) {
-        throw PyException(MakeCustomError("Correct Usage: /create [typeID]"));
-    }
+static PyResult generic_createitem(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
 
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    int typeID = atoi(args.arg(1).c_str());
+    int typeID = -1;
+    if (args.isNumber(1)) {
+        typeID = atoi(args.arg(1).c_str());
+    } else {
+        std::map<uint32_t, std::string> matches;
+        if (!db->ItemSearch(args.arg(1).c_str(), matches)) {
+            throw PyException(MakeCustomError("Item not found"));
+        }
+
+        if (matches.size() > 1) {
+            auto c = matches.begin();
+            auto e = matches.end();
+            for (; c != e; c++) {
+                _log(COMMAND__MESSAGE, "Got match: %s\n", c->second.c_str());
+
+                // POSIX standard btw
+                if (strcasecmp(c->second.c_str(), args.arg(1).c_str()) == 0) {
+                    typeID = c->first;
+                }
+            }
+            if (typeID == -1) {
+                throw PyException(MakeCustomError("Item name is ambiguous.  Please use a full item name"));
+            }
+        } else if (matches.size() == 1) {
+            auto cur = matches.begin();
+            _log(COMMAND__MESSAGE,
+                 "ItemSearch returned type: \"%s\" given \"%s\"\n", 
+                 cur->second.c_str(), args.arg(1).c_str());
+            typeID = cur->first;
+        }
+    }
+    if (typeID == -1) {
+        throw PyException(MakeCustomError("Unable to find valid type to create"));
+    }
+    
 
     int qty = 1;
     if (2 < args.argCount()) {
@@ -232,52 +261,18 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
     return new PyInt(i.get()->itemID());
 }
 
+PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    if (args.argCount() < 2) {
+        throw PyException(MakeCustomError("Correct Usage: /create [typeID|\"Type Name\"] [qty] [where]"));
+    }
+    generic_createitem(who, db, services, args);
+}
+
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 2)
-        throw PyException(MakeCustomError("Correct Usage: /create [typeID]"));
-
-    //basically, a copy/paste from Command_create. The client seems to call this multiple times,
-    //each time it creates an item
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    int typeID = atoi(args.arg(1).c_str());
-
-    int qty = 1;
-    if (2 < args.argCount()) {
-        if (args.isNumber(2))
-            qty = atoi(args.arg(2).c_str());
+    if (args.argCount() < 4) {
+        throw PyException(MakeCustomError("Correct Usage: /createitem [typeID|\"Type Name\"] [qty] [where]"));
     }
-
-    sLog.White("command message", "Create %s %u times", args.arg(1).c_str(), qty);
-
-    //create into their cargo hold unless they are docked in a station,
-    //then stick it in their hangar instead.
-    uint32 locationID;
-    EVEItemFlags flag;
-    if (who->IsInSpace()) {
-        locationID = who->GetShipID();
-        flag = flagCargoHold;
-    } else {
-        locationID = who->GetStationID();
-        flag = flagHangar;
-    }
-
-    ItemData idata(
-        typeID,
-        who->GetCharacterID(),
-                   0, //temp location
-                   flag,
-                   qty
-    );
-
-    InventoryItemRef i = services->item_factory->SpawnItem(idata);
-    if (i.get() == nullptr)
-        throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
-
-    //Move to location
-    i->Move(locationID, flag, true);
-
-    return new PyString("Creation successful.");
+    generic_createitem(who, db, services, args);
 }
 
 
@@ -540,6 +535,7 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      * ' /pos unanchor ' + str(itemID)
      * ' /pos anchor ' + str(itemID)
      * ' /pos offline ' + str(itemID)
+     * ' /pos fuel [itemID]
      */
 
     /*
