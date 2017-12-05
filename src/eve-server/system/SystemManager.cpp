@@ -74,6 +74,7 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_ratBubbles.clear();
     m_beltVector.clear();
     m_roidBubbles.clear();
+    m_ticEntities.clear();
 
     m_secValue = 1.1 - GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
@@ -96,6 +97,9 @@ SystemManager::~SystemManager() {
     m_entities.clear();
     m_planetMap.clear();
     m_ratBubbles.clear();
+    m_beltVector.clear();
+    m_roidBubbles.clear();
+    m_ticEntities.clear();
 
     SafeDelete(m_dunMgr);
     SafeDelete(m_anomMgr);
@@ -152,9 +156,9 @@ bool SystemManager::ProcessTic() {
      * std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
     uint32 mLast = 0;
-    while (itr != m_entities.end()) {
+    while (itr != m_ticEntities.end()) {
         if (mLast >= itr->first) {
             ++itr;
             continue;
@@ -162,14 +166,14 @@ bool SystemManager::ProcessTic() {
         if (m_entityChanged) {
             mLast = itr->first;
             m_entityChanged = false;
-            itr = m_entities.begin();
+            itr = m_ticEntities.begin();
             continue;
         }
         itr->second->Process(); /* main process call. */
         if (m_entityChanged) {
             mLast = itr->first;
             m_entityChanged = false;
-            itr = m_entities.begin();
+            itr = m_ticEntities.begin();
             continue;
         }
         ++itr;
@@ -226,6 +230,7 @@ void SystemManager::UnloadSystem() {
     }
     // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
+    m_ticEntities.clear();
 
     // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
@@ -758,14 +763,16 @@ void SystemManager::RemoveNPC(NPC* who) {
 void SystemManager::AddEntity(SystemEntity* who) {
     if (who == nullptr)
         return;
-    auto itr = m_entities.find(who->GetID());
-    if (itr != m_entities.end()) {
-        _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-
+    uint32 itemID = who->GetID();
+    if (m_entities.find(itemID) != m_entities.end()) {
+        _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
     } else {
-        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-        m_entities[who->GetID()] = who;
+        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        m_entities[itemID] = who;
         m_entityChanged = true;
+        // *most* dynamic items need proc tics.  add to proc list
+        if (!IsStaticItem(itemID))
+            m_ticEntities[itemID] = who;
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
         AddItemToInventory( who->GetSelf() );
     }
@@ -776,16 +783,22 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     if (who == nullptr)
         return;
     sBubbleMgr.Remove(who);
-    auto itr = m_entities.find(who->GetID());
+    uint32 itemID = who->GetID();
+
+    auto itr = m_entities.find(itemID);
     if (itr != m_entities.end()) {
-        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
         who->TargetMgr()->ClearAllTargets(false);
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
         RemoveItemFromInventory( who->GetSelf() );
     } else
-        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+
+    auto sItr = m_ticEntities.find(itemID);
+    if (sItr != m_ticEntities.end())
+        m_ticEntities.erase(sItr);
 }
 
 void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
