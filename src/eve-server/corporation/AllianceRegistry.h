@@ -39,7 +39,10 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
+    PyCallable_DECL_CALL(GetAlliance);
     PyCallable_DECL_CALL(GetRankedAlliances);
+    PyCallable_DECL_CALL(GetAllianceApplications);
+    PyCallable_DECL_CALL(GetEmploymentRecord);
     PyCallable_DECL_CALL(GetAllianceApplications);
 
 };

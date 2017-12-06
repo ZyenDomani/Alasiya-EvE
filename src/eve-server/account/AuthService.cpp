@@ -51,7 +51,7 @@ AuthService::~AuthService() {
 
 
 PyResult AuthService::Handle_Ping(PyCallArgs &call) {
-    return new PyLong(GetFileTimeNow());
+    return new PyULong(GetFileTimeNow());
 }
 
 PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)

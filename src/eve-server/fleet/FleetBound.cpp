@@ -154,7 +154,7 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
         [PyString "N=790423:223898"]  "N=%u:%u", &nodeID, &bindID
         [PyIntegerVar 129756560170416597]
         */
-    return new PyLong(GetFileTimeNow());
+    return new PyULong(GetFileTimeNow());
 }
 
 PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
@@ -318,12 +318,12 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
 
     Character* pChar = call.client->GetChar().get();
     if (pChar == nullptr)
-        return new PyLong(GetFileTimeNow());
+        return new PyULong(GetFileTimeNow());
 
     InviteData data;
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)){
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
-        return new PyLong(GetFileTimeNow());
+        return new PyULong(GetFileTimeNow());
     }
 
     int8 booster = Fleet::Booster::No;
@@ -352,7 +352,7 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
     sFltSvc.RemoveInviteData(pChar->itemID());
 
     // returns nodeID and timestamp
-    return new PyLong(GetFileTimeNow());
+    return new PyULong(GetFileTimeNow());
 }
 
 PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
@@ -361,7 +361,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
 
     Character* pChar = call.client->GetChar().get();
     if (pChar == nullptr)
-        return new PyLong(GetFileTimeNow());
+        return new PyULong(GetFileTimeNow());
 
     bool rejected = false;
     if (call.tuple->AsTuple()->GetItem(0)->IsBool())
@@ -370,7 +370,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
     InviteData data;
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)) {
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
-        return new PyLong(GetFileTimeNow());
+        return new PyULong(GetFileTimeNow());
     }
 
     if (rejected)
@@ -380,7 +380,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
     sFltSvc.RemoveInviteData(pChar->itemID());
 
     // returns nodeID and timestamp
-    return new PyLong(GetFileTimeNow());
+    return new PyULong(GetFileTimeNow());
 }
 
 

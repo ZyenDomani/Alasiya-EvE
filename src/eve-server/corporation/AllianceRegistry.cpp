@@ -31,6 +31,17 @@
 #include "PyServiceCD.h"
 #include "corporation/AllianceRegistry.h"
 
+/*
+ * ALLY__ERROR
+ * ALLY__WARNING
+ * ALLY__INFO
+ * ALLY__MESSAGE
+ * ALLY__TRACE
+ * ALLY__CALL
+ * ALLY__CALL_DUMP
+ * ALLY__RSP_DUMP
+ */
+
 PyCallable_Make_InnerDispatcher(AllianceRegistry)
 
 AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
@@ -39,16 +50,61 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(AllianceRegistry, GetAlliance);     //  bound object call
     PyCallable_REG_CALL(AllianceRegistry, GetRankedAlliances);
     PyCallable_REG_CALL(AllianceRegistry, GetAllianceApplications);
+    PyCallable_REG_CALL(AllianceRegistry, GetEmploymentRecord);
+    PyCallable_REG_CALL(AllianceRegistry, GetAllianceMembers);
+
+
     /*
-            alliance = sm.RemoteSvc('allianceRegistry').GetAlliance(allianceID)
+     bound objects
+     self.members = self.GetMoniker().GetMembers()
+     self.GetMoniker().DeclareExecutorSupport(corpID)
+     self.GetMoniker().DeleteMember(corpID)
+     self.applications = self.GetMoniker().GetApplications()
+     return self.GetMoniker().UpdateApplication(corpID, applicationText, state)
+     success = moniker.GetAlliance().AddToVoiceChat(vivoxChannelName)
+     return self.GetMoniker().PayBill(billID, fromAccountKey)
+     return self.GetMoniker().GetBillBalance(billID)
+     return self.GetMoniker().GetBills()
+     return self.GetMoniker().GetBillsReceivable()
+     self.bulletins = self.GetMoniker().GetBulletins()
+     return self.GetMoniker().GetAllianceContacts()
+     self.GetMoniker().AddAllianceContact(contactID, relationshipID)
+     self.GetMoniker().EditAllianceContact(contactID, relationshipID)
+     self.GetMoniker().RemoveAllianceContacts(contactIDs)
+     self.GetMoniker().EditContactsRelationshipID(contactIDs, relationshipID)
+     return self.GetMoniker().GetLabels()
+     return self.GetMoniker().CreateLabel(name, color)
+     self.GetMoniker().DeleteLabel(labelID)
+     self.GetMoniker().EditLabel(labelID, name, color)
+     self.GetMoniker().AssignLabels(contactIDs, labelMask)
+     self.GetMoniker().RemoveLabels(contactIDs, labelMask)
+     return self.GetMoniker().UpdateAlliance(description, url)
             */
 }
 
 AllianceRegistry::~AllianceRegistry()
 {
     delete m_dispatch;
+}
+
+// this is the bind call.  do it like fleet
+PyResult AllianceRegistry::Handle_GetAlliance(PyCallArgs &call) {
+    //alliance = sm.RemoteSvc('allianceRegistry').GetAlliance(allianceID)
+    sLog.White("AllianceRegistry", "Handle_GetAlliance() size=%u", call.tuple->size() );
+    call.Dump(ALLY__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult AllianceRegistry::Handle_GetAllianceMembers(PyCallArgs &call) {
+    // members = sm.RemoteSvc('allianceRegistry').GetAllianceMembers(itemID)  <-- returns dict of corpIDs
+    sLog.White("AllianceRegistry", "Handle_GetAllianceMembers() size=%u", call.tuple->size() );
+    call.Dump(ALLY__CALL_DUMP);
+
+    return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
@@ -61,15 +117,24 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
          */
 
     sLog.White("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
 }
 
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
-
+    //
     sLog.White("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
 }
+
+PyResult AllianceRegistry::Handle_GetEmploymentRecord(PyCallArgs &call) {
+    //  allianceHistory = sm.RemoteSvc('allianceRegistry').GetEmploymentRecord(itemID)
+    sLog.White("AllianceRegistry", "Handle_GetEmploymentRecord() size=%u", call.tuple->size() );
+    call.Dump(ALLY__CALL_DUMP);
+
+    return nullptr;
+}
+

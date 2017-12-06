@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #ifndef __FACTION_WAR_MGR__H__INCL__
@@ -37,14 +38,37 @@ public:
 
     PyCallable_DECL_CALL(GetWarFactions);
     PyCallable_DECL_CALL(GetFWSystems);
+    PyCallable_DECL_CALL(RefreshCorps);
     PyCallable_DECL_CALL(GetMyCharacterRankOverview);
     PyCallable_DECL_CALL(GetMyCharacterRankInfo);
     PyCallable_DECL_CALL(GetFactionMilitiaCorporation);
     PyCallable_DECL_CALL(GetCharacterRankInfo);
     PyCallable_DECL_CALL(GetFactionalWarStatus);
     PyCallable_DECL_CALL(GetSystemStatus);
+    PyCallable_DECL_CALL(GetFactionCorporations);
+    PyCallable_DECL_CALL(GetSystemsConqueredThisRun);
     PyCallable_DECL_CALL(IsEnemyFaction);
+    PyCallable_DECL_CALL(IsEnemyCorporation);
+
     PyCallable_DECL_CALL(JoinFactionAsCharacter);
+    PyCallable_DECL_CALL(JoinFactionAsCharacterRecommendationLetter);
+    PyCallable_DECL_CALL(JoinFactionAsCorporation);
+    PyCallable_DECL_CALL(JoinFactionAsAlliance);
+    PyCallable_DECL_CALL(LeaveFactionAsAlliance);
+    PyCallable_DECL_CALL(LeaveFactionAsCorporation);
+    PyCallable_DECL_CALL(WithdrawJoinFactionAsAlliance);
+    PyCallable_DECL_CALL(WithdrawJoinFactionAsCorporation);
+    PyCallable_DECL_CALL(WithdrawLeaveFactionAsAlliance);
+    PyCallable_DECL_CALL(WithdrawLeaveFactionAsCorporation);
+
+    PyCallable_DECL_CALL(GetStats_FactionInfo);
+    PyCallable_DECL_CALL(GetStats_Corp);
+    PyCallable_DECL_CALL(GetStats_Character);
+    PyCallable_DECL_CALL(GetStats_Alliance);
+    PyCallable_DECL_CALL(GetStats_Militia);
+    PyCallable_DECL_CALL(GetStats_CorpPilots);
+    PyCallable_DECL_CALL(GetStats_TopAndAllKillsAndVPs);
+
 
 private:
     class Dispatcher;

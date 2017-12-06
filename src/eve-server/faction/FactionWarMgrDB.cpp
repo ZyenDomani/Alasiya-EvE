@@ -26,17 +26,23 @@
 #include "eve-server.h"
 
 #include "faction/FactionWarMgrDB.h"
+/*
+ * FACWAR__DB_ERROR
+ * FACWAR__DB_WARNING
+ * FACWAR__DB_INFO
+ * FACWAR__DB_MESSAGE
+ */
 
 PyRep *FactionWarMgrDB::GetWarFactions() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT factionID, militiaCorporationID"
         " FROM chrFactions"
         " WHERE militiaCorporationID IS NOT NULL"))
     {
         _log(DATABASE__ERROR, "Failed to query war factions: %s.", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return(DBResultToIntIntDict(res));
@@ -45,11 +51,11 @@ PyRep *FactionWarMgrDB::GetWarFactions() {
 PyRep* FactionWarMgrDB::GetFacWarSystems()
 {   /* done  -allan 03May16 */
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT systemID, occupierID, factionID FROM factionWarSystems"))
     {
         _log(DATABASE__ERROR, "Failed to query war factions: %s.", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     PyDict* result = new PyDict;
@@ -67,7 +73,7 @@ PyRep* FactionWarMgrDB::GetFacWarSystems()
 uint32 FactionWarMgrDB::GetFactionMilitiaCorporation(const uint32 factionID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT militiaCorporationID"
         " FROM chrFactions"
         " WHERE factionID=%u",
@@ -78,7 +84,7 @@ uint32 FactionWarMgrDB::GetFactionMilitiaCorporation(const uint32 factionID) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "Faction %u not found.", factionID);
         return 0;
     }

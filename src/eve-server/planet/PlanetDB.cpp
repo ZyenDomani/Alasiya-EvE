@@ -50,7 +50,8 @@ void PlanetDB::GetPlanetData(DBQueryResult& res)
         "SELECT planet.typeID AS planetTypeID,"
         " resource.typeID AS resourceID"
         " FROM invTypes planet, invTypes resource, dgmTypeAttributes dgm1, dgmTypeAttributes dgm2 "
-        " WHERE dgm1.typeID = dgm2.typeID AND dgm1.attributeID = 1632 AND dgm1.valueFloat = planet.typeID AND dgm2.attributeID = 709 AND dgm2.valueFloat = resource.typeID ORDER BY planet.typeID ")) {
+        " WHERE dgm1.typeID = dgm2.typeID AND dgm1.attributeID = 1632 AND dgm1.valueFloat = planet.typeID AND dgm2.attributeID = 709"
+        " AND dgm2.valueFloat = resource.typeID ORDER BY planet.typeID ")) {
         _log(DATABASE__ERROR, "Error in GetPlanetData Query: %s", res.error.c_str());
         }
 }

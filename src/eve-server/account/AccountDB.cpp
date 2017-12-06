@@ -100,20 +100,18 @@ PyRep *AccountDB::GetWalletDivisionsInfo(uint32 corpID) {
     }
 
     DBResultRow row;
-    res.GetRow(row);
-    /** @todo  fix this.....
-        data = <Anonymous KeyVal: {}>
-        d = u'1st wallet division'
-AttributeError: 'unicode' object has no attribute 'key'
-*/
-
-/*
     PyDict *dict = new PyDict();
-    for (uint8 i=0; i<7; i++)
-        dict->SetItem(new PyInt(1000+i),new PyString(row.GetText(i)));
+    if (res.GetRow(row)) {
+        // tried looping this...didnt work
+            dict->SetItem(new PyInt(1000),new PyString(row.GetText(0)));
+            dict->SetItem(new PyInt(1001),new PyString(row.GetText(1)));
+            dict->SetItem(new PyInt(1002),new PyString(row.GetText(2)));
+            dict->SetItem(new PyInt(1003),new PyString(row.GetText(3)));
+            dict->SetItem(new PyInt(1004),new PyString(row.GetText(4)));
+            dict->SetItem(new PyInt(1005),new PyString(row.GetText(5)));
+            dict->SetItem(new PyInt(1006),new PyString(row.GetText(6)));
+    }
     return new PyObject("util.KeyVal", dict);
-*/
-    return DBRowToRow(row);
 }
 
 //////////////////////////////////

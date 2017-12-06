@@ -507,8 +507,8 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     res->SetItemString("Mission Keywords", new PyString("Mission Keywords"));
     res->SetItemString("Mission Title ID", new PyString("Mission Title ID") );
     res->SetItemString("Mission Briefing ID", new PyString("Mission Briefing ID") );
-    res->SetItemString("Decline Time", new PyFloat( Win32TimeNow() + Win32Time_Hour ) );
-    res->SetItemString("Expiration Time", new PyFloat( Win32TimeNow()+Win32Time_Day ) );
+    res->SetItemString("Decline Time", new PyULong( GetFileTimeNow() + Win32Time_Hour ) );
+    res->SetItemString("Expiration Time", new PyULong( GetFileTimeNow()+Win32Time_Day ) );
     res->SetItemString("Mission Image", new PyString("MissionImage") );
 
     return res;

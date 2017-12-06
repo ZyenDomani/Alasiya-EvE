@@ -1036,7 +1036,7 @@ ShipItemRef Client::SpawnNewRookieShip() {
     InventoryItemRef cRef = m_services.item_factory->SpawnItem(cData);
     // create and fit noob items in ship
     if (sRef.get() != nullptr)
-        sRef->Move(m_locationID, flagHangar);
+        sRef->Move(m_char->stationID(), flagHangar);
     if (mRef.get() != nullptr)
         mRef->Move(sRef->itemID(), flagHiSlot0);
     if (wRef.get() != nullptr)

@@ -125,8 +125,12 @@ PyResult AccountService::Handle_GetKeyMap(PyCallArgs &call) {
     return result;
 }
 
-//give cash takes (ownerID, retval['qty'], retval['reason'][:40])
 PyResult AccountService::Handle_GiveCash(PyCallArgs &call) {
+    /*
+     * 21:07:02 [SvcCall] Service account::GiveCash()
+     * 21:07:02 [PacketError] Decode Call_GiveCash failed: reason is not a wide string: String
+     * 21:07:02 [SvcError] Handle_GiveCash(/usr/local/src/eve/Alasiya-EvE/src/eve-server/account/AccountService.cpp:132): allan: failed to decode arguments
+     */
     Call_GiveCash args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());

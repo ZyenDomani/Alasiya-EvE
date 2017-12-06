@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Additions:  Allan
-    Log Version: 8.1
+    Log Version: 8.4
 */
  /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -227,10 +227,35 @@ LOG_TYPE( CORP, INFO, DISABLED, "CorpInfo" )
 LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
 LOG_TYPE( CORP, CALL, DISABLED, "CorpCall" )
 LOG_TYPE( CORP, CALL_DUMP, DISABLED, "CorpCallDump" )
+LOG_TYPE( CORP, RSP_DUMP, DISABLED, "CorpRspDump" )
 LOG_TYPE( CORP, DB_ERROR,   ENABLED, "CorpDBError" )
 LOG_TYPE( CORP, DB_WARNING, DISABLED, "CorpDBWarning" )
 LOG_TYPE( CORP, DB_MESSAGE, DISABLED, "CorpDBMsg" )
 LOG_TYPE( CORP, DB_INFO, DISABLED, "CorpDBInfo" )
+
+LOG_CATEGORY( ALLY )
+LOG_TYPE( ALLY, ERROR,   ENABLED, "AllyError" )
+LOG_TYPE( ALLY, WARNING, DISABLED, "AllyWarning" )
+LOG_TYPE( ALLY, MESSAGE, DISABLED, "AllyMsg" )
+LOG_TYPE( ALLY, INFO, DISABLED, "AllyInfo" )
+LOG_TYPE( ALLY, TRACE, DISABLED, "AllyTrace" )
+LOG_TYPE( ALLY, CALL, DISABLED, "AllyCall" )
+LOG_TYPE( ALLY, CALL_DUMP, DISABLED, "AllyCallDump" )
+LOG_TYPE( ALLY, RSP_DUMP, DISABLED, "AllyRspDump" )
+
+LOG_CATEGORY( FACWAR )
+LOG_TYPE( FACWAR, ERROR,   ENABLED, "FacWarError" )
+LOG_TYPE( FACWAR, WARNING, DISABLED, "FacWarWarning" )
+LOG_TYPE( FACWAR, MESSAGE, DISABLED, "FacWarMsg" )
+LOG_TYPE( FACWAR, INFO, DISABLED, "FacWarInfo" )
+LOG_TYPE( FACWAR, TRACE, DISABLED, "FacWarTrace" )
+LOG_TYPE( FACWAR, CALL, DISABLED, "FacWarCall" )
+LOG_TYPE( FACWAR, CALL_DUMP, DISABLED, "FacWarCallDump" )
+LOG_TYPE( FACWAR, RSP_DUMP, DISABLED, "FacWarRspDump" )
+LOG_TYPE( FACWAR, DB_ERROR,   ENABLED, "FacWarDBError" )
+LOG_TYPE( FACWAR, DB_WARNING, DISABLED, "FacWarDBWarning" )
+LOG_TYPE( FACWAR, DB_MESSAGE, DISABLED, "FacWarDBMsg" )
+LOG_TYPE( FACWAR, DB_INFO, DISABLED, "FacWarDBInfo" )
 
 LOG_CATEGORY( INV )
 LOG_TYPE( INV, ERROR,   ENABLED, "InvError" )

@@ -40,8 +40,10 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             corp.push_back(cur);
         else if (IsAlliance(cur))
             ally.push_back(cur);
-        else
+        else if (IsCharacter(cur))
             player.push_back(cur);
+        else
+            ; // make error here for untested type
     }
 
     DBQueryResult res;
@@ -49,7 +51,6 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (corp.size()) {
         ListToINString(corp, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  corporationID as ownerID,"
@@ -67,7 +68,6 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (ally.size()) {
         ListToINString(ally, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  allianceID as ownerID,"
@@ -85,16 +85,14 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (player.size()) {
         ListToINString(player, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  c.characterID as ownerID,"
-            "  e.itemName as ownerName,"
-            "  e.typeID,"
-            "  c.gender,"
+            "  characterID as ownerID,"
+            "  name as ownerName,"
+            "  typeID,"
+            "  gender,"
             "  NULL AS ownerNameID"
             " FROM chrCharacter AS c"
-            "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
             " WHERE characterID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
