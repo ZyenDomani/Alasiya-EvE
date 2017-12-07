@@ -65,6 +65,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
         if (args.isNumber(1)) {
             tag = translocate_resolve_id(&d, atoi(args.arg(1).c_str()));
         } else {
+						codelog(COMMAND__ERROR, "argument 1: %s", args.arg(1).c_str());
             tag = translocate_resolve_location_name(&d, args.arg(1).c_str(), &dest);
         }
         if (translocate_to(&d, who->GetCharacterID(), dest, tag)) {
@@ -180,14 +181,14 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (args.argCount() < 2) {
         throw PyException(MakeCustomError("Correct Usage: /create [typeID|\"Type Name\"] [qty] [where]"));
     }
-    generic_createitem(who, db, services, args);
+    return generic_createitem(who, db, services, args);
 }
 
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     if (args.argCount() < 4) {
         throw PyException(MakeCustomError("Correct Usage: /createitem [typeID|\"Type Name\"] [qty] [where]"));
     }
-    generic_createitem(who, db, services, args);
+    return generic_createitem(who, db, services, args);
 }
 
 
