@@ -169,7 +169,7 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
     if (!system) {
         return false;
     }
-    
+
     Client *client = sEntityList.FindClientByCharID(who);
     if (!client) {
         return false;
@@ -189,96 +189,96 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
 }
 
 static bool translocate_to_station(TRData *data, uint32_t who, uint32_t dest) {
-		codelog(COMMAND__ERROR, "translocate_to_station called\n");
-		Client *c = sEntityList.FindClientByCharID(who);
+    codelog(COMMAND__ERROR, "translocate_to_station called\n");
+    Client *c = sEntityList.FindClientByCharID(who);
 
-		Ship *ship = c->GetShipSE();
-		if (ship != nullptr and ship->DestinyMgr() != nullptr and !ship->DestinyMgr()->IsCloaked()) {
-				ship->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
-		}
+    Ship *ship = c->GetShipSE();
+    if (ship != nullptr and ship->DestinyMgr() != nullptr and !ship->DestinyMgr()->IsCloaked()) {
+        ship->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
+    }
 
-		c->MoveToLocation(dest, GPoint(NULL_ORIGIN));
+    c->MoveToLocation(dest, GPoint(NULL_ORIGIN));
 
-		// No jump out. We're docking, probably..
-		return true;
+    // No jump out. We're docking, probably..
+    return true;
 }
 
 static bool translocate_to_characterID(TRData *data, uint32_t who, uint32_t dest) {
-		// Since we're /tr to player.  The system is assumed to be booted
-		//if (!IsCharType(dest)) {
-		//		ERROR("/tr called with a non-character ID but was resolved to a character action");
-		//}
-		Client *dest_client = sEntityList.FindClientByCharID(dest);
-		Client *victim_client = sEntityList.FindClientByCharID(who);
-		if (dest_client == nullptr or victim_client == nullptr) {
-				ERROR("/tr to or from offline players.");
-		}
+    // Since we're /tr to player.  The system is assumed to be booted
+    //if (!IsCharType(dest)) {
+    //		ERROR("/tr called with a non-character ID but was resolved to a character action");
+    //}
+    Client *dest_client = sEntityList.FindClientByCharID(dest);
+    Client *victim_client = sEntityList.FindClientByCharID(who);
+    if (dest_client == nullptr or victim_client == nullptr) {
+        ERROR("/tr to or from offline players.");
+    }
 
-		if (dest_client->IsDocked()) {
-				uint32 station_id = dest_client->GetStationID();
-				codelog(COMMAND__ERROR, "stationID: %d\n", station_id);
-				if (IsStation(station_id)) {
-						return translocate_to_station(data, who, station_id);
-				} else {
-						return false;
-				}
-		}
+    if (dest_client->IsDocked()) {
+        uint32 station_id = dest_client->GetStationID();
+        codelog(COMMAND__ERROR, "stationID: %d\n", station_id);
+        if (IsStation(station_id)) {
+            return translocate_to_station(data, who, station_id);
+        } else {
+            return false;
+        }
+    }
 
-		if (dest_client->IsInSpace()) {
-				if (dest_client->GetShipSE() != nullptr) {
+    if (dest_client->IsInSpace()) {
+        if (dest_client->GetShipSE() != nullptr) {
 
-						Ship *ship = victim_client->GetShipSE();
-						if (ship != nullptr and ship->DestinyMgr() != nullptr and !ship->DestinyMgr()->IsCloaked()) {
-								ship->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
-						}
+            Ship *ship = victim_client->GetShipSE();
+            if (ship != nullptr and ship->DestinyMgr() != nullptr and !ship->DestinyMgr()->IsCloaked()) {
+                ship->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
+            }
 
-						GPoint position = dest_client->GetShip()->position();
-						victim_client->MoveToLocation(dest_client->GetSystemID(), position);
+            GPoint position = dest_client->GetShip()->position();
+            victim_client->MoveToLocation(dest_client->GetSystemID(), position);
 
-						if (ship != nullptr and ship->DestinyMgr() != nullptr and 
-										!ship->DestinyMgr()->IsCloaked()) {
-								ship->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", dest);
-						}
-						return true;
-				} else {
-						return false;
-				}
-		}
+            if (ship != nullptr and ship->DestinyMgr() != nullptr and 
+                    !ship->DestinyMgr()->IsCloaked()) {
+                ship->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", dest);
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-		return false;
+    return false;
 }
 
 static bool translocate_to_celestial(TRData *data, uint32_t who, uint32_t dest) {
-		ERROR("/tr to celestials not implemented")
-		return false;
+    ERROR("/tr to celestials not implemented")
+        return false;
 }
 
 
 bool translocate_to(TRData *data, uint32_t who, uint32_t dest, LocationTag tag) {
     switch (tag) {
     case LocationTag_Character: {
-				codelog(COMMAND__ERROR, "translocate_to_characterID");
+        codelog(COMMAND__ERROR, "translocate_to_characterID");
         return translocate_to_characterID(data, who, dest);
     } break;
     case LocationTag_SolarSystem: {
-				codelog(COMMAND__ERROR, "translocate_to_solarysystem");
+        codelog(COMMAND__ERROR, "translocate_to_solarysystem");
         return translocate_to_solarsystem(data, who, dest);
     } break;
     case LocationTag_Celestial: {
-				codelog(COMMAND__ERROR, "translocate_to_celestial");
+        codelog(COMMAND__ERROR, "translocate_to_celestial");
         return translocate_to_celestial(data, who, dest);
     } break;
     case LocationTag_Station: {
-				codelog(COMMAND__ERROR, "translocate_to_station");
+        codelog(COMMAND__ERROR, "translocate_to_station");
         return translocate_to_station(data, who, dest);
     } break;
-		default:
+    default:
     case LocationTag_Invalid: {
         codelog(COMMAND__ERROR, "Somehow translocate_to got called with LocationTag_Invalid.  Fix yo shit");
         return false;
     } break;
     }
-		return false;
+    return false;
 }
 
 LocationTag translocate_resolve_id(TRData *data, uint32_t thing_id) {
@@ -306,11 +306,11 @@ LocationTag translocate_resolve_location_name(TRData *data, const char *location
     }
     // Currently translocate_resolve_location_name only works with
     // solar systems and players.  I don't see a purpose otherwise
-		//
-		Client *client = sEntityList.FindClientByName(location_name);
+    //
+    Client *client = sEntityList.FindClientByName(location_name);
     if (client != nullptr) {
         *thing_id = client->GetCharacterID();
-				return LocationTag_Character;
+        return LocationTag_Character;
     }
     uint32_t id = data->db->GetSolarSystem(location_name);
     if (id != 0) {
@@ -318,7 +318,7 @@ LocationTag translocate_resolve_location_name(TRData *data, const char *location
         return LocationTag_SolarSystem;
     }
 
-		codelog(COMMAND__ERROR, "FindClientByName with name: '%s' returned no client\n", location_name);
+    codelog(COMMAND__ERROR, "FindClientByName with name: '%s' returned no client\n", location_name);
     return LocationTag_Invalid;
 }
 

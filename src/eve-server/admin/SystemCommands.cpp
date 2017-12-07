@@ -50,8 +50,7 @@ PyResult Command_translocate(Client* who, CommandDB* db, PyServiceMgr* services,
 }
 
 
-PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
-{
+PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     TRData d = {};
     d.who = who;
     d.db = db;
