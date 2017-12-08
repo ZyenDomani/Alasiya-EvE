@@ -24,6 +24,9 @@
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "admin/TranslocateHelper.h"
+#include "admin/CommandHelper.h"
+#include "tables/invGroups.h"
+#include "tables/invCategories.h"
 
 PyResult Command_goto(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
@@ -51,6 +54,10 @@ PyResult Command_translocate(Client* who, CommandDB* db, PyServiceMgr* services,
 
 
 PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    codelog(COMMAND__ERROR, "/tr issued:");
+    for (int i = 0; i < args.argCount(); i++) {
+        codelog(COMMAND__ERROR, "  %s", args.arg(i).c_str());
+    }
     TRData d = {};
     d.who = who;
     d.db = db;
@@ -62,9 +69,10 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
 
     if (args.argCount() == 2) {
         if (args.isNumber(1)) {
+            dest = atoi(args.arg(1).c_str());
             tag = translocate_resolve_id(&d, atoi(args.arg(1).c_str()));
         } else {
-						codelog(COMMAND__ERROR, "argument 1: %s", args.arg(1).c_str());
+            codelog(COMMAND__ERROR, "argument 1: %s", args.arg(1).c_str());
             tag = translocate_resolve_location_name(&d, args.arg(1).c_str(), &dest);
         }
         if (translocate_to(&d, who->GetCharacterID(), dest, tag)) {
@@ -75,13 +83,15 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     }
     if (args.argCount() == 3) {
         if (args.isNumber(1)) {
-            tag = translocate_resolve_id(&d, atoi(args.arg(1).c_str()));
+            victim = atoi(args.arg(1).c_str());
+            tag = translocate_resolve_id(&d, victim);
         } else {
             tag = translocate_resolve_location_name(&d, args.arg(1).c_str(),
                                                     &victim);
         }
         if (args.isNumber(2)) {
-            tag = translocate_resolve_id(&d, atoi(args.arg(2).c_str()));
+            dest = atoi(args.arg(2).c_str());
+            tag = translocate_resolve_id(&d, dest);
         } else {
             tag = translocate_resolve_location_name(&d, args.arg(2).c_str(),
                                                     &dest);
@@ -184,7 +194,7 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
 }
 
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 4) {
+    if (args.argCount() < 2) {
         throw PyException(MakeCustomError("Correct Usage: /createitem [typeID|\"Type Name\"] [qty] [where]"));
     }
     return generic_createitem(who, db, services, args);
@@ -254,32 +264,116 @@ PyResult Command_killallnpcs(Client* who, CommandDB* db, PyServiceMgr* services,
 
 PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+#define DEFAULT_RANGE 500000
+    if (!who->IsInSpace()) {
         throw PyException(MakeCustomError("You must be in space to unspawn things."));
-
-    if ((args.argCount() < 2) || (args.argCount() > 2))
-        throw PyException(MakeCustomError("Correct Usage: /unspawn (itemID)"));
-
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 should be itemID"));
-
-    uint32 itemID = atoi(args.arg(1).c_str());
-
-    // Search for the itemRef for itemID:
-    InventoryItemRef itemRef = who->services().item_factory->GetItem(itemID);
-    SystemEntity* pSE = who->SystemMgr()->GetSE(itemID);
-
-    // Actually do the unspawn using SystemManager's RemoveEntity:
-    if (pSE == nullptr) {
-        throw PyException(MakeCustomError("Un-Spawn Failed: itemID %u not found.", itemID));
-    } else {
-        who->SystemMgr()->RemoveEntity(pSE);
-        itemRef->Delete();
     }
 
-    sLog.White("Command", "%s: Un-Spawned %u.", who->GetName(), itemID);
+    if (who->GetShipSE() == nullptr) {
+            throw PyException(MakeCustomError("/unspawn failed. You don't appear to have a ship?"));
+    }
+    int target_index = cmd_find_nth_noneq(args, 1);
+    uint32 target = 0;
+    if (target_index > 0) {
+        if (!args.isNumber(target_index)) {
+            throw PyException(MakeCustomError("/unspawn called with non number"));
+        }
+        target = atoi(args.arg(target_index).c_str());
+    }
+    
+    std::string range_str = cmd_parse_eq_arg(args, "range=");
+    std::string only_str = cmd_parse_eq_arg(args, "only=");
 
-    return new PyString("Un-Spawn successful.");
+    codelog(COMMAND__ERROR, "unspawn got: %s %s %u", 
+            range_str.c_str(), only_str.c_str(), target);
+
+    uint32 range = DEFAULT_RANGE;
+
+    if (range_str.size() > 0) {
+        if (!IsNumber(range_str)) {
+            throw PyException(MakeCustomError("/unspawn with range=x must be a number"));
+        }
+        range = atoi(range_str.c_str());
+    }
+
+    if ((range != DEFAULT_RANGE or
+            only_str.size() > 0) and
+            target != 0) {
+            throw PyException(MakeCustomError("/unspawn cannot be called with an explcit target and either range= or only="));
+    }
+
+    if (target != 0) {
+        InventoryItemRef item_ref = who->services().item_factory->GetItem(target);
+        SystemEntity *sys_entity = who->SystemMgr()->GetSE(target);
+        if (sys_entity == nullptr) {
+            throw PyException(MakeCustomError("/unspawn failed.  Item %u not found.", target));
+        }
+
+        who->SystemMgr()->RemoveEntity(sys_entity);
+        item_ref->Delete();
+        codelog(COMMAND__MESSAGE, "/unspawn called with single target successful");
+        return new PyBool(true);
+    }
+
+    if (only_str.size() == 0) {
+        throw PyException(MakeCustomError("/unspawn usage:<br>  /unspawn [itemID]<br>/unspawn only=category|group<br>If using only the default range is 10k.  You can set this by adding range=x in meters"));
+    }
+
+    bool is_category_match = false;
+    bool is_group_match = false;
+    uint16 match_id = 0;
+
+    if (strcmp(only_str.c_str(), "categoryDrone") == 0) {
+        match_id = EVEDB::invCategories::Drone;
+        is_category_match = true;
+    } else if (strcmp(only_str.c_str(), "groupWreck") == 0) {
+        match_id = EVEDB::invGroups::Wreck;
+        is_group_match = true;
+    } else {
+        throw PyException(MakeCustomError("only='%s' not a supported group or category", only_str.c_str()));
+    }
+
+    SystemBubble *bubble = who->GetShipSE()->SysBubble();
+    if (bubble == nullptr) {
+        throw PyException(MakeCustomError("/unspawn failed.  You don't appear to be in a bubble.  Try /update"));
+    }
+
+    GPoint player_pos = who->GetShipSE()->GetPosition();
+    Inventory *sys_inv = who->SystemMgr()->GetSystemInv();
+
+    std::vector<SystemEntity *> entities;
+    bubble->GetEntities(entities);
+    for (int i = 0; i < entities.size(); i++) {
+        SystemEntity *e = entities[i];
+        if (is_group_match == true and match_id != e->GetGroupID()) {
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u", 
+                    is_group_match, is_category_match, match_id, e->GetGroupID());
+            continue;
+        }
+        if (is_category_match == true and match_id != e->GetCategoryID()) {
+
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u categoryID %u", 
+                    is_group_match, is_category_match, match_id, e->GetGroupID());
+            continue;
+        }
+
+        uint32_t itemID = e->GetID();
+        codelog(COMMAND__ERROR, "Grid item: %u passed initial checks", itemID);
+        GPoint pos = e->GetPosition();
+        float d = player_pos.distance(pos);
+        if (d > (float)range) {
+            continue;
+        }
+
+
+        who->SystemMgr()->RemoveEntity(e);
+        InventoryItemRef item = who->services().item_factory->GetItem(itemID);
+        item->Delete();
+    }
+
+#undef DEFAULT_RANGE
+
+    return new PyBool(true);
 }
 
 PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)

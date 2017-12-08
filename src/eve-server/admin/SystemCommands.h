@@ -2,7 +2,7 @@
 
 COMMAND( create, ROLE_VIP,
          "(itemID) [count] - Create count or 1 of the specified item." )
-COMMAND( createitem, ROLE_ADMIN,
+COMMAND( createitem, ROLE_VIP,
          "(itemID) [count] - Create count or 1 of the specified item.(from Insider)" )
 COMMAND( goto, ROLE_VIP,
          "(x) (y) (z) - Jump to the specified position in space. Stopped." )
@@ -28,7 +28,7 @@ COMMAND( unspawn, ROLE_SPAWN,
          "(itemID) - remove and delete itemID" )
 COMMAND( kill, ROLE_VIP,
          "(entityID) - insta-pops a destroyable ship, drone, structure, if applicable")
-COMMAND( killallnpcs, ROLE_ADMIN,
+COMMAND( killallnpcs, ROLE_PROGRAMMER,
          " - insta-pops all NPC ships in the current bubble")
 COMMAND( cloak, ROLE_VIP,
          " - instantly and unconditionally toggles cloak state of your vessel")
