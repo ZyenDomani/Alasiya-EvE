@@ -23,10 +23,10 @@ DROP TABLE IF EXISTS `chrBLEyebrows`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrBLEyebrows` (
-  `bloodlineID` int(10) unsigned NOT NULL DEFAULT '0',
-  `gender` int(10) unsigned NOT NULL DEFAULT '0',
-  `eyebrowsID` int(10) unsigned NOT NULL DEFAULT '0',
-  `npc` int(10) unsigned NOT NULL DEFAULT '0',
+  `bloodlineID` int(10)  NOT NULL DEFAULT '0',
+  `gender` int(10)  NOT NULL DEFAULT '0',
+  `eyebrowsID` int(10)  NOT NULL DEFAULT '0',
+  `npc` int(10)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`bloodlineID`,`gender`,`eyebrowsID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

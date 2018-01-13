@@ -108,7 +108,7 @@ PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
         return nullptr;
     }
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
@@ -159,16 +159,18 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
         if (iRef->IsShipItem()) {
             if ((pShip != nullptr) and (pShip != iRef->GetShipItem())) {
                 codelog(ITEM__ERROR, "Got a new ship item here.  Rework this code!");
-                return new PyNone();
+                return PyStatic.NewNone();
             }
             pShip = iRef->GetShipItem();
             hp     += iRef->GetAttribute(AttrArmorHP).get_int();
             damage += iRef->GetAttribute(AttrArmorDamage).get_int();
             // ship is (basePrice)*7.5e-10
+            /** @todo  AttrRepairCostPercent = 396,  */
             cost   = (iRef->type().basePrice() * 0.00000000075);
         } else {
             itemRefVec.push_back(iRef);
             // modules are (basePrice)*1.25e-6
+            /** @todo  AttrRepairCostPercent = 396,  */
             cost   = (iRef->type().basePrice() * 0.00000125);
         }
         delta = hp - damage;
@@ -181,7 +183,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     pShip->RepairShip(fraction);
     pShip->RepairModules(itemRefVec, fraction);
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
@@ -207,7 +209,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     if (IsNPCCorp(sRef->ownerID()))
         standing = pClient->GetChar()->GetNPCCorpStanding(pClient->GetCharacterID(), sRef->ownerID());
     else
-        standing = pClient->GetChar()->GetCorpStanding(pClient->GetCharacterID(), sRef->ownerID());
+        standing = pClient->GetChar()->GetStanding(pClient->GetCharacterID(), sRef->ownerID());
 
     for (auto cur : args.ints) {
         RepairListRsp rlr;
@@ -298,7 +300,6 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
     PyTuple *tuple(nullptr);
     InventoryItemRef iRef;
     uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
-    ItemFactory* factory = call.client->services().item_factory;
 
     if (args.list->size() > 0)
         ;  // skipChecks is populated....do something constructive here
@@ -319,7 +320,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                     // Get the itemID.
                     itemID = tuple->GetItem(0)->AsInt()->value();
                     //itemLoc = tuple->GetItem(1)->AsInt()->value();
-                    iRef = factory->GetItem(itemID);
+                    iRef = sItemFactory.GetItem(itemID);
                     if (iRef.get() != nullptr) {
                         // Add type exceptions here.
                         if (iRef->categoryID() == EVEDB::invCategories::Blueprint
@@ -335,5 +336,5 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
         }
     }
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }

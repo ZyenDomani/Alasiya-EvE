@@ -89,7 +89,7 @@ public:
     bool HasColony()                                    { return (ccPin->ccPinID ? true : false); }
 
     int8 GetLevel()                                     { return ccPin->level; }
-    uint64 GetSimTime()                                 { return ccPin->currentSimTime; }
+    int64 GetSimTime()                                 { return ccPin->currentSimTime; }
 
 private:
     PyServiceMgr* m_svcMgr;
@@ -108,7 +108,7 @@ private:
     uint16 m_cpu;
     uint32 m_colonyID;
 
-    uint64 m_procTime;
+    int64 m_procTime;
 
     std::vector<uint32> tempECUs;
     std::map<uint8, uint32> tempPinIDs;

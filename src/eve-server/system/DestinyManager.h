@@ -55,6 +55,7 @@ public:
 
     void Process();
 
+    void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;
     void SendSingleDestinyUpdate(PyTuple** up, bool self_only=false) const;
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only=false) const;
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, bool self_only=false) const;

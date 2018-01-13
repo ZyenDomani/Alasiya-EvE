@@ -24,7 +24,16 @@
     Updates:    Allan
 */
 
-/** @todo (Allan) this entire file needs updating.  current code calls are shit */
+/*
+ * # Manufacturing Logging:
+ * MANUF__ERROR
+ * MANUF__WARNING
+ * MANUF__MESSAGE
+ * MANUF__INFO
+ * MANUF__DEBUG
+ * MANUF__TRACE
+ * MANUF__DUMP
+ */
 
 
 #include "eve-server.h"
@@ -32,7 +41,9 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "packets/Manufacturing.h"
+#include "manufacturing/RamMethods.h"
 #include "station/ReprocessingService.h"
+#include "Station.h"
 #include "system/SystemManager.h"
 
 class ReprocessingServiceBound
@@ -48,7 +59,6 @@ public:
     PyCallable_DECL_CALL(GetQuotes);
     PyCallable_DECL_CALL(Reprocess);
 
-    bool Load();
     virtual void Release();
 
 protected:
@@ -57,20 +67,20 @@ protected:
 
     ReprocessingDB& m_db;
 
-    uint32 m_stationID;
-	uint32 m_stationCorpID; //NPC (or not?) corp that owns station. Used for standing
-    double m_staEfficiency;
-    double m_tax;
+    StationItemRef m_station;
+	uint32 m_stationCorpID; //corp that owns station. Used for standing
+    float m_staEfficiency;
+    float m_tax;
 
-    double _CalcReprocessingEfficiency(const Client *client, InventoryItemRef item = InventoryItemRef()) const;
-    double _CalcTax(const CharacterRef ch) const;
-    double _CalcTax(double standing) const;
-    PyRep *_GetQuote(uint32 itemID, const Client *c) const;
+    float CalcReprocessingEfficiency(const Client *pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
+    float CalcTax(float standing) const;
+    PyRep* GetQuote(uint32 itemID, const Client *pClient) const;
+
+    float GetStanding(const Client* pClient) const; // gets the higher of char/corp standings with station owner
 };
 
-PyCallable_Make_InnerDispatcher(ReprocessingServiceBound)
-
 PyCallable_Make_InnerDispatcher(ReprocessingService)
+PyCallable_Make_InnerDispatcher(ReprocessingServiceBound)
 
 ReprocessingService::ReprocessingService(PyServiceMgr *mgr)
 : PyService(mgr, "reprocessingSvc"),
@@ -84,36 +94,25 @@ ReprocessingService::~ReprocessingService() {
 }
 
 PyBoundObject *ReprocessingService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    if(!bind_args->IsInt()) {
+    if (!bind_args->IsInt()) {
         codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
-        return NULL;
+        return nullptr;
     }
 
     uint32 stationID = bind_args->AsInt()->value();
-
-    if(!IsStation(stationID)) {
-        codelog(CLIENT__ERROR, "%s: Expected stationID, but hasn't got any.", c->GetName());
-        return NULL;
+    if (!IsStation(stationID)) {
+        codelog(CLIENT__ERROR, "%s: Expected stationID, but got %u.", c->GetName(), stationID);
+        return nullptr;
     }
 
-    ReprocessingServiceBound *obj = new ReprocessingServiceBound(m_manager, m_db, stationID);
-    if(!obj->Load()) {
-        _log(SERVICE__ERROR, "Failed to load static info for station %u.", stationID);
-        delete obj;
-        return NULL;
-    } else
-        return(obj);
+    return new ReprocessingServiceBound(m_manager, m_db, stationID);
 }
 
 
 ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, ReprocessingDB& db, uint32 stationID)
 : PyBoundObject(mgr),
   m_dispatch(new Dispatcher(this)),
-  m_db(db),
-  m_stationID(stationID),
-  m_staEfficiency(0.0),
-  m_tax(0.0),
-  m_stationCorpID(0)
+  m_db(db)
 {
     _SetCallDispatcher(m_dispatch);
 
@@ -124,6 +123,9 @@ ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, Reprocessi
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuote);
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuotes);
     PyCallable_REG_CALL(ReprocessingServiceBound, Reprocess);
+
+    m_station = sItemFactory.GetStation(stationID);
+    m_station->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
 }
 
 ReprocessingServiceBound::~ReprocessingServiceBound() {
@@ -135,264 +137,233 @@ void ReprocessingServiceBound::Release() {
     delete this;
 }
 
-bool ReprocessingServiceBound::Load() {
-    return(m_db.LoadStatic(m_stationID, m_staEfficiency, m_tax, m_stationCorpID));
-}
-
 PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &call) {
-    PyRep *result = NULL;
-
-    Call_GetOptionsForItemTypes call_args;
-    if(!call_args.Decode(&call.tuple)) {
+    Call_GetOptionsForItemTypes args;
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     Rsp_GetOptionsForItemTypes      rsp;
     Rsp_GetOptionsForItemTypes_Arg  arg;
 
-    std::map<int32, PyRep *>::iterator cur, end;
-    cur = call_args.typeIDs.begin();
-    end = call_args.typeIDs.end();
-
-    for(; cur != end; cur++) {
-        arg.isRecyclable = m_db.IsRecyclable(cur->first);
-        arg.isRefinable = m_db.IsRefinable(cur->first);
-
-        rsp.typeIDs[cur->first] = arg.Encode();
+    // this data may be in static...nope.  and not sure i can do this better....
+    for (auto cur : args.typeIDs) {
+        arg.isRecyclable = m_db.IsRecyclable(cur.first);
+        arg.isRefinable = m_db.IsRefinable(cur.first);
+        rsp.typeIDs[cur.first] = arg.Encode();
     }
 
-    result = rsp.Encode();
-    return result;
+    return rsp.Encode();
 }
 
 PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) {
-    PyRep *result = NULL;
     Client *pClient = call.client;
-
     Rsp_GetReprocessingInfo rsp;
-
-    rsp.reputation = pClient->GetChar()->GetCorpStanding(pClient->GetCharacterID(), m_stationCorpID);
-    rsp.tax = _CalcTax( rsp.reputation );
-    rsp.yield = m_staEfficiency;
-    rsp.combinedyield = _CalcReprocessingEfficiency(pClient);
-
-    result = rsp.Encode();
-
-    return result;
+        rsp.standing = GetStanding(pClient);
+        rsp.tax = CalcTax( rsp.standing );
+        rsp.yield = m_staEfficiency;
+        rsp.combinedyield = CalcReprocessingEfficiency(pClient);
+    return rsp.Encode();
 }
 
 PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
-    Call_SingleIntegerArg call_args;    // itemID
-    if(!call_args.Decode(&call.tuple)) {
+    Call_SingleIntegerArg arg;    // itemID
+    if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
-    return(_GetQuote(call_args.arg, call.client));
+    return GetQuote(arg.arg, call.client);
 }
 
 PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
-     Call_GetQuotes call_arg;
-
-     if(!call_arg.Decode(&call.tuple)) {
+    // why shipID here?  processing in cap indy ships?
+     Call_GetQuotes args;
+     if (!args.Decode(&call.tuple)) {
          codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-         return NULL;
+         return nullptr;
      }
 
     Rsp_GetQuotes rsp;
-    std::vector<int32>::iterator cur, end;
-    cur = call_arg.itemIDs.begin();
-    end = call_arg.itemIDs.end();
-
-    for(; cur != end; cur++) {
-        PyRep *quote = NULL;
-        try {
-            quote = _GetQuote(*cur, call.client);
-        } catch(PyException &e) {
-            sLog.Error("ReprocessingServiceBound::Handle_GetQuotes", "error %s", e.ssException->AsString()->content().c_str() );
-            // ignore all exceptions
-            continue;
-        }
-        if(quote != NULL)
-            rsp.quotes[*cur] = quote;
+    for (auto cur : args.itemIDs) {
+        PyRep* quote = GetQuote(cur, call.client);
+        if (quote != nullptr)
+            rsp.quotes[cur] = quote;
     }
 
-    return(rsp.Encode());
+    return rsp.Encode();
 }
 
 PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
-    if(!IsStation(call.client->GetLocationID())) {
+    if (!IsStation(call.client->GetLocationID())) {
         _log(SERVICE__MESSAGE, "Character %s tried to reprocess, but isn't is station.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
-    Call_Reprocess call_args;
-
-    if(!call_args.Decode(&call.tuple)) {
+    Call_Reprocess args;
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
-    if(call_args.ownerID == 0)
-        call_args.ownerID = call.client->GetCharacterID();
+    if (args.ownerID == 0)
+        args.ownerID = call.client->GetCharacterID();
 
-    if(call_args.flag == 0)
-        call_args.flag = flagHangar;
+    if (args.flag == flagAutoFit)
+        args.flag = flagHangar;
 
-    double tax = _CalcTax(call.client->GetChar() );
+    if (args.ownerID == call.client->GetCorporationID()) {
+        int64 roles = call.client->GetCorpRole();
 
-    std::vector<int32>::iterator cur, end;
-    cur = call_args.items.begin();
-    end = call_args.items.end();
-    for(; cur != end; cur++) {
-        InventoryItemRef item = m_manager->item_factory->GetItem( *cur );
-        if( !item )
+        if ((args.flag == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
+        or  (args.flag == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
+        or  (args.flag == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
+        or  (args.flag == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
+        or  (args.flag == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
+        or  (args.flag == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
+        or  (args.flag == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
+            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", call.client->GetCharacterName().c_str(), call.client->GetCharacterID());
+    }
+
+    double tax = CalcTax(GetStanding(call.client));
+    InventoryItemRef iRef = InventoryItemRef(nullptr);
+    for (auto cur : args.items)  {
+        iRef = sItemFactory.GetItem(cur);
+        if (iRef.get() == nullptr)
             continue;
-
-        if(item->ownerID() != (uint32)call_args.ownerID) {
-            _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u. Skipping.", call.client->GetCharacterID(), item->itemID(), item->ownerID());
-            continue;
-        }
 
         // this should never happen, but for sure ...
-        if(item->type().portionSize() > item->quantity()) {
+        if (iRef->type().portionSize() > iRef->quantity()) {
             std::map<std::string, PyRep *> args;
-            args["typename"] = new PyString(item->itemName().c_str());
-            args["portion"] = new PyInt(item->type().portionSize());
+            args["typename"] = new PyString(iRef->itemName().c_str());
+            args["portion"] = new PyInt(iRef->type().portionSize());
             throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
         }
 
-        double efficiency = _CalcReprocessingEfficiency( call.client, item );
+        double efficiency = CalcReprocessingEfficiency( call.client, iRef );
 
+        // dont hit db for this shit...we kinda have to....dont have this data in static shit.
         std::vector<Recoverable> recoverables;
-        if( !m_db.GetRecoverables( item->typeID(), recoverables ) )
+        if ( !m_db.GetRecoverables( iRef->typeID(), recoverables ) )
             continue;
 
         std::vector<Recoverable>::iterator cur_rec = recoverables.begin();
-        for(; cur_rec != recoverables.end(); cur_rec++) {
-			uint32 full = cur_rec->amountPerBatch * item->quantity() / item->type().portionSize();
+        for (; cur_rec != recoverables.end(); cur_rec++) {
+			uint32 full = cur_rec->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
             uint32 quantity = uint32(full * efficiency * (1.0 - tax) );
-			if(quantity == 0)
+			if (quantity == 0)
                 continue;
 
-            ItemData idata(
-                cur_rec->typeID,
-                call.client->GetCharacterID(),
-                0, //temp location
-                flagHangar,
-                quantity
-            );
-
-            InventoryItemRef i = m_manager->item_factory->SpawnItem( idata );
-            if( !i )
+            ItemData idata(cur_rec->typeID, args.ownerID, 0, flagAutoFit, quantity);
+            InventoryItemRef iRef2 = sItemFactory.SpawnItem( idata );
+            if (iRef2.get() == nullptr)
                 continue;
 
-            i->Move(call.client->GetStationID(), flagHangar, true);
+            // update this for corp usage
+            iRef2->Move(m_station->GetID(), (EVEItemFlags)args.flag, true);
         }
 
-        uint32 qtyLeft = item->quantity() % item->type().portionSize();
+        uint32 qtyLeft = iRef->quantity() % iRef->type().portionSize();
         if (qtyLeft)
-            item->SetQuantity(qtyLeft);
+            iRef->SetQuantity(qtyLeft);
         else {
-            call.client->SystemMgr()->RemoveItemFromInventory(item);
-            item->Delete();
+            m_station->RemoveItem(iRef);
+            iRef->Delete();
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
-double ReprocessingServiceBound::_CalcReprocessingEfficiency(const Client *c, InventoryItemRef item) const {
-    CharacterRef ch = c->GetChar();
+float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient, InventoryItemRef item) const {
     /* formula is:
         reprocessingEfficiency = 0.375
-        *(1 + 0.02*RefiningSkill)
-        *(1 + 0.04*RefineryEfficiencySkill)
-        *(1 + 0.05*OreProcessingSkill)
+        *(1 + 0.02 * RefiningSkill)
+        *(1 + 0.04 * RefineryEfficiencySkill)
+        *(1 + 0.05 * OreProcessingSkill)
     */
+    CharacterRef cRef = pClient->GetChar();
     double efficiency =  (0.375
-                        * (1 + (0.02 * ch->GetSkillLevel(skillRefining)))
-                        * (1 + (0.04 * ch->GetSkillLevel(skillRefineryEfficiency))));
+                        * (1 + (0.02 * cRef->GetSkillLevel(skillRefining)))
+                        * (1 + (0.04 * cRef->GetSkillLevel(skillRefineryEfficiency))));
 
-    if (item.get()) {
+    if (item.get() != nullptr) {
         uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
         if (specificSkill)
-            efficiency *= (1 + 0.05 * ch->GetSkillLevel(specificSkill));
+            efficiency *= (1 + 0.05 * cRef->GetSkillLevel(specificSkill));
         else
-            efficiency *= (1 + 0.05 * ch->GetSkillLevel(skillScrapmetalProcessing));    // use Scrapmetal Processing as default
+            efficiency *= (1 + 0.05 * cRef->GetSkillLevel(skillScrapmetalProcessing));    // use Scrapmetal Processing as default
     }
 
     efficiency += m_staEfficiency;
 
     if (efficiency > 1)
-        efficiency = 1.1;  // should be 1.0 max
+        efficiency = 1.05;  // should be 1.0 max
 
     return efficiency;
 }
 
-PyRep *ReprocessingServiceBound::_GetQuote(uint32 itemID, const Client *c) const {
-    InventoryItemRef item = m_manager->item_factory->GetItem( itemID );
-    if( !item )
-        return NULL;    // No action as GetQuote is also called for reprocessed items (probably for check)
+PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, const Client* pClient) const {
+    InventoryItemRef iRef = sItemFactory.GetItem( itemID );
+    if (iRef.get() == nullptr)
+        return nullptr;    // No action as GetQuote is also called for reprocessed items (probably for check)
 
-    if(item->ownerID() != c->GetCharacterID()) {
-        _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", c->GetCharacterID(), item->itemID(), item->ownerID());
-        return NULL;
+    // update this for corp items
+    if (iRef->ownerID() != pClient->GetCharacterID()) {
+        _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", pClient->GetCharacterID(), iRef->itemID(), iRef->ownerID());
+        return nullptr;
     }
-/*
-    if(item->quantity() < item->type().portionSize()) {
-        if (c and c->CanThrow()) {
-            std::map<std::string, PyRep *> args;
-            args["typename"] = new PyString(item->itemName().c_str());
-            args["portion"] = new PyInt(item->type().portionSize());
-            // throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
-        }
-    }
-*/
+
     Rsp_GetQuote quote;
-    quote.lines = new PyList;
-    quote.leftOvers = item->quantity() % item->type().portionSize();
-    quote.quantityToProcess = item->quantity() - quote.leftOvers;
-    quote.playerStanding = c->GetChar()->GetCorpStanding(c->GetCharacterID(), m_stationCorpID);
+    quote.lines = new PyList();
+    quote.leftOvers = iRef->quantity() % iRef->type().portionSize();
+    quote.quantityToProcess = iRef->quantity() - quote.leftOvers;
+    quote.playerStanding = GetStanding(pClient);
 
-    double tax = _CalcTax( quote.playerStanding );
+    double tax = CalcTax( quote.playerStanding );
 
-    if(item->quantity() >= item->type().portionSize()) {
+    if (iRef->quantity() >= iRef->type().portionSize()) {
         std::vector<Recoverable> recoverables;
-        if( !m_db.GetRecoverables( item->typeID(), recoverables ) )
-            return NULL;
+        if (!m_db.GetRecoverables( iRef->typeID(), recoverables))
+            return nullptr;
 
-        double efficiency = _CalcReprocessingEfficiency(c, item);
+        double efficiency = CalcReprocessingEfficiency(pClient, iRef);
 
-        std::vector<Recoverable>::const_iterator cur, end;
-        cur = recoverables.begin();
-        end = recoverables.end();
-        for(; cur != end; cur++)
-        {
-            uint32 ratio = cur->amountPerBatch * quote.quantityToProcess / item->type().portionSize();
-
+        for (auto cur :recoverables) {
+            uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
             Rsp_GetQuote_Recoverables_Line line;
-
-            line.typeID			= cur->typeID;
-            line.client			= uint32(efficiency * (1.0 - tax)   * ratio);
-            line.station		= uint32(efficiency * tax           * ratio);
-            line.unrecoverable	= ratio - line.client - line.station;
-
+                line.typeID			= cur.typeID;
+                line.client			= uint32(efficiency * (1.0 - tax)   * ratio);
+                line.station		= uint32(efficiency * tax           * ratio);
+                line.unrecoverable	= ratio - line.client - line.station;
             quote.lines->AddItem( line.Encode() );
         }
+    } else {
+        std::map<std::string, PyRep *> args;
+        args["typename"] = new PyString(iRef->itemName().c_str());
+        args["portion"] = new PyInt(iRef->type().portionSize());
+        throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
     }
 
     return quote.Encode();
 }
 
+float ReprocessingServiceBound::GetStanding(const Client* pClient) const
+{
+    float standing = pClient->GetChar()->GetStanding(pClient->GetCharacterID(), m_stationCorpID);
+    if (standing < 0)
+        standing += ((10 +standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillDiplomacy));
+    else
+        standing += ((10 -standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillConnections));
 
-double ReprocessingServiceBound::_CalcTax(const CharacterRef ch) const {
-    return _CalcTax(ch->GetCorpStanding(ch.get()->itemID(), m_stationCorpID));
+    return EvE::max(standing, pClient->GetChar()->GetStanding(pClient->GetCorporationID(), m_stationCorpID));
 }
 
-double ReprocessingServiceBound::_CalcTax(double standing) const {
-    double tax = m_tax - 0.75/100*standing;
-    if (tax < 0) tax = 0;
+float ReprocessingServiceBound::CalcTax(float standing) const {
+    //EvEMath::Refine::StationTaxesForReprocessing(standing);
+    double tax = m_tax - 0.75/100 * standing;
+    if (tax < 0)
+        tax = 0;
     return tax;
 }

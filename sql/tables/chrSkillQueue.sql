@@ -23,10 +23,10 @@ DROP TABLE IF EXISTS `chrSkillQueue`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrSkillQueue` (
-  `characterID` int(10) unsigned NOT NULL,
-  `orderIndex` int(10) unsigned NOT NULL,
-  `typeID` int(10) unsigned NOT NULL,
-  `level` int(10) unsigned NOT NULL
+  `characterID` int(10)  NOT NULL,
+  `orderIndex` int(10)  NOT NULL,
+  `typeID` int(10)  NOT NULL,
+  `level` int(10)  NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=FIXED;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

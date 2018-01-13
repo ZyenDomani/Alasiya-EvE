@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `chrOwnerNote`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrOwnerNote` (
-  `noteID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `ownerID` int(10) unsigned NOT NULL,
+  `noteID` int(10)  NOT NULL AUTO_INCREMENT,
+  `ownerID` int(10)  NOT NULL,
   `label` text,
   `note` text,
   UNIQUE KEY `noteID` (`noteID`)

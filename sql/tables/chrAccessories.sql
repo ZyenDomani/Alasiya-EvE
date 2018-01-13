@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrAccessories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrAccessories` (
-  `accessoryID` int(10) unsigned NOT NULL DEFAULT '0',
+  `accessoryID` int(10)  NOT NULL DEFAULT '0',
   `accessoryName` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`accessoryID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

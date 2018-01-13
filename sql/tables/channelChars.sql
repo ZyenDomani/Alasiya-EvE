@@ -24,11 +24,11 @@ DROP TABLE IF EXISTS `channelChars`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channelChars` (
   `channelID` int(10) NOT NULL DEFAULT '0',
-  `corpID` int(10) unsigned NOT NULL DEFAULT '0',
-  `charID` int(10) unsigned NOT NULL DEFAULT '0',
-  `allianceID` int(10) unsigned NOT NULL DEFAULT '0',
-  `role` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `extra` int(10) unsigned NOT NULL DEFAULT '0'
+  `corpID` int(10)  NOT NULL DEFAULT '0',
+  `charID` int(10)  NOT NULL DEFAULT '0',
+  `allianceID` int(10)  NOT NULL DEFAULT '0',
+  `role` bigint(20)  NOT NULL DEFAULT '0',
+  `extra` int(10)  NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrCertificates`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrCertificates` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10)  NOT NULL AUTO_INCREMENT,
   `characterID` int(10) NOT NULL,
   `certificateID` int(10) NOT NULL,
   `grantDate` bigint(20) NOT NULL,

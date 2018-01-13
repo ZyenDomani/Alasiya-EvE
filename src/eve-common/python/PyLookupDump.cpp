@@ -132,7 +132,7 @@ bool PyLookupResolver::LoadStringFile(const char *file) {
     return true;
 }
 
-const char *PyLookupResolver::LookupInt(uint64 value) const {
+const char *PyLookupResolver::LookupInt(int64 value) const {
     //hackish check for win32 time looking things...
     if(value > 127900000000000000LL && value < 130000000000000000LL) {
         //this is not thread safe or reentrant..

@@ -23,14 +23,15 @@ DROP TABLE IF EXISTS `crpOffices`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `crpOffices` (
-  `corporationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `stationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `itemID` int(10) unsigned NOT NULL DEFAULT '0',
-  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
-  `officeFolderID` int(10) unsigned NOT NULL DEFAULT '0',
+  `officeID` int(10)  NOT NULL DEFAULT '0',
+  `officeFolderID` int(10)  NOT NULL DEFAULT '0',
+  `corporationID` int(10)  NOT NULL DEFAULT '0',
+  `stationID` int(10)  NOT NULL DEFAULT '0',
+  `itemID` int(10)  NOT NULL DEFAULT '0',
+  `typeID` int(10)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`corporationID`,`officeFolderID`),
   KEY `itemID` (`itemID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Corporate Office Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --

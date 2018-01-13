@@ -1,6 +1,11 @@
-/*
-    Author:        Allan
-*/
+
+/**
+ * @name PosMgrDB.h
+ *   DataBase methods for all POS items
+ *
+ * @Author:         Allan
+ * @date:   8 December 17
+ */
 
 
 #ifndef EVEMU_POS_POSMGR_H_
@@ -9,23 +14,48 @@
 #include "ServiceDB.h"
 #include "../../eve-common/EVE_POS.h"
 
+class ReactorData;
+class StructureSE;
 class PosMgrDB
 : public ServiceDB
 {
 public:
-    PyRep *GetControlTowerFuelRequirements();
-    PyRep *GetSiloCapacityByItemID(uint16 typeID);
+    PyRep *GetSiloCapacityForType(uint16 typeID);
+    PyRep* GetCorpControlTowers(uint32 corpID);
+
+    static void GetLinkableJumpArrays(uint32 corpID, DBQueryResult& res);
+
+    void GetControlTowerFuelRequirements(DBQueryResult& res);
+    void GetCorpJumpArrays(uint32 corpID, DBQueryResult& res);
+
 
     // pos data methods
-    bool GetPOSData(EVEPOS::SaveData& data);
-    void SavePOSData(EVEPOS::SaveData& data);
-    void UpdatePOSData(EVEPOS::SaveData& data);
+    bool GetBaseData(EVEPOS::StructureData& data);
+    void SaveBaseData(EVEPOS::StructureData& data);
+    void UpdateBaseData(EVEPOS::StructureData& data);
 
-    void UpdatePOSNotify(uint32 towerID, EVEPOS::TowerData& data);
-    void UpdatePOSSentry(uint32 towerID, EVEPOS::TowerData& data);
-    void UpdatePOSPassword(uint32 towerID, EVEPOS::TowerData& data);
-    void UpdatePOSPermission(uint32 towerID, EVEPOS::TowerData& data);
-    void UpdatePOSTimeStamp(uint32 towerID, uint64 timeStamp);
+    bool GetTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sData);
+    void SaveTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sData);
+
+    bool GetBridgeData(EVEPOS::JumpBridgeData& data);
+    void SaveBridgeData(EVEPOS::JumpBridgeData& data);
+    void UpdateBridgeData(EVEPOS::JumpBridgeData& data);
+
+    bool GetReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
+    void SaveReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
+    void UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
+
+
+    void UpdateAccess(int32 itemID, EVEPOS::TowerData& data);
+    void UpdateNotify(int32 itemID, EVEPOS::TowerData& data);
+    void UpdateSentry(int32 itemID, EVEPOS::TowerData& data);
+    void UpdatePassword(int32 itemID, EVEPOS::TowerData& data);
+    void UpdateTimeStamp(int32 itemID, EVEPOS::StructureData& data);
+    void UpdatePermission(int32 itemID, EVEPOS::TowerData& data);
+    void UpdateUsageFlags(int32 itemID, EVEPOS::StructureData& data);
+    void UpdateDeployFlags(int32 itemID, EVEPOS::TowerData& data);
+    void UpdateHarmonicAndPassword(int32 itemID, EVEPOS::TowerData& data);
+
 
 };
 

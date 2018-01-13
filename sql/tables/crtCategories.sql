@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `crtCategories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `crtCategories` (
-  `categoryID` tinyint(3) unsigned NOT NULL,
+  `categoryID` tinyint(3)  NOT NULL,
   `description` varchar(500) DEFAULT NULL,
   `categoryName` varchar(256) DEFAULT NULL,
-  `categoryNameID` int(10) unsigned DEFAULT '0',
-  `dataID` int(10) unsigned DEFAULT '0',
+  `categoryNameID` int(10)  DEFAULT '0',
+  `dataID` int(10)  DEFAULT '0',
   PRIMARY KEY (`categoryID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

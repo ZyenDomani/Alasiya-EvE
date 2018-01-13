@@ -151,9 +151,9 @@ PyResult Command_spawnbelt( Client* who, CommandDB* db, PyServiceMgr* services, 
 
     for (uint32 i = 1; i < pcs; ++i) {
         roidradius = MakeRandomFloat( 3000.0, 8000.0 ) *security;
-        theta = EvE_DegreesToRadians(degreeSeperation *i);
-        mposition.x = radius * cos(theta);
-        mposition.z = radius * sin(theta);
+        theta = EvE::Trig::Deg2Rad(degreeSeperation *i);
+        mposition.x = radius * std::cos(theta);
+        mposition.z = radius * std::sin(theta);
         mposition.y = MakeRandomFloat( -(radius/12), (radius/10) );
         SpawnAsteroid( pSystem, GetAsteroidType( MakeRandomFloat(), roidDist ), roidradius, (center +mposition) );
     }
@@ -184,7 +184,7 @@ void SpawnAsteroid( SystemManager* pSystem, uint32 typeID, double radius, const 
                     "",    //name
                     position );
 
-    InventoryItemRef i = pSystem->itemFactory()->SpawnItem(idata);
+    InventoryItemRef i = sItemFactory.SpawnItem(idata);
     if (!i)
         throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 

@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `channels`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channels` (
   `channelID` int(10) NOT NULL AUTO_INCREMENT,
-  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerID` int(10)  NOT NULL DEFAULT '0',
   `displayName` varchar(85) DEFAULT NULL,
   `motd` text,
   `comparisonKey` varchar(11) DEFAULT NULL,

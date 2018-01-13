@@ -32,43 +32,38 @@
 #include "planet/PlanetDB.h"
 #include "system/DestinyManager.h"
 #include "system/Container.h"
-#include "SystemManager.h"
-#include "SystemBubble.h"
-#include "cosmicMgrs/SpawnMgr.h"
+#include "system/SystemManager.h"
+#include "system/SystemBubble.h"
+#include "system/cosmicMgrs/SpawnMgr.h"
 
 /*
  * CargoContainer
  */
-CargoContainer::CargoContainer(
-    ItemFactory &_factory,
-    uint32 _containerID,
-    // InventoryItem stuff:
-    const ItemType &_containerType,
-    const ItemData &_data)
-: InventoryItem(_factory, _containerID, _containerType, _data)
+CargoContainer::CargoContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
+: InventoryItem(_containerID, _containerType, _data)
 {
     m_isAnchored = false;
-    m_inventory = new Inventory(InventoryItemRef(this));
-    _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", itemName().c_str(), itemID());
+    pInventory = new Inventory(InventoryItemRef(this));
+    _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", m_itemName.c_str(), m_itemID);
 }
 
-CargoContainerRef CargoContainer::Load(ItemFactory &factory, uint32 containerID)
+CargoContainerRef CargoContainer::Load( uint32 containerID)
 {
-    return InventoryItem::Load<CargoContainer>( factory, containerID );
+    return InventoryItem::Load<CargoContainer>(containerID );
 }
 
 bool CargoContainer::_Load() {
-    if (!m_inventory->LoadContents( &m_factory ) )
+    if (!pInventory->LoadContents())
         return false;
 
     return InventoryItem::_Load();
 }
 
-CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
-    uint32 containerID = CargoContainer::CreateItemID( factory, data );
+CargoContainerRef CargoContainer::Spawn( ItemData &data) {
+    uint32 containerID = CargoContainer::CreateItemID(data );
     if (containerID == 0 )
         return CargoContainerRef();
-    CargoContainerRef containerRef = CargoContainer::Load( factory, containerID );
+    CargoContainerRef containerRef = CargoContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
     containerRef->SetAttribute(AttrRadius,        containerRef->type().radius());			// Radius
@@ -81,22 +76,22 @@ CargoContainerRef CargoContainer::Spawn(ItemFactory &factory, ItemData &data) {
 	return containerRef;
 }
 
-uint32 CargoContainer::CreateItemID(ItemFactory &factory, ItemData &data)
+uint32 CargoContainer::CreateItemID( ItemData &data)
 {
-    return InventoryItem::CreateItemID(factory, data);
+    return InventoryItem::CreateItemID(data);
 }
 
 void CargoContainer::Delete()
 {
     if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
         PlanetDB mDB;
-        mDB.DeleteLaunch(itemID());
+        mDB.DeleteLaunch(m_itemID);
     }
 
     mySE->Delete();
-    m_inventory->LoadContents(&m_factory);
+    pInventory->LoadContents();
     // delete contents first
-    m_inventory->DeleteContents();
+    pInventory->DeleteContents();
     InventoryItem::Delete();
 }
 
@@ -115,7 +110,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
     if (flag == flagCargoHold )  {
         EvilNumber capacityUsed(0);
         std::vector<InventoryItemRef> items;
-        m_inventory->FindByFlag(flag, items);
+        pInventory->FindByFlag(flag, items);
         for (auto cur : items)
             capacityUsed += cur->GetAttribute(AttrVolume);
         capacityUsed += item->GetAttribute(AttrVolume);
@@ -125,8 +120,8 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
 }
 
 PyObject *CargoContainer::CargoContainerGetInfo() {
-    if (!m_inventory->LoadContents( &m_factory ) ) {
-        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", itemName().c_str(), itemID() );
+    if (!pInventory->LoadContents( ) ) {
+        codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", m_itemName.c_str(), m_itemID );
         return NULL;
     }
 
@@ -137,17 +132,12 @@ PyObject *CargoContainer::CargoContainerGetInfo() {
     if (!Populate( entry ) )
         return NULL;    //print already done.
 
-    result.items[ itemID() ] = entry.Encode();
+    result.items[ m_itemID ] = entry.Encode();
 
     return result.Encode();
 }
 
-void CargoContainer::AddItem(InventoryItemRef item)
-{
-    m_inventory->AddItem( item );
-}
-
-void CargoContainer::RemoveItem(InventoryItemRef item)
+void CargoContainer::RemoveItem(InventoryItemRef iRef)
 {
     /** @todo  put check in here for container owner (if space container) and implement sec penalty */
     /* http://www.eveinfo.net/wiki/ind~4067.htm
@@ -160,12 +150,12 @@ void CargoContainer::RemoveItem(InventoryItemRef item)
     double loss = penalty * (client->GetSecurityRating() + 10);
     client->GetChar()->secStatusChange( loss );
     */
-    m_inventory->RemoveItem( item );
+    pInventory->RemoveItem( iRef );
     if (m_isAnchored)
         return;
    // if (typeID() == EVEDB::invTypes::typeCargoContainer)
-    if (m_inventory->IsEmpty()) {
-        sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", itemID() );
+    if (pInventory->IsEmpty()) {
+        sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
         Delete();
     }
 }
@@ -270,7 +260,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = m_allyID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
     DSTBALL_TROLL_Struct troll;
         troll.formationID = 0xFF;
@@ -301,6 +291,8 @@ PyDict *ContainerSE::MakeSlimItem() {
         slim->SetItemString("corpID",       new PyInt(m_corpID));
         slim->SetItemString("allianceID",   new PyInt(m_allyID));
         slim->SetItemString("warFactionID", new PyInt(m_warID));
+        if (m_contRef->IsAnchored())        // not sure if this is right...testing
+            slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureState::Anchored));
 
     if (is_log_enabled(DESTINY__DEBUG)) {
         _log( DESTINY__DEBUG, "ContainerSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
@@ -313,35 +305,30 @@ PyDict *ContainerSE::MakeSlimItem() {
 /*
  * WreckContainer
  */
-WreckContainer::WreckContainer(
-    ItemFactory &_factory,
-    uint32 _containerID,
-    // InventoryItem stuff:
-    const ItemType &_containerType,
-    const ItemData &_data)
-: InventoryItem(_factory, _containerID, _containerType, _data)
+WreckContainer::WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
+: InventoryItem(_containerID, _containerType, _data)
 {
-    m_inventory = new Inventory(InventoryItemRef(this));
+    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
 }
 
-WreckContainerRef WreckContainer::Load(ItemFactory &factory, uint32 containerID)
+WreckContainerRef WreckContainer::Load( uint32 containerID)
 {
-    return InventoryItem::Load<WreckContainer>( factory, containerID );
+    return InventoryItem::Load<WreckContainer>(containerID );
 }
 
 bool WreckContainer::_Load() {
-    if (!m_inventory->LoadContents( &m_factory ) )
+    if (!pInventory->LoadContents( ) )
         return false;
 
     return InventoryItem::_Load();
 }
 
-WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
-    uint32 containerID = WreckContainer::CreateItemID( factory, data );
+WreckContainerRef WreckContainer::Spawn( ItemData &data) {
+    uint32 containerID = WreckContainer::CreateItemID(data );
     if (containerID == 0 )
         return WreckContainerRef();
-    WreckContainerRef wreckRef = WreckContainer::Load( factory, containerID );
+    WreckContainerRef wreckRef = WreckContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
     wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
@@ -354,17 +341,17 @@ WreckContainerRef WreckContainer::Spawn(ItemFactory &factory, ItemData &data) {
     return wreckRef;
 }
 
-uint32 WreckContainer::CreateItemID(ItemFactory &factory, ItemData &data)
+uint32 WreckContainer::CreateItemID( ItemData &data)
 {
-    return InventoryItem::CreateItemID(factory, data);
+    return InventoryItem::CreateItemID(data);
 }
 
 void WreckContainer::Delete()
 {
     mySE->Delete();
-    m_inventory->LoadContents(&m_factory);
+    pInventory->LoadContents();
     // delete contents first
-    m_inventory->DeleteContents();
+    pInventory->DeleteContents();
     InventoryItem::Delete();
 }
 
@@ -375,7 +362,7 @@ double WreckContainer::GetCapacity(EVEItemFlags flag) const
 
 PyObject *WreckContainer::WreckContainerGetInfo()
 {
-    if (!m_inventory->LoadContents(&m_factory)) {
+    if (!pInventory->LoadContents()) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
         return NULL;
     }
@@ -397,14 +384,9 @@ void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item )
         //  no code here.  should NOT be able to add items to a wreck contaier.
 }
 
-void WreckContainer::AddItem( InventoryItemRef item )
+void WreckContainer::RemoveItem(InventoryItemRef iRef)
 {
-    m_inventory->AddItem( item );
-}
-
-void WreckContainer::RemoveItem(InventoryItemRef item)
-{
-    m_inventory->RemoveItem( item );
+    pInventory->RemoveItem( iRef );
     if (IsEmpty()) {
         MakeSlimItemChange();
         _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
@@ -487,7 +469,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = m_allyID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
 
     DSTBALL_TROLL_Struct troll;

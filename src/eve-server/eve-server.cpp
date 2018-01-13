@@ -59,7 +59,7 @@
 // character services
 #include "character/AggressionMgrService.h"
 #include "character/CertificateMgrService.h"
-#include "character/CharFittingMgrService.h"
+#include "character/CharFittingMgr.h"
 #include "character/CharMgrService.h"
 #include "character/CharUnboundMgrService.h"
 #include "character/PaperDollService.h"
@@ -74,13 +74,18 @@
 #include "config/ConfigService.h"
 #include "config/LanguageService.h"
 #include "config/LocalizationServerService.h"
+// contract services
+#include "contract/ContractMgr.h"
+#include "contract/ContractProxy.h"
 // corporation services
 #include "corporation/AllianceRegistry.h"
-#include "corporation/CorpBookmarkMgrService.h"
+#include "corporation/BillMgr.h"
+#include "corporation/CorpBookmarkMgr.h"
+#include "corporation/CorpFittingMgr.h"
 #include "corporation/CorpMgrService.h"
 #include "corporation/CorporationService.h"
 #include "corporation/CorpRegistryService.h"
-#include "corporation/CorpStationMgrService.h"
+#include "corporation/CorpStationMgr.h"
 #include "corporation/LPService.h"
 #include "corporation/LPStore.h"
 // dogmaim services
@@ -118,9 +123,7 @@
 // map services
 #include "map/MapService.h"
 // market services
-#include "market/BillMgrService.h"
-#include "market/ContractMgrService.h"
-#include "market/ContractProxy.h"
+#include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
 #include "market/MarketBotMgr.h"
 // missions services
@@ -131,7 +134,7 @@
 #include "planet/PlanetMgrBound.h"
 #include "planet/PlanetORBBound.h"
 // pos services
-#include "pos/PosMgrService.h"
+#include "pos/PosMgr.h"
 #include "pos/Structure.h"
 // search services
 #include "search/Search.h"
@@ -146,6 +149,7 @@
 #include "station/JumpCloneService.h"
 #include "station/RepairService.h"
 #include "station/ReprocessingService.h"
+#include "station/StationDataMgr.h"
 #include "station/StationService.h"
 #include "station/StationSvcService.h"
 #include "station/TradeService.h"
@@ -270,7 +274,7 @@ int main( int argc, char* argv[] )
 
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
-    ItemFactory* item_factory = new ItemFactory();
+    sItemFactory.Initialize();
 
     /* initialize EntityList singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
@@ -278,7 +282,7 @@ int main( int argc, char* argv[] )
 
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
-    PyServiceMgr pyServMgr( 888444, sEntityList, item_factory );
+    PyServiceMgr pyServMgr( 888444, sEntityList );
 
     /* create a command dispatcher */
     sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
@@ -301,19 +305,23 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Starting Civilian Manager");
     sCivMgr.Initialize(&pyServMgr);
 
+    /* create the MarketMgr singleton */
+    sLog.Green("       ServerInit", "Starting Market Manager");
+    sMktMgr.Initialize();
+
     /* create the MarketBot singleton */
     sLog.Green("       ServerInit", "Starting Market Bot Manager");
     sMktBotMgr.Initialize();
 
     /* create console command interperter singleton */
     sLog.Green("       ServerInit", "Starting Console Manager");
-    sConsole.Initialize(&command_dispatcher, item_factory);
+    sConsole.Initialize(&command_dispatcher);
 
     /* Service creation and registration. */
     sLog.Green("       ServerInit", "Registering Service Managers."); // 85 currently known pyServMgr
     double startTime = GetTimeMSeconds();
     /* Please keep the pyServMgr list clean so it's easier to find things */
-    /* service here are systems responding to client calls */
+    /* 'services' here are systems that respond to client calls */
     // move this into a service Init() function?   will need more work to do...
     pyServMgr.RegisterService("account", new AccountService(&pyServMgr));
     pyServMgr.RegisterService("agentMgr", new AgentMgrService(&pyServMgr));
@@ -321,7 +329,7 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("alert", new AlertService(&pyServMgr));
     pyServMgr.RegisterService("allianceRegistry", new AllianceRegistry(&pyServMgr));
     pyServMgr.RegisterService("authentication", new AuthService(&pyServMgr));
-    pyServMgr.RegisterService("billMgr", new BillMgrService(&pyServMgr));
+    pyServMgr.RegisterService("billMgr", new BillMgr(&pyServMgr));
     pyServMgr.RegisterService("beyonce", new BeyonceService(&pyServMgr));
     pyServMgr.RegisterService("bookmark", new BookmarkService(&pyServMgr));
     pyServMgr.RegisterService("browserLockdownSvc", new BrowserLockdownService(&pyServMgr));
@@ -329,19 +337,20 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("CalendarProxy", new CalendarProxy(&pyServMgr));
     pyServMgr.RegisterService("calendarMgr", new CalendarMgrService(&pyServMgr));
     pyServMgr.RegisterService("certificateMgr", new CertificateMgrService(&pyServMgr));
-    pyServMgr.RegisterService("charFittingMgr", new CharFittingMgrService(&pyServMgr));
+    pyServMgr.RegisterService("charFittingMgr", new CharFittingMgr(&pyServMgr));
     pyServMgr.RegisterService("charUnboundMgr", new CharUnboundMgrService(&pyServMgr));
     pyServMgr.RegisterService("charMgr", new CharMgrService(&pyServMgr));
     pyServMgr.RegisterService("clientStatLogger", new ClientStatLogger(&pyServMgr));
     pyServMgr.RegisterService("clientStatsMgr", new ClientStatsMgr(&pyServMgr));
     pyServMgr.RegisterService("config", new ConfigService(&pyServMgr));
-    pyServMgr.RegisterService("corpBookmarkMgr", new CorpBookmarkMgrService(&pyServMgr));
+    pyServMgr.RegisterService("corpBookmarkMgr", new CorpBookmarkMgr(&pyServMgr));
+    pyServMgr.RegisterService("corpFittingMgr", new CorpFittingMgr(&pyServMgr));
     pyServMgr.RegisterService("corpmgr", new CorpMgrService(&pyServMgr));
     pyServMgr.RegisterService("corporationSvc", new CorporationService(&pyServMgr));
     pyServMgr.RegisterService("corpRegistry", new CorpRegistryService(&pyServMgr));
-    pyServMgr.RegisterService("corpStationMgr", new CorpStationMgrService(&pyServMgr));
-    pyServMgr.RegisterService("contractMgr", new ContractMgrService(&pyServMgr));
-    pyServMgr.RegisterService("contractProxy", new ContractProxyService(&pyServMgr));
+    pyServMgr.RegisterService("corpStationMgr", new CorpStationMgr(&pyServMgr));
+    pyServMgr.RegisterService("contractMgr", new ContractMgr(&pyServMgr));
+    pyServMgr.RegisterService("contractProxy", new ContractProxy(&pyServMgr));
     pyServMgr.RegisterService("devToolsProvider", new DevToolsProviderService(&pyServMgr));
     pyServMgr.RegisterService("dogmaIM", new DogmaIMService(&pyServMgr));
     pyServMgr.RegisterService("dogma", new DogmaService(&pyServMgr));
@@ -383,7 +392,7 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("photoUploadSvc", new PhotoUploadService(&pyServMgr));
     pyServMgr.RegisterService("planetMgr", new PlanetMgrService(&pyServMgr));
     pyServMgr.RegisterService("planetOrbitalRegistryBroker", new planetORB(&pyServMgr));
-    pyServMgr.RegisterService("posMgr", new PosMgrService(&pyServMgr));
+    pyServMgr.RegisterService("posMgr", new PosMgr(&pyServMgr));
     pyServMgr.RegisterService("ramProxy", new RamProxyService(&pyServMgr));
     pyServMgr.RegisterService("repairSvc", new RepairService(&pyServMgr));
     pyServMgr.RegisterService("reprocessingSvc", new ReprocessingService(&pyServMgr));
@@ -416,7 +425,9 @@ int main( int argc, char* argv[] )
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
     else
         sBulkDB.Initialize();
-    sLog.Green("       ServerInit", "Effect Data Sets");
+    sLog.Green("       ServerInit", "Loading Data Sets");
+    sDataMgr.Initialize();
+    sLog.Green("       ServerInit", "Effect Data");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
     sDGM_Types_to_Wrecks_Table.Initialize();
@@ -428,8 +439,8 @@ int main( int argc, char* argv[] )
     sPlanetDataMgr.Initialize();
     sLog.Green("       ServerInit", "PI Data");
     sPIDataMgr.Initialize();
-    sLog.Green("       ServerInit", "Misc Data Sets");
-    sDataMgr.Initialize();
+    sLog.Green("       ServerInit", "Station Data");
+    stDataMgr.Initialize();
 
     sLog.White("", "");     // spacer
 
@@ -449,7 +460,7 @@ int main( int argc, char* argv[] )
         sLog.Green("  Idle Sleep Time","Default at 1000ms.");
     else
         sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
-    if (sConfig.server.UseShipTracking)
+    if (sConfig.debug.UseShipTracking)
         sLog.Warning("    Ship Tracking","Enabled.");
     else
         sLog.Warning("    Ship Tracking","Disabled.");
@@ -457,7 +468,7 @@ int main( int argc, char* argv[] )
         sLog.Green("     BeanCounting","Enabled.");
     else
         sLog.Warning("     BeanCounting","Disabled.");
-    if (sConfig.server.UseProfiling) {
+    if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
@@ -575,9 +586,9 @@ int main( int argc, char* argv[] )
     sEntityList.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
     /* Shut down the Item system */
-    item_factory->SaveItems();
+    sItemFactory.SaveItems();
     sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    SafeDelete(item_factory);
+    sItemFactory.Close();
     /* Close the service manager */
     pyServMgr.Close();
     /* Close the bulk data manager */
@@ -630,6 +641,9 @@ static void CleanUp() {
     /* Close the bulk data manager */
     sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
+    /* Close the station data manager */
+    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
+    stDataMgr.Close();
     /* Close the static data manager */
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();

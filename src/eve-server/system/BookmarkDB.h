@@ -44,7 +44,7 @@ public:
     bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
     bool DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList);
 
-    bool UpdateFolderInDatabase(int32 folderID, std::string& folderName);
+    bool UpdateFolderInDatabase(int32 folderID, std::string folderName);
     bool DeleteFolderFromDatabase(int32 folderID);
 
     uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID);

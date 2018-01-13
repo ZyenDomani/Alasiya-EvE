@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `srvStatisticDataDescription`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `srvStatisticDataDescription` (
-  `dataID` tinyint(1) unsigned NOT NULL,
+  `dataID` tinyint(1)  NOT NULL,
   `dataName` varchar(30) NOT NULL,
   `dataDescription` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Descriptions for DataNames in srvStatisticData table';

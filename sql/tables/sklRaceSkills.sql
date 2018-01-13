@@ -26,7 +26,7 @@ CREATE TABLE `sklRaceSkills` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `raceID` int(10) DEFAULT NULL,
   `skillTypeID` int(10) DEFAULT NULL,
-  `level` tinyint(3) unsigned DEFAULT NULL,
+  `level` tinyint(3)  DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `skillTypeID` (`skillTypeID`)
 ) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by raceID';

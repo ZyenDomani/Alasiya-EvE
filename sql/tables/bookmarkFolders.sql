@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `bookmarkFolders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bookmarkFolders` (
-  `folderID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `folderID` int(10)  NOT NULL AUTO_INCREMENT,
   `folderName` varchar(255) NOT NULL DEFAULT '',
   `ownerID` int(10) NOT NULL DEFAULT '0',
   `creatorID` int(10) NOT NULL DEFAULT '0',

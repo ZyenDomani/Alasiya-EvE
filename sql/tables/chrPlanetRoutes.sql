@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `chrPlanetRoutes`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrPlanetRoutes` (
   `ccPinID` int(10) NOT NULL DEFAULT '0',
-  `routeID` smallint(6) unsigned NOT NULL AUTO_INCREMENT,
+  `routeID` smallint(6)  NOT NULL AUTO_INCREMENT,
   `srcPinID` int(10) NOT NULL DEFAULT '0',
   `destPinID` int(10) NOT NULL DEFAULT '0',
   `state` tinyint(2) NOT NULL DEFAULT '1',

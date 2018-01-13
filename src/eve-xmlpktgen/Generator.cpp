@@ -47,9 +47,7 @@ void Generator::RegisterProcessors()
 
     AddMemberParser( "raw",             &Generator::ProcessRaw );
     AddMemberParser( "int",             &Generator::ProcessInt );
-    AddMemberParser( "uint",            &Generator::ProcessUInt );
     AddMemberParser( "long",            &Generator::ProcessLong );
-    AddMemberParser( "ulong",           &Generator::ProcessULong );
     AddMemberParser( "real",            &Generator::ProcessReal );
     AddMemberParser( "bool",            &Generator::ProcessBool );
     AddMemberParser( "none",            &Generator::ProcessNone );
@@ -102,9 +100,7 @@ void Generator::LoadEncTypes()
 
         smEncTypes[ "raw" ] = "PyRep";
         smEncTypes[ "int" ] = "PyInt";
-        smEncTypes[ "uint" ] = "PyUInt";
         smEncTypes[ "long" ] = "PyLong";
-        smEncTypes[ "ulong" ] = "PyULong";
         smEncTypes[ "real" ] = "PyFloat";
         smEncTypes[ "bool" ] = "PyBool";
         smEncTypes[ "none" ] = "PyNone";

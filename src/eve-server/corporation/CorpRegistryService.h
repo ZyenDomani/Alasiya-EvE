@@ -61,7 +61,7 @@ protected:
     PyCallable_DECL_CALL(EditLabel);
     PyCallable_DECL_CALL(AssignLabels);
     PyCallable_DECL_CALL(RemoveLabels);
-    //PyCallable_DECL_CALL();
+    PyCallable_DECL_CALL(ResignFromCEO);
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);

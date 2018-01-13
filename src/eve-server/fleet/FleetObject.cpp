@@ -43,7 +43,11 @@ PyBoundObject* FleetObject::_CreateBoundObject( Client* c, const PyRep* bind_arg
         _log(FLEET__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return nullptr;
     }
-
+    /*  do we need to bind object like this?   probably not, cause it works as-is
+    //we just bind up a new inventory object for container requested and give it back to them.
+    InventoryBound *ib = new InventoryBound(m_manager, item, flag);
+    PyRep *result = m_manager->BindObject(call.client, ib);
+    */
     return new FleetBound( m_manager, bind_args->AsInt()->value());
 }
 

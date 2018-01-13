@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `sysAsteroids`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `sysAsteroids` (
-  `itemID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `itemID` int(10)  NOT NULL AUTO_INCREMENT,
   `itemName` varchar(25) NOT NULL,
   `typeID` int(10) NOT NULL,
   `systemID` int(10) NOT NULL,

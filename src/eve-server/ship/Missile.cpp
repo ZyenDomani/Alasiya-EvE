@@ -82,7 +82,7 @@ Missile::~Missile() {
 
 void Missile::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
@@ -94,7 +94,7 @@ void Missile::Process() {
         m_hitTimer.Disable();
         HitTarget();
     }
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_missileProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -115,8 +115,8 @@ void Missile::EncodeDestiny( Buffer& into )
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
     DataSector data;
         data.maxVelocity = m_speed;

@@ -87,7 +87,7 @@ public:
         bool herState;
         double myMoney;
         double herMoney;
-        uint64 fileTime;
+        int64 fileTime;
     };
 
     struct TradeItems {

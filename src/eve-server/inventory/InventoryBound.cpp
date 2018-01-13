@@ -28,6 +28,7 @@
 
 #include "PyServiceCD.h"
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "inventory/InventoryBound.h"
 #include "pos/Structure.h"
 #include "system/BookmarkDB.h"
@@ -36,14 +37,18 @@
 
 PyCallable_Make_InnerDispatcher(InventoryBound)
 
-InventoryBound::InventoryBound( PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag)
+InventoryBound::InventoryBound( PyServiceMgr* mgr, InventoryItemRef item, EVEItemFlags flag, uint32 ownerID, bool passive)
 : PyBoundObject(mgr),
 m_dispatch(new Dispatcher(this)),
-mInventory(item->GetMyInventory()),
+pInventory(item->GetMyInventory()),
 mFlag(flag),
-m_self(item)
+m_self(item),
+m_itemID(item->itemID()),
+m_ownerID(ownerID),
+m_passive(passive)
 {
     _SetCallDispatcher(m_dispatch);
+
 
     m_strBoundObjectName = "InventoryBound";
 
@@ -59,7 +64,11 @@ m_self(item)
     PyCallable_REG_CALL(InventoryBound, DestroyFitting);
     PyCallable_REG_CALL(InventoryBound, SetPassword);
     PyCallable_REG_CALL(InventoryBound, CreateBookmarkVouchers);
+    PyCallable_REG_CALL(InventoryBound, RunRefiningProcess);
     PyCallable_REG_CALL(InventoryBound, Voucher);
+
+    _log(INV__BIND, "Created InventoryBound object %p for %s(%u) and ownerID %u with flag %s  (passive: %s)", \
+            this, m_self->itemName().c_str(), m_itemID, ownerID, sDataMgr.GetFlagName(flag).c_str(), (m_passive ? "true" : "false"));
 }
 
 InventoryBound::~InventoryBound()
@@ -68,35 +77,118 @@ InventoryBound::~InventoryBound()
 }
 
 PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     return m_self->GetItem();
 }
 
+PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
+{
+    _log(INV__MESSAGE, "Calling InventoryBound::ListStations() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+
+    util_Rowset rowset;
+
+    rowset.header.push_back( "stationID" );
+    rowset.header.push_back( "itemCount" );
+
+    return rowset.Encode();
+}
+
+PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
+    return nullptr;
+}
+
+PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
+{
+    call.client->GetShip()->StripFitting();
+    return nullptr;
+}
+
+PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)){
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    }
+
+    InventoryItemRef item = sItemFactory.GetItem(args.arg);
+    call.client->GetShip()->RemoveRig(item);
+
+    return nullptr;
+}
+
+
 PyResult InventoryBound::Handle_List(PyCallArgs &call) {
-    /** @todo (allan)  this does not work for POS cargohold (flag 5) */
-    /*
-     *
-     *    --found in starModeHandler.py:338 (ColorStarsByCargoIllegality)
-        inv = invCache.GetInventoryFromId(activeShipID, locationID=session.stationid2)
-        shipCargo = inv.List()
+    uint32 ownerID = m_ownerID;
+    // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
+    EVEItemFlags flag = mFlag, oldFlag = mFlag;
+    if (call.byname.find("flag") != call.byname.end())
+        flag = (EVEItemFlags)PyRep::IntegerValue(call.byname.find("flag")->second);
 
+    if (call.tuple->size() > 0) {
+        Call_List arg;
+        if (!arg.Decode(&call.tuple))
+            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        if (flag != arg.flag)
+            flag = (EVEItemFlags)arg.flag;
+    }
+
+    // check for owner type of this inventory for reference checks
+    if (IsOffice(m_itemID)) {
+        // office owned by corp in station
+        // check for owner or corp
+        if (call.client->GetCorporationID() != m_ownerID)
+            ; // calling char is not member of corp.  send error?
+    } else if (IsPlayerItem(m_itemID)) {
+        // this is probably a ship calling for all items
+        flag = flagAnywhere;
+        /*
+    } else if (IsPlayerCorp(m_itemID)) {
+        // this one probably will not be used.
+        //  what items in a corp would be listed?  corpItem dont have inventory
+    } else if (IsCharacter(m_itemID)) { // this is chccked in Inventory::List()
+        // this is asking for skill list...char is a container for skills
+        flag = flagAnywhere;
+    } else if (IsSolarSystem(m_itemID)) {
+        //  not sure how to do this one...will have to check on WHEN system listing would be called
         */
+    } else if (IsStation(m_itemID)) {
+        // this will get owners items only, including corps
 
-    /*  this is a start for determining if char is in corp, corp is owner of items, and/or what ownerID to send to List()
-     *
-     *    InventoryItemRef rItem = call.client->services().item_factory->GetItem(mInventory.inventoryID());
-     *    if (rItem.get()->categoryID() == EVEDB::invCategories::Structure)
-     *        return mInventory->List( 5, call.client->GetCharacterID());
-     *    else
-     */
+    } else if (IsControlBunker(m_itemID)) {
+        // not sure what this is yet
 
-    /** @todo make sure we are allowed to list this inventory */
-    _log(INV__MESSAGE, "Calling InventoryBound::List() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    return mInventory->List( mFlag, call.client->GetCharacterID() );
+    }
+/*
+    if (IsCargoHoldFlag(flag)) {
+        // check for owner or corpID
+
+    } else if (IsHangarFlag(flag)) {
+        // check for owner or corpID
+
+        flag = flagAnywhere;
+        if (call.client->GetCorporationID() != m_ownerID)
+            ; // calling char is not member of corp.  send error?
+    } else if (IsOfficeFlag(flag)) {
+        // flags for npc station containers, owned by station, but items owned by corp
+        //  this is market deliveries, impounded, etc.
+        // check for corpID
+
+        flag = flagAnywhere;
+        if (call.client->GetCorporationID() != m_ownerID)
+            ; // calling char is not member of corp.  send error?
+    }
+*/
+    _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
+                call.client->GetName(), ownerID, m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(flag).c_str(), (m_passive ? ":passive" : ""), \
+                sDataMgr.GetFlagName(oldFlag).c_str());
+
+    return pInventory->List(flag, ownerID);
 }
 
 PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     Inventory_CallReplaceCharges args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -105,48 +197,36 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
 
     //validate flag.
     if (!IsModuleSlot(args.flag)) {
-        _log(INV__ERROR, "%s: Invalid flag %d", call.client->GetName(), args.flag);
+        _log(INV__ERROR, "%s: Invalid flag %i", call.client->GetName(), args.flag);
         return nullptr;
     }
 
     // returns new ref
-    InventoryItemRef new_charge = mInventory->GetByID( args.itemID );
-    if ( !new_charge ) {
-        _log(INV__ERROR, "%s: Unable to find charge %d", call.client->GetName(), args.itemID);
+    InventoryItemRef iRef = pInventory->GetByID( args.itemID );
+    if (iRef.get() == nullptr) {
+        _log(INV__ERROR, "%s: Unable to find charge %i", call.client->GetName(), args.itemID);
         return nullptr;
     }
 
-    if (new_charge->ownerID() != call.client->GetCharacterID()) {
-        _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), new_charge->itemID(), new_charge->ownerID());
+    if ((iRef->ownerID() != call.client->GetCharacterID())
+    or (iRef->ownerID() != call.client->GetCorporationID())) {
+        _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
         return nullptr;
     }
 
-    if (new_charge->quantity() < args.quantity) {
-        _log(INV__WARNING, "%s: Item %u: Requested quantity (%d) exceeds actual quantity (%d), using actual.", call.client->GetName(), args.itemID, args.quantity, new_charge->quantity());
-    } else if (new_charge->quantity() > args.quantity) {
-        new_charge = new_charge->Split(args.quantity);  // split item
-        if ( !new_charge ) {
-            _log(INV__ERROR, "%s: Unable to split charge %d into %d", call.client->GetName(), args.itemID, args.quantity);
+    if (iRef->quantity() < args.quantity) {
+        _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
+    } else if (iRef->quantity() > args.quantity) {
+        iRef = iRef->Split(args.quantity);  // split item and get new item reference
+        if (iRef.get() == nullptr) {
+            _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
             return nullptr;
         }
     }
 
-    // new ref is consumed, we don't release it
-    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, new_charge );
+    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
 
     return new PyInt(1);
-}
-
-PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
-{
-    _log(INV__MESSAGE, "Calling InventoryBound::ListStations() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-
-    util_Rowset rowset;
-
-    rowset.header.push_back( "stationID" );
-    rowset.header.push_back( "itemCount" );
-
-    return rowset.Encode();
 }
 
 PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
@@ -160,6 +240,9 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         return nullptr;
     }
     args.Dump(COMMON__INFO);
+
+    // CanOnlyCreateVoucherInPersonalHangar     << dunno if i wanna pull an iRef JUST for this check....make voucher itemID group?
+    // m_self is *this itemRef
 
     /**
      * 00:39:12 [SvcCall]   Call Arguments:
@@ -203,7 +286,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         for (; itr != args.bmIDs->end(); ++itr) {
             //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
             ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa((*itr)->AsInt()->value()));
-            InventoryItemRef iRef = m_manager->item_factory->SpawnItem( iData );
+            InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
             if (iRef.get() == nullptr) {
                 codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
                 continue;
@@ -226,56 +309,63 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     return tuple;
 }
 
+PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call){
+    _log(INV__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    sLog.White( "InventoryBound::Handle_RunRefiningProcess()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
-    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::MultiMerge() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
+    _log(INV__MESSAGE, "Calling InventoryBound::MultiMerge() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     //Decode Args
-    Inventory_CallMultiMerge elements;
-    if (!elements.Decode(&call.tuple)) {
+    Inventory_CallMultiMerge args;
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
     Inventory_CallMultiMergeElement element;
 
-    call.client->services().item_factory->SetUsingClient(call.client);
-    std::vector<PyRep *>::const_iterator cur = elements.MMElements->begin();
-    for (; cur != elements.MMElements->end(); ++cur) {
+    sItemFactory.SetUsingClient(call.client);
+    std::vector<PyRep *>::const_iterator cur = args.MMElements->begin();
+    for (; cur != args.MMElements->end(); ++cur) {
         if (!element.Decode( *cur )) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             continue;
         }
 
-        InventoryItemRef stationaryItem = m_manager->item_factory->GetItem( element.stationaryItemID );
-        if ( !stationaryItem ) {
+        InventoryItemRef stationaryItem = sItemFactory.GetItem( element.stationaryItemID );
+        if (stationaryItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load stationary item %u. Skipping.", element.stationaryItemID);
             continue;
         }
 
-        InventoryItemRef draggedItem = m_manager->item_factory->GetItem( element.draggedItemID );
-        if ( !draggedItem ) {
+        InventoryItemRef draggedItem = sItemFactory.GetItem( element.draggedItemID );
+        if (draggedItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load dragged item %u. Skipping.", element.draggedItemID);
             continue;
         }
 
-        if (call.client->services().item_factory->GetItemContainerInventory(stationaryItem->itemID())->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
-            draggedItem->ChangeOwner(call.client->GetCharacterID());
+        if (sItemFactory.GetItemContainerInventory(stationaryItem->itemID())->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
+            // this shits not right.....
+            draggedItem->ChangeOwner(m_ownerID);
             stationaryItem->Merge( draggedItem, element.draggedQty );
         } // if false, error is thrown in ValidateAddItem() call
     }
-    call.client->services().item_factory->UnsetUsingClient();
+    sItemFactory.UnsetUsingClient();
 
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     EVEItemFlags stackFlag = mFlag;
 
     if (call.tuple->items.size() != 0) {
@@ -288,131 +378,250 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
         stackFlag = (EVEItemFlags)arg.arg;
     }
 
+    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) with flag %s", m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag).c_str());
+
     //Stack Items contained in this inventory
-    mInventory->StackAll(stackFlag, call.client->GetCharacterID());
+    pInventory->StackAll(stackFlag, m_ownerID);
 
     return nullptr;
 }
 
-PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::StripFitting() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.IsTestServer) {
-        sLog.White( "InventoryBound::Handle_StripFitting()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
-    }
-
-    call.client->GetShip()->StripFitting();
-
-    return nullptr;
-}
-
-PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)){
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-    }
-
-    //get the actual item
-    InventoryItemRef item = m_manager->item_factory->GetItem(args.arg);
-    //remove the rig effects from the ship
-    call.client->GetShip()->RemoveRig(item);
-
-    return nullptr;
-}
-
-PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (sConfig.server.IsTestServer) {
-        sLog.White( "InventoryBound::Handle_SetPassword()", "size= %u", call.tuple->size());
-        call.Dump(SERVICE__CALL_DUMP);
-    }
-    return nullptr;
-}
-
-/** @todo  need to check bound ship vs current ship.
- * when adding items to ANOTHER ship's cargohold (in station),
- * this does not check for other ship, instead adding items to CURRENT ship
+/* this call is used for moving an item to *THIS* inventory
+ * Moving items to/from containers
+ * Removing Module/Charges from ship (using 'remove' button on item slot)
+ * Adding Modules to a specific slot on ship
  */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
-   // _log(INV__MESSAGE, "Calling InventoryBound::Add() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     if (is_log_enabled(INV__DUMP)) {
         _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());
         call.Dump(INV__DUMP);
     }
 
-    if (call.tuple->items.size() == 2) {
-        /* this call is used for:
-         * Moving cargo items from ship cargo bay to a container in space
-         * Moving items from hangar to cargo bay or cargo bay to hangar
-         * Removing Module/Charges from ship (using 'remove' button on item slot)
-         * Adding Modules in a particular slot
-         */
+    if (call.tuple->items.size() != 2) {
+        _log(INV__ERROR, "InventoryBound::Handle_Add()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        return nullptr;
+    }
 
-        Call_Add_2 args;
-        /*  args sent from client
-         * args.itemID          - the item to move
-         * args.inventoryID     - the item's current location's itemID
-         */
-        if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    Call_Add_2 args;    // item and location
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint16 toFlag = mFlag;
+    if (call.byname.find("flag") != call.byname.end())
+        toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
+    if (toFlag == flagLocked) {
+        // corp role 'equip config' can move locked items (per client)
+        _log(INV__MESSAGE, "InventoryBound::Handle_Add() - item %u from %u sent flagLocked.", args.itemID, args.containerID);
+        toFlag = flagCargoHold;
+    }
+
+    InventoryItemRef iRef = sItemFactory.GetItem(args.itemID);
+
+    bool manyFlags = false;
+    int32 quantity = 0;
+    if (call.byname.find("qty") != call.byname.end())
+        quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
+
+    if (call.byname.find("dividing") != call.byname.end()) {
+        // split stack, move original ref, leave remainder here with new item
+        InventoryItemRef newItem = iRef->Split(iRef->quantity() -quantity);
+        if (newItem.get() == nullptr) {
+            _log(INV__ERROR, "InventoryBound::Handle_Add() - Error splitting item %u. Skipping.", iRef->itemID());
             return nullptr;
         }
+        iRef = newItem;
+        args.itemID = iRef->itemID();
+    // we're not dividing the stack, so check for removing loaded charges
+    } else if (iRef->categoryID() == EVEDB::invCategories::Charge)
+        manyFlags = true;
 
-        uint32 flag = flagAutoFit;
-        if (call.byname.find("flag") == call.byname.end()) {
-            if (IsStation(call.client->GetLocationID()))
-                flag = flagHangar;
-            else {
-                SystemEntity* pSE = call.client->SystemMgr()->GetSE(m_self->itemID());
-                _log(INV__MESSAGE, "Attempting to add itemID %u to inventory of %s(%u).", args.itemID, pSE->GetName(), m_self->itemID());
-                if (pSE->IsWreckSE()) {
-                    // cant move items into wrecks. deny
-                    call.client->SendErrorMsg("You cannot put items into wrecks.");
-                    return nullptr;
-                } else if (pSE->IsContainerSE()) {
-                    // allow items to be added to other containers in space
-                    flag = flagAutoFit;
-                } else if (pSE->IsObjectEntity()) {
-                    //  make checks here for adding objects to POS/SOV structures
+    float capacity = 0.0f;
+    if (call.byname.find("capacity") != call.byname.end())
+        capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
 
-                } else if (pSE->IsDynamicEntity()) {
-                    // will need to verify correct flag when moving items between ships (corp holds, command ships, etc)
-                    flag = flagCargoHold;
-                }
+    if (quantity < 1)
+        quantity = 1;
+
+    _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u of item %u from (%u:%s) to me(%s:%u:%s).", \
+            quantity, args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
+
+    std::vector<int32> items;
+    items.push_back(args.itemID);
+
+    return MoveItems(call.client, items, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
+}
+
+// this call is for moving items to *THIS* inventory
+PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
+    if (is_log_enabled(INV__DUMP)) {
+        _log(INV__DUMP, "InventoryBound::Handle_MultiAdd() size= %u", call.tuple->size());
+        call.Dump(INV__DUMP);
+    }
+
+    if (call.tuple->items.size() != 2) {
+        _log(INV__ERROR, "InventoryBound::Handle_MultiAdd()  Unexpected number of elements in tuple: %u (should be 2).", call.tuple->items.size() );
+        return nullptr;
+    }
+
+    Call_MultiAdd_2 args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint16 toFlag = mFlag;
+    if (call.byname.find("flag") != call.byname.end())
+        toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
+
+    int32 quantity = 1;
+    if (call.byname.find("qty") != call.byname.end())
+        quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
+
+    //bool byname(fromManyFlags):true == unload charges from module referenced
+    bool manyFlags = false;
+    if (call.byname.find("fromManyFlags") != call.byname.end())
+        if (!call.byname.find("fromManyFlags")->second->IsNone())
+            manyFlags = true;
+
+    float capacity = 0.0f;
+    if (call.byname.find("capacity") != call.byname.end())
+        capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
+
+    if ((capacity < 1) and (quantity < 1))
+        manyFlags = true;
+    if (IsHangarFlag(toFlag)) {
+        if (toFlag == flagCargoHold) {
+            if (quantity < 1)
+                manyFlags = true;
+        } else {
+            manyFlags = true;
+        }
+    }
+    
+    _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
+                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(mFlag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
+
+    return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
+}
+
+PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool manyFlags, float capacity)
+{   // complete method rewrite -allan 21Dec17
+    InventoryItemRef contRef(nullptr);
+    ShipItem* pShip = pClient->GetShip().get();
+    bool donating = false, ship = false;
+    int32 origQty = quantity;
+
+    // we will need to check *this for specific item-moving rules
+    switch (m_self->categoryID()) {
+        // specific container-type categories that may move items in/out
+        case EVEDB::invCategories::Trading: {
+            // this shouldnt hit.  trading is handled in separate system
+            codelog(INV__ERROR, "InventoryBound::MoveItems() - Trading Category called.");
+            EvE::traceStack();
+        } break;
+        case EVEDB::invCategories::Structure: {
+            // this is all POS groups.  use corp donating checks
+            donating = true;
+            // may have to reset flags based on type
+            switch (m_self->groupID()) {
+                case EVEDB::invGroups::Control_Tower: {
+                    // flag 0 = fuel bay, flag = 122 stronium bay (2nd storage)
+                } break;
+                case EVEDB::invGroups::Mobile_Missile_Sentry:
+                case EVEDB::invGroups::Mobile_Projectile_Sentry:
+                case EVEDB::invGroups::Mobile_Laser_Sentry:
+                case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
+                } break;
+                case EVEDB::invGroups::Electronic_Warfare_Battery:
+                case EVEDB::invGroups::Sensor_Dampening_Battery:
+                case EVEDB::invGroups::Stasis_Webification_Battery:
+                case EVEDB::invGroups::Warp_Scrambling_Battery:
+                case EVEDB::invGroups::Energy_Neutralizing_Battery:
+                case EVEDB::invGroups::Target_Painting_Battery: {
+                } break;
+                case EVEDB::invGroups::Refining_Array:
+                case EVEDB::invGroups::Ship_Maintenance_Array:
+                case EVEDB::invGroups::Assembly_Array:
+                case EVEDB::invGroups::Shield_Hardening_Array:
+                case EVEDB::invGroups::Corporate_Hangar_Array:
+                case EVEDB::invGroups::Stealth_Emitter_Array:
+                case EVEDB::invGroups::Scanner_Array:
+                case EVEDB::invGroups::Logistics_Array:
+                case EVEDB::invGroups::Cynosural_Generator_Array:
+                case EVEDB::invGroups::Structure_Repair_Array: {
+                } break;
+                default: {
+                } break;
             }
-        } else
-            flag = call.byname.find("flag")->second->AsInt()->value();
-
-        if (flag == flagLocked)
-            flag = flagCargoHold;
-
-        int32 quantity = 0;
-        if (call.byname.find("qty") != call.byname.end())
-            if (!call.byname.find("qty")->second->IsNone())
-                quantity = call.byname.find("qty")->second->AsInt()->value();
-
-        /*  this is module's charge capacity
-         *  also used for moved-to container's capacity
-         *  also used for slot capacity (??? got capacity=0 from moving rigs.)
-         */
-        float capacity = 0.0f;
-        if (call.byname.find("capacity") != call.byname.end())
-            if (!call.byname.find("capacity")->second->IsNone()) {
-                if (call.byname.find("capacity")->second->IsFloat())
-                    capacity = call.byname.find("capacity")->second->AsFloat()->value();
-                else if(call.byname.find("capacity")->second->IsInt())
-                    capacity = call.byname.find("capacity")->second->AsInt()->value();
+        } break;
+        case EVEDB::invCategories::Station: {
+            switch (m_self->groupID()) {
+                case EVEDB::invGroups::Station: {
+                    // standard station hangar
+                    if ((toFlag == flagCorpMarket)
+                    or (toFlag == flagImpounded)
+                    or (toFlag == flagDelivery)) {
+                        donating = true;
+                    } else if (toFlag == flagLocked) {
+                        ; // do tests here for moving locked items (corp role config and ??)
+                    }
+                } break;
+                case EVEDB::invGroups::Station_Services: {
+                    // station offices, office and factory folders.
+                    if (m_self->typeID() == EVEDB::invTypes::typeOffice) //office.  use corp donating checks
+                        donating = true;
+                } break;
             }
+        } break;
+        case EVEDB::invCategories::Orbitals: {
+            //may not have to do anything here.....test it
+            /*
+            if ((m_self->typeID() == EVEDB::invTypes::typePlanetaryCustomsOffice)
+            or (m_self->typeID() == EVEDB::invTypes::typeInterbusCustomsOffice)
+            or (m_self->typeID() == EVEDB::invTypes::typePlanetaryOfficeGantry))
+                donating = true;
+            */
+        } break;
+        case EVEDB::invCategories::Celestial: {
+            // containers, wrecks, construction platform, station improve/upgrade platform,
+            if (IsPlayerCorp(m_ownerID))
+                donating = true;
+        } break;
+        case EVEDB::invCategories::Ship: {
+            // do module checks for these items
+            ship = true;
+        } break;
+    }
 
-        /* check for avalible capy vs item volume
-         *  this will avoid an unnecessary call to _ExecAdd() if there's no room in dest container.
-         */
-        InventoryItemRef iRef = m_manager->item_factory->GetItem(args.itemID);
-        if (IsModuleSlot(flag) and (iRef->categoryID() == EVEDB::invCategories::Module)) {
-            quantity = 1;
-        } else if (capacity) {
-            if (!quantity)
+    EVEItemFlags old_flag(flagAutoFit);
+    InventoryItemRef iRef(nullptr);
+    sItemFactory.SetUsingClient(pClient);
+
+    std::vector<int32>::const_iterator cur = items.begin();
+    for (; cur != items.end(); ++cur) {
+        quantity = origQty;
+        iRef = sItemFactory.GetItem(*cur);
+        if (iRef.get() == nullptr) {
+            _log(INV__ERROR, "InventoryBound::MoveItems() - item %i not found.  continuing.", (*cur));
+            continue;
+        }
+        //ALL items *should* have a loaded container item.
+        contRef = sItemFactory.GetItemContainer(*cur); // item container should be loaded at this point.
+        if (contRef.get() == nullptr) {
+            _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*cur));
+            continue;
+        }
+
+        old_flag = iRef->flag();
+
+        if (manyFlags)
+            quantity = iRef->quantity();
+
+        // if client send capy, check here and throw on fail
+        if (capacity > 0) {
+            if (quantity < 1)
                 quantity = iRef->quantity();    // assume all.
 
             float volume = quantity * iRef->GetAttribute(AttrVolume).get_float();
@@ -420,232 +629,93 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
                 std::map<std::string, PyRep *> args;
                 args["available"] = new PyFloat(capacity);
                 args["volume"] = new PyFloat(volume);
-
-                if (call.client->CanThrow())
+                if (toFlag == flagCargoHold)
                     throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-                return nullptr;
+                else if (toFlag == flagDroneBay)
+                    throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
+                else if (IsModuleSlot(toFlag))
+                    throw PyException(MakeUserError("NotEnoughChargeSpace", args));
+                else
+                    throw PyException(MakeUserError("NoSpaceForThat", args));
             }
+        } else if (quantity < 1) {
+            _log(INV__ERROR, "InventoryBound::MoveItems() - Quantity < 1.  Setting quantity = 1.");
+            quantity = 1;
         }
 
-        if (call.byname.find("dividing") != call.byname.end()) {
-            _log(INV__ERROR, "[Add] byname.dividing found when adding itemID %u(flag %u) to inventoryID %u", args.itemID, flag, args.inventoryID);
-            quantity = -1; //special value here to hit tests in _ExecAdd
-        }
+        // remove item from current location
+        if (IsRigSlot(old_flag)) { //  cant remove rigs like this.  send error.
+            throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
+        } else if (IsModuleSlot(old_flag)) {
+            // can we remove modules from an inative ship?  no.
+            if (pShip == nullptr)
+                throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
-        std::vector<int32> items;
-        items.push_back(args.itemID);
-        return ExecAdd( call.client, items, quantity, (EVEItemFlags)flag );
-    } else {
-        _log(INV__ERROR, "[Add] Unknown number of elements in a tuple: %u.", call.tuple->items.size() );
-        return nullptr;
-    }
-}
-
-PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::MultiAdd() for %s(%u)", m_self->itemName().c_str(), m_self->itemID());
-    if (is_log_enabled(INV__DUMP)) {
-        _log(INV__DUMP, "InventoryBound::Handle_MultiAdd() size= %u", call.tuple->size());
-        call.Dump(INV__DUMP);
-    }
-    /*  called like this when dragging loaded charges from module in fit window to cargohold on ship
-     * 23:57:53 [BindDump] NodeID: 888444 BindID: 147 calling MultiAdd in service manager 'InventoryBound'
-     * 23:57:53 [BindDump]   Call Arguments:
-     * 23:57:53 [BindDump]       Tuple: 2 elements
-     * 23:57:53 [BindDump]         [ 0] List: 1 elements
-     * 23:57:53 [BindDump]         [ 0]   [ 0] Integer field: 140000161    << chargeID
-     * 23:57:53 [BindDump]         [ 1] Integer field: 140000075           << shipID
-     * 23:57:53 [BindDump]   Call Named Arguments:
-     * 23:57:53 [BindDump]     Argument 'capacity':
-     * 23:57:53 [BindDump]         Real field: 130.000000                  << cargohold capacity
-     * 23:57:53 [BindDump]     Argument 'flag':
-     * 23:57:53 [BindDump]         Integer field: 5                        << flagCargoHold
-     * 23:57:53 [BindDump]     Argument 'fromManyFlags':
-     * 23:57:53 [BindDump]         Boolean field: true
-     * 23:57:53 [BindDump]     Argument 'machoVersion':
-     * 23:57:53 [BindDump]         Integer field: 1
-     * 23:57:53 [BindDump]     Argument 'qty':
-     * 23:57:53 [BindDump]         (None)                                  << means "all"
-     */
-    if ( call.tuple->items.size() != 2 ) {
-        _log(INV__ERROR, "InventoryBound::Handle_MultiAdd()  Unexpected number of elements in a tuple: %u (should be 2).", call.tuple->items.size() );
-        return nullptr;
-    }
-
-     Call_MultiAdd_2 args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint32 flag = flagAutoFit;
-    if ((call.byname.find("flag") == call.byname.end()) or (call.byname.find("flag")->second->IsNone())) {
-        if (IsStation(call.client->GetLocationID()))
-            flag = flagHangar;
-        else
-            flag = flagCargoHold;
-    } else {
-        if (call.byname.find("flag")->second->IsInt())
-            flag = call.byname.find("flag")->second->AsInt()->value();
-        else if (call.byname.find("flag")->second->IsFloat())
-            flag = call.byname.find("flag")->second->AsFloat()->value();
-        else
-            _log(INV__ERROR, "InventoryBound::Handle_MultiAdd() - flag neither Int nor Float.  %s", call.byname.find("flag")->second->TypeString() );
-    }
-
-    if (flag == flagLocked)
-        flag = flagCargoHold;
-
-    int32 quantity = 0;
-    if (call.byname.find("qty") != call.byname.end())
-        if (!call.byname.find("qty")->second->IsNone())
-            quantity = call.byname.find("qty")->second->AsInt()->value();
-
-    //bool byname(fromManyFlags):true == unload charges from module referenced
-    if (call.byname.find("fromManyFlags") != call.byname.end())
-        if (!call.byname.find("fromManyFlags")->second->IsNone())
-            quantity = -1; //special value here to hit tests in _ExecAdd
-
-    return ExecAdd( call.client, args.itemIDs, quantity, (EVEItemFlags)flag );
-}
-
-PyRep* InventoryBound::ExecAdd(Client* pClient, const std::vector< int32 >& items, int32 quantity, EVEItemFlags flag) {
-    // method logic rewrite to handle all types and send a proper return, and added some error returns...still incomplete   -allan 2Jan16 (UD 24May16, 13Dec16)
-    /** @todo  update this....check for correct container when adding items */
-
-    //quantity is used in logic for spitting stacks
-    int32 origQty = quantity;
-    InventoryItemRef itemRef(nullptr);
-    EVEItemFlags old_flag(flagAutoFit);
-    ShipItem* pShip = pClient->GetShip().get();
-    // set pShip to owner of this inventory object.  this will fix adding items to inactive ships in hangar.
-    if (m_self->categoryID() == EVEDB::invCategories::Ship)
-        pShip = m_manager->item_factory->GetShip(m_self->itemID()).get();
-
-    std::vector<int32>::const_iterator cur = items.begin();
-    for (; cur != items.end(); ++cur) {
-        itemRef = m_manager->item_factory->GetItem(*cur);
-        old_flag = itemRef->flag();
-        quantity = origQty;
-
-        if (old_flag >= flagRigSlot0 && old_flag <= flagRigSlot7) {
-            //  cant remove rigs like this.  send error.
-            if (pClient->CanThrow())
-                throw PyException( MakeUserError("CannotRemoveUpgradeManually"));
-            return nullptr;
-        }
-
-        if (IsModuleSlot(old_flag) or IsModuleSlot(flag) or IsCargoHoldFlag(old_flag))
-            if (!pShip) {
-                if (pClient->CanThrow())
-                    throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", itemRef->itemName().c_str()));
-                return nullptr;
-            }
-
-        if (IsModuleSlot(old_flag)) {
-            if (IsModuleSlot(flag)) {
+            if (IsModuleSlot(toFlag)) {
                 // we are wanting to change slots on a fitted module.
-                pShip->MoveModuleSlot(old_flag, flag);
+                pShip->MoveModuleSlot(old_flag, toFlag);
                 Call_SingleIntegerArg result;
-                    result.arg = itemRef->itemID();
+                result.arg = iRef->itemID();
                 return result.Encode();
             } else {
-                pShip->RemoveItem(itemRef);
-                if (itemRef->categoryID() == EVEDB::invCategories::Charge)
-                    quantity = -1;  // remove all loaded charges from this module
-            }
-        }
-
-        // trying to fit a module from a stack.  make it check qty and split if needed.
-        if ((IsModuleSlot(flag) or (flag == flagAutoFit)) and (m_self->itemID() == pShip->itemID()))
-            quantity = 1;
-
-        // the following conditionals are logic for splitting stacks
-        if (itemRef->singleton()) {
-            // there is no stack to split.
-            ;
-        } else if (quantity < 1) {
-            // -1 is special quantity meaning "take full stack" used when removing loaded charges
-            // 0 is special quantity meaning "take full stack" used when moving complete stacks, usually to/from hangar and hold.
-            ;
-        } else if (quantity != itemRef->quantity()) {
-            // at this point, item is in stack, so split off quantity and create new item to move.
-            InventoryItemRef newItem = itemRef->Split(quantity);
-            if (newItem.get() == nullptr) {
-                sLog.Error("ExecAdd", "Error splitting item %u. Skipping.", itemRef->itemID());
-                return nullptr;
-            }
-            // set itemRef to newly created single item.  this will allow common move code later and avoid complications (that were in original code)
-            itemRef = newItem;
-        }
-
-        /** @todo  will have to test for and code for removing items from entities other than ships (pos) here */
-        if (IsCargoHoldFlag(old_flag))
-            pShip->RemoveItem(itemRef);
-
-        /* check for and remove item from container inventory */
-        if (old_flag == flagAutoFit) {
-            _log(INV__TRACE, "old_flag == flagAutoFit for item %s(%u) in locationID %u for inventory of %s(%u).", \
-                    itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID(), m_self->itemName().c_str(), m_self->itemID());
-            if (pClient->IsDocked()) {
-                CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
-                contRef->RemoveItem(contRef);
-            } else {
-                SystemEntity* pSE = pClient->SystemMgr()->GetSE(itemRef->locationID());
-                if (pSE->IsWreckSE()) {
-                    WreckContainerRef wreckRef = m_manager->item_factory->GetWreckContainer(itemRef->locationID());
-                    wreckRef->RemoveItem(itemRef);
-                } else if (pSE->IsContainerSE()) {
-                    CargoContainerRef contRef = m_manager->item_factory->GetCargoContainer(itemRef->locationID());
-                    contRef->RemoveItem(itemRef);
-                } else if (pSE->IsShipSE()) {
-                    ShipItemRef shipRef = m_manager->item_factory->GetShip(itemRef->locationID());
-                    shipRef->RemoveItem(itemRef);
-                } else if (pSE->IsTowerSE()) {
-                    StructureItemRef posRef = m_manager->item_factory->GetStructure(itemRef->locationID());
-                    posRef->RemoveItem(itemRef);
-                } else {
-                    /** @todo will have to test and add code for moving items from other entities (pos) */
-                    _log(INV__WARNING, "old_flag == flagAutoFit and IsInSpace, but container is not cargo or wreck for item %s(%u) in locationID %u.", \
-                        itemRef->itemName().c_str(), itemRef->itemID(), itemRef->locationID());
-                }
-            }
-        }
-
-        // check where to put item to be added.  use flags to find an open spot
-        if ((flag == flagAutoFit) and (m_self->itemID() == pShip->itemID())) {
-            EVEItemFlags openSlotFlag = pShip->FindAvailableModuleSlot(itemRef);
-            if (openSlotFlag == flagIllegal) {
-                pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.");
-                return nullptr;
-            }
-            flag = openSlotFlag;
-        }
-
-        if (IsModuleSlot(flag)/* || IsCargoHoldFlag(flag)*/) {
-            // verify ship has room for this item.
-            if (!pShip->AddItem(flag, itemRef)) {
-                // if not, and in station, move item to hangar
-                if (IsStation(pShip->locationID()))
-                    itemRef->Move(pShip->locationID(), flagHangar, true);
+                pShip->RemoveItem(iRef);
             }
         } else {
-            // what else do we need to check for here?
-            m_manager->item_factory->SetUsingClient(pClient);
-            if (mInventory->ValidateAddItem(flag, itemRef)) {
-                // all checks have passed.  move the item
-                pClient->MoveItem(itemRef->itemID(), m_self->itemID(), flag);
-            } else {
-                m_manager->item_factory->UnsetUsingClient();
-                return nullptr;
+            if (!manyFlags and (quantity < iRef->quantity())) {
+                InventoryItemRef newItem = iRef->Split(quantity);
+                if (newItem.get() == nullptr) {
+                    _log(INV__ERROR, "InventoryBound::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
+                    continue;
+                }
+                iRef = newItem;
+                if (iRef.get() == nullptr) {
+                    _log(INV__ERROR, "InventoryBound::MoveItems() - Error getting split item. Skipping.");
+                    continue;
+                }
+                if (iRef->quantity() > quantity)
+                    _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", iRef->itemID(), iRef->quantity(), quantity);
             }
-            m_manager->item_factory->UnsetUsingClient();
+
+            contRef->RemoveItem(iRef);
+        }
+
+        // add item to new location
+        if (donating) {
+            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
+            iRef->Donate(m_ownerID, m_itemID, toFlag);
+            continue;
+        }
+
+        if (ship) {
+            // are we adding module to ship using autoFit?
+            if (toFlag == flagAutoFit)
+                if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Charge)) {
+                    toFlag = pShip->FindAvailableModuleSlot(iRef);
+                    if (toFlag == flagIllegal) {
+                        pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
+                        toFlag = flagCargoHold;
+                    }
+                }
+            if (toFlag == flagAutoFit)
+                toFlag = mFlag;
+
+            // check adding item to ship...if it fails, return to previous container
+            if (m_self->GetShipItem()->AddItem(toFlag, iRef) < 1)
+                contRef->AddItem(iRef);
+            else
+                iRef->ChangeOwner(m_ownerID);
+        } else {
+            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails...how do we return the item if this fails?
+            iRef->Donate(m_ownerID, m_itemID, toFlag);
         }
     }
+
+    sItemFactory.UnsetUsingClient();
 
     if (items.size() == 1) {
         //call returns itemID
         Call_SingleIntegerArg result;
-            result.arg = itemRef->itemID();
+        result.arg = iRef->itemID();
         return result.Encode();
     }
 

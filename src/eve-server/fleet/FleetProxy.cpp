@@ -73,29 +73,12 @@ PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
     //call.Dump(FLEET__DUMP);
 
     /** @todo  this needs to be updated....check standings and verifly scope */
-    
+
     FleetAdvertCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
         return nullptr;
     }
-
-    std::string fleetName = "";
-    if (args.fleetName->IsWString())
-        fleetName = args.fleetName->AsWString()->content();
-    else if (args.fleetName->IsString())
-        fleetName = args.fleetName->AsString()->content();
-    else
-        _log(FLEET__ERROR, "AddFleetFinderAdvert - args.fleetName is of the wrong type: '%s'.  Expected PyString or PyWString.", args.fleetName->TypeString());
-
-    std::string description = "";
-    if (args.description->IsWString())
-        description = args.description->AsWString()->content();
-    else if (args.description->IsString())
-        description = args.description->AsString()->content();
-    else
-        _log(FLEET__ERROR, "AddFleetFinderAdvert - args.description is of the wrong type: '%s'.  Expected PyString or PyWString.", args.description->TypeString());
-
 
     int32 fleetID = call.client->GetChar()->fleetID();
 
@@ -107,10 +90,10 @@ PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
         adata.hideInfo = args.hideInfo;
         adata.inviteScope = args.inviteScope;
         adata.leader = call.client;
-        adata.fleetName = fleetName;
+        adata.fleetName = PyRep::StringContent(args.fleetName);
         adata.advertTime = GetFileTimeNow();
         adata.dateCreated = data.dateCreated;
-        adata.description = description;
+        adata.description = PyRep::StringContent(args.description);
         adata.solarSystemID = call.client->GetSystemID();
         adata.joinNeedsApproval = args.joinNeedsApproval;
         adata.local_minSecurity = args.local_minSecurity;

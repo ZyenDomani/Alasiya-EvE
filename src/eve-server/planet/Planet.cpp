@@ -140,7 +140,7 @@ void PlanetSE::CreateCustomsOffice()
     pos -= (dir * 25000);   // put CO 25km closer to planet than warpIn point.
 */
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
-    StructureItemRef iRef = m_services.item_factory->SpawnStructure(idata);
+    StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
     iRef->Relocate(pos);
     iRef->ChangeSingleton(true, false);
     iRef->SetAttribute(AttrIsGlobal, 1, false);
@@ -202,7 +202,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
         args->SetItem("pins", pColony->GetPins());
         args->SetItem("links", pColony->GetLinks());
         args->SetItem("routes", pColony->GetRoutes());
-        args->SetItem("currentSimTime", new PyULong(pColony->GetSimTime()));
+        args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
     }
     PyIncRef(args);
     PyObject *rtn = new PyObject("util.KeyVal", args);
@@ -217,7 +217,7 @@ PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
 
     DBQueryResult res;
     PlanetDB m_db;
-    // {for ecu in planetID}  SELECT `headID`, `typeID`, `ownerID`, `latitude`, `longitude` FROM `chrPlanetECUHeads`
+    // {for ecu in planetID}  SELECT `headID`, `typeID`, `ownerID`, `latitude`, `longitude` FROM `piECUHeads`
     m_db.GetExtractorsForPlanet(planetID, res);
 
     PyList* list(new PyList());

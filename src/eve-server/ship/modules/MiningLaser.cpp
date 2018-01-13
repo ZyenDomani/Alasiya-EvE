@@ -181,7 +181,7 @@ void MiningLaser::ProcessCycle(bool partial)
     (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
 
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
-    InventoryItemRef oRef = m_shipRef->GetItemFactory()->SpawnItem( idata );
+    InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
     if (oRef.get() == nullptr) {
         _log(MINING__ERROR, "Could not create mined ore for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;

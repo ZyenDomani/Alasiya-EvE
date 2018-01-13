@@ -34,6 +34,7 @@
 #include "planet/PlanetDataMgr.h"
 
 // for launching shit...
+#include "account/AccountService.h" // fund xfer and journal logging methods
 #include "system/Container.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
@@ -45,7 +46,33 @@
  *  timers (launch, run, current, logistics)
  *  planet items attribs/effects
  *  item->Move() logistics
+ *
+    __notifyevents__ = [
+    'OnPlanetCommandCenterDeployedOrRemoved',
+     'OnPlanetPinsChanged',
+     'OnColonyPinCountUpdated',
  */
+/* The list of restricted systems is:
+
+    Amarr
+    Arnon
+    Aunia
+    Auvergne
+    Balginia
+    Dodixie
+    Fricoure
+    Ichoriya
+    Irjunen
+    Isaziwa
+    Isinokka
+    Jita
+    Lustrevik
+    Motsu
+    Oursulaert
+    Rens
+    Sankkasen
+    Umokka
+    */
 /*10% + % Player Tax - 1% per level of Customs Code Expertise
  * Export fee = Base cost * tax rate (*1.5 if launched via Command Center)
 Import fee = Base cost * tax rate * 0.5
@@ -199,7 +226,7 @@ uint32 Colony::GetOwner()
 void Colony::AbandonColony()
 {
     /** @todo  go thru entire pinMap and delete each itemRef.  */
-    InventoryItemRef iRef = m_svcMgr->item_factory->GetItem(m_colonyID);
+    InventoryItemRef iRef = sItemFactory.GetItem(m_colonyID);
     iRef->Delete();
     m_db.DeleteColony(m_colonyID, m_pSE->GetID(), m_client->GetCharacterID());
     SafeDelete(ccPin);
@@ -225,7 +252,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     if (groupID != Command_Centers) {
         // type, owner, location, flag, qty
         ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagAutoFit, 1);
-        iRef = m_svcMgr->item_factory->SpawnItem(data);
+        iRef = sItemFactory.SpawnItem(data);
 
         /*  this shit doesnt work....changes arent sent to client.  not sure why
         m_pg = iRef->GetAttribute(AttrPowerLoad).get_int();
@@ -241,11 +268,11 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
             m_cpu *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillCommandCenterUpgrades, true))));    // 1% decrease in need
         } */
     } else {
-        iRef = m_svcMgr->item_factory->GetItem(m_colonyID);
+        iRef = sItemFactory.GetItem(m_colonyID);
         if (iRef->quantity() > 1) {
             // check for stack of CC items, and split as needed
             ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
-            InventoryItemRef iRef2 = m_svcMgr->item_factory->SpawnItem(data);
+            InventoryItemRef iRef2 = sItemFactory.SpawnItem(data);
             iRef2->Move(m_client->GetShipID(), flagCargoHold);
             iRef->SetQuantity(1);
         }
@@ -322,6 +349,20 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         tempPinIDs.insert(std::pair<uint8, uint32>(pinID, iRef->itemID()));     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
 
     _log(PLANET__TRACE, "Colony::CreatePin() - Created pin for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+
+    /** @todo  do the construction cost thing...
+     / /take the money, send wallet blink *event record the transaction in their journal.
+     std::string reason = "DESC:  ";
+     reason += itoa(call.client->GetStationID());
+     AccountService::TranserFunds(
+         call.client->GetCharacterID(),
+         args.stationID, // fix this to get ownerID
+         money,
+         reason.c_str(),
+         Journal::EntryType::MarketTransaction,
+         call.client->GetStationID(),
+         Account::KeyType::Cash);
+         */
 }
 
 void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
@@ -336,7 +377,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
             dest = itr->second;
     }
     ItemData data(2280, m_client->GetCharacterID(), 0, flagAutoFit, 1);
-    InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(data);
+    InventoryItemRef iRef = sItemFactory.SpawnItem(data);
     iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
 
@@ -590,10 +631,10 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, fl
         itr->second.expiryTime = ((cycleTime * numCycles) * 60 * 60 * 10000000L) + GetFileTimeNow();
         itr->second.headRadius = headRadius;
         if (itr->second.qtyPerCycle < 1) {
-            InventoryItemRef iRef = m_svcMgr->item_factory->GetItem(ecuID);
+            InventoryItemRef iRef = sItemFactory.GetItem(ecuID);
             itr->second.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
         }
-        itr->second.schematicID = GetHeadType(m_svcMgr->item_factory->GetItem(ecuID)->typeID(), typeID);
+        itr->second.schematicID = GetHeadType(sItemFactory.GetItem(ecuID)->typeID(), typeID);
     } else
         _log(PLANET__ERROR, "Colony::SetProgramResults() - ecuPinID %u not found in ccPin.pins map", ecuID);
 }
@@ -602,11 +643,11 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
 {
     std::map<uint32, PI_Pin>::iterator src = ccPin->pins.find(srcID);
     if (src == ccPin->pins.end()) {
-        ; // make error and exit.
+        return nullptr; // make error and exit.
     }
     std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(destID);
     if (dest == ccPin->pins.end()) {
-        ; // make error and exit.
+        return nullptr; // make error and exit.
     }
 
     // capacities are checked in client.  procede with xfer
@@ -631,9 +672,9 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
     ccPin->currentSimTime = GetFileTimeNow();
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args(new PyDict());
-    args->SetItem("simTime", new PyULong(ccPin->currentSimTime));
+    args->SetItem("simTime", new PyLong(ccPin->currentSimTime));
     src->second.lastRunTime = GetFileTimeNow() + (Win32Time_Minute * 15);  // arbitrary 15 minute delivery time
-    args->SetItem("sourceRunTime", new PyULong(src->second.lastRunTime));
+    args->SetItem("sourceRunTime", new PyLong(src->second.lastRunTime));
 
     return args;
 }
@@ -657,7 +698,7 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
                         "PI Commodities Container",
                         location);
 
-        CargoContainerRef contRef = m_svcMgr->item_factory->SpawnCargoContainer(canData);
+        CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
         if (!contRef)
             if (m_client->CanThrow())
                 throw PyException(MakeCustomError("Unable to spawn item of type %u.", 2263));
@@ -699,10 +740,22 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
                 case 4:     cost += (75000.00 * cur.second);    break;
             }
             ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
-            InventoryItemRef iRef = m_svcMgr->item_factory->SpawnItem(iData);
+            InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
             iRef->Move(cSE->GetID(), flagAutoFit, true);
         }
-        m_client->AddBalance(-cost);
+
+        //take the money, send wallet blink event record the transaction in their journal.
+        std::string reason = "DESC:  Exporting items from ";
+        reason += m_pSE->GetName();
+        AccountService::TranserFunds(
+                    m_client->GetCharacterID(),
+                    ownerUnknown,  // not sure who to send this to
+                    cost,
+                    reason.c_str(),
+                    Journal::EntryType::PlanetaryExportTax,
+                    m_pSE->GetID(),
+                    Account::KeyType::Cash);
+
         contRef->SaveItem();
         pin->second.lastLaunchTime = GetFileTimeNow();
 
@@ -743,15 +796,15 @@ PyTuple* Colony::GetPins()
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
         dict->SetItem("latitude", new PyFloat(cur.second.latitude));
         dict->SetItem("longitude", new PyFloat(cur.second.longitude));
-        dict->SetItem("lastRunTime", new PyULong(cur.second.lastRunTime));
+        dict->SetItem("lastRunTime", new PyLong(cur.second.lastRunTime));
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
         if (cur.second.isLaunchable)
-            dict->SetItem("lastLaunchTime", new PyULong(cur.second.lastLaunchTime));
+            dict->SetItem("lastLaunchTime", new PyLong(cur.second.lastLaunchTime));
 
         if ((cur.second.isProcess) and (cur.second.schematicID)) {
-            dict->SetItem("cycleTime", new PyULong(cur.second.cycleTime));
+            dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
             dict->SetItem("schematicID", new PyInt(cur.second.schematicID));
             dict->SetItem("hasReceivedInputs", new PyBool(cur.second.hasReceivedInputs));
             dict->SetItem("receivedInputsLastCycle", new PyBool(cur.second.receivedInputsLastCycle));
@@ -767,10 +820,10 @@ PyTuple* Colony::GetPins()
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
-                dict->SetItem("cycleTime", new PyULong(cur.second.cycleTime));
-                dict->SetItem("expiryTime", new PyULong(cur.second.expiryTime));
+                dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
+                dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
                 dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
-                dict->SetItem("installTime", new PyULong(cur.second.installTime));
+                dict->SetItem("installTime", new PyLong(cur.second.installTime));
                 dict->SetItem("programType", new PyInt(cur.second.programType));
                 dict->SetItem("qtyPerCycle", new PyFloat(cur.second.qtyPerCycle));
             }
@@ -854,7 +907,7 @@ PyRep* Colony::GetColony()
         args->SetItem("level", new PyInt(ccPin->level));
         args->SetItem("links", GetLinks());
         args->SetItem("routes", GetRoutes());
-        args->SetItem("currentSimTime", new PyULong(ccPin->currentSimTime));
+        args->SetItem("currentSimTime", new PyLong(ccPin->currentSimTime));
     PyObject* res(new PyObject("util.KeyVal", args));
 
     _log(PLANET__DEBUG, "Colony::GetColony() Dump");
@@ -873,7 +926,7 @@ PyRep* Colony::GetColony()
 void Colony::Update(bool updateTimes/*false*/)
 {
     double profileStartTime = 0.0;
-    //if (sConfig.server.UseProfiling)
+    //if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     m_procTime = GetFileTimeNow();
@@ -898,7 +951,7 @@ void Colony::Update(bool updateTimes/*false*/)
     _log(PLANET__TRACE, "Colony::Update() - Update completed in %.3fus", GetTimeUSeconds() - profileStartTime);
 
     // profile timer for the colony updates
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_colonyProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -1305,3 +1358,69 @@ uint8 Colony::GetProductLevel(uint16 typeID)
     _log(PLANET__ERROR, "Colony::GetProductLevel() - Commodity product level not found for typeID: %u", typeID);
     return 0;
 }
+
+
+/*
+ *
+    PlanetaryImportTax = 96,     // * Planet ID
+    PlanetaryExportTax = 97,     // * Planet ID
+    PlanetaryConstruction = 98,
+    AttrImportTax = 1638,
+    AttrExportTax = 1639,
+    AttrImportTaxMultiplier = 1640,
+    AttrExportTaxMultiplier = 1641,
+    AttrnpcCustomsOfficeTaxRate = 1780,
+    AttrdefaultCustomsOfficeTaxRate = 1781,
+
+Command Center Properties
+Level  Capy    CPU     PG           Upgrade Cost
+0   500 m3  1,675 tf    6,000 MW    N/A
+1   500 m3  7,057 tf    9,000 MW    580,000 ISK
+2   500 m3  12,136 tf   12,000 MW   930,000 ISK
+3   500 m3  17,215 tf   15,000 MW   1,200,000 ISK
+4   500 m3  21,315 tf   17,000 MW   1,500,000 ISK
+5   500 m3  25,415 tf   19,000 MW   2,100,000 ISK
+
+Structure Properties
+Name                        CPU Required        Power Required      Cost
+Extractor Control Unit      400 tf          2600 MW               45,000.00 ISK
+Extractor Head              110 tf          550 MW                  0.00 ISK
+Basic Industry Facility     200 tf          800 MW              75,000.00 ISK
+Advanced Industry Facility  500 tf          700 MW              250,000.00 ISK
+High-Tech Industry Facility 1100 tf         400 MW              525,000.00 ISK
+Storage Facility            500 tf          700 MW              250,000.00 ISK
+Space Port                  3600 tf         700 MW              900,000.00 ISK
+
+
+ *
+ * Link Cost by Distance Distance   CPU Required    Power Required
+2.5 km  16 tf   11 MW
+10 km   18 tf   12 MW
+20 km   20 tf   14 MW
+50 km   26 tf   18 MW
+100 km  36 tf   26 MW
+200 km  56 tf   41 MW
+500 km  116 tf  86 MW
+1000 km     215 tf  160 MW
+2000 km     416 tf  311 MW
+5000 km     1016 tf     761 MW
+40000 km    8016 tf     6001 MW
+
+
+Link Upgrade Costs
+
+Data on relative costs of upgrading the link capacity (uses a link that is 500km as a base):
+Level   Capacity    CPU Required    Power Required
+0   250 m3  116 tf  86 MW
+1   500 m3  280 tf  183 MW
+2   1000 m3     481 tf  291 MW
+3   2000 m3     713 tf  407 MW
+4   4000 m3     968 tf  528 MW
+5   8000 m3     1245 tf     655 MW
+6   16000 m3    1542 tf     786 MW
+7   32000 m3    1855 tf     921 MW
+8   64000 m3    2185 tf     1059 MW
+9   128000 m3   2530 tf     1200 MW
+10  256000 m3   2889 tf     1344 MW
+
+*/

@@ -92,15 +92,6 @@ PyResult ConfigService::Handle_GetMultiAllianceShortNamesEx(PyCallArgs &call) {
 
 
 PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // now working correctly  -allan  25April
-/*
-23:23:57 L ConfigService: Handle_GetMultiLocationsEx
-23:23:57 [SvcCall]   Call Arguments:
-23:23:57 [SvcCall]       Tuple: 1 elements
-23:23:57 [SvcCall]         [ 0] List: 2 elements
-23:23:57 [SvcCall]         [ 0]   [ 0] Integer field: 140000725
-23:23:57 [SvcCall]         [ 0]   [ 1] Integer field: 140001260
-
-*/
   sLog.White( "ConfigService", "Handle_GetMultiLocationsEx" );
   call.Dump(SERVICE__CALL_DUMP);
     Call_SingleIntList arg;
@@ -122,7 +113,7 @@ PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
         return nullptr;
     }
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {

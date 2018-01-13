@@ -26,7 +26,7 @@ CREATE TABLE `webBounties` (
   `characterID` int(10) NOT NULL,
   `ownerID` int(10) NOT NULL,
   `bounty` bigint(20) NOT NULL,
-  `timePlaced` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `timePlaced` bigint(20)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`timePlaced`),
   KEY `ownerID` (`ownerID`),
   KEY `timePlaced` (`timePlaced`),

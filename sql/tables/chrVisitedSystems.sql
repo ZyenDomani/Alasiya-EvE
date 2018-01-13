@@ -27,7 +27,7 @@ CREATE TABLE `chrVisitedSystems` (
   `characterID` int(20) NOT NULL,
   `solarSystemID` int(10) NOT NULL,
   `visits` int(10) NOT NULL DEFAULT '0',
-  `lastDateTime` bigint(20) unsigned NOT NULL,
+  `lastDateTime` bigint(20)  NOT NULL,
   PRIMARY KEY (`idx`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

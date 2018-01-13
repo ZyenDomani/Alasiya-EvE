@@ -37,15 +37,7 @@ class LSCDB
 : public ServiceDB
 {
 public:
-    PyObject *LookupChars(const char *match, bool exact);
-    PyObject *LookupOwners(const char *match, bool exact);
-    PyObject *LookupCorporations(const std::string &);
-    PyObject *LookupFactions(const std::string &);
-    PyObject *LookupCorporationTickers(const std::string &);
-    PyObject *LookupStations(const std::string &);
-    PyObject *LookupKnownLocationsByGroup(const std::string &, uint32);
-
-    uint32 StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, uint64 sentTime);
+    uint32 StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, int64 sentTime);
     PyObject *GetMailHeaders(uint32 recID);
     PyRep *GetMailDetails(uint32 messageID, uint32 readerID);
     bool MarkMessageRead(uint32 messageID);
@@ -60,9 +52,9 @@ public:
     std::string GetRegionName(uint32 id) { return GetChannelName(id, "mapRegions", "regionName", "regionID"); }
     std::string GetConstellationName(uint32 id) { return GetChannelName(id, "mapConstellations", "constellationName", "constellationID"); }
     std::string GetSolarSystemName(uint32 id) { return GetChannelName(id, "mapSolarSystems", "solarSystemName", "solarSystemID"); }
-    std::string GetCorporationName(uint32 id) { return GetChannelName(id, "corporation", "corporationName", "corporationID"); }
-    std::string GetAllianceName(uint32 id) { return GetChannelName(id, "crpAlliance", "allianceShortName", "allianceID"); }
-    std::string GetCharacterName(uint32 id) { return GetChannelName(id, "entity", "itemName", "itemID"); }
+    std::string GetCorporationName(uint32 id) { return GetChannelName(id, "crpCorporation", "corporationName", "corporationID"); }
+    std::string GetAllianceName(uint32 id) { return GetChannelName(id, "alnAlliance", "shortName", "allianceID"); }
+    std::string GetCharacterName(uint32 id) { return GetChannelName(id, "chrCharacters", "name", "charID"); }
 
     int32 GetChannelID(std::string &name);
 

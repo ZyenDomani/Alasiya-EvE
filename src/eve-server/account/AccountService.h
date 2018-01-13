@@ -27,14 +27,22 @@
 #ifndef __ACCOUNTSERVICE_H_INCL__
 #define __ACCOUNTSERVICE_H_INCL__
 
-#include "account/AccountDB.h"
 #include "PyService.h"
+#include "account/AccountDB.h"
 
 class AccountService
 : public PyService {
 public:
     AccountService(PyServiceMgr *mgr);
     virtual ~AccountService();
+
+    // this moves currency and adds journal entries. will also handle corp taxes internally
+    static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", uint8 entryTypeID = Journal::EntryType::Undefined,\
+                             uint32 referenceID = 0, uint16 fromKey = Account::KeyType::Cash, uint16 toKey = Account::KeyType::Cash);
+
+    // this should be the ONLY method to alter corp balances, and ONLY called from TransferFunds()
+    static void HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, uint16 accountKey, \
+                                      double amount, std::string description, uint32 referenceID = 0);
 
 protected:
     class Dispatcher;
@@ -48,11 +56,9 @@ protected:
     PyCallable_DECL_CALL(GiveCash);
     PyCallable_DECL_CALL(GiveCashFromCorpAccount);
     PyCallable_DECL_CALL(GetJournal);
+    PyCallable_DECL_CALL(GetJournalForAccounts);
     PyCallable_DECL_CALL(GetWalletDivisionsInfo);
 
-    PyTuple * GiveCashToChar(Client * const from, Client * const to, double amount, const char *reason, JournalRefType refTypeID);
-    PyTuple * GiveCashToCorp(Client * const from, uint32 corpID, double amount, const char *reason, JournalRefType refTypeID);
-    PyTuple * WithdrawCashToChar(Client * const client, Client * const other, double amount, const char *reason, JournalRefType refTypeID);
 };
 
 #endif

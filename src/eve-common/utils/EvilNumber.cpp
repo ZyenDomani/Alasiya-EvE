@@ -79,21 +79,6 @@ EvilNumber::EvilNumber( int64 val ) : mType(evil_number_int)
     mValue.iVal = val;
 }
 
-/* this is tricky, as we only handle signed calculations.
- * so this has the potentional to go wrong because uint64 can
- * hold a larger positive number than int64 can hold.  int64 can
- * hold only a number as big as half as big as the largest number
- * that uint64 can hold, so we need to be clear what the compiler
- * will do in the cast of a too-large uint64 to an int64
- */
-EvilNumber::EvilNumber( uint64 val ) : mType(evil_number_int)
-{
-    if( val > MAX_EVIL_INTEGER )
-        mValue.iVal = MAX_EVIL_INTEGER;     // Intentionally saturate the integer value to maximum positive value if incoming uint64 is larger
-    else
-        mValue.iVal = *((int64*)&val);
-}
-
 EvilNumber::EvilNumber( float val ) : mType(evil_number_float)
 {
     mValue.fVal = val;
@@ -275,9 +260,9 @@ PyRep* EvilNumber::GetPyObject()
             return (PyRep*)new PyLong(mValue.iVal);
         else
             return (PyRep*)new PyInt((int32)(mValue.iVal));
-    } else if (mType == evil_number_float)
+    } else if (mType == evil_number_float) {
         return (PyRep*)new PyFloat(mValue.fVal);
-    else {
+    } else {
         assert(false);
         return (PyRep*)new PyInt(0);
     }
@@ -288,15 +273,21 @@ inline void EvilNumber::CheckIntegrity()
     // check if we are a integer
     int cmp_val = (int)mValue.fVal;
     if (double(cmp_val) == mValue.fVal) {
-        //we are a integer.... /me cheers...
         mValue.iVal = cmp_val;
         mType = evil_number_int;
     }
 }
 
+bool EvilNumber::isNaN()
+{
+    if( mType == evil_number_nan )
+        return true;
+
+    return false;
+}
+
 bool EvilNumber::isInt()
 {
-    // First check to see if this value is already integer and if so, do nothing:
     if( mType == evil_number_int )
         return true;
 
@@ -305,7 +296,6 @@ bool EvilNumber::isInt()
 
 bool EvilNumber::isFloat()
 {
-    // First check to see if this value is already float and if so, do nothing:
     if( mType == evil_number_float )
         return true;
 

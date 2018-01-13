@@ -23,12 +23,12 @@ DROP TABLE IF EXISTS `eveMail`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `eveMail` (
-  `channelID` int(10) unsigned NOT NULL DEFAULT '0',
-  `messageID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `senderID` int(10) unsigned NOT NULL DEFAULT '0',
+  `channelID` int(10)  NOT NULL DEFAULT '0',
+  `messageID` int(10)  NOT NULL AUTO_INCREMENT,
+  `senderID` int(10)  NOT NULL DEFAULT '0',
   `subject` varchar(255) NOT NULL DEFAULT '',
-  `created` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `read` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `created` bigint(20)  NOT NULL DEFAULT '0',
+  `read` tinyint(3)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`messageID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

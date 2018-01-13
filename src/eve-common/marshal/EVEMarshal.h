@@ -98,11 +98,8 @@ protected:
      *       research shows that Op_PyByte can be negative
      */
     bool VisitInteger( const PyInt* rep );
-    bool VisitUInteger( const PyUInt* rep );
     //! Adds a long to the stream
     bool VisitLong( const PyLong* rep );
-    //! Adds a ulong to the stream
-    bool VisitULong( const PyULong* rep );
     //! Adds a boolean to the stream
     bool VisitBoolean( const PyBool* rep );
     //! Adds a double to the stream
@@ -143,7 +140,6 @@ protected:
 private:
     // utility to handle Op_PyVarInteger (a bit hacky......)
     void SaveVarInteger( const PyLong* v );
-    void SaveVarInteger( const PyULong* v );
     // zero-compresses given buffer and adds it to the stream
     bool SaveZeroCompressed( const Buffer& data );
 

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrEyebrows`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrEyebrows` (
-  `eyebrowsID` int(10) unsigned NOT NULL DEFAULT '0',
+  `eyebrowsID` int(10)  NOT NULL DEFAULT '0',
   `eyebrowsName` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`eyebrowsID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

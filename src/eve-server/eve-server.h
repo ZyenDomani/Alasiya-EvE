@@ -108,8 +108,6 @@
 #include "threading/Mutex.h"
 // utils
 #include "utils/EVEUtils.h"
-#include "utils/EVE_Equations.h"
-#include "utils/EVE_Trig.h"
 #include "utils/XMLParserEx.h"
 
 

@@ -81,36 +81,40 @@ PyCallArgs::~PyCallArgs() {
 }
 
 void PyCallArgs::Dump(LogType type) const {
-    if(!is_log_enabled(type))
+    if (!is_log_enabled(type))
         return;
 
     _log(type, "  Call Arguments:");
-    tuple->Dump(type, "      ");
+    tuple->Dump(type, "    ");
     if (!byname.empty()) {
-        _log(type, "  Call Named Arguments:");
+        _log(type, " Named Arguments:");
         for (auto cur : byname) {
-            _log(type, "    Argument '%s':", cur.first.c_str());
-            cur.second->Dump(type, "        ");
+            _log(type, "  %s", cur.first.c_str());
+            cur.second->Dump(type, "    ");
         }
     }
 }
 
 /* PyResult */
-PyResult::PyResult( PyRep* result ) : ssResult( result ? result : new PyNone() ) {}
+PyResult::PyResult( ) : ssResult( nullptr ) { }
+PyResult::PyResult( PyRep* result ) : ssResult( result != nullptr ? result : PyStatic.NewNone() ) {}
 PyResult::PyResult( const PyResult& oth ) : ssResult( nullptr ) { *this = oth; }
 PyResult::~PyResult() { PySafeDecRef( ssResult ); }
 
 PyResult& PyResult::operator=( const PyResult& oth )
 {
     PySafeDecRef( ssResult );
-    ssResult = oth.ssResult;
+    if (oth.ssResult != nullptr )
+        ssResult = oth.ssResult;
+    else
+        ssResult = PyStatic.NewNone();
     PySafeIncRef( ssResult );
 
     return *this;
 }
 
 /* PyException */
-PyException::PyException( PyRep* except ) : ssException( except ? except : new PyNone()) {}
+PyException::PyException( PyRep* except ) : ssException( except != nullptr ? except : PyStatic.NewNone()) {}
 PyException::PyException( const PyException& oth ) : ssException( nullptr ) { *this = oth; }
 PyException::~PyException() { PySafeDecRef( ssException ); }
 

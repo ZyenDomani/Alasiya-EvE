@@ -57,7 +57,7 @@ PyResult FleetManager::Handle_ForceLeaveFleet(PyCallArgs &call) {
     sFltSvc.LeaveFleet(call.client);
 
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
@@ -86,7 +86,7 @@ PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
 
     int32 fleetID = call.client->GetChar()->fleetID();
     if (fleetID == 0)
-        return new PyNone();
+        return PyStatic.NewNone();
 
     ActiveStatusRSP rsp;
     rsp.fleetCount = (255 - sFltSvc.GetFleetMemberCount(fleetID));     // this is slots left from max (256)
@@ -191,5 +191,5 @@ PyResult FleetManager::Handle_RegisterForDamageUpdates(PyCallArgs &call) {
     call.Dump(FLEET__DUMP);
 
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }

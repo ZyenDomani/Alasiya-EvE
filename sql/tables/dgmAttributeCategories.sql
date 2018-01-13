@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `dgmAttributeCategories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `dgmAttributeCategories` (
-  `categoryID` tinyint(3) unsigned NOT NULL,
+  `categoryID` tinyint(3)  NOT NULL,
   `categoryName` varchar(50) DEFAULT NULL,
   `categoryDescription` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`categoryID`)

@@ -38,8 +38,6 @@
  * it's also in need of an overhaul.
  */
 
-class PyObject;
-
 class ServiceDB
 {
 public:
@@ -51,17 +49,12 @@ public:
     static void SaveKillOrLoss(CharKillData& data);
 
     //destiny setstate stuff:
-    static PyObject *GetSolDroneState(uint32 systemID);
+    static PyRep* GetSolDroneState(uint32 systemID);
 
     uint32 GetStationOwner(uint32 stationID);
 
-    bool GetConstant(const char *name, uint32 &into);
-
-    //these really want to move back into AccountDB
-    bool GiveCash( uint32 characterID, JournalRefType refTypeID, uint32 ownerFromID, uint32 ownerToID, const char *argID1,
-                   uint32 accountID, EVEAccountKeys accountKey, double amount, double balance, const char *reason);
-    double GetCorpBalance(uint32 corpID, uint16 accountKey);
-    bool AddBalanceToCorp(uint32 corpID, double amount);
+    // not used cause eveConstants table doesnt exist...omitted from ccp dump
+    static bool GetConstant(const char *name, uint32 &into);
 
     static void SetServerOnlineStatus(bool online);
     static void SetCharacterOnlineStatus(uint32 char_id, bool online);
@@ -71,10 +64,21 @@ public:
 
     static uint32 SetClientSeed();
 
+    static PyRep* LookupChars(const char *match, bool exact);
+    static PyRep* LookupOwners(const char *match, bool exact);
+    static PyRep* LookupCorporations(const std::string &);
+    static PyRep* LookupFactions(const std::string &);
+    static PyRep* LookupCorporationTickers(const std::string &);
+    static PyRep* LookupStations(const std::string &);
+    static PyRep* LookupKnownLocationsByGroup(const std::string &, uint32);
+
+    static PyRep* PrimeOwners(std::vector<int32>& itemIDs);
+
 protected:
-    void ProcessStringChange(const char * key, const std::string & oldValue, const std::string & newValue, PyDict * notif, std::vector<std::string> & dbQ);
+    void ProcessStringChange(const char* key, const std::string& oldValue, std::string newValue, PyDict* notif, std::vector< std::string >& dbQ);
     void ProcessRealChange(const char * key, double oldValue, double newValue, PyDict * notif, std::vector<std::string> & dbQ);
     void ProcessIntChange(const char * key, uint32 oldValue, uint32 newValue, PyDict * notif, std::vector<std::string> & dbQ);
+    void ProcessLongChange(const char* key, int64 oldValue, int64 newValue, PyDict* notif, std::vector< std::string >& dbQ);
 
     /**
      * CreateNewAccount
@@ -88,7 +92,7 @@ protected:
      * @param role is the users role in the game.
      * @author firefoxpdm, xanarox
      */
-    uint32 CreateNewAccount( const char* login, const char* pass, uint64 role );
+    uint32 CreateNewAccount( const char* login, const char* pass, int64 role );
 
 };
 

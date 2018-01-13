@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `droneState`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `droneState` (
-  `droneID` int(10) unsigned NOT NULL DEFAULT '0',
-  `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
-  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
-  `controllerID` int(10) unsigned NOT NULL DEFAULT '0',
-  `activityState` int(10) unsigned NOT NULL DEFAULT '0',
-  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
-  `controllerOwnerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `droneID` int(10)  NOT NULL DEFAULT '0',
+  `solarSystemID` int(10)  NOT NULL DEFAULT '0',
+  `ownerID` int(10)  NOT NULL DEFAULT '0',
+  `controllerID` int(10)  NOT NULL DEFAULT '0',
+  `activityState` int(10)  NOT NULL DEFAULT '0',
+  `typeID` int(10)  NOT NULL DEFAULT '0',
+  `controllerOwnerID` int(10)  NOT NULL DEFAULT '0',
   `targetID` int(11) NOT NULL,
   PRIMARY KEY (`droneID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

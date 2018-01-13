@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `tutorial_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tutorial_categories` (
-  `categoryID` int(10) unsigned NOT NULL,
+  `categoryID` int(10)  NOT NULL,
   `categoryName` varchar(100) NOT NULL,
   `description` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`categoryID`)

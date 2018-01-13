@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `invBlueprints`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `invBlueprints` (
-  `blueprintID` int(10) unsigned NOT NULL,
-  `copy` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `blueprintID` int(10)  NOT NULL,
+  `copy` tinyint(1)  NOT NULL DEFAULT '0',
   `materialLevel` int(10) NOT NULL DEFAULT '-1',
   `productivityLevel` int(10) NOT NULL DEFAULT '-1',
   `licensedProductionRunsRemaining` int(10) NOT NULL DEFAULT '-1',

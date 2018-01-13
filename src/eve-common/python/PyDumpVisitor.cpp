@@ -38,49 +38,37 @@ PyDumpVisitor::PyDumpVisitor( const char* pfx, bool full_nested ) : PyPfxVisitor
 
 bool PyDumpVisitor::VisitInteger( const PyInt* rep )
 {
-    _print( "%sInteger field: %d", _pfx(), rep->value() );
-    return true;
-}
-
-bool PyDumpVisitor::VisitUInteger( const PyUInt* rep )
-{
-    _print( "%sInteger field: %u", _pfx(), rep->value() );
+    _print( "%s   Integer: %i", _pfx(), rep->value() );
     return true;
 }
 
 bool PyDumpVisitor::VisitLong( const PyLong* rep )
 {
-    _print( "%sInteger field: %" PRId64, _pfx(), rep->value() );
-    return true;
-}
-
-bool PyDumpVisitor::VisitULong( const PyULong* rep )
-{
-    _print( "%sLong field: %" PRIu64, _pfx(), rep->value() );
+    _print( "%s      Long: %" PRIi64, _pfx(), rep->value() );
     return true;
 }
 
 bool PyDumpVisitor::VisitReal( const PyFloat* rep )
 {
-    _print( "%sReal field: %f", _pfx(), rep->value() );
+    _print( "%s      Real: %f", _pfx(), rep->value() );
     return true;
 }
 
 bool PyDumpVisitor::VisitBoolean( const PyBool* rep )
 {
-    _print( "%sBoolean field: %s", _pfx(), rep->value() ? "true" : "false" );
+    _print( "%s   Boolean: %s", _pfx(), rep->value() ? "true" : "false" );
     return true;
 }
 
 bool PyDumpVisitor::VisitNone( const PyNone* rep )
 {
-    _print( "%s(None)", _pfx() );
+    _print( "%s      None", _pfx() );
     return true;
 }
 
 bool PyDumpVisitor::VisitBuffer( const PyBuffer* rep )
 {
-    _print( "%sBuffer of length %lu:", _pfx(), rep->content().size() );
+    _print( "%s Buffer (%lu):", _pfx(), rep->content().size() );
 
     _pfxExtend( "  " );
     _dump( _pfx(), &rep->content()[ 0 ], rep->content().size() );
@@ -92,9 +80,9 @@ bool PyDumpVisitor::VisitBuffer( const PyBuffer* rep )
 bool PyDumpVisitor::VisitString( const PyString *rep )
 {
     if( IsPrintable( rep ) )
-        _print( "%sString: '%s'", _pfx(), rep->content().c_str() );
+        _print( "%s    String: '%s'", _pfx(), rep->content().c_str() );
     else
-        _print( "%sString: '<binary, len=%lu>'", _pfx(), rep->content().length() );
+        _print( "%sBinary String: (len=%lu)", _pfx(), rep->content().length() );
 
     return true;
 }
@@ -103,16 +91,16 @@ bool PyDumpVisitor::VisitWString( const PyWString* rep )
 {
     // how to do it correctly?
     if( IsPrintable( rep ) )
-        _print( "%sWString: '%s'", _pfx(), rep->content().c_str() );
+        _print( "%s   WString: '%s'", _pfx(), rep->content().c_str() );
     else
-        _print( "%sWstring: '<binary, len=%lu>'", _pfx(), rep->content().length() );
+        _print( "%ssBinary WString: (len=%lu)'", _pfx(), rep->content().length() );
 
     return true;
 }
 
 bool PyDumpVisitor::VisitToken( const PyToken* rep )
 {
-    _print( "%sToken: '%s'", _pfx(), rep->content().c_str() );
+    _print( "%s     Token: '%s'", _pfx(), rep->content().c_str() );
 
     return true;
 }
@@ -121,9 +109,9 @@ bool PyDumpVisitor::VisitTuple( const PyTuple* rep )
 {
     bool res = true;
     if( rep->empty() )
-        _print( "%sTuple: Empty", _pfx() );
+        _print( "%s Tuple: Empty", _pfx() );
     else  {
-        _print( "%sTuple: %lu elements", _pfx(), rep->size() );
+        _print( "%s Tuple: %lu elements", _pfx(), rep->size() );
 
         PyTuple::const_iterator cur = rep->begin();
         for ( uint32 i = 0; cur != rep->end(); cur++, i++ )  {
@@ -146,9 +134,9 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
 {
     bool res = true;
     if( rep->empty() )
-        _print( "%sList: Empty", _pfx() );
+        _print( "%s  List: Empty", _pfx() );
     else {
-        _print( "%sList: %lu elements", _pfx(), rep->size() );
+        _print( "%s  List: %lu elements", _pfx(), rep->size() );
 
         PyList::const_iterator cur = rep->begin();
         for (uint32 i = 0; cur != rep->end(); cur++, i++) {
@@ -170,9 +158,9 @@ bool PyDumpVisitor::VisitList( const PyList* rep )
 bool PyDumpVisitor::VisitDict( const PyDict* rep )
 {
     if( rep->empty() )
-        _print( "%sDictionary: Empty", _pfx() );
+        _print( "%s Dictionary: Empty", _pfx() );
     else {
-        _print( "%sDictionary: %lu entries", _pfx(), rep->size() );
+        _print( "%s Dictionary: %lu entries", _pfx(), rep->size() );
 
         PyDict::const_iterator cur = rep->begin();
         for( uint32 i = 0; cur != rep->end(); cur++, i++ ) {
@@ -181,7 +169,7 @@ bool PyDumpVisitor::VisitDict( const PyDict* rep )
                 break;
             }
 
-            _pfxExtend( "  [%2u] Key: ", i );
+            _pfxExtend( "  [%2u]   Key: ", i );
             bool res = cur->first->visit( *this );
             _pfxWithdraw();
 
@@ -222,11 +210,11 @@ bool PyDumpVisitor::VisitObject( const PyObject* rep )
 
 bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
 {
-    _print( "%sObjectEx%s:", _pfx(), rep->isType2() ? " (Type2)" : "" );
+    _print( "%s ObjectEx%s:", _pfx(), rep->isType2() ? "2" : "1" );
 
-    _print( "%sHeader:", _pfx() );
+    _print( "%s    Header:", _pfx() );
     if( rep->header() == NULL )
-        _print( "%s  (None)", _pfx() );
+        _print( "%s (None)", _pfx() );
     else {
         _pfxExtend( "  " );
         bool res = rep->header()->visit( *this );
@@ -236,7 +224,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
             return false;
     }
 
-    _print( "%sList data:", _pfx() );
+    _print( "%s  List:", _pfx() );
     if( rep->list().empty() )
         _print( "%s  Empty", _pfx() );
     else  {
@@ -258,9 +246,9 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
         }
     }
 
-    _print( "%sDict data:", _pfx() );
+    _print( "%s    Dict:", _pfx() );
     if( rep->dict().empty() )
-        _print( "%s  Empty", _pfx() );
+        _print( "%s   Empty", _pfx() );
     else {
         PyObjectEx::const_dict_iterator cur = rep->dict().begin();
         for( uint32 i = 0; cur != rep->dict().end(); cur++, i++ ) {
@@ -269,7 +257,7 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
                 break;
             }
 
-            _pfxExtend( "  [%2u] Key: ", i );
+            _pfxExtend( "  [%2u]   Key: ", i );
             bool res = cur->first->visit( *this );
             _pfxWithdraw();
 
@@ -291,15 +279,15 @@ bool PyDumpVisitor::VisitObjectEx( const PyObjectEx* rep )
 bool PyDumpVisitor::VisitPackedRow( const PyPackedRow* rep )
 {
     _print( "%sPacked Row:", _pfx() );
-    _print( "%s column_count=%u", _pfx(), rep->header()->ColumnCount() );
+    _print( "%scolumn_count=%u", _pfx(), rep->header()->ColumnCount() );
 
     PyPackedRow::const_iterator cur = rep->begin();
     for( uint32 i = 0; cur != rep->end(); cur++, i++ ) {
-        _pfxExtend( "  [%2u] %s: ", i, rep->header()->GetColumnName( i )->content().c_str() );
+        _pfxExtend( "    [%2u] %s: ", i, rep->header()->GetColumnName( i )->content().c_str() );
 
         bool res = true;
         if( (*cur) == NULL )
-            _print( "%s(None)", _pfx() );
+            _print( "%s  (None)", _pfx() );
         else
             res = (*cur)->visit( *this );
 
@@ -314,7 +302,7 @@ bool PyDumpVisitor::VisitPackedRow( const PyPackedRow* rep )
 
 bool PyDumpVisitor::VisitSubStruct( const PySubStruct* rep )
 {
-    _print( "%sSubstruct:", _pfx() );
+    _print( "%s Substruct:", _pfx() );
 
     _pfxExtend( "  " );
     bool res = PyVisitor::VisitSubStruct( rep );
@@ -325,7 +313,7 @@ bool PyDumpVisitor::VisitSubStruct( const PySubStruct* rep )
 
 bool PyDumpVisitor::VisitSubStream( const PySubStream* rep )
 {
-    _print( "%sSubstream: %s", _pfx(), ( rep->decoded() == NULL ) ? "from data" : "from rep" );
+    _print( "%s Substream: %s", _pfx(), ( rep->decoded() == NULL ) ? "from data" : "from rep" );
 
     _pfxExtend( "  " );
     bool res = PyVisitor::VisitSubStream( rep );
@@ -336,7 +324,7 @@ bool PyDumpVisitor::VisitSubStream( const PySubStream* rep )
 
 bool PyDumpVisitor::VisitChecksumedStream( const PyChecksumedStream* rep )
 {
-    _print( "%sStream With Checksum: 0x%08x", _pfx(), rep->checksum() );
+    _print( "%sChecksumStream: 0x%08x", _pfx(), rep->checksum() );
 
     _pfxExtend( "  " );
     bool res = PyVisitor::VisitChecksumedStream( rep );

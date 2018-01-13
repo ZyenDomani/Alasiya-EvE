@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `mailList`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailList` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `id` int(10)  NOT NULL AUTO_INCREMENT,
   `displayName` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `defaultAccess` tinyint(4) unsigned NOT NULL,
-  `defaultMemberAccess` tinyint(4) unsigned NOT NULL,
-  `cost` int(10) unsigned NOT NULL,
+  `defaultAccess` tinyint(4)  NOT NULL,
+  `defaultMemberAccess` tinyint(4)  NOT NULL,
+  `cost` int(10)  NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;

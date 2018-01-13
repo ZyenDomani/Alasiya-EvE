@@ -5,10 +5,10 @@
  */
 
 
- #ifndef EVE_ROLES_H
- #define EVE_ROLES_H
+#ifndef EVE_ROLES_H
+#define EVE_ROLES_H
 
-enum:uint64_t {
+enum:int64_t {
     ROLE_DUST               = 1L,                      // 0x01                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0001
     ROLE_BANNING            = 2L,                      // 0x02                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0010
     ROLE_MARKET             = 4L,                      // 0x04                0b0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0100
@@ -59,9 +59,9 @@ enum:uint64_t {
     ROLE_NEWBIE             = 576460752303423488LL,
     ROLE_SERVICE            = 1152921504606846976LL,        // can use station services without being docked.
     ROLE_PLAYER             = 2305843009213693952LL, // 0x02
-    ROLE_LOGIN              = 4611686018427387904ULL, // 0x04000000000000000  0b100 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
+    ROLE_LOGIN              = 4611686018427387904LL, // 0x04000000000000000  0b100 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000 0000
 
-    ROLE_ANY                = 18446744073709551615ULL & ~ROLE_IGB,
+    //ROLE_ANY                = 18446744073709551615LL & ~ROLE_IGB,     max uint64 invalid.  unsigned types removed from this version.  -allan 10Dec17
 
     ROLE_STD                = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB,
     ROLE_VIP                = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF,
@@ -86,76 +86,81 @@ enum:uint64_t {
      */
 };
 
-enum:uint64_t {
-    corpRoleDirector                        = 1,
-    corpRolePersonnelManager                = 128,
-    corpRoleAccountant                      = 256,
-    corpRoleSecurityOfficer                 = 512,
-    corpRoleFactoryManager                  = 1024,
-    corpRoleStationManager                  = 2048,
-    corpRoleAuditor                         = 4096,
-    corpRoleHangarCanTake1                  = 8192,
-    corpRoleHangarCanTake2                  = 16384,
-    corpRoleHangarCanTake3                  = 32768,
-    corpRoleHangarCanTake4                  = 65536,
-    corpRoleHangarCanTake5                  = 131072,
-    corpRoleHangarCanTake6                  = 262144,
-    corpRoleHangarCanTake7                  = 524288,
-    corpRoleHangarCanQuery1                 = 1048576,
-    corpRoleHangarCanQuery2                 = 2097152,
-    corpRoleHangarCanQuery3                 = 4194304,
-    corpRoleHangarCanQuery4                 = 8388608,
-    corpRoleHangarCanQuery5                 = 16777216,
-    corpRoleHangarCanQuery6                 = 33554432,
-    corpRoleHangarCanQuery7                 = 67108864,
-    corpRoleAccountCanTake1                 = 134217728,
-    corpRoleAccountCanTake2                 = 268435456,
-    corpRoleAccountCanTake3                 = 536870912,
-    corpRoleAccountCanTake4                 = 1073741824,
-    corpRoleAccountCanTake5                 = 2147483648L,
-    corpRoleAccountCanTake6                 = 4294967296L,
-    corpRoleAccountCanTake7                 = 8589934592L,
-    corpRoleDiplomat                        = 17179869184L,
-    corpRoleEquipmentConfig                 = 2199023255552L,
-    corpRoleContainerCanTake1               = 4398046511104L,
-    corpRoleContainerCanTake2               = 8796093022208L,
-    corpRoleContainerCanTake3               = 17592186044416L,
-    corpRoleContainerCanTake4               = 35184372088832L,
-    corpRoleContainerCanTake5               = 70368744177664L,
-    corpRoleContainerCanTake6               = 140737488355328L,
-    corpRoleContainerCanTake7               = 281474976710656L,
-    corpRoleCanRentOffice                   = 562949953421312L,
-    corpRoleCanRentFactorySlot              = 1125899906842624L,
-    corpRoleCanRentResearchSlot             = 2251799813685248L,
-    corpRoleJuniorAccountant                = 4503599627370496L,
-    corpRoleStarbaseConfig                  = 9007199254740992L,
-    corpRoleTrader                          = 18014398509481984L,
-    corpRoleChatManager                     = 36028797018963968L,
-    corpRoleContractManager                 = 72057594037927936L,
-    corpRoleInfrastructureTacticalOfficer   = 144115188075855872L,
-    corpRoleStarbaseCaretaker               = 288230376151711744L,
-    corpRoleFittingManager                  = 576460752303423488L,
-    corpRoleMissing                         = 3458764513820540928L, //   0x3000000000000000
+namespace Corp {
+    namespace Role {
+        enum:int64_t {
+            Member                          = 0,
+            Director                        = 1,
+            PersonnelManager                = 128,
+            Accountant                      = 256,
+            SecurityOfficer                 = 512,
+            FactoryManager                  = 1024,
+            StationManager                  = 2048,
+            Auditor                         = 4096,
+            HangarCanTake1                  = 8192,
+            HangarCanTake2                  = 16384,
+            HangarCanTake3                  = 32768,
+            HangarCanTake4                  = 65536,
+            HangarCanTake5                  = 131072,
+            HangarCanTake6                  = 262144,
+            HangarCanTake7                  = 524288,
+            HangarCanQuery1                 = 1048576,
+            HangarCanQuery2                 = 2097152,
+            HangarCanQuery3                 = 4194304,
+            HangarCanQuery4                 = 8388608,
+            HangarCanQuery5                 = 16777216,
+            HangarCanQuery6                 = 33554432,
+            HangarCanQuery7                 = 67108864,
+            AccountCanTake1                 = 134217728,
+            AccountCanTake2                 = 268435456,
+            AccountCanTake3                 = 536870912,
+            AccountCanTake4                 = 1073741824,
+            AccountCanTake5                 = 2147483648L,
+            AccountCanTake6                 = 4294967296L,
+            AccountCanTake7                 = 8589934592L,
+            Diplomat                        = 17179869184L,
+            EquipmentConfig                 = 2199023255552L,
+            ContainerCanTake1               = 4398046511104L,
+            ContainerCanTake2               = 8796093022208L,
+            ContainerCanTake3               = 17592186044416L,
+            ContainerCanTake4               = 35184372088832L,
+            ContainerCanTake5               = 70368744177664L,
+            ContainerCanTake6               = 140737488355328L,
+            ContainerCanTake7               = 281474976710656L,
+            CanRentOffice                   = 562949953421312L,
+            CanRentFactorySlot              = 1125899906842624L,
+            CanRentResearchSlot             = 2251799813685248L,
+            JuniorAccountant                = 4503599627370496L,
+            StarbaseConfig                  = 9007199254740992L,
+            Trader                          = 18014398509481984L,
+            ChatManager                     = 36028797018963968L,
+            ContractManager                 = 72057594037927936L,
+            InfrastructureTacticalOfficer   = 144115188075855872L,
+            StarbaseCaretaker               = 288230376151711744L,
+            FittingManager                  = 576460752303423488L,
+            Missing                         = 3458764513820540928L, //   0x3000000000000000     <-- seen in logs, but not defined in client
 
-    //Some Combos
-    corpRoleAllHangar   = corpRoleHangarCanTake1|corpRoleHangarCanTake2|corpRoleHangarCanTake3|corpRoleHangarCanTake4|corpRoleHangarCanTake5|corpRoleHangarCanTake6|corpRoleHangarCanTake7|corpRoleHangarCanQuery1|corpRoleHangarCanQuery2|corpRoleHangarCanQuery3|corpRoleHangarCanQuery4|corpRoleHangarCanQuery5|corpRoleHangarCanQuery6|corpRoleHangarCanQuery7,
-    corpRoleAllAccount  = corpRoleJuniorAccountant|corpRoleAccountCanTake1|corpRoleAccountCanTake2|corpRoleAccountCanTake3|corpRoleAccountCanTake4|corpRoleAccountCanTake5|corpRoleAccountCanTake6|corpRoleAccountCanTake7|corpRoleAccountant,
-    corpRoleAllContainer= corpRoleContainerCanTake1|corpRoleContainerCanTake2|corpRoleContainerCanTake3|corpRoleContainerCanTake4|corpRoleContainerCanTake5|corpRoleContainerCanTake6|corpRoleContainerCanTake7,
-    corpRoleAllOffice   = corpRoleCanRentOffice|corpRoleCanRentFactorySlot|corpRoleCanRentResearchSlot,
-    corpRoleAllStarbase = corpRoleStarbaseCaretaker|corpRoleStarbaseConfig|corpRoleInfrastructureTacticalOfficer|corpRoleEquipmentConfig,
-    corpRoleAllManager  = corpRolePersonnelManager|corpRoleStationManager|corpRoleFactoryManager|corpRoleChatManager|corpRoleContractManager|corpRoleFittingManager,
+            //Some Combos
+            AllHangar   = HangarCanTake1|HangarCanTake2|HangarCanTake3|HangarCanTake4|HangarCanTake5|HangarCanTake6|HangarCanTake7|HangarCanQuery1|HangarCanQuery2|HangarCanQuery3|HangarCanQuery4|HangarCanQuery5|HangarCanQuery6|HangarCanQuery7,
+            AllAccount  = JuniorAccountant|AccountCanTake1|AccountCanTake2|AccountCanTake3|AccountCanTake4|AccountCanTake5|AccountCanTake6|AccountCanTake7|Accountant,
+            AllContainer= ContainerCanTake1|ContainerCanTake2|ContainerCanTake3|ContainerCanTake4|ContainerCanTake5|ContainerCanTake6|ContainerCanTake7,
+            AllOffice   = CanRentOffice|CanRentFactorySlot|CanRentResearchSlot,
+            AllStarbase = StarbaseCaretaker|StarbaseConfig|InfrastructureTacticalOfficer|EquipmentConfig,
+            AllManager  = PersonnelManager|StationManager|FactoryManager|ChatManager|ContractManager|FittingManager,
 
-    corpRoleAll         = corpRoleAllHangar|corpRoleAllAccount|corpRoleAllContainer|corpRoleAllOffice|corpRoleAllStarbase|corpRoleAllManager|corpRoleAuditor|corpRoleDiplomat,
-    corpRoleAdmin       = corpRoleAll|corpRoleTrader|corpRoleSecurityOfficer|corpRoleDirector|corpRoleMissing
+            All         = AllHangar|AllAccount|AllContainer|AllOffice|AllStarbase|AllManager|Auditor|Diplomat,
+            Admin       = All|Trader|SecurityOfficer|Director //|Missing
 
-    /* 18:05:31 G   Alasiya's EvEMu: Common Corp Roles:
-     * 18:37:16 W          Role_All:  1134904941433847168(0xfbffe07fffffd80)
-     * 18:37:16 W         Role_Cont:  558551906910208(0x1fc0000000000)
-     * 18:37:16 W        Role_Admin:  1152919339943329665(0xffffe07ffffff81)
-     * 18:37:16 W       Role_Hangar:  134209536(0x7ffe000)
-     * 18:37:16 W      Role_Account:  4503616673022208(0x100003f8000100)
-     * 18:37:16 W     Role_Starbase:  441352763482308608(0x620000000000000)
-     */
-};
+            /* 18:05:31 G   Alasiya's EvEMu: Common Corp Roles:
+             * 18:37:16 W          Role_All:  1134904941433847168(0xfbffe07fffffd80)
+             * 18:37:16 W         Role_Cont:  558551906910208(0x1fc0000000000)
+             * 18:37:16 W        Role_Admin:  1152919339943329665(0xffffe07ffffff81)
+             * 18:37:16 W       Role_Hangar:  134209536(0x7ffe000)
+             * 18:37:16 W      Role_Account:  4503616673022208(0x100003f8000100)
+             * 18:37:16 W     Role_Starbase:  441352763482308608(0x620000000000000)
+             */
+        };
+    }
+}
 
 #endif  //EVE_ROLES_H

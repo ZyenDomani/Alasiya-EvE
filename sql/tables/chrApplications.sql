@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `chrApplications`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrApplications` (
-  `corporationID` int(10) unsigned NOT NULL,
-  `characterID` int(10) unsigned NOT NULL,
+  `corporationID` int(10)  NOT NULL,
+  `characterID` int(10)  NOT NULL,
   `applicationText` text NOT NULL,
-  `roles` bigint(20) unsigned NOT NULL,
-  `grantableRoles` bigint(20) unsigned NOT NULL,
-  `status` int(10) unsigned NOT NULL,
-  `applicationDateTime` bigint(20) unsigned NOT NULL,
-  `deleted` tinyint(3) unsigned NOT NULL,
-  `lastCorpUpdaterID` int(10) unsigned NOT NULL,
+  `roles` bigint(20)  NOT NULL,
+  `grantableRoles` bigint(20)  NOT NULL,
+  `status` int(10)  NOT NULL,
+  `applicationDateTime` bigint(20)  NOT NULL,
+  `deleted` tinyint(3)  NOT NULL,
+  `lastCorpUpdaterID` int(10)  NOT NULL,
   PRIMARY KEY (`corporationID`,`characterID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

@@ -47,9 +47,9 @@ typedef enum {
     NOTIF_DEST__CORPORATION
 } NotificationDestination;
 
+//this object is a set of "or"s, matching any criteria is sufficient.
 class MulticastTarget {
 public:
-    //this object is a set of "or"s, matching any criteria is sufficient.
     std::set<uint32> characters;
     std::set<uint32> locations;
     std::set<uint32> corporations;
@@ -74,6 +74,7 @@ public:
     void RemoveNPC()                                    { --m_npcs; }
     void SetService(PyServiceMgr* svc)                  { m_services = svc; }
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
+    // updated to use station guest list instead of full clientlist loop
     void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
 
     Client* FindClientByName(const char* name) const;
@@ -96,7 +97,7 @@ public:
 
     void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;
     void Broadcast(const PyAddress &dest, EVENotificationStream &noti) const;
-    void Multicast(const char* notifyType, const char* idType, PyTuple** payload, NotificationDestination target, uint32 target_id, bool seq=true);
+    void Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 target_id, bool seq = true);
     void Multicast(const char* notifyType, const char* idType, PyTuple** payload, const MulticastTarget &mcset, bool seq=true);
     void Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const;
     void Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true) const;
@@ -106,9 +107,9 @@ public:
 
     uint32 GetConnections()                             { return m_connections; }
 
-    void AddStation(uint32 stationID, InventoryItemRef itemRef);
+    void AddStation(uint32 stationID, StationItemRef itemRef);
     void RemoveStation(uint32 stationID);
-    InventoryItemRef GetStationByID(uint32 stationID);
+    StationItemRef GetStationByID(uint32 stationID);
 
     void RegisterSID(int64& sessionID);
     void RemoveSID(int64 sessionID);
@@ -131,7 +132,7 @@ private:
     std::vector<Client*> m_clients;
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
-    std::map<uint32, InventoryItemRef> m_stations;
+    std::map<uint32, StationItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
 
     uint32 m_npcs = 0;

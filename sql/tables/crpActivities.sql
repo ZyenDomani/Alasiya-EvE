@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `crpActivities`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `crpActivities` (
-  `activityID` tinyint(3) unsigned NOT NULL,
+  `activityID` tinyint(3)  NOT NULL,
   `activityName` varchar(100) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`activityID`)

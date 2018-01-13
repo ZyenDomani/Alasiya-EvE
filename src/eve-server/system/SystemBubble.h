@@ -29,10 +29,11 @@
 #include <map>
 #include <vector>
 
-#include "utils/gpoint.h"
+#include "eve-core.h"
+
 
 class Client;
-class DoDestiny_SetState;
+class  SetState;
 class PyTuple;
 class SystemEntity;
 class SystemManager;
@@ -41,7 +42,7 @@ class Timer;
 class SystemBubble {
 public:
     SystemBubble(SystemManager* pSystem, const GPoint& center, double radius);
-    ~SystemBubble();
+    ~SystemBubble() noexcept;
 
     SystemEntity* const GetEntity(uint32 entityID) const;
     SystemManager* const GetSystem() const              { return m_system; }
@@ -96,7 +97,9 @@ public:
     void BubblecastSendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
     void BubblecastDestinyUpdateExclusive(PyTuple** payload, const char* desc, SystemEntity* pSE) const;
 
-    bool InBubble(const GPoint &pt) const;
+    bool InBubble(const GPoint &pt, bool inWarp=false) const;
+    void MarkCenter();
+    void RemoveMarkers();
 
     /* for targeting purposes */
     void GetEntities(std::vector<SystemEntity*> &into) const;
@@ -115,12 +118,15 @@ protected:
 private:
     SystemManager* m_system;
 
+    bool m_hasMarkers;
+
     uint16 m_bubbleID;
 	uint32 m_systemID;
 
     static uint32 m_bubbleIncrementer;
 
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
+    std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
     std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
     std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
 

@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `market_history_old`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `market_history_old` (
-  `regionID` int(10) unsigned NOT NULL,
-  `typeID` int(10) unsigned NOT NULL,
-  `historyDate` bigint(20) unsigned NOT NULL,
+  `regionID` int(10)  NOT NULL,
+  `typeID` int(10)  NOT NULL,
+  `historyDate` bigint(20)  NOT NULL,
   `lowPrice` double NOT NULL,
   `highPrice` double NOT NULL,
   `avgPrice` double NOT NULL,
-  `volume` int(10) unsigned NOT NULL,
-  `orders` int(10) unsigned NOT NULL
+  `volume` int(10)  NOT NULL,
+  `orders` int(10)  NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

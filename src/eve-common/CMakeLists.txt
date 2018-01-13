@@ -32,7 +32,8 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/EVE_Scanning.h"
      "${TARGET_INCLUDE_DIR}/EVE_Skills.h"
      "${TARGET_INCLUDE_DIR}/EVE_Typedefs.h"
-     "${TARGET_INCLUDE_DIR}/EVEVersion.h" )
+     "${TARGET_INCLUDE_DIR}/EVEVersion.h"
+     "${TARGET_INCLUDE_DIR}/EVE_Wallet.h" )
 SET( SOURCE
      "" )
 
@@ -211,14 +212,13 @@ SET( tables_SOURCE
      "" )
 
 SET( utils_INCLUDE
+     "${TARGET_INCLUDE_DIR}/utils/EvEMath.h"
      "${TARGET_INCLUDE_DIR}/utils/EVEUtils.h"
-     "${TARGET_INCLUDE_DIR}/utils/EVE_Equations.h"
-     "${TARGET_INCLUDE_DIR}/utils/EVE_Trig.h"
      "${TARGET_INCLUDE_DIR}/utils/EvilNumber.h"
      "${TARGET_INCLUDE_DIR}/utils/Util.h" )
 SET( utils_SOURCE
+     "${TARGET_SOURCE_DIR}/utils/EvEMath.cpp"
      "${TARGET_SOURCE_DIR}/utils/EVEUtils.cpp"
-     "${TARGET_SOURCE_DIR}/utils/EVE_Equations.cpp"
      "${TARGET_SOURCE_DIR}/utils/EvilNumber.cpp"
      "${TARGET_SOURCE_DIR}/utils/util.cpp" )
 

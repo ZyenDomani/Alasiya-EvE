@@ -37,12 +37,12 @@
  * LOADING INVOKATION EXPLANATION:
  * ItemCategory, ItemGroup, ItemType and InventoryItem classes and their children have special loading. Every such type has following methods:
  *
- *  static Load(ItemFactory &factory, <identifier>):
+ *  static Load( <identifier>):
  *    Merges static and virtual loading trees.
  *    First calls static _Load() to create desired object and
  *    then calls its virtual _Load() (if the type has any).
  *
- *  static _Load(ItemFactory &factory, <identifier>[, <data-argument>, ...]):
+ *  static _Load( <identifier>[, <data-argument>, ...]):
  *    These functions gradually, one by one, load any data needed to create desired
  *    type and in the end they create the type object.
  *
@@ -72,7 +72,7 @@ public:
  */
 class ItemCategory {
 public:
-    static ItemCategory *Load(ItemFactory &factory, EVEItemCategories category);
+    static ItemCategory *Load( EVEItemCategories category);
 
     EVEItemCategories id() const                        { return m_id; }
 
@@ -87,8 +87,8 @@ protected:
         const CategoryData &_data
     );
 
-    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category);
-    static ItemCategory *_Load(ItemFactory &factory, EVEItemCategories category, const CategoryData &data);
+    static ItemCategory *_Load( EVEItemCategories category);
+    static ItemCategory *_Load( EVEItemCategories category, const CategoryData &data);
 
     const EVEItemCategories m_id;
 
@@ -136,7 +136,7 @@ public:
 /** @todo update this to use EVEItemGroups instead of uint16 for groupID */
 class ItemGroup {
 public:
-    static ItemGroup *Load(ItemFactory &factory, uint16 groupID);
+    static ItemGroup *Load( uint16 groupID);
 
     uint16 id() const                                   { return m_id; }
 
@@ -158,8 +158,8 @@ protected:
         uint16 _id, const ItemCategory& _category, const GroupData& _data
     );
 
-    static ItemGroup *_Load(ItemFactory &factory, uint16 groupID);
-    static ItemGroup *_Load(ItemFactory &factory, uint16 groupID, const ItemCategory &category, const GroupData &data);
+    static ItemGroup *_Load( uint16 groupID);
+    static ItemGroup *_Load( uint16 groupID, const ItemCategory &category, const GroupData &data);
 
     const uint16 m_id;
     const ItemCategory *m_category;
@@ -226,7 +226,7 @@ public:
      * @param[in] typeID ID of type to load.
      * @return Pointer to new ItemType object; NULL if failed.
      */
-    static ItemType* Load(ItemFactory &factory, uint32 typeID);
+    static ItemType* Load( uint32 typeID);
 
     /* Helper methods  */
     uint16 id() const                                   { return m_id; }
@@ -255,7 +255,7 @@ public:
     void GetEffectMap(const int8 state, std::map<uint16, Effect>& effectMap) const;
 
     bool HasEffect(uint16 effectID) const;
-    bool HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const;
+    bool HasReqSkill(const uint16 skillID) const;
 
     const bool HasAttribute(const uint16 attributeID) const;
     EvilNumber GetAttribute(const uint16 attributeID) const;
@@ -273,15 +273,15 @@ protected:
      */
     // Template helper:
     template<class _Ty>
-    static _Ty *Load(ItemFactory &factory, uint32 typeID)
+    static _Ty *Load( uint32 typeID)
     {
         // static load
-        _Ty *t = _Ty::template _Load<_Ty>( factory, typeID );
+        _Ty *t = _Ty::template _Load<_Ty>(typeID );
         if( t == nullptr )
             return nullptr;
 
         // dynamic load
-        if( !t->_Load(factory) )
+        if( !t->_Load() )
         {
             delete t;
             return nullptr;
@@ -293,26 +293,26 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_Load(ItemFactory &factory, uint32 typeID)
+    static _Ty *_Load( uint32 typeID)
     {
         // pull data
         TypeData data;
-        if( !factory.db().GetType( typeID, data ) )
+        if( !sItemFactory.db()->GetType( typeID, data ) )
             return nullptr;
 
         // obtain group
-        const ItemGroup *g = factory.GetGroup( data.groupID );
+        const ItemGroup *g = sItemFactory.GetGroup( data.groupID );
         if( g == nullptr )
             return nullptr;
 
-        return _Ty::template _LoadType<_Ty>( factory, typeID, *g, data );
+        return _Ty::template _LoadType<_Ty>(typeID, *g, data );
     }
 
     // Actual loading stuff:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &group, const TypeData &data);
+    static _Ty *_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data);
 
-    virtual bool _Load(ItemFactory &factory);
+    virtual bool _Load();
 
     void LoadEffects();
 
@@ -365,8 +365,8 @@ public:
     uint32          ownerID;
     uint32          locationID;
     EVEItemFlags    flag;
-    bool            contraband : 1;
-    bool            singleton : 1;
+    bool            contraband :1;
+    bool            singleton :1;
     uint32          quantity;
     GPoint          position;
     std::string     customInfo;

@@ -71,7 +71,7 @@ uint16 crc_hqx( const uint8* data, size_t len, uint16 crc )
     return crc;
 }
 
-uint64 filesize( const char* filename )
+int64 filesize( const char* filename )
 {
     FILE* fd = fopen( filename, "r" );
     if( fd == NULL )
@@ -80,7 +80,7 @@ uint64 filesize( const char* filename )
     return filesize( fd );
 }
 
-uint64 filesize( FILE* fd )
+int64 filesize( FILE* fd )
 {
 #ifdef HAVE_SYS_STAT_H
     struct stat st;
@@ -91,7 +91,7 @@ uint64 filesize( FILE* fd )
 #endif /* !HAVE_SYS_STAT_H */
 }
 
-uint64 npowof2( uint64 num )
+int64 npowof2( int64 num )
 {
     --num;
     num |= ( num >>  1 );

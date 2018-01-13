@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `mailListUsers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailListUsers` (
-  `listID` int(10) unsigned NOT NULL,
-  `characterID` int(10) unsigned NOT NULL,
+  `listID` int(10)  NOT NULL,
+  `characterID` int(10)  NOT NULL,
   `role` tinyint(1) NOT NULL,
   `access` tinyint(1) NOT NULL,
   PRIMARY KEY (`listID`)

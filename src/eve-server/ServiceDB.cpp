@@ -80,7 +80,7 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
         account_info.hash   = row.GetText(3);
 
     account_info.name       = _escaped_username;
-    account_info.role       = row.GetUInt64(4);
+    account_info.role       = row.GetInt64(4);
     account_info.online     = row.GetBool(5);
     account_info.banned     = row.GetBool(6);
     account_info.visits     = row.GetInt(7);
@@ -125,16 +125,21 @@ bool ServiceDB::UpdateAccountInformation( const char* username, bool isOnline )
     return true;
 }
 
-uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 role )
+uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 role )
 {
     uint32 accountID = 0;
     uint32 clientID = sEntityList.GetClientSeed();
 
+    std::string eLogin;
+    std::string ePass;
+    sDatabase.DoEscapeString(eLogin, login);
+    sDatabase.DoEscapeString(ePass, pass);
+
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
-        "INSERT INTO account ( accountName, hash, role, clientID )"
-        " VALUES ( '%s', '%s', %" PRIu64 ", %i )",
-        login, pass, role, clientID ) )
+            "INSERT INTO account ( accountName, hash, role, clientID )"
+            " VALUES ( '%s', '%s', %" PRIi64 ", %i )",
+                    eLogin.c_str(), ePass.c_str(), role, clientID ) )
     {
         sLog.Error( "ServiceDB", "Failed to create a new account '%s': %s.", login, err.c_str() );
         return 0;
@@ -147,23 +152,21 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
 void ServiceDB::SaveKillOrLoss(CharKillData &data) {
     DBerror err;
     sDatabase.RunQuery(err,
-        " INSERT INTO chrKillTable"
-        " VALUES (0,%u,%u,%u,"
-        "%u,%u,%u,%u,"
-        "%u,%u,%u,%u,"
-        "%u,%u,%f,%u,"
-        "'%s',%" PRIu64 ",%u)",
-        data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
-        data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
-        data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
-        data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,
-        data.killBlob.c_str(), data.killTime, data.moonID);
+            " INSERT INTO chrKillTable (solarSystemID, victimCharacterID, victimCorporationID, victimAllianceID, victimFactionID,"
+            "victimShipTypeID, victimDamageTaken, finalCharacterID, finalCorporationID, finalAllianceID, finalFactionID, finalShipTypeID,"
+            "finalWeaponTypeID, finalSecurityStatus, finalDamageDone, killBlob, killTime, moonID)"
+            " VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%f,%u,'%s',%" PRIi64 ",%u)",
+            data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
+            data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
+            data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,
+            data.finalShipTypeID, data.finalWeaponTypeID, data.finalSecurityStatus, data.finalDamageDone,
+            data.killBlob.c_str(), data.killTime, data.moonID);
 }
 
 /** @todo  all of the following bullshit needs to be checked/updated/deleted as appropriate */
 //this function is temporary, I dont plan to keep this crap in the DB.
 //   will make mem object for droneState later...   test with this.
-PyObject *ServiceDB::GetSolDroneState(uint32 systemID) {
+PyRep* ServiceDB::GetSolDroneState(uint32 systemID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
@@ -220,64 +223,80 @@ bool ServiceDB::GetConstant(const char *name, uint32 &into)
     return true;
 }
 
-void ServiceDB::ProcessStringChange(const char * key, const std::string & oldValue, const std::string & newValue, PyDict * notif, std::vector<std::string> & dbQ) {
-    if (oldValue != newValue) {
-        std::string newEscValue;
-        std::string qValue(key);
+void ServiceDB::ProcessStringChange(const char* key, const std::string& oldValue, std::string newValue, PyDict* notif, std::vector< std::string >& dbQ)
+{
+    if (oldValue.compare(newValue) == 0)
+        return;
+    // add to notification
+    PyTuple* val = new PyTuple(2);
+    val->items[0] = new PyString(oldValue);
+    val->items[1] = new PyString(newValue);
+    notif->SetItemString(key, val);
 
-        sDatabase.DoEscapeString(newEscValue, newValue);
+    std::string newEscValue;
+    sDatabase.DoEscapeString(newEscValue, newValue);
 
-        // add to notification
-        PyTuple * val = new PyTuple(2);
-        val->items[0] = new PyString(oldValue);
-        val->items[1] = new PyString(newValue);
-        notif->SetItemString(key, val);
-
-        qValue += " = " + newEscValue;
-        dbQ.push_back(qValue);
-    }
+    std::string qValue = " ";
+    qValue += key;
+    qValue += " = '";
+    qValue += newEscValue.c_str();
+    qValue += "' ";
+    dbQ.push_back(qValue);
 }
 
-void ServiceDB::ProcessRealChange(const char * key, double oldValue, double newValue, PyDict * notif, std::vector<std::string> & dbQ) {
-    if (oldValue != newValue) {
-        // add to notification
-        std::string qValue(key);
+void ServiceDB::ProcessRealChange(const char * key, double oldValue, double newValue, PyDict* notif, std::vector<std::string> & dbQ)
+{
+    if (oldValue == newValue)
+        return;
+    // add to notification
+    PyTuple* val = new PyTuple(2);
+    val->items[0] = new PyFloat(oldValue);
+    val->items[1] = new PyFloat(newValue);
+    notif->SetItemString(key, val);
 
-        PyTuple * val = new PyTuple(2);
-        val->items[0] = new PyFloat(oldValue);
-        val->items[1] = new PyFloat(newValue);
-        notif->SetItemString(key, val);
-
-        char cc[10];
-        snprintf(cc, 9, "'%5.3lf'", newValue);
-        qValue += " = ";
-        qValue += cc;
-        dbQ.push_back(qValue);
-    }
+    std::string qValue(key);
+    qValue += " = ";
+    qValue += fcvt(newValue, 2, nullptr, nullptr);
+    dbQ.push_back(qValue);
 }
 
-void ServiceDB::ProcessIntChange(const char * key, uint32 oldValue, uint32 newValue, PyDict * notif, std::vector<std::string> & dbQ) {
-    if (oldValue != newValue) {
-        // add to notification
-        PyTuple * val = new PyTuple(2);
-        std::string qValue(key);
+void ServiceDB::ProcessIntChange(const char * key, uint32 oldValue, uint32 newValue, PyDict* notif, std::vector<std::string> & dbQ)
+{
+    if (oldValue == newValue)
+        return;
+    // add to notification
+    PyTuple* val = new PyTuple(2);
+    val->items[0] = new PyInt(oldValue);
+    val->items[1] = new PyInt(newValue);
+    notif->SetItemString(key, val);
 
-        val->items[0] = new PyInt(oldValue);
-        val->items[1] = new PyInt(newValue);
-        notif->SetItemString(key, val);
-
-        char cc[10];
-        snprintf(cc, 9, "%u", newValue);
-        qValue += " = ";
-        qValue += cc;
-        dbQ.push_back(qValue);
-    }
+    std::string qValue(key);
+    qValue += " = ";
+    qValue += itoa(newValue);
+    dbQ.push_back(qValue);
 }
+
+void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValue, PyDict* notif, std::vector< std::string >& dbQ)
+{
+    if (oldValue == newValue)
+        return;
+    // add to notification
+    PyTuple* val = new PyTuple(2);
+    val->items[0] = new PyLong(oldValue);
+    val->items[1] = new PyLong(newValue);
+    notif->SetItemString(key, val);
+
+    std::string qValue(key);
+    qValue += " = ";
+    qValue += itoa(newValue);
+    dbQ.push_back(qValue);
+}
+
 
 void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacter SET online = %d WHERE characterID = %u", online, char_id);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %d WHERE characterID = %u", online, char_id);
 
     if ( online )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
@@ -291,8 +310,8 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
 
     //this is only called on startup/shutdown.  reset all char online counts/status'
     sDatabase.RunQuery(err,
-        "UPDATE chrCharacter, account"
-        " SET chrCharacter.online = 0,"
+        "UPDATE chrCharacters, account"
+        " SET chrCharacters.online = 0,"
         "     account.online = 0");
 
     sDatabase.RunQuery( err,
@@ -342,7 +361,215 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
 	" WHERE AI = 1",
 	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount()/*, sEntityList.GetConnections()*/);
 
-  if (sConfig.server.UseProfiling)
+  if (sConfig.debug.UseProfiling)
       _log(DATABASE__MESSAGE, "Server Stats Saved");
 }
 
+// lookupService db calls moved here...made no sense in LSCDB file.
+PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
+    DBQueryResult res;
+
+    std::string matchEsc;
+    sDatabase.DoEscapeString(matchEsc, match);
+    if (matchEsc == "__ALL__") {
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "   characterID AS ownerID"
+            " FROM chrCharacters"
+            " WHERE characterID > %u", maxNPCItem))
+        {
+            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
+            return NULL;
+        }
+    } else {
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "   itemID AS ownerID"
+            " FROM entity"
+            " WHERE itemName %s '%s'",
+            exact?"=":"RLIKE", matchEsc.c_str()
+        ))
+        {
+            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
+            return NULL;
+        }
+    }
+
+    return DBResultToRowset(res);
+}
+
+
+PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
+    DBQueryResult res;
+
+    std::string matchEsc;
+    sDatabase.DoEscapeString(matchEsc, match);
+
+    // so each row needs "ownerID", "ownerName", and "groupID"
+    // ownerID      =  itemID
+    // ownerName    =  name
+    // groupID      = 1 for character, 2 for corporation, 32 for alliance
+
+    sDatabase.RunQuery(res,
+        "SELECT"
+        "  characterID AS ownerID,"
+        "  name AS ownerName,"
+        "  1 AS groupID"
+        " FROM chrCharacters"
+        " WHERE name %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+
+    sDatabase.RunQuery(res,
+        "SELECT"
+        "  corporationID AS ownerID,"
+        "  corporationName AS ownerName,"
+        "  2 AS groupID"
+        " FROM crpCorporation"
+        " WHERE corporationName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+
+    sDatabase.RunQuery(res,
+        "SELECT"
+        "  corporationID AS ownerID,"
+        "  corporationName AS ownerName,"
+        "  2 AS groupID"
+        " FROM crpCorporation"
+        " WHERE tickerName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+
+    sDatabase.RunQuery(res,
+        "SELECT"
+        "  allianceID AS ownerID,"
+        "  name AS ownerName,"
+        "  32 AS groupID"
+        " FROM alnAlliance"
+        " WHERE name %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+
+    sDatabase.RunQuery(res,
+        "SELECT"
+        "  allianceID AS ownerID,"
+        "  shortName AS ownerName,"
+        "  32 AS groupID"
+        " FROM alnAlliance"
+        " WHERE shortName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+
+    return DBResultToRowset(res);
+}
+
+PyRep* ServiceDB::LookupCorporations(const std::string & search) {
+    DBQueryResult res;
+    std::string secure;
+    sDatabase.DoEscapeString(secure, search);
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   corporationID, corporationName, corporationType "
+        " FROM crpCorporation "
+        " WHERE corporationName RLIKE '%s'", secure.c_str()))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    return DBResultToRowset(res);
+}
+
+
+PyRep* ServiceDB::LookupFactions(const std::string & search) {
+    DBQueryResult res;
+    std::string secure;
+    sDatabase.DoEscapeString(secure, search);
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   factionID, factionName "
+        " FROM facFactions "
+        " WHERE factionName RLIKE '%s'", secure.c_str()))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    return DBResultToRowset(res);
+}
+
+
+PyRep* ServiceDB::LookupCorporationTickers(const std::string & search) {
+    DBQueryResult res;
+    std::string secure;
+    sDatabase.DoEscapeString(secure, search);
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   corporationID, corporationName, tickerName "
+        " FROM crpCorporation "
+        " WHERE tickerName RLIKE '%s'", secure.c_str()))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    return DBResultToRowset(res);
+}
+
+
+PyRep* ServiceDB::LookupStations(const std::string & search) {
+    DBQueryResult res;
+    std::string secure;
+    sDatabase.DoEscapeString(secure, search);
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   stationID, stationName, stationTypeID "
+        " FROM staStations "
+        " WHERE stationName RLIKE '%s'", secure.c_str()))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    return DBResultToRowset(res);
+}
+
+//  wtf is this shit?
+PyRep* ServiceDB::LookupKnownLocationsByGroup(const std::string & search, uint32 typeID) {
+    DBQueryResult res;
+    std::string secure;
+    sDatabase.DoEscapeString(secure, search);
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   itemID, itemName, typeID "
+        " FROM entity "
+        " WHERE itemName RLIKE '%s' AND typeID = %u", secure.c_str(), typeID))
+    {
+        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+
+    return DBResultToRowset(res);
+}
+
+PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
+{
+    DBQueryResult res;
+    for (auto cur : itemIDs) {
+        if (IsCharacter(cur))
+            sDatabase.RunQuery(res, "SELECT characterID, name, typeID FROM chrCharacters WHERE characterID = %u", cur);
+        else if (IsPlayerCorp(cur))
+            sDatabase.RunQuery(res, "SELECT corporationID, corporationName, typeID FROM crpCorporation WHERE corporationID = %u", cur);
+        else if (IsAlliance(cur))
+            sDatabase.RunQuery(res, "SELECT allianceID, name, typeID FROM alnAlliance WHERE allianceID = %u", cur);
+        else
+            ; // make error
+    }
+
+    DBResultRow row;
+    PyDict* dict = new PyDict();
+    while (res.GetRow(row)) {
+        PyList* list = new PyList();
+        list->AddItem(new PyInt(row.GetInt(0)));
+        list->AddItem(new PyString(row.GetText(1)));
+        list->AddItem(new PyInt(row.GetInt(2)));
+        dict->SetItem(new PyInt(row.GetInt(0)), list);
+    }
+
+    return dict;
+}

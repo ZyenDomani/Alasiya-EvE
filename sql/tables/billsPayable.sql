@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `billsPayable`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `billsPayable` (
-  `billID` int(10) unsigned NOT NULL DEFAULT '0',
-  `billTypeID` int(10) unsigned DEFAULT NULL,
-  `debtorID` int(10) unsigned DEFAULT NULL,
-  `creditorID` int(10) unsigned DEFAULT NULL,
+  `billID` int(10)  NOT NULL DEFAULT '0',
+  `billTypeID` int(10)  DEFAULT NULL,
+  `debtorID` int(10)  DEFAULT NULL,
+  `creditorID` int(10)  DEFAULT NULL,
   `amount` text NOT NULL,
   `dueDateTime` text NOT NULL,
   `interest` text NOT NULL,
-  `externalID` int(10) unsigned DEFAULT NULL,
+  `externalID` int(10)  DEFAULT NULL,
   `paid` text NOT NULL,
   `externalID2` text NOT NULL,
   PRIMARY KEY (`billID`)

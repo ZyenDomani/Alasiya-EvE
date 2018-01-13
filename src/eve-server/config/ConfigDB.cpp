@@ -58,7 +58,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  2 AS typeID,"                    // corp typeID
             "  NULL AS gender,"
             "  NULL AS ownerNameID"
-            " FROM corporation"
+            " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -75,7 +75,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  16159 AS typeID,"                 // alliance typeID.
             "  NULL AS gender,"
             "  NULL AS ownerNameID"
-            " FROM crpAlliance"
+            " FROM alnAlliance"
             " WHERE allianceID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -92,7 +92,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  typeID,"
             "  gender,"
             "  NULL AS ownerNameID"
-            " FROM chrCharacter AS c"
+            " FROM chrCharacters AS c"
             " WHERE characterID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -109,7 +109,7 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT allianceID, allianceShortName FROM crpAlliance"
+        "SELECT allianceID, shortName FROM alnAlliance"
         ))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiAllianceShortNamesEx query: %s", res.error.c_str());
@@ -125,6 +125,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
     staticItems.clear();
     dynamicItems.clear();
+    asteroidItems.clear();
 
     for (auto cur : entityIDs) {
         if (IsStaticMapItem(cur) or (cur == 0))
@@ -200,7 +201,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) 
         "   corporationID, tickerName,"
         "   shape1, shape2, shape3,"
         "   color1, color2, color3 "
-        " FROM corporation"
+        " FROM crpCorporation"
         " WHERE corporationID in (%s)", ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiCorpTickerNamesEx query: %s", res.error.c_str());

@@ -23,16 +23,16 @@ DROP TABLE IF EXISTS `rentalInfo`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `rentalInfo` (
-  `stationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `slotNumber` int(10) unsigned NOT NULL DEFAULT '0',
-  `renterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
-  `rentPeriodInDays` int(10) unsigned NOT NULL DEFAULT '0',
+  `stationID` int(10)  NOT NULL DEFAULT '0',
+  `slotNumber` int(10)  NOT NULL DEFAULT '0',
+  `renterID` int(10)  NOT NULL DEFAULT '0',
+  `typeID` int(10)  NOT NULL DEFAULT '0',
+  `rentPeriodInDays` int(10)  NOT NULL DEFAULT '0',
   `periodCost` double NOT NULL DEFAULT '0',
-  `billID` int(10) unsigned NOT NULL DEFAULT '0',
-  `balanceDueDate` int(10) unsigned NOT NULL DEFAULT '0',
-  `discontinue` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `publiclyAvailable` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `billID` int(10)  NOT NULL DEFAULT '0',
+  `balanceDueDate` int(10)  NOT NULL DEFAULT '0',
+  `discontinue` tinyint(3)  NOT NULL DEFAULT '0',
+  `publiclyAvailable` tinyint(3)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`stationID`,`slotNumber`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;

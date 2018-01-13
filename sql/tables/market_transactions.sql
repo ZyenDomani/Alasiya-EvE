@@ -23,17 +23,17 @@ DROP TABLE IF EXISTS `market_transactions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `market_transactions` (
-  `transactionID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `transactionDate` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `transactionID` int(10)  NOT NULL AUTO_INCREMENT,
+  `transactionDate` bigint(20)  NOT NULL DEFAULT '0',
+  `typeID` int(10)  NOT NULL DEFAULT '0',
   `keyID` int(10) NOT NULL DEFAULT '1000',
-  `quantity` int(10) unsigned NOT NULL DEFAULT '0',
+  `quantity` int(10)  NOT NULL DEFAULT '0',
   `price` double NOT NULL DEFAULT '0',
-  `transactionType` int(10) unsigned NOT NULL DEFAULT '0',
-  `clientID` int(10) unsigned NOT NULL DEFAULT '0',
-  `regionID` int(10) unsigned NOT NULL DEFAULT '0',
-  `stationID` int(10) unsigned NOT NULL DEFAULT '0',
-  `corpTransaction` int(10) unsigned NOT NULL DEFAULT '0',
+  `transactionType` int(10)  NOT NULL DEFAULT '0',
+  `clientID` int(10)  NOT NULL DEFAULT '0',
+  `regionID` int(10)  NOT NULL DEFAULT '0',
+  `stationID` int(10)  NOT NULL DEFAULT '0',
+  `corpTransaction` int(10)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`transactionID`),
   KEY `regionID` (`regionID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=529 DEFAULT CHARSET=utf8;

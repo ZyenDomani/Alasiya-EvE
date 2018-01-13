@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `chrShipFittings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrShipFittings` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `characterID` int(10) unsigned NOT NULL,
-  `shipID` int(10) unsigned NOT NULL,
+  `id` int(10)  NOT NULL AUTO_INCREMENT,
+  `characterID` int(10)  NOT NULL,
+  `shipID` int(10)  NOT NULL,
   `shipDNA` tinytext NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Ship Stored Fittings, saved as ShipDNA';

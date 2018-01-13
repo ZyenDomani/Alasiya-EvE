@@ -112,6 +112,8 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
 PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
 {
     // called when mail window's notifications tab opened
+    // see /journal/GetUnprocessed for info..
+    
     return new PyTuple(0);
 }
 

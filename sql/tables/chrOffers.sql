@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `chrOffers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrOffers` (
-  `characterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `offerID` int(10) unsigned NOT NULL DEFAULT '0',
-  `expirationTime` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `characterID` int(10)  NOT NULL DEFAULT '0',
+  `offerID` int(10)  NOT NULL DEFAULT '0',
+  `expirationTime` bigint(20)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`characterID`,`offerID`),
   KEY `offerID` (`offerID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -13,7 +13,7 @@
 /* POD structure for certificate data */
 struct CharCerts {
     uint32 certificateID;
-    uint64 grantDate;
+    int64 grantDate;
     uint8 visibilityFlags;
 };
 typedef std::vector<CharCerts> CertVector;
@@ -36,9 +36,9 @@ struct AttrData {
 /* POD structure for account data */
 struct AccountData {
     int32 id;
-    uint64 role;
+    int64 role;
     int32 visits;
-    uint64 clientID;
+    int64 clientID;
     std::string name;
     std::string hash;
     std::string password;
@@ -47,15 +47,107 @@ struct AccountData {
     bool banned;
 };
 
+/* POD structure for character data */
+struct CharacterData {
+    bool gender;
+    uint8 flag;
+    uint8 bloodlineID;
+    uint8 raceID;
+    uint16 typeID;
+    uint32 accountID;
+    uint32 shipID;
+    uint32 capsuleID;
+    uint32 logonMinutes;
+    uint32 corporationID;
+    uint32 allianceID;
+    uint32 warFactionID;
+    uint32 locationID;
+    uint32 stationID;
+    uint32 solarSystemID;
+    uint32 constellationID;
+    uint32 regionID;
+    uint32 ancestryID;
+    uint32 careerID;
+    uint32 schoolID;
+    uint32 careerSpecialityID;
+    int64 loginTime;
+    int64 startDateTime;
+    int64 createDateTime;
+    double bounty;
+    double balance;
+    double aurBalance;
+    double securityRating;
+    double skillPoints;
+    std::string name;
+    std::string title;
+    std::string description;
+};
+
+/* POD structure for corp data */
+struct CorpData {
+    int32 corpAccountKey;
+    uint32 corporationID;
+    uint32 corpHQ;
+    uint32 allianceID;
+    uint32 warFactionID;
+    int64 corpRole;
+    int64 rolesAtAll;
+    int64 rolesAtBase;
+    int64 rolesAtHQ;
+    int64 rolesAtOther;
+    double taxRate;
+    std::string name;
+    std::string ticker;
+};
+
+/* POD structure for corp office data */
+struct OfficeData {
+    bool lockDown;
+    uint32 officeID;
+    uint32 folderID;
+    uint32 typeID;
+    uint32 stationID;
+    uint32 corporationID;
+    int64 rentalFee;
+    int64 expiryTime;
+    std::string ticker;
+};
+
+/* POD structure for corp app data */
+struct ApplicationInfo {
+    uint32 appID;
+    uint32 corpID;
+    uint32 charID;
+    std::string appText;
+    int64 appTime;
+    int64 role;
+    int64 grantRole;
+    uint32 status;
+    uint32 deleted;
+    uint32 lastCID;
+    bool valid;
+};
+
 /* POD structure for fleet data    -allan 31Jul14 */
 struct CharFleetData {
-    int8 fleetRole;
-    int8 fleetBooster;
-    int8 fleetJob;
+    int8 job;
+    int8 role;
+    int8 booster;
     int32 fleetID;
     int32 wingID;
     int32 squadID;
     int64 joinTime;
+};
+
+/* POD structure for bounty timer data  */
+struct BountyData {
+    uint32 fromID;
+    uint32 toID;
+    double amount;
+    uint8 refTypeID;
+    uint16 fromKey;
+    uint16 toKey;
+    std::string reason;
 };
 
 /* POD structure for blueprint data */
@@ -68,10 +160,12 @@ struct BlueprintData {
 
 /* POD structure for blueprint type data */
 struct BlueprintTypeData {
-    uint32 parentBlueprintTypeID;
-    uint32 productTypeID;
+    int8 catID;
+    int8 techLevel;
+    uint16 wasteFactor;
+    uint16 productTypeID;
+    uint16 parentBlueprintTypeID;
     uint32 productionTime;
-    uint32 techLevel;
     uint32 researchProductivityTime;
     uint32 researchMaterialTime;
     uint32 researchCopyTime;
@@ -79,24 +173,9 @@ struct BlueprintTypeData {
     uint32 productivityModifier;
     uint32 materialModifier;
     uint32 maxProductionLimit;
-    double wasteFactor;
     double chanceOfReverseEngineering;
 };
 
-/* POD structure for blueprint ram requirements */
-struct ramRequirements {
-    bool recycle;
-    uint8 activityID;
-    uint16 requiredTypeID;
-    uint32 quantity;
-    float damagePerJob;
-};
-
-/* POD structure for blueprint item materials  */
-struct ramMaterials {
-    uint16 materialTypeID;
-    uint32 quantity;
-};
 
 /* POD structure for character kill data  -allan 01May16 */
 struct CharKillData {
@@ -116,7 +195,7 @@ struct CharKillData {
     double finalSecurityStatus;
     uint32 finalDamageDone;
     std::string killBlob;
-    uint64 killTime;
+    int64 killTime;
     uint32 moonID;
 };
 
@@ -145,7 +224,7 @@ struct ActiveDungeon {
     uint32 systemID;
     uint32 dunItemID;
     uint32 dunTemplateID;
-    uint64 dunExpiryTime;
+    int64 dunExpiryTime;
     uint8 state;
     double x;
     double y;
@@ -247,8 +326,33 @@ struct StaticData {
 
 /* POD structure for stations. */
 struct StationData {
+    bool conquerable;
     uint32 stationID;
+    std::string name;
+    std::string description;
+    uint8 officeSlots;
+    uint8 operationID;
+    uint16 typeID;
+    uint16 graphicID;
+    uint16 descriptionID;
+    uint16 hangarGraphicID;
+    uint16 dockingBayGraphicID;
+    uint16 reprocessingHangarFlag;
+    uint32 corporationID;
+    uint32 maxShipVolumeDockable;
+    uint32 officeRentalFee;
+    uint32 systemID;
+    uint32 constellationID;
+    uint32 regionID;
+    uint32 orbitID;
+    int64 serviceMask;
+    float radius;
+    float security;
+    float dockingCostPerVolume;
+    float reprocessingEfficiency;
+    float reprocessingStationsTake;
     GPoint position;
+    GPoint dockEntry;
     GPoint dockPosition;
     GVector dockOrientation;
 };
@@ -433,10 +537,10 @@ struct PI_Plant {
     uint8 order;
     uint16 schematicID;
     uint16 qtyPerCycle;
-    uint64 cycleTime;
-    uint64 expiryTime;
-    uint64 installTime;
-    uint64 lastRunTime;
+    int64 cycleTime;
+    int64 expiryTime;
+    int64 installTime;
+    int64 lastRunTime;
 
     bool hasReceivedInputs;
     bool receivedInputsLastCycle;
@@ -458,13 +562,13 @@ public:
     uint16 level;
     uint16 typeID;
     uint32 ownerID;
-    uint64 lastRunTime;
+    int64 lastRunTime;
 
     double latitude;
     double longitude;
 
     // Command/Spaceport
-    uint64 lastLaunchTime;
+    int64 lastLaunchTime;
 
     //ExtractorControlUnit
     std::map<uint16, PI_Heads> heads;
@@ -476,9 +580,9 @@ public:
     uint16 schematicID;   // used in ecu as extractor head typeID
     uint16 programType;      // used in extractors as extracted resource typeID
     uint16 qtyPerCycle;
-    uint64 cycleTime;
-    uint64 expiryTime;
-    uint64 installTime;
+    int64 cycleTime;
+    int64 expiryTime;
+    int64 installTime;
 
     // Storage    typeID, qty
     std::map<uint16, uint32> contents;
@@ -492,7 +596,7 @@ class PI_CCPin {
 public:
     uint8 level;
     uint32 ccPinID;
-    uint64 currentSimTime;
+    int64 currentSimTime;
 
     // pinID, pinData
     std::map<uint32, PI_Pin> pins;

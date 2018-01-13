@@ -75,7 +75,7 @@ PyResult SovereigntyMgrService::Handle_GetSystemSovereigntyInfo(PyCallArgs &call
         return NULL;
     }
 
-    return (m_db.GetSystemSovInfo(args.arg));
+    return m_db.GetSystemSovInfo(args.arg);
 }
 
 /*sovSvc.CanInstallUpgrade(t.typeID, self.hubID, devIndices=self.devIndices)

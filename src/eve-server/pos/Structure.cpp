@@ -7,63 +7,67 @@
  * @date:   unknown
  */
 
+/*
+ * POS__ERROR
+ * POS__WARNING
+ * POS__MESSAGE
+ * POS__DUMP
+ * POS__DEBUG
+ * POS__DESTINY
+ * POS__SLIMITEM
+ * POS__TRACE
+ */
+
+
 #include "eve-server.h"
 
-#include <PyServiceMgr.h>
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "manufacturing/Blueprint.h"
-#include "pos/POS.h"
+#include "planet/Moon.h"
+#include "pos/Tower.h"
 #include "pos/Structure.h"
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/LootSystem.h"
-#include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+
 /*
-POS__WARNING=1
-POS__MESSAGE=0
-POS__DEBUG=1
-POS__DESTINY=0
-POS__SLIMITEM=0
-POS__TRACE=0
-*/
-/*
- * Structure
+ * Base Structure Item for all POS types
  */
-StructureItem::StructureItem(ItemFactory &_factory, uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
-: InventoryItem(_factory, _structureID, _itemType, _data)
+StructureItem::StructureItem(uint32 _structureID, const ItemType &_itemType, const ItemData &_data)
+: InventoryItem(_structureID, _itemType, _data)
 {
-    m_inventory = new Inventory(InventoryItemRef(this));
+    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
     _log(POS__TRACE, "Created StructureItem for %s (%u).", itemName().c_str(), itemID());
 }
 
 StructureItem::~StructureItem()
 {
-    SafeDelete(m_inventory);
+    SafeDelete(pInventory);
 }
 
-StructureItemRef StructureItem::Load(ItemFactory &factory, uint32 structureID)
+StructureItemRef StructureItem::Load(uint32 structureID)
 {
-    return InventoryItem::Load<StructureItem>( factory, structureID );
+    return InventoryItem::Load<StructureItem>(structureID );
 }
 
 bool StructureItem::_Load()
 {
-    if( !m_inventory->LoadContents( &m_factory ) )
+    if (!pInventory->LoadContents())
         return false;
 
     return InventoryItem::_Load();
 }
 
-StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
+StructureItemRef StructureItem::Spawn(ItemData &data)
 {
-    uint32 structureID = StructureItem::CreateItemID( factory, data );
-    if (!structureID)
+    uint32 structureID = InventoryItem::CreateItemID(data);
+    if (structureID < 1)
         return StructureItemRef();
-    StructureItemRef sRef = StructureItem::Load( factory, structureID );
+    StructureItemRef sRef = StructureItem::Load(structureID );
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
         or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
@@ -78,90 +82,39 @@ StructureItemRef StructureItem::Spawn(ItemFactory &factory, ItemData &data)
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
-    if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false );
-    if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false );
-    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
-    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
+    if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false);
+    if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false);
+    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
+    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
 
     // Shield Resonance
-    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0);
-    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0);
+    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
 
     return sRef;
-}
-
-uint32 StructureItem::CreateItemID(ItemFactory &factory, ItemData &data)
-{
-    return InventoryItem::CreateItemID( factory, data );
 }
 
 void StructureItem::Delete()
 {
     // delete contents first
-    m_inventory->DeleteContents();
+    pInventory->DeleteContents();
 
     InventoryItem::Delete();
 }
 
-void StructureItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
-{
-    /** @todo update this to new inventory system  */
-    EvilNumber capacityUsed(0);
-    std::vector<InventoryItemRef> items;
-    m_inventory->FindByFlag(flag, items);
-    for (auto cur : items)
-        capacityUsed += cur->GetAttribute(AttrVolume);
-    capacityUsed += item->GetAttribute(AttrVolume);
-
-    /*
-     * 1351,1352
-    AttrSpecialFuelBayCapacity = 1549,
-    AttrSpecialOreHoldCapacity = 1556,
-    AttrSpecialGasHoldCapacity = 1557,
-    AttrSpecialMineralHoldCapacity = 1558,
-    AttrSpecialSalvageHoldCapacity = 1559,
-    AttrSpecialShipHoldCapacity = 1560,
-    AttrSpecialSmallShipHoldCapacity = 1561,
-    AttrSpecialMediumShipHoldCapacity = 1562,
-    AttrSpecialLargeShipHoldCapacity = 1563,
-    AttrSpecialIndustrialShipHoldCapacity = 1564,
-    AttrSpecialAmmoHoldCapacity = 1573,
-    */
-
-    /** @todo  check for throwable status here */
-    switch (flag) {
-        case flagCargoHold: {
-            if( capacityUsed > GetAttribute(AttrCapacity) )
-                throw PyException( MakeCustomError( "Not enough cargo space!") );
-        }
-        case flagSecondaryStorage: {
-            if( capacityUsed > GetAttribute(AttrCapacitySecondary) )
-                throw PyException( MakeCustomError( "Not enough Secondary Storage space!") );
-        }
-        case flagSpecializedAmmoHold: {
-            if( capacityUsed > GetAttribute(AttrSpecialAmmoHoldCapacity) )
-                throw PyException( MakeCustomError( "Not enough Ammo Storage space!") );
-        }
-        case flagSpecializedFuelBay: {
-            if( capacityUsed > GetAttribute(AttrSpecialFuelBayCapacity) )
-                throw PyException( MakeCustomError( "Not enough Fuel Storage space!") );
-        }
-    }
-}
-
 PyObject *StructureItem::StructureGetInfo()
 {
-    if (!m_inventory->LoadContents(&m_factory)) {
+    if (!pInventory->LoadContents()) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for Structure", itemName().c_str(), itemID() );
         return NULL;
     }
@@ -178,111 +131,31 @@ PyObject *StructureItem::StructureGetInfo()
     return result.Encode();
 }
 
-void StructureItem::AddItem( InventoryItemRef item )
-{
-    m_inventory->AddItem( item );
-}
 
-void StructureItem::RemoveItem(InventoryItemRef item)
-{
-    m_inventory->RemoveItem( item );
-}
-
-
-/** @todo (Allan) this class needs more research to finish
- * see pics in ::GamePC/G/games/EvE/misc/POS
-    flagStructureActive             = 144,
-    flagStructureInactive           = 145,
-    AttrOperationConsumptionRate = 687,
-    AttrReinforcedConsumptionRate = 688,
-    AttrResourceReinforced1Type = 694,
-    AttrResourceReinforced2Type = 695,
-    AttrResourceReinforced3Type = 696,
-    AttrResourceReinforced4Type = 697,
-    AttrResourceReinforced5Type = 698,
-    AttrResourceReinforced1Quantity = 699,
-    AttrResourceReinforced2Quantity = 700,
-    AttrResourceReinforced3Quantity = 701,
-    AttrResourceReinforced4Quantity = 703,
-    AttrResourceReinforced5Quantity = 704,
-    AttrResourceOnline1Type = 705,
-    AttrResourceOnline2Type = 706,
-    AttrResourceOnline3Type = 707,
-    AttrResourceOnline4Type = 708,
-    ***  many other attributes for towers and their modules.....
-    AttrControlTowerMissileVelocityBonus = 792,
-    AttrControlTowerSize = 1031,
-    AttrAnchoringSecurityLevelMax = 1032,
-    AttrAnchoringRequiresSovereignty = 1033,
-    AttrControlTowerMinimumDistance = 1165,
-    AttrPosPlayerControlStructure = 1167,
-    AttrIsIncapacitated = 1168,
-    AttrPosStructureControlAmount = 1174,
-    AttrOnliningRequiresSovereigntyLevel = 1185,
-    AttrPosAnchoredPerSolarSystemAmount = 1195,
-    AttrPosStructureControlDistanceMax = 1214,
-    AttrAnchoringRequiresSovereigntyLevel = 1215,
-    AttrHarvesterType = 709,
-    AttrHarvesterQuality = 710,
-    AttrMoonAnchorDistance = 711,
-    AttrUsageDamagePercent = 712,
-    AttrConsumptionType = 713,
-    AttrConsumptionQuantity = 714,
-    AttrMaxOperationalDistance = 715,
-    AttrMaxOperationalUsers = 716,
-    AttrRefiningYieldMultiplier = 717,
-    AttrOperationalDuration = 719,
-    AttrRefineryCapacity = 720,
-    AttrRefiningDelayMultiplier = 721,
-    AttrPosControlTowerPeriod = 722,
-    AttrMoonMiningAmount = 726,
-    AttrControlTowerLaserDamageBonus = 728,
-    AttrControlTowerLaserOptimalBonus = 750,
-    AttrControlTowerHybridOptimalBonus = 751,
-    AttrControlTowerProjectileOptimalBonus = 752,
-    AttrControlTowerProjectileFallOffBonus = 753,
-    AttrControlTowerProjectileROFBonus = 754,
-    AttrControlTowerMissileROFBonus = 755,
-    AttrControlTowerMoonHarvesterCPUBonus = 756,
-    AttrControlTowerSiloCapacityBonus = 757,
-    AttrControlTowerLaserProximityRangeBonus = 760,
-    AttrControlTowerProjectileProximityRangeBonus = 761,
-    AttrControlTowerHybridProximityRangeBonus = 762,
-    AttrMaxGroupActive = 763,
-    AttrControlTowerEwRofBonus = 764,
-    AttrScanRange = 765,
-    AttrControlTowerHybridDamageBonus = 766,
-    AttrTrackingSpeedBonus = 767,
-    AttrMaxRangeBonus2 = 769,
-    AttrControlTowerEwTargetSwitchDelayBonus = 770,
-    AttrAmmoCapacity = 771,
-    AttrActivationBlocked = 1349,
-    AttrActivationBlockedStrenght = 1350,
-    AttrPosCargobayAcceptType = 1351,
-    AttrPosCargobayAcceptGroup = 1352,
-    */
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system),
   m_moonSE(nullptr),
+  m_towerSE(nullptr),
   m_procTimer(10000) // arbitrary default
 {
     m_co = false;
     m_tcu = false;
     m_sbu = false;
+    m_miner = false;
+    m_tower = false;
     m_bridge = false;
     m_jammer = false;
     m_module = false;
     m_outpost = false;
-
-    m_towerID = 0;
+    m_reactor = false;
 
     m_procTimer.Disable();
+    m_procState = EVEPOS::ProcState::Invalid;
 
-    m_state = EVEPOS::StructureState::Unanchored;
     /** @todo  this is direction from customs office to planet and set when co is created */
     m_rotation = NULL_ORIGIN;
+    m_planetID = 0;
     m_delayTime = 0;
-    m_timestamp = 0;
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
@@ -292,66 +165,68 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
-void StructureSE::InitData() {
-    EVEPOS::SaveData data;
-        data.itemID = GetID();
-        data.timestamp = 0;
-        data.harmonic = m_harmonic;     // set during base SE creation
-        data.state = m_state;
-        data.rotation = m_rotation;
-        data.planetID = 0;
-        data.status = 0.0f;
-        data.standing = 0.0f;
-        data.standingOwnerID = 0;
-        data.corpWar = false;
-        data.allowCorp = false;
-        data.statusDrop = false;
-        data.allowAlliance = false;
-        data.showInCalendar = false;
-        data.sendFuelNotifications = false;
+void StructureSE::InitData(SystemBubble* pBubble) {
+    m_data.use = 0;
+    m_data.view = 0;
+    m_data.take = 0;
+    m_data.timestamp = 0;
+    m_data.state = EVEPOS::StructureState::Unanchored;
+    m_data.status = 0.0f;
+
     if (m_module) {
         bool found = false;
         // this item is a module.  get towerID and save
         std::vector<SystemEntity*> seVec;
-        if (m_bubble == nullptr)
-            if (m_system != nullptr)
-                m_system->AddEntity(this);
-            else
-                ; // make error here for no SystemManager?
-        m_bubble->GetEntities(seVec);
+        pBubble->GetEntities(seVec);
         for (auto cur : seVec) {
             if (cur->IsTowerSE()) {
                 found = true;
-                m_towerID = cur->GetID();
-                // do we wanna save towerSE for each module?
+                m_data.towerID = cur->GetID();
             }
             if (found)
                 break;
         }
-    } else
-        data.towerID = m_towerID;
+    }
 
-    m_db.SavePOSData(data);
+    if (m_bridge) {
+        /** @todo figure out how/where to store this data.  */
+        EVEPOS::JumpBridgeData data;
+        data.itemID = m_data.itemID;
+        data.towerID = m_data.towerID;
+        data.corpID = m_corpID;
+        data.allyID = m_allyID;
+        data.systemID = m_system->GetID();
+        data.toItemID = 0;
+        data.toTypeID = 0;
+        data.toSystemID = 0;
+        data.password = "";
+        data.allowCorp = false;
+        data.allowAlliance = false;
+        m_db.SaveBridgeData(data);
+    }
+
+    m_moonSE = m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
+    m_data.moonID = m_moonSE->GetID();
 }
 
-void StructureSE::Init(StructureItemRef structure)
+void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
 {
-    EVEPOS::SaveData data;
-    data.itemID = structure->itemID();
-    if (!m_db.GetPOSData(data)) {
-        // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
-        InitData();
-        data.towerID = 0;
-    } else
-        m_harmonic = data.harmonic;
+    m_data.towerID = 0;
+    m_data.itemID = iRef->itemID();
+    m_data.state = EVEPOS::StructureState::Unanchored;
+    iRef->SetFlag(flagStructureInactive);
 
-    switch(structure->groupID()) {
+    switch(iRef->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
             m_co = true;
             m_planetID = atoi(m_self->customInfo().c_str());
         } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
             m_sbu = true;
+        } break;
+        case EVEDB::invGroups::Control_Tower: {
+            m_tower = true;
+            m_data.towerID = m_data.itemID;
         } break;
         case EVEDB::invGroups::Territorial_Claim_Units: {
             m_tcu = true;
@@ -367,17 +242,57 @@ void StructureSE::Init(StructureItemRef structure)
             m_jammer = true;
             m_module = true;
         } break;
+        case EVEDB::invGroups::Silo:
+        case EVEDB::invGroups::Mobile_Reactor: {
+            m_module = true;
+            m_reactor = true;
+        } break;
+        case EVEDB::invGroups::Moon_Mining: {
+            m_miner = true;
+            m_module = true;
+            m_reactor = true;
+        } break;
         default: {
             m_module = true;
         }
     }
 
-    if (m_module)
-        m_towerID = data.towerID;
+    if (!m_db.GetBaseData(m_data)) {
+        _log(POS__TRACE, "StructureSE %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), m_data.itemID);
+        // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
+        if (pBubble != nullptr)
+            InitData(pBubble);
+        else   // make error here.  this should never hit.
+            _log(POS__TRACE, "StructureSE %s(%u) called with null bubble.", iRef->itemName().c_str(), m_data.itemID);
+        m_db.SaveBaseData(m_data);
+    }
 
-    if ((m_state == EVEPOS::StructureState::Online) or (m_state == EVEPOS::StructureState::Operating))
+    if (m_moonSE == nullptr)
+        m_moonSE = m_system->GetSE(m_data.moonID)->GetMoonSE();
+
+    if (m_co or m_miner) {
+        GVector dir(m_self->position(), m_moonSE->GetPosition());
+        dir.normalize();
+        m_rotation = dir;
+    }
+
+    // all POS have 1h duration
+    if (m_tower) {
+        m_duration = m_self->GetAttribute(AttrPosControlTowerPeriod).get_int();
+    } else if (m_module) {
+        m_towerSE = m_system->GetSE(m_data.towerID)->GetTowerSE();
+        m_towerSE->AddModule(this);
+        m_duration = 3600000;
+    } else {
+        m_duration = 0;
+    }
+
+    /** @todo check for timestamp here and see if any processes are running.
+     * if so, set varaibles accordingly and continue.
+     */
+
+    if (m_data.state > EVEPOS::StructureState::Anchored)
         m_self->SetFlag(flagStructureActive);
-
 }
 
 void StructureSE::Process() {
@@ -385,114 +300,359 @@ void StructureSE::Process() {
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
-    using namespace EVEPOS;
     if (m_procTimer.Check(false)) {
     	m_procTimer.Disable();
-        m_timestamp = 0;  // time state ends
         m_delayTime = 0;
 
-        switch (m_state) {
-            case StructureState::Unanchored: {
-                m_state = StructureState::Anchored;
-            } break;
+        _log(POS__DEBUG, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, GetProcStateName(m_procState).c_str());
 
-            // those below are not coded yet
-            case StructureState::Onlining: {
-                m_self->SetFlag(flagStructureActive);
+        using namespace EVEPOS;
+        switch (m_procState) {
+            case ProcState::Unanchoring: {
+                SendSlimUpdate();
+                m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorLift",0,0,0,-1,0);
+                m_db.UpdateBaseData(m_data);
             } break;
+            case ProcState::Anchoring: {
+                SendSlimUpdate();
+                m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorDrop",0,0,0,-1,0);
+                if (m_tower)
+                    m_moonSE->SetTower(this);
 
-            case StructureState::Anchored: {
-                ; // unanchor
+                m_db.UpdateBaseData(m_data);
             } break;
-
-            case StructureState::Operating: {
+            case ProcState::Offlining: {
+                m_data.state = StructureState::Anchored;
+                SetOffline();
+                SendSlimUpdate();
+                m_db.UpdateBaseData(m_data);
+            } break;
+            case ProcState::Onlining: {
+                m_data.state = StructureState::Online;
+                SetOnline();
+                SendSlimUpdate();
+                m_db.UpdateBaseData(m_data);
+            } break;
+            case ProcState::Online: {
+                Online();
+            } break;
+            case ProcState::Operating: {
+                // this is virtual, overridden in specific class' for their needs
                 // take resources or whatever needs to be done
+                Operating();
             } break;
-
-            case StructureState::SheildReinforced:
-            case StructureState::ArmorReinforced: {
-                m_delayTime = 0;
-            } break;
-
-            case StructureState::Reinforced: {
+            // those below are not coded yet
+            case ProcState::Reinforcing:
+            case ProcState::SheildReinforcing:
+            case ProcState::ArmorReinforcing: {
                 m_self->SetFlag(flagStructureInactive);
+                m_data.state = StructureState::Invulnerable;
+                //m_data.state = StructureState::Reinforced;
+                m_db.UpdateBaseData(m_data);
+                // set timer for time to come out of reinforced
+            } break;
+            default:
+            case ProcState::Invalid: {
+                _log(POS__WARNING, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, GetProcStateName(m_procState).c_str());
             } break;
         }
+
+        m_data.timestamp = 0;
+
+        if (m_procState < ProcState::Online)
+            m_procState = ProcState::Invalid;
     }
 }
 
-/*  for updating structure data
- *
- * EVEPOS::SaveData data;
- * m_db.UpdatePOSData(data);
- */
-
-void StructureSE::Anchor(GPoint& pos)
+void StructureSE::SetAnchor(GPoint& pos)
 {
+    if (m_data.state > EVEPOS::StructureState::Unanchored)
+        return;  // make error here?
+
     /* returns SetBallPosition for towers.
-     *    ct will anchor in the middle of the grid that you warp-in to.
+     *    ct will anchor in the middle of the grid that you warp-in to....supposed to, but i dont know how yet.
      */
 
-    if (IsTowerSE() or pos.isZero()) {
-        // set position away from current position and send new position to client
-        uint32 dist = MakeRandomInt(200000, 250000);
-        uint32 radius = GetPosition().distance(m_moonSE->GetPosition());
-        float rad = dist / radius;
+    /** @todo  check for other modules changing state...only allow one at a time */
 
-        GPoint newPos(GetPosition());
-        newPos.x += radius * cos(rad);
-        newPos.z += radius * sin(rad);
+    if (IsTowerSE()) {
+        // hack for warping to moons
+        // this puts ship at Az: 0.785332, Ele: 0.615505, angle: 1.5708
+        //warpToPoint -= (radius * 1.25);
 
-        m_destiny->SetPosition(newPos);
+        uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_int()*/;
+        uint32 radius = m_moonSE->GetRadius();
+        float rad = EvE::Trig::Deg2Rad(90);
+
+        pos = m_moonSE->GetPosition();
+        pos.x += radius + dist * std::sin(rad);
+        pos.z += radius + dist * std::cos(rad);
+        m_destiny->SetPosition(pos);
+        sBubbleMgr.Add(this);
+
+        if (is_log_enabled(POS__TRACE))
+            _log(POS__TRACE, "StructureSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f", GetName(), m_data.itemID, pos.x, pos.y, pos.z);
+    } else {
+        /*  few attribs to look into...
+         * maxStructureDistance
+         * posStructureControlDistanceMax   (maybe multiply this by tower size, or some fraction thereof?)
+         */
+        m_destiny->SetPosition(pos);
     }
 
-    m_procTimer.SetTimer(m_self->GetAttribute(AttrAnchoringDelay).get_int());
-    m_timestamp = Win32TimeNow();
+    m_self->SaveItem();
 
+    m_procState = EVEPOS::ProcState::Anchoring;
+    m_data.state = EVEPOS::StructureState::Anchored;
+    m_delayTime = m_self->GetAttribute(AttrAnchoringDelay).get_int();
+    m_procTimer.SetTimer(m_delayTime);
+    m_data.timestamp = GetFileTimeNow();
+
+    SendSlimUpdate();
+
+    std::vector<PyTuple*> updates;
+    SetBallFree sbf;
+        sbf.entityID = m_self->itemID();
+        sbf.is_free = false;
+    updates.push_back(sbf.Encode());
+    SetBallRadius sbr;
+        sbr.entityID = m_self->itemID();
+        sbr.radius = m_self->radius();
+    updates.push_back(sbr.Encode());
+    m_destiny->SendDestinyUpdate(updates); //consumed
+    m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorDrop",0,1,1,-1,0);
 }
+
+void StructureSE::PullAnchor()
+{
+    if (m_data.state > EVEPOS::StructureState::Anchored)
+        return;  // make error here?
+
+        /** @todo  check for other modules changing state...only allow one at a time */
+
+    /** @todo make sure there are NO modules within the SOI of tower if Unanchoring tower.  */
+    //m_towerSE->GetSOI();
+
+    m_procState = EVEPOS::ProcState::Unanchoring;
+    m_data.state = EVEPOS::StructureState::Unanchored;
+    m_delayTime = m_self->GetAttribute(AttrUnanchoringDelay).get_int();
+    m_procTimer.SetTimer(m_delayTime);
+    m_data.timestamp = GetFileTimeNow();
+
+    SendSlimUpdate();
+
+    /*
+    if (m_tower)
+        SendEffectUpdate(anchorLiftForStructures, true);
+    else if (m_co)
+        SendEffectUpdate(anchorLiftForOrbitals, true);
+    else
+        */
+        m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorLift",0,1,1,-1,0);
+}
+
+/*
+ * 556     anchoringDelay  1800000     NULL
+ * 650     maxStructureDistance    50000   NULL
+ * 676     unanchoringDelay    NULL    3600000
+ * 677     onliningDelay   1800000     NULL
+ * 680     shieldRadius    30000   NULL
+ * 711     moonAnchorDistance  100000  NULL
+ * 1214    posStructureControlDistanceMax  NULL    15000
+ */
 
 void StructureSE::Activate(int32 effectID)
 {
+    if (m_data.state > EVEPOS::StructureState::Anchored)
+        return;  // make error here?
+
+        /** @todo  check for other modules changing state...only allow one at a time */
+
     // check effectID, check current state, check current timer, set new state, update timer
 
-    /** @note  to change tower timers, the m_timestamp will have to be adjusted.
-     *   the client calculates all pos timers internally
-     */
+    if (m_tower) {
+        // if tower, check fuel quantity for onlining
+        //  if qty sufficient, begin online proc and send OnSlimItemChange and OnSpecialFX
 
-    /** @todo somehow notify client with one of these effects:
-     *  effectAnchorDrop = 649
-     *  effectAnchorLift = 650
-     *  effectAnchorDropForStructures = 1022
-     *  effectAnchorLiftForStructures = 1023
-     *
-     ** @todo  many more effects to send for.....look into later.
-     * effectOnlineForStructures = 901
-     *
-     ** @note  also note there are timers involved here...
-     */
+    } else if (m_module) {
+        if (m_towerSE == nullptr) {
+            _log(POS__ERROR, "POS Module %s(%u) has no TowerSE for tower %u", m_self->itemName().c_str(), m_data.itemID, m_data.towerID);
+            return;
+        }
+        if (!m_towerSE->HasCPU(m_self->GetAttribute(AttrCpu).get_float())) {
+            // throwing an error negates further processing
+            float total = m_towerSE->GetSelf()->GetAttribute(AttrCpuOutput).get_float();
+            float remaining = total - m_towerSE->GetCPULoad();
+            std::map<std::string, PyRep *> args;
+            args["total"] = new PyFloat(total);
+            args["require"] = new PyFloat(m_self->GetAttribute(AttrCpu).get_float());
+            args["remaining"] = new PyFloat(remaining);
+            args["moduleType"] = new PyInt(m_self->typeID());
+            throw PyException( MakeUserError("NotEnoughCpu", args));
+        }
+        if (!m_towerSE->HasPG(m_self->GetAttribute(AttrPower).get_float())) {
+            // throwing an error negates further processing
+            float total = m_towerSE->GetSelf()->GetAttribute(AttrPowerOutput).get_float();
+            float remaining = total - m_towerSE->GetPGLoad();
+            std::map<std::string, PyRep *> args;
+            args["total"] = new PyFloat(total);
+            args["require"] = new PyFloat(m_self->GetAttribute(AttrPower).get_float());
+            args["remaining"] = new PyFloat(remaining);
+            args["moduleType"] = new PyInt(m_self->typeID());
+            throw PyException( MakeUserError("NotEnoughPower", args));
+        }
+    } else {
+        ; // check for things that DONT use a tower.  not sure if we need anymore checks here.
+    }
+    m_data.state = EVEPOS::StructureState::Onlining;
+    m_procState = EVEPOS::ProcState::Onlining;
+    m_delayTime = m_self->GetAttribute(AttrOnliningDelay).get_int();
+    m_procTimer.SetTimer(m_delayTime);
+    m_data.timestamp = GetFileTimeNow();
 
-    // check fuel quantity for onlining
-    //  if qty sufficient, set tower to online and send OnSlimItemChange and OnSpecialFX and
+    SendSlimUpdate();
+    m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.StructureOnline",0,1,1,-1,0);
 
-    m_self->SetFlag(flagStructureActive);
-    m_state = EVEPOS::StructureState::Online;
+    if (m_module)
+        m_towerSE->OnlineModule(this);
+
+    //m_db.UpdateBaseData(m_data);
 }
 
 void StructureSE::Deactivate(int32 effectID)
 {
-    // check effectID, check current state, check current timer, set new state, update timer
+    m_procState = EVEPOS::ProcState::Offlining;
+    m_delayTime = 500 /*m_self->GetAttribute(AttrOnliningDelay).get_int()*/;
+    m_procTimer.SetTimer(m_delayTime);
+    m_data.timestamp = GetFileTimeNow();
 
-    m_self->SetFlag(flagStructureInactive);
+    SendSlimUpdate();
+    //m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.StructureOnline",0,0,0,-1,0);
 }
+
+void StructureSE::SetOnline()
+{
+    // this state is persistant until out of resources or changed
+    m_self->SetFlag(flagStructureActive);
+    m_procState = EVEPOS::ProcState::Online;
+    m_data.state = EVEPOS::StructureState::Online;
+
+    SetTimer(m_duration);
+    m_db.UpdateBaseData(m_data);
+}
+
+void StructureSE::SetOffline()
+{
+    m_self->SetFlag(flagStructureInactive);
+    if (m_module)
+        m_towerSE->OfflineModule(this);
+}
+
+void StructureSE::Online()
+{
+    // structure online, but not operating
+    // take resources or whatever needs to be done
+
+    if (!m_tower) {
+        // do module shit here....tower online methods handled in tower class
+    }
+
+    SetTimer(m_duration);
+}
+
+void StructureSE::SetOperating()
+{
+    // this state is persistant until out of resources or changed
+    m_procState = EVEPOS::ProcState::Operating;
+    m_data.state = EVEPOS::StructureState::Operating;
+    m_data.timestamp = GetFileTimeNow();
+
+    SetTimer(m_duration);
+
+    SendSlimUpdate();
+
+    m_db.UpdateBaseData(m_data);
+}
+
+void StructureSE::Operating()
+{
+    // structure operating
+    // take resources, move items, process reactions or whatever needs to be done (follow PI proc code)
+
+    if (!m_tower) {
+        // do module shit here....tower operating methods handled in tower class
+    }
+
+
+    SetTimer(m_duration);
+}
+
+void StructureSE::SetUsageFlags(int8 view/*0*/, int8 take/*0*/, int8 use/*0*/)
+{
+    m_data.use = use;
+    m_data.view = view;
+    m_data.take = take;
+    m_db.UpdateBaseData(m_data);
+}
+
+void StructureSE::SendSlimUpdate()
+{
+    PyDict *slim = new PyDict();
+        slim->SetItemString("name",                     new PyString(m_self->itemName()));
+        slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
+        slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
+        slim->SetItemString("corpID",                   new PyInt(m_corpID));
+        slim->SetItemString("allianceID",               new PyInt(m_allyID));
+        slim->SetItemString("warFactionID",             new PyInt(m_warID));
+        slim->SetItemString("posTimestamp",             new PyLong(m_data.timestamp));
+        slim->SetItemString("posState",                 new PyInt(m_data.state));
+        slim->SetItemString("incapacitated",            new PyInt(0));
+        slim->SetItemString("posDelayTime",             new PyInt(m_delayTime));
+    PyTuple* shipData = new PyTuple(2);
+        shipData->SetItem(0, new PyLong(m_data.itemID));
+        shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
+    PyTuple* sItem = new PyTuple(2);
+        sItem->SetItem(0, new PyString("OnSlimItemChange"));
+        sItem->SetItem(1, shipData);
+    m_destiny->SendSingleDestinyUpdate(&sItem);   // consumed
+}
+
+void StructureSE::SendEffectUpdate(int16 effectID, bool active)
+{
+    GodmaEnvironment ge;
+        ge.selfID = m_data.itemID;
+        ge.charID = m_ownerID;
+        ge.shipID = m_data.itemID;
+        ge.targetID = 0;
+        ge.other = PyStatic.NewNone();
+        ge.area = new PyList();
+        ge.effectID = effectID;
+    Notify_OnGodmaShipEffect shipEff;
+        shipEff.itemID = ge.selfID;
+        shipEff.effectID = effectID;
+        shipEff.timeNow = GetFileTimeNow();
+        shipEff.start = (active ? 1 : 0);
+        shipEff.active = (active ? 1 : 0);
+        shipEff.environment = ge.Encode();
+        shipEff.startTime = shipEff.timeNow;    // do we need to adjust this?
+        shipEff.duration = (active ? 0 : -1);
+        shipEff.repeat = (active ? 1 : 0);
+        shipEff.error = PyStatic.NewNone();
+    PyList* events = new PyList();
+        events->AddItem(shipEff.Encode());
+    PyTuple* event = new PyTuple(1);
+        event->SetItem(0, events);
+    m_destiny->SendSingleDestinyEvent(&event);   // consumed
+}
+
 
 void StructureSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     //const uint16 miniballsCount = GetMiniBalls();
-
     BallHeader head;
-        head.entityID = GetID();
+        head.entityID = m_data.itemID;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
@@ -503,23 +663,37 @@ void StructureSE::EncodeDestiny( Buffer& into )
     } else if (m_co) {
         head.mode = DSTBALL_RIGID;
         head.flags = IsGlobal /*| HasMiniBalls*/;
+    } else if (m_tower) {
+        head.mode = DSTBALL_STOP;
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0)/* | HasMiniBalls*/;
     } else {
         head.mode = DSTBALL_RIGID;
-        head.flags = IsMassive | IsInteractive /*| HasMiniBalls*/;        //TODO check for miniballs and add here if found.
+        //TODO check for miniballs and add here if found.
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : IsMassive) /*| IsInteractive | HasMiniBalls*/;
     }
     into.Append( head );
 
-    //if (m_tcu or m_pos) {
+    if (m_tcu or m_tower) {
         MassSector mass;
             mass.cloak = 0;
             mass.corporationID = m_corpID;
-            mass.allianceID = m_allyID;
+            mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
             mass.harmonic = m_harmonic;
             mass.mass = m_self->type().mass();
         into.Append( mass );
-    //}
+    }
 
-    /** @todo (Allan) fix this when POS system is more operational */
+    if (m_data.state < EVEPOS::StructureState::Anchored) {
+        DataSector data;
+            data.inertia = 1;
+            data.velocity_x = 0;
+            data.velocity_y = 0;
+            data.velocity_z = 0;
+            data.maxVelocity = 1;
+            data.speedfraction = 1;
+        into.Append( data );
+    }
+
     /* TODO  query and configure miniballs for entity
      * NOTE  MiniBalls are BROKEN!!!  DO NOT USE!
     into.Append( miniballsCount );
@@ -551,67 +725,65 @@ void StructureSE::EncodeDestiny( Buffer& into )
 
     _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
     _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
-/*
-    if (is_log_enabled(POS__DEBUG)) {
-        _log( POS__DEBUG, "StructureSE::EncodeDestiny() - %s(%u)", GetName(), GetID());
-        uint8* data(into.Get<uint8*>(0));
-        Destiny::DumpUpdate( POS__DEBUG, data, (uint32)into.size());    <<-- this doesnt work right....dunno why
-    } */
 }
 
 PyDict *StructureSE::MakeSlimItem() {
-    _log(SE__SLIMITEM, "MakeSlimItem for StructureSE %u", m_self->itemID());
-    _log(POS__SLIMITEM, "MakeSlimItem for StructureSE %u", m_self->itemID());
+    _log(SE__SLIMITEM, "MakeSlimItem for StructureSE %u", m_data.itemID);
+    _log(POS__SLIMITEM, "MakeSlimItem for StructureSE %u", m_data.itemID);
     /** @todo (Allan) *Timestamp will need to be set to time current state is started. */
     PyDict *slim = new PyDict();
         slim->SetItemString("name",                     new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",                   new PyNone());
-        slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
+        slim->SetItemString("nameID",                   PyStatic.NewNone());
+        slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));
-        if (m_module) {    // for control towers and structures
-            slim->SetItemString("posTimestamp",         new PyLong((m_timestamp > 0) ? m_timestamp : 0));
-            slim->SetItemString("posState",             new PyInt(GetStructureState()));
-            slim->SetItemString("incapacitated",        new PyInt((m_state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
-            // this is time shown in structure status (time left until current state completes)
-            if (m_delayTime)
-                slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
+        if (m_module or m_tower) {    // for control towers and structures
+            slim->SetItemString("posTimestamp",         new PyLong(m_data.timestamp));
+            slim->SetItemString("posState",             new PyInt(m_data.state));
+            slim->SetItemString("incapacitated",        new PyInt((m_data.state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
+            slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         }
         if (m_outpost) {
-            slim->SetItemString("startTimestamp",       new PyLong(m_timestamp));
-            slim->SetItemString("structureState",       new PyInt(GetStructureState()));
-            if (m_delayTime)
-                slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
+            slim->SetItemString("startTimestamp",       new PyLong(m_data.timestamp));
+            slim->SetItemString("structureState",       new PyInt(m_data.state));
+            slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         } else if (m_co) {
             slim->SetItemString("level",                new PyInt(1)); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
-            slim->SetItemString("orbitalTimestamp",     new PyLong(m_timestamp));
+            slim->SetItemString("orbitalTimestamp",     new PyLong(m_data.timestamp));
             slim->SetItemString("planetID",             new PyInt(m_planetID));  // planetID for this orbital
-            slim->SetItemString("orbitalState",         new PyInt(GetStructureState()));
+            slim->SetItemString("orbitalState",         new PyInt(m_data.state));   // this needs to be ORBITAL state...not structure state
             PyTuple* tuple = new PyTuple(3);
                 tuple->SetItem(0,                       new PyFloat(m_rotation.x));
                 tuple->SetItem(1,                       new PyFloat(m_rotation.y));
                 tuple->SetItem(2,                       new PyFloat(m_rotation.z));
             slim->SetItemString("dunRotation", tuple);  // direction to planet
             //  dunno what these are...
-            slim->SetItemString("orbitalHackerProgress", new PyNone());
-            slim->SetItemString("orbitalHackerID",      new PyNone());
-        } else if ((m_tcu) and (m_delayTime)) {
+            slim->SetItemString("orbitalHackerProgress", PyStatic.NewNone());
+            slim->SetItemString("orbitalHackerID",      PyStatic.NewNone());
+        } else if (m_tcu) {
             slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
+        } else if (m_miner) {
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0,                       new PyFloat(m_rotation.x));
+                tuple->SetItem(1,                       new PyFloat(m_rotation.y));
+                tuple->SetItem(2,                       new PyFloat(m_rotation.z));
+            slim->SetItemString("dunRotation", tuple);  // direction to moon
+            slim->SetItemString("controlTowerID",       new PyLong(m_data.towerID));
         } else if (m_module) {
-            slim->SetItemString("controlTowerID",       new PyLong(m_towerID));
+            slim->SetItemString("controlTowerID",       new PyLong(m_data.towerID));
         }
 
-    if (is_log_enabled(POS__DEBUG)) {
-        _log( POS__DEBUG, "StructureSE::MakeSlimItem() - %s(%u)", GetName(), GetID());
-        slim->Dump(POS__DEBUG, "     ");
+    if (is_log_enabled(POS__SLIMITEM)) {
+        _log( POS__SLIMITEM, "StructureSE::MakeSlimItem() - %s(%u)", GetName(), m_data.itemID);
+        slim->Dump(POS__SLIMITEM, "     ");
     }
     return slim;
 }
 
-/*  Log events
+/*  Log events...not sure what this is for yet.
 eventTCUExploded = 280
 eventTCUInvulnerable = 283
 eventTCUOffline = 259
@@ -627,39 +799,56 @@ eventSBUOffline = 257
 eventSBUOnline = 256
 */
 
+std::string StructureSE::GetProcStateName(int8 state)
+{
+    using namespace EVEPOS;
+    switch(state) {
+        case ProcState::Invalid:            return "Invalid";
+        case ProcState::Unanchoring:        return "Unanchoring";
+        case ProcState::Anchoring:          return "Anchoring";
+        case ProcState::Offlining:          return "Offlining";
+        case ProcState::Onlining:           return "Onlining";
+        case ProcState::Online:             return "Online";
+        case ProcState::Operating:          return "Operating";
+        case ProcState::Reinforcing:        return "Reinforcing";
+        case ProcState::SheildReinforcing:  return "SheildReinforcing";
+        case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
+        default:                                    return "Bad State";
+    }
+}
 
-PyTuple *StructureSE::GetEffectState() {
+void StructureSE::GetEffectState(PyList& into) {
 	// this is for sending structure state info in destiny state data
-    /** @todo (Allan) fix this when POS system is more operational */
-    /* see file:///home/allan/Desktop/cruc/entities/pos_packets/control_tower_packets and cruc/entities/structures for more info */
+    if ((m_data.state != EVEPOS::StructureState::Online)
+    and (m_data.state != EVEPOS::StructureState::Operating))
+        return;
 
     std::vector<int32, std::allocator<int32> > area;
-
-    DoDestiny_OnSpecialFX13 effect;
+     OnSpecialFX13 effect;
         if (m_module)
-            effect.entityID = m_towerID;            /* control tower id */
+            effect.entityID = m_data.towerID;            /* control tower id */
         else
-            effect.entityID = m_self->itemID();     /* control tower id */
+            effect.entityID = m_data.itemID;     /* control tower id */
         if (!m_co) {
-            effect.moduleID = m_self->itemID();         /* structure/module id as part of above tower system */
+            effect.moduleID = m_data.itemID;         /* structure/module id as part of above tower system */
             effect.moduleTypeID = m_self->typeID();
-            effect.targetID = m_self->itemID();
+            effect.targetID = 0;
             effect.chargeTypeID = 0;
             effect.duration_ms = -1;
         }
         effect.area = area;
         effect.guid = "effects.StructureOnline"; // this is sent in destiny::SetState.  check for actual effect of this pos
-        effect.isOffensive = 0;                     /** @todo (Allan) this should be boolean */
+        effect.isOffensive = false;                     /** @todo (Allan) this should be boolean */
         effect.start = 1;
         effect.active = 1;
         effect.repeat = 0;
-        effect.startTime = m_timestamp;             /* time this effect started */
-    PyTuple *update = effect.Encode();
-    return update;
+        effect.startTime = m_data.timestamp;             /* time this effect started */
+    into.AddItem(effect.Encode());
 }
 
 void StructureSE::Killed(Damage &fatal_blow) {
-    if (!m_bubble or !m_destiny) return;
+    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+        return;
 
     m_destiny->Halt();
 
@@ -679,7 +868,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
+    m_destiny->SendTerminalExplosion(m_data.itemID, m_bubble->GetID());
 
     GPoint deadPOSPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
@@ -694,7 +883,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadPOSPosition, faction);
-    WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
+    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (!wreckItemRef) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
@@ -796,146 +985,11 @@ void StructureSE::Killed(Damage &fatal_blow) {
         ServiceDB::SaveKillOrLoss(data);
 
     _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-    GetName(), GetID(), x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
+    GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
 
     // cleanup and removal
     m_system->RemoveEntity(this);
 }
-
-/*
- *    [PyTuple 1 items]
- *      [PyTuple 2 items]
- *        [PyInt 0]
- *        [PySubStream 160 bytes]
- *          [PyTuple 2 items]
- *            [PyInt 0]
- *            [PyTuple 2 items]
- *              [PyInt 1]
- *              [PyTuple 3 items]
- *                [PyList 1 items]
- *                  [PyTuple 2 items]
- *                    [PyInt 12193]
- *                    [PyTuple 2 items]
- *                      [PyString "PackagedAction"]
- *                      [PySubStream 123 bytes]
- *                        [PyList 1 items]
- *                          [PyTuple 2 items]
- *                            [PyInt 12193]
- *                            [PyTuple 2 items]
- *                              [PyString "AddBalls2"]
- *                              [PyTuple 1 items]
- *                                [PyTuple 2 items]
- *                                  [Destiny Header]
- *                                    [PacketType: 1]
- *                                    [Stamp: 12193]
- *                                  [Ball]
- *                                    [Name: ]
- *                                    [FormationId: 255]
- *                                    [Header]
- *                                      [ItemId: 9000000000000038313]
- *                                      [Mode: Stop (2)]
- *                                      [Flags: 0 (0)]
- *                                      [Radius: 30000]
- *                                      [Location: (-29259571200, -487710720, 55060439040)]
- *                                    [ExtraHeader]
- *                                      [AllianceId: -1]
- *                                      [CorporationId: 98038978]
- *                                      [CloakMode: 0]
- *                                      [Harmonic: NaN]
- *                                      [Mass: 10000000000]
- *
- *                                  [PyList 1 items]
- *                                    [PyDict 3 kvp]
- *                                      [PyString "itemID"]
- *                                      [PyIntegerVar 9000000000000038313]
- *                                      [PyString "typeID"] (groupID 411)
- *                                      [PyInt 16103]                       <<<  POS tower force field?
- *                                      [PyString "ownerID"]
- *                                      [PyInt 98038978]
- *                [PyBool True]
- *                [PyList 0 items]
- *    [PyDict 1 kvp]
- *      [PyString "sn"]
- *      [PyIntegerVar 85]
- *
- *    [PyTuple 1 items]
- *      [PyTuple 2 items]
- *        [PyInt 0]
- *        [PySubStream 127 bytes]
- *          [PyTuple 2 items]
- *            [PyInt 0]
- *            [PyTuple 2 items]
- *              [PyInt 1]
- *              [PyTuple 2 items]
- *                [PyList 3 items]
- *                  [PyTuple 2 items]
- *                    [PyInt 12193]
- *                    [PyTuple 2 items]
- *                      [PyString "SetBallHarmonic"]
- *                      [PyTuple 5 items]
- *                        [PyIntegerVar 1002330621081]              <<  setting ship ID
- *                        [PyIntegerVar 8039077077960405911]        <<  allianceID
- *                        [PyInt 98038978]                          <<  corpID
- *                        [PyInt -1]
- *                        [PyInt 0]
- *                  [PyTuple 2 items]
- *                    [PyInt 12193]
- *                    [PyTuple 2 items]
- *                      [PyString "SetBallMassive"]
- *                      [PyTuple 2 items]
- *                        [PyIntegerVar 9000000000000038313]        <<  force field ID
- *                        [PyInt 1]
- *                  [PyTuple 2 items]
- *                    [PyInt 12193]
- *                    [PyTuple 2 items]
- *                      [PyString "SetBallHarmonic"]
- *                      [PyTuple 5 items]
- *                        [PyIntegerVar 9000000000000038313]        <<  force field ID
- *                        [PyIntegerVar 8039077077960405911]        <<  allianceID
- *                        [PyInt 98038978]                          <<  corpID
- *                        [PyInt -1]
- *                        [PyInt 1]
- *                [PyBool False]
- *    [PyDict 1 kvp]
- *      [PyString "sn"]
- *      [PyIntegerVar 86]
- *
- *
- *
-                      [PyString "SetState"]
-                      [PyTuple 1 items]
-                        [PyObjectData Name: util.KeyVal]
-                          [PyDict 10 kvp]
-                            [PyString "stamp"]
-                            [PyInt 4480]
-                            [PyString "damageState"]
-                            [PyDict 110 kvp]
-                              [PyIntegerVar 1002330708702]
-                              [PyList 3 items]
-                                [PyTuple 3 items]
-                                  [PyFloat 0.995216219742903]
-                                  [PyFloat 40000000]
-                                  [PyIntegerVar 129527416407184682]
-                                [PyFloat 1]
-                                [PyFloat 1]
-                            [PyString "effectStates"]
-                            [PyList 1 items]
-                              [PyTuple 14 items]
-                                [PyIntegerVar 1002330708702]
-                                [PyIntegerVar 1002330708702]
-                                [PyInt 32226]
-                                [PyNone]
-                                [PyNone]
-                                [PyList 0 items]
-                                [PyString "effects.StructureOnline"]
-                                [PyBool False]
-                                [PyInt 1]
-                                [PyInt 1]
-                                [PyInt -1]
-                                [PyInt 0]
-                                [PyIntegerVar 129527371609182416]
-                                [PyNone]
-                        */
 
 
     /*      GetHybridBridgeMenu

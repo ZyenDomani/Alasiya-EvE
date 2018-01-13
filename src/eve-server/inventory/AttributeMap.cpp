@@ -54,10 +54,16 @@ bool AttributeMap::Load(bool reset/*false*/) {
     /* First, we copy default attributes values from our itemType */
     mItem.type().CopyAttributes(mItem);
 
-    /* Then we load item damage from the db, if any, to update the defaults */
+    /* Then we load saved attribs from the db, if any, to update the defaults */
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID='%u'", mItem.itemID())) {
-        _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+    if (IsCharacter(mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
+            _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+        }
+    } else {
+        if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID())) {
+            _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
+        }
     }
 
     DBResultRow row;
@@ -89,9 +95,7 @@ bool AttributeMap::Save() {
      *   all attribs for ISEs and CSEs, where applicable
      *   damage for modules/charges, where applicable (ship damage saved separately)
      */
-    if (mItem.itemID() >= EVEMU_NPC_ID)    // not saving npc attribs
-        return true;
-    if (mItem.itemID() < EVEMU_MINIMUM_DYNAMIC_ID)  // not saving static object attribs
+    if (IsStaticItem(mItem.itemID()))
         return true;
 
     bool skill = false, damage = false, owner = false;
@@ -152,7 +156,7 @@ bool AttributeMap::Save() {
         }
     }
 
-    m_db.SaveAttributes(items);
+    m_db.SaveAttributes(IsCharacter(mItem.itemID()), items);
     return true;
 }
 
@@ -229,23 +233,27 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
 bool AttributeMap::SendChanges( PyTuple* attrChange ) {
     if (attrChange == nullptr)
         return true;
-    if ((mItem.ownerID() == 1) or IsNPCCorp(mItem.ownerID()))
+    if (IsCorp(mItem.ownerID()))
+        return true;
+    if ((mItem.ownerID() == 1)
+    and (!IsCharacter(mItem.itemID())))
         return true;
 
     Client* pClient(nullptr);
-    if (IsCharType(mItem.typeID()))
+    if (IsCharacter(mItem.itemID()))
         pClient = sEntityList.FindClientByCharID(mItem.itemID());
     else
         pClient = sEntityList.FindClientByCharID(mItem.ownerID());
 
-    if (pClient != nullptr) {
-        if (is_log_enabled(CLIENT__TRACE))
-            attrChange->Dump(CLIENT__TRACE, "");
-        pClient->QueueDestinyEvent(&attrChange);
-    } else {
+    if (pClient == nullptr) {
         _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
         return false;
     }
+
+    if (is_log_enabled(CLIENT__TRACE))
+        attrChange->Dump(CLIENT__TRACE, "");
+    pClient->QueueDestinyEvent(&attrChange);
+
     return true;
 }
 
@@ -321,8 +329,14 @@ void AttributeMap::DeleteAttribute(uint16 attrID) {
     if (itr != mAttributes.end())
         mAttributes.erase(itr);
     DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
-        _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+    if (IsCharacter(mItem.itemID())) {
+        if (!sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
+            _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+        }
+    } else {
+        if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
+            _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+        }
     }
 }
 

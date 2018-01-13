@@ -21,23 +21,29 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
-#ifndef __ACCOUNTDB_H_INCL__
-#define __ACCOUNTDB_H_INCL__
+#ifndef EVE_ACCOUNT_DB_H
+#define EVE_ACCOUNT_DB_H
 
 #include "ServiceDB.h"
 
-class PyObject;
-class PyRep;
 
-class AccountDB : public ServiceDB
+class AccountDB
 {
 public:
-    PyObject *GetEntryTypes();
-    PyObject *GetKeyMap();
-    PyObject *GetJournal(uint32 charID, uint32 refTypeID, uint32 accountKey, uint64 transDate);//mandela
-    PyRep *GetWalletDivisionsInfo(uint32 corpID);
+    PyRep* GetWalletDivisionsInfo(uint32 corpID);
 
-    bool CheckIfCorporation(uint32 corpID);
+    PyRep* GetJournal(uint32 ownerID, int8 entryTypeID, uint16 accountKey, int64 fromDate, bool reverse = false);
+
+    static double OfflineFundXfer(uint32 charID, double amount, uint8 type=Account::CreditType::ISK);
+    static double GetCorpBalance(uint32 corpID, uint16 accountKey);
+    static void UpdateCorpBalance(uint32 corpID, uint16 accountKey, double amount);
+
+    static void AddJournalEntry(uint32 ownerID, int8 entryTypeID, uint32 ownerFromID, uint32 ownerToID, int8 currency, uint16 accountKey, \
+                                double amount, double newBalance, std::string description, uint32 referenceID = 0);
+
 };
-#endif
+
+
+#endif  // EVE_ACCOUNT_DB_H

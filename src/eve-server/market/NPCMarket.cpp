@@ -84,7 +84,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
 
     // get the solar system and region IDs.
     StationData data;
-    if (!sDataMgr.GetStationInfo(StationID, data)) {
+    if (!stDataMgr.GetStationData(StationID, data)) {
         newOrders.clear();
         codelog(MARKET__ERROR, "NPCMarket: Failed to find parents for station %u", StationID);
         // adding these market orders failed but that does not mean the xml is at fault.
@@ -94,7 +94,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
 
     uint32 orderID;
     std::ostringstream values;
-    uint64 trnTime = Win32TimeNow();
+    int64 trnTime = Win32TimeNow();
     bool first = true;
     // create a single insert command to improve sql performance.
     std::list<stationOrder>::iterator itr = newOrders.begin();

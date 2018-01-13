@@ -49,9 +49,8 @@ AuthService::~AuthService() {
     delete m_dispatch;
 }
 
-
 PyResult AuthService::Handle_Ping(PyCallArgs &call) {
-    return new PyULong(GetFileTimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
@@ -63,7 +62,6 @@ PyResult AuthService::Handle_GetPostAuthenticationMessage(PyCallArgs &call)
         args->SetItemString( "message", new PyString( sConfig.account.loginMessage ) );
     return new PyObject( "util.KeyVal", args );
 }
-
 
 PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
 {

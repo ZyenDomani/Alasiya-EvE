@@ -276,7 +276,7 @@ uint32 BookmarkDB::SaveNewFolderToDatabase(std::string folderName, uint32 ownerI
     return folderID;
 }
 
-bool BookmarkDB::UpdateFolderInDatabase(int32 folderID, std::string& folderName)
+bool BookmarkDB::UpdateFolderInDatabase(int32 folderID, std::string folderName)
 {
     std::string folderName_fixed = "";
     sDatabase.DoEscapeString(folderName_fixed, folderName.c_str());

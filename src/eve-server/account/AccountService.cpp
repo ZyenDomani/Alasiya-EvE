@@ -28,8 +28,24 @@
 
 #include "EntityList.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "cache/ObjCacheService.h"
+
+/*
+ * ACCOUNT__ERROR
+ * ACCOUNT__WARNING
+ * ACCOUNT__INFO
+ * ACCOUNT__MESSAGE
+ * ACCOUNT__TRACE
+ * ACCOUNT__CALL
+ * ACCOUNT__CALL_DUMP
+ * ACCOUNT__RSP_DUMP
+ * ACCOUNT__DB_ERROR
+ * ACCOUNT__DB_WARNING
+ * ACCOUNT__DB_INFO
+ * ACCOUNT__DB_MESSAGE
+ */
 
 PyCallable_Make_InnerDispatcher(AccountService)
 
@@ -45,6 +61,7 @@ AccountService::AccountService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(AccountService, GiveCash);
     PyCallable_REG_CALL(AccountService, GiveCashFromCorpAccount);
     PyCallable_REG_CALL(AccountService, GetJournal);
+    PyCallable_REG_CALL(AccountService, GetJournalForAccounts);
     PyCallable_REG_CALL(AccountService, GetWalletDivisionsInfo);
 }
 
@@ -52,9 +69,25 @@ AccountService::~AccountService() {
     delete m_dispatch;
 }
 
-PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
-    //corrected, updated, optimized     -allan 26jan15
+PyResult AccountService::Handle_GetKeyMap(PyCallArgs &call)
+{
+    return sDataMgr.GetKeyMap();    // account key types
+}
 
+PyResult AccountService::Handle_GetEntryTypes(PyCallArgs &call)
+{
+    return sDataMgr.GetEntryTypes();    // journal entry IDs
+}
+
+PyResult AccountService::Handle_GetWalletDivisionsInfo(PyCallArgs &call)
+{
+    return m_db.GetWalletDivisionsInfo(call.client->GetCorporationID());
+}
+
+PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
+    //corrected, updated, optimized     -allan 26jan15      ReVisited/Rewrote  -allan 7Dec17
+    sLog.White( "AccountService::Handle_GetCashBalance()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
     bool isCorp = false;
     if (call.tuple->size() > 0) {
         if (call.tuple->GetItem(0)->IsBool())
@@ -64,431 +97,255 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
     }
 
     double balance = 0;
-    if (isCorp) {
-        int16 accountKey = accountingKeyCash;
-        if (call.tuple->size() > 1)
-            accountKey = call.tuple->GetItem(1)->AsInt()->value();
-        balance = m_db.GetCorpBalance( call.client->GetCorporationID(), accountKey );
-    } else {
-        if (call.byname.find("accountKey") != call.byname.end())
-            balance = call.client->GetChar().get()->aurBalance();
-        else
-            balance = call.client->GetChar().get()->balance();
+    int16 accountKey = call.client->GetCorpAccountKey();
+    if (call.byname.find("accountKey") != call.byname.end())
+        if (call.byname.find("accountKey")->second->IsInt())
+            accountKey = call.byname.find("accountKey")->second->AsInt()->value();
+
+    if (isCorp)
+        balance = AccountDB::GetCorpBalance( call.client->GetCorporationID(), accountKey);
+    else {
+        int8 type = Account::CreditType::ISK;
+        if (accountKey == Account::KeyType::AUR)
+            type = Account::CreditType::AURUM;
+        else if (accountKey == Account::KeyType::DUST_ISK)
+            type = Account::CreditType::MPLEX;
+        balance = call.client->GetBalance(type);
     }
 
     return new PyFloat(balance);
 }
 
-PyResult AccountService::Handle_GetEntryTypes(PyCallArgs &call) {
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetEntryTypes");
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetEntryTypes();
-        if(result == NULL) {
-            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            result = new PyNone();
-        }
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
-}
-
-PyResult AccountService::Handle_GetKeyMap(PyCallArgs &call) {
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetKeyMap");
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetKeyMap();
-        if(result == NULL) {
-            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            result = new PyNone();
-        }
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
-}
-
-PyResult AccountService::Handle_GiveCash(PyCallArgs &call) {
-    /*
-     * 21:07:02 [SvcCall] Service account::GiveCash()
-     * 21:07:02 [PacketError] Decode Call_GiveCash failed: reason is not a wide string: String
-     * 21:07:02 [SvcError] Handle_GiveCash(/usr/local/src/eve/Alasiya-EvE/src/eve-server/account/AccountService.cpp:132): allan: failed to decode arguments
-     */
-    Call_GiveCash args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return nullptr;
-    }
-
-    if(args.amount == 0) return nullptr;
-
-    if(args.amount < 0 || args.amount > call.client->GetBalance()) {
-        _log(CLIENT__ERROR, "%s: Invalid amount in GiveCash(): %.2f", call.client->GetName(), args.amount);
-        call.client->SendErrorMsg("Invalid amount '%.2f'", args.amount);
-        return nullptr;
-    }
-
-    if (IsCorp(args.toID))
-        return GiveCashToCorp(call.client, args.toID, args.amount, args.reason.c_str(), refPlayerDonation);
-    else{
-        Client *pToClient = sEntityList.FindClientByCharID(args.toID);
-        return GiveCashToChar(call.client, pToClient, args.amount, args.reason.c_str(), refPlayerDonation);
-    }
-}
-
-PyTuple * AccountService::GiveCashToCorp(Client * const client, uint32 corpID, double amount, const char *reason, JournalRefType refTypeID) {
-    if(!client->AddBalance(-amount)) {
-        _log(CLIENT__ERROR, "%s: Failed to remove %.2f ISK from %u for donation to %u",
-            client->GetName(),
-            amount,
-            client->GetCharacterID(),
-            corpID );
-        client->SendErrorMsg("Failed to transfer money from your account.");
-        return nullptr;
-    }
-    if(!m_db.AddBalanceToCorp(corpID, amount)) {
-        _log(CLIENT__ERROR, "%s: Failed to add %.2f ISK to %u for donation from %u",
-            client->GetName(),
-            amount,
-            corpID,
-            client->GetCharacterID());
-        client->SendErrorMsg("Failed to transfer money to your destination.");
-
-        //try to refund the money..
-        client->AddBalance(amount);
-
-        return nullptr;
-    }
-
-    uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
-    double cnb = m_db.GetCorpBalance(corpID, accountKey);
-
-    // Send notification about the cash change
-    OnAccountChange oac;
-    oac.accountKey = "cash";
-    oac.balance = cnb;
-    oac.ownerid = corpID;
-    PyTuple * answer = oac.Encode();
-
-    MulticastTarget mct;
-    mct.corporations.insert(corpID);
-    sEntityList.Multicast("OnAccountChange", "*corpid&corpAccountKey", &answer, mct);
-
-    //record the transactions in the wallet.
-    if(!m_db.GiveCash(
-        client->GetCharacterID(),
-        refTypeID,
-        client->GetCharacterID(),
-        corpID,
-        "unknown",
-        client->GetUserID(),
-        accountingKeyCash,
-        -amount,
-        client->GetBalance(),
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on sending side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-    if(!m_db.GiveCash(
-        corpID,
-        refTypeID,
-        client->GetCharacterID(),
-        corpID,
-        "unknown",
-        corpID,
-        accountingKeyCash,      /** @todo set proper wallet division here */
-        amount,
-        cnb,
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on receiving side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-    //send back the new balance
-    PyTuple *ans= new PyTuple(2);
-    ans->items[0]=new PyFloat(cnb);//new balance
-    ans->items[1]=new PyFloat(cnb);//new balance, not an error need to send it 2 times
-
-    return ans;
-}
-
-PyTuple * AccountService::GiveCashToChar(Client * const from, Client * const to, double amount, const char *reason, JournalRefType refTypeID) {
-    if(!from->AddBalance(-amount)) {
-        _log(CLIENT__ERROR, "%s: Failed to remove %.2f ISK from %u for donation to %u",
-            from->GetName(),
-            amount,
-            from->GetCharacterID(),
-            to->GetCharacterID() );
-        from->SendErrorMsg("Failed to transfer money from your account.");
-        return nullptr;
-    }
-    if(!to->AddBalance(amount)) {
-        _log(CLIENT__ERROR, "%s: Failed to add %.2f ISK to %u for donation from %u",
-            from->GetName(),
-            amount,
-            to->GetCharacterID(),
-            from->GetCharacterID());
-        from->SendErrorMsg("Failed to transfer money to your destination.");
-
-        //try to refund the money..
-        from->AddBalance(amount);
-
-        return nullptr;
-    }
-
-    //record the transactions in the wallet.
-    //first on the send side.
-    if(!m_db.GiveCash(
-        from->GetCharacterID(),
-        refTypeID,
-        from->GetCharacterID(),
-        to->GetCharacterID(),
-        "unknown",
-        from->GetUserID(),
-        accountingKeyCash,
-        -amount,
-        from->GetBalance(),
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on receiving side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-    //then on the receive side.
-    if(!m_db.GiveCash(
-        to->GetCharacterID(),
-        refTypeID,
-        to->GetCharacterID(),
-        from->GetCharacterID(),
-        "unknown",
-        to->GetUserID(),
-        accountingKeyCash,
-        amount,
-        to->GetBalance(),
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on sending side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-
-    //send back the new balance
-    PyTuple *ans= new PyTuple(2);
-    ans->items[0]=new PyFloat(from->GetBalance());//new balance
-    ans->items[1]=new PyFloat(from->GetBalance());//new balance, not an error need to send it 2 times
-
-    return ans;
-}
-
-PyResult AccountService::Handle_GetJournal(PyCallArgs &call) {
-/*
- *   02:46:06 L AccountService::Handle_GetJournal(): size= 6, 0=Integer, 1=Long, 2=None, 3=Boolean, 4=None, 5=Integer
- *   keyvalues = sm.GetService('account').GetJournal(accountKey, fromDate, entryTypeID, corpAccount, transactionID, rev)
- *
-            [PyTuple 6 items]
-              [PyInt 1000]
-              [PyIntegerVar 129493728000000000]
-              [PyNone]
-              [PyBool False]
-              [PyNone]
-              [PyInt 1]
- */
-
+PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
+{    // this asks for data for a single acctKey
+    sLog.White( "AccountService::Handle_GetJournal()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
     Call_GetJournal args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
-    bool ca = false;
-    if( args.corpAccount->IsBool() )
-        ca = args.corpAccount->AsBool()->value();
-    else if( args.corpAccount->IsInt() )
-        ca = ( args.corpAccount->AsInt()->value() != 0 );
-    else
-    {
-        // problem
-        _log(CORP__WARNING, "%s: Unsupported value for corpAccount", GetName() );
+    uint32 ownerID = call.client->GetCharacterID();
+    if (args.corpAccount)
+            ownerID = call.client->GetCorporationID();
 
+    PyRep* res = m_db.GetJournal(ownerID, args.entryTypeID, args.accountKey, args.fromDate, args.rev);
+   // if (is_log_enabled(ACCOUNT__RSP_DUMP))
+     //   res->Dump(ACCOUNT__RSP_DUMP, "    ");
+    return res;
+}
+
+PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
+    // this asks for data for multiple acctKeys
+    // self.journalData[key] = self.GetAccountSvc().GetJournalForAccounts(accountKeys, fromDate, entryTypeID, corpAccount, transactionID, rev)
+    sLog.White( "AccountService::Handle_GetJournalForAccounts()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
+
+    Call_GetJournals args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
-    return m_db.GetJournal(
-        ( ca ? call.client->GetCorporationID() : call.client->GetCharacterID() ),
-        args.entryTypeID,
-        args.accountKey,
-        args.fromDate
-    );
+    uint32 ownerID = call.client->GetCharacterID();
+    if (args.corpAccount)
+        ownerID = call.client->GetCorporationID();
+
+    uint16 acctKey = Account::KeyType::Cash;
+    if (call.byname.find("accountKey") != call.byname.end())
+        if (call.byname.find("accountKey")->second->IsInt())
+            acctKey = call.byname.find("accountKey")->second->AsInt()->value();
+
+    PyRep* res = m_db.GetJournal(ownerID, args.entryTypeID, acctKey, args.fromDate, args.rev);
+    if (is_log_enabled(ACCOUNT__RSP_DUMP))
+        res->Dump(ACCOUNT__RSP_DUMP, "    ");
+    return res;
 }
 
-//givecash takes (ownerID, retval['qty'], retval['reason'][:40])
-//GiveCashFromCorpAccount(ownerID, retval['qty'], retval['reason'][:40])
-// notify OnAccountChange:
-//         accountKey: 'cash', ownerID: charID or corpID, new balance
+PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
+{
+    sLog.White( "AccountService::Handle_GiveCash()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
 
-PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call) {
-    /** @todo  fix corpAccountKey */
-    /*[00m18:58:35 [SvcCall] Service account: calling GiveCashFromCorpAccount
-     * 18:58:35 [PacketError] Decode Call_GiveCorpCash failed: tuple0 is the wrong size: expected 4, but got 3
-     * 18:58:35 [ClientError] Handle_GiveCashFromCorpAccount(/usr/local/src/eve/evemu_personal/src/eve-server/account/AccountService.cpp:347): Invalid arguments
-     */
+    Call_GiveCash args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        return nullptr;
+    }
 
+    std::string reason = "DESC: ";
+    reason += args.reason;
+
+    TranserFunds(call.client->GetCharacterID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::PlayerDonation, call.client->GetCharacterID());
+    return nullptr;
+}
+
+PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
+{
     sLog.White( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(ACCOUNT__CALL_DUMP);
 
     Call_GiveCorpCash args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
-    if(args.amount == 0) return nullptr;
+    uint16 toAcctKey = Account::KeyType::Cash;
+    if (call.byname.find("toAccountKey") != call.byname.end())
+        if (call.byname.find("toAccountKey")->second->IsInt())
+            toAcctKey = call.byname.find("toAccountKey")->second->AsInt()->value();
 
-    uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
-
-    if(args.amount < 0 || args.amount > m_db.GetCorpBalance(call.client->GetCorporationID(), accountKey)) {
-        _log(CLIENT__ERROR, "%s: Invalid amount in GiveCashFromCorpAccount(): %.2f", call.client->GetName(), args.amount);
-        call.client->SendErrorMsg("Invalid amount '%.2f'", args.amount);
-        return nullptr;
+    std::string reason;
+    if (call.byname.find("reason") != call.byname.end()) {
+        reason = "DESC: ";
+        reason += PyRep::StringContent(call.byname.find("reason")->second);
     }
 
-    SystemManager *system = call.client->SystemMgr();
-    if(system == NULL) {
-        codelog(CLIENT__ERROR, "%s: bad system", call.client->GetName());
-        return nullptr;
-    }
-
-    //NOTE: this will need work once we reorganize the entity list...
-    Client *other = sEntityList.FindClientByCharID(args.toID);
-    if(other == NULL) {
-        _log(CLIENT__ERROR, "%s: Failed to find character %u", call.client->GetName(), args.toID);
-        call.client->SendErrorMsg("Unable to find the target");
-        return nullptr;
-    }
-
-
-    return WithdrawCashToChar(call.client, other, args.amount, args.reason.c_str(), refCorporationAccountWithdrawal);
+    TranserFunds(call.client->GetCorporationID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::CorporationAccountWithdrawal, \
+                call.client->GetCharacterID(), args.fromAcctKey, toAcctKey);
+    return nullptr;
 }
 
-PyTuple * AccountService::WithdrawCashToChar(Client * const client, Client * const other, double amount, const char *reason, JournalRefType refTypeID) {
-    // remove money from the corp
-    uint32 corpID = client->GetCorporationID();
-    if (!m_db.AddBalanceToCorp(corpID, double(-amount))) {
-        _log(CLIENT__ERROR, "%s: Failed to remove %.2f ISK from %u for withdrawal to %u",
-            client->GetName(),
-            amount,
-            corpID,
-            other->GetCharacterID() );
-        client->SendErrorMsg("Failed to transfer money from your account.");
-        return nullptr;
+void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason /*""*/, uint8 entryTypeID /*Journal::EntryType::Undefined*/, \
+                                  uint32 referenceID/*0*/, uint16 fromKey/*Account::KeyType::Cash*/, uint16 toKey/*Account::KeyType::Cash*/)
+{
+    _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
+                            fromID, toID, entryTypeID, referenceID, amount, fromKey, toKey);
+    uint8 fromCurrency = Account::CreditType::ISK;
+    if (IsAUR(fromKey))
+        fromCurrency = Account::CreditType::AURUM;
+    else if (IsDustKey(fromKey))
+        fromCurrency = Account::CreditType::MPLEX;
+
+    double newBalanceFrom = 0, newBalanceTo = 0;
+    Client* pClientFrom(nullptr);
+    if (IsCharacter(fromID)) {
+        pClientFrom = sEntityList.FindClientByCharID(fromID);
+        if (pClientFrom == nullptr) {
+            // sender is offline. xfer funds thru db
+            newBalanceFrom = AccountDB::OfflineFundXfer(fromID, -amount, fromCurrency);
+        } else {
+            // this will throw if it fails
+            pClientFrom->AddBalance(-amount, fromCurrency);
+            newBalanceFrom = pClientFrom->GetBalance(fromCurrency);
+        }
+        AccountDB::AddJournalEntry(fromID, entryTypeID, fromID, toID, fromCurrency, fromKey, -amount, newBalanceFrom, reason, referenceID);
+    } else if (IsPlayerCorp(fromID)) {
+        HandleCorpTransaction(fromID, entryTypeID, fromID, toID, fromCurrency, fromKey, -amount, reason, referenceID);
+    } // fromID could be npc or _System.  nothing to do on this side.
+
+    uint8 toCurrency = Account::CreditType::ISK;
+    if (IsAUR(toKey))
+        toCurrency = Account::CreditType::AURUM;
+    else if (IsDustKey(toKey))
+        toCurrency = Account::CreditType::MPLEX;
+
+    Client* pClientTo(nullptr);
+    if (IsCharacter(toID)) {
+        pClientTo = sEntityList.FindClientByCharID(toID);
+        if (pClientTo == nullptr) {
+            // receipient is offline. xfer funds thru db
+            newBalanceTo = AccountDB::OfflineFundXfer(toID, amount, toCurrency);
+        } else {
+            // this will throw if it fails
+            pClientTo->AddBalance(amount, toCurrency);
+            /** @todo if this DOES fail, return funds to origin.  this needs a try/catch block */
+            //TranserFunds(ownerSCC, fromID, amount, reason, Journal::EntryType::Undefined, referenceID, fromKey, fromKey);
+            newBalanceTo = pClientTo->GetBalance(toCurrency);
+        }
+        AccountDB::AddJournalEntry(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, newBalanceTo, reason, referenceID);
+    } else if (IsPlayerCorp(toID)) {
+        HandleCorpTransaction(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, reason, referenceID);
+    } else {
+        _log(ACCOUNT__TRACE, "TranserFunds() - toID: %u is neither player nor player corp.", toID);
+        return;
     }
 
-    uint16 accountKey = accountingKeyCash;  //FIXME  get proper corp wallet division
+    /* corp taxes...
+     *   bounty prizes and mission rewards are taxed by the players corp based on corp tax rate.
+     *   there is a possibility the char receiving these payments could be offline (for whatever reason)
+     *   these payments are only taxed if they are above amount set in config, or the default 250000 isk.
+     */
 
-    double ncb = m_db.GetCorpBalance(corpID, accountKey);
+    // is receipient a char?
+    if (!IsCharacter(toID))
+        return;
+    // is amount worth taxing?
+    if (amount < sConfig.rates.TaxedAmount)
+        return;
+    float tax = 0;
+    uint32 corpID = 0;
+    if (pClientTo != nullptr) {
+        tax = pClientTo->GetCorpTaxRate() * amount;
+        corpID = pClientTo->GetCorporationID();
+    } else {
+        //  receipient is offline...try to get needed data from db
+        tax = CharacterDB::GetCorpTaxRate(toID) * amount;
+        corpID = CharacterDB::GetCorpID(toID);
+    }
 
-    // Send notification about the cash change
+    // is tax worth the accounting hassle? (from corp pov)
+    if (tax < sConfig.rates.TaxAmount)
+        return;
+    // just in case something went wrong.....
+    if (!IsCorp(corpID))
+        return;
+
+    switch (entryTypeID) {
+        // Corp Taxed payment types
+        case Journal::EntryType::BountyPrize:
+        case Journal::EntryType::BountyPrizes: {
+            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxNpcBounties, referenceID);
+        } break;
+        case Journal::EntryType::AgentMissionReward: {
+            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentRewards, referenceID);
+        } break;
+        case Journal::EntryType::AgentMissionTimeBonusReward: {
+            TranserFunds(toID, corpID, tax, reason.c_str(), Journal::EntryType::CorporationTaxAgentBonusRewards, referenceID);
+        } break;
+    }
+}
+
+void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, \
+                                           uint16 accountKey, double amount, std::string description, uint32 referenceID)
+{
+    _log(ACCOUNT__TRACE, "HandleCorpTransaction() - owner: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
+                        ownerID, fromID, toID, entryTypeID, referenceID, amount,accountKey, currency);
+    double balance = AccountDB::GetCorpBalance(ownerID, accountKey);
+    // verify funds available for withdraw first
+    if (amount < 0) {
+        if (-amount > balance) {
+            std::map<std::string, PyRep *> args;
+            args["amount"] = new PyFloat(-amount);
+            args["balance"] = new PyFloat(balance);
+            throw PyException(MakeUserError("NotEnoughMoney", args));
+        }
+    }
+    // get new corp balance
+    balance += amount;
+    // update corp balance
+    AccountDB::UpdateCorpBalance(ownerID, accountKey, balance);
+
     OnAccountChange oac;
-    oac.accountKey = "cash";
-    oac.balance = ncb;
-    oac.ownerid = corpID;
-    PyTuple * answer = oac.Encode();
-
+    switch (accountKey) {
+        case Account::KeyType::Cash2: oac.accountKey = "cash2"; break;
+        case Account::KeyType::Cash3: oac.accountKey = "cash3"; break;
+        case Account::KeyType::Cash4: oac.accountKey = "cash4"; break;
+        case Account::KeyType::Cash5: oac.accountKey = "cash5"; break;
+        case Account::KeyType::Cash6: oac.accountKey = "cash6"; break;
+        case Account::KeyType::Cash7: oac.accountKey = "cash7"; break;
+        case Account::KeyType::Cash:
+        default:                      oac.accountKey = "cash";  break;
+    }
+    oac.balance = balance;
+    oac.ownerid = fromID;
+    PyTuple* answer = oac.Encode();
     MulticastTarget mct;
-    mct.corporations.insert(corpID);
+    mct.corporations.insert(fromID);
     sEntityList.Multicast("OnAccountChange", "*corpid&corpAccountKey", &answer, mct);
 
-    if(!other->AddBalance(amount)) {
-        _log(CLIENT__ERROR, "%s: Failed to add %.2f ISK to %u for donation from %u",
-            client->GetName(),
-            amount,
-            corpID,
-            client->GetCharacterID());
-        client->SendErrorMsg("Failed to transfer money to your destination.");
 
-        //try to refund the money..
-        m_db.AddBalanceToCorp(corpID, double(amount));
-        // if we're here, we have a more serious problem than
-        // corp's balance not being displayed properly, so i won't bother with it
-
-        return nullptr;
-    }
-
-    //record the transactions in the wallet.
-    //first on the send side.
-    char argID[15];
-    snprintf(argID, 14, "%u", client->GetCharacterID());
-    if(!m_db.GiveCash(
-        corpID,
-        refTypeID,
-        corpID,
-        other->GetCharacterID(),
-        argID,
-        corpID,
-        accountingKeyCash,      /** @todo set proper wallet division here */
-        -amount,
-        ncb,
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on receiving side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-    //then on the receive side.
-    if(!m_db.GiveCash(
-        other->GetCharacterID(),
-        refTypeID,
-        corpID,
-        other->GetCharacterID(),
-        argID,
-        other->GetUserID(),
-        accountingKeyCash,
-        amount,
-        other->GetBalance(),
-        reason
-        )
-    ) {
-        codelog(CLIENT__ERROR, "Failed to record transaction on sending side");
-        //no good reason to return... the money has actually been moved.
-    }
-
-
-    //send back the new balance
-    PyTuple *ans= new PyTuple(2);
-
-    // maybe this needs it this way, just like the other ones...
-    // i'm not sure, but it works for sure
-    ans->items[0]=new PyFloat(ncb);
-    ans->items[1]=new PyFloat(ncb);
-
-    return ans;
-}
-
-PyResult AccountService::Handle_GetWalletDivisionsInfo(PyCallArgs &call) {
-    return (m_db.GetWalletDivisionsInfo(call.client->GetCorporationID()));
+    AccountDB::AddJournalEntry(ownerID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
 }

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `billTypes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `billTypes` (
-  `billTypeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `billTypeID` int(10)  NOT NULL DEFAULT '0',
   `billTypeName` varchar(100) NOT NULL DEFAULT '',
   `description` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`billTypeID`)

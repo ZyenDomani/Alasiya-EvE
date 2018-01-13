@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -34,7 +35,7 @@ PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
 {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " job.jobID,"
         " job.assemblyLineID,"
@@ -63,7 +64,7 @@ PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
         " FROM ramJobs AS job"
         " LEFT JOIN entity AS installedItem ON job.installedItemID = installedItem.itemID"
         " LEFT JOIN ramAssemblyLines AS assemblyLine ON job.assemblyLineID = assemblyLine.assemblyLineID"
-        " LEFT JOIN invBlueprints AS blueprint ON installedItem.itemID = blueprint.blueprintID"
+        " LEFT JOIN invBlueprints AS blueprint ON installedItem.itemID = blueprint.itemID"
         " LEFT JOIN invBlueprintTypes AS blueprintType ON installedItem.typeID = blueprintType.blueprintTypeID"
         " LEFT JOIN ramAssemblyLineStations AS station ON assemblyLine.containerID = station.stationID"
         " WHERE job.ownerID = %u"
@@ -81,7 +82,7 @@ PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
 PyRep *RamProxyDB::AssemblyLinesSelectPublic(const uint32 regionID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
@@ -107,7 +108,7 @@ PyRep *RamProxyDB::AssemblyLinesSelectPublic(const uint32 regionID) {
 PyRep *RamProxyDB::AssemblyLinesSelectPersonal(const uint32 charID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
@@ -118,8 +119,8 @@ PyRep *RamProxyDB::AssemblyLinesSelectPersonal(const uint32 charID) {
         " FROM ramAssemblyLineStations AS station"
         " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
         " WHERE station.ownerID = %u"
-        " AND (line.restrictionMask & 12) = 0", // (restrictionMask & (ramRestrictByCorp | ramRestrictByAlliance)) = 0
-        charID))
+        " AND (line.restrictionMask & %u) = %u",
+        charID, (EvERam::RestrictionMask::ByCorp | EvERam::RestrictionMask::ByAlliance), (EvERam::RestrictionMask::ByCorp | EvERam::RestrictionMask::ByAlliance)))
     {
         _log(DATABASE__ERROR, "Failed to query personal assembly lines for char %u: %s.", charID, res.error.c_str());
         return NULL;
@@ -131,7 +132,7 @@ PyRep *RamProxyDB::AssemblyLinesSelectPersonal(const uint32 charID) {
 PyRep *RamProxyDB::AssemblyLinesSelectPrivate(const uint32 charID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
@@ -141,8 +142,7 @@ PyRep *RamProxyDB::AssemblyLinesSelectPrivate(const uint32 charID) {
         " station.ownerID"
         " FROM ramAssemblyLineStations AS station"
         " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
-        " WHERE station.ownerID = %u"
-        " AND (line.restrictionMask & 12) = 0", // (restrictionMask & (ramRestrictByCorp | ramRestrictByAlliance)) = 0
+        " WHERE station.ownerID = %u",
         charID))
     {
         _log(DATABASE__ERROR, "Failed to query private assembly lines for char %u: %s.", charID, res.error.c_str());
@@ -152,10 +152,11 @@ PyRep *RamProxyDB::AssemblyLinesSelectPrivate(const uint32 charID) {
     return DBResultToCRowset(res);
 }
 
-PyRep *RamProxyDB::AssemblyLinesSelectCorporation(const uint32 corporationID) {
+/** @todo  need to add check/query for POS assembly modules here */
+PyRep *RamProxyDB::AssemblyLinesSelectCorporation(const uint32 corpID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
@@ -166,20 +167,21 @@ PyRep *RamProxyDB::AssemblyLinesSelectCorporation(const uint32 corporationID) {
         " FROM ramAssemblyLineStations AS station"
         " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
         " WHERE station.ownerID = %u"
-        " AND (line.restrictionMask & 4) = 4", // (restrictionMask & ramRestrictByCorp) = ramRestrictByCorp
-        corporationID))
+        " AND (line.restrictionMask & %u) = %u",
+        corpID, EvERam::RestrictionMask::ByCorp, EvERam::RestrictionMask::ByCorp))
     {
-        _log(DATABASE__ERROR, "Failed to query corporation assembly lines for corp %u: %s.", corporationID, res.error.c_str());
+        _log(DATABASE__ERROR, "Failed to query corporation assembly lines for corp %u: %s.", corpID, res.error.c_str());
         return NULL;
     }
 
     return DBResultToCRowset(res);
 }
 
+/** @todo  need to add check/query for POS assembly modules here */
 PyRep *RamProxyDB::AssemblyLinesSelectAlliance(const uint32 allianceID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " station.stationID AS containerID,"
         " station.stationTypeID AS containerTypeID,"
@@ -188,11 +190,11 @@ PyRep *RamProxyDB::AssemblyLinesSelectAlliance(const uint32 allianceID) {
         " station.quantity,"
         " station.ownerID"
         " FROM ramAssemblyLineStations AS station"
-        " LEFT JOIN corporation AS crp ON station.ownerID = crp.corporationID"
+        " LEFT JOIN crpCorporation AS crp ON station.ownerID = crp.corporationID"
         " LEFT JOIN ramAssemblyLines AS line ON station.stationID = line.containerID AND station.assemblyLineTypeID = line.assemblyLineTypeID AND station.ownerID = line.ownerID"
         " WHERE crp.allianceID = %u"
-        " AND (line.restrictionMask & 8) = 8", // (restrictionMask & ramRestrictByAlliance) = ramRestrictByAlliance
-        allianceID))
+        " AND (line.restrictionMask & %u) = %u",
+        allianceID, EvERam::RestrictionMask::ByAlliance, EvERam::RestrictionMask::ByAlliance))
     {
         _log(DATABASE__ERROR, "Failed to query alliance assembly lines for alliance %u: %s.", allianceID, res.error.c_str());
         return NULL;
@@ -201,10 +203,11 @@ PyRep *RamProxyDB::AssemblyLinesSelectAlliance(const uint32 allianceID) {
     return DBResultToCRowset(res);
 }
 
+/** @todo  need to add check/query for POS assembly modules here */
 PyRep *RamProxyDB::AssemblyLinesGet(const uint32 containerID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " assemblyLineID,"
         " assemblyLineTypeID,"
@@ -230,10 +233,10 @@ PyRep *RamProxyDB::AssemblyLinesGet(const uint32 containerID) {
     return DBResultToCRowset(res);
 }
 
-bool RamProxyDB::GetAssemblyLineProperties(const uint32 assemblyLineID, double &baseMaterialMultiplier, double &baseTimeMultiplier, double &costInstall, double &costPerHour) {
+/** @todo  need to add check/query for POS assembly modules here */
+bool RamProxyDB::GetAssemblyLineProperties(const uint32 assemblyLineID, Rsp_InstallJob& into) {
     DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " alt.baseMaterialMultiplier,"
         " alt.baseTimeMultiplier,"
@@ -249,23 +252,25 @@ bool RamProxyDB::GetAssemblyLineProperties(const uint32 assemblyLineID, double &
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "No properties found for assembly line %u.", assemblyLineID);
         return false;
     }
 
-    baseMaterialMultiplier = row.GetDouble(0);
-    baseTimeMultiplier = row.GetDouble(1);
-    costInstall = row.GetDouble(2);
-    costPerHour = row.GetDouble(3);
+    into.materialMultiplier = row.GetDouble(0);
+    into.timeMultiplier     = row.GetDouble(1);
+    into.installCost        = row.GetDouble(2);
+    into.usageCost          = row.GetDouble(3);
 
     return true;
 }
 
-bool RamProxyDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uint32 &ownerID, double &minCharSecurity, double &maxCharSecurity, EVERamRestrictionMask &restrictionMask, EVERamActivity &activity) {
+/** @todo  need to add check/query for POS assembly modules here */
+bool RamProxyDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, uint32 &ownerID, double &minCharSecurity, double &maxCharSecurity,
+                                                 int8 &restrictionMask, int8 &activity) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " ownerID,"
         " minimumCharSecurity,"
@@ -281,7 +286,7 @@ bool RamProxyDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, ui
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "No verify properties found for assembly line %u.", assemblyLineID);
         return false;
     }
@@ -289,26 +294,26 @@ bool RamProxyDB::GetAssemblyLineVerifyProperties(const uint32 assemblyLineID, ui
     ownerID = row.GetUInt(0);
     minCharSecurity = row.GetDouble(1);
     maxCharSecurity = row.GetDouble(2);
-    restrictionMask = (EVERamRestrictionMask)row.GetUInt(3);
-    activity = (EVERamActivity)row.GetUInt(4);
+    restrictionMask = row.GetInt(3);
+    activity        = row.GetInt(4);
 
     return true;
 }
 
 bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         const uint32 assemblyLineID, const uint32 installedItemID,
-        const uint64 beginProductionTime, const uint64 endProductionTime,
+        const int64 beginProductionTime, const int64 endProductionTime,
         const char *description, const int32 runs, const EVEItemFlags outputFlag,
         const uint32 installedInSolarSystem, const int32 licensedProductionRuns) {
     DBerror err;
 
     // insert job
-    if(!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQuery(err,
         "INSERT INTO ramJobs"
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %f, %" PRIu64 ", %" PRIu64 ", '%s', %i, %d, 0, %u, %i)",
+        " (%u, %u, %u, %u, %f, %" PRIi64 ", %" PRIi64 ", '%s', %i, %i, 0, %u, %i)",
         ownerID, installerID, assemblyLineID, installedItemID, GetFileTimeNow(), beginProductionTime, endProductionTime, description,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {
@@ -317,9 +322,9 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
     }
 
     // update nextFreeTime
-    if(!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQuery(err,
         "UPDATE ramAssemblyLines"
-        " SET nextFreeTime = %" PRIu64
+        " SET nextFreeTime = %" PRIi64
         " WHERE assemblyLineID = %u",
         endProductionTime, assemblyLineID))
     {
@@ -332,28 +337,17 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
 
 bool RamProxyDB::IsProducableBy(const uint32 assemblyLineID, const uint32 groupID) {
     double tmp;
-    return(_GetMultipliers(assemblyLineID, groupID, tmp, tmp));
-}
-
-bool RamProxyDB::MultiplyMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier) {
-    double tmpMat, tmpTime;
-    if(!_GetMultipliers(assemblyLineID, productGroupID, tmpMat, tmpTime))
-        return false;
-
-    materialMultiplier *= tmpMat;
-    timeMultiplier *= tmpTime;
-
-    return true;
+    return RamProxyDB::GetMultipliers(assemblyLineID, groupID, tmp, tmp);
 }
 
 uint32 RamProxyDB::CountManufacturingJobs(const uint32 installerID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " COUNT(job.jobID)"
         " FROM ramJobs AS job"
-        " LEFT JOIN ramAssemblyLines AS line ON job.assemblyLineID = line.assemblyLineID"
+        " LEFT JOIN ramAssemblyLines AS line USING (assemblyLineID)"
         " WHERE job.installerID = %u"
         " AND job.completedStatusID = 0"
         " AND line.activityID = 1",
@@ -364,24 +358,24 @@ uint32 RamProxyDB::CountManufacturingJobs(const uint32 installerID) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "No rows returned while counting manufacturing jobs for installer %u.", installerID);
         return 0;
     }
 
-    return(row.GetUInt(0));
+    return row.GetUInt(0);
 }
 uint32 RamProxyDB::CountResearchJobs(const uint32 installerID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " COUNT(job.jobID)"
         " FROM ramJobs AS job"
-        " LEFT JOIN ramAssemblyLines AS line ON job.assemblyLineID = line.assemblyLineID"
+        " LEFT JOIN ramAssemblyLines AS line USING (assemblyLineID)"
         " WHERE job.installerID = %u"
         " AND job.completedStatusID = 0"
-        " AND line.activityID != 1",
+        " AND line.activityID != 1",    // is this accurate?
         installerID))
     {
         _log(DATABASE__ERROR, "Failed to count research jobs for installer %u.", installerID);
@@ -389,22 +383,20 @@ uint32 RamProxyDB::CountResearchJobs(const uint32 installerID) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "No rows returned while counting research jobs for installer %u.", installerID);
+    if (!res.GetRow(row))
         return 0;
-    }
 
-    return(row.GetUInt(0));
+    return row.GetUInt(0);
 }
 
-bool RamProxyDB::GetRequiredItems(const uint32 typeID, const EVERamActivity activity, std::vector<RequiredItem> &into) {
+bool RamProxyDB::GetRequiredItems(const uint32 typeID, const int8 activity, std::vector< EvERam::RequiredItem >& into) {
     DBQueryResult res;
     DBResultRow row;
 
     if (activity == 1) {
         /** @todo update this.  */
         //sDataMgr.GetRamMaterials();
-        if(!sDatabase.RunQuery(res,
+        if (!sDatabase.RunQuery(res,
             "SELECT"
             " m.materialTypeID,"
             " m.quantity"
@@ -419,16 +411,17 @@ bool RamProxyDB::GetRequiredItems(const uint32 typeID, const EVERamActivity acti
         }
         // only materials in this table
         while(res.GetRow(row))
-            into.push_back(RequiredItem(row.GetUInt(0), row.GetUInt(1), 1.0, false));
+            into.push_back(EvERam::RequiredItem(row.GetUInt(0), row.GetUInt(1), 1.0, false, false));
     }
 
     res.Reset();
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         " material.requiredTypeID,"
         " material.quantity,"
         " material.damagePerJob,"
-        " IF(materialGroup.categoryID = 16, 1, 0) AS isSkill"
+        " IF(materialGroup.categoryID = 16, 1, 0) AS isSkill,"
+        " material.extra"
         " FROM ramTypeRequirements AS material"
         " LEFT JOIN invTypes AS materialType ON materialType.typeID = material.requiredTypeID"
         " LEFT JOIN invGroups AS materialGroup ON materialGroup.groupID = materialType.groupID"
@@ -443,15 +436,15 @@ bool RamProxyDB::GetRequiredItems(const uint32 typeID, const EVERamActivity acti
     }
 
     while(res.GetRow(row))
-        into.push_back(RequiredItem(row.GetUInt(0), row.GetUInt(1), row.GetFloat(2), row.GetInt(3) ? true : false));
+        into.push_back(EvERam::RequiredItem(row.GetUInt(0), row.GetUInt(1), row.GetFloat(2), row.GetInt(3) ? true : false, row.GetInt(4) ? true : false));
 
     return true;
 }
 
-bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32 &installedItemID, uint32 &ownerID, EVEItemFlags &outputFlag, int32 &runs, int32 &licensedProductionRuns, EVERamActivity &activity) {
+bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT job.installedItemID, job.ownerID, job.outputFlag, job.runs, job.licensedProductionRuns, assemblyLine.activityID"
         " FROM ramJobs AS job"
         " LEFT JOIN ramAssemblyLines AS assemblyLine ON job.assemblyLineID = assemblyLine.assemblyLineID"
@@ -463,25 +456,25 @@ bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32 &installedItemID, u
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "No properties found for job %u.", jobID);
         return false;
     }
 
-    installedItemID = row.GetUInt(0);
-    ownerID = row.GetUInt(1);
-    outputFlag = (EVEItemFlags)row.GetUInt(2);
-    runs = row.GetInt(3);
-    licensedProductionRuns = row.GetInt(4);
-    activity = (EVERamActivity)row.GetUInt(5);
+    installedItemID         = row.GetUInt(0);
+    ownerID                 = row.GetUInt(1);
+    outputFlag              = (EVEItemFlags)row.GetUInt(2);
+    runs                    = row.GetInt(3);
+    licensedProductionRuns  = row.GetInt(4);
+    activity                = row.GetUInt(5);
 
     return true;
 }
 
-bool RamProxyDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, uint64 &endProductionTime, EVERamRestrictionMask &restrictionMask, EVERamCompletedStatus &status) {
+bool RamProxyDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, int64 &endProductionTime, int8 &restrictionMask, int8 &status) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
                 "SELECT job.ownerID, job.endProductionTime, job.completedStatusID, line.restrictionMask"
                 " FROM ramJobs AS job"
                 " LEFT JOIN ramAssemblyLines AS line ON line.assemblyLineID = job.assemblyLineID"
@@ -493,61 +486,39 @@ bool RamProxyDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, uin
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "No completion properties found for job %u.", jobID);
         return false;
     }
 
     ownerID = row.GetUInt(0);
-    endProductionTime = row.GetUInt64(1);
-    status = (EVERamCompletedStatus)row.GetUInt(2);
-    restrictionMask = (EVERamRestrictionMask)row.GetUInt(3);
+    endProductionTime = row.GetInt64(1);
+    status = row.GetInt(2);
+    restrictionMask = row.GetInt(3);
 
     return true;
 }
 
-bool RamProxyDB::CompleteJob(const uint32 jobID, const EVERamCompletedStatus completedStatus) {
+bool RamProxyDB::CompleteJob(const uint32 jobID, const int8 completedStatus) {
     DBerror err;
 
-    if(!sDatabase.RunQuery(err,
+    if (!sDatabase.RunQuery(err,
         "UPDATE ramJobs"
-        " SET completedStatusID = %u"
+        " SET completedStatusID = %i"
         " WHERE jobID = %u",
-        (uint32)completedStatus, jobID))
+        completedStatus, jobID))
     {
-        _log(DATABASE__ERROR, "Failed to complete job %u (completed status = %u): %s.", jobID, (uint32)completedStatus, err.c_str());
+        _log(DATABASE__ERROR, "Failed to complete job %u (completed status = %i): %s.", jobID, completedStatus, err.c_str());
         return false;
     }
 
     return true;
 }
 
-std::string RamProxyDB::GetStationName(const uint32 stationID) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT stationName"
-        " FROM staStations"
-        " WHERE stationID = %u",
-        stationID))
-    {
-        _log(DATABASE__ERROR, "Failed to query station name of station %u: %s.", stationID, res.error.c_str());
-        return("");
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Station %u not found.", stationID);
-        return("");
-    }
-
-    return(row.GetText(0));
-}
-
 uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT blueprintTypeID"
         " FROM invBlueprintTypes"
         " WHERE parentBlueprintTypeID = %u",
@@ -558,12 +529,10 @@ uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
-        // no error because it's normal
+    if (!res.GetRow(row))
         return 0;
-    }
 
-    return(row.GetUInt(0));
+    return row.GetUInt(0);
 }
 
 int64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
@@ -588,14 +557,14 @@ int64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
         return (row.IsNull(0) ? 0 : row.GetInt64(0));
 }
 
-bool RamProxyDB::_GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier) {
+bool RamProxyDB::GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier) {
     DBQueryResult res;
 
     // check table ramAssemblyLineTypeDetailPerGroup first
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT materialMultiplier, timeMultiplier"
         " FROM ramAssemblyLineTypeDetailPerGroup"
-        " JOIN ramAssemblyLines USING (assemblyLineTypeID)"
+        " LEFT JOIN ramAssemblyLines USING (assemblyLineTypeID)"
         " WHERE assemblyLineID = %u"
         " AND groupID = %u",
         assemblyLineID, groupID))
@@ -605,7 +574,7 @@ bool RamProxyDB::_GetMultipliers(const uint32 assemblyLineID, uint32 groupID, do
     }
 
     DBResultRow row;
-    if(res.GetRow(row)) {
+    if (res.GetRow(row)) {
         materialMultiplier = row.GetDouble(0);
         timeMultiplier = row.GetDouble(1);
         return true;
@@ -614,11 +583,11 @@ bool RamProxyDB::_GetMultipliers(const uint32 assemblyLineID, uint32 groupID, do
     res.Reset();
 
     // then ramAssemblyLineTypeDetailPerCategory
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT materialMultiplier, timeMultiplier"
         " FROM ramAssemblyLineTypeDetailPerCategory"
-        " JOIN ramAssemblyLines USING (assemblyLineTypeID)"
-        " JOIN invGroups USING (categoryID)"
+        " LEFT JOIN ramAssemblyLines USING (assemblyLineTypeID)"
+        " LEFT JOIN invGroups USING (categoryID)"
         " WHERE assemblyLineID = %u"
         " AND groupID = %u",
         assemblyLineID, groupID))
@@ -627,12 +596,12 @@ bool RamProxyDB::_GetMultipliers(const uint32 assemblyLineID, uint32 groupID, do
         return false;
     }
 
-    if(res.GetRow(row)) {
+    if (res.GetRow(row)) {
         materialMultiplier = row.GetDouble(0);
         timeMultiplier = row.GetDouble(1);
         return true;
-    } else {
-        return false;
     }
+
+    return false;
 }
 

@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `repChar`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `repChar` (
-  `fromID` int(10) unsigned NOT NULL DEFAULT '0',
-  `toID` int(10) unsigned NOT NULL DEFAULT '0',
+  `fromID` int(10)  NOT NULL DEFAULT '0',
+  `toID` int(10)  NOT NULL DEFAULT '0',
   `standing` double NOT NULL DEFAULT '0',
   PRIMARY KEY (`toID`,`fromID`),
   KEY `fromID` (`fromID`),

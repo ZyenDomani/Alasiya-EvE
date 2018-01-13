@@ -387,7 +387,11 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
 
     m_colony->LaunchCommodities(args.pinID, items);
 
-    return new PyULong(Win32TimeNow());
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {

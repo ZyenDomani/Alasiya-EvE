@@ -316,9 +316,9 @@ void DBcore::DoEscapeString(std::string &to, const std::string &from)
 {
     assert(mysql);
     uint32 len = (uint32)from.length();
-    to.resize(len*2 + 1);   // make enough room
+    to.resize(len * 2);   // make enough room
     uint32 esc_len = mysql_real_escape_string(mysql, &to[0], from.c_str(), len);
-    to.resize(esc_len+1); // optional.
+    to.resize(esc_len + 1); // optional.
 }
 
 //look for things in the string which might cause SQL problems
@@ -570,7 +570,7 @@ bool DBResultRow::GetBool( uint32 index ) const
         return false;       //nothing better to do...
     }
 
-    return (GetText(index)[0] == 1);
+    return (GetText(index)[0] == 1 ? true : false);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const
@@ -599,18 +599,6 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtoll( GetText( index ), nullptr, 0 );
-}
-
-uint64 DBResultRow::GetUInt64( uint32 index ) const
-{
-    if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetUInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        EvE::traceStack();
-        return 0;       //nothing better to do...
-    }
-
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoull( GetText( index ), nullptr, 0 );
 }
 
 float DBResultRow::GetFloat( uint32 index ) const

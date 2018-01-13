@@ -83,30 +83,28 @@ public:
     std::string GetLanguageID() const                   { return mSession.GetCurrentString( "languageID" ); }
 
     uint32 GetAccountType() const                       { return mSession.GetCurrentInt( "userType" ); }
-    uint64 GetAccountRole() const                       { return mSession.GetCurrentULong( "role" ); }
+    int64 GetAccountRole() const                        { return mSession.GetCurrentLong( "role" ); }
     int64 GetClientID() const                           { return mSession.GetCurrentLong( "clientid" ); }
     uint32 GetUserID() const                            { return mSession.GetCurrentInt( "userid" ); }
     int64 GetSessionID()                                { return mSession.GetCurrentLong( "sessionID" ); }
 
     uint32 GetCharacterID() const                       { return mSession.GetCurrentInt( "charid" ); }
     std::string GetCharacterName() const                { return mSession.GetCurrentString( "charname" ); }
-    uint32 GetShipID() const                            { return m_shipId; }
-    uint32 GetCorporationID() const                     { return mSession.GetCurrentInt( "corpid" ); }
-    uint32 GetLocationID() const                        { return m_locationID; }
     uint32 GetStationID() const                         { return mSession.GetCurrentInt( "stationid" ); }
     uint32 GetStationID2() const                        { return mSession.GetCurrentInt( "stationid2" ); }
-    uint32 GetSystemID() const                          { return m_SystemData.systemID; }
-    uint32 GetConstellationID() const                   { return m_SystemData.constellationID; }
-    uint32 GetRegionID() const                          { return m_SystemData.regionID; }
     uint32 GetCloneStationID() const                    { return mSession.GetCurrentInt( "cloneStationID" ); }
 
+    double GetCorpTaxRate()                             { return m_char->corpTaxRate(); }
+    uint32 GetCorporationID() const                     { return mSession.GetCurrentInt( "corpid" ); }
     uint32 GetCorpHQ() const                            { return mSession.GetCurrentInt( "hqID" ); }
+    uint32 GetAllianceID() const                        { return mSession.GetCurrentInt( "allianceID" ); }
+    uint32 GetWarFactionID() const                      { return mSession.GetCurrentInt( "warFactionID" ); }
     int32 GetCorpAccountKey() const                     { return mSession.GetCurrentInt( "corpAccountKey" ); }
-    uint64 GetCorpRole() const                          { return mSession.GetCurrentULong( "corpRole" ); }
-    uint64 GetRolesAtAll() const                        { return mSession.GetCurrentULong( "rolesAtAll" ); }
-    uint64 GetRolesAtBase() const                       { return mSession.GetCurrentULong( "rolesAtBase" ); }
-    uint64 GetRolesAtHQ() const                         { return mSession.GetCurrentULong( "rolesAtHQ" ); }
-    uint64 GetRolesAtOther() const                      { return mSession.GetCurrentULong( "rolesAtOther" ); }
+    int64 GetCorpRole() const                           { return mSession.GetCurrentLong( "corpRole" ); }
+    int64 GetRolesAtAll() const                         { return mSession.GetCurrentLong( "rolesAtAll" ); }
+    int64 GetRolesAtBase() const                        { return mSession.GetCurrentLong( "rolesAtBase" ); }
+    int64 GetRolesAtHQ() const                          { return mSession.GetCurrentLong( "rolesAtHQ" ); }
+    int64 GetRolesAtOther() const                       { return mSession.GetCurrentLong( "rolesAtOther" ); }
 
     // fleet data
     bool InFleet()                                      { return (IsFleet(m_fleet) ? true : false); }
@@ -118,9 +116,15 @@ public:
     int32 GetSquadID() const                            { return m_squad; }
     int8 GetFleetRole()                                 { return mSession.GetCurrentInt("fleetrole"); }
 
+    uint32 GetShipID() const                            { return m_shipId; }
+    uint32 GetLocationID() const                        { return m_locationID; }
+    uint32 GetSystemID() const                          { return m_SystemData.systemID; }
+    uint32 GetConstellationID() const                   { return m_SystemData.constellationID; }
+    uint32 GetRegionID() const                          { return m_SystemData.regionID; }
+
     //  public functions to update client session when char's roles are changed
-    void UpdateCorpSession();
-    void UpdateFleetSession();
+    void UpdateCorpSession(CorpData& data);
+    void UpdateFleetSession(CharFleetData& fleet);
 
     // character data
     void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used in char creation
@@ -129,12 +133,11 @@ public:
     Ship* GetShipSE()                                   { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
     uint32 GetPodID() const                             { return m_char->capsuleID(); }
-    uint32 GetAllianceID() const                        { return m_char->allianceID(); }
-    uint32 GetWarFactionID() const                      { return m_char->warFactionID(); }
     double GetBounty() const                            { return m_char->bounty(); }
     double GetSecurityRating() const                    { return m_char->GetSecurityRating(); }
-    double GetBalance() const                           { return m_char->balance(); }
-    double GetAurBalance() const                        { return m_char->aurBalance(); }
+    //check all these and update to AccountService::TransferFunds() where applicable
+    bool AddBalance(double amount, uint8 type=Account::CreditType::ISK) { return m_char->AlterBalance(amount, type); }
+    double GetBalance(uint8 type=Account::CreditType::ISK) { return m_char->balance(type); }
 
     std::string GetSystemName() const                   { return m_SystemData.name; }
 
@@ -163,7 +166,6 @@ public:
     void AddStationHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);
 
-    bool AddBalance(double amount);
     bool SelectCharacter( uint32 char_id=0);
     bool IsHangarLoaded(uint32 stationID);
 
@@ -356,9 +358,9 @@ private:
 protected:
     void _SendPingRequest();
     void _UpdateSession();
-    void _SendException( const PyAddress& source, uint64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
-    void _SendCallReturn( const PyAddress& source, uint64 callID, uint64 clientID, PyRep** return_value, const char* channel = 0 );
-    void _SendPingResponse( const PyAddress& source, uint64 callID );
+    void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
+    void _SendCallReturn( const PyAddress& source, int64 callID, int64 clientID, PyRep** return_value, const char* channel = 0 );
+    void _SendPingResponse( const PyAddress& source, int64 callID );
 
     bool Handle_CallReq( PyPacket* packet, PyCallStream& req );
     bool Handle_Notify( PyPacket* packet );

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrRaces`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrRaces` (
-  `raceID` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `raceID` tinyint(3)  NOT NULL DEFAULT '0',
   `raceName` varchar(100) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
   `iconID` smallint(6) NOT NULL DEFAULT '0',

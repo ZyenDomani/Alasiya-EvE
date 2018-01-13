@@ -43,14 +43,14 @@ public:
 
 class AgentMission {
 public:
-    AgentMission(Agent *_agent, const AgentMissionSpec *_spec, MissionState state, uint64 expirationTime);
+    AgentMission(Agent *_agent, const AgentMissionSpec *_spec, MissionState state, int64 expirationTime);
 
     PyRep *MakeDetailsRep();
 
     Agent *agent;    //we do not own this.
     const AgentMissionSpec *spec;    //we do not own this.
     MissionState missionState;
-    uint64 expirationTime;
+    int64 expirationTime;
 };
 
 
@@ -67,13 +67,13 @@ public:
 
 class AgentOffer {
 public:
-    AgentOffer(Agent *_agent, const AgentOfferSpec *_spec, uint64 expirationTime);
+    AgentOffer(Agent *_agent, const AgentOfferSpec *_spec, int64 expirationTime);
 
     PyRep *MakeDetailsRep();
 
     Agent *agent;    //we do not own this.
     const AgentOfferSpec *spec;    //we do not own this.
-    uint64 expirationTime;
+    int64 expirationTime;
 };
 
 

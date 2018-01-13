@@ -53,6 +53,23 @@ Standing::~Standing() {
     delete m_dispatch;
 }
 
+PyResult Standing::Handle_GetCharStandings(PyCallArgs &call)
+{
+    return m_db.GetCharStandings(call.client);
+}
+
+PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call)
+{
+    return m_db.GetCorpStandings(call.client);
+}
+
+PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call)
+{
+    return m_db.GetFactionStandings();
+}
+
+/** @todo  need to add a standing from ownerCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
+
 PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     //takes an integer: characterID
     Call_SingleIntegerArg arg;
@@ -61,7 +78,7 @@ PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
         return NULL;
     }
 
-    CharacterRef c = m_manager->item_factory->GetCharacter( arg.arg );
+    CharacterRef c = sItemFactory.GetCharacter( arg.arg );
     if( !c ) {
         _log(SERVICE__ERROR, "Character %u not found.", arg.arg);
         return NULL;
@@ -81,6 +98,7 @@ PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
     return tu;
 }
 
+// cannot find a call to this one
 PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
     /* still working on this one (cause i dont completely understand it yet) */
   sLog.White( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
@@ -105,55 +123,6 @@ PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
     return result;
 }
 
-PyResult Standing::Handle_GetCharStandings(PyCallArgs &call) {
-    ObjectCachedSessionMethodID method_id(GetName(), "GetCharStandings", call.client->GetCharacterID());
-
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyRep *t = m_db.GetCharStandings(call.client);
-
-        m_manager->cache_service->GiveCache(method_id, &t);
-    }
-
-    return m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "charID");
-}
-
-PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call) {
-  sLog.White( "Standing::Handle_GetCorpStandings()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
-
-    ObjectCachedSessionMethodID method_id(GetName(), "GetCorpStandings", call.client->GetCorporationID());
-
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        PyRep *t = m_db.GetCorpStandings(call.client->GetCorporationID());
-
-        m_manager->cache_service->GiveCache(method_id, &t);
-    }
-
-    return m_manager->cache_service->MakeObjectCachedSessionMethodCallResult(method_id, "corpID");
-}
-
-PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call) {
-    // this is NPC<-->NPC standings
-    /*
-    PyRep *result = NULL;
-    ObjectCachedMethodID method_id(GetName(), "GetNPCNPCStandings");
-
-    //check to see if this method is in the cache already.
-    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetFactionStandings();
-        if (result == NULL)
-            result = new PyNone();
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-    */
-    return /*result*/m_db.GetFactionStandings();
-}
-
 PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
     /**
      * data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
@@ -167,8 +136,7 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
         return NULL;
     }
 
-    PyRep *result = m_db.GetStandingTransactions(args.fromID, args.toID, args.direction, args.eventID, args.eventType, args.eventDateTime);
-    return result;
+    return m_db.GetStandingTransactions(args.fromID, args.toID, args.direction, args.eventID, args.eventType, args.eventDateTime);
 }
 
 PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
@@ -189,6 +157,5 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
         return NULL;
     }
 
-    PyRep *result = m_db.GetStandingCompositions(args.toID, args.fromID);
-    return result;
+    return m_db.GetStandingCompositions(args.toID, args.fromID);
 }

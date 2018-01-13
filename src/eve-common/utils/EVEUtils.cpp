@@ -73,7 +73,7 @@ bool DBTYPE_IsCompatible( DBTYPE type, const PyRep* rep )
 {
 // Helper macro, checks type and range
 #define CheckTypeRangeUnsigned( type, lower_bound, upper_bound ) \
-    ( rep->Is##type() && (uint64)rep->As##type()->value() >= lower_bound && (uint64)rep->As##type()->value() <= upper_bound )
+    ( rep->Is##type() && (int64)rep->As##type()->value() >= lower_bound && (int64)rep->As##type()->value() <= upper_bound )
 #define CheckTypeRange( type, lower_bound, upper_bound ) \
     ( rep->Is##type() && rep->As##type()->value() >= lower_bound && rep->As##type()->value() <= upper_bound )
 

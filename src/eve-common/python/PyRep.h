@@ -26,17 +26,8 @@
 #ifndef EVE_PY_REP_H
 #define EVE_PY_REP_H
 
-/* note: this will decrease memory use with 50% but increase load time with 50%
- * enabling this would have to wait until references work properly. Or when
- * you operate the server using the cache store system this can also be enabled.
- * note: this will have influence on the overall server performance.
- */
-//#pragma pack(push,1)
-
 class PyInt;
-class PyUInt;
 class PyLong;
-class PyULong;
 class PyFloat;
 class PyBool;
 class PyBuffer;
@@ -81,26 +72,24 @@ public:
     {
         PyTypeMin               = 0,
         PyTypeInt               = 1,
-        PyTypeUInt              = 2,
-        PyTypeLong              = 3,
-        PyTypeULong             = 4,
-        PyTypeFloat             = 5,
-        PyTypeBool              = 6,
-        PyTypeBuffer            = 7,
-        PyTypeString            = 8,
-        PyTypeWString           = 9,
-        PyTypeToken             = 10,
-        PyTypeTuple             = 11,
-        PyTypeList              = 12,
-        PyTypeDict              = 13,
-        PyTypeNone              = 14,
-        PyTypeSubStruct         = 15,
-        PyTypeSubStream         = 16,
-        PyTypeChecksumedStream  = 17,
-        PyTypeObject            = 18,
-        PyTypeObjectEx          = 19,
-        PyTypePackedRow         = 20,
-        PyTypeError             = 21
+        PyTypeLong              = 2,
+        PyTypeFloat             = 3,
+        PyTypeBool              = 4,
+        PyTypeBuffer            = 5,
+        PyTypeString            = 6,
+        PyTypeWString           = 7,
+        PyTypeToken             = 8,
+        PyTypeTuple             = 9,
+        PyTypeList              = 10,
+        PyTypeDict              = 11,
+        PyTypeNone              = 12,
+        PyTypeSubStruct         = 13,
+        PyTypeSubStream         = 14,
+        PyTypeChecksumedStream  = 15,
+        PyTypeObject            = 16,
+        PyTypeObjectEx          = 17,
+        PyTypePackedRow         = 18,
+        PyTypeError             = 19
     };
 
     /** PyType check functions
@@ -109,9 +98,7 @@ public:
     PyType GetType() const          { return mType; }
 
     bool IsInt() const              { return mType == PyTypeInt; }
-    bool IsUInt() const             { return mType == PyTypeUInt; }
     bool IsLong() const             { return mType == PyTypeLong; }
-    bool IsULong() const            { return mType == PyTypeULong; }
     bool IsFloat() const            { return mType == PyTypeFloat; }
     bool IsBool() const             { return mType == PyTypeBool; }
     bool IsBuffer() const           { return mType == PyTypeBuffer; }
@@ -134,12 +121,8 @@ public:
     // tools for easy access, less typecasting...
     PyInt* AsInt()                                       { assert( IsInt() ); return (PyInt*)this; }
     const PyInt* AsInt() const                           { assert( IsInt() ); return (const PyInt*)this; }
-    PyUInt* AsUInt()                                     { assert( IsUInt() ); return (PyUInt*)this; }
-    const PyUInt* AsUInt() const                         { assert( IsUInt() ); return (const PyUInt*)this; }
     PyLong* AsLong()                                     { assert( IsLong() ); return (PyLong*)this; }
     const PyLong* AsLong() const                         { assert( IsLong() ); return (const PyLong*)this; }
-    PyULong* AsULong()                                   { assert( IsULong() ); return (PyULong*)this; }
-    const PyULong* AsULong() const                       { assert( IsULong() ); return (const PyULong*)this; }
     PyFloat* AsFloat()                                   { assert( IsFloat() ); return (PyFloat*)this; }
     const PyFloat* AsFloat() const                       { assert( IsFloat() ); return (const PyFloat*)this; }
     PyBool* AsBool()                                     { assert( IsBool() ); return (PyBool*)this; }
@@ -215,6 +198,11 @@ public:
      */
     virtual int32 hash() const;
 
+    // this is used when PyRep can be either String or WString.
+    static std::string StringContent(PyRep* pRep);
+    // this is used when PyRep can be either Int or Long (None returns 0)
+    static int64 IntegerValue(PyRep* pRep);
+
 protected:
     PyRep( PyType t );
     virtual ~PyRep();
@@ -245,28 +233,6 @@ protected:
 };
 
 /**
- * @brief Python integer.
- *
- * Class representing 32-bit unsigned integer.
- */
-class PyUInt : public PyRep
-{
-public:
-    PyUInt( const uint32 i );
-    PyUInt( const PyUInt& oth );
-
-    PyRep* Clone() const;
-    bool visit( PyVisitor& v ) const;
-
-    uint32 value() const { return mValue; }
-
-    int32 hash() const;
-
-protected:
-    const uint32 mValue;
-};
-
-/**
  * @brief Python long integer.
  *
  * Class representing 64-bit signed integer.
@@ -286,28 +252,6 @@ public:
 
 protected:
     const int64 mValue;
-};
-
-/**
- * @brief Python long integer.
- *
- * Class representing 64-bit unsigned integer.
- */
-class PyULong : public PyRep
-{
-public:
-    PyULong( const uint64 i );
-    PyULong( const PyULong& oth );
-
-    PyRep* Clone() const;
-    bool visit( PyVisitor& v ) const;
-
-    uint64 value() const { return mValue; }
-
-    int32 hash() const;
-
-protected:
-    const uint64 mValue;
 };
 
 /**
@@ -590,7 +534,10 @@ public:
         PyRep** rep = &items.at( index );
 
         PySafeDecRef( *rep );
-        *rep = object;
+        if (object == nullptr)
+            *rep = new PyNone();
+        else
+            *rep = object;
         PyIncRef( *rep );
     }
 
@@ -656,7 +603,10 @@ public:
         PyRep** rep = &items.at( index );
 
         PySafeDecRef( *rep );
-        *rep = object;
+        if (object == nullptr)
+            *rep = new PyNone();
+        else
+            *rep = object;
         PyIncRef( *rep );
     }
     /**
@@ -669,9 +619,7 @@ public:
 
     void AddItem( PyRep* i ) { items.push_back( i ); }
     void AddItemInt( int32 intval ) { AddItem( new PyInt( intval ) ); }
-    void AddItemUInt( uint32 intval ) { AddItem( new PyUInt( intval ) ); }
     void AddItemLong( int64 intval ) { AddItem( new PyLong( intval ) ); }
-    void AddItemULong( uint64 intval ) { AddItem( new PyULong( intval ) ); }
     void AddItemReal( double realval ) { AddItem( new PyFloat( realval ) ); }
     void AddItemString( const char* str ) { AddItem( new PyString( str ) ); }
 
@@ -1034,10 +982,6 @@ protected:
     const uint32 mChecksum;
 };
 
-/* note: this will decrease memory use with 50% but increase load time with 50%
- * enabling this would have to wait until references work properly.
- */
-//#pragma pack(pop)
 
 /* note: these need to be in header since they are templates ... we don't mess
  * the class definitions up with them, we stick them here instead to have them
@@ -1056,8 +1000,8 @@ inline PyToken::PyToken( Iter first, Iter last ) : PyRep( PyRep::PyTypeToken ), 
 /************************************************************************/
 /* tuple helper functions                                               */
 /************************************************************************/
-PyTuple * new_tuple(uint64 arg1);
-PyTuple * new_tuple(uint64 arg1, uint64 arg2);
+PyTuple * new_tuple(int64 arg1);
+PyTuple * new_tuple(int64 arg1, int64 arg2);
 PyTuple * new_tuple(const char* arg1);
 PyTuple * new_tuple(const char* arg1, const char* arg2);
 PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3);
@@ -1079,5 +1023,40 @@ class CacheOK : public PyObjectEx_Type1
 public:
     CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
 };
+
+
+/**
+ * @name PyStatic.h
+ *   memory object tracking system for oft-used Python objects
+ *
+ * @Author:         Allan
+ * @date:          13 December 17
+ *
+ */
+
+#include "../../eve-core/utils/Singleton.h"
+
+class pyStatic
+: public Singleton< pyStatic >
+{
+public:
+    pyStatic()                  { m_none = new PyNone(); m_true = new PyBool(true); m_false = new PyBool(false); }
+    ~pyStatic()                 { PyDecRef(m_none); PyDecRef(m_true); PyDecRef(m_false); }
+
+    PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
+    PyRep* NewTrue()            { PyIncRef(m_true); return m_true; }
+    PyRep* NewFalse()           { PyIncRef(m_false); return m_false; }
+
+private:
+    PyRep* m_none;
+    PyRep* m_true;
+    PyRep* m_false;
+
+
+};
+
+//Singleton
+#define PyStatic \
+( pyStatic::get() )
 
 #endif//EVE_PY_REP_H

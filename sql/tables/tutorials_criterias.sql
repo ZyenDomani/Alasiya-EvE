@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `tutorials_criterias`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tutorials_criterias` (
-  `tutorialID` int(10) unsigned NOT NULL DEFAULT '0',
-  `criteriaID` int(10) unsigned NOT NULL DEFAULT '0',
+  `tutorialID` int(10)  NOT NULL DEFAULT '0',
+  `criteriaID` int(10)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`tutorialID`,`criteriaID`),
   KEY `criteriaID` (`criteriaID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

@@ -172,8 +172,8 @@ enum EVEEffectID {
     NPCGroupPropJamAssist =   4688,     // effects.ElectronicAttributeModifyActivate
     NPCGroupArmorAssist =   4689,     // effects.ElectronicAttributeModifyActivate
     fighterMissile =   4729,     // effects.Laser
-    anchorDropOrbital =   4769,     // effects.AnchorDrop
-    anchorLiftOrbital =   4770,     // effects.AnchorLift
+    anchorDropForOrbitals =   4769,     // effects.AnchorDrop
+    anchorLiftForOrbitals =   4770,     // effects.AnchorLift
     onlineOrbital =   4771,     // effects.StructureOnline
     hackOrbital =   4773,     // effects.TargetScan
     deployPledge =   4774,     // DeployPledge

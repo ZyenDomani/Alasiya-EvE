@@ -43,7 +43,7 @@ protected:
     PyCallable_DECL_CALL(GetRankedAlliances);
     PyCallable_DECL_CALL(GetAllianceApplications);
     PyCallable_DECL_CALL(GetEmploymentRecord);
-    PyCallable_DECL_CALL(GetAllianceApplications);
+    PyCallable_DECL_CALL(GetAllianceMembers);
 
 };
 

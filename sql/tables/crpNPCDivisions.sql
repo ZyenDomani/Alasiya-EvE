@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `crpNPCDivisions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `crpNPCDivisions` (
-  `divisionID` tinyint(3) unsigned NOT NULL,
+  `divisionID` tinyint(3)  NOT NULL,
   `divisionName` varchar(100) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
   `leaderType` varchar(100) DEFAULT NULL,

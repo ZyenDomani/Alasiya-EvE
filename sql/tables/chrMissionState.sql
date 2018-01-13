@@ -23,10 +23,10 @@ DROP TABLE IF EXISTS `chrMissionState`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrMissionState` (
-  `characterID` int(10) unsigned NOT NULL DEFAULT '0',
-  `missionID` int(10) unsigned NOT NULL DEFAULT '0',
-  `missionState` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `expirationTime` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `characterID` int(10)  NOT NULL DEFAULT '0',
+  `missionID` int(10)  NOT NULL DEFAULT '0',
+  `missionState` tinyint(3)  NOT NULL DEFAULT '0',
+  `expirationTime` bigint(20)  NOT NULL DEFAULT '0',
   PRIMARY KEY (`characterID`,`missionID`),
   KEY `missionID` (`missionID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

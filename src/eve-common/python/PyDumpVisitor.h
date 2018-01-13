@@ -42,9 +42,7 @@ protected:
 
     //! primitive data visitors
     bool VisitInteger( const PyInt* rep );
-    bool VisitUInteger( const PyUInt* rep );
     bool VisitLong( const PyLong* rep );
-    bool VisitULong( const PyULong* rep );
     bool VisitReal( const PyFloat* rep );
     bool VisitBoolean( const PyBool* rep );
     bool VisitNone( const PyNone* rep );

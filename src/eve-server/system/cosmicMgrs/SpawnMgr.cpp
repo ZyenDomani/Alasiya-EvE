@@ -66,7 +66,7 @@ void SpawnMgr::Process() {
         return;
 
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // called by SystemManager::Process() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
@@ -80,7 +80,7 @@ void SpawnMgr::Process() {
             _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Main Timer called.  Spawn functions enabled for %s(%u).",
                  m_system->GetName().c_str(), m_system->GetID());
         }
-        if (sConfig.server.UseProfiling)
+        if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
         return;
     }
@@ -120,7 +120,7 @@ void SpawnMgr::Process() {
                          * should we return here and wait for next timer to hit,
                          * or spawn all missing entities at same time?
                          * for now, just spawn them all.
-                        if (sConfig.server.UseProfiling)
+                        if (sConfig.debug.UseProfiling)
                             sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
                         return; */
                     }
@@ -136,7 +136,7 @@ void SpawnMgr::Process() {
         }
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -149,7 +149,7 @@ void SpawnMgr::MoveSpawn()
 void SpawnMgr::StartMainTimer()
 {
     uint32 time = sConfig.npc.RoamingTimer *60 *1000;
-    if (sConfig.server.IsTestServer and sConfig.npc.SpawnTest)
+    if (sConfig.debug.SpawnTest)
         time = 5000; /* 5s for npc spawn testing */
     m_mainTimer.Start(time);
 
@@ -206,7 +206,7 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     if (pSysBubble == nullptr)
         return false;
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     if (FindSpawnForBubble(pSysBubble->GetID())) {
         _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pSysBubble->GetID());
@@ -226,7 +226,7 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, doubl
     m_system->IncRatSpawnCount();
 
     /* this will throw off the accuracy of the profile, as this and Process() use the same data container */
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
     return true;
 }
@@ -464,7 +464,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry)
      *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
      */
     ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
-    InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db.
+    InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
     if (iRef.get() == nullptr) {
         _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry.typeID);
         return;
@@ -532,7 +532,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type,
         ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
 
         for (uint8 x=0; x!=cur->quantity; ++x) {
-            InventoryItemRef iRef = m_services.item_factory->SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
+            InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
             if (iRef.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;

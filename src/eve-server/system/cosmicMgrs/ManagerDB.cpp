@@ -18,12 +18,53 @@ void ManagerDB::GetSkillList(DBQueryResult& res)
     if (!sDatabase.RunQuery(res, "SELECT typeID, typeName FROM invTypes WHERE groupID IN (SELECT groupID FROM invGroups WHERE categoryID = 16)"))
         codelog(DATABASE__ERROR, "Error in GetSkillList query: %s", res.error.c_str());
 
+    _log(DATABASE__RESULTS, "GetSkillList returned %u items", res.GetRowCount());
+
 }
 
 void ManagerDB::GetTypeAttributes(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res, "SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes"))
         codelog(DATABASE__ERROR, "Error in GetTypeAttributes query: %s", res.error.c_str());
+
+    _log(DATABASE__RESULTS, "GetTypeAttributes returned %u items", res.GetRowCount());
+}
+
+/** @todo these are incomplete.  not sure where data came from, but we DO have a bulkdata fileID for it.  */
+PyObject *ManagerDB::GetEntryTypes() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT entryTypeID, entryTypeName, description FROM jnlEntryTypeIDs"))    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    _log(DATABASE__RESULTS, "GetEntryTypes returned %u items", res.GetRowCount());
+
+    return DBResultToRowset(res);
+}
+
+PyObject *ManagerDB::GetKeyMap() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT keyID, keyType, keyName, description FROM actKeyTypes")) {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    _log(DATABASE__RESULTS, "GetKeyMap returned %u items", res.GetRowCount());
+
+    return DBResultToRowset(res);
+}
+
+PyObject* ManagerDB::GetBillTypes() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT billTypeID, billTypeName, description FROM billTypes")) {
+        codelog(DATABASE__ERROR, "Failed to query bill types: %s.", res.error.c_str());
+        return nullptr;
+    }
+
+    _log(DATABASE__RESULTS, "GetBillTypes returned %u items", res.GetRowCount());
+
+    return DBResultToRowset(res);
 }
 
 PyObjectEx *ManagerDB::GetOperands() {
@@ -39,10 +80,121 @@ PyObjectEx *ManagerDB::GetOperands() {
     return DBResultToCIndexedRowset(res, "operandID");
 }
 
+void ManagerDB::ListAllCorpFactions(std::map<uint32, uint32> &into) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT corporationID,factionID FROM crpNPCCorporations" )) {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+
+    DBResultToUIntUIntDict(res, into);
+}
+
+void ManagerDB::ListAllFactionStationCounts(std::map<uint32, uint32> &into) {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT factionID, COUNT(DISTINCT staStations.stationID) FROM crpNPCCorporations"
+        " LEFT JOIN staStations USING (corporationID)"
+        " GROUP BY factionID"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+
+    DBResultToUIntUIntDict(res, into);
+}
+
+void ManagerDB::ListAllFactionSystemCounts(std::map<uint32, uint32> &into) {
+    DBQueryResult res;
+    //this is not quite right, but its good enough.
+    if (!sDatabase.RunQuery(res, "SELECT factionID, COUNT(solarSystemID) FROM mapSolarSystems GROUP BY factionID"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+
+    DBResultToUIntUIntDict(res, into);
+}
+
+void ManagerDB::ListAllFactionRegions(std::map<int32, PyRep *> &into) {
+    DBQueryResult res;
+    //this is not quite right, but its good enough.
+    if (!sDatabase.RunQuery(res, "SELECT factionID,regionID FROM mapRegions WHERE factionID IS NOT NULL"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+    DBResultToIntIntlistDict(res, into);
+}
+
+void ManagerDB::ListAllFactionConstellations(std::map<int32, PyRep *> &into) {
+    DBQueryResult res;
+    //this is not quite right, but its good enough.
+    if (!sDatabase.RunQuery(res, "SELECT factionID,constellationID FROM mapConstellations WHERE factionID IS NOT NULL" ))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+    DBResultToIntIntlistDict(res, into);
+}
+
+void ManagerDB::ListAllFactionSolarSystems(std::map<int32, PyRep *> &into) {
+    DBQueryResult res;
+    //this is not quite right, but its good enough.
+    if (!sDatabase.RunQuery(res, "SELECT factionID,solarSystemID FROM mapSolarSystems WHERE factionID IS NOT NULL"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+    DBResultToIntIntlistDict(res, into);
+}
+
+void ManagerDB::ListAllFactionRaces(std::map<int32, PyRep *> &into) {
+    DBQueryResult res;
+    //this is not quite right, but its good enough.
+    if (!sDatabase.RunQuery(res, "SELECT factionID,raceID FROM facRaces WHERE factionID IS NOT NULL"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
+    }
+    DBResultToIntIntlistDict(res, into);
+}
+
+PyDict* ManagerDB::ListAllNPCCorpInfo() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "   crp.corporationName,"
+        "   ncrp.corporationID,"
+        "   ncrp.size, ncrp.extent, ncrp.solarSystemID,"
+        "   ncrp.factionID, ncrp.sizeFactor, ncrp.stationCount, ncrp.stationSystemCount,"
+        "   crp.stationID, crp.ceoID, chr.characterName AS ceoName"
+        " FROM crpNPCCorporations AS ncrp"
+        "  LEFT JOIN crpCorporation AS crp ON ncrp.corporationID = crp.corporationID"
+        "  LEFT JOIN chrNPCCharacters AS chr ON ceoID=chr.characterID"))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToIntRowDict(res, 1);
+}
+
+PyObject* ManagerDB::GetNPCDivisions() {
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        " divisionID, divisionName, description, leaderType, divisionNameID, leaderTypeID"
+        " FROM crpNPCDivisions" )) {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToRowset(res);
+}
 
 void ManagerDB::GetSalvageGroups(DBQueryResult& res) {
-    //`factionSalvage` (`factionID`,`itemID`,`itemName`)
-    if (!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM factionSalvage")) {
+    //`facSalvage` (`factionID`,`itemID`,`itemName`)
+    if (!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM facSalvage")) {
         codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
     }
@@ -64,8 +216,12 @@ void ManagerDB::GetBlueprintType(DBQueryResult& res) {
         "  materialModifier,"
         "  wasteFactor,"
         "  maxProductionLimit, "
-        "  chanceOfRE"
-        " FROM invBlueprintTypes "))
+        "  chanceOfRE,"
+        "  g.categoryID"
+        " FROM invBlueprintTypes AS bt"
+        "  LEFT JOIN invTypes AS t ON t.typeID = bt.blueprintTypeID"
+        "  LEFT JOIN invGroups AS g USING (groupID)"
+        " WHERE t.published = 1" ))
     {
         codelog(DATABASE__ERROR, "Error in GetBlueprintType query: %s.", res.error.c_str());
     }
@@ -79,7 +235,7 @@ void ManagerDB::GetRAMMaterials(DBQueryResult& res)
 
 void ManagerDB::GetRAMRequirements(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements"))
+    if (!sDatabase.RunQuery(res, "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements"))
         codelog(DATABASE__ERROR, "Error in GetRAMRequirements query: %s", res.error.c_str());
 }
 
@@ -101,26 +257,6 @@ void ManagerDB::GetStaticData(DBQueryResult& res)
     if (!sDatabase.RunQuery(res,
         "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL"))
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetStationInfo(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res,
-        "SELECT s.stationID, s.x, s.y, s.z, st.dockEntryX, st.dockEntryY, st.dockEntryZ, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ FROM staStations AS s"
-        " LEFT JOIN staStationTypes AS st USING (stationTypeID)"))
-        codelog(DATABASE__ERROR, "Error in GetStationInfo query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetStationSystem(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT stationID, solarSystemID FROM staStations"))
-        codelog(DATABASE__ERROR, "Error in GetStationSystem query: %s", res.error.c_str());
-}
-
-void ManagerDB::GetStationRegion(DBQueryResult& res)
-{
-    if (!sDatabase.RunQuery(res, "SELECT stationID, regionID FROM staStations"))
-        codelog(DATABASE__ERROR, "Error in GetStationRegion query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetMoonResouces(DBQueryResult& res)

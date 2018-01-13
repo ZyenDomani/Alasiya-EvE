@@ -47,6 +47,7 @@ class Sentry;
 class SystemBubble;
 class SystemManager;
 class WreckSE;
+class FieldSE;
 
 class StationSE;
 class StaticSystemEntity;
@@ -68,7 +69,9 @@ class DungeonSE;
 class TowerSE;
 class ArraySE;
 class BatterySE;
+class ModuleSE;
 class WeaponSE;
+class ReactorSE;
 
 /*
  * base class for all SystemEntities
@@ -103,6 +106,7 @@ public:
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
+    virtual FieldSE*            GetFieldSE()            { return nullptr; }
     virtual StructureSE*        GetJammerSE()           { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
@@ -115,6 +119,8 @@ public:
     virtual BatterySE*          GetBatterySE()          { return nullptr; }
     virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
     virtual Sentry*             GetSentrySE()           { return nullptr; }
+    virtual ModuleSE*           GetModuleSE()           { return nullptr; }
+    virtual ReactorSE*          GetReactorSE()          { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -142,6 +148,7 @@ public:
     virtual bool                IsWormholeSE()          { return false; }
     virtual bool                IsCelestialSE()         { return false; }
     virtual bool                IsContainerSE()         { return false; }
+    virtual bool                IsFieldSE()             { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
     virtual bool                IsSentrySE()            { return false; }
@@ -154,10 +161,13 @@ public:
     virtual bool                IsJammerSE()            { return false; }
     virtual bool                IsWeaponSE()            { return false; }
     virtual bool                IsBatterySE()           { return false; }
+    virtual bool                IsModuleSE()            { return false; }
+    virtual bool                IsMoonMiner()           { return false; }
     virtual bool                IsOutpostSE()           { return false; }
     virtual bool                IsAsteroidSE()          { return false; }
     virtual bool                IsDeployableSE()        { return false; }
     virtual bool                IsJumpBridgeSE()        { return false; }
+    virtual bool                IsReactorSE()           { return false; }
     /* Dynamic */
     virtual bool                IsDynamicEntity()       { return false; }
     virtual bool                IsLogin()               { return false; }
@@ -195,6 +205,10 @@ public:
     uint32                      GetAllianceID()         { return m_allyID; }
     uint32                      GetWarFactionID()       { return m_warID; }
     uint32                      GetOwnerID()            { return m_ownerID; }
+
+    int8                        GetHarmonic()           { return m_harmonic; }
+    void                        SetHarmonic(int8 set)   { m_harmonic = set; }
+
 
     /* public generic functions handled in base class. */
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
@@ -384,10 +398,31 @@ public:
     virtual ~DeployableSE()                             { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual DeployableSE*       GetDeployableSE()       { return nullptr; }
+    virtual DeployableSE*       GetDeployableSE()       { return this; }
     /* class type tests. */
     virtual bool                IsDeployableSE()        { return true; }
 };
+
+/* POS ForceField */
+class FieldSE
+: public ObjectSystemEntity
+{
+public:
+    FieldSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data);
+    virtual ~FieldSE()                             { /* Do nothing here */ }
+
+    /* class type pointer querys. */
+    virtual FieldSE*            GetFieldSE()            { return this; }
+    /* class type tests. */
+    virtual bool                IsFieldSE()             { return true; }
+
+    /* SystemEntity interface */
+    virtual void                EncodeDestiny( Buffer& into );
+
+    virtual PyDict*             MakeSlimItem();
+    
+};
+
 
 
 /* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles */

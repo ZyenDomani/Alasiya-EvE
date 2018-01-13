@@ -162,41 +162,7 @@ bool ClassCloneGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
-bool ClassCloneGenerator::ProcessUInt( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassCloneGenerator::  field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    fprintf( mOutputFile,
-             "    %s = oth.%s;\n"
-             "\n",
-             name, name
-    );
-
-    return true;
-}
-
 bool ClassCloneGenerator::ProcessLong( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassCloneGenerator::  field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    fprintf( mOutputFile,
-             "    %s = oth.%s;\n"
-             "\n",
-             name, name
-    );
-
-    return true;
-}
-
-bool ClassCloneGenerator::ProcessULong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {

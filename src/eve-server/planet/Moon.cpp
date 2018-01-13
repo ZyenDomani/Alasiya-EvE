@@ -53,7 +53,8 @@ Moon::Moon()
 
 
 MoonSE::MoonSE(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: StaticSystemEntity(self, services, system)
+: StaticSystemEntity(self, services, system),
+m_towerSE(nullptr)
 {
     /** @todo finish moon resources...this is hacked */
     m_resources.clear();
@@ -134,7 +135,7 @@ bool MoonSE::LoadExtras() {
      */
 
     /*  moon goo data (notes for me)
-     * goo rarity 8/16/32/64
+     * goo rarity 4/8/16/32/64
      *
      *
 

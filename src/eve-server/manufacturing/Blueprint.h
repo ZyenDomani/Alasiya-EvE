@@ -41,24 +41,24 @@ class BlueprintType
 {
     friend class ItemType;    // To let our parent redirect construction to our _Load().
 public:
-    static BlueprintType*   Load(ItemFactory& factory, uint32 typeID);
+    static BlueprintType*   Load( uint32 typeID);
 
     /* Access functions  */
     const BlueprintType*    parentBlueprintType() const { return m_parentBlueprintType; }
     const ItemType&         productType()         const { return m_productType; }
-    uint8                   techLevel()           const { return m_techLevel; }
+    uint8                   techLevel()           const { return m_data.techLevel; }
+    uint16                  wasteFactor()         const { return m_data.wasteFactor; }
     uint32                  productTypeID()       const { return productType().id(); }
-    uint32                  productionTime()      const { return m_productionTime; }
-    uint32                  researchCopyTime()    const { return m_researchCopyTime; }
-    uint32                  researchTechTime()    const { return m_researchTechTime; }
-    uint32                  materialModifier()    const { return m_materialModifier; }
-    uint32                  maxProductionLimit()  const { return m_maxProductionLimit; }
-    uint32                 researchMaterialTime() const { return m_researchMaterialTime; }
-    uint32                 productivityModifier() const { return m_productivityModifier; }
-    uint32             researchProductivityTime() const { return m_researchProductivityTime; }
+    uint32                  productionTime()      const { return m_data.productionTime; }
+    uint32                  researchCopyTime()    const { return m_data.researchCopyTime; }
+    uint32                  researchTechTime()    const { return m_data.researchTechTime; }
+    uint32                  materialModifier()    const { return m_data.materialModifier; }
+    uint32                  maxProductionLimit()  const { return m_data.maxProductionLimit; }
+    uint32                 researchMaterialTime() const { return m_data.researchMaterialTime; }
+    uint32                 productivityModifier() const { return m_data.productivityModifier; }
+    uint32             researchProductivityTime() const { return m_data.researchProductivityTime; }
     uint32                parentBlueprintTypeID() const { return (m_parentBlueprintType ? 0 : parentBlueprintType()->id()); }
-    double                  wasteFactor()         const { return m_wasteFactor; }
-    double           chanceOfReverseEngineering() const { return m_chanceOfReverseEngineering; }
+    double           chanceOfReverseEngineering() const { return m_data.chanceOfReverseEngineering; }
 
 protected:
     BlueprintType(uint32 _id, const ItemGroup& _group, const TypeData& _data, const BlueprintType *_parentBlueprintType, const ItemType& _productType, const BlueprintTypeData& _bpData);
@@ -70,7 +70,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory& factory, uint32 typeID, const ItemGroup& group, const TypeData& data)  {
+    static _Ty *_LoadType( uint32 typeID, const ItemGroup& group, const TypeData& data)  {
         // check if we are really loading a blueprint
         if (group.categoryID() != EVEDB::invCategories::Blueprint ) {
             sLog.Error("Blueprint", "Load of blueprint type %u requested, but it's %s.", typeID, group.category().name().c_str() );
@@ -84,13 +84,13 @@ protected:
         // obtain parent blueprint type (might be NULL)
         const BlueprintType* parentBlueprintType(nullptr);
         if (bpData.parentBlueprintTypeID) {
-            parentBlueprintType = factory.GetBlueprintType( bpData.parentBlueprintTypeID );
+            parentBlueprintType = sItemFactory.GetBlueprintType( bpData.parentBlueprintTypeID );
             if (!parentBlueprintType)
                 return nullptr;
         }
 
         // obtain product type
-        const ItemType* productType = factory.GetType( bpData.productTypeID );
+        const ItemType* productType = sItemFactory.GetType( bpData.productTypeID );
         if (!productType)
             return nullptr;
 
@@ -103,17 +103,7 @@ protected:
     const BlueprintType *m_parentBlueprintType;
     const ItemType& m_productType;
 
-    uint8 m_techLevel;
-    uint32 m_productionTime;
-    uint32 m_researchProductivityTime;
-    uint32 m_researchMaterialTime;
-    uint32 m_researchCopyTime;
-    uint32 m_researchTechTime;
-    uint32 m_productivityModifier;
-    uint32 m_materialModifier;
-    uint32 m_maxProductionLimit;
-    double m_wasteFactor;
-    double m_chanceOfReverseEngineering;
+    BlueprintTypeData m_data;
 };
 
 
@@ -129,8 +119,8 @@ public:
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true) { return SplitBlueprint( qty_to_take, notify ); }
     BlueprintRef            SplitBlueprint(int32 qty_to_take, bool notify);
 
-    static BlueprintRef     Load(ItemFactory& factory, uint32 blueprintID);
-    static BlueprintRef     Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData);
+    static BlueprintRef     Load( uint32 blueprintID);
+    static BlueprintRef     Spawn( ItemData& data, BlueprintData& bpData);
 
     /*
      * Public fields:
@@ -138,26 +128,26 @@ public:
     const BlueprintType&    type()                const { return static_cast<const BlueprintType& >(InventoryItem::type()); }
     const ItemType&         productType()         const { return type().productType(); }
     uint32                  productTypeID()       const { return type().productTypeID(); }
-    bool                    copy()                      { return m_copy; }
-    int32                   materialLevel()             { return m_mLevel; }
-    int32                   productivityLevel()         { return m_pLevel; }
-    int32                   runsRemaining()             { return m_runs; }
+    bool                    copy()                      { return m_data.copy; }
+    int32                   materialLevel()             { return m_data.mLevel; }
+    int32                   productivityLevel()         { return m_data.pLevel; }
+    int32                   runsRemaining()             { return m_data.runs; }
 
     // some blueprint-related stuff
-    void                    UpdateME(int32 change)      { m_mLevel += change;}
-    void                    UpdatePE(int32 change)      { m_pLevel += change;}
-    void                    UpdateRuns(int32 change)    { m_runs += change;}
+    void                    UpdateME(int32 change)      { m_data.mLevel += change;}
+    void                    UpdatePE(int32 change)      { m_data.pLevel += change;}
+    void                    UpdateRuns(int32 change)    { m_data.runs += change;}
 
-    bool                    infinite()                  { return ((m_runs < 0) ? true : false); }
-    double                  wasteFactor()         const { return (type().wasteFactor() / (1 + m_mLevel)); }
-    double                  materialMultiplier()        { return (1.0 + wasteFactor()); }
-    double                  timeSaved()           const { return (1.0 - (1.0 / (1 + m_pLevel))) * type().productivityModifier(); }
-    double                  timeMultiplier()      const { return (1.0 - (timeSaved() / type().productionTime())); }
+    bool                    infinite()                  { return ((m_data.runs < 0) ? true : false); }
+    float                   timeFactor() const;
+    float                   wasteFactor() const;
+    double                  materialMultiplier()  const { return (1.0 + wasteFactor()); }
+    double                  timeMultiplier()      const { return (1.0 - (timeFactor() / type().productionTime())); }
 
-    void                    SetCopy(bool copy)          { m_copy = copy; }
-    void                    SetME(uint32 me)            { m_mLevel = me; }
-    void                    SetPE(int32 pe)             { m_pLevel = pe; }
-    void                    SetRuns(int32 runs)         { m_runs = runs; }
+    void                    SetCopy(bool copy)          { m_data.copy = copy; }
+    void                    SetME(uint32 me)            { m_data.mLevel = me; }
+    void                    SetPE(int32 pe)             { m_data.pLevel = pe; }
+    void                    SetRuns(int32 runs)         { m_data.runs = runs; }
 
     /*
      * Primary public packet builders:
@@ -168,7 +158,7 @@ private:
     FactoryDB m_db;
 
 protected:
-    Blueprint(ItemFactory& _factory, uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, BlueprintData& _bpData);
+    Blueprint(  uint32 _blueprintID, const BlueprintType& _bpType, const ItemData& _data, BlueprintData& _bpData);
 
     /*
      * Member functions
@@ -177,7 +167,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory& factory, uint32 blueprintID, const ItemType& type, const ItemData& data)
+    static RefPtr<_Ty> _LoadItem( uint32 blueprintID, const ItemType& type, const ItemData& data)
     {
         if (type.categoryID() != EVEDB::invCategories::Blueprint )
         {
@@ -193,18 +183,15 @@ protected:
         if (!mdb.GetBlueprint( blueprintID, bpData ) )
             return RefPtr<_Ty>();
 
-        return BlueprintRef( new Blueprint( factory, blueprintID, bpType, data, bpData ) );
+        return BlueprintRef( new Blueprint( blueprintID, bpType, data, bpData ) );
     }
 
     void                    SaveBlueprint();
-    static uint32           CreateItemID(ItemFactory& factory, ItemData& data, BlueprintData& bpData);
+    static uint32           CreateItemID( ItemData& data, BlueprintData& bpData);
 
 private:
-    bool      m_copy;
+    BlueprintData m_data;
 
-    int32     m_mLevel;
-    int32     m_pLevel;
-    int32     m_runs;
 };
 
 #endif /* !__BLUEPRINT_ITEM__H__INCL__ */

@@ -25,7 +25,7 @@ DROP TABLE IF EXISTS `sklCareerSkills`;
 CREATE TABLE `sklCareerSkills` (
   `careerID` int(10) NOT NULL DEFAULT '0',
   `skillTypeID` int(10) NOT NULL DEFAULT '0',
-  `level` tinyint(3) unsigned NOT NULL DEFAULT '1',
+  `level` tinyint(3)  NOT NULL DEFAULT '1',
   PRIMARY KEY (`careerID`,`skillTypeID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by careerID';
 /*!40101 SET character_set_client = @saved_cs_client */;

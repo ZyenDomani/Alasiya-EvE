@@ -56,6 +56,14 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
     PyCallable_REG_CALL(AllianceRegistry, GetEmploymentRecord);
     PyCallable_REG_CALL(AllianceRegistry, GetAllianceMembers);
 
+    /*
+    PyCallable_REG_CALL(CorpRegistryBound, CreateLabel);
+    PyCallable_REG_CALL(CorpRegistryBound, GetLabels);
+    PyCallable_REG_CALL(CorpRegistryBound, DeleteLabel);
+    PyCallable_REG_CALL(CorpRegistryBound, EditLabel);
+    PyCallable_REG_CALL(CorpRegistryBound, AssignLabels);
+    PyCallable_REG_CALL(CorpRegistryBound, RemoveLabels);
+    */
 
     /*
      bound objects
@@ -69,6 +77,7 @@ AllianceRegistry::AllianceRegistry(PyServiceMgr *mgr)
      return self.GetMoniker().GetBillBalance(billID)
      return self.GetMoniker().GetBills()
      return self.GetMoniker().GetBillsReceivable()
+     sm.GetService('alliance').GetMoniker().AddBulletin(title, body)
      self.bulletins = self.GetMoniker().GetBulletins()
      return self.GetMoniker().GetAllianceContacts()
      self.GetMoniker().AddAllianceContact(contactID, relationshipID)
@@ -138,3 +147,71 @@ PyResult AllianceRegistry::Handle_GetEmploymentRecord(PyCallArgs &call) {
     return nullptr;
 }
 
+/*
+PyResult AllianceRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
+    //  sm.GetService('alliance').GetMoniker().AddBulletin(title, body)
+    //  sm.GetService('alliance').GetMoniker().AddBulletin(title, body, bulletinID=bulletinID, editDateTime=editDateTime)  <-- this is to update bulletin
+
+    sLog.White( "CorpRegistryBound::Handle_AddBulletin()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_AddBulletin args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    m_db.AddBulletin(*need list of corpIDs here*, m_allyID, call.client->GetCharacterID(), PyRep::StringContent(args.title), PyRep::StringContent(args.body));
+
+    return nullptr;
+}
+*/
+
+/*
+PyResult CorpRegistryBound::Handle_GetLabels(PyCallArgs &call) {
+    sLog.White("CorpRegistryBound", "Handle_GetLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_CreateLabel(PyCallArgs &call) {
+    // return self.GetCorpRegistry().CreateLabel(name, color)
+    sLog.White("CorpRegistryBound", "Handle_CreateLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_DeleteLabel(PyCallArgs &call) {
+    // self.GetCorpRegistry().DeleteLabel(labelID)
+    sLog.White("CorpRegistryBound", "Handle_DeleteLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditLabel(PyCallArgs &call) {
+    // self.GetCorpRegistry().EditLabel(labelID, name, color)
+    sLog.White("CorpRegistryBound", "Handle_EditLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_AssignLabels(PyCallArgs &call) {
+    // self.GetCorpRegistry().AssignLabels(contactIDs, labelMask)
+    sLog.White("CorpRegistryBound", "Handle_AssignLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_RemoveLabels(PyCallArgs &call) {
+    // self.GetCorpRegistry().RemoveLabels(contactIDs, labelMask)
+    sLog.White("CorpRegistryBound", "Handle_RemoveLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+*/

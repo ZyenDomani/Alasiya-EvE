@@ -21,167 +21,161 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
 
 #include "account/AccountDB.h"
 
-PyObject *AccountDB::GetEntryTypes() {
-    DBQueryResult res;
+/*
+ * ACCOUNT__ERROR
+ * ACCOUNT__WARNING
+ * ACCOUNT__INFO
+ * ACCOUNT__MESSAGE
+ * ACCOUNT__TRACE
+ * ACCOUNT__CALL
+ * ACCOUNT__CALL_DUMP
+ * ACCOUNT__RSP_DUMP
+ * ACCOUNT__DB_ERROR
+ * ACCOUNT__DB_WARNING
+ * ACCOUNT__DB_INFO
+ * ACCOUNT__DB_MESSAGE
+ */
 
-    if(!sDatabase.RunQuery(res, "SELECT entryTypeID, entryTypeName, description FROM market_refTypes"))
-    {
-        sLog.Error("Account DB", "Error in query: %s", res.error.c_str());
-        return NULL;
+double AccountDB::OfflineFundXfer(uint32 charID, double amount, uint8 type)
+{
+    std::string from = "";
+    switch (type) {
+        case Account::CreditType::ISK:      from = "balance";    break;
+        case Account::CreditType::AURUM:    from = "aurBalance"; break;
+        case Account::CreditType::MPLEX:    return 0; //make error..this isnt used yet
     }
 
-    return DBResultToRowset(res);
-}
-
-PyObject *AccountDB::GetKeyMap() {
+    double balance = 0;
     DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT %s FROM chrCharacters WHERE characterID = %u", from.c_str(), charID);
+    DBResultRow row;
+    if (res.GetRow(row))
+        balance = row.GetDouble(0);
 
-    if(!sDatabase.RunQuery(res, "SELECT keyID, keyType, keyName, description FROM market_keyMap"))
-    {
-        sLog.Error("Account DB", "Error in query: %s", res.error.c_str());
-        return NULL;
-    }
-
-    return DBResultToRowset(res);
+    balance += amount;
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET %s = %f WHERE characterID = %u", from.c_str(), balance, charID);
+    return balance;
 }
 
-PyObject *AccountDB::GetJournal(uint32 charID, uint32 refTypeID, uint32 accountKey, uint64 transDate) {
-//'refID', 'transDate', 'refTypeID','ownerID1', 'ownerID2', 'argID1', 'accountID', 'amount', 'balance', 'reason'
-  //  rec.entryTypeID, rec.ownerID1, rec.ownerID2, rec.referenceID, rec.amount, rec.balance, rec.currency, rec.transactionDate, rec.sortValue
 
-    /*
-          [PyPackedRow 51 bytes]
-            ["transactionID" => <5572917879> [I8]]
-            ["transactionDate" => <129755653800000000> [FileTime]]
-            ["referenceID" => <61000064> [I8]]
-            ["description" => <None> [WStr]]
-            ["ownerID1" => <1661059544> [I4]]
-            ["ownerID2" => <1557789550> [I4]]
-            ["entryTypeID" => <1> [I2]]
-            ["amount" => <0> [CY]]
-            ["balance" => <6885742154656> [CY]]
-            */
+double AccountDB::GetCorpBalance(uint32 corpID, uint16 accountKey)
+{
+    std::string acctKey = "";
+    switch (accountKey) {
+        case Account::KeyType::Cash:    acctKey = "balance1"; break;
+        case Account::KeyType::Cash2:   acctKey = "balance2"; break;
+        case Account::KeyType::Cash3:   acctKey = "balance3"; break;
+        case Account::KeyType::Cash4:   acctKey = "balance4"; break;
+        case Account::KeyType::Cash5:   acctKey = "balance5"; break;
+        case Account::KeyType::Cash6:   acctKey = "balance6"; break;
+        case Account::KeyType::Cash7:   acctKey = "balance7"; break;
+    }
     DBQueryResult res;
-    uint64 dT = transDate - Win32Time_Day;
-    // 1 sec = 10.000.000
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT refID AS transactionID,transDate AS transactionDate,0 AS referenceID, refTypeID AS entryTypeID,ownerID1,ownerID2,argID1, accountKey,amount,balance,reason AS description "
-        "FROM market_journal "
-        "WHERE (transDate >= %" PRIu64 " AND transDate <= %" PRIu64 ") "
-        "AND accountKey = %u "
-        "AND (0 = %u OR refTypeID = %u) "
-        "AND characterID=%u" , dT, transDate, accountKey, refTypeID, refTypeID, charID))
-    {
-        sLog.Error("Account DB", "Error in query: %s", res.error.c_str());
-        return NULL;
+    if (!sDatabase.RunQuery(res, "SELECT %s FROM crpWalletDivisons WHERE corporationID = %u ", acctKey.c_str(), corpID)) {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
     }
-
-    return DBResultToRowset(res);
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return 0;
+    return row.GetDouble(0);
 }
+
+void AccountDB::UpdateCorpBalance(uint32 corpID, uint16 accountKey, double amount)
+{
+    if (amount == 0)
+        return;
+    std::string acctKey = "";
+    switch (accountKey) {
+        case Account::KeyType::Cash:    acctKey = "balance1"; break;
+        case Account::KeyType::Cash2:   acctKey = "balance2"; break;
+        case Account::KeyType::Cash3:   acctKey = "balance3"; break;
+        case Account::KeyType::Cash4:   acctKey = "balance4"; break;
+        case Account::KeyType::Cash5:   acctKey = "balance5"; break;
+        case Account::KeyType::Cash6:   acctKey = "balance6"; break;
+        case Account::KeyType::Cash7:   acctKey = "balance7"; break;
+    }
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE crpWalletDivisons SET %s = %.2f WHERE corporationID = %u ", acctKey.c_str(), amount, corpID);
+}
+
 
 PyRep *AccountDB::GetWalletDivisionsInfo(uint32 corpID) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  walletDivision1, walletDivision2, walletDivision3, walletDivision4, walletDivision5, walletDivision6, walletDivision7"
-        " FROM corporation"
+        "SELECT balance1, balance2, balance3, balance4, balance5, balance6,  balance7"
+        " FROM crpWalletDivisons"
         " WHERE corporationID = %u", corpID))
     {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
     }
 
     DBResultRow row;
-    PyDict *dict = new PyDict();
-    if (res.GetRow(row)) {
-        // tried looping this...didnt work
-            dict->SetItem(new PyInt(1000),new PyString(row.GetText(0)));
-            dict->SetItem(new PyInt(1001),new PyString(row.GetText(1)));
-            dict->SetItem(new PyInt(1002),new PyString(row.GetText(2)));
-            dict->SetItem(new PyInt(1003),new PyString(row.GetText(3)));
-            dict->SetItem(new PyInt(1004),new PyString(row.GetText(4)));
-            dict->SetItem(new PyInt(1005),new PyString(row.GetText(5)));
-            dict->SetItem(new PyInt(1006),new PyString(row.GetText(6)));
-    }
-    return new PyObject("util.KeyVal", dict);
+    PyList *list = new PyList();
+    if (res.GetRow(row))
+        for (int8 i = 0; i < 7; ++i) {
+            PyDict *dict = new PyDict();
+            dict->SetItemString("key", new PyInt(1000 + i));
+            dict->SetItemString("balance", new PyFloat(row.GetDouble(i)));
+            list->AddItem(new PyObject("util.KeyVal", dict));
+        }
+
+    if (is_log_enabled(ACCOUNT__RSP_DUMP))
+        list->Dump(ACCOUNT__RSP_DUMP, "    ");
+    return list;
 }
 
-//////////////////////////////////
-// temporarily moved into ServiceDB because other services needed access to
-// it, eventually something better will need to be done (as the account system
-// grows up)
-bool ServiceDB::GiveCash( uint32 characterID, JournalRefType refTypeID, uint32 ownerFromID, uint32 ownerToID, const char *argID1,
-    uint32 accountID, EVEAccountKeys accountKey, double amount, double balance, const char *reason )
+PyRep* AccountDB::GetJournal(uint32 ownerID, int8 entryTypeID, uint16 accountKey, int64 fromDate, bool reverse/*false*/)
 {
-//the only unknown is argID1 , what is it ?
+    std::string tblName = "jnlCharacters";
+    if (IsCorp(ownerID))
+        tblName = "jnlCorporations";
+
+    std::string entryType = "";
+    if (entryTypeID) {
+        entryType = " AND entryTypeID = ";
+        entryType += itoa(entryTypeID);
+    }
+
     DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT transactionID, transactionDate, referenceID, entryTypeID, ownerID1, ownerID2, accountKey, amount, balance, description, currency, 1 AS sortValue"
+        " FROM %s"
+        " WHERE transactionDate > %" PRIi64 " AND accountKey = %u %s AND ownerID = %u",
+        tblName.c_str(), fromDate, accountKey, entryType.c_str(), ownerID))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+void AccountDB::AddJournalEntry(uint32 ownerID, int8 entryTypeID, uint32 ownerFromID, uint32 ownerToID, int8 currency, \
+                                uint16 accountKey, double amount, double newBalance, std::string description, uint32 referenceID/*0*/ )
+{
+    if (entryTypeID == Journal::EntryType::SkipLog)
+        return;
+    std::string eDesc;
+    sDatabase.DoEscapeString(eDesc, description);
+
+    std::string tblName = "jnlCharacters";
+    if (IsCorp(ownerID))
+        tblName = "jnlCorporations";
+
+    // dont care if this fails...
     DBerror err;
-
-    std::string eReason;
-    sDatabase.DoEscapeString(eReason, reason);
-    std::string eArg1;
-    sDatabase.DoEscapeString(eArg1, argID1);
-
-    if(!sDatabase.RunQuery(err,
-        "INSERT INTO market_journal(characterID,refID,transDate,refTypeID,ownerID1,ownerID2,argID1,accountID,accountKey,amount,balance,reason) "
-        "VALUES (%u,NULL,%f,%u,%u,%u,\"%s\",%u,%u,%.2f,%.2f,\"%s\")",
-        characterID, GetFileTimeNow(), refTypeID, ownerFromID, ownerToID, eArg1.c_str(), accountID, accountKey, amount, balance, eReason.c_str()))
-    {
-        sLog.Error("Service DB", "Error in query : %s", err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool AccountDB::CheckIfCorporation(uint32 corpID) {
-    DBQueryResult res;
-    DBResultRow row;
-    if (!sDatabase.RunQuery(res, "SELECT corporationID FROM corporation WHERE corporationID = %u ", corpID))
-    {
-        sLog.Error("Service DB", "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    if (!res.GetRow(row))
-    {
-        sLog.Error("Service DB", "Failed to find corporation %u", corpID);
-        return false;
-    }
-    return true;
-}
-
-bool ServiceDB::AddBalanceToCorp(uint32 corpID, double amount) {
-    DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE corporation SET balance = balance + (%lf) WHERE corporationID = %u ", amount, corpID))
-    {
-        sLog.Error("Service DB", "Error in query: %s", err.c_str());
-        return false;
-    }
-    return true;
-}
-
-double ServiceDB::GetCorpBalance(uint32 corpID, uint16 accountKey) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT balance FROM corporation WHERE corporationID = %u ", corpID))
-    {
-        sLog.Error("Service DB", "Error in query: %s", res.error.c_str());
-        return 0.0;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row))
-    {
-        sLog.Error("Service DB", "Corporation %u missing from database.", corpID);
-        return 0.0;
-    }
-    return row.GetDouble(0);
+    sDatabase.RunQuery(err,
+        "INSERT INTO %s (ownerID, entryTypeID, accountKey, transactionDate, ownerID1, ownerID2, referenceID, currency, amount, balance, description)"
+        " VALUES (%u,%u,%u,%f,%u,%u,%u,%i,%.2f,%.2f,'%s')",
+        tblName.c_str(), ownerID, entryTypeID, accountKey, GetFileTimeNow(), ownerFromID, ownerToID, referenceID, currency, amount, newBalance, eDesc.c_str());
 }

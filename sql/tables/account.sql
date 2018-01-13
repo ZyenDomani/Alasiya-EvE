@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `account` (
-  `accountID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `clientID` int(10) unsigned NOT NULL DEFAULT '0',
+  `accountID` int(10)  NOT NULL AUTO_INCREMENT,
+  `clientID` int(10)  NOT NULL DEFAULT '0',
   `accountName` varchar(43) NOT NULL DEFAULT '',
   `password` varchar(43) NOT NULL DEFAULT '',
   `hash` tinyblob,
-  `role` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `role` bigint(20)  NOT NULL DEFAULT '0',
   `online` tinyint(1) NOT NULL DEFAULT '0',
   `banned` tinyint(1) NOT NULL DEFAULT '0',
-  `logonCount` int(10) unsigned NOT NULL DEFAULT '0',
+  `logonCount` int(10)  NOT NULL DEFAULT '0',
   `lastLogin` timestamp NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`accountID`),
   UNIQUE KEY `accountName` (`accountName`)

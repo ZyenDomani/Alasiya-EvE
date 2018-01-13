@@ -1078,11 +1078,11 @@ enum EveAttrEnum {
     AttrPosPlayerControlStructure = 1167,
     AttrIsIncapacitated = 1168,
     AttrScanGenericStrength = 1169,
-    AttrStructureArmorRepairAmount = 1170,
-    AttrStructureShieldRepairAmount = 1171,
-    AttrStructureArmorBoostValue = 1172,
-    AttrStructureShieldBoostValue = 1173,
-    AttrPosStructureControlAmount = 1174,
+    AttrStructureArmorRepairAmount = 1170,  //typeID 27676
+    AttrStructureShieldRepairAmount = 1171,  //typeID 27676
+    AttrStructureArmorBoostValue = 1172,   // not used
+    AttrStructureShieldBoostValue = 1173,   // not used
+    AttrPosStructureControlAmount = 1174,   // not used
     AttrHeatHi = 1175,
     AttrHeatMed = 1176,
     AttrHeatLow = 1177,

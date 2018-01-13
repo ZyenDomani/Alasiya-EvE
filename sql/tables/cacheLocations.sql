@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `cacheLocations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `cacheLocations` (
-  `locationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `locationID` int(10)  NOT NULL DEFAULT '0',
   `locationName` varchar(100) NOT NULL DEFAULT '',
   `locationNameID` tinyint(4) NOT NULL DEFAULT '0',
   `x` double NOT NULL DEFAULT '0',

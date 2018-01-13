@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `ramCompletedStatuses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ramCompletedStatuses` (
-  `completedStatusID` int(10) unsigned NOT NULL DEFAULT '0',
+  `completedStatusID` int(10)  NOT NULL DEFAULT '0',
   `completedStatusName` varchar(100) NOT NULL DEFAULT '',
   `completedStatusText` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`completedStatusID`)

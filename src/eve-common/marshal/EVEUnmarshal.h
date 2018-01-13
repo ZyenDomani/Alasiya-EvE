@@ -28,6 +28,7 @@
 
 #include "python/PyRep.h"
 
+
 /**
  * @brief Turns marshal stream into Python object.
  *
@@ -141,12 +142,12 @@ protected:
 
 private:
     /** Loads none from stream. */
-    PyRep* LoadNone() { return new PyNone(); }
+    PyRep* LoadNone() { return PyStatic.NewNone(); }
 
     /** Loads true boolean from stream. */
-    PyRep* LoadBoolTrue() { return new PyBool( true ); }
+    PyRep* LoadBoolTrue() { return PyStatic.NewTrue(); }
     /** Loads false boolean from stream. */
-    PyRep* LoadBoolFalse() { return new PyBool( false ); }
+    PyRep* LoadBoolFalse() { return PyStatic.NewFalse(); }
 
     /** Loads long long integer from stream. */
     PyRep* LoadIntegerLongLong() { return new PyLong( Read<int64>() ); }

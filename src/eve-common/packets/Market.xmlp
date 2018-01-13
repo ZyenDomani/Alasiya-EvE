@@ -78,12 +78,12 @@
       <int name="typeID" />
       <real name="price" />
       <int name="quantity" />
-      <bool name="bid" soft="true" />
+      <int name="bid" safe="true" /><!-- integer boolean -->
       <int name="orderRange" />
       <int name="itemID" none_marker="0" />
       <int name="minVolume" />
       <int name="duration" /> <!-- in days -->
-      <bool name="useCorp" soft="true" />
+      <int name="useCorp" safe="true" /><!-- integer boolean -->
       <bool name="located" none_marker="false" />
     </tupleInline>
   </elementDef>
@@ -92,7 +92,7 @@
     <tupleInline>
       <int name="orderID" />
       <real name="newPrice" />
-      <bool name="bid" soft="true" />
+      <bool name="bid" safe="true" />
       <int name="stationID" />
       <int name="solarSystemID" />
       <real name="price" />

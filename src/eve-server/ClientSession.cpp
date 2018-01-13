@@ -57,7 +57,7 @@ int64 ClientSession::CreateSessionID() {
     return m_sessionID;
 }
 
-// note:  cannot destroy these Py* objects here.  
+// note:  cannot destroy these Py* objects here.
 int32 ClientSession::GetLastInt( const char* name) const
 {
     PyRep* value = _GetLast( name);
@@ -87,35 +87,6 @@ void ClientSession::SetInt( const char* name, int32 value)
     _Set( name, new PyInt( value));
 }
 
-uint32 ClientSession::GetLastUInt( const char* name) const
-{
-    PyRep* value = _GetLast( name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsUInt())
-        return 0;
-
-    return value->AsUInt()->value();
-}
-
-uint32 ClientSession::GetCurrentUInt( const char* name) const
-{
-    PyRep* value = _GetCurrent( name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsUInt())
-        return 0;
-
-    return value->AsUInt()->value();
-}
-
-void ClientSession::SetUInt( const char* name, uint32 value)
-{
-    _Set( name, new PyUInt( value));
-}
-
 int64 ClientSession::GetLastLong( const char* name) const
 {
     PyRep* value = _GetLast( name);
@@ -143,35 +114,6 @@ int64 ClientSession::GetCurrentLong( const char* name) const
 void ClientSession::SetLong( const char* name, int64 value)
 {
     _Set( name, new PyLong( value));
-}
-
-uint64 ClientSession::GetLastULong( const char* name) const
-{
-    PyRep* value = _GetLast( name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsULong())
-        return 0;
-
-    return value->AsULong()->value();
-}
-
-uint64 ClientSession::GetCurrentULong( const char* name) const
-{
-    PyRep* value = _GetCurrent( name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsULong())
-        return 0;
-
-    return value->AsULong()->value();
-}
-
-void ClientSession::SetULong( const char* name, uint64 value)
-{
-    _Set( name, new PyULong( value));
 }
 
 std::string ClientSession::GetLastString( const char* name) const

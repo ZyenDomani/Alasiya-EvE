@@ -146,7 +146,7 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
     count->Dump(FLEET__UPDATE_DUMP, "   ");
     pClient->SendNotification("OnFleetActive", "clientid", count, true);
 
-    //response should be node data and timestamp
+    //response should be OID
     /*
     [PyDict 1 kvp]
       [PyString "OID+"]
@@ -154,7 +154,7 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
         [PyString "N=790423:223898"]  "N=%u:%u", &nodeID, &bindID
         [PyIntegerVar 129756560170416597]
         */
-    return new PyULong(GetFileTimeNow());
+    return new PyLong(GetFileTimeNow());
 }
 
 PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
@@ -248,15 +248,15 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     FleetInviteCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     Client* pClient = sEntityList.FindClientByCharID(args.charID);
     if (pClient == nullptr)
-        return new PyNone();
+        return PyStatic.NewNone();
     if (pClient->GetChar()->fleetID()) {
         call.client->SendNotifyMsg("%s is already in a fleet.  Denying Fleet Invite issue.", pClient->GetChar()->itemName().c_str());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     InviteData data;
@@ -286,7 +286,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
 
     if (!sFltSvc.SaveInviteData(args.charID, data)) {
         call.client->SendNotifyMsg("%s is invited to another fleet.  That invite must be rejected bfore another can be issued.", pClient->GetChar()->itemName().c_str());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     // join requests are accepted via invite.  delete request on invite
@@ -309,7 +309,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
     pClient->SendNotification("OnFleetInvite", "clientID", &tuple, true);
 
     // this returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
@@ -318,12 +318,12 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
 
     Character* pChar = call.client->GetChar().get();
     if (pChar == nullptr)
-        return new PyULong(GetFileTimeNow());
+        return new PyLong(GetFileTimeNow());
 
     InviteData data;
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)){
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
-        return new PyULong(GetFileTimeNow());
+        return new PyLong(GetFileTimeNow());
     }
 
     int8 booster = Fleet::Booster::No;
@@ -352,7 +352,10 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
     sFltSvc.RemoveInviteData(pChar->itemID());
 
     // returns nodeID and timestamp
-    return new PyULong(GetFileTimeNow());
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
@@ -361,7 +364,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
 
     Character* pChar = call.client->GetChar().get();
     if (pChar == nullptr)
-        return new PyULong(GetFileTimeNow());
+        return new PyLong(GetFileTimeNow());
 
     bool rejected = false;
     if (call.tuple->AsTuple()->GetItem(0)->IsBool())
@@ -370,7 +373,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
     InviteData data;
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)) {
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
-        return new PyULong(GetFileTimeNow());
+        return new PyLong(GetFileTimeNow());
     }
 
     if (rejected)
@@ -380,7 +383,10 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
     sFltSvc.RemoveInviteData(pChar->itemID());
 
     // returns nodeID and timestamp
-    return new PyULong(GetFileTimeNow());
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 
@@ -402,7 +408,7 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
     else
         _log(FLEET__ERROR, "ChangeWingName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
@@ -423,7 +429,7 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
     else
         _log(FLEET__ERROR, "ChangeSquadName - args.name is of the wrong type: '%s'.  Expected PyString or PyWString.", args.name->TypeString());
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_SetOptions(PyCallArgs &call) {
@@ -438,7 +444,7 @@ PyResult FleetBound::Handle_SetOptions(PyCallArgs &call) {
 
     sFltSvc.UpdateOptions(m_fleetID, isFreeMove, isRegistered, isVoiceEnabled);
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_GetJoinRequests(PyCallArgs &call) {
@@ -481,7 +487,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
 
     pClient->SendInfoModalMsg("Your fleet join request was denied by %s", call.client->GetName());
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
@@ -565,14 +571,7 @@ PyResult FleetBound::Handle_SetMotdEx(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_SetMotdEx() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    PyRep* rep = call.tuple->AsTuple()->GetItem(0);
-    std::string motd = "";
-    if (rep->IsWString())
-        motd = rep->AsWString()->content();
-    else if (rep->IsString())
-        motd = rep->AsString()->content();
-
-    sFltSvc.SetMOTD(m_fleetID, motd);
+    sFltSvc.SetMOTD(m_fleetID, PyRep::StringContent(call.tuple->AsTuple()->GetItem(0)));
 
     return nullptr;
 }
@@ -593,7 +592,7 @@ PyResult FleetBound::Handle_LeaveFleet(PyCallArgs &call) {
     sFltSvc.LeaveFleet(call.client);
 
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
@@ -614,7 +613,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     if (pClient != nullptr) {
         Character* pCharOld = pClient->GetChar().get();
         if (pCharOld == nullptr)
-            return new PyNone();
+            return PyStatic.NewNone();
         int32 wingID = 0, squadID = 0;
         sFltSvc.GetRandUnitIDs(m_fleetID, wingID, squadID);
         sFltSvc.UpdateMember(pCharOld->itemID(), m_fleetID, wingID, squadID, pCharOld->fleetJob(), Fleet::Role::Member, pCharOld->fleetBooster());
@@ -623,11 +622,11 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     // update new leader
     Character* pCharNew = sEntityList.FindClientByCharID(arg.arg)->GetChar().get();
     if (pCharNew == nullptr)
-        return new PyNone();
+        return PyStatic.NewNone();
     sFltSvc.UpdateMember(arg.arg, m_fleetID, -1, -1, pCharNew->fleetJob(), Fleet::Role::FleetLeader, pCharNew->fleetBooster());
 
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
@@ -792,7 +791,7 @@ PyResult FleetBound::Handle_AddToVoiceChat(PyCallArgs &call) {
 
     //sConfig.chat.EnableVoiceChat;
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
@@ -800,7 +799,7 @@ PyResult FleetBound::Handle_SetVoiceMuteStatus(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_SetVoiceMuteStatus() size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
@@ -808,6 +807,6 @@ PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
     sLog.White("FleetBound", "Handle_ExcludeFromVoiceMute()) size=%u", call.tuple->size() );
     call.Dump(FLEET__DUMP);
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 

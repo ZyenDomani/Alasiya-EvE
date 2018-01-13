@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `dgmUnits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `dgmUnits` (
-  `unitID` tinyint(3) unsigned NOT NULL,
+  `unitID` tinyint(3)  NOT NULL,
   `unitName` varchar(100) DEFAULT NULL,
   `displayName` varchar(50) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,

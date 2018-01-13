@@ -50,3 +50,7 @@
           " - note giving you detailed fleet boost information")
  COMMAND( fleetinvite, ROLE_PLAYER,
           " - sets fleet invite scope to <arg> or none")
+ COMMAND( getposition, ROLE_PLAYER,
+          " - gets positional data between ship and moon (for pos placement testing)")
+ COMMAND( bubbletrack, ROLE_PROGRAMMER,
+          " - enable/disable bubble outline tracking." )

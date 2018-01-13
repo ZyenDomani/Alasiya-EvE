@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrBackgrounds`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrBackgrounds` (
-  `backgroundID` int(10) unsigned NOT NULL DEFAULT '0',
+  `backgroundID` int(10)  NOT NULL DEFAULT '0',
   `backgroundName` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`backgroundID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

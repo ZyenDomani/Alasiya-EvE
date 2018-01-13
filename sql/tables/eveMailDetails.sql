@@ -23,9 +23,9 @@ DROP TABLE IF EXISTS `eveMailDetails`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `eveMailDetails` (
-  `attachmentID` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `messageID` int(10) unsigned NOT NULL DEFAULT '0',
-  `mimeTypeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `attachmentID` int(10)  NOT NULL AUTO_INCREMENT,
+  `messageID` int(10)  NOT NULL DEFAULT '0',
+  `mimeTypeID` int(10)  NOT NULL DEFAULT '0',
   `attachment` longtext NOT NULL,
   PRIMARY KEY (`attachmentID`),
   KEY `messageID` (`messageID`)

@@ -33,11 +33,7 @@
 /*
  * CelestialObjectData
  */
-CelestialObjectData::CelestialObjectData(
-    double _radius,
-    double _security,
-    uint8 _celestialIndex,
-    uint8 _orbitIndex)
+CelestialObjectData::CelestialObjectData(double _radius, double _security, uint8 _celestialIndex, uint8 _orbitIndex)
 : radius(_radius),
   security(_security),
   celestialIndex(_celestialIndex),
@@ -48,48 +44,39 @@ CelestialObjectData::CelestialObjectData(
 /*
  * CelestialObject
  */
-CelestialObject::CelestialObject(
-    ItemFactory &_factory,
-    uint32 _celestialID,
-    const ItemType &_type,
-    const ItemData &_data)
-: InventoryItem(_factory, _celestialID, _type, _data),
+CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data)
+: InventoryItem(_celestialID, _type, _data),
   m_radius( 0.0 ),
   m_security( 0.0 ),
   m_celestialIndex( 0 ),
   m_orbitIndex( 0 )
   {
-      m_inventory = new Inventory(InventoryItemRef(this));
+      pInventory = new Inventory(InventoryItemRef(this));
       _log(ITEM__TRACE, "Created Default CelestialObject for item %s (%u).", itemName().c_str(), itemID());
 }
 
-CelestialObject::CelestialObject(
-    ItemFactory &_factory,
-    uint32 _celestialID,
-    const ItemType &_type,
-    const ItemData &_data,
-    const CelestialObjectData &_cData)
-: InventoryItem(_factory, _celestialID, _type, _data),
+CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data, const CelestialObjectData &_cData)
+: InventoryItem(_celestialID, _type, _data),
   m_radius(_cData.radius),  // no longer needed here
   m_security(_cData.security),
   m_celestialIndex(_cData.celestialIndex),
   m_orbitIndex(_cData.orbitIndex)
   {
-      m_inventory = new Inventory(InventoryItemRef(this));
+      pInventory = new Inventory(InventoryItemRef(this));
       _log(ITEM__TRACE, "Created CelestialObject for item %s (%u) with radius of %.1f.", itemName().c_str(), itemID(), m_radius);
 }
 
-CelestialObjectRef CelestialObject::Load(ItemFactory &factory, uint32 celestialID)
+CelestialObjectRef CelestialObject::Load( uint32 celestialID)
 {
-    return InventoryItem::Load<CelestialObject>( factory, celestialID );
+    return InventoryItem::Load<CelestialObject>(celestialID );
 }
 
-CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) {
-    uint32 celestialID = CelestialObject::CreateItemID( factory, data );
+CelestialObjectRef CelestialObject::Spawn( ItemData &data) {
+    uint32 celestialID = CelestialObject::CreateItemID(data);
     if (celestialID == 0 )
         return CelestialObjectRef();
 
-    CelestialObjectRef celestialRef = CelestialObject::Load( factory, celestialID );
+    CelestialObjectRef celestialRef = CelestialObject::Load(celestialID);
 
     if ((celestialRef->type().groupID() == EVEDB::invGroups::Beacon) or (celestialRef->type().groupID() == EVEDB::invGroups::Effect_Beacon))
         celestialRef->SetAttribute(AttrIsGlobal, 1);
@@ -97,8 +84,8 @@ CelestialObjectRef CelestialObject::Spawn(ItemFactory &factory, ItemData &data) 
     return celestialRef;
 }
 
-uint32 CelestialObject::CreateItemID(ItemFactory &factory, ItemData &data) {
-    return InventoryItem::CreateItemID(factory, data);
+uint32 CelestialObject::CreateItemID( ItemData &data) {
+    return InventoryItem::CreateItemID(data);
 }
 
 void CelestialObject::Delete() {

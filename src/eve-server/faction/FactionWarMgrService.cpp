@@ -230,15 +230,15 @@ PyResult FactionWarMgrService::Handle_JoinFactionAsCharacter(PyCallArgs &call) {
   return nullptr;
 }
 
-PyResult FactionWarMgrService::Handle_(PyCallArgs &call) {
+PyResult FactionWarMgrService::Handle_GetCorporationWarFactionID(PyCallArgs &call) {
     //ret = self.facWarMgr.GetCorporationWarFactionID(corpID)
-    sLog.White( "FactionWarMgrService::Handle_()", "size=%u ", call.tuple->size() );
+    sLog.White( "FactionWarMgrService::Handle_GetCorporationWarFactionID()", "size=%u ", call.tuple->size() );
     call.Dump(FACWAR__CALL_DUMP);
 
     return nullptr;
 }
 
-PyResult FactionWarMgrService::Handle_(IsEnemyCorporationPyCallArgs &call) {
+PyResult FactionWarMgrService::Handle_IsEnemyCorporation(PyCallArgs &call) {
     //return self.facWarMgr.IsEnemyCorporation(enemyID, factionID)
     sLog.White( "FactionWarMgrService::Handle_IsEnemyCorporation()", "size=%u ", call.tuple->size() );
     call.Dump(FACWAR__CALL_DUMP);

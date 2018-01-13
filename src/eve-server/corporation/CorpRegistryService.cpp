@@ -32,6 +32,21 @@
 #include "corporation/CorpRegistryService.h"
 #include "corporation/CorpRegistryBound.h"
 
+/*
+ * CORP__ERROR
+ * CORP__WARNING
+ * CORP__INFO
+ * CORP__MESSAGE
+ * CORP__TRACE
+ * CORP__CALL
+ * CORP__CALL_DUMP
+ * CORP__RSP_DUMP
+ * CORP__DB_ERROR
+ * CORP__DB_WARNING
+ * CORP__DB_INFO
+ * CORP__DB_MESSAGE
+ */
+
 
 PyCallable_Make_InnerDispatcher(CorpRegistryService)
 
@@ -59,6 +74,7 @@ CorpRegistryService::CorpRegistryService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorpRegistryService, EditLabel);
     PyCallable_REG_CALL(CorpRegistryService, AssignLabels);
     PyCallable_REG_CALL(CorpRegistryService, RemoveLabels);
+    PyCallable_REG_CALL(CorpRegistryService, ResignFromCEO);
 }
 
 CorpRegistryService::~CorpRegistryService() {
@@ -74,6 +90,23 @@ PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* pClient, const P
     }
 
     return new CorpRegistryBound(m_manager, m_db, bind_args->AsTuple()->GetItem(0)->AsInt()->value());
+}
+
+PyResult CorpRegistryService::Handle_GetCorporateContacts(PyCallArgs &call)
+{
+    return m_db.GetContacts(call.client->GetCorporationID());
+}
+
+/**     ***********************************************************************
+ * @note   these below are not coded or partially coded
+ */
+
+PyResult CorpRegistryService::Handle_ResignFromCEO(PyCallArgs &call) {
+    //    self.GetCorpRegistry().ResignFromCEO(newCeoID)
+    sLog.White( "CorpRegistryService::Handle_ResignFromCEO()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
 }
 
 PyResult CorpRegistryService::Handle_GetSuggestedAllianceShortNames(PyCallArgs &call) {
@@ -120,13 +153,6 @@ PyResult CorpRegistryService::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 }
 
 
-PyResult CorpRegistryService::Handle_GetCorporateContacts(PyCallArgs &call) {
-    sLog.White( "CorpRegistryService::Handle_GetCorporateContacts()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
 PyResult CorpRegistryService::Handle_AddCorporateContact(PyCallArgs &call) {
     sLog.White( "CorpRegistryService::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
@@ -171,7 +197,7 @@ PyResult CorpRegistryService::Handle_GetLabels(PyCallArgs &call) {
     sLog.White( "CorpRegistryService::Handle_GetLabels()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    return nullptr;
+    return m_db.GetLabels(call.client->GetCorporationID());
 }
 
 PyResult CorpRegistryService::Handle_CreateLabel(PyCallArgs &call) {
