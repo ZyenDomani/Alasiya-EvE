@@ -130,11 +130,15 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
     uint32 accountID = 0;
     uint32 clientID = sEntityList.GetClientSeed();
 
+    std::string eLogin, ePass;
+    sDatabase.DoEscapeString(eLogin, login);
+    sDatabase.DoEscapeString(ePass, pass);
+
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
         "INSERT INTO account ( accountName, hash, role, clientID )"
-        " VALUES ( '%s', '%s', %" PRIu64 ", %i )",
-        login, pass, role, clientID ) )
+        " VALUES ( '%s', '%s', %" PRIu64 ", %u )",
+        eLogin.c_str(), ePass.c_str(), role, clientID ) )
     {
         sLog.Error( "ServiceDB", "Failed to create a new account '%s': %s.", login, err.c_str() );
         return 0;
