@@ -132,6 +132,9 @@ maxDustCharacter = 2130000000
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
 
+#define IsCharacter(itemID) \
+ ((typeID >= minCharacter) && (typeID <= maxCharacter))
+
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
 

@@ -41,15 +41,14 @@ uint32 ServiceDB::SetClientSeed()
 
 bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountData &account_info )
 {			//added auto account    -allan 18Jan14
-    std::string _username = username;
-    std::string _escaped_username;
-
-    sDatabase.DoEscapeString(_escaped_username, _username);
+    std::string eLogin, ePass;
+    sDatabase.DoEscapeString(eLogin, username);
+    sDatabase.DoEscapeString(ePass, password);
 
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res,
         "SELECT accountID, clientID, password, hash, role, online, banned, logonCount, lastLogin"
-        " FROM account WHERE accountName = '%s'", _escaped_username.c_str() ) )
+        " FROM account WHERE accountName = '%s'", eLogin.c_str() ) )
     {
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
         return false;
@@ -59,10 +58,10 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!res.GetRow( row )) {
         // account not found, create new one if autoAccountRole is not zero (0)
         if (sConfig.account.autoAccountRole > 0) {
-            uint32 accountID = CreateNewAccount( _username.c_str(), password, sConfig.account.autoAccountRole);
+            uint32 accountID = CreateNewAccount( eLogin, ePass, sConfig.account.autoAccountRole);
             if ( accountID > 0 ) {
                 // add new account successful, get account info again
-                bool ret = GetAccountInformation(username, password, account_info);
+                bool ret = GetAccountInformation(eLogin, ePass, account_info);
                 return ret;
             } else
                 return false;
@@ -79,7 +78,7 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!row.IsNull(3))
         account_info.hash   = row.GetText(3);
 
-    account_info.name       = _escaped_username;
+    account_info.name       = eLogin;
     account_info.role       = row.GetUInt64(4);
     account_info.online     = row.GetBool(5);
     account_info.banned     = row.GetBool(6);
@@ -130,15 +129,11 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, uint64 
     uint32 accountID = 0;
     uint32 clientID = sEntityList.GetClientSeed();
 
-    std::string eLogin, ePass;
-    sDatabase.DoEscapeString(eLogin, login);
-    sDatabase.DoEscapeString(ePass, pass);
-
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
         "INSERT INTO account ( accountName, hash, role, clientID )"
-        " VALUES ( '%s', '%s', %" PRIu64 ", %u )",
-        eLogin.c_str(), ePass.c_str(), role, clientID ) )
+        " VALUES ( '%s', '%s', %" PRIu64 ", %i )",
+        login, pass, role, clientID ) )
     {
         sLog.Error( "ServiceDB", "Failed to create a new account '%s': %s.", login, err.c_str() );
         return 0;
