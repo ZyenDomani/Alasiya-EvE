@@ -278,7 +278,6 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
 void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
 {
     int64 roles = pClient->GetCorpRole();
-
     if ((flagID == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
     or  (flagID == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
     or  (flagID == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
@@ -447,7 +446,7 @@ bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef install
         return false;
 
     // calculate the remaining things
-    into.charMaterialMultiplier = 1.0; //ch->GetAttribute(AttrResearchCostPercent).get_int();
+    into.charMaterialMultiplier = 1.0; //ch->GetAttribute(AttrResearchCostPercent).get_int();   << this is not used
     into.productionTime *= (int32)(into.timeMultiplier * into.charTimeMultiplier * args.runs);
     into.usageCost *= ceil(into.productionTime / 3600.0);
     into.cost = into.installCost + into.usageCost;

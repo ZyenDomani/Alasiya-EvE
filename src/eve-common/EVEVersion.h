@@ -39,15 +39,15 @@ static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const char* const EVEMU_REVISION = "0.9.14-allan";
-static const char* const EVEMU_BUILD_DATE = "6 December 2017";
-static const float EVE_Build = 1.98;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.9.15-allan";
+static const char* const EVEMU_BUILD_DATE = "13 January 2018";
+static const float EVE_Build = 2.01;     /* this is for bug tracking on my forums.  -allan 3July15 */
 /* match versions here with stated files for full support */
-static const float Config_Version = 8.4; /* eve-server.xml and EveServerConfig.cpp */
+static const float Config_Version = 8.5; /* eve-server.xml and EveServerConfig.cpp */
 static const float Log_Version = 8.1;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp */
-/* these 3 dont have separate config files */
+/* these 3 dont have separate config files ...yet */
 static const float NPC_AI_Version = 0.45;
 static const float Civilian_AI_Version = 0.10;
 static const float Sentry_AI_Version = 0.10;

@@ -200,7 +200,7 @@ void Missile::HitTarget() {
     double v1 = Sr/Er;
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
     d *= EvE::min1(v1, v2);
-    d *= sConfig.rates.missileRate;
+    d *= sConfig.rates.missileRoF;
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;

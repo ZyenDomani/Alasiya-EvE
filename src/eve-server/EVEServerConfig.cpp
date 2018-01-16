@@ -56,6 +56,7 @@ EVEServerConfig::EVEServerConfig()
     server.DisableIGB = true;
     server.MaxThreadReport = 20;
     server.ModuleDamageChance = 0.35;
+    server.processTic = 1.0;
 
     // world
     world.chatLogs = false;//N
@@ -71,9 +72,11 @@ EVEServerConfig::EVEServerConfig()
     rates.npcBountyMultiply = 1.0;
     rates.secRate = 1.0;
     rates.damageRate = 1.0;
-    rates.missileRate = 1.0;
+    rates.missileDamage = 1.0;
     rates.missileTime = 1.0;
-    rates.turretRate = 1.0;
+    rates.missileRoF = 1.0;
+    rates.turretDamage = 1.0;
+    rates.turretRoF = 1.0;
     rates.corpCost = 1599800;
     rates.WorldDecay = 120 /*m*/;//P   2 hours
     rates.NPCDecay = 90 /*m*/; //P 90 mins
@@ -118,6 +121,8 @@ EVEServerConfig::EVEServerConfig()
     npc.StaticTimer = 10 /*m*/;//P
     npc.RatFaction = 0;
     npc.EnableDrones = false;
+    npc.TargetPodSec = 0;
+    npc.TargetPod = false;
 
     // database
     database.host = "localhost";
@@ -240,6 +245,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
     AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
     AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
+    AddValueParser( "processTic",           server.processTic );
 
     const bool result = ParseElementChildren( ele );
 
@@ -254,6 +260,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "idleSleepTime" );
     RemoveParser( "MaxThreadReport" );
     RemoveParser( "ModuleDamageChance" );
+    RemoveParser( "processTic" );
 
     return result;
 }
@@ -288,9 +295,11 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "secRate",          rates.secRate );
     AddValueParser( "npcBountyMultiply",rates.npcBountyMultiply );
     AddValueParser( "damageRate",       rates.damageRate );
-    AddValueParser( "missileRate",      rates.missileRate );
+    AddValueParser( "missileRoF",       rates.missileRoF );
+    AddValueParser( "missileDamage",    rates.missileDamage );
     AddValueParser( "missileTime",      rates.missileTime );
-    AddValueParser( "turretRate",       rates.turretRate );
+    AddValueParser( "turretDamage",     rates.turretDamage );
+    AddValueParser( "turretRoF",        rates.turretRoF );
     AddValueParser( "corpCost",         rates.corpCost );
     AddValueParser( "WorldDecay",       rates.WorldDecay );
     AddValueParser( "NPCDecay",         rates.NPCDecay );
@@ -306,9 +315,11 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "secRate" );
     RemoveParser( "npcBountyMultiply" );
     RemoveParser( "damageRate" );
-    RemoveParser( "missileRate" );
+    RemoveParser( "missileDamage" );
+    RemoveParser( "missileRoF" );
     RemoveParser( "missileTime" );
-    RemoveParser( "turretRate" );
+    RemoveParser( "turretDamage" );
+    RemoveParser( "turretRoF" );
     RemoveParser( "corpCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );
@@ -396,6 +407,8 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticTimer",      npc.StaticTimer );
     AddValueParser( "RatFaction",       npc.RatFaction );
     AddValueParser( "EnableDrones",     npc.EnableDrones );
+    AddValueParser( "TargetPod",        npc.TargetPod );
+    AddValueParser( "TargetPodSec",     npc.TargetPodSec );
 
     const bool result = ParseElementChildren( ele );
 
@@ -408,6 +421,8 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticTimer" );
     RemoveParser( "RatFaction" );
     RemoveParser( "EnableDrones" );
+    RemoveParser( "TargetPod" );
+    RemoveParser( "TargetPodSec" );
 
     return result;
 }
@@ -497,6 +512,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     AddValueParser( "roidRadiusMultiplier", cosmic.roidRadiusMultiplier );
     AddValueParser( "WormHoleEnabled",      cosmic.WormHoleEnabled );
     AddValueParser( "CiviliansEnabled",     cosmic.CiviliansEnabled);
+    AddValueParser( "BumpEnabled",          cosmic.BumpEnabled );
 
     const bool result = ParseElementChildren( ele );
 
@@ -509,6 +525,7 @@ bool EVEServerConfig::ProcessCosmic( const TiXmlElement* ele )
     RemoveParser( "roidRadiusMultiplier" );
     RemoveParser( "WormHoleEnabled" );
     RemoveParser( "CiviliansEnabled" );
+    RemoveParser( "BumpEnabled" );
 
     return result;
 }

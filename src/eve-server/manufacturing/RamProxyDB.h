@@ -51,8 +51,6 @@ public:
     static uint32 CountManufacturingJobs(const uint32 installerID);
     static uint32 CountResearchJobs(const uint32 installerID);
 
-    bool GetRequiredItems(const uint32 typeID, const int8 activity, std::vector<EvERam::RequiredItem> &into);
-
     // CompleteJob stuff
     bool GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity);
     static bool GetJobVerifyProperties(const uint32 jobID, uint32& ownerID, int64& endProductionTime, int8& restrictionMask, int8& status);

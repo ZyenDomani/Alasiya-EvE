@@ -182,23 +182,48 @@ int main( int argc, char* argv[] )
 {
     double profileStartTime = GetTimeMSeconds();
 
+    sLog.Initialize();
+
+    sLog.Green("       ServerInit", "Loading Server Configuration Files.");
+    // should i try to load individual config files here?  probably not, but would look cool.  ;)
+
     /* Load server configuration */
     if (!sConfig.ParseFile(SRV_CONFIG_FILE)) {
-        printf("ERROR: Loading server configuration '%s' failed.", SRV_CONFIG_FILE );
+        sLog.Error( "       ServerInit", "ERROR: Loading server configuration '%s' failed.", SRV_CONFIG_FILE );
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
+    } else {
+        sLog.Green("       ServerInit", "Server Configuration Files Loaded.");
+    }
+
+    /* init logging */
+    sLog.InitializeLogging(sConfig.files.logDir);
+
+    /* Load server log settings */
+    if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
+        sLog.Green( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
+    else
+        sLog.Warning( "       ServerInit", "Unable to read %s (this file is optional)", sConfig.files.logSettings.c_str() );
+
+    /* open up the log file if specified */
+    if (!sConfig.files.logDir.empty()) {
+        std::string logFile = sConfig.files.logDir + "eve-server.log";
+        if( log_open_logfile( logFile.c_str() ) )
+            sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
+        else
+            sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
 
     /* set current time for timer */
     Timer::SetCurrentTime();
 
-    /* init logging */
-    sLog.InitializeLogging(sConfig.files.logDir);
     sThread.Initialize();
     sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
 
     sLog.White("", "");     // spacer
+
+    sLog.Green("       ServerInit", "Loading server");
 
     /* display server data */
     sLog.White(" Supported Client"," %s", EVEProjectVersion);
@@ -216,25 +241,6 @@ int main( int argc, char* argv[] )
     sLog.White("MarketBot Version", " %.2f", Bot_Version );
 
     sLog.White("", "");     // spacer
-
-    sLog.Green("       ServerInit", "Loading server");
-
-    sLog.White("", "");     // spacer
-
-    /* Load server log settings */
-    if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
-        sLog.Green( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
-    else
-        sLog.Warning( "       ServerInit", "Unable to read %s (this file is optional)", sConfig.files.logSettings.c_str() );
-
-    /* open up the log file if specified */
-    if (!sConfig.files.logDir.empty()) {
-        std::string logFile = sConfig.files.logDir + "eve-server.log";
-        if( log_open_logfile( logFile.c_str() ) )
-            sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
-        else
-            sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
-    }
 
     /* Start up the TCP server */
     EVETCPServer tcps;
@@ -501,16 +507,16 @@ int main( int argc, char* argv[] )
         sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
     else
         sLog.Blue("      All Damages","Normal.");
-    if (sConfig.rates.missileRate != 1.0)
-        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRate *100) );
+    if (sConfig.rates.missileRoF != 1.0)
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
     else
         sLog.Blue("      Missile Dmg","Normal.");
     if (sConfig.rates.missileTime != 1.0)
         sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
     else
         sLog.Blue("     Missile Time","Normal.");
-    if (sConfig.rates.turretRate != 1.0)
-        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRate *100) );
+    if (sConfig.rates.turretRoF != 1.0)
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
     else
         sLog.Blue("       Turret Dmg","Normal.");
     // config option for decay?

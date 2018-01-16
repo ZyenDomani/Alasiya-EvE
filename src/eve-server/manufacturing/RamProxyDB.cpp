@@ -389,65 +389,12 @@ uint32 RamProxyDB::CountResearchJobs(const uint32 installerID) {
     return row.GetUInt(0);
 }
 
-bool RamProxyDB::GetRequiredItems(const uint32 typeID, const int8 activity, std::vector< EvERam::RequiredItem >& into) {
-    DBQueryResult res;
-    DBResultRow row;
-
-    if (activity == 1) {
-        /** @todo update this.  */
-        //sDataMgr.GetRamMaterials();
-        if (!sDatabase.RunQuery(res,
-            "SELECT"
-            " m.materialTypeID,"
-            " m.quantity"
-            " FROM invTypeMaterials as m "
-            " LEFT JOIN invBlueprintTypes AS bpTypes "
-            "   ON m.typeID = bpTypes.productTypeID"
-            " WHERE bpTypes.blueprintTypeID = %u",
-            typeID) )
-        {
-            _log(DATABASE__ERROR, "Failed to query data to build BillOfMaterials: %s.", res.error.c_str());
-            return false;
-        }
-        // only materials in this table
-        while(res.GetRow(row))
-            into.push_back(EvERam::RequiredItem(row.GetUInt(0), row.GetUInt(1), 1.0, false, false));
-    }
-
-    res.Reset();
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        " material.requiredTypeID,"
-        " material.quantity,"
-        " material.damagePerJob,"
-        " IF(materialGroup.categoryID = 16, 1, 0) AS isSkill,"
-        " material.extra"
-        " FROM ramTypeRequirements AS material"
-        " LEFT JOIN invTypes AS materialType ON materialType.typeID = material.requiredTypeID"
-        " LEFT JOIN invGroups AS materialGroup ON materialGroup.groupID = materialType.groupID"
-        " WHERE material.typeID = %u"
-        " AND material.activityID = %d"
-        //this is needed as db is quite crappy ...
-        " AND material.quantity > 0",
-        typeID, (const int)activity))
-    {
-        _log(DATABASE__ERROR, "Failed to query data to build BillOfMaterials: %s.", res.error.c_str());
-        return false;
-    }
-
-    while(res.GetRow(row))
-        into.push_back(EvERam::RequiredItem(row.GetUInt(0), row.GetUInt(1), row.GetFloat(2), row.GetInt(3) ? true : false, row.GetInt(4) ? true : false));
-
-    return true;
-}
-
 bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32& installedItemID, uint32& ownerID, EVEItemFlags& outputFlag, int32& runs, int32& licensedProductionRuns, int8& activity) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
         "SELECT job.installedItemID, job.ownerID, job.outputFlag, job.runs, job.licensedProductionRuns, assemblyLine.activityID"
         " FROM ramJobs AS job"
-        " LEFT JOIN ramAssemblyLines AS assemblyLine ON job.assemblyLineID = assemblyLine.assemblyLineID"
+        " LEFT JOIN ramAssemblyLines AS assemblyLine USING (assemblyLineID)"
         " WHERE job.jobID = %u",
         jobID))
     {
@@ -473,7 +420,6 @@ bool RamProxyDB::GetJobProperties(const uint32 jobID, uint32& installedItemID, u
 
 bool RamProxyDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, int64 &endProductionTime, int8 &restrictionMask, int8 &status) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
                 "SELECT job.ownerID, job.endProductionTime, job.completedStatusID, line.restrictionMask"
                 " FROM ramJobs AS job"
@@ -502,12 +448,7 @@ bool RamProxyDB::GetJobVerifyProperties(const uint32 jobID, uint32 &ownerID, int
 bool RamProxyDB::CompleteJob(const uint32 jobID, const int8 completedStatus) {
     DBerror err;
 
-    if (!sDatabase.RunQuery(err,
-        "UPDATE ramJobs"
-        " SET completedStatusID = %i"
-        " WHERE jobID = %u",
-        completedStatus, jobID))
-    {
+    if (!sDatabase.RunQuery(err, "UPDATE ramJobs SET completedStatusID = %i WHERE jobID = %u", completedStatus, jobID)) {
         _log(DATABASE__ERROR, "Failed to complete job %u (completed status = %i): %s.", jobID, completedStatus, err.c_str());
         return false;
     }
@@ -518,12 +459,7 @@ bool RamProxyDB::CompleteJob(const uint32 jobID, const int8 completedStatus) {
 uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
     DBQueryResult res;
 
-    if (!sDatabase.RunQuery(res,
-        "SELECT blueprintTypeID"
-        " FROM invBlueprintTypes"
-        " WHERE parentBlueprintTypeID = %u",
-        blueprintTypeID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT blueprintTypeID FROM invBlueprintTypes WHERE parentBlueprintTypeID = %u", blueprintTypeID)) {
         _log(DATABASE__ERROR, "Unable to get T2 type for type ID %u: %s", blueprintTypeID, res.error.c_str());
         return 0;
     }
@@ -537,14 +473,7 @@ uint32 RamProxyDB::GetTech2Blueprint(const uint32 blueprintTypeID) {
 
 int64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
     DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        " nextFreeTime"
-        " FROM ramAssemblyLines"
-        " WHERE assemblyLineID = %u",
-        assemblyLineID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT nextFreeTime FROM ramAssemblyLines WHERE assemblyLineID = %u", assemblyLineID)) {
         _log(DATABASE__ERROR, "Failed to query next free time for assembly line %u: %s.", assemblyLineID, res.error.c_str());
         return 0;
     }
@@ -553,8 +482,9 @@ int64 RamProxyDB::GetNextFreeTime(const uint32 assemblyLineID) {
     if (!res.GetRow(row)) {
         _log(DATABASE__ERROR, "Assembly line %u not found.", assemblyLineID);
         return 0;
-    } else
-        return (row.IsNull(0) ? 0 : row.GetInt64(0));
+    }
+
+    return (row.IsNull(0) ? 0 : row.GetInt64(0));
 }
 
 bool RamProxyDB::GetMultipliers(const uint32 assemblyLineID, uint32 groupID, double &materialMultiplier, double &timeMultiplier) {

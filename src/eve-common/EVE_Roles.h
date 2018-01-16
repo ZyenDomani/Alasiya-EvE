@@ -138,18 +138,28 @@ namespace Corp {
             InfrastructureTacticalOfficer   = 144115188075855872L,
             StarbaseCaretaker               = 288230376151711744L,
             FittingManager                  = 576460752303423488L,
-            Missing                         = 3458764513820540928L, //   0x3000000000000000     <-- seen in logs, but not defined in client
+            Missing                         = 3458764513820540928L, //   0x3000000000000000     <-- seen in logs, but not defined in client  ** not used **
 
-            //Some Combos
-            AllHangar   = HangarCanTake1|HangarCanTake2|HangarCanTake3|HangarCanTake4|HangarCanTake5|HangarCanTake6|HangarCanTake7|HangarCanQuery1|HangarCanQuery2|HangarCanQuery3|HangarCanQuery4|HangarCanQuery5|HangarCanQuery6|HangarCanQuery7,
-            AllAccount  = JuniorAccountant|AccountCanTake1|AccountCanTake2|AccountCanTake3|AccountCanTake4|AccountCanTake5|AccountCanTake6|AccountCanTake7|Accountant,
-            AllContainer= ContainerCanTake1|ContainerCanTake2|ContainerCanTake3|ContainerCanTake4|ContainerCanTake5|ContainerCanTake6|ContainerCanTake7,
+            // corpRoles data
             AllOffice   = CanRentOffice|CanRentFactorySlot|CanRentResearchSlot,
             AllStarbase = StarbaseCaretaker|StarbaseConfig|InfrastructureTacticalOfficer|EquipmentConfig,
             AllManager  = PersonnelManager|StationManager|FactoryManager|ChatManager|ContractManager|FittingManager,
 
-            All         = AllHangar|AllAccount|AllContainer|AllOffice|AllStarbase|AllManager|Auditor|Diplomat,
-            Admin       = All|Trader|SecurityOfficer|Director //|Missing
+            // rolesAt* data
+            AllHangarTake   = HangarCanTake1|HangarCanTake2|HangarCanTake3|HangarCanTake4|HangarCanTake5|HangarCanTake6|HangarCanTake7,
+            AllHangarQuery  = HangarCanQuery1|HangarCanQuery2|HangarCanQuery3|HangarCanQuery4|HangarCanQuery5|HangarCanQuery6|HangarCanQuery7,
+            AllAccountTake  = AccountCanTake1|AccountCanTake2|AccountCanTake3|AccountCanTake4|AccountCanTake5|AccountCanTake6|AccountCanTake7,
+            // this means the player can take containers out of the respective inventory
+            AllContainerTake = ContainerCanTake1|ContainerCanTake2|ContainerCanTake3|ContainerCanTake4|ContainerCanTake5|ContainerCanTake6|ContainerCanTake7,
+
+            AllHangar = AllHangarTake | AllHangarQuery,
+            AllAt       = AllHangar|AllAccountTake|AllContainerTake,
+            AllAccount = JuniorAccountant|Accountant,
+            All         = AllHangar|AllAccount|AllContainerTake|AllOffice|AllStarbase|AllManager|Auditor|Diplomat,
+            Admin       = All|Trader|SecurityOfficer|Director,
+
+            None        = 0
+
 
             /* 18:05:31 G   Alasiya's EvEMu: Common Corp Roles:
              * 18:37:16 W          Role_All:  1134904941433847168(0xfbffe07fffffd80)

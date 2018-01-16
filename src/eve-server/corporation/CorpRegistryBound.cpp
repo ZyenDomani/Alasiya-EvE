@@ -556,14 +556,20 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.taxRate = args.taxRate;
         data.allianceID = 0;
         data.warFactionID = 0;
+        //data.baseID = call.client->GetChar()->GetBaseID();
         data.corpHQ = call.client->GetLocationID();
         data.corporationID = corpID;
         data.corpAccountKey = Account::KeyType::Cash;
         data.corpRole = Corp::Role::Admin;
-        data.rolesAtAll = Corp::Role::Admin;
-        data.rolesAtBase = Corp::Role::Admin;
-        data.rolesAtHQ = Corp::Role::Admin;
-        data.rolesAtOther = Corp::Role::Admin;
+        data.rolesAtAll = Corp::Role::AllAt;
+        data.rolesAtBase = Corp::Role::AllAt;
+        data.rolesAtHQ = Corp::Role::AllAt;
+        data.rolesAtOther = Corp::Role::AllAt;
+        data.grantableRoles = Corp::Role::AllAt;
+        data.grantableRolesAtBase = Corp::Role::AllAt;
+        data.grantableRolesAtHQ = Corp::Role::AllAt;
+        data.grantableRolesAtOther = Corp::Role::AllAt;
+        /*roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther */
     // update corp data and refresh session data.
     call.client->GetChar()->JoinCorporation(data);
 
@@ -840,10 +846,160 @@ PyResult CorpRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult CorpRegistryBound::Handle_GetRecruiters(PyCallArgs &call) {
+    sLog.White( "CorpRegistryBound::Handle_GetRecruiters()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_TwoIntegerArgs args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return m_db.GetRecruiters(args.arg2/*, args.arg1*/);
+}
+
+PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
+    // return self.GetCorpRegistry().CreateRecruitmentAd(days, typeMask, allianceID, description, channelID, recruiters, title)
+    sLog.White( "CorpRegistryBound::Handle_CreateRecruitmentAd()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    /*
+     * 00:41:50 [SvcCall] Service CorpRegistryBound::CreateRecruitmentAd()
+     * 00:41:50 W CorpRegistryBound::Handle_CreateRecruitmentAd(): size= 7
+     * 00:41:50 [CorpCallDump]   Call Arguments:
+     * 00:41:50 [CorpCallDump]      Tuple: 7 elements
+     * 00:41:50 [CorpCallDump]       [ 0]    Integer: 14
+     * 00:41:50 [CorpCallDump]       [ 1]    Integer: 34672663
+     * 00:41:50 [CorpCallDump]       [ 2]       None
+     * 00:41:50 [CorpCallDump]       [ 3]    WString: 'test'
+     * 00:41:50 [CorpCallDump]       [ 4]    Integer: 0
+     * 00:41:50 [CorpCallDump]       [ 5]   List: 1 elements
+     * 00:41:50 [CorpCallDump]       [ 5]   [ 0]    Integer: 90000000
+     * 00:41:50 [CorpCallDump]       [ 6]    WString: 'test'
+     */
+
+    Call_CreateRecruitmentAd args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
+
+    std::vector<int32> recruiters;
+    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); ++itr)
+        recruiters.push_back((*itr)->AsInt()->value());
+
+    m_db.AddRecruiters(adID, m_corpID, recruiters);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetLabels(PyCallArgs &call) {
+    sLog.White("CorpRegistryBound", "Handle_GetLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return m_db.GetLabels(call.client->GetCorporationID());
+}
+
+PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
+    // return self.GetCorpRegistry().MoveCompanyShares(corporationID, toShareholderID, numberOfShares)
+    sLog.White( "CorpRegistryBound::Handle_MoveCompanyShares()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_MoveShares args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint32 corpID = 0;
+    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
+    // not sure if it's possible to xfer shares to offline chars, but test anyway
+    if (pClient == nullptr) {
+        corpID = CharacterDB::GetCorpID(args.toShareholderID);
+    } else
+        corpID = pClient->GetCorporationID();
+
+    m_db.MoveShares(m_corpID, corpID, args);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
+    // return self.GetCorpRegistry().MovePrivateShares(corporationID, toShareholderID, numberOfShares)
+    sLog.White( "CorpRegistryBound::Handle_MovePrivateShares()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_MoveShares args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint32 corpID = 0;
+    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
+    // not sure if it's possible to xfer shares to offline chars, but test anyway
+    if (pClient == nullptr) {
+        corpID = CharacterDB::GetCorpID(args.toShareholderID);
+    } else
+        corpID = pClient->GetCorporationID();
+
+    // gonna have to do this one different...
+    //  will need shares OF WHAT corpID also.
+    m_db.MoveShares(call.client->GetCharacterID(), corpID, args);
+    return nullptr;
+}
+
 
 /**     ***********************************************************************
  * @note   these below are not coded or partially coded
  */
+
+PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
+    //self.GetCorpRegistry().PayoutDividend(payShareholders, payoutAmount)
+    /*** shareholders
+     * 04:42:43 W CorpRegistryBound::Handle_PayoutDividend(): size= 2
+     * 04:42:43 [CorpCallDump]   Call Arguments:
+     * 04:42:43 [CorpCallDump]       Tuple: 2 elements
+     * 04:42:43 [CorpCallDump]         [ 0] Integer field: 1            <-- int bool?
+     * 04:42:43 [CorpCallDump]         [ 1] Real field: 1.000000        <-- amount
+     *** members
+     * 04:42:50 W CorpRegistryBound::Handle_PayoutDividend(): size= 2
+     * 04:42:50 [CorpCallDump]   Call Arguments:
+     * 04:42:50 [CorpCallDump]       Tuple: 2 elements
+     * 04:42:50 [CorpCallDump]         [ 0] Integer field: 0
+     * 04:42:50 [CorpCallDump]         [ 1] Real field: 1.000000
+     */
+    sLog.White( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_PayoutDividend args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    // get list of ids to pay.  this includes corp shareholders if paying to shares
+    std::vector<uint32> toIDs;
+    if (args.payShareholders) {
+
+    } else {
+
+    }
+
+    // get total amount and divide by # of ids to pay
+    float amount = args.payoutAmount / toIDs.size();
+    if (amount < 0.01)
+        return nullptr;  //make error here?
+
+        // pay each id and record xfer
+        std::string reason = "Dividend Payment from ";
+    reason += ""; //corp name here
+    for (auto cur : toIDs)
+        AccountService::TranserFunds(m_corpID, cur, amount, reason.c_str(), Journal::EntryType::CorporationDividendPayment, call.client->GetCharacterID());
+
+    return nullptr;
+}
 
 PyResult CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares(PyCallArgs &call) {
     // return self.GetCorpRegistry().GetMemberIDsWithMoreThanAvgShares()
@@ -997,7 +1153,7 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
         return nullptr;
 
     int64 oldRole = 0;
-    bool grantable = false;  // boolean - do new roles have grantable privs?
+    bool grantable = false;  // boolean - do new roles have grantable privs?  they may.
 
     Client* pClient = sEntityList.FindClientByCharID(args.charID);
     if (pClient == nullptr) {
@@ -1005,18 +1161,15 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
         CharacterDB::SetCorpRole(args.charID, args.roles);
     } else {
         oldRole = pClient->GetCorpRole();
-        CorpData data;
-        data.taxRate = pClient->GetCorpTaxRate();
-        data.allianceID = pClient->GetAllianceID();
-        data.warFactionID = pClient->GetWarFactionID();
-        data.corpHQ = pClient->GetCorpHQ();
-        data.corporationID = pClient->GetCorpHQ();
-        data.corpAccountKey = pClient->GetCorpAccountKey();
-        data.corpRole = pClient->GetCorpRole();
+        CorpData data = pClient->GetChar()->GetCorpData();
         data.rolesAtAll = args.roles;
-        data.rolesAtBase = pClient->GetRolesAtBase();
-        data.rolesAtHQ = pClient->GetRolesAtHQ();
-        data.rolesAtOther = pClient->GetRolesAtOther();
+        data.rolesAtBase = args.rolesAtBase;
+        data.rolesAtHQ = args.rolesAtHQ;
+        data.rolesAtOther = args.rolesAtOther;
+        data.grantableRolesAtBase = args.grantableRolesAtBase;
+        data.grantableRolesAtHQ = args.grantableRolesAtHQ;
+        data.grantableRolesAtOther = args.grantableRolesAtOther;
+        data.grantableRoles = args.grantableRoles;
         // update corp data and refresh session data.
         pClient->GetChar()->UpdateCorpData(data);
     }
@@ -1029,57 +1182,9 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_GetLocationalRoles(PyCallArgs &call) {
+    // this gets grantable roles for title (i think)
     sLog.White( "CorpRegistryBound::Handle_GetLocationalRoles()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_GetRecruiters(PyCallArgs &call) {
-    sLog.White( "CorpRegistryBound::Handle_GetRecruiters()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_TwoIntegerArgs args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return m_db.GetRecruiters(args.arg2/*, args.arg1*/);
-}
-
-PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
-    // return self.GetCorpRegistry().CreateRecruitmentAd(days, typeMask, allianceID, description, channelID, recruiters, title)
-    sLog.White( "CorpRegistryBound::Handle_CreateRecruitmentAd()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-    /*
-     * 00:41:50 [SvcCall] Service CorpRegistryBound::CreateRecruitmentAd()
-     * 00:41:50 W CorpRegistryBound::Handle_CreateRecruitmentAd(): size= 7
-     * 00:41:50 [CorpCallDump]   Call Arguments:
-     * 00:41:50 [CorpCallDump]      Tuple: 7 elements
-     * 00:41:50 [CorpCallDump]       [ 0]    Integer: 14
-     * 00:41:50 [CorpCallDump]       [ 1]    Integer: 34672663
-     * 00:41:50 [CorpCallDump]       [ 2]       None
-     * 00:41:50 [CorpCallDump]       [ 3]    WString: 'test'
-     * 00:41:50 [CorpCallDump]       [ 4]    Integer: 0
-     * 00:41:50 [CorpCallDump]       [ 5]   List: 1 elements
-     * 00:41:50 [CorpCallDump]       [ 5]   [ 0]    Integer: 90000000
-     * 00:41:50 [CorpCallDump]       [ 6]    WString: 'test'
-     */
-
-    Call_CreateRecruitmentAd args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
-
-    std::vector<int32> recruiters;
-    for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); ++itr)
-        recruiters.push_back((*itr)->AsInt()->value());
-
-    m_db.AddRecruiters(adID, m_corpID, recruiters);
-
     return nullptr;
 }
 
@@ -1160,13 +1265,6 @@ PyResult CorpRegistryBound::Handle_ExecuteActions(PyCallArgs &call) {
      */
 
     return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_GetLabels(PyCallArgs &call) {
-    sLog.White("CorpRegistryBound", "Handle_GetLabels() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return m_db.GetLabels(call.client->GetCorporationID());
 }
 
 PyResult CorpRegistryBound::Handle_CreateLabel(PyCallArgs &call) {
@@ -1413,6 +1511,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
      *   - (none), so far
      */
 
+    /** @todo  update all of this.  */
     Call_UpdateApplicationOffer args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -1493,23 +1592,21 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 "OnCorporationApplicationChanged",
                 "*corpid&corprole", &answer, mct);
 
+            MemberAttributeUpdate change;
+            if (!m_db.CreateMemberAttributeUpdate(oldInfo.corpID, args.charID, change)) {
+                codelog(SERVICE__ERROR, "Couldn't get data from the character. Sorry.");
+                return nullptr;
+            }
+
             //TODO: should probably put this into a function, since there may be other
             //places (gm commands at a minimum) where we want to change corp.
             /** TODO: Update employment history object, if present
              */
             // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
             OnObjectPublicAttributesUpdated N_pau;
-            MemberAttributeUpdate change;
-
             N_pau.realRowCount = 4;
             N_pau.bindID = GetBindStr();
             N_pau.changePKIndexValue = args.charID;
-
-            if (!m_db.CreateMemberAttributeUpdate(oldInfo.corpID, args.charID, change)) {
-                codelog(SERVICE__ERROR, "Couldn't get data from the character. Sorry.");
-                return nullptr;
-            }
-
             N_pau.changes = change.Encode();
 
             answer = N_pau.Encode();
@@ -1520,7 +1617,6 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
             // OnCorporationMemberChanged event
             OnCorpMemberChange ocmc;
-
             ocmc.charID = args.charID;
             ocmc.newCorpID = change.corporationIDNew->AsInt()->value();
             ocmc.oldCorpID = change.corporationIDOld->AsInt()->value();
@@ -1544,14 +1640,18 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
             Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);
             if (recruit != nullptr) {
-                CorpData data;
+                CorpData data = recruit->GetChar()->GetCorpData();
+                /** @todo  update data as needed here... */
                 data.corpAccountKey = Account::KeyType::Cash;
                 data.corpRole = Corp::Role::Member;
-                data.rolesAtAll = Corp::Role::Member;
-                data.rolesAtBase = Corp::Role::Member;
-                data.rolesAtHQ = Corp::Role::Member;
-                data.rolesAtOther = Corp::Role::Member;
-                data.corpHQ = Corp::Role::Member;
+                data.rolesAtAll = Corp::Role::None;
+                data.rolesAtBase = Corp::Role::None;
+                data.rolesAtHQ = Corp::Role::None;
+                data.rolesAtOther = Corp::Role::None;
+                data.grantableRoles = Corp::Role::None;
+                data.grantableRolesAtBase = Corp::Role::None;
+                data.grantableRolesAtHQ = Corp::Role::None;
+                data.grantableRolesAtOther = Corp::Role::None;
                 data.corporationID = ocmc.newCorpID;
                 CorporationDB::GetCorpData(data);
                 recruit->GetChar()->JoinCorporation(data);
@@ -1654,100 +1754,6 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
         "OnCorporationApplicationChanged",
         "clientID", &notif,
         NOTIF_DEST__CORPORATION, OCAC.corpID);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
-    // return self.GetCorpRegistry().MoveCompanyShares(corporationID, toShareholderID, numberOfShares)
-    sLog.White( "CorpRegistryBound::Handle_MoveCompanyShares()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_MoveShares args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint32 corpID = 0;
-    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    // not sure if it's possible to xfer shares to offline chars, but test anyway
-    if (pClient == nullptr) {
-        corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    } else
-        corpID = pClient->GetCorporationID();
-
-    m_db.MoveShares(m_corpID, corpID, args);
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
-    // return self.GetCorpRegistry().MovePrivateShares(corporationID, toShareholderID, numberOfShares)
-    sLog.White( "CorpRegistryBound::Handle_MovePrivateShares()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_MoveShares args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint32 corpID = 0;
-    Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    // not sure if it's possible to xfer shares to offline chars, but test anyway
-    if (pClient == nullptr) {
-        corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    } else
-        corpID = pClient->GetCorporationID();
-
-    // gonna have to do this one different...
-    //  will need shares OF WHAT corpID also.
-    m_db.MoveShares(call.client->GetCharacterID(), corpID, args);
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
-    //self.GetCorpRegistry().PayoutDividend(payShareholders, payoutAmount)
-    /*** shareholders
-     * 04:42:43 W CorpRegistryBound::Handle_PayoutDividend(): size= 2
-     * 04:42:43 [CorpCallDump]   Call Arguments:
-     * 04:42:43 [CorpCallDump]       Tuple: 2 elements
-     * 04:42:43 [CorpCallDump]         [ 0] Integer field: 1            <-- int bool?
-     * 04:42:43 [CorpCallDump]         [ 1] Real field: 1.000000        <-- amount
-     *** members
-     * 04:42:50 W CorpRegistryBound::Handle_PayoutDividend(): size= 2
-     * 04:42:50 [CorpCallDump]   Call Arguments:
-     * 04:42:50 [CorpCallDump]       Tuple: 2 elements
-     * 04:42:50 [CorpCallDump]         [ 0] Integer field: 0
-     * 04:42:50 [CorpCallDump]         [ 1] Real field: 1.000000
-     */
-    sLog.White( "CorpRegistryBound::Handle_PayoutDividend()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_PayoutDividend args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    // get list of ids to pay.  this includes corp shareholders if paying to shares
-    std::vector<uint32> toIDs;
-    if (args.payShareholders) {
-
-    } else {
-
-    }
-
-    // get total amount and divide by # of ids to pay
-    float amount = args.payoutAmount / toIDs.size();
-    if (amount < 0.01)
-        return nullptr;  //make error here?
-
-    // pay each id and record xfer
-    std::string reason = "Dividend Payment from ";
-    reason += ""; //corp name here
-    for (auto cur : toIDs)
-        AccountService::TranserFunds(m_corpID, cur, amount, reason.c_str(), Journal::EntryType::CorporationDividendPayment, call.client->GetCharacterID());
 
     return nullptr;
 }

@@ -100,10 +100,15 @@ public:
     uint32 GetAllianceID() const                        { return mSession.GetCurrentInt( "allianceID" ); }
     uint32 GetWarFactionID() const                      { return mSession.GetCurrentInt( "warFactionID" ); }
     int32 GetCorpAccountKey() const                     { return mSession.GetCurrentInt( "corpAccountKey" ); }
+    // corporation management-type roles (manager, officer, trader)  also has container roles
     int64 GetCorpRole() const                           { return mSession.GetCurrentLong( "corpRole" ); }
+    // access roles everywhere.  is joined with other access roles
     int64 GetRolesAtAll() const                         { return mSession.GetCurrentLong( "rolesAtAll" ); }
+    // access roles at base defined for this char. overrides hq if same location
     int64 GetRolesAtBase() const                        { return mSession.GetCurrentLong( "rolesAtBase" ); }
+    // access roles at corp HQ.
     int64 GetRolesAtHQ() const                          { return mSession.GetCurrentLong( "rolesAtHQ" ); }
+    // access roles for non-station containers with corp hangars
     int64 GetRolesAtOther() const                       { return mSession.GetCurrentLong( "rolesAtOther" ); }
 
     // fleet data

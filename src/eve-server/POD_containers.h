@@ -88,6 +88,7 @@ struct CorpData {
     int32 corpAccountKey;
     uint32 corporationID;
     uint32 corpHQ;
+    uint32 baseID;
     uint32 allianceID;
     uint32 warFactionID;
     int64 corpRole;
@@ -95,6 +96,10 @@ struct CorpData {
     int64 rolesAtBase;
     int64 rolesAtHQ;
     int64 rolesAtOther;
+    int64 grantableRoles;
+    int64 grantableRolesAtBase;
+    int64 grantableRolesAtHQ;
+    int64 grantableRolesAtOther;
     double taxRate;
     std::string name;
     std::string ticker;

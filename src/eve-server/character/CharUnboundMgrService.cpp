@@ -232,14 +232,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.careerSpecialityID = 11;
     }
 
-    CorpData corpData;
-        corpData.corpRole = 0;
-        corpData.corpAccountKey = Account::KeyType::Cash;
-        corpData.rolesAtAll = 0;
-        corpData.rolesAtBase = 0;
-        corpData.rolesAtHQ = 0;
-        corpData.rolesAtOther = 0;
-
     // Variables for storing attribute bonuses
     uint8 intelligence = char_type->intelligence();
     uint8 charisma = char_type->charisma();
@@ -280,6 +272,18 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.name = name;
     cdata.locationID = cdata.stationID;
     cdata.logonMinutes = 2;
+
+    CorpData corpData;
+        corpData.corpRole = Corp::Role::Member;
+        corpData.corpAccountKey = Account::KeyType::Cash;
+        corpData.rolesAtAll = Corp::Role::None;
+        corpData.rolesAtBase = Corp::Role::None;
+        corpData.rolesAtHQ = Corp::Role::None;
+        corpData.rolesAtOther = Corp::Role::None;
+        corpData.grantableRoles = Corp::Role::None;
+        corpData.grantableRolesAtBase = Corp::Role::None;
+        corpData.grantableRolesAtHQ = Corp::Role::None;
+        corpData.grantableRolesAtOther = Corp::Role::None;
 
     CharacterRef charRef = sItemFactory.SpawnCharacter(cdata, corpData);
     if (charRef.get() == nullptr) {
@@ -379,7 +383,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     pClient->SetShip(pClient->SpawnNewRookieShip());
 
     CharacterDB::AddEmployment(charRef->itemID(), cdata.corporationID);
-    //charRef->JoinCorporation(corpData);       <-- this may not work here, can client/char not completely established yet
     charRef->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image

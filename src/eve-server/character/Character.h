@@ -404,6 +404,7 @@ public:
 
     // Corporation:
     void                    UpdateCorpData(CorpData data);
+    CorpData                GetCorpData()                       { return m_corpData; }
     std::string             corpTicker() const                  { return m_corpData.ticker; }
     uint32                  corporationID() const               { return m_corpData.corporationID; }
     uint32                  corporationHQ() const               { return m_corpData.corpHQ; }

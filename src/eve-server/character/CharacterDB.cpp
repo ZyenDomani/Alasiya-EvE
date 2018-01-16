@@ -46,7 +46,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO chrCharacters"
         "  (accountID, name, typeID, locationID, description, balance, aurBalance,"
-        "   logonDateTime, corporationID, startDateTime, createDateTime, "
+        "   logonDateTime, corporationID, baseID, startDateTime, createDateTime, "
         "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
         "   stationID, solarSystemID, constellationID, regionID)"
         " VALUES"
@@ -55,7 +55,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
-        GetFileTimeNow(), data.corporationID, GetFileTimeNow(), GetFileTimeNow(),
+        GetFileTimeNow(), data.corporationID, data.locationID/*baseID*/, GetFileTimeNow(), GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID))
     {
@@ -116,14 +116,20 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
         "UPDATE chrCharacters"
         " SET"
         "  corporationID = %u, "
+        "  baseID = %u,"
         "  corpRole = %" PRIi64 ","
         "  corpAccountKey = %i,"
         "  rolesAtAll = %" PRIi64 ","
         "  rolesAtBase = %" PRIi64 ","
         "  rolesAtHQ = %" PRIi64 ","
+        "  rolesAtOther = %" PRIi64 ","
+        "  rolesAtAll = %" PRIi64 ","
+        "  rolesAtBase = %" PRIi64 ","
+        "  rolesAtHQ = %" PRIi64 ","
         "  rolesAtOther = %" PRIi64
         " WHERE characterID = %u",
-        data.corporationID, data.corpRole, data.corpAccountKey, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther, characterID))
+        data.corporationID, data.baseID, data.corpRole, data.corpAccountKey, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
+        data.grantableRoles, data.grantableRolesAtBase, data.grantableRolesAtHQ, data.grantableRolesAtOther, characterID))
     {
         codelog(DATABASE__ERROR, "Failed to update corp member info of character %u: %s.", characterID, err.c_str());
         return false;

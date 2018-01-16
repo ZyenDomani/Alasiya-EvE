@@ -858,6 +858,10 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.rolesAtBase = 0;
         into.rolesAtHQ = 0;
         into.rolesAtOther = 0;
+        into.grantableRoles = 0;
+        into.grantableRolesAtBase = 0;
+        into.grantableRolesAtHQ = 0;
+        into.grantableRolesAtOther = 0;
 
         if (!sDatabase.RunQuery(res,
             "SELECT"
@@ -884,7 +888,11 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             "  rolesAtAll,"
             "  rolesAtBase,"
             "  rolesAtHQ,"
-            "  rolesAtOther"
+            "  rolesAtOther,"
+            "  grantableRoles,"
+            "  grantableRolesAtBase,"
+            "  grantableRolesAtHQ,"
+            "  grantableRolesAtOther"
             " FROM chrCharacters"
             " WHERE characterID = %u",
             characterID))
@@ -904,6 +912,10 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.rolesAtBase = row.GetInt64(4);
         into.rolesAtHQ = row.GetInt64(5);
         into.rolesAtOther = row.GetInt64(6);
+        into.grantableRoles = row.GetInt64(7);
+        into.grantableRolesAtBase = row.GetInt64(8);
+        into.grantableRolesAtHQ = row.GetInt64(9);
+        into.grantableRolesAtOther = row.GetInt64(10);
     }
 
     if(!sDatabase.RunQuery(res,

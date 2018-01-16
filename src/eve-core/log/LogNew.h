@@ -48,6 +48,8 @@ public:
     /// Destructor, closes the logfile.
     ~NewLog();
 
+    void Initialize();
+
     /**
      * @brief Initializes and sets the Log file path.
      *

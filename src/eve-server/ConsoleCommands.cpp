@@ -150,12 +150,12 @@ bool ConsoleCommand::Process() {
                     sLog.Green("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
                 else
 					sLog.Warning("      All Damages","Normal.");
-                if (sConfig.rates.missileRate != 1.0)
-                    sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
+                if (sConfig.rates.missileRoF != 1.0)
+                    sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRoF *100) );
                 else
 					sLog.Warning("      Missile Dmg","Normal.");
-                if (sConfig.rates.turretRate != 1.0)
-                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRate *100) );
+                if (sConfig.rates.turretRoF != 1.0)
+                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
                 else
                     sLog.Warning("      Turret Dmg","Normal.");
 			} else if (strncmp(buf, "v", 1) == 0) {
@@ -264,7 +264,7 @@ bool ConsoleCommand::Process() {
                 sLog.White("", "");
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
                 sLog.Warning("         Role_All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
-                sLog.Warning("        Role_Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
+                sLog.Warning("        Role_Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainerTake, Corp::Role::AllContainerTake);
                 sLog.Warning("       Role_Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
                 sLog.Warning("      Role_Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
                 sLog.Warning("     Role_Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);

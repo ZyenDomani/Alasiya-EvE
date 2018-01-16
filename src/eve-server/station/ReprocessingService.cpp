@@ -74,7 +74,7 @@ protected:
 
     float CalcReprocessingEfficiency(const Client *pClient, InventoryItemRef item = InventoryItemRef(nullptr)) const;
     float CalcTax(float standing) const;
-    PyRep* GetQuote(uint32 itemID, const Client *pClient) const;
+    PyRep* GetQuote(uint32 itemID, Client* pClient);
 
     float GetStanding(const Client* pClient) const; // gets the higher of char/corp standings with station owner
 };
@@ -215,6 +215,13 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
     if (args.ownerID == call.client->GetCorporationID()) {
         int64 roles = call.client->GetCorpRole();
+        if (roles & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
+            _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
+                        call.client->GetCharacterName().c_str(), call.client->GetCharacterID());
+            call.client->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
+            //throw error here...dunno the format yet.
+            return nullptr;
+        }
 
         if ((args.flag == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
         or  (args.flag == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
@@ -224,6 +231,9 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         or  (args.flag == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
         or  (args.flag == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
             _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", call.client->GetCharacterName().c_str(), call.client->GetCharacterID());
+            call.client->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
+            //throw error here...dunno the format yet.
+            return nullptr;
     }
 
     double tax = CalcTax(GetStanding(call.client));
@@ -283,6 +293,7 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
         *(1 + 0.04 * RefineryEfficiencySkill)
         *(1 + 0.05 * OreProcessingSkill)
     */
+    /** @todo  check for implants here ... once they're working  */
     CharacterRef cRef = pClient->GetChar();
     double efficiency =  (0.375
                         * (1 + (0.02 * cRef->GetSkillLevel(skillRefining)))
@@ -304,14 +315,41 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
     return efficiency;
 }
 
-PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, const Client* pClient) const {
+PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     InventoryItemRef iRef = sItemFactory.GetItem( itemID );
     if (iRef.get() == nullptr)
         return nullptr;    // No action as GetQuote is also called for reprocessed items (probably for check)
 
     // update this for corp items
-    if (iRef->ownerID() != pClient->GetCharacterID()) {
+    if (iRef->ownerID() == pClient->GetCorporationID()) {
+        /** @todo update this for item location - need to verify corp roles are being set correctly  */
+        int64 roles = pClient->GetRolesAtAll();
+        //roles = pClient->GetRolesAtBase() | pClient->GetRolesAtAll();
+        //roles = pClient->GetRolesAtHQ() | pClient->GetRolesAtAll();
+        //roles = pClient->GetRolesAtOther() | pClient->GetRolesAtAll();
+        if (pClient->GetCorpRole() & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
+            _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
+                    pClient->GetCharacterName().c_str(), pClient->GetCharacterID());
+            pClient->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
+            //throw error here...dunno the format yet.
+            return nullptr;
+        }
+
+        if ((iRef->flag() == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
+        or  (iRef->flag() == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
+        or  (iRef->flag() == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
+        or  (iRef->flag() == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
+        or  (iRef->flag() == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
+        or  (iRef->flag() == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
+        or  (iRef->flag() == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
+            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", \
+                    pClient->GetCharacterName().c_str(), pClient->GetCharacterID());
+            pClient->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
+            //throw error here...dunno the format yet.
+            return nullptr;
+    } else if (iRef->ownerID() != pClient->GetCharacterID()) {
         _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", pClient->GetCharacterID(), iRef->itemID(), iRef->ownerID());
+        pClient->SendErrorMsg("The requested item is not yours.");
         return nullptr;
     }
 

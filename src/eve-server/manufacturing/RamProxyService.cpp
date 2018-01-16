@@ -158,39 +158,43 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     RamMethods::JobsCheck(call.client->GetChar().get(), args);
 
 	// load installed item
-    // this is InventoryItem details of the bp being installed.
-    if (call.byname.find("installedItem") != call.byname.end()) {
-        // use this for stations that are NOT loaded.
-        //  on remote jobs, may have to use this data to split stacks and send to proper places, verify containers, verify access, etc.
-        /*
-23:29:22 [ManufDump]       Args:  Dictionary: 11 entries
-23:29:22 [ManufDump]       Args:   [ 0]   Key:     String: 'categoryID'
-23:29:22 [ManufDump]       Args:   [ 0] Value:    Integer: 9
-23:29:22 [ManufDump]       Args:   [ 1]   Key:     String: 'itemID'
-23:29:22 [ManufDump]       Args:   [ 1] Value:    Integer: 140000623
-23:29:22 [ManufDump]       Args:   [ 2]   Key:     String: 'typeID'
-23:29:22 [ManufDump]       Args:   [ 2] Value:    Integer: 785
-23:29:22 [ManufDump]       Args:   [ 3]   Key:     String: 'singleton'
-23:29:22 [ManufDump]       Args:   [ 3] Value:    Integer: 1
-23:29:22 [ManufDump]       Args:   [ 4]   Key:     String: 'stacksize'
-23:29:22 [ManufDump]       Args:   [ 4] Value:    Integer: 1
-23:29:22 [ManufDump]       Args:   [ 5]   Key:     String: 'flagID'
-23:29:22 [ManufDump]       Args:   [ 5] Value:    Integer: 4
-23:29:22 [ManufDump]       Args:   [ 6]   Key:     String: 'customInfo'
-23:29:22 [ManufDump]       Args:   [ 6] Value:    WString: ''
-23:29:22 [ManufDump]       Args:   [ 7]   Key:     String: 'ownerID'
-23:29:22 [ManufDump]       Args:   [ 7] Value:    Integer: 90000000
-23:29:22 [ManufDump]       Args:   [ 8]   Key:     String: 'groupID'
-23:29:22 [ManufDump]       Args:   [ 8] Value:    Integer: 134
-23:29:22 [ManufDump]       Args:   [ 9]   Key:     String: 'locationID'
-23:29:22 [ManufDump]       Args:   [ 9] Value:    Integer: 60014140
-23:29:22 [ManufDump]       Args:   [10]   Key:     String: 'itemName'
-23:29:22 [ManufDump]       Args:   [10] Value:    WString: 'Miner I Blueprint'
-*/
-    }
     InventoryItemRef installedItem = sItemFactory.GetItem( args.installedItemID );
     if (installedItem.get() == nullptr) {
+        // this means item/location not loaded.  get data from installedItem named args and continue
+        // this will require some work/rewriting
+
+        // this is InventoryItem details of the bp being installed.
+        if (call.byname.find("installedItem") != call.byname.end()) {
+            // use this for stations that are NOT loaded.
+            //  on remote jobs, may have to use this data to split stacks and send to proper places, verify containers, verify access, etc.
+            /*
+             2 3:29*:22 [ManufDump]       Args:  Dictionary: 11 entries
+             23:29:22 [ManufDump]       Args:   [ 0]   Key:     String: 'categoryID'
+             23:29:22 [ManufDump]       Args:   [ 0] Value:    Integer: 9
+             23:29:22 [ManufDump]       Args:   [ 1]   Key:     String: 'itemID'
+             23:29:22 [ManufDump]       Args:   [ 1] Value:    Integer: 140000623
+             23:29:22 [ManufDump]       Args:   [ 2]   Key:     String: 'typeID'
+             23:29:22 [ManufDump]       Args:   [ 2] Value:    Integer: 785
+             23:29:22 [ManufDump]       Args:   [ 3]   Key:     String: 'singleton'
+             23:29:22 [ManufDump]       Args:   [ 3] Value:    Integer: 1
+             23:29:22 [ManufDump]       Args:   [ 4]   Key:     String: 'stacksize'
+             23:29:22 [ManufDump]       Args:   [ 4] Value:    Integer: 1
+             23:29:22 [ManufDump]       Args:   [ 5]   Key:     String: 'flagID'
+             23:29:22 [ManufDump]       Args:   [ 5] Value:    Integer: 4
+             23:29:22 [ManufDump]       Args:   [ 6]   Key:     String: 'customInfo'
+             23:29:22 [ManufDump]       Args:   [ 6] Value:    WString: ''
+             23:29:22 [ManufDump]       Args:   [ 7]   Key:     String: 'ownerID'
+             23:29:22 [ManufDump]       Args:   [ 7] Value:    Integer: 90000000
+             23:29:22 [ManufDump]       Args:   [ 8]   Key:     String: 'groupID'
+             23:29:22 [ManufDump]       Args:   [ 8] Value:    Integer: 134
+             23:29:22 [ManufDump]       Args:   [ 9]   Key:     String: 'locationID'
+             23:29:22 [ManufDump]       Args:   [ 9] Value:    Integer: 60014140
+             23:29:22 [ManufDump]       Args:   [10]   Key:     String: 'itemName'
+             23:29:22 [ManufDump]       Args:   [10] Value:    WString: 'Miner I Blueprint'
+             */
+        }
         _log(MANUF__ERROR, "Could not get installedItem");
+        throw(PyException(MakeUserError("Remote Job Installation Not Functional at this time.")));
         return nullptr;
     }
     if (installedItem->categoryID() != EVEDB::invCategories::Blueprint)
@@ -203,7 +207,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     if (args.flagOutput == flagAutoFit)
         args.flagOutput = installedItem->flag();
 
-    // check permissions
+    // check permissions and corp roles, if applicable
     RamMethods::AssemblyLineCheck(call.client, args);
     RamMethods::ItemPermissionCheck(call.client, args, installedItem);
 
@@ -387,6 +391,8 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         _log(MANUF__ERROR, "Could not InstallJob for %s", installedItem->itemName().c_str());
     }
 
+    // we may need a separate table for invention jobs to store it's specific data....
+
     return nullptr;
 }
 
@@ -430,6 +436,8 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
     if (installedItem.get() == nullptr)
         return nullptr;
     installedItem->Move( installedItem->locationID(), outputFlag, true );
+
+    m_db.CompleteJob(args.jobID, (args.cancel ? EvERam::CompletedStatus::Abort : EvERam::CompletedStatus::Delivered));
 
     // return materials which weren't  consumed
     /** @todo make sure this is NOT returning more items than given...  */
@@ -479,7 +487,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                 }
             } break;
             /* todo */
-            case EvERam::Activity::Invention:
+            case EvERam::Activity::Invention: {
     /** @todo  this needs a return for invention
      *
             result = sm.ProxySvc('ramProxy').CompleteJob(installationLocationData, jobdata.jobID, cancel)
@@ -495,10 +503,46 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                      'itemid': str(result.outputItemID)})
                 else:
                     eve.Message('RamInventionJobFailed', {'info': inventionResultLabel})
+        */
+                PyDict* dict = new PyDict();
+                if (1) {
+                    dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobSucceeded"));
+                    dict->SetItemString("jobCompletedSuccessfully", new PyBool(true));
+                    dict->SetItemString("outputME", new PyInt(0));
+                    dict->SetItemString("outputPE", new PyInt(0));
+                    dict->SetItemString("outputRuns", new PyInt(0));
+                    dict->SetItemString("outputTypeID", new PyInt(0));
+                    dict->SetItemString("outputItemID", new PyInt(0));
+                } else {
+                    dict->SetItemString("messageLabel", new PyString("UI/ScienceAndIndustry/ScienceAndIndustryWindow/RamInventionJobFailed"));
+                    dict->SetItemString("jobCompletedSuccessfully", new PyBool(false));
+                }
+                // not sure the semantics on this...its' on both succede and fail
+                // this *could* be the part about your skills
+                /*
+(251331, `This job was so easy you feel you could do it again in your sleep.`)
+(251332, `You have a good feeling this job is perfectly suited to someone of your talents.`)
+(251333, `Completing this job was fairly comfortable for you and didn't tax your talents too much.`)
+(251334, `You're happy with your success, for succeeding this job was far from certain.`)
+(251335, `You succeeded, but you have a nagging feeling that you can't count on it every time.`)
+(251336, `Despite valiant efforts you failed the job with success at your fingertips.`)
+(251338, `You've got a good feel for this job, even if nothing of value came out of it this time.`)
+(251339, `Although you have a firm understanding of the basics of this job you were never close to a solution.`)
+(251340, `This is far from an impossible job, but one that might require a few tries before succeeding.`)
+(251341, `This job requires lot of diligence and hard work on your part if you want to succeed.`)
+(251342, `You feel a bit out of your league, succeeding this job requires a fair bit of luck.`)
+(251343, `You never saw the light, this job is almost impossible for you to complete.`)
+*/
+                /*
             if hasattr(result, 'message'):
                 eve.Message(result.message.msg, result.message.args)
-        */
-
+                */
+                PyDict* msg = new PyDict();
+                    msg->SetItemString("msg", new PyInt(0));
+                    msg->SetItemString("args", new PyInt(0));
+                dict->SetItemString("message", msg);
+                return dict;
+            } break;
             case EvERam::Activity::ReverseEngineering:
             /* unsupported */
             case EvERam::Activity::ResearchTech:
@@ -509,8 +553,6 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             } break;
         }
     }
-
-    m_db.CompleteJob(args.jobID, (args.cancel ? EvERam::CompletedStatus::Abort : EvERam::CompletedStatus::Delivered));
 
     // there is more to this.  also could be not needed, as it checks for 'none'
     // result.message.msg = "event";

@@ -56,6 +56,7 @@ public:
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint16 idleSleepTime;
+        float processTic;
         uint16 maxPlayers;
         float ModuleDamageChance;
     } server;
@@ -81,11 +82,15 @@ public:
         /// Modifier for damage from NPCs
         float damageRate;
         /// Modifier for damage from missiles
-        float missileRate;
+        float missileDamage;
         /// Modifier for missile flightTime
         float missileTime;
+        /// Modifier for missile rate of fire
+        float missileRoF;
         /// Modifier for damage from PC turrets
-        float turretRate;
+        float turretDamage;
+        /// Modifier for turret rate of fire
+        float turretRoF;
         /// Startup Cost to create a corporation.
         double corpCost;
         // Decay timer for item deletion (garbage collection)
@@ -153,6 +158,8 @@ public:
         uint8 StaticTimer;
         float ThreatRadius;
         uint32 RatFaction;
+        bool TargetPod;
+        float TargetPodSec;
         bool EnableDrones;
     } npc;
 
