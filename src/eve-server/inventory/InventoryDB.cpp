@@ -491,7 +491,7 @@ uint32 InventoryDB::NewItem(const ItemData &data) {
 
 bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
     // First check whether they are trying to save proper item:
-    if (IsStaticMapItem(itemID)) {
+    if (IsStaticItem(itemID)) {
         _log(ITEM__ERROR, "Refusing to modify static map object %u.", itemID);
         return false;
     }
@@ -603,7 +603,7 @@ void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
 
 
 bool InventoryDB::DeleteItem(uint32 itemID) {
-    if (IsStaticMapItem(itemID)) {
+    if (IsStaticItem(itemID)) {
         _log(ITEM__ERROR, "Refusing to delete static map object %u.", itemID);
         return false;
     }
@@ -1141,7 +1141,7 @@ bool InventoryDB::DeleteCharacter(uint32 characterID) {
 bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;
 
-    if( IsStaticMapItem(celestialID)) {
+    if( IsStaticItem(celestialID)) {
         // This Celestial object is a static celestial, so get its data from the 'mapDenormalize' table:
         if(!sDatabase.RunQuery(res,
             "SELECT"

@@ -58,10 +58,10 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!res.GetRow( row )) {
         // account not found, create new one if autoAccountRole is not zero (0)
         if (sConfig.account.autoAccountRole > 0) {
-            uint32 accountID = CreateNewAccount( eLogin, ePass, sConfig.account.autoAccountRole);
+            uint32 accountID = CreateNewAccount( eLogin.c_str(), ePass.c_str(), sConfig.account.autoAccountRole);
             if ( accountID > 0 ) {
                 // add new account successful, get account info again
-                bool ret = GetAccountInformation(eLogin, ePass, account_info);
+                bool ret = GetAccountInformation(eLogin.c_str(), ePass.c_str(), account_info);
                 return ret;
             } else
                 return false;

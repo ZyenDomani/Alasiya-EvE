@@ -133,7 +133,7 @@ maxDustCharacter = 2130000000
  ((typeID >= minCharType) && (typeID <= maxCharType))
 
 #define IsCharacter(itemID) \
- ((typeID >= minCharacter) && (typeID <= maxCharacter))
+ ((itemID >= minCharacter) && (itemID <= maxCharacter))
 
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
@@ -170,7 +170,7 @@ maxDustCharacter = 2130000000
 ((itemID >= minFaction) && (itemID < maxFaction))
 
 // this covers ALL static celestial-type items
-#define IsStaticMapItem(itemID) \
+#define IsStaticItem(itemID) \
 ((itemID >= minRegion) && (itemID < maxNPCItem))
 
 #define IsRegion(itemID) \
