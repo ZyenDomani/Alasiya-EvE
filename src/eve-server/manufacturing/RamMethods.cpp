@@ -192,6 +192,9 @@ void RamMethods::AssemblyLineCheck(Client*const pClient, const Call_InstallJob& 
             throw(PyException(MakeUserError("RamAccessDeniedWrongCorp")));
     }
 
+    //RamCannotInstallWithoutRentFactorySlot
+    //RamCannotInstallWithoutRentResearchSlot
+
     if (args.isCorpJob) {
         int64 roles = pClient->GetCorpRole();
         if ((roles & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)

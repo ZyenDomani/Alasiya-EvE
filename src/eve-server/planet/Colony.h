@@ -212,3 +212,17 @@ private:
 
 #endif
 
+/*{'messageKey': 'RouteFailedValidationCannotRouteCommodities', 'dataID': 17875533, 'suppressable': False, 'bodyID': 256544, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3293}
+ * {'messageKey': 'RouteFailedValidationExpeditedDestinationCannotAccept', 'dataID': 17876139, 'suppressable': False, 'bodyID': 256765, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3376}
+ * {'messageKey': 'RouteFailedValidationExpeditedSourceLacksCommodity', 'dataID': 17876179, 'suppressable': False, 'bodyID': 256779, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3322}
+ * {'messageKey': 'RouteFailedValidationExpeditedSourceLacksCommodityQty', 'dataID': 17876176, 'suppressable': False, 'bodyID': 256778, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3323}
+ * {'messageKey': 'RouteFailedValidationExpeditedSourceNotReady', 'dataID': 17875596, 'suppressable': False, 'bodyID': 256567, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3325}
+ * {'messageKey': 'RouteFailedValidationExpeditedSourceNotStorage', 'dataID': 17875590, 'suppressable': False, 'bodyID': 256565, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3321}
+ * {'messageKey': 'RouteFailedValidationLinkDoesNotExist', 'dataID': 17875530, 'suppressable': False, 'bodyID': 256543, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3292}
+ * {'messageKey': 'RouteFailedValidationNoBandwidthAvailable', 'dataID': 17875593, 'suppressable': False, 'bodyID': 256566, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3324}
+ * {'messageKey': 'RouteFailedValidationPinDoesNotExist', 'dataID': 17875524, 'suppressable': False, 'bodyID': 256541, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3290}
+ * {'messageKey': 'RouteFailedValidationPinNotYours', 'dataID': 17875527, 'suppressable': False, 'bodyID': 256542, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3291}
+ * {'messageKey': 'RouteRemoveNotFound', 'dataID': 17875539, 'suppressable': False, 'bodyID': 256546, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3295}
+ * {'messageKey': 'RouteRemoveRouteNotYours', 'dataID': 17875542, 'suppressable': False, 'bodyID': 256547, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3296}
+ * {'messageKey': 'RunProcessCycle', 'dataID': 17881150, 'suppressable': False, 'bodyID': 258668, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258667, 'messageID': 1969}
+ */

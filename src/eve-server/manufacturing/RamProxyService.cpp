@@ -163,6 +163,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
         // this means item/location not loaded.  get data from installedItem named args and continue
         // this will require some work/rewriting
 
+        //RamBlueprintAlreadyInstalled
         // this is InventoryItem details of the bp being installed.
         if (call.byname.find("installedItem") != call.byname.end()) {
             // use this for stations that are NOT loaded.
@@ -253,7 +254,9 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 	// sent as assy line.nextFreeTime + 1m  (a previous client call asks for assy line nextFreeTime, displayed in window)
     if (call.byname.find("maxJobStartTime") != call.byname.end())
         if (rsp.maxJobStartTime > PyRep::IntegerValue(call.byname["maxJobStartTime"]))
-            throw(PyException(MakeUserError("RamCannotGuaranteeStartTime")));
+            throw(PyException(MakeUserError("RamProductionTimeExceedsLimits")));
+
+    //RamCannotGuaranteeStartTime  // timeslot taken by another char while installing this one
 
     // query required items for activity from static data (and not db hit)
     std::vector<EvERam::RequiredItem> reqItems;
@@ -332,6 +335,8 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     }
 
     if (args.activityID == EvERam::Activity::Invention) {
+        //RamCannotInventABlueprintOriginal
+        //RamCannotInventZeroRuns
         /** @todo do something constructive with this data... */
         // this is populated for t2 bpc
         int16 outputType = 0, baseItemType = 0, decryptorType = 0;
@@ -532,7 +537,33 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
 (251341, `This job requires lot of diligence and hard work on your part if you want to succeed.`)
 (251342, `You feel a bit out of your league, succeeding this job requires a fair bit of luck.`)
 (251343, `You never saw the light, this job is almost impossible for you to complete.`)
+
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251331, 'label': u'InventionResultSuccessCouldDoInSleep'}(u'This job was so easy you feel you could do it again in your sleep.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251332, 'label': u'InventionResultSuccessSuitedToYourTalets'}(u'You have a good feeling this job is perfectly suited to someone of your talents.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251333, 'label': u'InventionResultSuccessDidntTaxTooMuch'}(u"Completing this job was fairly comfortable for you and didn't tax your talents too much.", None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251334, 'label': u'InventionResultSuccessFarFromCertain'}(u"You're happy with your success, for succeeding this job was far from certain.", None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251335, 'label': u'InventionResultSuccessCantCountOnIt'}(u"You succeeded, but you have a nagging feeling that you can't count on it every time.", None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251336, 'label': u'InventionResultFailedSuccessAtFingertips'}(u'Despite valiant efforts you failed the job with success at your fingertips.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251338, 'label': u'InventionResultFailedFeltGoodAboutIt'}(u"You've got a good feel for this job, even if nothing of value came out of it this time.", None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251339, 'label': u'InventionResultFailedNeverClose'}(u'Although you have a firm understanding of the basics of this job you were never close to a solution.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251340, 'label': u'InventionResultFailedRequiresAFewTries'}(u'This is far from an impossible job, but one that might require a few tries before succeeding.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251341, 'label': u'InventionResultFailedRequiresHardWork'}(u'This job requires lot of diligence and hard work on your part if you want to succeed.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251342, 'label': u'InventionResultFailedRequiresLuck'}(u'You feel a bit out of your league, succeeding this job requires a fair bit of luck.', None, None)
+{'FullPath': u'UI/ScienceAndIndustry/Invention', 'messageID': 251343, 'label': u'InventionResultFailedImpossible'}(u'You never saw the light, this job is almost impossible for you to complete.', None, None)
+{
 */
+                /*{'messageKey': 'ProductionDuplicationFailure', 'dataID': 17875202, 'suppressable': False, 'bodyID': 256422, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256421, 'messageID': 3739}
+                 * {'messageKey': 'ProductionFailure', 'dataID': 17875197, 'suppressable': False, 'bodyID': 256420, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': 256419, 'messageID': 3741}
+                 * {'messageKey': 'ProductionInventionFailure', 'dataID': 17875207, 'suppressable': False, 'bodyID': 256424, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256423, 'messageID': 3740}
+                 *
+                 * {'FullPath': u'UI/Messages', 'messageID': 256419, 'label': u'ProductionFailureTitle'}(u'Production Job Will Fail', None, None)
+                 * {'FullPath': u'UI/Messages', 'messageID': 256420, 'label': u'ProductionFailureBody'}(u'There is no chance of that action succeeding.', None, None)
+                 * {'FullPath': u'UI/Messages', 'messageID': 256421, 'label': u'ProductionDuplicationFailureTitle'}(u'Production Job Will Fail', None, None)
+                 * {'FullPath': u'UI/Messages', 'messageID': 256422, 'label': u'ProductionDuplicationFailureBody'}(u'"{[item]type.name}" can not be duplicated, there is no chance of it succeeding.', None, {u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}})
+                 * {'FullPath': u'UI/Messages', 'messageID': 256423, 'label': u'ProductionInventionFailureTitle'}(u'Production Job Will Fail', None, None)
+                 * {'FullPath': u'UI/Messages', 'messageID': 256424, 'label': u'ProductionInventionFailureBody'}(u'"{[item]type.name}" can not be invented, there is no chance of it succeeding.', None, {u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}})
+                 *
+                 * /
                 /*
             if hasattr(result, 'message'):
                 eve.Message(result.message.msg, result.message.args)
