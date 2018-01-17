@@ -24,7 +24,7 @@ DROP TABLE IF EXISTS `channels`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channels` (
   `channelID` int(10) NOT NULL AUTO_INCREMENT,
-  `ownerID` int(10)  NOT NULL DEFAULT '0',
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
   `displayName` varchar(85) DEFAULT NULL,
   `motd` text,
   `comparisonKey` varchar(11) DEFAULT NULL,
@@ -33,7 +33,7 @@ CREATE TABLE `channels` (
   `mailingList` tinyint(4) NOT NULL DEFAULT '0',
   `cspa` tinyint(4) NOT NULL DEFAULT '0',
   PRIMARY KEY (`channelID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2100000001 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:20
+-- Dump completed on 2018-01-16 19:11:33

@@ -23,10 +23,10 @@ DROP TABLE IF EXISTS `mailStatus`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailStatus` (
-  `messageID` int(10)  NOT NULL,
-  `characterID` int(10)  NOT NULL,
-  `statusMask` bigint(20)  DEFAULT NULL,
-  `labelMask` bigint(20)  DEFAULT NULL,
+  `messageID` int(10) unsigned NOT NULL,
+  `characterID` int(10) unsigned NOT NULL,
+  `statusMask` bigint(20) unsigned DEFAULT NULL,
+  `labelMask` bigint(20) unsigned DEFAULT NULL,
   KEY `messageID` (`messageID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:28
+-- Dump completed on 2018-01-16 19:11:39

@@ -23,10 +23,10 @@ DROP TABLE IF EXISTS `tutorials`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tutorials` (
-  `tutorialID` int(10)  NOT NULL DEFAULT '0',
+  `tutorialID` int(10) unsigned NOT NULL DEFAULT '0',
   `tutorialName` varchar(100) NOT NULL,
-  `nextTutorialID` int(10)  DEFAULT NULL,
-  `categoryID` int(10)  NOT NULL,
+  `nextTutorialID` int(10) unsigned DEFAULT NULL,
+  `categoryID` int(10) unsigned NOT NULL,
   PRIMARY KEY (`tutorialID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:54
+-- Dump completed on 2018-01-16 19:12:02

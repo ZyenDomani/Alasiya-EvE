@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `tutorial_categories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `tutorial_categories` (
-  `categoryID` int(10)  NOT NULL,
+  `categoryID` int(10) unsigned NOT NULL,
   `categoryName` varchar(100) NOT NULL,
   `description` varchar(200) NOT NULL DEFAULT '',
   PRIMARY KEY (`categoryID`)
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:54
+-- Dump completed on 2018-01-16 19:12:02

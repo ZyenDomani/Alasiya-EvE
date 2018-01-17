@@ -23,12 +23,12 @@ DROP TABLE IF EXISTS `channelMods`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `channelMods` (
-  `id` int(10)  NOT NULL AUTO_INCREMENT,
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `channelID` int(10) NOT NULL DEFAULT '0',
-  `accessor` int(10)  DEFAULT NULL,
-  `mode` int(10)  NOT NULL DEFAULT '0',
-  `untilWhen` bigint(20)  DEFAULT NULL,
-  `originalMode` int(10)  DEFAULT NULL,
+  `accessor` int(10) unsigned DEFAULT NULL,
+  `mode` int(10) unsigned NOT NULL DEFAULT '0',
+  `untilWhen` bigint(20) unsigned DEFAULT NULL,
+  `originalMode` int(10) unsigned DEFAULT NULL,
   `admin` varchar(85) DEFAULT NULL,
   `reason` text,
   PRIMARY KEY (`id`),
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:20
+-- Dump completed on 2018-01-16 19:11:33

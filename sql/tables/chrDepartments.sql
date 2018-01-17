@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `chrDepartments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrDepartments` (
-  `schoolID` int(10)  NOT NULL DEFAULT '0',
-  `departmentID` int(10)  NOT NULL DEFAULT '0',
+  `schoolID` int(10) unsigned NOT NULL DEFAULT '0',
+  `departmentID` int(10) unsigned NOT NULL DEFAULT '0',
   `departmentName` varchar(100) NOT NULL DEFAULT '',
   `description` mediumtext NOT NULL,
-  `skillTypeID1` int(10)  NOT NULL DEFAULT '0',
-  `skillTypeID2` int(10)  NOT NULL DEFAULT '0',
-  `skillTypeID3` int(10)  NOT NULL DEFAULT '0',
-  `graphicID` int(10)  NOT NULL DEFAULT '0',
+  `skillTypeID1` int(10) unsigned NOT NULL DEFAULT '0',
+  `skillTypeID2` int(10) unsigned NOT NULL DEFAULT '0',
+  `skillTypeID3` int(10) unsigned NOT NULL DEFAULT '0',
+  `graphicID` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`departmentID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:21
+-- Dump completed on 2018-01-16 19:11:34

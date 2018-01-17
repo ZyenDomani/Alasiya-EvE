@@ -128,6 +128,7 @@ public:
     bool GetCurrentApplicationInfo(uint32 charID, uint32 corpID, ApplicationInfo& aInfo);
     bool CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID, MemberAttributeUpdate& attrib);
 
+    static std::string GetDivisionName(uint32 corpID, uint16 acctKey);
     bool UpdateDivisionNames(uint32 corpID, const Call_UpdateDivisionNames & divs, PyDict * notif);
     bool UpdateCorporation(uint32 corpID, const Call_UpdateCorporation & upd, PyDict * notif);
     bool UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDict * notif);

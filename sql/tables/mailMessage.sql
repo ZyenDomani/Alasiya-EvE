@@ -23,11 +23,11 @@ DROP TABLE IF EXISTS `mailMessage`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailMessage` (
-  `messageID` int(10)  NOT NULL AUTO_INCREMENT,
-  `senderID` int(10)  NOT NULL,
+  `messageID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `senderID` int(10) unsigned NOT NULL,
   `toCharacterIDs` text COLLATE utf8_unicode_ci,
-  `toListID` int(10)  DEFAULT NULL,
-  `toCorpOrAllianceID` int(10)  DEFAULT NULL,
+  `toListID` int(10) unsigned DEFAULT NULL,
+  `toCorpOrAllianceID` int(10) unsigned DEFAULT NULL,
   `title` text COLLATE utf8_unicode_ci,
   `body` blob,
   `sentDate` bigint(20) DEFAULT NULL,
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:28
+-- Dump completed on 2018-01-16 19:11:39

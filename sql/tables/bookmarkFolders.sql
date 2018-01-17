@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `bookmarkFolders`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `bookmarkFolders` (
-  `folderID` int(10)  NOT NULL AUTO_INCREMENT,
+  `folderID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `folderName` varchar(255) NOT NULL DEFAULT '',
   `ownerID` int(10) NOT NULL DEFAULT '0',
   `creatorID` int(10) NOT NULL DEFAULT '0',
   PRIMARY KEY (`folderID`),
   KEY `ownerID` (`ownerID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:20
+-- Dump completed on 2018-01-16 19:11:33

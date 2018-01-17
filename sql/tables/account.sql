@@ -23,15 +23,15 @@ DROP TABLE IF EXISTS `account`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `account` (
-  `accountID` int(10)  NOT NULL AUTO_INCREMENT,
-  `clientID` int(10)  NOT NULL DEFAULT '0',
+  `accountID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `clientID` int(10) unsigned NOT NULL DEFAULT '0',
   `accountName` varchar(43) NOT NULL DEFAULT '',
   `password` varchar(43) NOT NULL DEFAULT '',
   `hash` tinyblob,
-  `role` bigint(20)  NOT NULL DEFAULT '0',
+  `role` bigint(20) unsigned NOT NULL DEFAULT '0',
   `online` tinyint(1) NOT NULL DEFAULT '0',
   `banned` tinyint(1) NOT NULL DEFAULT '0',
-  `logonCount` int(10)  NOT NULL DEFAULT '0',
+  `logonCount` int(10) unsigned NOT NULL DEFAULT '0',
   `lastLogin` timestamp NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`accountID`),
   UNIQUE KEY `accountName` (`accountName`)
@@ -44,7 +44,7 @@ CREATE TABLE `account` (
 
 LOCK TABLES `account` WRITE;
 /*!40000 ALTER TABLE `account` DISABLE KEYS */;
-INSERT INTO `account` VALUES (1,1,'allan','','‡\rŽÆ ­YÁÄã©V‡´ppsf',7131450020691443712,0,0,105,'2017-07-30 00:48:17'),(2,2,'lee','','‹I<\r¤)hìY†µî§.åöxø¥',7131450020691443712,0,0,421,'2017-07-23 00:42:19'),(3,3,'ray','','Gëb¾L-)*Lý$NßÝ8ÚÚ',7131450020691443712,0,0,3,'2017-07-23 02:14:59');
+INSERT INTO `account` VALUES (1,1,'allan','','‡\rŽÆ ­YÁÄã©V‡´ppsf',7131450020691443712,0,0,869,'2018-01-14 06:49:04'),(2,2,'lee','','‹I<\r¤)hìY†µî§.åöxø¥',7131450020691443712,0,0,514,'2017-12-05 17:44:09'),(3,3,'ray','','Gëb¾L-)*Lý$NßÝ8ÚÚ',7131450020691443712,0,0,35,'2017-12-04 07:39:39');
 /*!40000 ALTER TABLE `account` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:19
+-- Dump completed on 2018-01-16 19:11:32

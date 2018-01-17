@@ -26,14 +26,14 @@ CREATE TABLE `crpRoleTitles` (
   `corporationID` int(10) NOT NULL,
   `titleID` int(10) NOT NULL,
   `titleName` varchar(130) COLLATE utf8_unicode_ci NOT NULL,
-  `roles` bigint(20) NOT NULL,
-  `grantableRoles` bigint(20) NOT NULL,
-  `rolesAtHQ` bigint(20) NOT NULL,
-  `grantableRolesAtHQ` bigint(20) NOT NULL,
-  `rolesAtBase` bigint(20) NOT NULL,
-  `grantableRolesAtBase` bigint(20) NOT NULL,
-  `rolesAtOther` bigint(20) NOT NULL,
-  `grantableRolesAtOther` bigint(20) NOT NULL
+  `roles` bigint(20) NOT NULL DEFAULT '0',
+  `grantableRoles` bigint(20) NOT NULL DEFAULT '0',
+  `rolesAtHQ` bigint(20) NOT NULL DEFAULT '0',
+  `grantableRolesAtHQ` bigint(20) NOT NULL DEFAULT '0',
+  `rolesAtBase` bigint(20) NOT NULL DEFAULT '0',
+  `grantableRolesAtBase` bigint(20) DEFAULT '0',
+  `rolesAtOther` bigint(20) NOT NULL DEFAULT '0',
+  `grantableRolesAtOther` bigint(20) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -43,7 +43,6 @@ CREATE TABLE `crpRoleTitles` (
 
 LOCK TABLES `crpRoleTitles` WRITE;
 /*!40000 ALTER TABLE `crpRoleTitles` DISABLE KEYS */;
-INSERT INTO `crpRoleTitles` VALUES (1001000,32,'',0,0,0,0,0,0,0,0),(1001000,1,'',0,0,0,0,0,0,0,0),(1001000,2,'',0,0,0,0,0,0,0,0),(1001000,4096,'',0,0,0,0,0,0,0,0),(1001000,4,'',0,0,0,0,0,0,0,0),(1001000,1024,'',0,0,0,0,0,0,0,0),(1001000,8192,'',0,0,0,0,0,0,0,0),(1001000,8,'',0,0,0,0,0,0,0,0),(1001000,64,'',0,0,0,0,0,0,0,0),(1001000,128,'',0,0,0,0,0,0,0,0),(1001000,256,'',0,0,0,0,0,0,0,0),(1001000,16384,'',0,0,0,0,0,0,0,0),(1001000,16,'',0,0,0,0,0,0,0,0),(1001000,512,'',0,0,0,0,0,0,0,0),(1001000,32768,'',0,0,0,0,0,0,0,0),(1001000,2048,'',0,0,0,0,0,0,0,0);
 /*!40000 ALTER TABLE `crpRoleTitles` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:23
+-- Dump completed on 2018-01-16 19:11:35

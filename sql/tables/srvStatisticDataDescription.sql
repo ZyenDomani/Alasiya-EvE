@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `srvStatisticDataDescription`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `srvStatisticDataDescription` (
-  `dataID` tinyint(1)  NOT NULL,
+  `dataID` tinyint(1) unsigned NOT NULL,
   `dataName` varchar(30) NOT NULL,
   `dataDescription` varchar(200) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Descriptions for DataNames in srvStatisticData table';
@@ -48,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:52
+-- Dump completed on 2018-01-16 19:12:01

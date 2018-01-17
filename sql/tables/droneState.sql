@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `droneState`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `droneState` (
-  `droneID` int(10)  NOT NULL DEFAULT '0',
-  `solarSystemID` int(10)  NOT NULL DEFAULT '0',
-  `ownerID` int(10)  NOT NULL DEFAULT '0',
-  `controllerID` int(10)  NOT NULL DEFAULT '0',
-  `activityState` int(10)  NOT NULL DEFAULT '0',
-  `typeID` int(10)  NOT NULL DEFAULT '0',
-  `controllerOwnerID` int(10)  NOT NULL DEFAULT '0',
+  `droneID` int(10) unsigned NOT NULL DEFAULT '0',
+  `solarSystemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `controllerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `activityState` int(10) unsigned NOT NULL DEFAULT '0',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `controllerOwnerID` int(10) unsigned NOT NULL DEFAULT '0',
   `targetID` int(11) NOT NULL,
   PRIMARY KEY (`droneID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -53,4 +53,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:25
+-- Dump completed on 2018-01-16 19:11:37

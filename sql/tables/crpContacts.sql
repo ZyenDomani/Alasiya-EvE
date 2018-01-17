@@ -23,12 +23,14 @@ DROP TABLE IF EXISTS `crpContacts`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `crpContacts` (
-  `corporationID` int(10) NOT NULL,
+  `id` int(10) NOT NULL AUTO_INCREMENT,
+  `ownerID` int(10) NOT NULL,
   `contactID` int(10) NOT NULL,
-  `inWatchlist` tinyint(2) NOT NULL,
+  `inWatchlist` tinyint(1) NOT NULL,
   `relationshipID` float NOT NULL,
-  `labelMask` int(20) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+  `labelMask` int(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='Corporate Contacts Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:23
+-- Dump completed on 2018-01-16 19:11:35

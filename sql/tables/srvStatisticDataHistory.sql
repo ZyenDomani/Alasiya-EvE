@@ -24,15 +24,15 @@ DROP TABLE IF EXISTS `srvStatisticDataHistory`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `srvStatisticDataHistory` (
   `month` tinyint(2) NOT NULL DEFAULT '1',
-  `1` int(10)  NOT NULL DEFAULT '0',
-  `2` int(10)  NOT NULL DEFAULT '0',
-  `3` int(10)  NOT NULL DEFAULT '0',
-  `4` int(10)  NOT NULL DEFAULT '0',
-  `5` int(10)  NOT NULL DEFAULT '0',
-  `6` int(10)  NOT NULL DEFAULT '0',
-  `7` int(10)  NOT NULL DEFAULT '0',
-  `8` int(10)  NOT NULL DEFAULT '0',
-  `9` int(10)  NOT NULL DEFAULT '0'
+  `1` int(10) unsigned NOT NULL DEFAULT '0',
+  `2` int(10) unsigned NOT NULL DEFAULT '0',
+  `3` int(10) unsigned NOT NULL DEFAULT '0',
+  `4` int(10) unsigned NOT NULL DEFAULT '0',
+  `5` int(10) unsigned NOT NULL DEFAULT '0',
+  `6` int(10) unsigned NOT NULL DEFAULT '0',
+  `7` int(10) unsigned NOT NULL DEFAULT '0',
+  `8` int(10) unsigned NOT NULL DEFAULT '0',
+  `9` int(10) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Historical Data for graphing player activity from previous months';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -54,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:52
+-- Dump completed on 2018-01-16 19:12:01

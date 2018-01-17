@@ -25,25 +25,15 @@ DROP TABLE IF EXISTS `posStructureData`;
 CREATE TABLE `posStructureData` (
   `itemID` int(10) NOT NULL DEFAULT '0',
   `towerID` int(10) NOT NULL DEFAULT '0',
-  `planetID` int(10) NOT NULL DEFAULT '0',
-  `harmonic` int(10) NOT NULL DEFAULT '0',
-  `password` varchar(50) NOT NULL DEFAULT '''''',
-  `standingOwnerID` int(10) NOT NULL DEFAULT '0',
-  `state` tinyint(1) NOT NULL DEFAULT '-1',
-  `standing` double NOT NULL DEFAULT '0',
-  `status` double NOT NULL DEFAULT '0',
+  `moonID` int(10) NOT NULL DEFAULT '0',
+  `state` tinyint(2) NOT NULL DEFAULT '-1',
+  `canUse` tinyint(1) NOT NULL DEFAULT '0',
+  `canView` tinyint(1) NOT NULL DEFAULT '0',
+  `canTake` tinyint(1) NOT NULL DEFAULT '0',
+  `status` tinyint(2) NOT NULL DEFAULT '0',
   `timestamp` bigint(20) NOT NULL DEFAULT '0',
-  `rotationX` double NOT NULL DEFAULT '0',
-  `rotationY` double NOT NULL DEFAULT '0',
-  `rotationZ` double NOT NULL DEFAULT '0',
-  `statusDrop` tinyint(1) NOT NULL DEFAULT '0',
-  `corpWar` tinyint(1) NOT NULL DEFAULT '0',
-  `showInCalendar` tinyint(1) NOT NULL DEFAULT '0',
-  `sendFuelNotifications` tinyint(1) NOT NULL DEFAULT '0',
-  `allowCorp` tinyint(1) NOT NULL DEFAULT '0',
-  `allowAlliance` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`itemID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS - Structure Data';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS Basic Structure Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,4 +54,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:49
+-- Dump completed on 2018-01-16 19:11:59

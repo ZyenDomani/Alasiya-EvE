@@ -31,6 +31,7 @@
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "cache/ObjCacheService.h"
+#include <corporation/CorporationDB.h>
 
 /*
  * ACCOUNT__ERROR
@@ -320,7 +321,9 @@ void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uin
             std::map<std::string, PyRep *> args;
             args["amount"] = new PyFloat(-amount);
             args["balance"] = new PyFloat(balance);
-            throw PyException(MakeUserError("NotEnoughMoney", args));
+            /** @todo  update this... however, current implementation will allow for corp transactions w/o loaded corp  */
+            args["division"] = new PyString(CorporationDB::GetDivisionName(ownerID, accountKey));
+            throw PyException(MakeUserError("NotEnoughMoneyCorp", args));
         }
     }
     // get new corp balance

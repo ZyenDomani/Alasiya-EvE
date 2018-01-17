@@ -23,13 +23,13 @@ DROP TABLE IF EXISTS `entity_attributes`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `entity_attributes` (
-  `itemID` int(10)  NOT NULL DEFAULT '0',
-  `attributeID` int(10)  NOT NULL DEFAULT '0',
+  `itemID` int(10) unsigned NOT NULL DEFAULT '0',
+  `attributeID` int(10) unsigned NOT NULL DEFAULT '0',
   `valueInt` int(10) DEFAULT NULL,
   `valueFloat` double DEFAULT NULL,
   PRIMARY KEY (`itemID`,`attributeID`),
   KEY `attributeID` (`attributeID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:25
+-- Dump completed on 2018-01-16 19:11:37

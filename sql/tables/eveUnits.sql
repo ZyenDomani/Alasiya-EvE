@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `eveUnits`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `eveUnits` (
-  `unitID` tinyint(3)  NOT NULL,
+  `unitID` tinyint(3) unsigned NOT NULL,
   `unitName` varchar(100) DEFAULT NULL,
   `displayName` varchar(50) DEFAULT NULL,
   `description` varchar(1000) DEFAULT NULL,
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:26
+-- Dump completed on 2018-01-16 19:11:38

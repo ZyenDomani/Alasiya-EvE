@@ -23,17 +23,17 @@ DROP TABLE IF EXISTS `repStandingChanges`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `repStandingChanges` (
-  `eventID` int(10)  NOT NULL AUTO_INCREMENT,
-  `eventTypeID` int(10)  NOT NULL DEFAULT '0',
-  `eventDateTime` bigint(20)  NOT NULL DEFAULT '0',
-  `fromID` int(10)  NOT NULL DEFAULT '0',
-  `toID` int(10)  NOT NULL DEFAULT '0',
+  `eventID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `eventTypeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `eventDateTime` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `fromID` int(10) unsigned NOT NULL DEFAULT '0',
+  `toID` int(10) unsigned NOT NULL DEFAULT '0',
   `modification` double NOT NULL DEFAULT '0',
-  `originalFromID` int(10)  NOT NULL DEFAULT '0',
-  `originalToID` int(10)  NOT NULL DEFAULT '0',
-  `int_1` int(10)  NOT NULL DEFAULT '0',
-  `int_2` int(10)  NOT NULL DEFAULT '0',
-  `int_3` int(10)  NOT NULL DEFAULT '0',
+  `originalFromID` int(10) unsigned NOT NULL DEFAULT '0',
+  `originalToID` int(10) unsigned NOT NULL DEFAULT '0',
+  `int_1` int(10) unsigned NOT NULL DEFAULT '0',
+  `int_2` int(10) unsigned NOT NULL DEFAULT '0',
+  `int_3` int(10) unsigned NOT NULL DEFAULT '0',
   `msg` text NOT NULL,
   PRIMARY KEY (`eventID`),
   KEY `fromID` (`fromID`),
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:52
+-- Dump completed on 2018-01-16 19:12:00

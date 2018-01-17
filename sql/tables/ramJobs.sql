@@ -23,24 +23,24 @@ DROP TABLE IF EXISTS `ramJobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ramJobs` (
-  `jobID` int(10)  NOT NULL AUTO_INCREMENT,
-  `ownerID` int(10)  NOT NULL,
-  `installerID` int(10)  NOT NULL,
-  `assemblyLineID` int(10)  NOT NULL,
-  `installedItemID` int(10)  NOT NULL,
-  `installTime` bigint(20)  NOT NULL,
-  `beginProductionTime` bigint(20)  NOT NULL,
-  `pauseProductionTime` bigint(20)  DEFAULT NULL,
-  `endProductionTime` bigint(20)  NOT NULL,
+  `jobID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `ownerID` int(10) unsigned NOT NULL,
+  `installerID` int(10) unsigned NOT NULL,
+  `assemblyLineID` int(10) unsigned NOT NULL,
+  `installedItemID` int(10) unsigned NOT NULL,
+  `installTime` bigint(20) unsigned NOT NULL,
+  `beginProductionTime` bigint(20) unsigned NOT NULL,
+  `pauseProductionTime` bigint(20) unsigned DEFAULT NULL,
+  `endProductionTime` bigint(20) unsigned NOT NULL,
   `description` varchar(250) NOT NULL DEFAULT 'blah',
   `runs` int(10) NOT NULL,
-  `outputFlag` int(10)  NOT NULL,
-  `completedStatusID` int(10)  NOT NULL,
-  `installedInSolarSystemID` int(10)  NOT NULL,
+  `outputFlag` int(10) unsigned NOT NULL,
+  `completedStatusID` int(10) unsigned NOT NULL,
+  `installedInSolarSystemID` int(10) unsigned NOT NULL,
   `licensedProductionRuns` int(10) DEFAULT NULL,
   PRIMARY KEY (`jobID`),
   KEY `RAMJOBS_ASSEMBLYLINES` (`assemblyLineID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -61,4 +61,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:51
+-- Dump completed on 2018-01-16 19:12:00

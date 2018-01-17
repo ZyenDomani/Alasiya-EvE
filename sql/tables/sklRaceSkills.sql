@@ -26,7 +26,7 @@ CREATE TABLE `sklRaceSkills` (
   `id` int(10) NOT NULL AUTO_INCREMENT,
   `raceID` int(10) DEFAULT NULL,
   `skillTypeID` int(10) DEFAULT NULL,
-  `level` tinyint(3)  DEFAULT NULL,
+  `level` tinyint(3) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `skillTypeID` (`skillTypeID`)
 ) ENGINE=MyISAM AUTO_INCREMENT=33 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='skill and level list by raceID';
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:52
+-- Dump completed on 2018-01-16 19:12:01

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `dgmAttributeCategories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `dgmAttributeCategories` (
-  `categoryID` tinyint(3)  NOT NULL,
+  `categoryID` tinyint(3) unsigned NOT NULL,
   `categoryName` varchar(50) DEFAULT NULL,
   `categoryDescription` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`categoryID`)
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:23
+-- Dump completed on 2018-01-16 19:11:36

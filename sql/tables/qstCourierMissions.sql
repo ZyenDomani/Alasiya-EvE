@@ -23,30 +23,30 @@ DROP TABLE IF EXISTS `qstCourierMissions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `qstCourierMissions` (
-  `missionID` int(10)  NOT NULL AUTO_INCREMENT,
-  `kind` tinyint(3)  NOT NULL DEFAULT '0',
-  `state` tinyint(3)  NOT NULL DEFAULT '0',
-  `availabilityID` int(10)  DEFAULT NULL,
-  `inOrder` tinyint(3)  NOT NULL DEFAULT '0',
+  `missionID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `kind` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `state` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `availabilityID` int(10) unsigned DEFAULT NULL,
+  `inOrder` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `description` text NOT NULL,
-  `issuerID` int(10)  DEFAULT NULL,
-  `assigneeID` int(10)  DEFAULT NULL,
+  `issuerID` int(10) unsigned DEFAULT NULL,
+  `assigneeID` int(10) unsigned DEFAULT NULL,
   `acceptFee` double NOT NULL DEFAULT '0',
-  `acceptorID` int(10)  DEFAULT NULL,
-  `dateIssued` int(10)  NOT NULL DEFAULT '0',
-  `dateExpires` int(10)  NOT NULL DEFAULT '0',
-  `dateAccepted` int(10)  NOT NULL DEFAULT '0',
-  `dateCompleted` int(10)  NOT NULL DEFAULT '0',
+  `acceptorID` int(10) unsigned DEFAULT NULL,
+  `dateIssued` int(10) unsigned NOT NULL DEFAULT '0',
+  `dateExpires` int(10) unsigned NOT NULL DEFAULT '0',
+  `dateAccepted` int(10) unsigned NOT NULL DEFAULT '0',
+  `dateCompleted` int(10) unsigned NOT NULL DEFAULT '0',
   `totalReward` double NOT NULL DEFAULT '0',
-  `tracking` tinyint(3)  NOT NULL DEFAULT '0',
-  `pickupStationID` int(10)  DEFAULT NULL,
-  `craterID` int(10)  DEFAULT NULL,
-  `dropStationID` int(10)  DEFAULT NULL,
+  `tracking` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `pickupStationID` int(10) unsigned DEFAULT NULL,
+  `craterID` int(10) unsigned DEFAULT NULL,
+  `dropStationID` int(10) unsigned DEFAULT NULL,
   `volume` double NOT NULL DEFAULT '0',
-  `pickupSolarSystemID` int(10)  DEFAULT NULL,
-  `pickupRegionID` int(10)  DEFAULT NULL,
-  `dropSolarSystemID` int(10)  DEFAULT NULL,
-  `dropRegionID` int(10)  DEFAULT NULL,
+  `pickupSolarSystemID` int(10) unsigned DEFAULT NULL,
+  `pickupRegionID` int(10) unsigned DEFAULT NULL,
+  `dropSolarSystemID` int(10) unsigned DEFAULT NULL,
+  `dropRegionID` int(10) unsigned DEFAULT NULL,
   PRIMARY KEY (`missionID`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -69,4 +69,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:49
+-- Dump completed on 2018-01-16 19:11:59

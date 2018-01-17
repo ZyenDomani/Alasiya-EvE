@@ -1557,6 +1557,35 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
     return true;
 }
 
+std::string CorporationDB::GetDivisionName(uint32 corpID, uint16 acctKey)
+{
+    std::string acctKeyName = "";
+    switch (acctKey) {
+        case Account::KeyType::Cash:    acctKeyName = "division1"; break;
+        case Account::KeyType::Cash2:   acctKeyName = "division2"; break;
+        case Account::KeyType::Cash3:   acctKeyName = "division3"; break;
+        case Account::KeyType::Cash4:   acctKeyName = "division4"; break;
+        case Account::KeyType::Cash5:   acctKeyName = "division5"; break;
+        case Account::KeyType::Cash6:   acctKeyName = "division6"; break;
+        case Account::KeyType::Cash7:   acctKeyName = "division7"; break;
+    }
+
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT %s FROM crpWalletDivisons WHERE corporationID = %u", corpID)) {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return "Unknown";
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(CORP__DB_WARNING, "Corporation %u - division name for acctKey %u not found.", corpID, acctKey);
+        return "Unknown";
+    }
+    
+    return row.GetText(0);
+}
+
+
 bool CorporationDB::UpdateCorporation(uint32 corpID, const Call_UpdateCorporation & upd, PyDict * notif) {
     DBQueryResult res;
 

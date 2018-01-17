@@ -23,12 +23,12 @@ DROP TABLE IF EXISTS `eveMail`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `eveMail` (
-  `channelID` int(10)  NOT NULL DEFAULT '0',
-  `messageID` int(10)  NOT NULL AUTO_INCREMENT,
-  `senderID` int(10)  NOT NULL DEFAULT '0',
+  `channelID` int(10) unsigned NOT NULL DEFAULT '0',
+  `messageID` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `senderID` int(10) unsigned NOT NULL DEFAULT '0',
   `subject` varchar(255) NOT NULL DEFAULT '',
-  `created` bigint(20)  NOT NULL DEFAULT '0',
-  `read` tinyint(3)  NOT NULL DEFAULT '0',
+  `created` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `read` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`messageID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -51,4 +51,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:25
+-- Dump completed on 2018-01-16 19:11:37

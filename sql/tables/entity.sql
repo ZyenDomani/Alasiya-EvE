@@ -23,22 +23,22 @@ DROP TABLE IF EXISTS `entity`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `entity` (
-  `itemID` int(10)  NOT NULL AUTO_INCREMENT,
+  `itemID` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `itemName` varchar(85) NOT NULL DEFAULT '',
-  `typeID` int(10)  NOT NULL DEFAULT '0',
-  `ownerID` int(10)  NOT NULL DEFAULT '0',
-  `locationID` int(10)  NOT NULL DEFAULT '0',
-  `flag` int(4)  NOT NULL DEFAULT '0',
-  `contraband` tinyint(1)  NOT NULL DEFAULT '0',
-  `singleton` tinyint(1)  NOT NULL DEFAULT '0',
-  `quantity` int(10)  NOT NULL DEFAULT '0',
+  `typeID` int(10) unsigned NOT NULL DEFAULT '0',
+  `ownerID` int(10) unsigned NOT NULL DEFAULT '0',
+  `locationID` int(10) unsigned NOT NULL DEFAULT '0',
+  `flag` int(4) unsigned NOT NULL DEFAULT '0',
+  `contraband` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `singleton` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `quantity` int(10) NOT NULL DEFAULT '0',
   `x` double NOT NULL DEFAULT '0',
   `y` double NOT NULL DEFAULT '0',
   `z` double NOT NULL DEFAULT '0',
   `customInfo` text,
   PRIMARY KEY (`itemID`),
   KEY `typeID` (`typeID`)
-) ENGINE=InnoDB AUTO_INCREMENT=140000000 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=140000000 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,4 +59,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:25
+-- Dump completed on 2018-01-16 19:11:37

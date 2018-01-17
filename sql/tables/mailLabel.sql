@@ -1,8 +1,8 @@
--- MySQL dump 10.16  Distrib 10.1.24-MariaDB, for Linux (x86_64)
+-- MySQL dump 10.15  Distrib 10.0.24-MariaDB, for Linux (x86_64)
 --
--- Host: localhost    Database: evemu
+-- Host: localhost    Database: alasiya-new
 -- ------------------------------------------------------
--- Server version	10.1.24-MariaDB
+-- Server version	10.0.24-MariaDB
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -27,7 +27,7 @@ CREATE TABLE `mailLabel` (
   `bit` int(10) NOT NULL DEFAULT '0',
   `name` varchar(100) DEFAULT '0',
   `color` int(11) DEFAULT '0',
-  `ownerID` bigint(20)  NOT NULL DEFAULT '0',
+  `ownerID` bigint(20) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -50,4 +50,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 17:39:32
+-- Dump completed on 2018-01-16 19:11:39

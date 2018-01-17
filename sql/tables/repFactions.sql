@@ -27,7 +27,7 @@ CREATE TABLE `repFactions` (
   `toID` int(10) unsigned NOT NULL DEFAULT '0',
   `standing` float NOT NULL DEFAULT '0',
   PRIMARY KEY (`fromID`,`toID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Static Faction Standing Data';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:52
+-- Dump completed on 2018-01-16 19:12:00

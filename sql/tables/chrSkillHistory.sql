@@ -23,13 +23,12 @@ DROP TABLE IF EXISTS `chrSkillHistory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrSkillHistory` (
-  `eventTypeID` smallint(6) NOT NULL,
+  `eventTypeID` smallint(3) NOT NULL,
   `characterID` int(10) NOT NULL,
   `logDate` bigint(20) NOT NULL,
   `skillTypeID` int(8) NOT NULL,
   `skillLevel` tinyint(4) NOT NULL,
-  `relativePoints` bigint(20) NOT NULL,
-  `absolutePoints` bigint(20) NOT NULL,
+  `absolutePoints` int(10) NOT NULL,
   `AI` int(10) NOT NULL AUTO_INCREMENT,
   UNIQUE KEY `AI` (`AI`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Char Skill History';
@@ -53,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:23
+-- Dump completed on 2018-01-16 19:11:35

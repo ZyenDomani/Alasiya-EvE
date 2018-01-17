@@ -34,20 +34,15 @@ CREATE TABLE `sysSignatures` (
   `scanAttributeID` int(10) NOT NULL DEFAULT '0',
   `x` double NOT NULL,
   `y` double NOT NULL,
-  `z` double NOT NULL
+  `z` double NOT NULL,
+  PRIMARY KEY (`sigID`),
+  UNIQUE KEY `sigID` (`sigID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
 -- Dumping data for table `sysSignatures`
 --
-
---
--- Indexes for table `sysSignatures`
---
-ALTER TABLE `sysSignatures`
-  ADD PRIMARY KEY (`sigID`),
-  ADD UNIQUE KEY `sigID` (`sigID`);
 
 LOCK TABLES `sysSignatures` WRITE;
 /*!40000 ALTER TABLE `sysSignatures` DISABLE KEYS */;
@@ -63,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:53
+-- Dump completed on 2018-01-16 19:12:01

@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS `chrMakeups`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `chrMakeups` (
-  `makeupID` int(10)  NOT NULL DEFAULT '0',
+  `makeupID` int(10) unsigned NOT NULL DEFAULT '0',
   `makeupName` varchar(100) NOT NULL DEFAULT '',
   PRIMARY KEY (`makeupID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -48,4 +48,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:22
+-- Dump completed on 2018-01-16 19:11:34

@@ -23,8 +23,8 @@ DROP TABLE IF EXISTS `mailListUsers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `mailListUsers` (
-  `listID` int(10)  NOT NULL,
-  `characterID` int(10)  NOT NULL,
+  `listID` int(10) unsigned NOT NULL,
+  `characterID` int(10) unsigned NOT NULL,
   `role` tinyint(1) NOT NULL,
   `access` tinyint(1) NOT NULL,
   PRIMARY KEY (`listID`)
@@ -49,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-01 18:36:28
+-- Dump completed on 2018-01-16 19:11:39
