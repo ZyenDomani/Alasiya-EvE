@@ -35,5 +35,5 @@
 - Missiles are implemented
 - Asteroid Rat Spawns implemented
 - Mining system rewrite
-- PI system started (can set up and view colony, but extracting, logistics, and production not working yet)
+- PI system started (import/export not working yet)
 
