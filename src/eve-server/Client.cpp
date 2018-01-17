@@ -1317,9 +1317,8 @@ void Client::InitSession(uint32 characterID)
     mSession.SetInt("regionid", (int32)(characterDataMap["regionID"]));
 
     mSession.SetInt("hqID", (int32)(characterDataMap["corporationHQ"]));
-    /** @todo  added this, means a corp alternate station, outpost/pos maybe?    -allan  28Jan15*/
-    //mSession.SetInt("baseID", 0);
-    mSession.SetInt("corpAccountKey", (int32)(characterDataMap["corpAccountKey"]));
+    mSession.SetInt("baseID", characterDataMap["baseID"]);
+    mSession.SetInt("corpAccountKey", characterDataMap["corpAccountKey"]);
     mSession.SetLong("corpRole",     characterDataMap["corpRole"]);
     mSession.SetLong("rolesAtAll",   characterDataMap["rolesAtAll"]);
     mSession.SetLong("rolesAtBase",  characterDataMap["rolesAtBase"]);

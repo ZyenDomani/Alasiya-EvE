@@ -761,7 +761,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
             if (pInv != nullptr)
                 pInv->AddItem(InventoryItemRef(this));
             else
-                _log(INV__WARNING, "Inventory for %s not found. %s not added to it's container's inventory.", itemName().c_str(), new_location);
+                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", new_location, itemName().c_str() );
         }
     }
 

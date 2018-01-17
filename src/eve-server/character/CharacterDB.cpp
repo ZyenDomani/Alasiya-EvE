@@ -55,7 +55,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
-        GetFileTimeNow(), data.corporationID, data.locationID/*baseID*/, GetFileTimeNow(), GetFileTimeNow(),
+        GetFileTimeNow(), data.corporationID, corpData.baseID, GetFileTimeNow(), GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID))
     {
@@ -459,7 +459,8 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
         "  ch.gender, "
         "  ch.bloodlineID, "
         "  ch.raceID, "     //15
-        "  ch.locationID "
+        "  ch.locationID, "
+        "  ch.baseID"
         " FROM chrCharacters AS ch"
         "    LEFT JOIN crpCorporation AS co USING (corporationID) "
         " WHERE characterID = %u", characterID))
@@ -490,6 +491,7 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["bloodlineID"] = row.GetUInt(14);
     characterDataMap["raceID"] = row.GetUInt(15);
     characterDataMap["locationID"] = row.GetUInt(16);
+    characterDataMap["baseID"] = row.GetInt(17);
     uint32 stationID = 0;
     GetCharHomeStation(characterID, stationID);
     characterDataMap["cloneStationID"] = stationID;

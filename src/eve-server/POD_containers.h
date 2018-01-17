@@ -85,7 +85,7 @@ struct CharacterData {
 
 /* POD structure for corp data */
 struct CorpData {
-    int32 corpAccountKey;
+    int16 corpAccountKey;
     uint32 corporationID;
     uint32 corpHQ;
     uint32 baseID;

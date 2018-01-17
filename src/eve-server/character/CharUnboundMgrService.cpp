@@ -256,10 +256,10 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // this also sets schoolID, corporationID and allianceID based on career
     m_db.GetLocationCorporationByCareer(cdata);
 
-    if (sConfig.character.startStation) { // Skip if 0
-        uint32 stationID = sConfig.character.startStation;
-        if (!m_db.GetLocationByStation(stationID, cdata))
-            _log(CLIENT__MESSAGE, "Could not find data for stationID %u.  Using Corp Default.", stationID);
+    if (IsStation(sConfig.character.startStation)) { // Skip if 0
+        cdata.stationID = sConfig.character.startStation;
+        if (!m_db.GetLocationByStation(cdata.stationID, cdata))
+            _log(CLIENT__MESSAGE, "Could not find data for stationID %u.  Using Corp Default.", sConfig.character.startStation);
     }
 
     std::string name = "";
@@ -274,6 +274,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.logonMinutes = 2;
 
     CorpData corpData;
+        corpData.baseID = cdata.stationID;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
         corpData.rolesAtAll = Corp::Role::None;
@@ -396,8 +397,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     std::string reason = "DESC: Inheritance Payment to ";
     reason += charRef->itemName().c_str();
-    AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
-    AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, sConfig.character.startAurBalance, reason, \
+    AccountService::TranserFunds(charRef->itemID(), ownerSCC, sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
+    AccountService::TranserFunds(charRef->itemID(), ownerSCC, sConfig.character.startAurBalance, reason, \
                                     Journal::EntryType::Inheritance, Account::KeyType::AUR, Account::KeyType::AUR);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );
