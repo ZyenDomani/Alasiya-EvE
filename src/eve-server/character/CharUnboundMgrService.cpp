@@ -182,7 +182,6 @@ PyResult CharUnboundMgrService::Handle_GetCharNewExtraCreationInfo(PyCallArgs &c
 
 PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call) {
     // charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
-
     CallCreateCharacterWithDoll arg;
     if (!arg.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -397,8 +396,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     std::string reason = "DESC: Inheritance Payment to ";
     reason += charRef->itemName().c_str();
-    AccountService::TranserFunds(charRef->itemID(), ownerSCC, sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
-    AccountService::TranserFunds(charRef->itemID(), ownerSCC, sConfig.character.startAurBalance, reason, \
+    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
+    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
                                     Journal::EntryType::Inheritance, Account::KeyType::AUR, Account::KeyType::AUR);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );

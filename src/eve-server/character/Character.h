@@ -225,6 +225,7 @@ public:
 	void JoinCorporation(const CorpData& data);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
+    void SetBaseID(uint32 baseID);
     void SetFleetData(CharFleetData& fleet);
     uint32 PickAlternateShip(uint32 locationID);
 

@@ -417,6 +417,14 @@ void Character::SetAccountKey(int32 accountKey)
     m_pClient->UpdateCorpSession(m_corpData);
 }
 
+void Character::SetBaseID(uint32 baseID)
+{
+    m_corpData.baseID = baseID;
+    /** @todo remove this in favor of updating data when changed */
+    m_db.SaveCorpData(m_itemID, m_corpData);
+    m_pClient->UpdateCorpSession(m_corpData);
+}
+
 void Character::UpdateCorpData(CorpData data)
 {
     m_corpData = data;

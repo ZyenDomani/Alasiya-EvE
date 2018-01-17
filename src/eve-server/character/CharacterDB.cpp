@@ -123,10 +123,10 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
         "  rolesAtBase = %" PRIi64 ","
         "  rolesAtHQ = %" PRIi64 ","
         "  rolesAtOther = %" PRIi64 ","
-        "  rolesAtAll = %" PRIi64 ","
-        "  rolesAtBase = %" PRIi64 ","
-        "  rolesAtHQ = %" PRIi64 ","
-        "  rolesAtOther = %" PRIi64
+        "  grantableRoles = %" PRIi64 ","
+        "  grantableRolesAtBase = %" PRIi64 ","
+        "  grantableRolesAtHQ = %" PRIi64 ","
+        "  grantableRolesAtOther = %" PRIi64
         " WHERE characterID = %u",
         data.corporationID, data.baseID, data.corpRole, data.corpAccountKey, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
         data.grantableRoles, data.grantableRolesAtBase, data.grantableRolesAtHQ, data.grantableRolesAtOther, characterID))
