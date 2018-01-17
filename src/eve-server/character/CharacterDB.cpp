@@ -46,16 +46,16 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO chrCharacters"
         "  (accountID, name, typeID, locationID, description, balance, aurBalance,"
-        "   logonDateTime, corporationID, baseID, startDateTime, createDateTime, "
+        "   logonDateTime, corporationID, baseID, corpAccountKey, startDateTime, createDateTime, "
         "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
         "   stationID, solarSystemID, constellationID, regionID)"
         " VALUES"
         "  (%u,'%s', %u, %u, '%s', %f, %f,"
-        "   %f, %u, %u, %f, %f,"
+        "   %f, %u, %u, %u, %f, %f,"
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
-        GetFileTimeNow(), data.corporationID, corpData.baseID, GetFileTimeNow(), GetFileTimeNow(),
+        GetFileTimeNow(), data.corporationID, corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(), GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID))
     {

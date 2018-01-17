@@ -683,7 +683,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  rolesAtAll, "
         "  grantableRoles, "
         "  startDateTime, "
-        "  0 AS baseID," // "  clone.locationID AS baseID,"
+        "  baseID,"
         "  rolesAtHQ, "
         "  grantableRolesAtHQ, "
         "  rolesAtBase, "
@@ -697,10 +697,6 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  name"
         " FROM chrCharacters"
         " WHERE characterID = %u", charID))
-        /*
-        "  LEFT JOIN entity AS clone ON clone.ownerID = characterID"
-        "  AND clone.flag='400'"
-        "  AND clone.customInfo='active'"*/
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -724,7 +720,7 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
         "  rolesAtAll, "
         "  grantableRoles, "
         "  startDateTime, "
-        //"  clone.locationID AS baseID,"
+        "  baseID,"
         "  rolesAtHQ, "
         "  grantableRolesAtHQ, "
         "  rolesAtBase, "
@@ -737,10 +733,7 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
         "  blockRoles,"
         "  name"
         " FROM chrCharacters"
-        //"  LEFT JOIN entity AS clone ON clone.ownerID = characterID"
         " WHERE corporationID = %u", corpID))
-        //"  AND clone.flag='400'"
-        //"  AND clone.customInfo='active'", GetFileTimeNow()
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
     }
@@ -1446,7 +1439,7 @@ bool CorporationDB::CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID,
         " SELECT "
         "   title, startDateTime, corporationID, "
         "   corpRole, rolesAtAll, rolesAtBase, "
-        "   rolesAtHQ, rolesAtOther, titleMask "
+        "   rolesAtHQ, rolesAtOther, titleMask, baseID "
         " FROM chrCharacters "
         " WHERE characterID = %u ", charID))
     {
@@ -1471,7 +1464,7 @@ bool CorporationDB::CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID,
 
     //element                   Old Value               New Value
     F(accountKey,               PRN,                    PRN);
-    F(baseID,                   PRN,                    PRN);
+    F(baseID,                   PRI(row.GetInt(9)),     PRI(0));
     F(characterID,              PRN,                    PRI(charID));
     F(corporationID,            PRI(row.GetUInt(2)),    PRI(newCorpID));
     F(divisionID,               PRN,                    PRN);
@@ -1483,8 +1476,7 @@ bool CorporationDB::CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID,
     F(squadronID,               PRN,                    PRN);
     F(startDateTime,            PRL(row.GetInt64(1)),   PRL(GetFileTimeNow()));
     F(titleMask,                PRL(row.GetInt64(8)),   PRI(0));
-    // fix this...
-    F(baseID,                   PRN,                    PRI(0));
+
 #undef F
 #undef PRN
 #undef PRI
@@ -1682,13 +1674,10 @@ PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.grantableRoles, c.blockRoles, c.logonDateTime,"
-        "  c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, clone.locationID AS baseID, -1 AS lastOnline"
+        "  c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, baseID, -1 AS lastOnline"
         " FROM chrCharacters AS c"
         "  LEFT JOIN entity AS e ON c.shipID = e.itemID"
-        "  LEFT JOIN entity AS clone ON clone.ownerID = c.characterID"
-        " WHERE c.corporationID = %u"
-        "  AND clone.flag='400'"
-        "  AND clone.customInfo='active'", corpID))
+        " WHERE c.corporationID = %u", corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;

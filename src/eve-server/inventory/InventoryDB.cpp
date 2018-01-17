@@ -733,73 +733,67 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
         if(!sDatabase.RunQuery(res,
             "SELECT"
             "   0 as accountID,"
-            "   chr.title,"
-            "   chr.description,"
-            "   chr.gender,"
-            "   chr.bounty,"
+            "   title,"
+            "   description,"
+            "   gender,"
+            "   bounty,"
             "   0 as balance,"
             "   0 as aurBalance,"
-            "   chr.securityRating,"
+            "   securityRating,"
             "   0 as logonMinutes,"
-            "   chr.corporationID,"
-            "   crp.allianceID,"
-            "   chr.stationID,"
-            "   chr.solarSystemID,"
-            "   chr.constellationID,"
-            "   chr.regionID,"
-            "   chr.ancestryID,"
+            "   stationID,"
+            "   solarSystemID,"
+            "   constellationID,"
+            "   regionID,"
+            "   ancestryID,"
             "   0 AS bloodlineID,"      /** @todo fix these */
             "   0 AS raceID,"
-            "   chr.careerID,"
-            "   chr.schoolID,"
-            "   chr.careerSpecialityID,"
-            "   chr.startDateTime,"
-            "   chr.createDateTime,"
+            "   careerID,"
+            "   schoolID,"
+            "   careerSpecialityID,"
+            "   createDateTime,"
             "   0 as shipID,"       // update this when agents are in space
-            "   0 as capsuleID"
+            "   0 as capsuleID,"
+            "   flag,"
+            "   name,"
+            "   0 AS skillPoints,"
+            "   typeID"
 			" FROM chrNPCCharacters AS chr"
-			"  LEFT JOIN staStations AS sta ON sta.stationID = chr.stationID"
-            "  LEFT JOIN crpCorporation AS crp ON crp.corporationID = sta.corporationID"
-            " WHERE chr.characterID = %u", characterID)) {
+            " WHERE characterID = %u", characterID)) {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
             return false;
             }
     } else {
         if(!sDatabase.RunQuery(res,
             "SELECT"
-            "   chr.accountID,"
-            "   chr.title,"
-            "   chr.description,"
-            "   chr.gender,"
-            "   chr.bounty,"
-            "   chr.balance,"
-            "   chr.aurBalance,"
-            "   chr.securityRating,"
-            "   chr.logonMinutes,"
-            "   chr.corporationID,"
-            "   crp.allianceID,"
-            "   chr.stationID,"
-            "   chr.solarSystemID,"
-            "   chr.constellationID,"
-            "   chr.regionID,"
-            "   chr.ancestryID,"
-            "   chr.bloodlineID,"
-            "   chr.raceID,"
-            "   chr.careerID,"
-            "   chr.schoolID,"
-            "   chr.careerSpecialityID,"
-            "   chr.startDateTime,"
-            "   chr.createDateTime,"
-            "   chr.shipID,"
-            "   chr.capsuleID,"
-            "   chr.flag,"
-            "   chr.name,"
-            "   chr.skillPoints,"
-            "   chr.typeID,"
-            "   crp.warFactionID"
-            " FROM chrCharacters AS chr"
-            "  LEFT JOIN crpCorporation AS crp USING (corporationID)"
-            " WHERE chr.characterID = %u", characterID))
+            "   accountID,"
+            "   title,"
+            "   description,"
+            "   gender,"
+            "   bounty,"
+            "   balance,"
+            "   aurBalance,"
+            "   securityRating,"
+            "   logonMinutes,"
+            "   stationID,"
+            "   solarSystemID,"
+            "   constellationID,"
+            "   regionID,"
+            "   ancestryID,"
+            "   bloodlineID,"
+            "   raceID,"
+            "   careerID,"
+            "   schoolID,"
+            "   careerSpecialityID,"
+            "   createDateTime,"
+            "   shipID,"
+            "   capsuleID,"
+            "   flag,"
+            "   name,"
+            "   skillPoints,"
+            "   typeID"
+            " FROM chrCharacters"
+            " WHERE characterID = %u", characterID))
         {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
             return false;
@@ -821,28 +815,24 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     into.aurBalance = row.GetDouble( 6 );
     into.securityRating = row.GetDouble( 7 );
     into.logonMinutes = row.GetUInt( 8 );
-    into.corporationID = row.GetUInt( 9 );
-    into.allianceID = row.IsNull( 10 ) ? 0 : row.GetUInt( 10 );
-    into.stationID = row.GetUInt( 11 );
-    into.solarSystemID = row.GetUInt( 12 );
+    into.stationID = row.GetUInt( 9 );
+    into.solarSystemID = row.GetUInt( 10 );
     into.locationID = (into.stationID == 0 ? into.solarSystemID : into.stationID);
-    into.constellationID = row.GetUInt( 13 );
-    into.regionID = row.GetUInt( 14 );
-    into.ancestryID = row.GetUInt( 15 );
-    into.bloodlineID =  row.GetUInt( 16 );
-    into.raceID = row.GetUInt( 17 );
-    into.careerID =row.GetUInt( 18 );
-    into.schoolID = row.GetUInt( 19 );
-    into.careerSpecialityID = row.GetUInt( 20 );
-    into.startDateTime = row.GetInt64( 21 );
-    into.createDateTime = row.GetInt64( 22 );
-    into.shipID = row.GetUInt( 23 );
-    into.capsuleID = row.GetUInt( 24 );
-    into.flag = row.GetUInt(25);
-    into.name = row.GetText(26);
-    into.skillPoints = row.GetDouble(27);
-    into.typeID = row.GetUInt(28);
-    into.warFactionID = row.GetUInt(29);
+    into.constellationID = row.GetUInt( 11 );
+    into.regionID = row.GetUInt( 12 );
+    into.ancestryID = row.GetUInt( 13 );
+    into.bloodlineID =  row.GetUInt( 14 );
+    into.raceID = row.GetUInt( 15 );
+    into.careerID =row.GetUInt( 16 );
+    into.schoolID = row.GetUInt( 17 );
+    into.careerSpecialityID = row.GetUInt( 18 );
+    into.createDateTime = row.GetInt64( 19 );
+    into.shipID = row.GetUInt( 20 );
+    into.capsuleID = row.GetUInt( 21 );
+    into.flag = row.GetUInt(22);
+    into.name = row.GetText(23);
+    into.skillPoints = row.GetDouble(24);
+    into.typeID = row.GetUInt(25);
 
     return true;
 }
@@ -862,11 +852,12 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.grantableRolesAtBase = 0;
         into.grantableRolesAtHQ = 0;
         into.grantableRolesAtOther = 0;
+        into.startDateTime = 0;
 
         if (!sDatabase.RunQuery(res,
             "SELECT"
-            "  corporationID"
-            " FROM agtAgents"
+            "  corporationID, locationID"
+            " FROM agtAgents AS a"
             " WHERE agentID = %u",
             characterID))
         {
@@ -879,9 +870,11 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             return false;
         }
         into.corporationID = row.GetInt(0);
+        into.baseID = row.GetInt(1);
     } else {
         if (!sDatabase.RunQuery(res,
             "SELECT"
+            "  startDateTime,"
             "  corporationID,"
             "  corpAccountKey,"
             "  corpRole,"
@@ -892,7 +885,8 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             "  grantableRoles,"
             "  grantableRolesAtBase,"
             "  grantableRolesAtHQ,"
-            "  grantableRolesAtOther"
+            "  grantableRolesAtOther,"
+            "  baseID"
             " FROM chrCharacters"
             " WHERE characterID = %u",
             characterID))
@@ -905,17 +899,19 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             return false;
         }
 
-        into.corporationID = row.GetInt(0);
-        into.corpAccountKey = row.GetInt(1);
-        into.corpRole = row.GetInt64(2);
-        into.rolesAtAll = row.GetInt64(3);
-        into.rolesAtBase = row.GetInt64(4);
-        into.rolesAtHQ = row.GetInt64(5);
-        into.rolesAtOther = row.GetInt64(6);
-        into.grantableRoles = row.GetInt64(7);
-        into.grantableRolesAtBase = row.GetInt64(8);
-        into.grantableRolesAtHQ = row.GetInt64(9);
-        into.grantableRolesAtOther = row.GetInt64(10);
+        into.startDateTime = row.GetInt(0);
+        into.corporationID = row.GetInt(1);
+        into.corpAccountKey = row.GetInt(2);
+        into.corpRole = row.GetInt64(3);
+        into.rolesAtAll = row.GetInt64(4);
+        into.rolesAtBase = row.GetInt64(5);
+        into.rolesAtHQ = row.GetInt64(6);
+        into.rolesAtOther = row.GetInt64(7);
+        into.grantableRoles = row.GetInt64(8);
+        into.grantableRolesAtBase = row.GetInt64(9);
+        into.grantableRolesAtHQ = row.GetInt64(10);
+        into.grantableRolesAtOther = row.GetInt64(11);
+        into.baseID = row.GetInt(12);
     }
 
     if(!sDatabase.RunQuery(res,

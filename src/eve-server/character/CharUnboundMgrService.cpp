@@ -273,6 +273,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.logonMinutes = 2;
 
     CorpData corpData;
+        corpData.corporationID = cdata.corporationID;
         corpData.baseID = cdata.stationID;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
@@ -284,6 +285,11 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         corpData.grantableRolesAtBase = Corp::Role::None;
         corpData.grantableRolesAtHQ = Corp::Role::None;
         corpData.grantableRolesAtOther = Corp::Role::None;
+        // these arent needed yet, but set to 0 to avoid trash data
+        corpData.taxRate = 0;
+        corpData.corpHQ = 0;
+        corpData.allianceID = 0;
+        corpData.warFactionID = 0;
 
     CharacterRef charRef = sItemFactory.SpawnCharacter(cdata, corpData);
     if (charRef.get() == nullptr) {
@@ -383,6 +389,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     pClient->SetShip(pClient->SpawnNewRookieShip());
 
     CharacterDB::AddEmployment(charRef->itemID(), cdata.corporationID);
+    charRef->SetFlag(flagAutoFit);
     charRef->SaveFullCharacter();
 
     // we need to report the charID to the ImageServer so it can correctly assign a previously received image

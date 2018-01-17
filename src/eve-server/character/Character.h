@@ -444,7 +444,7 @@ public:
     uint32                  careerSpecialityID() const          { return m_charData.careerSpecialityID; }
 
     // Some important dates:
-    int64                  startDateTime() const               { return m_charData.startDateTime; }
+    int64                  startDateTime() const               { return m_corpData.startDateTime; }
     int64                  createDateTime() const              { return m_charData.createDateTime; }
 
     uint32                  shipID() const                      { return m_charData.shipID; }

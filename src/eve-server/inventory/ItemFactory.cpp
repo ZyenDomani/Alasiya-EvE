@@ -404,9 +404,6 @@ CharacterRef ItemFactory::SpawnCharacter(CharacterData &charData, CorpData &corp
     if (iRef.get() == nullptr)
         return iRef;
 
-    //  do NOT add new char to item list to allow char to be selected and loaded normally after creation.
-    //m_items.insert( std::make_pair( c->itemID(), c ) );
-    //++m_itemCount;
     return iRef;
 }
 

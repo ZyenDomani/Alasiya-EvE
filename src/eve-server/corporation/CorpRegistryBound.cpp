@@ -451,7 +451,7 @@ PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
         dict->SetItemString( "roles",                   new PyLong(row.GetInt64(3)));
         dict->SetItemString( "grantableRoles",          new PyInt(row.GetInt(4)));
         dict->SetItemString( "startDateTime",           new PyLong(row.GetInt64(5)));
-        dict->SetItemString( "baseID",                  new PyInt(0));
+        dict->SetItemString( "baseID",                  new PyInt(0)); /** @todo update this */
         dict->SetItemString( "rolesAtHQ",               new PyLong(row.GetInt64(6)));
         dict->SetItemString( "grantableRolesAtHQ",      new PyLong(row.GetInt64(7)));
         dict->SetItemString( "rolesAtBase",             new PyLong(row.GetInt64(8)));
@@ -556,7 +556,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.taxRate = args.taxRate;
         data.allianceID = 0;
         data.warFactionID = 0;
-        //data.baseID = call.client->GetChar()->GetBaseID();
+        data.baseID = call.client->GetLocationID();
         data.corpHQ = call.client->GetLocationID();
         data.corporationID = corpID;
         data.corpAccountKey = Account::KeyType::Cash;

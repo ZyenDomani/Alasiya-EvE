@@ -1226,6 +1226,7 @@ void Client::UpdateCorpSession(CorpData& data)
 {
     // session.Set* methods only updates on change
     mSession.SetInt("corpid", data.corporationID);
+    mSession.SetInt("baseid", data.baseID);
     mSession.SetInt("hqID", data.corpHQ);
     mSession.SetInt("allianceID", data.allianceID);
     mSession.SetInt("warFactionID", data.warFactionID);

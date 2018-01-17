@@ -58,9 +58,6 @@ struct CharacterData {
     uint32 shipID;
     uint32 capsuleID;
     uint32 logonMinutes;
-    uint32 corporationID;
-    uint32 allianceID;
-    uint32 warFactionID;
     uint32 locationID;
     uint32 stationID;
     uint32 solarSystemID;
@@ -71,7 +68,6 @@ struct CharacterData {
     uint32 schoolID;
     uint32 careerSpecialityID;
     int64 loginTime;
-    int64 startDateTime;
     int64 createDateTime;
     double bounty;
     double balance;
@@ -91,6 +87,7 @@ struct CorpData {
     uint32 baseID;
     uint32 allianceID;
     uint32 warFactionID;
+    int64 startDateTime;
     int64 corpRole;
     int64 rolesAtAll;
     int64 rolesAtBase;
