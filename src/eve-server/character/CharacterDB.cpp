@@ -48,12 +48,12 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "  (accountID, name, typeID, locationID, description, balance, aurBalance,"
         "   logonDateTime, corporationID, baseID, corpAccountKey, startDateTime, createDateTime, "
         "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
-        "   stationID, solarSystemID, constellationID, regionID)"
+        "   stationID, solarSystemID, constellationID, regionID, freeRespecs)"
         " VALUES"
         "  (%u,'%s', %u, %u, '%s', %f, %f,"
         "   %f, %u, %u, %u, %f, %f,"
         "   %u, %u, %u, %u, %u, %u, %u,"
-        "   %u, %u, %u, %u)",
+        "   %u, %u, %u, %u, 2)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
         GetFileTimeNow(), corpData.corporationID, corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(), GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
