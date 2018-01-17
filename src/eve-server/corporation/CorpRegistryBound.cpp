@@ -168,6 +168,7 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
     PyCallable_REG_CALL(CorpRegistryBound, GetShareholders);
     PyCallable_REG_CALL(CorpRegistryBound, PayoutDividend);
 
+    PyCallable_REG_CALL(CorpRegistryBound, CanViewVotes);
     PyCallable_REG_CALL(CorpRegistryBound, InsertVoteCase);
     PyCallable_REG_CALL(CorpRegistryBound, GetVoteCasesByCorporation);
     PyCallable_REG_CALL(CorpRegistryBound, GetSanctionedActionsByCorporation);
@@ -534,22 +535,6 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     // add corp event for creating new corp
     m_db.AddItemEvent(corpID, call.client->GetCharacterID(), EveCorp::EventType::CreatedCorporation);
 
-    // Here we send a notification about creating a new corporation...
-    OnCorporationChanged cc;
-    cc.corpID = corpID;
-    if (!m_db.CreateCorporationCreatePacket(cc, m_corpID, corpID)) {
-        codelog(SERVICE__ERROR, "Failed to create OnCorpChanged notification stream.");
-        // This is a big problem, because this way we won't be able to see the difference...
-        call.client->SendErrorMsg("Unable to notify about corp creation.");
-        return nullptr;
-    }
-    PyTuple* a1 = cc.Encode();
-    PyTuple* a2 = cc.Encode();
-    // send single to client
-    call.client->SendNotification("OnCorporationChanged", "clientID", &a1);
-    // send multi to station guests
-    sEntityList.Multicast("OnCorporationChanged", "stationid", &a2, NOTIF_DEST__LOCATION, call.client->GetLocationID());
-
     CorpData data;
         data.name = args.corpName;
         data.ticker = args.corpTicker;
@@ -569,9 +554,25 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.grantableRolesAtBase = Corp::Role::AllAt;
         data.grantableRolesAtHQ = Corp::Role::AllAt;
         data.grantableRolesAtOther = Corp::Role::AllAt;
-        /*roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther */
     // update corp data and refresh session data.
     call.client->GetChar()->JoinCorporation(data);
+
+    // Here we send a notification about creating a new corporation...
+    OnCorporationChanged cc;
+    cc.corpID = corpID;
+    if (!m_db.CreateCorporationCreatePacket(cc, m_corpID, corpID)) {
+        codelog(SERVICE__ERROR, "Failed to create OnCorpChanged notification stream.");
+        // This is a big problem, because this way we won't be able to see the difference...
+        call.client->SendErrorMsg("Unable to notify about corp creation.");
+        return nullptr;
+    }
+    PyTuple* a1 = cc.Encode();
+    PyIncRef(a1);
+    // send single to client
+    call.client->SendNotification("OnCorporationChanged", "clientID", &a1);
+    // send multi to station guests
+    PyIncRef(a1);
+    sEntityList.Multicast("OnCorporationChanged", "stationid", &a1, NOTIF_DEST__LOCATION, call.client->GetLocationID());
 
     return m_db.GetCorporations(corpID);
 }
@@ -1756,6 +1757,14 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
         NOTIF_DEST__CORPORATION, OCAC.corpID);
 
     return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_CanViewVotes(PyCallArgs &call) {
+    //  bCan = self.GetCorpRegistry().CanViewVotes(corpid)
+    sLog.White( "CorpRegistryBound::Handle_CanViewVotes()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return PyStatic.NewFalse();
 }
 
 PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {

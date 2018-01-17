@@ -152,10 +152,10 @@ namespace Corp {
             // this means the player can take containers out of the respective inventory
             AllContainerTake = ContainerCanTake1|ContainerCanTake2|ContainerCanTake3|ContainerCanTake4|ContainerCanTake5|ContainerCanTake6|ContainerCanTake7,
 
-            AllHangar = AllHangarTake | AllHangarQuery,
+            AllHangar   = AllHangarTake | AllHangarQuery,
             AllAt       = AllHangar|AllAccountTake|AllContainerTake,
-            AllAccount = JuniorAccountant|Accountant,
-            All         = AllHangar|AllAccount|AllContainerTake|AllOffice|AllStarbase|AllManager|Auditor|Diplomat,
+            AllAccount  = JuniorAccountant|Accountant,
+            All         = AllHangar|AllAccount|AllOffice|AllStarbase|AllManager|Auditor|Diplomat,
             Admin       = All|Trader|SecurityOfficer|Director,
 
             None        = 0

@@ -57,6 +57,7 @@ public:
     PyCallable_DECL_CALL(GetShareholders);
     PyCallable_DECL_CALL(PayoutDividend);
 
+    PyCallable_DECL_CALL(CanViewVotes);
     PyCallable_DECL_CALL(InsertVoteCase);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
     PyCallable_DECL_CALL(GetSanctionedActionsByCorporation);

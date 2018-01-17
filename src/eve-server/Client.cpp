@@ -1226,12 +1226,12 @@ void Client::UpdateCorpSession(CorpData& data)
 {
     // session.Set* methods only updates on change
     mSession.SetInt("corpid", data.corporationID);
-    mSession.SetInt("baseid", data.baseID);
+    mSession.SetInt("baseID", data.baseID);
     mSession.SetInt("hqID", data.corpHQ);
-    mSession.SetInt("allianceID", data.allianceID);
-    mSession.SetInt("warFactionID", data.warFactionID);
+    mSession.SetInt("allianceid", data.allianceID);
+    mSession.SetInt("warfactionid", data.warFactionID);
     mSession.SetInt("corpAccountKey", data.corpAccountKey);
-    mSession.SetLong("corpRole", data.corpRole);
+    mSession.SetLong("corprole", data.corpRole);
     mSession.SetLong("rolesAtAll", data.rolesAtAll);
     mSession.SetLong("rolesAtBase", data.rolesAtBase);
     mSession.SetLong("rolesAtHQ", data.rolesAtHQ);
@@ -1320,7 +1320,7 @@ void Client::InitSession(uint32 characterID)
     mSession.SetInt("hqID", (int32)(characterDataMap["corporationHQ"]));
     mSession.SetInt("baseID", characterDataMap["baseID"]);
     mSession.SetInt("corpAccountKey", characterDataMap["corpAccountKey"]);
-    mSession.SetLong("corpRole",     characterDataMap["corpRole"]);
+    mSession.SetLong("corprole",     characterDataMap["corpRole"]);
     mSession.SetLong("rolesAtAll",   characterDataMap["rolesAtAll"]);
     mSession.SetLong("rolesAtBase",  characterDataMap["rolesAtBase"]);
     mSession.SetLong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);

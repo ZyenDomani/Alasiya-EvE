@@ -680,6 +680,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  0 AS divisionID,"
         "  0 AS squadronID,"
         "  title, "
+        "  corpRole AS roles,"
         "  rolesAtAll, "
         "  grantableRoles, "
         "  startDateTime, "
@@ -1673,8 +1674,8 @@ PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
     //  lastOnline needs update based on char logoffDateTime using GetElapsedHours();
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.grantableRoles, c.blockRoles, c.logonDateTime,"
-        "  c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, baseID, -1 AS lastOnline"
+        "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.baseID, c.grantableRoles, c.blockRoles, c.logonDateTime,"
+        "  c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, -1 AS lastOnline"
         " FROM chrCharacters AS c"
         "  LEFT JOIN entity AS e ON c.shipID = e.itemID"
         " WHERE c.corporationID = %u", corpID))
@@ -1689,7 +1690,8 @@ PyRep* CorporationDB::GetMemberTrackingInfoSimple(uint32 corpID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT c.characterID, c.corporationID, c.logoffDateTime, c.logonDateTime, c.title, c.startDateTime, c.corpRole AS roles, c.blockRoles, IFNULL(e.typeID, 0) AS shipTypeID"
+        "SELECT c.characterID, c.corporationID, c.logoffDateTime, c.logonDateTime, c.title, c.startDateTime, c.corpRole AS roles,"
+        " c.baseID, c.blockRoles, IFNULL(e.typeID, 0) AS shipTypeID"
         " FROM chrCharacters AS c"
         "  LEFT JOIN entity AS e ON c.shipID = e.itemID"
         " WHERE corporationID = %u", corpID))
