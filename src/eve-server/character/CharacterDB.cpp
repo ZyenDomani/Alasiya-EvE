@@ -55,7 +55,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
-        GetFileTimeNow(), data.corporationID, corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(), GetFileTimeNow(),
+        GetFileTimeNow(), corpData.corporationID, corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(), GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID))
     {
@@ -67,7 +67,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
     if (!sDatabase.RunQuery(err,
         "UPDATE crpCorporation"
         "  SET memberCount = memberCount + 1"
-        " WHERE corporationID = %u", data.corporationID))
+        " WHERE corporationID = %u", corpData.corporationID))
     {
         _log(DATABASE__MESSAGE, "Failed to raise member count of corporation %u: %s.", uid, err.c_str());
     }
@@ -840,13 +840,12 @@ bool CharacterDB::GetCorporationBySchool(uint32 schoolID, uint32 &corporationID)
 /**
   * @todo Here should come a call to Corp??::CharacterJoinToCorp or what the heck... for now we only put it there
   */
-bool CharacterDB::GetLocationCorporationByCareer(CharacterData &cdata) {
+bool CharacterDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& corporationID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
      "SELECT "      // fixed DB Query   -allan 01/02/14
      "  co.corporationID, "
      "  cs.schoolID, "
-     "  co.allianceID, "
      "  co.stationID, "
      "  st.solarSystemID, "
      "  st.constellationID, "
@@ -867,9 +866,8 @@ bool CharacterDB::GetLocationCorporationByCareer(CharacterData &cdata) {
         return false;
     }
 
-    cdata.corporationID = row.GetUInt(0);
+    corporationID = row.GetUInt(0);
     cdata.schoolID = row.GetUInt(1);
-    cdata.allianceID = row.GetUInt(2);
     cdata.stationID = row.GetUInt(3);
     cdata.solarSystemID = row.GetUInt(4);
     cdata.constellationID = row.GetUInt(5);

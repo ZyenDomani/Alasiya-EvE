@@ -109,7 +109,7 @@ public:
     bool GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID);
     bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
-    bool GetLocationCorporationByCareer(CharacterData &cdata);
+    bool GetLocationCorporationByCareer(CharacterData &cdata, uint32 &corporationID);
     bool DoesCorporationExist(uint32 corpID);
 
     /**

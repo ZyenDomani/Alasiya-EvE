@@ -18,9 +18,27 @@
 
 
 StaticDataMgr::StaticDataMgr()
-: m_operands(nullptr)
+: m_keyMap(nullptr),
+m_operands(nullptr),
+m_billTypes(nullptr),
+m_entryTypes(nullptr),
+m_factionInfo(nullptr),
+m_npcDivisions(nullptr)
 {
-    Clear();
+    m_ramReq.clear();
+    m_moonGoo.clear();
+    m_ramMatl.clear();
+    m_regions.clear();
+    m_bpMatlData.clear();
+    m_systemData.clear();
+    m_staticData.clear();
+    m_salvageMap.clear();
+    m_typeAttrMap.clear();
+    m_stationCount.clear();
+    m_stationConst.clear();
+    m_stationRegion.clear();
+    m_stationSystem.clear();
+    m_oreBySecClass.clear();
 }
 
 StaticDataMgr::~StaticDataMgr()

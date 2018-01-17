@@ -211,13 +211,13 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.description = "Character Created on ";
         cdata.description += currentDateTime();
         cdata.bounty = 0;
-        cdata.balance = /*sConfig.character.startBalance*/0;    // updated to use TranserFunds and record journal entry
-        cdata.aurBalance = /*sConfig.character.startAurBalance*/0; // Added aurBalance    -allan 01/07/14
         cdata.securityRating = sConfig.character.startSecRating;
         cdata.logonMinutes = 0;
         cdata.title = "No Title";
-        cdata.createDateTime = (int64)GetFileTimeNow();
-        cdata.startDateTime = cdata.createDateTime;
+        cdata.createDateTime = (int64)GetFileTimeNow(); 
+        // updated these to use TranserFunds and record journal entry
+        cdata.balance = /*sConfig.character.startBalance*/0;
+        cdata.aurBalance = /*sConfig.character.startAurBalance*/0; // Added aurBalance    -allan 01/07/14
 
 
     //Set the character's career and race based on the school they picked.
@@ -238,22 +238,41 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     uint8 memory = char_type->memory();
     uint8 willpower = char_type->willpower();
 
+    CorpData corpData;
+        corpData.startDateTime = cdata.createDateTime;
+        corpData.baseID = cdata.stationID;
+        corpData.corpRole = Corp::Role::Member;
+        corpData.corpAccountKey = Account::KeyType::Cash;
+        corpData.rolesAtAll = Corp::Role::None;
+        corpData.rolesAtBase = Corp::Role::None;
+        corpData.rolesAtHQ = Corp::Role::None;
+        corpData.rolesAtOther = Corp::Role::None;
+        corpData.grantableRoles = Corp::Role::None;
+        corpData.grantableRolesAtBase = Corp::Role::None;
+        corpData.grantableRolesAtHQ = Corp::Role::None;
+        corpData.grantableRolesAtOther = Corp::Role::None;
+        // these arent needed yet, but set to 0 to avoid trash data
+        corpData.taxRate = 0;
+        corpData.corpHQ = 0;
+        corpData.allianceID = 0;
+        corpData.warFactionID = 0;
+
     bool defCorp = true;
     if (sConfig.character.startCorporation) { // Skip if 0
         if( m_db.DoesCorporationExist( sConfig.character.startCorporation ) ) {
-            cdata.corporationID = sConfig.character.startCorporation;
+            corpData.corporationID = sConfig.character.startCorporation;
             defCorp = false;
         } else
             _log(CLIENT__MESSAGE, "Could not find default Corporation ID %u. Using Career Defaults instead.", sConfig.character.startCorporation);
     }
     if (defCorp) {
-        if (!m_db.GetCorporationBySchool(cdata.schoolID, cdata.corporationID))
+        if (!m_db.GetCorporationBySchool(cdata.schoolID, corpData.corporationID))
             _log(CLIENT__MESSAGE, "Could not place character in default corporation for school.");
     }
 
     // Setting character's default starting position, and getting the location...
-    // this also sets schoolID, corporationID and allianceID based on career
-    m_db.GetLocationCorporationByCareer(cdata);
+    // this also sets schoolID and corporationID based on career
+    m_db.GetLocationCorporationByCareer(cdata, corpData.corporationID);
 
     if (IsStation(sConfig.character.startStation)) { // Skip if 0
         cdata.stationID = sConfig.character.startStation;
@@ -271,25 +290,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     cdata.name = name;
     cdata.locationID = cdata.stationID;
     cdata.logonMinutes = 2;
-
-    CorpData corpData;
-        corpData.corporationID = cdata.corporationID;
-        corpData.baseID = cdata.stationID;
-        corpData.corpRole = Corp::Role::Member;
-        corpData.corpAccountKey = Account::KeyType::Cash;
-        corpData.rolesAtAll = Corp::Role::None;
-        corpData.rolesAtBase = Corp::Role::None;
-        corpData.rolesAtHQ = Corp::Role::None;
-        corpData.rolesAtOther = Corp::Role::None;
-        corpData.grantableRoles = Corp::Role::None;
-        corpData.grantableRolesAtBase = Corp::Role::None;
-        corpData.grantableRolesAtHQ = Corp::Role::None;
-        corpData.grantableRolesAtOther = Corp::Role::None;
-        // these arent needed yet, but set to 0 to avoid trash data
-        corpData.taxRate = 0;
-        corpData.corpHQ = 0;
-        corpData.allianceID = 0;
-        corpData.warFactionID = 0;
 
     CharacterRef charRef = sItemFactory.SpawnCharacter(cdata, corpData);
     if (charRef.get() == nullptr) {
@@ -388,7 +388,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     pClient->SetChar(charRef);        // set new charRef in client
     pClient->SetShip(pClient->SpawnNewRookieShip());
 
-    CharacterDB::AddEmployment(charRef->itemID(), cdata.corporationID);
+    CharacterDB::AddEmployment(charRef->itemID(), corpData.corporationID);
     charRef->SetFlag(flagAutoFit);
     charRef->SaveFullCharacter();
 
@@ -403,8 +403,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     std::string reason = "DESC: Inheritance Payment to ";
     reason += charRef->itemName().c_str();
-    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
-    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
+    AccountService::TranserFunds(ownerUnknown, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
+    AccountService::TranserFunds(ownerUnknown, charRef->itemID(), sConfig.character.startAurBalance, reason, \
                                     Journal::EntryType::Inheritance, Account::KeyType::AUR, Account::KeyType::AUR);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );
