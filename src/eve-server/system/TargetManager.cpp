@@ -49,7 +49,7 @@ TargetManager::TargetManager(SystemEntity *self)
 
 void TargetManager::Process() {
      double profileStartTime = 0.0;
-     if (sConfig.server.UseProfiling)
+     if (sConfig.debug.UseProfiling)
          profileStartTime = GetTimeUSeconds();
 
     //process outgoing targeting (outgoing will call incomming as needed)
@@ -79,7 +79,7 @@ void TargetManager::Process() {
         ++itr;
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_targetsProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -142,6 +142,7 @@ void TargetManager::ClearFromTargets() {
 
 bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
 {       // NOTE this is for players
+    /** @todo   AttrUntargetable = 1158,  */
     TargetTry(who);
     if (!mySE->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s", mySE->GetName(), mySE->GetID(), who->GetName());
@@ -215,6 +216,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
 
 bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs
+    /** @todo   AttrUntargetable = 1158,  */
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res != m_targets.end()) {
@@ -292,7 +294,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
         te.targetID = who->GetID();
         //te.reason = "Docking";
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
@@ -412,7 +414,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
 
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
-    float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
+    float time = ( 40000 /(scanRes * std::pow(std::asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
     /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
      *  +0.1s for each 10k distance
@@ -482,7 +484,7 @@ void TargetManager::TargetAdded(SystemEntity* who) {
     if (!mySE->HasPilot())
         return;
     PyTuple* up(nullptr);
-    DoDestiny_OnDamageStateChange odsc;
+     OnDamageStateChange odsc;
         odsc.entityID = who->GetID();
         odsc.state = who->MakeDamageState();
     up = odsc.Encode();

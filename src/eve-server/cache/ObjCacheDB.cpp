@@ -420,9 +420,9 @@ PyRep *ObjCacheDB::Generate_BillTypes()
 }
 
 PyRep *ObjCacheDB::Generate_AllianceShortnames()
-{   //TODO:  fix this when alliances are implemented (DB table will be 'crpAlliance')
+{   //TODO:  fix this when alliances are implemented (DB table will be 'alnAlliance')
     DBQueryResult res;
-    const char *q = "SELECT allianceID, allianceShortName FROM crpAlliance";
+    const char *q = "SELECT allianceID, shortName FROM alnAlliance";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.alliance_ShortNames': %s",res.error.c_str());
@@ -599,7 +599,7 @@ PyRep *ObjCacheDB::Generate_ramCompletedStatuses()
 PyRep *ObjCacheDB::Generate_ramTypeRequirements()
 {
     DBQueryResult res;
-    const char *q = "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, recycle FROM ramTypeRequirements";
+    const char *q = "SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.ramtyperequirements': %s", res.error.c_str());
@@ -623,7 +623,7 @@ PyRep *ObjCacheDB::Generate_mapCelestialDescriptions()
 PyRep *ObjCacheDB::Generate_tickerNames()
 {
     DBQueryResult res;
-    const char *q = "SELECT corporationID,tickerName,shape1,shape2,shape3,color1,color2,color3 FROM corporation WHERE corporationType=1";
+    const char *q = "SELECT corporationID,tickerName,shape1,shape2,shape3,color1,color2,color3 FROM crpCorporation";
     if(!sDatabase.RunQuery(res, q))
     {
         _log(DATABASE__ERROR, "Error in query for cached object 'config.BulkData.tickernames': %s", res.error.c_str());

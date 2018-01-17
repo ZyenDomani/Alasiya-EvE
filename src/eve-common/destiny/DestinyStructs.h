@@ -29,6 +29,10 @@
 
 namespace Destiny {
 
+/** @note  this file MUST use packed data.
+ * client will not recognize it with byte-ordered padding
+ * (error: malformed packet)
+ */
 #pragma pack(1)
 
 struct AddBall_header {
@@ -69,7 +73,7 @@ enum BallFlag {
 
 
 struct BallHeader {
-    uint64 entityID;
+    int64 entityID;
     uint8 mode;
     float radius;
     double x;
@@ -123,7 +127,7 @@ struct DSTBALL_GOTO_Struct {
 
 struct DSTBALL_FOLLOW_Struct {
     uint8  formationID;
-    uint64 followID;
+    int64 followID;
     float followRange;
 };
 
@@ -138,8 +142,8 @@ struct DSTBALL_WARP_Struct {
     double z;
     uint32 effectStamp;   //statestamp of when warp started
     int64 followRange;   //unknown   -4616189618054758400 when warp is initiated.  calculation unknown for other values (used during warp)
-    uint64 followID;      //unknown   4669471951536783360 when warp is initiated or ship enters new bubble (AddBalls), 0 otherwise
-    uint64 ownerID;
+    int64 followID;      //unknown   4669471951536783360 when warp is initiated or ship enters new bubble (AddBalls), 0 otherwise
+    int64 ownerID;
 };
 
 struct DSTBALL_ORBIT_Struct {
@@ -150,9 +154,9 @@ struct DSTBALL_ORBIT_Struct {
 
 struct DSTBALL_MISSILE_Struct {
     uint8  formationID;
-    uint64 followID;    //targetID
+    int64 followID;    //targetID
     float followRange;
-    uint64 ownerID;
+    int64 ownerID;
     uint32 effectStamp;
     double x;
     double y;
@@ -164,7 +168,7 @@ struct DSTBALL_MUSHROOM_Struct {
     float followRange;
     double unknown125;
     uint32 effectStamp;
-    uint64 ownerID;
+    int64 ownerID;
 };
 
 struct DSTBALL_TROLL_Struct {
@@ -184,7 +188,7 @@ struct DSTBALL_RIGID_Struct {
 
 struct DSTBALL_FORMATION_Struct {
     uint8  formationID;
-    uint64 followID;
+    int64 followID;
     float followRange;
     uint32 effectStamp;  //statestamp of when warp started
 };

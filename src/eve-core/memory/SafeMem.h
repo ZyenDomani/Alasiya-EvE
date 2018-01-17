@@ -75,6 +75,8 @@ inline T* SafeAllocArray( size_t size )
  * URL: http://nedprod.com/programs/index.html
  * Note: always nullify pointers after deletion, why? because its safer on a MT application
  *
+ * (Allan) by setting a pointer to the null pointer, you have successfully eliminated the only chance to detect double deletion
+ *
  * @param[in] p The pointer.
  */
 template< typename T >

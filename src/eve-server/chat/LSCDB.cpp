@@ -33,12 +33,11 @@ void LSCDB::GetChannelNames(uint32 charID, std::vector<std::string> & names) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "    entity.itemName, "
-        "    corporation.corporationName, "
-        " FROM chrCharacter "
-        "  LEFT JOIN entity ON entity.itemID = chrCharacter.characterID "
-        "  LEFT JOIN corporation ON chrCharacter.corporationID = corporation.corporationID "
-        " WHERE chrCharacter.characterID = %u ", charID))
+        "    chrCharacters.name, "
+        "    crpCorporation.corporationName "
+        " FROM chrCharacters "
+        "  LEFT JOIN crpCorporation USING (corporationID) "
+        " WHERE chrCharacters.characterID = %u ", charID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return;
@@ -394,174 +393,8 @@ std::string LSCDB::GetChannelName(uint32 id, const char * table, const char * co
     return row.GetText(0);
 }
 
-PyObject *LSCDB::LookupChars(const char *match, bool exact) {
-    DBQueryResult res;
-
-    std::string matchEsc;
-    sDatabase.DoEscapeString(matchEsc, match);
-    if (matchEsc == "__ALL__") {
-        if(!sDatabase.RunQuery(res,
-            "SELECT "
-            "   characterID AS ownerID"
-            " FROM chrCharacter"
-            " WHERE characterID >= %u", EVEMU_MINIMUM_DYNAMIC_ID))
-        {
-            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
-            return NULL;
-        }
-    } else {
-        if(!sDatabase.RunQuery(res,
-            "SELECT "
-            "   itemID AS ownerID"
-            " FROM entity"
-            " WHERE itemName %s '%s'",
-            exact?"=":"RLIKE", matchEsc.c_str()
-        ))
-        {
-            _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
-            return NULL;
-        }
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyObject *LSCDB::LookupOwners(const char *match, bool exact) {
-    DBQueryResult res;
-
-    std::string matchEsc;
-    sDatabase.DoEscapeString(matchEsc, match);
-
-    // so each row needs "ownerID", "ownerName", and "groupID"
-    // ownerID = either characterID or corporationID
-    // ownerName = either characterName or corporationName
-    // groupID = either 1 for character or 2 for corporation
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  chrCharacter.characterID AS ownerID,"
-        "  entity.itemName AS ownerName,"
-        "  invTypes.groupID AS groupID"
-        " FROM chrCharacter"
-        "  LEFT JOIN entity ON characterID = itemID"
-        "  LEFT JOIN invTypes ON entity.typeID = invTypes.typeID"
-        " WHERE chrCharacter.characterID >= %u"
-        "  AND entity.itemName %s '%s'"
-        " UNION "
-        "SELECT"
-        "  corporation.corporationID AS ownerID,"
-        "  corporation.corporationName AS ownerName,"
-        "  invTypes.groupID AS groupID"
-        " FROM corporation"
-        "  LEFT JOIN invTypes ON groupID = 2"
-        " WHERE corporation.corporationName %s '%s'",
-        EVEMU_MINIMUM_DYNAMIC_ID, (exact?"=":"RLIKE"), matchEsc.c_str(), (exact?"=":"RLIKE"), matchEsc.c_str()))
-    {
-        _log(DATABASE__ERROR, "Failed to lookup player char '%s': %s.", matchEsc.c_str(), res.error.c_str());
-        return NULL;
-    }
-
-    return DBResultToRowset(res);
-}
-
-PyObject *LSCDB::LookupCorporations(const std::string & search) {
-    DBQueryResult res;
-    std::string secure;
-    sDatabase.DoEscapeString(secure, search);
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   corporationID, corporationName, corporationType "
-        " FROM corporation "
-        " WHERE corporationName RLIKE '%s'", secure.c_str()))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyObject *LSCDB::LookupFactions(const std::string & search) {
-    DBQueryResult res;
-    std::string secure;
-    sDatabase.DoEscapeString(secure, search);
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   factionID, factionName "
-        " FROM chrFactions "
-        " WHERE factionName RLIKE '%s'", secure.c_str()))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyObject *LSCDB::LookupCorporationTickers(const std::string & search) {
-    DBQueryResult res;
-    std::string secure;
-    sDatabase.DoEscapeString(secure, search);
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   corporationID, corporationName, tickerName "
-        " FROM corporation "
-        " WHERE tickerName RLIKE '%s'", secure.c_str()))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyObject *LSCDB::LookupStations(const std::string & search) {
-    DBQueryResult res;
-    std::string secure;
-    sDatabase.DoEscapeString(secure, search);
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   stationID, stationName, stationTypeID "
-        " FROM staStations "
-        " WHERE stationName RLIKE '%s'", secure.c_str()))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
-PyObject *LSCDB::LookupKnownLocationsByGroup(const std::string & search, uint32 typeID) {
-    DBQueryResult res;
-    std::string secure;
-    sDatabase.DoEscapeString(secure, search);
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "   itemID, itemName, typeID "
-        " FROM entity "
-        " WHERE itemName RLIKE '%s' AND typeID = %u", secure.c_str(), typeID))
-    {
-        _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return 0;
-    }
-
-    return DBResultToRowset(res);
-}
-
-
 //temporarily relocated into ServiceDB until some things get cleaned up...
-uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, uint64 sentTime) {
+uint32 LSCDB::StoreMail(uint32 senderID, uint32 recipID, const char * subject, const char * message, int64 sentTime) {
     DBQueryResult res;
     DBerror err;
     DBResultRow row;
@@ -656,7 +489,7 @@ PyRep *LSCDB::GetMailDetails(uint32 messageID, uint32 readerID) {
     details.senderID = row.GetUInt(1);
     details.subject = row.GetText(2);
     details.body = row.GetText(3);
-    details.created = row.GetUInt64(7);
+    details.created = row.GetInt64(7);
     details.channelID = row.GetUInt(8);
     details.deleted = 0; // If a message's details are sent, then it isn't deleted. If it's deleted, details cannot be sent
     details.mimeTypeID = row.GetInt(4);

@@ -57,6 +57,20 @@ NewLog::NewLog()
     m_initialized = false;
 }
 
+NewLog::NewLog(std::string logPath)
+: mLogfile( NULL ),
+mTime( 0 )
+{
+    // open default logfile
+    if( logPath.empty() )
+        logPath = EVEMU_ROOT "/log/";
+
+    SetLogfileDefault(logPath);
+
+    m_initialized = true;
+}
+
+
 NewLog::~NewLog()
 {
     Debug( "Log", "Log system shutting down" );
@@ -64,6 +78,12 @@ NewLog::~NewLog()
     // close logfile
     SetLogfile( (FILE*)NULL );
 }
+
+void NewLog::Initialize()
+{
+    Blue("       Log System", "Log System Initialized.");
+}
+
 
 void NewLog::InitializeLogging( std::string logPath )
 {

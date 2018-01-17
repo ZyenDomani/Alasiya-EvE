@@ -117,29 +117,29 @@ PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     call.client->GetChar()->GrantCertificate(arg.arg);
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) {
     Call_TwoIntegerArgs arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     call.client->GetChar()->UpdateCertificate( arg.arg1, arg.arg2 );
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     PyList* res = new PyList();
@@ -156,14 +156,14 @@ PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) 
     Call_BatchCertificateUpdate args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     CharacterRef ch = call.client->GetChar();
     std::map<uint32, uint32>::iterator itr = args.update.begin();
     for (; itr != args.update.end(); ++itr)
         ch->UpdateCertificate( itr->first, itr->second );
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& call )
@@ -171,11 +171,11 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     CertVector crt;
-    m_manager->item_factory->GetCharacter(arg.arg)->GetCertificates(crt);
+    sItemFactory.GetCharacter(arg.arg)->GetCertificates(crt);
 
     util_Rowset rs;
         rs.lines = new PyList();

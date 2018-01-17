@@ -64,10 +64,20 @@ class InventoryItem
 : public RefObject
 {
 public:
-    InventoryItem(ItemFactory &_factory, uint32 _itemID, const ItemType &_type, const ItemData &_data);
-    virtual ~InventoryItem();
+    InventoryItem(uint32 _itemID, const ItemType &_type, const ItemData &_data);
+    virtual ~InventoryItem() noexcept;
 
-    /* begin rewrite */
+    /* begin rewrite and update */
+    /** @todo  derive and execute tests to determing if these are needed... */
+    // copy c'tor
+    //InventoryItem(const InventoryItem& oth);
+    // move c'tor
+    InventoryItem(InventoryItem&& oth) noexcept;
+    // assignment op
+    //InventoryItem& operator= (const InventoryItem& oth);
+    // move op
+    InventoryItem& operator= (InventoryItem&& oth) noexcept;
+
 
     /* class type pointer querys. */
     virtual ShipItem* GetShipItem()                     { return nullptr; }
@@ -75,8 +85,7 @@ public:
     virtual bool IsShipItem()                           { return false; }
 
     /* generic access functions handled here */
-    Inventory*              GetMyInventory()            { return m_inventory; }
-    ItemFactory*            GetItemFactory()            { return &m_factory; }
+    Inventory*              GetMyInventory()            { return pInventory; }
 
     /* common functions for all entities handled here */
     /* public data queries  */
@@ -103,11 +112,12 @@ public:
 
     /* public-access generic functions handled in base class. */
     void                    Rename(std::string name);
-    void                    Relocate(const GPoint &pos);
+    void                    Relocate(const GPoint pos);
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
-    void                    Move(uint32 location, EVEItemFlags flag=flagAutoFit, bool notify=false);
-    void                    MoveInto(Inventory& new_home, EVEItemFlags _flag = flagAutoFit, bool notify = false);
+    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
+    // Donate() is used to xfer owner and location when moving items between char and corp
+    void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
 
     bool                    ChangeSingleton(bool singleton, bool notify=false);
@@ -126,27 +136,21 @@ public:
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
-    // save timers arent currently used.  not sure if i'll implement them.
-    void                    SetSaveTimerExpiry(uint32 saveTimerExpiry) \
-                                { m_saveTimerExpiryTime = saveTimerExpiry; }
-    void                    EnableSaveTimer() \
-                                { m_saveTimer.Start( m_saveTimerExpiryTime * 1000, true ); }
-    void                    DisableSaveTimer()          { m_saveTimer.Disable(); }
-    bool                    CheckSaveTimer(bool iReset = true) \
-                                { return m_saveTimer.Check( iReset ); }
-    bool                    IsSaveTimerEnabled()        { return m_saveTimer.Enabled(); }
-    uint32                  GetSaveTimerExpiry()        { return m_saveTimerExpiryTime; }
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //remove the item from the DB.
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
 
+    virtual void            AddItem(InventoryItemRef item);
+    virtual void            RemoveItem(InventoryItemRef item);
+
+
     /* specific functions handled here */
     /* returns uID for new item.  saves item data to db */
-    static uint32           CreateItemID(ItemFactory &factory, ItemData &data);
+    static uint32           CreateItemID( ItemData &data);
     /* returns uID for temp item, without saving to db */
-    static uint32           CreateTempItemID(ItemFactory &factory, ItemData &data);
+    static uint32           CreateTempItemID( ItemData &data);
     /* loads attributes for this item */
     //bool LoadAttributes();
     uint32                  GetPackagedVolume();
@@ -161,12 +165,12 @@ public:
      * ItemCategory, ItemGroup, ItemType and Item classes and their children have special loading.
      *   Every such type has following methods: (with ShipItem being the exception)
      *
-     *  static Load(ItemFactory &factory, <identifier>):
+     *  static Load( <identifier>):
      *    Merges static and virtual loading trees.
      *    First calls static _Load() to create desired object and
      *    then calls its virtual _Load()
      *
-     *  static _Load(ItemFactory &factory, <identifier>[, <data-argument>, ...]):
+     *  static _Load( <identifier>[, <data-argument>, ...]):
      *    creates item data and type info, then calls _Ty::LoadItem(), which then
      *    creates any additional data needed, and calls the item constructor
      *
@@ -178,21 +182,21 @@ public:
 
     /*  Item Loading methods */
     /* calls _Ty::Load<_Ty>.  */
-    static InventoryItemRef Load(ItemFactory &factory, uint32 itemID);
+    static InventoryItemRef Load( uint32 itemID);
     /* creates new Item and calls item::_Load() */
-    static InventoryItemRef SpawnItem(ItemFactory &factory, uint32 itemID, const ItemData &data);
+    static InventoryItemRef SpawnItem( uint32 itemID, const ItemData &data);
     /* Spawns new Item.  whats difference here?? */
-    static InventoryItemRef Spawn(ItemFactory &factory, ItemData &data);
+    static InventoryItemRef Spawn( ItemData &data);
 
     virtual bool _Load();
 
 protected:
     /* template helper, calls template loader then class loader */
     template<class _Ty>
-    static RefPtr<_Ty> Load(ItemFactory &factory, uint32 itemID)
+    static RefPtr<_Ty> Load( uint32 itemID)
     {
         // static load
-        RefPtr<_Ty> i = _Ty::template _Load<_Ty>( factory, itemID );
+        RefPtr<_Ty> i = _Ty::template _Load<_Ty>( itemID );
         if( !i )
             return RefPtr<_Ty>();
 
@@ -205,24 +209,24 @@ protected:
 
     /* template loader, calls class _LoadItem */
     template<class _Ty>
-    static RefPtr<_Ty> _Load(ItemFactory &factory, uint32 itemID)
+    static RefPtr<_Ty> _Load( uint32 itemID)
     {
         // pull the item info
         ItemData data;
-        if( !factory.db().GetItem( itemID, data ) )
+        if( !sItemFactory.db()->GetItem( itemID, data ) )
             return RefPtr<_Ty>();
 
         // obtain type
-        const ItemType *type = factory.GetType( data.typeID );
+        const ItemType *type = sItemFactory.GetType( data.typeID );
         if( type == nullptr )
             return RefPtr<_Ty>();
 
-        return _Ty::template _LoadItem<_Ty>( factory, itemID, *type, data );
+        return _Ty::template _LoadItem<_Ty>( itemID, *type, data );
     }
 
     /* template class _LoadItem.  defined in derived class. calls class c'tor */
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 itemID, const ItemType &type, const ItemData &data);
+    static RefPtr<_Ty> _LoadItem( uint32 itemID, const ItemType &type, const ItemData &data);
 
 
 public:
@@ -244,20 +248,11 @@ public:
     PyPackedRow*            GetChargeStatusRow(uint32 shipID) const;
 
 protected:
-    Inventory* m_inventory;
-
-    ItemFactory& m_factory;
-
-    Timer m_saveTimer;
-
-    uint32 m_saveTimerExpiryTime;
-
-    std::map<EVEItemFlags, double> m_cargoHoldsUsedVolumeByFlag;
-
-    const uint32            m_itemID;
-    std::string             m_itemName;
+    Inventory* pInventory;
 
     // our item data:
+    const uint32            m_itemID;
+    std::string             m_itemName;
     bool                    m_contraband;
     bool                    m_singleton;
     int32                   m_quantity;
@@ -268,50 +263,43 @@ protected:
     EVEItemFlags            m_flag;
     GPoint                  m_position;
 
-private:
-    // for asteroid item:
-    AsteroidData m_roidData;
-
 /* new effects processing system */
 public:
-    /*  this checks requires skills on refItem against current skills in caller.
+    /*  this checks this item's required skills against callers' current skills.
      *  returns true if all pass */
     bool SkillCheck(InventoryItemRef refItem);
 
+    // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
     void ClearModifiers();
     void AddModifier(fxData data);
     void RemoveModifier(fxData data);
 
     //  if itemType requires skill(skillID) return true else return false
-    bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID, m_factory); }
+    bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID); }
 
     // gotta make this public for now...
-    std::multimap<int8, fxData> m_modifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
-    std::multimap<int8, fxData> m_rModifiers;    // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+    std::multimap<int8, fxData> m_modifiers;     // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
-/*  new attribute system */
-    AttributeMap& GetAttributeMap()                     { return mAttributeMap; }
+    /*  new attribute system */
+    AttributeMap* GetAttributeMap()                     { return pAttributeMap; }
 
-protected:
-    AttributeMap mAttributeMap;
-
-public:
-    // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
-    void ReloadAttributes();
     void SetAttribute(uint16 attrID, int num, bool notify=true);
     void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
-    void SetAttribute(uint16 attrID, int64 num, bool notify = true);
-    void SetAttribute(uint16 attrID, uint64 num, bool notify=true);
+    void SetAttribute(uint16 attrID, int64 num, bool notify=true);
     void SetAttribute(uint16 attrID, double num, bool notify=true);
     void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
-    bool HasAttribute(const uint16 attrID) const                       { return mAttributeMap.HasAttribute(attrID); }
-    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return mAttributeMap.HasAttribute(attrID, value); }
-    bool SaveAttributes()                                              { return mAttributeMap.SaveAttributes(); }
-    void ResetAttribute(uint16 attrID, bool notify=false)              { mAttributeMap.ResetAttribute(attrID, notify); }
-    void DeleteAttribute(uint16 attrID)                                { mAttributeMap.DeleteAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID) const                       { return pAttributeMap->HasAttribute(attrID); }
+    bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return pAttributeMap->HasAttribute(attrID, value); }
+    bool SaveAttributes()                                              { return pAttributeMap->SaveAttributes(); }
+    void ResetAttribute(uint16 attrID, bool notify=false)              { pAttributeMap->ResetAttribute(attrID, notify); }
+    void DeleteAttribute(uint16 attrID)                                { pAttributeMap->DeleteAttribute(attrID); }
 
-    EvilNumber GetAttribute(const uint16 attrID) const                 { return mAttributeMap.GetAttribute(attrID); }
+    EvilNumber GetAttribute(const uint16 attrID) const                 { return pAttributeMap->GetAttribute(attrID); }
     EvilNumber GetDefaultAttribute(const uint16 attrID) const          { return m_type.GetAttribute(attrID); }
+
+protected:
+    AttributeMap* pAttributeMap;
+
 };
 
 #endif

@@ -62,9 +62,7 @@ protected:
 
     virtual bool ProcessRaw( const TiXmlElement* field ) = 0;
     virtual bool ProcessInt( const TiXmlElement* field ) = 0;
-    virtual bool ProcessUInt( const TiXmlElement* field ) = 0;
     virtual bool ProcessLong( const TiXmlElement* field ) = 0;
-    virtual bool ProcessULong( const TiXmlElement* field ) = 0;
     virtual bool ProcessReal( const TiXmlElement* field ) = 0;
     virtual bool ProcessBool( const TiXmlElement* field ) = 0;
     virtual bool ProcessNone( const TiXmlElement* field ) = 0;

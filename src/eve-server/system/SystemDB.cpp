@@ -30,7 +30,7 @@
 
 PyObject* SystemDB::ListFactions() {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, "SELECT factionID FROM chrFactions")) {
+    if(!sDatabase.RunQuery(res, "SELECT factionID FROM facFactions")) {
         codelog(DATABASE__ERROR, "Error in ListFactions query: %s", res.error.c_str());
         return nullptr;
     }
@@ -137,8 +137,7 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
         _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/, //asteroids are owned/controlled by BeltMgr.
-        Orbitals/*46*/
-        )) {
+        Orbitals/*46*/ )) {
             codelog(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
         }
@@ -194,14 +193,17 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         Deployable/*22*/,           // include deployed items owned by players or corps
         Drone/*18*/, Entity/*11*/,  // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
         /*Structure*/23, StructureUpgrade/*39*/, SovereigntyStructure/*40*/ )) {
-        codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
-        return false;
+            codelog(DATABASE__ERROR, "Error in LoadPlayerDynamicEntities query: %s", res.error.c_str());
+            return false;
     }
 
     _log(DATABASE__RESULTS, "LoadPlayerDynamicEntities returned %u items", res.GetRowCount());
     DBResultRow row, row2;
     DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
+        entry.factionID = 0;
+        entry.allianceID = 0;
+        entry.corporationID = 0;
         entry.itemID = row.GetUInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
@@ -213,38 +215,22 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         entry.z = row.GetDouble(8);
         if (IsCorp(entry.ownerID)) {
             entry.corporationID = entry.ownerID;
-            if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM corporation WHERE corporationID = %u", entry.ownerID)) {
-                if (res2.GetRow(row2)) {
+            if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM crpCorporation WHERE corporationID = %u", entry.corporationID))
+                if (res2.GetRow(row2))
                     entry.allianceID = row2.GetUInt(0);
                     entry.factionID = row2.GetUInt(1);
-                } else {
-                    entry.allianceID = 0;
-                    entry.factionID = 0;
-                }
-            } else {
-                entry.allianceID = 0;
-                entry.factionID = 0;
-            }
         } else {
             //  should we test for ownerID is NOT corp/player here?  dunno...what other entities own things?
             if (sDatabase.RunQuery(res2,
-                               "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacter AS c"
-                               " LEFT JOIN corporation AS co USING (corporationID)"
-                               " WHERE c.characterID = %u", entry.ownerID))
+                        "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacters AS c"
+                        " LEFT JOIN crpCorporation AS co USING (corporationID)"
+                        " WHERE c.characterID = %u", entry.ownerID))
             {
                 if (res2.GetRow(row2)) {
                     entry.corporationID = row2.GetUInt(0);
                     entry.allianceID = row2.GetUInt(1);
                     entry.factionID = row2.GetUInt(2);
-                } else {
-                    entry.corporationID = 0;
-                    entry.allianceID = 0;
-                    entry.factionID = 0;
                 }
-            } else {
-                entry.corporationID = 0;
-                entry.allianceID = 0;
-                entry.factionID = 0;
             }
         }
         res2.Reset();

@@ -41,8 +41,6 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    LSCDB m_db;
-
     PyCallable_DECL_CALL(LookupCharacters);
     PyCallable_DECL_CALL(LookupPCOwners);
     PyCallable_DECL_CALL(LookupOwners);
@@ -52,13 +50,9 @@ protected:
     PyCallable_DECL_CALL(LookupCorporationTickers);
     PyCallable_DECL_CALL(LookupStations);
     PyCallable_DECL_CALL(LookupKnownLocationsByGroup);
+    PyCallable_DECL_CALL(LookupNoneNPCAccountOwners);
     PyCallable_DECL_CALL(LookupEvePlayerCharacters);
 };
 
 
-
-
-
 #endif
-
-

@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.2 -->
+     Version: 8.5 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -36,16 +36,13 @@
 
     <server>
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
-        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
-        <UseProfiling>false</UseProfiling><!-- bool -->
-        <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <PositionHack>false</PositionHack><!-- bool -->
-        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown -->
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <NoobShipCheck>true</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
-        <StackTrace>false</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on certain errors -->
+        <StackTrace>true</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
         <maxPlayers>2500</maxPlayers>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>20</MaxThreadReport>
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>true</DisableIGB>
@@ -54,11 +51,10 @@
     </server>
 
     <world>
-        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
         <gridUnload>true</gridUnload><!-- bool -->
         <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
-    <!-- next 5 not implemented yet -->
+        <!-- not implemented yet -->
         <chatLogs>false</chatLogs><!-- bool -->
         <globalChat>false</globalChat><!-- bool -->
         <loginInfo>false</loginInfo><!-- bool -->
@@ -69,24 +65,26 @@
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
         <damageRate>1.0</damageRate><!-- ALL damage multiplier.  DO NOT USE 0.0 -->
-        <missileRate>1.0</missileRate><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileDamage>1.0</missileDamage><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
-        <turretRate>1.0</turretRate><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
+        <turretDamage>1.0</turretDamage><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
-        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
-        <!-- Decay is implemented -->
-        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default) -->
+        <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
-        <!-- WebUpdate is implemented -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
         <!-- implemented only for salvage max items -->
         <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
         <!-- these rates are not implemented yet -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
+        <!-- corp tax variables. -->
+        <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
+        <TaxAmount>20000</TaxAmount><!-- default is 20000 isk.  less than this isnt worth the processing for corps -->
+        <!-- min amount to be taxed.  received amounts less than this will not be taxed. -->
+       <TaxedAmount>250000</TaxedAmount><!-- live uses 100000.  default is 250000 -->
     </rates>
 
     <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
@@ -108,24 +106,23 @@
         <startCorporation>0</startCorporation>
         <terminationDelay>180</terminationDelay> <!-- seconds -->
         <statMultiplier>3</statMultiplier><!-- stats are multiplied by this -->
+        <allow3edChar>false</allow3edChar><!-- (dis)allow creating a third character -->
     </character>
 
     <npc>
-        <IdleWander>false</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
+        <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
         <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
-        <TargetPodSec>0.4</TargetPodSec><!-- float   npc target/attack pod in truSec of this and lower -->
+        <TargetPodSec>0.4</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
         <!-- Threat not implemented yet -->
-        <ThreatRadius>1.0</ThreatRadius> <!-- percent of default 0.0 to 1.0 -->
+        <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
         <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
         <StaticSpawns>false</StaticSpawns><!-- bool -->
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
-        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
-        <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>false</EnableDrones><!-- bool -->
     </npc>
 
@@ -145,8 +142,8 @@
         <BeltRespawn>6</BeltRespawn><!-- hours  (6h default) -->
         <roidRadiusMultiplier>1.0</roidRadiusMultiplier><!-- float  used to change default coded roid size (and the belt radius) -->
         <WormHoleEnabled>false</WormHoleEnabled><!-- bool -->
-        <BumpEnabled>false</BumpEnabled><!-- bool -->
         <CiviliansEnabled>false</CiviliansEnabled><!-- bool -->
+        <BumpEnabled>false</BumpEnabled><!-- bool -->
     </cosmic>
 
     <crime><!-- not implemented yet -->
@@ -156,6 +153,17 @@
         <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
         <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
     </crime>
+
+    <debug><!-- switches for various server methods -->
+        <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
+        <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
+        <IsTestServer>false</IsTestServer>  <!--  bool   -some functions disabled for live server -->
+        <UseProfiling>false</UseProfiling><!-- bool -->
+        <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <PositionHack>false</PositionHack><!-- bool -->
+        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
+        <AnomalyFaction>0</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
+    </debug>
 
     <threads><!-- not implemented yet -->
         <NetworkThreads>2</NetworkThreads>

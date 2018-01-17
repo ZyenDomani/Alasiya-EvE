@@ -315,7 +315,7 @@ PyObject *CachedObjectMgr::GetCachedObject(const PyRep *objectID)
     return result;
 }
 
-bool CachedObjectMgr::IsCacheUpToDate(const PyRep *objectID, uint32 version, uint64 timestamp)
+bool CachedObjectMgr::IsCacheUpToDate(const PyRep *objectID, uint32 version, int64 timestamp)
 {
     const std::string str = OIDToString(objectID);
 
@@ -485,7 +485,7 @@ PySubStream* CachedObjectMgr::LoadCachedFile( const char* abs_fname, const char*
         return 0;
     }
 
-    uint64 file_length = filesize( f );
+    int64 file_length = filesize( f );
     if( file_length == 0 )
     {
         sLog.Error("CachedObjMgr","Unable to stat cache file '%s' for oname '%s'", abs_fname, oname );

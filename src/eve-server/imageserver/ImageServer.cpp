@@ -109,6 +109,8 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
 
 std::shared_ptr<std::vector<char> > ImageServer::GetImage(std::string& category, uint32 id, uint32 size)
 {
+    sLog.Cyan("      ImageServer"," GetImage() called. Cat: %s, id: %u, size:%u", category.c_str(), id, size);
+
     if (!ValidateCategory(category) || !ValidateSize(category, size))
         return std::shared_ptr<std::vector<char> >();
 

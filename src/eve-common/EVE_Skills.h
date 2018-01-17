@@ -8,7 +8,17 @@
 #ifndef EVE_SKILLS_H
 #define EVE_SKILLS_H
 
-typedef enum {
+/**  only skill events that client will recognize....
+ *
+        actions = {34: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillClonePenalty'),
+         36: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingStarted'),
+         37: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete'),
+         38: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingCanceled'),
+         39: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/GMGiveSkill'),
+         53: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillTrainingComplete'),
+         307: localization.GetByLabel('UI/CharacterSheet/CharacterSheetWindow/SkillTabs/SkillPointsApplied')}
+    */
+typedef enum {                                      // client msg in skill history
     skillEventGift                          = 24,   //Unknown
     skillEventCharCreation                  = 33,   //Unknown
     skillEventClonePenalty                  = 34,   //Skill Clone Penalty
@@ -19,11 +29,10 @@ typedef enum {
     skillEventGMGive                        = 39,   //GM Skill Gift
     skillEventQueueTrainingCompleted        = 53,   //Skill Training Complete
     skillEventSkillInjected                 = 56,   //Unknown
-    skillEventRemoval                       = 177,
-    /** @todo cant use these below, as current eventID is uint8 */
-    skillEventHaltedAccountLapsed           = 260,
-    skillEventSkillPointsApplied            = 307,
-    skillEventGMReverseFreeSkillPointsUsed  = 309
+    skillEventRemoval                       = 177,  //Unknown
+    skillEventHaltedAccountLapsed           = 260,  //Unknown
+    skillEventSkillPointsApplied            = 307,  //Apply Free Skill Points
+    skillEventGMReverseFreeSkillPointsUsed  = 309   //Unknown
 } EVESkillEvent;
 
  /** Created with MYSQL query:

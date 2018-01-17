@@ -34,18 +34,20 @@ DAY = (HOUR * 24L)
 MONTH = (30 * DAY)
 YEAR = (12 * MONTH)
 */
-extern const uint64 Win32Time_Second;
-extern const uint64 Win32Time_Minute;
-extern const uint64 Win32Time_Hour;
-extern const uint64 Win32Time_Day;
-extern const uint64 Win32Time_Month;
-extern const uint64 Win32Time_Year;
+extern const int64 Win32Time_Second;
+extern const int64 Win32Time_Minute;
+extern const int64 Win32Time_Hour;
+extern const int64 Win32Time_Day;
+extern const int64 Win32Time_Month;
+extern const int64 Win32Time_Year;
 
-extern uint64 UnixTimeToWin32Time( time_t sec, uint32 nsec );
-extern uint64 Win32TimeNow();
-extern void Win32TimeToUnixTime( uint64 win32t, time_t &unix_time, uint32 &nsec );
-extern std::string Win32TimeToString(uint64 win32t);
+extern int64 UnixTimeToWin32Time( time_t sec, uint32 nsec );
+extern int64 Win32TimeNow();
+extern void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec );
+extern std::string Win32TimeToString(int64 win32t);
 
+// returns delta between time and now, in hours
+int32 GetElapsedHours(int64 time);
 // this returns 100 nanosecond resolution in filetime format
 double GetFileTimeNow();
 //  this returns milliseconds in microsecond resolution

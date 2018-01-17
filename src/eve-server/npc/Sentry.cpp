@@ -61,14 +61,14 @@ Sentry::~Sentry() {
 
 void Sentry::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     m_AI->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_npcProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -98,7 +98,7 @@ void Sentry::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = m_allyID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
     DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
@@ -170,7 +170,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadNPCPosition, faction);
-    WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
+    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (!wreckItemRef) {
         sLog.Error("Sentry::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;

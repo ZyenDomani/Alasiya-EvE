@@ -42,10 +42,17 @@ public:
 
 
     /* specific functions handled in this class. */
-    std::map<uint16, uint8>::iterator GooEnd()       { return m_resources.end(); }
-    std::map<uint16, uint8>::iterator GooBegin()     { return m_resources.begin(); }
+    StructureSE* GetMyTower()                           { return m_towerSE; }
+    bool HasTower()                                     { return (m_towerSE == nullptr ? false : true); }
+    void SetTower(StructureSE* pSE)                     { m_towerSE = pSE; }
+
+    std::map<uint16, uint8>::iterator GooEnd()          { return m_resources.end(); }
+    std::map<uint16, uint8>::iterator GooBegin()        { return m_resources.begin(); }
+
 
 private:
+    StructureSE* m_towerSE;
+
     std::map<uint16, uint8> m_resources;     // moon goo (typeID, amt)
 
 };

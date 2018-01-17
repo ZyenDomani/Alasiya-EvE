@@ -144,7 +144,7 @@ int MailDB::SendMail(int sender, std::vector<int>& toCharacterIDs, int toListID,
         }
     }
     // TODO(groove) corp/alliance mails
-    
+
     return messageID;
 }
 
@@ -173,7 +173,7 @@ void MailDB::SetMailRead(int id)
     ApplyStatusMask(id, mailStatusMaskRead);
 }
 
-void MailDB::SetMailsUnread(std::vector<int32> ids) 
+void MailDB::SetMailsUnread(std::vector<int32> ids)
 {
     RemoveStatusMasks(ids, mailStatusMaskRead);
 }
@@ -186,7 +186,7 @@ void MailDB::SetMailsRead(std::vector<int32> ids)
 void MailDB::MarkAllAsUnread(uint32 characterID)
 {
     DBerror err;
-    
+
     if (!sDatabase.RunQuery(err,
                             "UPDATE mailMessage "
                             "SET statusMask = statusMask & ~%u "
@@ -197,10 +197,10 @@ void MailDB::MarkAllAsUnread(uint32 characterID)
 }
 
 
-void MailDB::MarkAllAsRead(uint32 characterID) 
+void MailDB::MarkAllAsRead(uint32 characterID)
 {
     DBerror err;
-    
+
     if (!sDatabase.RunQuery(err,
                             "UPDATE mailMessage "
                             "SET statusMask = statusMask | %u "
@@ -243,14 +243,14 @@ void MailDB::MarkAllAsReadByLabel(uint32 characterID, int labelID)
     }
 }
 
-void MailDB::RemoveLabels(std::vector<int32> messageIDs, int labelID) 
+void MailDB::RemoveLabels(std::vector<int32> messageIDs, int labelID)
 {
     DBerror err;
-    
+
     if (messageIDs.size() == 0) {
         return;
     }
-    
+
     int bit = BitFromLabelID(labelID);
     std::ostringstream query;
     query << "UPDATE mailMessage SET labelMask = labelMask & ~(1 << " << bit << ") ";
@@ -264,7 +264,7 @@ void MailDB::RemoveLabels(std::vector<int32> messageIDs, int labelID)
 
     query << ")";
     _log(DATABASE__ERROR, query.str().c_str());
-    
+
 
     if (!sDatabase.RunQuery(err, query.str().c_str()))
     {
@@ -278,8 +278,6 @@ void MailDB::ApplyLabels(std::vector<int32> messageIDs, int labelID)
     int bit = BitFromLabelID(labelID);
     ApplyLabelMasks(messageIDs, (1 << bit));
 }
-
-
 
 PyRep* MailDB::GetLabels(int characterID) const
 {
@@ -347,7 +345,7 @@ void MailDB::DeleteLabel(int characterID, int labelID) const
         codelog(DATABASE__ERROR, "Failed to delete label");
         return;
     }
-    
+
     sDatabase.RunQuery(err,
                        "DELETE FROM mailLabel "
                        "WHERE ownerID = %u AND bit = %u;", characterID, bit);
@@ -384,7 +382,7 @@ void MailDB::DeleteMail(int32 messageID)
     }
 }
 
-void MailDB::EmptyTrash(uint32 characterID) 
+void MailDB::EmptyTrash(uint32 characterID)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -395,7 +393,7 @@ void MailDB::EmptyTrash(uint32 characterID)
     }
 }
 
-void MailDB::MoveAllFromTrash(uint32 characterID) 
+void MailDB::MoveAllFromTrash(uint32 characterID)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -406,7 +404,7 @@ void MailDB::MoveAllFromTrash(uint32 characterID)
     }
 }
 
-void MailDB::MoveAllToTrash(uint32 characterID) 
+void MailDB::MoveAllToTrash(uint32 characterID)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
@@ -417,7 +415,7 @@ void MailDB::MoveAllToTrash(uint32 characterID)
     }
 }
 
-void MailDB::MoveToTrash(int32 messageID) 
+void MailDB::MoveToTrash(int32 messageID)
 {
     DBerror err;
 
@@ -427,7 +425,7 @@ void MailDB::MoveToTrash(int32 messageID)
                             "SET statusMask = statusMask | %u", messageID, mailStatusMaskTrashed)) {
         codelog(DATABASE__ERROR, "Failed to move message to trash");
     }
-        
+
 }
 
 void MailDB::MoveToTrashByLabel(int32 characterID, int32 labelID)
@@ -446,12 +444,12 @@ void MailDB::MoveToTrashByLabel(int32 characterID, int32 labelID)
     }
 }
 
-void MailDB::ApplyStatusMasks(std::vector<int32> messageIDs, int mask) 
+void MailDB::ApplyStatusMasks(std::vector<int32> messageIDs, int mask)
 {
     if (messageIDs.size() == 0) {
         return;
     }
-    
+
     std::ostringstream query;
 
     query << "UPDATE mailStatus SET statusMask = statusMask | " << mask << " WHERE ";
@@ -467,12 +465,12 @@ void MailDB::ApplyStatusMasks(std::vector<int32> messageIDs, int mask)
     }
 }
 
-void MailDB::RemoveStatusMasks(std::vector<int32> messageIDs, int mask) 
+void MailDB::RemoveStatusMasks(std::vector<int32> messageIDs, int mask)
 {
     if (messageIDs.size() == 0) {
         return;
     }
-    
+
     std::ostringstream query;
 
     query << "UPDATE mailStatus SET statusMask = statusMask & ~" << mask << " WHERE ";
@@ -541,11 +539,11 @@ void MailDB::RemoveLabelMask(int32 messageID, int mask)
 void MailDB::ApplyLabelMasks(std::vector<int32> messageIDs, int mask)
 {
     DBerror err;
-    
+
     if (messageIDs.size() == 0) {
         return;
     }
-    
+
     std::ostringstream query;
     query << "UPDATE mailStatus SET labelMask = labelMask | " << mask << " ";
 
@@ -556,7 +554,7 @@ void MailDB::ApplyLabelMasks(std::vector<int32> messageIDs, int mask)
     }
 
     _log(DATABASE__ERROR, query.str().c_str());
-    
+
 
     if (!sDatabase.RunQuery(err, query.str().c_str()))
     {
@@ -568,11 +566,11 @@ void MailDB::ApplyLabelMasks(std::vector<int32> messageIDs, int mask)
 void MailDB::RemoveLabelMasks(std::vector<int32> messageIDs, int mask)
 {
     DBerror err;
-    
+
     if (messageIDs.size() == 0) {
         return;
     }
-    
+
     std::ostringstream query;
     query << "UPDATE mailStatus SET labelMask = labelMask & ~" << mask << " ";
 
@@ -583,7 +581,7 @@ void MailDB::RemoveLabelMasks(std::vector<int32> messageIDs, int mask)
     }
 
     _log(DATABASE__ERROR, query.str().c_str());
-    
+
 
     if (!sDatabase.RunQuery(err, query.str().c_str()))
     {
@@ -605,7 +603,7 @@ int MailDB::BitFromLabelID(int id)
     return 0;
 }
 
-PyDict *MailDB::GetJoinedMailingLists(uint32 characterID) 
+PyDict *MailDB::GetJoinedMailingLists(uint32 characterID)
 {
 
     // @NOTE: May have to util.keyval this??j?
@@ -679,7 +677,7 @@ uint32 MailDB::CreateMailingList(uint32 creator, std::string name, int32 default
         codelog(DATABASE__ERROR, "Failed to insert owner of mailing list");
         return -1;
     }
-    
+
     return id;
 }
 
@@ -726,13 +724,13 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
         codelog(DATABASE__ERROR, "mailList didn't give us a row");
         return nullptr;
     }
-    
+
 
     ret->SetItemString("defaultAccess", new PyInt(row.GetInt(2)));
     ret->SetItemString("defaultMemberAccess", new PyInt(row.GetInt(3)));
-    
+
     DBQueryResult res2;
-    
+
     if (!sDatabase.RunQuery(res,
                             "SELECT * FROM mailListUsers "
                             "WHERE listID = %u", listID))
@@ -742,10 +740,10 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
     }
 
     PyDict *dict = new PyDict();
-    
+
     ret->SetItemString("access", dict);
 
-    
+
     while (res.GetRow(row)) {
         dict->SetItem(new PyInt(row.GetInt(1)), new PyInt(row.GetInt(3)));
     }
@@ -757,7 +755,7 @@ PyObject *MailDB::MailingListGetSettings(int32 listID)
 void MailDB::SetMailingListDefaultAccess(int32 listID, int32 defaultAccess, int32 defaultMemberAccess, int32 cost)
 {
     DBerror err;
-    
+
     if (!sDatabase.RunQuery(err,
                    "UPDATE mailList "
                    "SET defaultAccess = %u, defaultMemberAccess = %u, cost = %u "
@@ -766,4 +764,29 @@ void MailDB::SetMailingListDefaultAccess(int32 listID, int32 defaultAccess, int3
         codelog(DATABASE__ERROR, "Failed to update mailing list defaults");
         return;
     }
+}
+
+void MailDB::DeleteMailingList(uint32 characterID, int32 listID)
+{
+
+}
+void MailDB::JoinMailingList(uint32 characterID, std::string name)
+{
+
+}
+void MailDB::LeaveMailingList(uint32 characterID, int32 listID)
+{
+
+}
+void MailDB::MailingListClearEntityAccess(int32 entity, int32 listID)
+{
+
+}
+void MailDB::MailingListSetEntityAccess(int32 entity, int32 access, int32 listID)
+{
+
+}
+void MailDB::MoveFromTrash(int32 messageID)
+{
+
 }

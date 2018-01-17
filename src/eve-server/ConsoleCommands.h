@@ -50,7 +50,7 @@ class ConsoleCommand
     ConsoleCommand();
     virtual ~ConsoleCommand()   { /* do nothing here */ }
 
-    void Initialize(CommandDispatcher* cd, ItemFactory* itmf);
+    void Initialize(CommandDispatcher* cd);
 
 	void UpdateStatus();
     void HaltServer()           { m_haltServer = true; }
@@ -61,7 +61,6 @@ class ConsoleCommand
   private:
 	  // we do NOT own any of these...
     LSCChannel* plscc;
-	ItemFactory* pFactory;
 	SystemBubble* pBubbles;
     SystemManager* pSystems;
     CommandDispatcher* pCommand;

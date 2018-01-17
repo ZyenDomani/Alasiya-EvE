@@ -28,9 +28,7 @@
 
 class PyRep;
 class PyInt;
-class PyUInt;
 class PyLong;
-class PyULong;
 class PyFloat;
 class PyBool;
 class PyNone;
@@ -55,9 +53,7 @@ public:
 
     //! primitive data visitors
     virtual bool VisitInteger( const PyInt* rep ) { return true; }
-    virtual bool VisitUInteger( const PyUInt* rep ) { return true; }
     virtual bool VisitLong( const PyLong* rep ) { return true; }
-    virtual bool VisitULong( const PyULong* rep ) { return true; }
     virtual bool VisitReal( const PyFloat* rep ) { return true; }
     virtual bool VisitBoolean( const PyBool* rep ) { return true; }
     virtual bool VisitNone( const PyNone* rep ) { return true; }

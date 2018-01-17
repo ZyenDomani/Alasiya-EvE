@@ -130,8 +130,8 @@ uint32 str2< uint32 >( const char* str );
  *
  * @return An unsigned integer corresponding to content of @a str.
  */
-template<>
-uint64 str2< uint64 >( const char* str );
+//template<>
+//uint64 str2< uint64 >( const char* str );
 
 /**
  * @brief Converts string to real number.

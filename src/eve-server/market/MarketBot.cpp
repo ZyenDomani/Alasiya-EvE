@@ -10,7 +10,7 @@
 #include "eve-server.h"
 #include "EVEServerConfig.h"
 #include "market/MarketBot.h"
-#include "market/MarketDB.h"
+#include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
 
 
@@ -28,7 +28,8 @@ void MarketBot::Init()
 
 void MarketBot::Process()
 {
-    if (!m_initalized) return;
+    if (!m_initalized)
+        return;
 
 }
 

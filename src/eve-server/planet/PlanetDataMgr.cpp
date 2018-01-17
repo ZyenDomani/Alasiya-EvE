@@ -58,6 +58,7 @@ int PIDataMgr::Initialize()
     return 1;
 }
 
+// do we need anything from piPinMap?
 void PIDataMgr::_Populate()
 {
     double start = GetTimeMSeconds();
@@ -112,5 +113,6 @@ void PIDataMgr::GetSchematicData(uint16 schematicID, PI_Schematic& data)
     }
     // make error here
 }
+
 
 

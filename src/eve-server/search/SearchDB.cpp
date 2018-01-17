@@ -55,28 +55,25 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
             case 1: //searchResultAgent = 1
                 sDatabase.RunQuery(res,
                     "SELECT"
-                    "   itemID AS agentID"
-                    " FROM entity"
-                    " WHERE itemName LIKE '%s' "
-                    " AND itemID BETWEEN 2999999 AND 4000000 "
+                    "   characterID AS agentID"
+                    " FROM chrNPCCharacters"
+                    " WHERE characterName LIKE '%s' "
                     " LIMIT 0, 10", string.c_str() );
                 id = "agentID";
                 break;
             case 2: //searchResultCharacter = 2
                 sDatabase.RunQuery(res,
                     "SELECT"
-                    "   itemID AS ownerID"
-                    " FROM entity"
-                    " WHERE itemName LIKE '%s' "
-                    " AND itemID >= %u "
-                    " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_DYNAMIC_ID );
+                    "   characterID AS ownerID"
+                    " FROM chrCharacters"
+                    " WHERE name LIKE '%s' ", string.c_str() );
                 id = "ownerID";
                 break;
             case 3: //searchResultCorporation = 3
                 sDatabase.RunQuery(res,
                     "SELECT"
                     "   corporationID AS ownerID"
-                    " FROM corporation"
+                    " FROM crpCorporation"
                     " WHERE corporationName LIKE '%s' "
                     " LIMIT 0, 10", string.c_str() );
                 id = "ownerID";
@@ -84,15 +81,15 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
             case 4: //searchResultAlliance = 4
                 sDatabase.RunQuery(res,
                     "SELECT allianceID AS ownerID"
-                    " FROM crpAlliance"
-                    " WHERE allianceShortName LIKE '%s' "
+                    " FROM alnAlliance"
+                    " WHERE shortName LIKE '%s' "
                     " LIMIT 0, 10", string.c_str() );
                 id = "ownerID";
                 break;
             case 5: //searchResultFaction = 5
                 sDatabase.RunQuery(res,
                     "SELECT factionID AS ownerID"
-                    " FROM chrFactions"
+                    " FROM facFactions"
                     " WHERE factionName LIKE '%s' "
                     " LIMIT 0, 10", string.c_str() );
                 id = "ownerID";
@@ -166,83 +163,72 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
         switch(searchID->at(i)) {
             case 1: //searchResultAgent = 1
                 sDatabase.RunQuery(res,
-                                   "SELECT"
-                                   "   itemID"
-                                   " FROM entity"
-                                   " WHERE itemName LIKE '%s' "
-                                   " AND itemID BETWEEN 2999999 AND 4000000 "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT characterID"
+                    " FROM chrNPCCharacters"
+                    " WHERE characterName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 2: //searchResultCharacter = 2
                 sDatabase.RunQuery(res,
-                                   "SELECT"
-                                   "   itemID"
-                                   " FROM entity"
-                                   " WHERE itemName LIKE '%s' "
-                                   " AND itemID >= %u "
-                                   " AND ownerID = 1", string.c_str(), EVEMU_MINIMUM_DYNAMIC_ID );
+                    "SELECT characterID"
+                    " FROM chrCharacters"
+                    " WHERE name LIKE '%s' ", string.c_str() );
                 break;
             case 3: //searchResultCorporation = 3
                 sDatabase.RunQuery(res,
-                                   "SELECT"
-                                   "   corporationID"
-                                   " FROM corporation"
-                                   " WHERE corporationName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT corporationID"
+                    " FROM crpCorporation"
+                    " WHERE corporationName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 4: //searchResultAlliance = 4
                 sDatabase.RunQuery(res,
-                                   "SELECT allianceID"
-                                   " FROM alliance_ShortNames"
-                                   " WHERE shortName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT allianceID"
+                    " FROM alnAlliance"
+                    " WHERE shortName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 5: //searchResultFaction = 5
                 sDatabase.RunQuery(res,
-                                   "SELECT factionID"
-                                   " FROM chrFactions"
-                                   " WHERE factionName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT factionID"
+                    " FROM facFactions"
+                    " WHERE factionName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 6: //searchResultConstellation = 6
                 sDatabase.RunQuery(res,
-                                   "SELECT"
-                                   "   constellationID"
-                                   " FROM mapConstellations"
-                                   " WHERE constellationName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT constellationID"
+                    " FROM mapConstellations"
+                    " WHERE constellationName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 7: //searchResultSolarSystem = 7
                 sDatabase.RunQuery(res,
-                                   "SELECT "
-                                   "   solarSystemID"
-                                   " FROM mapSolarSystems "
-                                   " WHERE solarSystemName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT solarSystemID"
+                    " FROM mapSolarSystems "
+                    " WHERE solarSystemName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 8: //searchResultRegion = 8
                 sDatabase.RunQuery(res,
-                                   "SELECT "
-                                   "   regionID"
-                                   " FROM mapRegions"
-                                   " WHERE regionName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT regionID"
+                    " FROM mapRegions"
+                    " WHERE regionName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 9: //searchResultStation = 9
                 sDatabase.RunQuery(res,
-                                   "SELECT "
-                                   "   stationID"
-                                   " FROM staStations "
-                                   " WHERE stationName LIKE '%s' "
-                                   " LIMIT 0, 10", string.c_str() );
+                    "SELECT stationID"
+                    " FROM staStations "
+                    " WHERE stationName LIKE '%s' "
+                    " LIMIT 0, 10", string.c_str() );
                 break;
             case 10:    //searchResultInventoryType = 10
                 sDatabase.RunQuery(res,
-                                   "SELECT"
-                                   "   typeID"
-                                   " FROM entity"
-                                   " WHERE itemName LIKE '%s'"
-                                   " AND ownerID = %u", string.c_str(), charID );
+                    "SELECT typeID"
+                    " FROM entity"
+                    " WHERE itemName LIKE '%s'"
+                    " AND ownerID = %u", string.c_str(), charID );
                 break;
         }
         while (res.GetRow(row)) {

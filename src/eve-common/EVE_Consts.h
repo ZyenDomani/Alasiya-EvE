@@ -62,11 +62,11 @@ static const uint32 minWarpDistance(100000);    // 100km
 static const float onlineModInSpace(0.75);     // onling modules while NOT docked or using fitting services will take 75% of capacitor capacity.
 
 //   based on client code...
-static const uint64 ONE_LIGHTYEAR(9460000000000000);  // in meters
-static const uint64 ONE_AU_IN_METERS(149597870700);     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
-static const uint64 STATION_HANGAR_MAX_CAPACITY(9000000000000000);  //per client
+static const int64 ONE_LIGHTYEAR(9460000000000000);  // in meters
+static const int64 ONE_AU_IN_METERS(149597870700);     // 1 astronomical unit in meters, per EVElopedia: http://wiki.eveonline.com/en/wiki/Astronomical_Unit
+static const int64 STATION_HANGAR_MAX_CAPACITY(9000000000000000);  //per client
 static const double MAX_MARKET_PRICE(9223372036854);  //max int64/1000000  (9223372036854775807/1000000)
-static const uint32 INCAPACITATION_DISTANCE(250000);    // drone to ship max distance.  after this, drone goes Offline and is considered 'lost'
+static const int32 INCAPACITATION_DISTANCE(250000);    // drone to ship max distance.  after this, drone goes Offline and is considered 'lost'
 
 // Cosmic Managers constants here  *not used yet*
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS(3600000);  /* this is grow check in ms (1d) */

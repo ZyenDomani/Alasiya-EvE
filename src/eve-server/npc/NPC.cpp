@@ -98,14 +98,14 @@ NPC::~NPC() {
 
 void NPC::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     m_AI->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_npcProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -152,7 +152,7 @@ void NPC::EncodeDestiny( Buffer& into )
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = m_allyID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
     DataSector data;
         data.maxVelocity = m_destiny->GetMaxVelocity();
@@ -340,7 +340,7 @@ void NPC::Killed(Damage &fatal_blow) {
         faction
     );
 
-    WreckContainerRef wreckItemRef = m_self->GetItemFactory()->SpawnWreckContainer( wreckItemData );
+    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;

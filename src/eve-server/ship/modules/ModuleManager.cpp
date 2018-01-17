@@ -31,6 +31,7 @@
 #include "PyCallable.h"
 #include "EVEServerConfig.h"
 #include "Client.h"
+#include "StaticDataMgr.h"
 #include "effects/EffectsDataMgr.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
@@ -43,7 +44,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleContainer class definitions
-#pragma region ModuleContainerClass
 ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots,
     uint8 turretSlots, uint8 launcherSlots, ModuleManager* myManager)
 {
@@ -349,13 +349,11 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
 }
 
 
-#pragma endregion
 /////////////////////////// END MODULECONTAINER //////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleManager class definitions
-#pragma region ModuleManagerClass
 ModuleManager::ModuleManager(ShipItem *const ship)
 {
     m_initalized = false;
@@ -420,12 +418,12 @@ bool ModuleManager::Initialize() {
 void ModuleManager::Process()
 {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     m_Modules->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -466,7 +464,7 @@ void ModuleManager::UninstallRig(uint32 itemID)
     GenericModule* pMod = m_Modules->GetModule(itemID);
     if (pMod != nullptr) {
         pMod->Offline();
-        if (!sConfig.server.IsTestServer)
+        if (!sConfig.debug.IsTestServer)
             pMod->DestroyRig();
     }
     m_Modules->RemoveModule(itemID);
@@ -509,6 +507,11 @@ void ModuleManager::UnfitModule(uint32 itemID)
 
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
+    if (!IsModuleSlot(flag)) {
+        sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        return false;
+    }
+
     if (item->categoryID() == EVEDB::invCategories::Module) {
         // Attempt to fit the module
         if ( fitModule(item, flag) ) {
@@ -517,19 +520,24 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
             return true;
         }
     } else
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
+        sLog.Warning("ModuleManager::fitModule","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
 }
 
 bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 {
+    if (!IsModuleSlot(flag)) {
+        sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        return false;
+    }
+
 	if (m_Modules->GetModule(item->itemID())) {
-		if (m_Modules->isSlotOccupied(flag))
-            //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-			//throw PyException( MakeUserError("SlotAlreadyOccupied"));
-        /** @todo change this to use movemodule */
-		return false;
+        if (m_Modules->isSlotOccupied(flag)) {
+            throw PyException( MakeUserError("SlotAlreadyOccupied"));
+            /** @todo change this to use movemodule */
+            return false;
+        }
 	} else {
         // create new module object
 		GenericModule* pMod = ModuleFactory(item, ShipItemRef(m_Ship));
@@ -538,9 +546,7 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
         if (pMod->isMaxGroupFitLimited()) {
             if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
                 SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("CantFitTooManyByGroup"));
-                return false;
+                throw PyException( MakeUserError("CantFitTooManyByGroup"));
             }
         }
         if (pMod->isTurretFitted()) {
@@ -548,18 +554,24 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
                 m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
             } else {
                 SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughTurretSlots"));    // this takes 2 args, u/k and module's typeID
-                return false;
+                PyTuple* tuple = new PyTuple(2);
+                    tuple->SetItem(0, new PyInt(m_Ship->GetDefaultAttribute(AttrTurretSlotsLeft).get_int()));
+                    tuple->SetItem(1, new PyInt(item->typeID()));
+                std::map<std::string, PyRep *> args;
+                args["moduleName"] = tuple;
+                throw PyException( MakeUserError("NotEnoughTurretSlots", args));
             }
 		} else if (pMod->isLauncherFitted()) {
             if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
                 m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
             } else {
                 SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughLauncherSlots"));    // this takes 2 args, u/k and module's typeID
-                return false;
+                PyTuple* tuple = new PyTuple(2);
+                    tuple->SetItem(0, new PyInt(m_Ship->GetDefaultAttribute(AttrLauncherSlotsLeft).get_int()));
+                    tuple->SetItem(1, new PyInt(item->typeID()));
+                std::map<std::string, PyRep *> args;
+                args["moduleName"] = tuple;
+                throw PyException( MakeUserError("NotEnoughLauncherSlots", args));
             }
 		}
 
@@ -1073,5 +1085,4 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
 
 }
 
-#pragma endregion
 //////////////////////////////////////////////////////////////////////////////////

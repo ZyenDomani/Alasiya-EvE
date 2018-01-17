@@ -105,7 +105,6 @@ public:
     bool GetBool( uint32 index ) const;
     uint32 GetUInt( uint32 index ) const;
     int64 GetInt64( uint32 index ) const;
-    uint64 GetUInt64( uint32 index ) const;
     float GetFloat( uint32 index ) const;
     double GetDouble( uint32 index ) const;
 
@@ -143,6 +142,7 @@ public:
 
     //new shorter syntax:
     //query which returns a result (error is stored in the result if it occurs)
+    // NOTE:  result is cleared before populating with most recent data.
     bool    RunQuery(DBQueryResult &into, const char *query_fmt, ...);
     //query which returns no information except error status
     bool    RunQuery(DBerror &err, const char *query_fmt, ...);

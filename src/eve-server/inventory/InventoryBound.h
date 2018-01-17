@@ -33,7 +33,7 @@ class InventoryBound
 : public PyBoundObject
 {
 public:
-    InventoryBound(PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag);
+    InventoryBound(PyServiceMgr *mgr, InventoryItemRef item, EVEItemFlags flag, uint32 ownerID,  bool passive);
     virtual ~InventoryBound();
 
     virtual void Release() {
@@ -53,18 +53,25 @@ public:
     PyCallable_DECL_CALL(DestroyFitting);
     PyCallable_DECL_CALL(SetPassword);
     PyCallable_DECL_CALL(CreateBookmarkVouchers);
+    PyCallable_DECL_CALL(RunRefiningProcess);
     PyCallable_DECL_CALL(Voucher);
 
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-    Inventory* mInventory;
+    Inventory* pInventory;
 
     InventoryItemRef m_self;
 
     EVEItemFlags mFlag;
 
-    PyRep* ExecAdd(Client *c, const std::vector<int32> &items, int32 quantity, EVEItemFlags flag);
+    uint32 m_itemID;
+    uint32 m_ownerID;
+
+    bool m_passive;
+
+    PyRep* MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool manyFlags, float capacity);
+
 };
 
 #endif//_INVENTORY_BOUND_H

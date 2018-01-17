@@ -11,7 +11,7 @@
 - Injecting Skills is working
 - BookMarks are mostly working (no support for delete)
 - All Celestial Information from OverView is working
-- Corporation stuff kinda working
+- Corporation rewrite and mostly functional
 - Planets and Services Info from StarMap(F10) is working
 - MapBrowser(F11) is working
 - Empire Regions show Sovereignty
@@ -23,41 +23,17 @@
 - Market History Data working
 - Manufacturing working
 - ML/PL research working (time is wrong)
-- POS's Deployable and Anchorable (but cant put online)
+- POS's Deployable and Anchorable
+- Control Towers management somewhat working
 - Text-Based Search working
 - Bounties are working (with payouts)
 - Insurance is working (with payouts)
-- Most Weapons working (all turrets, all guided missiles)
-- Some Active modules working (Shield boosters, Armor repairers, Hull repairers, Afterburners, Mining modules)
-- Most Passive modules working (any module that affects ship attributes)
-- Most Rigs working (any rig that affects ship attributes)
+- Most Modules working (except cap-size)
 - Loot working (Most NPC's, rogue drones are in process of fixing)
-- DestinyManager Rewrite Completed (BlackScreen problem fixed)
 - Faction Standings working
-- Weapon Damage Types and ship resistances implemented
+- Damage Types and resistances implemented
 - Missiles are implemented
-- Targeting fixed, and uses skills
-- All missile skills implemented
 - Asteroid Rat Spawns implemented
-- Mining system rewrite (mostly completed)
+- Mining system rewrite
 - PI system started (can set up and view colony, but extracting, logistics, and production not working yet)
-
-# Legal
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
 

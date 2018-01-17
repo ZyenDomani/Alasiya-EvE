@@ -126,7 +126,7 @@ void Salvager::DropSalvage()
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), m_targetSE->GetID(), flagAutoFit, quantity);
-            itemRef = pChar->GetItemFactory()->SpawnItem(iLoot);
+            itemRef = sItemFactory.SpawnItem(iLoot);
             if (!itemRef) // we'll get over it...continue
                 continue;
             itemRef->Move(m_shipRef->itemID(), flagCargoHold);
@@ -148,7 +148,7 @@ void Salvager::DropSalvage()
                         "Jettisoned Loot Container",
                         m_targetSE->GetPosition());
 
-        CargoContainerRef jetCanRef = pChar->GetItemFactory()->SpawnCargoContainer(p_idata);
+        CargoContainerRef jetCanRef = sItemFactory.SpawnCargoContainer(p_idata);
         if (!jetCanRef)
             throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
 

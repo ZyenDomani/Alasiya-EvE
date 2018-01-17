@@ -601,7 +601,7 @@ bool ActiveModule::CanActivate()
 
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
-    if (!m_shipRef->GetPilot()->GetShipSE()->SysBubble())
+    if (m_shipRef->GetPilot()->GetShipSE()->SysBubble() == nullptr)
         return;
 
     int64 abortTime = Win32TimeNow();
@@ -689,18 +689,16 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 void ActiveModule::LaunchMissile()
 {
     // Actually Launch a missile, creating a new Destiny object for it
-    Character* pChar = m_shipRef->GetPilot()->GetChar().get();
-    if (pChar == nullptr)
+    Client* pClient = m_shipRef->GetPilot();
+    if (pClient == nullptr)
         return;
-    SystemManager* pSystem = m_shipRef->GetPilot()->SystemMgr();
-    ItemData idata(m_chargeRef->typeID(), pChar->itemID(), pChar->locationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
-
-    InventoryItemRef missileRef = m_shipRef->GetItemFactory()->SpawnItem(idata);
-
+    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
+    InventoryItemRef missileRef = sItemFactory.SpawnItem(idata);
     if (missileRef.get() == nullptr)
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
+    SystemManager* pSystem = pClient->SystemMgr();
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef.get());
     if (pMissile == nullptr)
         return; // make error here

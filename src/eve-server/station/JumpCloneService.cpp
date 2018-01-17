@@ -89,6 +89,7 @@ PyBoundObject* JumpCloneService::_CreateBoundObject( Client* c, const PyRep* bin
 }
 
 PyResult JumpCloneBound::Handle_InstallCloneInStation( PyCallArgs &call ) {
+    //19:02:15 W JumpCloneBound::Handle_InstallCloneInStation(): size= 0
   sLog.White( "JumpCloneBound::Handle_InstallCloneInStation()", "size= %u", call.tuple->size() );
   call.Dump(SERVICE__CALL_DUMP);
     PyRep *result = NULL;

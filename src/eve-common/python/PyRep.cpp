@@ -39,26 +39,24 @@ const char* const s_mTypeString[] =
 {
     "Min",
     "Integer",          //1
-    "UInt",             //2
-    "Long",             //3
-    "ULong",            //4
-    "Real",             //5
-    "Boolean",          //6
-    "Buffer",           //7
-    "String",           //8
-    "WString",          //9
-    "Token",            //10
-    "Tuple",            //11
-    "List",             //12
-    "Dict",             //13
-    "None",             //14
-    "SubStruct",        //15
-    "SubStream",        //16
-    "ChecksumedStream", //17
-    "Object",           //18
-    "ObjectEx",         //19
-    "PackedRow",        //20
-    "Invalid Type"      //21
+    "Long",             //2
+    "Real",             //3
+    "Boolean",          //4
+    "Buffer",           //5
+    "String",           //6
+    "WString",          //7
+    "Token",            //8
+    "Tuple",            //9
+    "List",             //10
+    "Dict",             //11
+    "None",             //12
+    "SubStruct",        //13
+    "SubStream",        //14
+    "ChecksumedStream", //15
+    "Object",           //16
+    "ObjectEx",         //17
+    "PackedRow",        //18
+    "Invalid Type"      //19
 };
 
 /************************************************************************/
@@ -94,6 +92,36 @@ int32 PyRep::hash() const
     return -1;
 }
 
+std::string PyRep::StringContent(PyRep* pRep)
+{
+    if (pRep == nullptr)
+        return "";
+    else if (pRep->IsString())
+        return pRep->AsString()->content();
+    else if (pRep->IsWString())
+        return pRep->AsWString()->content();
+
+    _log(COMMON__ERROR, "PyRep::StringContent() - Expected PyString or PyWString but got %s.", pRep->TypeString());
+    return "";
+}
+
+int64 PyRep::IntegerValue(PyRep* pRep)
+{
+    if (pRep == nullptr)
+        return 0;
+    else if (pRep->IsInt())
+        return pRep->AsInt()->value();
+    else if (pRep->IsLong())
+        return pRep->AsLong()->value();
+    else if (pRep->IsFloat())
+        return pRep->AsFloat()->value();
+    else if (pRep->IsNone())
+        return 0;
+
+    return 0;
+}
+
+
 /************************************************************************/
 /* PyRep Integer Class                                                  */
 /************************************************************************/
@@ -111,32 +139,6 @@ bool PyInt::visit( PyVisitor& v ) const
 }
 
 int32 PyInt::hash() const
-{
-    /* XXX If this is changed, you also need to change the way
-     *    Python's long, float and complex types are hashed. */
-    int32 x = mValue;
-    if (x == -1 )
-        x = -2;
-    return x;
-}
-
-/************************************************************************/
-/* PyRep Unsigned Integer Class                                                  */
-/************************************************************************/
-PyUInt::PyUInt( const uint32 i ) : PyRep( PyRep::PyTypeUInt ), mValue( i ) {}
-PyUInt::PyUInt( const PyUInt& oth ) : PyRep( PyRep::PyTypeUInt ), mValue( oth.value() ) {}
-
-PyRep* PyUInt::Clone() const
-{
-    return new PyUInt( *this );
-}
-
-bool PyUInt::visit( PyVisitor& v ) const
-{
-    return v.VisitUInteger( this );
-}
-
-int32 PyUInt::hash() const
 {
     /* XXX If this is changed, you also need to change the way
      *    Python's long, float and complex types are hashed. */
@@ -207,69 +209,6 @@ int32 PyLong::hash() const
 #undef PyLong_MASK
 
 #undef LONG_BIT_PyLong_SHIFT
-}
-
-/************************************************************************/
-/* PyRep Unsigned Long Class                                                     */
-/************************************************************************/
-PyULong::PyULong( const uint64 i ) : PyRep( PyRep::PyTypeULong ), mValue( i ) {}
-PyULong::PyULong( const PyULong& oth ) : PyRep( PyRep::PyTypeULong ), mValue( oth.value() ) {}
-
-PyRep* PyULong::Clone() const
-{
-    return new PyULong( *this );
-}
-
-bool PyULong::visit( PyVisitor& v ) const
-{
-    return v.VisitULong( this );
-}
-
-int32 PyULong::hash() const
-{
-    #define PyULong_SHIFT    15
-    #define PyULong_BASE     (1 << PyULong_SHIFT)
-    #define PyULong_MASK     ((int)(PyULong_BASE - 1))
-
-    #define LONG_BIT_PyULong_SHIFT    (8*sizeof(long) - PyULong_SHIFT)
-
-    unsigned long x;
-    int i;
-    int sign;
-
-    /* This is designed so that Python ints and longs with the
-     *    same value hash to the same value, otherwise comparisons
-     *    of mapping keys will turn out weird */
-    i = 8;
-    sign = 1;
-    x = 0;
-    if (i < 0 ) {
-        sign = -1;
-        i = -(i);
-    }
-    /* The following loop produces a C long x such that (unsigned long)x
-     *    is congruent to the absolute value of v modulo ULONG_MAX.  The
-     *    resulting x is nonzero if and only if v is. */
-    while( --i >= 0 ) {
-        /* Force a native long #-bits (32 or 64) circular shift */
-        x = ((x << PyULong_SHIFT) & ~PyULong_MASK) | ((x >> LONG_BIT_PyULong_SHIFT) & PyULong_MASK);
-        x += ((uint8*)&mValue)[i];// v->ob_digit[i];
-        /* If the addition above overflowed (thinking of x as
-         *        unsigned), we compensate by incrementing.  This preserves
-         *        the value modulo ULONG_MAX. */
-        if ((unsigned long)x < ((uint8*)&mValue)[i] )//v->ob_digit[i])
-            x++;
-    }
-    x = x * sign;
-    if (x == -1 )
-        x = -2;
-    return x;
-
-    #undef PyULong_SHIFT
-    #undef PyULong_BASE
-    #undef PyULong_MASK
-
-    #undef LONG_BIT_PyULong_SHIFT
 }
 
 /************************************************************************/
@@ -772,7 +711,10 @@ void PyDict::SetItem( PyRep* key, PyRep* value )
         PyDecRef( key );
         // Replace itr->second with new value.
         PySafeDecRef( itr->second );
-        itr->second = value;
+        if (value == nullptr)
+            itr->second = PyStatic.NewNone();
+        else
+            itr->second = value;
     }
 }
 
@@ -1171,18 +1113,18 @@ bool PyChecksumedStream::visit( PyVisitor& v ) const
 /************************************************************************/
 /* tuple large integer helper functions                                 */
 /************************************************************************/
-PyTuple * new_tuple(uint64 arg1)
+PyTuple * new_tuple(int64 arg1)
 {
     PyTuple * res = new PyTuple(1);
-        res->SetItem(0, new PyULong(arg1));
+        res->SetItem(0, new PyLong(arg1));
     return res;
 }
 
-PyTuple * new_tuple(uint64 arg1, uint64 arg2)
+PyTuple * new_tuple(int64 arg1, int64 arg2)
 {
     PyTuple * res = new PyTuple(2);
-        res->SetItem(0, new PyULong(arg1));
-        res->SetItem(1, new PyULong(arg2));
+        res->SetItem(0, new PyLong(arg1));
+        res->SetItem(1, new PyLong(arg2));
     return res;
 }
 

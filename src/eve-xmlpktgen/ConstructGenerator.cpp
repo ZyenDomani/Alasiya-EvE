@@ -128,51 +128,11 @@ bool ClassConstructGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
-bool ClassConstructGenerator::ProcessUInt( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassConstructGenerator::ProcessUInt field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    const char* def = field->Attribute( "default" );
-    if (def == nullptr)
-        def = "0";
-
-    fprintf( mOutputFile,
-             "    %s = %s;\n",
-             name, def
-    );
-
-    return true;
-}
-
 bool ClassConstructGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
     if (name == nullptr) {
         std::cout << std::endl <<  "ClassConstructGenerator::ProcessLong field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    const char* def = field->Attribute( "default" );
-    if (def == nullptr)
-        def = "0";
-
-    fprintf( mOutputFile,
-             "    %s = %s;\n",
-             name, def
-    );
-
-    return true;
-}
-
-bool ClassConstructGenerator::ProcessULong( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassConstructGenerator::ProcessULong field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
 

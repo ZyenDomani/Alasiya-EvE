@@ -23,10 +23,10 @@
     Author:        Zhur
 */
 
-#include "eve-core.h"
+#include "../eve-core.h"
 
-#include "log/LogNew.h"
-#include "memory/SafeMem.h"
+#include "../log/LogNew.h"
+#include "../memory/SafeMem.h"
 #include "utils/XMLParser.h"
 
 /************************************************************************/

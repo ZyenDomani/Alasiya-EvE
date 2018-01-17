@@ -36,7 +36,7 @@ class LSCChannel;
 
 class LSCChannelChar {
 public:
-    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, uint32 warFactionID, uint64 role, uint32 extra, LSC::Mode mode) :
+    LSCChannelChar(LSCChannel *chan, uint32 corpID, uint32 charID, std::string charName, uint32 allianceID, uint32 warFactionID, int64 role, uint32 extra, LSC::Mode mode) :
       m_parent(chan),
       m_corpID(corpID),
       m_charID(charID),
@@ -57,14 +57,14 @@ protected:
     std::string m_charName;
     uint32 m_allianceID;
     uint32 m_warFactionID;
-    uint64 m_role;
+    int64 m_role;
     uint32 m_extra;
     LSC::Mode m_mode;
 };
 
 class LSCChannelMod {
 public:
-    LSCChannelMod(LSCChannel * chan, uint32 accessor, uint64 untilWhen, uint32 originalMode, std::string admin, std::string reason, LSC::Mode mode) :
+    LSCChannelMod(LSCChannel * chan, uint32 accessor, int64 untilWhen, uint32 originalMode, std::string admin, std::string reason, LSC::Mode mode) :
       m_parent(chan),
       m_accessor(accessor),
       m_mode(mode),
@@ -80,7 +80,7 @@ protected:
     LSCChannel * m_parent;    // we do not own this
     uint32 m_accessor;
     LSC::Mode m_mode;
-    uint64 m_untilWhen;
+    int64 m_untilWhen;
     uint32 m_originalMode;
     std::string m_admin;
     std::string m_reason;

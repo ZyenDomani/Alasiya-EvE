@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Bloody.Rabbit
+    Update:     Allan
 */
 
 #ifndef __UTILS__REF_PTR_H__INCL__
@@ -137,7 +138,7 @@ public:
     explicit RefPtr( X* p = nullptr)
     : mPtr( p )
     {
-        if ( *this )
+        if (*this)
             (*this)->IncRef();
     }
     /**
@@ -148,7 +149,7 @@ public:
     RefPtr( const RefPtr& oth )
     : mPtr( oth.get() )
     {
-        if ( *this )
+        if (*this)
             (*this)->IncRef();
     }
     /**
@@ -160,7 +161,7 @@ public:
     RefPtr( const RefPtr<Y>& oth )
     : mPtr( oth.get() )
     {
-        if ( *this )
+        if (*this)
             (*this)->IncRef();
     }
 
@@ -169,7 +170,7 @@ public:
      */
     ~RefPtr()
     {
-        if ( *this )
+        if (*this)
             (*this)->DecRef();
     }
 
@@ -180,14 +181,11 @@ public:
      */
     RefPtr& operator=( const RefPtr& oth )
     {
-        if ( *this )
+        if (*this)
             (*this)->DecRef();
-
         mPtr = oth.get();
-
-        if ( *this )
+        if (*this)
             (*this)->IncRef();
-
         return *this;
     }
     /**
@@ -198,14 +196,11 @@ public:
     template<typename Y>
     RefPtr& operator=( const RefPtr<Y>& oth )
     {
-        if ( *this )
+        if (*this)
             (*this)->DecRef();
-
         mPtr = oth.get();
-
-        if ( *this )
+        if (*this)
             (*this)->IncRef();
-
         return *this;
     }
 

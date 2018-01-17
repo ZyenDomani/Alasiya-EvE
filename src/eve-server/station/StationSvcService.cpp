@@ -28,6 +28,7 @@
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
+#include "station/StationDataMgr.h"
 #include "station/StationSvcService.h"
 
 
@@ -50,9 +51,8 @@ StationSvcService::~StationSvcService() {
 }
 
 PyResult StationSvcService::Handle_GetStationItemBits(PyCallArgs &call) {
-    return m_db.GetStationItemBits(call.client->GetStationID());
+    return stDataMgr.GetStationItemBits(call.client->GetStationID());
 }
-
 
 PyResult StationSvcService::Handle_GetSolarSystem(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
@@ -79,7 +79,7 @@ PyResult StationSvcService::Handle_GetStation(PyCallArgs &call) {
         return nullptr;
     }
 
-    return sDataMgr.GetStationData(arg.arg);
+    return stDataMgr.GetStationPyData(arg.arg);
 }
 
 PyResult StationSvcService::Handle_GetAllianceSystems(PyCallArgs &call) {

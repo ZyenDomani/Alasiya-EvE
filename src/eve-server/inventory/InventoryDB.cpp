@@ -29,6 +29,7 @@
 #include "Client.h"
 #include "PyCallable.h"
 #include "character/Character.h"
+#include "inventory/ItemType.h"
 #include "manufacturing/Blueprint.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
@@ -148,7 +149,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.capacity = row.GetDouble(6);
     into.portionSize = row.GetUInt(7);
     into.race = EVERace(row.IsNull(8) ? 0 : row.GetUInt(8));
-	into.basePrice = row.GetUInt64(9) /1000;
+	into.basePrice = row.GetInt64(9) /1000;
     into.published = (row.GetInt(10) ? true : false);
     into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
@@ -298,48 +299,11 @@ bool InventoryDB::GetShipType(uint32 shipTypeID, ShipTypeData &into) {
     return true;
 }
 
-bool InventoryDB::GetStationType(uint32 stationTypeID, StationTypeData &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  0 as dockingBayGraphicID, 0 as hangarGraphicID,"
-        "  dockEntryX, dockEntryY, dockEntryZ,"
-        "  dockOrientationX, dockOrientationY, dockOrientationZ,"
-        "  operationID, officeSlots, reprocessingEfficiency, conquerable"
-        " FROM staStationTypes"
-        " WHERE stationTypeID = %u",
-        stationTypeID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query station type %u: %s.", stationTypeID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Station type %u not found.", stationTypeID);
-        return false;
-    }
-
-    into.dockingBayGraphicID = (row.IsNull(0) ? 0 : row.GetUInt(0));
-    into.hangarGraphicID = (row.IsNull(1) ? 0 : row.GetUInt(1));
-
-    into.dockEntry = GPoint(row.GetDouble(2), row.GetDouble(3), row.GetDouble(4));
-    into.dockOrientation = GVector(row.GetDouble(5), row.GetDouble(6), row.GetDouble(7));
-
-    into.operationID = (row.IsNull(8) ? 0 : row.GetUInt(8));
-    into.officeSlots = (row.IsNull(9) ? 0 : row.GetUInt(9));
-    into.reprocessingEfficiency = (row.IsNull(10) ? 0.0 : row.GetDouble(10));
-    into.conquerable = (row.GetInt(11) ? true : false);
-
-    return true;
-}
-
 bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     /* called by RefPtr<_Ty> _Load() at InventoryItem.h:189 */
     DBQueryResult res;
 
-    // For certain ranges of itemID-s we use specialized tables:
+    // For ranges of itemIDs we use specialized tables:
     if (IsRegion(itemID)) {
         //region
         if (!sDatabase.RunQuery(res,
@@ -425,6 +389,30 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
             codelog(DATABASE__ERROR, "Error in query for asteroid %u: %s", itemID, res.error.c_str());
             return false;
         }
+    } else if (IsCharacter(itemID)) {
+        //use chrCharacters
+        if (!sDatabase.RunQuery(res,
+            "SELECT"
+            "  name, typeID, 1 AS ownerID, solarSystemID, flag, 0 AS contraband,"
+            "  1 AS singleton, 1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
+            " FROM chrCharacters"
+            " WHERE characterID=%u", itemID))
+        {
+            codelog(DATABASE__ERROR, "Error in query for character %u: %s", itemID, res.error.c_str());
+            return false;
+        }
+    } else if (IsOffice(itemID)) {
+        //use staOffices
+        if (!sDatabase.RunQuery(res,
+            "SELECT"
+            "  name, typeID, corporationID, solarSystemID, flag, 0 AS contraband,"
+            "  1 AS singleton, 1 AS quantity, 0 AS x, 0 AS y, 0 AS z, '' AS customInfo"
+            " FROM staOffices"
+            " WHERE itemID=%u", itemID))
+        {
+            codelog(DATABASE__ERROR, "Error in query for character %u: %s", itemID, res.error.c_str());
+            return false;
+        }
     } else {
         //fallback to entity
         if (!sDatabase.RunQuery(res,
@@ -506,22 +494,18 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         "UPDATE entity"
         " SET"
         "  itemName = '%s',"
-        "  typeID = %u,"
         "  ownerID = %u,"
         "  locationID = %u,"
         "  flag = %u,"
-        "  contraband = %u,"
         "  singleton = %u,"
         "  quantity = %u,"
-        "  x = %f, y = %f, z = %f,"
+        "  x = %.2f, y = %.2f, z = %.2f,"
         "  customInfo = '%s'"
         " WHERE itemID = %u",
         nameEsc.c_str(),
-        data.typeID,
         data.ownerID,
         data.locationID,
         (uint16)data.flag,
-        (data.contraband?1:0),
         (data.singleton?1:0),
         data.quantity,
         data.position.x, data.position.y, data.position.z,
@@ -571,12 +555,19 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
     }
 }
 
-void InventoryDB::SaveAttributes(std::vector<AttrData>& data)
+void InventoryDB::SaveAttributes(bool isChar, std::vector<AttrData>& data)
 {
     std::ostringstream Inserts;
     // start the insert into command.
-    Inserts << "INSERT INTO entity_attributes";
-    Inserts << " (itemID, attributeID, valueInt, valueFloat)";
+    if (isChar) {
+        DBerror err;
+        sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u", data[0].itemID);
+        Inserts << "INSERT INTO chrCharacterAttributes";
+        Inserts << " (charID, attributeID, valueInt, valueFloat)";
+    } else {
+        Inserts << "INSERT INTO entity_attributes";
+        Inserts << " (itemID, attributeID, valueInt, valueFloat)";
+    }
     bool first = true;
     for (auto cur : data) {
         if (first) {
@@ -635,8 +626,8 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
     } else if (IsStation(od.locID)) {
         if (od.ownerID == 1) {
             /* this will get agents in station */
-            query << " AND ownerID < " << EVEMU_MINIMUM_DYNAMIC_ID;
-            query << " AND itemID < " << EVEMU_MINIMUM_DYNAMIC_ID;
+            query << " AND ownerID < " << maxNPCItem;
+            query << " AND itemID < " << maxNPCItem;
         } else {
             if (IsPlayerCorp(od.corpID)) {
                 // check for items owned by corp in players cargo/hangar
@@ -645,15 +636,18 @@ bool InventoryDB::GetItemContents(OwnerData &od, std::vector<uint32> &into) {
                 query << " AND ownerID = " << od.ownerID;
             }
         }
-    } else if (IsPlayerItem(od.locID)) {
+    } else if (IsCharacter(od.locID)) {
         if (od.ownerID == 1) {
             // not sure what to do here....
         } else if (IsPlayerCorp(od.corpID)) {
-            // check for items owned by corp in players cargo/hangar
+            // check for items owned by corp in players cargo/hangar...this *should* work for cap ships' cargo, also
            query << " AND ((ownerID = " << od.ownerID << ") OR (ownerID = " << od.corpID << "))";
         } else {
             query << " AND ownerID = " << od.ownerID;
         }
+    } else if (IsOffice(od.locID)) {
+        // may not need this, as location is officeID, but items MAY be owned by players in corp hangar.
+        //query << " AND ownerID = " << od.ownerID;
     }
 
     query << " ORDER BY itemID";
@@ -728,9 +722,11 @@ void InventoryDB::DeleteTrackingCans()
     DBerror err;
     std::string query = "'%Position Test%'";
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+    query = "'%Bubble%'";
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
 }
 
-bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
+bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     DBQueryResult res;
 
     if (IsAgent(characterID)) {
@@ -759,14 +755,14 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
             "   chr.careerSpecialityID,"
             "   chr.startDateTime,"
             "   chr.createDateTime,"
-            "   0 as shipID,"
+            "   0 as shipID,"       // update this when agents are in space
             "   0 as capsuleID"
 			" FROM chrNPCCharacters AS chr"
 			"  LEFT JOIN staStations AS sta ON sta.stationID = chr.stationID"
-			"  LEFT JOIN corporation AS crp ON crp.corporationID = sta.corporationID"
+            "  LEFT JOIN crpCorporation AS crp ON crp.corporationID = sta.corporationID"
             " WHERE chr.characterID = %u", characterID)) {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
-            return NULL;
+            return nullptr;
             }
     } else {
         if(!sDatabase.RunQuery(res,
@@ -795,13 +791,18 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
             "   chr.startDateTime,"
             "   chr.createDateTime,"
             "   chr.shipID,"
-            "   chr.capsuleID"
-            " FROM chrCharacter AS chr"
-            "  LEFT JOIN corporation AS crp USING (corporationID)"
+            "   chr.capsuleID,"
+            "   chr.flag,"
+            "   chr.name,"
+            "   chr.skillPoints,"
+            "   chr.typeID,"
+            "   crp.warFactionID"
+            " FROM chrCharacters AS chr"
+            "  LEFT JOIN crpCorporation AS crp USING (corporationID)"
             " WHERE chr.characterID = %u", characterID))
         {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
-            return NULL;
+            return nullptr;
         }
     }
 
@@ -824,6 +825,7 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     into.allianceID = row.IsNull( 10 ) ? 0 : row.GetUInt( 10 );
     into.stationID = row.GetUInt( 11 );
     into.solarSystemID = row.GetUInt( 12 );
+    into.locationID = (into.stationID == 0 ? into.solarSystemID : into.stationID);
     into.constellationID = row.GetUInt( 13 );
     into.regionID = row.GetUInt( 14 );
     into.ancestryID = row.GetUInt( 15 );
@@ -832,10 +834,15 @@ bool InventoryDB::GetCharacter(uint32 characterID, CharacterData &into) {
     into.careerID =row.GetUInt( 18 );
     into.schoolID = row.GetUInt( 19 );
     into.careerSpecialityID = row.GetUInt( 20 );
-    into.startDateTime = row.GetUInt64( 21 );
-    into.createDateTime = row.GetUInt64( 22 );
+    into.startDateTime = row.GetInt64( 21 );
+    into.createDateTime = row.GetInt64( 22 );
     into.shipID = row.GetUInt( 23 );
     into.capsuleID = row.GetUInt( 24 );
+    into.flag = row.GetUInt(25);
+    into.name = row.GetText(26);
+    into.skillPoints = row.GetDouble(27);
+    into.typeID = row.GetUInt(28);
+    into.warFactionID = row.GetUInt(29);
 
     return true;
 }
@@ -851,60 +858,79 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.rolesAtBase = 0;
         into.rolesAtHQ = 0;
         into.rolesAtOther = 0;
-    } else {
-        if(!sDatabase.RunQuery(res,
+        into.grantableRoles = 0;
+        into.grantableRolesAtBase = 0;
+        into.grantableRolesAtHQ = 0;
+        into.grantableRolesAtOther = 0;
+
+        if (!sDatabase.RunQuery(res,
             "SELECT"
+            "  corporationID"
+            " FROM agtAgents"
+            " WHERE agentID = %u",
+            characterID))
+        {
+            codelog(DATABASE__ERROR, "Failed to query corp member info of character %u: %s.", characterID, res.error.c_str());
+            return false;
+        }
+
+        if (!res.GetRow(row)) {
+            _log(DATABASE__MESSAGE, "No corp member info found for character %u.", characterID);
+            return false;
+        }
+        into.corporationID = row.GetInt(0);
+    } else {
+        if (!sDatabase.RunQuery(res,
+            "SELECT"
+            "  corporationID,"
             "  corpAccountKey,"
             "  corpRole,"
             "  rolesAtAll,"
             "  rolesAtBase,"
             "  rolesAtHQ,"
-            "  rolesAtOther"
-            " FROM chrCharacter"
+            "  rolesAtOther,"
+            "  grantableRoles,"
+            "  grantableRolesAtBase,"
+            "  grantableRolesAtHQ,"
+            "  grantableRolesAtOther"
+            " FROM chrCharacters"
             " WHERE characterID = %u",
             characterID))
         {
             codelog(DATABASE__ERROR, "Failed to query corp member info of character %u: %s.", characterID, res.error.c_str());
             return false;
         }
-        if(!res.GetRow(row)) {
+        if (!res.GetRow(row)) {
             _log(DATABASE__MESSAGE, "No corp member info found for character %u.", characterID);
             return false;
         }
 
-        into.corpAccountKey = row.GetInt(0);
-        into.corpRole = row.GetInt64(1);
-        into.rolesAtAll = row.GetInt64(2);
-        into.rolesAtBase = row.GetInt64(3);
-        into.rolesAtHQ = row.GetInt64(4);
-        into.rolesAtOther = row.GetInt64(5);
+        into.corporationID = row.GetInt(0);
+        into.corpAccountKey = row.GetInt(1);
+        into.corpRole = row.GetInt64(2);
+        into.rolesAtAll = row.GetInt64(3);
+        into.rolesAtBase = row.GetInt64(4);
+        into.rolesAtHQ = row.GetInt64(5);
+        into.rolesAtOther = row.GetInt64(6);
+        into.grantableRoles = row.GetInt64(7);
+        into.grantableRolesAtBase = row.GetInt64(8);
+        into.grantableRolesAtHQ = row.GetInt64(9);
+        into.grantableRolesAtOther = row.GetInt64(10);
     }
 
-    // this is hack and belongs somewhere else
-    if (IsAgent(characterID)) {
-        if(!sDatabase.RunQuery(res,
-            "SELECT"
-            "  corporation.stationID"
-            " FROM chrNPCCharacters"
-            "  LEFT JOIN corporation USING (corporationID)"
-            " WHERE characterID = %u",
-            characterID))
-        {
-            codelog(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
-            return false;
-        }
-    } else {
-        if(!sDatabase.RunQuery(res,
-            "SELECT"
-            "  corporation.stationID"
-            " FROM chrCharacter"
-            "  LEFT JOIN corporation USING (corporationID)"
-            " WHERE characterID = %u",
-            characterID))
-        {
-            codelog(DATABASE__ERROR, "Failed to query HQ of character's %u corporation: %s.", characterID, res.error.c_str());
-            return false;
-        }
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "  taxRate,"
+        "  stationID,"
+        "  allianceID,"
+        "  warFactionID,"
+        "  corporationName,"
+        "  tickerName"
+        " FROM crpCorporation"
+        " WHERE corporationID = %u", into.corporationID))
+    {
+        codelog(DATABASE__ERROR, "Failed to query HQ of character's %u corporation %u: %s.", characterID, into.corporationID, res.error.c_str());
+        return false;
     }
 
     if(!res.GetRow(row)) {
@@ -912,7 +938,12 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         return false;
     }
 
-    into.corpHQ = (row.IsNull(0) ? 0 : row.GetUInt(0));
+    into.taxRate = row.GetDouble(0);
+    into.corpHQ = (row.IsNull(1) ? 0 : row.GetUInt(1));
+    into.allianceID = (row.IsNull(2) ? 0 : row.GetUInt(2));
+    into.warFactionID = (row.IsNull(3) ? 0 : row.GetUInt(3));
+    into.name = row.GetText(4);
+    into.ticker = row.GetText(5);
 
     return true;
 }
@@ -944,199 +975,8 @@ static std::string _ToStr(double v) {
     return(buf);
 }
 
-bool InventoryDB::NewCharacter(uint32 characterID, const CharacterData &data, const CorpData &corpData) {
-    DBerror err;
-
-    std::string titleEsc, descriptionEsc;
-    sDatabase.DoEscapeString(titleEsc, data.title);
-    sDatabase.DoEscapeString(descriptionEsc, data.description);
-
-    // Table chrCharacter goes first
-    if(!sDatabase.RunQuery(err,
-        "INSERT INTO chrCharacter"
-        // CharacterData:
-        "  (characterID, accountID, title, description, bounty, balance, aurBalance, securityRating, petitionMessage,"
-        "   logonDateTime, logonMinutes, corporationID, corpRole, rolesAtAll, rolesAtBase, rolesAtHQ, rolesAtOther,"
-        "   startDateTime, createDateTime, corpAccountKey,"
-        "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
-        "   stationID, solarSystemID, constellationID, regionID, freeRespecs, lastRespecDateTime, nextRespecDateTime)"
-        " VALUES"
-        // CharacterData:
-        "  (%u, %u, '%s', '%s', %f, %f, %f, %f, '%s',"
-        "   %" PRIu64 ", %u, %u, %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %" PRIu64 ", "
-        "   %" PRIu64 ", %" PRIu64 ", %i,"
-        "   %u, %u, %u, %u, %u, %u, %u,"
-        "   %u, %u, %u, %u, %u, %u, %u)",
-        // CharacterData:
-        characterID, data.accountID, titleEsc.c_str(), descriptionEsc.c_str(), data.bounty, data.balance, data.aurBalance, data.securityRating, "No petition",
-        Win32TimeNow(), data.logonMinutes, data.corporationID, corpData.corpRole, corpData.rolesAtAll, corpData.rolesAtBase, corpData.rolesAtHQ, corpData.rolesAtOther,
-        data.startDateTime, data.createDateTime, corpData.corpAccountKey,
-        data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
-        data.stationID, data.solarSystemID, data.constellationID, data.regionID, 2, 0, 0
-    )) {
-        codelog(DATABASE__ERROR, "Failed to insert character %u: %s.", characterID, err.c_str());
-        return false;
-    }
-
-    // TODO: Eventually, this should go under corp stuff...
-    // TODO;  set to use CharacterDB::UpdateCharCorpRecords(char, corp)
-    if(!sDatabase.RunQuery(err,
-        "INSERT INTO chrEmployment"
-        "  (characterID, corporationID, startDate, deleted)"
-        " VALUES"
-        "  (%u, %u, %" PRIu64 ", 0)",
-        characterID, data.corporationID, Win32TimeNow()))
-    {
-        codelog(DATABASE__ERROR, "Failed to insert employment info of character %u: %s.", characterID, err.c_str());
-        //just let it go... its a lot easier this way
-    }
-
-    // And one more member to the corporation
-    if(!sDatabase.RunQuery(err,
-        "UPDATE corporation"
-        "  SET memberCount = memberCount + 1"
-        " WHERE corporationID = %u",
-        data.corporationID))
-    {
-        _log(DATABASE__MESSAGE, "Failed to raise member count of corporation %u: %s.", characterID, err.c_str());
-        //just let it go... its a lot easier this way
-    }
-
-    return true;
-}
-
-bool InventoryDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
-    DBerror err;
-
-    std::string titleEsc;
-    sDatabase.DoEscapeString(titleEsc, data.title);
-
-    std::string descriptionEsc;
-    sDatabase.DoEscapeString(descriptionEsc, data.description);
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE chrCharacter"
-        " SET"
-        "  accountID = %u,"
-        "  title = '%s',"
-        "  description = '%s',"
-        "  gender = %u,"
-        "  bounty = %f,"
-        "  balance = %f,"
-        "  aurBalance = %f,"
-        "  securityRating = %f,"
-        "  logonMinutes = %u,"
-        "  skillPoints = %f,"
-        "  corporationID = %u,"
-        "  stationID = %u,"
-        "  solarSystemID = %u,"
-        "  constellationID = %u,"
-        "  regionID = %u,"
-        "  ancestryID = %u,"
-        "  careerID = %u,"
-        "  schoolID = %u,"
-        "  careerSpecialityID = %u,"
-        "  startDateTime = %" PRIu64 ","
-        "  createDateTime = %" PRIu64 ","
-        "  shipID = %u,"
-        "  capsuleID = %u"
-        " WHERE characterID = %u",
-        data.accountID,
-        titleEsc.c_str(),
-        descriptionEsc.c_str(),
-        data.gender,
-        data.bounty,
-        data.balance,
-        data.aurBalance,
-        data.securityRating,
-        data.logonMinutes,
-        data.skillPoints,
-        data.corporationID,
-        data.stationID,
-        data.solarSystemID,
-        data.constellationID,
-        data.regionID,
-        data.ancestryID,
-        data.careerID,
-        data.schoolID,
-        data.careerSpecialityID,
-        data.startDateTime,
-        data.createDateTime,
-        data.shipID,
-        data.capsuleID,
-        characterID))
-    {
-        codelog(DATABASE__ERROR, "Failed to save character %u: %s.", characterID, err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-bool InventoryDB::SaveCorpData(uint32 characterID, const CorpData &data) {
-    DBerror err;
-
-    if(!sDatabase.RunQuery(err,
-        "UPDATE chrCharacter"
-        " SET"
-        "  corpRole = %" PRIu64 ","
-        "  corpAccountKey = %i,"
-        "  rolesAtAll = %" PRIu64 ","
-        "  rolesAtBase = %" PRIu64 ","
-        "  rolesAtHQ = %" PRIu64 ","
-        "  rolesAtOther = %" PRIu64
-        " WHERE characterID = %u",
-        data.corpRole,
-        data.corpAccountKey,
-        data.rolesAtAll,
-        data.rolesAtBase,
-        data.rolesAtHQ,
-        data.rolesAtOther,
-        characterID))
-    {
-        codelog(DATABASE__ERROR, "Failed to update corp member info of character %u: %s.", characterID, err.c_str());
-        return false;
-    }
-
-    return true;
-}
-
-// Undefine the macro used only in NewCharacter and SaveCharacterAppearance.
+// Undefine the macro used only in SaveCharacterAppearance.
 #undef _VoN
-
-bool InventoryDB::DeleteCharacter(uint32 characterID) {
-    DBerror err;
-
-    sDatabase.RunQuery(err,
-        "DELETE FROM eveMailDetails"
-        " USING eveMail, eveMailDetails"
-        " WHERE eveMail.messageID = eveMailDetails.messageID"
-        " AND (senderID = %u OR channelID = %u)", characterID, characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM bookmarks WHERE ownerID = %u",  characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM market_orders WHERE charID =% lu", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM market_transactions WHERE clientID = %u", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM repAgent, repAlliance, repChar, repCorp, repNPCCorp, repStandingChanges"
-        " WHERE (fromID = %u OR toID = %u)", characterID, characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacter, chrEmployment, market_journal, crpCharShares"
-         " WHERE characterID=%u", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM entity, entity_attributes"
-        " WHERE itemID = %u", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM entity_attributes"
-        " WHERE itemID IN (SELECT itemID FROM entity WHERE ownerID = %u)", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE ownerID = %u", characterID);
-
-    return true;
-}
 
 bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &into) {
     DBQueryResult res;
@@ -1156,7 +996,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
 
         DBResultRow row;
         if(!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Celestial object %u not found.", celestialID);
+            _log(DATABASE__MESSAGE, "Static Celestial object %u not found.", celestialID);
             return false;
         }
 
@@ -1182,7 +1022,7 @@ bool InventoryDB::GetCelestialObject(uint32 celestialID, CelestialObjectData &in
 
         DBResultRow row;
         if(!res.GetRow(row)) {
-            _log(DATABASE__MESSAGE, "Celestial object %u not found.", celestialID);
+            _log(DATABASE__MESSAGE, "Dynamic Celestial object %u not found.", celestialID);
             return false;
         }
 
@@ -1235,40 +1075,6 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     into.radius = row.GetDouble(16);
     into.sunTypeID = row.GetUInt(17);
     into.securityClass = (row.IsNull(18) ? (std::string("")) : row.GetText(18));
-
-    return true;
-}
-
-bool InventoryDB::GetStation(uint32 stationID, StationInfo &into) {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  security, dockingCostPerVolume, maxShipVolumeDockable, officeRentalCost, operationID,"
-        "  reprocessingEfficiency, reprocessingStationsTake, reprocessingHangarFlag"
-        " FROM staStations"
-        " WHERE stationID = %u",
-        stationID))
-    {
-        codelog(DATABASE__ERROR, "Failed to query data for station %u: %s.", stationID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Station %u not found.", stationID);
-        return false;
-    }
-
-    into.security = row.GetUInt(0);
-    into.dockingCostPerVolume = row.GetDouble(1);
-    into.maxShipVolumeDockable = row.GetDouble(2);
-    into.officeRentalCost = row.GetUInt(3);
-    into.operationID = row.GetUInt(4);
-
-    into.reprocessingEfficiency = row.GetDouble(5);
-    into.reprocessingStationsTake = row.GetDouble(6);
-    into.reprocessingHangarFlag = (EVEItemFlags)row.GetInt(7);
 
     return true;
 }

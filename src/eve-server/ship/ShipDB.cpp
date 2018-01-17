@@ -105,7 +105,7 @@ PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
 }
 
 bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
-    uint64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
+    int64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
 
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO "

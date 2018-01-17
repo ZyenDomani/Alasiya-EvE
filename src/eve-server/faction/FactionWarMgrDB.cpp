@@ -38,27 +38,27 @@ PyRep *FactionWarMgrDB::GetWarFactions() {
 
     if (!sDatabase.RunQuery(res,
         "SELECT factionID, militiaCorporationID"
-        " FROM chrFactions"
+        " FROM facFactions"
         " WHERE militiaCorporationID IS NOT NULL"))
     {
         _log(DATABASE__ERROR, "Failed to query war factions: %s.", res.error.c_str());
         return nullptr;
     }
 
-    return(DBResultToIntIntDict(res));
+    return DBResultToIntIntDict(res);
 }
 
 PyRep* FactionWarMgrDB::GetFacWarSystems()
 {   /* done  -allan 03May16 */
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT systemID, occupierID, factionID FROM factionWarSystems"))
+        "SELECT systemID, occupierID, factionID FROM facWarSystems"))
     {
         _log(DATABASE__ERROR, "Failed to query war factions: %s.", res.error.c_str());
         return nullptr;
     }
 
-    PyDict* result = new PyDict;
+    PyDict* result = new PyDict();
     PyDict* dict;
     DBResultRow row;
     while (res.GetRow(row)) {
@@ -75,7 +75,7 @@ uint32 FactionWarMgrDB::GetFactionMilitiaCorporation(const uint32 factionID) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT militiaCorporationID"
-        " FROM chrFactions"
+        " FROM facFactions"
         " WHERE factionID=%u",
         factionID))
     {
@@ -85,10 +85,10 @@ uint32 FactionWarMgrDB::GetFactionMilitiaCorporation(const uint32 factionID) {
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "Faction %u not found.", factionID);
+        _log(FACWAR__DB_WARNING, "Faction %u not found.", factionID);
         return 0;
     }
 
-    return(row.GetUInt(0));
+    return row.GetUInt(0);
 }
 

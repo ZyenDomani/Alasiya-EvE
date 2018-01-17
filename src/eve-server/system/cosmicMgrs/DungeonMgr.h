@@ -25,7 +25,7 @@
  *    uint32 systemID;
  *    uint32 dungeonID;
  *    uint8 dunTemplateID;
- *    uint64 dunExpiryTime;
+ *    int64 dunExpiryTime;
  *    uint8 state;
  *    double x;
  *    double y;

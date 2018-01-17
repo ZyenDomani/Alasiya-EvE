@@ -41,7 +41,7 @@ class NPC;
 class InventoryItem;
 class SystemEntity;
 class SystemBubble;
-class DoDestiny_SetState;
+class  SetState;
 class DestinyManager;
 
 class AnomalyMgr;
@@ -53,7 +53,7 @@ class PyServiceMgr;
 class DynamicEntityFactory {
 public:
     // you MUST call (your SystemManager)->AddEntity() after this to actually put the entity in space
-    static SystemEntity* BuildEntity(SystemManager &system, ItemFactory* factory, const DBSystemDynamicEntity &entity);
+    static SystemEntity* BuildEntity(SystemManager &system, const DBSystemDynamicEntity &entity);
 };
 
 class SystemManager
@@ -62,7 +62,6 @@ public:
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
     virtual ~SystemManager();
 
-    ItemFactory* itemFactory() const;
     SystemEntity* GetSE(uint32 entityID) const;
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
@@ -100,7 +99,7 @@ public:
     void RemoveItemFromInventory(InventoryItemRef item);
     void DoSpawnForBubble(SystemBubble* pSysBubble);
 
-    void MakeSetState(const SystemBubble *bubble, DoDestiny_SetState &into, bool login=false) const;
+    void MakeSetState(const SystemBubble* bubble,  SetState& into) const;
 
     // for spawn system     -allan 15July15     (not complete)
     typedef std::vector<uint32> SpawnBubbleVec;
@@ -134,8 +133,9 @@ protected:
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
 
-    bool LoadCosmicMgrs();
+    void PayBounties();
 
+    bool LoadCosmicMgrs();
     bool LoadSystemStatics();
     bool LoadSystemDynamics();
     bool LoadPlayerDynamics();
@@ -144,8 +144,9 @@ protected:
     bool m_entityChanged;
     std::map<uint32, NPC*> m_npcs;
     std::map<uint32, Client*> m_clients;
-    std::map<uint32, SystemEntity*> m_entities;     //we own these, but they are also referenced in m_bubbles
-    std::map<uint32, SystemEntity*> m_ticEntities;  // this list is for entities that need process tics (objects, npc, client ships)
+    std::map<uint32, SystemEntity*> m_entities;         // this list is all entities in this system.  we own these.
+    std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
+    std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
 
 private:
     // for spawn systems     -allan 15July15
@@ -168,6 +169,10 @@ private:
     uint32 m_activityTime;
 
     float m_secValue;
+
+    // for bounty processing (20m timer)
+    Timer m_bountyTimer;
+    std::multimap<uint32, BountyData> m_bountyMap;  // charID/data
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunely, this is very specific for which iterators it can check.  see notes in code.

@@ -178,7 +178,7 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 
 PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 {
-    return new PyULong(call.client->GetChar()->createDateTime());
+    return new PyLong(call.client->GetChar()->createDateTime());
 }
 
 PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )

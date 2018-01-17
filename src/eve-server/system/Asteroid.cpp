@@ -33,20 +33,20 @@
 #include "system/SystemBubble.h"
 
 
-AsteroidItem::AsteroidItem(ItemFactory& _factory, uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
-: InventoryItem(_factory, _asteroidID, _type, _idata),
+AsteroidItem::AsteroidItem(uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
+: InventoryItem(_asteroidID, _type, _idata),
 m_data(_adata)
 {
     _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", _idata.name.c_str(), _asteroidID);
 }
 
-AsteroidItemRef AsteroidItem::Load(ItemFactory &factory, uint32 asteroidID)
+AsteroidItemRef AsteroidItem::Load( uint32 asteroidID)
 {
-    return InventoryItem::Load<AsteroidItem>( factory, asteroidID );
+    return InventoryItem::Load<AsteroidItem>(asteroidID );
 }
 
-AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, AsteroidData& adata) {
-    const ItemType *type = factory.GetType(adata.typeID);
+AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
+    const ItemType *type = sItemFactory.GetType(adata.typeID);
     if (type == nullptr)
         return AsteroidItemRef();
 
@@ -56,7 +56,7 @@ AsteroidItemRef AsteroidItem::Spawn(ItemFactory& factory, ItemData& idata, Aster
     if (asteroidID == 0)
         return AsteroidItemRef();
 
-    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem( factory, asteroidID, *type, idata, adata));
+    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(asteroidID, *type, idata, adata));
     roidRef->SetAttribute(AttrRadius,    adata.radius);
     roidRef->SetAttribute(AttrQuantity,  adata.quantity);
     roidRef->SetAttribute(AttrVolume,    type->volume());

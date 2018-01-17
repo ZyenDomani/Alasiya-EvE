@@ -45,7 +45,7 @@ uint16 crc_hqx( const uint8* data, size_t len, uint16 crc = 0 );
  *
  * @return Size of file.
  */
-uint64 filesize( const char* filename );
+int64 filesize( const char* filename );
 /**
  * @brief Obtains filesize.
  *
@@ -53,7 +53,7 @@ uint64 filesize( const char* filename );
  *
  * @return Size of file.
  */
-uint64 filesize( FILE* fd );
+int64 filesize( FILE* fd );
 
 /**
  * @brief Calculates next (greater or equal)
@@ -64,7 +64,7 @@ uint64 filesize( FILE* fd );
  * @return Power-of-two number which is greater than or
  *         equal to the base number.
  */
-uint64 npowof2( uint64 num );
+int64 npowof2( int64 num );
 
 /**
  * @brief Generates random integer from interval [low; high].
@@ -96,7 +96,7 @@ namespace EvE {
     // returns the minimum of x,y and 1
     double min1(double x, double y);
     // returns the max of x,y with y=0 by default
-    inline uint64 max(int64 x, int64 y=0)               { return ((x > y) ? x : y); }
+    inline int64 max(int64 x, int64 y=0)                { return ((x > y) ? x : y); }
     // returns the max of x,y with y=0 by default
     inline double max(double x, double y=0)             { return ((x > y) ? x : y); }
     // prints the top10 items in stack to stdout

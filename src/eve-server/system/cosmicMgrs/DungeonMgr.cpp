@@ -251,7 +251,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */
-    InventoryItemRef iRef = m_services.item_factory->SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    InventoryItemRef iRef = sItemFactory.SpawnItem(iData);  /* not sure how well generic spawn will work here. */
     if (iRef.get() == nullptr) // make error and exit
         return false;
     // do this or create/add generic se here?
@@ -333,7 +333,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         /** @todo update this to use temp items */
         // not sure how well generic spawn will work here...it doesnt!  fix this shit
         // asteroids MUST be created using BeltMgr/AsteroidItem....CANNOT use generic spawn
-        InventoryItemRef item = m_services.item_factory->SpawnItem(iData);
+        InventoryItemRef item = sItemFactory.SpawnItem(iData);
         if (item.get() == nullptr) // we'll survive...
             continue;
 
@@ -685,9 +685,9 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             grp.typeName = it->second.typeName;
             grp.typeID = it->second.typeID;
             if (sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric) {
-                theta = MakeRandomFloat(0, EvE_Pi);
-                grp.x = (pos + radius * cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
-                grp.z = (pos + radius * sin(theta)) * -1;
+                theta = MakeRandomFloat(0,  EvE::Trig::Pi);
+                grp.x = (pos + radius * std::cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+                grp.z = (pos + radius * std::sin(theta)) * -1;
                 grp.y = MakeRandomFloat(-radius, radius);
             } else if (IsEven(MakeRandomInt(0,10))) {
                 grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);

@@ -90,7 +90,7 @@ public:
      * @param[in] solarSystemID ID of solar system to load.
      * @return Pointer to new solar system object; NULL if failed.
      */
-    static SolarSystemRef Load(ItemFactory &factory, uint32 solarSystemID);
+    static SolarSystemRef Load( uint32 solarSystemID);
 
     /*
      * Public Fields:
@@ -112,12 +112,12 @@ public:
     double              radius() const                  { return m_radius; }
     const std::string & securityClass() const           { return m_securityClass; }
 
-    void AddItemToInventory(InventoryItemRef item);
-    void RemoveItemFromInventory(InventoryItemRef item);
+    // Solar System Inventory Functions:
+    void AddItemToInventory(InventoryItemRef iRef);
+    void RemoveItemFromInventory(InventoryItemRef iRef);
 
 protected:
     SolarSystem(
-        ItemFactory &_factory,
         uint32 _solarSystemID,
         // InventoryItem stuff:
         const ItemType &_type,
@@ -129,11 +129,6 @@ protected:
     );
     virtual ~SolarSystem();
 
-    // Solar System Inventory Functions:
-
-    void AddItem(InventoryItemRef item);
-    void RemoveItem(InventoryItemRef item);
-
     /*
      * Member functions:
      */
@@ -142,7 +137,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 solarSystemID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 solarSystemID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
             _log( ITEM__ERROR, "Trying to load %s as Solar system %u.", type.name().c_str(), solarSystemID );
             if (sConfig.server.StackTrace)
@@ -152,15 +147,15 @@ protected:
 
         // load celestial data
         CelestialObjectData cData;
-        if (!factory.db().GetCelestialObject(solarSystemID, cData))
+        if (!sItemFactory.db()->GetCelestialObject(solarSystemID, cData))
             return RefPtr<_Ty>();
 
         // load solar system data
         SolarSystemData ssData;
-        if( !factory.db().GetSolarSystem( solarSystemID, ssData ) )
+        if( !sItemFactory.db()->GetSolarSystem( solarSystemID, ssData ) )
             return RefPtr<_Ty>();
 
-        return SolarSystemRef( new SolarSystem( factory, solarSystemID, type, data, cData, ssData ) );
+        return SolarSystemRef( new SolarSystem(solarSystemID, type, data, cData, ssData ) );
     }
 
     /*

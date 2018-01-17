@@ -77,7 +77,7 @@ STR2( int64, SCNd64 )
 STR2( uint8,  SCNu8 )
 STR2( uint16, SCNu16 )
 STR2( uint32, SCNu32 )
-STR2( uint64, SCNu64 )
+//STR2( uint64, SCNu64 )
 
 STR2( float, "f" )
 STR2( double, "lf" )

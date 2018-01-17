@@ -12,7 +12,7 @@
 #include "EVEServerConfig.h"
 #include "market/MarketBotConf.h"
 #include "market/MarketBotMgr.h"
-#include "market/MarketDB.h"
+#include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
 
 
@@ -30,7 +30,6 @@ void MarketBotDataMgr::Initialize()
 
     sLog.Green("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
     /* load current data */
-
 }
 
 
@@ -60,12 +59,12 @@ void MarketBotMgr::Initialize()
 
     sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
     /* start timers, process current data, and create new orders, if needed */
-
 }
 
 void MarketBotMgr::Process()
 {
-    if (!m_initalized) return;
+    if (!m_initalized)
+        return;
     if (m_updateTimer.Check(false)) {
     /* process current data, process orders, xfer funds, reset timers, create new orders */
     }

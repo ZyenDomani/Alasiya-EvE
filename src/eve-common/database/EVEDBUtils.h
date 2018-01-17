@@ -47,9 +47,11 @@ StringContentsType ClassifyStringContents(const char *str);*/
 
 PyRep *DBColumnToPyRep(const DBResultRow &row, uint32 column_index);
 
+// this returns a std PyObject "util.Rowset" with data in 'lines'
 PyObject *DBResultToRowset(DBQueryResult &result);
 PyObject *DBResultToIndexRowset(DBQueryResult &result, const char *key);
 PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index);
+
 PyTuple *DBResultToTupleSet(DBQueryResult &result);
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type = "util.Row");
 PyDict *DBResultToIntRowDict(DBQueryResult &result, uint32 key_index, const char *type = "util.Row");
@@ -60,11 +62,13 @@ void DBResultToIntIntlistDict(DBQueryResult &result, std::map<int32, PyRep *> &i
 
 PyList *DBResultToPackedRowList(DBQueryResult &result);
 PyTuple *DBResultToPackedRowListTuple(DBQueryResult &result);
+// this fills PyObjectEx2(util.KeyVal)'s 'list" with PacketRow objects
 PyObjectEx *DBResultToCRowset(DBQueryResult &result);
 
 PyDict *DBResultToPackedRowDict(DBQueryResult &result, const char *key);
 PyDict *DBResultToPackedRowDict(DBQueryResult &result, uint32 key_index);
 
+// this fills PyObjectEx2(util.KeyVal)'s 'list" with Indexed PacketRow objects
 PyObjectEx *DBResultToCIndexedRowset(DBQueryResult &result, const char *key);
 PyObjectEx *DBResultToCIndexedRowset(DBQueryResult &result, uint32 key_index);
 

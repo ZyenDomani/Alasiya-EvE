@@ -42,7 +42,7 @@ class AttributeMap
 {
 public:
     AttributeMap(InventoryItem& item);
-    ~AttributeMap();
+    ~AttributeMap() noexcept;
 
     void SetAttribute(uint16 attrID, EvilNumber& num, bool nofity = true);
 

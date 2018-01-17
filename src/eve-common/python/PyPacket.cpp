@@ -243,7 +243,7 @@ PyRep *PyPacket::Encode() {
     arg_tuple->items[2] = dest.Encode();
     //userid
     if (userid == 0)
-        arg_tuple->items[3] = new PyNone();
+        arg_tuple->items[3] = PyStatic.NewNone();
     else
         arg_tuple->items[3] = new PyInt(userid);
 
@@ -254,12 +254,12 @@ PyRep *PyPacket::Encode() {
 
     //named arguments
     if (named_payload == nullptr)
-        arg_tuple->items[5] = new PyNone();
+        arg_tuple->items[5] = PyStatic.NewNone();
     else
         arg_tuple->items[5] = named_payload; //->Clone();
 
     //TODO: Not sure what this is, On packets so far they always have as PyNone
-    arg_tuple->items[6] = new PyNone();
+    arg_tuple->items[6] = PyStatic.NewNone();
 
     return new PyObject( type_string.c_str(), arg_tuple );
 }
@@ -458,12 +458,12 @@ PyRep *PyAddress::Encode() {
         t->items[0] = new PyInt((int)type);
 
         if (service == "")
-            t->items[1] = new PyNone();
+            t->items[1] = PyStatic.NewNone();
         else
             t->items[1] = new PyString(service.c_str());
 
         if (objectID == 0)
-            t->items[2] = new PyNone();
+            t->items[2] = PyStatic.NewNone();
         else
             t->items[2] = new PyLong(objectID);
 
@@ -475,12 +475,12 @@ PyRep *PyAddress::Encode() {
         t->items[1] = new PyLong(objectID);
 
         if (service == "")
-            t->items[2] = new PyNone();
+            t->items[2] = PyStatic.NewNone();
         else
             t->items[2] = new PyString(service.c_str());
 
         if (callID == 0)
-            t->items[3] = new PyNone();
+            t->items[3] = PyStatic.NewNone();
         else
             t->items[3] = new PyLong(callID);
 
@@ -490,9 +490,14 @@ PyRep *PyAddress::Encode() {
         t = new PyTuple(4);
         t->items[0] = new PyInt((int)type);
         t->items[1] = new PyLong(objectID);
-        t->items[2] = new PyLong(callID);
+
+        if (callID == 0)
+            t->items[2] = PyStatic.NewNone();
+        else
+            t->items[2] = new PyLong(callID);
+
         if (service == "")
-            t->items[3] = new PyNone();
+            t->items[3] = PyStatic.NewNone();
         else
             t->items[3] = new PyString(service.c_str());
 
@@ -503,7 +508,7 @@ PyRep *PyAddress::Encode() {
         t->items[0] = new PyInt((int)type);
         //broadcastID
         if (service == "")
-            t->items[1] = new PyNone();
+            t->items[1] = PyStatic.NewNone();
         else
             t->items[1] = new PyString(service.c_str());
         //narrowcast
@@ -760,7 +765,7 @@ PyTuple *PyCallStream::Encode() {
 
     //options
     if (arg_dict == nullptr)
-        res_tuple->items[3] = new PyNone();
+        res_tuple->items[3] = PyStatic.NewNone();
     else
         res_tuple->items[3] = new PyDict( *arg_dict );
 
@@ -770,7 +775,7 @@ PyTuple *PyCallStream::Encode() {
         it2->items[1] = new PySubStream(res_tuple);
     PyTuple *it1 = new PyTuple(2);
         it1->items[0] = it2;
-        it1->items[1] = new PyNone();    //this is the "channel" dict if populated.
+        it1->items[1] = PyStatic.NewNone();    //this is the "channel" dict if populated.
     return(it1);
 }
 
@@ -938,6 +943,6 @@ PyTuple *EVENotificationStream::Encode() {
         t2->SetItem(1, new PySubStream(t3));
     PyTuple *t1 = new PyTuple(1);
         t1->SetItem(0, t2);
-        //t1->SetItem(1, new PyNone());     // this may not be right.  most packets dont have it, but some do.  dunno what's the difference.
+        //t1->SetItem(1, PyStatic.NewNone());     // this may not be right.  most packets dont have it, but some do.  dunno what's the difference.
     return(t1);
 }

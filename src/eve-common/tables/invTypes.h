@@ -4,6 +4,8 @@
 namespace EVEDB {
     namespace invTypes {
         typedef enum {
+            typeJumpBridge = 27897,
+            typeFastJumpBridge = 28189,
             typeInvalid = 35564,
             typeTicketFrigate = 30717,
             typeTicketDestroyer = 30718,
@@ -148,6 +150,7 @@ namespace EVEDB {
             typeOrbitalCommandCenter = 3964,
             typePlanetaryCustomsOffice = 2233,
             typePlanetaryLaunchContainer = 2263,
+            typePlanetaryOfficeGantry = 3962,
             typePlanetEarthlike = 11,
             typePlanetGas = 13,
             typePlanetIce = 12,

@@ -31,6 +31,7 @@
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
 #include "market/MarketBotMgr.h"
+#include "station/Station.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -48,7 +49,7 @@ m_stampTimer(1000, true)    /* in ms */
     m_stations.clear();
 
     m_connections = 0;
-    m_shipTracking = sConfig.server.UseShipTracking;
+    m_shipTracking = sConfig.debug.UseShipTracking;
 }
 
 EntityList::~EntityList() {
@@ -115,7 +116,7 @@ void EntityList::Remove(Client* client) {
 
 void EntityList::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     Client* pClient(nullptr);
@@ -130,7 +131,7 @@ void EntityList::Process() {
         }
     }
 
-    if (sConfig.server.UseProfiling) {
+    if (sConfig.debug.UseProfiling) {
         sProfile.AddTime(_entityCProfile, GetTimeUSeconds() - profileStartTime);
         profileStartTime = GetTimeUSeconds();
     }
@@ -138,7 +139,7 @@ void EntityList::Process() {
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
         ++m_stamp;
-        //sLog.White("time check", "(%u) - ms: %f, win32: %" PRIu64 ", file: %.4f", m_stamp, GetTimeMSeconds(), Win32TimeNow(), GetFileTimeNow());
+        //sLog.White("time check", "(%u) - ms: %f, win32: %" PRIi64 ", file: %.4f", m_stamp, GetTimeMSeconds(), Win32TimeNow(), GetFileTimeNow());
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();
@@ -162,7 +163,7 @@ void EntityList::Process() {
             }
             ++itr;
         }
-        if (sConfig.server.UseProfiling)
+        if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
     }
 }
@@ -189,7 +190,14 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     return pSM;
 }
 
-/* note...all of the Find* methods below can get very expensive for many players */
+// this method is corrected, as stations have their own guestlist now.
+void EntityList::FindClientByStationID(uint32 stationID, std::vector<Client*> &result) const {
+    std::map<uint32, StationItemRef>::const_iterator itr = m_stations.find(stationID);
+    if (itr != m_stations.end())
+        itr->second->GetGuestList(result);
+}
+
+/** @todo @note NOTE: TODO: HACK:...all of the Find* methods below can get very expensive for many players */
 Client* EntityList::FindClientByCharID(uint32 char_id) const {
     for (auto cur : m_clients) {
         if (cur->GetCharacterID() == char_id)
@@ -224,12 +232,6 @@ Client* EntityList::FindClientByAccount(uint32 account_id) const {
     return nullptr;
 }
 
-void EntityList::FindClientByStationID(uint32 stationID, std::vector<Client*> &result) const {
-    for (auto cur : m_clients)
-        if (cur->GetStationID() == stationID)
-            result.push_back(cur);
-}
-
 void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
     for (auto cur : m_clients)
         if (cur->GetRegionID() == regionID)
@@ -241,7 +243,7 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
     EVENotificationStream notify;
         notify.remoteObject = 1;
         notify.args = *payload;
-    *payload = nullptr;    //consumed
+    payload = nullptr;    //consumed
 
     //now sent it to the client
     PyAddress dest;
@@ -268,55 +270,56 @@ void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVE
 
 //in theory this could be written in terms of the more generic
 //MulticastTarget function, but this is much more efficient.
-void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** payload, NotificationDestination target, uint32 target_id, bool seq )
+/** @todo  this shit is nuts.  update to use system/station maps for existing clients, instead of looping thru entire fuckin list */
+void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 target_id, bool seq )
 {
-    PyTuple* p = *payload;
-    *payload = nullptr;
+    PyTuple* payload = *in_payload;
+    in_payload = nullptr;
 
     for (auto cur : m_clients) {
         switch( target ) {
             case NOTIF_DEST__LOCATION: {
-                if( cur->GetLocationID() != target_id )
+                if ( cur->GetLocationID() != target_id )
                     continue;
             } break;
             case NOTIF_DEST__CORPORATION: {
-                if( cur->GetCorporationID() != target_id )
+                if ( cur->GetCorporationID() != target_id )
                     continue;
             } break;
         }
 
-        PyTuple* temp = new PyTuple(* p );
-        cur->SendNotification( notifyType, idType, &temp, seq );
+        PyIncRef(payload);
+        cur->SendNotification( notifyType, idType, &payload, seq );
     }
 
-    PyDecRef( p );
+    PyDecRef( payload );
 }
 
 void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
 {
     // consume payload
     PyTuple* payload = *in_payload;
-    *in_payload = nullptr;
+    in_payload = nullptr;
 
     if (!mcset.characters.empty())
         for (auto cur : m_clients)
             if ( mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end()) {
-                PyTuple* temp = new PyTuple(*payload);
-                cur->SendNotification( notifyType, idType, &temp, seq );
+                PyIncRef(payload);
+                cur->SendNotification( notifyType, idType, &payload, seq );
             }
 
     if (!mcset.locations.empty())
         for (auto cur : m_clients)
             if (mcset.locations.find(cur->GetLocationID()) != mcset.locations.end()) {
-                PyTuple* temp = new PyTuple(*payload);
-                cur->SendNotification( notifyType, idType, &temp, seq );
+                PyIncRef(payload);
+                cur->SendNotification( notifyType, idType, &payload, seq );
             }
 
     if (!mcset.corporations.empty())
         for (auto cur : m_clients)
             if (mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end()) {
-                PyTuple* temp = new PyTuple(*payload);
-                cur->SendNotification( notifyType, idType, &temp, seq );
+                PyIncRef(payload);
+                cur->SendNotification( notifyType, idType, &payload, seq );
             }
 
     PyDecRef( payload );
@@ -326,24 +329,16 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
     std::vector<Client*> result;
     GetClients(cset, result);
 
-    size_t num_remaining = result.size();
+    // consume payload
+    PyTuple* payload = *in_payload;
+    in_payload = nullptr;
 
-    std::vector<Client*>::iterator cur = result.begin(), end = result.end();
-    PyTuple* payload;
-    for (; cur != end; ++cur, --num_remaining) {
-        //keep a counter to eliminate an extra copy of in_payload
-        if (num_remaining < 2) {
-            payload = *in_payload;
-            *in_payload = nullptr;
-        } else {
-            if (*in_payload == nullptr)
-                payload = nullptr;
-            else
-                payload = (PyTuple*) (*in_payload)->Clone();
-        }
-
+    std::vector<Client*>::iterator cur = result.begin();
+    for (; cur != result.end(); ++cur) {
+        PyIncRef(payload);
         (*cur)->SendNotification(notifyType, idType, &payload, seq);
     }
+    PyDecRef( payload );
 }
 
 void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
@@ -358,9 +353,8 @@ void EntityList::GetClients(const character_set &cset, std::vector<Client*> &res
     character_set::iterator res;
     for (auto cur : m_clients) {
         res = cset.find(cur->GetCharacterID());
-        if (res != cset.end()) {
+        if (res != cset.end())
             result.push_back(cur);
-        }
     }
 }
 
@@ -369,7 +363,7 @@ void EntityList::GetClients(std::vector<Client*> &result) const {
         result.push_back(cur);
 }
 
-void EntityList::AddStation(uint32 stationID, InventoryItemRef itemRef) {
+void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
     m_stations[stationID] = itemRef;
 }
 
@@ -377,18 +371,18 @@ void EntityList::RemoveStation(uint32 stationID) {
     m_stations.erase(stationID);
 }
 
-InventoryItemRef EntityList::GetStationByID(uint32 stationID) {
-    std::map<uint32, InventoryItemRef>::iterator res = m_stations.find(stationID);
+StationItemRef EntityList::GetStationByID(uint32 stationID) {
+    std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
     if (res != m_stations.end())
-        return res->second;
-    return InventoryItemRef();
+        return StationItemRef::StaticCast(res->second);
+    return StationItemRef(nullptr);
 }
 
 void EntityList::RegisterSID(int64 &sessionID) {
     /*  this whole method is just made up...eventually it will return a unique long long */
     /* max for int64 = 9223372036854775807 */
     if (sessionID >= EVEMU_MAX_LONG_ID) {
-        sessionID /= EvE_Pi;
+        sessionID /= EvE::Trig::Pi;
         RegisterSID(sessionID);
     }
     std::set<int64>::iterator cur = m_sessions.find(sessionID);

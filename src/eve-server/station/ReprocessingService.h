@@ -30,7 +30,8 @@
 #include "station/ReprocessingDB.h"
 
 class ReprocessingService
-: public PyService    {
+: public PyService
+{
 public:
     ReprocessingService(PyServiceMgr *mgr);
     virtual ~ReprocessingService();
@@ -41,7 +42,7 @@ protected:
 
     ReprocessingDB m_db;
 
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject* _CreateBoundObject(Client *c, const PyRep *bind_args);
 };
 
 

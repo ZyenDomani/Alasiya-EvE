@@ -138,7 +138,7 @@ uint32 SystemGPoint::GetRandMoon(uint32 systemID) {
     return (moonIDs[i].itemID);
 }
 
-const GPoint SystemGPoint::GetRandPointInSystem(uint32 systemID, uint64 distance) {
+const GPoint SystemGPoint::GetRandPointInSystem(uint32 systemID, int64 distance) {
     // get system max diameter, verify distance is within system.
 
 }

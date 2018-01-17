@@ -29,6 +29,7 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "Client.h"
+#include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "station/InsuranceService.h"
 #include "system/SystemEntity.h"
@@ -98,26 +99,26 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
-    const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
         return new PyFloat(type->basePrice()/15);
     else
-        return new PyNone();
+        return PyStatic.NewNone();
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called when docked */
-    const ItemType *type = m_manager->item_factory->GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
     if (type)
         return new PyFloat(type->basePrice()/15);
     else
-        return new PyNone();
+        return PyStatic.NewNone();
 }
 
 PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
     if (call.tuple->size() > 1) {
         Call_IntBoolArg args;
-        if(!args.Decode(&call.tuple)) {
+        if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             return NULL;
         }
@@ -134,7 +135,7 @@ PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
 
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 	Call_InsureShip args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
@@ -142,10 +143,10 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured.
      *   may not need this, as client will not try to insure rookie ships
      */
-    InventoryItemRef shipRef = call.client->services().item_factory->GetItem(args.shipID) ;
-    if(shipRef->groupID() == EVEDB::invGroups::Rookieship) {
+    InventoryItemRef shipRef = sItemFactory.GetItem(args.shipID) ;
+    if (shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
-        return new PyNone();
+        return PyStatic.NewNone();
     } // end rookie ship check
 
     /* INSURANCE FRACTION TABLE:
@@ -172,7 +173,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     if (fraction == 0) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
-        return new PyNone();
+        return PyStatic.NewNone();
     } else if (fraction == 0.3)
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
 
@@ -185,19 +186,12 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, type.basePrice(), args.isCorp, numWeeks)) {
         //  it sucessfully added, now, have the player pay for the insurance
-        if (!call.client->AddBalance(- args.amount)) {
-            _log(CLIENT__ERROR, "%s: Failed to remove %.2f ISK from %u for insurance premium.",
-            call.client->GetName(), args.amount, call.client->GetCharacterID() );
-            call.client->SendErrorMsg("Failed to transfer money from your account.");
-            m_db->DeleteInsuranceByShipID(args.shipID);
-            return new PyNone();
-			// at this point, the previous insurance was deleted, and the new insurance
-			//   has been deleted.  should there be a check for keeping the old insurance incase
-			//   the payment fails?
-        }
+        std::string reason = "Insurance Premium on ";
+        reason += call.client->GetShip()->itemName().c_str();
+        AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
 	} else {
         call.client->SendErrorMsg("Failed to install new insurance contract.");
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     // TODO:  send mail detailing insurance coverage and length of coverage
@@ -213,14 +207,12 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
                     "Reference ID: %u <BR><BR>" \
                     "jav";
 
-    //  corpID: 1000132 = Secure Commerce Commission
-
-    m_manager->lsc_service->SendMail(1000132, call.client->GetCharacterID(), subject, body);
+    m_manager->lsc_service->SendMail(ownerSCC, call.client->GetCharacterID(), subject, body);
 
     return m_db->GetInsuranceByShipID(args.shipID);
 }
 
 PyResult InsuranceBound::Handle_UnInsureShip( PyCallArgs& call ) {
     m_db->DeleteInsuranceByShipID(call.tuple->GetItem(0)->AsInt()->value());
-    return new PyNone();
+    return PyStatic.NewNone();
 }

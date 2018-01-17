@@ -41,6 +41,7 @@
 #include "../EVE_Roles.h"
 #include "../EVE_Skills.h"
 #include "../EVE_Typedefs.h"
+#include "../EVE_Wallet.h"
 
 
 /*

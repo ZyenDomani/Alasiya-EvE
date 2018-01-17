@@ -66,7 +66,7 @@ AnomalyMgr::~AnomalyMgr()
 {
     InventoryItemRef iRef;
     for (auto sig : m_sigByItemID) {
-        iRef = m_services.item_factory->GetItem(sig.first);
+        iRef = sItemFactory.GetItem(sig.first);
         m_system->RemoveItemFromInventory(iRef);
         iRef->Delete();
     }
@@ -135,7 +135,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_Complex = 0;
 
     /* load current data?, start timers, process current data, and create new items, if needed */
-    if (sConfig.server.IsTestServer)
+    if (sConfig.debug.IsTestServer)
         m_anomTimer.Start(1000);  // 1s
     else
         m_anomTimer.Start(120000);  // 120s
@@ -147,7 +147,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 void AnomalyMgr::Process() {
     if (!m_initalized)
         return;
-    if (m_anomTimer.Check(!sConfig.server.IsTestServer)) {
+    if (m_anomTimer.Check(!sConfig.debug.IsTestServer)) {
         /* do something useful here */
         if (m_Sigs < m_maxSigs)
             CreateAnomaly();
@@ -200,8 +200,8 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/) {
         sig.sigItemID = 0;
         sig.sigName = "Test Name Here";
         sig.ownerID = 500022;
-        if (sConfig.npc.AnomalyFaction)
-            sig.ownerID = sConfig.npc.AnomalyFaction;
+        if (sConfig.debug.AnomalyFaction)
+            sig.ownerID = sConfig.debug.AnomalyFaction;
         else if (MakeRandomFloat() > 0.15) // chance to be rogue drones
             sig.ownerID =  sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
 

@@ -93,7 +93,7 @@ public:
      * @param[in] characterTypeID ID of character type to load.
      * @return Pointer to new object, NULL if failed.
      */
-    static CharacterType* Load(ItemFactory& factory, uint32 characterTypeID);
+    static CharacterType* Load( uint32 characterTypeID);
 
     /*
      * Access functions:
@@ -137,9 +137,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty* _LoadType(ItemFactory& factory, uint32 typeID,
-        // ItemType stuff:
-        const ItemGroup& group, const TypeData& data)
+    static _Ty* _LoadType( uint32 typeID, const ItemGroup& group, const TypeData& data)
     {
         // check we are really loading a character type
         if( group.id() != EVEDB::invGroups::Character ) {
@@ -150,11 +148,11 @@ protected:
         // query character type data
         uint32 bloodlineID;
         CharacterTypeData charData;
-        if( !factory.db().GetCharacterType(typeID, bloodlineID, charData) )
+        if( !sItemFactory.db()->GetCharacterType(typeID, bloodlineID, charData) )
             return nullptr;
 
         // load ship type
-        const ItemType* type = factory.GetType( charData.shipTypeID );
+        const ItemType* type = sItemFactory.GetType( charData.shipTypeID );
         if( type == nullptr )
             return nullptr;
 
@@ -211,97 +209,6 @@ private:
 };
 
 /**
- * * Container for raw character data.
- * v6
- */
-class CharacterData {
-public:
-    CharacterData(
-        uint32 _accountID = 0,
-        const char* _title = "",
-        const char* _desc = "",
-        bool _gender = false,
-        double _bounty = 0.0,
-        double _balance = 0.0,
-        double _aurBalance = 0.0,
-        double _securityRating = 0.0,
-        uint32 _logonMinutes = 0,
-        double _skillPoints = 0,
-        uint32 _corporationID = 0,
-        uint32 _allianceID = 0,
-        uint32 _warFactionID = 0,
-        uint32 _stationID = 0,
-        uint32 _solarSystemID = 0,
-        uint32 _constellationID = 0,
-        uint32 _regionID = 0,
-        uint32 _ancestryID = 0,
-        uint8 _bloodlineID = 0,
-        uint8 _raceID = 0,
-        uint32 _careerID = 0,
-        uint32 _schoolID = 0,
-        uint32 _careerSpecialityID = 0,
-        uint64 _startDateTime = 0,
-        uint64 _createDateTime = 0,
-        uint32 _shipID = 0,
-        uint32 _capsuleID = 0 );
-    bool gender;
-
-    uint8 bloodlineID;
-    uint8 raceID;
-    uint32 accountID;
-    uint32 shipID;
-    uint32 capsuleID;
-    uint32 logonMinutes;
-    uint32 corporationID;
-    uint32 allianceID;
-    uint32 warFactionID;
-    uint32 stationID;
-    uint32 solarSystemID;
-    uint32 constellationID;
-    uint32 regionID;
-    uint32 ancestryID;
-    uint32 careerID;
-    uint32 schoolID;
-    uint32 careerSpecialityID;
-
-    uint64 startDateTime;
-    uint64 createDateTime;
-
-    double bounty;
-    double balance;
-    double aurBalance;
-    double securityRating;
-    double skillPoints;
-
-    std::string title;
-    std::string description;
-};
-
-/**
- * Container for some corporation-membership related stuff.
- */
-class CorpData {
-public:
-    CorpData(
-        uint32 _corpHQ = 0,
-        int32 _corpAccountKey = 0,
-        uint64 _corpRole = 0,
-        uint64 _rolesAtAll = 0,
-        uint64 _rolesAtBase = 0,
-        uint64 _rolesAtHQ = 0,
-        uint64 _rolesAtOther = 0
-    );
-
-    uint32 corpHQ;    //this really doesn't belong here...
-    int32 corpAccountKey;
-    uint64 corpRole;
-    uint64 rolesAtAll;
-    uint64 rolesAtBase;
-    uint64 rolesAtHQ;
-    uint64 rolesAtOther;
-};
-
-/**
  * Class representing character.
  */
 class Character
@@ -309,37 +216,13 @@ class Character
 {
     friend class InventoryItem;    // to let it construct us
 public:
-    /**
-     * Loads character.
-     *
-     * @param[in] factory
-     * @param[in] characterID ID of character to load.
-     * @return Pointer to new Character object; NULL if failed.
-     */
-    static CharacterRef Load(ItemFactory& factory, uint32 characterID);
-    /**
-     * Spawns new character.
-     *
-     * @param[in] factory
-     * @param[in] data ItemData (data for entity table) for new character.
-     * @param[in] charData Character data for new character.
-     * @param[in] appData Appearance data for new character.
-     * @param[in] corpData Corporation membership data for new character.
-     * @return Pointer to new Character object; NULL if failed.
-     */
-    static CharacterRef Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpData& corpData);
 
-    static CharacterRef Spawn(ItemFactory& factory, ItemData& data) {
-        uint32 charID = InventoryItem::CreateItemID( factory, data );
-        if( charID == 0 ) return CharacterRef();
-        return Character::Load( factory, charID );
-    }
     /**
      * Primary public interface:
      */
-    bool AlterBalance(double balanceChange);
+    bool AlterBalance(double amount, uint8 type);
     void SetLocation(uint32 stationID, uint32 solarSystemID, uint32 constellationID, uint32 regionID);
-	void JoinCorporation(uint32 corporationID, const CorpData& roles);
+	void JoinCorporation(const CorpData& data);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
     void SetFleetData(CharFleetData& fleet);
@@ -405,12 +288,7 @@ public:
      */
     void            GetSkillsList(std::vector<InventoryItemRef>& skills) const;
 
-    /**
-     * Calculates Total Skillpoints the character has trained
-     *
-     * @return Skillpoints the character has trained
-     */
-    EvilNumber      GetTotalSPTrained() { return m_totalSPtrained; };
+    double      GetTotalSPTrained() { return m_charData.skillPoints; };
     /**
      * Calculates Skillpoints per minute rate.
      *
@@ -509,66 +387,67 @@ public:
     EVERace                 race() const                        { return type().race(); }
 
     // Account:
-    uint32                  accountID() const                   { return m_accountID; }
+    uint32                  accountID() const                   { return m_charData.accountID; }
 
-    const std::string&      title() const                       { return m_title; }
-    const std::string&      description() const                 { return m_description; }
-    bool                    gender() const                      { return m_gender; }
+    const std::string&      title() const                       { return m_charData.title; }
+    const std::string&      description() const                 { return m_charData.description; }
+    bool                    gender() const                      { return m_charData.gender; }
 
-    double                  bounty() const                      { return m_bounty; }
-    double                  balance() const                     { return m_balance; }
-    double                  aurBalance() const                  { return m_aurBalance; }
-    double                  GetSecurityRating() const           { return m_securityStatus; }
+    double                  bounty() const                      { return m_charData.bounty; }
+    double                  balance(uint8 type);
+    double                  GetSecurityRating() const           { return m_charData.securityRating; }
     uint32					loginTime() const                   { return m_loginTime; }
-    uint32                  logonMinutes() const                { return m_logonMinutes; }
+    uint32                  logonMinutes() const                { return m_charData.logonMinutes; }
+    uint16                  OnlineTime();
 
-    /**
-     *  This is used to modifiy a characters Security Status
-     *  @in amount to adjust m_securityStatus
-     */
-    void                    secStatusChange( double amount )    { m_securityStatus += amount; }
+    void                    secStatusChange( double amount )    { m_charData.securityRating += amount; }
 
     // Corporation:
-    uint32                  corporationID() const               { return m_corporationID; }
-    uint32                  corporationHQ() const               { return m_corpHQ; }
-    uint32                  allianceID() const                  { return m_allianceID; }
-    uint32                  warFactionID() const                { return m_warFactionID; }
-    int32                   corpAccountKey() const              { return m_corpAccountKey; }
+    void                    UpdateCorpData(CorpData data);
+    CorpData                GetCorpData()                       { return m_corpData; }
+    std::string             corpTicker() const                  { return m_corpData.ticker; }
+    uint32                  corporationID() const               { return m_corpData.corporationID; }
+    uint32                  corporationHQ() const               { return m_corpData.corpHQ; }
+    uint32                  allianceID() const                  { return m_corpData.allianceID; }
+    uint32                  warFactionID() const                { return m_corpData.warFactionID; }
+    int32                   corpAccountKey() const              { return m_corpData.corpAccountKey; }
+    double                  corpTaxRate() const                 { return m_corpData.taxRate; }
+    void                    SetCorpHQ(uint32 stationID)         { m_corpData.corpHQ = stationID; UpdateCorpData(m_corpData);}
 
     // Corporation role:
-    uint64                  corpRole() const                    { return m_corpRole; }
-    uint64                  rolesAtAll() const                  { return m_rolesAtAll; }
-    uint64                  rolesAtBase() const                 { return m_rolesAtBase; }
-    uint64                  rolesAtHQ() const                   { return m_rolesAtHQ; }
-    uint64                  rolesAtOther() const                { return m_rolesAtOther; }
+    int64                  corpRole() const                     { return m_corpData.corpRole; }
+    int64                  rolesAtAll() const                   { return m_corpData.rolesAtAll; }
+    int64                  rolesAtBase() const                  { return m_corpData.rolesAtBase; }
+    int64                  rolesAtHQ() const                    { return m_corpData.rolesAtHQ; }
+    int64                  rolesAtOther() const                 { return m_corpData.rolesAtOther; }
 
     // Fleet:
-    int64                   fleetJoinTime()                     { return m_fleetJoinTime; }
-    int32                   fleetID() const                     { return m_fleetID; }
-    int32                   wingID() const                      { return m_wingID; }
-    int32                   squadID() const                     { return m_squadID; }
-    int8                    fleetRole() const                   { return m_fleetRole; }
-    int8                    fleetBooster() const                { return m_fleetBooster; }
-    int8                    fleetJob() const                    { return m_fleetJob; }
+    int64                   fleetJoinTime()                     { return m_fleetData.joinTime; }
+    int32                   fleetID() const                     { return m_fleetData.fleetID; }
+    int32                   wingID() const                      { return m_fleetData.wingID; }
+    int32                   squadID() const                     { return m_fleetData.squadID; }
+    int8                    fleetRole() const                   { return m_fleetData.role; }
+    int8                    fleetBooster() const                { return m_fleetData.booster; }
+    int8                    fleetJob() const                    { return m_fleetData.job; }
 
     // Current location:
-    uint32                  stationID() const                   { return m_stationID; }
-    uint32                  solarSystemID() const               { return m_solarSystemID; }
-    uint32                  constellationID() const             { return m_constellationID; }
-    uint32                  regionID() const                    { return m_regionID; }
+    uint32                  stationID() const                   { return m_charData.stationID; }
+    uint32                  solarSystemID() const               { return m_charData.solarSystemID; }
+    uint32                  constellationID() const             { return m_charData.constellationID; }
+    uint32                  regionID() const                    { return m_charData.regionID; }
 
     // Ancestry, career:
-    uint32                  ancestryID() const                  { return m_ancestryID; }
-    uint32                  careerID() const                    { return m_careerID; }
-    uint32                  schoolID() const                    { return m_schoolID; }
-    uint32                  careerSpecialityID() const          { return m_careerSpecialityID; }
+    uint32                  ancestryID() const                  { return m_charData.ancestryID; }
+    uint32                  careerID() const                    { return m_charData.careerID; }
+    uint32                  schoolID() const                    { return m_charData.schoolID; }
+    uint32                  careerSpecialityID() const          { return m_charData.careerSpecialityID; }
 
     // Some important dates:
-    uint64                  startDateTime() const               { return m_startDateTime; }
-    uint64                  createDateTime() const              { return m_createDateTime; }
+    int64                  startDateTime() const               { return m_charData.startDateTime; }
+    int64                  createDateTime() const              { return m_charData.createDateTime; }
 
-    uint32                  shipID() const                      { return m_shipID; }
-    uint32                  capsuleID() const                   { return m_capsuleID; }
+    uint32                  shipID() const                      { return m_charData.shipID; }
+    uint32                  capsuleID() const                   { return m_charData.capsuleID; }
 
     void                    SetActiveShip(uint32 shipID);
     void                    SetActivePod(uint32 podID);
@@ -584,9 +463,8 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
+    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
 
-    bool                    isOffline(uint32 online);
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
     void                    SetLoginTime();
@@ -594,18 +472,10 @@ public:
 
 	//  Standings functions
 	//     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
-	double 					GetAgentStanding(uint32 toID, uint32 fromID);
-	double 					GetAllianceStanding(uint32 toID, uint32 fromID);
-	double 					GetCharStanding(uint32 toID, uint32 fromID);
-	double 					GetCorpStanding(uint32 toID, uint32 fromID);
-	double 					GetNPCCorpStanding(uint32 toID, uint32 fromID);
-	double 					GetFactionStanding(uint32 toID, uint32 fromID);
+    double 					GetStanding(uint32 toID, uint32 fromID);    // NOTE:  this is NOT adjusted for skills
+    double                  GetNPCCorpStanding(uint32 toID, uint32 fromID);
 	double 					GetStandingChanges();
-	void 					SetAgentStanding(uint32 toID, uint32 fromID, double standing);
-	void 					SetAllianceStanding(uint32 toID, uint32 fromID, double standing);
-	void 					SetCharStanding(uint32 toID, uint32 fromID, double standing);
-	void 					SetCorpStanding(uint32 toID, uint32 fromID, double standing);
-	void 					SetNPCCorpStanding(uint32 toID, uint32 fromID, double standing);
+	void 					SetStanding(uint32 toID, uint32 fromID, double standing);
 	void 					SaveStandingChanges(uint32 fromID,
 												uint32 toID,
 												uint32 eventType,
@@ -626,11 +496,8 @@ public:
     void                    ProcessEffects();
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
-    virtual bool _Load();
-
 protected:
     Character(
-        ItemFactory& _factory,
         uint32 _characterID,
         // InventoryItem stuff:
         const CharacterType& _charType,
@@ -646,15 +513,21 @@ protected:
     void LoadBookmarks();
 
     /*
-     * Member functions:
+     * templated loading system
      */
-    using InventoryItem::_Load;
-    static uint32 _Spawn(ItemFactory& factory, ItemData& data, CharacterData& charData, CorpData& corpData)  { }
+public:
+    static CharacterRef Load( uint32 characterID);
+    static CharacterRef Spawn( CharacterData& charData, CorpData& corpData);
+    virtual bool _Load();
 
+protected:
+    using InventoryItem::_Load;
+
+    static uint32 _Spawn( ItemData& data, CharacterData& charData, CorpData& corpData)  { }
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory& factory, uint32 characterID, const ItemType& type, const ItemData& data) {
+    static RefPtr<_Ty> _LoadItem( uint32 characterID, const ItemType& type, const ItemData& data) {
         if( type.groupID() != EVEDB::invGroups::Character ) {
             sLog.Error("Character", "Trying to load %s as Character.", type.group().name().c_str() );
             if (sConfig.server.StackTrace)
@@ -662,99 +535,41 @@ protected:
             return RefPtr<_Ty>();
         }
         CharacterData charData;
-        if( !factory.db().GetCharacter( characterID, charData ) )
+        if( !sItemFactory.db()->GetCharacterData( characterID, charData ) )
             return RefPtr<_Ty>();
 
         CorpData corpData;
-        if( !factory.db().GetCorpData( characterID, corpData ) )
+        if( !sItemFactory.db()->GetCorpData( characterID, corpData ) )
             return RefPtr<_Ty>();
 
         // cast the type
         const CharacterType& charType = static_cast<const CharacterType& >( type );
 
-        return _Ty::template CreateCharacter<_Ty>( factory, characterID, charType, data, charData, corpData );
+        // construct the character item
+        return CharacterRef( new Character( characterID, charType, data, charData, corpData ) );
     }
-
-    // Actual creation method:
-    template<class _Ty>
-    static RefPtr<_Ty> CreateCharacter(ItemFactory& factory, uint32 characterID,
-        const CharacterType& charType, const ItemData& data,
-        const CharacterData& charData, const CorpData& corpData
-    );
 
 
 private:
-    /*
-     * Data members
-     */
-    uint32 m_accountID;
-
-    std::string m_title;
-    std::string m_description;
-    bool m_gender;
-
-    double m_bounty;
-    double m_balance;
-    double m_aurBalance;
-    double m_securityStatus;
-	uint32 m_loginTime;
-    uint32 m_logonMinutes;
-
-    /** @todo  use corpData.* and remove these */
-    uint32 m_corporationID;
-    uint32 m_corpHQ;
-    uint32 m_allianceID;
-    uint32 m_warFactionID;
-
-    int32 m_corpAccountKey;
-    uint64 m_corpRole;
-    uint64 m_rolesAtAll;
-    uint64 m_rolesAtBase;
-    uint64 m_rolesAtHQ;
-    uint64 m_rolesAtOther;
-
-    /** @todo  use fleetData.* and remove these */
-    int64 m_fleetJoinTime;
-    int32 m_fleetID;
-    int32 m_wingID;
-    int32 m_squadID;
-    int8 m_fleetRole;
-    int8 m_fleetBooster;
-    int8 m_fleetJob;
-
-    uint32 m_stationID;
-    uint32 m_solarSystemID;
-    uint32 m_constellationID;
-    uint32 m_regionID;
-
-    /** @todo  use charData.* and remove these */
-    uint32 m_ancestryID;
-    uint8  m_bloodlineID;
-    uint8  m_raceID;
-    uint32 m_careerID;
-    uint32 m_schoolID;
-    uint32 m_careerSpecialityID;
-
-    uint64 m_startDateTime;
-    uint64 m_createDateTime;
-
-    uint32 m_shipID;
-    uint32 m_capsuleID;
-
-    // Skill queue:
-    SkillQueue m_skillQueue;
-    EvilNumber m_totalSPtrained;
-    uint32 m_freePoints;
-
-    CertVector m_certificates;
-
     CertificateMgrDB m_cdb;
-	CharacterDB m_db;
+    CharacterDB m_db;
     StandingDB s_db;
 
     Client* m_pClient;
 
+    CorpData m_corpData;
+    CharacterData m_charData;
+    CharFleetData m_fleetData;
+
+    // Skill queue:
+    SkillQueue m_skillQueue;
+    uint32 m_freePoints;
+
+    CertVector m_certificates;
+
     bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
+
+    uint32 m_loginTime;
 
 };
 

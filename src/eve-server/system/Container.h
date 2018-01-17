@@ -40,13 +40,7 @@ class CargoContainer
 {
     friend class InventoryItem;    // to let it construct us
 public:
-    CargoContainer(
-        ItemFactory &_factory,
-        uint32 _containerID,
-        // InventoryItem stuff:
-        const ItemType &_containerType,
-        const ItemData &_data
-    );
+    CargoContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data);
     virtual ~CargoContainer()                           { /* Do nothing here */ }
 
     /**
@@ -56,7 +50,7 @@ public:
      * @param[in] containerID ID of container to load.
      * @return Pointer to CargoContainer object; NULL if failed.
      */
-    static CargoContainerRef Load(ItemFactory &factory, uint32 containerID);
+    static CargoContainerRef Load( uint32 containerID);
     /**
      * Spawns new CargoContainer.
      *
@@ -64,7 +58,7 @@ public:
      * @param[in] data Item data for CargoContainer.
      * @return Pointer to new CargoContainer object; NULL if failed.
      */
-    static CargoContainerRef Spawn(ItemFactory &factory, ItemData &data);
+    static CargoContainerRef Spawn( ItemData &data);
 
     /*
      * Primary public interface:
@@ -77,8 +71,7 @@ public:
      */
     void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 
-    void AddItem(InventoryItemRef item);
-    void RemoveItem(InventoryItemRef item);
+    virtual void RemoveItem(InventoryItemRef iRef);
 
     bool IsAnchored()                                   { return m_isAnchored; }
     void SetAnchor(bool set=false)                      { m_isAnchored = set; }
@@ -109,7 +102,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 containerID, const ItemType &type, const ItemData &data) {
         if ( (type.groupID() != EVEDB::invGroups::Cargo_Container)
             && (type.groupID() != EVEDB::invGroups::Audit_Log_Secure_Container)
             && (type.groupID() != EVEDB::invGroups::Freight_Container)
@@ -121,10 +114,10 @@ protected:
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        return CargoContainerRef( new CargoContainer( factory, containerID, type, data ) );
+        return CargoContainerRef( new CargoContainer(containerID, type, data ) );
     }
 
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
+    static uint32 CreateItemID( ItemData &data);
 
     virtual PyRep* GetItem() const                      { return GetItemRow(); }
 
@@ -186,79 +179,43 @@ class WreckContainer
 {
     friend class InventoryItem;    // to let it construct us
 public:
-    WreckContainer(
-        ItemFactory &_factory,
-        uint32 _containerID,
-        // InventoryItem stuff:
-        const ItemType &_containerType,
-        const ItemData &_data
-    );
+    WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data);
     virtual ~WreckContainer()                           { /* Do nothing here */ }
 
-    /**
-     * Loads WreckContainer from DB.
-     *
-     * @param[in] factory
-     * @param[in] containerID ID of container to load.
-     * @return Pointer to WreckContainer object; NULL if failed.
-     */
-    static WreckContainerRef Load(ItemFactory &factory, uint32 containerID);
-    /**
-     * Spawns new WreckContainer.
-     *
-     * @param[in] factory
-     * @param[in] data Item data for WreckContainer.
-     * @return Pointer to new WreckContainer object; NULL if failed.
-     */
-    static WreckContainerRef Spawn(ItemFactory &factory, ItemData &data);
+    static WreckContainerRef Load( uint32 containerID);
+    static WreckContainerRef Spawn( ItemData &data);
 
-    /*
-     * Primary public interface:
-     */
     virtual void Delete();
+    virtual void RemoveItem(InventoryItemRef iRef);
 
     double GetCapacity(EVEItemFlags flag) const;
-    /*
-     * _ExecAdd validation interface:
-     */
     void ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
 
-    void AddItem(InventoryItemRef item);
-    void RemoveItem(InventoryItemRef item);
-    /*
-     * Public fields:
-     */
     const ItemType &type() const                        { return InventoryItem::type(); }
 
-    /*
-     * Primary public packet builders:
-     */
     PyObject *WreckContainerGetInfo();
 
-    bool IsEmpty()                                      { return m_inventory->IsEmpty(); }
+    bool IsEmpty()                                      { return pInventory->IsEmpty(); }
     void MakeSlimItemChange();
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
 
 protected:
-    /*
-     * Member functions:
-     */
     using InventoryItem::_Load;
     virtual bool _Load();
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 containerID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 containerID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Wreck) {
             _log( ITEM__ERROR, "Trying to load %s as Wreck.", type.category().name().c_str() );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        return WreckContainerRef( new WreckContainer( factory, containerID, type, data ) );
+        return WreckContainerRef( new WreckContainer(containerID, type, data ) );
     }
 
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data );
+    static uint32 CreateItemID( ItemData &data );
 
 private:
     SystemEntity* mySE;

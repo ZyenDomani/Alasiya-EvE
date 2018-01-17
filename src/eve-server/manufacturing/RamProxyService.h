@@ -29,26 +29,12 @@
 
 #include "PyService.h"
 #include "manufacturing/RamProxyDB.h"
-#include "packets/Manufacturing.h"
 
-static const uint32 ramProductionTimeLimit = 60*60*24*30;   //30 days
 
 class RamProxyService : public PyService {
 public:
     RamProxyService(PyServiceMgr *mgr);
     virtual ~RamProxyService();
-
-protected:
-    // verifying functions
-    void VerifyInstallJob_Call(const Call_InstallJob &args, InventoryItemRef installedItem, const PathElement &bomLocation, Client *const c);
-    void VerifyInstallJob_Install(const Rsp_InstallJob& rsp, const PathElement& pathBomLocation, const std::vector< RequiredItem >& reqItems, const int32 runs, Client*const c);
-    void VerifyCompleteJob(const Call_CompleteJob &args, Client *const c);
-
-    bool Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into);
-    void EncodeBillOfMaterials(const std::vector<RequiredItem> &reqItems, double materialMultiplier, double charMaterialMultiplier, uint32 runs, BillOfMaterials &into);
-    void EncodeMissingMaterials(const std::vector<RequiredItem> &reqItems, const PathElement &bomLocation, Client *const c, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map<int32, PyRep *> &into);
-
-    void GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
 
 private:
     class Dispatcher;
@@ -61,8 +47,12 @@ private:
     PyCallable_DECL_CALL(AssemblyLinesGet);
     PyCallable_DECL_CALL(AssemblyLinesSelect);
     PyCallable_DECL_CALL(GetRelevantCharSkills);
+    PyCallable_DECL_CALL(AssemblyLinesSelectCorp);
     PyCallable_DECL_CALL(AssemblyLinesSelectPublic);
     PyCallable_DECL_CALL(AssemblyLinesSelectPrivate);
+    PyCallable_DECL_CALL(AssemblyLinesSelectAlliance);
+    PyCallable_DECL_CALL(UpdateAssemblyLineConfigurations);
+
 };
 
 #endif

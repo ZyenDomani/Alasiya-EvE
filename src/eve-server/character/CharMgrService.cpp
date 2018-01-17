@@ -27,25 +27,29 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "EntityList.h"
+#include "account/AccountService.h"
 #include "character/CharMgrService.h"
 
 class CharMgrBound
-	: public PyBoundObject
+: public PyBoundObject
 {
 public:
 	PyCallable_Make_Dispatcher(CharMgrBound);
 
-    CharMgrBound(PyServiceMgr *mgr, uint32 characterID)
+    CharMgrBound(PyServiceMgr *mgr, uint32 ownerID, uint16 contFlag)
 		: PyBoundObject(mgr),
 		m_dispatch(new Dispatcher(this)),
-		m_characterID(characterID)
+		m_ownerID(ownerID),
+		m_containerFlag(contFlag)
     {
         _SetCallDispatcher(m_dispatch);
 
         m_strBoundObjectName = "CharMgrBound";
 
-		PyCallable_REG_CALL(CharMgrBound, ListStations);
-		PyCallable_REG_CALL(CharMgrBound, ListStationItems);
+        PyCallable_REG_CALL(CharMgrBound, ListStations);
+        PyCallable_REG_CALL(CharMgrBound, ListStationItems);
+        PyCallable_REG_CALL(CharMgrBound, ListStationBlueprintItems);
 	}
 
     virtual ~CharMgrBound() {delete m_dispatch;}
@@ -57,57 +61,216 @@ public:
 
     PyCallable_DECL_CALL(ListStations);
     PyCallable_DECL_CALL(ListStationItems);
+    PyCallable_DECL_CALL(ListStationBlueprintItems);
 
 protected:
     Dispatcher *const m_dispatch;
 
-    uint32 m_characterID;
+    uint32 m_ownerID;
+    uint16 m_containerFlag;     // this is EVEContainerType defined in EVE_Inventory.h
 };
 
-/** @todo remove these db calls and put into approprate file  */
+
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {
-    /** @todo really query the database directly? */
+    call.Dump(CHARACTER__DEBUG);
+    std::ostringstream flagIDs;
+    flagIDs << flagHangar;
+    // test m_containerFlag to determine correct flag here and append to flagIDs string?
+
+    uint32 ownerID = m_ownerID;
+    bool blueprintOnly = PyRep::IntegerValue(call.tuple->GetItem(0));
+    bool isCorp = PyRep::IntegerValue(call.tuple->GetItem(1));
+
+    if (isCorp) {
+        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        if (pClient == nullptr)
+            return nullptr; // make error here
+        ownerID = pClient->GetCorporationID();
+        //  add corp hangar flags
+        flagIDs << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5 << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+    }
+
+    /** @todo check into this to see if we're querying POS modules(uk) also. */
     DBQueryResult res;
-	if(!sDatabase.RunQuery(res, "SELECT locationID AS stationID, COUNT(itemID) as itemCount FROM entity WHERE ownerID=%d AND flag=4 GROUP BY locationID", m_characterID))
-	{
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-		return nullptr;
-	}
-	return(DBResultToCRowset(res));
+    if (blueprintOnly) {
+        if (isCorp) {
+            // this is some funky shit to get correct stationID for corp bps in hangar, as their location is officeID, but we need stationID for this call
+            if (!sDatabase.RunQuery(res,
+                "SELECT o.stationID, COUNT(e.itemID) as blueprintCount"
+                " FROM entity AS e"
+                "  LEFT JOIN invTypes USING (typeID)"
+                "  LEFT JOIN invGroups AS g USING (groupID)"
+                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        } else {
+            if (!sDatabase.RunQuery(res,
+                "SELECT e.locationID AS stationID, COUNT(e.itemID) as blueprintCount"
+                " FROM entity AS e"
+                "  LEFT JOIN invTypes USING (typeID)"
+                "  LEFT JOIN invGroups AS g USING (groupID)"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        }
+    } else {
+        if (isCorp) {
+            // this is some funky shit to get correct stationID for corp bps in hangar, as their location is officeID, but we need stationID for this call
+            if (!sDatabase.RunQuery(res,
+                "SELECT o.stationID, COUNT(e.itemID) as itemCount"
+                " FROM entity AS e"
+                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s)"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str()))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        } else {
+            if (!sDatabase.RunQuery(res,
+                "SELECT locationID AS stationID, COUNT(itemID) as itemCount"
+                " FROM entity WHERE ownerID=%u AND flag IN (%s)"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str()))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        }
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+	return rsp;
 }
 
 PyResult CharMgrBound::Handle_ListStationItems( PyCallArgs& call )
-{       // this is the assets window
-	uint32 locationID = call.tuple->GetItem(0)->AsInt()->value();
+{
+    call.Dump(CHARACTER__DEBUG);
+    // this is the assets window
+    uint32 stationID = call.tuple->GetItem(0)->AsInt()->value();
 
-    /** @todo really query the database directly? */
-	DBQueryResult res;
-	if(!sDatabase.RunQuery(res,
-		"SELECT "
-		"  e.itemID, "
-		"  e.itemName, "
-		"  e.typeID, "
-		"  e.ownerID, "
-		"  e.locationID, "
-		"  e.flag as flagID, "
-		"  e.quantity as stacksize, "
-		"  e.customInfo, "
-		"  e.singleton, "
-		"  g.categoryID, "
-		"  g.groupID "
-		"FROM "
-		"  (entity e LEFT JOIN invTypes t ON e.typeID=t.typeID) LEFT JOIN invGroups g ON t.groupID=g.groupID "
-		"WHERE "
-		"  e.ownerID=%d AND "
-		"  e.locationID=%d AND "
-		"  e.flag=4"
-		, m_characterID, locationID))
-	{
+    /** @todo check into this to see if we're querying POS modules also */
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT "
+        "  e.itemID, "
+        "  e.itemName, "
+        "  e.typeID, "
+        "  e.ownerID, "
+        "  e.locationID, "
+        "  e.flag AS flagID, "
+        "  e.quantity AS stacksize, "
+        "  e.customInfo, "
+        "  e.singleton, "
+        "  g.categoryID, "
+        "  g.groupID "
+        "FROM entity AS e"
+        "  LEFT JOIN invTypes USING (typeID)"
+        "  LEFT JOIN invGroups AS g USING (groupID)"
+        "WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4",
+        m_ownerID, stationID))
+    {
         codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-		return nullptr;
-	}
-	return(DBResultToCRowset(res));
+        return nullptr;
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return rsp;
+}
+
+PyResult CharMgrBound::Handle_ListStationBlueprintItems( PyCallArgs& call )
+{
+    // this is the BP tab of the S&I window
+    call.Dump(CHARACTER__DEBUG);
+
+    /** @todo whats diff between stationID and locationID?   none that i see so far...*/
+    uint32 locationID = PyRep::IntegerValue(call.tuple->GetItem(0));
+    uint32 stationID = PyRep::IntegerValue(call.tuple->GetItem(1));
+
+    uint32 ownerID = m_ownerID;
+    bool forCorp = PyRep::IntegerValue(call.tuple->GetItem(2));
+    if (forCorp) { //forCorp
+        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        if (pClient == nullptr)
+            return nullptr; // make error here
+            ownerID = pClient->GetCorporationID();
+    }
+
+    /** @todo check into this to see if we're querying POS modules also(uk) */
+    DBQueryResult res;
+    if (forCorp) {
+        // do crazy shit here to get actual stationID/locationID of bp items in corp hangar
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "  e.itemID, "
+            "  e.itemName, "
+            "  e.typeID, "
+            "  e.ownerID, "
+            "  o.stationID AS locationID, "
+            "  e.flag AS flagID, "
+            "  e.quantity AS stacksize, "
+            "  e.customInfo, "
+            "  e.singleton, "
+            "  g.groupID, "
+            "  g.categoryID, "
+            "  b.productivityLevel, "
+            "  b.materialLevel, "
+            "  b.copy, "
+            "  b.licensedProductionRunsRemaining "
+            " FROM entity AS e"
+            "  LEFT JOIN invTypes USING (typeID)"
+            "  LEFT JOIN invGroups AS g USING (groupID)"
+            "  LEFT JOIN invBlueprints AS b USING (itemID)"
+            "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+            " WHERE e.ownerID=%u AND o.stationID=%u AND g.categoryID = %u",
+            ownerID, stationID, EVEDB::invCategories::Blueprint))
+        {
+            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+    } else {
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "  e.itemID, "
+            "  e.itemName, "
+            "  e.typeID, "
+            "  e.ownerID, "
+            "  e.locationID, "
+            "  e.flag AS flagID, "
+            "  e.quantity AS stacksize, "
+            "  e.customInfo, "
+            "  e.singleton, "
+            "  g.groupID, "
+            "  g.categoryID, "
+            "  b.productivityLevel, "
+            "  b.materialLevel, "
+            "  b.copy, "
+            "  b.licensedProductionRunsRemaining "
+            " FROM entity AS e"
+            "  LEFT JOIN invTypes USING (typeID)"
+            "  LEFT JOIN invGroups AS g USING (groupID)"
+            "  LEFT JOIN invBlueprints AS b USING (itemID)"
+            " WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4 AND g.categoryID = %u",
+            ownerID, stationID, EVEDB::invCategories::Blueprint))
+        {
+            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return rsp;
 }
 
 PyCallable_Make_InnerDispatcher(CharMgrService)
@@ -170,62 +333,43 @@ PyBoundObject *CharMgrService::_CreateBoundObject(Client *c, const PyRep *bind_a
         return nullptr;
     }
 
-	return(new CharMgrBound(m_manager, args.arg1));
+	return(new CharMgrBound(m_manager, args.arg1, args.arg2));
 }
 
-PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call) {
-  /*
-                  [PyToken dbutil.CRowset]
-                [PyDict 1 kvp]
-                  [PyString "header"]
-                  [PyObjectEx Normal]
-                    [PyTuple 2 items]
-                      [PyToken blue.DBRowDescriptor]
-                      [PyTuple 1 items]
-                        [PyTuple 4 items]
-                          [PyTuple 2 items]
-                            [PyString "contactID"]
-                            [PyInt 3]
-                          [PyTuple 2 items]
-                            [PyString "inWatchlist"]
-                            [PyInt 11]
-                          [PyTuple 2 items]
-                            [PyString "relationshipID"]
-                            [PyInt 5]
-                          [PyTuple 2 items]
-                            [PyString "labelMask"]
-                            [PyInt 20]
-              [PyPackedRow 21 bytes]
-                ["contactID" => <3008990> [I4]]
-                ["inWatchlist" => <0> [Bool]]
-                ["relationshipID" => <0> [R8]]
-                ["labelMask" => <0> [I8]]
-              [PyPackedRow 21 bytes]
-                ["contactID" => <3008992> [I4]]
-                ["inWatchlist" => <0> [Bool]]
-                ["relationshipID" => <0> [R8]]
-                ["labelMask" => <0> [I8]]
-              [PyPackedRow 21 bytes]
-                ["contactID" => <3009010> [I4]]
-                ["inWatchlist" => <0> [Bool]]
-                ["relationshipID" => <0> [R8]]
-                ["labelMask" => <0> [I8]]
-                */
-  /** @todo  fix this.... */
-    // another dummy
-    DBRowDescriptor *header = new DBRowDescriptor();
-    header->AddColumn("contactID", DBTYPE_I4);
-    header->AddColumn("inWatchList", DBTYPE_BOOL);
-    header->AddColumn("relationshipID", DBTYPE_R8);
-    header->AddColumn("labelMask", DBTYPE_I8);
-    CRowSet *rowset = new CRowSet( &header );
+PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
+{   /* cached object - can return db object as DBResultToCRowset*/
+    return m_db.GetKillOrLoss(call.client->GetCharacterID());
+}
 
+PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call )
+{
+    return m_db.GetTopBounties();
+}
+
+PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
+{
+    return m_db.GetCharPublicInfo3(call.client->GetCharacterID());
+}
+
+PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
+{
+    return m_db.GetLabels(call.client->GetCharacterID());
+}
+
+PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
+{
+    return new PyInt(paperdollStateNoRecustomization);
+}
+
+PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call)
+{
     PyDict* dict = new PyDict();
-    dict->SetItemString("addresses", rowset);
-    dict->SetItemString("blocked", rowset);
-    PyObject *keyVal = new PyObject( "util.KeyVal", dict);
-
-    return keyVal;
+    dict->SetItemString("addresses", m_db.GetContacts(call.client->GetCharacterID(), false));
+    dict->SetItemString("blocked", m_db.GetContacts(call.client->GetCharacterID(), true));
+    PyObject* args = new PyObject("util.KeyVal", dict);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        args->Dump(CLIENT__RSP_DUMP, "");
+    return args;
 }
 
 PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
@@ -259,42 +403,44 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 
     PyRep *result = m_db.GetCharPublicInfo(args.arg);
     if (result == NULL)
-        codelog(CLIENT__ERROR, "%s: Failed to find char %u", call.client->GetName(), args.arg);
+        codelog(CHARACTER__ERROR, "%s: Failed to find char %u", call.client->GetName(), args.arg);
 
     return result;
-}
-
-PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call) {
-    return m_db.GetCharPublicInfo3(call.client->GetCharacterID());
 }
 
 PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
 {
     Call_TwoIntegerArgs args;
-    if( !args.Decode( &call.tuple ) )  {
+    if (!args.Decode( &call.tuple ) )  {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-	if (call.client->GetCharacterID() == args.arg1){
-	    call.client->SendErrorMsg("You cannot put a bounty on yourself.");
-		return nullptr;
-	}
+    if (call.client->GetCharacterID() == args.arg1){
+        call.client->SendErrorMsg("You cannot put a bounty on yourself.");
+        return nullptr;
+    }
 
-    if(call.client->GetChar()->AlterBalance(-args.arg2))
-		m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
+    if (args.arg2 < call.client->GetBalance()) {
+        std::string reason = "Placing Bounty on ";
+        reason += m_db.GetCharName(args.arg1);
+        AccountService::TranserFunds(call.client->GetCharacterID(), ownerCONCORD, args.arg2, reason, Journal::EntryType::Bounty);
+        m_db.AddBounty(args.arg1, call.client->GetCharacterID(), args.arg2);
+        // new system gives target a mail from concord about placement of bounty and char name placing it.
+    } else {
+        std::map<std::string, PyRep *> res;
+        res["amount"] = new PyFloat(args.arg2);
+        res["balance"] = new PyFloat(call.client->GetBalance());
+        throw(PyException(MakeUserError("NotEnoughMoney", res)));
+    }
 
     return new PyNone();
-}
-
-PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call ) {
-    return m_db.GetTopBounties();
 }
 
 PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
 {
 	uint32 typeID;
-	if( !m_db.GetActiveCloneType(call.client->GetCharacterID(), typeID ) )
+	if (!m_db.GetActiveCloneType(call.client->GetCharacterID(), typeID ) )
 	{
 		// This should not happen, because a clone is created at char creation.
 		// We don't have a clone, so return a basic one. cloneTypeID = 9917 (Clone Grade Delta)
@@ -306,31 +452,23 @@ PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
 
 PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 {
-	uint32 stationID;
-	if( !m_db.GetCharHomeStation(call.client->GetCharacterID(), stationID) )
-	{
+	uint32 stationID = 0;
+	if (!m_db.GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
 		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
 		return new PyNone();
 	}
     return new PyInt(stationID);
 }
 
-PyResult CharMgrService::Handle_GetRecentShipKillsAndLosses( PyCallArgs& call )
-{   /* cached object - can return db object as DBResultToCRowset*/
-    return m_db.GetKillOrLoss(call.client->GetCharacterID());
-}
-
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
     sLog.White( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
-
     return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 {
     sLog.White( "CharMgrService::Handle_GetPrivateInfo()", "size= %u", call.tuple->size() );
-
     return nullptr;
 }
 
@@ -341,12 +479,10 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
         return new PyNone();
     }
 
-    bool afk = (args.arg1 ? true : false);
-    uint16 time = args.arg2;
-    sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%u.", call.client->GetName(), call.client->GetCharacterID(), (afk ? "true" : "false"), time);
+    sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%i.", \
+    call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
 
     // call code here to set an AFK watchdog?  config option?
-
     return new PyNone();
 }
 
@@ -496,10 +632,10 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
         return nullptr;
     }
 
-    m_manager->item_factory->SetUsingClient(call.client);
-    CharacterRef c = m_manager->item_factory->GetCharacter(args.arg);
-    if( !c ) {
-        _log(CLIENT__ERROR, "GetCharacterDescription failed to load character %u.", args.arg);
+    sItemFactory.SetUsingClient(call.client);
+    CharacterRef c = sItemFactory.GetCharacter(args.arg);
+    if (!c ) {
+        _log(CHARACTER__ERROR, "GetCharacterDescription failed to load character %u.", args.arg);
         return nullptr;
     }
 
@@ -516,8 +652,8 @@ PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
     }
 
     CharacterRef c = call.client->GetChar();
-    if( !c ) {
-        _log(CLIENT__ERROR, "SetCharacterDescription called with no char!");
+    if (!c ) {
+        _log(CHARACTER__ERROR, "SetCharacterDescription called with no char!");
         return nullptr;
     }
     c->SetDescription(args.arg.c_str());
@@ -578,7 +714,7 @@ PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {
     */
 
   sLog.White( "CharMgrService::Handle_AddOwnerNote()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -625,7 +761,7 @@ PyResult CharMgrService::Handle_GetOwnerNote(PyCallArgs &call)
             */
 
     sLog.White( "CharMgrService::Handle_GetOwnerNote()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(CHARACTER__DEBUG);
     return nullptr;
     //return m_db.GetOwnerNote(call.client->GetCharacterID());
 }
@@ -670,7 +806,7 @@ PyResult CharMgrService::Handle_GetOwnerNoteLabels(PyCallArgs &call)
     [PyNone]
 */
   sLog.White( "CharMgrService::Handle_GetOwnerNoteLabels()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
     return m_db.GetOwnerNoteLabels(call.client->GetCharacterID());
 }
@@ -703,7 +839,7 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
 15:48:32 [SvcCall]         Integer field: 1
 */
   sLog.White( "CharMgrService::Handle_AddContact()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   // make db call to save contact.  will have to find the call to get contact list....
   return nullptr;
@@ -712,18 +848,7 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
 PyResult CharMgrService::Handle_EditContact( PyCallArgs& call )
 {
   sLog.White( "CharMgrService::Handle_EditContact()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
-
-  return nullptr;
-}
-
-PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
-{
-  sLog.White( "CharMgrService::Handle_GetLabels()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
-
-//AttributeError: 'NoneType' object has no attribute 'values'
-//AttributeError: 'NoneType' object has no attribute 'itervalues'
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -731,7 +856,7 @@ PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 PyResult CharMgrService::Handle_CreateLabel( PyCallArgs& call )
 {
   sLog.White( "CharMgrService::Handle_CreateLabel()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -742,7 +867,7 @@ PyResult CharMgrService::Handle_DeleteContacts( PyCallArgs& call )
  sm.RemoteSvc('charMgr').DeleteContacts([contactIDs])
  */
   sLog.White( "CharMgrService::Handle_DeleteContacts()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -751,7 +876,7 @@ PyResult CharMgrService::Handle_BlockOwners( PyCallArgs& call )
 {
   //        sm.RemoteSvc('charMgr').BlockOwners([ownerID])
   sLog.White( "CharMgrService::Handle_BlockOwners()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -760,7 +885,7 @@ PyResult CharMgrService::Handle_UnblockOwners( PyCallArgs& call )
 {
   //            sm.RemoteSvc('charMgr').UnblockOwners(blocked)
   sLog.White( "CharMgrService::Handle_UnblockOwners()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -771,7 +896,7 @@ PyResult CharMgrService::Handle_EditContactsRelationshipID( PyCallArgs& call )
             sm.RemoteSvc('charMgr').EditContactsRelationshipID(contactIDs, relationshipID)
  */
   sLog.White( "CharMgrService::Handle_EditContactsRelationshipID()", "size=%u ", call.tuple->size());
-  call.Dump(SERVICE__CALL_DUMP);
+  call.Dump(CHARACTER__DEBUG);
 
   return nullptr;
 }
@@ -784,9 +909,4 @@ PyResult CharMgrService::Handle_GetImageServerLink( PyCallArgs& call )
     urlBuilder << "http://" << sConfig.net.imageServer << ":" << sConfig.net.imageServerPort << "/";
 
     return new PyString(urlBuilder.str());
-}
-
-PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
-{
-    return new PyInt(paperdollStateNoRecustomization);
 }

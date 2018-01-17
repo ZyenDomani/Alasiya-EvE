@@ -126,83 +126,9 @@ bool MarshalStream::VisitInteger( const PyInt* rep )
     return true;
 }
 
-bool MarshalStream::VisitUInteger( const PyUInt* rep )
-{
-    const int32 val = rep->value();
-
-    if( val == -1 )
-    {
-        Put<uint8>( Op_PyMinusOne );
-    }
-    else if( val == 0 )
-    {
-        Put<uint8>( Op_PyZeroInteger );
-    }
-    else if( val == 1 )
-    {
-        Put<uint8>( Op_PyOneInteger );
-    }
-    else if( val + 0x8000u > 0xFFFF )
-    {
-        Put<uint8>( Op_PyLong );
-        Put<uint32>( val );
-    }
-    else if( val + 0x80u > 0xFF )
-    {
-        Put<uint8>( Op_PySignedShort );
-        Put<uint16>( val );
-    }
-    else
-    {
-        Put<uint8>( Op_PyByte );
-        Put<uint8>( val );
-    }
-
-    return true;
-}
-
 bool MarshalStream::VisitLong( const PyLong* rep )
 {
     const int64 val = rep->value();
-
-    if( val == -1 )
-    {
-        Put<uint8>( Op_PyMinusOne );
-    }
-    else if( val == 0 )
-    {
-        Put<uint8>( Op_PyZeroInteger );
-    }
-    else if( val == 1 )
-    {
-        Put<uint8>( Op_PyOneInteger );
-    }
-    else if( val + 0x800000u > 0xFFFFFFFF )
-    {
-        SaveVarInteger( rep );
-    }
-    else if( val + 0x8000u > 0xFFFF )
-    {
-        Put<uint8>( Op_PyLong );
-        Put<int32>(static_cast<int32>(val));
-    }
-    else if( val + 0x80u > 0xFF )
-    {
-        Put<uint8>( Op_PySignedShort );
-        Put<int16>(static_cast<int16>(val));
-    }
-    else
-    {
-        Put<uint8>( Op_PyByte );
-        Put<int8>(static_cast<int8>(val));
-    }
-
-    return true;
-}
-
-bool MarshalStream::VisitULong( const PyULong* rep )
-{
-    const uint64 val = rep->value();
 
     if( val == -1 )
     {
@@ -492,25 +418,18 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
         /* note the assert are disabled because of performance flows */
         switch( header->GetColumnType( index ) )
         {
+            case DBTYPE_CY:
             case DBTYPE_I8:
+            case DBTYPE_UI8:
+            case DBTYPE_FILETIME:
             {
                 unpacked.Append<int64>( r->IsNone() ? 0 : r->AsLong()->value() );
             } break;
 
-            case DBTYPE_CY:
-            case DBTYPE_UI8:
-            case DBTYPE_FILETIME:
-            {
-                unpacked.Append<uint64>( r->IsNone() ? 0 : r->AsULong()->value() );
-            } break;
-
             case DBTYPE_I4:
-            {
-                unpacked.Append<int32>( r->IsNone() ? 0 : r->AsInt()->value() );
-            } break;
             case DBTYPE_UI4:
             {
-                unpacked.Append<uint32>( r->IsNone() ? 0 : r->AsUInt()->value() );
+                unpacked.Append<int32>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
 
             case DBTYPE_I2:
@@ -644,7 +563,7 @@ bool MarshalStream::VisitChecksumedStream( const PyChecksumedStream* rep )
 
 void MarshalStream::SaveVarInteger( const PyLong* v )
 {
-    const uint64 value = v->value();
+    const int64 value = v->value();
     uint8 integerSize = 0;
 
 #define DoIntegerSizeCheck(x) if( ( (uint8*)&value )[x] != 0 ) integerSize = x + 1;
@@ -652,30 +571,6 @@ void MarshalStream::SaveVarInteger( const PyLong* v )
     DoIntegerSizeCheck(5);
     DoIntegerSizeCheck(6);
 #undef  DoIntegerSizeCheck
-
-    if( integerSize > 0 && integerSize < 7 )
-    {
-        Put<uint8>(Op_PyVarInteger);
-        Put<uint8>(integerSize);
-        Put( &( (uint8*)&value )[0], &( (uint8*)&value )[integerSize] );
-    }
-    else
-    {
-        Put<uint8>(Op_PyLongLong);                    // 1
-        Put<int64>(value);                           // 8
-    }
-}
-
-void MarshalStream::SaveVarInteger( const PyULong* v )
-{
-    const uint64 value = v->value();
-    uint8 integerSize = 0;
-
-    #define DoIntegerSizeCheck(x) if( ( (uint8*)&value )[x] != 0 ) integerSize = x + 1;
-    DoIntegerSizeCheck(4);
-    DoIntegerSizeCheck(5);
-    DoIntegerSizeCheck(6);
-    #undef  DoIntegerSizeCheck
 
     if( integerSize > 0 && integerSize < 7 )
     {

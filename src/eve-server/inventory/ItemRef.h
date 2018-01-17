@@ -41,6 +41,7 @@ class WreckContainer;
 class Character;
 class SolarSystem;
 class StationItem;
+class StationOffice;
 
 /*
  * Typedefs for all item classes we have:
@@ -59,6 +60,7 @@ typedef RefPtr<Character>                CharacterRef;
 typedef RefPtr<const Character>          CharacterConstRef;
 typedef RefPtr<SolarSystem>              SolarSystemRef;
 typedef RefPtr<StationItem>              StationItemRef;
+typedef RefPtr<StationOffice>            StationOfficeRef;
 
 #endif /* !__ITEM_REF__H__INCL__ */
 
