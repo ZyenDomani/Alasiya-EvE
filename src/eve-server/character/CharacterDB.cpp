@@ -868,10 +868,10 @@ bool CharacterDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& c
 
     corporationID = row.GetUInt(0);
     cdata.schoolID = row.GetUInt(1);
-    cdata.stationID = row.GetUInt(3);
-    cdata.solarSystemID = row.GetUInt(4);
-    cdata.constellationID = row.GetUInt(5);
-    cdata.regionID = row.GetUInt(6);
+    cdata.stationID = row.GetUInt(2);
+    cdata.solarSystemID = row.GetUInt(3);
+    cdata.constellationID = row.GetUInt(4);
+    cdata.regionID = row.GetUInt(5);
 
     return true;
 }

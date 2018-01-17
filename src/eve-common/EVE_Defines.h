@@ -130,10 +130,10 @@ maxDustCharacter = 2130000000
 #define EVEMU_MAX_LONG_ID   9223372036854775807     // max int64.
 
 #define IsTempPinID(pinID) \
- (pinID < 1000)
+ (pinID <= 1000)
 
 #define IsStaticChannel(itemID) \
- ((itemID > 0) && (itemID < maxStaticChannel))
+ ((itemID >= 1) && (itemID <= maxStaticChannel))
 
 #define IsCharType(typeID) \
  ((typeID >= minCharType) && (typeID <= maxCharType))
@@ -189,7 +189,7 @@ maxDustCharacter = 2130000000
 
 // this covers all static items
 #define IsStaticItem(itemID) \
- (itemID < maxNPCItem)
+ (itemID <= maxNPCItem)
 
 // this covers ALL static celestial-type items
 #define IsStaticMapItem(itemID) \
@@ -284,13 +284,13 @@ maxDustCharacter = 2130000000
 
 
 #define IsCash(key) \
-((key > 999) && (key < 1007))
+((key >= 1000) && (key <= 1006))
 
 #define IsAUR(key) \
-((key > 1999) && (key < 1207))
+((key >= 1200) && (key <= 1206))
 
 #define IsDustKey(key) \
-(key > 9999)
+(key >= 10000)
 
 
 

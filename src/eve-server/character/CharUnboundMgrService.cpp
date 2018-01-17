@@ -214,7 +214,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.securityRating = sConfig.character.startSecRating;
         cdata.logonMinutes = 0;
         cdata.title = "No Title";
-        cdata.createDateTime = (int64)GetFileTimeNow(); 
+        cdata.createDateTime = (int64)GetFileTimeNow();
         // updated these to use TranserFunds and record journal entry
         cdata.balance = /*sConfig.character.startBalance*/0;
         cdata.aurBalance = /*sConfig.character.startAurBalance*/0; // Added aurBalance    -allan 01/07/14
@@ -403,9 +403,10 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     std::string reason = "DESC: Inheritance Payment to ";
     reason += charRef->itemName().c_str();
-    AccountService::TranserFunds(ownerUnknown, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
-    AccountService::TranserFunds(ownerUnknown, charRef->itemID(), sConfig.character.startAurBalance, reason, \
-                                    Journal::EntryType::Inheritance, Account::KeyType::AUR, Account::KeyType::AUR);
+    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
+
+    AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
+                            Journal::EntryType::Inheritance, 0, Account::KeyType::AUR, Account::KeyType::AUR);
 
     _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );
     return new PyInt(charRef->itemID());
