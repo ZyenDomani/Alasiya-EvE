@@ -762,7 +762,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
             "  LEFT JOIN crpCorporation AS crp ON crp.corporationID = sta.corporationID"
             " WHERE chr.characterID = %u", characterID)) {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
-            return nullptr;
+            return false;
             }
     } else {
         if(!sDatabase.RunQuery(res,
@@ -802,7 +802,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
             " WHERE chr.characterID = %u", characterID))
         {
             codelog(DATABASE__ERROR, "Error in GetCharacter query: %s", res.error.c_str());
-            return nullptr;
+            return false;
         }
     }
 

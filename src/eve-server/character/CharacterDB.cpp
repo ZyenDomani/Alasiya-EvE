@@ -51,7 +51,7 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         "   stationID, solarSystemID, constellationID, regionID)"
         " VALUES"
         "  (%u,'%s', %u, %u, '%s', %f, %f,"
-        "   %f, %u, %f, %f,"
+        "   %f, %u, %u, %f, %f,"
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,

@@ -560,12 +560,13 @@ bool CorporationDB::CreateCorporationCreatePacket(OnCorporationChanged & cc, uin
     DBResultRow row;
     if (!sDatabase.RunQuery(res,
         " SELECT "
-        "  corporationID, corporationName, description, tickerName, allianceID, warFactionID, url, taxRate,"
-        "  minimumJoinStanding, corporationType, hasPlayerPersonnelManager, sendCharTerminationMessage, creatorID, ceoID, stationID, raceID, "
-        "  shares, memberCount, memberLimit, allowedMemberRaceIDs, shape1, shape2, shape3, color1, color2, color3,"
-        "  typeface, division1, division2, division3, division4, division5, division6, division7, walletDivision1, walletDivision2,"
-        "  walletDivision3, walletDivision4, walletDivision5, walletDivision6, walletDivision7, deleted, isRecruiting "
-        " FROM crpCorporation "
+        "  c.corporationID, c.corporationName, c.description, c.tickerName, c.allianceID, c.warFactionID, c.url, c.taxRate,"
+        "  c.minimumJoinStanding, c.corporationType, c.hasPlayerPersonnelManager, c.sendCharTerminationMessage, c.creatorID, c.ceoID, c.stationID, c.raceID, "
+        "  c.shares, c.memberCount, c.memberLimit, c.allowedMemberRaceIDs, c.shape1, c.shape2, c.shape3, c.color1, c.color2,c. color3,"
+        "  c.typeface, w.division1, w.division2, w.division3, w.division4, w.division5, w.division6, w.division7, w.walletDivision1, w.walletDivision2,"
+        "  w.walletDivision3, w.walletDivision4, w.walletDivision5, w.walletDivision6, w.walletDivision7, c.deleted, c.isRecruiting "
+        " FROM crpCorporation AS c"
+        "  LEFT JOIN crpWalletDivisons AS w USING (corporationID)"
         " WHERE corporationID = %u ", newCorpID
         ))
     {
@@ -1581,7 +1582,7 @@ std::string CorporationDB::GetDivisionName(uint32 corpID, uint16 acctKey)
         _log(CORP__DB_WARNING, "Corporation %u - division name for acctKey %u not found.", corpID, acctKey);
         return "Unknown";
     }
-    
+
     return row.GetText(0);
 }
 
