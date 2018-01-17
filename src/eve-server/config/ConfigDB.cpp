@@ -128,7 +128,9 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (IsStaticItem(cur) or (cur == 0))
+        if (cur == 0)
+            continue;
+        if (IsStaticItem(cur))
             staticItems.push_back(cur);
         else if (IsAsteroid(cur))
             asteroidItems.push_back(cur);
