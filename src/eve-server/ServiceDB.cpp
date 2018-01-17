@@ -40,16 +40,15 @@ uint32 ServiceDB::SetClientSeed()
 }
 
 bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountData &account_info )
-{			//added auto account    -allan 18Jan14
-    std::string _username = username;
-    std::string _escaped_username;
-
-    sDatabase.DoEscapeString(_escaped_username, _username);
+{       //added auto account    -allan 18Jan14      //UD 16Jan18
+    std::string eLogin, ePass;
+    sDatabase.DoEscapeString(eLogin, username);
+    sDatabase.DoEscapeString(ePass, password);
 
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res,
         "SELECT accountID, clientID, password, hash, role, online, banned, logonCount, lastLogin"
-        " FROM account WHERE accountName = '%s'", _escaped_username.c_str() ) )
+        " FROM account WHERE accountName = '%s'", eLogin.c_str() ) )
     {
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
         return false;
@@ -59,10 +58,10 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!res.GetRow( row )) {
         // account not found, create new one if autoAccountRole is not zero (0)
         if (sConfig.account.autoAccountRole > 0) {
-            uint32 accountID = CreateNewAccount( _username.c_str(), password, sConfig.account.autoAccountRole);
+            uint32 accountID = CreateNewAccount( eLogin.c_str(), ePass.c_str(), sConfig.account.autoAccountRole);
             if ( accountID > 0 ) {
                 // add new account successful, get account info again
-                bool ret = GetAccountInformation(username, password, account_info);
+                bool ret = GetAccountInformation(eLogin.c_str(), ePass.c_str(), account_info);
                 return ret;
             } else
                 return false;
@@ -79,7 +78,7 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!row.IsNull(3))
         account_info.hash   = row.GetText(3);
 
-    account_info.name       = _escaped_username;
+    account_info.name       = eLogin;
     account_info.role       = row.GetInt64(4);
     account_info.online     = row.GetBool(5);
     account_info.banned     = row.GetBool(6);
@@ -93,16 +92,12 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
 
 bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
 {
+    std::string eLogin, eHash;
+    sDatabase.DoEscapeString(eLogin, username);
+    sDatabase.DoEscapeString(eHash, hash);
+
     DBerror err;
-    std::string user_name = username;
-    std::string escaped_hash;
-    std::string escaped_username;
-
-    sDatabase.DoEscapeString(escaped_hash, hash);
-    sDatabase.DoEscapeString(escaped_username, user_name);
-
-    if (!sDatabase.RunQuery(err, "UPDATE account SET password='',hash='%s' where accountName='%s'",
-                                escaped_hash.c_str(), escaped_username.c_str())) {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET hash='%s' where accountName='%s'", eHash.c_str(), eLogin.c_str())) {
         sLog.Error( "AccountDB", "Unable to update account information for: %s.", username );
         return false;
     }
@@ -112,13 +107,12 @@ bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
 
 bool ServiceDB::UpdateAccountInformation( const char* username, bool isOnline )
 {
-    DBerror err;
-    std::string user_name = username;
-    std::string escaped_username;
+    std::string eLogin;
+    sDatabase.DoEscapeString(eLogin, username);
 
-    sDatabase.DoEscapeString(escaped_username, user_name);
-    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1, online=%u where accountName='%s'", isOnline, escaped_username.c_str())) {
-        sLog.Error( "AccountDB", "Unable to update account information for: %s.", username );
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1, online=%u where accountName='%s'", isOnline, eLogin.c_str())) {
+        sLog.Error( "AccountDB", "Unable to update account information for: '%s'.", eLogin.c_str() );
         return false;
     }
 
@@ -130,8 +124,7 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 r
     uint32 accountID = 0;
     uint32 clientID = sEntityList.GetClientSeed();
 
-    std::string eLogin;
-    std::string ePass;
+    std::string eLogin, ePass;
     sDatabase.DoEscapeString(eLogin, login);
     sDatabase.DoEscapeString(ePass, pass);
 
@@ -141,7 +134,7 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 r
             " VALUES ( '%s', '%s', %" PRIi64 ", %i )",
                     eLogin.c_str(), ePass.c_str(), role, clientID ) )
     {
-        sLog.Error( "ServiceDB", "Failed to create a new account '%s': %s.", login, err.c_str() );
+        sLog.Error( "ServiceDB", "Failed to create a new account '%s':'%s': %s.", eLogin.c_str(), ePass.c_str(), err.c_str() );
         return 0;
     }
 
