@@ -358,6 +358,10 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     // create default wallet info
     sDatabase.RunQuery(err, "INSERT INTO crpWalletDivisons (corporationID) VALUES (%u)", corpID);
 
+    // create corp-owned shares
+    sDatabase.RunQuery(err, "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
+                            " VALUES (%i, %i, %i, %u)", corpID, corpID, 1000, corpID);
+
     return true;
 }
 

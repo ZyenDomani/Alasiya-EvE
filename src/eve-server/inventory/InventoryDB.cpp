@@ -899,7 +899,7 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
             return false;
         }
 
-        into.startDateTime = row.GetInt(0);
+        into.startDateTime = row.GetInt64(0);
         into.corporationID = row.GetInt(1);
         into.corpAccountKey = row.GetInt(2);
         into.corpRole = row.GetInt64(3);

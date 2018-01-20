@@ -45,6 +45,9 @@ protected:
     PyCallable_DECL_CALL(GetEmploymentRecord);
     PyCallable_DECL_CALL(GetAllianceMembers);
 
+    //overloaded in order to support bound objects:
+    virtual PyBoundObject* _CreateBoundObject(Client* pClient, const PyRep *bind_args);
+
 };
 
 #endif  // EVEMU_CORP_ALLIANCEREGISTRY_H_
