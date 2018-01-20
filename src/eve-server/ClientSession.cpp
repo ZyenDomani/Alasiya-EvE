@@ -34,17 +34,17 @@
 */
 
 ClientSession::ClientSession()
-: mSession( new PyDict()),
-mDirty( false)
+: mSession(new PyDict()),
+mDirty(false)
 {
     /* default value of attribute */
     PyTuple* tuple = new_tuple(new PyNone(), new PyLong(ROLE_PLAYER | ROLE_NEWBIE));
-    mSession->SetItemString( "role", tuple);
+    mSession->SetItemString("role", tuple);
 }
 
 ClientSession::~ClientSession()
 {
-    PyDecRef( mSession);
+    PyDecRef(mSession);
 }
 
 int64 ClientSession::CreateSessionID() {
@@ -58,9 +58,9 @@ int64 ClientSession::CreateSessionID() {
 }
 
 // note:  cannot destroy these Py* objects here.
-int32 ClientSession::GetLastInt( const char* name) const
+int32 ClientSession::GetLastInt(const char* name) const
 {
-    PyRep* value = _GetLast( name);
+    PyRep* value = _GetLast(name);
     if (value == nullptr)
         return 0;
 
@@ -70,9 +70,9 @@ int32 ClientSession::GetLastInt( const char* name) const
     return value->AsInt()->value();
 }
 
-int32 ClientSession::GetCurrentInt( const char* name) const
+int32 ClientSession::GetCurrentInt(const char* name) const
 {
-    PyRep* value = _GetCurrent( name);
+    PyRep* value = _GetCurrent(name);
     if (value == nullptr)
         return 0;
 
@@ -82,14 +82,14 @@ int32 ClientSession::GetCurrentInt( const char* name) const
     return value->AsInt()->value();
 }
 
-void ClientSession::SetInt( const char* name, int32 value)
+void ClientSession::SetInt(const char* name, int32 value)
 {
-    _Set( name, new PyInt( value));
+    _Set(name, new PyInt(value));
 }
 
-int64 ClientSession::GetLastLong( const char* name) const
+int64 ClientSession::GetLastLong(const char* name) const
 {
-    PyRep* value = _GetLast( name);
+    PyRep* value = _GetLast(name);
     if (value == nullptr)
         return 0;
 
@@ -99,9 +99,9 @@ int64 ClientSession::GetLastLong( const char* name) const
     return value->AsLong()->value();
 }
 
-int64 ClientSession::GetCurrentLong( const char* name) const
+int64 ClientSession::GetCurrentLong(const char* name) const
 {
-    PyRep* value = _GetCurrent( name);
+    PyRep* value = _GetCurrent(name);
     if (value == nullptr)
         return 0;
 
@@ -111,14 +111,14 @@ int64 ClientSession::GetCurrentLong( const char* name) const
     return value->AsLong()->value();
 }
 
-void ClientSession::SetLong( const char* name, int64 value)
+void ClientSession::SetLong(const char* name, int64 value)
 {
-    _Set( name, new PyLong( value));
+    _Set(name, new PyLong(value));
 }
 
-std::string ClientSession::GetLastString( const char* name) const
+std::string ClientSession::GetLastString(const char* name) const
 {
-    PyRep* value = _GetLast( name);
+    PyRep* value = _GetLast(name);
     if (value == nullptr)
         return std::string();
 
@@ -128,9 +128,9 @@ std::string ClientSession::GetLastString( const char* name) const
     return value->AsString()->content();
 }
 
-std::string ClientSession::GetCurrentString( const char* name) const
+std::string ClientSession::GetCurrentString(const char* name) const
 {
-    PyRep* value = _GetCurrent( name);
+    PyRep* value = _GetCurrent(name);
     if (value == nullptr)
         return std::string();
 
@@ -140,80 +140,84 @@ std::string ClientSession::GetCurrentString( const char* name) const
     return value->AsString()->content();
 }
 
-void ClientSession::SetString( const char* name, const char* value)
+void ClientSession::SetString(const char* name, const char* value)
 {
-    _Set( name, new PyString( value));
+    _Set(name, new PyString(value));
 }
 
-void ClientSession::Clear( const char* name)
+void ClientSession::Clear(const char* name)
 {
-    _Set( name, new PyNone());
+    _Set(name, new PyNone());
 }
 
-void ClientSession::EncodeChanges( PyDict* into)
+void ClientSession::EncodeChanges(PyDict* into)
 {
     PyDict::const_iterator cur = mSession->begin();
     for (; cur != mSession->end(); ++cur) {
         PyString* str = cur->first->AsString();
         PyTuple* value = cur->second->AsTuple();
-        PyRep* last = value->GetItem( 0);
-        PyRep* current = value->GetItem( 1);
+        PyRep* last = value->GetItem(0);
+        PyRep* current = value->GetItem(1);
 
         if (last->hash() != current->hash()) {
             // Duplicate tuple
-            PyTuple* t = new PyTuple( 2);
-            t->SetItem( 0, last); PyIncRef( last);
-            t->SetItem( 1, current); PyIncRef( current);
-            into->SetItem( str, t); PyIncRef( str);
+            PyTuple* t = new PyTuple(2);
+            t->SetItem(0, last); PyIncRef(last);
+            t->SetItem(1, current); PyIncRef(current);
+            into->SetItem(str, t); PyIncRef(str);
             // Update our tuple
-            value->SetItem( 0, current); PyIncRef( current);
+            value->SetItem(0, current); PyIncRef(current);
         }
     }
 
     mDirty = false;
 }
 
-PyTuple* ClientSession::_GetValueTuple( const char* name) const
+PyTuple* ClientSession::_GetValueTuple(const char* name) const
 {
-    PyRep* value = mSession->GetItemString( name);
+    PyRep* value = mSession->GetItemString(name);
     if (value == nullptr)
         return nullptr;
     return value->AsTuple();
 }
 
-PyRep* ClientSession::_GetLast( const char* name) const
+PyRep* ClientSession::_GetLast(const char* name) const
 {
-    PyTuple* tuple = _GetValueTuple( name);
-    if (tuple == nullptr)
-        return nullptr;
-    return tuple->GetItem( 0);
-}
-
-PyRep* ClientSession::_GetCurrent( const char* name) const
-{
-    PyTuple* tuple = _GetValueTuple( name);
-    if (tuple == nullptr)
-        return nullptr;
-    return tuple->GetItem( 1);
-}
-
-void ClientSession::_Set( const char* name, PyRep* value)
-{
-    PyTuple* tuple = _GetValueTuple( name);
+    PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
-        tuple = new PyTuple( 2);
-        tuple->SetItem( 0, new PyNone());
-        tuple->SetItem( 1, new PyNone());
-        mSession->SetItemString( name, tuple);
+        _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetLast - value not found with name '%s'", name);
+        return nullptr;
+    }
+    return tuple->GetItem(0);
+}
+
+PyRep* ClientSession::_GetCurrent(const char* name) const
+{
+    PyTuple* tuple = _GetValueTuple(name);
+    if (tuple == nullptr) {
+        _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetCurrent - value not found with name '%s'", name);
+        return nullptr;
+    }
+    return tuple->GetItem(1);
+}
+
+void ClientSession::_Set(const char* name, PyRep* value)
+{
+    PyTuple* tuple = _GetValueTuple(name);
+    if (tuple == nullptr) {
+        tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyNone());
+        tuple->SetItem(1, new PyNone());
+        mSession->SetItemString(name, tuple);
     }
 
-    PyRep* current = tuple->GetItem( 1);
+    PyRep* current = tuple->GetItem(1);
     if (value->hash() != current->hash()) {
-        //v->SetItem( 0, current); /* didn't the session need to store the old value to? */
-        tuple->SetItem( 1, value);
+        //v->SetItem(0, current); /* didn't the session need to store the old value to? */
+        tuple->SetItem(1, value);
 
         mDirty = true;
     } else
-        PyDecRef( value);
+        PyDecRef(value);
 }
 

@@ -31,7 +31,7 @@
 #include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "planet/PlanetDB.h"
-#include <planet/Moon.h>
+#include "planet/Moon.h"
 #include "ship/BeyonceService.h"
 #include "station/StationDataMgr.h"
 #include "system/BookmarkService.h"
@@ -150,24 +150,40 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
-    ObjectCachedMethodID method_id(GetName(), "GetFormations");
-
-    //check to see if this method is in the cache already.
-    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        PyRep *res = m_db.GetFormations();
-        if (res == nullptr) {
-            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            res = PyStatic.NewNone();
-        }
-
-        m_manager->cache_service->GiveCache(method_id, &res);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    return m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-    //return new PyTuple(0);
+    //vicious crap.
+    PyTuple* res = new PyTuple( 2 );
+        Beyonce_Formation f;
+            //Diamond formation
+            f.name = "Diamond";
+            f.pos1.x = 100;
+            f.pos1.y = 0;
+            f.pos1.z = 0;
+            f.pos2.x = 0;
+            f.pos2.y = 100;
+            f.pos2.z = 0;
+            f.pos3.x = -100;
+            f.pos3.y = 0;
+            f.pos3.z = 0;
+            f.pos4.x = 0;
+            f.pos4.y = -100;
+            f.pos4.z = 0;
+        res->SetItem( 0, f.Encode() );
+            //Arrow formation
+            f.name = "Arrow";
+            f.pos1.x = 100;
+            f.pos1.y = 0;
+            f.pos1.z = -50;
+            f.pos2.x = 50;
+            f.pos2.y = 0;
+            f.pos2.z = 0;
+            f.pos3.x = -100;
+            f.pos3.y = 0;
+            f.pos3.z = -50;
+            f.pos4.x = -50;
+            f.pos4.y = 0;
+            f.pos4.z = 0;
+        res->SetItem( 1, f.Encode() );
+    return res;
 }
 
 /*

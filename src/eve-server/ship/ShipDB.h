@@ -37,8 +37,6 @@ class ShipDB
 : public ServiceDB
 {
 public:
-    PyTuple *GetFormations();
-
     // insurance functions  -allan  21Jul14
     PyRep *GetInsuranceByShipID(uint32 shipID);
     PyRep *GetInsuranceByOwnerID(uint32 ownerID);
