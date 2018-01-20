@@ -153,7 +153,7 @@ void ActiveModule::Process()
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
-    if ((m_needsCharge) and ((!m_chargeLoaded) or (!m_chargeRef))) {
+    if ((m_needsCharge) and ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr))) {
         _log(SHIP__MODULE_WARNING, "ActiveModule::Activate() - Cannot find loaded charge for this module");
         if (m_shipRef->HasPilot())
             if (m_shipRef->GetPilot()->CanThrow())
@@ -163,7 +163,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (targetID) {
         m_targetID = targetID;
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
-        if (!m_targetSE) {
+        if (m_targetSE == nullptr) {
             sLog.Error("ActiveModule::Activate()", "m_targetSE == NULL");
             m_shipRef->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
             Clear();

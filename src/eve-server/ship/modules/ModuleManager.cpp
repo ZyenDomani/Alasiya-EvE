@@ -827,6 +827,12 @@ void ModuleManager::RepairModules()
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
+    if (chargeRef.get() == nullptr)
+        if (m_Ship->HasPilot())
+            throw PyException( MakeUserError( "CantFindChargeToAdd"));
+
+    //CantMoveChargesBetweenModules
+
     GenericModule* pMod = m_Modules->GetModule(flag);
     if (pMod != nullptr) {
         float modCapacity = pMod->getItem()->GetAttribute(AttrCapacity).get_float();

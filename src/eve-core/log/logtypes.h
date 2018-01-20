@@ -1,30 +1,28 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Zhur
-    Additions:  Allan
-    Log Version: 8.4
-*/
- /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
+ - ----------*-------------------------------------------------------------------------
+ LICENSE:
+ ------------------------------------------------------------------------------------
+ This file is part of EVEmu: EVE Online Server Emulator
+ Copyright 2006 - 2011 The EVEmu Team
+ For the latest information visit http://evemu.org
+ ------------------------------------------------------------------------------------
+ This program is free software; you can redistribute it and/or modify it under
+ the terms of the GNU Lesser General Public License as published by the Free Software
+ Foundation; either version 2 of the License, or (at your option) any later
+ version.
+ This program is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ You should have received a copy of the GNU Lesser General Public License along with
+ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+ http://www.gnu.org/copyleft/lesser.txt.
+ ------------------------------------------------------------------------------------
+ Author:        Zhur
+ Additions:  Allan
+ Log Version: 8.5
+ */
+/*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
 #ifndef LOG_CATEGORY
 #define LOG_CATEGORY(name)
@@ -50,10 +48,11 @@
  *  6 - trace
  *  7 - success         (not used)
  *
-*/
+ */
 
 LOG_CATEGORY( DEBUG )
 LOG_TYPE( DEBUG, DEBUG, ENABLED, "Debug" )
+LOG_TYPE( DEBUG, DEV_LOG, ENABLED, "DevLog" )
 
 LOG_CATEGORY( NET )
 LOG_TYPE( NET, PRES_ERROR, ENABLED, "PresError" )
@@ -462,6 +461,7 @@ LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
 LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDmp" )
 LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
 LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
+LOG_TYPE( CLIENT, SESSION_NOTFOUND, DISABLED, "ClientSession" )
 LOG_TYPE( CLIENT, TIMER, DISABLED, "ClientTimer" )
 LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )
 LOG_TYPE( CLIENT, STACK_TRACE, DISABLED, "ClientStack" )

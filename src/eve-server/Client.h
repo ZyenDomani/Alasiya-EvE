@@ -84,7 +84,7 @@ public:
 
     uint32 GetAccountType() const                       { return mSession.GetCurrentInt( "userType" ); }
     int64 GetAccountRole() const                        { return mSession.GetCurrentLong( "role" ); }
-    int64 GetClientID() const                           { return mSession.GetCurrentLong( "clientid" ); }
+    int64 GetClientID() const                           { return mSession.GetCurrentLong( "clientID" ); }
     uint32 GetUserID() const                            { return mSession.GetCurrentInt( "userid" ); }
     int64 GetSessionID()                                { return mSession.GetCurrentLong( "sessionID" ); }
 
@@ -97,11 +97,11 @@ public:
     double GetCorpTaxRate()                             { return m_char->corpTaxRate(); }
     uint32 GetCorporationID() const                     { return mSession.GetCurrentInt( "corpid" ); }
     uint32 GetCorpHQ() const                            { return mSession.GetCurrentInt( "hqID" ); }
-    uint32 GetAllianceID() const                        { return mSession.GetCurrentInt( "allianceID" ); }
-    uint32 GetWarFactionID() const                      { return mSession.GetCurrentInt( "warFactionID" ); }
+    uint32 GetAllianceID() const                        { return mSession.GetCurrentInt( "allianceid" ); }
+    uint32 GetWarFactionID() const                      { return mSession.GetCurrentInt( "warfactionid" ); }
     int32 GetCorpAccountKey() const                     { return mSession.GetCurrentInt( "corpAccountKey" ); }
     // corporation management-type roles (manager, officer, trader)  also has container roles
-    int64 GetCorpRole() const                           { return mSession.GetCurrentLong( "corpRole" ); }
+    int64 GetCorpRole() const                           { return mSession.GetCurrentLong( "corprole" ); }
     // access roles everywhere.  is joined with other access roles
     int64 GetRolesAtAll() const                         { return mSession.GetCurrentLong( "rolesAtAll" ); }
     // access roles at base defined for this char. overrides hq if same location

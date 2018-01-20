@@ -243,14 +243,14 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         corpData.baseID = cdata.stationID;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
-        corpData.rolesAtAll = Corp::Role::None;
-        corpData.rolesAtBase = Corp::Role::None;
-        corpData.rolesAtHQ = Corp::Role::None;
-        corpData.rolesAtOther = Corp::Role::None;
-        corpData.grantableRoles = Corp::Role::None;
-        corpData.grantableRolesAtBase = Corp::Role::None;
-        corpData.grantableRolesAtHQ = Corp::Role::None;
-        corpData.grantableRolesAtOther = Corp::Role::None;
+        corpData.rolesAtAll = Corp::Role::Member;
+        corpData.rolesAtBase = Corp::Role::Member;
+        corpData.rolesAtHQ = Corp::Role::Member;
+        corpData.rolesAtOther = Corp::Role::Member;
+        corpData.grantableRoles = Corp::Role::Member;
+        corpData.grantableRolesAtBase = Corp::Role::Member;
+        corpData.grantableRolesAtHQ = Corp::Role::Member;
+        corpData.grantableRolesAtOther = Corp::Role::Member;
         // these arent needed yet, but set to 0 to avoid trash data
         corpData.taxRate = 0;
         corpData.corpHQ = 0;

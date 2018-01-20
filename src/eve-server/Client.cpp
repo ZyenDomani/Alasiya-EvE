@@ -627,15 +627,18 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->Relocate(pt);
         m_ship->Dock();
 
-        if (IsFleetBooster()) {
-            std::list<int32> wing, squad;
-            wing.clear();
-            squad.clear();
-            if (IsSquad(m_squad))
-                squad.emplace(squad.end(), m_squad);
-            else if (IsWing(m_wing))
-                wing.emplace(wing.end(), m_wing);
-            sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+        if (IsFleet(m_fleet)) {
+            m_fleetTimer.Disable();
+            if (IsFleetBooster()) {
+                std::list<int32> wing, squad;
+                wing.clear();
+                squad.clear();
+                if (IsSquad(m_squad))
+                    squad.emplace(squad.end(), m_squad);
+                else if (IsWing(m_wing))
+                    wing.emplace(wing.end(), m_wing);
+                sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+            }
         }
 
         if (!IsHangarLoaded(locationID))
@@ -1768,7 +1771,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //user type 30 is normal user, type 23 is a trial account user.
     mSession.SetInt("userType", userTypeMammon);
     mSession.SetInt("userid", account_info.id);
-    mSession.SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this causes errors in client log when !=0.  no clue why yet.  */
+    mSession.SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
     mSession.SetLong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 

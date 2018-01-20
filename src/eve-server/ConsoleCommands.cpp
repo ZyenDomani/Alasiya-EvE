@@ -264,7 +264,7 @@ bool ConsoleCommand::Process() {
                 sLog.White("", "");
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
                 sLog.Warning("         Role_All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
-                sLog.Warning("        Role_Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainerTake, Corp::Role::AllContainerTake);
+                sLog.Warning("        Role_Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
                 sLog.Warning("       Role_Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
                 sLog.Warning("      Role_Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
                 sLog.Warning("     Role_Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);

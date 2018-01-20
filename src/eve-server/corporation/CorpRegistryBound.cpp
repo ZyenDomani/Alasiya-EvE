@@ -546,14 +546,14 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.corporationID = corpID;
         data.corpAccountKey = Account::KeyType::Cash;
         data.corpRole = Corp::Role::Admin;
-        data.rolesAtAll = Corp::Role::AllAt;
-        data.rolesAtBase = Corp::Role::AllAt;
-        data.rolesAtHQ = Corp::Role::AllAt;
-        data.rolesAtOther = Corp::Role::AllAt;
-        data.grantableRoles = Corp::Role::AllAt;
-        data.grantableRolesAtBase = Corp::Role::AllAt;
-        data.grantableRolesAtHQ = Corp::Role::AllAt;
-        data.grantableRolesAtOther = Corp::Role::AllAt;
+        data.rolesAtAll = Corp::Role::Admin;
+        data.rolesAtBase = Corp::Role::Admin;
+        data.rolesAtHQ = Corp::Role::Admin;
+        data.rolesAtOther = Corp::Role::Admin;
+        data.grantableRoles = Corp::Role::Admin;
+        data.grantableRolesAtBase = Corp::Role::Admin;
+        data.grantableRolesAtHQ = Corp::Role::Admin;
+        data.grantableRolesAtOther = Corp::Role::Admin;
     // update corp data and refresh session data.
     call.client->GetChar()->JoinCorporation(data);
 
@@ -1645,14 +1645,14 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
                 /** @todo  update data as needed here... */
                 data.corpAccountKey = Account::KeyType::Cash;
                 data.corpRole = Corp::Role::Member;
-                data.rolesAtAll = Corp::Role::None;
-                data.rolesAtBase = Corp::Role::None;
-                data.rolesAtHQ = Corp::Role::None;
-                data.rolesAtOther = Corp::Role::None;
-                data.grantableRoles = Corp::Role::None;
-                data.grantableRolesAtBase = Corp::Role::None;
-                data.grantableRolesAtHQ = Corp::Role::None;
-                data.grantableRolesAtOther = Corp::Role::None;
+                data.rolesAtAll = Corp::Role::Member;
+                data.rolesAtBase = Corp::Role::Member;
+                data.rolesAtHQ = Corp::Role::Member;
+                data.rolesAtOther = Corp::Role::Member;
+                data.grantableRoles = Corp::Role::Member;
+                data.grantableRolesAtBase = Corp::Role::Member;
+                data.grantableRolesAtHQ = Corp::Role::Member;
+                data.grantableRolesAtOther = Corp::Role::Member;
                 data.corporationID = ocmc.newCorpID;
                 CorporationDB::GetCorpData(data);
                 recruit->GetChar()->JoinCorporation(data);
