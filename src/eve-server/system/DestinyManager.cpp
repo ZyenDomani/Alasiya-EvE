@@ -1702,13 +1702,18 @@ void DestinyManager::GotoPoint(const GPoint& point) {
     SendSingleDestinyUpdate(&up);   // consumed
 }
 
-void DestinyManager::WarpTo(const GPoint& where, int32 distance) {
+void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoPilot/*false*/, SystemEntity* pSE/*nullptr*/) {
     /* warp order..
      * pick destination -> align/accel -> aura "warp drive active" -> cap drain -> accel
      *      -> enter warp -> warp -> decel -> leave warp -> coast -> stop
      */
-    GotoPoint(where);
     SafeDelete(m_warpState);
+
+    // check for autopilot.  it has 'special' checks in client for auto-disable by destiny update
+    if (autoPilot)
+        Follow(pSE, distance);
+    else
+        GotoPoint(where);
 
     /** @todo (allan) finish warp scramble system */
     // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)

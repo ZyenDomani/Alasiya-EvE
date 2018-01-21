@@ -208,8 +208,10 @@ public:
     void SetSessionChange(bool set=false)               { m_sessionChangeActive = set; }
     void SetBallPark();
     void SetJumpTimers();
-    void SetAutoPilot(bool=false);
     void StargateJump(uint32 fromGate, uint32 toGate);
+
+    bool IsAutoPilot()                                  { return m_autoPilot; }
+    void SetAutoPilot(bool set=false);
 
     //jetcan timer
     bool IsJetcanAvalible();

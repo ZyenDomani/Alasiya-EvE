@@ -469,6 +469,14 @@ void Client::ProcessClient() {
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
 }
 
+void Client::SetAutoPilot(bool set/*false*/)
+{
+    // itemID=10644  flag=
+    m_autoPilot = set;
+    _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
+}
+
+
 void Client::SetDestiny(const GPoint& pt, bool count) {
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr))
         CreateShipSE();
@@ -558,10 +566,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         return;
     }
 
-    if (m_autoPilot) {
-        // this entire system (AP) needs lots of work.  i *think* solarsystemid is used as a check here and solarsystemid2 is 'current' system
-        _log(PLAYER__AP_TRACE, "MoveToLocation() - m_autoPilot = true");
-    }
+    if (m_autoPilot)
+        _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = true");
 
     if (!m_login and (m_locationID == locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
@@ -719,6 +725,8 @@ void Client::UndockFromStation() {
 }
 
 void Client::DockToStation() {
+    // ap cleared on client side when docking.
+    m_autoPilot = false;
     m_clientState = ClientState::csIdle;
     pShipSE->DestinyMgr()->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
@@ -894,17 +902,6 @@ PyRep *Client::GetAggressors() const {
     return dict;
 }
 
-void Client::SetAutoPilot(bool autoPilot /*false*/) {
-    // itemID=10644  flag=
-    m_autoPilot = autoPilot;
-    if (autoPilot)
-        UpdateSessionInt("solarsystemid2", 0);
-    else {
-        if (IsInSpace())
-            UpdateSessionInt("solarsystemid2", m_locationID);   //this is currrent system.
-    }
-}
-
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     if ((m_clientState != csIdle) or m_stateTimer.Enabled()) {
         sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->itemName().c_str());
@@ -1061,8 +1058,7 @@ void Client::ResetAfterPodded() {
      */
 
     m_bubbleWait = true;
-    //clear AutoPilot
-    SetAutoPilot(false);
+    m_autoPilot = false;
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
     SpawnNewRookieShip();
@@ -1275,9 +1271,7 @@ void Client::_UpdateSession()
         mSession.Clear("stationid");
         mSession.Clear("stationid2");
         mSession.Clear("worldspaceid");
-        /** @todo  will have to look into AP shit more to understand what it uses to work.  ssid is only part of it. */
-        //if (!m_autoPilot)
-            mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
         mSession.SetInt("locationid", solarsystemID);
         mSession.SetInt("shipid", m_shipId);
     }

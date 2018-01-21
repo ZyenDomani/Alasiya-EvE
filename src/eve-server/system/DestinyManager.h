@@ -94,7 +94,7 @@ public:
     void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
 
     /* Larger movement */
-    void WarpTo(const GPoint& where, int32 distance = 0);
+    void WarpTo(const GPoint& where, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
     bool IsMoving()                                     { return (m_currentSpeedFraction ? true : false); }

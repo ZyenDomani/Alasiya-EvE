@@ -67,6 +67,7 @@ EVEServerConfig::EVEServerConfig()
     world.loginMsg = false;//N
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
+    world.apWarptoDistance = 15000;
 
     // rates
     rates.npcBountyMultiply = 1.0;
@@ -275,6 +276,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "loginMsg",         world.loginMsg );
     AddValueParser( "mailDelay",        world.mailDelay );
     AddValueParser( "StationDockDelay", world.StationDockDelay );
+    AddValueParser( "apWarptoDistance", world.apWarptoDistance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -286,6 +288,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "loginMsg" );
     RemoveParser( "mailDelay" );
     RemoveParser( "StationDockDelay" );
+    RemoveParser( "apWarptoDistance" );
 
     return result;
 }

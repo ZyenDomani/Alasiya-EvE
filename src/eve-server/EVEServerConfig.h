@@ -71,6 +71,7 @@ public:
         bool loginMsg;
         uint8 mailDelay;
         uint8 StationDockDelay;
+        uint16 apWarptoDistance;
     } world;
 
     // From <rates/>
