@@ -14,14 +14,14 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
-ActiveModule::ActiveModule(InventoryItemRef item, ShipItemRef ship)
-: GenericModule(item, ship),
+ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
+: GenericModule(iRef, sRef),
 m_timer(1000),
 m_reloadTimer(10000)
 {
-    m_needsCharge = item->HasAttribute(AttrChargeGroup1);
+    m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
-        switch (item->groupID()) {
+        switch (iRef->groupID()) {
             // these neither require nor consume charges
             case EVEDB::invGroups::Remote_Sensor_Damper:
             case EVEDB::invGroups::Tracking_Link:
@@ -38,7 +38,7 @@ m_reloadTimer(10000)
             } break;
         }
     } else {
-        switch (item->groupID()) {
+        switch (iRef->groupID()) {
             case EVEDB::invGroups::Survey_Scanner:
             case EVEDB::invGroups::Ship_Scanner:
             case EVEDB::invGroups::Cargo_Scanner:
@@ -58,7 +58,7 @@ m_reloadTimer(10000)
      */
     if (m_needsCharge)  {
         if (m_reloadTime < 1) {
-            switch (item->groupID()) {
+            switch (iRef->groupID()) {
                 case EVEDB::invGroups::Projectile_Weapon: {
                     m_reloadTime = 4000;
                 } break;
@@ -83,14 +83,15 @@ m_reloadTimer(10000)
                 } break;
             }
         }
-    }
+    } else
+        m_chargeRef = iRef;
 
     m_reloadTimer.Disable();
 
     Clear();
 
     if (m_reloadTime > 0)
-        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", item->itemName().c_str(), item->itemID(), m_reloadTime);
+        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", iRef->itemName().c_str(), iRef->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Clear()
@@ -455,9 +456,17 @@ void ActiveModule::SetTimer(uint32 time) {
     m_timer.Start(time);
 }
 
-void ActiveModule::LoadCharge(InventoryItemRef charge)
+void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
-    m_chargeRef = charge;
+    if (chargeRef.get() == nullptr) {
+        _log(SHIP__MODULE_WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
+        if (m_shipRef->HasPilot())
+            if (m_shipRef->GetPilot()->CanThrow())
+                throw PyException( MakeCustomError( "Cannot find charge to load into this module  - Ref: ServerError 15693"));
+            return;
+    }
+
+    m_chargeRef = chargeRef;
     m_chargeLoaded = true;
     m_ChargeState = ModStates::ChargeStates::CHG_LOADING;
 
@@ -475,23 +484,23 @@ void ActiveModule::LoadCharge(InventoryItemRef charge)
             module->SetItem(0, new PyInt(m_modRef->itemID()));
         PyTuple* tmp = new PyTuple(3);
             tmp->SetItem(0, module);
-            tmp->SetItem(1, new PyInt(charge->typeID()));
+            tmp->SetItem(1, new PyInt(chargeRef->typeID()));
             tmp->SetItem(2, new PyInt(m_reloadTime));
         m_shipRef->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
         m_reloadTimer.Start(m_reloadTime);
     }
     // process new charge's effects here
-    charge->ClearModifiers();
+    chargeRef->ClearModifiers();
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
-    data.srcRef = charge;
-    for (auto it : charge->type().m_stateFxMap) {
+    data.srcRef = chargeRef;
+    for (auto it : chargeRef->type().m_stateFxMap) {
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        sFxProc.ParseExpression(charge.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        sFxProc.ParseExpression(chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
     if (m_shipRef->GetPilot()->IsLogin() or m_shipRef->GetPilot()->IsDocked()) {
         m_ChargeState = ModStates::ChargeStates::CHG_LOADED;
-        sFxProc.ApplyEffects(charge.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+        sFxProc.ApplyEffects(chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
     }
 }
 

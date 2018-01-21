@@ -29,7 +29,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
 
     m_modRef = item;
     m_shipRef = ship;
-    m_chargeRef = InventoryItemRef();
+    m_chargeRef = InventoryItemRef(nullptr);
 
     m_ModuleState = ModStates::ModuleStates::MOD_UNFITTED;
     m_ChargeState = ModStates::ChargeStates::CHG_UNLOADED;
