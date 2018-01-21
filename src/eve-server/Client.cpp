@@ -566,8 +566,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         return;
     }
 
-    if (m_autoPilot)
-        _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = true");
+    _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = %s", (m_autoPilot ? "true" : "false"));
 
     if (!m_login and (m_locationID == locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
@@ -680,6 +679,9 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_char->Move(m_shipId, flagPilot, true);
 
         SetDestiny(pt, !m_undock);
+
+        if (IsJump() and !m_autoPilot)
+            pShipSE->DestinyMgr()->Stop();
     }
 
     m_ship->SetCustomInfo(ci);

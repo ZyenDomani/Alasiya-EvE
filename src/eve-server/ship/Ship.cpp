@@ -1089,6 +1089,7 @@ void ShipItem::RepairShip(float fraction)
 
 void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction)
 {
+    /** @todo  this isnt right....needs update */
     EvilNumber amount = 0, damage = 0;
     InventoryItem* pItem;
     for (auto cur : itemRefVec) {

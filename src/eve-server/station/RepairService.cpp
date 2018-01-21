@@ -94,10 +94,10 @@ PyBoundObject* RepairService::_CreateBoundObject(Client* c, const PyRep* bind_ar
 }
 
 PyResult RepairSvcBound::Handle_DamageModules(PyCallArgs &call) {
-    /*    itemIDAndAmountOfDamageList.append((item.itemID, amount))
+    /*    itemIDAndAmountOfDamageList.append((item.itemID, amount)) <-- amount is % of damage
      *    self.repairSvc.DamageModules(itemIDAndAmountOfDamageList)
      */
-    // note....cant find a call to this method in client
+
     sLog.White( "RepairSvcBound::Handle_DamageModules()", "size= %u", call.tuple->size() );
     call.Dump(PHYSICS__INFO);
 

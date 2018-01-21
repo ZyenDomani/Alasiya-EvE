@@ -489,17 +489,16 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
 
-    if ((capacity < 1) and (quantity < 1))
+    if (capacity > 1)
         manyFlags = true;
-    if (IsHangarFlag(toFlag)) {
-        if (toFlag == flagCargoHold) {
-            if (quantity < 1)
-                manyFlags = true;
-        } else {
-            manyFlags = true;
-        }
-    }
+    else if (quantity < 1)
+        manyFlags = true;
     
+    if (IsHangarFlag(toFlag)) {
+        if (quantity < 1)
+            manyFlags = true;
+    }
+
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(mFlag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
 
