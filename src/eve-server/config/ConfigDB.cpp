@@ -191,6 +191,28 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     return DBResultToTupleSet(res);
 }
 
+PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
+{
+    std::string ids;
+    ListToINString(entityIDs, ids, "0");
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        " stationID,"
+        " stationName,"
+        " stationTypeID,"
+        " solarSystemID,"
+        " x, y, z"
+        " FROM staStations"
+        " WHERE stationID in (%s)", ids.c_str()))
+    {
+        codelog(DATABASE__ERROR, "Error in GetMultiStationEx query: %s", res.error.c_str());
+    }
+
+    return DBResultToTupleSet(res);
+}
+
+
 PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) {
 
     std::string ids;

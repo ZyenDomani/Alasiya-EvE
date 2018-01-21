@@ -106,14 +106,13 @@ PyResult ConfigService::Handle_GetMultiLocationsEx(PyCallArgs &call) {      // n
 PyResult ConfigService::Handle_GetMultiStationEx(PyCallArgs &call) {
     sLog.White( "ConfigService", "Handle_GetMultiStationEx" );
     call.Dump(SERVICE__CALL_DUMP);
-
     Call_SingleIntList arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-    return PyStatic.NewNone();
+    return m_db.GetMultiStationEx(arg.ints);
 }
 
 PyResult ConfigService::Handle_GetMultiCorpTickerNamesEx(PyCallArgs &call) {
