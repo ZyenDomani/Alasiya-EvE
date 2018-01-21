@@ -192,8 +192,7 @@ void RamMethods::AssemblyLineCheck(Client*const pClient, const Call_InstallJob& 
             throw(PyException(MakeUserError("RamAccessDeniedWrongCorp")));
     }
 
-    //RamCannotInstallWithoutRentFactorySlot
-    //RamCannotInstallWithoutRentResearchSlot
+    //RamCannotInstallForCorpByRole     -- You cannot install this job for your corporation as you do not have the correct role to do so
 
     if (args.isCorpJob) {
         int64 roles = pClient->GetCorpRole();
@@ -201,10 +200,10 @@ void RamMethods::AssemblyLineCheck(Client*const pClient, const Call_InstallJob& 
             throw(PyException(MakeUserError("RamCannotInstallForCorpByRoleFactoryManager")));
         if (args.activityID == EvERam::Activity::Manufacturing) {
             if ((roles & Corp::Role::CanRentFactorySlot) != Corp::Role::CanRentFactorySlot)
-                throw(PyException(MakeUserError("RamCannotInstallForCorpByRole")));
+                throw(PyException(MakeUserError("RamCannotInstallWithoutRentFactorySlot")));
         } else {
             if ((roles & Corp::Role::CanRentResearchSlot) != Corp::Role::CanRentResearchSlot)
-                throw(PyException(MakeUserError("RamCannotInstallForCorpByRole")));
+                throw(PyException(MakeUserError("RamCannotInstallWithoutRentResearchSlot")));
         }
     }
 }
@@ -219,7 +218,6 @@ void RamMethods::ItemPermissionCheck(Client*const pClient, const Call_InstallJob
             if (installedItem->ownerID() != pClient->GetCharacterID())
                 throw(PyException(MakeUserError("RamCannotInstallItemForAnother")));
         }
-        LocationRolesCheck(pClient, installedItem->flag());
 }
 
 void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& args, InventoryItemRef installedItem)
@@ -310,10 +308,9 @@ void RamMethods::MaterialSkillsCheck(Client*const pClient, uint32 runs, const Pa
             if (cur.damagePerJob == 1.0)
                 qtyNeeded = (uint32)ceil(qtyNeeded * rsp.charMaterialMultiplier);
             std::vector<InventoryItemRef>::iterator curi = items.begin();
-            for(; curi != items.end(); curi++) {
-                if (   (*curi)->typeID() == cur.typeID
-                    and (*curi)->ownerID() == pClient->GetCharacterID()
-                ) {
+            for (; curi != items.end(); curi++) {
+                if ((*curi)->typeID() == cur.typeID
+                and (*curi)->ownerID() == pClient->GetCharacterID()) {
                     if ((*curi)->quantity() < qtyNeeded)
                         qtyNeeded -= (*curi)->quantity();
                     else {

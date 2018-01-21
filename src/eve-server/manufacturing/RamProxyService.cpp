@@ -212,6 +212,10 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     RamMethods::AssemblyLineCheck(call.client, args);
     RamMethods::ItemPermissionCheck(call.client, args, installedItem);
 
+    // if corp item, check location access
+    if (args.isCorpJob)
+        RamMethods::LocationRolesCheck(call.client, installedItem->flag());
+
     // decode path to BOM location
     PathElement pathBomLocation;
     if (!pathBomLocation.Decode( args.bomPath->GetItem(0))) {
@@ -220,7 +224,8 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     }
 
     // check bom location access
-    RamMethods::LocationRolesCheck(call.client, pathBomLocation.flag);
+    if (args.isCorpJob)
+        RamMethods::LocationRolesCheck(call.client, pathBomLocation.flag);
 
     PathElement path;
     /*  the first item in bomLocationData list is list of location data, which is same for both, although the data itself is different based on many other factors
