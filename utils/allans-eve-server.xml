@@ -48,6 +48,7 @@
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
+        <AllowNonPublished>true</AllowNonPublished>
     </server>
 
     <world>
@@ -60,6 +61,7 @@
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
+        <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
     </world>
 
     <rates>
@@ -178,7 +180,7 @@
         <host>localhost</host>
         <username>allan</username>
         <password>none</password>
-        <db>alasiya-new</db>
+        <db>EVE_Crucible</db>
         <port>3306</port><!-- 3306 default -->
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication -->
