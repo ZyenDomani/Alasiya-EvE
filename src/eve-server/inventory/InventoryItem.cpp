@@ -328,8 +328,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
     }
 
     switch( iType->categoryID() ) { //23
-        case EVEDB::invCategories::Owner:
-        case EVEDB::invCategories::Asteroid: {
+        case EVEDB::invCategories::Owner: {
             assert(0);  // this needs to make a serious error here....these CANNOT be called from here using the generic InventoryItem::Spawn() method
         } break;
         //! TODO not handled....use generic item
@@ -347,6 +346,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::AncientRelics:   // t3 bpc from sleepers
         case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
+        case EVEDB::invCategories::Asteroid:  // ore is "asteroid" also.....i forgot about that
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "InventoryItem::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:

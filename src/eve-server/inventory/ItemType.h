@@ -299,7 +299,7 @@ protected:
         TypeData data;
         if( !sItemFactory.db()->GetType( typeID, data ) )
             return nullptr;
-
+        /** @todo  this needs work.  static map items are "non-published" */
         if (!data.published)
             return nullptr;
 

@@ -25,11 +25,11 @@
 
 #define minEveMarketGroup       0
 #define maxStaticChannel        1000
-#define maxEveMarketGroup       350000
-#define minDustMarketGroup      350001
 #define maxDustMarketGroup      399999
 #define minBMFolder             100000
 #define maxBMFolder             300000
+#define maxEveMarketGroup       350000
+#define minDustMarketGroup      350001
 #define minFaction              500000
 #define maxFaction              999999
 #define minNPCCorporation       1000000

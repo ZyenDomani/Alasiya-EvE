@@ -80,7 +80,7 @@ void SystemBubble::Process()
 {
     if (m_system->GetSystemSecurityRating() > 0.90) // make config option here?
         return;
-    if (m_spawned){
+    if (m_spawned) {
         m_spawnTimer.Disable();
         return;
     }
