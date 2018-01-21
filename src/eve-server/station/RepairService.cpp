@@ -67,7 +67,6 @@ public:
 
 protected:
     Dispatcher* const m_dispatch;
-    ItemFactory m_ifac;
 
     uint32 m_locationID;
 };
@@ -150,7 +149,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
         damage = 0;
         iRef = pInv->GetByID((*itr)->AsInt()->value());
         if (iRef.get() == nullptr) {
-            iRef = m_ifac.GetItem((*itr)->AsInt()->value());
+            iRef = sItemFactory.GetItem((*itr)->AsInt()->value());
             if (iRef.get() == nullptr)
                 continue;
         }
@@ -225,11 +224,10 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
 }
 
 void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* list) {
-    ItemFactory m_ifac;
     std::vector<InventoryItemRef> itemRefVec;
     InventoryItemRef iRef = pInv->GetByID(itemID);
     if (iRef.get() == nullptr) {
-        iRef = m_ifac.GetItem(itemID);
+        iRef = sItemFactory.GetItem(itemID);
         if (iRef.get() == nullptr)
             return;
     }
