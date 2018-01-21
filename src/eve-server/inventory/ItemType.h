@@ -300,6 +300,9 @@ protected:
         if( !sItemFactory.db()->GetType( typeID, data ) )
             return nullptr;
 
+        if (!data.published)
+            return nullptr;
+
         // obtain group
         const ItemGroup *g = sItemFactory.GetGroup( data.groupID );
         if( g == nullptr )

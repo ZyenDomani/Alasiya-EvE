@@ -57,6 +57,7 @@ EVEServerConfig::EVEServerConfig()
     server.MaxThreadReport = 20;
     server.ModuleDamageChance = 0.35;
     server.processTic = 1.0;
+    server.AllowNonPublished = false;
 
     // world
     world.chatLogs = false;//N
@@ -247,6 +248,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
     AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
     AddValueParser( "processTic",           server.processTic );
+    AddValueParser( "AllowNonPublished",    server.AllowNonPublished );
 
     const bool result = ParseElementChildren( ele );
 
@@ -262,6 +264,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "MaxThreadReport" );
     RemoveParser( "ModuleDamageChance" );
     RemoveParser( "processTic" );
+    RemoveParser( "AllowNonPublished" );
 
     return result;
 }

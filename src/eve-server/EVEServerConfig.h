@@ -59,6 +59,7 @@ public:
         float processTic;
         uint16 maxPlayers;
         float ModuleDamageChance;
+        bool AllowNonPublished;
     } server;
 
     // From <world/>

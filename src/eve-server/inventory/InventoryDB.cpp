@@ -150,7 +150,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.portionSize = row.GetUInt(7);
     into.race = EVERace(row.IsNull(8) ? 0 : row.GetUInt(8));
 	into.basePrice = row.GetInt64(9) /1000;
-    into.published = (row.GetInt(10) ? true : false);
+    into.published = (sConfig.server.AllowNonPublished ? true : (row.GetInt(10) ? true : false));
     into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
 
