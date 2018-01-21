@@ -681,6 +681,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, const DBS
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 NPC* npcSE = new NPC(npcRef, *(system.GetServiceMgr()), &system, data);
+                sEntityList.AddNPC();
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPC item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return npcSE;
             } else if ((entity.groupID == EVEDB::invGroups::Sentry_Gun) or (entity.groupID == EVEDB::invGroups::Protective_Sentry_Gun)
