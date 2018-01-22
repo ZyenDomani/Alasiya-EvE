@@ -42,10 +42,14 @@ set @regionid=10000030;      --Heimatar
 set @stationid=60012178;     --Aranir VIIIM8 - Ammatar Fleet Logistic Support
 set @solarSystemID=30000092; --Aranir
 set @regionid=10000001;      --Derelik
+-----------------
+set @stationid=60009112;     --Odatrik V - TransStellar Shipping Storage
+set @solarSystemID=30002509; --Odatrik
+set @regionid=10000030;      --Heimatar
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60014137, 30000053, 10000001);
+insert into tStations values (60009112, 30002509, 10000001);
 
 -- actual seeding
 INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,

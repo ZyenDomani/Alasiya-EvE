@@ -531,52 +531,52 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
         sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
-
-	if (m_Modules->GetModule(item->itemID())) {
-        if (m_Modules->isSlotOccupied(flag)) {
-            throw PyException( MakeUserError("SlotAlreadyOccupied"));
-            /** @todo change this to use movemodule */
-            return false;
-        }
-	} else {
+    if (m_Modules->isSlotOccupied(flag)) {
+        throw PyException( MakeUserError("SlotAlreadyOccupied"));
+        /** @todo change this to use movemodule */
+        return false;
+    }
+	if (m_Modules->GetModule(item->itemID()) == nullptr) {
         // create new module object
 		GenericModule* pMod = ModuleFactory(item, ShipItemRef(m_Ship));
         if (pMod == nullptr)
             return false;
+        /** @todo  this needs to get out of here, but has to have GenericModule access for data */
         if (pMod->isMaxGroupFitLimited()) {
             if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
                 SafeDelete(pMod);
-                throw PyException( MakeUserError("CantFitTooManyByGroup"));
+                std::map<std::string, PyRep *> args;
+                args["noOfModules"]         = new PyInt(pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int());
+                args["noOfModulesFitted"]   = new PyInt(m_Modules->GetFittedModuleCountByGroup(item->groupID()));
+                args["ship"]                = new PyInt(m_Ship->itemID());
+                args["groupName"]           = new PyString(pMod->GetSelf()->group().name());
+                args["module"]              = new PyInt(pMod->itemID());
+                throw PyException( MakeUserError("CantFitTooManyByGroup", args));
+                /*CantFitTooManyByGroupBody'}(
+                 * u"You're unable to fit {[item]module.name} to {[item]ship.name}.
+                 * You can only fit {[numeric]noOfModules} of type {groupName} but already have {[numeric]noOfModulesFitted}.", None,
+                 * {u'{[numeric]noOfModules}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'noOfModules'},
+                 * u'{[numeric]noOfModulesFitted}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'noOfModulesFitted'},
+                 * u'{[item]ship.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'ship'},
+                 * u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'},
+                 * u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+                 */
             }
         }
         if (pMod->isTurretFitted()) {
-            if (m_Ship->GetAttribute(AttrTurretSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
-            } else {
-                SafeDelete(pMod);
-                PyTuple* tuple = new PyTuple(2);
-                    tuple->SetItem(0, new PyInt(m_Ship->GetDefaultAttribute(AttrTurretSlotsLeft).get_int()));
-                    tuple->SetItem(1, new PyInt(item->typeID()));
-                std::map<std::string, PyRep *> args;
-                args["moduleName"] = tuple;
-                throw PyException( MakeUserError("NotEnoughTurretSlots", args));
-            }
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
 		} else if (pMod->isLauncherFitted()) {
-            if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
-            } else {
-                SafeDelete(pMod);
-                PyTuple* tuple = new PyTuple(2);
-                    tuple->SetItem(0, new PyInt(m_Ship->GetDefaultAttribute(AttrLauncherSlotsLeft).get_int()));
-                    tuple->SetItem(1, new PyInt(item->typeID()));
-                std::map<std::string, PyRep *> args;
-                args["moduleName"] = tuple;
-                throw PyException( MakeUserError("NotEnoughLauncherSlots", args));
-            }
-		}
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
+		} else if (pMod->isRig()) {
+            m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
+            m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
+        }
 
         return m_Modules->AddModule(flag, pMod);
     }
+
+    // else, module already fit
+    return false;
 }
 
 bool ModuleManager::OnlineCheck(GenericModule* pMod)
@@ -601,6 +601,13 @@ bool ModuleManager::OnlineCheck(GenericModule* pMod)
             args["remaining"] = new PyFloat(remaining);
             args["total"] = new PyFloat(total);
             throw PyException( MakeUserError("NotEnoughCpu", args));
+            /*u'NotEnoughCpuBody'}
+             * (u'To bring {[item]moduleType.name} online requires {[numeric]require, decimalPlaces=2} cpu units, but only {[numeric]remaining, decimalPlaces=2} of the {[numeric]total, decimalPlaces=2} units that your computer produces are still available.', None,
+             * {u'{[numeric]remaining, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'remaining'},
+             * u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'},
+             * u'{[numeric]total, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'total'},
+             * u'{[numeric]require, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'require'}})
+             */
         }
         return false;
     }

@@ -346,20 +346,11 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             return false;
         }
     } else if (IsRigSlot(flag)) {
-        if (m_pilot->IsClient()) {
+        if (m_pilot->IsClient())
             if (!Skill::FitModuleSkillCheck(iRef, character)) {
                 m_pilot->SendErrorMsg("You do not have the required skills to fit this %s", iRef->itemName().c_str());
                 return false;
             }
-            if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
-                m_pilot->SendErrorMsg("Your ship cannot fit this size module");
-                return false;
-            }
-            if (GetAttribute(AttrUpgradeLoad) + iRef->GetAttribute(AttrUpgradeCost) > GetAttribute(AttrUpgradeCapacity)) {
-                m_pilot->SendErrorMsg("Your ship cannot handle the extra calibration");
-                return false;
-            }
-        }
     } else if (IsSubSystem(flag)) {
         if (m_pilot->IsClient())
             if (!Skill::FitModuleSkillCheck(iRef, character)) {
@@ -376,7 +367,9 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             return false;
         }
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-            if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(flag)) {
+            if (m_ModuleManager == nullptr)
+                return false;   // log error?
+            if (m_ModuleManager->GetModule(flag)) {
                 InventoryItemRef module = m_ModuleManager->GetModule(flag)->getItem();
                 if (module.get() == nullptr)
                     return false;
@@ -401,26 +394,6 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
                 m_pilot->SendErrorMsg("Module at flag '%u' does not exist.  Ref: ServerError 25162.", flag);
                 return false;
             }
-        } else {
-            if ((m_ModuleManager != nullptr) and m_ModuleManager->IsSlotOccupied(flag)) {
-                if (m_pilot->CanThrow())
-                    throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
-                return false;
-            }
-        }
-    } else {
-        // Handle any other flag, legal or not by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
-        // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
-        // check for adding unpackaged ships to cargo of active ship...
-        //pInventory->ValidateAddItem(flag, iRef);  <-- this isnt entirely accurate for all types, like packaged items.
-        double volume = iRef->GetPackagedVolume();
-        volume *= iRef->quantity();
-        double capacity = GetRemainingVolumeByFlag(flag);
-        if (capacity < volume) {
-            std::map<std::string, PyRep *> args;
-            args["available"] = new PyFloat(capacity);
-            args["volume"] = new PyFloat(volume);
-            throw PyException( MakeUserError( "NotEnoughCargoSpace", args));
         }
     }
 
@@ -885,13 +858,96 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
         return InventoryItemRef(nullptr);
 }
 
+void ShipItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
+{
+    // Handle any flag, legal or not, by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
+    // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
+    // check for adding unpackaged ships to cargo of active ship...
+    double volume = iRef->GetPackagedVolume();
+    volume *= iRef->quantity();
+    double capacity = GetRemainingVolumeByFlag(flag);
+    if (capacity < volume) {
+        std::map<std::string, PyRep *> args;
+        args["available"] = new PyFloat(capacity);
+        args["volume"] = new PyFloat(volume);
+        throw PyException( MakeUserError( "NotEnoughCargoSpace", args));
+    }
+}
+
+void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
+{
+    if (m_ModuleManager->IsSlotOccupied(flag))
+        throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
+
+    if (IsHiSlot(flag)) {
+        // check avalible turret/launcher slots
+        if (iRef->type().HasEffect(EVEEffectID::turretFitted)) {
+            if (!HasAttribute(AttrTurretSlotsLeft)) {
+                std::map<std::string, PyRep *> args;
+                args["moduleName"] = new PyString(iRef->itemName());
+                throw PyException( MakeUserError("NotEnoughTurretSlots", args));
+                /*u'NotEnoughTurretSlotsBody'}(u"You cannot fit the {moduleName} because your ship doesn't have any turret slots left for fitting, possibly because you have already filled your ship with turrets or that the ship simply can not be fitted with turrets.\r\n<br>
+                 * <br>Turret slots represent how many weapons of a certain type can be fitted on a ship. The current design is over a hundred years old, and is modular enough to allow for a great leeway in the fitting of various weaponry.", None,
+                 * {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+                 */
+            }
+        } else if (iRef->type().HasEffect(EVEEffectID::launcherFitted)) {
+            if (!HasAttribute(AttrLauncherSlotsLeft)) {
+                std::map<std::string, PyRep *> args;
+                args["moduleName"] = new PyString(iRef->itemName());
+                throw PyException( MakeUserError("NotEnoughLauncherSlots", args));
+                /*NotEnoughLauncherSlotsBody'}(u"You cannot fit the {moduleName} because your ship doesn't have any launcher slots left for fitting, possibly because you have already filled your ship with launchers or that the ship simply can not be fitted with launchers.<br>
+                 * <br>Launcher slots represent how many weapons of a certain type can be fitted on a ship. The current design is over a hundred years old, and is modular enough to allow for a great leeway in the fitting of various weaponry.", None,
+                 * {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+                 */
+            }
+        }
+    } else if (IsRigSlot(flag)) {
+        if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
+            std::map<std::string, PyRep *> args;
+            args["rigSize"] = new PyString(iRef->type().name());
+            args["item"] = new PyString(iRef->itemName());
+            args["shipRigSize"] = new PyString(iRef->type().name());
+            throw PyException( MakeUserError("CannotFitRigWrongSize", args));
+            /* CannotFitRigWrongSizeBody'}(u'{item} does not fit in this slot.
+             * The slot takes size {shipRigSize} rigs, but the item is size {rigSize}.', None,
+             * {u'{rigSize}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'rigSize'},
+             * u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'},
+             * u'{shipRigSize}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'shipRigSize'}})
+             * check avalible rig slots and ship upgrade capy
+             */
+        }
+        EvilNumber capy = 0, cost = 0, load = 0;
+        if ((!HasAttribute(AttrUpgradeCapacity, capy))
+        or  (!HasAttribute(AttrUpgradeSlotsLeft))) {
+            std::map<std::string, PyRep *> args;
+            args["moduleType"] = new PyString(iRef->type().name());
+            throw PyException( MakeUserError("NotEnoughUpgradeSlots", args));
+            /*NotEnoughUpgradeSlotsBody'}(u"You cannot fit the {[item]moduleType.name} because your ship doesn't have any upgrade slots left for fitting, possibly because you have already filled your ship with upgrades or that the ship simply can not be fitted with upgrades.", None,
+             * {u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'}})
+             */
+        }
+
+        iRef->HasAttribute(AttrUpgradeCost, cost);
+        HasAttribute(AttrUpgradeLoad, load);
+        if (((load - cost) < 0) or (capy < (load - cost))) {
+            std::map<std::string, PyRep *> args;
+            args["moduleName"] = new PyString(iRef->itemName());
+            throw PyException( MakeUserError("NotEnoughUpgradeCapacity", args));
+            /*NotEnoughUpgradeCapacityBody'}(u'You cannot fit the {moduleName} because your ship cannot handle it. Your ship can only fit so many upgrades as each interferes with its calibration, and past a certain point your ship is rendered unusable.', None,
+                * {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+                */
+        }
+    }
+}
+
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
+    // CantFitModuleToThatShip
+    // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     uint16 slotFound = flagIllegal;
-    // 1) get slot bank (low, med, high, rig, subsystem) from dgmTypeEffects using item->itemID()
-    // 2) query this ship's ModuleManager to determine if there are any free slots in that bank,
-    //    it should return a slot flag number for the next available slot starting at the lowest number
-    //    for that bank
-    // 3) return that slot flag number
+    // 1) get slot bank from dgmTypeEffects using itemtype
+    // 2) query this ship's ModuleManager for the next available slot for that bank
+    // 3) return that slot flag
     if (iRef->type().HasEffect(EVEEffectID::loPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
     } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {

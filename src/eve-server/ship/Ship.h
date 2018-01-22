@@ -248,7 +248,7 @@ public:
     virtual void Delete();
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
     const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
@@ -317,8 +317,13 @@ public:
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 itemID);
+
+    // this also checks for fit-by-type and rig restrictions
+    void TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
+    // calls methods to verify hold capy based on flag
+    void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);          // make sure this does NOT throw.  must return integer
     /* end new module manager interface */
 
     // Tactical Interface:

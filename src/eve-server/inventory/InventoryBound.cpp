@@ -493,11 +493,10 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         manyFlags = true;
     else if (quantity < 1)
         manyFlags = true;
-    
-    if (IsHangarFlag(toFlag)) {
-        if (quantity < 1)
-            manyFlags = true;
-    }
+
+    // moving TO hangar...move all items in stack, if applicable
+    if (IsHangarFlag(toFlag))
+        manyFlags = true;
 
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(mFlag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
@@ -686,6 +685,9 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
 
         if (ship) {
+            if (iRef->categoryID() == EVEDB::invCategories::Module)
+                m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef);
+        
             // are we adding module to ship using autoFit?
             if (toFlag == flagAutoFit)
                 if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Charge)) {
@@ -694,10 +696,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
                         toFlag = flagCargoHold;
                     }
+                } else {
+                    toFlag = mFlag;
                 }
-            if (toFlag == flagAutoFit)
-                toFlag = mFlag;
 
+            if (IsCargoHoldFlag(toFlag))
+                m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef);
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef) < 1)
                 contRef->AddItem(iRef);
@@ -712,7 +716,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
     sItemFactory.UnsetUsingClient();
 
     if (items.size() == 1) {
-        //call returns itemID
+        //call returns itemID for single-item adds
         Call_SingleIntegerArg result;
         result.arg = iRef->itemID();
         return result.Encode();
