@@ -179,6 +179,14 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     if (args.iskAmount < total)
         fraction = total / args.iskAmount;
 
+    /** more shit to check for and add as required...
+     * NotEnoughRepairMaterialToFinishAllRepairs
+     * NotEnoughRepairMaterialToFinishAllRepairsBody'}(u'There is not enough unallocated {typeName} left to initiate repairs on this module.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+     * 
+     *{'messageKey': 'RepairModuleNotDamaged', 'dataID': 17882542, 'suppressable': False, 'bodyID': 259175, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1492}
+     * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
+     *
+     */
     pShip->RepairShip(fraction);
     pShip->RepairModules(itemRefVec, fraction);
 
@@ -333,6 +341,8 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
             }
         }
     }
+
+    // MultipleItemsFailedToRepackage
 
     return PyStatic.NewNone();
 }

@@ -363,7 +363,32 @@ void StructureSE::Process() {
             m_procState = ProcState::Invalid;
     }
 }
-
+/*{'messageKey': 'CantObjectInsideForceField', 'dataID': 17885214, 'suppressable': False, 'bodyID': 260153, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 399}
+ * {'messageKey': 'CantOnlineAnotherClaimMarkerOnlining', 'dataID': 17876439, 'suppressable': False, 'bodyID': 256876, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3091}
+ * {'messageKey': 'CantOnlineDamagedGoods', 'dataID': 17885104, 'suppressable': False, 'bodyID': 260116, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 400}
+ * {'messageKey': 'CantOnlineDisruptorAnchored', 'dataID': 17877056, 'suppressable': False, 'bodyID': 257107, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3116}
+ * {'messageKey': 'CantOnlineDisruptorNotClaimed', 'dataID': 17877530, 'suppressable': False, 'bodyID': 257286, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2931}
+ * {'messageKey': 'CantOnlineDisruptorOutpostProtecting', 'dataID': 17876457, 'suppressable': False, 'bodyID': 256882, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3106}
+ * {'messageKey': 'CantOnlineDisruptorsOnline', 'dataID': 17877687, 'suppressable': False, 'bodyID': 257346, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2932}
+ * {'messageKey': 'CantOnlineInfrastructureDontOwnFlag', 'dataID': 17876442, 'suppressable': False, 'bodyID': 256877, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3153}
+ * {'messageKey': 'CantOnlineInfrastructureHubAlreadyInSystem', 'dataID': 17876267, 'suppressable': False, 'bodyID': 256810, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3056}
+ * {'messageKey': 'CantOnlineInfrastructureHubNoSovereignty', 'dataID': 17876796, 'suppressable': False, 'bodyID': 257014, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3125}
+ * {'messageKey': 'CantOnlineInfrastructurePresent', 'dataID': 17877059, 'suppressable': False, 'bodyID': 257108, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3115}
+ * {'messageKey': 'CantOnlineMissingUpgrade', 'dataID': 17876891, 'suppressable': False, 'bodyID': 257047, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3080}
+ * {'messageKey': 'CantOnlineNoInfrastructureHub', 'dataID': 17876280, 'suppressable': False, 'bodyID': 256815, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3078}
+ * {'messageKey': 'CantOnlineNotLinked', 'dataID': 17879371, 'suppressable': False, 'bodyID': 257982, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2294}
+ * {'messageKey': 'CantOnlineNotSovereign', 'dataID': 17876923, 'suppressable': False, 'bodyID': 257058, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3144}
+ * {'messageKey': 'CantOnlineRequireTower', 'dataID': 17885220, 'suppressable': False, 'bodyID': 260155, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 401}
+ * {'messageKey': 'CantOnlineSovInWormhole', 'dataID': 17877461, 'suppressable': False, 'bodyID': 257260, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2935}
+ * {'messageKey': 'CantOnlineSovereigntyAlreadyClaimed', 'dataID': 17876445, 'suppressable': False, 'bodyID': 256878, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3044}
+ * {'messageKey': 'CantOnlineStructureGroupLimit', 'dataID': 17879595, 'suppressable': False, 'bodyID': 258065, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2407}
+ * {'messageKey': 'CantOnlineStructureOwnerBad', 'dataID': 17885124, 'suppressable': False, 'bodyID': 260123, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 402}
+ * {'messageKey': 'CantOnlineStructureRequiresSovereigntyLevel', 'dataID': 17879395, 'suppressable': False, 'bodyID': 257991, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2254}
+ * {'messageKey': 'CantOnlineTowerLacksCpuResources', 'dataID': 17885223, 'suppressable': False, 'bodyID': 260156, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 403}
+ * {'messageKey': 'CantOnlineTowerLacksPowerResources', 'dataID': 17885226, 'suppressable': False, 'bodyID': 260157, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 404}
+ * {'messageKey': 'CantOnlineTowerLacksResources', 'dataID': 17885363, 'suppressable': False, 'bodyID': 260207, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 405}
+ * {'messageKey': 'CantOnlineWithinGlobalDisruptor', 'dataID': 17876951, 'suppressable': False, 'bodyID': 257068, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3180}
+ */
 void StructureSE::SetAnchor(GPoint& pos)
 {
     if (m_data.state > EVEPOS::StructureState::Unanchored)

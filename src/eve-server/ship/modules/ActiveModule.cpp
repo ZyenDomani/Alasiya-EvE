@@ -52,10 +52,7 @@ m_reloadTimer(10000)
 
     // this is an internal variable only.
     m_reloadTime = GetAttribute(AttrReloadTime).get_int();
-    /* our db doesnt have reload times for launchers or projectile turrets.
-     * set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
-     * maybe make config option later to avoid hard-coding
-     */
+    // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
     if (m_needsCharge)  {
         if (m_reloadTime < 1) {
             switch (iRef->groupID()) {

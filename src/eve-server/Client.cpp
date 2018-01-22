@@ -706,6 +706,8 @@ void Client::UndockFromStation() {
         mts->CancelTrade(this);
     }
 
+    //ShipIllegalTypeUndock
+    
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;

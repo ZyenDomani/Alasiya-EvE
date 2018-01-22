@@ -738,6 +738,13 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
     return nullptr;
 }
 
+/*{'messageKey': 'CantLinkAmmoInWeapon', 'dataID': 17878021, 'suppressable': False, 'bodyID': 257472, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2664}
+ * {'messageKey': 'CantLinkModuleActive', 'dataID': 17878024, 'suppressable': False, 'bodyID': 257473, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2665}
+ * {'messageKey': 'CantLinkModuleDamaged', 'dataID': 17878030, 'suppressable': False, 'bodyID': 257475, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2666}
+ * {'messageKey': 'CantLinkModuleLoading', 'dataID': 17877482, 'suppressable': False, 'bodyID': 257268, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2942}
+ * {'messageKey': 'CantLinkModuleNotOnline', 'dataID': 17878033, 'suppressable': False, 'bodyID': 257476, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2667}
+ */
+
 PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
     /* 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
      * 12:54:01 DogmaIMBound::Handle_LinkWeapons(): [00msize=3
