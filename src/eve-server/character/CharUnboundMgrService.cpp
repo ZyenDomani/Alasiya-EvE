@@ -354,7 +354,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         }
 
         skillLevel = cur.second;
-        skill->SetAttribute(AttrSkillLevel, skillLevel, false);
+        skill->SetAttribute(AttrSkillLevel, (int8)skillLevel, false);
         skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();

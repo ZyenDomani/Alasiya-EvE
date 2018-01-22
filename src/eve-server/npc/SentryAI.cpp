@@ -298,11 +298,10 @@ void SentryAI::AttackTarget(SystemEntity* pTarget) {
     std::string guid = "effects.Laser";
     // sentry does NOT have a destiny manager...use target's destiny manager for sending fx
     pTarget->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
-                                           pTarget->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,1
-    );
+                                             m_npc->GetSelf()->itemID(),
+                                             m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                             pTarget->GetID(),
+                                             0,guid,1,1,1,m_attackSpeed,0);
 
     Damage d(m_npc,
              m_npc->GetSelf(),

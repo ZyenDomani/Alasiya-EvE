@@ -585,7 +585,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 skill = character->GetSkill(skillID);
                 oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
                 oldPoints = skill->GetAttribute(AttrSkillPoints).get_int();
-                skill->SetAttribute(AttrSkillLevel, level);
+                skill->SetAttribute(AttrSkillLevel, (int8)level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {
                     skill->SetFlag(flagSkill, false);
@@ -599,7 +599,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                     throw PyException(MakeCustomError("Unable to create item of type %s.", item->typeID()));
                 else {
                     skill = SkillRef::StaticCast(item);
-                    skill->SetAttribute(AttrSkillLevel, level);
+                    skill->SetAttribute(AttrSkillLevel, (int8)level);
                     skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 }
             }
@@ -674,7 +674,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
                 return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
             }
             newPoints = skill->GetSPForLevel((EvilNumber)level);
-            skill->SetAttribute(AttrSkillLevel, level);
+            skill->SetAttribute(AttrSkillLevel, (int8)level);
             skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill, true);
@@ -689,7 +689,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             } else {
                 character->AddItem(skill);
                 newPoints = skill->GetSPForLevel((EvilNumber)level);
-                skill->SetAttribute(AttrSkillLevel, level);
+                skill->SetAttribute(AttrSkillLevel, (int8)level);
                 skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             }
         }

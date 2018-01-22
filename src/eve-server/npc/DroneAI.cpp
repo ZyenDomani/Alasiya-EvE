@@ -425,11 +425,10 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
     /** @todo  not all drones use lazors...fix this */
     std::string guid = "effects.Laser";
     m_drone->DestinyMgr()->SendSpecialEffect(m_drone->GetSelf()->itemID(),
-                                           m_drone->GetSelf()->itemID(),
-                                           m_drone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                             m_drone->GetSelf()->itemID(),
+                                             m_drone->GetSelf()->typeID(), //m_drone->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                              pTarget->GetID(),
-                                             0,guid,1,1,1,m_attackSpeed,1
-    );
+                                             0,guid,1,1,1,m_attackSpeed,0);
 
     Damage d(m_drone,
              m_drone->GetSelf(),

@@ -328,6 +328,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     InventoryItemRef moduleRef;
     uint32 loadedChargeID = 0;
 
+    /** @todo  this appears to send only the first module in bank.
+     * check for non-loaded modules in bank and load with chargeRef
+     */
+
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
         moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
         if (moduleRef.get() == nullptr) {

@@ -24,7 +24,6 @@
 */
 
 #include "eve-xmlpktgen.h"
-
 #include "CloneGenerator.h"
 
 ClassCloneGenerator::ClassCloneGenerator( FILE* outputFile )

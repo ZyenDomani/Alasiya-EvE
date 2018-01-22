@@ -519,8 +519,18 @@ int main( int argc, char* argv[] )
         sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
     else
         sLog.Blue("       Turret Dmg","Normal.");
-    // config option for decay?
-    sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
+    if (sConfig.server.ModuleAutoOff)
+        sLog.Green("  Module Auto-Off","Enabled.");
+    else
+        sLog.Warning("  Module Auto-Off","Disabled.");
+    if (sConfig.server.ModuleDamageChance)
+        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
+    else
+        sLog.Warning("    Module Damage","Disabled.");
+    if (sConfig.rates.WorldDecay)
+        sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
+    else
+        sLog.Warning("      Decay Timer","Disabled.");
 
     sLog.White("", "");     // spacer
 
@@ -536,7 +546,7 @@ int main( int argc, char* argv[] )
     EVETCPConnection* tcpc(nullptr);
 
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
-    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
+    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.  Main Loop starting.");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -579,7 +589,7 @@ int main( int argc, char* argv[] )
     /** @todo  update this to have a ShutDown() method, with these items.
      * also look into calling it when a signal is caught, for cleanup.
      */
-    sLog.Warning("   ServerShutdown", "Main loop stopped" );
+    sLog.Warning("   ServerShutdown", "Main loop has stopped.  Server shutting down." );
     ServiceDB::SetServerOnlineStatus(false);
 
     /* stop TCP listener */

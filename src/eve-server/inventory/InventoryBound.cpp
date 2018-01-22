@@ -685,9 +685,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
 
         if (ship) {
-            if (iRef->categoryID() == EVEDB::invCategories::Module)
-                m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef);
-        
             // are we adding module to ship using autoFit?
             if (toFlag == flagAutoFit)
                 if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Charge)) {
@@ -699,6 +696,9 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 } else {
                     toFlag = mFlag;
                 }
+
+            if (iRef->categoryID() == EVEDB::invCategories::Module)
+                m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef);
 
             if (IsCargoHoldFlag(toFlag))
                 m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef);

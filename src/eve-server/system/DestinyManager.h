@@ -134,7 +134,8 @@ public:
     void SendCloakShip(const bool IsWarpSafe) const;
     void SendUncloakShip() const;
     void SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const;
-    void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
+    void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid,
+                           bool isOffensive, bool start, bool isActive, double duration, uint32 repeat, int32 graphicInfo=0) const;
 
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
     int32 GetDistance()                                 { return m_stopDistance; }

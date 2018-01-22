@@ -6,8 +6,8 @@
   * @date:   11 August 2016   -UD/RW 12 April 2017
   */
 
-#ifndef _EVE_SHIP_MOD_SALVAGER_H_
-#define _EVE_SHIP_MOD_SALVAGER_H_
+#ifndef _EVE_SHIP_MODULES_SALVAGER_MODULE_H_
+#define _EVE_SHIP_MODULES_SALVAGER_MODULE_H_
 
 #include "ship/modules/ActiveModule.h"
 
@@ -37,4 +37,4 @@ protected:
     Character* pChar;
 };
 
-#endif  //_EVE_SHIP_MOD_SALVAGER_H_
+#endif  //_EVE_SHIP_MODULES_SALVAGER_MODULE_H_

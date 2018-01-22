@@ -401,13 +401,13 @@ DST_WARPEXIT = 11
             <!-- 9: active: saw 0 -->
             <int name="active" />
             <!-- 10: duration in milliseconds (optional) -->
-            <real name="duration_ms" default="0" none_marker="0" />
+            <real name="duration_ms" default="-1" none_marker="0" />
             <!-- 11: repeat (optional) (really defaults to None, but -1 seems to work too) -->
             <int name="repeat" default="0" none_marker="0" />
             <!-- 12: startTime (optional) -->
             <long name="startTime" default="0" none_marker="0" />
-            <!-- 13: always seems to be a PyNone at the end of this packet, we have NO clue why -->
-            <none />
+            <!-- 13: graphicInfo (optional)  - not sure what this is yet.  -->
+            <int name="graphicInfo" default="0" none_marker="0" />
         </tupleInline>
       </tupleInline>
   </elementDef>

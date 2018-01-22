@@ -560,6 +560,8 @@ bool DynamicSystemEntity::Load() {
 }
 
 PyDict *DynamicSystemEntity::MakeSlimItem() {
+    if (IsNPCSE())
+        return SystemEntity::MakeSlimItem();
     _log(SE__SLIMITEM, "MakeSlimItem for DSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
@@ -639,6 +641,7 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
 }
 
 /** @todo set this to use cache and timer like live does...will get really busy on active fleets/ratting  */
+/** @todo journal will have to be updated when switching to timed bounty awards */
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
     // this will use a map{charID/BountyData} in system manager for using a bounty timer.
@@ -663,9 +666,9 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
         bounty /= members.size();
         // send bounty to members
         for (auto cur :members)
-            AccountService::TranserFunds(ownerCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize);
+            AccountService::TranserFunds(ownerCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
     }
 
-    AccountService::TranserFunds(ownerCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize);
+    AccountService::TranserFunds(ownerCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
 }
 

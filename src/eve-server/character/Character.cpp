@@ -608,13 +608,13 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
             return false;
         }
         // use single_skill ...
-        single_skill->SetAttribute(AttrSkillPoints, 0);
-        single_skill->SetAttribute(AttrSkillLevel, 0);
+        single_skill->SetAttribute(AttrSkillPoints, (int8)0);
+        single_skill->SetAttribute(AttrSkillLevel, (int8)0);
         single_skill->ChangeSingleton(true);
         single_skill->Move(m_itemID, flagSkill, true);
     } else {  // use original skill
-        skill->SetAttribute(AttrSkillPoints, 0);
-        skill->SetAttribute(AttrSkillLevel, 0);
+        skill->SetAttribute(AttrSkillPoints, (int8)0);
+        skill->SetAttribute(AttrSkillLevel, (int8)0);
         skill->ChangeSingleton(true);
         skill->Move(m_itemID, flagSkill, true);
     }
@@ -767,7 +767,7 @@ void Character::UpdateSkillQueue() {
                     } break;
                 }
             }
-            currentTraining->SetAttribute(AttrSkillLevel, level );
+            currentTraining->SetAttribute(AttrSkillLevel, (int8)level );
             currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
             SaveSkillHistory(skillEventQueueTrainingCompleted, completeTime.get_double(), m_itemID, currentTraining->typeID(), level, newPoints.get_float());
             _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
@@ -947,8 +947,8 @@ void Character::AddItem(InventoryItemRef item) {
 
         if( !skill->singleton() ) {
             skill->ChangeSingleton( true, true );
-            skill->SetAttribute(AttrSkillLevel, 0);
-            skill->SetAttribute(AttrSkillPoints, 0);
+            skill->SetAttribute(AttrSkillLevel, (int8)0);
+            skill->SetAttribute(AttrSkillPoints, (int8)0);
             if( skill->flag() != flagSkillInTraining )
                 skill->SetAttribute(AttrExpiryTime, 0);
         }

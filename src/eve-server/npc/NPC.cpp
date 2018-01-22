@@ -258,6 +258,7 @@ void NPC::UseHullRepairer()
     } else
         m_AI->DisableRepTimers();
     // TODO: Need to send SpecialFX / amount update
+    // gfxBoosterID
     UpdateDamage();
 }
 

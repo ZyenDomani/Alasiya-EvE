@@ -707,7 +707,7 @@ void Client::UndockFromStation() {
     }
 
     //ShipIllegalTypeUndock
-    
+
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
@@ -1425,6 +1425,8 @@ void Client::QueueDestinyEvent(PyTuple** event) {
 
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
     if ((update == nullptr) or ((*update) == nullptr))
+        return;
+    if (IsStation(m_locationID))
         return;
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();

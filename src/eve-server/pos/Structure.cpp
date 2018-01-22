@@ -310,6 +310,7 @@ void StructureSE::Process() {
         switch (m_procState) {
             case ProcState::Unanchoring: {
                 SendSlimUpdate();
+                /** @todo  change SendSpecialEffect to SendSpecialEffect10 */
                 m_destiny->SendSpecialEffect(m_data.itemID,m_data.itemID,m_self->typeID(),0,0,"effects.AnchorLift",0,0,0,-1,0);
                 m_db.UpdateBaseData(m_data);
             } break;

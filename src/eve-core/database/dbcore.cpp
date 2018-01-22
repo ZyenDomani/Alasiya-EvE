@@ -31,6 +31,9 @@
 #include "log/logsys.h"
 #include "utils/misc.h"
 
+// this is needed for client list and Shutdown()
+//#include "../eve-server/EntityList.h"
+
 #define COLUMN_BOUNDS_CHECKING
 
 // this is used to enable socket communication (may not be needed)
@@ -233,6 +236,14 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore Query - DB Status != Connected");
+        /** @todo  this needs access to EntityList, but cannot due to include problems
+        _log(DATABASE__MESSAGE, "DataBase lost connection.  Server restarting.");
+        std::vector<Client*> list;
+        sEntityList.GetClients(list);
+        for (auto cur : list)
+            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
+        sEntityList.Shutdown();
+        */
         return false;
     }
 

@@ -216,18 +216,16 @@ bool ConsoleCommand::Process() {
                 const char* buff = buf +2;
 				std::vector<Client*> list;
 				sEntityList.GetClients(list);
-				for (auto cur : list) {
+				for (auto cur : list)
                     cur->SendNotifyMsg( buff );
-				}
 				sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
                 const char* buff = buf +2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
-                for (auto cur : list) {
+                for (auto cur : list)
                     cur->SendInfoModalMsg( buff );
-                }
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");

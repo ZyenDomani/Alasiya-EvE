@@ -56,7 +56,7 @@ void TurretModule::ApplyDamage()
         case EVEDB::invGroups::Projectile_Weapon:
         case EVEDB::invGroups::Hybrid_Weapon: {
             if (m_chargeLoaded)
-                m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
+                m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
             if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))

@@ -2638,9 +2638,11 @@ void DestinyManager::SendUncloakShip() const {
     SendSingleDestinyUpdate(&up);   // consumed
 }
 
+// def OnSpecialFX(shipID, moduleID, moduleTypeID, targetID, otherTypeID, area, guid, isOffensive, start, active, duration = -1, repeat = None, startTime = None, graphicInfo = None):
+
 void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const
 {
-    //TODO need to figure out what this is....
+    //TODO need to figure out what 'area' is....
 	std::vector<int32, std::allocator<int32> > area;
      OnSpecialFX10 effect;
         effect.entityID = entityID;
@@ -2656,9 +2658,9 @@ void DestinyManager::SendSpecialEffect10(uint32 entityID, uint32 targetID, std::
 
 void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID,
                                        uint32 chargeTypeID, std::string guid, bool isOffensive, bool start,
-                                       bool isActive, double duration, uint32 repeat) const
+                                       bool isActive, double duration, uint32 repeat, int32 graphicInfo/*0*/) const
 {
-    //TODO need to figure out what this is....
+    //TODO need to figure out what 'area' is....
     std::vector<int32, std::allocator<int32> > area;
      OnSpecialFX13 effect;
         effect.entityID = entityID;
@@ -2674,6 +2676,7 @@ void DestinyManager::SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 
         effect.duration_ms = duration;
         effect.repeat = repeat;
         effect.startTime = GetFileTimeNow();
+        effect.graphicInfo = graphicInfo;
     PyTuple *up = effect.Encode();
     SendSingleDestinyUpdate(&up);   // consumed
 }

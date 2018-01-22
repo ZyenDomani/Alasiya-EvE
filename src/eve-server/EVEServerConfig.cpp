@@ -55,6 +55,7 @@ EVEServerConfig::EVEServerConfig()
     server.idleSleepTime = 1000;
     server.DisableIGB = true;
     server.MaxThreadReport = 20;
+    server.ModuleAutoOff = false;
     server.ModuleDamageChance = 0.35;
     server.processTic = 1.0;
     server.AllowNonPublished = false;
@@ -246,6 +247,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "ServerSleepTime",      server.ServerSleepTime );
     AddValueParser( "idleSleepTime",        server.idleSleepTime );
     AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
+    AddValueParser( "ModuleAutoOff",        server.ModuleAutoOff );
     AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
     AddValueParser( "processTic",           server.processTic );
     AddValueParser( "AllowNonPublished",    server.AllowNonPublished );
@@ -262,6 +264,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "ServerSleepTime" );
     RemoveParser( "idleSleepTime" );
     RemoveParser( "MaxThreadReport" );
+    RemoveParser( "ModuleAutoOff" );
     RemoveParser( "ModuleDamageChance" );
     RemoveParser( "processTic" );
     RemoveParser( "AllowNonPublished" );

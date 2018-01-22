@@ -631,10 +631,9 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
     std::string guid = "effects.Laser";
     m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                            pTarget->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,1
-    );
+                                           0,guid,1,1,1,m_attackSpeed,0);
 
     Damage d(m_npc,
              m_npc->GetSelf(),

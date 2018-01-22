@@ -58,6 +58,7 @@ public:
         uint16 idleSleepTime;
         float processTic;
         uint16 maxPlayers;
+        bool ModuleAutoOff;
         float ModuleDamageChance;
         bool AllowNonPublished;
     } server;

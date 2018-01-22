@@ -265,6 +265,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
      * found in /eve/client/script/environment/godma.py
      *
      * ALL dmg msgs working  22Apr15
+     * these need updates.  see notes in eve_constants.h
      */
     if (HasPilot()) {
         if (!d.chargeRef) {

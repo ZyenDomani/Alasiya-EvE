@@ -528,12 +528,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
-        sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
-        return false;
-    }
-    if (m_Modules->isSlotOccupied(flag)) {
-        throw PyException( MakeUserError("SlotAlreadyOccupied"));
-        /** @todo change this to use movemodule */
+        sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
 	if (m_Modules->GetModule(item->itemID()) == nullptr) {
@@ -573,6 +568,10 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
         }
 
         return m_Modules->AddModule(flag, pMod);
+    } else if (m_Modules->isSlotOccupied(flag)) {
+        throw PyException( MakeUserError("SlotAlreadyOccupied"));
+        /** @todo change this to use movemodule */
+        return false;
     }
 
     // else, module already fit

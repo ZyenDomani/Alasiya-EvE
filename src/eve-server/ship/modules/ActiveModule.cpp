@@ -718,5 +718,5 @@ void ActiveModule::LaunchMissile()
     pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // Reduce ammo charge by 1 unit:
-    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
+    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
 }
