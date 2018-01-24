@@ -1416,6 +1416,16 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
      */
     double currentDistance = exp(3 * sec_into_warp);
 
+    if (m_inBubble)
+        if (currentDistance > BUBBLE_RADIUS_METERS)
+            if (mySE->SysBubble() != m_targBubble) {
+                if (is_log_enabled(DESTINY__WARP_TRACE))
+                    _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) is being removed from bubble %u.",\
+                            mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetID());
+                mySE->SysBubble()->Remove(mySE);
+                m_inBubble = false;
+            }
+
     if (currentDistance > m_warpState->accelDist) {
         currentDistance = m_warpState->accelDist;
         m_warpState->accel = false;
@@ -1425,12 +1435,12 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
             m_warpState->decel = true;
     }
     m_targetDistance -= currentDistance;
-
     double currentShipSpeed = (3 * currentDistance);
     _WarpUpdate(currentShipSpeed);
 
-    _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f.", \
-            mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f from bubble %u.", \
+                mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance, mySE->SysBubble()->GetID());
 }
 
 void DestinyManager::_WarpCruise(uint16 sec_into_warp) {
@@ -1443,9 +1453,9 @@ void DestinyManager::_WarpCruise(uint16 sec_into_warp) {
     }
 
     _WarpUpdate(m_warpState->warpSpeed);
-
-    _log(DESTINY__WARP_TRACE, "Destiny::_WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %.4f m left to go.", \
-             mySE->GetName(), mySE->GetID(), sec_into_warp, m_warpState->warpSpeed, m_targetDistance);
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpCruise(): %s(%u) - Warp Crusing(%us): velocity %.4f m/s. with %.4f m left to go.", \
+                mySE->GetName(), mySE->GetID(), sec_into_warp, m_warpState->warpSpeed, m_targetDistance);
 }
 
 void DestinyManager::_WarpDecel(uint16 sec_into_warp) {
@@ -1459,8 +1469,9 @@ void DestinyManager::_WarpDecel(uint16 sec_into_warp) {
     double currentShipSpeed = (m_warpState->warpSpeed * exp(-decelTime));
 
     _WarpUpdate(currentShipSpeed);
-    _log(DESTINY__WARP_TRACE, "Destiny::_WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
-             mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpDecel(): %s(%u) - Warp Decelerating(%us/%us): velocity %.4f m/s with %.4f m left to go.", \
+                mySE->GetName(), mySE->GetID(), decelTime, sec_into_warp, currentShipSpeed, m_targetDistance);
 
     if (currentShipSpeed <= m_speedToLeaveWarp)
         _WarpStop(currentShipSpeed);
@@ -1474,34 +1485,28 @@ void DestinyManager::_WarpUpdate(double currentShipSpeed) {
 
     if (m_warpState->decel) {
         if (!m_inBubble) {
-            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate():Decel %s(%u): Ship is %f from center of target bubble %u.",\
-                    mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
+            if (is_log_enabled(DESTINY__WARP_TRACE))
+                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate():Decel %s(%u): Ship is %f from center of target bubble %u.",\
+                        mySE->GetName(), mySE->GetID(), m_targBubble->GetCenter().distance(m_position), m_targBubble->GetID());
             if (m_targBubble->InBubble(m_position, true)) {
-                _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() .", \
-                    mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
+                if (is_log_enabled(DESTINY__WARP_TRACE))
+                    _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Add() for bubble %u.", \
+                            mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_targBubble->GetID());
                 m_targBubble->Add(mySE);
                 SetPosition(m_position, true);
                 m_inBubble = true;
             }
         }
-    } else if (m_inBubble) {
-        _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate():InBubble %s(%u): Ship is %f from center of bubble %u.",\
-                mySE->GetName(), mySE->GetID(), mySE->SysBubble()->GetCenter().distance(m_position), mySE->SysBubble()->GetID());
-        if (!mySE->SysBubble()->InBubble(m_position)) {
-            _log(DESTINY__WARP_TRACE, "Destiny::_WarpUpdate(): %s(%u): Ship at %.2f,%.2f,%.2f is calling Remove() .", \
-                    mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-            mySE->SysBubble()->Remove(mySE);
-            m_inBubble = false;
-        }
     }
 }
 
 void DestinyManager::_WarpStop(double currentShipSpeed) {
-    _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %.4f m left to go.", \
-            mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance);
-    _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
-            mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
-
+    if (is_log_enabled(DESTINY__WARP_TRACE)) {
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u) - Warp complete. Exit velocity %.4f m/s with %.4f m left to go.", \
+                mySE->GetName(), mySE->GetID(), currentShipSpeed, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
+                mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
+    }
     m_targetPoint += (m_warpState->warp_vector *10000);
     // SetSpeedFraction() checks for State = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting State or WarpState.
