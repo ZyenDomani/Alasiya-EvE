@@ -288,8 +288,8 @@ public:
      * @param[in] empty std::vector<InventoryItemRef> which is populated with list of skills
      */
     void            GetSkillsList(std::vector<InventoryItemRef>& skills) const;
-
-    double      GetTotalSPTrained() { return m_charData.skillPoints; };
+    void            VerifySP();
+    double          GetTotalSPTrained()                 { return m_charData.skillPoints; };
     /**
      * Calculates Skillpoints per minute rate.
      *
@@ -508,8 +508,6 @@ protected:
         const CorpData& _corpData
     );
     virtual ~Character();
-
-    void VerifySP();
 
     void LoadBookmarks();
 

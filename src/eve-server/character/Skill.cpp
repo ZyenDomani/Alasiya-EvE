@@ -43,7 +43,7 @@ SkillRef Skill::Load( uint32 skillID)
 
 SkillRef Skill::Spawn( ItemData &data)
 {
-    uint32 skillID = CreateItemID(data );
+    uint32 skillID = InventoryItem::CreateItemID(data );
     if ( skillID == 0 )
         return SkillRef();
 
@@ -57,21 +57,16 @@ SkillRef Skill::Spawn( ItemData &data)
     return skillRef;
 }
 
-uint32 Skill::CreateItemID( ItemData &data)
-{
-    return InventoryItem::CreateItemID(data );
-}
-
 EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
-    return EvEMath::Skill::PointsAtLevel(level, GetAttribute(AttrSkillTimeConstant));
+    return EvEMath::Skill::PointsAtLevel(level, GetAttribute(AttrSkillTimeConstant)).get_int();
 }
 
 void Skill::VerifySP()
 {
-    EvilNumber spThisLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
-    EvilNumber spNextLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
-    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
-        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), (spThisLevel.get_float() + 0.0001));
+    uint32 spThisLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant)).get_int();
+    uint32 spNextLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant)).get_int();
+    if ((GetAttribute(AttrSkillPoints).get_int() < spThisLevel) or (GetAttribute(AttrSkillPoints).get_int() > spNextLevel)) {
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u", itemName().c_str(), (uint32)GetAttribute(AttrSkillPoints).get_int(), spThisLevel);
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
 }

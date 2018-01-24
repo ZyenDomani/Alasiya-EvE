@@ -264,9 +264,6 @@ bool Character::_Load() {
 
     // Update Skill Queue and Total Skill Points Trained:
     if (m_loaded) {
-        if (GetSkillInTraining())
-            UpdateSkillQueue();
-        VerifySP();
         m_certificates.clear();
         if (!m_cdb.LoadCertificates(m_itemID, m_certificates)) {
             sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
@@ -641,6 +638,26 @@ void Character::SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel,
 void Character::ClearSkillQueue() {
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Queue Cleared", itemName().c_str(), m_itemID);
     m_skillQueue.clear();
+    // if there is currently a skill in training, stop training and save
+    Skill* currentTraining = GetSkillInTraining().get();
+    if (currentTraining != nullptr) {
+        currentTraining->VerifySP();
+        EvilNumber level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+        if (level > 5)  // make error here?
+            level = 5;
+        //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
+        EvilNumber nextLevelSP = currentTraining->GetSPForLevel(level + 1);
+        EvilNumber CurrentSP = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+
+        SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
+        _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
+                itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
+
+        currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
+        currentTraining->SetAttribute(AttrExpiryTime, 0);
+        currentTraining->SetFlag(flagSkill, true);
+        currentTraining->SaveItem();
+    }
 }
 
 void Character::PauseSkillQueue() {
@@ -655,40 +672,45 @@ void Character::LoadPausedSkillQueue() {
 
 void Character::UpdateSkillQueue() {
     /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17  --updated code, logic and timers 16Nov17  -again 9jan18*/
+    // finally fixed.  22Jan18
     if (m_pClient == nullptr)
         return;
-    EvilNumber nextLevelSP = 0;
+    EvilNumber CurrentSP = 0, trainingEndTime = 0, level = 0;
     Skill* currentTraining = GetSkillInTraining().get();
     if (currentTraining != nullptr) {
         currentTraining->VerifySP();
         if (m_skillQueue.empty() or (currentTraining->typeID() != m_skillQueue.front().typeID)) {
-            uint8 oldLevel = currentTraining->GetAttribute(AttrSkillLevel).get_int();
-            if (oldLevel < 0)
-                oldLevel = 0;
+            level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+            if (level > 5)  // make error here?
+                level = 5;
             //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
-            nextLevelSP = currentTraining->GetSPForLevel(oldLevel + 1);
-            EvilNumber skillPointsTrained = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+            CurrentSP = (currentTraining->GetSPForLevel(level) - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
 
-            SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), oldLevel +1, skillPointsTrained.get_double());
+            SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-            itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel, currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
 
-            OnSkillTrainingStopped osst;
-                osst.itemID = currentTraining->itemID();
-                osst.silent = true;    // slient means 'disable neocom blink event'
-            PyTuple* tmp = osst.Encode();
-            m_pClient->QueueDestinyEvent(&tmp);
-
-            currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained.get_int());
+            currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0);
             currentTraining->SetFlag(flagSkill, true);
             currentTraining->SaveItem();
+
+            if (!m_pClient->IsLogin()) {
+                OnSkillTrainingStopped osst;
+                    osst.itemID = currentTraining->itemID();
+                    osst.silent = true;    // slient means 'disable neocom blink event'
+                PyTuple* tmp = osst.Encode();
+                m_pClient->QueueDestinyEvent(&tmp);
+            }
+
             currentTraining = nullptr;
+            trainingEndTime = GetFileTimeNow();
+            level = CurrentSP = 0;
         }
     }
 
+    bool sent = false;
     uint32 skillID = 0;
-    EvilNumber CurrentSP = 0, trainingEndTime = 0;
     while (!m_skillQueue.empty()) {
         if (currentTraining == nullptr) {
             skillID = m_skillQueue.front().typeID;
@@ -700,54 +722,67 @@ void Character::UpdateSkillQueue() {
             }
 
             currentTraining->VerifySP();
-            EvilNumber level = (currentTraining->GetAttribute(AttrSkillLevel) + 1);
-            if (level > 5)
+            level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+            if (level > 5)  // make error here?
                 level = 5;
-            nextLevelSP = currentTraining->GetSPForLevel(level);
             CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
-            if (CurrentSP >= nextLevelSP) {
-                SaveSkillHistory(skillEventTrainingComplete, currentTraining->GetAttribute(AttrExpiryTime).get_double(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), \
-                            nextLevelSP.get_double());
-                _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                                itemName().c_str(), m_itemID, currentTraining->typeID(), level, currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
-                if (level == 5)
-                    currentTraining->DeleteAttribute(AttrExpiryTime);
-                else
-                    currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill, true);
-                currentTraining->SaveItem();
-                currentTraining = nullptr;
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
+            if (trainingEndTime == 0)
+                trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), GetFileTimeNow());
+            else if (trainingEndTime > currentTraining->GetAttribute(AttrExpiryTime)) {
+                if (currentTraining->GetAttribute(AttrExpiryTime) > 0) {
+                    trainingEndTime = currentTraining->GetAttribute(AttrExpiryTime);
+                } else  {
+                    trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), trainingEndTime.get_int());
+                }
             }
-            trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, nextLevelSP, GetSPPerMin(currentTraining), GetFileTimeNow());
+            SaveSkillHistory(skillEventTrainingStarted, trainingEndTime.get_float(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double());
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining started - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
+                        itemName().c_str(), m_itemID, skillID, (uint8)level.get_int(), trainingEndTime.get_float(), GetFileTimeNow());
 
-            SaveSkillHistory(skillEventTrainingStarted, GetFileTimeNow(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double());
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                            itemName().c_str(), m_itemID, skillID, level.get_int(), trainingEndTime.get_float(), GetFileTimeNow());
-
-            // need to set end time for persistance
+            currentTraining->SetFlag(flagSkillInTraining, true);
             currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+            currentTraining->SaveItem();
 
-            if (trainingEndTime > GetFileTimeNow()) {
-                currentTraining->SetFlag(flagSkillInTraining, true);
-
+            if (!m_pClient->IsLogin()) {
                 OnSkillStartTraining osst;
                     osst.itemID = currentTraining->itemID();
                     osst.endOfTraining = trainingEndTime.get_double();
                 PyTuple* tmp = osst.Encode();
                 m_pClient->QueueDestinyEvent(&tmp);
-                currentTraining->SaveItem();
             }
         }
+        if (currentTraining == nullptr)
+            continue;
 
-        if ( trainingEndTime < GetFileTimeNow() ) {
-            // training has been finished
-            uint8 level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
+        if (trainingEndTime == 0)
+            trainingEndTime = currentTraining->GetAttribute(AttrExpiryTime);
+        if (trainingEndTime == 0) {
+            level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
             if (level > 5)
                 level = 5;
-            EvilNumber newPoints = currentTraining->GetSPForLevel( (EvilNumber)level );
-            EvilNumber completeTime = currentTraining->GetAttribute(AttrExpiryTime);
+            CurrentSP = currentTraining->GetSPForLevel(level);
+            trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), GetFileTimeNow());
+            currentTraining->SetFlag(flagSkillInTraining, true);
+            currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+            level = CurrentSP = 0;
+        }
+
+        if (trainingEndTime < GetFileTimeNow()) {
+            level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
+            if (level > 5)
+                level = 5;
+            CurrentSP = currentTraining->GetSPForLevel(level);
+            SaveSkillHistory(skillEventQueueTrainingCompleted, trainingEndTime.get_double(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_float());
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), trainingEndTime.get_float(), GetFileTimeNow());
+            if (level == 5)
+                currentTraining->DeleteAttribute(AttrExpiryTime);
+            else
+                currentTraining->SetAttribute(AttrExpiryTime, 0);
+            currentTraining->SetAttribute(AttrSkillLevel, level.get_int());
+            currentTraining->SetAttribute(AttrSkillPoints, CurrentSP);
+            currentTraining->SetFlag(flagSkill, true);
+            currentTraining->SaveItem();
 
             OnSkillTrained ost;
                 ost.itemID = currentTraining->itemID();
@@ -763,77 +798,16 @@ void Character::UpdateSkillQueue() {
                         ;   // do nothing for these.
                     } break;
                     default: {
-                        m_pClient->SendInfoModalMsg("Your ship will update to your new skill level when you dock.");
+                        if (!sent) {
+                            sent = true;
+                            m_pClient->SendInfoModalMsg("Your ship will update to your new skill level the next time you undock.");
+                        }
                     } break;
                 }
             }
-            currentTraining->SetAttribute(AttrSkillLevel, (int8)level );
-            currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
-            SaveSkillHistory(skillEventQueueTrainingCompleted, completeTime.get_double(), m_itemID, currentTraining->typeID(), level, newPoints.get_float());
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                        itemName().c_str(), m_itemID, currentTraining->typeID(), level, completeTime.get_float(), GetFileTimeNow());
-            if (level == 5)
-                currentTraining->DeleteAttribute(AttrExpiryTime);
-            else
-                currentTraining->SetAttribute(AttrExpiryTime, 0);
-            currentTraining->SetFlag(flagSkill, true);
-            currentTraining->SaveItem();
             currentTraining = nullptr;
             m_skillQueue.erase( m_skillQueue.begin() );
-
-            //  start training the next skill in queue when previous skill finished.....hackish persistance  -allan 7Apr14
-            //  first, check for skills in queue...
-            if (m_skillQueue.empty())
-                break;
-
-            skillID = m_skillQueue.front().typeID;
-            currentTraining = GetSkill(skillID).get();
-            if (currentTraining == nullptr) {
-                _log( CHARACTER__WARNING, "%s(%u): Skill %u to train was not found.", itemName().c_str(), m_itemID, skillID );
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
-            }
-
-            currentTraining->VerifySP();
-            level = (currentTraining->GetAttribute(AttrSkillLevel).get_int() + 1);
-            if (level > 5)
-                level = 5;
-            nextLevelSP = currentTraining->GetSPForLevel(level);
-            CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
-            if (CurrentSP >= nextLevelSP) {
-                SaveSkillHistory(skillEventTrainingComplete, completeTime.get_double(), m_itemID, currentTraining->typeID(), level, \
-                            nextLevelSP.get_double());
-                _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                            itemName().c_str(), m_itemID, currentTraining->typeID(), level, completeTime.get_float(), GetFileTimeNow());
-                if (level == 5)
-                    currentTraining->DeleteAttribute(AttrExpiryTime);
-                else
-                    currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill, true);
-                currentTraining->SaveItem();
-                currentTraining = nullptr;
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
-            }
-            trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, nextLevelSP, GetSPPerMin(currentTraining), completeTime.get_int());
-
-            SaveSkillHistory(skillEventTrainingStarted, trainingEndTime.get_int(), m_itemID, skillID, level, CurrentSP.get_double());
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                        itemName().c_str(), m_itemID, skillID, level, trainingEndTime.get_float(), GetFileTimeNow());
-
-            // need to set end time for persistance
-            currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
-
-            if (trainingEndTime > GetFileTimeNow()) {
-                currentTraining->SetFlag(flagSkillInTraining, true);
-
-                OnSkillStartTraining osst;
-                    osst.itemID = currentTraining->itemID();
-                    osst.endOfTraining = trainingEndTime.get_double();
-                PyTuple *tmp2 = osst.Encode();
-                m_pClient->QueueDestinyEvent(&tmp2);
-                currentTraining->SaveItem();
-            }
+            continue;
         } else
             break;  // this skill is still in training.  break out of while() loop
     }

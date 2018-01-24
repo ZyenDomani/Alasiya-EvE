@@ -109,8 +109,6 @@ protected:
 
         return SkillRef( new Skill(skillID, type, data ) );
     }
-
-    static uint32 CreateItemID( ItemData &data);
 };
 
 #endif /* !__SKILL__H__INCL__ */
