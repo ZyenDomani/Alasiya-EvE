@@ -320,7 +320,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
             continue;
         if (sConfig.chat.EnforceRookieInHelp)
             if ((channelID == 1) or (channelID == 2))
-                if (!(args.role & Acct::Role::NEWBIE) or !(args.role & Acct::Role::ELEVATEDPLAYER))
+                if (!(args.role & Acct::Role::NEWBIE) or !(args.role & Acct::Role::EPLAYER))
                     continue;
 
         channel = GetChannelByID(channelID);
