@@ -63,6 +63,8 @@ EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
 
 void Skill::VerifySP()
 {
+    if (GetAttribute(AttrSkillPoints) == 0)
+        return;
     uint32 spThisLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant)).get_int();
     uint32 spNextLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant)).get_int();
     if ((GetAttribute(AttrSkillPoints).get_int() < spThisLevel) or (GetAttribute(AttrSkillPoints).get_int() > spNextLevel)) {
