@@ -31,10 +31,22 @@
 #include "log/logsys.h"
 #include "utils/misc.h"
 
-// this is needed for client list and Shutdown()
-//#include "../eve-server/EntityList.h"
-
 #define COLUMN_BOUNDS_CHECKING
+
+// this group is to enable server shutdown (and online player notification)
+//      in the case of db lost connection
+#define sEntityList (EntityList::get())
+class Client {
+public:
+    void SendInfoModalMsg(const char* fmt, ...);
+};
+class EntityList
+: public Singleton<EntityList>
+{
+public:
+    void Shutdown();
+    void GetClients(std::vector<Client*>& result) const;
+};
 
 // this is used to enable socket communication (may not be needed)
 enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
@@ -231,19 +243,24 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore Query - mysql = null");
+        _log(DATABASE__MESSAGE, "mysql = null.  Server restarting.");
+        std::vector<Client*> list;
+        sEntityList.GetClients(list);
+        for (auto cur : list)
+            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
+        sEntityList.Shutdown();
         return false;
     }
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore Query - DB Status != Connected");
-        /** @todo  this needs access to EntityList, but cannot due to include problems
+        /** @todo  this needs access to EntityList, but cannot due to include problems */
         _log(DATABASE__MESSAGE, "DataBase lost connection.  Server restarting.");
         std::vector<Client*> list;
         sEntityList.GetClients(list);
         for (auto cur : list)
             cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
         sEntityList.Shutdown();
-        */
         return false;
     }
 
