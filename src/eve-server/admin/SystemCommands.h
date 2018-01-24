@@ -16,7 +16,7 @@ COMMAND( location, Acct::Role::PLAYER,
          "- Gives you back your current location in space." )
 COMMAND( syncloc, Acct::Role::PLAYER,
          "- Synchonizes your location in client with location on server." )
-COMMAND( update, Acct::Role::CONTENT,
+COMMAND( update, Acct::Role::PLAYER,
          "- Sets Current Position according to Server's DestinyManager, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
 COMMAND( sendstate, Acct::Role::CONTENT,
          "- Sends DoDestinyUpdate SetState." )
