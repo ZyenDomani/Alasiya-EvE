@@ -123,6 +123,8 @@ InventoryItemRef InventoryItem::Load( uint32 itemID)
 
 InventoryItemRef InventoryItem::SpawnItem( uint32 itemID, const ItemData &data)
 {
+    if (data.quantity == 0)
+        return InventoryItemRef(nullptr);
     const ItemType *iType = sItemFactory.GetType( data.typeID );
     if (iType == nullptr)
         return InventoryItemRef(nullptr);
@@ -658,7 +660,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
-                result.attributes[(*itr).first] = new PyFloat(GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
+                result.attributes[AttrWarpSpeedMultiplier] = new PyFloat(GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
             else
                 result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         }

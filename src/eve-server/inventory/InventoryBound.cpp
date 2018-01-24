@@ -434,7 +434,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         iRef = newItem;
         args.itemID = iRef->itemID();
     // we're not dividing the stack, so check for removing loaded charges
-    } else if (iRef->categoryID() == EVEDB::invCategories::Charge)
+    } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(toFlag)))
         manyFlags = true;
 
     float capacity = 0.0f;
