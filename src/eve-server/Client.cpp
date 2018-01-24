@@ -263,7 +263,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     MoveToLocation(m_locationID, pos);
 
     if (IsSolarSystem(m_locationID)) {
-        m_invulTimer.Start(ClientTimers::LoginTimer);
+        m_invulTimer.Start(ClientTimers::WarpInInvul);
         WarpIn();
     } else {
         //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
@@ -288,6 +288,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
+    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return true;
 }
 
@@ -596,8 +597,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         // remove from 'current' system before resetting system vars
         m_char->AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, (count = true));
-        if (pShipSE != nullptr)
+        if (pShipSE != nullptr) {
             m_system->RemoveEntity(pShipSE);
+            pShipSE->DestinyMgr()->Halt();
+        }
         m_system = nullptr;
     }
 

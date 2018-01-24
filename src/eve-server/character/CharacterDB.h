@@ -105,7 +105,6 @@ public:
      */
     bool del_name_validation_set(uint32 characterID);
     bool GetCharItems(uint32 characterID, std::vector<uint32> &into);
-    bool GetLocationByStation(uint32 staID, CharacterData &cdata);
     bool GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID);
     bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);

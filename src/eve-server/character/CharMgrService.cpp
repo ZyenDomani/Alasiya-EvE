@@ -346,11 +346,6 @@ PyResult CharMgrService::Handle_GetTopBounties( PyCallArgs& call )
     return m_db.GetTopBounties();
 }
 
-PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
-{
-    return m_db.GetCharPublicInfo3(call.client->GetCharacterID());
-}
-
 PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 {
     return m_db.GetLabels(call.client->GetCharacterID());
@@ -359,6 +354,17 @@ PyResult CharMgrService::Handle_GetLabels( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetPaperdollState( PyCallArgs& call )
 {
     return new PyInt(paperdollStateNoRecustomization);
+}
+
+PyResult CharMgrService::Handle_GetPublicInfo3(PyCallArgs &call)
+{
+    Call_SingleIntegerArg arg;
+    if(!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return m_db.GetCharPublicInfo3(arg.arg);
 }
 
 PyResult CharMgrService::Handle_GetContactList(PyCallArgs &call)
@@ -382,11 +388,11 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 17:01:37 [SvcCall]     Argument 'machoVersion':
 17:01:37 [SvcCall]         Integer field: 1
 
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(CHARACTER__TRACE);
 */
     //takes a single int arg: char id or corp id
-    Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
+    Call_SingleIntegerArg arg;
+    if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
@@ -401,9 +407,9 @@ PyResult CharMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
         return result;
     }*/
 
-    PyRep *result = m_db.GetCharPublicInfo(args.arg);
+    PyRep *result = m_db.GetCharPublicInfo(arg.arg);
     if (result == NULL)
-        codelog(CHARACTER__ERROR, "%s: Failed to find char %u", call.client->GetName(), args.arg);
+        codelog(CHARACTER__ERROR, "%s: Failed to find char %u", call.client->GetName(), arg.arg);
 
     return result;
 }
@@ -434,7 +440,7 @@ PyResult CharMgrService::Handle_AddToBounty( PyCallArgs& call )
         throw(PyException(MakeUserError("NotEnoughMoney", res)));
     }
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
@@ -455,7 +461,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 	uint32 stationID = 0;
 	if (!m_db.GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
 		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
-		return new PyNone();
+		return PyStatic.NewNone();
 	}
     return new PyInt(stationID);
 }
@@ -463,12 +469,14 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetFactions( PyCallArgs& call )
 {
     sLog.White( "CharMgrService::Handle_GetFactions()", "size= %u", call.tuple->size() );
+    call.Dump(CHARACTER__TRACE);
     return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetPrivateInfo( PyCallArgs& call )
 {
     sLog.White( "CharMgrService::Handle_GetPrivateInfo()", "size= %u", call.tuple->size() );
+    call.Dump(CHARACTER__TRACE);
     return nullptr;
 }
 
@@ -476,14 +484,14 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%i.", \
-    call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
+            call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
 
     // call code here to set an AFK watchdog?  config option?
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {
@@ -619,7 +627,7 @@ PyResult CharMgrService::Handle_LogSettings( PyCallArgs& call ) {
               [PyInt 1]
     */
   sLog.White( "CharMgrService::Handle_LogSettings()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(CHARACTER__TRACE);
  return nullptr;
 }
 
@@ -684,7 +692,7 @@ PyResult CharMgrService::Handle_SetNote(PyCallArgs &call)
 
     m_db.SetNote(call.client->GetCharacterID(), args.itemID, args.note.c_str());
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult CharMgrService::Handle_AddOwnerNote( PyCallArgs& call ) {

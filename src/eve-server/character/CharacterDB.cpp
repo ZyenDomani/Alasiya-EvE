@@ -402,8 +402,8 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT "       // fixed DB Query   -allan 11Jan14   -update 20April16
-        "  e.typeID,"
-        "  e.itemName AS characterName,"
+        "  ch.typeID,"
+        "  ch.name AS characterName,"
         "  ch.corporationID,"
         "  ch.raceID,"
         "  ch.bloodlineID,"
@@ -419,7 +419,6 @@ PyRep *CharacterDB::GetCharPublicInfo(uint32 characterID) {
         "  ch.description,"
         "  ch.startDateTime"
         " FROM chrCharacters AS ch"
-        "  LEFT JOIN entity AS e ON e.itemID = ch.characterID "
         "  LEFT JOIN chrSchools AS cs USING (schoolID) "
         " WHERE ch.characterID=%u", characterID))
     {
@@ -876,46 +875,15 @@ bool CharacterDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& c
     return true;
 }
 
-bool CharacterDB::GetLocationByStation(uint32 stationID, CharacterData &cdata) {
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-     "SELECT "
-     "  solarSystemID, "
-     "  constellationID, "
-     "  regionID "
-     " FROM staStations"
-     " WHERE stationID = %u", stationID))
-    {
-        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Failed to find station %u", stationID);
-        return false;
-    }
-
-    cdata.stationID = stationID;
-    cdata.solarSystemID = row.GetUInt(0);
-    cdata.constellationID = row.GetUInt(1);
-    cdata.regionID = row.GetUInt(2);
-
-    return true;
-}
-
 bool CharacterDB::GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT stationID FROM crpCorporation WHERE corporationID = %u", corporationID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT stationID FROM crpCorporation WHERE corporationID = %u", corporationID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
-
     DBResultRow row;
-    if (!res.GetRow(row))
-    {
+    if (!res.GetRow(row)) {
         codelog(DATABASE__ERROR, "Failed to find corporation %u", corporationID);
         return false;
     }
@@ -928,8 +896,7 @@ bool CharacterDB::DoesCorporationExist(uint32 corpID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
      "SELECT "
-     "  corporationID, "
-     "  corporationName "
+     "  corporationID"
      " FROM crpCorporation"
      " WHERE corporationID = %u", corpID))
     {
@@ -937,12 +904,9 @@ bool CharacterDB::DoesCorporationExist(uint32 corpID) {
         return false;
     }
 
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Failed to find corporation %u", corpID);
-        return false;
-    }
-    return true;
+    if (!res.ColumnCount() > 0)
+        return true;
+    return false;
 }
 
 void CharacterDB::SetAvatar(uint32 charID, PyRep* hairDarkness) {
@@ -1002,30 +966,21 @@ void CharacterDB::SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep
 
 bool CharacterDB::GetBaseSkills(std::map<uint32, uint32> &into) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "  skillTypeID, level"
-        " FROM sklBaseSkills "))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT skillTypeID, level FROM sklBaseSkills"))  {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    while (res.GetRow(row)) {
+    while (res.GetRow(row))
         into[row.GetUInt(0)] = row.GetUInt(1);
-    }
+
     return true;
 }
 
 bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "  skillTypeID, level"
-        " FROM sklRaceSkills "
-        " WHERE raceID = %u ", raceID))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT skillTypeID, level FROM sklRaceSkills WHERE raceID = %u ", raceID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
     }
@@ -1072,11 +1027,7 @@ bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint32> &i
 
 PyString *CharacterDB::GetNote(uint32 ownerID, uint32 itemID) {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-            "SELECT `note` FROM `chrNotes` WHERE ownerID = %u AND itemID = %u",
-            ownerID, itemID)
-        )
-    {
+    if (!sDatabase.RunQuery(res, "SELECT note FROM chrNotes WHERE ownerID = %u AND itemID = %u",  ownerID, itemID))  {
         codelog(DATABASE__ERROR, "Error on query: %s", res.error.c_str());
         return nullptr;
     }
@@ -1255,13 +1206,7 @@ uint32 CharacterDB::djb2_hash( const char* str )
 void CharacterDB::load_name_validation_set()
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  characterID, itemName AS characterName"
-        " FROM chrCharacters"
-        "    JOIN entity ON characterID = itemID"
-        ))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT characterID, name FROM chrCharacters")) {
         codelog(DATABASE__ERROR, "Error in query for %s", res.error.c_str());
         return;
     }
@@ -1329,7 +1274,6 @@ bool CharacterDB::del_name_validation_set( uint32 characterID )
     }
 }
 
-/** @todo update this fucking shit..... */
 bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
@@ -1451,7 +1395,7 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
         " FROM chrSkillHistory"
         " WHERE characterID = %u"
         " ORDER BY logDate DESC"
-        " LIMIT 100",
+        " LIMIT 50",
         characterID )) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -1487,29 +1431,25 @@ void CharacterDB::addOwnerCache(uint32 ownerID, std::string ownerName, uint32 ty
 
 PyRep* CharacterDB::GetBounty(uint32 charID, uint32 ownerID) {
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT characterID, bounty FROM chrCharacters WHERE bounty > 0 ORDER BY bounty DESC");
+    sDatabase.RunQuery(res, "SELECT characterID, bounty FROM webBounties WHERE characterID = %u OR ownerID = %u", charID, ownerID);
     return DBResultToRowset(res);
 }
 
 PyRep* CharacterDB::GetTopBounties() {
     DBQueryResult res;
     sDatabase.RunQuery(res,
-                       "SELECT c.characterID, c.bounty, c.online, e.itemName AS ownerName"
-                       " FROM chrCharacters AS c"
-                       " LEFT JOIN entity AS e ON e.itemID = c.characterID"
-                       " WHERE c.bounty > 0"
-                       " ORDER BY bounty DESC"
+                       "SELECT c.characterID, c.bounty, c.online, o.name AS ownerName"
+                       " FROM webBounties AS b"
+                       " LEFT JOIN chrCharacters AS c ON c.characterID = b.characterID"
+                       " LEFT JOIN chrCharacters AS o ON o.characterID = b.ownerID"
+                       " ORDER BY c.bounty DESC"
                        " LIMIT 15");
     return DBResultToRowset(res);
 }
 
 void CharacterDB::AddBounty(uint32 charID, uint32 ownerID, uint32 amount) {
     DBerror err;
-
-    sDatabase.RunQuery(err,
-                       "UPDATE chrCharacters SET bounty = bounty + %u WHERE characterID = %u",
-        amount, charID);
-
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET bounty = bounty + %u WHERE characterID = %u", amount, charID);
     sDatabase.RunQuery(err,
         "INSERT INTO webBounties(characterID, ownerID, bounty, timePlaced)"
         " VALUES (%u, %u, %u, UNIX_TIMESTAMP(CURRENT_TIMESTAMP) )",
@@ -1618,7 +1558,9 @@ float CharacterDB::GetCorpTaxRate(uint32 charID)
     return row.GetFloat(0);
 }
 
+/** @todo  update this bullshit */
 void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
+    /*
     DBQueryResult res;
     sDatabase.RunQuery(res,
       "SELECT visits FROM chrVisitedSystems WHERE characterID = %u AND solarSystemID = %u",
@@ -1629,19 +1571,14 @@ void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
     uint16 visits = 0;
     if (res.GetRow(row)) visits = row.GetUInt(0);
     visits++;
-
+*/
     DBerror err;
-    if (visits > 1) {
-      sDatabase.RunQuery(err,
-        "UPDATE chrVisitedSystems SET visits = %u, lastDateTime = %" PRIi64 " WHERE characterID = %u AND solarSystemID = %u",
-        visits, GetFileTimeNow(), charID, solarSystemID
-        );
-    }else{
-      sDatabase.RunQuery(err,
+    sDatabase.RunQuery(err,
         "INSERT INTO chrVisitedSystems (characterID, solarSystemID, visits, lastDateTime)"
-        "VALUES (%u, %u, %u, %" PRIi64 ")", charID, solarSystemID, visits, GetFileTimeNow()
-        );
-    }
+        "VALUES (%u, %u, 1, %f)"
+        " ON DUPLICATE KEY UPDATE"
+        " visits = visits +1,"
+        " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
 }
 
 /** @todo  look into updating this to be a mem object, saved to db every 'x' */
