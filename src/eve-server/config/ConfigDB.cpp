@@ -30,10 +30,11 @@
 
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
-    std::vector<int32> player, corp, ally;
+    std::vector<int32> player, corp, ally, owner;
     player.clear();
     corp.clear();
     ally.clear();
+    owner.clear();
 
     for (auto cur : entityIDs) {
         if (IsCorp(cur))
@@ -43,7 +44,8 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         else if (IsCharacter(cur))
             player.push_back(cur);
         else
-            ; // make error here for untested type
+            owner.push_back(cur);
+
     }
 
     DBQueryResult res;
@@ -92,13 +94,29 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  typeID,"
             "  gender,"
             "  NULL AS ownerNameID"
-            " FROM chrCharacters AS c"
+            " FROM chrCharacters"
             " WHERE characterID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         }
     }
 
+    if (owner.size()) {
+        ListToINString(owner, ids, "0");
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  ownerID,"
+            "  ownerName,"
+            "  typeID,"
+            "  1 AS gender,"
+            "  NULL AS ownerNameID"
+            " FROM eveStaticOwners"
+            " WHERE ownerID IN (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+    }
+    
     return DBResultToTupleSet(res);
 }
 
