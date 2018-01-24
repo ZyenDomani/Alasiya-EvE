@@ -106,6 +106,7 @@ public:
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
     //batch processes handlers
+    void ShipWarping();
     void AbortCycle();
     void Process();
     void OfflineAll();
@@ -249,4 +250,30 @@ private:
 
 #endif  /* MODULE_MANAGER_H */
 
-
+/*
+{'messageKey': 'ModuleActivatedDeniedForceField', 'dataID': 17881053, 'suppressable': False, 'bodyID': 258630, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1797}
+{'messageKey': 'ModuleActivationDeniedCriminalAssistance', 'dataID': 17875215, 'suppressable': False, 'bodyID': 256427, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3548}
+{'messageKey': 'ModuleActivationDeniedJumping', 'dataID': 17876072, 'suppressable': False, 'bodyID': 256741, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3450}
+{'messageKey': 'ModuleAlreadyActive', 'dataID': 17882992, 'suppressable': False, 'bodyID': 259340, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259339, 'messageID': 1224}
+{'messageKey': 'ModuleAlreadyBanked', 'dataID': 17878036, 'suppressable': False, 'bodyID': 257477, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2671}
+{'messageKey': 'ModuleAlreadyFitting', 'dataID': 17882995, 'suppressable': False, 'bodyID': 259341, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1225}
+{'messageKey': 'ModuleEffectActive', 'dataID': 17883214, 'suppressable': False, 'bodyID': 259424, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1226}
+{'messageKey': 'ModuleFit', 'dataID': 17883325, 'suppressable': False, 'bodyID': 259463, 'messageType': 'notify', 'urlAudio': 'wise:/msg_ModuleFit_play', 'urlIcon': '', 'titleID': None, 'messageID': 1227}
+{'messageKey': 'ModuleFitFailed', 'dataID': 17883222, 'suppressable': False, 'bodyID': 259427, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1228}
+{'messageKey': 'ModuleGotDamagedWhileBeingRepaired', 'dataID': 17879486, 'suppressable': False, 'bodyID': 258026, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2389}
+{'messageKey': 'ModuleIsBlocked', 'dataID': 17878649, 'suppressable': False, 'bodyID': 257706, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2573}
+{'messageKey': 'ModuleJammedOnBadAmmo', 'dataID': 17883225, 'suppressable': False, 'bodyID': 259428, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1229}
+{'messageKey': 'ModuleNoLongerPresentForCharges', 'dataID': 17882998, 'suppressable': False, 'bodyID': 259342, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1230}
+{'messageKey': 'ModuleNotOnline', 'dataID': 17883228, 'suppressable': False, 'bodyID': 259429, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1231}
+{'messageKey': 'ModuleNotPowered', 'dataID': 17883231, 'suppressable': False, 'bodyID': 259430, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1232}
+{'messageKey': 'ModuleReactivationDelayed2', 'dataID': 17879578, 'suppressable': False, 'bodyID': 258059, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2307}
+{'messageKey': 'ModuleRequiresFuel', 'dataID': 17883167, 'suppressable': False, 'bodyID': 259407, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1235}
+{'messageKey': 'ModuleRequiresLowerSystemSecurity', 'dataID': 17883256, 'suppressable': False, 'bodyID': 259439, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1236}
+{'messageKey': 'ModuleRequiresTargetOwnerFleetMembership', 'dataID': 17883161, 'suppressable': False, 'bodyID': 259405, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1237}
+{'messageKey': 'ModuleTooBigForThisShip', 'dataID': 17879517, 'suppressable': False, 'bodyID': 258037, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2424}
+{'messageKey': 'ModuleTooDamagedToBeOnlined', 'dataID': 17878773, 'suppressable': False, 'bodyID': 257752, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2303}
+{'messageKey': 'ModuleTooDamagedToRepairGoToStation', 'dataID': 17879349, 'suppressable': False, 'bodyID': 257974, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2387}
+{'messageKey': 'ModuleUnfit', 'dataID': 17883328, 'suppressable': False, 'bodyID': 259464, 'messageType': 'notify', 'urlAudio': 'wise:/msg_ModuleUnfit_play', 'urlIcon': '', 'titleID': None, 'messageID': 1239}
+{'messageKey': 'ModulesIncorrectlyFitted', 'dataID': 17878135, 'suppressable': False, 'bodyID': 257513, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2512}
+{'messageKey': 'ModulesNotLoadableInSpace', 'dataID': 17883271, 'suppressable': False, 'bodyID': 259444, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1240}
+*/

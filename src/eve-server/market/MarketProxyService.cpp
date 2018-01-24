@@ -119,6 +119,7 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
 }
 
 // this is called 3x on every market transaction
+/** @todo  make this static data, updated on a timer.  can be done in MarketMgr code  */
 PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {

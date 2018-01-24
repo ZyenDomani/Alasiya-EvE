@@ -349,6 +349,8 @@ void Ship::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
+    // AttrFwLpKill
+
     uint32 locationID = GetLocationID();
     if (!m_self->GetPilot()) {
         m_destiny->Stop();
