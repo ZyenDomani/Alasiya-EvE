@@ -32,6 +32,7 @@
 #include "cache/ObjCacheService.h"
 #include "character/CharUnboundMgrService.h"
 #include "imageserver/ImageServer.h"
+#include "station/StationDataMgr.h"
 
 PyCallable_Make_InnerDispatcher(CharUnboundMgrService)
 
@@ -276,8 +277,11 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     if (IsStation(sConfig.character.startStation)) { // Skip if 0
         cdata.stationID = sConfig.character.startStation;
-        if (!m_db.GetLocationByStation(cdata.stationID, cdata))
-            _log(CLIENT__MESSAGE, "Could not find data for stationID %u.  Using Corp Default.", sConfig.character.startStation);
+        StationData sData;
+        stDataMgr.GetStationData(cdata.stationID, sData);
+        cdata.solarSystemID = sData.systemID;
+        cdata.constellationID = sData.constellationID;
+        cdata.regionID = sData.regionID;
     }
 
     std::string name = "";
