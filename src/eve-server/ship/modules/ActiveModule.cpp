@@ -171,6 +171,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_repeat = repeat;
     m_effectID = effectID;
+    m_isWarpSafe = sFxDataMgr.isWarpSafe(effectID);
     m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
     m_bubble = m_shipRef->GetPilot()->GetShipSE()->SysBubble();
     m_targMgr = m_shipRef->GetPilot()->GetShipSE()->TargetMgr();

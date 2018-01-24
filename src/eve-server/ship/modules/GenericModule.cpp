@@ -34,6 +34,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ModuleState = ModStates::ModuleStates::MOD_UNFITTED;
     m_ChargeState = ModStates::ChargeStates::CHG_UNLOADED;
 
+    m_isWarpSafe = false;
     m_overLoaded = false;
     m_chargeLoaded = false;
 
@@ -80,16 +81,17 @@ void GenericModule::Online()
                 m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
     }
-    // check for avalible resources to online this module.
+    // update avalible ship resources.
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
+    // why would either of these be negative??  i dont think either of them will hit.
     if (cpuNeed < 0) {
-        ; // make error for not enough cpu
+        _log(SHIP__MODULE_ERROR, "GenericModule::Online() %u(%s) - cpuNeed is negative: %i.",m_modRef->itemID(), m_modRef->itemName().c_str(), (int32)cpuNeed.get_int());
         m_modRef->PutOffline();
         return;
     }
     EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
-    if (cpuNeed < 0) {
-        ; // make error for not enough pg
+    if (pgNeed < 0) {
+        _log(SHIP__MODULE_ERROR, "GenericModule::Online() %u(%s) - pgNeed is negative: %i.",m_modRef->itemID(), m_modRef->itemName().c_str(), (int32)pgNeed.get_int());
         m_modRef->PutOffline();
         return;
     }
@@ -145,6 +147,7 @@ void GenericModule::Offline()
         return;
     }
 
+    m_isWarpSafe = false;
     m_ModuleState = ModStates::ModuleStates::MOD_DEACTIVATING;
 
     /* code for offlining module before MOD_OFFLINE state is set. */

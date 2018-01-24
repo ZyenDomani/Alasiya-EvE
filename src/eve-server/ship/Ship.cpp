@@ -241,7 +241,7 @@ void ShipItem::InitAttribs()
     SetAttribute(AttrVolume,                            GetPackagedVolume());
     SetAttribute(AttrCpuLoad,                           0);
     SetAttribute(AttrPowerLoad,                         0);
-    SetAttribute(AttrUpgradeLoad,                       0);
+    SetAttribute(AttrUpgradeLoad,                       0); // rig shit
 
     // Check for existence of attributes.  if not loaded then set them to default values:
     if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
@@ -260,7 +260,6 @@ void ShipItem::InitAttribs()
     if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance));
     if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance));
     if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance));
-
 }
 
 void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
@@ -719,7 +718,7 @@ void ShipItem::Undock() {
         UpdateEffects();
         //ClearModifiers();
         //ProcessEffects(true, IsSolarSystem(m_locationID));
-        UpdateModules();
+        UpdateModules(); //FailedToOnlineModulesOnUndock
     } else {
         _log(SHIP__MODULE_ERROR, "Undock() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
@@ -882,7 +881,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
     if (IsHiSlot(flag)) {
         // check avalible turret/launcher slots
         if (iRef->type().HasEffect(EVEEffectID::turretFitted)) {
-            if (!HasAttribute(AttrTurretSlotsLeft)) {
+            if (GetAttribute(AttrTurretSlotsLeft) < 1) {
                 std::map<std::string, PyRep *> args;
                 args["moduleName"] = new PyString(iRef->itemName());
                 throw PyException( MakeUserError("NotEnoughTurretSlots", args));
@@ -892,7 +891,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
                  */
             }
         } else if (iRef->type().HasEffect(EVEEffectID::launcherFitted)) {
-            if (!HasAttribute(AttrLauncherSlotsLeft)) {
+            if (GetAttribute(AttrLauncherSlotsLeft) < 1) {
                 std::map<std::string, PyRep *> args;
                 args["moduleName"] = new PyString(iRef->itemName());
                 throw PyException( MakeUserError("NotEnoughLauncherSlots", args));
@@ -917,9 +916,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
              * check avalible rig slots and ship upgrade capy
              */
         }
-        EvilNumber capy = 0, cost = 0, load = 0;
-        if ((!HasAttribute(AttrUpgradeCapacity, capy))
-        or  (!HasAttribute(AttrUpgradeSlotsLeft))) {
+        if (GetAttribute(AttrUpgradeSlotsLeft) < 1) {
             std::map<std::string, PyRep *> args;
             args["moduleType"] = new PyString(iRef->type().name());
             throw PyException( MakeUserError("NotEnoughUpgradeSlots", args));
@@ -928,15 +925,13 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
              */
         }
 
-        iRef->HasAttribute(AttrUpgradeCost, cost);
-        HasAttribute(AttrUpgradeLoad, load);
-        if (((load - cost) < 0) or (capy < (load - cost))) {
+        if ((GetAttribute(AttrUpgradeLoad) + iRef->GetAttribute(AttrUpgradeCost)) > GetAttribute(AttrUpgradeCapacity)) {
             std::map<std::string, PyRep *> args;
             args["moduleName"] = new PyString(iRef->itemName());
             throw PyException( MakeUserError("NotEnoughUpgradeCapacity", args));
             /*NotEnoughUpgradeCapacityBody'}(u'You cannot fit the {moduleName} because your ship cannot handle it. Your ship can only fit so many upgrades as each interferes with its calibration, and past a certain point your ship is rendered unusable.', None,
-                * {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
-                */
+             * {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+             */
         }
     }
 }
@@ -1034,7 +1029,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(iRef->flag());
         } else if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Subsystem)) {
-            if ((iRef->flag() >= flagRigSlot0) and (iRef->flag() <= flagRigSlot7))
+            if (IsRigSlot(iRef->flag()))
                 m_ModuleManager->UninstallRig(iRef->itemID());
             else
                 m_ModuleManager->UnfitModule(iRef->itemID());
