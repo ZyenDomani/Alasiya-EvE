@@ -105,7 +105,6 @@ typedef enum {
     standingCombatPodKill                   = 78,   //Combat - Pod Kill
     standingCombatOther                     = 79,
     standingAgentMissionBonus               = 80,
-    standingPirateKillSecurityStatus        = 89,
     standingDerivedModificationPleased      = 82,   //fromID was pleased
     standingDerivedModificationDispleased   = 83,   //fromID was displeased
     standingGMInterventionDirect            = 84,   //Mod directly by _int1. Reason: _msg

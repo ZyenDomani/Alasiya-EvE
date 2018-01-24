@@ -1,50 +1,50 @@
 //no macroguard on purpose
 
 
-COMMAND( spawnn, ROLE_SPAWN,
+COMMAND( spawnn, Acct::Role::SPAWN,
          "(typeID) - Spawn an NPC with the specified type." )
-COMMAND( spawn, ROLE_SPAWN,
+COMMAND( spawn, Acct::Role::SPAWN,
          "(typeID) - Spawn an NPC with the specified type." )
-COMMAND( search, ROLE_VIP,
+COMMAND( search, Acct::Role::VIP,
          "(text) - Search for items matching the specified query" )
-COMMAND( giveisk, ROLE_GMH,
+COMMAND( giveisk, Acct::Role::GMH,
          "(entityID) (amount) - Give the specified amount of cash to the specified character. 0=self." )
-COMMAND( pop, ROLE_ADMIN,
+COMMAND( pop, Acct::Role::ADMIN,
          "(type) (key) (value) - Send an OnRemoteMessage" )
-COMMAND( setbpattr, ROLE_CONTENT,
+COMMAND( setbpattr, Acct::Role::CONTENT,
          "(itemID) (copy) (materialLevel) (productivityLevel) (licensedProductionRunsRemaining) - Change blueprint's attributes." )
-COMMAND( getattr, ROLE_VIP,
+COMMAND( getattr, Acct::Role::VIP,
          "(itemID) (attributeID) - Retrieves attribute value." )
-COMMAND( setattr, ROLE_CONTENT,
+COMMAND( setattr, Acct::Role::CONTENT,
          "(itemID) (attributeID) (value) - Sets attributeID of itemID to value." )
-COMMAND( fit, ROLE_VIP,
+COMMAND( fit, Acct::Role::VIP,
         "(itemID) - Fits selected item to active ship." )
-COMMAND( giveallskills, ROLE_ADMIN,
+COMMAND( giveallskills, Acct::Role::ADMIN,
         "['me'|<characterID>] - gives ALL skills to designated character or self" )
-COMMAND( giveskill, ROLE_VIP,
+COMMAND( giveskill, Acct::Role::VIP,
          "(skillID) (level) - gives skillID to specified level." )
-COMMAND( online, ROLE_VIP,
+COMMAND( online, Acct::Role::VIP,
         "(entityID) - online all modules on the ship of the entityID. entityID=me=>online my modules" )
-COMMAND( unload, ROLE_VIP,
+COMMAND( unload, Acct::Role::VIP,
         "(entityID) (itemID) - unload module itemID from entityID (itemID=all=>unload all) (entityID=me=>my modules)" )
-COMMAND( repairmodules, ROLE_HEALSELF,
+COMMAND( repairmodules, Acct::Role::HEALSELF,
         "(entityID) (itemID) - repair the modules of the character with the entityID" )
-COMMAND( giveskills, ROLE_ADMIN,
+COMMAND( giveskills, Acct::Role::ADMIN,
         "(itemID) - gives skills to character." )
-COMMAND( dogma, ROLE_ADMIN,
+COMMAND( dogma, Acct::Role::ADMIN,
         "(attribute) - change item attribute value" )
-COMMAND( kick, ROLE_ADMIN,
+COMMAND( kick, Acct::Role::ADMIN,
         "(charName) - kicks [charName] from the server")
-COMMAND( ban, ROLE_ADMIN,
+COMMAND( ban, Acct::Role::ADMIN,
         "(charName) - bans player's account from the server")
-COMMAND( unban, ROLE_ADMIN,
+COMMAND( unban, Acct::Role::ADMIN,
         "(charName) - removes ban on player's account")
 
 /*
-COMMAND( entity, ROLE_ADMIN,
+COMMAND( entity, Acct::Role::ADMIN,
         "(entityID) - unknown" )
-COMMAND( chatban, ROLE_ADMIN,
+COMMAND( chatban, Acct::Role::ADMIN,
         "(characterID) - bans character from channel" )
-COMMAND( whois, ROLE_ADMIN,
+COMMAND( whois, Acct::Role::ADMIN,
         "(characterName) - returns information on character")
 */

@@ -221,6 +221,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     }
 
     m_char->SetClient(this);
+    m_char->VerifySP();
     m_char->UpdateSkillQueue();
     /*
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
@@ -386,10 +387,12 @@ void Client::ProcessClient() {
             switch (m_clientState) {
                 case ClientState::csDock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
+                    m_setStateSent = false;
                     DockToStation();
                 } break;
                 case ClientState::csUndock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
+                    m_setStateSent = false;
                     SetBallPark();
                 } break;
                 case ClientState::csKilled: {
@@ -1798,7 +1801,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.userid = GetUserID();   //5654387 accountID?
         ack.maxSessionTime = new PyNone();
         ack.userType = 1;
-        ack.role = ROLE_PLAYER | ROLE_NEWBIE; /* account role is not defined yet.  live returns these */
+        ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE; /*  live returns these */
         ack.address = GetAddress();
         ack.inDetention = new PyNone();
     // no client update available

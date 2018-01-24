@@ -1,40 +1,40 @@
 
 
-COMMAND( create, ROLE_VIP,
+COMMAND( create, Acct::Role::VIP,
          "(itemID) [count] - Create count or 1 of the specified item." )
-COMMAND( createitem, ROLE_ADMIN,
+COMMAND( createitem, Acct::Role::ADMIN,
          "(itemID) [count] - Create count or 1 of the specified item.(from Insider)" )
-COMMAND( goto, ROLE_VIP,
+COMMAND( goto, Acct::Role::VIP,
          "(x) (y) (z) - Jump to the specified position in space. Stopped." )
-COMMAND( translocate, ROLE_VIP,
+COMMAND( translocate, Acct::Role::VIP,
          "(entityID) - Translocate to the specified entity" )
-COMMAND( tr, ROLE_VIP,
+COMMAND( tr, Acct::Role::VIP,
          "(who) (entityID) - Translocate the specified person to the specified entity" )
-COMMAND( halt, ROLE_VIP,
+COMMAND( halt, Acct::Role::VIP,
          "- Immediatly stops ship, setting Destiny::State = dstball_halt.")
-COMMAND( location, ROLE_PLAYER,
+COMMAND( location, Acct::Role::PLAYER,
          "- Gives you back your current location in space." )
-COMMAND( syncloc, ROLE_PLAYER,
+COMMAND( syncloc, Acct::Role::PLAYER,
          "- Synchonizes your location in client with location on server." )
-COMMAND( update, ROLE_CONTENT,
+COMMAND( update, Acct::Role::CONTENT,
          "- Sets Current Position according to Server's DestinyManager, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
-COMMAND( sendstate, ROLE_CONTENT,
+COMMAND( sendstate, Acct::Role::CONTENT,
          "- Sends DoDestinyUpdate SetState." )
-COMMAND( addball, ROLE_PLAYER,
+COMMAND( addball, Acct::Role::PLAYER,
          "- Sends BubbleManager AddBalls.")
-COMMAND( addball2, ROLE_PLAYER,
+COMMAND( addball2, Acct::Role::PLAYER,
          "- Sends BubbleManager AddBalls2.")
-COMMAND( unspawn, ROLE_SPAWN,
+COMMAND( unspawn, Acct::Role::SPAWN,
          "(itemID) - remove and delete itemID" )
-COMMAND( kill, ROLE_VIP,
+COMMAND( kill, Acct::Role::VIP,
          "(entityID) - insta-pops a destroyable ship, drone, structure, if applicable")
-COMMAND( killallnpcs, ROLE_ADMIN,
+COMMAND( killallnpcs, Acct::Role::ADMIN,
          " - insta-pops all NPC ships in the current bubble")
-COMMAND( cloak, ROLE_VIP,
+COMMAND( cloak, Acct::Role::VIP,
          " - instantly and unconditionally toggles cloak state of your vessel")
-COMMAND( sov, ROLE_CONTENT,
+COMMAND( sov, Acct::Role::CONTENT,
          " - unknown at this time")
-COMMAND( pos, ROLE_PROGRAMMER,
+COMMAND( pos, Acct::Role::PROGRAMMER,
          " - unknown at this time")
-COMMAND( hop, ROLE_CONTENT,
+COMMAND( hop, Acct::Role::CONTENT,
          " - unknown at this time")

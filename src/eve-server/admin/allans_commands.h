@@ -1,56 +1,56 @@
 
 
- COMMAND( spawndungeon, ROLE_CONTENT,
+ COMMAND( spawndungeon, Acct::Role::CONTENT,
           " - spawns dungeon <dungeonID> in your system, with BM to location")
- COMMAND( removedungeon, ROLE_CONTENT,
+ COMMAND( removedungeon, Acct::Role::CONTENT,
           " - removes identified dungeon")
- COMMAND( siglist, ROLE_CONTENT,
+ COMMAND( siglist, Acct::Role::CONTENT,
           " - lists all active signatures, with location, name, and type." )
- COMMAND( heal, ROLE_HEALSELF,
+ COMMAND( heal, Acct::Role::HEALSELF,
          "(entityID) - heal the character with the entityID" )
- COMMAND( status, ROLE_PLAYER,
+ COMMAND( status, Acct::Role::PLAYER,
           " - note giving you detailed ship status information")
- COMMAND( secstatus, ROLE_PLAYER,
+ COMMAND( secstatus, Acct::Role::PLAYER,
           " - note giving you this character's current security status")
- COMMAND( list, ROLE_PLAYER,
+ COMMAND( list, Acct::Role::PLAYER,
           " - gives a list of all dynamic entities and players and their destinyState in this bubble")
- COMMAND( commandlist, ROLE_PLAYER,
+ COMMAND( commandlist, Acct::Role::PLAYER,
           " - gives a list of all game commands, required role, and a description")
- COMMAND( destinyvars, ROLE_GMH,
+ COMMAND( destinyvars, Acct::Role::GMH,
           " - shows some current destiny variables")
- COMMAND( shipvars, ROLE_GMH,
+ COMMAND( shipvars, Acct::Role::GMH,
           " - shows other current destiny variables")
- COMMAND( fixconnections, ROLE_WORLDMOD,
+ COMMAND( fixconnections, Acct::Role::WORLDMOD,
           " - updates current (incorrect) db table for mapConnections")
- COMMAND( shutdown, ROLE_GMH,
+ COMMAND( shutdown, Acct::Role::GMH,
           " - save all items, kick all connections, and halt server. immediate command." )
- COMMAND( beltlist, ROLE_PROGRAMMER,
+ COMMAND( beltlist, Acct::Role::PROGRAMMER,
           " - list all roids in current belt's inventory." )
- COMMAND( inventory, ROLE_PROGRAMMER,
+ COMMAND( inventory, Acct::Role::PROGRAMMER,
           " - list all items in current location's inventory (either station or solsystem)." )
- COMMAND( shipinventory, ROLE_PROGRAMMER,
+ COMMAND( shipinventory, Acct::Role::PROGRAMMER,
           " - list all items in current ship's inventory." )
- COMMAND( showsession, ROLE_PROGRAMMER,
+ COMMAND( showsession, Acct::Role::PROGRAMMER,
           " - list current session values." )
- COMMAND( skilllist, ROLE_PROGRAMMER,
+ COMMAND( skilllist, Acct::Role::PROGRAMMER,
           " - list all skills loaded for character." )
- COMMAND( shipdna, ROLE_PROGRAMMER,
+ COMMAND( shipdna, Acct::Role::PROGRAMMER,
           " - show current ship DNA." )
- COMMAND( targlist, ROLE_PROGRAMMER,
+ COMMAND( targlist, Acct::Role::PROGRAMMER,
           " - show current ship target list." )
- COMMAND( bubblelist, ROLE_PROGRAMMER,
+ COMMAND( bubblelist, Acct::Role::PROGRAMMER,
           " - show current objects in bubble, their destiny state, and movement speed." )
- COMMAND( track, ROLE_PROGRAMMER,
+ COMMAND( track, Acct::Role::PROGRAMMER,
           " - toggles current object movement tracking state." )
- COMMAND( attrlist, ROLE_PROGRAMMER,
+ COMMAND( attrlist, Acct::Role::PROGRAMMER,
           " - show current attributes for itemID given in args." )
- COMMAND( warpto, ROLE_GMH,
+ COMMAND( warpto, Acct::Role::GMH,
           " - warp to an object using its itemID." )
- COMMAND( fleetboost, ROLE_PLAYER,
+ COMMAND( fleetboost, Acct::Role::PLAYER,
           " - note giving you detailed fleet boost information")
- COMMAND( fleetinvite, ROLE_PLAYER,
+ COMMAND( fleetinvite, Acct::Role::PLAYER,
           " - sets fleet invite scope to <arg> or none")
- COMMAND( getposition, ROLE_PLAYER,
+ COMMAND( getposition, Acct::Role::PLAYER,
           " - gets positional data between ship and moon (for pos placement testing)")
- COMMAND( bubbletrack, ROLE_PROGRAMMER,
+ COMMAND( bubbletrack, Acct::Role::PROGRAMMER,
           " - enable/disable bubble outline tracking." )

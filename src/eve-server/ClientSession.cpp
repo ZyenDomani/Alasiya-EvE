@@ -38,7 +38,7 @@ ClientSession::ClientSession()
 mDirty(false)
 {
     /* default value of attribute */
-    PyTuple* tuple = new_tuple(new PyNone(), new PyLong(ROLE_PLAYER | ROLE_NEWBIE));
+    PyTuple* tuple = new_tuple(new PyNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE));
     mSession->SetItemString("role", tuple);
 }
 

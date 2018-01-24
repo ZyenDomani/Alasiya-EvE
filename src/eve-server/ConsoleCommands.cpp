@@ -251,22 +251,22 @@ bool ConsoleCommand::Process() {
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
-                sLog.Warning("         ROLE_DEV", " %" PRIi64 "(%p)", ROLE_DEV, ROLE_DEV);
-                sLog.Warning("         ROLE_STD", " %" PRIi64 "(%p)", ROLE_STD, ROLE_STD);
-                sLog.Warning("         ROLE_VIP", " %" PRIi64 "(%p)", ROLE_VIP, ROLE_VIP);
-                sLog.Warning("        ROLE_VIP+", " %" PRIi64 "(%p)", ROLE_ELEVATEDPLAYER, ROLE_ELEVATEDPLAYER);
-                sLog.Warning("        ROLE_VIEW", " %" PRIi64 "(%p)", ROLE_VIEW, ROLE_VIEW);
-                sLog.Warning("        ROLE_BOSS", " %" PRIi64 "(%p)", ROLE_BOSS, ROLE_BOSS);
-                sLog.Warning("       ROLE_SLASH", " %" PRIi64 "(%p)", ROLE_SLASH, ROLE_SLASH);
-                sLog.Warning("     ROLE_CREATOR", " %" PRIi64 "(%p)", ROLE_CREATOR, ROLE_CREATOR);
+                sLog.Warning("     Acct::Role::DEV", " %" PRIi64 "(%p)", Acct::Role::DEV, Acct::Role::DEV);
+                sLog.Warning("     Acct::Role::STD", " %" PRIi64 "(%p)", Acct::Role::STD, Acct::Role::STD);
+                sLog.Warning("     Acct::Role::VIP", " %" PRIi64 "(%p)", Acct::Role::VIP, Acct::Role::VIP);
+                sLog.Warning("    Acct::Role::VIP+", " %" PRIi64 "(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
+                sLog.Warning("    Acct::Role::VIEW", " %" PRIi64 "(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
+                sLog.Warning("    Acct::Role::BOSS", " %" PRIi64 "(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
+                sLog.Warning("   Acct::Role::SLASH", " %" PRIi64 "(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
+                sLog.Warning(" Acct::Role::CREATOR", " %" PRIi64 "(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
                 sLog.White("", "");
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
-                sLog.Warning("         Role_All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
-                sLog.Warning("        Role_Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
-                sLog.Warning("       Role_Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
-                sLog.Warning("      Role_Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
-                sLog.Warning("     Role_Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
-                sLog.Warning("    Role_Starbase", " %" PRIi64 "(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
+                sLog.Warning("     Corp::Role::All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
+                sLog.Warning("    Corp::Role::Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
+                sLog.Warning("   Corp::Role::Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
+                sLog.Warning("  Corp::Role::Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
+                sLog.Warning(" Corp::Role::Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
+                sLog.Warning("Corp::Role::Starbase", " %" PRIi64 "(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
             } else if (strncmp(buf, "o", 1) == 0) {
                 pCommand->ListCommands();
             } else if (strncmp(buf, "t", 1) == 0) {

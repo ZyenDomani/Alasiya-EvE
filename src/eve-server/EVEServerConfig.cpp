@@ -101,7 +101,7 @@ EVEServerConfig::EVEServerConfig()
     bpTimes.ResRE = 1.0;
 
     // account
-    account.autoAccountRole = ROLE_STD;
+    account.autoAccountRole = Acct::Role::STD;
     account.loginMessage = "";
 
     // character
