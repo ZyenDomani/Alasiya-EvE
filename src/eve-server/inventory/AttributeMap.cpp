@@ -165,7 +165,7 @@ void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*t
 {
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
-        mAttributes.insert(std::make_pair(attrID, num));
+        mAttributes.emplace(attrID, num);
         if (nofity)
             Add(attrID, num);
         return;

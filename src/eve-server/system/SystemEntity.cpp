@@ -195,12 +195,19 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
         sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), m_self->itemID(), killBonus, oldSec, secAward);
         pChar->secStatusChange( secAward );
-        std::string msg = "Status Change for killing pirates in ";
-        msg += m_system->GetName();
-        if (m_self->HasPilot())
+        std::string msg = "Status Change for killing";
+        if (m_self->HasPilot()) {
+            msg += m_self->GetPilot()->GetName();
+            msg += " in ";
+            msg += m_system->GetName();
             pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingCombatShipKill, secAward, msg);
-        else
-            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingPirateKillSecurityStatus, secAward, msg);
+        } else {
+            msg += " pirates in ";
+            msg += m_system->GetName();
+            pChar->SaveStandingChanges( ownerCONCORD,  pChar->itemID(), standingLawEnforcement, secAward, msg);
+            // decrease standings with faction of this npc kill
+            pChar->SaveStandingChanges( m_self->ownerID(),  pChar->itemID(), standingCombatShipKill, -secAward, msg);
+        }
     }
 }
 
