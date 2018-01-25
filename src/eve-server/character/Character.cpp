@@ -1025,7 +1025,7 @@ void Character::PayBounty(CharacterRef cRef)
 {
     std::string reason = "Bounty paid for the killing of ";
     reason += cRef->itemName();
-    AccountService::TranserFunds(ownerCONCORD, m_itemID, cRef->bounty(), reason, Journal::EntryType::Bounty);
+    AccountService::TranserFunds(ownerCONCORD, m_itemID, cRef->bounty(), reason, Journal::EntryType::Bounty, cRef->itemID());
 }
 
 void Character::SetLoginTime()
