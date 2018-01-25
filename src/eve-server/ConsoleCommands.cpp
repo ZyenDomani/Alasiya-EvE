@@ -42,19 +42,21 @@ m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
 
 void ConsoleCommand::Initialize(CommandDispatcher* cd)
 {
+    m_dbError = false;
+    m_haltServer = false;
     pCommand = cd;
 	m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);	// change minutes to ms for timer
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
 	UpdateStatus();	//initial status setting
-    m_haltServer = false;
     sLog.Blue( "   ConsoleCommand", "Console Commands Initialized." );
     sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
 }
 
 bool ConsoleCommand::Process() {
     if (m_haltServer) {
-        sEntityList.Shutdown();
+        if (!m_dbError)
+            sEntityList.Shutdown();
         return false;
     }
 	if (m_updateTimer.Check())

@@ -545,8 +545,9 @@ int main( int argc, char* argv[] )
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
+    sLog.Error("       ServerInit", "Main Loop starting.");
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
-    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.  Main Loop starting.");
+    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -589,9 +590,10 @@ int main( int argc, char* argv[] )
     /** @todo  update this to have a ShutDown() method, with these items.
      * also look into calling it when a signal is caught, for cleanup.
      */
-    sLog.Warning("   ServerShutdown", "Main loop has stopped.  Server shutting down." );
-    ServiceDB::SetServerOnlineStatus(false);
-
+    sLog.Warning("   ServerShutdown", "Main loop has stopped." );
+    sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
+    if (!sConsole.IsDbError())
+        ServiceDB::SetServerOnlineStatus(false);
     /* stop TCP listener */
     tcps.Close();
     sLog.Warning("   ServerShutdown", "TCP listener stopped." );
@@ -602,7 +604,8 @@ int main( int argc, char* argv[] )
     sEntityList.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
     /* Shut down the Item system */
-    sItemFactory.SaveItems();
+    if (!sConsole.IsDbError())
+        sItemFactory.SaveItems();
     sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
     sItemFactory.Close();
     /* Close the service manager */
@@ -629,9 +632,6 @@ int main( int argc, char* argv[] )
 }
 
 static void CleanUp() {
-    /** @todo  update this to have a ShutDown() method, with these items.
-     * also look into calling it when a signal is caught, for cleanup.
-     */
     sLog.Warning("   ServerShutdown", "Main loop stopped" );
     ServiceDB::SetServerOnlineStatus(false);
 

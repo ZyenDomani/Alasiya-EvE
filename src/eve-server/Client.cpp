@@ -152,8 +152,10 @@ Client::~Client() {
         // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
         m_ship->LogOut();
 
-        ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
-        ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
+        if (!sConsole.IsDbError()) {
+            ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
+            ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
+        }
         // LSC logout
         if (!sConsole.IsShutdown())
             for (auto cur : m_channels)
@@ -163,7 +165,7 @@ Client::~Client() {
         m_TS = nullptr;
         m_system = nullptr;
 
-        sEntityList.RemoveSID(GetSessionID());
+        //sEntityList.RemoveSID(GetSessionID());
 
         SafeDelete(m_scan);
         SafeDelete(pShipSE);
@@ -949,7 +951,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_char->VisitSystem(toData.systemID);
 
     // call Stop() per packet sniff
-    pShipSE->DestinyMgr()->Stop();
+    pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
     pShipSE->DestinyMgr()->SendJumpOut(fromGate);
     //  show gate animation in from gate.   -working -allan 15Nov15
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);

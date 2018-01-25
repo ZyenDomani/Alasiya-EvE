@@ -53,10 +53,12 @@ class ConsoleCommand
     void Initialize(CommandDispatcher* cd);
 
 	void UpdateStatus();
-    void HaltServer()           { m_haltServer = true; }
+    void HaltServer(bool dbError=false)           { m_haltServer = true; m_dbError = dbError; }
 
     bool Process();
     bool IsShutdown()           { return m_haltServer; }
+    // avoid using db after it has lost connection.
+    bool IsDbError()            { return m_dbError; }
 
   private:
 	  // we do NOT own any of these...
@@ -70,6 +72,7 @@ class ConsoleCommand
     struct timeval tv;
     Timer m_updateTimer;
     bool m_haltServer;
+    bool m_dbError;
 
     void GetUpTime(uint8 *w, uint8 *d, uint8 *h, uint8 *m, uint8 *s);
     void SendMessage(const char *msg);

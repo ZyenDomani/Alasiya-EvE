@@ -35,6 +35,7 @@
 
 // this group is to enable server shutdown (and online player notification)
 //      in the case of db lost connection
+#define sConsole ( ConsoleCommand::get() )
 #define sEntityList (EntityList::get())
 class Client {
 public:
@@ -44,9 +45,17 @@ class EntityList
 : public Singleton<EntityList>
 {
 public:
-    void Shutdown();
     void GetClients(std::vector<Client*>& result) const;
 };
+class ConsoleCommand
+: public Singleton<ConsoleCommand>
+{
+public:
+    bool IsDbError();
+    void HaltServer(bool dbError=false);
+};
+
+
 
 // this is used to enable socket communication (may not be needed)
 enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
@@ -60,6 +69,7 @@ DBcore::DBcore()
 }
 
 void DBcore::Close() {
+    pStatus = Closed;
     mysql_close(mysql);
     mysql_library_end();
     mysql_thread_end();
@@ -69,14 +79,14 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
 {
     if (mysql == nullptr)
         mysql = mysql_init(nullptr);    // try again
-        if (mysql == nullptr) {
-            sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned nullptr");
-            return;
-        }
-        if (pStatus == Connected)
-            return;
+    if (mysql == nullptr) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
+        return;
+    }
+    if (pStatus == Connected)
+        return;
 
-        pHost = host;
+    pHost = host;
     pUser = user;
     pPassword = password;
     pDatabase = database;
@@ -108,34 +118,63 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     int32 flags = CLIENT_FOUND_ROWS; //2
     if (pCompress)
         flags |= CLIENT_COMPRESS; //32
-        // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
-        if (pSSL)
-            flags |= CLIENT_SSL;
-        if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
-            pStatus = Error;
-            *errnum = mysql_errno(mysql);
-            if (errbuf != nullptr)
-                snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
-            DBerror err;
-            err.SetError(*errnum, errbuf);
-            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
-            return;
-        } else {
-            pStatus = Connected;
-        }
+    // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
+    if (pSSL)
+        flags |= CLIENT_SSL;
+    if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
+        pStatus = Error;
+        *errnum = mysql_errno(mysql);
+        if (errbuf != nullptr)
+            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
+        DBerror err;
+        err.SetError(*errnum, errbuf);
+        sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+        return;
+    } else {
+        pStatus = Connected;
+    }
 
-        // Setup character set we wish to use
-        if (mysql_set_character_set(mysql, "utf8") != 0) {
-            pStatus = Error;
-            *errnum = mysql_errno(mysql);
-            if (errbuf != nullptr)
-                snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
-            DBerror err;
-            err.SetError(*errnum, errbuf);
-            sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
-        }
+    // Setup character set we wish to use
+    if (mysql_set_character_set(mysql, "utf8") != 0) {
+        pStatus = Error;
+        *errnum = mysql_errno(mysql);
+        if (errbuf != nullptr)
+            snprintf(errbuf, MYSQL_ERRMSG_SIZE, "#%i: %s", mysql_errno(mysql), mysql_error(mysql));
+        DBerror err;
+        err.SetError(*errnum, errbuf);
+        sLog.Error( "       ServerInit", "Unable to connect to the database: %s", err.c_str() );
+    }
 
-        mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void *)&prot_type);
+    mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void *)&prot_type);
+}
+
+bool DBcore::Reconnect()
+{
+    _log(DATABASE__MESSAGE, "DBCore attempting to recover...");
+    Close();
+    mysql = mysql_init(nullptr);
+    uint errnum = 0;
+    char errbuf[1024];
+    errbuf[0] = 0;
+    MutexLock lock(MDatabase);
+    Connect(&errnum, errbuf);
+
+    if (pStatus == Connected)
+        _log(DATABASE__MESSAGE, "DBCore recovery successful.  Continuing.");
+
+
+    return (pStatus == Connected);
+}
+
+void DBcore::CallShutdown()
+{
+    _log(DATABASE__MESSAGE, "DBCore recovery failed.  Server restarting.");
+    std::vector<Client*> list;
+    sEntityList.GetClients(list);
+    for (auto cur : list)
+        cur->SendInfoModalMsg("DBCore lost connection and recovery failed.  Server restarting.");
+    Sleep(4000);    // pause running thread to allow players (if any) to view msg
+    sConsole.HaltServer(true);
 }
 
 // Sends the MySQL server a ping
@@ -238,29 +277,27 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
     return true;
 }
 
-bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry)
+bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry/*true*/)
 {
     if (mysql == nullptr) {
+        if (sConsole.IsDbError())
+            return false;
         pStatus = Error;
-        codelog(DATABASE__ERROR, "DBCore Query - mysql = null");
-        _log(DATABASE__MESSAGE, "mysql = null.  Server restarting.");
-        std::vector<Client*> list;
-        sEntityList.GetClients(list);
-        for (auto cur : list)
-            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
-        sEntityList.Shutdown();
+        codelog(DATABASE__ERROR, "DBCore - mysql = null");
+        if (Reconnect())
+            return DoQuery_locked(err, query, querylen, false);
+        CallShutdown();
         return false;
     }
 
     if (pStatus != Connected) {
-        codelog(DATABASE__ERROR, "DBCore Query - DB Status != Connected");
-        /** @todo  this needs access to EntityList, but cannot due to include problems */
-        _log(DATABASE__MESSAGE, "DataBase lost connection.  Server restarting.");
-        std::vector<Client*> list;
-        sEntityList.GetClients(list);
-        for (auto cur : list)
-            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
-        sEntityList.Shutdown();
+        if (sConsole.IsDbError())
+            return false;
+        codelog(DATABASE__ERROR, "DBCore - Status != Connected");
+        _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
+        if (Reconnect())
+            return DoQuery_locked(err, query, querylen, false);
+        CallShutdown();
         return false;
     }
 
@@ -270,10 +307,10 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
         if (num == CR_SERVER_GONE_ERROR)
             pStatus = Error;
 
-        if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR))
-        {
-            _log(DATABASE__MESSAGE, "DBCore Lost connection, attempting to recover....");
-            return DoQuery_locked(err, query, querylen, false);
+        if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR)) {
+            if (Reconnect())
+                return DoQuery_locked(err, query, querylen, false);
+            CallShutdown();
         }
 
         pStatus = Error;
@@ -282,7 +319,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
         return false;
     }
 
-    _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+    if (is_log_enabled(DATABASE__QUERIES))
+        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     err.ClearError();
     return true;
