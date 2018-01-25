@@ -30,10 +30,9 @@ void ManagerDB::GetTypeAttributes(DBQueryResult& res)
     _log(DATABASE__RESULTS, "GetTypeAttributes returned %u items", res.GetRowCount());
 }
 
-/** @todo these are incomplete.  not sure where data came from, but we DO have a bulkdata fileID for it.  */
 PyObject *ManagerDB::GetEntryTypes() {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT entryTypeID, entryTypeName, description FROM jnlEntryTypeIDs"))    {
+    if (!sDatabase.RunQuery(res, "SELECT entryTypeID, entryTypeName, entryTypeNameID FROM jnlEntryTypeIDs"))    {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
@@ -45,7 +44,7 @@ PyObject *ManagerDB::GetEntryTypes() {
 
 PyObject *ManagerDB::GetKeyMap() {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT keyID, keyType, keyName, description FROM actKeyTypes")) {
+    if (!sDatabase.RunQuery(res, "SELECT keyID, keyType, keyName, keyNameID FROM actKeyTypes")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }

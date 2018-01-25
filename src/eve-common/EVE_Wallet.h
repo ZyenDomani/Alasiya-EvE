@@ -66,7 +66,6 @@ namespace Account {
 
 //  -allan 20Dec14    UD 9Dec17
 // '*' denotes populated referenceID field (and with what)  - used for popup descriptions
-/** @todo these need to be updated in DB and MUST be sent to client in bulkdata or journal "type" column will be empty */
 namespace Journal {
     namespace EntryType {
         enum {
@@ -87,7 +86,7 @@ namespace Journal {
             OfficeRentalFee = 13,     // * EVE System    1
             FactorySlotRentalFee = 14,
             RepairBill = 15,
-            Bounty = 16,     // * character ID killed
+            Bounty = 16,     // * characterID with bounty
             BountyPrize = 17,     // * NPC ID
             Insurance = 19,     // * Destroyed Ship Type ID
             MissionExpiration = 20,

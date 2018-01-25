@@ -70,10 +70,10 @@
 #define minControlBunker        80000000
 #define maxControlBunker        80099999
 #define maxNPCItem              89999999
-#define minCharacter            90000000
+#define minCharacter            90000000        // client NPC def ends here
 #define maxCharacter            97999999
 #define minPCCorporation        98000000        // player corps start here
-#define minAlliance             99000000
+#define minAlliance             99000000        // alliances start here
 #define minOffice               100000000
 #define minTempItemID           110000000
 #define minPIStructure          130000000
