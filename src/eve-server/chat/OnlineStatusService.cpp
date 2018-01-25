@@ -26,6 +26,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "EntityList.h"
 #include "chat/OnlineStatusService.h"
 
 PyCallable_Make_InnerDispatcher(OnlineStatusService)
@@ -44,6 +45,7 @@ OnlineStatusService::~OnlineStatusService() {
     delete m_dispatch;
 }
 
+/** @todo finish this */
 PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
 /*
 21:35:16 L OnlineStatusService::Handle_GetInitialState(): size= 0
@@ -91,22 +93,28 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
 
     DBRowDescriptor *header = new DBRowDescriptor();
     header->AddColumn("contactID", DBTYPE_I4);
-    header->AddColumn("online", DBTYPE_I4);
+    header->AddColumn("online", DBTYPE_BOOL);
     CRowSet *rowset = new CRowSet( &header );
+    // loop thru contact list and fill following row accordingly
+    //PyPackedRow* row = rowset->NewRow();
+    //row->SetField(new PyInt(*charID*), PyStatic.NewFalse()); // charID/online
     return rowset;
 }
 
 PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
-
-  sLog.White( "OnlineStatusService::Handle_GetOnlineStatus()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
     // this is used to query the online state of all contacts
-
-    DBRowDescriptor *header = new DBRowDescriptor();
-    header->AddColumn("contactID", DBTYPE_I4);
-    header->AddColumn("online", DBTYPE_I4);
-    CRowSet *rowset = new CRowSet( &header );
-    return rowset;
+    /** @todo this currently throws an error.  dont know why yet.
+     *
+     * /client/script/ui/shared/comtool/onlinestatus.py(56) GetOnlineStatus
+     *        self = <svc.OnlineStatus instance at 0x4529EC88>
+     *        fetch = True
+     *        charID = <Row charID:90000000>
+     * TypeError: unhashable instance
+     */
+    Client* pClient = sEntityList.FindClientByCharID(call.tuple->GetItem(0)->AsInt()->value());
+    if (pClient == nullptr)
+        return PyStatic.NewFalse();
+    return PyStatic.NewTrue();
 }
 
 /*
@@ -115,7 +123,7 @@ PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
  *        fetch = True
  *        charID = 140000000
  * TypeError: an integer is required
- * 
+ *
 ==================== Sent from Server 81 bytes
 
 [PyObjectData Name: macho.Notification]
