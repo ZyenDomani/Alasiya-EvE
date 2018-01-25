@@ -249,7 +249,8 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
      */
     if ((fraction == m_userSpeedFraction) and (!startMovement))
         return;
-    _log(DESTINY__MOVE_TRACE, "Destiny::SetSpeedFraction() - %s(%u):  fraction: %.2f, start: %i, stop: %i",
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__MOVE_TRACE, "Destiny::SetSpeedFraction() - %s(%u):  fraction: %.2f, start: %i, stop: %i",
                  mySE->GetName(), mySE->GetID(), fraction, startMovement, m_stop );
 
     // this is to start movement when setting fractional speeds from speedo in client.
@@ -411,7 +412,8 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             m_currentSpeedFraction = (1 - std::exp(-0.01 / m_shipAgility));
             m_velocity = m_shipHeading * m_maxSpeed * m_currentSpeedFraction;
         }
-        _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u): Speed Change - USF: %.2f, ASF: %.2f, CSF: %.2f, PSF: %.2f, prevSpeed: %.2f", \
+        if (is_log_enabled(DESTINY__MOVE_TRACE))
+            _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u): Speed Change - USF: %.2f, ASF: %.2f, CSF: %.2f, PSF: %.2f, prevSpeed: %.2f", \
                  mySE->GetName(), mySE->GetID(), m_userSpeedFraction, m_activeSpeedFraction, m_currentSpeedFraction, m_prevSpeedFraction, m_prevSpeed);
     } else if ((m_currentSpeedFraction) or (m_prevSpeedFraction)) {
         if (isMoving) { //stop movement
@@ -453,7 +455,8 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             return;
         } break;
     }
-    _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u):  %s.  AccelTime: %.2f, USF: %.2f, ASF: %.2f, CSF: %.2f, PSF: %.2f", \
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__MOVE_TRACE, "Destiny::UpdateVelocity - %s(%u):  %s.  AccelTime: %.2f, USF: %.2f, ASF: %.2f, CSF: %.2f, PSF: %.2f", \
             mySE->GetName(), mySE->GetID(), msg.c_str(), m_shipMaxAccelTime, m_userSpeedFraction, m_activeSpeedFraction, m_currentSpeedFraction, m_prevSpeedFraction);
 }
 
@@ -541,8 +544,9 @@ void DestinyManager::Halt() {
     if ((m_shipMaxAccelTime < 1.0) and (mySE->IsDynamicEntity()))
         m_shipMaxAccelTime = (-std::log(0.0001) * m_shipAgility);
 
-    _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - %s(%u): m_shipHeading: %.3f,%.3f,%.3f", \
-        mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__MOVE_TRACE, "Destiny::Halt() - %s(%u): m_shipHeading: %.3f,%.3f,%.3f", \
+                mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
 // Global collision methods
@@ -711,7 +715,8 @@ void DestinyManager::MoveObject() {
         m_accel = m_decel = false;
         if (m_prevSpeed) {
             speed = m_prevSpeed - ((m_prevSpeed - m_maxSpeed) * m_currentSpeedFraction);
-            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has deceled from %.2fm/s to %.2fm/s of max %.2f in %.3fs.", \
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) has deceled from %.2fm/s to %.2fm/s of max %.2f in %.3fs.", \
                     mySE->GetName(), mySE->GetID(), m_prevSpeed, speed, m_maxSpeed, timeStamp);
             m_prevSpeed = 0.0f;
             m_prevSpeedFraction = 0.0f;
@@ -727,7 +732,8 @@ void DestinyManager::MoveObject() {
             //ship has reached full stop
             // update position one final time (for last bit of drift) and exit movement functions by calling Halt()
             SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);
-            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is at full stop after %.3f seconds.", \
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is at full stop after %.3f seconds.", \
                     mySE->GetName(), mySE->GetID(), timeStamp);
             Halt();
             return;
@@ -802,10 +808,12 @@ void DestinyManager::MoveObject() {
     }
 
     if ((m_prevSpeed) or (m_prevSpeedFraction)) {
-        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f pSpeed:%.2f(%.3f), sec: %.3f).", \
+        if (is_log_enabled(DESTINY__MOVE_TRACE))
+            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f pSpeed:%.2f(%.3f), sec: %.3f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_currentSpeedFraction, m_activeSpeedFraction, m_prevSpeed, m_prevSpeedFraction, timeStamp);
     } else {
-        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f  sec: %.3f).", \
+        if (is_log_enabled(DESTINY__MOVE_TRACE))
+            _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f  sec: %.3f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_currentSpeedFraction, m_activeSpeedFraction, timeStamp);
     }
 
@@ -813,7 +821,8 @@ void DestinyManager::MoveObject() {
     m_velocity = m_shipHeading * speed;
     SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
 
-    //_log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) Pos:%.2f,%.2f,%.2f  Vel:%.3f,%.3f,%.3f  Head:%.3f,%.3f,%.3f", \
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) Pos:%.2f,%.2f,%.2f  Vel:%.3f,%.3f,%.3f  Head:%.3f,%.3f,%.3f", \
             mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z, m_velocity.x, m_velocity.y, m_velocity.z,\
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 
@@ -874,10 +883,12 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
         m_shipHeading = toVec;
         return false;
     }
-    _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() - %s(%u): dot: %.5f, radians:%.5f, degrees:%.3f",\
+    if (is_log_enabled(DESTINY__MOVE_TRACE)) {
+        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() - %s(%u): dot: %.5f, radians:%.5f, degrees:%.3f",\
             mySE->GetName(), mySE->GetID(), dot, m_radians, degrees);
-    //_log(DESTINY__TURN_TRACE, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f", \
+        _log(DESTINY__TURN_TRACE, "Destiny::IsTurn() m_shipHeading: %.3f,%.3f,%.3f.  m_targetHeading: %.3f,%.3f,%.3f", \
             m_shipHeading.x, m_shipHeading.y, m_shipHeading.z, m_targetHeading.x, m_targetHeading.y, m_targetHeading.z);
+    }
     return true;
 }
 
@@ -906,7 +917,8 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
         m_turnFraction = std::sqrt((std::cos(m_radians) + 1) /2);
         //this isnt used yet...used as comparison for testing time calc's
         m_alignTime = (EvE::Trig::Rad2Deg(m_radians) / m_degPerTic);
-        _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
+        if (is_log_enabled(DESTINY__MOVE_TRACE))
+            _log(DESTINY__TURN_TRACE, "Destiny::Turn() - %s(%u): Agility:%.3f, Inertia:%.3f, alignTime:%.3f, turnTime:%.3f, turnFraction:%.3f, m_degPerTic:%.3f", \
                 mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_alignTime, turnTime, m_turnFraction, m_degPerTic);
     }
 
@@ -966,7 +978,8 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
     }
     deltaHeading *= turnPercent;
     m_shipHeading += deltaHeading;
-    _log(DESTINY__TURN_TRACE, "Destiny::Turn() - csf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__TURN_TRACE, "Destiny::Turn() - csf:%.3f, turnTic:%u, degRemain:%.3f  (deltaHeading:%.5f, %.5f, %.5f * turnPercent:%.2f) = shipHeading:%.3f, %.3f, %.3f", \
             m_currentSpeedFraction, m_turnTic, degrees, deltaHeading.x, deltaHeading.y, deltaHeading.z, turnPercent, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
@@ -1094,7 +1107,8 @@ void DestinyManager::_Orbit() {
     double current = m_position.distance(Tp);
     double actual = (current - m_radius - Tr);
     float near = actual / m_targetDistance, far = current / m_followDistance;
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - current:%.2f, actual:%.2f, target:%.2f, follow:%.2f, near:%.3f, far:%.3f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - current:%.2f, actual:%.2f, target:%.2f, follow:%.2f, near:%.3f, far:%.3f", \
             current, actual, m_targetDistance, m_followDistance, near, far);
 
     // distances for orbit calculations for orbits within engage distance
@@ -1207,7 +1221,8 @@ void DestinyManager::_Orbit() {
     GVector heading(m_position, Tp + mPos);
     heading.normalize();
     m_shipHeading = heading;
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%u, speed:%.2f, Now:%.2f Next:%.2f, mPos:%.3f,%.3f,%.3f, Head:%.3f,%.3f,%.3f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%u, speed:%.2f, Now:%.2f Next:%.2f, mPos:%.3f,%.3f,%.3f, Head:%.3f,%.3f,%.3f", \
             curRad, timeStamp, curSpeed, orbitDistNow, orbitDistNext, mPos.x, mPos.y, mPos.z, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
     m_position = Tp + mPos;
     //m_position.y = Tp.y; // fudge elevation for now...
@@ -1250,14 +1265,16 @@ void DestinyManager::_Orbit() {
     mPos.z += orbitDistNow * sin(phi) * cos(lambda);
     mPos.y += orbitDistNow * sin(lambda);
     double mainHyp = mPos.y / sin(lambda);  // test calculated radius with actual radius
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f, speed:%.2f, orbitDistNow:%.2f, mainHyp:%.2f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE)) {
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%.3f, speed:%.2f, orbitDistNow:%.2f, mainHyp:%.2f", \
                 curRad, timeStamp, curSpeed, orbitDistNow, mainHyp);
-    _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - phi:%.2f, lambda:%.2f, hypPhi:%.2f, curRad:%.3f, mPos:%.3f, %.3f, %.3f", \
-    phi, lambda, hypPhi, curRad, mPos.x, mPos.y, mPos.z);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - phi:%.2f, lambda:%.2f, hypPhi:%.2f, curRad:%.3f, mPos:%.3f, %.3f, %.3f", \
+                phi, lambda, hypPhi, curRad, mPos.x, mPos.y, mPos.z);
 
-    LogMacro(mPos);
-    LogMacro(m_position);
-    LogMacro(m_shipHeading);
+        LogMacro(mPos);
+        LogMacro(m_position);
+        LogMacro(m_shipHeading);
+    }
 */
 }
 
@@ -1291,7 +1308,8 @@ void DestinyManager::_InitWarp() {
      * the client seems to accept and agree with the math here.
      */
 
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp(): %s(%u) has initialized warp.", mySE->GetName(), mySE->GetID());
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp(): %s(%u) has initialized warp.", mySE->GetName(), mySE->GetID());
 
     bool cruise = false;
     double warpSpeedInMeters = (m_shipWarpSpeed * ONE_AU_IN_METERS);
@@ -1370,16 +1388,17 @@ void DestinyManager::_InitWarp() {
     GVector warp_vector(m_position, m_targetPoint);
     warp_vector.normalize();
 
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.3fs, and warp speed of %.4f m/s.", \
+    if (is_log_enabled(DESTINY__WARP_TRACE)) {
+        _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Warp will accelerate for %us, cruise for %.3f, then decelerate for %us, with total time of %.3fs, and warp speed of %.4f m/s.", \
             mySE->GetName(), mySE->GetID(), m_warpAccelTime, cruiseTime, m_warpDecelTime, warpTime, warpSpeedInMeters);
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
+        _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): Accel distance is %.4f. Cruise distance is %.4f.  Decel distance is %.4f.  Direction is %.3f,%.3f,%.3f.", \
             mySE->GetName(), mySE->GetID(), accelDistance, cruiseDistance, decelDistance, warp_vector.x, warp_vector.y, warp_vector.z);
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%.4fm).", \
+        _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): We will exit warp at %.2f,%.2f,%.2f at a distance of %.4f AU (%.4fm).", \
             mySE->GetName(), mySE->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_targetDistance/ONE_AU_IN_METERS, m_targetDistance);
-    GPoint destination = m_position + (warp_vector * m_targetDistance);
-    _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
+        GPoint destination = m_position + (warp_vector * m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::_InitWarp():Calculate - %s(%u): calculated exit is %.2f,%.2f,%.2f and vector is %.4f,%.4f,%.4f.", \
             mySE->GetName(), mySE->GetID(), destination.x, destination.y, destination.z, warp_vector.x, warp_vector.y, warp_vector.z);
-
+    }
     //  reset deceltime for time check in _WarpDecel()
     m_warpDecelTime = m_warpAccelTime + floor(cruiseTime);
     m_stateStamp = sEntityList.GetStamp();
@@ -1507,6 +1526,7 @@ void DestinyManager::_WarpStop(double currentShipSpeed) {
         _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
     }
+    _log(AUTOPILOT__MESSAGE, "Destiny::_WarpStop(): %s(%u) - Warp complete.", mySE->GetName(), mySE->GetID());
     m_targetPoint += (m_warpState->warp_vector *10000);
     // SetSpeedFraction() checks for State = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting State or WarpState.
@@ -1740,7 +1760,8 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     m_targetPoint -= warp_distance;
 
     m_targBubble = sBubbleMgr.GetBubble(mySE->SystemMgr(), m_targetPoint);
-    _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
             mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
 
     if (mySE->IsNPCSE()) {
@@ -1865,8 +1886,9 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     PyTuple *up = bm.Encode();
     SendSingleDestinyUpdate(&up, true);   // consumed
 
-    _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() bubble: %u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
-         m_targBubble->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+    if (is_log_enabled(DESTINY__WARP_TRACE))
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() bubble: %u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
+            m_targBubble->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
 }
 
 void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
@@ -1895,7 +1917,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     m_targetDistance = distance;
     _BeginMovement();
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
             m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
 
     // Target (orbited object)
@@ -1904,7 +1927,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     if (Tm != 0.0)
         Tm = pSE->GetSelf()->type().mass();
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
             Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
     // fudge distance to work 'close enough' with all targets...this was trial-n-error
@@ -1934,7 +1958,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     double orbitTime = circ / velocity;
     m_orbitRadTic = (2 *  EvE::Trig::Pi) / orbitTime;
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
             Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
 
     double current = m_position.distance(pSE->GetPosition());
@@ -2116,7 +2141,8 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
         ; // make error here?
         */
     if (mySE->IsShipSE()) {
-        _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) Pilot:%s(%u) - AttrMaxDirectionalVelocity is %.1f", \
+        if (is_log_enabled(DESTINY__TRACE))
+            _log(DESTINY__TRACE, "Destiny::SetMaxVelocity() - Ship:%s(%u) Pilot:%s(%u) - AttrMaxDirectionalVelocity is %.1f", \
                     mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID(), \
                     mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float());
     }
@@ -2142,7 +2168,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     m_shipMaxAccelTime = (-std::log(0.0001) * m_shipAgility);
     m_degPerTic = (65.0f - m_shipAgility) /10;
 
-    _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - oldMass: %.5f, newMass: %.5f, oldAgility: %.5f, newAgility: %.5f", \
+    if (is_log_enabled(DESTINY__MOVE_TRACE))
+        _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost() - oldMass: %.5f, newMass: %.5f, oldAgility: %.5f, newAgility: %.5f", \
             oldMass, m_mass, oldAgility, m_shipAgility);
 
     // check current movement and reset variables using modified values
@@ -2164,7 +2191,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         float fracCheck = m_prevSpeed / m_maxShipSpeed;
         //m_currentSpeedFraction = 1 - m_activeSpeedFraction;    // reset csf
         m_moveTimer = GetTimeMSeconds();    // reset timer
-        _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::Deactivate - sec: %.2f, csf: %.3f. asf: %.3f (check: %.3f), curSpeed: %.3f, decelTime: %.3f", \
+        if (is_log_enabled(DESTINY__MOVE_TRACE))
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::Deactivate - sec: %.2f, csf: %.3f. asf: %.3f (check: %.3f), curSpeed: %.3f, decelTime: %.3f", \
                 curTime, m_currentSpeedFraction, m_activeSpeedFraction, fracCheck, m_prevSpeed, m_shipMaxAccelTime);
     } else if (m_orbiting) {
         // ....orbiting
@@ -2177,7 +2205,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
             // - this hits when prop mod activated while ship is decel from previous prop mod deactivation
             m_maxSpeed = m_maxShipSpeed * m_prevSpeedFraction;      // reset ship max speed using updated m_maxShipSpeed
             m_currentSpeedFraction = m_activeSpeedFraction = m_prevSpeed / m_maxSpeed;          //get updated asf
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(asf>usf>=0) - decelerating. - sec: %.2f, csf: %.3f. asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(asf>usf>=0) - decelerating. - sec: %.2f, csf: %.3f. asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
                     curTime, m_currentSpeedFraction, m_activeSpeedFraction, m_prevSpeed, m_shipMaxAccelTime);
         } else {
             // ....is not decelerating (this includes turning)
@@ -2188,7 +2217,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
             //m_currentSpeedFraction = ((-log(m_activeSpeedFraction) +1) / m_shipAgility);
             // - use accel equation to get elapsed time for new csf
             double newTime = (-std::log(1 - m_currentSpeedFraction) * m_shipAgility);
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<usf) - newTime: %.2f, new csf: %.3f, new asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(0<asf<usf) - newTime: %.2f, new csf: %.3f, new asf: %.3f, curSpeed: %.3f, accelTime: %.3f", \
                     newTime, m_currentSpeedFraction, m_activeSpeedFraction, m_prevSpeed, m_shipMaxAccelTime);
             m_prevSpeed = 0;    // previous speed is not needed for subsquent calculations
             // adjust m_moveTimer time to fit current speed onto new max speed range.  (previous max < new max)
@@ -2198,9 +2228,11 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         // ....is sitting still
         // - do nothing
         if (m_userSpeedFraction) {
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf>asf=0) -  sitting still.  not coded yet");
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf>asf=0) -  sitting still.  not coded yet");
         } else {
-            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf=asf=0) -  sitting still.  not coded yet");
+            if (is_log_enabled(DESTINY__MOVE_TRACE))
+                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf=asf=0) -  sitting still.  not coded yet");
         }
     }
 
