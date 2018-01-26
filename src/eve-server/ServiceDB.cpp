@@ -171,7 +171,7 @@ PyRep* ServiceDB::GetSolDroneState(uint32 systemID) {
         " WHERE solarSystemID=%u",
         systemID)) {
         codelog(DATABASE__ERROR, "Error in GetSolDroneState query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -354,8 +354,7 @@ void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user,
 	" WHERE AI = 1",
 	    threads, rss, vm, user, kernel, items, bubbles, sEntityList.GetSystemCount(), sEntityList.GetNPCCount()/*, sEntityList.GetConnections()*/);
 
-  if (sConfig.debug.UseProfiling)
-      _log(DATABASE__MESSAGE, "Server Stats Saved");
+    _log(DATABASE__INFO, "Server Stats Saved");
 }
 
 // lookupService db calls moved here...made no sense in LSCDB file.
@@ -372,7 +371,7 @@ PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
             " WHERE characterID > %u", maxNPCItem))
         {
             _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
-            return NULL;
+            return nullptr;
         }
     } else {
         if(!sDatabase.RunQuery(res,
@@ -384,7 +383,7 @@ PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
         ))
         {
             _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
-            return NULL;
+            return nullptr;
         }
     }
 

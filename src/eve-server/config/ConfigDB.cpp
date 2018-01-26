@@ -52,7 +52,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     std::string ids = "";
 
     if (corp.size()) {
-        ListToINString(corp, ids, "0");
+        ListToINString(corp, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  corporationID as ownerID,"
@@ -69,7 +69,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     }
 
     if (ally.size()) {
-        ListToINString(ally, ids, "0");
+        ListToINString(ally, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  allianceID as ownerID,"
@@ -86,7 +86,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     }
 
     if (player.size()) {
-        ListToINString(player, ids, "0");
+        ListToINString(player, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  characterID as ownerID,"
@@ -102,7 +102,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     }
 
     if (owner.size()) {
-        ListToINString(owner, ids, "0");
+        ListToINString(owner, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  ownerID,"
@@ -116,13 +116,13 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         }
     }
-    
+
     return DBResultToTupleSet(res);
 }
 
 PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityIDs) {
     std::string ids;
-    ListToINString(entityIDs, ids, "0");
+    ListToINString(entityIDs, ids);
 
     DBQueryResult res;
 
@@ -160,7 +160,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     std::string ids = "";
 
     if (staticItems.size()) {
-        ListToINString(staticItems, ids, "0");
+        ListToINString(staticItems, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"
@@ -176,7 +176,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     }
 
     if (dynamicItems.size()) {
-        ListToINString(dynamicItems, ids, "0");
+        ListToINString(dynamicItems, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"
@@ -192,7 +192,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     }
 
     if (asteroidItems.size()) {
-        ListToINString(asteroidItems, ids, "0");
+        ListToINString(asteroidItems, ids);
         if (!sDatabase.RunQuery(res,
             "SELECT "
             " itemID AS locationID,"
@@ -212,7 +212,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
 PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
 {
     std::string ids;
-    ListToINString(entityIDs, ids, "0");
+    ListToINString(entityIDs, ids);
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT "
@@ -234,7 +234,7 @@ PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
 PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) {
 
     std::string ids;
-    ListToINString(entityIDs, ids, "0");
+    ListToINString(entityIDs, ids);
 
     DBQueryResult res;
 
@@ -257,7 +257,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) 
 PyRep *ConfigDB::GetMultiGraphicsEx(const std::vector<int32> &entityIDs) {
 
     std::string ids;
-    ListToINString(entityIDs, ids, "0");
+    ListToINString(entityIDs, ids);
 
     DBQueryResult res;
 
@@ -367,7 +367,7 @@ PyObject *ConfigDB::ListLanguages() {
 PyRep *ConfigDB::GetMultiInvTypesEx(const std::vector<int32> &entityIDs) {
 
     std::string ids;
-    ListToINString(entityIDs, ids, "0");
+    ListToINString(entityIDs, ids);
 
     DBQueryResult res;
 
