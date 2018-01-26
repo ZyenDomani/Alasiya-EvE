@@ -48,8 +48,8 @@
 // log
 #include "log/LogNew.h"
 #include "log/logsys.h"
-#include "log/Basic_Log.h"
-#include "log/HTML_Log.h"
+//#include "log/Basic_Log.h"
+//#include "log/HTML_Log.h"
 // math
 #include "math/gpoint.h"
 #include "math/Trig.h"

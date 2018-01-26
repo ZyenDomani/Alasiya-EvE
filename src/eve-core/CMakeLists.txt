@@ -33,14 +33,14 @@ SET( error_SOURCE
      "${TARGET_SOURCE_DIR}/error/ErrorHandler.cpp" )
 
 SET( log_INCLUDE
-     "${TARGET_INCLUDE_DIR}/log/Basic_Log.h"
-     "${TARGET_INCLUDE_DIR}/log/HTML_Log.h"
+     #"${TARGET_INCLUDE_DIR}/log/Basic_Log.h"
+     #"${TARGET_INCLUDE_DIR}/log/HTML_Log.h"
      "${TARGET_INCLUDE_DIR}/log/LogNew.h"
      "${TARGET_INCLUDE_DIR}/log/logsys.h"
      "${TARGET_INCLUDE_DIR}/log/logtypes.h" )
 SET( log_SOURCE
-     "${TARGET_SOURCE_DIR}/log/Basic_Log.cpp"
-     "${TARGET_SOURCE_DIR}/log/HTML_Log.cpp"
+     #"${TARGET_SOURCE_DIR}/log/Basic_Log.cpp"
+     #"${TARGET_SOURCE_DIR}/log/HTML_Log.cpp"
      "${TARGET_SOURCE_DIR}/log/LogNew.cpp"
      "${TARGET_SOURCE_DIR}/log/logsys.cpp" )
 
