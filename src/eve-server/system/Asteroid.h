@@ -31,20 +31,17 @@
 #include "system/SystemEntity.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
-/** @todo  finish this to completely remove roids from entity table.
- * InventoryItem for asteroid item....didnt work.  revert to default item
- */
 
 class AsteroidItem
 : public InventoryItem
 {
     friend class InventoryItem; // to let it construct us
 public:
-    AsteroidItem(ItemFactory &_factory, uint32 _asteroidID, const ItemType &_type, const ItemData &_data, const AsteroidData &_cData);
+    AsteroidItem(uint32 _asteroidID, const ItemType &_type, const ItemData &_data, const AsteroidData &_cData);
     virtual ~AsteroidItem()                             { /* Do nothing here */ }
 
-    static AsteroidItemRef Load(ItemFactory &factory, uint32 asteroidID);
-    static AsteroidItemRef Spawn(ItemFactory& factory, ItemData &idata, AsteroidData& adata);
+    static AsteroidItemRef Load( uint32 asteroidID);
+    static AsteroidItemRef Spawn( ItemData &idata, AsteroidData& adata);
 
     double      radius() const                          { return m_data.radius; }
 
@@ -54,7 +51,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 asteroidID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 asteroidID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Asteroid) {
             _log( ITEM__ERROR, "Trying to load %s as Asteroid.", type.category().name().c_str() );
             if (sConfig.server.StackTrace)
@@ -66,11 +63,12 @@ protected:
         if ( !ManagerDB::GetAsteroidData( asteroidID, dbData ) )
             return RefPtr<_Ty>();
 
-        return AsteroidItemRef( new AsteroidItem( factory, asteroidID, type, data, dbData ) );
+        return AsteroidItemRef( new AsteroidItem(asteroidID, type, data, dbData ) );
     }
 
 private:
     AsteroidData m_data;
+
 };
 
 

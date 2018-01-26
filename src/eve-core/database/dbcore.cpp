@@ -33,6 +33,21 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
+// this group is to enable server shutdown (and online player notification)
+//      in the case of db lost connection
+#define sEntityList (EntityList::get())
+class Client {
+public:
+    void SendInfoModalMsg(const char* fmt, ...);
+};
+class EntityList
+: public Singleton<EntityList>
+{
+public:
+    void Shutdown();
+    void GetClients(std::vector<Client*>& result) const;
+};
+
 // this is used to enable socket communication (may not be needed)
 enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
 
@@ -228,11 +243,24 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore Query - mysql = null");
+        _log(DATABASE__MESSAGE, "mysql = null.  Server restarting.");
+        std::vector<Client*> list;
+        sEntityList.GetClients(list);
+        for (auto cur : list)
+            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
+        sEntityList.Shutdown();
         return false;
     }
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore Query - DB Status != Connected");
+        /** @todo  this needs access to EntityList, but cannot due to include problems */
+        _log(DATABASE__MESSAGE, "DataBase lost connection.  Server restarting.");
+        std::vector<Client*> list;
+        sEntityList.GetClients(list);
+        for (auto cur : list)
+            cur->SendInfoModalMsg("DataBase lost connection.  Server restarting.");
+        sEntityList.Shutdown();
         return false;
     }
 
@@ -316,9 +344,9 @@ void DBcore::DoEscapeString(std::string &to, const std::string &from)
 {
     assert(mysql);
     uint32 len = (uint32)from.length();
-    to.resize(len*2 + 1);   // make enough room
+    to.resize(len * 2);   // make enough room
     uint32 esc_len = mysql_real_escape_string(mysql, &to[0], from.c_str(), len);
-    to.resize(esc_len+1); // optional.
+    to.resize(esc_len + 1); // optional.
 }
 
 //look for things in the string which might cause SQL problems
@@ -570,7 +598,7 @@ bool DBResultRow::GetBool( uint32 index ) const
         return false;       //nothing better to do...
     }
 
-    return (GetText(index)[0] == 1);
+    return (GetText(index)[0] == 1 ? true : false);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const
@@ -599,18 +627,6 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtoll( GetText( index ), nullptr, 0 );
-}
-
-uint64 DBResultRow::GetUInt64( uint32 index ) const
-{
-    if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetUInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
-        EvE::traceStack();
-        return 0;       //nothing better to do...
-    }
-
-    //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoull( GetText( index ), nullptr, 0 );
 }
 
 float DBResultRow::GetFloat( uint32 index ) const

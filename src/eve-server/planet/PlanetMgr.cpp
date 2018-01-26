@@ -14,6 +14,7 @@
 
 #include "Client.h"
 #include "PyService.h"
+#include "account/AccountService.h"
 #include "inventory/ItemType.h"
 #include "inventory/InventoryItem.h"
 #include "packets/Planet.h"
@@ -56,7 +57,7 @@ def GetCycleTimeFromProgramLength(programLength):
         cycleTime = int(cycleTime * HOUR)
 
     */
-    InventoryItemRef iRef = m_svcMgr->item_factory->GetItem(pinID);
+    InventoryItemRef iRef = sItemFactory.GetItem(pinID);
     float cycleTime = 0, length = 0;
     uint16 numCycles = 0;
     double one = ((headRadius - 0.01f) /0.04);
@@ -131,19 +132,26 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     while (oldLevel != newLevel) {
         //  calculate total upgrade cost in cases where upgrading multiple levels at once
         switch (oldLevel) {
-            case PinLevel0: cost -= 580000; break;
-            case PinLevel1: cost -= 930000; break;
-            case PinLevel2: cost -= 1200000; break;
-            case PinLevel3: cost -= 1500000; break;
-            case PinLevel4: cost -= 2100000; break;
+            case PinLevel0: cost += 580000; break;
+            case PinLevel1: cost += 930000; break;
+            case PinLevel2: cost += 1200000; break;
+            case PinLevel3: cost += 1500000; break;
+            case PinLevel4: cost += 2100000; break;
         }
         ++oldLevel;
     }
-    if (!m_client->AddBalance(cost)) {
-        m_client->SendErrorMsg("You cannot afford the upgrade cost required for this Command Center.");
-        return true;
+    //take the money, send wallet blink event record the transaction in their journal.
+    std::string reason = "DESC:  Command Center upgrade on ";
+    reason += m_planet->GetName();
+    AccountService::TranserFunds(
+                    m_client->GetCharacterID(),
+                    ownerUnknown,  // not sure who to send this to
+                    cost,
+                    reason.c_str(),
+                    Journal::EntryType::PlanetaryConstruction,
+                    m_planet->GetID(),
+                    Account::KeyType::Cash);
 
-    }
     m_colony->UpgradeCommandCenter(nc.command_data->GetItem(0)->AsInt()->value(), newLevel);
     return false;
 }
@@ -153,13 +161,20 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
     // the return here is used to break out of loop if needed.  return false = continue
     using namespace EVEDB::invGroups;
     uint32 typeID = nc.command_data->GetItem(1)->AsInt()->value();
-    uint32 groupID = m_svcMgr->item_factory->GetType(typeID)->groupID();
+    uint32 groupID = sItemFactory.GetType(typeID)->groupID();
     switch (groupID) {
         case Command_Centers: {
-            if (!m_client->AddBalance(-90000)) {
-                m_client->SendErrorMsg("You cannot afford the construction cost required to construct a Command Center on this planet.");
-                return true;
-            }
+            //take the money, send wallet blink event record the transaction in their journal.
+            std::string reason = "DESC:  Command Center construction on ";
+            reason += m_planet->GetName();
+            AccountService::TranserFunds(
+                        m_client->GetCharacterID(),
+                        ownerUnknown,  // not sure who to send this to
+                        90000,
+                        reason.c_str(),
+                        Journal::EntryType::PlanetaryConstruction,
+                        m_planet->GetID(),
+                        Account::KeyType::Cash);
 
             UUNCCommandCenter uunccc;
             if (!uunccc.Decode(nc.command_data)) {
@@ -225,17 +240,13 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
             pinString = "LaunchPad";
         } break;
         case Planetary_Links: {
-            cost = 0;
+            cost = 1000;
             pinString = "Link";
         } break;
         case Extractors: {
-            cost = 0;
+            cost = 100;
             pinString = "Extractor Head";
         } break;
-        if (!m_client->AddBalance(-cost)) {
-            m_client->SendErrorMsg("You cannot afford the construction cost required for this %s.", pinString.c_str());
-            return true;
-        }
         UUNCStandardPin uuncsp;
         if (!uuncsp.Decode(nc.command_data)) {
             _log(SERVICE__ERROR, "Failed to decode args for UUNCStandardPin!");
@@ -243,6 +254,20 @@ bool PlanetMgr::CreatePin(UUNCommand& nc)
         }
         m_colony->CreatePin(groupID, uuncsp.pinID2, uuncsp.typeID, uuncsp.latitude, uuncsp.longitude);
     }
+    //take the money, send wallet blink event record the transaction in their journal.
+    std::string reason = "DESC:  ";
+    reason += pinString.c_str();
+    reason += " Construction on ";
+    reason += m_planet->GetName();
+    AccountService::TranserFunds(
+                m_client->GetCharacterID(),
+                ownerUnknown,  // not sure who to send this to
+                cost,
+                reason.c_str(),
+                Journal::EntryType::PlanetaryConstruction,
+                m_planet->GetID(),
+                Account::KeyType::Cash);
+
     return false;
 }
 

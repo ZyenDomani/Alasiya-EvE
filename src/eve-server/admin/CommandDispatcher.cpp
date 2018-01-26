@@ -49,7 +49,7 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
     if (from->IsInSpace()) {
         if (!from->DestinyMgr())
             from->SendErrorMsg( "Internal Server Error.  Ref: ServerError 31110 " );
-        if (from->DestinyMgr()->IsWarping() && (!from->GetAccountRole() & ROLE_GML)) {
+        if (from->DestinyMgr()->IsWarping() && (!from->GetAccountRole() & Acct::Role::GML)) {
             sLog.Error( "CommandDispatcher", " Command Requested by %s while warping. --Access denied.", from->GetName() );
             from->SendErrorMsg( "ServerError 31113 - Cannot Request Commands While Warping." );
         }
@@ -89,7 +89,7 @@ PyResult CommandDispatcher::Execute( Client* from, const char* msg )
     return ( *rec->function )( from, &m_db, &m_services, sep );
 }
 
-void CommandDispatcher::AddCommand( const char* cmd, const char* desc, uint64 required_role, CommandFunc function )
+void CommandDispatcher::AddCommand( const char* cmd, const char* desc, int64 required_role, CommandFunc function )
 {
     std::map<std::string, CommandRecord*>::iterator itr = m_commands.find( cmd );
     if (itr != m_commands.end())
@@ -102,7 +102,7 @@ void CommandDispatcher::ListCommands() {
     sLog.Green("  Alasiya's EvEMu", "Currently Loaded %u Commands:", m_commands.size());
     std::map<std::string, CommandDispatcher::CommandRecord*>::iterator cur = m_commands.begin();
     for (; cur != m_commands.end(); cur++) {
-        sLog.Magenta("    Call and Role", "%s - %p (%" PRIu64 ")",
+        sLog.Magenta("    Call and Role", "%s - %p (%" PRIi64 ")",
                      cur->first.c_str(), cur->second->required_role, cur->second->required_role);
     }
 }

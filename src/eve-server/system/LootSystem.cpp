@@ -135,7 +135,7 @@ void DGM_Loot_Groups_Table::_Populate()
 
 void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     double randChance = 0.0;
@@ -180,6 +180,6 @@ void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
         }
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
 }

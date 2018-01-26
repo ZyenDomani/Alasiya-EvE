@@ -136,7 +136,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetState">
+  <elementDef name="SetState">
     <tupleInline>
       <!-- 0 -->
       <stringInline value="SetState" />
@@ -188,7 +188,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SlimItem">
+  <elementDef name="SlimItem">
     <objectInline>
         <stringInline value="foo.SlimItem" />
         <dictInline>
@@ -235,7 +235,7 @@ DST_WARPEXIT = 11
     def AddBalls(self, chunk):
         state, slims, damageDict = chunk
         -->
-  <elementDef name="DoDestiny_AddBalls">
+  <elementDef name="AddBalls">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="AddBalls" />
@@ -245,7 +245,7 @@ DST_WARPEXIT = 11
             <tupleInline>
               <!-- 0 -->
               <buffer name="state" />
-              <!-- 1: slims (list of DoDestiny_SlimItem) -->
+              <!-- 1: slims (list of SlimItem) -->
               <list name="slims" />
               <!-- 2 -->
               <dictInt name="damageDict" />
@@ -289,7 +289,7 @@ DST_WARPEXIT = 11
                 damageState = None
         -->
 
-  <elementDef name="DoDestiny_AddBalls2">
+  <elementDef name="AddBalls2">
     <tupleInline>
       <!-- 0-->
       <int name="stateStamp" />
@@ -310,7 +310,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_DamageDetails">
+  <elementDef name="DamageDetails">
     <listInline>
       <tupleInline>
           <real name="shield" />
@@ -322,7 +322,7 @@ DST_WARPEXIT = 11
     </listInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_RemoveBall">
+  <elementDef name="RemoveBallFromBP">
     <tupleInline>
       <!-- 0: call -->
       <stringInline value="RemoveBall" />
@@ -333,7 +333,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_RemoveBalls">
+  <elementDef name="RemoveBallsFromBP">
     <tupleInline>
       <!-- 0: call -->
       <stringInline value="RemoveBalls" />
@@ -344,7 +344,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_OnSpecialFX10">
+  <elementDef name="OnSpecialFX10">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnSpecialFX" />
@@ -374,7 +374,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_OnSpecialFX13">
+  <elementDef name="OnSpecialFX13">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnSpecialFX" />
@@ -395,24 +395,24 @@ DST_WARPEXIT = 11
             <!-- 6: guid: see scripts/parklife/fxSequencer.py -->
             <string name="guid" />
             <!-- 7: isOffensive: saw 0 -->
-            <int name="isOffensive" />
+            <bool name="isOffensive" default="false" />
             <!-- 8: start: saw 1 -->
             <int name="start" />
             <!-- 9: active: saw 0 -->
             <int name="active" />
             <!-- 10: duration in milliseconds (optional) -->
-            <real name="duration_ms" default="0" none_marker="0" />
+            <real name="duration_ms" default="-1" none_marker="0" />
             <!-- 11: repeat (optional) (really defaults to None, but -1 seems to work too) -->
             <int name="repeat" default="0" none_marker="0" />
             <!-- 12: startTime (optional) -->
             <long name="startTime" default="0" none_marker="0" />
-            <!-- 13: always seems to be a PyNone at the end of this packet, we have NO clue why -->
-            <none />
+            <!-- 13: graphicInfo (optional)  - not sure what this is yet.  -->
+            <int name="graphicInfo" default="0" none_marker="0" />
         </tupleInline>
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_OnDamageStateChange">
+  <elementDef name="OnDamageStateChange">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnDamageStateChange" />
@@ -426,7 +426,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdSetSpeedFraction">
+  <elementDef name="CmdSetSpeedFraction">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetSpeedFraction" />
@@ -440,7 +440,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdFollowBall">
+  <elementDef name="CmdFollowBall">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="FollowBall" />
@@ -454,7 +454,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdStop">
+  <elementDef name="CmdStop">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="Stop" />
@@ -466,7 +466,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdWarpTo">
+  <elementDef name="CmdWarpTo">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="WarpTo" />
@@ -488,7 +488,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdGotoDirection">
+  <elementDef name="CmdGotoDirection">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="GotoDirection" />
@@ -502,7 +502,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdAlignTo">
+  <elementDef name="CmdAlignTo">
     <tupleInline>
       <!-- 0 -->
       <stringInline value="AlignTo" />
@@ -513,7 +513,7 @@ DST_WARPEXIT = 11
     </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_GotoPoint">
+  <elementDef name="CmdGotoPoint">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="GotoPoint" />
@@ -527,7 +527,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdOrbit">
+  <elementDef name="CmdOrbit">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="Orbit" />
@@ -540,19 +540,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CmdSetMaxSpeed">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="SetMaxSpeed" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="entityID" />
-            <real name="speed" />
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_SetNotificationRange">
+  <elementDef name="SetNotificationRange">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetNotificationRange" />
@@ -566,7 +554,17 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallPosition">
+  <elementDef name="SetBallSpeed">
+    <tupleInline>
+      <stringInline value="SetMaxSpeed" />
+      <tupleInline>
+        <int name="entityID" />
+        <real name="speed" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="SetBallPosition">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallPosition" />
@@ -580,7 +578,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallAgility">
+  <elementDef name="SetBallAgility">
       <tupleInline>
         <stringInline value="SetBallAgility" />
         <tupleInline>
@@ -590,7 +588,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallVelocity">
+  <elementDef name="SetBallVelocity">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallVelocity" />
@@ -604,7 +602,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallMass">
+  <elementDef name="SetBallMass">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallMass" />
@@ -616,7 +614,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallRadius">
+  <elementDef name="SetBallRadius">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallRadius" />
@@ -628,7 +626,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallMassive">
+  <elementDef name="SetBallMassive">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallMassive" />
@@ -641,7 +639,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallFree">
+  <elementDef name="SetBallFree">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallFree" />
@@ -654,7 +652,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallGlobal">
+  <elementDef name="SetBallGlobal">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallGlobal" />
@@ -667,7 +665,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBallTroll">
+  <elementDef name="SetBallTroll">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallTroll" />
@@ -679,7 +677,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetBoid">
+  <elementDef name="SetBallBoid">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBoid" />
@@ -691,17 +689,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_SetMaxSpeed">
-    <tupleInline>
-      <stringInline value="SetMaxSpeed" />
-      <tupleInline>
-        <int name="entityID" />
-        <real name="speedValue" />
-      </tupleInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_SetBallInteractive">
+  <elementDef name="SetBallInteractive">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="SetBallInteractive" />
@@ -715,7 +703,35 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_AddMushroom">
+  <elementDef name="SetBallHarmonic">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="SetBallHarmonic" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="itemID" />
+            <int name="allianceID" />
+            <int name="corpID" />
+            <int name="mass" /><!-- always -1 -->
+            <int name="harmonic" />
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="SetBallCloak">
+      <tupleInline>
+        <!-- 0 -->
+        <stringInline value="CloakBall" />
+        <!-- 1 -->
+        <tupleInline>
+            <int name="entityID" />
+            <bool name="cloaked" />
+            <!-- optional: maybe <real name="cloakMode" /> -->
+        </tupleInline>
+      </tupleInline>
+  </elementDef>
+
+  <elementDef name="AddMushroom">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="AddMushroom" />
@@ -729,20 +745,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_CloakBall">
-      <tupleInline>
-        <!-- 0 -->
-        <stringInline value="CloakBall" />
-        <!-- 1 -->
-        <tupleInline>
-            <int name="entityID" />
-            <bool name="cloaked" />
-            <!-- optional: maybe <real name="cloakMode" /> -->
-        </tupleInline>
-      </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestiny_OnDockingAccepted">
+  <elementDef name="OnDockingAccepted">
         <!-- OnDockingAccepted(self, dockingStartPos, dockingEndPos, stationID): -->
       <tupleInline>
         <!-- 0: ship position -->
@@ -762,7 +765,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_TerminalExplosion">
+  <elementDef name="TerminalExplosion">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="TerminalExplosion" />
@@ -775,7 +778,7 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestiny_OnDroneStateChange">
+  <elementDef name="OnDroneStateChange">
       <tupleInline>
         <!-- 0 -->
         <stringInline value="OnDroneStateChange" />

@@ -49,7 +49,7 @@ TargetManager::TargetManager(SystemEntity *self)
 
 void TargetManager::Process() {
      double profileStartTime = 0.0;
-     if (sConfig.server.UseProfiling)
+     if (sConfig.debug.UseProfiling)
          profileStartTime = GetTimeUSeconds();
 
     //process outgoing targeting (outgoing will call incomming as needed)
@@ -79,7 +79,7 @@ void TargetManager::Process() {
         ++itr;
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_targetsProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -139,9 +139,25 @@ void TargetManager::ClearFromTargets() {
         if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->TargetLost(mySE);
 }
-
+/*{'messageKey': 'DeniedTargetAfterCloak', 'dataID': 17883412, 'suppressable': False, 'bodyID': 259495, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 781}
+ * {'messageKey': 'DeniedTargetEvadesSensors', 'dataID': 17883870, 'suppressable': False, 'bodyID': 259657, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 782}
+ * {'messageKey': 'DeniedTargetForceField', 'dataID': 17883882, 'suppressable': False, 'bodyID': 259661, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 783}
+ * {'messageKey': 'DeniedTargetInvulnerable', 'dataID': 17883415, 'suppressable': False, 'bodyID': 259496, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 784}
+ * {'messageKey': 'DeniedTargetOtherFrozen', 'dataID': 17883876, 'suppressable': False, 'bodyID': 259659, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 785}
+ * {'messageKey': 'DeniedTargetOtherWarping', 'dataID': 17883809, 'suppressable': False, 'bodyID': 259635, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 786}
+ * {'messageKey': 'DeniedTargetReinforcedStructure', 'dataID': 17883888, 'suppressable': False, 'bodyID': 259663, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 787}
+ * {'messageKey': 'DeniedTargetSelf', 'dataID': 17883418, 'suppressable': False, 'bodyID': 259497, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 788}
+ * {'messageKey': 'DeniedTargetSelfFrozen', 'dataID': 17883873, 'suppressable': False, 'bodyID': 259658, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 789}
+ * {'messageKey': 'DeniedTargetSelfWarping', 'dataID': 17883879, 'suppressable': False, 'bodyID': 259660, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 790}
+ * {'messageKey': 'DeniedTargetUntargetable', 'dataID': 17880323, 'suppressable': False, 'bodyID': 258348, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2170}
+ * {'messageKey': 'DeniedTargetingAttemptFailed', 'dataID': 17883942, 'suppressable': False, 'bodyID': 259683, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 791}
+ * {'messageKey': 'DeniedTargetingCloaked', 'dataID': 17883664, 'suppressable': False, 'bodyID': 259583, 'messageType': 'notify', 'urlAudio': 'wise:/msg_DeniedTargetingCloaked_play', 'urlIcon': '', 'titleID': None, 'messageID': 792}
+ * {'messageKey': 'DeniedTargetingInsideField', 'dataID': 17883885, 'suppressable': False, 'bodyID': 259662, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 793}
+ * {'messageKey': 'DeniedTargetingTargetCloaked', 'dataID': 17883421, 'suppressable': False, 'bodyID': 259498, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 794}
+ */
 bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
 {       // NOTE this is for players
+    /** @todo   AttrUntargetable = 1158,  only for 21094, 28650 (cyno fields) */
     TargetTry(who);
     if (!mySE->HasPilot()) {
         codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s", mySE->GetName(), mySE->GetID(), who->GetName());
@@ -215,6 +231,7 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
 
 bool TargetManager::StartTargeting(SystemEntity *who, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs
+    /** @todo   AttrUntargetable = 1158,  */
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
     if (res != m_targets.end()) {
@@ -292,7 +309,7 @@ void TargetManager::TargetLost(SystemEntity *who) {
         te.targetID = who->GetID();
         //te.reason = "Docking";
     Notify_OnMultiEvent multi;
-        multi.events = new PyList;
+        multi.events = new PyList();
         multi.events->AddItem(te.Encode());
     PyTuple* tmp = multi.Encode();   //this is consumed below
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
@@ -412,7 +429,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
 
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
-    float time = ( 40000 /(scanRes * pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
+    float time = ( 40000 /(scanRes * std::pow(std::asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
     /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
      *  +0.1s for each 10k distance
@@ -482,7 +499,7 @@ void TargetManager::TargetAdded(SystemEntity* who) {
     if (!mySE->HasPilot())
         return;
     PyTuple* up(nullptr);
-    DoDestiny_OnDamageStateChange odsc;
+     OnDamageStateChange odsc;
         odsc.entityID = who->GetID();
         odsc.state = who->MakeDamageState();
     up = odsc.Encode();

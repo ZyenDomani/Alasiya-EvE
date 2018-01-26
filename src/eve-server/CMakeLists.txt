@@ -20,6 +20,7 @@ SET( INCLUDE
      "${TARGET_INCLUDE_DIR}/Client.h"
      "${TARGET_INCLUDE_DIR}/ClientSession.h"
      "${TARGET_INCLUDE_DIR}/ConsoleCommands.h"
+     "${TARGET_INCLUDE_DIR}/DataClasses.h"
      "${TARGET_INCLUDE_DIR}/EntityList.h"
      "${TARGET_INCLUDE_DIR}/EVEServerConfig.h"
      "${TARGET_INCLUDE_DIR}/LiveUpdateDB.h"
@@ -38,6 +39,7 @@ SET( SOURCE
      "${TARGET_SOURCE_DIR}/Client.cpp"
      "${TARGET_SOURCE_DIR}/ClientSession.cpp"
      "${TARGET_SOURCE_DIR}/ConsoleCommands.cpp"
+     "${TARGET_SOURCE_DIR}/DataClasses.cpp"
      "${TARGET_SOURCE_DIR}/EntityList.cpp"
      "${TARGET_SOURCE_DIR}/EVEServerConfig.cpp"
      "${TARGET_SOURCE_DIR}/LiveUpdateDB.cpp"
@@ -81,7 +83,7 @@ SET( admin_INCLUDE
      "${TARGET_INCLUDE_DIR}/admin/CommandDispatcher.h"
      "${TARGET_INCLUDE_DIR}/admin/DevToolsProviderService.h"
      "${TARGET_INCLUDE_DIR}/admin/GMCommands.h"
-     "${TARGET_INCLUDE_DIR}/admin/MiningCommands.h"
+     #"${TARGET_INCLUDE_DIR}/admin/MiningCommands.h"
      "${TARGET_INCLUDE_DIR}/admin/PetitionerService.h"
      "${TARGET_INCLUDE_DIR}/admin/SlashService.h"
      "${TARGET_INCLUDE_DIR}/admin/SystemCommands.h"
@@ -96,7 +98,7 @@ SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/CommandDispatcher.cpp"
      "${TARGET_SOURCE_DIR}/admin/DevToolsProviderService.cpp"
      "${TARGET_SOURCE_DIR}/admin/GMCommands.cpp"
-     "${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
+     #"${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/PetitionerService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SlashService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"  
@@ -129,7 +131,7 @@ SET( character_INCLUDE
      "${TARGET_INCLUDE_DIR}/character/CertificateMgrService.h"
      "${TARGET_INCLUDE_DIR}/character/Character.h"
      "${TARGET_INCLUDE_DIR}/character/CharacterDB.h"
-     "${TARGET_INCLUDE_DIR}/character/CharFittingMgrService.h"
+     "${TARGET_INCLUDE_DIR}/character/CharFittingMgr.h"
      "${TARGET_INCLUDE_DIR}/character/CharMgrService.h"
      "${TARGET_INCLUDE_DIR}/character/CharUnboundMgrService.h"
      "${TARGET_INCLUDE_DIR}/character/PaperDollDB.h"
@@ -143,7 +145,7 @@ SET( character_SOURCE
      "${TARGET_SOURCE_DIR}/character/CertificateMgrService.cpp"
      "${TARGET_SOURCE_DIR}/character/Character.cpp"
      "${TARGET_SOURCE_DIR}/character/CharacterDB.cpp"
-     "${TARGET_SOURCE_DIR}/character/CharFittingMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/character/CharFittingMgr.cpp"
      "${TARGET_SOURCE_DIR}/character/CharMgrService.cpp"
      "${TARGET_SOURCE_DIR}/character/CharUnboundMgrService.cpp"
      "${TARGET_SOURCE_DIR}/character/PaperDollDB.cpp"
@@ -178,27 +180,39 @@ SET( config_SOURCE
      "${TARGET_SOURCE_DIR}/config/LanguageService.cpp"
      "${TARGET_SOURCE_DIR}/config/LocalizationServerService.cpp" )
 
+SET( contract_INCLUDE
+     "${TARGET_INCLUDE_DIR}/contract/ContractMgr.h"
+     "${TARGET_INCLUDE_DIR}/contract/ContractProxy.h" )
+SET( contract_SOURCE
+     "${TARGET_SOURCE_DIR}/contract/ContractMgr.cpp"
+     "${TARGET_SOURCE_DIR}/contract/ContractProxy.cpp")
+
 SET( corporation_INCLUDE
+     "${TARGET_INCLUDE_DIR}/corporation/AllianceBound.h"
      "${TARGET_INCLUDE_DIR}/corporation/AllianceRegistry.h"
-     "${TARGET_INCLUDE_DIR}/corporation/CorpBookmarkMgrService.h"
+     "${TARGET_INCLUDE_DIR}/corporation/BillMgr.h"
+     "${TARGET_INCLUDE_DIR}/corporation/CorpBookmarkMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpMgrService.h"
-     "${TARGET_INCLUDE_DIR}/corporation/CorporationCarrier.h"
+     "${TARGET_INCLUDE_DIR}/corporation/CorpFittingMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorporationDB.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorporationService.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpRegistryBound.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpRegistryService.h"
-     "${TARGET_INCLUDE_DIR}/corporation/CorpStationMgrService.h"
+     "${TARGET_INCLUDE_DIR}/corporation/CorpStationMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/LPService.h"
      "${TARGET_INCLUDE_DIR}/corporation/LPStore.h" )
 SET( corporation_SOURCE
+     "${TARGET_SOURCE_DIR}/corporation/AllianceBound.cpp"
      "${TARGET_SOURCE_DIR}/corporation/AllianceRegistry.cpp"
-     "${TARGET_SOURCE_DIR}/corporation/CorpBookmarkMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/corporation/BillMgr.cpp"
+     "${TARGET_SOURCE_DIR}/corporation/CorpBookmarkMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/corporation/CorpFittingMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorporationDB.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorporationService.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpRegistryBound.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpRegistryService.cpp"
-     "${TARGET_SOURCE_DIR}/corporation/CorpStationMgrService.cpp"
+     "${TARGET_SOURCE_DIR}/corporation/CorpStationMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/LPService.cpp"
      "${TARGET_SOURCE_DIR}/corporation/LPStore.cpp" )
 
@@ -312,11 +326,13 @@ SET( manufacturing_INCLUDE
      "${TARGET_INCLUDE_DIR}/manufacturing/FactoryDB.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/FactoryService.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/RamProxyDB.h"
+     "${TARGET_INCLUDE_DIR}/manufacturing/RamMethods.h"
      "${TARGET_INCLUDE_DIR}/manufacturing/RamProxyService.h" )
 SET( manufacturing_SOURCE
      "${TARGET_SOURCE_DIR}/manufacturing/Blueprint.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/FactoryDB.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/FactoryService.cpp"
+     "${TARGET_SOURCE_DIR}/manufacturing/RamMethods.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/RamProxyDB.cpp"
      "${TARGET_SOURCE_DIR}/manufacturing/RamProxyService.cpp" )
 
@@ -330,22 +346,18 @@ SET( map_SOURCE
      "${TARGET_SOURCE_DIR}/map/MapService.cpp" )
 
 SET( market_INCLUDE
-     "${TARGET_INCLUDE_DIR}/market/BillMgrService.h"
-     "${TARGET_INCLUDE_DIR}/market/ContractMgrService.h"
-     "${TARGET_INCLUDE_DIR}/market/ContractProxy.h"
      "${TARGET_INCLUDE_DIR}/market/MarketBot.h"
      "${TARGET_INCLUDE_DIR}/market/MarketBotConf.h"
      "${TARGET_INCLUDE_DIR}/market/MarketBotMgr.h"
+     "${TARGET_INCLUDE_DIR}/market/MarketMgr.h"
      "${TARGET_INCLUDE_DIR}/market/MarketDB.h"
      "${TARGET_INCLUDE_DIR}/market/MarketProxyService.h" )
      #"${TARGET_INCLUDE_DIR}/market/NPCMarket.h")
 SET( market_SOURCE
-     "${TARGET_SOURCE_DIR}/market/BillMgrService.cpp"
-     "${TARGET_SOURCE_DIR}/market/ContractMgrService.cpp"
-     "${TARGET_SOURCE_DIR}/market/ContractProxy.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketBot.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketBotConf.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketBotMgr.cpp"
+     "${TARGET_SOURCE_DIR}/market/MarketMgr.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketDB.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketProxyService.cpp" )
      #"${TARGET_SOURCE_DIR}/market/NPCMarket.cpp")
@@ -396,15 +408,25 @@ SET( planet_SOURCE
      "${TARGET_SOURCE_DIR}/planet/PlanetORBBound.cpp")
 
 SET( pos_INCLUDE
-     "${TARGET_INCLUDE_DIR}/pos/POS.h"
+     "${TARGET_INCLUDE_DIR}/pos/Array.h"
+     "${TARGET_INCLUDE_DIR}/pos/Battery.h"
+     "${TARGET_INCLUDE_DIR}/pos/Module.h"
+     "${TARGET_INCLUDE_DIR}/pos/POS_AI.h"
+     "${TARGET_INCLUDE_DIR}/pos/PosMgr.h"
      "${TARGET_INCLUDE_DIR}/pos/PosMgrDB.h"
-     "${TARGET_INCLUDE_DIR}/pos/PosMgrService.h"
-     "${TARGET_INCLUDE_DIR}/pos/Structure.h" )
+     "${TARGET_INCLUDE_DIR}/pos/Structure.h"
+     "${TARGET_INCLUDE_DIR}/pos/Tower.h"
+     "${TARGET_INCLUDE_DIR}/pos/Weapon.h" )
 SET( pos_SOURCE
-     "${TARGET_SOURCE_DIR}/pos/POS.cpp"
+     "${TARGET_SOURCE_DIR}/pos/Array.cpp"
+     "${TARGET_SOURCE_DIR}/pos/Battery.cpp"
+     "${TARGET_SOURCE_DIR}/pos/Module.cpp"
+     "${TARGET_SOURCE_DIR}/pos/POS_AI.cpp"
+     "${TARGET_SOURCE_DIR}/pos/PosMgr.cpp"
      "${TARGET_SOURCE_DIR}/pos/PosMgrDB.cpp"
-     "${TARGET_SOURCE_DIR}/pos/PosMgrService.cpp"
-     "${TARGET_SOURCE_DIR}/pos/Structure.cpp" )
+     "${TARGET_SOURCE_DIR}/pos/Structure.cpp"
+     "${TARGET_SOURCE_DIR}/pos/Tower.cpp"
+     "${TARGET_SOURCE_DIR}/pos/Weapon.cpp" )
 
 SET( search_INCLUDE
      "${TARGET_INCLUDE_DIR}/search/Search.h"
@@ -466,7 +488,9 @@ SET( station_INCLUDE
      "${TARGET_INCLUDE_DIR}/station/ReprocessingDB.h"
      "${TARGET_INCLUDE_DIR}/station/ReprocessingService.h"
      "${TARGET_INCLUDE_DIR}/station/Station.h"
+     "${TARGET_INCLUDE_DIR}/station/StationDataMgr.h"
      "${TARGET_INCLUDE_DIR}/station/StationDB.h"
+     "${TARGET_INCLUDE_DIR}/station/StationOffice.h"
      "${TARGET_INCLUDE_DIR}/station/StationService.h"
      "${TARGET_INCLUDE_DIR}/station/StationSvcService.h"
      "${TARGET_INCLUDE_DIR}/station/TradeService.h"  )
@@ -478,7 +502,9 @@ SET( station_SOURCE
      "${TARGET_SOURCE_DIR}/station/ReprocessingDB.cpp"
      "${TARGET_SOURCE_DIR}/station/ReprocessingService.cpp"
      "${TARGET_SOURCE_DIR}/station/Station.cpp"
+     "${TARGET_SOURCE_DIR}/station/StationDataMgr.cpp"
      "${TARGET_SOURCE_DIR}/station/StationDB.cpp"
+     "${TARGET_SOURCE_DIR}/station/StationOffice.cpp"
      "${TARGET_SOURCE_DIR}/station/StationService.cpp"
      "${TARGET_SOURCE_DIR}/station/StationSvcService.cpp"
      "${TARGET_SOURCE_DIR}/station/TradeService.cpp" )
@@ -566,6 +592,7 @@ SOURCE_GROUP( "src\\cache"         FILES ${cache_INCLUDE} )
 SOURCE_GROUP( "src\\character"     FILES ${character_INCLUDE} )
 SOURCE_GROUP( "src\\chat"          FILES ${chat_INCLUDE} )
 SOURCE_GROUP( "src\\config"        FILES ${config_INCLUDE} )
+SOURCE_GROUP( "src\\contract"      FILES ${contract_INCLUDE} )
 SOURCE_GROUP( "src\\corporation"   FILES ${corporation_INCLUDE} )
 SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_INCLUDE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_INCLUDE} )
@@ -599,6 +626,7 @@ SOURCE_GROUP( "src\\cache"         FILES ${cache_SOURCE} )
 SOURCE_GROUP( "src\\character"     FILES ${character_SOURCE} )
 SOURCE_GROUP( "src\\chat"          FILES ${chat_SOURCE} )
 SOURCE_GROUP( "src\\config"        FILES ${config_SOURCE} )
+SOURCE_GROUP( "src\\contract"      FILES ${contract_SOURCE} )
 SOURCE_GROUP( "src\\corporation"   FILES ${corporation_SOURCE} )
 SOURCE_GROUP( "src\\dogmaim"       FILES ${dogmaim_SOURCE} )
 SOURCE_GROUP( "src\\dungeon"       FILES ${dungeon_SOURCE} )
@@ -633,6 +661,7 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${character_INCLUDE}      ${character_SOURCE}
                 ${chat_INCLUDE}           ${chat_SOURCE}
                 ${config_INCLUDE}         ${config_SOURCE}
+                ${contract_INCLUDE}       ${contract_SOURCE}
                 ${corporation_INCLUDE}    ${corporation_SOURCE}
                 ${dogmaim_INCLUDE}        ${dogmaim_SOURCE}
                 ${dungeon_INCLUDE}        ${dungeon_SOURCE}

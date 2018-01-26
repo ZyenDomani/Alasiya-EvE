@@ -29,6 +29,8 @@
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "EntityList.h"
+#include "StaticDataMgr.h"
+#include "account/AccountService.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
 #include "fleet/FleetService.h"
@@ -106,9 +108,9 @@ CharacterType::CharacterType(
     assert(_charData.shipTypeID == _shipType.id());
 }
 
-CharacterType *CharacterType::Load(ItemFactory &factory, uint32 characterTypeID)
+CharacterType *CharacterType::Load( uint32 characterTypeID)
 {
-    return ItemType::Load<CharacterType>( factory, characterTypeID );
+    return ItemType::Load<CharacterType>(characterTypeID );
 }
 
 /*
@@ -197,92 +199,9 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 
 
 /*
- * CharacterData
- */
-CharacterData::CharacterData(   //uses v6
-    uint32 _accountID,
-    const char *_title,
-    const char *_desc,
-    bool _gender,
-    double _bounty,
-    double _balance,
-    double _aurBalance,
-    double _securityRating,
-    uint32 _logonMinutes,
-    double _skillPoints,
-    uint32 _corporationID,
-    uint32 _allianceID,
-    uint32 _warFactionID,
-    uint32 _stationID,
-    uint32 _solarSystemID,
-    uint32 _constellationID,
-    uint32 _regionID,
-    uint32 _ancestryID,
-    uint8 _bloodlineID,
-    uint8 _raceID,
-    uint32 _careerID,
-    uint32 _schoolID,
-    uint32 _careerSpecialityID,
-    uint64 _startDateTime,
-    uint64 _createDateTime,
-    uint32 _shipID,
-    uint32 _capsuleID)
-: accountID(_accountID),
-  title(_title),
-  description(_desc),
-  gender(_gender),
-  bounty(_bounty),
-  balance(_balance),
-  aurBalance(_aurBalance),
-  securityRating(_securityRating),
-  logonMinutes(_logonMinutes),
-  skillPoints(_skillPoints),
-  corporationID(_corporationID),
-  allianceID(_allianceID),
-  warFactionID(_warFactionID),
-  stationID(_stationID),
-  solarSystemID(_solarSystemID),
-  constellationID(_constellationID),
-  regionID(_regionID),
-  ancestryID(_ancestryID),
-  bloodlineID(_bloodlineID),
-  raceID(_raceID),
-  careerID(_careerID),
-  schoolID(_schoolID),
-  careerSpecialityID(_careerSpecialityID),
-  startDateTime(_startDateTime),
-  createDateTime(_createDateTime),
-  shipID(_shipID),
-  capsuleID(_capsuleID)
-{
-}
-
-/*
- * * CorpMemberInfo
- */
-CorpData::CorpData(
-    uint32 _corpHQ,
-    int32 _corpAccountKey,
-    uint64 _corpRole,
-    uint64 _rolesAtAll,
-    uint64 _rolesAtBase,
-    uint64 _rolesAtHQ,
-    uint64 _rolesAtOther)
-: corpHQ(_corpHQ),
-  corpAccountKey(_corpAccountKey),
-  corpRole(_corpRole),
-  rolesAtAll(_rolesAtAll),
-  rolesAtBase(_rolesAtBase),
-  rolesAtHQ(_rolesAtHQ),
-  rolesAtOther(_rolesAtOther)
-{
-}
-
-/*
  * Character
  */
 Character::Character(
-    ItemFactory &_factory,
     uint32 _characterID,
     // InventoryItem stuff:
     const CharacterType &_charType,
@@ -290,41 +209,9 @@ Character::Character(
     // Character stuff:
     const CharacterData &_charData,
     const CorpData &_corpData)
-: InventoryItem(_factory, _characterID, _charType, _data),
-  m_accountID(_charData.accountID),
-  m_title(_charData.title),
-  m_description(_charData.description),
-  m_gender(_charData.gender),
-  m_bounty(_charData.bounty),
-  m_balance(_charData.balance),
-  m_aurBalance(_charData.aurBalance),
-  m_securityStatus(_charData.securityRating),
-  m_logonMinutes(_charData.logonMinutes),
-  m_totalSPtrained(((double)(_charData.skillPoints))),
-  m_corporationID(_charData.corporationID),
-  m_corpHQ(_corpData.corpHQ),
-  m_allianceID(_charData.allianceID),
-  m_warFactionID(_charData.warFactionID),
-  m_corpAccountKey(_corpData.corpAccountKey),
-  m_corpRole(_corpData.corpRole),
-  m_rolesAtAll(_corpData.rolesAtAll),
-  m_rolesAtBase(_corpData.rolesAtBase),
-  m_rolesAtHQ(_corpData.rolesAtHQ),
-  m_rolesAtOther(_corpData.rolesAtOther),
-  m_stationID(_charData.stationID),
-  m_solarSystemID(_charData.solarSystemID),
-  m_constellationID(_charData.constellationID),
-  m_regionID(_charData.regionID),
-  m_ancestryID(_charData.ancestryID),
-  m_bloodlineID(_charData.bloodlineID),
-  m_raceID(_charData.raceID),
-  m_careerID(_charData.careerID),
-  m_schoolID(_charData.schoolID),
-  m_careerSpecialityID(_charData.careerSpecialityID),
-  m_startDateTime(_charData.startDateTime),
-  m_createDateTime(_charData.createDateTime),
-  m_shipID(_charData.shipID),
-  m_capsuleID(_charData.capsuleID),
+: InventoryItem(_characterID, _charType, _data),
+  m_charData(_charData),
+  m_corpData(_corpData),
   m_pClient(nullptr)
 {
     // allow characters to be only singletons
@@ -333,16 +220,16 @@ Character::Character(
     m_loaded = false;
 
     if (!IsAgent(m_itemID)) {
-        m_fleetID = 0;
-        m_wingID = 0;
-        m_squadID = 0;
-        m_fleetJob = 0;
-        m_fleetRole = 0;
-        m_fleetBooster = 0;
-        m_fleetJoinTime = 0;
+        m_fleetData.fleetID = 0;
+        m_fleetData.wingID = 0;
+        m_fleetData.squadID = 0;
+        m_fleetData.job = 0;
+        m_fleetData.role = 0;
+        m_fleetData.booster = 0;
+        m_fleetData.joinTime = 0;
         m_freePoints = 0;
         m_loginTime = sEntityList.GetStamp();
-        m_inventory = new Inventory(InventoryItemRef(this));
+        pInventory = new Inventory(InventoryItemRef(this));
     }
 }
 
@@ -351,11 +238,11 @@ Character::~Character()
     SaveBookMarks();
     SaveFullCharacter();
     SaveCertificates();
-    SafeDelete(m_inventory);
+    SafeDelete(pInventory);
 }
 
-CharacterRef Character::Load(ItemFactory &factory, uint32 characterID) {
-    return InventoryItem::Load<Character>( factory, characterID );
+CharacterRef Character::Load( uint32 characterID) {
+    return InventoryItem::Load<Character>( characterID );
 }
 
 bool Character::_Load() {
@@ -364,7 +251,7 @@ bool Character::_Load() {
     if (IsAgent(m_itemID))
         return true;
 
-    if (!m_inventory->LoadContents(&m_factory)) {
+    if (!pInventory->LoadContents()) {
         sLog.Warning("Character::_Load","LoadContents returned false for char %u", m_itemID);
         return (m_loaded = false);
     }
@@ -377,9 +264,6 @@ bool Character::_Load() {
 
     // Update Skill Queue and Total Skill Points Trained:
     if (m_loaded) {
-        if (GetSkillInTraining())
-            UpdateSkillQueue();
-        VerifySP();
         m_certificates.clear();
         if (!m_cdb.LoadCertificates(m_itemID, m_certificates)) {
             sLog.Warning("Character::_Load","LoadCertificates returned false for char %u", m_itemID);
@@ -397,6 +281,8 @@ bool Character::_Load() {
     // load char personal bookmarks and folders ... corp shit will be done ???
     LoadBookmarks();
 
+    m_charData.loginTime = GetFileTimeNow();
+
     return m_loaded;
 }
 
@@ -409,52 +295,30 @@ void Character::VerifySP()
     }
 }
 
-template<class _Ty>
-RefPtr<_Ty> Character::CreateCharacter(ItemFactory &factory, uint32 characterID,
-                                       const CharacterType &charType, const ItemData &data,
-                                       const CharacterData &charData, const CorpData &corpData)
-{
-    // construct the character item
-    return CharacterRef( new Character( factory, characterID, charType, data, charData, corpData ) );
-}
-
-CharacterRef Character::Spawn(ItemFactory &factory, ItemData &data, CharacterData &charData, CorpData &corpData) {
+CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
     // make sure it's a character
-    const CharacterType *ct = factory.GetCharacterType(data.typeID);
-    if (!ct) return CharacterRef();
+    const CharacterType *ct = sItemFactory.GetCharacterType(charData.typeID);
+    if (ct == nullptr)
+        return CharacterRef(nullptr);
 
-    // make sure it's a singleton with qty 1
-    if (!data.singleton || data.quantity != 1) {
-        _log(CHARACTER__ERROR, "Tried to create non-singleton character %s.", data.name.c_str());
-        return CharacterRef();
-    }
-
-    uint32 characterID = InventoryItem::CreateItemID(factory, data);
+    uint32 characterID = CharacterDB::NewCharacter(charData, corpData);
     if (characterID == 0) {
         _log(CHARACTER__ERROR, "Failed to get ItemID for new character.");
-        return CharacterRef();
+        return CharacterRef(nullptr);
     }
 
-    // then character
-    if (!factory.db().NewCharacter(characterID, charData, corpData)) {
-        // delete the item
-        factory.db().DeleteItem(characterID);
-        return CharacterRef();
-    }
-
-    CharacterRef charRef = Character::Load( factory, characterID );
-    charRef->SetAttribute(AttrMass, 0);
-
-    return charRef;
+    return Character::Load(characterID );
 }
 
 void Character::LogOut()
 {
+    SaveCharacter();
+    m_db.SetLogOffTime(m_itemID);
     if (!sConsole.IsShutdown())
-        if (IsFleet(m_fleetID))
+        if (IsFleet(m_fleetData.fleetID))
             sFltSvc.LeaveFleet(m_pClient);
 
-    m_factory.RemoveItem(m_itemID);
+    sItemFactory.RemoveItem(m_itemID);
     // remove char from station inventory, if docked
     /*
     Inventory* inv(nullptr);
@@ -469,61 +333,99 @@ void Character::LogOut()
 
 void Character::Delete() {
     // delete contents
-    m_inventory->DeleteContents();
+    pInventory->DeleteContents();
     // delete character record
-    m_factory.db().DeleteCharacter(m_itemID);
+    m_db.DeleteCharacter(m_itemID);
     // let the parent care about the rest
     InventoryItem::Delete();
 }
 
-bool Character::AlterBalance(double balanceChange) {
-    if(balanceChange == 0)
-        return true;
-    double result = m_balance + balanceChange;
-    //remember, this can take a negative amount...
-    if (result < 0)
-        return false;
-    m_balance = result;
+double Character::balance(uint8 type)
+{
+    if (type == Account::CreditType::ISK)
+        return m_charData.balance;
+    else if (type == Account::CreditType::AURUM)
+        return m_charData.aurBalance;
+    else
+        _log(ACCOUNT__ERROR, "Character::balance() - invalid type %u", type);
+    return 0;
+}
 
-    /** @todo (allan) save some info to journal. */
-    //SaveCharacter();
+bool Character::AlterBalance(double amount, uint8 type) {
+    if (amount == 0)
+        return true;
+
+    // amount can be negative.  check for funds to remove, if applicable
+    if ((balance(type) + amount) < 0) {
+        std::map<std::string, PyRep *> args;
+        args["amount"] = new PyFloat(amount);
+        args["balance"] = new PyFloat(balance(type));
+        throw(PyException(MakeUserError("NotEnoughMoney", args)));
+        return false;
+    }
+
+    //adjust balance and send notification of change
+    OnAccountChange ac;
+    ac.ownerid = m_itemID;
+    if (type == Account::CreditType::ISK) {
+        m_charData.balance += amount;
+        ac.balance = m_charData.balance;
+        ac.accountKey = "cash";
+    } else if (type == Account::CreditType::AURUM) {
+        m_charData.aurBalance += amount;
+        ac.balance = m_charData.aurBalance;
+        ac.accountKey = "AURUM";
+    }
+
+    PyTuple *answer = ac.Encode();
+    m_pClient->SendNotification("OnAccountChange", "cash", &answer, false);
 
     return true;
 }
 
 void Character::SetLocation(uint32 stationID, uint32 solarSystemID, uint32 constellationID, uint32 regionID) {
-    m_stationID = stationID;
-    m_solarSystemID = solarSystemID;
-    m_constellationID = constellationID;
-    m_regionID = regionID;
-    SaveCharacter();
-}
-
-void Character::JoinCorporation(uint32 corporationID, const CorpData &roles) {
-	m_corporationID = corporationID;
-	m_corpRole = roles.corpRole;
-    m_corpAccountKey = roles.corpAccountKey;
-    m_rolesAtAll = roles.rolesAtAll;
-    m_rolesAtBase = roles.rolesAtBase;
-    m_rolesAtHQ = roles.rolesAtHQ;
-	m_rolesAtOther = roles.rolesAtOther;
-    // Add new employment history record    -allan  25Mar14   update 20Jan15
-    m_db.UpdateCharCorpRecords(m_itemID, corporationID);
-    m_pClient->UpdateCorpSession();
+    m_charData.locationID = (stationID == 0 ? solarSystemID : stationID);
+    m_charData.stationID = stationID;
+    m_charData.solarSystemID = solarSystemID;
+    m_charData.constellationID = constellationID;
+    m_charData.regionID = regionID;
     SaveCharacter();
 }
 
 void Character::SetDescription(const char *newDescription) {
-    m_description = newDescription;
+    m_charData.description = newDescription;
     SaveCharacter();
+}
+
+void Character::JoinCorporation(const CorpData &data) {
+    m_corpData = data;
+    // Add new employment history record    -allan  25Mar14   update 20Jan15
+    CharacterDB::AddEmployment(m_itemID, m_corpData.corporationID);
+    m_pClient->UpdateCorpSession(m_corpData);
+    /** @todo remove this in favor of updating data when changed */
+    m_db.SaveCorpData(m_itemID, m_corpData);
 }
 
 void Character::SetAccountKey(int32 accountKey)
 {
-    m_corpAccountKey = accountKey;
-    m_pClient->UpdateCorpSession();
+    m_corpData.corpAccountKey = accountKey;
+    /** @todo remove this in favor of updating data when changed */
+    m_db.SaveCorpData(m_itemID, m_corpData);
+    m_pClient->UpdateCorpSession(m_corpData);
+}
 
-    SaveCharacter();
+void Character::SetBaseID(uint32 baseID)
+{
+    m_corpData.baseID = baseID;
+    /** @todo remove this in favor of updating data when changed */
+    m_db.SaveCorpData(m_itemID, m_corpData);
+    m_pClient->UpdateCorpSession(m_corpData);
+}
+
+void Character::UpdateCorpData(CorpData data)
+{
+    m_corpData = data;
+    m_pClient->UpdateCorpSession(m_corpData);
 }
 
 uint32 Character::PickAlternateShip(uint32 locationID)
@@ -531,27 +433,22 @@ uint32 Character::PickAlternateShip(uint32 locationID)
     return m_db.PickAlternateShip(m_itemID, locationID);
 }
 
-void Character::SetFleetData(CharFleetData &fleet)
+void Character::SetFleetData(CharFleetData& fleet)
 {
     if (fleet.fleetID == 0) {
-        m_fleetID = 0;
-        m_wingID = 0;
-        m_squadID = 0;
-        m_fleetJob = 0;
-        m_fleetRole = 0;
-        m_fleetBooster = 0;
-        m_fleetJoinTime = 0;
+        m_fleetData.fleetID = 0;
+        m_fleetData.wingID = 0;
+        m_fleetData.squadID = 0;
+        m_fleetData.job = 0;
+        m_fleetData.role = 0;
+        m_fleetData.booster = 0;
+        m_fleetData.joinTime = 0;
     } else {
-        m_fleetID = fleet.fleetID;
-        m_wingID = fleet.wingID;
-        m_squadID = fleet.squadID;
-        m_fleetRole = fleet.fleetRole;
-        m_fleetBooster = fleet.fleetBooster;
-        m_fleetJob = fleet.fleetJob;
-        if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
-            m_fleetJoinTime = fleet.joinTime;
+        m_fleetData = fleet;
+        //if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
+          //  m_fleetJoinTime = fleet.joinTime;
     }
-    m_pClient->UpdateFleetSession();
+    m_pClient->UpdateFleetSession(m_fleetData);
 }
 
 
@@ -570,9 +467,9 @@ bool Character::HasSkillTrainedToLevel(uint32 skillTypeID, uint32 skillLevel) co
 
 SkillRef Character::GetSkill(uint32 skillTypeID) const
 {
-    InventoryItemRef skill = m_inventory->GetByTypeFlag( skillTypeID, flagSkill );
+    InventoryItemRef skill = pInventory->GetByTypeFlag( skillTypeID, flagSkill );
     if (skill.get() == nullptr)
-        skill = m_inventory->GetByTypeFlag( skillTypeID, flagSkillInTraining );
+        skill = pInventory->GetByTypeFlag( skillTypeID, flagSkillInTraining );
 
     return SkillRef::StaticCast( skill );
 }
@@ -650,24 +547,24 @@ void Character::ProcessEffects()
 
 SkillRef Character::GetSkillInTraining() const {
     InventoryItemRef item;
-    m_inventory->FindSingleByFlag(flagSkillInTraining, item);
+    pInventory->FindSingleByFlag(flagSkillInTraining, item);
     return SkillRef::StaticCast( item );
 }
 
 void Character::GetSkillsList(std::vector<InventoryItemRef> &skills) const
 {
-    m_inventory->FindByFlag( flagSkillInTraining, skills );
-    m_inventory->FindByFlag( flagSkill, skills );
+    pInventory->FindByFlag( flagSkillInTraining, skills );
+    pInventory->FindByFlag( flagSkill, skills );
 }
 
 EvilNumber Character::GetSPPerMin(Skill* skill)
 {
-	return EvEMath::SkillPointsPerMinute(GetAttribute(skill->GetAttribute(AttrPrimaryAttribute).get_int()), GetAttribute(skill->GetAttribute(AttrSecondaryAttribute).get_int()));
+	return EvEMath::Skill::PointsPerMinute(GetAttribute(skill->GetAttribute(AttrPrimaryAttribute).get_int()), GetAttribute(skill->GetAttribute(AttrSecondaryAttribute).get_int()));
 }
 
 double Character::GetEndOfTraining() const {
     InventoryItemRef item;
-    if (m_inventory->FindSingleByFlag(flagSkillInTraining, item))
+    if (pInventory->FindSingleByFlag(flagSkillInTraining, item))
         return item->GetAttribute(AttrExpiryTime).get_double();
     return 0;
 }
@@ -708,18 +605,18 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
             return false;
         }
         // use single_skill ...
-        single_skill->SetAttribute(AttrSkillPoints, 0);
-        single_skill->SetAttribute(AttrSkillLevel, 0);
+        single_skill->SetAttribute(AttrSkillPoints, (int8)0);
+        single_skill->SetAttribute(AttrSkillLevel, (int8)0);
         single_skill->ChangeSingleton(true);
         single_skill->Move(m_itemID, flagSkill, true);
     } else {  // use original skill
-        skill->SetAttribute(AttrSkillPoints, 0);
-        skill->SetAttribute(AttrSkillLevel, 0);
+        skill->SetAttribute(AttrSkillPoints, (int8)0);
+        skill->SetAttribute(AttrSkillLevel, (int8)0);
         skill->ChangeSingleton(true);
         skill->Move(m_itemID, flagSkill, true);
     }
     // 'skillEventSkillInjected' shows as "Unknown" in PD>Skill>History
-    SaveSkillHistory(skillEventSkillInjected, GetFileTimeNow(), m_itemID, skill->typeID(), 0, 0, GetTotalSP().get_double() );
+    SaveSkillHistory(skillEventSkillInjected, GetFileTimeNow(), m_itemID, skill->typeID(), 0, 0);
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Injected: %u", itemName().c_str(), m_itemID, skill->itemID());
 
     m_pClient->SendNotifyMsg( "Injection of skill complete." );
@@ -741,6 +638,26 @@ void Character::SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel,
 void Character::ClearSkillQueue() {
     _log(CHARACTER__SKILL_TRACE, "%s(%u) Skill Queue Cleared", itemName().c_str(), m_itemID);
     m_skillQueue.clear();
+    // if there is currently a skill in training, stop training and save
+    Skill* currentTraining = GetSkillInTraining().get();
+    if (currentTraining != nullptr) {
+        currentTraining->VerifySP();
+        EvilNumber level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+        if (level > 5)  // make error here?
+            level = 5;
+        //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
+        EvilNumber nextLevelSP = currentTraining->GetSPForLevel(level + 1);
+        EvilNumber CurrentSP = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+
+        SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
+        _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
+                itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
+
+        currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
+        currentTraining->SetAttribute(AttrExpiryTime, 0);
+        currentTraining->SetFlag(flagSkill, true);
+        currentTraining->SaveItem();
+    }
 }
 
 void Character::PauseSkillQueue() {
@@ -754,42 +671,47 @@ void Character::LoadPausedSkillQueue() {
 }
 
 void Character::UpdateSkillQueue() {
-    /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17  --updated code, logic and timers 16Nov17*/
+    /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17  --updated code, logic and timers 16Nov17  -again 9jan18*/
+    // finally fixed.  22Jan18  --it wasnt.  trying again.  24Jan18
     if (m_pClient == nullptr)
         return;
-    EvilNumber nextLevelSP = 0;
+    EvilNumber CurrentSP = 0, trainingEndTime = 0, trainingStartTime = 0, level = 0;
     Skill* currentTraining = GetSkillInTraining().get();
     if (currentTraining != nullptr) {
         currentTraining->VerifySP();
         if (m_skillQueue.empty() or (currentTraining->typeID() != m_skillQueue.front().typeID)) {
-            uint8 oldLevel = currentTraining->GetAttribute(AttrSkillLevel).get_int();
-            if (oldLevel < 0)
-                oldLevel = 0;
-            EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
-            nextLevelSP = currentTraining->GetSPForLevel(oldLevel + 1);
-            EvilNumber skillPointsTrained = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+            level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+            if (level > 5)  // make error here?
+                level = 5;
+            //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
+            CurrentSP = (currentTraining->GetSPForLevel(level) - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
 
-            SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), oldLevel +1, skillPointsTrained.get_double(), GetTotalSP().get_double() );
+            SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-            itemName().c_str(), m_itemID, currentTraining->typeID(), oldLevel, currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
 
-            OnSkillTrainingStopped osst;
-                osst.itemID = currentTraining->itemID();
-                osst.silent = 0;    //look into this...why would it be silent?
-            PyTuple* tmp = osst.Encode();
-            m_pClient->QueueDestinyEvent(&tmp);
-
-            currentTraining->SetAttribute(AttrSkillPoints, skillPointsTrained.get_int());
+            currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
             currentTraining->SetAttribute(AttrExpiryTime, 0);
             currentTraining->SetFlag(flagSkill, true);
+            currentTraining->SaveItem();
+
+            if (!m_pClient->IsLogin()) {
+                OnSkillTrainingStopped osst;
+                    osst.itemID = currentTraining->itemID();
+                    osst.silent = true;    // slient means 'disable neocom blink event'
+                PyTuple* tmp = osst.Encode();
+                m_pClient->QueueDestinyEvent(&tmp);
+            }
+
             currentTraining = nullptr;
+            trainingEndTime = GetFileTimeNow();
+            level = CurrentSP = 0;
         }
     }
 
+    bool sent = false;
     uint32 skillID = 0;
-    EvilNumber CurrentSP = 0, trainingEndTime = 0;
     while (!m_skillQueue.empty()) {
-        trainingEndTime = 0;
         if (currentTraining == nullptr) {
             skillID = m_skillQueue.front().typeID;
             currentTraining = GetSkill( skillID ).get();
@@ -800,33 +722,54 @@ void Character::UpdateSkillQueue() {
             }
 
             currentTraining->VerifySP();
-            EvilNumber level = (currentTraining->GetAttribute(AttrSkillLevel) + 1);
-            if (level > 5)
+            level = currentTraining->GetAttribute(AttrSkillLevel) +1;
+            if (level > 5)  // make error here?
                 level = 5;
-            nextLevelSP = currentTraining->GetSPForLevel(level);
             CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
-            if (CurrentSP >= nextLevelSP) {
-                if (level == 5)
-                    currentTraining->DeleteAttribute(AttrExpiryTime);
-                else
-                    currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill, true);
-                currentTraining = nullptr;
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
-            }
-            trainingEndTime = EvEMath::SkillEndingTime(CurrentSP, nextLevelSP, GetSPPerMin(currentTraining), GetFileTimeNow());
+            // check start/end times.  avoid dupe history items and attrib setting
+            if (trainingEndTime == 0) {
+                if (currentTraining->GetAttribute(AttrExpiryTime) > 0) {
+                    trainingEndTime = currentTraining->GetAttribute(AttrExpiryTime);
+                    trainingStartTime = EvEMath::Skill::StartTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), trainingEndTime.get_double());
+                } else {
+                    trainingStartTime = GetFileTimeNow();
+                    trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), GetFileTimeNow());
+                    SaveSkillHistory(skillEventTrainingStarted, trainingStartTime.get_double(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double());
+                    _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining started - skill: %u, level: %u, startTime: %.0f, endTime: %.0f, timeNow: %.0f", \
+                    itemName().c_str(), m_itemID, skillID, (uint8)level.get_int(), trainingStartTime.get_double(), trainingEndTime.get_double(), GetFileTimeNow());
 
-            SaveSkillHistory(skillEventTrainingStarted, GetFileTimeNow(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double(), GetTotalSP().get_double() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining started - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                            itemName().c_str(), m_itemID, skillID, level.get_int(), trainingEndTime.get_float(), GetFileTimeNow());
+                    currentTraining->SetFlag(flagSkillInTraining, true);
+                    currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+                }
+            } else if (trainingEndTime > currentTraining->GetAttribute(AttrExpiryTime)) {
+                if (currentTraining->GetAttribute(AttrExpiryTime) > 0) {
+                    trainingEndTime = currentTraining->GetAttribute(AttrExpiryTime);
+                    trainingStartTime = EvEMath::Skill::StartTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), trainingEndTime.get_double());
+                } else {
+                    trainingStartTime = trainingEndTime;
+                    trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), trainingEndTime.get_int());
+                    SaveSkillHistory(skillEventTrainingStarted, trainingStartTime.get_double(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double());
+                    _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining started - skill: %u, level: %u, startTime: %.0f, endTime: %.0f, timeNow: %.0f", \
+                    itemName().c_str(), m_itemID, skillID, (uint8)level.get_int(), trainingStartTime.get_double(), trainingEndTime.get_double(), GetFileTimeNow());
 
-            // need to set end time for persistance
-            currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+                    currentTraining->SetFlag(flagSkillInTraining, true);
+                    currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+                }
+            } else {
+                trainingStartTime = trainingEndTime;
+                trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), trainingEndTime.get_int());
+                SaveSkillHistory(skillEventTrainingStarted, trainingStartTime.get_double(), m_itemID, skillID, (uint8)level.get_int(), CurrentSP.get_double());
+                _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining started - skill: %u, level: %u, startTime: %.0f, endTime: %.0f, timeNow: %.0f", \
+                itemName().c_str(), m_itemID, skillID, (uint8)level.get_int(), trainingStartTime.get_double(), trainingEndTime.get_double(), GetFileTimeNow());
 
-            if (trainingEndTime > GetFileTimeNow()) {
                 currentTraining->SetFlag(flagSkillInTraining, true);
+                currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+            }
 
+            currentTraining->SaveItem();
+
+            // dont flood client on login
+            if (!m_pClient->IsLogin()) {
                 OnSkillStartTraining osst;
                     osst.itemID = currentTraining->itemID();
                     osst.endOfTraining = trainingEndTime.get_double();
@@ -834,32 +777,43 @@ void Character::UpdateSkillQueue() {
                 m_pClient->QueueDestinyEvent(&tmp);
             }
         }
+        if (currentTraining == nullptr)
+            continue;
 
-        if ( currentTraining->GetAttribute(AttrExpiryTime) < GetFileTimeNow() ) {
-            // training has been finished
-            uint8 level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
+        if (trainingEndTime == 0)
+            trainingEndTime = currentTraining->GetAttribute(AttrExpiryTime);
+        if (trainingEndTime == 0) {
+            level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
             if (level > 5)
                 level = 5;
-            EvilNumber newPoints = currentTraining->GetSPForLevel( (EvilNumber)level );
-            EvilNumber completeTime = currentTraining->GetAttribute(AttrExpiryTime);
+            CurrentSP = currentTraining->GetSPForLevel(level);
+            trainingEndTime = EvEMath::Skill::EndTime(CurrentSP, currentTraining->GetSPForLevel(level), GetSPPerMin(currentTraining), GetFileTimeNow());
+            currentTraining->SetFlag(flagSkillInTraining, true);
+            currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
+            level = CurrentSP = 0;
+        }
 
-            SaveSkillHistory(skillEventTrainingComplete, completeTime.get_double(), m_itemID, currentTraining->typeID(), level, currentTraining->GetAttribute(AttrSkillPoints).get_double(), GetTotalSP().get_double() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining completed - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                        itemName().c_str(), m_itemID, currentTraining->typeID(), level, completeTime.get_float(), GetFileTimeNow());
+        if (trainingEndTime < GetFileTimeNow()) {
+            level = currentTraining->GetAttribute(AttrSkillLevel).get_int() +1;
+            if (level > 5)
+                level = 5;
+            CurrentSP = currentTraining->GetSPForLevel(level);
+            SaveSkillHistory(skillEventQueueTrainingCompleted, trainingEndTime.get_double(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_float());
+            _log(CHARACTER__SKILL_TRACE, "%s(%u) Queued SkillTraining completed - skill: %u, level: %u, endTime: %.0f, timeNow: %.0f", \
+                        itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), trainingEndTime.get_double(), GetFileTimeNow());
+            if (level == 5)
+                currentTraining->DeleteAttribute(AttrExpiryTime);
+            else
+                currentTraining->SetAttribute(AttrExpiryTime, 0);
+            currentTraining->SetAttribute(AttrSkillLevel, level.get_int());
+            currentTraining->SetAttribute(AttrSkillPoints, CurrentSP);
+            currentTraining->SetFlag(flagSkill, true);
+            currentTraining->SaveItem();
 
             OnSkillTrained ost;
                 ost.itemID = currentTraining->itemID();
             PyTuple* tmp = ost.Encode();
             m_pClient->QueueDestinyEvent(&tmp);
-
-            currentTraining->SetAttribute(AttrSkillLevel, level );
-            currentTraining->SetAttribute(AttrSkillPoints, newPoints.get_int());
-            if (level == 5)
-                currentTraining->DeleteAttribute(AttrExpiryTime);
-            else
-                currentTraining->SetAttribute(AttrExpiryTime, 0);
-            currentTraining->SetFlag(flagSkill, true);
-            m_skillQueue.erase( m_skillQueue.begin() );
 
             if (m_pClient->IsInSpace() and (!m_pClient->IsLogin())) {
                 switch (currentTraining->groupID()) {
@@ -870,58 +824,16 @@ void Character::UpdateSkillQueue() {
                         ;   // do nothing for these.
                     } break;
                     default: {
-                        m_pClient->SendInfoModalMsg("Your ship will update to your new skill level when you dock.");
+                        if (!sent) {
+                            sent = true;
+                            m_pClient->SendInfoModalMsg("Your ship will update to your new skill level the next time you undock.");
+                        }
                     } break;
                 }
             }
-
-            //  start training the next skill in queue when previous skill finished.....hackish persistance  -allan 7Apr14
-            //  first, check for skills in queue...
-            if (m_skillQueue.empty())
-                break;
-
-            skillID = m_skillQueue.front().typeID;
-            currentTraining = GetSkill(skillID).get();
-            if (currentTraining == nullptr) {
-                _log( CHARACTER__WARNING, "%s(%u): Skill %u to train was not found.", itemName().c_str(), m_itemID, skillID );
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
-            }
-
-            currentTraining->VerifySP();
-            level = (currentTraining->GetAttribute(AttrSkillLevel).get_int() + 1);
-            if (level > 5)
-                level = 5;
-            nextLevelSP = currentTraining->GetSPForLevel(level);
-            CurrentSP = currentTraining->GetAttribute(AttrSkillPoints);
-            if (CurrentSP >= nextLevelSP) {
-                if (level == 5)
-                    currentTraining->DeleteAttribute(AttrExpiryTime);
-                else
-                    currentTraining->SetAttribute(AttrExpiryTime, 0);
-                currentTraining->SetFlag(flagSkill, true);
-                currentTraining = nullptr;
-                m_skillQueue.erase( m_skillQueue.begin() );
-                continue;
-            }
-            trainingEndTime = EvEMath::SkillEndingTime(CurrentSP, nextLevelSP, GetSPPerMin(currentTraining), completeTime.get_int());
-
-            SaveSkillHistory(skillEventTrainingStarted, trainingEndTime.get_int(), m_itemID, skillID, level, CurrentSP.get_double(), GetTotalSP().get_double() );
-            _log(CHARACTER__SKILL_TRACE, "%s(%u) Persistant Training started - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
-                        itemName().c_str(), m_itemID, skillID, level, trainingEndTime.get_float(), GetFileTimeNow());
-
-            // need to set end time for persistance
-            currentTraining->SetAttribute(AttrExpiryTime, trainingEndTime);
-
-            if (trainingEndTime > GetFileTimeNow()) {
-                currentTraining->SetFlag(flagSkillInTraining, true);
-
-                OnSkillStartTraining osst;
-                    osst.itemID = currentTraining->itemID();
-                    osst.endOfTraining = trainingEndTime.get_double();
-                PyTuple *tmp2 = osst.Encode();
-                m_pClient->QueueDestinyEvent(&tmp2);
-            }
+            currentTraining = nullptr;
+            m_skillQueue.erase( m_skillQueue.begin() );
+            continue;
         } else
             break;  // this skill is still in training.  break out of while() loop
     }
@@ -947,7 +859,7 @@ void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
             if (itr->second < qs.level)
                 itr->second = qs.level;
         } else
-            flatSkillQueue.insert(std::make_pair(qs.typeID, qs.level));
+            flatSkillQueue.emplace(qs.typeID, qs.level);
     }
 
     Skill* skill(nullptr);
@@ -965,8 +877,8 @@ void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
 
 PyDict *Character::GetCharInfo() {
     // this is char, skills, implants, boosters.
-    if (!m_inventory->ContentsLoaded()) {
-        if (!m_inventory->LoadContents(&m_factory)) {
+    if (!pInventory->ContentsLoaded()) {
+        if (!pInventory->LoadContents()) {
             codelog(CHARACTER__ERROR, "%s (%u): Failed to load contents for GetCharInfo", m_itemName.c_str(), m_itemID);
             return nullptr;
         }
@@ -983,8 +895,8 @@ PyDict *Character::GetCharInfo() {
     std::vector<InventoryItemRef> skills;
     skills.clear();
     //find all the skills contained within ourself.
-    m_inventory->FindByFlag( flagSkill, skills );
-    m_inventory->FindByFlag( flagSkillInTraining, skills );
+    pInventory->FindByFlag( flagSkill, skills );
+    pInventory->FindByFlag( flagSkillInTraining, skills );
 
     /** @todo  get implants and boosters here once implemented */
 
@@ -1006,7 +918,7 @@ PyDict *Character::GetCharInfo() {
 PyObject *Character::GetDescription() const {
     util_Row row;
         row.header.push_back("description");
-        row.line = new PyList;
+        row.line = new PyList();
         row.line->AddItemString( description().c_str() );
     return row.Encode();
 }
@@ -1028,15 +940,15 @@ PyTuple *Character::GetSkillQueue() {
 }
 
 void Character::AddItem(InventoryItemRef item) {
-    m_inventory->AddItem( item );
+    pInventory->AddItem( item );
 
     if ((item->flag() == flagSkill) || (item->flag() == flagSkillInTraining)) {
         SkillRef skill = SkillRef::StaticCast( item );
 
         if( !skill->singleton() ) {
             skill->ChangeSingleton( true, true );
-            skill->SetAttribute(AttrSkillLevel, 0);
-            skill->SetAttribute(AttrSkillPoints, 0);
+            skill->SetAttribute(AttrSkillLevel, (int8)0);
+            skill->SetAttribute(AttrSkillPoints, (int8)0);
             if( skill->flag() != flagSkillInTraining )
                 skill->SetAttribute(AttrExpiryTime, 0);
         }
@@ -1047,16 +959,16 @@ void Character::AddItem(InventoryItemRef item) {
 
 void Character::SetActiveShip(uint32 shipID)
 {
-    m_shipID = shipID;
+    m_charData.shipID = shipID;
     m_db.SetCurrentShip(m_itemID, shipID);
 }
 
 void Character::SetActivePod(uint32 podID)
 {
-    m_capsuleID = podID;
+    m_charData.capsuleID = podID;
     m_db.SetCurrentPod(m_itemID, podID);
-
 }
+
 void Character::ResetClone()
 {
     m_db.ChangeCloneType(m_itemID, 164);       // typeID = 164 is for Clone Grade Alpha
@@ -1065,63 +977,15 @@ void Character::ResetClone()
 void Character::SaveCharacter() {
     _log( CHARACTER__INFO, "Saving character info for %u.", m_itemID );
 
-    // Set current m_logonMinutes
     SetLogonMinutes();
-
-    // character data
-    /** @todo rework this to save only updated data */
-    m_factory.db().SaveCharacter(
-        m_itemID,
-        CharacterData(
-            m_accountID,
-            m_title.c_str(),
-            m_description.c_str(),
-            m_gender,
-            m_bounty,
-            m_balance,
-            m_aurBalance,
-            m_securityStatus,
-            m_logonMinutes,
-            GetTotalSP().get_double(),
-            m_corporationID,
-            m_allianceID,
-            m_warFactionID,
-            m_stationID,
-            m_solarSystemID,
-            m_constellationID,
-            m_regionID,
-            m_ancestryID,
-            m_bloodlineID,
-            m_raceID,
-            m_careerID,
-            m_schoolID,
-            m_careerSpecialityID,
-            m_startDateTime,
-            m_createDateTime,
-            m_shipID,
-            m_capsuleID
-        )
-    );
-
-    // corporation data
-    /** @todo remove this in favor of updating data when changed */
-    m_factory.db().SaveCorpData(
-        m_itemID,
-        CorpData(
-            m_corpHQ,
-            m_corpAccountKey,
-            m_corpRole,
-            m_rolesAtAll,
-            m_rolesAtBase,
-            m_rolesAtHQ,
-            m_rolesAtOther
-        )
-    );
+    m_db.SaveCharacter(m_itemID, m_charData);
 }
 
 void Character::SaveFullCharacter() {
     _log( CHARACTER__INFO, "Saving full character info for %u.", m_itemID );
+    GetTotalSP();
 	SaveCharacter();
+    m_db.SaveCorpData(m_itemID, m_corpData);
     SaveAttributes();
     if (GetSkillInTraining())
         GetSkillInTraining()->SaveItem();
@@ -1141,23 +1005,47 @@ EvilNumber Character::GetTotalSP() {
     for (auto cur : skills)
         totalSP += cur->GetAttribute( AttrSkillPoints );    // much cleaner and more accurate    -allan
 
-    return (m_totalSPtrained = totalSP);
+    return (m_charData.skillPoints = totalSP.get_double());
 }
 
-void Character::SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints) {
-    m_db.SaveSkillHistory(eventID, (double)logDate, characterID, skillTypeID, skillLevel, relativePoints, absolutePoints);
+void Character::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints)
+{
+    if (absolutePoints < 0)
+        return;
+    if (skillLevel < 0)
+        return;
+    if (logDate < 0)
+        return;
+    if (!sDataMgr.IsSkillTypeID(skillTypeID))
+        return;
+    m_db.SaveSkillHistory(eventID, (double)logDate, characterID, skillTypeID, skillLevel, absolutePoints);
 }
 
-PyRep* Character::GetSkillHistory() {
+PyRep* Character::GetSkillHistory()
+{
     return m_db.GetSkillHistory(m_itemID);
 }
 
-void Character::PayBounty(CharacterRef cRef) {
-    AlterBalance(m_db.PayBounty(cRef));
+void Character::PayBounty(CharacterRef cRef)
+{
+    std::string reason = "Bounty paid for the killing of ";
+    reason += cRef->itemName();
+    AccountService::TranserFunds(ownerCONCORD, m_itemID, cRef->bounty(), reason, Journal::EntryType::Bounty);
 }
 
-void Character::SetLoginTime() {
+void Character::SetLoginTime()
+{
     m_loginTime = sEntityList.GetStamp();
+    m_db.SetLogInTime(m_itemID);
+}
+
+uint16 Character::OnlineTime()
+{
+    double onlineTime = m_charData.loginTime - GetFileTimeNow();
+    onlineTime /= 10000000;
+    onlineTime -= 11644473600;
+    onlineTime /= 60;
+    return (uint16)onlineTime;
 }
 
 // called on 10m timer from client
@@ -1167,17 +1055,9 @@ void Character::SetLogonMinutes() {
 
     // some checks are done < 1m, so if this check has no minutes, keep original time and exit
     if (loginMinutes > 0) {
-        m_logonMinutes += loginMinutes;
+        m_charData.logonMinutes += loginMinutes;
         m_loginTime = sEntityList.GetStamp();
     }
-}
-
-bool Character::isOffline(uint32 charID) {
-    //return m_db.isOffline(charID);
-    if (m_pClient)
-		return false;
-	else
-		return true;
 }
 
 // certificate system
@@ -1225,22 +1105,8 @@ void Character::SaveBookMarks()
 }
 
 
-
 // functions and methods for standings system
-/** @todo (allan)  this system is not complete... */
-double Character::GetAgentStanding(uint32 toID, uint32 fromID) {
-	return s_db.GetAgentStanding(toID, fromID);
-}
-
-double Character::GetAllianceStanding(uint32 toID, uint32 fromID) {
-	return s_db.GetAllianceStanding(toID, fromID);
-}
-
-double Character::GetCharStanding(uint32 toID, uint32 fromID) {
-	return s_db.GetCharStanding(toID, fromID);
-}
-
-double Character::GetCorpStanding(uint32 toID, uint32 fromID) {
+double Character::GetStanding(uint32 toID, uint32 fromID) {
 	/*
 	 *    double res = s_db.GetCorpStanding(toID, fromID);
 	 *
@@ -1249,7 +1115,7 @@ double Character::GetCorpStanding(uint32 toID, uint32 fromID) {
 	 *    else
 	 *        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
 	 */
-	return s_db.GetCorpStanding(toID, fromID);
+	return s_db.GetStanding(toID, fromID);
 }
 
 double Character::GetNPCCorpStanding(uint32 toID, uint32 fromID) {
@@ -1261,35 +1127,15 @@ double Character::GetNPCCorpStanding(uint32 toID, uint32 fromID) {
 	 *    else
 	 *        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
 	 */
-	return s_db.GetNPCCorpStanding(toID, fromID);
-}
-
-double Character::GetFactionStanding(uint32 toID, uint32 fromID) {
-	return s_db.GetFactionStanding(toID, fromID);
+	return s_db.GetStanding(toID, fromID);
 }
 
 double Character::GetStandingChanges() {
 	return s_db.GetStandingChanges(m_itemID);
 }
 
-void Character::SetAgentStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetAgentStanding(fromID, toID, standing);
-}
-
-void Character::SetAllianceStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetAllianceStanding(fromID, toID, standing);
-}
-
-void Character::SetCharStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetCharStanding(fromID, toID, standing);
-}
-
-void Character::SetCorpStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetCorpStanding(fromID, toID, standing);
-}
-
-void Character::SetNPCCorpStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetNPCCorpStanding(fromID, toID, standing);
+void Character::SetStanding(uint32 fromID, uint32 toID, double standing) {
+	s_db.SetStanding(fromID, toID, standing);
 }
 
 void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg) {

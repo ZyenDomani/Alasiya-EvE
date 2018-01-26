@@ -28,13 +28,14 @@
 
 //#include "eve-compat.h"
 
-/** @todo look into making this a singleton to avoid multiple redirection calls when factory is needed (and it's single-instance code anyway) */
+#include "utils/Singleton.h"
+#include "inventory/ItemRef.h"
 
-#include "inventory/InventoryDB.h"
 
 class ItemCategory;
 class ItemGroup;
 class ItemType;
+
 class BlueprintType;
 class CharacterType;
 class ShipType;
@@ -43,13 +44,18 @@ class Missile;
 class Client;
 class EntityList;
 class Inventory;
+class PyServiceMgr;
+class InventoryDB;
 
 class ItemFactory
+: public Singleton<ItemFactory>
 {
-    friend class InventoryItem;    //only for access to _DeleteItem
 public:
     ItemFactory();
     ~ItemFactory();
+
+    void Close();
+    void Initialize();
 
     void SaveItems();
     void RemoveItem(uint32 itemID);
@@ -58,11 +64,11 @@ public:
 
     uint32 Count()                                      { return m_itemCount; }
 
-    InventoryDB& db()                                   { return m_db; }
+    InventoryDB* db()                                   { return m_db; }
 
     Client* GetUsingClient()                            { return m_pClient; }
-    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);
-    Inventory* GetItemContainerInventory(uint32 itemID, bool load = true);
+    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);     // load=true will load the item and its container (recursively) into server, up to solarSystem
+    Inventory* GetItemContainerInventory(uint32 itemID, bool load = true);   // load=true will load the item and its container (recursively) into server, up to solarSystem
 
     /**
      * these load type, cache it and return it.
@@ -94,6 +100,7 @@ public:
     SolarSystemRef          GetSolarSystem(uint32 solarSystemID);
     AsteroidItemRef         GetAsteroid(uint32 asteroidID);
     StructureItemRef        GetStructure(uint32 structureID);
+    StationOfficeRef        GetOffice(uint32 officeID);
     InventoryItemRef        GetItem(uint32 itemID);
     InventoryItemRef        GetItemContainer(uint32 itemID, bool load=true);
     InventoryItemRef        GetInventoryItemFromID(uint32 itemID, bool load=true);
@@ -113,9 +120,10 @@ public:
      */
     SkillRef                SpawnSkill(ItemData &data);
     ShipItemRef             SpawnShip(ItemData &data);
-    CharacterRef            SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData);
+    CharacterRef            SpawnCharacter(CharacterData& charData, CorpData& corpData);
     BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
     InventoryItemRef        SpawnItem(ItemData &data);
+    StationOfficeRef        SpawnOffice(ItemData &idata, OfficeData& odata);
     AsteroidItemRef         SpawnAsteroid(ItemData& idata, AsteroidData& adata);
     StructureItemRef        SpawnStructure(ItemData &data);
     CargoContainerRef       SpawnCargoContainer(ItemData &data);
@@ -132,7 +140,7 @@ public:
 
 
 protected:
-    InventoryDB m_db;
+    InventoryDB* m_db;
     Client* m_pClient;     // client currently using the ItemFactory, we do not own this
 
     std::map<uint32, ItemType*> m_types;
@@ -159,6 +167,11 @@ private:
     //item to hold current number of currently loaded items
     uint32 m_itemCount;
 };
+
+//Singleton
+#define sItemFactory \
+ ( ItemFactory::get() )
+
 
 #endif
 

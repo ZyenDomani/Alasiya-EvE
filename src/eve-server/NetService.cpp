@@ -37,13 +37,17 @@ NetService::NetService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    PyCallable_REG_CALL(NetService, GetInitVals);
     PyCallable_REG_CALL(NetService, GetTime);
+    PyCallable_REG_CALL(NetService, GetInitVals);
     PyCallable_REG_CALL(NetService, GetClusterSessionStatistics);
 }
 
 NetService::~NetService() {
     delete m_dispatch;
+}
+
+PyResult NetService::Handle_GetTime(PyCallArgs &call) {
+    return new PyLong(GetFileTimeNow());
 }
 
 /** @note:  wtf is this used for???  */
@@ -73,89 +77,89 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
         dict->SetItemString("config", new PyString("locationPreferred"));
         dict->SetItemString("scanMgr", new PyString("solarsystem"));
         dict->SetItemString("keeper", new PyString("solarsystem"));
-		dict->SetItemString("agentMgr", new PyNone());
-		dict->SetItemString("aggressionMgr", new PyNone());
-		dict->SetItemString("alert", new PyNone());
-		dict->SetItemString("allianceRegistry", new PyNone());
-		dict->SetItemString("authentication", new PyNone());
-		dict->SetItemString("billMgr", new PyNone());
-		dict->SetItemString("billingMgr", new PyNone());
-		dict->SetItemString("beyonce", new PyNone());
-		dict->SetItemString("BSD", new PyNone());
-		dict->SetItemString("cache", new PyNone());
-		dict->SetItemString("CalendarProxy", new PyNone());
-		dict->SetItemString("corporationSvc", new PyNone());
-		dict->SetItemString("corpStationMgr", new PyNone());
-		dict->SetItemString("corpmgr", new PyNone());
-		dict->SetItemString("corpRegistry", new PyNone());
-		dict->SetItemString("counter", new PyNone());
-		dict->SetItemString("certificateMgr", new PyNone());
-		dict->SetItemString("charFittingMgr", new PyNone());
-		dict->SetItemString("charmgr", new PyNone());
-		dict->SetItemString("charUnboundMgr", new PyNone());
-		dict->SetItemString("clientStatLogger", new PyNone());
-		dict->SetItemString("clientStatsMgr", new PyNone());
-		dict->SetItemString("clones", new PyNone());
-		dict->SetItemString("damageTracker", new PyNone());
-		dict->SetItemString("dataconfig", new PyNone());
-		dict->SetItemString("DB", new PyNone());
-		dict->SetItemString("DB2", new PyNone());
-		dict->SetItemString("debug", new PyNone());
-		dict->SetItemString("director", new PyNone());
-        dict->SetItemString("dogma", new PyNone());
-		dict->SetItemString("dogmaIM", new PyNone());
-		dict->SetItemString("droneMgr", new PyNone());
-		dict->SetItemString("dungeon", new PyNone());
-		dict->SetItemString("dungeonExplorationMgr", new PyNone());
-		dict->SetItemString("effectCompiler", new PyNone());
-		dict->SetItemString("emailreader", new PyNone());
-		dict->SetItemString("entity", new PyNone());
-		dict->SetItemString("factory", new PyNone());
-        dict->SetItemString("facWarMgr", new PyNone());
-        dict->SetItemString("fleetMgr", new PyNone());
-        dict->SetItemString("fleetObjectHandler", new PyNone());
-		dict->SetItemString("fleetProxy", new PyNone());
-		dict->SetItemString("gagger", new PyNone());
-		dict->SetItemString("gangSvcObjectHandler", new PyNone());
-		dict->SetItemString("http", new PyNone());
-		dict->SetItemString("i2", new PyNone());
-		dict->SetItemString("infoGatheringMgr", new PyNone());
-		dict->SetItemString("insuranceSvc", new PyNone());
-		dict->SetItemString("invbroker", new PyNone());
-		dict->SetItemString("jumpbeaconsvc", new PyNone());
-		dict->SetItemString("jumpCloneSvc", new PyNone());
-		dict->SetItemString("languageSvc", new PyNone());
-		dict->SetItemString("lien", new PyNone());
-		dict->SetItemString("lookupSvc", new PyNone());
-		dict->SetItemString("lootSvc", new PyNone());
-		dict->SetItemString("LPSvc", new PyNone());
-		dict->SetItemString("LPStore", new PyNone());
-		dict->SetItemString("machoNet", new PyNone());
-		dict->SetItemString("map", new PyNone());
-		dict->SetItemString("market", new PyNone());
-		dict->SetItemString("npcSvc", new PyNone());
-		dict->SetItemString("objectCaching", new PyNone());
-		dict->SetItemString("onlineStatus", new PyNone());
-		dict->SetItemString("posMgr", new PyNone());
-		dict->SetItemString("ram", new PyNone());
-		dict->SetItemString("repairSvc", new PyNone());
-		dict->SetItemString("reprocessingSvc", new PyNone());
-		dict->SetItemString("pathfinder", new PyNone());
-		dict->SetItemString("petitioner", new PyNone());
-		dict->SetItemString("planetMgr", new PyNone());
-		dict->SetItemString("search", new PyNone());
-		dict->SetItemString("sessionMgr", new PyNone());
-		dict->SetItemString("ship", new PyNone());
-		dict->SetItemString("skillMgr", new PyNone());
-		dict->SetItemString("sovMgr", new PyNone());
-		dict->SetItemString("standing2", new PyNone());
-        dict->SetItemString("stationSvc", new PyNone());
-        dict->SetItemString("userSvc", new PyNone());
-		dict->SetItemString("voiceMgr", new PyNone());
-        dict->SetItemString("voucher", new PyNone());
-        dict->SetItemString("warRegistry", new PyNone());
-        dict->SetItemString("watchdog", new PyNone());
-        dict->SetItemString("zsystem", new PyNone());
+		dict->SetItemString("agentMgr", PyStatic.NewNone());
+		dict->SetItemString("aggressionMgr", PyStatic.NewNone());
+		dict->SetItemString("alert", PyStatic.NewNone());
+		dict->SetItemString("allianceRegistry", PyStatic.NewNone());
+		dict->SetItemString("authentication", PyStatic.NewNone());
+		dict->SetItemString("billMgr", PyStatic.NewNone());
+		dict->SetItemString("billingMgr", PyStatic.NewNone());
+		dict->SetItemString("beyonce", PyStatic.NewNone());
+		dict->SetItemString("BSD", PyStatic.NewNone());
+		dict->SetItemString("cache", PyStatic.NewNone());
+		dict->SetItemString("CalendarProxy", PyStatic.NewNone());
+		dict->SetItemString("corporationSvc", PyStatic.NewNone());
+		dict->SetItemString("corpStationMgr", PyStatic.NewNone());
+		dict->SetItemString("corpmgr", PyStatic.NewNone());
+		dict->SetItemString("corpRegistry", PyStatic.NewNone());
+		dict->SetItemString("counter", PyStatic.NewNone());
+		dict->SetItemString("certificateMgr", PyStatic.NewNone());
+		dict->SetItemString("charFittingMgr", PyStatic.NewNone());
+		dict->SetItemString("charmgr", PyStatic.NewNone());
+		dict->SetItemString("charUnboundMgr", PyStatic.NewNone());
+		dict->SetItemString("clientStatLogger", PyStatic.NewNone());
+		dict->SetItemString("clientStatsMgr", PyStatic.NewNone());
+		dict->SetItemString("clones", PyStatic.NewNone());
+		dict->SetItemString("damageTracker", PyStatic.NewNone());
+		dict->SetItemString("dataconfig", PyStatic.NewNone());
+		dict->SetItemString("DB", PyStatic.NewNone());
+		dict->SetItemString("DB2", PyStatic.NewNone());
+		dict->SetItemString("debug", PyStatic.NewNone());
+		dict->SetItemString("director", PyStatic.NewNone());
+        dict->SetItemString("dogma", PyStatic.NewNone());
+		dict->SetItemString("dogmaIM", PyStatic.NewNone());
+		dict->SetItemString("droneMgr", PyStatic.NewNone());
+		dict->SetItemString("dungeon", PyStatic.NewNone());
+		dict->SetItemString("dungeonExplorationMgr", PyStatic.NewNone());
+		dict->SetItemString("effectCompiler", PyStatic.NewNone());
+		dict->SetItemString("emailreader", PyStatic.NewNone());
+		dict->SetItemString("entity", PyStatic.NewNone());
+		dict->SetItemString("factory", PyStatic.NewNone());
+        dict->SetItemString("facWarMgr", PyStatic.NewNone());
+        dict->SetItemString("fleetMgr", PyStatic.NewNone());
+        dict->SetItemString("fleetObjectHandler", PyStatic.NewNone());
+		dict->SetItemString("fleetProxy", PyStatic.NewNone());
+		dict->SetItemString("gagger", PyStatic.NewNone());
+		dict->SetItemString("gangSvcObjectHandler", PyStatic.NewNone());
+		dict->SetItemString("http", PyStatic.NewNone());
+		dict->SetItemString("i2", PyStatic.NewNone());
+		dict->SetItemString("infoGatheringMgr", PyStatic.NewNone());
+		dict->SetItemString("insuranceSvc", PyStatic.NewNone());
+		dict->SetItemString("invbroker", PyStatic.NewNone());
+		dict->SetItemString("jumpbeaconsvc", PyStatic.NewNone());
+		dict->SetItemString("jumpCloneSvc", PyStatic.NewNone());
+		dict->SetItemString("languageSvc", PyStatic.NewNone());
+		dict->SetItemString("lien", PyStatic.NewNone());
+		dict->SetItemString("lookupSvc", PyStatic.NewNone());
+		dict->SetItemString("lootSvc", PyStatic.NewNone());
+		dict->SetItemString("LPSvc", PyStatic.NewNone());
+		dict->SetItemString("LPStore", PyStatic.NewNone());
+		dict->SetItemString("machoNet", PyStatic.NewNone());
+		dict->SetItemString("map", PyStatic.NewNone());
+		dict->SetItemString("market", PyStatic.NewNone());
+		dict->SetItemString("npcSvc", PyStatic.NewNone());
+		dict->SetItemString("objectCaching", PyStatic.NewNone());
+		dict->SetItemString("onlineStatus", PyStatic.NewNone());
+		dict->SetItemString("posMgr", PyStatic.NewNone());
+		dict->SetItemString("ram", PyStatic.NewNone());
+		dict->SetItemString("repairSvc", PyStatic.NewNone());
+		dict->SetItemString("reprocessingSvc", PyStatic.NewNone());
+		dict->SetItemString("pathfinder", PyStatic.NewNone());
+		dict->SetItemString("petitioner", PyStatic.NewNone());
+		dict->SetItemString("planetMgr", PyStatic.NewNone());
+		dict->SetItemString("search", PyStatic.NewNone());
+		dict->SetItemString("sessionMgr", PyStatic.NewNone());
+		dict->SetItemString("ship", PyStatic.NewNone());
+		dict->SetItemString("skillMgr", PyStatic.NewNone());
+		dict->SetItemString("sovMgr", PyStatic.NewNone());
+		dict->SetItemString("standing2", PyStatic.NewNone());
+        dict->SetItemString("stationSvc", PyStatic.NewNone());
+        dict->SetItemString("userSvc", PyStatic.NewNone());
+		dict->SetItemString("voiceMgr", PyStatic.NewNone());
+        dict->SetItemString("voucher", PyStatic.NewNone());
+        dict->SetItemString("warRegistry", PyStatic.NewNone());
+        dict->SetItemString("watchdog", PyStatic.NewNone());
+        dict->SetItemString("zsystem", PyStatic.NewNone());
 
         //register it
         m_manager->cache_service->GiveCache(str, (PyRep **)&dict);
@@ -170,10 +174,6 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
         result->SetItem( 0, serverinfo );
         result->SetItem( 1, initvals );
     return result;
-}
-
-PyResult NetService::Handle_GetTime(PyCallArgs &call) {
-    return new PyLong(GetFileTimeNow());
 }
 
 PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {

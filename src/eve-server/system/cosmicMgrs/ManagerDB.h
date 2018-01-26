@@ -26,16 +26,26 @@ public:
     static void GetSkillList(DBQueryResult& res);
     static void GetSystemData(DBQueryResult& res);
     static void GetStaticData(DBQueryResult& res); // static items in a solar system
-    static void GetStationInfo(DBQueryResult& res);
     static void GetMoonResouces(DBQueryResult& res);
     static void GetRAMMaterials(DBQueryResult& res);
     static void GetSalvageGroups(DBQueryResult& res);
     static void GetBlueprintType(DBQueryResult& res);
-    static void GetStationSystem(DBQueryResult& res);
-    static void GetStationRegion(DBQueryResult& res);
     static void GetTypeAttributes(DBQueryResult& res);
     static void GetRAMRequirements(DBQueryResult& res);
 
+    static void ListAllCorpFactions(std::map<uint32, uint32> &into);
+    static void ListAllFactionStationCounts(std::map<uint32, uint32> &into);
+    static void ListAllFactionSystemCounts(std::map<uint32, uint32> &into);
+    static void ListAllFactionRegions(std::map<int32, PyRep *> &into);
+    static void ListAllFactionConstellations(std::map<int32, PyRep *> &into);
+    static void ListAllFactionSolarSystems(std::map<int32, PyRep *> &into);
+    static void ListAllFactionRaces(std::map<int32, PyRep *> &into);
+
+    static PyDict* ListAllNPCCorpInfo();
+    static PyObject* GetEntryTypes();
+    static PyObject* GetKeyMap();
+    static PyObject* GetNPCDivisions();
+    static PyObject* GetBillTypes();
     static PyObjectEx* GetOperands();
 
     /* belt manager */

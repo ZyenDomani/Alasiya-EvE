@@ -55,6 +55,7 @@ public:
 
     void Process();
 
+    void SendSingleDestinyEvent(PyTuple** ev, bool self_only=false) const;
     void SendSingleDestinyUpdate(PyTuple** up, bool self_only=false) const;
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only=false) const;
     void SendDestinyUpdate(std::vector<PyTuple*> &updates, std::vector<PyTuple*> &events, bool self_only=false) const;
@@ -93,7 +94,7 @@ public:
     void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
 
     /* Larger movement */
-    void WarpTo(const GPoint& where, int32 distance = 0);
+    void WarpTo(const GPoint& where, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
     bool IsMoving()                                     { return (m_currentSpeedFraction ? true : false); }
@@ -133,7 +134,8 @@ public:
     void SendCloakShip(const bool IsWarpSafe) const;
     void SendUncloakShip() const;
     void SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const;
-    void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid, bool isOffensive, bool start, bool isActive, double duration, uint32 repeat) const;
+    void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid,
+                           bool isOffensive, bool start, bool isActive, double duration, uint32 repeat, int32 graphicInfo=0) const;
 
     //  functions to return protected variables for SystemBubble exclusive WarpTo updates and other methods that need Destiny Variables
     int32 GetDistance()                                 { return m_stopDistance; }

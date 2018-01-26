@@ -40,6 +40,8 @@
 #include "npc/NPC.h"
 #include "npc/Drone.h"
 #include "npc/DroneAI.h"
+#include "station/StationDataMgr.h"
+#include "station/StationOffice.h"
 #include "system/DestinyManager.h"
 #include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
@@ -74,8 +76,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0)
 {
-    m_pod = ShipItemRef();
-    m_ship = ShipItemRef();
+    m_pod = ShipItemRef(nullptr);
+    m_ship = ShipItemRef(nullptr);
 
     m_pingTimer.Start();
     m_jumpTimer.Disable();
@@ -123,12 +125,14 @@ Client::~Client() {
         /** @todo  - for warping to random point when client logs out in space...
          *      1)  check client IsInSpace(?)
          *      2)  set timer to delay removing bubble/sysmgr/destiny...or check based on destiny->isstopped() or timer on destiny->ismoving()
-         *      3)  set current position (DB::chrCharacter.logoutPosition?)  initial code in place for warp-in on login
+         *      3)  set current position (DB::chrCharacters.logoutPosition?)  initial code in place for warp-in on login
          *      4)  generate random point to warp to ** use m_SGP.GetRandPointInSystem(systemID, distance)
          *      5)  _warp to random point, but DONT make/update new bubble with entering ship
          *      6)  remove client from sysmgr/destiny/server
          */
         if (IsDocked()) {
+            StationItemRef sRef = sEntityList.GetStationByID(m_locationID);
+            sRef->RemoveGuest(this);
             if (GetTradeSession()) {
                 TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
                 mts->CancelTrade(this);
@@ -200,6 +204,7 @@ bool Client::ProcessNet()
 bool Client::SelectCharacter(uint32 char_id) {
     InitSession(char_id);
 
+    sItemFactory.SetUsingClient(this);
     m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
     if (m_system == nullptr) {
@@ -208,15 +213,15 @@ bool Client::SelectCharacter(uint32 char_id) {
         return false;
     }
 
-    m_services.item_factory->SetUsingClient(this);
-    m_char = m_services.item_factory->GetCharacter(char_id);
+    m_char = sItemFactory.GetCharacter(char_id);
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", char_id);
-        m_services.item_factory->UnsetUsingClient();
+        sItemFactory.UnsetUsingClient();
         return false;
     }
 
     m_char->SetClient(this);
+    m_char->VerifySP();
     m_char->UpdateSkillQueue();
     /*
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
@@ -233,11 +238,11 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     SetPodItem();
 
-    m_ship = m_services.item_factory->GetShip(m_shipId);
+    m_ship = sItemFactory.GetShip(m_shipId);
     if (m_ship.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "shipID %u invalid for %u.  Picking new ship...", m_shipId, char_id);
         PickAlternateShip();    // incase shipID wasnt set correctly in db (seen on 'bad' Damage::Killed())
-        m_ship = m_services.item_factory->GetShip(m_shipId);
+        m_ship = sItemFactory.GetShip(m_shipId);
         if (m_ship.get() == nullptr) {
             sLog.Error("Client::SelectCharacter()", "shipID %u for %u also invalid.  Loading Pod.", m_shipId, char_id);
             m_ship = m_pod;
@@ -258,7 +263,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     MoveToLocation(m_locationID, pos);
 
     if (IsSolarSystem(m_locationID)) {
-        m_invulTimer.Start(ClientTimers::LoginTimer);
+        m_invulTimer.Start(ClientTimers::WarpInInvul);
         WarpIn();
     } else {
         //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
@@ -279,10 +284,11 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
-    m_services.item_factory->UnsetUsingClient();
+    sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
+    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return true;
 }
 
@@ -290,7 +296,7 @@ void Client::ProcessClient() {
     if (m_locationID == 0)
         return;
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     // wtf is this for?
@@ -318,7 +324,23 @@ void Client::ProcessClient() {
     */
 
     if (IsStation(m_locationID)) {
-        if (sConfig.server.UseProfiling)
+        if (m_stateTimer.Enabled())
+            if (m_stateTimer.Check(false)) {
+                m_stateTimer.Disable();
+                switch (m_clientState) {
+                    case ClientState::csLogin: {
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csLogin");
+                        m_login = false;
+                    } break;
+                    case ClientState::csIdle: {
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csIdle");
+                    } break;
+                    case ClientState::csLogout: {
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csLogout");
+                    } break;
+                }
+            }
+        if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
         return;
     }
@@ -366,10 +388,12 @@ void Client::ProcessClient() {
             switch (m_clientState) {
                 case ClientState::csDock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
+                    m_setStateSent = false;
                     DockToStation();
                 } break;
                 case ClientState::csUndock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
+                    m_setStateSent = false;
                     SetBallPark();
                 } break;
                 case ClientState::csKilled: {
@@ -445,9 +469,17 @@ void Client::ProcessClient() {
             pShipSE->ApplyBoost(data);
         }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
 }
+
+void Client::SetAutoPilot(bool set/*false*/)
+{
+    // itemID=10644  flag=
+    m_autoPilot = set;
+    _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
+}
+
 
 void Client::SetDestiny(const GPoint& pt, bool count) {
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr))
@@ -538,8 +570,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         return;
     }
 
-    if (m_autoPilot)
-        _log(PLAYER__AP_TRACE, "MoveToLocation() - m_autoPilot = true");
+    _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = %s", (m_autoPilot ? "true" : "false"));
 
     if (!m_login and (m_locationID == locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
@@ -566,17 +597,19 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         // remove from 'current' system before resetting system vars
         m_char->AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, (count = true));
-        if (pShipSE != nullptr)
+        if (pShipSE != nullptr) {
             m_system->RemoveEntity(pShipSE);
+            pShipSE->DestinyMgr()->Halt();
+        }
         m_system = nullptr;
     }
 
     if (m_system == nullptr) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_system == NULL, m_locationID = %u", m_locationID);
         // find our new system's manager
-        m_services.item_factory->SetUsingClient(this);
+        sItemFactory.SetUsingClient(this);
         m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
-        m_services.item_factory->UnsetUsingClient();
+        sItemFactory.UnsetUsingClient();
         if (m_system == nullptr) {
             sLog.Error("Client", "Failed to boot system %u for char %s (%u)", m_SystemData.systemID, m_char->itemName().c_str(), m_char->itemID());
             SendErrorMsg("Unable to boot system.  Relog and try again.");
@@ -595,22 +628,28 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     char ci[25];
     if (stationID > 0) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
-        sDataMgr.GetStationInfo(locationID, m_StationData);
+        stDataMgr.GetStationData(locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked:%u", locationID);
+        StationItemRef sRef = sEntityList.GetStationByID(locationID);
+        sRef->LoadStationOffice(GetCorporationID());
+        sRef->AddGuest(this);
         m_char->Move(locationID, flagAutoFit, true);
         m_ship->Move(locationID, flagHangar, true);
         m_ship->Relocate(pt);
         m_ship->Dock();
 
-        if (IsFleetBooster()) {
-            std::list<int32> wing, squad;
-            wing.clear();
-            squad.clear();
-            if (IsSquad(m_squad))
-                squad.emplace(squad.end(), m_squad);
-            else if (IsWing(m_wing))
-                wing.emplace(wing.end(), m_wing);
-            sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+        if (IsFleet(m_fleet)) {
+            m_fleetTimer.Disable();
+            if (IsFleetBooster()) {
+                std::list<int32> wing, squad;
+                wing.clear();
+                squad.clear();
+                if (IsSquad(m_squad))
+                    squad.emplace(squad.end(), m_squad);
+                else if (IsWing(m_wing))
+                    wing.emplace(wing.end(), m_wing);
+                sFltSvc.UpdateBoost(m_fleet, IsFleetBoss(), wing, squad);
+            }
         }
 
         if (!IsHangarLoaded(locationID))
@@ -646,6 +685,9 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             m_char->Move(m_shipId, flagPilot, true);
 
         SetDestiny(pt, !m_undock);
+
+        if (IsJump() and !m_autoPilot)
+            pShipSE->DestinyMgr()->Stop();
     }
 
     m_ship->SetCustomInfo(ci);
@@ -670,6 +712,8 @@ void Client::UndockFromStation() {
         mts->CancelTrade(this);
     }
 
+    //ShipIllegalTypeUndock
+
     m_invul = m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
@@ -682,6 +726,7 @@ void Client::UndockFromStation() {
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
+    sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     OnCharNoLongerInStation();
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
@@ -690,11 +735,10 @@ void Client::UndockFromStation() {
 }
 
 void Client::DockToStation() {
+    // ap cleared on client side when docking.
+    m_autoPilot = false;
     m_clientState = ClientState::csIdle;
     pShipSE->DestinyMgr()->Dock();
-    SetAutoPilot(false);
-
-    m_ship->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
@@ -735,11 +779,11 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
 
     /* check for and delete pod entity if boarding new ship */
     if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
-        m_ship->SetFlag(flagCapsule);
         m_ship->Relocate(NULL_ORIGIN);
+        m_ship->Move(m_system->GetID(), flagCapsule, true);
         DestroyShipSE();
     } else if (m_login) {
-        ;  // do nothing here...just loggin in
+        _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipItemRef->itemID());
     } else  {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SetPlayer(nullptr);
@@ -790,8 +834,10 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
                 m_system->AddEntity(pShipSE);
             }
         }
-        if (pShipSE == nullptr)
-            ;  // make error here....not sure what else to do.
+        if (pShipSE == nullptr) {
+            _log(PLAYER__MESSAGE, "%s pShipSE for shipID %u is null on boardShip.", m_char->itemName().c_str(), newShipItemRef->itemID());
+            return;
+        }
         m_ship->UpdateEffects();
         pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
         pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
@@ -835,7 +881,7 @@ void Client::SetPodItem() {
     if (m_char->capsuleID() <= 0)
         CreateNewPod();
     else
-        m_pod = m_services.item_factory->GetShip(m_char->capsuleID());
+        m_pod = sItemFactory.GetShip(m_char->capsuleID());
 }
 
 bool Client::IsJetcanAvalible() {
@@ -864,17 +910,6 @@ PyRep *Client::GetAggressors() const {
      */
 
     return dict;
-}
-
-void Client::SetAutoPilot(bool autoPilot /*false*/) {
-    // itemID=10644  flag=
-    m_autoPilot = autoPilot;
-    if (autoPilot)
-        UpdateSessionInt("solarsystemid2", 0);
-    else {
-        if (IsInSpace())
-            UpdateSessionInt("solarsystemid2", m_locationID);   //this is currrent system.
-    }
 }
 
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
@@ -942,28 +977,6 @@ void Client::SetJumpTimers() {
     m_invulTimer.Start(ClientTimers::JumpInvul);
 }
 
-bool Client::AddBalance(double amount) {
-    if (!m_char->AlterBalance(amount)) {
-        if (m_canThrow) {
-            std::map<std::string, PyRep *> args;
-            args["amount"] = new PyFloat(amount);
-            args["balance"] = new PyFloat(m_char->balance());
-            throw(PyException(MakeUserError("NotEnoughMoney", args)));
-        }
-        return false;
-    }
-
-    //send notification of change
-    OnAccountChange ac;
-        ac.accountKey = "cash";
-        ac.ownerid = m_char->itemID();
-        ac.balance = m_char->balance();
-    PyTuple *answer = ac.Encode();
-    SendNotification("OnAccountChange", "cash", &answer, false);
-
-    return true;
-}
-
 void Client::SetClientTimer(ClientState state, uint32 time)
 {
     m_clientState = state;
@@ -1003,7 +1016,7 @@ void Client::PickAlternateShip() {
 void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
     ItemData podItem( itemTypeCapsule, m_char->itemID(), m_locationID, flagCapsule, pod_name.c_str() );
-    m_pod = m_services.item_factory->SpawnShip( podItem );
+    m_pod = sItemFactory.SpawnShip( podItem );
     m_char->SetActivePod(m_pod->itemID());
 }
 
@@ -1030,13 +1043,13 @@ ShipItemRef Client::SpawnNewRookieShip() {
     ItemData wData(gunID, m_char->itemID(), 0, flagAutoFit);
     ItemData cData(itemTypeTrit, m_char->itemID(), 0, flagAutoFit, 100);
     //spawn rookie ship
-    ShipItemRef sRef = m_services.item_factory->SpawnShip(sData);
-    InventoryItemRef mRef = m_services.item_factory->SpawnItem(mData);
-    InventoryItemRef wRef = m_services.item_factory->SpawnItem(wData);
-    InventoryItemRef cRef = m_services.item_factory->SpawnItem(cData);
+    ShipItemRef sRef = sItemFactory.SpawnShip(sData);
+    InventoryItemRef mRef = sItemFactory.SpawnItem(mData);
+    InventoryItemRef wRef = sItemFactory.SpawnItem(wData);
+    InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     // create and fit noob items in ship
     if (sRef.get() != nullptr)
-        sRef->Move(m_locationID, flagHangar);
+        sRef->Move(m_char->stationID(), flagHangar);
     if (mRef.get() != nullptr)
         mRef->Move(sRef->itemID(), flagHiSlot0);
     if (wRef.get() != nullptr)
@@ -1055,8 +1068,7 @@ void Client::ResetAfterPodded() {
      */
 
     m_bubbleWait = true;
-    //clear AutoPilot
-    SetAutoPilot(false);
+    m_autoPilot = false;
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
     SpawnNewRookieShip();
@@ -1082,29 +1094,28 @@ void Client::AddStationHangar(uint32 stationID) {
     m_hangarLoaded.insert(std::make_pair(stationID, true));
 }
 
-void Client::RemoveStationHangar(uint32 stationID) {
-    m_hangarLoaded.erase(stationID);
+void Client::RemoveStationHangar(uint32 hangarID) {
+    m_hangarLoaded.erase(hangarID);
 }
 
-bool Client::IsHangarLoaded(uint32 stationID) {
-    std::map<uint32, bool>::const_iterator itr = m_hangarLoaded.find(stationID);
+bool Client::IsHangarLoaded(uint32 hangarID) {
+    std::map<uint32, bool>::const_iterator itr = m_hangarLoaded.find(hangarID);
     if (itr != m_hangarLoaded.end())
         return itr->second;
     return false;
 }
 
 void Client::LoadStationHangar(uint32 stationID) {
-    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading hangar for %s(%u) in stationID %u",  m_char->itemName().c_str(), m_char->itemID(), stationID);
-    StationItemRef sRef = m_system->GetStationFromInventory(stationID);
-    m_system->itemFactory()->SetUsingClient(this);
-    sRef->GetMyInventory()->LoadContents(m_system->itemFactory());
-    m_system->itemFactory()->UnsetUsingClient();
+    _log(PLAYER__INFO, "Client::LoadStationHangar() is loading personal hangar for %s(%u) in stationID %u",  m_char->itemName().c_str(), m_char->itemID(), stationID);
+    sItemFactory.SetUsingClient(this);
+    m_system->GetStationFromInventory(stationID)->GetMyInventory()->LoadContents();
+    sItemFactory.UnsetUsingClient();
 }
 
 void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 {
-    m_services.item_factory->SetUsingClient(this);
-    InventoryItemRef item = m_services.item_factory->GetItem(itemID);
+    sItemFactory.SetUsingClient(this);
+    InventoryItemRef item = sItemFactory.GetItem(itemID);
     if (item.get() == nullptr) {
         _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->itemName().c_str(), itemID);
         return;
@@ -1112,13 +1123,18 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 
     item->Move(location, flag, true);
 
-    /** @todo  this isnt right....correct it.  */
-    if ((item->flag() >= flagSlotFirst) and (item->flag() <= flagSlotLast))
-        m_ship->UpdateModules(item->flag());
-    else
-        m_ship->UpdateHoldsUsedVolume();
-
-    m_services.item_factory->UnsetUsingClient();
+    if (IsPlayerItem(location)) {
+        if (IsModuleSlot(item->flag())) {
+            m_ship->UpdateModules(item->flag());
+        } else if (IsCargoHoldFlag(item->flag())) {
+            m_ship->UpdateHoldsUsedVolume();
+        } else {
+            _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %u", m_char->itemName().c_str(), itemID);
+        }
+    } else {
+        _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %u", m_char->itemName().c_str(), itemID);
+    }
+    sItemFactory.UnsetUsingClient();
 }
 
 PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {
@@ -1153,7 +1169,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     Drone* pDrone = new Drone(drone, m_services, m_system, position, data);
     // add drone entity to system, set speed, begin orbit around launching ship
     m_system->AddEntity(pDrone);
-    DoDestiny_OnDroneStateChange du;
+     OnDroneStateChange du;
         du.droneID = drone->itemID();
         du.ownerID = m_char->itemID();
         du.droneTypeID = drone->typeID();
@@ -1183,15 +1199,14 @@ void Client::OnCharNoLongerInStation() {
         n.allianceID = GetAllianceID();
         n.factionID = GetWarFactionID();
     PyTuple* tmp = n.Encode();
-    PyTuple* up = tmp;
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
     for (auto cur : clients) {
-        if (up == nullptr)
-            up = new PyTuple( *tmp );
-        cur->SendNotification("OnCharNoLongerInStation", "stationid", &up); //consumed
+        PySafeIncRef(tmp);
+        cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
     }
+    PySafeDecRef(tmp);
 }
 
 void Client::OnCharNowInStation() {
@@ -1201,15 +1216,14 @@ void Client::OnCharNowInStation() {
         n.allianceID = GetAllianceID();
         n.warFactionID = GetWarFactionID();
     PyTuple* tmp = n.Encode();
-    PyTuple* up = tmp;
     std::vector<Client*> clients;
     clients.clear();
     sEntityList.FindClientByStationID(m_locationID, clients);
     for (auto cur : clients) {
-        if (up == nullptr)
-            up = new PyTuple( *tmp );
-        cur->SendNotification("OnCharNowInStation", "stationid", &up);
+        PySafeIncRef(tmp);
+        cur->SendNotification("OnCharNowInStation", "stationid", &tmp);
     }
+    PySafeDecRef(tmp);
 }
 
 void Client::UpdateSessionInt(const char *sessionType, int value)
@@ -1217,28 +1231,32 @@ void Client::UpdateSessionInt(const char *sessionType, int value)
     mSession.SetInt(sessionType, value);
 }
 
-void Client::UpdateCorpSession()
+void Client::UpdateCorpSession(CorpData& data)
 {
-    mSession.SetInt("corpid", m_char->corporationID());
-    mSession.SetInt("hqID", m_char->corporationHQ());
-    mSession.SetInt("corpAccountKey", m_char->corpAccountKey());
-    mSession.SetULong("corpRole", m_char->corpRole());
-    mSession.SetULong("rolesAtAll", m_char->rolesAtAll());
-    mSession.SetULong("rolesAtBase", m_char->rolesAtBase());
-    mSession.SetULong("rolesAtHQ", m_char->rolesAtHQ());
-    mSession.SetULong("rolesAtOther", m_char->rolesAtOther());
+    // session.Set* methods only updates on change
+    mSession.SetInt("corpid", data.corporationID);
+    mSession.SetInt("baseID", data.baseID);
+    mSession.SetInt("hqID", data.corpHQ);
+    mSession.SetInt("allianceid", data.allianceID);
+    mSession.SetInt("warfactionid", data.warFactionID);
+    mSession.SetInt("corpAccountKey", data.corpAccountKey);
+    mSession.SetLong("corprole", data.corpRole);
+    mSession.SetLong("rolesAtAll", data.rolesAtAll);
+    mSession.SetLong("rolesAtBase", data.rolesAtBase);
+    mSession.SetLong("rolesAtHQ", data.rolesAtHQ);
+    mSession.SetLong("rolesAtOther", data.rolesAtOther);
     SendSessionChange();
 }
 
-void Client::UpdateFleetSession()
+void Client::UpdateFleetSession(CharFleetData& fleet)
 {
-    m_fleet = m_char->fleetID();
-    m_wing = m_char->wingID();
-    m_squad = m_char->squadID();
+    m_fleet = fleet.fleetID;
+    m_wing = fleet.wingID;
+    m_squad = fleet.squadID;
 
-    mSession.SetInt("fleetjob", m_char->fleetJob());
-    mSession.SetInt("fleetrole", m_char->fleetRole());
-    mSession.SetInt("fleetbooster", m_char->fleetBooster());
+    mSession.SetInt("fleetjob", fleet.job);
+    mSession.SetInt("fleetrole", fleet.role);
+    mSession.SetInt("fleetbooster", fleet.booster);
     mSession.SetInt("fleetid", m_fleet);
     mSession.SetInt("wingid", m_wing);
     mSession.SetInt("squadid", m_squad);
@@ -1256,16 +1274,14 @@ void Client::_UpdateSession()
         mSession.Clear("shipid");    //must be 0 in station
 
         mSession.SetInt("stationid", stationID);
-        mSession.SetInt("stationid2", stationID);   // client uses this to get correct dogmaLocation
-        mSession.SetInt("worldspaceid", stationID);
+        mSession.SetInt("stationid2", stationID);   // client uses this for continer location checks
+        //mSession.SetInt("worldspaceid", stationID);
         mSession.SetInt("locationid", stationID);
     } else {
         mSession.Clear("stationid");
         mSession.Clear("stationid2");
         mSession.Clear("worldspaceid");
-        /** @todo  will have to look into AP shit more to understand what it uses to work.  ssid is only part of it. */
-        //if (!m_autoPilot)
-            mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
         mSession.SetInt("locationid", solarsystemID);
         mSession.SetInt("shipid", m_shipId);
     }
@@ -1286,7 +1302,7 @@ void Client::InitSession(uint32 characterID)
         return;
     }
 
-    std::map<std::string, uint64> characterDataMap;
+    std::map<std::string, int64> characterDataMap;
     ((CharUnboundMgrService *)(m_services.LookupService("charUnboundMgr")))->GetCharacterData(characterID, characterDataMap);
     if (characterDataMap.size() < 1) {
         sLog.Error("Client::InitSession()", "characterDataMap.size() returned zero.");
@@ -1309,14 +1325,13 @@ void Client::InitSession(uint32 characterID)
     mSession.SetInt("regionid", (int32)(characterDataMap["regionID"]));
 
     mSession.SetInt("hqID", (int32)(characterDataMap["corporationHQ"]));
-    /** @todo  added this, means a corp alternate station, outpost/pos maybe?    -allan  28Jan15*/
-    //mSession.SetInt("baseID", 0);
-    mSession.SetInt("corpAccountKey", (int32)(characterDataMap["corpAccountKey"]));
-    mSession.SetULong("corpRole",     characterDataMap["corpRole"]);
-    mSession.SetULong("rolesAtAll",   characterDataMap["rolesAtAll"]);
-    mSession.SetULong("rolesAtBase",  characterDataMap["rolesAtBase"]);
-    mSession.SetULong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);
-    mSession.SetULong("rolesAtOther", characterDataMap["rolesAtOther"]);
+    mSession.SetInt("baseID", characterDataMap["baseID"]);
+    mSession.SetInt("corpAccountKey", characterDataMap["corpAccountKey"]);
+    mSession.SetLong("corprole",     characterDataMap["corpRole"]);
+    mSession.SetLong("rolesAtAll",   characterDataMap["rolesAtAll"]);
+    mSession.SetLong("rolesAtBase",  characterDataMap["rolesAtBase"]);
+    mSession.SetLong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);
+    mSession.SetLong("rolesAtOther", characterDataMap["rolesAtOther"]);
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:
@@ -1327,7 +1342,7 @@ void Client::InitSession(uint32 characterID)
         mSession.SetInt("stationid", stationID);
         mSession.SetInt("stationid2", stationID);
         mSession.SetInt("locationid", stationID);
-        mSession.SetInt("worldspaceid", stationID);
+        //mSession.SetInt("worldspaceid", stationID);
     } else {
         m_locationID = solarSystemID;
         mSession.SetInt("shipid", m_shipId);
@@ -1417,6 +1432,8 @@ void Client::QueueDestinyEvent(PyTuple** event) {
 void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool IsSetState /*false*/) {
     if ((update == nullptr) or ((*update) == nullptr))
         return;
+    if (IsStation(m_locationID))
+        return;
     DoDestinyAction act;
         act.stamp = sEntityList.GetStamp();
     if (DoPackage/* or m_packaged*/) {
@@ -1502,6 +1519,9 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
     dest.type = PyAddress::Broadcast;
     dest.service = notifyType;
     dest.bcast_idtype = idType;
+    /*
+    if (dest.bcast_idtype.compare("clientID") == 0)
+        dest.objectID = GetClientID();*/
 
     //now send it to the client
     SendNotification(dest, notify, seq);
@@ -1509,6 +1529,8 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
 }
 
 void Client::SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq /*true*/) {
+    if ((*payload) == nullptr)
+        return;
     //build a little notification out of it.
     EVENotificationStream notify;
         notify.notifyType = notifyType;
@@ -1519,6 +1541,7 @@ void Client::SendNotification(const char *notifyType, const char *idType, PyTupl
         dest.type = PyAddress::Broadcast;
         dest.service = notifyType;
         dest.bcast_idtype = idType;
+        dest.objectID = GetClientID();
 
     //now send it to the client
     SendNotification(dest, notify, seq);
@@ -1754,8 +1777,8 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //user type 30 is normal user, type 23 is a trial account user.
     mSession.SetInt("userType", userTypeMammon);
     mSession.SetInt("userid", account_info.id);
-    mSession.SetLong("clientID", 10000000000L * account_info.clientID + 888444);   /* this causes errors in client log when !=0.  no clue why yet.  */
-    mSession.SetULong("role", account_info.role);
+    mSession.SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
+    mSession.SetLong("role", account_info.role);
     //mSession.SetLong("sessionID", mSession.CreateSessionID());
 
     sLog.Green("  Client::Login()","Account \"%s\" logging in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
@@ -1781,7 +1804,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
         ack.userid = GetUserID();   //5654387 accountID?
         ack.maxSessionTime = new PyNone();
         ack.userType = 1;
-        ack.role = ROLE_PLAYER | ROLE_NEWBIE; /* account role is not defined yet.  live returns these */
+        ack.role = Acct::Role::PLAYER | Acct::Role::NEWBIE; /*  live returns these */
         ack.address = GetAddress();
         ack.inDetention = new PyNone();
     // no client update available
@@ -1802,7 +1825,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     return true;
 }
 
-void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint64 clientID, PyRep** return_value, const char* channel)
+void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 clientID, PyRep** return_value, const char* channel)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -1819,7 +1842,7 @@ void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint64 clie
 
     packet->payload = new PyTuple(1);
     packet->payload->SetItem(0, new PySubStream(*return_value));
-    *return_value = nullptr;   //consumed
+    return_value = nullptr;   //consumed
 
     if (channel != nullptr) {
         packet->named_payload = new PyDict();
@@ -1832,7 +1855,7 @@ void Client::_SendCallReturn(const PyAddress& source, uint64 callID, uint64 clie
     FastQueuePacket(packet);
 }
 
-void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
+void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_TYPE msgType, MACHONETERR_TYPE errCode, PyRep** payload)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -1851,7 +1874,7 @@ void Client::_SendException(const PyAddress& source, uint64 callID, MACHONETMSG_
     e.MsgType = msgType;
     e.ErrorCode = errCode;
     e.payload = *payload;   //consumed
-    *payload = nullptr;
+    payload = nullptr;
 
     packet->payload = e.Encode();
     FastQueuePacket(packet);
@@ -1881,7 +1904,7 @@ void Client::_SendPingRequest()
     FastQueuePacket(packet);
 }
 
-void Client::_SendPingResponse(const PyAddress& source, uint64 callID)
+void Client::_SendPingResponse(const PyAddress& source, int64 callID)
 {
     PyPacket* packet = new PyPacket();
     packet->type = PING_RSP;
@@ -1990,13 +2013,14 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
 
     //parts of call may be consumed here
-    m_canThrow = true;      // test for throwable.  -allan 29Jul16
+    m_canThrow = true;      // test for throwable.  -allan 29Jul16      should we use try/catch here?
     PyResult result = dest->Call(req.method, args);
     m_canThrow = false;
 
     SendSessionChange();  //send out the session change before the return.
     if (is_log_enabled(CLIENT__OUT_ALL))
-        result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
+        if (result.ssResult != nullptr)
+            result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);  //ssResult is consumed here
 
     //PySafeDecRef(result.ssResult);

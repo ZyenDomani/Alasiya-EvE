@@ -50,7 +50,7 @@ DAMAGE__DEBUG
 Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _kinetic, double _thermal, double _em, double _explosive, double _modifier, uint16 eID)
 {
     weaponRef   = weapon;
-    chargeRef   = InventoryItemRef();
+    chargeRef   = InventoryItemRef(nullptr);
     srcSE       = source;
     effectID    = eID;
     modifier    = _modifier;
@@ -69,7 +69,7 @@ Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _modifier, 
     kinetic     = weapon->GetAttribute(AttrKineticDamage).get_float();
     thermal     = weapon->GetAttribute(AttrThermalDamage).get_float();
     explosive   = weapon->GetAttribute(AttrExplosiveDamage).get_float();
-    chargeRef   = InventoryItemRef();
+    chargeRef   = InventoryItemRef(nullptr);
     modifier    = _modifier;
 
     _log(DAMAGE__WARNING, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
@@ -99,7 +99,7 @@ Damage::Damage(SystemEntity* _source, bool fatal_blow)
     assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
 
     em = kinetic = thermal = explosive = 0.0f;
-    weaponRef = chargeRef = InventoryItemRef();
+    weaponRef = chargeRef = InventoryItemRef(nullptr);
 }
 
 bool SystemEntity::ApplyDamage(Damage &d) {
@@ -265,6 +265,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
      * found in /eve/client/script/environment/godma.py
      *
      * ALL dmg msgs working  22Apr15
+     * these need updates.  see notes in eve_constants.h
      */
     if (HasPilot()) {
         if (!d.chargeRef) {
@@ -348,6 +349,8 @@ void Ship::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
+    // AttrFwLpKill
+
     uint32 locationID = GetLocationID();
     if (!m_self->GetPilot()) {
         m_destiny->Stop();
@@ -362,7 +365,7 @@ void Ship::Killed(Damage &fatal_blow) {
         std::string wreck_name = m_self->itemName();
         GPoint wreckPosition = m_destiny->GetPosition();
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
-        WreckContainerRef wreckItemRef = m_system->GetServiceMgr()->item_factory->SpawnWreckContainer( wreckItemData );
+        WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr)
             /** @todo  make error here */
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
@@ -413,7 +416,6 @@ void Ship::Killed(Damage &fatal_blow) {
         return;
 
     if (pPilot->InPod()) {
-
         pClient->GetChar()->PayBounty(pPilot->GetChar());
 
         /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
@@ -458,7 +460,7 @@ void Ship::Killed(Damage &fatal_blow) {
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
         ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), deadPodPosition);
-        InventoryItemRef corpseItemRef = m_services.item_factory->SpawnItem( corpseItemData );
+        InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
         if (corpseItemRef.get() != nullptr) {
             DBSystemDynamicEntity corpseEntity;
                 corpseEntity.allianceID = m_allyID;
@@ -500,8 +502,8 @@ void Ship::Killed(Damage &fatal_blow) {
         float radius = m_self->GetAttribute(AttrRadius).get_float();
         capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
 
-        m_services.item_factory->SetUsingClient(pPilot);
-        ShipItemRef podRef = m_services.item_factory->GetShip(pPilot->GetPodID());
+        sItemFactory.SetUsingClient(pPilot);
+        ShipItemRef podRef = sItemFactory.GetShip(pPilot->GetPodID());
         podRef->Relocate(capsulePosition);
 
         SystemEntity* pPodEntity = m_system->GetSE(pPilot->GetPodID());
@@ -529,7 +531,7 @@ void Ship::Killed(Damage &fatal_blow) {
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
 
 		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), deadShipPosition);
-        WreckContainerRef wreckItemRef = m_services.item_factory->SpawnWreckContainer( wreckItemData );
+        WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() != nullptr) {
             DBSystemDynamicEntity wreckEntity;
                 wreckEntity.allianceID = killer->GetAllianceID();
@@ -626,7 +628,7 @@ void Ship::Killed(Damage &fatal_blow) {
         m_destiny->SendTerminalExplosion(oldShipItemID, m_bubble->GetID());
         pPilot->BoardShip(podRef);
         pPilot->SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
-        m_services.item_factory->UnsetUsingClient();
+        sItemFactory.UnsetUsingClient();
         m_system->RemoveEntity(this);
         deadShipRef->Delete();
     }

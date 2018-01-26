@@ -33,35 +33,57 @@ public:
     PyCallable_DECL_CALL(GetSuggestedTickerNames);
     PyCallable_DECL_CALL(GetOffices);
     PyCallable_DECL_CALL(GetStations);
+
+    PyCallable_DECL_CALL(CreateRecruitmentAd);
+    PyCallable_DECL_CALL(GetRecruiters);
+    PyCallable_DECL_CALL(GetRecruitmentAdsForCorporation);
     PyCallable_DECL_CALL(GetMyApplications);
     PyCallable_DECL_CALL(InsertApplication);
     PyCallable_DECL_CALL(GetApplications);
     PyCallable_DECL_CALL(UpdateApplicationOffer);
     PyCallable_DECL_CALL(DeleteApplication);
     PyCallable_DECL_CALL(UpdateApplication);
+
     PyCallable_DECL_CALL(UpdateDivisionNames);
     PyCallable_DECL_CALL(UpdateCorporation);
     PyCallable_DECL_CALL(UpdateLogo);
     PyCallable_DECL_CALL(SetAccountKey);
     PyCallable_DECL_CALL(GetMember);
     PyCallable_DECL_CALL(GetMembers);
+
+    PyCallable_DECL_CALL(MoveCompanyShares);
+    PyCallable_DECL_CALL(MovePrivateShares);
     PyCallable_DECL_CALL(GetSharesByShareholder);
     PyCallable_DECL_CALL(GetShareholders);
     PyCallable_DECL_CALL(PayoutDividend);
+
+    PyCallable_DECL_CALL(CanViewVotes);
+    PyCallable_DECL_CALL(InsertVoteCase);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
+    PyCallable_DECL_CALL(GetSanctionedActionsByCorporation);
 
     PyCallable_DECL_CALL(GetRoleGroups);
     PyCallable_DECL_CALL(GetRoles);
+
+    PyCallable_DECL_CALL(CreateLabel);
+    PyCallable_DECL_CALL(GetLabels);
+    PyCallable_DECL_CALL(DeleteLabel);
+    PyCallable_DECL_CALL(EditLabel);
+    PyCallable_DECL_CALL(AssignLabels);
+    PyCallable_DECL_CALL(RemoveLabels);
 
     PyCallable_DECL_CALL(GetTitles);
     PyCallable_DECL_CALL(UpdateTitle);
     PyCallable_DECL_CALL(UpdateTitles);
     PyCallable_DECL_CALL(DeleteTitle);
 
-    PyCallable_DECL_CALL(GetLocationalRoles);
+    PyCallable_DECL_CALL(AddBulletin);
     PyCallable_DECL_CALL(GetBulletins);
+
+    PyCallable_DECL_CALL(GetLocationalRoles);
     PyCallable_DECL_CALL(GetRecentKillsAndLosses);
     PyCallable_DECL_CALL(UpdateMember);
+    PyCallable_DECL_CALL(ExecuteActions);
 
     PyCallable_DECL_CALL(GetCorporateContacts);
     PyCallable_DECL_CALL(AddCorporateContact);
@@ -72,10 +94,25 @@ public:
     PyCallable_DECL_CALL(CreateAlliance);
     PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
 
+    PyCallable_DECL_CALL(GetMemberTrackingInfo);
+    PyCallable_DECL_CALL(GetMembersPaged);
+    PyCallable_DECL_CALL(GetMembersByIds);
+    PyCallable_DECL_CALL(GetMemberIDsWithMoreThanAvgShares);
+    PyCallable_DECL_CALL(GetMemberIDsByQuery);
+    PyCallable_DECL_CALL(GetMemberTrackingInfoSimple);
+
+    PyCallable_DECL_CALL(GetRentalDetailsPlayer);
+    PyCallable_DECL_CALL(GetRentalDetailsCorp);
+
+    PyCallable_DECL_CALL(UpdateCorporationAbilities);
+    PyCallable_DECL_CALL(UpdateStationManagementSettings);
+
 
 protected:
-    bool JoinCorporation(Client *who, uint32 newCorpID, const CorpData &roles);
-    static void FillOCApplicationChange(Notify_OnCorporationApplicationChanged & OCAC, const ApplicationInfo & Old, const ApplicationInfo & New);
+    void JoinCorporation(Client* who, const CorpData& data);
+    static void FillOCApplicationChange(OnCorporationApplicationChanged & OCAC, const ApplicationInfo & Old, const ApplicationInfo & New);
+
+    uint8 GetQueryType(std::string queryType);
 
     CorporationDB& m_db;
 

@@ -55,24 +55,24 @@ ItemCategory::ItemCategory(EVEItemCategories _id, const CategoryData &_data)
     _log(ITEM__TRACE, "Created object %p for category %s (%u).", this, m_name.c_str(), (uint32)m_id);
 }
 
-ItemCategory* ItemCategory::Load(ItemFactory &factory, EVEItemCategories category)
+ItemCategory* ItemCategory::Load( EVEItemCategories category)
 {
-    ItemCategory* c = ItemCategory::_Load(factory, category);
+    ItemCategory* c = ItemCategory::_Load(category);
 
     // ItemCategory has no virtual _Load()
     return c;
 }
 
-ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category)
+ItemCategory* ItemCategory::_Load( EVEItemCategories category)
 {
     CategoryData data;
-    if(!factory.db().GetCategory(category, data))
+    if(!sItemFactory.db()->GetCategory(category, data))
         return nullptr;
 
-    return ItemCategory::_Load(factory, category, data);
+    return ItemCategory::_Load(category, data);
 }
 
-ItemCategory* ItemCategory::_Load(ItemFactory &factory, EVEItemCategories category, const CategoryData &data)
+ItemCategory* ItemCategory::_Load( EVEItemCategories category, const CategoryData &data)
 {
     return new ItemCategory(category, data);
 }
@@ -130,30 +130,30 @@ ItemGroup::ItemGroup(
     _log(ITEM__TRACE, "Created object %p for group %s (%u).", this, name().c_str(), id());
 }
 
-ItemGroup* ItemGroup::Load(ItemFactory &factory, uint16 groupID)
+ItemGroup* ItemGroup::Load( uint16 groupID)
 {
-    ItemGroup* g = ItemGroup::_Load(factory, groupID);
+    ItemGroup* g = ItemGroup::_Load(groupID);
 
     // ItemGroup has no virtual _Load()
     return g;
 }
 
-ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID)
+ItemGroup* ItemGroup::_Load( uint16 groupID)
 {
     // pull data
     GroupData data;
-    if(!factory.db().GetGroup(groupID, data))
+    if(!sItemFactory.db()->GetGroup(groupID, data))
         return nullptr;
 
     // retrieve category
-    const ItemCategory *c = factory.GetCategory(data.category);
+    const ItemCategory *c = sItemFactory.GetCategory(data.category);
     if(c == nullptr)
         return nullptr;
 
-    return ItemGroup::_Load(factory, groupID, *c, data);
+    return ItemGroup::_Load(groupID, *c, data);
 }
 
-ItemGroup* ItemGroup::_Load(ItemFactory &factory, uint16 groupID, const ItemCategory &category, const GroupData &data)
+ItemGroup* ItemGroup::_Load( uint16 groupID, const ItemCategory &category, const GroupData &data)
 {
     return new ItemGroup(groupID, category, data);
 }
@@ -208,13 +208,13 @@ ItemType::ItemType(
     _log(ITEM__TRACE, "Created ItemType object %p for type %s (%u).", this, name().c_str(), id());
 }
 
-ItemType* ItemType::Load(ItemFactory &factory, uint32 typeID)
+ItemType* ItemType::Load( uint32 typeID)
 {
-    return ItemType::Load<ItemType>( factory, typeID );
+    return ItemType::Load<ItemType>(typeID );
 }
 
 template<class _Ty>
-_Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &group, const TypeData &data)
+_Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data)
 {
     switch( group.categoryID() ) {
         /*  not handled / not needed
@@ -228,7 +228,7 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &g
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Entity:
         case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Commodity:
+        case EVEDB::invCategories::Commodity:   // group StationComponents, for outpost shit
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Deployable:
@@ -236,18 +236,20 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &g
         case EVEDB::invCategories::Reaction:
         case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Orbitals:
-            */
+        */
         case EVEDB::invCategories::Owner: {
-            return CharacterType::_LoadType<CharacterType>( factory, typeID, group, data );
+            return CharacterType::_LoadType<CharacterType>(typeID, group, data );
         }
         case EVEDB::invCategories::Station: {
-            return StationType::_LoadType<StationType>( factory, typeID, group, data );
-        }
+            if (group.id() == EVEDB::invGroups::Station)
+                return StationType::_LoadType<StationType>(typeID, group, data );
+                //case EVEDB::invGroups::Station_Services:  use generic type for this
+        } break;
         case EVEDB::invCategories::Blueprint: {
-            return BlueprintType::_LoadType<BlueprintType>( factory, typeID, group, data );
+            return BlueprintType::_LoadType<BlueprintType>(typeID, group, data );
         }
         case EVEDB::invCategories::Ship: {
-            return ShipType::_LoadType<ShipType>( factory, typeID, group, data );
+            return ShipType::_LoadType<ShipType>(typeID, group, data );
         }
         default:
             _log(ITEM__MESSAGE, "type %u (group: %u, cat: %u) called _LoadType, but is not handled.", typeID, group.id(), group.categoryID());
@@ -258,7 +260,7 @@ _Ty* ItemType::_LoadType(ItemFactory &factory, uint32 typeID, const ItemGroup &g
     return new ItemType( typeID, group, data );
 }
 
-bool ItemType::_Load(ItemFactory &factory)
+bool ItemType::_Load()
 {
     // load type attribs
     std::vector< DmgTypeAttribute > typeAttrVec;
@@ -320,13 +322,13 @@ EvilNumber ItemType::GetAttribute(const uint16 attributeID) const
     return 0;
 }
 
-bool ItemType::HasReqSkill(const uint16 skillID, ItemFactory& m_factory) const
+bool ItemType::HasReqSkill(const uint16 skillID) const
 {
     std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
     if (itr != m_reqSkillMap.end())
         return true;
     for (auto cur : m_reqSkillMap)
-        if (m_factory.GetType(cur.first)->HasReqSkill(skillID, m_factory))
+        if (sItemFactory.GetType(cur.first)->HasReqSkill(skillID))
             return true;
     return false;
 }

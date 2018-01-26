@@ -40,10 +40,9 @@ m_updateTimer(sConfig.rates.WebUpdate * 60000)	//15 mins
     m_updateTimer.Disable();
 }
 
-void ConsoleCommand::Initialize(CommandDispatcher* cd, ItemFactory* itmf)
+void ConsoleCommand::Initialize(CommandDispatcher* cd)
 {
     pCommand = cd;
-    pFactory = itmf;
 	m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);	// change minutes to ms for timer
 	tv.tv_sec = 0;
 	tv.tv_usec = 0;
@@ -114,7 +113,7 @@ bool ConsoleCommand::Process() {
                         } else
                             sLog.Warning("      Connections", " [(%u)%u] %s in %s(%u).  %u Minutes Online.", \
 										 cur->GetUserID(), cur->GetCharacterID(), cur->GetName(), \
-										 cur->GetSystemName().c_str(), cur->GetLocationID(), cur->GetChar()->logonMinutes() );
+										 cur->GetSystemName().c_str(), cur->GetLocationID(), cur->GetChar()->OnlineTime() );
 					}
 				}
 			} else if (strncmp(buf, "s", 1) == 0) {
@@ -127,7 +126,7 @@ bool ConsoleCommand::Process() {
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-                if (sConfig.server.UseProfiling)
+                if (sConfig.debug.UseProfiling)
                     sLog.Green(" Server Profiling","Enabled.");
                 else
 					sLog.Warning(" Server Profiling","Disabled.");
@@ -151,12 +150,12 @@ bool ConsoleCommand::Process() {
                     sLog.Green("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
                 else
 					sLog.Warning("      All Damages","Normal.");
-                if (sConfig.rates.missileRate != 1.0)
-                    sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRate *100) );
+                if (sConfig.rates.missileRoF != 1.0)
+                    sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRoF *100) );
                 else
 					sLog.Warning("      Missile Dmg","Normal.");
-                if (sConfig.rates.turretRate != 1.0)
-                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRate *100) );
+                if (sConfig.rates.turretRoF != 1.0)
+                    sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
                 else
                     sLog.Warning("      Turret Dmg","Normal.");
 			} else if (strncmp(buf, "v", 1) == 0) {
@@ -191,7 +190,7 @@ bool ConsoleCommand::Process() {
 				else
                     sLog.Warning("    Server UpTime", " %u S.", s );
                 //  loaded items
-                sLog.Warning("     Loaded Items", " %u", pFactory->Count());
+                sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
                 //  loaded NPCs
                 sLog.Warning("      Loaded NPCs", " %u", sEntityList.GetNPCCount());
                 //  loaded systems
@@ -206,7 +205,7 @@ bool ConsoleCommand::Process() {
 			} else if (strncmp(buf, "a", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server SaveAll:");
                 //sLog.Error("      Server Save", " Not Avalible Yet." );
-				pFactory->SaveItems();
+				sItemFactory.SaveItems();
 			} else if (strncmp(buf, "b", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Broadcast:");
                 sLog.Error(" Server Broadcast", " Not Avalible Yet." );
@@ -217,22 +216,20 @@ bool ConsoleCommand::Process() {
                 const char* buff = buf +2;
 				std::vector<Client*> list;
 				sEntityList.GetClients(list);
-				for (auto cur : list) {
+				for (auto cur : list)
                     cur->SendNotifyMsg( buff );
-				}
 				sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
                 const char* buff = buf +2;
                 std::vector<Client*> list;
                 sEntityList.GetClients(list);
-                for (auto cur : list) {
+                for (auto cur : list)
                     cur->SendInfoModalMsg( buff );
-                }
                 sLog.Warning("  Console Command", " Modal Message sent to all online clients." );
             } else if (strncmp(buf, "p", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Profile:");
-                if (!sConfig.server.UseProfiling) {
+                if (!sConfig.debug.UseProfiling) {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
                 }
@@ -254,22 +251,22 @@ bool ConsoleCommand::Process() {
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
-                sLog.Warning("         ROLE_DEV", " %" PRIu64 "(%p)", ROLE_DEV, ROLE_DEV);
-                sLog.Warning("         ROLE_STD", " %" PRIu64 "(%p)", ROLE_STD, ROLE_STD);
-                sLog.Warning("         ROLE_VIP", " %" PRIu64 "(%p)", ROLE_VIP, ROLE_VIP);
-                sLog.Warning("        ROLE_VIP+", " %" PRIu64 "(%p)", ROLE_ELEVATEDPLAYER, ROLE_ELEVATEDPLAYER);
-                sLog.Warning("        ROLE_VIEW", " %" PRIu64 "(%p)", ROLE_VIEW, ROLE_VIEW);
-                sLog.Warning("        ROLE_BOSS", " %" PRIu64 "(%p)", ROLE_BOSS, ROLE_BOSS);
-                sLog.Warning("       ROLE_SLASH", " %" PRIu64 "(%p)", ROLE_SLASH, ROLE_SLASH);
-                sLog.Warning("     ROLE_CREATOR", " %" PRIu64 "(%p)", ROLE_CREATOR, ROLE_CREATOR);
+                sLog.Warning("     Acct::Role::DEV", " %" PRIi64 "(%p)", Acct::Role::DEV, Acct::Role::DEV);
+                sLog.Warning("     Acct::Role::STD", " %" PRIi64 "(%p)", Acct::Role::STD, Acct::Role::STD);
+                sLog.Warning("     Acct::Role::VIP", " %" PRIi64 "(%p)", Acct::Role::VIP, Acct::Role::VIP);
+                sLog.Warning("    Acct::Role::VIP+", " %" PRIi64 "(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
+                sLog.Warning("    Acct::Role::VIEW", " %" PRIi64 "(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
+                sLog.Warning("    Acct::Role::BOSS", " %" PRIi64 "(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
+                sLog.Warning("   Acct::Role::SLASH", " %" PRIi64 "(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
+                sLog.Warning(" Acct::Role::CREATOR", " %" PRIi64 "(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
                 sLog.White("", "");
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
-                sLog.Warning("         Role_All", " %" PRIu64 "(%p)", corpRoleAll, corpRoleAll);
-                sLog.Warning("        Role_Cont", " %" PRIu64 "(%p)", corpRoleAllContainer, corpRoleAllContainer);
-                sLog.Warning("       Role_Admin", " %" PRIu64 "(%p)", corpRoleAdmin, corpRoleAdmin);
-                sLog.Warning("      Role_Hangar", " %" PRIu64 "(%p)", corpRoleAllHangar, corpRoleAllHangar);
-                sLog.Warning("     Role_Account", " %" PRIu64 "(%p)", corpRoleAllAccount, corpRoleAllAccount);
-                sLog.Warning("    Role_Starbase", " %" PRIu64 "(%p)", corpRoleAllStarbase, corpRoleAllStarbase);
+                sLog.Warning("     Corp::Role::All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
+                sLog.Warning("    Corp::Role::Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
+                sLog.Warning("   Corp::Role::Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
+                sLog.Warning("  Corp::Role::Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
+                sLog.Warning(" Corp::Role::Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
+                sLog.Warning("Corp::Role::Starbase", " %" PRIi64 "(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
             } else if (strncmp(buf, "o", 1) == 0) {
                 pCommand->ListCommands();
             } else if (strncmp(buf, "t", 1) == 0) {
@@ -287,9 +284,13 @@ bool ConsoleCommand::Process() {
                 sLog.~NewLog();
                 sLog.InitializeLogging(sConfig.files.logDir);
                 */
-                if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
+                if (load_log_settings(sConfig.files.logSettings.c_str())) {
                     sLog.Green("  Alasiya's EvEMu", "Log settings reloaded from %s", sConfig.files.logSettings.c_str() );
-                else
+                    // reset config switches based on log settings
+                    sConfig.server.StackTrace = is_log_enabled(SERVER__STACKTRACE);
+                    sConfig.server.UseBeanCount = is_log_enabled(SERVER__BEANCOUNT);
+                    sConfig.debug.IsTestServer = is_log_enabled(SERVER__TESTSERVER);
+                } else
                     sLog.Warning("  Alasiya's EvEMu", "Unable to reload settings from %s", sConfig.files.logSettings.c_str() );
 			} else {
 				sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
@@ -324,7 +325,7 @@ void ConsoleCommand::Status(std::string* state, int64* threads, float* vm_usage,
     // the fields we want
     std::string ignore = "", run_state = "";
     int64 num_threads = 0;  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
-    uint64 vsize = 0;      //in bytes
+    int64 vsize = 0;      //in bytes
     int64 rss = 0;			//in pages
 	float utime = 0.0f, stime = 0.0f;
 
@@ -335,7 +336,7 @@ void ConsoleCommand::Status(std::string* state, int64* threads, float* vm_usage,
         >> ignore >> ignore >> vsize >> rss;
 	ifs.close();
 
-    if (sConfig.server.IsTestServer)
+    if (sConfig.debug.IsTestServer)
         _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
 
 	*state = run_state;
@@ -362,7 +363,7 @@ void ConsoleCommand::MemStatus(float* vm_usage, float* resident_set)
 {
     std::string ignore = "";
     // the fields we want
-    uint64 vsize = 0;      //in bytes
+    int64 vsize = 0;      //in bytes
     int64 rss = 0;			//in pages
 
     // stat seems to give the most reliable results
@@ -388,8 +389,8 @@ void ConsoleCommand::UpdateStatus() {
 	int64 threads = 0;
 	float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
 	Status(&state, &threads, &vm, &rss, &user, &kernel);
-    if (sConfig.server.IsTestServer)
+    if (sConfig.debug.IsTestServer)
         _log(SERVER__INFO, "Current Mem usage - RSS: %f, VM: %f", rss, vm);
-    ServiceDB::SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, pFactory->Count(), sBubbleMgr.Count());
+    ServiceDB::SaveServerStats(threads + sThread.Count(), rss, vm, user, kernel, sItemFactory.Count(), sBubbleMgr.Count());
 }
 

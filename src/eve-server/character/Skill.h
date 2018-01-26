@@ -57,7 +57,7 @@ public:
      * @param[in] skillID ID of skill to load.
      * @return Pointer to new Skill object; NULL if fails.
      */
-    static SkillRef Load(ItemFactory &factory, uint32 skillID);
+    static SkillRef Load( uint32 skillID);
     /**
      * Spawns new skill.
      *
@@ -65,7 +65,7 @@ public:
      * @param[in] data Item data of new skill.
      * @return Pointer to new Skill object; NULL if fails.
      */
-    static SkillRef Spawn(ItemFactory &factory, ItemData &data);
+    static SkillRef Spawn( ItemData &data);
 
     /**
      * Calculates required amount of skillpoints for level.
@@ -90,12 +90,7 @@ public:
     void VerifySP();
 
 protected:
-    Skill(
-        ItemFactory &_factory,
-        uint32 _skillID,
-        // InventoryItem stuff:
-        const ItemType &_type,
-        const ItemData &_data );
+    Skill(uint32 _skillID, const ItemType &_type, const ItemData &_data );
 
     /*
      * Member functions
@@ -104,7 +99,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 skillID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 skillID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Skill) {
             sLog.Error("Skill", "Trying to load %s as Skill.", type.category().name().c_str() );
             if (sConfig.server.StackTrace)
@@ -112,10 +107,8 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        return SkillRef( new Skill( factory, skillID, type, data ) );
+        return SkillRef( new Skill(skillID, type, data ) );
     }
-
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
 };
 
 #endif /* !__SKILL__H__INCL__ */

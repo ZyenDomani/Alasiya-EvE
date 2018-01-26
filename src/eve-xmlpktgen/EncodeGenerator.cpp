@@ -107,7 +107,7 @@ bool ClassEncodeGenerator::ProcessElementPtr( const TiXmlElement* field )
         "        %s = %s->Encode();\n"
         "    else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null. Encoding a PyNone\");\n"
-        "        %s = new PyNone();\n"
+        "        %s = PyStatic.NewNone();\n"
         "    }\n"
         "\n",
         name, v, name,
@@ -133,7 +133,7 @@ bool ClassEncodeGenerator::ProcessRaw( const TiXmlElement* field )
         "        PyIncRef(%s);\n"
         "    } else {\n"
         "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
-        "        %s = new PyNone();\n"
+        "        %s = PyStatic.NewNone();\n"
         "    }\n"
         "\n",
         name,
@@ -155,54 +155,20 @@ bool ClassEncodeGenerator::ProcessInt( const TiXmlElement* field )
         return false;
     }
 
-    //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
     const char* v = top();
     if (none_marker != nullptr)
-        fprintf( mOutputFile,
-            "    if (%s == %s )\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name, none_marker,
+        fprintf(mOutputFile,
+                "    if (%s == %s )\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    else\n",
+                name, none_marker,
                 v
         );
 
-    fprintf( mOutputFile,
-        "    %s = new PyInt( %s );\n",
-        v, name
-    );
-
-    pop();
-    return true;
-}
-
-bool ClassEncodeGenerator::ProcessUInt( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    //this should be done better:
-    const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
-    const char* v = top();
-    if (none_marker != nullptr )
-        fprintf( mOutputFile,
-                 "    if (%s == %s )\n"
-                 "        %s = new PyNone();\n"
-                 "    else\n",
-                 name, none_marker,
-                 v
-        );
-
-    fprintf( mOutputFile,
-             "    %s = new PyUInt( %s );\n",
-             v, name
+    fprintf(mOutputFile,
+            "    %s = new PyInt( %s );\n",
+            v, name
     );
 
     pop();
@@ -217,15 +183,12 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
         return false;
     }
 
-    //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
     const char* v = top();
     if (none_marker != nullptr )
         fprintf( mOutputFile,
                  "    if (%s == %s )\n"
-                 "        %s = new PyNone();\n"
+                 "        %s = PyStatic.NewNone();\n"
                  "    else\n",
                  name, none_marker,
                  v
@@ -233,37 +196,6 @@ bool ClassEncodeGenerator::ProcessLong( const TiXmlElement* field )
 
     fprintf( mOutputFile,
              "    %s = new PyLong( %s );\n",
-             v, name
-    );
-
-    pop();
-    return true;
-}
-
-bool ClassEncodeGenerator::ProcessULong( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    //this should be done better:
-    const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
-    const char* v = top();
-    if (none_marker != nullptr )
-        fprintf( mOutputFile,
-                 "    if (%s == %s )\n"
-                 "        %s = new PyNone();\n"
-                 "    else\n",
-                 name, none_marker,
-                 v
-        );
-
-    fprintf( mOutputFile,
-             "    %s = new PyULong( %s );\n",
              v, name
     );
 
@@ -279,23 +211,20 @@ bool ClassEncodeGenerator::ProcessReal( const TiXmlElement* field )
         return false;
     }
 
-    //this should be done better:
     const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
     const char* v = top();
     if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if (%s == %s )\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name, none_marker,
+                "    if (%s == %s )\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    else\n",
+                name, none_marker,
                 v
         );
 
     fprintf( mOutputFile,
-        "    %s = new PyFloat( %s );\n",
-        v, name
+            "    %s = new PyFloat( %s );\n",
+            v, name
     );
 
     pop();
@@ -322,7 +251,7 @@ bool ClassEncodeGenerator::ProcessBool( const TiXmlElement* field )
 bool ClassEncodeGenerator::ProcessNone( const TiXmlElement* field )
 {
     fprintf( mOutputFile,
-        "    %s = new PyNone();\n",
+        "    %s = PyStatic.NewNone();\n",
         top()
     );
 
@@ -353,7 +282,6 @@ bool ClassEncodeGenerator::ProcessBuffer( const TiXmlElement* field )
             name,
             mName, name,
             v
-
     );
 
     pop();
@@ -369,21 +297,19 @@ bool ClassEncodeGenerator::ProcessString( const TiXmlElement* field )
     }
 
     const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
     const char* v = top();
     if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if (%s == \"%s\" )\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name, none_marker,
+                "    if (%s == \"%s\" )\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    else\n",
+                name, none_marker,
                 v
         );
 
     fprintf( mOutputFile,
-       "    %s = new PyString( %s );\n",
-        v, name
+            "    %s = new PyString( %s );\n",
+            v, name
     );
 
     pop();
@@ -415,23 +341,20 @@ bool ClassEncodeGenerator::ProcessWString( const TiXmlElement* field )
         std::cout << std::endl <<  "ClassEncodeGenerator:: field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
-
     const char* none_marker = field->Attribute( "none_marker" );
-    const char* default_marker = field->Attribute( "default" );
-
     const char* v = top();
     if (none_marker != nullptr )
         fprintf( mOutputFile,
-            "    if (%s == \"%s\" )\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name, none_marker,
+                "    if (%s == \"%s\" )\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    else\n",
+                name, none_marker,
                 v
         );
 
     fprintf( mOutputFile,
-       "    %s = new PyWString( %s );\n",
-        v, name
+            "    %s = new PyWString( %s );\n",
+            v, name
     );
 
     pop();
@@ -448,8 +371,8 @@ bool ClassEncodeGenerator::ProcessWStringInline( const TiXmlElement* field )
 
     const char* v = top();
     fprintf( mOutputFile,
-        "    %s = new PyWString( \"%s\", %zu );\n",
-        v, value, strlen( value )
+            "    %s = new PyWString( \"%s\", %zu );\n",
+            v, value, strlen( value )
     );
 
     pop();
@@ -472,19 +395,19 @@ bool ClassEncodeGenerator::ProcessToken( const TiXmlElement* field )
     const char* v = top();
     if (optional)
         fprintf( mOutputFile,
-            "    if (%s == nullptr)\n"
-            "        %s = new PyNone();\n"
-            "    else\n",
-            name,
+                "    if (%s == nullptr)\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    else\n",
+                name,
                 v
         );
     else
         fprintf( mOutputFile,
-            "    if (%s == nullptr) {\n"
-            "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
-            "        %s = new PyNone();\n"
-            "    } else\n",
-            name,
+                "    if (%s == nullptr) {\n"
+                "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
+                "        %s = PyStatic.NewNone();\n"
+                "    } else\n",
+                name,
                 mName, name,
                 v
         );
@@ -538,7 +461,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s == nullptr)\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    else\n",
             name,
                 v
@@ -547,7 +470,7 @@ bool ClassEncodeGenerator::ProcessObject( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    } else\n",
             name,
                 mName, name,
@@ -624,7 +547,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s == nullptr)\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    else\n",
             name,
                 v
@@ -633,7 +556,7 @@ bool ClassEncodeGenerator::ProcessObjectEx( const TiXmlElement* field )
         fprintf( mOutputFile,
             "    if (%s == nullptr) {\n"
             "        _log(NET__PACKET_WARNING, \"Encode %s: %s is null.  Encoding a PyNone\");\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    } else\n",
             name,
                 mName, name,
@@ -681,7 +604,7 @@ bool ClassEncodeGenerator::ProcessTuple( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    else\n",
             name,
                 v
@@ -772,7 +695,7 @@ bool ClassEncodeGenerator::ProcessList( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    else\n",
             name,
                 v
@@ -939,7 +862,7 @@ bool ClassEncodeGenerator::ProcessDict( const TiXmlElement* field )
     if (optional)
         fprintf( mOutputFile,
             "    if (%s->empty())\n"
-            "        %s = new PyNone();\n"
+            "        %s = PyStatic.NewNone();\n"
             "    else\n",
             name,
                 v

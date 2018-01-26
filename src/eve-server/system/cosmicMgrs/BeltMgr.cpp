@@ -149,7 +149,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
         return false;
 
     for (auto entity : entities) {
-        AsteroidItemRef itemRef = m_system->itemFactory()->GetAsteroid(entity.itemID);
+        AsteroidItemRef itemRef = sItemFactory.GetAsteroid(entity.itemID);
         if (itemRef.get() == nullptr) {
             _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
@@ -326,13 +326,13 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes,
         }
         /* if (anomaly) {
             // random for anomaly...may not need this
-            theta = MakeRandomFloat(0, (EvE_Pi*2));
+            theta = MakeRandomFloat(0, ( EvE::Trig::Pi*2));
             mposition.x = (radius + roidradius /10) * cos(theta);
             mposition.z = (radius + roidradius /10) * sin(theta);
             mposition.y = MakeRandomFloat(-elevation, elevation);
         } else */ if (type == 0) {
             // half-circle type
-            theta = EvE_DegreesToRadians(degreeSeparation * i);
+            theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
             mposition.x = (radius + roidradius /10) * cos(theta);
             mposition.z = (radius + roidradius /10) * sin(theta);
             mposition.y = MakeRandomFloat(-elevation, elevation);
@@ -391,7 +391,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         adata.y = position.y;
         adata.z = position.z;
     ItemData idata(typeID, 1, m_systemID, flagAutoFit, "", position);
-    InventoryItemRef itemRef = m_system->itemFactory()->SpawnAsteroid(idata, adata);
+    InventoryItemRef itemRef = sItemFactory.SpawnAsteroid(idata, adata);
     if (itemRef.get() == nullptr)
         return;
 

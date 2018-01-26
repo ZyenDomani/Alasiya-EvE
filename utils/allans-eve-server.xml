@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.3 -->
+     Version: 8.5 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -36,25 +36,22 @@
 
     <server>
         <UseBeanCount>true</UseBeanCount>  <!-- bool  -client python error reporting -->
-        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
-        <UseProfiling>false</UseProfiling><!-- bool -->
-        <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <PositionHack>false</PositionHack><!-- bool -->
-        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown -->
         <UseStackTrace>false</UseStackTrace><!-- bool -log client python error reports to evemu_client_stack_trace.txt-->
         <NoobShipCheck>false</NoobShipCheck><!-- bool  -check for ship in hangar when docking in a pod -->
         <ServerSleepTime>10</ServerSleepTime><!-- ms -->
-        <StackTrace>false</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
+        <StackTrace>true</StackTrace><!-- bool  -(en/dis)ables sending StackTrace on client errors -->
         <maxPlayers>2500</maxPlayers>
+        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
+        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>20</MaxThreadReport>
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
+        <AllowNonPublished>true</AllowNonPublished>
     </server>
 
     <world>
-        <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <StationDockDelay>3</StationDockDelay><!-- in seconds (3 sec default) -->
         <gridUnload>true</gridUnload><!-- bool -->
         <gridUnloadTime>300</gridUnloadTime><!-- in seconds (5 min default)-->
@@ -64,19 +61,19 @@
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
+        <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
     </world>
 
     <rates>
         <secRate>1.0</secRate><!-- only used if != 1.0 -->
         <damageRate>1.0</damageRate><!-- ALL damage multiplier.  DO NOT USE 0.0 -->
-        <missileRate>1.0</missileRate><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
+        <missileDamage>1.0</missileDamage><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileTime>1.0</missileTime><!--  ALL missiles multiplier.  DO NOT USE 0.0 -->
         <missileRoF>1.0</missileRoF><!-- ALL missiles multiplier.  DO NOT USE 0.0 -->
-        <turretRate>1.0</turretRate><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
+        <turretDamage>1.0</turretDamage><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
-        <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
@@ -85,6 +82,12 @@
         <!-- these rates are not implemented yet -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
+
+        <!-- corp tax variables. -->
+        <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
+        <TaxAmount>20000</TaxAmount><!-- default is 20000 isk.  less than this isnt worth the processing for corps -->
+        <!-- min amount to be taxed.  received amounts less than this will not be taxed. -->
+       <TaxedAmount>250000</TaxedAmount><!-- live uses 100000.  default is 250000 -->
     </rates>
 
     <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
@@ -106,6 +109,7 @@
         <startCorporation>0</startCorporation>
         <terminationDelay>180</terminationDelay> <!-- seconds -->
         <statMultiplier>3</statMultiplier><!-- stats are multiplied by this -->
+        <allow3edChar>false</allow3edChar><!-- (dis)allow creating a third character -->
     </character>
 
     <npc>
@@ -122,8 +126,6 @@
         <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
         <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
-        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
-        <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <EnableDrones>true</EnableDrones><!-- bool -->
     </npc>
 
@@ -155,6 +157,17 @@
         <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
     </crime>
 
+    <debug><!-- switches for various server methods -->
+        <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
+        <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
+        <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
+        <UseProfiling>false</UseProfiling><!-- bool -->
+        <UseShipTracking>false</UseShipTracking><!-- bool -->
+        <PositionHack>false</PositionHack><!-- bool -->
+        <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
+        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
+    </debug>
+
     <threads><!-- not implemented yet -->
         <NetworkThreads>2</NetworkThreads>
         <DatabaseThreads>2</DatabaseThreads>
@@ -167,7 +180,7 @@
         <host>localhost</host>
         <username>allan</username>
         <password>none</password>
-        <db>alasiya-new</db>
+        <db>EVE_Crucible</db>
         <port>3306</port><!-- 3306 default -->
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication -->

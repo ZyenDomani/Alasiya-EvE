@@ -39,7 +39,7 @@ class ConfigDB
 public:
     PyRep *GetMultiOwnersEx(const std::vector<int32> &entityIDs);
     PyRep *GetMultiLocationsEx(const std::vector<int32> &entityIDs);
-    //PyRep *GetMultiLocationsEx(int32 entityID);
+    PyRep *GetMultiStationEx(const std::vector<int32> &entityIDs);
     PyRep *GetMultiAllianceShortNamesEx(const std::vector<int32> &entityIDs);
     PyRep *GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs);
     PyRep *GetMultiGraphicsEx(const std::vector<int32> &entityIDs);

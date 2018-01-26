@@ -66,7 +66,6 @@ std::string BaseRowsetReader::iterator::GetAsString( size_t index ) const
     case PyRep::PyTypeInt:
         return itoa( GetInt( index ) );
     case PyRep::PyTypeLong:
-    case PyRep::PyTypeULong:
         return itoa( GetLong( index ) );
     case PyRep::PyTypeFloat:
         {
@@ -148,7 +147,7 @@ uint32 PyRowsetReader::iterator::GetInt( size_t index ) const
     return GetRep( index )->AsInt()->value();
 }
 
-uint64 PyRowsetReader::iterator::GetLong( size_t index ) const
+int64 PyRowsetReader::iterator::GetLong( size_t index ) const
 {
     return GetRep( index )->AsLong()->value();
 }

@@ -89,15 +89,13 @@ PyResult MailMgrService::Handle_SendMail(PyCallArgs &call)
 
 PyResult MailMgrService::Handle_PrimeOwners(PyCallArgs &call)
 {
-    // @TODO: Stub
     Call_SingleIntList args;
-    if (!args.Decode(&call.tuple))
-    {
+    if (!args.Decode(&call.tuple)) {
         codelog(CLIENT__ERROR, "Failed to decode PrimeOwners args");
         return nullptr;
     }
 
-    return nullptr;
+    return ServiceDB::PrimeOwners(args.ints);
 }
 
 PyResult MailMgrService::Handle_SyncMail(PyCallArgs &call)

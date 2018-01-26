@@ -107,6 +107,8 @@ public:
     std::string GetBCastScopeName(int8 scope);
     std::string GetBCastGroupName(int8 group);
 
+    void GetFleetMembersOnGrid(Client* pClient, std::vector<uint32>& data);
+
 protected:
     void RemoveMember(Client* pClient);
 

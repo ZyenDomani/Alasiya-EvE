@@ -25,7 +25,7 @@ class SystemGPoint {
       const GPoint Get3RandPlanets(uint32 systemID);
       const GPoint GetRandPointOnPlanet(uint32 systemID);
       const GPoint GetRandPointOnMoon(uint32 systemID);
-      const GPoint GetRandPointInSystem(uint32 systemID, uint64 distance);
+      const GPoint GetRandPointInSystem(uint32 systemID, int64 distance);
 
   protected:
     SystemDB m_db;

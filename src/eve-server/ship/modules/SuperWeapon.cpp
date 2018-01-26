@@ -105,7 +105,7 @@ void SuperWeapon::StopCycle(bool abort)
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
         ge.targetID = 0;
-        ge.other = new PyNone();
+        ge.other = sDataMgr.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -118,7 +118,7 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * Win32Time_Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
-        shipEff.error = new PyNone();
+        shipEff.error = sDataMgr.NewNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
@@ -224,7 +224,7 @@ void SuperWeapon::_ShowCycle()
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();;
         ge.targetID = 0;
-        ge.other = new PyNone();
+        ge.other = sDataMgr.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -237,7 +237,7 @@ void SuperWeapon::_ShowCycle()
         shipEff.startTime = shipEff.timeNow;
         shipEff.duration = m_cycleTime;
         shipEff.repeat = m_repeat;
-        shipEff.error = new PyNone();
+        shipEff.error = sDataMgr.NewNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;

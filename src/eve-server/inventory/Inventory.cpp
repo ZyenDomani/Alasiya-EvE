@@ -28,12 +28,15 @@
 
 #include "Client.h"
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "PyCallable.h"
 #include "character/Character.h"
 #include "inventory/Inventory.h"
+#include "inventory/ItemFactory.h"
 #include "pos/Structure.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "station/StationDB.h"
 #include "system/Container.h"
 #include "system/SolarSystem.h"
 
@@ -44,19 +47,13 @@ Inventory::Inventory(InventoryItemRef item)
 {
     mContentsLoaded = false;
     m_self = item;
-    m_inventoryID = item->itemID();
+    m_myID = item->itemID();
 }
 
-Inventory* Inventory::Cast(InventoryItemRef item) {
-    if (item.get() == nullptr)
-        return nullptr;
-    return this;
-}
-
-void Inventory::Reset(ItemFactory* factory)
+void Inventory::Reset()
 {
     Unload();
-    LoadContents(factory);
+    LoadContents();
 }
 
 void Inventory::Unload()
@@ -64,7 +61,7 @@ void Inventory::Unload()
     if (!mContentsLoaded)
         return;
 
-    //  save contents on the off-chance they have changed while owner was in this sytems
+    //  save contents on the off-chance they have changed
     std::vector<SaveData> items;
     items.clear();
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
@@ -83,81 +80,92 @@ void Inventory::Unload()
                 data.customInfo = itr->second->customInfo();
             items.push_back(data);
         }
-        m_factory->RemoveItem(itr->first);
+        sItemFactory.RemoveItem(itr->first);
         itr = mContents.erase(itr);
     }
 
-    m_db->SaveItems(items);
+    m_db.SaveItems(items);
     mContents.clear();
     mContentsLoaded = false;
 }
 
-bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) const {
-    return m_db->GetItemContents(od, into);
+bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) {
+    return m_db.GetItemContents(od, into);
 }
 
-bool Inventory::LoadContents(ItemFactory* factory) {
-    if (IsAgent(m_inventoryID))
+bool Inventory::LoadContents() {
+    if (IsAgent(m_myID))
         return true;
-    m_factory = factory;
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
-    Client* pClient = factory->GetUsingClient();
-    if (IsStation(m_inventoryID)) {
+    Client* pClient = sItemFactory.GetUsingClient();
+    if (IsStation(m_myID)) {
         if (pClient != nullptr) {
-            if (pClient->IsHangarLoaded(m_inventoryID))
+            if (pClient->IsHangarLoaded(m_myID))
                 return true;
-            pClient->AddStationHangar(m_inventoryID);
+            pClient->AddStationHangar(m_myID);
             mContentsLoaded = false;
         }
     }
 
     // check if the contents has already been loaded
     if (mContentsLoaded) {
-        _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_inventoryID, this);
+        _log(INV__INFO, "Inventory::LoadContents() - inventory %u(%p) already loaded.", m_myID, this);
         return true;
     }
 
     OwnerData od;
         od.ownerID = 1;
-        od.locID = m_inventoryID;
+        od.locID = m_myID;
 
     std::vector<uint32> items;
     if (pClient != nullptr) {
         od.corpID = pClient->GetCorporationID();
-        if (IsStation(m_inventoryID)) {
+        if (IsStation(m_myID)) {
+            if (!StationItemRef::StaticCast(m_self)->IsLoaded())
+                StationDB::LoadOffices(od, items);
             if (IsPlayerCorp(od.corpID)) {
                 /* this will load all non-NPC corp items in this station */
                 od.ownerID = od.corpID;
-                _log(INV__TRACE, "Inventory::LoadContents()::IsPlayerCorp() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
+                _log(INV__TRACE, "Inventory::LoadContents()::IsPlayerCorp() - Loading inventory %u(%p) with owner %u", m_myID, this , od.ownerID);
                 GetItems(od, items);
+            }
+        } else if (IsOffice(m_myID)) {
+            if (IsPlayerCorp(od.corpID)) {
+                /* this will load corp hangars' inventory for this station */
+                od.ownerID = od.corpID;
+                _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %u", m_myID, this , od.ownerID, pClient->GetStationID());
+                GetItems(od, items);
+            } else {
+                // make error for loading office and NOT a PC corp
+                _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
         od.ownerID = pClient->GetCharacterID();
     }
 
-    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_inventoryID, this , od.ownerID);
+    _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_myID, this , od.ownerID);
     if (!GetItems(od, items)) {
-        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get items of inventory %u", m_inventoryID);
-        if ((pClient != nullptr) and IsStation(m_inventoryID))
-            pClient->RemoveStationHangar(m_inventoryID);
+        _log(INV__ERROR, "Inventory::LoadContents() - Failed to get items of inventory %u", m_myID);
+        if ((pClient != nullptr) and IsStation(m_myID))
+            pClient->RemoveStationHangar(m_myID);
         return false;
     }
 
     for (auto cur : items) {
-        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_inventoryID))
+        if ((cur == od.ownerID) or (cur == od.locID) or (cur == m_myID))
             continue;
-        InventoryItemRef iRef = factory->GetItem(cur);
+        InventoryItemRef iRef = sItemFactory.GetItem(cur);
         if (iRef.get() == nullptr) {
-            _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_inventoryID);
+            _log(INV__WARNING, "Inventory::LoadContents() - Failed to load item %u contained in %u. Skipping.", cur, m_myID);
             continue;
         } else
             AddItem(iRef);
     }
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_itemloadProfile, GetTimeUSeconds() - profileStartTime);
 
     return (mContentsLoaded = true);
@@ -172,9 +180,11 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
 
     if (test.second)
-        _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %d.", m_inventoryID, this, iRef->itemID(), (int)iRef->flag());
+        _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %s.", \
+                m_myID, this, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()).c_str());
     else
-        _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %d.", m_inventoryID, iRef->itemID(), (int)iRef->flag());
+        _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %s.", \
+                m_myID, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()).c_str());
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -183,9 +193,9 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr->first);
-        _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_inventoryID, this, iRef->itemID());
+        _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_myID, this, iRef->itemID());
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_inventoryID, iRef->itemID());
+        _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_myID, iRef->itemID());
 }
 
 void Inventory::DeleteContents()
@@ -226,14 +236,21 @@ CRowSet* Inventory::List(EVEItemFlags flag, uint32 forOwner/*0*/) const
 
 void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 forOwner) const {
     //there has to be a better way to build this...
-    /** @todo  need to verify changing owners when trading non-empty containers */
     PyPackedRow* row(nullptr);
-    for (auto cur : mContents) {
-        if (   (cur.second->flag() == flag        || flag == flagAnywhere)
-            && (cur.second->ownerID() == forOwner || forOwner == 0))
-        {
+    // office hangars list ALL items.  client separates by division flag
+    if (IsOffice(m_myID)
+    or IsCharacter(m_myID)) {
+        for (auto cur : mContents) {
             row = into->NewRow();
             cur.second->GetItemRow(row);
+        }
+    } else {
+        for (auto cur : mContents) {
+            if (((forOwner == 0)        or (cur.second->ownerID() == forOwner))
+            and ((flag == flagAnywhere) or (cur.second->flag() == flag))) {
+                row = into->NewRow();
+                cur.second->GetItemRow(row);
+            }
         }
     }
 }
@@ -243,7 +260,7 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
         if (cur.second->flag() == flag)
             return cur.second;
 
-    return InventoryItemRef();
+        return InventoryItemRef(nullptr);
 }
 
 InventoryItemRef Inventory::GetByID(uint32 id) const {
@@ -251,7 +268,7 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
     if (res != mContents.end())
         return res->second;
 
-    return InventoryItemRef();
+    return InventoryItemRef(nullptr);
 }
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
@@ -260,7 +277,7 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
             && cur.second->flag() == flag)
             return cur.second;
 
-    return InventoryItemRef();
+        return InventoryItemRef(nullptr);
 }
 
 void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory) {
@@ -284,12 +301,12 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     /* sorting method to put modules first, charges second, and cargo last
      *  this is needed to correctly online modules BEFORE trying to load charges
      */
-    itemVec = _sortVector(itemVecTmp);
+    itemVec = SortVector(itemVecTmp);
 }
 
-std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRef> &itemVec)
+std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef> &itemVec)
 {
-    //15:53:09 L Inventory::_sortVector: 41 items sorted in 0.177us with 480 loops.
+    //15:53:09 L Inventory::SortVector: 41 items sorted in 0.177us with 480 loops.
 
     /* sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
      * if there is only one item, no sorting required...
@@ -301,8 +318,8 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
 
     uint16 count = 0;
     double start = 0.0;
-    if (sConfig.server.IsTestServer)
-        if (sConfig.server.UseProfiling)
+    if (sConfig.debug.IsTestServer)
+        if (sConfig.debug.UseProfiling)
             start = GetTimeUSeconds();
 
     //begin basic sort
@@ -331,9 +348,9 @@ std::vector<InventoryItemRef> Inventory::_sortVector(std::vector<InventoryItemRe
         }
     }
 
-    if (sConfig.server.IsTestServer)
-        if (sConfig.server.UseProfiling)
-            sLog.White("Inventory::_sortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+    if (sConfig.debug.IsTestServer)
+        if (sConfig.debug.UseProfiling)
+            sLog.White("Inventory::SortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
 
     return itemVec;  //returns sorted list
 }
@@ -390,21 +407,26 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
 {
     InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef> types;
+    std::map<uint32, InventoryItemRef>::iterator tItr;
+    //std::map<uint32, InventoryItemRef>::iterator fItr;
 
-    std::map<uint32, InventoryItemRef>::const_iterator cur = mContents.begin();
-    while (cur != mContents.end()) {
-        // Iterator becomes invalid when the item is moved out;
-        // we have to increment before calling Merge().
-        iRef = cur->second;
-        ++cur;
+    std::map<uint32, InventoryItemRef>::iterator lItr = mContents.begin();
+    while (lItr != mContents.end()) {
+        iRef = lItr->second;
+        ++lItr;
         if (IsModuleSlot(iRef->flag()))    // check to avoid removing loaded modules from ship
             continue;
         if ((!iRef->singleton()) and ((forOwner == 0) or (forOwner == iRef->ownerID()))) {
-            std::map<uint32, InventoryItemRef>::iterator itr = types.find(iRef->typeID());
-            if (itr == types.end())
+            tItr = types.find(iRef->typeID());
+            if (tItr == types.end())
                 types.insert(std::make_pair(iRef->typeID(), iRef));
             else
-                itr->second->Merge(iRef);
+                tItr->second->Merge(iRef);
+            /*
+            fItr = mContents.find(iRef->itemID());
+            if (fItr != mContents.end())
+                lItr = mContents.erase(fItr->first);
+            else */
         }
     }
 }
@@ -426,12 +448,20 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
     float volume = item->quantity() * item->GetAttribute(AttrVolume).get_float();
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
-        Client* pClient = m_factory->GetUsingClient();
-        if ((pClient != nullptr) and pClient->CanThrow()) {
+        Client* pClient = sItemFactory.GetUsingClient();
+        if (pClient != nullptr) {
             std::map<std::string, PyRep *> args;
             args["available"] = new PyFloat(capacity);
             args["volume"] = new PyFloat(volume);
-            throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+            sItemFactory.UnsetUsingClient();
+            if (flag == flagCargoHold)
+                throw PyException(MakeUserError("NotEnoughCargoSpace", args));
+            else if (flag == flagDroneBay)
+                throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
+            else if (IsModuleSlot(flag))
+                throw PyException(MakeUserError("NotEnoughChargeSpace", args));
+            else
+                throw PyException(MakeUserError("NoSpaceForThat", args));
         }
         return false;
     }
@@ -439,11 +469,23 @@ bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
 }
 
 double Inventory::GetCapacity(EVEItemFlags flag) const {
-    /** @todo verify the *hangar types and make sure flagHangar is for STATIONS ONLY  */
+    // added hangar capy for all hangar types
+    // are we missing any hangar types here?  POS types?
     switch( flag ) {
+        case flagHangar:
+        case flagOffice:
+        case flagProperty:
+        case flagDelivery:
+        case flagImpounded:
+        case flagCorpMarket:
+        case flagCorpHangar2:
+        case flagCorpHangar3:
+        case flagCorpHangar4:
+        case flagCorpHangar5:
+        case flagCorpHangar6:
+        case flagCorpHangar7:                   return maxHangarCapy;
         case flagAutoFit:
-        case flagCargoHold:
-        case flagHangar:                        return m_self->GetAttribute(AttrCapacity).get_float();
+        case flagCargoHold:                     return m_self->GetAttribute(AttrCapacity).get_float();
         case flagDroneBay:                      return m_self->GetAttribute(AttrDroneCapacity).get_float();
         case flagShipHangar:                    return m_self->GetAttribute(AttrShipMaintenanceBayCapacity).get_float();
         case flagSecondaryStorage:              return m_self->GetAttribute(AttrCapacitySecondary).get_float();
@@ -457,9 +499,12 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagSpecializedSmallShipHold:      return m_self->GetAttribute(AttrSpecialSmallShipHoldCapacity).get_float();
         case flagSpecializedLargeShipHold:      return m_self->GetAttribute(AttrSpecialLargeShipHoldCapacity).get_float();
         case flagSpecializedIndustrialShipHold: return m_self->GetAttribute(AttrSpecialIndustrialShipHoldCapacity).get_float();
+
+        // for pos battery/array
+        case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();
     }
 
-    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %u called for item %u", flag, m_inventoryID);
+    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %u called for item %u", flag, m_myID);
     return 0.0;
 }
 

@@ -29,6 +29,17 @@
 #include "PyServiceCD.h"
 #include "faction/WarRegistryService.h"
 
+/*
+ * FACWAR__ERROR
+ * FACWAR__WARNING
+ * FACWAR__INFO
+ * FACWAR__MESSAGE
+ * FACWAR__TRACE
+ * FACWAR__CALL
+ * FACWAR__CALL_DUMP
+ * FACWAR__RSP_DUMP
+ */
+
 class WarRegistryBound
 : public PyBoundObject
 {
@@ -45,6 +56,12 @@ public:
         m_strBoundObjectName = "WarRegistryBound";
 
         PyCallable_REG_CALL(WarRegistryBound, GetWars);
+        /*
+     return self.GetMoniker().RetractWar(againstID)
+     return self.GetMoniker().DeclareWarAgainst(againstID)
+     return self.GetMoniker().ChangeMutualWarFlag(warID, mutual)
+     return self.GetMoniker().GetCostOfWarAgainst(ownerID)
+     */
     }
     ~WarRegistryBound()
     {

@@ -34,7 +34,7 @@ bool ReprocessingDB::IsRefinable(const uint32 typeID) {
                 "SELECT NULL"
                 " FROM ramTypeRequirements"
                 " WHERE typeID=%u"
-                " AND recycle = 0"
+                " AND extra = 0"
                 " LIMIT 1",
                 typeID))
     {
@@ -56,7 +56,7 @@ bool ReprocessingDB::IsRecyclable(const uint32 typeID) {
                 "   (activityID = 6 AND typeID = %u)"
                 "   OR"
                 "    (activityID = 1 AND productTypeID = %u)"
-                ") AND recycle = 1"
+                ") AND extra = 1"
                 " LIMIT 1",
                 typeID, typeID))
     {
@@ -66,33 +66,6 @@ bool ReprocessingDB::IsRecyclable(const uint32 typeID) {
 
     DBResultRow row;
     return (res.GetRow(row));
-}
-
-bool ReprocessingDB::LoadStatic(const uint32 stationID, double &efficiency, double &tax, uint32 &corpID) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-                "SELECT reprocessingEfficiency, reprocessingStationsTake, corporationID"
-                " FROM staStations"
-                " WHERE stationID=%u",
-                stationID))
-    {
-        _log(DATABASE__ERROR, "Failed to get reprocessing info for station %u: '%s'.", stationID, res.error.c_str());
-        return false;
-    }
-
-    DBResultRow row;
-
-    if (!res.GetRow(row)) {
-        _log(DATABASE__ERROR, "No data found for stationID %u.", stationID);
-        return false;
-    }
-
-    efficiency = row.GetDouble(0);
-    tax = row.GetDouble(1);
-    corpID = row.GetUInt(2);
-
-    return true;
 }
 
 bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverable> &into) {

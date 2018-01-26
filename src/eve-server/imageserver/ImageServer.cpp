@@ -101,6 +101,10 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     //stream.flush();
     //stream.close();
 
+    /** @todo  we will need to make size 64 and size 40 images, and possibably 128/256 of char portaits */
+    // github.com/nothings/stb/blob/master/stb_image_resize.h
+    // github.com/nothings/stb/blob/master/stb_image.h
+    
     // and delete it from our limbo map
     _limboImages.erase(creatorAccountID);
 
@@ -109,6 +113,8 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
 
 std::shared_ptr<std::vector<char> > ImageServer::GetImage(std::string& category, uint32 id, uint32 size)
 {
+    sLog.Cyan("      ImageServer"," GetImage() called. Cat: %s, id: %u, size:%u", category.c_str(), id, size);
+
     if (!ValidateCategory(category) || !ValidateSize(category, size))
         return std::shared_ptr<std::vector<char> >();
 
@@ -165,7 +171,7 @@ bool ImageServer::ValidateSize(std::string& category, uint32 size)
         return size == 256 || size == 128 || size == 64 || size == 32;
 
     // Render and Character
-    return size == 512 || size == 256 || size == 128 || size == 64 || size == 32;
+    return size == 512 || size == 256 || size == 128 || size == 64 || size == 40 || size == 32;
 }
 
 bool ImageServer::ValidateCategory(std::string& category)

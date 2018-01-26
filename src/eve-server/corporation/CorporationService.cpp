@@ -26,6 +26,8 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
+#include "account/AccountService.h"
 #include "corporation/CorporationService.h"
 
 PyCallable_Make_InnerDispatcher(CorporationService)
@@ -43,21 +45,57 @@ CorporationService::CorporationService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorporationService, GetMedalsReceived);
     PyCallable_REG_CALL(CorporationService, GetMedalDetails);
     PyCallable_REG_CALL(CorporationService, GetAllCorpMedals);
-    PyCallable_REG_CALL(CorporationService, GetRecruitmentAdTypes);
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdsByCriteria);
     PyCallable_REG_CALL(CorporationService, GetRecruitmentAdRegistryData);
+    PyCallable_REG_CALL(CorporationService, GetRecruitmentAdsForCorporation);
     PyCallable_REG_CALL(CorporationService, IsEnemyFaction);
     PyCallable_REG_CALL(CorporationService, GetVoteCasesByCorporation);
+    PyCallable_REG_CALL(CorporationService, CreateMedal);
 }
 
 CorporationService::~CorporationService() {
     delete m_dispatch;
 }
 
-PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
-    sLog.White( "CorporationService", "Handle_GetFactionInfo() size=%u", call.tuple->size() );
+/*
+ * CORP__ERROR
+ * CORP__WARNING
+ * CORP__INFO
+ * CORP__MESSAGE
+ * CORP__TRACE
+ * CORP__CALL
+ * CORP__CALL_DUMP
+ * CORP__RSP_DUMP
+ * CORP__DB_ERROR
+ * CORP__DB_WARNING
+ * CORP__DB_INFO
+ * CORP__DB_MESSAGE
+ */
+
+PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call)
+{
+    return sDataMgr.GetNPCDivisions();
+}
+
+PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
+    sLog.White( "CorporationService", "Handle_GetVoteCasesByCorporation() size=%u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
+    // table crpVoteItems
+    return m_db.GetVoteItems(0);
+}
+
+PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return m_db.GetEmploymentRecord(args.arg);
+}
+
+PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
     /*self.factionIDbyNPCCorpID, self.factionRegions, self.factionConstellations, self.factionSolarSystems,
      * self.factionRaces, self.factionStationCount, self.factionSolarSystemCount, self.npcCorpInfo = sm.RemoteSvc('corporationSvc').GetFactionInfo()
      *        for corpID, factionID in self.factionIDbyNPCCorpID.iteritems():
@@ -71,111 +109,64 @@ PyResult CorporationService::Handle_GetFactionInfo(PyCallArgs &call) {
      *            owners[k] = 0
      *            owners[v] = 0
      */
-    /** @todo  load and store thie entire PyRep* in static data.. */
-    GetFactionInfoRsp rsp;
 
-    if (!m_db.ListAllCorpFactions(rsp.factionIDbyNPCCorpID)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionStationCounts(rsp.factionStationCount)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionSystemCounts(rsp.factionSolarSystemCount)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionRegions(rsp.factionRegions)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionConstellations(rsp.factionConstellations)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionSolarSystems(rsp.factionSolarSystems)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-    if (!m_db.ListAllFactionRaces(rsp.factionRaces)) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-
-    rsp.npcCorpInfo = m_db.ListAllCorpInfo();
-    if (!rsp.npcCorpInfo) {
-        codelog(SERVICE__ERROR, "Failed to service request");
-        return nullptr;
-    }
-
-    return rsp.Encode();
-
-
-    /*
-
-    std::string abs_fname = "../data/cache/fgAAAAAsEA5jb3Jwb3JhdGlvblN2YxAOR2V0RmFjdGlvbkluZm8.cache";
-
-    PySubStream *ss = new PySubStream();
-
-    if (!call.client->services().GetCache()->LoadCachedFile(abs_fname.c_str(), "GetFactionInfo", ss)) {
-        _log(CLIENT__ERROR, "GetFactionInfo Failed to load cache file '%s'", abs_fname.c_str());
-        ss->decoded = new PyNone();
-        return(ss);
-    }
-
-    //total hack:
-    ss->length -= 79;
-    uint8 *data = ss->data;
-    ss->data = new uint8[ss->length];
-    memcpy(ss->data, data + 79, ss->length);
-    delete[] data;
-    delete ss->decoded;
-    ss->decoded = NULL;
-
-    _log(CLIENT__MESSAGE, "Sending cache reply for GetFactionInfo");
-
-    return(ss);
-*/
+    return sDataMgr.GetFactionInfo();
 }
 
-PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call) {
+PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call)
+{
     //corpmktinfo = sm.RemoteSvc('corporationSvc').GetCorpInfo(itemID)
     // this wants corp market info
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return (NULL);
+        return nullptr;
     }
-    /*for each in corpmktinfo:
-            each.typeID
-            each.sellPrice,
-            each.sellQuantity,
-            each.sellDate,
-            each.sellStationID
-            each.buyPrice,
-            each.buyQuantity,
-            each.buyDate,
-            each.buyStationID
-            */
 
-    return nullptr; //m_db.GetCorpInfo(args.arg);
+    return m_db.GetMktInfo(args.arg);
 }
 
+PyResult CorporationService::Handle_GetRecruitmentAdRegistryData( PyCallArgs& call )
+{   // working
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdRegistryData() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
-PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call) {
-    return m_db.ListNPCDivisions();
+    PyDict* dict = new PyDict();
+        dict->SetItemString("types", m_db.GetAdTypeData());
+        dict->SetItemString("groups", m_db.GetAdGroupData());
+    PyObject* args = new PyObject("util.KeyVal", dict);
+    if (is_log_enabled(CORP__RSP_DUMP))
+        args->Dump(CORP__RSP_DUMP, "");
+    return args;
 }
 
-PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
+PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& call )
+{    //   return sm.RemoteSvc('corporationSvc').GetRecruitmentAdsByCriteria(typeMask, isInAlliance, minMembers, maxMembers)
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdsByCriteria() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_GetRecruitmentAdsByCriteria args;
+    if ( !args.Decode( &call.tuple ) )   {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return (NULL);
+        return nullptr;
     }
 
-    return m_db.GetEmploymentRecord(args.arg);
+    return m_db.GetAdRegistryData(args.typeMask, args.inAlliance, args.minMembers, args.maxMembers);
 }
+
+PyResult CorporationService::Handle_GetRecruitmentAdsForCorporation( PyCallArgs& call )
+{
+    // recruitments = self.GetCorpRegistry().GetRecruitmentAdsForCorporation()
+    sLog.White( "CorporationService", "Handle_GetRecruitmentAdsForCorporation() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return m_db.GetAdRegistryData();
+}
+
+
+/**     ***********************************************************************
+ * @note   these below are not coded or partially coded
+ */
 
 PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
     sLog.White( "CorporationService", "Handle_GetMedalsReceived() size=%u", call.tuple->size() );
@@ -184,12 +175,12 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
 
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return (NULL);
+        return nullptr;
     }
     // dont know the details for this return yet.....
     PyTuple *t = new PyTuple(2);
     t->items[0] = m_db.GetMedalsReceived(arg.arg);
-    t->items[1] = new PyList;
+    t->items[1] = new PyList();
     return t;
 }
 
@@ -200,12 +191,12 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call) {
 
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return (NULL);
+        return nullptr;
     }
     // dont know the details for this return yet.....
     PyTuple *t = new PyTuple(2);
     t->items[0] = m_db.GetMedalDetails(arg.arg);
-    t->items[1] = new PyList;
+    t->items[1] = new PyList();
     return t;
 }
 
@@ -221,9 +212,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
         return nullptr;
     }
 
-    sLog.White( "CorporationService", "Called GetAllCorpMedals stub." );
-
-    PyList* res = new PyList;
+    PyList* res = new PyList();
 
     util_Rowset rs;
 
@@ -248,73 +237,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
     return res;
 }
 
-PyResult CorporationService::Handle_GetRecruitmentAdTypes( PyCallArgs& call )
-{
-    // self.advertTypes = self.corpSvc.GetRecruitmentAdTypes()
-    sLog.White( "CorporationService", "Handle_GetRecruitmentAdTypes() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    util_Rowset rs;
-
-    rs.header.push_back( "groupID" );
-    rs.header.push_back( "groupName" );
-    rs.header.push_back( "typeID" );
-    rs.header.push_back( "typeMask" );
-    rs.header.push_back( "typeName" );
-    rs.header.push_back( "description" );
-    rs.header.push_back( "dataID" );
-    rs.header.push_back( "groupDataID" );
-
-    return rs.Encode();
-}
-
-PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& call )
-{
-    sLog.White( "CorporationService", "Handle_GetRecruitmentAdsByCriteria() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_GetRecruitmentAdsByCriteria args;
-    if ( !args.Decode( &call.tuple ) )   {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    util_Rowset rs;
-
-    rs.header.push_back( "adID" );
-    rs.header.push_back( "corporationID" );
-    rs.header.push_back( "allianceID" );
-    rs.header.push_back( "expiryDateTime" );
-    rs.header.push_back( "stationID" );
-    rs.header.push_back( "regionID" );
-    rs.header.push_back( "raceMask" );
-    rs.header.push_back( "typeMask" );
-    rs.header.push_back( "description" );
-    rs.header.push_back( "createDateTime" );
-    rs.header.push_back( "skillPoints" );
-    rs.header.push_back( "channelID" );
-
-    return rs.Encode();
-}
-
 /** not handled */
-//22:47:33 L CorporationService::Handle_GetRecruitmentAdRegistryData(): size= 0
-PyResult CorporationService::Handle_GetRecruitmentAdRegistryData(PyCallArgs &call) {
-    /*
-     *        data = sm.RemoteSvc('corporationSvc').GetRecruitmentAdRegistryData()
-     *        for row in data.types:
-     *            row.typeName = localization.GetByMessageID(row.typeNameID)
-     *            row.description = localization.GetByMessageID(row.descriptionID)
-     *
-     *        for row in data.groups:
-     *            row.groupName = localization.GetByMessageID(row.groupNameID)
-     *            row.description = localization.GetByMessageID(row.descriptionID)
-     */
-    sLog.White( "CorporationService", "Handle_GetRecruitmentAdRegistryData() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-  return nullptr;
-}
-
 PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
 {
     sLog.White( "CorporationService", "Handle_IsEnemyFaction() size=%u", call.tuple->size() );
@@ -322,21 +245,13 @@ PyResult CorporationService::Handle_IsEnemyFaction(PyCallArgs &call)
 
     return nullptr;
 }
+PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
+{
+    sLog.White( "CorporationService", "Handle_CreateMedal() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
 
-PyResult CorporationService::Handle_GetVoteCasesByCorporation(PyCallArgs &call) {
-  /*
-22:47:43 L CorpRegistryBound::Handle_GetVoteCasesByCorporation(): size= 3
-22:47:43 [SvcCall]   Call Arguments:
-22:47:43 [SvcCall]       Tuple: 3 elements
-22:47:43 [SvcCall]         [ 0] Integer field: 1001002
-22:47:43 [SvcCall]         [ 1] Integer field: 2
-22:47:43 [SvcCall]         [ 2] Integer field: 0
-22:47:43 [SvcCall]   Call Named Arguments:
-22:47:43 [SvcCall]     Argument 'machoVersion':
-22:47:43 [SvcCall]         Integer field: 1
-*/
-  sLog.White( "CorporationService", "Handle_GetVoteCasesByCorporation() size=%u", call.tuple->size() );
-  call.Dump(CORP__CALL_DUMP);
+
+    //AccountService::TranserFunds(Journal::EntryType::MedalCreation);
 
     return nullptr;
 }

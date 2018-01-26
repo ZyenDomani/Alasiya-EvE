@@ -99,10 +99,13 @@ void ImageServerConnection::ProcessHeaders()
     _size = atoi(sizeStr.c_str());
 
     _imageData = sImageServer.GetImage(_category, _id, _size);
-    if (!_imageData)
-    {
+    if (!_imageData) {
         if (IsPlayerItem(_id)) {
             sLog.Error("     Image Server","Image for itemID %u not found.", _id);
+            NotFound();
+            return;
+        } else if (IsCharacter(_id)) {
+            sLog.Error("     Image Server","Image for charID %u not found.", _id);
             NotFound();
             return;
         }

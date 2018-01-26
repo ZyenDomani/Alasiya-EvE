@@ -72,16 +72,12 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
         case DBTYPE_I2:
         case DBTYPE_UI2:
         case DBTYPE_I4:
+        case DBTYPE_UI4:
             return new PyInt( row.GetInt( index ) );
 
-        case DBTYPE_UI4:
-            return new PyUInt( row.GetUInt( index ) );
-
         case DBTYPE_I8:
-            return new PyLong( row.GetInt64( index ) );
-
         case DBTYPE_UI8:
-            return new PyULong( row.GetUInt64( index ) );
+            return new PyLong( row.GetInt64( index ) );
 
         case DBTYPE_R8:
         case DBTYPE_R4:
@@ -243,12 +239,11 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
 PyObject *DBRowToKeyVal(DBResultRow &row) {
 
     PyDict *args = new PyDict();
-    PyObject *res = new PyObject( "util.KeyVal", args );
-
     uint32 cc = row.ColumnCount();
     for( uint32 r = 0; r < cc; r++ )
         args->SetItemString( row.ColumnName(r), DBColumnToPyRep(row, r));
 
+    PyObject *res = new PyObject( "util.KeyVal", args );
     return res;
 }
 

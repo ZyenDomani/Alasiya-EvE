@@ -57,6 +57,20 @@ NewLog::NewLog()
     m_initialized = false;
 }
 
+NewLog::NewLog(std::string logPath)
+: mLogfile( NULL ),
+mTime( 0 )
+{
+    // open default logfile
+    if( logPath.empty() )
+        logPath = EVEMU_ROOT "/log/";
+
+    SetLogfileDefault(logPath);
+
+    m_initialized = true;
+}
+
+
 NewLog::~NewLog()
 {
     Debug( "Log", "Log system shutting down" );
@@ -64,6 +78,12 @@ NewLog::~NewLog()
     // close logfile
     SetLogfile( (FILE*)NULL );
 }
+
+void NewLog::Initialize()
+{
+    Blue("       Log System", "Log System Initialized.");
+}
+
 
 void NewLog::InitializeLogging( std::string logPath )
 {
@@ -88,6 +108,8 @@ void NewLog::Log( const char* source, const char* fmt, ... )
 
 void NewLog::White( const char* source, const char* fmt, ... )
 {
+    if (!is_log_enabled(DEBUG__DEV_LOG))
+        return;
     va_list ap;
     va_start( ap, fmt );
 
@@ -168,15 +190,14 @@ void NewLog::Yellow( const char* source, const char* fmt, ... )
 
 void NewLog::Debug( const char* source, const char* fmt, ... )
 {
-    if( is_log_enabled( DEBUG__DEBUG ) )
-    {
-        va_list ap;
-        va_start( ap, fmt );
+    if (!is_log_enabled(DEBUG__DEBUG))
+        return;
+    va_list ap;
+    va_start( ap, fmt );
 
-		PrintMsg( COLOR_WHITE, 'D', source, fmt, ap );
+    PrintMsg( COLOR_WHITE, 'D', source, fmt, ap );
 
-        va_end( ap );
-    }
+    va_end( ap );
 }
 
 bool NewLog::SetLogfile( const char* filename )

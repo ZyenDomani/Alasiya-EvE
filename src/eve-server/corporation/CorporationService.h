@@ -49,11 +49,12 @@ protected:
     PyCallable_DECL_CALL(GetMedalsReceived);
     PyCallable_DECL_CALL(GetMedalDetails);
     PyCallable_DECL_CALL(GetAllCorpMedals);
-    PyCallable_DECL_CALL(GetRecruitmentAdTypes);
     PyCallable_DECL_CALL(GetRecruitmentAdsByCriteria);
     PyCallable_DECL_CALL(GetRecruitmentAdRegistryData);
+    PyCallable_DECL_CALL(GetRecruitmentAdsForCorporation);
     PyCallable_DECL_CALL(IsEnemyFaction);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
+    PyCallable_DECL_CALL(CreateMedal);
 };
 
 #endif

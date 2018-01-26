@@ -72,7 +72,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         return 0;
 
     if (ballhead->mode > MAX_DSTBALL) {
-        _log(into, "Error: Invalid ball mode %u for ball %u", ballhead->mode, ballhead->entityID);
+        _log(into, "Error: Invalid ball mode %u for ball %" PRIi64, ballhead->mode, ballhead->entityID);
         return 0;
     }
 
@@ -90,7 +90,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     */
     _log(into, "entity=%u, mode=%s(%u) flags=0x%X",
         ballhead->entityID, DSTBALL_modeNames[ballhead->mode], ballhead->mode, ballhead->flags);
-    _log(into, "   pos=(%.3f, %.3f, %.3f), radius=%.1f",
+    _log(into, "   pos=(%.2f, %.2f, %.2f), radius=%.1f",
         ballhead->x, ballhead->y, ballhead->z, ballhead->radius);
 
     if (ballhead->mode != DSTBALL_RIGID) {
@@ -98,7 +98,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(MassSector);
         len -= sizeof(MassSector);
 
-        _log(into, "   mass=%.2f, cloak=%u, harmonic=%i, corp=%u, alliance=%u",
+        _log(into, "   mass=%.2f, cloak=%u, harmonic=%i, corp=%i, alliance=%" PRIi64 ,
             masschunk->mass, masschunk->cloak, masschunk->harmonic, masschunk->corporationID, masschunk->allianceID);
     }
 
@@ -108,7 +108,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         data += sizeof(DataSector);
         len -= sizeof(DataSector);
 
-        _log(into, "   maxSpeed=%.2f, Vel=(%.3f, %.3f, %.3f) IM=%.4f, SF=%.3f",
+        _log(into, "   maxSpeed=%.2f, Vel=(%.2f, %.2f, %.2f) IM=%.4f, SF=%.3f",
             shipchunk->maxVelocity,
             shipchunk->velocity_x, shipchunk->velocity_y, shipchunk->velocity_z,
             shipchunk->inertia,
@@ -126,13 +126,13 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const DSTBALL_GOTO_Struct *b = (const DSTBALL_GOTO_Struct *) data;
             data += sizeof(DSTBALL_GOTO_Struct);
             len -= sizeof(DSTBALL_GOTO_Struct);
-            _log(into, "       formID=%u, Goto=(%.3f, %.3f, %.3f)", b->formationID, b->x, b->y, b->z);
+            _log(into, "       formID=%u, Goto=(%.2f, %.2f, %.2f)", b->formationID, b->x, b->y, b->z);
         } break;
         case DSTBALL_FOLLOW: {
             const DSTBALL_FOLLOW_Struct *b = (const DSTBALL_FOLLOW_Struct *) data;
             data += sizeof(DSTBALL_FOLLOW_Struct);
             len -= sizeof(DSTBALL_FOLLOW_Struct);
-            _log(into, "       formID=%u, followID=%u, distance=%.1f", b->formationID, b->followID, b->followRange);
+            _log(into, "       formID=%u, followID=%" PRIi64 ", distance=%.1f", b->formationID, b->followID, b->followRange);
         } break;
         case DSTBALL_STOP: {
             const DSTBALL_STOP_Struct *b = (const DSTBALL_STOP_Struct *) data;
@@ -144,8 +144,8 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const DSTBALL_WARP_Struct *b = (const DSTBALL_WARP_Struct *) data;
             data += sizeof(DSTBALL_WARP_Struct);
             len -= sizeof(DSTBALL_WARP_Struct);
-            _log(into, "       formID=%u, Targ=(%.3f, %.3f, %.3f) start=%u", b->formationID, b->x, b->y, b->z, b->effectStamp);
-            _log(into, "       followRange=%.3f, followID=%u, ownerID=%u", b->followRange, b->followID, b->ownerID);
+            _log(into, "       formID=%u, Targ=(%.2f, %.2f, %.2f) start=%u", b->formationID, b->x, b->y, b->z, b->effectStamp);
+            _log(into, "       followRange=%.2f, followID=%" PRIi64 ", ownerID=%" PRIi64 , b->followRange, b->followID, b->ownerID);
         } break;
         case DSTBALL_ORBIT: {
             const DSTBALL_ORBIT_Struct *b = (const DSTBALL_ORBIT_Struct *) data;
@@ -157,14 +157,14 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const DSTBALL_MISSILE_Struct *b = (const DSTBALL_MISSILE_Struct *) data;
             data += sizeof(DSTBALL_MISSILE_Struct);
             len -= sizeof(DSTBALL_MISSILE_Struct);
-            _log(into, "       formID=%u, target=%u, followRange=%.1f, ownerID=%u, start=%u", b->formationID, b->followID, b->followRange, b->ownerID, b->effectStamp);
-            _log(into, "       pos=(%.3f, %.3f, %.3f)", b->x, b->y, b->z);
+            _log(into, "       formID=%u, target=%" PRIi64 ", followRange=%.1f, ownerID=%" PRIi64 ", start=%u", b->formationID, b->followID, b->followRange, b->ownerID, b->effectStamp);
+            _log(into, "       pos=(%.2f, %.2f, %.2f)", b->x, b->y, b->z);
         } break;
         case DSTBALL_MUSHROOM: {
             const DSTBALL_MUSHROOM_Struct *b = (const DSTBALL_MUSHROOM_Struct *) data;
             data += sizeof(DSTBALL_MUSHROOM_Struct);
             len -= sizeof(DSTBALL_MUSHROOM_Struct);
-            _log(into, "       formID=%u, distance=%.3f, u125=%.3f, start=%u, ownerID=%u", b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
+            _log(into, "       formID=%u, distance=%.2f, u125=%.3f, start=%u, ownerID=%" PRIi64, b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
         } break;
         case DSTBALL_TROLL: {
             const DSTBALL_TROLL_Struct *b = (const DSTBALL_TROLL_Struct *) data;
@@ -188,10 +188,10 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             const DSTBALL_FORMATION_Struct *b = (const DSTBALL_FORMATION_Struct *) data;
             data += sizeof(DSTBALL_FORMATION_Struct);
             len -= sizeof(DSTBALL_FORMATION_Struct);
-            _log(into, "       formID=%u, followID=%u, followRange=%.3f, start=%u", b->formationID, b->followID, b->followRange, b->effectStamp);
+            _log(into, "       formID=%u, followID=%" PRIi64 ", followRange=%.2f, start=%u", b->formationID, b->followID, b->followRange, b->effectStamp);
         } break;
         default:
-            _log(into, "Error: Unknown ball mode %d!", ballhead->mode);
+            _log(into, "Error: Unknown ball mode %u!", ballhead->mode);
             _hex(into, data-sizeof(BallHeader), (len>128)?128:(len+sizeof(BallHeader)));
             return 0;
     }

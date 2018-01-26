@@ -30,31 +30,24 @@ Updates:    Allan
 #include "character/Skill.h"
 #include "inventory/AttributeEnum.h"
 
-/*
-* Skill
-*/
-Skill::Skill(
-    ItemFactory &_factory,
-    uint32 _skillID,
-    // InventoryItem stuff:
-    const ItemType &_type,
-    const ItemData &_data )
-: InventoryItem(_factory, _skillID, _type, _data)
+
+Skill::Skill(uint32 _skillID, const ItemType& _type, const ItemData& _data)
+: InventoryItem(_skillID, _type, _data)
 {
 }
 
-SkillRef Skill::Load(ItemFactory &factory, uint32 skillID)
+SkillRef Skill::Load( uint32 skillID)
 {
-    return InventoryItem::Load<Skill>( factory, skillID );
+    return InventoryItem::Load<Skill>(skillID );
 }
 
-SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
+SkillRef Skill::Spawn( ItemData &data)
 {
-    uint32 skillID = CreateItemID( factory, data );
+    uint32 skillID = InventoryItem::CreateItemID(data );
     if ( skillID == 0 )
         return SkillRef();
 
-    SkillRef skillRef = Skill::Load( factory, skillID );
+    SkillRef skillRef = Skill::Load(skillID );
     if (skillRef.get() == nullptr) {
         // make error msg here for failure to load skill?
         return SkillRef();
@@ -64,21 +57,18 @@ SkillRef Skill::Spawn(ItemFactory &factory, ItemData &data)
     return skillRef;
 }
 
-uint32 Skill::CreateItemID(ItemFactory &factory, ItemData &data)
-{
-    return InventoryItem::CreateItemID( factory, data );
-}
-
 EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
-    return EvEMath::SkillPointsAtLevel(level, GetAttribute(AttrSkillTimeConstant));
+    return EvEMath::Skill::PointsAtLevel(level, GetAttribute(AttrSkillTimeConstant)).get_int();
 }
 
 void Skill::VerifySP()
 {
-    EvilNumber spThisLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant));
-    EvilNumber spNextLevel = EvEMath::SkillPointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant));
-    if ((GetAttribute(AttrSkillPoints) < spThisLevel) or (GetAttribute(AttrSkillPoints) > spNextLevel)) {
-        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %.6f to %.6f", itemName().c_str(), GetAttribute(AttrSkillPoints).get_float(), (spThisLevel.get_float() + 0.0001));
+    if (GetAttribute(AttrSkillPoints) == 0)
+        return;
+    uint32 spThisLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant)).get_int();
+    uint32 spNextLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant)).get_int();
+    if ((GetAttribute(AttrSkillPoints).get_int() < spThisLevel) or (GetAttribute(AttrSkillPoints).get_int() > spNextLevel)) {
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u", itemName().c_str(), (uint32)GetAttribute(AttrSkillPoints).get_int(), spThisLevel);
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
 }

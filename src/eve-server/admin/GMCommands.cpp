@@ -115,7 +115,7 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     double amount = strtod(args.arg(2).c_str(), NULL);
 
     Client* tgt;
-    if (entity >= EVEMU_MINIMUM_DYNAMIC_ID)
+    if (entity >= maxNPCItem)
     {
         tgt = sEntityList.FindClientByCharID(entity);
         if (!tgt)
@@ -124,7 +124,8 @@ PyResult Command_giveisk(Client* who, CommandDB* db, PyServiceMgr* services, con
     else
         throw PyException(MakeCustomError("Invalid entityID for characters %u", entity));
 
-    tgt->AddBalance(amount);
+    // GiveCash
+    tgt->AddBalance(amount, Account::CreditType::ISK);
     return new PyString("Operation successful.");
 }
 
@@ -205,7 +206,7 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
         loc
    );
 
-    item = services->item_factory->SpawnItem(idata);
+    item = sItemFactory.SpawnItem(idata);
     if (!item)
         throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
@@ -337,7 +338,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
             loc
        );
 
-        item = services->item_factory->SpawnItem(idata);
+        item = sItemFactory.SpawnItem(idata);
         if (!item)
             throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
@@ -387,7 +388,7 @@ PyResult Command_setbpattr(Client* who, CommandDB* db, PyServiceMgr* services, c
         throw PyException(MakeCustomError("Argument 5 must be remaining licensed production runs. (got %s)", args.arg(5).c_str()));
 
     int blueprintID = atoi(args.arg(1).c_str());
-    BlueprintRef bp = services->item_factory->GetBlueprint(blueprintID);
+    BlueprintRef bp = sItemFactory.GetBlueprint(blueprintID);
     if (!bp)
         throw PyException(MakeCustomError("Failed to load blueprint %u.", blueprintID));
 
@@ -414,7 +415,7 @@ PyResult Command_getattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("2nd argument must be attributeID (got %s).", args.arg(2).c_str()));
     const ItemAttributeMgr::Attr attribute = (ItemAttributeMgr::Attr)atoi(args.arg(2).c_str());
 
-    InventoryItemRef item = services->item_factory->GetItem(itemID);
+    InventoryItemRef item = sItemFactory.GetItem(itemID);
     if (!item)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
     */
@@ -456,10 +457,10 @@ PyResult Command_setattr(Client* who, CommandDB* db, PyServiceMgr* services, con
         throw PyException(MakeCustomError("3rd argument must be value (got %s).", args.arg(3).c_str()));
     const double value = atof(args.arg(3).c_str());
 
-    if (itemID < EVEMU_MINIMUM_DYNAMIC_ID)
+    if (itemID < minPlayerItem)
         throw PyException(MakeCustomError("1st argument must be a valid 'entity' table itemID that MUST be larger >= 140000000. (got %s)", args.arg(1).c_str()));
 
-    InventoryItemRef item = services->item_factory->GetItem(itemID);
+    InventoryItemRef item = sItemFactory.GetItem(itemID);
     if (!item)
         throw PyException(MakeCustomError("Failed to load item %u.", itemID));
 
@@ -522,7 +523,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
                        1
                        );
 
-        InventoryItemRef i = services->item_factory->SpawnItem(idata);
+        InventoryItemRef i = sItemFactory.SpawnItem(idata);
         if (!i) {
             throw PyException(MakeCustomError("Unable to create item of type %u.", typeID));
         }
@@ -584,12 +585,12 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
         for (; cur != skillList.end(); ++cur) {
             skillID = *cur;
             if (character->HasSkillTrainedToLevel(skillID, level))
-                return new PyNone();
+                return PyStatic.NewNone();
             else if (character->HasSkill(skillID)) {
                 skill = character->GetSkill(skillID);
                 oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
                 oldPoints = skill->GetAttribute(AttrSkillPoints).get_int();
-                skill->SetAttribute(AttrSkillLevel, level);
+                skill->SetAttribute(AttrSkillLevel, (int8)level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {
                     skill->SetFlag(flagSkill, false);
@@ -597,13 +598,13 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 }
             } else {    // Character DOES NOT have this skill
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-                InventoryItemRef item = services->item_factory->SpawnItem(idata);
+                InventoryItemRef item = sItemFactory.SpawnItem(idata);
 
                 if (!item)
                     throw PyException(MakeCustomError("Unable to create item of type %s.", item->typeID()));
                 else {
                     skill = SkillRef::StaticCast(item);
-                    skill->SetAttribute(AttrSkillLevel, level);
+                    skill->SetAttribute(AttrSkillLevel, (int8)level);
                     skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 }
             }
@@ -611,8 +612,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
             //  save gm skill gift in history  -allan
             //  maybe not for this....WAAAAYYY  to much DB traffic for this.
             //character->SaveSkillHistory(skillEventGMGive, Win32TimeNow(), ownerID, skillID.get_int(), level, \
-            skill->GetAttribute(AttrSkillPoints).get_double(), \
-            character->GetTotalSP().get_double());
+            skill->GetAttribute(AttrSkillPoints).get_double());
         }
         // END LOOP
         pTarget->SendErrorMsg("You need to relog for skills to get saved and show in character sheet.");
@@ -667,14 +667,19 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     } else
         throw PyException(MakeCustomError("Correct Usage: /giveskill [CharacterID] [skillID] [desired level]"));
 
-    if (pTarget && character.get()) {       // Make sure references are not NULL before trying to use them:
+    if ((pTarget != nullptr) and (character.get() != nullptr)) {       // Make sure references are not NULL before trying to use them:
         SkillRef skill;
         if (character->HasSkillTrainedToLevel(skillID, level))
-            return new PyNone();
+            return PyStatic.NewNone();
         else if (character->HasSkill(skillID)) {
+            /** @todo  check if this skill is being trained and update as necessary */
             skill = character->GetSkill(skillID);
+            if (skill.get() == nullptr){
+                throw PyException(MakeCustomError("Unable to get item for skillID %u.", skillID));
+                return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
+            }
             newPoints = skill->GetSPForLevel((EvilNumber)level);
-            skill->SetAttribute(AttrSkillLevel, level);
+            skill->SetAttribute(AttrSkillLevel, (int8)level);
             skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill, true);
@@ -682,29 +687,28 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             }
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
-            skill = services->item_factory->SpawnSkill(idata);
-            if (!skill) {
+            skill = sItemFactory.SpawnSkill(idata);
+            if (skill.get() == nullptr) {
                 throw PyException(MakeCustomError("Unable to create item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
             } else {
                 character->AddItem(skill);
                 newPoints = skill->GetSPForLevel((EvilNumber)level);
-                skill->SetAttribute(AttrSkillLevel, level);
+                skill->SetAttribute(AttrSkillLevel, (int8)level);
                 skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             }
         }
         skill->SaveItem();
         //  save gm skill gift in history  -allan
-        character->SaveSkillHistory(skillEventGMGive, GetFileTimeNow(), ownerID, skillID, level, \
-                                    newPoints.get_double(), character->GetTotalSP().get_double());
+        character->SaveSkillHistory(skillEventGMGive, GetFileTimeNow(), ownerID, skillID, level, newPoints.get_double());
 
         sLog.White("Command::GiveSkill", "skill %u set to level %u with %" PRIi64 " SP.", skillID, level, newPoints.get_int());
 
         return new PyString ("Skill Gifting Complete");
     } else
-        throw PyException(MakeCustomError("ERROR: Unable to validate character object, it was found to be NULL!"));
+        throw PyException(MakeCustomError("ERROR: Unable to validate character object."));
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult Command_online(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
@@ -830,9 +834,9 @@ PyResult Command_dogma(Client* who, CommandDB* db, PyServiceMgr* services, const
 
     InventoryItemRef i;
     if (args.arg(1) == "me") {
-        i = services->item_factory->GetItem(who->GetShip().get()->itemID());
+        i = sItemFactory.GetItem(who->GetShip().get()->itemID());
     } else {
-        i = services->item_factory->GetItem(atoi(args.arg(1).c_str()));
+        i = sItemFactory.GetItem(atoi(args.arg(1).c_str()));
     }
 
 

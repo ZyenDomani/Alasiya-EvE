@@ -558,32 +558,20 @@ PyRep* UnmarshalStream::LoadPackedRow()
         switch( row->header()->GetColumnType( index ) )
         {
             case DBTYPE_I8:
+            case DBTYPE_CY:
+            case DBTYPE_UI8:
+            case DBTYPE_FILETIME:
             {
                 Buffer::const_iterator<int64> v = unpackedItr.As<int64>();
                 row->SetField( index, new PyLong( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
 
-            case DBTYPE_CY:
-            case DBTYPE_UI8:
-            case DBTYPE_FILETIME:
-            {
-                Buffer::const_iterator<uint64> v = unpackedItr.As<uint64>();
-                row->SetField( index, new PyULong( *v++ ) );
-                unpackedItr = v.As<uint8>();
-            } break;
-
             case DBTYPE_I4:
+            case DBTYPE_UI4:
             {
                 Buffer::const_iterator<int32> v = unpackedItr.As<int32>();
                 row->SetField( index, new PyInt( *v++ ) );
-                unpackedItr = v.As<uint8>();
-            } break;
-
-            case DBTYPE_UI4:
-            {
-                Buffer::const_iterator<uint32> v = unpackedItr.As<uint32>();
-                row->SetField( index, new PyUInt( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;
 

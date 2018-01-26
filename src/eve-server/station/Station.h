@@ -30,35 +30,6 @@
 #include "system/Celestial.h"
 
 /**
- * Station type data container.
- */
-class StationTypeData {
-public:
-    StationTypeData(
-        uint32 _dockingBayGraphicID = 0,
-        uint32 _hangarGraphicID = 0,
-        const GPoint &_dockEntry = GPoint(0, 0, 0),
-        const GVector &_dockOrientation = GVector(0, 0, 0),
-        uint32 _operationID = 0,
-        uint32 _officeSlots = 0,
-        double _reprocessingEfficiency = 0.0,
-        bool _conquerable = false
-    );
-
-    // Data members:
-    uint32 dockingBayGraphicID;
-    uint32 hangarGraphicID;
-
-    GPoint dockEntry;
-    GVector dockOrientation;
-
-    uint32 operationID;
-    uint32 officeSlots;
-    double reprocessingEfficiency;
-    bool conquerable;
-};
-
-/**
  * Type of station.
  */
 class StationType
@@ -73,30 +44,14 @@ public:
      * @param[in] stationTypeID ID of station type to load.
      * @return Pointer to new StationType object; NULL if failed.
      */
-    static StationType *Load(ItemFactory &factory, uint32 stationTypeID);
-
-    /*
-     * Access methods:
-     */
-    uint32      dockingBayGraphicID() const { return m_dockingBayGraphicID; }
-    uint32      hangarGraphicID() const { return m_hangarGraphicID; }
-
-    GPoint      dockEntry() const { return m_dockEntry; }
-    GVector     dockOrientation() const { return m_dockOrientation; }
-
-    uint32      operationID() const { return m_operationID; }
-    uint32      officeSlots() const { return m_officeSlots; }
-    double      reprocessingEfficiency() const { return m_reprocessingEfficiency; }
-    bool        conquerable() const { return m_conquerable; }
+    static StationType *Load( uint32 stationTypeID);
 
 protected:
     StationType(
         uint32 _id,
         // ItemType stuff:
         const ItemGroup &_group,
-        const TypeData &_data,
-        // StationType stuff:
-        const StationTypeData &_stData
+        const TypeData &_data
     );
 
     /*
@@ -106,64 +61,17 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 stationTypeID, const ItemGroup &group, const TypeData &data)
+    static _Ty *_LoadType( uint32 stationTypeID, const ItemGroup &group, const TypeData &data)
     {
         if (group.id() != EVEDB::invGroups::Station) {
-            _log( ITEM__ERROR, "Trying to load %s as Station.", group.name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s as StationType.", group.name().c_str() );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return nullptr;
         }
 
-        // get station type data
-        StationTypeData stData;
-        if( !factory.db().GetStationType(stationTypeID, stData) )
-            return nullptr;
-
-        return new StationType( stationTypeID, group, data, stData );
+        return new StationType( stationTypeID, group, data );
     }
-
-    /*
-     * Data members:
-     */
-    uint32 m_dockingBayGraphicID;
-    uint32 m_hangarGraphicID;
-
-    GPoint m_dockEntry;
-    GVector m_dockOrientation;
-
-    uint32 m_operationID;
-    uint32 m_officeSlots;
-    double m_reprocessingEfficiency;
-    bool m_conquerable;
-};
-
-/**
- * Data container for station.
- */
-class StationInfo {
-public:
-    StationInfo(
-        uint32 _security = 0,
-        double _dockingCostPerVolume = 0.0,
-        double _maxShipVolumeDockable = 0.0,
-        uint32 _officeRentalCost = 0,
-        uint32 _operationID = 0,
-        double _reprocessingEfficiency = 0.0,
-        double _reprocessingStationsTake = 0.0,
-        EVEItemFlags _reprocessingHangarFlag = (EVEItemFlags)0
-    );
-
-    // Data members:
-    uint32 security;
-    double dockingCostPerVolume;
-    double maxShipVolumeDockable;
-    uint32 officeRentalCost;
-    uint32 operationID;
-
-    double reprocessingEfficiency;
-    double reprocessingStationsTake;
-    EVEItemFlags reprocessingHangarFlag;
 };
 
 /**
@@ -174,19 +82,6 @@ class StationItem
 {
     friend class InventoryItem; // to let it construct us
     friend class CelestialObject; // to let it construct us
-protected:
-    StationItem(
-        ItemFactory &_factory,
-        uint32 _stationID,
-        // InventoryItem stuff:
-        const StationType &_type,
-        const ItemData &_data,
-        // CelestialObject stuff:
-        const CelestialObjectData &_cData,
-        // Station stuff:
-        const StationInfo &_stData
-    );
-    virtual ~StationItem()                              { /* do nothing here */ }
 
 public:
     /**
@@ -196,24 +91,37 @@ public:
      * @param[in] stationID ID of station to load.
      * @return Pointer to new Station object; NULL if fails.
      */
-    static StationItemRef Load(ItemFactory &factory, uint32 stationID);
-
-    /*
-     * Access methods:
-     */
-    uint32 security() const { return m_security; }
-    double dockingCostPerVolume() const { return m_dockingCostPerVolume; }
-    double maxShipVolumeDockable() const { return m_maxShipVolumeDockable; }
-    uint32 officeRentalCost() const { return m_officeRentalCost; }
-    uint32 operationID() const { return m_operationID; }
-
-    double reprocessingEfficiency() const { return m_reprocessingEfficiency; }
-    double reprocessingStationsTake() const { return m_reprocessingStationsTake; }
-    EVEItemFlags reprocessingHangarFlag() const { return m_reprocessingHangarFlag; }
+    static StationItemRef Load( uint32 stationID);
 
     StationType* GetStationType() { return &m_stationType; }
 
+    // station methods here for offices, reprocessing, and docking.
+    PyRep* GetOffices()                                 { PyIncRef(m_officePyData); return m_officePyData; }  // cached officeData for client call
+    int8 GetAvalibleOfficeCount()                       { return 24 - m_officeMap.size(); }
+    int64 GetOfficeRentalFee()                          { return m_data.officeRentalFee; }
+    void RentOffice(OfficeData& odata);
+    uint32 GetOfficeID(uint32 corpID);
+    uint32 GetOwnerID()                                 { return m_data.corporationID; }
+    uint32 GetID()                                      { return m_data.stationID; }
+
+    void LoadStationOffice(uint32 corpID);
+    void AddLoadedOffice(uint32 officeID);
+    void RemoveLoadedOffice(uint32 officeID);
+
+    bool IsLoaded()                                     { return m_loaded; }
+    bool IsOfficeLoaded(uint32 officeID);
+
+    void GetGuestList(std::vector<Client*>& cVec);
+    void AddGuest(Client* pClient);
+    void RemoveGuest(Client* pClient);
+
+    void GetRefineData(uint32& stationCorpID, float& staEfficiency, float& tax);
+
+    // will need methods/table for updated station data
+
 protected:
+    StationItem(uint32 stationID, const StationType &type, const ItemData &data, const CelestialObjectData &cData);
+    virtual ~StationItem();
     /*
      * Member functions:
      */
@@ -222,7 +130,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 stationID, const ItemType &type, const ItemData &data)
+    static RefPtr<_Ty> _LoadItem( uint32 stationID, const ItemType &type, const ItemData &data)
     {
         if (type.groupID() != EVEDB::invGroups::Station) {
             _log( ITEM__ERROR, "Trying to load %s as Station.", type.group().name().c_str() );
@@ -235,32 +143,32 @@ protected:
 
         // load celestial data
         CelestialObjectData cData;
-        if (!factory.db().GetCelestialObject(stationID, cData))
+        if (!sItemFactory.db()->GetCelestialObject(stationID, cData))
             return RefPtr<_Ty>();
 
-        // load station data
-        StationInfo stData;
-        if( !factory.db().GetStation( stationID, stData ) )
-            return RefPtr<_Ty>();
-
-        return StationItemRef( new StationItem( factory, stationID, stType, data, cData, stData ) );
+        return StationItemRef(new StationItem(stationID, stType, data, cData));
     }
 
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
+    static uint32 CreateItemID( ItemData &data);
 
-    /*
-     * Data members:
-     */
-    StationType m_stationType;
-    uint32 m_security;
-    double m_dockingCostPerVolume;
-    double m_maxShipVolumeDockable;
-    uint32 m_officeRentalCost;
-    uint32 m_operationID;
+    // internal office methods
+    void SendBill();
+    void ImpoundOffice(uint32 officeID);
+    void RecoverOffice(uint32 officeID);
 
-    double m_reprocessingEfficiency;
-    double m_reprocessingStationsTake;
-    EVEItemFlags m_reprocessingHangarFlag;
+private:
+    PyRep*                                              m_officePyData;
+    StationType                                         m_stationType;
+    StationData                                         m_data;
+
+    bool                                                m_loaded;  // are offices loaded?
+    uint32                                              m_stationID;
+
+    std::map<uint32, Client*>                           m_guestList; // charID/Client*
+
+    std::map<uint32, OfficeData>                        m_officeMap;   // officeID/data
+    std::map<uint32, bool>                              m_officeLoaded;
+
 };
 
 

@@ -28,9 +28,11 @@
 #define EVEMU_PLANET_PLANETDB_H_
 
 #include "../eve-server.h"
-#include "POD_containers.h"
+#include "../POD_containers.h"
+//#include "../DataClasses.h"
 
 class CommandCenterPin;
+
 class PlanetDB
 {
 public:

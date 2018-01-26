@@ -49,13 +49,14 @@ void TurretModule::ApplyDamage()
     );
 
     d *= GetAttribute(AttrDamageMultiplier).get_float();
-    d *= sConfig.rates.turretRate;
+    d *= sConfig.rates.turretRoF;
     m_targetSE->ApplyDamage(d);
 
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
         case EVEDB::invGroups::Hybrid_Weapon: {
-            m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1);
+            if (m_chargeLoaded)
+                m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
             if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))

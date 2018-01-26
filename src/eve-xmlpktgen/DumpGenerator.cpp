@@ -160,23 +160,6 @@ bool ClassDumpGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
-bool ClassDumpGenerator::ProcessUInt( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    fprintf( mOutputFile,
-             "    _log( l_type, \"%%s%s=%%u\", pfx, %s );\n"
-             "\n",
-             name, name
-    );
-
-    return true;
-}
-
 bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
@@ -187,23 +170,6 @@ bool ClassDumpGenerator::ProcessLong( const TiXmlElement* field )
 
     fprintf( mOutputFile,
              "    _log( l_type, \"%%s%s=%%\" PRId64, pfx, %s );\n"
-             "\n",
-             name, name
-    );
-
-    return true;
-}
-
-bool ClassDumpGenerator::ProcessULong( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "name field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    fprintf( mOutputFile,
-             "    _log( l_type, \"%%s%s=%%\" PRIu64, pfx, %s );\n"
              "\n",
              name, name
     );

@@ -28,57 +28,6 @@ Author: Zhur, Allan
 #include "PyBoundObject.h"
 #include "ship/ShipDB.h"
 
-PyTuple* ShipDB::GetFormations()
-{
-    //vicious crap... but this is gunna be a bit of work to load from the DB (nested tuples)
-    PyTuple* res = new PyTuple( 2 );
-
-    Beyonce_Formation f;
-
-    //Diamond formation
-    f.name = "Diamond";
-
-    f.pos1.x = 100;
-    f.pos1.y = 0;
-    f.pos1.z = 0;
-
-    f.pos2.x = 0;
-    f.pos2.y = 100;
-    f.pos2.z = 0;
-
-    f.pos3.x = -100;
-    f.pos3.y = 0;
-    f.pos3.z = 0;
-
-    f.pos4.x = 0;
-    f.pos4.y = -100;
-    f.pos4.z = 0;
-
-    res->SetItem( 0, f.Encode() );
-
-    //Arrow formation
-    f.name = "Arrow";
-
-    f.pos1.x = 100;
-    f.pos1.y = 0;
-    f.pos1.z = -50;
-
-    f.pos2.x = 50;
-    f.pos2.y = 0;
-    f.pos2.z = 0;
-
-    f.pos3.x = -100;
-    f.pos3.y = 0;
-    f.pos3.z = -50;
-
-    f.pos4.x = -50;
-    f.pos4.y = 0;
-    f.pos4.z = 0;
-
-    res->SetItem( 1, f.Encode() );
-
-    return res;
-}
 
 PyRep *ShipDB::GetInsuranceByShipID(uint32 shipID) {
     DBQueryResult res;
@@ -105,7 +54,7 @@ PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
 }
 
 bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
-    uint64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
+    int64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
 
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO "

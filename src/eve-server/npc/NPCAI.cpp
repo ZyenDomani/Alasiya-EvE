@@ -569,9 +569,10 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
     std::string guid = "effects.Laser";
     m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           m_npc->GetSelf()->typeID(),
                                            pSE->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,1
+                                           0,guid,1,1,1,m_attackSpeed,0
+                                           //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int()    // graphicID for turret for drone type ships
                                           );
 
     Damage d(m_npc,

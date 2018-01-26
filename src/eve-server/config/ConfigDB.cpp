@@ -30,18 +30,22 @@
 
 PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     // separate list of ids into respective groups
-    std::vector<int32> player, corp, ally;
+    std::vector<int32> player, corp, ally, owner;
     player.clear();
     corp.clear();
     ally.clear();
+    owner.clear();
 
     for (auto cur : entityIDs) {
         if (IsCorp(cur))
             corp.push_back(cur);
         else if (IsAlliance(cur))
             ally.push_back(cur);
-        else
+        else if (IsCharacter(cur))
             player.push_back(cur);
+        else
+            owner.push_back(cur);
+
     }
 
     DBQueryResult res;
@@ -49,7 +53,6 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (corp.size()) {
         ListToINString(corp, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  corporationID as ownerID,"
@@ -57,7 +60,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  2 AS typeID,"                    // corp typeID
             "  NULL AS gender,"
             "  NULL AS ownerNameID"
-            " FROM corporation"
+            " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -67,7 +70,6 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (ally.size()) {
         ListToINString(ally, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
             "  allianceID as ownerID,"
@@ -75,7 +77,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  16159 AS typeID,"                 // alliance typeID.
             "  NULL AS gender,"
             "  NULL AS ownerNameID"
-            " FROM crpAlliance"
+            " FROM alnAlliance"
             " WHERE allianceID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -85,22 +87,36 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     if (player.size()) {
         ListToINString(player, ids, "0");
-
         if (!sDatabase.RunQuery(res,
             "SELECT "
-            "  c.characterID as ownerID,"
-            "  e.itemName as ownerName,"
-            "  e.typeID,"
-            "  c.gender,"
+            "  characterID as ownerID,"
+            "  name as ownerName,"
+            "  typeID,"
+            "  gender,"
             "  NULL AS ownerNameID"
-            " FROM chrCharacter AS c"
-            "  LEFT JOIN entity AS e ON e.itemID = c.characterID"
+            " FROM chrCharacters"
             " WHERE characterID IN (%s)", ids.c_str()))
         {
             codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         }
     }
 
+    if (owner.size()) {
+        ListToINString(owner, ids, "0");
+        if (!sDatabase.RunQuery(res,
+            "SELECT "
+            "  ownerID,"
+            "  ownerName,"
+            "  typeID,"
+            "  1 AS gender,"
+            "  NULL AS ownerNameID"
+            " FROM eveStaticOwners"
+            " WHERE ownerID IN (%s)", ids.c_str()))
+        {
+            codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        }
+    }
+    
     return DBResultToTupleSet(res);
 }
 
@@ -111,7 +127,7 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT allianceID, allianceShortName FROM crpAlliance"
+        "SELECT allianceID, shortName FROM alnAlliance"
         ))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiAllianceShortNamesEx query: %s", res.error.c_str());
@@ -127,9 +143,12 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
     staticItems.clear();
     dynamicItems.clear();
+    asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (IsStaticMapItem(cur) or (cur == 0))
+        if (cur == 0)
+            continue;
+        if (IsStaticItem(cur))
             staticItems.push_back(cur);
         else if (IsAsteroid(cur))
             asteroidItems.push_back(cur);
@@ -190,6 +209,28 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     return DBResultToTupleSet(res);
 }
 
+PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
+{
+    std::string ids;
+    ListToINString(entityIDs, ids, "0");
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT "
+        " stationID,"
+        " stationName,"
+        " stationTypeID,"
+        " solarSystemID,"
+        " x, y, z"
+        " FROM staStations"
+        " WHERE stationID in (%s)", ids.c_str()))
+    {
+        codelog(DATABASE__ERROR, "Error in GetMultiStationEx query: %s", res.error.c_str());
+    }
+
+    return DBResultToTupleSet(res);
+}
+
+
 PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) {
 
     std::string ids;
@@ -202,7 +243,7 @@ PyRep *ConfigDB::GetMultiCorpTickerNamesEx(const std::vector<int32> &entityIDs) 
         "   corporationID, tickerName,"
         "   shape1, shape2, shape3,"
         "   color1, color2, color3 "
-        " FROM corporation"
+        " FROM crpCorporation"
         " WHERE corporationID in (%s)", ids.c_str()))
     {
         codelog(DATABASE__ERROR, "Error in GetMultiCorpTickerNamesEx query: %s", res.error.c_str());

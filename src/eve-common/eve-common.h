@@ -50,6 +50,9 @@
 #include "log/logsys.h"
 #include "log/Basic_Log.h"
 #include "log/HTML_Log.h"
+// math
+#include "math/gpoint.h"
+#include "math/Trig.h"
 // memory
 #include "memory/RefPtr.h"
 // network
@@ -59,12 +62,13 @@
 #include "network/TCPServer.h"
 // threading
 #include "threading/Threading.h"
+// eve math equations
+#include "utils/EvEMath.h"
 // utils
 #include "utils/Buffer.h"
 #include "utils/crc32.h"
 #include "utils/Deflate.h"
 #include "utils/EvilNumber.h"
-#include "utils/gpoint.h"
 #include "utils/misc.h"
 #include "utils/Seperator.h"
 #include "utils/timer.h"

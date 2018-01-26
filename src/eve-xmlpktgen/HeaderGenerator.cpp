@@ -201,25 +201,6 @@ bool ClassHeaderGenerator::ProcessInt( const TiXmlElement* field )
     return true;
 }
 
-bool ClassHeaderGenerator::ProcessUInt( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessUInt: field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    if (!RegisterName(name, field->Row()))
-        return false;
-
-    fprintf( mOutputFile,
-             "    uint32\t\t%s;\n",
-             name
-    );
-
-    return true;
-}
-
 bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
 {
     const char* name = field->Attribute( "name" );
@@ -233,25 +214,6 @@ bool ClassHeaderGenerator::ProcessLong( const TiXmlElement* field )
 
     fprintf( mOutputFile,
              "    int64\t\t%s;\n",
-             name
-    );
-
-    return true;
-}
-
-bool ClassHeaderGenerator::ProcessULong( const TiXmlElement* field )
-{
-    const char* name = field->Attribute( "name" );
-    if (name == nullptr) {
-        std::cout << std::endl <<  "ClassHeaderGenerator::ProcessULong: field at line " << field->Row() << " is missing the name attribute, skipping.";
-        return false;
-    }
-
-    if (!RegisterName(name, field->Row()))
-        return false;
-
-    fprintf( mOutputFile,
-             "    uint64\t\t%s;\n",
              name
     );
 
@@ -665,3 +627,4 @@ bool ClassHeaderGenerator::ProcessSubStructInline( const TiXmlElement* field )
 {
     return ParseElementChildren( field, 1 );
 }
+

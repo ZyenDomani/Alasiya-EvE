@@ -209,7 +209,7 @@ int CommandDB::GetAccountID(std::string name) {
     if(!sDatabase.RunQuery(res,
         " SELECT "
         " AccountID "
-        " FROM chrCharacter "
+        " FROM chrCharacters "
         " WHERE characterID = ( SELECT itemID FROM entity WHERE itemName = '%s' )", name.c_str()))
     {
         sLog.Error("CommandDB", "Failed to retrieve accountID for %s", name.c_str());

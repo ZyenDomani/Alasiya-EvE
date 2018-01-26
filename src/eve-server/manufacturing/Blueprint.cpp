@@ -42,76 +42,62 @@ BlueprintType::BlueprintType(
     const BlueprintTypeData& _bpData)
 : ItemType(_id, _group, _data),
   m_parentBlueprintType(_parentBlueprintType),
-  m_productType(_productType),
-  m_productionTime(_bpData.productionTime),
-  m_techLevel(_bpData.techLevel),
-  m_researchProductivityTime(_bpData.researchProductivityTime),
-  m_researchMaterialTime(_bpData.researchMaterialTime),
-  m_researchCopyTime(_bpData.researchCopyTime),
-  m_researchTechTime(_bpData.researchTechTime),
-  m_productivityModifier(_bpData.productivityModifier),
-  m_wasteFactor(_bpData.wasteFactor),
-  m_chanceOfReverseEngineering(_bpData.chanceOfReverseEngineering),
-  m_maxProductionLimit(_bpData.maxProductionLimit)
+  m_productType(_productType)
 {   // asserts for data consistency
-    assert(_bpData.productTypeID == _productType.id());
-    if (_parentBlueprintType)
-        assert(_bpData.parentBlueprintTypeID == _parentBlueprintType->id());
+    assert(_bpData.productTypeID == m_productType.id());
+    if (m_parentBlueprintType != nullptr)
+        assert(_bpData.parentBlueprintTypeID == m_parentBlueprintType->id());
+
+    m_data = _bpData;
 }
 
-BlueprintType *BlueprintType::Load(ItemFactory& factory, uint32 typeID)
+BlueprintType *BlueprintType::Load( uint32 typeID)
 {
-    return ItemType::Load<BlueprintType>( factory, typeID );
+    return ItemType::Load<BlueprintType>(typeID );
 }
 
 /*
  * Blueprint
  */
 Blueprint::Blueprint(
-    ItemFactory& _factory,
     uint32 _blueprintID,
-    // InventoryItem stuff:
     const BlueprintType& _bpType,
     const ItemData& _data,
-    // Blueprint stuff:
     BlueprintData& _bpData)
-: InventoryItem(_factory, _blueprintID, _bpType, _data)
+: InventoryItem(_blueprintID, _bpType, _data)
 {
     // data consistency asserts
     assert(_bpType.categoryID() == EVEDB::invCategories::Blueprint);
-    m_copy   = _bpData.copy;
-    m_runs   = _bpData.runs;
-    m_mLevel = _bpData.mLevel;
-    m_pLevel = _bpData.pLevel;
+    m_data   = _bpData;
 }
 
-BlueprintRef Blueprint::Load(ItemFactory& factory, uint32 blueprintID)
+BlueprintRef Blueprint::Load( uint32 blueprintID)
 {
-    return InventoryItem::Load<Blueprint>( factory, blueprintID );
+    return InventoryItem::Load<Blueprint>(blueprintID );
 }
 
-BlueprintRef Blueprint::Spawn(ItemFactory& factory, ItemData& data, BlueprintData& bpData) {
-    uint32 blueprintID = Blueprint::CreateItemID(factory, data, bpData);
+BlueprintRef Blueprint::Spawn( ItemData& data, BlueprintData& bpData) {
+    uint32 blueprintID = Blueprint::CreateItemID(data, bpData);
     if (blueprintID == 0)
-        return BlueprintRef();
-    return Blueprint::Load(factory, blueprintID);
+        return BlueprintRef(nullptr);
+    return Blueprint::Load(blueprintID);
 }
 
-uint32 Blueprint::CreateItemID(ItemFactory& factory, ItemData& data, BlueprintData& bpData) {
+uint32 Blueprint::CreateItemID( ItemData& data, BlueprintData& bpData) {
     // make sure it's a blueprint type
-    const BlueprintType *bt = factory.GetBlueprintType(data.typeID);
-    if (!bt)
+    const BlueprintType* bpType = sItemFactory.GetBlueprintType(data.typeID);
+    if (bpType == nullptr)
         return 0;
 
     // get the blueprintID
-    uint32 blueprintID = InventoryItem::CreateItemID(factory, data);
+    uint32 blueprintID = InventoryItem::CreateItemID(data);
     if (blueprintID == 0)
         return 0;
 
     FactoryDB mdb;
     // insert blueprint data into DB
     if (!mdb.SaveBlueprintData(blueprintID, bpData)) {
-        factory.db().DeleteItem(blueprintID);
+        sItemFactory.db()->DeleteItem(blueprintID);
         return 0;
     }
 
@@ -125,17 +111,17 @@ void Blueprint::Delete() {
 
 BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify) {
     // split item
-    BlueprintRef res = BlueprintRef::StaticCast( InventoryItem::Split( qty_to_take, notify ) );
-    if ( !res )
-        return BlueprintRef();
+    BlueprintRef bRef = BlueprintRef::StaticCast( InventoryItem::Split( qty_to_take, notify ) );
+    if (bRef.get() == nullptr)
+        return BlueprintRef(nullptr);
 
     // copy our attributes
-    res->SetCopy(m_copy);
-    res->SetME(m_mLevel);
-    res->SetPE(m_pLevel);
-    res->SetRuns(m_runs);
-    res->SaveBlueprint();
-    return res;
+    bRef->SetCopy(m_data.copy);
+    bRef->SetME(m_data.mLevel);
+    bRef->SetPE(m_data.pLevel);
+    bRef->SetRuns(m_data.runs);
+    bRef->SaveBlueprint();
+    return bRef;
 }
 
 bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
@@ -145,11 +131,11 @@ bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
         return false;
     */
     BlueprintRef bpRef = BlueprintRef::StaticCast(itemRef);
-    if (m_mLevel != bpRef->materialLevel())
+    if (m_data.mLevel != bpRef->materialLevel())
         return false;
-    if (m_pLevel != bpRef->productivityLevel())
+    if (m_data.pLevel != bpRef->productivityLevel())
         return false;
-    if (m_runs != bpRef->runsRemaining())
+    if (m_data.runs != bpRef->runsRemaining())
         return false;
     if ( !InventoryItem::Merge( itemRef, qty, notify ) )
         return false;
@@ -159,21 +145,17 @@ bool Blueprint::Merge(InventoryItemRef itemRef, uint32 qty, bool notify) {
 void Blueprint::SaveBlueprint() {
     _log( MANUF__TRACE, "Saving blueprint %u.", itemID() );
 
-    BlueprintData data;
-        data.copy   = m_copy;
-        data.runs   = m_runs;
-        data.mLevel = m_mLevel;
-        data.pLevel = m_pLevel;
-    m_db.SaveBlueprintData(itemID(), data);
+    m_db.SaveBlueprintData(itemID(), m_data);
 }
 
+/** @todo this should be cached ..maybe */
 PyDict* Blueprint::GetBlueprintAttributes() {
     Rsp_GetBlueprintAttributes rsp;
         rsp.blueprintID = itemID();
-        rsp.copy = m_copy;
-        rsp.productivityLevel = m_pLevel;
-        rsp.materialLevel = m_mLevel;
-        rsp.licensedProductionRunsRemaining = m_runs;
+        rsp.copy = m_data.copy;
+        rsp.productivityLevel = m_data.pLevel;
+        rsp.materialLevel = m_data.mLevel;
+        rsp.licensedProductionRunsRemaining = m_data.runs;
         rsp.wastageFactor = wasteFactor();
         rsp.productTypeID = type().productTypeID();
         rsp.manufacturingTime = type().productionTime();
@@ -185,10 +167,45 @@ PyDict* Blueprint::GetBlueprintAttributes() {
     return rsp.Encode();
 }
 
+float Blueprint::wasteFactor() const
+{
+    float res = type().wasteFactor();
+    if ((m_data.mLevel < 0) and (res > 0))
+        res *= -(-1.0 + m_data.mLevel);
+    else if ((m_data.mLevel > 0) and (res > 0))
+        res *= 1.0 / (1.0 + m_data.mLevel);
+    res /= 100;
+    return res;
+}
+
+float Blueprint::timeFactor() const
+{
+    float batchTime = type().productionTime();
+    if (m_data.pLevel > 0)
+        batchTime = batchTime - (1.0 - 1.0 / (1 + batchTime)) * type().productivityModifier();
+    else if (m_data.pLevel < 0)
+        batchTime = batchTime + (1.0 - batchTime) * type().productivityModifier();
+    return batchTime;
+}
+
+/*
+                    if activity in (const.activityManufacturing, const.activityDuplicating):
+                        if material.requiredTypeID in indexedExtras and indexedExtras[material.requiredTypeID].quantity > 0:
+                            extraAmount = indexedExtras[material.requiredTypeID].quantity
+                            indexedExtras[material.requiredTypeID].quantity = 0
+                        if activity == const.activityManufacturing:
+                            blueprintWaste = float(amountRequired) * float(blueprintMaterialMultiplier)
+                        characterWaste = float(amountRequired) * float(characterMaterialMultiplier) - float(amountRequired)
+                        amountRequired = amountRequired + extraAmount + blueprintWaste
+                        amountRequiredByPlayer = int(round(amountRequired + characterWaste))
+                        amountRequired = int(round(amountRequired))
+                        */
 /* invention
  *
  *
- *    The chance for a succesful invention is calculated by this formula: Invention_Chance = Base_Chance * (1 + (0.01 * Encryption_Skill_Level)) * (1 + ((Datacore_1_Skill_Level + Datacore_2_Skill_Level) * Decryptor_Modifier
+ *    The chance for a succesful invention is calculated by this formula:
+ * Invention_Chance = Base_Chance * (1 + (0.01 * Encryption_Skill_Level)) * (1 + ((Datacore_1_Skill_Level + Datacore_2_Skill_Level) * Decryptor_Modifier
+ *      where:
  *        Base Chance
  *            Modules and Ammo have a base probability of 40%
  *            Frigates, Destroyers, Freighters and Skiff have a base probability of 30%

@@ -34,7 +34,7 @@ public:
     bool LoadIntFile(const char *file);
     bool LoadStringFile(const char *file);
 
-    const char *LookupInt(uint64 value) const;
+    const char *LookupInt(int64 value) const;
     const char *LookupString(const char *value) const;
 
 protected:

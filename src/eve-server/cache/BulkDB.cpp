@@ -44,6 +44,9 @@ void BulkDB::Close()
     dgmTypeAttributes = 800006,          -359049
     dgmTypeEffects = 800007,             -34076
     dgmUnits = 800009,                   -57
+    invBlueprintTypes = 1200001          -3292      // may not need this one...no, data is updated thru server call
+    actKeyTypes = 2001100001             -22
+    jnlEntryTypeIDs = 2001100002         -63
 
     these are split in chunks of ~10k with hard-coded chunk numbers
     as such, current (hacked) system only allows for all-or-none bulkdata file sets

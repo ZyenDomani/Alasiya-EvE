@@ -28,7 +28,8 @@
 #define __INVENTORY__H__INCL__
 
 
-#include "inventory/ItemFactory.h"
+#include "inventory/InventoryDB.h"
+
 
 class CRowSet;
 class OwnerData;
@@ -39,9 +40,9 @@ class Inventory
     friend class InventoryItem;
 public:
     Inventory(InventoryItemRef item);
-    virtual ~Inventory()                                { /* do nothing here*/ }
+    virtual ~Inventory() noexcept                       { /* do nothing here*/ }
 
-    void Reset(ItemFactory* factory);
+    void Reset();
     void Unload();  // used by stations and solar systems for item saving and unloading
     void AddItem(InventoryItemRef item);
     void RemoveItem(InventoryItemRef item);
@@ -52,22 +53,20 @@ public:
 
     bool IsEmpty()                                      { return mContents.empty(); }
     bool HasShip();
-    bool LoadContents(ItemFactory* factory);
+    bool LoadContents();
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool Contains(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }
-    bool GetItems(OwnerData od, std::vector< uint32 >& into) const;
 
     double GetCapacity(EVEItemFlags flag) const;
     double GetStoredVolume(EVEItemFlags flag) const;
     double GetRemainingCapacity(EVEItemFlags flag) const { return GetCapacity( flag ) - GetStoredVolume( flag ); }
 
-    //uint32 inventoryID() const                          { return m_inventoryID; }
-
     InventoryItemRef GetByID(uint32 id) const;
     InventoryItemRef GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const;
 
     /* Inventory-by-Flag methods */
+    /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
     bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
     uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
@@ -79,24 +78,20 @@ public:
     CRowSet* List( EVEItemFlags flag, uint32 forOwner = 0 ) const;
     void List( CRowSet* into, EVEItemFlags flag, uint32 forOwner = 0 ) const;
 
-    /**
-     * Casts given InventoryItemRef to Inventory.
-     *
-     * @return Pointer to Inventory; NULL if given item isn't a valid inventory.
-     */
-    Inventory *Cast(InventoryItemRef item);
-
 
 protected:
-    ItemFactory* m_factory;
-    InventoryDB* m_db;
+    bool GetItems(OwnerData od, std::vector< uint32 >& into);
+
+    InventoryDB m_db;
     InventoryItemRef m_self;
 
     bool mContentsLoaded;
 
-    uint32 m_inventoryID;
+    uint32 m_myID;
 
-    std::vector<InventoryItemRef> _sortVector(std::vector<InventoryItemRef> &itemVec);
+    std::map<EVEItemFlags, double> m_itemsByFlag;
+
+    std::vector<InventoryItemRef> SortVector(std::vector<InventoryItemRef> &itemVec);
     std::map<uint32, InventoryItemRef> mContents;    //maps item ID to its instance. we own a ref to all of these.
 };
 

@@ -154,7 +154,11 @@ PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
   sLog.White( "AgentMgrService::Handle_GetAgents()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     */
-
+  /*
+   * 00:25:33 [SvcCall] Service agentMgr::GetAgents()
+   * 00:25:33 [DBQuery] DBcore Query - SELECT    agt.agentID,    agt.agentTypeID,    agt.divisionID,    agt.level,    agt.quality,    agt.corporationID,    chr.stationID,    chr.gender,    bl.bloodlineID FROM agtAgents AS agt LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID
+   * 00:25:33 [DBResult] GetAgents returned 10977 items
+   */
     PyRep *result = NULL;
 
     ObjectCachedMethodID method_id(GetName(), "GetAgents");
@@ -507,8 +511,8 @@ PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     res->SetItemString("Mission Keywords", new PyString("Mission Keywords"));
     res->SetItemString("Mission Title ID", new PyString("Mission Title ID") );
     res->SetItemString("Mission Briefing ID", new PyString("Mission Briefing ID") );
-    res->SetItemString("Decline Time", new PyFloat( Win32TimeNow() + Win32Time_Hour ) );
-    res->SetItemString("Expiration Time", new PyFloat( Win32TimeNow()+Win32Time_Day ) );
+    res->SetItemString("Decline Time", new PyLong( GetFileTimeNow() + Win32Time_Hour ) );
+    res->SetItemString("Expiration Time", new PyLong( GetFileTimeNow()+Win32Time_Day ) );
     res->SetItemString("Mission Image", new PyString("MissionImage") );
 
     return res;

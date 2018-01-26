@@ -28,31 +28,31 @@
 
 #include "utils/utils_time.h"
 
-const uint64 Win32Time_Second = 10000000L;
-const uint64 Win32Time_Minute = Win32Time_Second*60;
-const uint64 Win32Time_Hour = Win32Time_Minute*60;
-const uint64 Win32Time_Day = Win32Time_Hour*24;
-const uint64 Win32Time_Month = Win32Time_Day*30;
-const uint64 Win32Time_Year = Win32Time_Month*12;
+const int64 Win32Time_Second = 10000000L;
+const int64 Win32Time_Minute = Win32Time_Second*60;
+const int64 Win32Time_Hour = Win32Time_Minute*60;
+const int64 Win32Time_Day = Win32Time_Hour*24;
+const int64 Win32Time_Month = Win32Time_Day*30;
+const int64 Win32Time_Year = Win32Time_Month*12;
 
-static const uint64 SECS_BETWEEN_EPOCHS = 11644473600LL;
-static const uint64 SECS_TO_100NS = 10000000L; // 10^7
+static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
+static const int64 SECS_TO_100NS = 10000000L; // 10^7
 
-uint64 UnixTimeToWin32Time( time_t sec, uint32 nsec ) {
+int64 UnixTimeToWin32Time( time_t sec, uint32 nsec ) {
     return(
-        (((uint64) sec) + SECS_BETWEEN_EPOCHS) * SECS_TO_100NS
+        (((int64) sec) + SECS_BETWEEN_EPOCHS) * SECS_TO_100NS
         + (nsec / 100)
     );
 }
 
-void Win32TimeToUnixTime( uint64 win32t, time_t &unix_time, uint32 &nsec ) {
+void Win32TimeToUnixTime( int64 win32t, time_t &unix_time, uint32 &nsec ) {
     win32t -= (SECS_BETWEEN_EPOCHS * SECS_TO_100NS);
     nsec = (win32t % SECS_TO_100NS) * 100;
     win32t /= SECS_TO_100NS;
     unix_time = win32t;
 }
 
-std::string Win32TimeToString(uint64 win32t) {
+std::string Win32TimeToString(int64 win32t) {
     std::time_t unix_time;
     uint32 nsec = 0;
     Win32TimeToUnixTime(win32t, unix_time, nsec);
@@ -63,8 +63,17 @@ std::string Win32TimeToString(uint64 win32t) {
     return(buf);
 }
 
-uint64 Win32TimeNow() {
+int64 Win32TimeNow() {
     return UnixTimeToWin32Time(std::time(NULL), 0);
+}
+
+int32 GetElapsedHours(int64 time)
+{
+    double hours = time - GetFileTimeNow();
+    hours /= 10000000;
+    hours -= 11644473600;
+    hours /= 3600;
+    return (int32)hours;
 }
 
 double GetFileTimeNow()

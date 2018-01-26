@@ -7,8 +7,8 @@
   */
 
 
-#ifndef __EVESERVER_SHIPMODULES_GENERICMODULE_H_
-#define __EVESERVER_SHIPMODULES_GENERICMODULE_H_
+#ifndef _EVE_SHIP_MODULES_GENERIC_MODULE_H
+#define _EVE_SHIP_MODULES_GENERIC_MODULE_H
 
 #include "EVEServerConfig.h"
 #include "effects/EffectsProcessor.h"
@@ -40,6 +40,7 @@ public:
     void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
+    bool isWarpSafe()                                   { return m_isWarpSafe; }
     bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
     bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
     bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
@@ -115,15 +116,16 @@ protected:
     ModStates::ModuleStates     m_ModuleState;
     ModStates::ChargeStates     m_ChargeState;
 
-    bool             m_hiPower : 1;
-    bool             m_medPower : 1;
-    bool             m_loPower : 1;
-    bool             m_rigSlot : 1;
-    bool             m_subSystem : 1;
-    bool             m_launcher : 1;
-    bool             m_turret : 1;
-    bool             m_overLoaded : 1;
-    bool             m_chargeLoaded : 1;
+    bool             m_isWarpSafe   :1;
+    bool             m_hiPower      :1;
+    bool             m_medPower     :1;
+    bool             m_loPower      :1;
+    bool             m_rigSlot      :1;
+    bool             m_subSystem    :1;
+    bool             m_launcher     :1;
+    bool             m_turret       :1;
+    bool             m_overLoaded   :1;
+    bool             m_chargeLoaded :1;
 
 
     int16            m_repeat;
@@ -133,4 +135,4 @@ protected:
 
 };
 
-#endif /* __EVESERVER_SHIPMODULES_GENERICMODULE_H_ */
+#endif  // _EVE_SHIP_MODULES_GENERIC_MODULE_H

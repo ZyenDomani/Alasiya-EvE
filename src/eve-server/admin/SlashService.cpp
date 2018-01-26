@@ -64,9 +64,9 @@ PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
 
 PyResult SlashService::SlashCommand(Client * client, std::string command)
 {
-    if (!(client->GetAccountRole() & ROLE_SLASH)) {
-        _log( COMMAND__ERROR, "%s: Client '%s' used a slash command but does not have ROLE_SLASH.", GetName(), client->GetName() );
-        throw PyException( MakeCustomError( "You need to have ROLE_SLASH to execute commands." ) );
+    if (client->GetAccountRole() & Acct::Role::SLASH != Acct::Role::SLASH) {
+        _log( COMMAND__ERROR, "%s: Client '%s' used a slash command but does not have Acct::Role::SLASH.", GetName(), client->GetName() );
+        throw PyException( MakeCustomError( "You need to have Acct::Role::SLASH to execute commands." ) );
     }
 
     return m_commandDispatch->Execute( client, command.c_str() );

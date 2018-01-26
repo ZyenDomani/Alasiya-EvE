@@ -39,8 +39,7 @@ enum EVIL_NUMBER_TYPE
     evil_number_float,
 };
 
-/* doing the pragma pack.. results in less memory but more cpu */
-#pragma pack(push,1)
+
 class PyRep;
 
 /**
@@ -74,7 +73,6 @@ public:
     EvilNumber(int32 val);
     EvilNumber(uint32 val);
     EvilNumber(int64 val);
-    EvilNumber(uint64 val);     // WARNING:  Possible data corruption here since internal integer type is 'int64'
     EvilNumber(float val);
     EvilNumber(double val);
 
@@ -146,7 +144,7 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<uint64>(val); \
+                return this->mValue.iVal a static_cast<int64>(val); \
             else \
                 return this->mValue.fVal a static_cast<double>(val); \
         }
@@ -175,7 +173,7 @@ public:
     MATH_OPERATORS_FOR( const int32)
     MATH_OPERATORS_FOR( const uint32)
     MATH_OPERATORS_FOR( const int64)
-    MATH_OPERATORS_FOR( const uint64)
+    MATH_OPERATORS_FOR( const int64)
     MATH_OPERATORS_FOR( const float)
     MATH_OPERATORS_FOR( const double)
 */
@@ -344,7 +342,7 @@ public:
     LOGIC_OPERATORS_FOR( const int32)
     LOGIC_OPERATORS_FOR( const uint32)
     LOGIC_OPERATORS_FOR( const int64)
-    //LOGIC_OPERATORS_FOR( const uint64)
+    //LOGIC_OPERATORS_FOR( const int64)
     LOGIC_OPERATORS_FOR( const float)
     LOGIC_OPERATORS_FOR( const double)
 
@@ -386,6 +384,7 @@ public:
     }
 
     bool isInt();
+    bool isNaN();
     bool isFloat();
 
     bool get_bool();
@@ -474,8 +473,6 @@ protected:
      */
     EvilNumber _SelfDecrement();
 };
-
-#pragma pack(pop)
 
 //////////////////////////////////////////////////////////////////////////
 // global operators

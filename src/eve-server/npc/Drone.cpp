@@ -99,7 +99,7 @@ void Drone::SetOwner(Client* pClient) {
 
 void Drone::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     /*  Enable base call to Process Targeting and Movement  */
@@ -107,7 +107,7 @@ void Drone::Process() {
     /** @todo (allan) finish drone AI and processing */
     m_AI->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -211,8 +211,8 @@ void Drone::EncodeDestiny( Buffer& into )
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
 
     DataSector data;

@@ -28,8 +28,11 @@
 #include "EntityList.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
+#include "account/AccountService.h"
 #include "cache/ObjCacheService.h"
+#include "market/MarketMgr.h"
 #include "market/MarketProxyService.h"
+#include "station/StationDataMgr.h"
 #include "system/SystemManager.h"
 
 PyCallable_Make_InnerDispatcher(MarketProxyService)
@@ -61,81 +64,70 @@ MarketProxyService::~MarketProxyService() {
     delete m_dispatch;
 }
 
-
 /*
-PyBoundObject *MarketProxyService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    _log(MARKET__MESSAGE, "MarketProxyService bind request for:");
-    bind_args->Dump(MARKET__MESSAGE, "    ");
+ * MARKET__ERROR
+ * MARKET__WARNING
+ * MARKET__MESSAGE
+ * MARKET__DEBUG
+ * MARKET__TRACE
+ * MARKET__DB_ERROR
+ * MARKET__DB_TRACE
+ */
 
-    return(new MarketProxyBound(m_manager, &m_db));
-}*/
-
-
-PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
-    uint32 locid = call.client->GetLocationID();
-    if (!IsStation(locid)) {
-        _log(SERVICE__ERROR, "%s: Requested StationAsks when in non-station location %u", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    PyRep* result = m_db.GetStationAsks(locid);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load StationAsks for location %u", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    return result;
-}
-
-
-PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
-    uint32 locid = call.client->GetSystemID();
-    if (!IsSolarSystem(locid)) {
-        codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    PyRep* result = m_db.GetSystemAsks(locid);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load SystemAsks for location %u", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    return result;
-}
-
-
-PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
-    PyRep *result = m_db.GetRegionBest(call.client->GetRegionID());
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load GetRegionBest for region %u", call.client->GetName(), call.client->GetRegionID());
-        return nullptr;
-    }
-
-    return result;
+PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
+    m_db.BuildOldPriceHistory();
+    return nullptr;
 }
 
 PyResult MarketProxyService::Handle_GetMarketGroups(PyCallArgs &call) {
-    PyRep *result(nullptr);
+    return sMktMgr.GetMarketGroups();
+}
 
-    ObjectCachedMethodID method_id(GetName(), "GetMarketGroups");
+/** @todo update these to use market manager instead of hitting db */
+PyResult MarketProxyService::Handle_GetStationAsks(PyCallArgs &call) {
+    if (call.client->IsDocked())
+        return m_db.GetStationAsks(call.client->GetStationID());
+    return m_db.GetSystemAsks(call.client->GetSystemID());
+}
 
-    //check to see if this method is in the cache already.
-    if (!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetMarketGroups();
-        if (!result) {
-            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            result = new PyNone();
-        }
-        m_manager->cache_service->GiveCache(method_id, &result);
+PyResult MarketProxyService::Handle_GetSystemAsks(PyCallArgs &call) {
+    return m_db.GetSystemAsks(call.client->GetSystemID());
+}
+
+PyResult MarketProxyService::Handle_GetRegionBest(PyCallArgs &call) {
+    return m_db.GetRegionBest(call.client->GetRegionID());
+}
+
+PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
+    return m_db.GetOrdersForOwner(call.client->GetCharacterID());
+}
+
+PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
+    return m_db.GetOrdersForOwner(call.client->GetCorporationID());
+}
+
+// this is called 3x on every market transaction
+/** @todo  make this static data, updated on a timer.  can be done in MarketMgr code  */
+PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(MARKET__ERROR, "Invalid arguments");
+        return nullptr;
     }
 
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
+    return m_db.GetOldPriceHistory(call.client->GetRegionID(), args.arg);
+}
 
-    return result;
+// this is called 3x on every market transaction
+/** @todo  make this static data, updated on a timer.  can be done in MarketMgr code  */
+PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(MARKET__ERROR, "Invalid arguments");
+        return nullptr;
+    }
+
+    return m_db.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
@@ -145,43 +137,19 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
         return nullptr;
     }
 
-    /*PyRep *result = nullptr;
-
-    // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
-    SystemData data;
-    sDataMgr.GetSystemInfo(stationID, data);
-    result = m_db.GetOrders(data.regionID, args.arg);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load GetOrders for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return nullptr;
-    }
-
-    return result;*/
     PyRep* result(nullptr);
 
     std::string method_name ("GetOrders_");
     method_name += itoa(args.arg);
     ObjectCachedMethodID method_id(GetName(), method_name.c_str());
-
-//#   pragma message( "TODO: temporary solution, make cache objects with arguments" )
-
-//#   pragma message("TODO: need to check if cache is refreshed when market orders change.")
-//    m_manager->cache_service->InvalidateCache(method_id);
-
     //check to see if this method is in the cache already.
     if (!m_manager->cache_service->IsCacheLoaded(method_id))
     {
         //this method is not in cache yet, load up the contents and cache it.
-        uint32 locid = call.client->GetSystemID();
-        if (!IsSolarSystem(locid))
-        {
-            codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-            return nullptr;
-        }
         result = m_db.GetOrders(call.client->GetRegionID(), args.arg);
-        if (!result) {
+        if (result == nullptr) {
             codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            result = new PyNone();
+            result = PyStatic.NewNone();
         }
         m_manager->cache_service->GiveCache(method_id, &result);
     }
@@ -193,64 +161,8 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     return result;
 }
 
-PyResult MarketProxyService::Handle_GetCharOrders(PyCallArgs &call) {
-    //no arguments
-    PyRep* result = m_db.GetCharOrders(call.client->GetCharacterID());
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load GetCharOrders", call.client->GetName());
-        return nullptr;
-    }
-
-    return result;
-}
-
-PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
-    Call_SingleIntegerArg args; //itemID
-    if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
-        return nullptr;
-    }
-
-    uint32 locid = call.client->GetSystemID();
-    if (!IsSolarSystem(locid)) {
-        codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    PyRep* result = m_db.GetOldPriceHistory(call.client->GetRegionID(), args.arg);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load Old Price History for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return nullptr;
-    }
-
-    return result;
-}
-
-PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
-    Call_SingleIntegerArg args; //itemID
-    if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
-        return nullptr;
-    }
-
-    uint32 locid = call.client->GetSystemID();
-    if (!IsSolarSystem(locid)) {
-        codelog(SERVICE__ERROR, "%s: GetSystemID() returned a non-system %u!", call.client->GetName(), locid);
-        return nullptr;
-    }
-
-    PyRep* result = m_db.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load New Price History for item %u of region %u", call.client->GetName(), args.arg, call.client->GetRegionID());
-        return nullptr;
-    }
-
-    return result;
-}
-
 PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
   /**
-17:15:42 L MarketProxyService::Handle_PlaceCharOrder: call.Dump to follow...
 17:15:42 [SvcCall]   Call Arguments:
 17:15:42 [SvcCall]       Tuple: 11 elements
 17:15:42 [SvcCall]         [ 0] Integer field: 60004594
@@ -264,9 +176,6 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 17:15:42 [SvcCall]         [ 8] Integer field: 1
 17:15:42 [SvcCall]         [ 9] Boolean field: false
 17:15:42 [SvcCall]         [10] (None)
-
-  sLog.White("MarketProxyService::Handle_PlaceCharOrder", "call.Dump to follow...");
-  call.Dump(SERVICE__CALL_DUMP);
 */
   Call_PlaceCharOrder args;
     if (!args.Decode(&call.tuple)) {
@@ -274,40 +183,30 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (args.bid) {
-        //buy order
+    //TODO: verify the validity of args.stationID (range vs. skill)
+    //TODO: handle located?  'located' is officeFolderID, officeID.  not sure how its' sent yet.
+    //NOTE: I am not sure that useCorp is as simple as it is currently implemented...
 
-        //TODO: do something with args.itemID
+    /** @todo  update for corporate use */
 
+    if (args.bid) {  //buy order
         //try to satisfy immediately...
         uint32 order_id = m_db.FindSellOrder(args.stationID, args.typeID, args.price, args.quantity, args.orderRange);
-        _log(MARKET__TRACE, "MarketProxyService::Handle_PlaceCharOrder - %s: Trying buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
+        _log(MARKET__TRACE, "MarketProxyService::Handle_PlaceCharOrder - %s: Trying buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %i)", \
+                    call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
         if (order_id) {
-            _log(MARKET__TRACE, "%s: Found sell order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
+            _log(MARKET__TRACE, "%s: Found sell order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %i)", \
+                        call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
             _ExecuteSellOrder(order_id, args.stationID, args.quantity, call.client, args.useCorp);
             return nullptr;
         }
 
         //unable to satisfy immediately...
-        //20:24:17 [Error] Lee Domani: Failed to satisfy order for 879 of 1 at 2.660000 ISK.
         if (args.duration == 0) {
             _log(MARKET__ERROR, "%s: Failed to satisfy buy order for %d of type %d at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID, args.price);
             call.client->SendErrorMsg("No such order found.");
-            return nullptr;
-        }
-
-        //TODO: verify the validity of args.stationID (range vs. skill)
-        //TODO: handle located?
-        //NOTE: I am not sure that useCorp is as simple as it is currently implemented...
-
-        //make sure they can afford this, and take the money if they can.
-        double money = args.price * args.quantity;
-        //TODO: add broker fees...
-        if (!call.client->AddBalance(-money)) {
-            _log(MARKET__ERROR, "%s: Client requested buy order exceeding their balance (%.2f ISK total).", call.client->GetName(), money);
-            call.client->SendErrorMsg("Insufficient Funds.  Transaction Cancelled.");
             return nullptr;
         }
 
@@ -336,7 +235,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         //sell order
 
         //verify that they actually have the item in the quantity specified...
-        InventoryItemRef item = m_manager->item_factory->GetItem( args.itemID );
+        InventoryItemRef item = sItemFactory.GetItem( args.itemID );
         if ( !item ) {
             codelog(MARKET__ERROR, "%s: Failed to find item %d for sell order.", call.client->GetName(), args.itemID);
             call.client->SendErrorMsg("Unable to find items %d to sell!", args.itemID);
@@ -372,7 +271,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             return nullptr;
         }
 
-        //TODO: verify orderRange against their skills.
+        //TODO: verify orderRange against their skills.   client may do this...verify
 
         //ok, we think they are allowed to sell this thing...
 
@@ -381,7 +280,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if (order_id) {
             _log(MARKET__TRACE, "%s: Found buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-            _ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, (InventoryItemRef)item, args.useCorp);
+            _ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, item, args.useCorp);
             return nullptr;
         }
 
@@ -453,9 +352,9 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
     if (price == args.newPrice)
         return nullptr;
 
-    if (isBuy) {
+    if (isBuy) {  // GiveCash
         double money = (price - args.newPrice) * quantity;
-        if (!call.client->AddBalance(money))
+        if (!call.client->AddBalance(money, Account::CreditType::ISK))
             return nullptr;
     }
 
@@ -487,13 +386,13 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     }
 
 
-    if (isBuy) {
+    if (isBuy) { // GiveCash
         double money = price * quantity;
         if (!call.client->AddBalance(money))
             return nullptr;
     } else {
         ItemData idata(typeID, 1, 0, flagHangar, quantity);
-        InventoryItemRef new_item = m_manager->item_factory->SpawnItem(idata);
+        InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
         new_item->ChangeOwner(call.client->GetCharacterID());
         new_item->Move(stationID, flagHangar, true);
     }
@@ -518,24 +417,10 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
         return nullptr;
     }
 
-    double minPrice;
-    if (args.minPrice->IsInt())
-        minPrice = args.minPrice->AsInt()->value();
-    else if (args.minPrice->IsFloat())
-        minPrice = args.minPrice->AsFloat()->value();
-    else {
-        codelog(CLIENT__ERROR, "%s: Invalid type %s for minPrice argument received.", call.client->GetName(), args.minPrice->TypeString());
-        return nullptr;
-    }
+    double minPrice = PyRep::IntegerValue(args.minPrice);
 
-    PyRep *result = m_db.GetTransactions(args.clientID==0?call.client->GetCharacterID():args.clientID, \
+    return m_db.GetTransactions(args.clientID==0?call.client->GetCharacterID():args.clientID, \
             args.typeID, args.quantity, minPrice, args.maxPrice, args.fromDate, args.buySell);
-    if (!result) {
-        _log(SERVICE__ERROR, "%s: Failed to load CharGetNewTransactions", call.client->GetName());
-        return nullptr;
-    }
-
-    return result;
 }
 
 PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
@@ -546,42 +431,10 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
         return nullptr;
     }
 
-    double minPrice;
-    if (args.minPrice->IsInt())
-        minPrice = args.minPrice->AsInt()->value();
-    else if (args.minPrice->IsFloat())
-        minPrice = args.minPrice->AsFloat()->value();
-    else {
-        codelog(CLIENT__ERROR, "CorpID %u: Invalid type %s for minPrice argument received.", call.client->GetCorporationID(), args.minPrice->TypeString());
-        return nullptr;
-    }
+    double minPrice = PyRep::IntegerValue(args.minPrice);
 
-    PyRep *result = m_db.GetTransactions(call.client->GetCorporationID(), args.typeID, args.quantity, minPrice,\
+    return m_db.GetTransactions(call.client->GetCorporationID(), args.typeID, args.quantity, minPrice,\
                                   args.maxPrice, args.fromDate, args.buySell, args.accountKey, args.memberID);
-    if (!result) {
-        _log(SERVICE__ERROR, "CorpID %u: Failed to load CorpGetNewTransactions", call.client->GetCorporationID());
-        return nullptr;
-    }
-
-    return result;
-}
-PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
-    m_db.BuildOldPriceHistory();
-    return nullptr;
-}
-
-
-PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call)
-{
-  /**
-00:11:38 L MarketProxyService::Handle_GetCorporationOrders(): size=0
-00:11:38 [SvcCall]   Call Arguments:
-00:11:38 [SvcCall]       Tuple: Empty
-00:11:38 [SvcCall]   Call Named Arguments:
-00:11:38 [SvcCall]     Argument 'machoVersion':
-00:11:38 [SvcCall]         Integer field: 1
-  */
-    return nullptr;
 }
 
 void MarketProxyService::_SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp, PyRep* order) {
@@ -605,7 +458,7 @@ void MarketProxyService::_BroadcastOnOwnOrderChanged(uint32 regionID, uint32 ord
     std::vector<Client*> clients;
     sEntityList.FindByRegionID(regionID, clients);
     std::vector<Client*>::iterator cur = clients.begin();
-    for (; cur != clients.end(); cur++) {
+    for (; cur != clients.end(); ++cur) {
         PySafeIncRef(order);
         _SendOnOwnOrderChanged(*cur, orderID, action, isCorp, order);
     }
@@ -616,7 +469,7 @@ void MarketProxyService::_BroadcastOnMarketRefresh(uint32 regionID) {
     std::vector<Client*> clients;
     sEntityList.FindByRegionID(regionID, clients);
     std::vector<Client*>::iterator cur = clients.begin();
-    for (; cur != clients.end(); cur++) {
+    for (; cur != clients.end(); ++cur) {
         _SendOnMarketRefresh(*cur);
     }
 }
@@ -629,99 +482,119 @@ void MarketProxyService::_InvalidateOrdersCache(uint32 typeID)
     m_manager->cache_service->InvalidateCache( method_id );
 }
 
+
+/** @todo take off market overhead fees */
+
 //NOTE: there are a lot of race conditions to deal with here if we ever
 //allow multiple market services to run at the same time.
-void MarketProxyService::_ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp) {
-    uint32 orderOwnerID = 0, typeID = 0, qtyReq = 0;
+void MarketProxyService::_ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp) {
+    uint32 ownerID = 0, typeID = 0, stationID2 = 0, qtyReq = 0;
     double price = 0;
+    bool isBuy = false;
 
-    if (!m_db.GetOrderInfo(buy_order_id, &orderOwnerID, &typeID, nullptr, &qtyReq, &price, nullptr, nullptr)) {
-        codelog(MARKET__ERROR, "%s: Failed to get info about buy order %u.", seller->GetName(), buy_order_id);
+    /** @todo  look into this....may need updates for corp transactions  */
+    /** @todo  what is stationID being sent?  whats diff in stationID and orderInfo.stationID? */
+
+    if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, &stationID2, &qtyReq, &price, &isBuy, &isCorp)) {
+        codelog(MARKET__ERROR, "%s: Failed to get info about buy order %u.", seller->GetName(), orderID);
         return;
     }
+    //  check for sellerID == EVESystem, and change to station owner (npcCorpID)
+    if (ownerID == 1)
+        ownerID = stDataMgr.GetOwnerID(stationID);
 
     if (typeID != item->typeID()) {
         //should never happen.
-        codelog(MARKET__ERROR, "%s: Type mismatch executing order %u: order %u item %u", seller->GetName(), buy_order_id, typeID, item->typeID());
+        codelog(MARKET__ERROR, "%s: Type mismatch executing order %u: order %u item %u", seller->GetName(), orderID, typeID, item->typeID());
         seller->SendErrorMsg("Order type mismatch.");
         return;
     }
 
     if (quantity > qtyReq) {
-        codelog(MARKET__ERROR, "%s: Tried to sell more (%u) than %u required (%u). Selling only what required.", seller->GetName(), quantity, orderOwnerID, qtyReq);
+        codelog(MARKET__ERROR, "%s: Tried to sell more (%u) than %u required (%u). Selling only what required.", seller->GetName(), quantity, ownerID, qtyReq);
         quantity = qtyReq;
     }
 
-    if (orderOwnerID == item->ownerID()) {
+    if (ownerID == item->ownerID()) {
         //I just have a bad feeling that this is not going to work very well...
         codelog(MARKET__WARNING, "%s: Selling an item to ourself... this may not work...", seller->GetName());
     }
 
     if (item->singleton() or item->quantity() == quantity) {
-        //entire item is moving...move out of first inventory
-        item->Move(0, flagAutoFit, false);
-        item->ChangeOwner(orderOwnerID);
-        item->Move(stationID, flagHangar, true);
+        item->Donate(ownerID, stationID, (isCorp ? flagCorpMarket : flagHangar));
     } else {
         //need to split item up...
-        InventoryItemRef new_item = item->Split(quantity, true);
-        if ( !new_item ) {
+        InventoryItemRef iRef = item->Split(quantity, true);
+        if (iRef.get() == nullptr) {
             codelog(MARKET__ERROR, "Failed to split item %u.", item->itemID());
             return;
         }
-        //use the owner change packet to alert the buyer of the new item
-        new_item->ChangeOwner(orderOwnerID);
-        new_item->Move(stationID, flagHangar, true);
+        iRef->Donate(ownerID, stationID, (isCorp ? flagCorpMarket : flagHangar));
     }
 
-    //the buyer has already paid out the money before the buy order
-    //was recorded in the database.
+    //the buyer has already paid out the money before the buy order was recorded in the database.
     //give the money to the seller...
     double money = price * quantity;
-    //TODO: take off market overhead fees...
-    seller->AddBalance(money);
-    //TODO: record this in the wallet history.
 
-    Client* buyer = sEntityList.FindClientByCharID(orderOwnerID);
+    std::string reason = "DESC:  Selling items in ";
+    reason += itoa(stationID);
+    if (isCorp) {
+        reason += " to ";
+        reason += seller->GetName();
+    }
+
+    AccountService::TranserFunds(
+                ownerID,
+                (isCorp ? seller->GetCorporationID() : seller->GetCharacterID()),
+                money,
+                reason.c_str(),
+                Journal::EntryType::MarketTransaction,
+                orderID,
+                (isCorp ? seller->GetCorpAccountKey() : Account::KeyType::Cash));  // this may not be right.  it *may* use corp master wallet.
+
     if (quantity == qtyReq) {
-        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", seller->GetName(), buy_order_id);
-        PyRep* order = m_db.GetOrderRow(buy_order_id);
-        if (!m_db.DeleteOrder(buy_order_id)) {
-            codelog(MARKET__ERROR, "Failed to delete order %u.", buy_order_id);
+        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", seller->GetName(), orderID);
+        PyRep* order = m_db.GetOrderRow(orderID);
+        if (!m_db.DeleteOrder(orderID)) {
+            codelog(MARKET__ERROR, "Failed to delete order %u.", orderID);
             return;
         }
         _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), buy_order_id, "Expiry", isCorp, order);
+        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Expiry", isCorp, order);
         _BroadcastOnMarketRefresh(seller->GetRegionID());
     } else {
-        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", seller->GetName(), buy_order_id, qtyReq - quantity);
-        if (!m_db.AlterOrderQuantity(buy_order_id, qtyReq - quantity)) {
-            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", buy_order_id);
+        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", seller->GetName(), orderID, qtyReq - quantity);
+        if (!m_db.AlterOrderQuantity(orderID, qtyReq - quantity)) {
+            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", orderID);
             return;
         }
        _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), buy_order_id, "Modify", isCorp);
+        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Modify", isCorp);
     }
 
     //record this transaction in market_transactions
-    //NOTE: regionID may not be accurate here...
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), seller->GetRegionID(), stationID)) {
-        codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
+    if (isCorp) {
+        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCorporationID(), sDataMgr.GetStationRegion(stationID), stationID))
+            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", seller->GetName());
+    } else {
+        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID))
+            codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
     }
     //FIXME:  for orderOwnerID == 1, reset owner to npc corp of stationID
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, orderOwnerID, seller->GetRegionID(), stationID)) {
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, ownerID, sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", seller->GetName());
     }
 }
 
 //NOTE: there are a lot of race conditions to deal with here if we ever
 //allow multiple market services to run at the same time.
-void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp) {
-    uint32 orderOwnerID = 0, typeID = 0, qtyAvail = 0;
+void MarketProxyService::_ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp) {
+    uint32 ownerID = 0, typeID = 0, qtyAvail = 0;
     double price = 0;
+    bool isBuy = false;
 
-    if (!m_db.GetOrderInfo(sell_order_id, &orderOwnerID, &typeID, nullptr, &qtyAvail, &price, nullptr, nullptr)) {
-        codelog(MARKET__ERROR, "%s: Failed to get info about sell order %u.", buyer->GetName(), sell_order_id);
+    if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, nullptr, &qtyAvail, &price, &isBuy, nullptr)) {
+        codelog(MARKET__ERROR, "%s: Failed to get info about sell order %u.", buyer->GetName(), orderID);
         return;
     }
 
@@ -730,85 +603,76 @@ void MarketProxyService::_ExecuteSellOrder(uint32 sell_order_id, uint32 stationI
         quantity = qtyAvail;
     }
 
-    if (orderOwnerID == buyer->GetCharacterID()) {
+    if (ownerID == buyer->GetCharacterID()) {
         //I just have a bad feeling that this is not going to work very well...
         codelog(MARKET__WARNING, "%s: Buying an item from ourself... this may not work...", buyer->GetName());
     }
 
     //  check for sellerID == EVESystem, and change to station owner (npcCorpID)
-    if (orderOwnerID == 1) {
-        ServiceDB s_db;
-        orderOwnerID = s_db.GetStationOwner(stationID);
-    }
+    if (ownerID == 1)
+        ownerID = stDataMgr.GetOwnerID(stationID);
 
     //spawn the item in the buyer's hangar.
-    ItemData idata(typeID, orderOwnerID, stationID, flagAutoFit, quantity);
-    InventoryItemRef new_item = m_manager->item_factory->SpawnItem(idata);
-    if (!new_item) //make error here?
+    ItemData idata(typeID, 0, 0, flagAutoFit, quantity);
+    InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
+    if (new_item.get() == nullptr) {
+        // item not created.  make error msg
         return;
+    }
 
     double money = price * quantity;
 
     //take the money from the buyer after we spawn the item. (verify the item is created.)
-    if (!buyer->AddBalance(-money)) {
-        codelog(MARKET__ERROR, "%s: Failed to take buyer %s (%u)'s money (%.2f ISK) for order %u", buyer->GetName(), buyer->GetName(), buyer->GetCharacterID(), money, sell_order_id);
-        buyer->SendErrorMsg("You cannot afford that.");
-        return;
+    // send wallet blink event and record the transaction in their journal.
+    std::string reason = "DESC:  Buying items in ";
+    reason += stDataMgr.GetStationName(stationID);
+    if (isCorp) {
+        reason += " by ";
+        reason += buyer->GetName();
     }
 
-    //use the owner change packet to alert the buyer of the new item
-    new_item->ChangeOwner(buyer->GetCharacterID());
-    new_item->Move(0, flagAutoFit, false);
-    if (buyer->IsDocked())
-        new_item->Move(buyer->GetStationID(), flagHangar, true);
-    else
-        new_item->Move(stationID, flagHangar, true);
+    AccountService::TranserFunds(
+                (isCorp ? buyer->GetCorporationID() : buyer->GetCharacterID()),
+                ownerID,
+                money,
+                reason.c_str(),
+                Journal::EntryType::MarketTransaction,
+                orderID,
+                (isCorp ? buyer->GetCorpAccountKey() : Account::KeyType::Cash));  // this may not be right.  it *may* use corp master wallet.
 
-    //give the money to the seller...
-    //TODO: take off market overhead fees...
-    if (IsNPCCorp(orderOwnerID)) {
-        // TODO:  what to do here?
-    } else if (IsPlayerCorp(orderOwnerID)) {
-        //TODO:  add money to player corp account.
-        //TODO:  find corp wallet division for market orders?
-    } else if (orderOwnerID >= EVEMU_MINIMUM_DYNAMIC_ID) {
-        Client* pSeller = sEntityList.FindClientByCharID(orderOwnerID);
-        if (pSeller != nullptr) {
-            //the seller is logged in, send them a notification...
-            if (!pSeller->AddBalance(money))
-                codelog(MARKET__ERROR, "%s: Failed to give seller %s (%u) %.2f ISK from order %u", buyer->GetName(), pSeller->GetName(), orderOwnerID, money, sell_order_id);
-        } else {
-            //seller is not online right now...
-            if (!m_db.AddCharacterBalance(orderOwnerID, money))
-                codelog(MARKET__ERROR, "%s: Failed to give seller ID %u %.2f ISK from order %u", buyer->GetName(), orderOwnerID, money, sell_order_id);
-        }
-    }  //  else make error here?
+    if (isCorp)
+        new_item->Donate(buyer->GetCorporationID(), stationID, flagCorpMarket);
+    else
+        new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar);
 
     if (quantity == qtyAvail) {
-        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), sell_order_id);
-        PyRep* order = m_db.GetOrderRow(sell_order_id);
-        if (!m_db.DeleteOrder(sell_order_id)) {
-            codelog(MARKET__ERROR, "Failed to delete order %u.", sell_order_id);
+        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), orderID);
+        PyRep* order = m_db.GetOrderRow(orderID);
+        if (!m_db.DeleteOrder(orderID)) {
+            codelog(MARKET__ERROR, "Failed to delete order %u.", orderID);
             return;
         }
         _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), sell_order_id, "Expiry", isCorp, order);
+        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Expiry", isCorp, order);
         _BroadcastOnMarketRefresh(buyer->GetRegionID());
     } else {
-        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", buyer->GetName(), sell_order_id, qtyAvail - quantity);
-        if (!m_db.AlterOrderQuantity(sell_order_id, qtyAvail - quantity)) {
-            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", sell_order_id);
+        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", buyer->GetName(), orderID, qtyAvail - quantity);
+        if (!m_db.AlterOrderQuantity(orderID, qtyAvail - quantity)) {
+            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", orderID);
             return;
         }
         _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), sell_order_id, "Modify", isCorp);
+        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Modify", isCorp);
     }
 
-    //record this transaction in market_transactions
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {
-        codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
+    if (isCorp) {
+        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCorporationID(), sDataMgr.GetStationRegion(stationID), stationID))
+            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
+    } else {
+        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID))
+            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
     }
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, orderOwnerID, sDataMgr.GetStationRegion(stationID), stationID)) {
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, ownerID, sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", buyer->GetName());
     }
 }

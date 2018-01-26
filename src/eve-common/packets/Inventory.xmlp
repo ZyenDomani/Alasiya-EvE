@@ -19,7 +19,7 @@
   <elementDef name="Inventory_GetInventory">
     <tupleInline>
       <int name="container" />
-      <raw name="argument" />
+      <int name="ownerID" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
@@ -41,15 +41,14 @@
   <elementDef name="Call_Add_2">
     <tupleInline>
       <int name="itemID" />
-      <int name="inventoryID" />
-      <!-- <int name="quantity" none_marker="1" /> -->
+      <int name="containerID" />
     </tupleInline>
   </elementDef>
 
   <elementDef name="Call_MultiAdd_2">
     <tupleInline>
       <listInt name="itemIDs" />
-      <int name="inventoryID" />
+      <int name="containerID" />
     </tupleInline>
   </elementDef>
 
@@ -114,6 +113,12 @@
   <elementDef name="Call_AssembleShipTech3">
     <tupleInline>
       <int name="item" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_List">
+    <tupleInline>
+      <int name="flag" none_marker="0" />
     </tupleInline>
   </elementDef>
 

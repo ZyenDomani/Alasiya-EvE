@@ -31,6 +31,7 @@
 #include "PyCallable.h"
 #include "EVEServerConfig.h"
 #include "Client.h"
+#include "StaticDataMgr.h"
 #include "effects/EffectsDataMgr.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleManager.h"
@@ -43,7 +44,6 @@
 
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleContainer class definitions
-#pragma region ModuleContainerClass
 ModuleContainer::ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots,
     uint8 turretSlots, uint8 launcherSlots, ModuleManager* myManager)
 {
@@ -102,7 +102,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 
 bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
-    if (!pMod)
+    if (pMod == nullptr)
         return false;
 
     pMod->ProcessEffects(Effects::dgmStatePassive, false);
@@ -113,7 +113,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
 
 bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
-    if (!pMod)
+    if (pMod == nullptr)
         return false;
 
     pMod->ProcessEffects(Effects::dgmStatePassive, false);
@@ -136,12 +136,26 @@ GenericModule* ModuleContainer::GetModule(uint32 itemID)
     //iterate through the list and see if we have it
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
-        if ((itr->second) and (itr->second->itemID() == itemID))
-            return itr->second;
-        else
-            ++itr;
+        if (itr->second != nullptr)
+            if (itr->second->itemID() == itemID)
+                return itr->second;
+
+        ++itr;
     }
     return nullptr;  //we don't
+}
+
+void ModuleContainer::ShipWarping()
+{
+    // this will test for 1) active modules and 2) if their effect is warpsafe
+    // those not safe for warp will be Deactivated
+    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
+    while (itr != m_modules.end()) {
+        if (itr->second != nullptr)
+            if (!itr->second->isWarpSafe())
+                itr->second->AbortCycle();
+        ++itr;
+    }
 }
 
 void ModuleContainer::AbortCycle() {
@@ -349,13 +363,11 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
 }
 
 
-#pragma endregion
 /////////////////////////// END MODULECONTAINER //////////////////////////////////
 
 
 //////////////////////////////////////////////////////////////////////////////////
 // ModuleManager class definitions
-#pragma region ModuleManagerClass
 ModuleManager::ModuleManager(ShipItem *const ship)
 {
     m_initalized = false;
@@ -420,12 +432,12 @@ bool ModuleManager::Initialize() {
 void ModuleManager::Process()
 {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     m_Modules->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -443,20 +455,13 @@ uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 	return m_Modules->GetAvailableSlotInBank(slotBank);
 }
 
-bool ModuleManager::InstallRig(InventoryItemRef item, EVEItemFlags flag) {
-    uint8 slots = m_Ship->GetAttribute(AttrUpgradeSlotsLeft).get_int();
-    if (slots <= 0) {
-        /* send error to player?  or does client do it?  dunno...  */
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s has no upgrade slots left.", m_Ship->itemName().c_str());
-        return false;
-    }
-    if (((item->groupID() >= EVEDB::invGroups::Rig_Armor) and (item->groupID() <= EVEDB::invGroups::Rig_Astronautic))
-        or (item->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
-        fitModule(item,flag);
-        m_Ship->SetAttribute(AttrUpgradeSlotsLeft, --slots);
+bool ModuleManager::InstallRig(InventoryItemRef iRef, EVEItemFlags flag) {
+    if (((iRef->groupID() >= EVEDB::invGroups::Rig_Armor) and (iRef->groupID() <= EVEDB::invGroups::Rig_Astronautic))
+    or (iRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
+        fitModule(iRef,flag);
         return true;
     } else
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %u, which is not a rig", m_Ship->GetPilot()->GetName(), item->itemID());
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", m_Ship->GetPilot()->GetName(), iRef->itemName().c_str(), iRef->itemID());
 
     return false;
 }
@@ -466,19 +471,20 @@ void ModuleManager::UninstallRig(uint32 itemID)
     GenericModule* pMod = m_Modules->GetModule(itemID);
     if (pMod != nullptr) {
         pMod->Offline();
-        if (!sConfig.server.IsTestServer)
+        if (!sConfig.debug.IsTestServer)
             pMod->DestroyRig();
+        m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
     }
+
     m_Modules->RemoveModule(itemID);
     m_Ship->SetAttribute(AttrUpgradeSlotsLeft, m_Ship->GetAttribute(AttrUpgradeSlotsLeft) +1);
 }
 
 bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
 {
-    if (item->categoryID() == EVEDB::invCategories::Subsystem) {
-        fitModule(item,flag);
-        return true;
-    } else
+    if (item->categoryID() == EVEDB::invCategories::Subsystem)
+        return fitModule(item,flag);
+    else
         sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
@@ -503,12 +509,18 @@ void ModuleManager::UnfitModule(uint32 itemID)
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
         if (pMod->isLauncherFitted())
             m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
+
     }
     m_Modules->RemoveModule(itemID);
 }
 
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
+    if (!IsModuleSlot(flag)) {
+        sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        return false;
+    }
+
     if (item->categoryID() == EVEDB::invCategories::Module) {
         // Attempt to fit the module
         if ( fitModule(item, flag) ) {
@@ -517,54 +529,62 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
             return true;
         }
     } else
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
+        sLog.Warning("ModuleManager::fitModule","%s tried to fit item %u, which is not a module", m_Ship->GetPilot()->GetName(), item->itemID());
 
     return false;
 }
 
 bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
 {
-	if (m_Modules->GetModule(item->itemID())) {
-		if (m_Modules->isSlotOccupied(flag))
-            //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-			//throw PyException( MakeUserError("SlotAlreadyOccupied"));
-        /** @todo change this to use movemodule */
-		return false;
-	} else {
+    if (!IsModuleSlot(flag)) {
+        sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        return false;
+    }
+	if (m_Modules->GetModule(item->itemID()) == nullptr) {
         // create new module object
 		GenericModule* pMod = ModuleFactory(item, ShipItemRef(m_Ship));
         if (pMod == nullptr)
             return false;
+        /** @todo  this needs to get out of here, but has to have GenericModule access for data */
         if (pMod->isMaxGroupFitLimited()) {
             if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
                 SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("CantFitTooManyByGroup"));
-                return false;
+                std::map<std::string, PyRep *> args;
+                args["noOfModules"]         = new PyInt(pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int());
+                args["noOfModulesFitted"]   = new PyInt(m_Modules->GetFittedModuleCountByGroup(item->groupID()));
+                args["ship"]                = new PyInt(m_Ship->itemID());
+                args["groupName"]           = new PyString(pMod->GetSelf()->group().name());
+                args["module"]              = new PyInt(pMod->itemID());
+                throw PyException( MakeUserError("CantFitTooManyByGroup", args));
+                /*CantFitTooManyByGroupBody'}(
+                 * u"You're unable to fit {[item]module.name} to {[item]ship.name}.
+                 * You can only fit {[numeric]noOfModules} of type {groupName} but already have {[numeric]noOfModulesFitted}.", None,
+                 * {u'{[numeric]noOfModules}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'noOfModules'},
+                 * u'{[numeric]noOfModulesFitted}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'noOfModulesFitted'},
+                 * u'{[item]ship.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'ship'},
+                 * u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'},
+                 * u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+                 */
             }
         }
         if (pMod->isTurretFitted()) {
-            if (m_Ship->GetAttribute(AttrTurretSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
-            } else {
-                SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughTurretSlots"));    // this takes 2 args, u/k and module's typeID
-                return false;
-            }
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
 		} else if (pMod->isLauncherFitted()) {
-            if (m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_bool()) {
-                m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
-            } else {
-                SafeDelete(pMod);
-                //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-                //throw PyException( MakeUserError("NotEnoughLauncherSlots"));    // this takes 2 args, u/k and module's typeID
-                return false;
-            }
-		}
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
+		} else if (pMod->isRig()) {
+            m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
+            m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
+        }
 
         return m_Modules->AddModule(flag, pMod);
+    } else if (m_Modules->isSlotOccupied(flag)) {
+        throw PyException( MakeUserError("SlotAlreadyOccupied"));
+        /** @todo change this to use movemodule */
+        return false;
     }
+
+    // else, module already fit
+    return false;
 }
 
 bool ModuleManager::OnlineCheck(GenericModule* pMod)
@@ -589,6 +609,13 @@ bool ModuleManager::OnlineCheck(GenericModule* pMod)
             args["remaining"] = new PyFloat(remaining);
             args["total"] = new PyFloat(total);
             throw PyException( MakeUserError("NotEnoughCpu", args));
+            /*u'NotEnoughCpuBody'}
+             * (u'To bring {[item]moduleType.name} online requires {[numeric]require, decimalPlaces=2} cpu units, but only {[numeric]remaining, decimalPlaces=2} of the {[numeric]total, decimalPlaces=2} units that your computer produces are still available.', None,
+             * {u'{[numeric]remaining, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'remaining'},
+             * u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'},
+             * u'{[numeric]total, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'total'},
+             * u'{[numeric]require, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'require'}})
+             */
         }
         return false;
     }
@@ -723,6 +750,17 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
                 pMod->getItem()->itemName().c_str(), sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
         pMod->Activate(effectID, targetID, repeat);
     }
+
+    /*{'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
+     * {'messageKey': 'DeniedActivateControlling', 'dataID': 17880010, 'suppressable': False, 'bodyID': 258228, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2230}
+     * {'messageKey': 'DeniedActivateFrozen', 'dataID': 17883391, 'suppressable': False, 'bodyID': 259488, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 772}
+     * {'messageKey': 'DeniedActivateInJump', 'dataID': 17883394, 'suppressable': False, 'bodyID': 259489, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 773}
+     * {'messageKey': 'DeniedActivateInWarp', 'dataID': 17883704, 'suppressable': False, 'bodyID': 259597, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 774}
+     * {'messageKey': 'DeniedActivateTargetAssistDisallowed', 'dataID': 17883397, 'suppressable': False, 'bodyID': 259490, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 775}
+     * {'messageKey': 'DeniedActivateTargetModuleDisallowed', 'dataID': 17883400, 'suppressable': False, 'bodyID': 259491, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 776}
+     * {'messageKey': 'DeniedActivateTargetNotPresent', 'dataID': 17883403, 'suppressable': False, 'bodyID': 259492, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 777}
+     * {'messageKey': 'DeniedActivateTargetOffModDisallowed', 'dataID': 17883406, 'suppressable': False, 'bodyID': 259493, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 778}
+     */
 }
 
 void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
@@ -815,6 +853,12 @@ void ModuleManager::RepairModules()
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
+    if (chargeRef.get() == nullptr)
+        if (m_Ship->HasPilot())
+            throw PyException( MakeUserError( "CantFindChargeToAdd"));
+
+    //CantMoveChargesBetweenModules
+
     GenericModule* pMod = m_Modules->GetModule(flag);
     if (pMod != nullptr) {
         float modCapacity = pMod->getItem()->GetAttribute(AttrCapacity).get_float();
@@ -924,7 +968,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     GenericModule* pMod(nullptr);
     m_Ship->SetAttribute(AttrCpuLoad,     0);
     m_Ship->SetAttribute(AttrPowerLoad,   0);
-    //m_Ship->SetAttribute(AttrUpgradeLoad, 0);
+    //m_Ship->SetAttribute(AttrUpgradeLoad, 0);  -> rigs do NOT get removed/disabled when changing pilots
     if (modVec.empty()) {
         OnlineAll();
     } else {
@@ -977,17 +1021,9 @@ void ModuleManager::CharacterLeavingShip()
 
 void ModuleManager::ShipWarping()
 {
-    sLog.Magenta("ModuleManager::ShipWarping()","Deactivating all modules.");
-    /** @todo  figure out how to check modules for warpsafe-ness and Deactivate accordingly....done.  use sFxDataMgr.isWarpSafe(effectID)
-     *
-     * the "correct" way here is to test all currently active effects for "Effect.isWarpSafe" boolean, and deactivate those that dont have it.
-     * for now, abort all modules.  yes, this is harsh, but will have to fix later.
-     */
-    /*  for_each(active_effect)
-            if (sFxDataMgr.isWarpSafe(effectID) == false)
-                deactivate(effect);
-     */
-    AbortCycle();
+    sLog.Magenta("ModuleManager::ShipWarping()","Deactivating non-warpsafe modules.");
+    // check modules for warpsafe-ness and Deactivate accordingly
+    m_Modules->ShipWarping();
 }
 
 void ModuleManager::ShipJumping()
@@ -1073,5 +1109,4 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
 
 }
 
-#pragma endregion
 //////////////////////////////////////////////////////////////////////////////////

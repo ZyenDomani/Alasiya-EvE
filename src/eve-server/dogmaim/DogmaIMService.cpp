@@ -156,17 +156,7 @@ PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
 PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_args) {
     _log(CLIENT__MESSAGE, "DogmaIMService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
-    /*
-     * 18:20:13 [ClientMessage] DogmaIMService bind request for:
-     * 18:20:13 [ClientMessage]     Tuple: 2 elements
-     * 18:20:13 [ClientMessage]       [ 0] Integer field: 60014749      << itemID
-     * 18:20:13 [ClientMessage]       [ 1] Integer field: 15            << groupID
-     * 18:26:29 [ClientMessage] DogmaIMService bind request for:
-     * 18:26:29 [ClientMessage]     Tuple: 2 elements
-     * 18:26:29 [ClientMessage]       [ 0] Integer field: 30002547      << itemID
-     * 18:26:29 [ClientMessage]       [ 1] Integer field: 5             << groupID
-     *
-     */
+
     DogmaLM_BindArgs args;
     //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
@@ -178,171 +168,25 @@ PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_a
     return new DogmaIMBound(m_manager, args.locationID, args.groupID);
 }
 
-PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
-    /*
-     * 21:59:29 L Server: ChangeDroneSettings call made to
-     * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
-     * 21:59:29 [SvcCall]   Call Arguments:
-     * 22:04:44 [SvcCall]       Tuple: 1 elements
-     * 22:04:44 [SvcCall]         [ 0] Dictionary: 3 entries
-     * 22:04:44 [SvcCall]         [ 0]   [ 0] Key: Integer field: 1283 <-- AttrFightersAttackAndFollow
-     * 22:04:44 [SvcCall]         [ 0]   [ 0] Value: Integer field: 1
-     * 22:04:44 [SvcCall]         [ 0]   [ 1] Key: Integer field: 1275 <-- AttrDroneIsAgressive
-     * 22:04:44 [SvcCall]         [ 0]   [ 1] Value: Integer field: 1
-     * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
-     * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
-     *
-     *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
-     *    call.Dump(SERVICE__CALL_DUMP);
-     */
+PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
+    return call.client->GetChar()->GetCharInfo();
+}
 
+PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
+    return call.client->GetShip()->ShipGetInfo();
+}
+
+PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
+    call.client->GetShipSE()->TargetMgr()->ClearTargets();
     return nullptr;
 }
 
-PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
-    /* 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
-     * 12:54:01 DogmaIMBound::Handle_LinkWeapons(): [00msize=3
-     * 12:54:01 [SvcCall]   Call Arguments:
-     * 12:54:01 [SvcCall]       Tuple: 3 elements
-     * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
-     * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
-     * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
-    sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-     */
-
-    Client* pClient = call.client;
-    Call_Dogma_LinkWeapons args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
-    }
-    /* args.shipID
-     * args.droppedID
-     * args.draggedID
-     */
-
-    return nullptr;
+PyResult DogmaIMBound::Handle_GetTargets(PyCallArgs& call) {
+    return call.client->GetShipSE()->TargetMgr()->GetTargets();
 }
 
-PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
-    /* 18:23:28 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
-     * 18:23:28 DogmaIMBound::Handle_LinkAllWeapons(): size=1
-     * 18:23:28 [SvcCall]   Call Arguments:
-     * 18:23:28 [SvcCall]       Tuple: 1 elements
-     * 18:23:28 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
-     */
-
-    Client* pClient = call.client;
-
-    Call_SingleIntegerArg arg;
-    if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
-    }
-    uint32 shipID = arg.arg;
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
-    /*
-     * 23:52:45 L DogmaIMBound::Handle_Overload(): size=2
-     * 23:52:45 [SvcCallDump]   Call Arguments:
-     * 23:52:45 [SvcCallDump]       Tuple: 2 elements
-     * 23:52:45 [SvcCallDump]         [ 0] Integer field: 140002542
-     * 23:52:45 [SvcCallDump]         [ 1] Integer field: 3035
-     * 23:52:45 [SvcCallDump]   Call Named Arguments:
-     * 23:52:45 [SvcCallDump]     Argument 'machoVersion':
-     * 23:52:45 [SvcCallDump]         Integer field: 1
-     */
-    Client* pClient = call.client;
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
-        }
-    }
-
-    sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    Call_TwoIntegerArgs args;   //itemID, effectID
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
-    }
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
-    Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
-        }
-    }
-
-    sLog.White("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
-    /*
-     *    called thru rclick menu on module
-     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): size=1
-     *    17:20:22 [SvcCall]   Call Arguments:
-     *    17:20:22 [SvcCall]       Tuple: 1 elements
-     *    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
-     *
-     *    called thru OL button on ship dashboard
-     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): size=1
-     *    17:24:00 [SvcCall]   Call Arguments:
-     *    17:24:00 [SvcCall]       Tuple: 1 elements
-     *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
-     *
-     *    returns - PyList of moduleIDs to OL
-     *
-     * /client/script/environment/godma.py(2407) OverloadRack
-     *        itemID = 140001963L
-     *        self = <godma.StateManager instance at 0x3CB717D8>
-     *        moduleIDs = None
-     * TypeError: 'NoneType' object is not iterable
-     *
-     *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
-     *    call.Dump(SERVICE__CALL_DUMP);
-     */
-    Client* pClient = call.client;
-
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
-    }
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
-    /*
-     */
-    sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-    Client* pClient = call.client;
-
-    return nullptr;
+PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
+    return call.client->GetShipSE()->TargetMgr()->GetTargeters();
 }
 
 PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
@@ -351,65 +195,26 @@ PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
     uint8 mod = sConfig.character.statMultiplier;
 
     PyDict* result = new PyDict();
-        result->SetItem(new PyInt(AttrIntelligence), new PyInt(static_cast<int32>(cref->GetAttribute(AttrIntelligence).get_int() * mod)));
-        result->SetItem(new PyInt(AttrPerception), new PyInt(static_cast<int32>(cref->GetAttribute(AttrPerception).get_int() * mod)));
-        result->SetItem(new PyInt(AttrCharisma), new PyInt(static_cast<int32>(cref->GetAttribute(AttrCharisma).get_int() * mod)));
-        result->SetItem(new PyInt(AttrWillpower), new PyInt(static_cast<int32>(cref->GetAttribute(AttrWillpower).get_int() * mod)));
-        result->SetItem(new PyInt(AttrMemory), new PyInt(static_cast<int32>(cref->GetAttribute(AttrMemory).get_int() * mod)));
+    result->SetItem(new PyInt(AttrIntelligence), new PyInt(static_cast<int32>(cref->GetAttribute(AttrIntelligence).get_int() * mod)));
+    result->SetItem(new PyInt(AttrPerception), new PyInt(static_cast<int32>(cref->GetAttribute(AttrPerception).get_int() * mod)));
+    result->SetItem(new PyInt(AttrCharisma), new PyInt(static_cast<int32>(cref->GetAttribute(AttrCharisma).get_int() * mod)));
+    result->SetItem(new PyInt(AttrWillpower), new PyInt(static_cast<int32>(cref->GetAttribute(AttrWillpower).get_int() * mod)));
+    result->SetItem(new PyInt(AttrMemory), new PyInt(static_cast<int32>(cref->GetAttribute(AttrMemory).get_int() * mod)));
     return result;
 }
 
-PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
-{
-    /*
-              [PyTuple 3 items]         << call from client
-                [PyString "GetLocationInfo"]
-                [PyTuple 0 items]
-                [PyDict 0 kvp]
-    [PyTuple 1 items]                   << response from server
-      [PySubStream 43 bytes]
-        [PyTuple 2 items]
-          [PySubStruct]
-            [PySubStream 32 bytes]
-              [PyTuple 2 items]
-                [PyString "N=699771:17106"]     << nodeID
-                [PyIntegerVar 129503265956883696]   << filetime.  sent in "ClientHasReleasedTheseObjects" packet later
-          [PyDict 0 kvp]
-    [PyDict 1 kvp]
-      [PyString "OID+"]
-      [PyDict 1 kvp]
-        [PyString "N=699771:17106"]
-        [PyIntegerVar 129503265956883696]
-    sLog.White("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-                */
-
-    // dummy right now, don't have any meaningful packet logs
-    //response should be node data and timestamp
-    return new PyLong(GetFileTimeNow());
-}
-
-PyResult DogmaIMBound::Handle_CharGetInfo(PyCallArgs& call) {
-    //no arguments
-    return call.client->GetChar()->GetCharInfo();
-}
-
-PyResult DogmaIMBound::Handle_ShipGetInfo(PyCallArgs& call) {
-    //no arguments
-    return call.client->GetShip()->ShipGetInfo();
-}
 
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
-    InventoryItemRef itemRef = m_manager->item_factory->GetItem(args.arg);
+    InventoryItemRef itemRef = sItemFactory.GetItem(args.arg);
     if (itemRef.get() == nullptr ) {
         _log(SERVICE__ERROR, "Unable to load item %u", args.arg);
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     return itemRef->ItemGetInfo();
@@ -431,10 +236,10 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     }
 
@@ -442,7 +247,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
 	pClient->GetShip()->Online(args.arg2);
@@ -458,10 +263,10 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     }
 
@@ -469,13 +274,16 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 
 	if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
 	pClient->GetShip()->Offline(args.arg2);
 
-    //response should be node data and timestamp
-    return new PyLong(GetFileTimeNow());
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
@@ -485,10 +293,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     }
 
@@ -507,18 +315,22 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     if (args.moduleIDs.empty())
-        return new PyNone();
+        return PyStatic.NewNone();
 
     // Get Reference to Ship, Module, and Charge
     ShipItemRef shipRef = pClient->GetShip();
-    InventoryItemRef chargeRef = m_manager->item_factory->GetItem(args.itemID);
+    InventoryItemRef chargeRef = sItemFactory.GetItem(args.itemID);
     Call_SingleIntList chargeList;
     InventoryItemRef moduleRef;
     uint32 loadedChargeID = 0;
+
+    /** @todo  this appears to send only the first module in bank.
+     * check for non-loaded modules in bank and load with chargeRef
+     */
 
     for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
         moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
@@ -544,10 +356,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     }
 
@@ -560,7 +372,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
 	// NOTES:
@@ -579,7 +391,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
 	if (moduleRef.get() == nullptr) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
-		return new PyNone();
+		return PyStatic.NewNone();
 	}
 
     EVEItemFlags moduleFlag = moduleRef->flag();
@@ -587,7 +399,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     uint32 loadedChargeID = 0;
 
 	if (!args.itemIDs.empty()) {
-	    chargeRef = m_manager->item_factory->GetItem(args.itemIDs.at(0));
+	    chargeRef = sItemFactory.GetItem(args.itemIDs.at(0));
         if (chargeRef.get() != nullptr)
             loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
 
@@ -600,25 +412,28 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 		}
 	}
 
-	return new PyNone();
+	return PyStatic.NewNone();
 }
 
 PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 {
+    sLog.White("DogmaIMBound::Handle_Activate()", "size=%u", call.tuple->size());
+    call.Dump(POS__DUMP);
+
     Client* pClient = call.client;
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     } else {
         pClient->SendNotifyMsg("You can't do this while docked");
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     uint8 callTupleSize = call.tuple->size();
@@ -629,27 +444,44 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
-        /*
-          [PyString "Activate"]     << onlining a pos module
-          [PyTuple 2 items]
-            [PyIntegerVar 1002332856217]    << module itemID
-            [PyInt 901]             << effectOnlineForStructures
+        /*      this is deactivate call....
+            22:06:59 W DogmaIMBound::Handle_Activate(): size=2
+            22:06:59 [POS:Dump]   Call Arguments:
+            22:06:59 [POS:Dump]      Tuple: 2 elements
+            22:06:59 [POS:Dump]       [ 0]    Integer: 140000061
+            22:06:59 [POS:Dump]       [ 1]    Integer: 1023     << deactivate
+
+            anchorDrop =   649,     // effects.AnchorDrop
+            anchorLift =   650,     // effects.AnchorLift
+            onlineForStructures =   901,     // effects.StructureOnline
+            anchorDropForStructures =   1022,     // effects.AnchorDrop
+            anchorLiftForStructures =   1023,     // effects.AnchorLift
+            anchorDropOrbital =   4769,     // effects.AnchorDrop
+            anchorLiftOrbital =   4770,     // effects.AnchorLift
         */
 
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", args.arg1);
-             return new PyNone();
+             return PyStatic.NewNone();
         }
         // determine if this pSE is pos or cont.
-        //call activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
-        if (pSE->IsPOSSE())
-            pSE->GetPOSSE()->Activate(args.arg2);
-        else if (pSE->IsContainerSE())
+        //call (de)activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
+        if (pSE->IsPOSSE()) {
+            /*
+            if ((args.arg2 == anchorDropForStructures)
+            or (args.arg2 == anchorDropOrbital))
+                pSE->GetPOSSE()->SetAnchor(args.arg2);
+            else */ if (args.arg2 == anchorLiftForStructures)
+                pSE->GetPOSSE()->PullAnchor();
+            else if (args.arg2 == onlineForStructures)
+                pSE->GetPOSSE()->Activate(args.arg2);
+        } else if (pSE->IsContainerSE()) {
+            // not sure what all calls are for containers yet
             pSE->GetContSE()->Activate(args.arg2);
-        else
+        } else
             ; // make error here
 
     } else if (callTupleSize == 4) {
@@ -657,54 +489,53 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
 
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);
     }
     // are there any other cases to test for here?
 
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
+    sLog.White("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
+    call.Dump(POS__DUMP);
+
     Client* pClient = call.client;
 
     if (pClient->IsInSpace()) {
         DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
         if (pDestiny == nullptr) {
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
             pClient->SendNotifyMsg("You can't do this while warping");
-            return new PyNone();
+            return PyStatic.NewNone();
         }
     }
 
-    call.Dump(SERVICE__CALL_DUMP);
-    //18:50:24 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer      << called by POS->SetOffline
-    //  this is also used on POS items, so adjust as needed.  (will have to construct it like Activate())
-    /*
-     * 16:42:39 [SvcCall] Service DogmaIMBound::Deactivate()
-     * 16:42:39 [SvcCallDump]   Call Arguments:
-     * 16:42:39 [SvcCallDump]       Tuple: 2 elements
-     * 16:42:39 [SvcCallDump]         [ 0] Integer field: 140035963
-     * 16:42:39 [SvcCallDump]         [ 1] Integer field: 901
-     * 16:42:39 [PacketError] Decode Call_Dogma_Deactivate failed: effectName is not a wide string: Integer
-     */
     if (call.tuple->items.at(1)->IsInt()) {
         // if effect is integer, call is for pos
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Deactivate()", "%u is not a valid EntityID in this system.", args.arg1);
-             return new PyNone();
+             return PyStatic.NewNone();
         }
+        /*
+         * 22:24:28 W DogmaIMBound::Handle_Deactivate(): size=2
+         * 22:24:28 [POS:Dump]   Call Arguments:
+         * 22:24:28 [POS:Dump]      Tuple: 2 elements
+         * 22:24:28 [POS:Dump]       [ 0]    Integer: 140000061
+         * 22:24:28 [POS:Dump]       [ 1]    Integer: 901
+         */
         // determine if this pSE is pos or cont.
         //call activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
         if (pSE->IsPOSSE())
@@ -719,20 +550,20 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         Call_Dogma_Deactivate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
 
         pClient->GetShip()->Deactivate(args.itemID, args.effectName);
     }
     // are there any other cases to test for?
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
     Rsp_Dogma_AddTarget rsp;
         rsp.flag = false;
@@ -774,7 +605,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         return rsp.Encode();
     }
 
-    if (sConfig.server.IsTestServer)
+    if (sConfig.debug.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
             _log(TARGET__MESSAGE, "Handle_AddTarget() - %s(%u) -> %s(%u) at range of %.2f meters.", \
@@ -791,21 +622,21 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
     SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
     if (pTSE == nullptr) {
         _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
-    if (sConfig.server.IsTestServer)
+    if (sConfig.debug.IsTestServer)
         if (is_log_enabled(TARGET__MESSAGE)) {
             GVector vectorToTarget(pClient->GetShipSE()->GetPosition(), pTSE->GetPosition());
             _log(TARGET__MESSAGE, "Handle_RemoveTarget() - Removed %s(%u) - Range to Target: %.2f meters.", \
@@ -816,24 +647,6 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     return nullptr;
 }
 
-PyResult DogmaIMBound::Handle_ClearTargets(PyCallArgs& call) {
-    call.client->GetShipSE()->TargetMgr()->ClearTargets();
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_GetTargets(PyCallArgs& call) {
-    return call.client->GetShipSE()->TargetMgr()->GetTargets();
-}
-
-PyResult DogmaIMBound::Handle_GetTargeters(PyCallArgs& call) {
-    return call.client->GetShipSE()->TargetMgr()->GetTargeters();
-}
-
-
-PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
-    /** @todo  look into this...what is it used for?  */
-    return new BuiltinSet();
-}
 
 PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 {
@@ -846,7 +659,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     Call_TwoBoolArgs args; /* arg1: getCharInfo, arg2: getShipInfo */
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
 	/* Create the response dictionary */
@@ -859,18 +672,18 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
             for locationID, datas in cData.iteritems():
         --still dont know what 'datas' are
      */
-    rsp->SetItemString("locationInfo", new PyNone());
+    rsp->SetItemString("locationInfo", PyStatic.NewNone());
 
     /* Setting "shipModifiedCharAttribs" in the Dictionary */
     /** @todo  havent found a populated item in packet logs */
-    rsp->SetItemString("shipModifiedCharAttribs", new PyNone());
+    rsp->SetItemString("shipModifiedCharAttribs", PyStatic.NewNone());
 
     /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
         if (charResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
     } else  // fixed
@@ -881,7 +694,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
-            return new PyNone();
+            return PyStatic.NewNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
     } else
@@ -890,7 +703,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     /* Setting "shipState" in the Dictionary  -fixed 26Mar16 */
     if (pClient->GetShip().get() == nullptr) {
         _log(SERVICE__ERROR, "Unable to build shipState for %u", pClient->GetShipID());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
     PyTuple* rspShipState = new PyTuple(3);
         rspShipState->items[0] = pClient->GetShip()->GetShipState();
@@ -900,4 +713,214 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "     ");
 	return new PyObject("util.KeyVal", rsp );
+}
+
+
+PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
+    /** @todo  look into this...what is it used for?  */
+    return new BuiltinSet();
+}
+
+PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
+    /*
+     * 21:59:29 L Server: ChangeDroneSettings call made to
+     * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
+     * 21:59:29 [SvcCall]   Call Arguments:
+     * 22:04:44 [SvcCall]       Tuple: 1 elements
+     * 22:04:44 [SvcCall]         [ 0] Dictionary: 3 entries
+     * 22:04:44 [SvcCall]         [ 0]   [ 0] Key: Integer field: 1283 <-- AttrFightersAttackAndFollow
+     * 22:04:44 [SvcCall]         [ 0]   [ 0] Value: Integer field: 1
+     * 22:04:44 [SvcCall]         [ 0]   [ 1] Key: Integer field: 1275 <-- AttrDroneIsAgressive
+     * 22:04:44 [SvcCall]         [ 0]   [ 1] Value: Integer field: 1
+     * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
+     * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
+     *
+     *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
+     *    call.Dump(SERVICE__CALL_DUMP);
+     */
+
+    return nullptr;
+}
+
+/*{'messageKey': 'CantLinkAmmoInWeapon', 'dataID': 17878021, 'suppressable': False, 'bodyID': 257472, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2664}
+ * {'messageKey': 'CantLinkModuleActive', 'dataID': 17878024, 'suppressable': False, 'bodyID': 257473, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2665}
+ * {'messageKey': 'CantLinkModuleDamaged', 'dataID': 17878030, 'suppressable': False, 'bodyID': 257475, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2666}
+ * {'messageKey': 'CantLinkModuleLoading', 'dataID': 17877482, 'suppressable': False, 'bodyID': 257268, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2942}
+ * {'messageKey': 'CantLinkModuleNotOnline', 'dataID': 17878033, 'suppressable': False, 'bodyID': 257476, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2667}
+ */
+
+PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
+    /* 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
+     * 12:54:01 DogmaIMBound::Handle_LinkWeapons(): [00msize=3
+     * 12:54:01 [SvcCall]   Call Arguments:
+     * 12:54:01 [SvcCall]       Tuple: 3 elements
+     * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
+     * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
+     * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
+     *   sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
+     *   call.Dump(SERVICE__CALL_DUMP);
+     */
+
+    Client* pClient = call.client;
+    Call_Dogma_LinkWeapons args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    /* args.shipID
+     * args.droppedID
+     * args.draggedID
+     */
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
+    /* 18:23:28 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
+     * 18:23:28 DogmaIMBound::Handle_LinkAllWeapons(): size=1
+     * 18:23:28 [SvcCall]   Call Arguments:
+     * 18:23:28 [SvcCall]       Tuple: 1 elements
+     * 18:23:28 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
+     */
+
+    Client* pClient = call.client;
+
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    uint32 shipID = arg.arg;
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
+    /*
+     * 23:52:45 L DogmaIMBound::Handle_Overload(): size=2
+     * 23:52:45 [SvcCallDump]   Call Arguments:
+     * 23:52:45 [SvcCallDump]       Tuple: 2 elements
+     * 23:52:45 [SvcCallDump]         [ 0] Integer field: 140002542
+     * 23:52:45 [SvcCallDump]         [ 1] Integer field: 3035
+     * 23:52:45 [SvcCallDump]   Call Named Arguments:
+     * 23:52:45 [SvcCallDump]     Argument 'machoVersion':
+     * 23:52:45 [SvcCallDump]         Integer field: 1
+     */
+    Client* pClient = call.client;
+    if (pClient->IsInSpace()) {
+        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+        if (pDestiny == nullptr) {
+            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
+            return PyStatic.NewNone();
+        } else if (pDestiny->IsWarping()) {
+            pClient->SendNotifyMsg("You can't do this while warping");
+            return PyStatic.NewNone();
+        }
+    }
+
+    sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    Call_TwoIntegerArgs args;   //itemID, effectID
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
+    Client* pClient = call.client;
+
+    if (pClient->IsInSpace()) {
+        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+        if (pDestiny == nullptr) {
+            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
+            return PyStatic.NewNone();
+        } else if (pDestiny->IsWarping()) {
+            pClient->SendNotifyMsg("You can't do this while warping");
+            return PyStatic.NewNone();
+        }
+    }
+
+    sLog.White("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
+    /*
+     *    called thru rclick menu on module
+     *    17:20:22 L DogmaIMBound::Handle_OverloadRack(): size=1
+     *    17:20:22 [SvcCall]   Call Arguments:
+     *    17:20:22 [SvcCall]       Tuple: 1 elements
+     *    17:20:22 [SvcCall]         [ 0] Integer field: 140000223    <--  itemID in any slot of location to OL
+     *
+     *    called thru OL button on ship dashboard
+     *    17:24:00 L DogmaIMBound::Handle_OverloadRack(): size=1
+     *    17:24:00 [SvcCall]   Call Arguments:
+     *    17:24:00 [SvcCall]       Tuple: 1 elements
+     *    17:24:00 [SvcCall]         [ 0] Integer field: 140000213    <--  itemID in first slot of location to OL
+     *
+     *    returns - PyList of moduleIDs to OL
+     *
+     * /client/script/environment/godma.py(2407) OverloadRack
+     *        itemID = 140001963L
+     *        self = <godma.StateManager instance at 0x3CB717D8>
+     *        moduleIDs = None
+     * TypeError: 'NoneType' object is not iterable
+     *
+     *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+     *    call.Dump(SERVICE__CALL_DUMP);
+     */
+    Client* pClient = call.client;
+
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
+    /*
+     */
+    sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+    Client* pClient = call.client;
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
+{
+    /*
+     *             [PyTuple 3 items]         << call from client
+     *               [PyString "GetLocationInfo"]
+     *               [PyTuple 0 items]
+     *               [PyDict 0 kvp]
+     *   [PyTuple 1 items]                   << response from server
+     *     [PySubStream 43 bytes]
+     *       [PyTuple 2 items]
+     *         [PySubStruct]
+     *           [PySubStream 32 bytes]
+     *             [PyTuple 2 items]
+     *               [PyString "N=699771:17106"]     << nodeID
+     *               [PyIntegerVar 129503265956883696]   << filetime.  sent in "ClientHasReleasedTheseObjects" packet later
+     *         [PyDict 0 kvp]
+     *   [PyDict 1 kvp]
+     *     [PyString "OID+"]
+     *     [PyDict 1 kvp]
+     *       [PyString "N=699771:17106"]
+     *       [PyIntegerVar 129503265956883696]
+     *   sLog.White("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
+     *   call.Dump(SERVICE__CALL_DUMP);
+     */
+
+    // dummy right now, don't have any meaningful packet logs
+    //response should be node data and timestamp
+    return new PyLong(GetFileTimeNow());
 }

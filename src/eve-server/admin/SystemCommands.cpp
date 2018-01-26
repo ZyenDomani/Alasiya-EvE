@@ -173,7 +173,7 @@ static PyResult generic_createitem(Client *who, CommandDB *db, PyServiceMgr *ser
                    qty
     );
 
-    InventoryItemRef i = services->item_factory->SpawnItem(idata);
+    InventoryItemRef i = sItemFactory.SpawnItem(idata);
     if (i.get() == nullptr)
         throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
 
@@ -209,7 +209,7 @@ PyResult Command_kill(Client* who, CommandDB* db, PyServiceMgr* services, const 
         }
         int entity = atoi(args.arg(1).c_str());
 
-        InventoryItemRef itemRef = services->item_factory->GetShip(entity);
+        InventoryItemRef itemRef = sItemFactory.GetShip(entity);
         if (itemRef.get() == NULL)
             throw PyException(MakeCustomError("/kill NOT supported on non-ship types at this time"));
 
@@ -303,7 +303,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
     }
 
     if (target != 0) {
-        InventoryItemRef item_ref = who->services().item_factory->GetItem(target);
+        InventoryItemRef item_ref = sItemFactory.GetItem(target);
         SystemEntity *sys_entity = who->SystemMgr()->GetSE(target);
         if (sys_entity == nullptr) {
             throw PyException(MakeCustomError("/unspawn failed.  Item %u not found.", target));
@@ -367,7 +367,7 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
 
 
         who->SystemMgr()->RemoveEntity(e);
-        InventoryItemRef item = who->services().item_factory->GetItem(itemID);
+        InventoryItemRef item = sItemFactory.GetItem(itemID);
         item->Delete();
     }
 

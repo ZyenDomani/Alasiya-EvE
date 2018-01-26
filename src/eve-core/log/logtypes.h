@@ -1,30 +1,28 @@
 /*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
-
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Zhur
-    Additions:  Allan
-    Log Version: 8.1
-*/
- /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
+ - ----------*-------------------------------------------------------------------------
+ LICENSE:
+ ------------------------------------------------------------------------------------
+ This file is part of EVEmu: EVE Online Server Emulator
+ Copyright 2006 - 2011 The EVEmu Team
+ For the latest information visit http://evemu.org
+ ------------------------------------------------------------------------------------
+ This program is free software; you can redistribute it and/or modify it under
+ the terms of the GNU Lesser General Public License as published by the Free Software
+ Foundation; either version 2 of the License, or (at your option) any later
+ version.
+ This program is distributed in the hope that it will be useful, but WITHOUT
+ ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+ You should have received a copy of the GNU Lesser General Public License along with
+ this program; if not, write to the Free Software Foundation, Inc., 59 Temple
+ Place - Suite 330, Boston, MA 02111-1307, USA, or go to
+ http://www.gnu.org/copyleft/lesser.txt.
+ ------------------------------------------------------------------------------------
+ Author:        Zhur
+ Additions:  Allan
+ Log Version: 8.5
+ */
+/*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
 #ifndef LOG_CATEGORY
 #define LOG_CATEGORY(name)
@@ -50,10 +48,11 @@
  *  6 - trace
  *  7 - success         (not used)
  *
-*/
+ */
 
 LOG_CATEGORY( DEBUG )
 LOG_TYPE( DEBUG, DEBUG, ENABLED, "Debug" )
+LOG_TYPE( DEBUG, DEV_LOG, ENABLED, "DevLog" )
 
 LOG_CATEGORY( NET )
 LOG_TYPE( NET, PRES_ERROR, ENABLED, "PresError" )
@@ -97,6 +96,14 @@ LOG_TYPE( COLLECT, CALLRSP_XML, DISABLED, "CallRspXML" )
 LOG_TYPE( COLLECT, NOTIFY_XML, DISABLED, "NotifyXML" )
 LOG_TYPE( COLLECT, MISC_XML, DISABLED, "MiscXML" )
 LOG_TYPE( COLLECT, CALLRSP_SQL, DISABLED, "CallRspSQL" )
+
+LOG_CATEGORY( XMLP )
+LOG_TYPE( XMLP, ENCODE_ERROR,   ENABLED, "EncodeError" )
+LOG_TYPE( XMLP, ENCODE_WARNING, DISABLED, "EncodeWarning" )
+LOG_TYPE( XMLP, ENCODE_MESSAGE, DISABLED, "EncodeMsg" )
+LOG_TYPE( XMLP, DECODE_ERROR,   ENABLED, "DecodeError" )
+LOG_TYPE( XMLP, DECODE_WARNING, DISABLED, "DecodeWarning" )
+LOG_TYPE( XMLP, DECODE_MESSAGE, DISABLED, "DecodeMsg" )
 
 LOG_CATEGORY( REFPTR )
 LOG_TYPE( REFPTR, INC, DISABLED, "RefPtr" )
@@ -214,6 +221,7 @@ LOG_TYPE( POS, ERROR,   ENABLED, "POS:Error" )
 LOG_TYPE( POS, WARNING, DISABLED, "POS:Warning" )
 LOG_TYPE( POS, MESSAGE, DISABLED, "POS:Msg" )
 LOG_TYPE( POS, DUMP, DISABLED, "POS:Dump" )
+LOG_TYPE( POS, RSP_DUMP, DISABLED, "POS:RspDump" )
 LOG_TYPE( POS, DEBUG, DISABLED, "POS:Debug" )
 LOG_TYPE( POS, TRACE, DISABLED, "POS:Trace" )
 LOG_TYPE( POS, DESTINY, DISABLED, "POS:State" )
@@ -227,10 +235,49 @@ LOG_TYPE( CORP, INFO, DISABLED, "CorpInfo" )
 LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
 LOG_TYPE( CORP, CALL, DISABLED, "CorpCall" )
 LOG_TYPE( CORP, CALL_DUMP, DISABLED, "CorpCallDump" )
+LOG_TYPE( CORP, RSP_DUMP, DISABLED, "CorpRspDump" )
 LOG_TYPE( CORP, DB_ERROR,   ENABLED, "CorpDBError" )
 LOG_TYPE( CORP, DB_WARNING, DISABLED, "CorpDBWarning" )
 LOG_TYPE( CORP, DB_MESSAGE, DISABLED, "CorpDBMsg" )
 LOG_TYPE( CORP, DB_INFO, DISABLED, "CorpDBInfo" )
+
+LOG_CATEGORY( ALLY )
+LOG_TYPE( ALLY, ERROR,   ENABLED, "AllyError" )
+LOG_TYPE( ALLY, WARNING, DISABLED, "AllyWarning" )
+LOG_TYPE( ALLY, MESSAGE, DISABLED, "AllyMsg" )
+LOG_TYPE( ALLY, INFO, DISABLED, "AllyInfo" )
+LOG_TYPE( ALLY, TRACE, DISABLED, "AllyTrace" )
+LOG_TYPE( ALLY, CALL, DISABLED, "AllyCall" )
+LOG_TYPE( ALLY, CALL_DUMP, DISABLED, "AllyCallDump" )
+LOG_TYPE( ALLY, RSP_DUMP, DISABLED, "AllyRspDump" )
+
+LOG_CATEGORY( FACWAR )
+LOG_TYPE( FACWAR, ERROR,   ENABLED, "FacWarError" )
+LOG_TYPE( FACWAR, WARNING, DISABLED, "FacWarWarning" )
+LOG_TYPE( FACWAR, MESSAGE, DISABLED, "FacWarMsg" )
+LOG_TYPE( FACWAR, INFO, DISABLED, "FacWarInfo" )
+LOG_TYPE( FACWAR, TRACE, DISABLED, "FacWarTrace" )
+LOG_TYPE( FACWAR, CALL, DISABLED, "FacWarCall" )
+LOG_TYPE( FACWAR, CALL_DUMP, DISABLED, "FacWarCallDump" )
+LOG_TYPE( FACWAR, RSP_DUMP, DISABLED, "FacWarRspDump" )
+LOG_TYPE( FACWAR, DB_ERROR,   ENABLED, "FacWarDBError" )
+LOG_TYPE( FACWAR, DB_WARNING, DISABLED, "FacWarDBWarning" )
+LOG_TYPE( FACWAR, DB_MESSAGE, DISABLED, "FacWarDBMsg" )
+LOG_TYPE( FACWAR, DB_INFO, DISABLED, "FacWarDBInfo" )
+
+LOG_CATEGORY( ACCOUNT )
+LOG_TYPE( ACCOUNT, ERROR,   ENABLED, "AcctError" )
+LOG_TYPE( ACCOUNT, WARNING, DISABLED, "AcctWarning" )
+LOG_TYPE( ACCOUNT, MESSAGE, DISABLED, "AcctMsg" )
+LOG_TYPE( ACCOUNT, INFO, DISABLED, "AcctInfo" )
+LOG_TYPE( ACCOUNT, TRACE, DISABLED, "AcctTrace" )
+LOG_TYPE( ACCOUNT, CALL, DISABLED, "AcctCall" )
+LOG_TYPE( ACCOUNT, CALL_DUMP, DISABLED, "AcctCallDump" )
+LOG_TYPE( ACCOUNT, RSP_DUMP, DISABLED, "AcctRspDump" )
+LOG_TYPE( ACCOUNT, DB_ERROR,   ENABLED, "AcctDBError" )
+LOG_TYPE( ACCOUNT, DB_WARNING, DISABLED, "AcctDBWarning" )
+LOG_TYPE( ACCOUNT, DB_MESSAGE, DISABLED, "AcctDBMsg" )
+LOG_TYPE( ACCOUNT, DB_INFO, DISABLED, "AcctDBInfo" )
 
 LOG_CATEGORY( INV )
 LOG_TYPE( INV, ERROR,   ENABLED, "InvError" )
@@ -272,6 +319,8 @@ LOG_TYPE( MARKET, WARNING, DISABLED, "MarketWarning" )
 LOG_TYPE( MARKET, MESSAGE, DISABLED, "MarketMsg" )
 LOG_TYPE( MARKET, DEBUG, DISABLED, "MarketDebug" )
 LOG_TYPE( MARKET, TRACE, DISABLED, "MarketTrace" )
+LOG_TYPE( MARKET, DB_ERROR, DISABLED, "MktDBError" )
+LOG_TYPE( MARKET, DB_TRACE, DISABLED, "MkDBTrace" )
 
 LOG_CATEGORY( MINING )
 LOG_TYPE( MINING, ERROR,   ENABLED, "MiningError" )
@@ -332,6 +381,8 @@ LOG_TYPE( SERVER, INFO, DISABLED, "ServerInfo" )
 LOG_TYPE( SERVER, CLIENTS, DISABLED, "ServerClients" )
 LOG_TYPE( SERVER, SHUTDOWN, DISABLED, "ServerShutdown" )
 LOG_TYPE( SERVER, STACKTRACE, DISABLED, "StackTrace" )
+LOG_TYPE( SERVER, BEANCOUNT, DISABLED, "BeanCount" )
+LOG_TYPE( SERVER, TESTSERVER, DISABLED, "TestServer" )
 
 LOG_CATEGORY( COMMAND )
 LOG_TYPE( COMMAND, ERROR, ENABLED, "CmdError" )
@@ -403,12 +454,14 @@ LOG_TYPE( CLIENT, MESSAGE, DISABLED, "ClientMsg" )
 LOG_TYPE( CLIENT, INFO, DISABLED, "ClientInfo" )
 LOG_TYPE( CLIENT, CALL_REP, DISABLED, "ClientCallRep" )
 LOG_TYPE( CLIENT, CALL_DUMP, DISABLED, "ClientCallDump" )
+LOG_TYPE( CLIENT, RSP_DUMP, DISABLED, "ClientRspDump" )
 LOG_TYPE( CLIENT, IN_ALL, DISABLED, "ClientInAll" )
 LOG_TYPE( CLIENT, OUT_ALL, DISABLED, "ClientOutAll" )
 LOG_TYPE( CLIENT, NOTIFY_REP, DISABLED, "ClientNotifyRep" )
 LOG_TYPE( CLIENT, NOTIFY_DUMP, DISABLED, "ClientNotifyDmp" )
 LOG_TYPE( CLIENT, QUEUE_DUMP, DISABLED, "ClientQueueDump" )
 LOG_TYPE( CLIENT, SESSION, DISABLED, "ClientSession" )
+LOG_TYPE( CLIENT, SESSION_NOTFOUND, DISABLED, "ClientSession" )
 LOG_TYPE( CLIENT, TIMER, DISABLED, "ClientTimer" )
 LOG_TYPE( CLIENT, TRACE, DISABLED, "ClientTrace" )
 LOG_TYPE( CLIENT, STACK_TRACE, DISABLED, "ClientStack" )

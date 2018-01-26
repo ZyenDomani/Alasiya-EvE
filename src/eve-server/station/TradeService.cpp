@@ -27,9 +27,11 @@
 #include "eve-server.h"
 
 #include <unordered_map>
+
 #include "EntityList.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "account/AccountService.h"
 #include "station/TradeService.h"
 #include "system/SystemManager.h"
 #include "system/Container.h"
@@ -114,7 +116,7 @@ PyBoundObject* TradeService::_CreateBoundObject(Client* pClient, const PyRep *bi
     //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
     if (!args.Decode(&t)) {
-        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
+        codelog(PLAYER__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
         return nullptr;
     }
     _log(COLLECT__OTHER_DUMP, "Trade bind request for:");
@@ -173,7 +175,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
         list->SetItem(1, new PyFloat(0.0f)); //herMoney
         _log(CLIENT__ERROR, "TradeBound::Handle_OfferMoney() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
         pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     //  reset states after offer changes..
@@ -192,7 +194,7 @@ PyResult TradeBound::Handle_OfferMoney(PyCallArgs &call) {
     pClient->SendNotification("OnTrade", "charid", &tuple);
     pOther->SendNotification("OnTrade", "charid", &tuple1);
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
@@ -217,7 +219,7 @@ PyResult TradeBound::Handle_Abort(PyCallArgs &call) {
     pClient->ClearTradeSession();
     pOther->ClearTradeSession();
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSes)
@@ -226,12 +228,11 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
     PyDict* dict = new PyDict;
     dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
-    ItemFactory* factory = pClient->services().item_factory;
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
-        InventoryItemRef itemRef = factory->GetItem(cur.itemID);
-        if (!itemRef)  {
-            _log(SERVICE__ERROR, "TradeBound::CancelTrade() - Failed to get ItemRef.");
+        InventoryItemRef itemRef = sItemFactory.GetItem(cur.itemID);
+        if (itemRef.get() == nullptr)  {
+            _log(PLAYER__ERROR, "TradeBound::CancelTrade() - Failed to get ItemRef.");
             continue;
         }
 
@@ -260,7 +261,7 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_ToggleAccept() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
                     pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     bool forceTrade = false;
@@ -300,7 +301,7 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
     }
 
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
@@ -308,7 +309,7 @@ PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
     call.Dump(CLIENT__CALL_DUMP);
     // still not sure what this does...only returns PyNone in packet logs.
     // returns none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 /** @todo  refresh other window when item added */
@@ -319,16 +320,16 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
      *  call.byname "qty"
      */
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return Handle_Abort(call);
     }
-    InventoryItemRef itemRef = call.client->services().item_factory->GetItem(args.arg1);
-    if (!itemRef)  {
+    InventoryItemRef itemRef = sItemFactory.GetItem(args.arg1);
+    if (itemRef.get() == nullptr)  {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_Add() - Failed to get ItemRef.");
         //  should i abort trade, or just return null here?  single add, so not a big deal.
         //     return null, let them try again if they want.  maybe later add config option?
         //Handle_Abort(call);   << this will cancel and nullify the trade session
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     TradeSession* pTSes = call.client->GetTradeSession();
@@ -342,7 +343,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
         pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     uint32 flag = 0;
@@ -387,20 +388,18 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         row->SetField( "customInfo",    new PyString(mTI.customInfo));
 
     PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, row->Clone());
-        tuple->SetItem(1, dict->Clone());
-    PyTuple* tuple1 = new PyTuple(2);
-        tuple1->SetItem(0, row);
-        tuple1->SetItem(1, dict);
+        tuple->SetItem(0, row);
+        tuple->SetItem(1, dict);
+    PyIncRef(tuple);
     // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
     pClient->SendNotification("OnItemChange", "charid", &tuple);
-    pOther->SendNotification("OnItemChange", "charid", &tuple1);
+    pOther->SendNotification("OnItemChange", "charid", &tuple);
 
     //  reset states after offer changes..
     pTSes->m_tradeSession.myState  = false;
     pTSes->m_tradeSession.herState = false;
     // return none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
@@ -410,7 +409,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
      *  call.byname "flag"
      */
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return Handle_Abort(call);
     }
     uint32 flag = 0;
@@ -432,19 +431,18 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     } else {
         _log(PLAYER__TRADE_MESSAGE, "TradeBound::Handle_MultiAdd() : %s(%u) & %s(%u) - clients are neither mine nor hers.", \
         pClient->GetName(), pClient->GetCharacterID(), pOther->GetName(), pOther->GetCharacterID());
-        return new PyNone();
+        return PyStatic.NewNone();
     }
 
     uint32 charID = call.client->GetCharacterID();
     uint32 tradeContID = pTSes->m_tradeSession.containerID;
-    ItemFactory* factory = call.client->services().item_factory;
 
     DBRowDescriptor* header = m_TSvc->CreateHeader();
     std::vector<int32> list = args.ints;
     for (auto cur : list) {
-        InventoryItemRef itemRef = factory->GetItem(cur);
-        if (!itemRef)  {
-            _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
+        InventoryItemRef itemRef = sItemFactory.GetItem(cur);
+        if (itemRef.get() == nullptr)  {
+            _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
         }
 
@@ -474,14 +472,12 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
             row->SetField( "categoryID",    new PyInt(mTI.categoryID));
             row->SetField( "customInfo",    new PyString(mTI.customInfo));
         PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, row->Clone());
-            tuple->SetItem(1, dict->Clone());
-        PyTuple* tuple1 = new PyTuple(2);
-            tuple1->SetItem(0, row);
-            tuple1->SetItem(1, dict->Clone());
+            tuple->SetItem(0, row);
+            tuple->SetItem(1, dict);
+        PyIncRef(tuple);
         // now send it, bypassing the extra shit and wrong dest name added in Client::SendNotification
         pClient->SendNotification("OnItemChange", "charid", &tuple);
-        pOther->SendNotification("OnItemChange", "charid", &tuple1);
+        pOther->SendNotification("OnItemChange", "charid", &tuple);
     }
 
     //  reset states after offer changes.
@@ -489,7 +485,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
     pTSes->m_tradeSession.myState  = false;
     pTSes->m_tradeSession.herState = false;
     // return none
-    return new PyNone();
+    return PyStatic.NewNone();
 }
 
 PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
@@ -509,11 +505,11 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
         row->SetField( "typeID",        new PyInt(53));     // type Trade Window
         row->SetField( "ownerID",       new PyInt(1));      // EvE_System
         row->SetField( "locationID",    new PyLong(pTSes->m_tradeSession.stationID));
-        row->SetField( "flagID",        new PyNone());
+        row->SetField( "flagID",        PyStatic.NewNone());
         row->SetField( "quantity",      new PyInt(-1));     // singleton
         row->SetField( "groupID",       new PyInt(EVEDB::invGroups::Trade_Session ) );
         row->SetField( "categoryID",    new PyInt(EVEDB::invCategories::Trading));
-        row->SetField( "customInfo",    new PyNone());
+        row->SetField( "customInfo",    PyStatic.NewNone());
     return row;
 }
 
@@ -592,20 +588,24 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
         pOther = sEntityList.FindClientByCharID(pTSes->m_tradeSession.herID);
         pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
     }
-    pClient->AddBalance(-pTSes->m_tradeSession.myMoney);
-    pClient->AddBalance(pTSes->m_tradeSession.herMoney);
-    pOther->AddBalance(-pTSes->m_tradeSession.herMoney);
-    pOther->AddBalance(pTSes->m_tradeSession.myMoney);
+    // transfer funds and add journal entries for both sides
+    std::string reason = "Player Trade between ";
+    reason += pClient->GetCharacterName();
+    reason += " and ";
+    reason += pOther->GetCharacterName();
+    reason += " in ";
+    reason += pClient->GetSystemName();
+    AccountService::TranserFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
+    AccountService::TranserFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
 
     PyDict* dict = new PyDict;
         dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
 
-    ItemFactory* factory = pClient->services().item_factory;
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
-        InventoryItemRef itemRef = factory->GetItem(cur.itemID);
+        InventoryItemRef itemRef = sItemFactory.GetItem(cur.itemID);
         if (!itemRef)  {
-            _log(SERVICE__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
+            _log(PLAYER__ERROR, "TradeBound::Handle_Add() - Failed to get ItemRef.");
             continue;
         }
 
@@ -640,13 +640,13 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
     if (itemRef->categoryID() == EVEDB::invCategories::Ship) {
         ShipItemRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
         if (!shipRef)
-            shipRef = m_SvcMgr->item_factory->GetShip(itemRef->itemID());
+            shipRef = sItemFactory.GetShip(itemRef->itemID());
         if (!shipRef->GetMyInventory()->IsEmpty())
             shipRef->GetMyInventory()->GetInventoryList(InventoryMap);
     } else {
         CargoContainerRef contRef = pSysMgr->GetContainerFromInventory(itemRef->itemID());
         if (!contRef)
-            contRef = m_SvcMgr->item_factory->GetCargoContainer(itemRef->itemID());
+            contRef = sItemFactory.GetCargoContainer(itemRef->itemID());
         if (!contRef->IsEmpty())
             contRef->GetMyInventory()->GetInventoryList(InventoryMap);
     }
@@ -666,7 +666,7 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     //    .arg is char to trade with
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(PLAYER__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
     target = sEntityList.FindClientByCharID( args.arg );

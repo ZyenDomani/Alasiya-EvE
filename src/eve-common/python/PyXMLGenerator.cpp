@@ -49,13 +49,6 @@ bool PyXMLGenerator::VisitLong( const PyLong* rep )
     return true;
 }
 
-bool PyXMLGenerator::VisitULong( const PyULong* rep )
-{
-    fprintf( mInto, "%s<ulong name=\"ulong%u\" />\n", _pfx(), mItem++ );
-    
-    return true;
-}
-
 bool PyXMLGenerator::VisitReal( const PyFloat* rep )
 {
     fprintf( mInto, "%s<real name=\"real%u\" />\n", _pfx(), mItem++ );

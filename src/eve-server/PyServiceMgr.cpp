@@ -33,9 +33,8 @@
 #include "PyServiceMgr.h"
 #include "PyBoundObject.h"
 
-PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist, ItemFactory* ifactory )
-: item_factory(ifactory),
-  lsc_service(nullptr),
+PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist )
+: lsc_service(nullptr),
   cache_service(nullptr),
   m_nextBindID(100),
   m_nodeID(nodeID)
@@ -109,7 +108,7 @@ PySubStruct* PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict**
                 pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, who->GetName());
 
     //not sure what this really is...
-    uint64 expiration = Win32TimeNow() + Win32Time_Hour;
+    int64 expiration = Win32TimeNow() + Win32Time_Hour;
 
     PyTuple *objt(nullptr);
     if ((dict == nullptr) or ((*dict) == nullptr)) {

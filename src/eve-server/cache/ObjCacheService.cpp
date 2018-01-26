@@ -23,7 +23,10 @@
     Author:        Zhur
 */
 
-/** @todo this is for CACHED objects....NOT BulkData...  needs to be fixed.  */
+/** @todo this needs to be fixed.
+ * is currently unused, but intended to be a BulkData data service.  the "config*" and "char*" files are *intended* to be sent in BulkData
+ * the rest of this file isnt fully understood (by me) or implemented.
+ */
 
 #include "eve-server.h"
 

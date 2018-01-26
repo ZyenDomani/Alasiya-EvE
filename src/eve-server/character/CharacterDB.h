@@ -38,15 +38,22 @@ class CharKillData;
 class ItemFactory;
 class InventoryItem;
 class Client;
+class ItemData;
+class CorpData;
 
 class CharacterDB : public ServiceDB
 {
 public:
     CharacterDB();
 
+    static uint32 NewCharacter(const CharacterData& data, const CorpData& corpData);
+    static bool SaveCharacter(uint32 characterID, const CharacterData &data);
+    static bool SaveCorpData(uint32 characterID, const CorpData &data);
+    void DeleteCharacter(uint32 characterID);
+    static void AddEmployment(uint32 charID, uint32 corpID);
+
     PyRep *GetCharacterList(uint32 accountID);
     PyRep *GetCharSelectInfo(uint32 characterID);
-    void UpdateCharCorpRecords(uint32 charID, uint32 corpID);
     void SetAvatar(uint32 charID, PyRep* hairDarkness);
 	void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
 	void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
@@ -65,8 +72,13 @@ public:
 	bool GetCharClones(uint32 characterID, std::vector<uint32> &into);
     bool GetActiveClone(uint32 characterID, uint32 &itemID);
     bool GetActiveCloneType(uint32 characterID, uint32 &typeID);
-    void GetCharacterData(uint32 characterID, std::map<std::string, uint64> &characterDataMap);
+    void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
 	bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
+    std::string GetCharName(uint32 characterID);
+
+    PyRep* GetContacts(uint32 charID, bool blocked);
+    void AddContact(uint32 charID);
+    void UpdateContact(uint32 charID);
 
     PyRep* ValidateCharName(const char* name);
     /**
@@ -93,11 +105,10 @@ public:
      */
     bool del_name_validation_set(uint32 characterID);
     bool GetCharItems(uint32 characterID, std::vector<uint32> &into);
-    bool GetLocationByStation(uint32 staID, CharacterData &cdata);
     bool GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID);
     bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
-    bool GetLocationCorporationByCareer(CharacterData &cdata);
+    bool GetLocationCorporationByCareer(CharacterData &cdata, uint32 &corporationID);
     bool DoesCorporationExist(uint32 corpID);
 
     /**
@@ -111,7 +122,7 @@ public:
      * @param[out] willpower Bonus to willpower.
      * @return True if operation succeeded, false if failed.
      */
-    bool GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower);
+    bool        GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower);
 
     bool        GetBaseSkills(std::map<uint32, uint32> &into);
     bool        GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into);
@@ -122,7 +133,7 @@ public:
      *
      * @author LSMoura
      */
-    PyString *GetNote(uint32 ownerID, uint32 itemID);
+    PyString*   GetNote(uint32 ownerID, uint32 itemID);
 
     /**
      * Stores the character note on the database, given the ownerID and itemID and the string itself.
@@ -133,17 +144,16 @@ public:
      *
      * @author LSMoura
      */
-    bool SetNote(uint32 ownerID, uint32 itemID, const char *str);
+    bool        SetNote(uint32 ownerID, uint32 itemID, const char *str);
 
-    uint32 AddOwnerNote(uint32 charID, const std::string &label, const std::string &content);
-    bool EditOwnerNote(uint32 charID, uint32 noteID, const std::string &label, const std::string &content);
+    uint32      AddOwnerNote(uint32 charID, const std::string &label, const std::string &content);
+    bool        EditOwnerNote(uint32 charID, uint32 noteID, const std::string &label, const std::string &content);
 
-    uint64 PrepareCharacterForDelete(uint32 accountID, uint32 charID);
-    void CancelCharacterDeletePrepare(uint32 accountID, uint32 charID);
-    PyRep* DeleteCharacter(uint32 accountID, uint32 charID);
+    int64      PrepareCharacterForDelete(uint32 accountID, uint32 charID);
+    void        CancelCharacterDeletePrepare(uint32 accountID, uint32 charID);
 
-    bool ReportRespec(uint32 characterId);
-    bool GetRespecInfo(uint32 characterId, uint32& out_freeRespecs, uint64& out_lastRespec, uint64& out_nextRespec);
+    bool        ReportRespec(uint32 characterId);
+    PyRep*      GetRespecInfo(uint32 characterId);
 
     /**
      * Loads skill queue.
@@ -163,20 +173,30 @@ public:
      */
     bool        SaveSkillQueue(uint32 characterID, SkillQueue &queue);
     bool        SavePausedSkillQueue(uint32 characterID, SkillQueue &queue);
-    void        SaveSkillHistory(uint8 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double relativePoints, double absolutePoints);
+    void        SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
     PyRep*      GetSkillHistory(uint32 characterID);
-    void        UpdateSkillQueueEndTime(uint64 endtime, uint32 charID);
+    void        UpdateSkillQueueEndTime(int64 endtime, uint32 charID);
 
-	bool 		isOffline(uint32 characterID);
+    void        SetLogInTime(uint32 charID);
+    void        SetLogOffTime(uint32 charID);
 
 	void 		addOwnerCache(uint32 ownerID, std::string ownerName, uint32 typeID);
 
 	PyRep*      GetBounty(uint32 charID, uint32 ownerID);
     PyRep*      GetTopBounties();
     void        AddBounty(uint32 charID, uint32 ownerID, uint32 amount);
-    uint32      PayBounty(CharacterRef cRef);
 
-    PyRep* GetKillOrLoss(uint32 charID);
+    PyRep*      GetKillOrLoss(uint32 charID);
+
+    static void SetCorpRole(uint32 charID, int64 role);
+    static int64 GetCorpRole(uint32 charID);
+    static uint32 GetCorpID(uint32 charID);
+    static float GetCorpTaxRate(uint32 charID);
+
+    PyRep*      GetLabels(uint32 charID);
+    void        SetLabel(uint32 charID, uint32 color, std::string name);
+    void        EditLabel(uint32 charID, uint32 labelID, uint32 color, std::string name);
+    void        DeleteLabel(uint32 charID, uint32 labelID);
 
 	// for dynamic db functions    -allan
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);
@@ -187,7 +207,6 @@ public:
 	void        AddPodKillToDynamicData(uint32 solarSystemID);
 	void        AddFactionKillToDynamicData(uint32 solarSystemID);
     void        GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16 &pilotsDocked, uint16 &pilotsInSpace);
-
 
 private:
     /**

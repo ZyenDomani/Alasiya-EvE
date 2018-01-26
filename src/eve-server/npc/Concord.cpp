@@ -91,14 +91,14 @@ Concord::~Concord() {
 
 void Concord::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     m_AI->Process();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_concordProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -144,8 +144,8 @@ void Concord::EncodeDestiny( Buffer& into ) const
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
-        mass.corporationID = GetCorporationID();
-        mass.allianceID = GetAllianceID();
+        mass.corporationID = m_corpID;
+        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
     DataSector data;
         data.maxVelocity = m_destiny->GetMaxVelocity();
@@ -234,13 +234,13 @@ void Concord::UseArmorRepairer()
 
 void Concord::_UpdateDamage()
 {
-    DoDestiny_DamageDetails dmgState;
+     DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
         dmgState.timestamp = Win32TimeNow();
         dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
         dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
-    DoDestiny_OnDamageStateChange dmgChange;
+     OnDamageStateChange dmgChange;
         dmgChange.entityID = GetID();
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
@@ -631,10 +631,9 @@ void ConcordAI::AttackTarget(SystemEntity* pTarget) {
     std::string guid = "effects.Laser";
     m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
                                            m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
+                                           m_npc->GetSelf()->typeID(), //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int(),
                                            pTarget->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,1
-    );
+                                           0,guid,1,1,1,m_attackSpeed,0);
 
     Damage d(m_npc,
              m_npc->GetSelf(),

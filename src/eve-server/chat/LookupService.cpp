@@ -48,6 +48,7 @@ LookupService::LookupService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(LookupService, LookupKnownLocationsByGroup);
     PyCallable_REG_CALL(LookupService, LookupEvePlayerCharacters);
     PyCallable_REG_CALL(LookupService, LookupPCOwners);
+    PyCallable_REG_CALL(LookupService, LookupNoneNPCAccountOwners);
 }
 
 LookupService::~LookupService() {
@@ -61,7 +62,7 @@ PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
         return nullptr;
     }
 
-    return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
+    return ServiceDB::LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
 }
 
 PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
@@ -71,7 +72,7 @@ PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
+    return ServiceDB::LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
 }
 
 PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
@@ -81,7 +82,7 @@ PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
+    return ServiceDB::LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
 }
 //LookupOwners
 PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
@@ -91,7 +92,17 @@ PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupOwners(args.searchString.c_str(),  args.searchOption ? true : false );
+    return ServiceDB::LookupOwners(args.searchString.c_str(),  args.searchOption ? true : false );
+}
+
+PyResult LookupService::Handle_LookupNoneNPCAccountOwners(PyCallArgs &call) {
+    Call_LookupStringInt args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return ServiceDB::LookupOwners(args.searchString.c_str(),  args.searchOption ? true : false );
 }
 
 PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
@@ -101,7 +112,7 @@ PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupChars(args.searchString.c_str(), false);
+    return ServiceDB::LookupChars(args.searchString.c_str(), false);
 }
 PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
     Call_LookupStringInt args;
@@ -110,7 +121,7 @@ PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupCorporations(args.searchString);
+    return ServiceDB::LookupCorporations(args.searchString);
 }
 PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
     Call_LookupStringInt args;
@@ -119,7 +130,7 @@ PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupFactions(args.searchString);
+    return ServiceDB::LookupFactions(args.searchString);
 }
 PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
     Call_LookupStringInt args;
@@ -128,7 +139,7 @@ PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupCorporationTickers(args.searchString);
+    return ServiceDB::LookupCorporationTickers(args.searchString);
 }
 PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
     Call_LookupStringInt args;
@@ -137,9 +148,9 @@ PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupStations(args.searchString);
+    return ServiceDB::LookupStations(args.searchString);
 }
-// Asteroids, constellations and regions should be injected into the entity table...
+
 PyResult LookupService::Handle_LookupKnownLocationsByGroup(PyCallArgs &call) {
     Call_LookupIntString args;
     if (!args.Decode(&call.tuple)) {
@@ -147,5 +158,5 @@ PyResult LookupService::Handle_LookupKnownLocationsByGroup(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.LookupKnownLocationsByGroup(args.searchString, args.searchOption);
+    return ServiceDB::LookupKnownLocationsByGroup(args.searchString, args.searchOption);
 }

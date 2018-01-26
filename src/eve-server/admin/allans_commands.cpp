@@ -15,14 +15,16 @@
 #include "inventory/InventoryItem.h"
 #include "manufacturing/Blueprint.h"
 #include "map/MapConnections.h"
-#include "system/DestinyManager.h"
 #include "npc/Drone.h"
+#include "station/Station.h"
 #include "system/Damage.h"
+#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
+#include <planet/Moon.h>
 
 
 
@@ -417,37 +419,46 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
-    uint32 inventoryID = who->GetStationID();
 
     InventoryItem* item(nullptr);
     Inventory* inv(nullptr);
-    if (inventoryID) {
-        InventoryItemRef station = sEntityList.GetStationByID(inventoryID);
-        if (!station) throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
+    uint32 inventoryID = 0;
+    if (who->IsDocked()) {
+        inventoryID = who->GetStationID();
+        StationItemRef station = sEntityList.GetStationByID(inventoryID);
+        if (station.get() == nullptr)
+            throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
         inv = station->GetMyInventory();
+        if (inv == nullptr)
+            throw PyException(MakeCustomError("Cannot find inventory for locationID %u", inventoryID));
         inv->GetInventoryList(invMap);
         item = station.get();
     } else {
         Command_list(who,db,services,args);
         inventoryID = who->GetSystemID();
-        SolarSystemRef system = services->item_factory->GetSolarSystem(inventoryID);
+        SolarSystemRef system = sItemFactory.GetSolarSystem(inventoryID);
+        if (system.get() == nullptr)
+            throw PyException(MakeCustomError("Cannot find Station Reference for systemID %u", inventoryID));
         inv = system->GetMyInventory();
+        if (inv == nullptr)
+            throw PyException(MakeCustomError("Cannot find inventory for locationID %u", inventoryID));
         inv->GetInventoryList(invMap);
         item = system.get();
     }
 
     std::ostringstream str;
     str.clear();
+    str << "%s<br>";
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     for (auto cur : invMap)
         str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
 
-        int count = invMap.size();
+    int count = invMap.size();
     int size = count * 90;
     size += 70;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, item, count);
+    snprintf(reply, size, str.str().c_str(), item->itemName().c_str(), inventoryID, inv, item, count);
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -461,22 +472,23 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
     uint32 inventoryID = who->GetShipID();
-    ShipItemRef ship = services->item_factory->GetShip(inventoryID);
+    ShipItemRef ship = sItemFactory.GetShip(inventoryID);
     Inventory* inv = ship->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
     str.clear();
+    str << "%s<br>"; //40
     str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
 
     for (auto cur : invMap)
         str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
 
-        int count = invMap.size();
+    int count = invMap.size();
     int size = count * 60;
-    size += 50;
+    size += 90;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, ship.get(), count);
+    snprintf(reply, size, str.str().c_str(), ship->itemName().c_str(), inventoryID, inv, ship.get(), count);
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -526,14 +538,14 @@ PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, co
         throw PyException(MakeCustomError("Argument 1 must be a valid itemID."));
     uint32 itemID = atol(args.arg(1).c_str());
 
-    InventoryItemRef iRef = services->item_factory->GetItem(itemID);
+    InventoryItemRef iRef = sItemFactory.GetItem(itemID);
     if (!iRef) {
         // make error msg here
         return new PyNone();
     }
 
     std::map<uint16, EvilNumber> attrMap;
-    iRef->GetAttributeMap().CopyAttributes(attrMap);
+    iRef->GetAttributeMap()->CopyAttributes(attrMap);
 
     std::ostringstream str;
     str.clear();
@@ -661,8 +673,28 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
     } else
         sEntityList.SetTracking(true);
 
-    char reply[25];
-    snprintf(reply, 25, "Tracking %s.", track.c_str());
+    char reply[30];
+    snprintf(reply, 30, "Ship Tracking is %s.", track.c_str());
+
+    who->SendNotifyMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_bubbletrack(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    bool tracking = sConfig.debug.BubbleTrack;
+    std::string track = "enabled";
+    if (tracking) {
+        sConfig.debug.BubbleTrack = false;
+        track = "disabled";
+        who->GetShipSE()->SysBubble()->RemoveMarkers();
+    } else {
+        sConfig.debug.BubbleTrack = true;
+        who->GetShipSE()->SysBubble()->MarkCenter();
+    }
+
+    char reply[30];
+    snprintf(reply, 30, "Bubble Tracking is %s.", track.c_str());
 
     who->SendNotifyMsg(reply);
     return new PyString(reply);
@@ -751,6 +783,39 @@ PyResult Command_fleetinvite(Client* who, CommandDB* db, PyServiceMgr* services,
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
+
+PyResult Command_getposition(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!who->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (!who->GetShipSE()->SysBubble())
+        throw PyException(MakeCustomError("You're not in a bubble."));
+    if (!who->GetShipSE()->DestinyMgr())
+        throw PyException(MakeCustomError("You have no destiny manager."));
+
+    GPoint sPos(who->GetShipSE()->GetPosition());
+    GPoint mPos(who->SystemMgr()->GetClosestMoonSE(sPos)->GetPosition());
+    GVector vec(sPos, mPos);
+
+    float normProd = sPos.normalize() * mPos.normalize();
+    float dotProd = sPos.dotProduct(mPos);
+    float angle = std::acos( dotProd / normProd);
+
+    float azimuth = std::atan2(vec.z, vec.x);
+    float elevation = std::atan2(vec.y, std::sqrt(std::pow(vec.x,2) + std::pow(vec.z,2)));
+
+    std::ostringstream str;
+    str.clear();
+    str << "Angle for current position is " << angle << "<br>";
+    str << "Az: " << azimuth << " Ele: " << elevation;
+    int size = 70;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]

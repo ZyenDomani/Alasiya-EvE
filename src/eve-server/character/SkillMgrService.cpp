@@ -121,7 +121,7 @@ PyResult SkillMgrBound::Handle_GetEndOfTraining(PyCallArgs &call) {
 }
 
 PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
-    return (call.client->GetChar()->GetSkillHistory());
+    return call.client->GetChar()->GetSkillHistory();
 }
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
@@ -166,6 +166,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
         return nullptr;
     }
 
+    // xml decode will now check for and fix level being a float instead of int and leading to client freakout
     CharacterRef ch = call.client->GetChar();
     ch->ClearSkillQueue();
     SkillQueue_Element el;
@@ -197,16 +198,13 @@ PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
 
 PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
-    sLog.White( "SkillMgrBound::Handle_RespecCharacter()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    Call_RespecCharacter spec;
-    if (!spec.Decode(call.tuple)) {
+    Call_RespecCharacter args;
+    if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
 	CharacterRef cref = call.client->GetChar();
-    //if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
     if (cref->GetSkillInTraining())
 		throw(PyException(MakeUserError("RespecSkillInTraining")));
 
@@ -214,11 +212,11 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
     if (!m_db.ReportRespec(call.client->GetCharacterID()))
         return nullptr;
     uint8 multiplier = sConfig.character.statMultiplier;
-    cref->SetAttribute(AttrCharisma, spec.charisma * multiplier);
-    cref->SetAttribute(AttrIntelligence, spec.intelligence * multiplier);
-    cref->SetAttribute(AttrMemory, spec.memory * multiplier);
-    cref->SetAttribute(AttrPerception, spec.perception * multiplier);
-    cref->SetAttribute(AttrWillpower, spec.willpower * multiplier);
+    cref->SetAttribute(AttrCharisma, args.charisma * multiplier);
+    cref->SetAttribute(AttrIntelligence, args.intelligence * multiplier);
+    cref->SetAttribute(AttrMemory, args.memory * multiplier);
+    cref->SetAttribute(AttrPerception, args.perception * multiplier);
+    cref->SetAttribute(AttrWillpower, args.willpower * multiplier);
     cref->SaveAttributes();
 
     // no return value
@@ -227,16 +225,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 
 PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call )
 {
-    uint32 freeRespecs = 0;
-    uint64 lastRespec = 0, nextRespec = 0;
-    m_db.GetRespecInfo(call.client->GetCharacterID(), freeRespecs, lastRespec, nextRespec);
-
-    PyDict* result = new PyDict;
-    result->SetItemString( "lastRespecDate", new PyInt( lastRespec ) );
-    result->SetItemString( "freeRespecs", new PyInt( freeRespecs ) );
-    result->SetItemString( "nextTimedRespec", new PyLong( nextRespec ) );
-
-    return result;
+    return m_db.GetRespecInfo(call.client->GetCharacterID());
 }
 
 //13:43:18 L SkillMgrBound::Handle_CharStartTrainingSkillByTypeID(): size= 1, 0 = Integer(3308) <- this is skill#
@@ -262,7 +251,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
     CharacterRef ch = call.client->GetChar();
 
     for (auto cur : args.skills)  {
-        SkillRef skill = m_manager->item_factory->GetSkill(cur);
+        SkillRef skill = sItemFactory.GetSkill(cur);
         if (skill.get() == nullptr) {
             codelog( ITEM__ERROR, "%s: failed to load skill item %u for injection.", call.client->GetName(), cur );
             continue;

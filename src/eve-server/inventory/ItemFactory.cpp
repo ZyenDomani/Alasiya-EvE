@@ -29,12 +29,15 @@
 #include "Client.h"
 #include "EVEServerConfig.h"
 #include "character/Character.h"
+#include "inventory/InventoryDB.h"
 #include "inventory/ItemFactory.h"
+#include "inventory/ItemType.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
 #include "station/Station.h"
+#include "station/StationOffice.h"
 #include "system/Asteroid.h"
 #include "system/Container.h"
 #include "system/SolarSystem.h"
@@ -47,12 +50,24 @@ uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
 uint32 ItemFactory::m_nextPlanetPinID = EVEMU_PLANET_PIN_ID;
 
 ItemFactory::ItemFactory()
+:m_pClient(nullptr)
 {
     m_itemCount = 0;
-    m_pClient = nullptr;
+    m_db = new InventoryDB();
 }
 
-ItemFactory::~ItemFactory() {
+ItemFactory::~ItemFactory()
+{
+    SafeDelete(m_db);
+}
+
+void ItemFactory::Initialize()
+{
+    sLog.Blue("     Item Factory", "Item Factory Initialized.");
+}
+
+void ItemFactory::Close()
+{
     // types
     for (auto cur : m_types)
         SafeDelete(cur.second);
@@ -75,8 +90,8 @@ ItemFactory::~ItemFactory() {
 }
 
 void ItemFactory::SaveItems() {
-    if (sConfig.server.DeleteTrackingCans)
-        m_db.DeleteTrackingCans();
+    if (sConfig.debug.DeleteTrackingCans)
+        m_db->DeleteTrackingCans();
     uint32 count = 0;
     double startTime = GetTimeMSeconds();
     std::vector<SaveData> items;
@@ -85,6 +100,8 @@ void ItemFactory::SaveItems() {
         if (cur.second->quantity() < 1)
             continue;
         if (IsAsteroid(cur.first))
+            continue;
+        if (IsCharacter(cur.first))
             continue;
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
             SaveData data;
@@ -104,14 +121,17 @@ void ItemFactory::SaveItems() {
             cur.second->SaveAttributes();
         }
     }
-    m_db.SaveItems(items);
+    m_db->SaveItems(items);
     sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fms.", count, (GetTimeMSeconds() -startTime) );
 }
 
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
+    // do we need to check trade containers here?
+    if (!IsValidLocation(itemID))
+        return nullptr;
     InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end()){
+    if (res != m_items.end()) {
         iRef = res->second;
     } else {
         if (load)
@@ -133,9 +153,6 @@ InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /
         if (load)
             iRef = GetItem( itemID );
     }
-
-    if (iRef.get() == nullptr)
-        return InventoryItemRef();
 
     return iRef;
 }
@@ -205,7 +222,7 @@ void ItemFactory::RemoveItem(uint32 itemID) {
 const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
     std::map<EVEItemCategories, ItemCategory *>::iterator res = m_categories.find(category);
     if (res == m_categories.end()) {
-        ItemCategory *cat = ItemCategory::Load(*this, category);
+        ItemCategory *cat = ItemCategory::Load(category);
         if (cat == nullptr)
             return nullptr;
 
@@ -220,7 +237,7 @@ const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
 const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
     std::map<uint32, ItemGroup*>::iterator res = m_groups.find(groupID);
     if (res == m_groups.end()) {
-        ItemGroup* group = ItemGroup::Load(*this, groupID);
+        ItemGroup* group = ItemGroup::Load(groupID);
         if (group == nullptr)
             return nullptr;
 
@@ -236,7 +253,7 @@ template<class _Ty>
 const _Ty* ItemFactory::_GetType(uint32 typeID) {
     std::map<uint32, ItemType*>::iterator res = m_types.find(typeID);
     if (res == m_types.end()) {
-        _Ty* type = _Ty::Load(*this, typeID);
+        _Ty* type = _Ty::Load(typeID);
         if (type == nullptr)
             return nullptr;
 
@@ -263,7 +280,7 @@ const CharacterType* ItemFactory::GetCharacterType(uint32 characterTypeID) {
 const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint32 bloodlineID) {
     // Unfortunately, we have it indexed by typeID, so we must get it ...
     uint32 characterTypeID;
-    if (!db().GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
+    if (!m_db->GetCharacterTypeByBloodline(bloodlineID, characterTypeID))
         return nullptr;
     return GetCharacterType(characterTypeID);
 }
@@ -283,7 +300,7 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     if (res == m_items.end())
     {
         // load the item
-        RefPtr<_Ty> item = _Ty::Load( *this, itemID );
+        RefPtr<_Ty> item = _Ty::Load(itemID );
         if (!item)
             return RefPtr<_Ty>();
 
@@ -341,6 +358,11 @@ AsteroidItemRef ItemFactory::GetAsteroid(uint32 asteroidID)
     return _GetItem<AsteroidItem>( asteroidID );
 }
 
+StationOfficeRef ItemFactory::GetOffice(uint32 officeID)
+{
+    return _GetItem<StationOffice>( officeID );
+}
+
 StructureItemRef ItemFactory::GetStructure(uint32 structureID)
 {
     return _GetItem<StructureItem>( structureID );
@@ -357,9 +379,9 @@ WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
 }
 
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
-    InventoryItemRef iRef = InventoryItem::Spawn(*this, data);
+    InventoryItemRef iRef = InventoryItem::Spawn(data);
     if (iRef.get() == nullptr)
-        return InventoryItemRef();
+        return iRef;
 
     // spawn successful; store the ref
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
@@ -368,30 +390,27 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
 }
 
 BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
-    BlueprintRef iRef = Blueprint::Spawn(*this, data, bpData);
+    BlueprintRef iRef = Blueprint::Spawn(data, bpData);
     if (iRef.get() == nullptr)
-        return BlueprintRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
     return iRef;
 }
 
-CharacterRef ItemFactory::SpawnCharacter(ItemData &data, CharacterData &charData, CorpData &corpData) {
-    CharacterRef iRef = Character::Spawn(*this, data, charData, corpData);
+CharacterRef ItemFactory::SpawnCharacter(CharacterData &charData, CorpData &corpData) {
+    CharacterRef iRef = Character::Spawn(charData, corpData);
     if (iRef.get() == nullptr)
-        return CharacterRef();
+        return iRef;
 
-    //  do NOT add new char to item list to allow char to be selected and loaded normally after creation.
-    //m_items.insert( std::make_pair( c->itemID(), c ) );
-    //++m_itemCount;
     return iRef;
 }
 
 ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
-    ShipItemRef iRef = ShipItem::Spawn(*this, data);
+    ShipItemRef iRef = ShipItem::Spawn(data);
     if (iRef.get() == nullptr)
-        return ShipItemRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
@@ -400,9 +419,9 @@ ShipItemRef ItemFactory::SpawnShip(ItemData &data) {
 
 SkillRef ItemFactory::SpawnSkill(ItemData &data)
 {
-    SkillRef iRef = Skill::Spawn( *this, data );
+    SkillRef iRef = Skill::Spawn( data );
     if (iRef.get() == nullptr)
-        return SkillRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
@@ -411,9 +430,9 @@ SkillRef ItemFactory::SpawnSkill(ItemData &data)
 
 StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 {
-    StructureItemRef iRef = StructureItem::Spawn( *this, data );
+    StructureItemRef iRef = StructureItem::Spawn( data );
     if (iRef.get() == nullptr)
-        return StructureItemRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
@@ -422,9 +441,20 @@ StructureItemRef ItemFactory::SpawnStructure(ItemData &data)
 
 AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 {
-    AsteroidItemRef iRef = AsteroidItem::Spawn( *this, idata, adata );
+    AsteroidItemRef iRef = AsteroidItem::Spawn( idata, adata );
     if (iRef.get() == nullptr)
-        return AsteroidItemRef();
+        return iRef;
+
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
+    ++m_itemCount;
+    return iRef;
+}
+
+StationOfficeRef ItemFactory::SpawnOffice(ItemData &idata, OfficeData& odata)
+{
+    StationOfficeRef iRef = StationOffice::Spawn( idata, odata );
+    if (iRef.get() == nullptr)
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
@@ -433,23 +463,9 @@ AsteroidItemRef ItemFactory::SpawnAsteroid(ItemData &idata, AsteroidData& adata)
 
 CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 {
-    /*  this is supposed to create a jetcan for ship tracking as a temp item.
-     * it currently crashes after 4 hits with a "malloc(): smallbin double linked list corrupted"  error.
-     * dunno why.  may track later.  04Jun17
-    uint32 containerID = 0;
-    CargoContainerRef containerRef = CargoContainerRef();
-    std::string str = "Position Test";
-    if (data.name.find(str) != data.name.npos) {
-        containerID = InventoryItem::CreateTempItemID( *this, data );
-        InventoryItemRef iRef = InventoryItem::SpawnItem( *this, containerID, data );
-        if (iRef.get() == nullptr)
-            return CargoContainerRef();
-        return RefPtr<CargoContainer>::StaticCast(iRef);
-    }
-*/
-    CargoContainerRef iRef = CargoContainer::Spawn( *this, data );
+    CargoContainerRef iRef = CargoContainer::Spawn( data );
     if (iRef.get() == nullptr)
-        return CargoContainerRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
@@ -458,9 +474,9 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 
 WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
 {
-    WreckContainerRef iRef = WreckContainer::Spawn( *this, data );
+    WreckContainerRef iRef = WreckContainer::Spawn( data );
     if (iRef.get() == nullptr)
-        return WreckContainerRef();
+        return iRef;
 
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;

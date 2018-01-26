@@ -7,8 +7,8 @@
   */
 
 
-#ifndef __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H
-#define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H
+#ifndef _EVE_SHIP_MODULES_ACTIVE_MODULE_H_
+#define _EVE_SHIP_MODULES_ACTIVE_MODULE_H_
 
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
@@ -90,4 +90,4 @@ private:
 };
 
 
-#endif  // __EVESERVER_SHIPMODULES_ACTIVE_MODULES_H
+#endif  // _EVE_SHIP_MODULES_ACTIVE_MODULE_H_

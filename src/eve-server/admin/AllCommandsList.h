@@ -2,7 +2,7 @@
 //if you add a new command file, you only need to add it here
 
 #include "admin/GMCommands.h"
-#include "admin/MiningCommands.h"
+// #include "admin/MiningCommands.h"
 #include "admin/SystemCommands.h"
 
 #include "admin/allans_commands.h"

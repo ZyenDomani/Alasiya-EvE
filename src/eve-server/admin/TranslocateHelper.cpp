@@ -23,6 +23,7 @@
     Author:        Groove
 */
 
+// Reduce width of making errors
 #define ERROR(_str) \
     throw PyException(MakeCustomError(_str));
 
@@ -42,7 +43,9 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
         return false;
     }
 
-    if (client->GetShipSE() != nullptr and client->GetShipSE()->DestinyMgr() and !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
+    if (client->GetShipSE() != nullptr and 
+        client->GetShipSE()->DestinyMgr() and 
+        !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
         client->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", dest);
     }
 
@@ -50,7 +53,27 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
     client->SetAutoPilot(false);
     client->EnterSystem(dest);
 
-    if (client->GetShipSE() != nullptr and client->GetShipSE()->DestinyMgr() and !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
+    if (client->GetShipSE()->DestinyMgr() == nullptr) {
+        client->SetDestiny(NULL_ORIGIN);
+    }
+
+    if (client->GetShipSE()->SysBubble() == nullptr) {
+        client->EnterSystem(client->GetSystemID());
+    }
+
+    SystemBubble *bubble = client->GetShipSE()->SysBubble();
+    if (bubble == nullptr) {
+        sBubbleMgr.Add(client->GetShipSE());
+        bubble = client->GetShipSE()->SysBubble();
+    }
+
+    bubble->SendAddBalls(client->GetShipSE());
+    client->SetStateSent(false);
+    client->GetShipSE()->DestinyMgr()->SendSetState();
+
+    if (client->GetShipSE() != nullptr and 
+        client->GetShipSE()->DestinyMgr() and 
+        !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
         client->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
     }
 
@@ -117,11 +140,12 @@ static bool translocate_to_characterID(TRData *data, uint32_t who, uint32_t dest
     return false;
 }
 
+// I have no way that I'm aware of to query celestials by name, so for now
+// this will remain unimplemented
 static bool translocate_to_celestial(TRData *data, uint32_t who, uint32_t dest) {
     ERROR("/tr to celestials not implemented")
         return false;
 }
-
 
 bool translocate_to(TRData *data, uint32_t who, uint32_t dest, LocationTag tag) {
     switch (tag) {
@@ -177,7 +201,6 @@ LocationTag translocate_resolve_location_name(TRData *data, const char *location
     }
     // Currently translocate_resolve_location_name only works with
     // solar systems and players.  I don't see a purpose otherwise
-    //
     Client *client = sEntityList.FindClientByName(location_name);
     if (client != nullptr) {
         *thing_id = client->GetCharacterID();

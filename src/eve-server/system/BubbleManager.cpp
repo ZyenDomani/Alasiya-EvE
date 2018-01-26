@@ -30,6 +30,7 @@
 
 #include "EVEServerConfig.h"
 #include "system/BubbleManager.h"
+#include "system/Container.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
@@ -40,6 +41,7 @@ BubbleManager::BubbleManager()
 : m_wanderTimer(30000),
   m_emptyTimer(60000)
 {
+    m_bubbleID = 0;
     m_bubbles.clear();
     m_bubbleMap.clear();
     m_emptyTimer.Start(60000);
@@ -66,7 +68,7 @@ void BubbleManager::clear() {
 
 void BubbleManager::Process() {
     double profileStartTime = 0.0;
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
     // process each belt and gate bubble for spawns
     for (auto cur : m_bubbles)
@@ -99,7 +101,7 @@ void BubbleManager::Process() {
     if (m_emptyTimer.Check())   //60s
         RemoveEmpty();
 
-    if (sConfig.server.UseProfiling)
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
@@ -150,7 +152,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
         NewBubbleCenter( pSE->GetVelocity(), center );
     }
 
-    pBubble = FindBubble(pSE->SystemMgr()->GetID(), center);
+    pBubble = GetBubble(pSE->SystemMgr(), center);
     if (pBubble != nullptr) {
         if (pSE->SysBubble() != nullptr) {
             if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
@@ -165,18 +167,11 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
                 return;
             }
         }
-        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to existing Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
         pBubble->Add(pSE);
-        return;
-    }
-    // this System Entity is not in any existing bubble, so let's make a new bubble
-    // TODO check edges of bubbles....should NOT overlap.
-    pBubble = new SystemBubble(pSE->SystemMgr(), center, BUBBLE_RADIUS_METERS);
-    m_bubbles.push_back(pBubble);
-    m_bubbleMap.emplace(pSE->SystemMgr()->GetID(), pBubble);
-
-    _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): Entity %s(%u) being added to NEW Bubble %u", pSE->GetName(), pSE->GetID(), pBubble->GetID() );
-    pBubble->Add(pSE);
+    } else
+        _log(DESTINY__ERROR, "BubbleManager::Add(): GetBubble() returned nullptr for %s:%u, at (%.2f, %.2f, %.2f).", \
+                    pSE->SystemMgr()->GetName().c_str(), pSE->SystemMgr()->GetID(), center.x, center.y, center.z );
 }
 
 void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
@@ -224,12 +219,15 @@ SystemBubble* BubbleManager::FindBubble(uint32 systemID, const GPoint &pos) cons
 
 SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
 {
+    // TODO check edges of bubbles....should NOT overlap.
     SystemBubble* pBubble(nullptr);
     pBubble = FindBubble(sysMgr->GetID(), pos);
     if (pBubble == nullptr) {
         pBubble = new SystemBubble(sysMgr, pos, BUBBLE_RADIUS_METERS);
         m_bubbles.push_back(pBubble);
         m_bubbleMap.emplace(sysMgr->GetID(), pBubble);
+        if (sConfig.debug.BubbleTrack)
+            pBubble->MarkCenter();
     }
     return pBubble;
 }

@@ -118,9 +118,9 @@ uint32 FleetService::CreateFleet(Client *pClient)
         fleet.fleetID = m_fleetID;        //this is also lsc channel #
         fleet.wingID = -1;
         fleet.squadID = -1;
-        fleet.fleetJob = Fleet::Job::Creator;
-        fleet.fleetRole = Fleet::Role::FleetLeader;
-        fleet.fleetBooster = Fleet::Booster::Fleet;
+        fleet.job = Fleet::Job::Creator;
+        fleet.role = Fleet::Role::FleetLeader;
+        fleet.booster = Fleet::Booster::Fleet;
         fleet.joinTime = GetFileTimeNow();
     pChar->SetFleetData(fleet);
 
@@ -264,9 +264,9 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
         fData.fleetID = fleetID;
         fData.wingID = wingID;
         fData.squadID = squadID;
-        fData.fleetJob = Fleet::Job::None;
-        fData.fleetRole = role;
-        fData.fleetBooster = booster;
+        fData.job = Fleet::Job::None;
+        fData.role = role;
+        fData.booster = booster;
         fData.joinTime = GetFileTimeNow();
     pChar->SetFleetData(fData);
 
@@ -527,10 +527,10 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
         fData.fleetID = fleetID;
         fData.wingID = newWingID;
         fData.squadID = newSquadID;
-        fData.fleetJob = newJob;
-        fData.fleetRole = newRole;
-        fData.fleetBooster = newBooster;
-        fData.joinTime = 0; // dont update this value
+        fData.job = newJob;
+        fData.role = newRole;
+        fData.booster = newBooster;
+        fData.joinTime = pChar->fleetJoinTime();
     pChar->SetFleetData(fData);
 
     // update fleet members with new data
@@ -1206,10 +1206,10 @@ void FleetService::LeaveFleet(Client* pClient)
         fleet.wingID = 0;
         fleet.fleetID = 0;
         fleet.squadID = 0;
-        fleet.fleetJob = 0;
+        fleet.job = 0;
         fleet.joinTime = 0;
-        fleet.fleetRole = 0;
-        fleet.fleetBooster = 0;
+        fleet.role = 0;
+        fleet.booster = 0;
     //call updates on fleet session data
     pChar->SetFleetData(fleet);
 }
@@ -1521,6 +1521,22 @@ void FleetService::SendFleetUpdate(uint32 fleetID, const char* notifyType, PyTup
             continue;
         PySafeIncRef(payload);
         cur->SendNotification(notifyType, "*fleetid", payload, true);    // this sends "*fleetid" update to all fleet memebers and is sequenced
+    }
+}
+
+void FleetService::GetFleetMembersOnGrid(Client* pClient, std::vector< uint32 >& data)
+{
+    std::vector<Client*> members;
+    uint16 scopeID = pClient->GetShipSE()->SysBubble()->GetID();
+    auto range = m_fleetMembers.equal_range(pClient->GetFleetID());
+    for (auto fItr = range.first; fItr != range.second; ++fItr)
+        members.push_back(fItr->second);
+
+    for (auto cur : members) {
+        if (cur == nullptr)
+            continue;
+        if (cur->GetShipSE()->SysBubble()->GetID() == scopeID)
+            data.push_back(cur->GetCharacterID());
     }
 }
 

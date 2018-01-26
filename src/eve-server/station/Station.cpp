@@ -25,131 +25,212 @@
 
 #include "eve-server.h"
 
+#include "Client.h"
+#include "EntityList.h"
+#include "packets/CorporationPkts.h"
 #include "station/Station.h"
+#include "station/StationOffice.h"
+#include "station/StationDataMgr.h"
 #include "system/DestinyManager.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
 
 /*
- * StationTypeData
- */
-// NOTE: each station can only have 24 offices
-StationTypeData::StationTypeData(
-    uint32 _dockingBayGraphicID,
-    uint32 _hangarGraphicID,
-    const GPoint &_dockEntry,
-    const GVector &_dockOrientation,
-    uint32 _operationID,
-    uint32 _officeSlots,
-    double _reprocessingEfficiency,
-    bool _conquerable)
-: dockingBayGraphicID(_dockingBayGraphicID),
-  hangarGraphicID(_hangarGraphicID),
-  dockEntry(_dockEntry),
-  dockOrientation(_dockOrientation),
-  operationID(_operationID),
-  officeSlots(_officeSlots),
-  reprocessingEfficiency(_reprocessingEfficiency),
-  conquerable(_conquerable)
-{
-}
-
-/*
  * StationType
  */
-StationType::StationType(
-    uint32 _id,
-    // ItemType stuff:
-    const ItemGroup &_group,
-    const TypeData &_data,
-    // StationType stuff:
-    const StationTypeData &_stData)
-: ItemType(_id, _group, _data),
-  m_dockingBayGraphicID(_stData.dockingBayGraphicID),
-  m_hangarGraphicID(_stData.hangarGraphicID),
-  m_dockEntry(_stData.dockEntry),
-  m_dockOrientation(_stData.dockOrientation),
-  m_operationID(_stData.operationID),
-  m_officeSlots(_stData.officeSlots),
-  m_reprocessingEfficiency(_stData.reprocessingEfficiency),
-  m_conquerable(_stData.conquerable)
+StationType::StationType(uint32 _id, const ItemGroup &_group, const TypeData &_data)
+: ItemType(_id, _group, _data)
 {
     // consistency check
     assert(_data.groupID == EVEDB::invGroups::Station);
 }
 
-StationType *StationType::Load(ItemFactory &factory, uint32 stationTypeID)
+StationType *StationType::Load( uint32 stationTypeID)
 {
-    return ItemType::Load<StationType>( factory, stationTypeID );
+    return ItemType::Load<StationType>(stationTypeID );
 }
 
 /*
- * StationInfo
+ * Station Item
  */
-StationInfo::StationInfo(
-    uint32 _security,
-    double _dockingCostPerVolume,
-    double _maxShipVolumeDockable,
-    uint32 _officeRentalCost,
-    uint32 _operationID,
-    double _reprocessingEfficiency,
-    double _reprocessingStationsTake,
-    EVEItemFlags _reprocessingHangarFlag)
-: security(_security),
-  dockingCostPerVolume(_dockingCostPerVolume),
-  maxShipVolumeDockable(_maxShipVolumeDockable),
-  officeRentalCost(_officeRentalCost),
-  operationID(_operationID),
-  reprocessingEfficiency(_reprocessingEfficiency),
-  reprocessingStationsTake(_reprocessingStationsTake),
-  reprocessingHangarFlag(_reprocessingHangarFlag)
+StationItem::StationItem(uint32 stationID, const StationType& type, const ItemData& data, const CelestialObjectData& cData)
+: CelestialObject(stationID, type, data, cData),
+m_officePyData(nullptr),
+m_stationType(type)
 {
-}
+    m_loaded = false;
+    m_stationID = stationID;
 
-/*
- * Station
- */
-StationItem::StationItem(
-    ItemFactory &_factory,
-    uint32 _stationID,
-    // InventoryItem stuff:
-    const StationType &_type,
-    const ItemData &_data,
-    // CelestialObject stuff:
-    const CelestialObjectData &_cData,
-    // Station stuff:
-    const StationInfo &_stData)
-: CelestialObject(_factory, _stationID, _type, _data, _cData),
-m_stationType(_type),
-m_security(_stData.security),
-m_dockingCostPerVolume(_stData.dockingCostPerVolume),
-m_maxShipVolumeDockable(_stData.maxShipVolumeDockable),
-m_officeRentalCost(_stData.officeRentalCost),
-m_operationID(_stData.operationID),
-m_reprocessingEfficiency(_stData.reprocessingEfficiency),
-m_reprocessingStationsTake(_stData.reprocessingStationsTake),
-m_reprocessingHangarFlag(_stData.reprocessingHangarFlag)
-{
-    m_inventory = new Inventory(InventoryItemRef(this));
+    m_officeMap.clear();
+    m_guestList.clear();
+
+    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
 }
 
-StationItemRef StationItem::Load(ItemFactory &factory, uint32 stationID)
+StationItem::~StationItem()
 {
-    return InventoryItem::Load<StationItem>( factory, stationID );
+    m_officeMap.clear();
+    m_guestList.clear();
+    PySafeDecRef(m_officePyData);
+}
+
+StationItemRef StationItem::Load( uint32 stationID)
+{
+    return InventoryItem::Load<StationItem>(stationID );
 }
 
 bool StationItem::_Load() {
-    if( !m_inventory->LoadContents( &m_factory ) )
+    if (!pInventory->LoadContents())
         return false;
+
+    stDataMgr.GetStationData(m_stationID, m_data);
+    stDataMgr.LoadOffices(m_stationID, m_officeMap);
+    m_officePyData = StationDB::GetOffices(m_stationID);
+
+    if (m_data.officeRentalFee < 10000)
+        m_data.officeRentalFee = 10000;
+
+    m_loaded = true;
 
     return CelestialObject::_Load();
 }
 
-uint32 StationItem::CreateItemID(ItemFactory &factory, ItemData &data) {
-    return InventoryItem::CreateItemID(factory, data);
+uint32 StationItem::CreateItemID( ItemData &data) {
+    return InventoryItem::CreateItemID(data);
 }
 
+uint32 StationItem::GetOfficeID(uint32 corpID)
+{
+    if (!IsPlayerCorp(corpID))
+        return 0;
+    for (auto cur : m_officeMap)
+        if (cur.second.corporationID = corpID)
+            return cur.first;
+    return 0;
+}
+
+void StationItem::AddLoadedOffice(uint32 officeID)
+{
+    if (!IsOffice(officeID))
+        return;
+    m_officeLoaded.emplace(officeID, true);
+}
+
+bool StationItem::IsOfficeLoaded(uint32 officeID)
+{
+    if (!IsOffice(officeID))
+        return false;
+    std::map<uint32, bool>::const_iterator itr = m_officeLoaded.find(officeID);
+    if (itr != m_officeLoaded.end())
+        return itr->second;
+    return false;
+}
+
+void StationItem::RemoveLoadedOffice(uint32 officeID)
+{
+    if (!IsOffice(officeID))
+        return;
+    m_officeLoaded.erase(officeID);
+}
+
+void StationItem::LoadStationOffice(uint32 corpID)
+{
+    if (!IsPlayerCorp(corpID))
+        return;
+    uint32 officeID = GetOfficeID(corpID);
+    if (officeID == 0)
+        return;
+    if (IsOfficeLoaded(officeID))
+        return;
+    _log(PLAYER__INFO, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
+    StationOfficeRef oRef = sItemFactory.GetOffice(officeID);
+    oRef->SetLoaded(oRef->GetMyInventory()->LoadContents());
+    m_officeLoaded.emplace(officeID, true);
+}
+
+void StationItem::ImpoundOffice(uint32 officeID)
+{
+    std::map<uint32, OfficeData>::iterator itr = m_officeMap.find(officeID);
+    if (itr != m_officeMap.end())
+        itr->second.lockDown = true;
+}
+
+void StationItem::RecoverOffice(uint32 officeID)
+{
+    std::map<uint32, OfficeData>::iterator itr = m_officeMap.find(officeID);
+    if (itr != m_officeMap.end())
+        itr->second.lockDown = false;
+}
+
+
+void StationItem::RentOffice(OfficeData& odata)
+{
+    odata.folderID = m_stationID + staOfficeOffset;
+    odata.stationID = m_stationID;
+
+    // create new office item
+    std::string name = odata.ticker;
+    name += "'s Office";
+    ItemData idata(27, m_data.corporationID, m_stationID, flagOffice, name.c_str());
+    StationOfficeRef oRef = sItemFactory.SpawnOffice(idata, odata);
+    if (oRef.get() == nullptr)
+        return;  // make error here?
+
+    // make and send notifications
+    OnOfficeRentalChanged oorc;
+        oorc.ownerID = odata.corporationID;
+        oorc.officeID = odata.officeID;
+        oorc.officeFolderID = odata.folderID;
+    PyTuple* payload = oorc.Encode();
+    for (auto cur : m_guestList) {
+        PyIncRef(payload);
+        cur.second->SendNotification("OnOfficeRentalChanged", "stationid", &payload, false);
+    }
+    PyDecRef( payload );
+
+    oRef->ChangeOwner(odata.corporationID, true);
+
+    // update data
+    stDataMgr.AddOffice(m_stationID, odata);
+    m_officeMap.emplace(odata.officeID, odata);
+    m_officeLoaded.emplace(odata.officeID, true);
+    PySafeDecRef(m_officePyData);
+    m_officePyData = StationDB::GetOffices(m_stationID);
+}
+
+void StationItem::SendBill()
+{
+    // do we need this here?
+}
+
+void StationItem::AddGuest(Client* pClient)
+{
+    m_guestList.emplace(pClient->GetCharacterID(), pClient);
+}
+
+void StationItem::GetGuestList(std::vector< Client* >& cVec)
+{
+    for (auto cur : m_guestList)
+        cVec.push_back(cur.second);
+}
+
+void StationItem::RemoveGuest(Client* pClient)
+{
+    m_guestList.erase(pClient->GetCharacterID());
+}
+
+void StationItem::GetRefineData(uint32& stationCorpID, float& staEfficiency, float& tax)
+{
+    stationCorpID = m_data.corporationID;
+    staEfficiency = m_data.reprocessingEfficiency;
+    tax = m_data.reprocessingStationsTake;
+}
+
+
+/*
+ * Station Entity
+ */
 StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManager* system)
 : StaticSystemEntity(station, services, system)
 {

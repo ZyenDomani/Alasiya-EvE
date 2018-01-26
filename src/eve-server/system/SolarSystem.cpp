@@ -41,7 +41,7 @@
 
     Constellation = always the same as Border
 
-    Security = If it is positive, rounding to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
+    Security = If it is positive, floor to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
     */
 
 /*
@@ -85,7 +85,6 @@ SolarSystemData::SolarSystemData(
  * SolarSystem
  */
 SolarSystem::SolarSystem(
-    ItemFactory &_factory,
     uint32 _solarSystemID,
     // InventoryItem stuff:
     const ItemType &_type,
@@ -94,7 +93,7 @@ SolarSystem::SolarSystem(
     const CelestialObjectData &_cData,
     // SolarSystem stuff:
     const SolarSystemData &_ssData)
-: CelestialObject(_factory, _solarSystemID, _type, _data, _cData),
+: CelestialObject(_solarSystemID, _type, _data, _cData),
   m_minPosition(_ssData.minPosition),
   m_maxPosition(_ssData.maxPosition),
   m_luminosity(_ssData.luminosity),
@@ -110,42 +109,32 @@ SolarSystem::SolarSystem(
   m_radius(_ssData.radius),
   m_securityClass(_ssData.securityClass)
 {
-    m_inventory = new Inventory(InventoryItemRef(this));
+    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
 }
 
 SolarSystem::~SolarSystem()
 {
-    SafeDelete(m_inventory);
+    SafeDelete(pInventory);
 }
 
-SolarSystemRef SolarSystem::Load(ItemFactory &factory, uint32 solarSystemID)
+SolarSystemRef SolarSystem::Load( uint32 solarSystemID)
 {
-    return InventoryItem::Load<SolarSystem>( factory, solarSystemID );
+    return InventoryItem::Load<SolarSystem>(solarSystemID );
 }
 
 bool SolarSystem::_Load() {
     return CelestialObject::_Load();
 }
 
-void SolarSystem::AddItemToInventory(InventoryItemRef item)
-{
-    AddItem( item );
-}
-
-void SolarSystem::AddItem(InventoryItemRef item)
-{
-    m_inventory->AddItem( item );
-}
-
 // unload...loop thru currently loaded inventory and call RemoveItem for each.
 
-void SolarSystem::RemoveItemFromInventory( InventoryItemRef item )
+void SolarSystem::AddItemToInventory(InventoryItemRef iRef)
 {
-    RemoveItem( item );
+    AddItem( iRef );
 }
 
-void SolarSystem::RemoveItem(InventoryItemRef item)
+void SolarSystem::RemoveItemFromInventory( InventoryItemRef iRef )
 {
-    m_inventory->RemoveItem( item );
+    RemoveItem( iRef );
 }

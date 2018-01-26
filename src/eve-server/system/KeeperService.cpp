@@ -173,7 +173,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
 
     /** @todo   this should be called for gate... */
     pClient->GetShipSE()->DestinyMgr()->SendSpecialEffect10(args.arg, 0, "effects.WarpGateEffect", 0, 1, 0);
-    
+
 	double distance = MakeRandomFloat(5, 25) * ONE_AU_IN_METERS;
     GPoint currentPosition(pClient->GetShipSE()->GetPosition());
     GPoint deltaPosition;
@@ -185,7 +185,6 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     double distanceToDestination = vectorToDestination.length();
     pClient->GetShipSE()->DestinyMgr()->WarpTo(warpToPoint, distanceToDestination);
 
-    /*
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }

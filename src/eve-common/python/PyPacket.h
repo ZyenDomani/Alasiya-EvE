@@ -51,7 +51,7 @@ public:
              * [3]   callID
              */
         Client  = 2,
-            /*
+            /* "because it's ID doesn't match"
              * [1]   clientID
              * [2]   callID
              * [3]   service
@@ -71,8 +71,8 @@ public:
     } AddrType;
 
     AddrType type;
-    uint64 objectID;  //node id, client id, etc...
-    uint64 callID;
+    int64 objectID;  //node id, client id, etc...
+    int64 callID;
 
     std::string service;    //broadcastID for a broadcast.
     std::string bcast_idtype;

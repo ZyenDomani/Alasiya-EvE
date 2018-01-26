@@ -44,6 +44,7 @@ MapService::MapService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MapService, GetBeaconCount);
     PyCallable_REG_CALL(MapService, GetHistory);
     PyCallable_REG_CALL(MapService, GetStationCount);    //ColorStarsByStationCount
+    PyCallable_REG_CALL(MapService, GetLinkableJumpArrays);
 
     /**  not handled yet...these are empty calls  */
     PyCallable_REG_CALL(MapService, GetStuckSystems);
@@ -58,7 +59,6 @@ MapService::MapService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MapService, GetMyExtraMapInfoAgents);  //ColorStarsByMyAgents
     PyCallable_REG_CALL(MapService, GetAllianceJumpBridges);
     PyCallable_REG_CALL(MapService, GetAllianceBeacons);
-    PyCallable_REG_CALL(MapService, GetLinkableJumpArrays);
     PyCallable_REG_CALL(MapService, GetCurrentSovData);
 
 }
@@ -67,8 +67,40 @@ MapService::~MapService() {
     delete m_dispatch;
 }
 
+PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
+{
+    return m_db.GetSolSystemVisits(call.client->GetCharacterID());
+}
+
+PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
+    int32 int1 = call.tuple->GetItem(0)->AsInt()->value();
+    int32 int2 = call.tuple->GetItem(1)->AsInt()->value();
+    sLog.White( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
+
+    return m_db.GetDynamicData(int1, int2);
+}
+
+PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
+{   // working
+    DBQueryResult res;
+    PosMgrDB::GetLinkableJumpArrays(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, itemID
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));
+        list->AddItem(tuple);
+    }
+
+    return list;
+}
+
 PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call) {
-    //takes no arguments
+
+    /** @todo  put this in static data */
+    
     //returns tuple(
     //     stations: rowset stationID,solarSystemID,operationID,stationTypeID,ownerID
     //     opservices: rowset: (operationID, serviceID) (from staOperationServices)
@@ -90,19 +122,19 @@ PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call) {
         resultt->items[0] = m_db.GetStationExtraInfo();
         if(resultt->items[0] == NULL) {
             codelog(SERVICE__ERROR, "Failed to query station info");
-            return NULL;
+            return PyStatic.NewNone();
         }
 
         resultt->items[1] = m_db.GetStationOpServices();
         if(resultt->items[1] == NULL) {
             codelog(SERVICE__ERROR, "Failed to query op services");
-            return NULL;
+            return PyStatic.NewNone();
         }
 
         resultt->items[2] = m_db.GetStationServiceInfo();
         if(resultt->items[2] == NULL) {
             codelog(SERVICE__ERROR, "Failed to query service info");
-            return NULL;
+            return PyStatic.NewNone();
         }
 
         result = resultt;
@@ -136,20 +168,6 @@ PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call) {
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 
     return result;
-}
-
-PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
-{       // passes no args
-    uint32 charID = call.client->GetCharacterID();
-    return (m_db.GetSolSystemVisits(charID));
-}
-
-PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
-    uint32 int1 = call.tuple->GetItem(0)->AsInt()->value();
-    uint32 int2 = call.tuple->GetItem(1)->AsInt()->value();
-      sLog.White( "MapService::Handle_GetHistory()", "size= %u, type: (%u), timeframe: (%u)", call.tuple->size(), int1, int2 );
-
-    return (m_db.GetDynamicData(int1, int2));
 }
 
 //02:38:07 L MapService::Handle_GetBeaconCount(): size= 0
@@ -314,7 +332,7 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
   sLog.White( "MapService::Handle_GetIncursionGlobalReport()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
@@ -325,7 +343,7 @@ PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
   sLog.White( "MapService::Handle_GetSystemsInIncursions()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 //20:38:53 L MapService::Handle_GetSystemsInIncursionsGM(): size= 0
@@ -335,7 +353,7 @@ PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
 
   */
     call.Dump(SERVICE__CALL_DUMP);
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 //   factional warfare shit
@@ -346,7 +364,7 @@ PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetVictoryPoints()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 //06:04:50 L MapService::Handle_GetMyExtraMapInfoAgents(): size= 0
@@ -359,7 +377,7 @@ PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)  //ColorSt
   sLog.White( "MapService::Handle_GetMyExtraMapInfoAgents()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
@@ -370,7 +388,7 @@ PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetMyExtraMapInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
@@ -383,7 +401,9 @@ PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    // copy format from GetLinkableJumpArrays()
+
+    return PyStatic.NewNone();
 }
 
 PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
@@ -400,18 +420,9 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetAllianceBeacons()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
-}
+    // copy format from GetLinkableJumpArrays()
 
-PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
-{
-    /*
-    for solarSystemID, structureID in sm.RemoteSvc('map').GetLinkableJumpArrays():
-             */
-  sLog.White( "MapService::Handle_GetLinkableJumpArrays()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return NULL;
+    return PyStatic.NewNone();
 }
 
 PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
@@ -423,5 +434,5 @@ PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetCurrentSovData()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    return NULL;
+    return PyStatic.NewNone();
 }

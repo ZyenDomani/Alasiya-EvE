@@ -69,7 +69,7 @@ public:
      * @param[in] shipTypeID ID of ship type to load.
      * @return Pointer to new ShipType object; NULL if failed.
      */
-    static ShipType *Load(ItemFactory &factory, uint32 shipTypeID);
+    static ShipType *Load(uint32 shipTypeID);
 
     /*
      * Access methods:
@@ -98,7 +98,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType(ItemFactory &factory, uint32 shipTypeID,
+    static _Ty *_LoadType( uint32 shipTypeID,
         // ItemType stuff:
         const ItemGroup &group, const TypeData &data)
     {
@@ -110,13 +110,13 @@ protected:
 
         // load additional ship type stuff
         ShipTypeData stData;
-        if( !factory.db().GetShipType(shipTypeID, stData) )
+        if( !sItemFactory.db()->GetShipType(shipTypeID, stData) )
             return NULL;
 
         // try to load weapon type
         const ItemType *weaponType = NULL;
         if( stData.mWeaponTypeID != 0 ) {
-            weaponType = factory.GetType( stData.mWeaponTypeID );
+            weaponType = sItemFactory.GetType( stData.mWeaponTypeID );
             if( weaponType == NULL )
                 return NULL;
         }
@@ -124,7 +124,7 @@ protected:
         // try to load mining type
         const ItemType *miningType = NULL;
         if( stData.mMiningTypeID != 0 ) {
-            miningType = factory.GetType( stData.mMiningTypeID );
+            miningType = sItemFactory.GetType( stData.mMiningTypeID );
             if( miningType == NULL )
                 return NULL;
         }
@@ -132,7 +132,7 @@ protected:
         // try to load skill type
         const ItemType *skillType = NULL;
         if( stData.mSkillTypeID != 0 ) {
-            skillType = factory.GetType( stData.mSkillTypeID );
+            skillType = sItemFactory.GetType( stData.mSkillTypeID );
             if( skillType == NULL )
                 return NULL;
         }
@@ -215,13 +215,12 @@ class ShipItem
 
 protected:
     ShipItem(
-        ItemFactory &_factory,
         uint32 _shipID,
         // InventoryItem stuff:
         const ShipType &_shipType,
         const ItemData &_data
     );
-    virtual ~ShipItem();
+    virtual ~ShipItem() noexcept;
 
 public:
     /* class type pointer querys. */
@@ -233,12 +232,15 @@ public:
     void InitPod();
     void InitAttribs();
     void LogOut();
-    static ShipItemRef Load(ItemFactory &factory, uint32 shipID);
-    static ShipItemRef Spawn(ItemFactory &factory, ItemData &data);
+    static ShipItemRef Load( uint32 shipID);
+    static ShipItemRef Spawn( ItemData &data);
 
     virtual void SetPlayer(Client* pClient);
     virtual bool HasPilot()                             { return (m_pilot ? true : false); }
     virtual Client* GetPilot()                          { return m_pilot; }
+
+    virtual void AddItem(InventoryItemRef iRef);
+    virtual void RemoveItem( InventoryItemRef iRef);
 
     bool HasModuleManager()                             { return (m_ModuleManager ? true : false); }
     ModuleManager* GetModuleManager()                   { return m_ModuleManager; }
@@ -246,7 +248,7 @@ public:
     virtual void Delete();
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
     const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
@@ -266,19 +268,10 @@ public:
     PyList* ShipGetModuleList();
     PyDict* GetChargeState();
 
-    /*
-     * Validates boarding ship
-     */
-    bool ValidateBoardShip(ShipItemRef ship, CharacterRef who);
-
-    /*
-     * Saves the ship state
-     */
+    bool ValidateBoardShip(CharacterRef who);
     void SaveShip();
 
-    /*
-     * Inform Ship that a state change is taking place
-     */
+    /* Inform Ship that a state change is taking place  */
     void Dock();
     void Heal();
     void Jump();
@@ -301,8 +294,6 @@ public:
     void CancelOverloading();
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef iRef);
-    void AddItem(InventoryItemRef iRef);
-    void RemoveItem( InventoryItemRef iRef, uint32 qty=0/*, uint32 inventoryID, EVEItemFlags flag*/ );
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID);
@@ -326,8 +317,13 @@ public:
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 itemID);
+
+    // this also checks for fit-by-type and rig restrictions
+    void TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
+    // calls methods to verify hold capy based on flag
+    void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);          // make sure this does NOT throw.  must return integer
     /* end new module manager interface */
 
     // Tactical Interface:
@@ -356,7 +352,7 @@ public:
 protected:
     // Template loader:
     template<class _Ty>
-    static RefPtr<_Ty> _LoadItem(ItemFactory &factory, uint32 shipID, const ItemType &type, const ItemData &data) {
+    static RefPtr<_Ty> _LoadItem( uint32 shipID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Ship) {
             _log( ITEM__ERROR, "Trying to load %s as ShipItem.", type.category().name().c_str() );
             if (sConfig.server.StackTrace)
@@ -365,13 +361,13 @@ protected:
         }
 
         const ShipType &shipType = static_cast<const ShipType &>( type );
-        return ShipItemRef( new ShipItem(factory, shipID, shipType, data ));
+        return ShipItemRef( new ShipItem(shipID, shipType, data ));
     }
 
     //bool LoadAttributes();
     bool m_IsLoaded;
 
-    static uint32 CreateItemID(ItemFactory &factory, ItemData &data);
+    static uint32 CreateItemID( ItemData &data);
 
     void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
 
@@ -390,6 +386,8 @@ private:
     InventoryItemRef m_targetRef;
 
     std::vector<uint32> m_onlineModuleVec;
+
+    std::map<EVEItemFlags, double> m_usedVolumeByFlag;
 
     void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);
@@ -438,6 +436,7 @@ public:
     virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
     /* specific functions handled here. */
+    void SetPassword(std::string pass)                  { m_towerPass = pass; }
     // fleet
     void ClearBoostData();
     bool IsBoosted()                                    { return m_boosted; }
@@ -483,6 +482,8 @@ private:
     uint32 m_oldTargetRange;
 
     double m_oldInertia;
+
+    std::string m_towerPass;
 
 };
 

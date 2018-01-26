@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -51,7 +52,7 @@ bool FactoryDB::SaveBlueprintData(uint32 blueprintID, BlueprintData& data) {
     DBerror err;
     if(!sDatabase.RunQuery(err,
         "INSERT INTO invBlueprints"
-        "  (blueprintID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
+        "  (itemID, copy, materialLevel, productivityLevel, licensedProductionRunsRemaining)"
         " VALUES"
         "  (%u, %u, %i, %i, %i)"
         "ON DUPLICATE KEY UPDATE "
@@ -90,7 +91,7 @@ bool FactoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
         "  productivityLevel,"
         "  licensedProductionRunsRemaining"
         " FROM invBlueprints"
-        " WHERE blueprintID=%u",
+        " WHERE itemID=%u",
         blueprintID))
     {
         codelog(DATABASE__ERROR, "Error in GetBlueprint query: %s.", res.error.c_str());

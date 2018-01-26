@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.3
+    Version:    8.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -48,12 +48,7 @@ public:
     struct {
         bool UseBeanCount;
         bool UseMarketBot;
-        bool UseProfiling;
-        bool UseShipTracking;
-        bool DeleteTrackingCans;
-        bool PositionHack;
         bool UseStackTrace;
-        bool IsTestServer;    // to distuinguish between live production server or experimental testing server
         bool DisableIGB;
         bool BulkDataOD;
         bool NoobShipCheck;
@@ -61,8 +56,11 @@ public:
         uint8 ServerSleepTime;
         uint8 MaxThreadReport;
         uint16 idleSleepTime;
+        float processTic;
         uint16 maxPlayers;
+        bool ModuleAutoOff;
         float ModuleDamageChance;
+        bool AllowNonPublished;
     } server;
 
     // From <world/>
@@ -75,6 +73,7 @@ public:
         bool loginMsg;
         uint8 mailDelay;
         uint8 StationDockDelay;
+        uint16 apWarptoDistance;
     } world;
 
     // From <rates/>
@@ -86,11 +85,15 @@ public:
         /// Modifier for damage from NPCs
         float damageRate;
         /// Modifier for damage from missiles
-        float missileRate;
+        float missileDamage;
         /// Modifier for missile flightTime
         float missileTime;
+        /// Modifier for missile rate of fire
+        float missileRoF;
         /// Modifier for damage from PC turrets
-        float turretRate;
+        float turretDamage;
+        /// Modifier for turret rate of fire
+        float turretRoF;
         /// Startup Cost to create a corporation.
         double corpCost;
         // Decay timer for item deletion (garbage collection)
@@ -103,6 +106,11 @@ public:
         float RepairCost;
 
         uint8 WebUpdate;
+
+        // min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment.
+        uint32 TaxAmount;
+        // min amount to be taxed.  received amounts less than this will not be taxed.
+        uint32 TaxedAmount;
     } rates;
 
     // From <bpTimes/>
@@ -120,7 +128,7 @@ public:
     // From <account/>
     struct {
         /// Role to assign to auto created account; set to 0 to disable auto account creation.
-        uint64 autoAccountRole;
+        int64 autoAccountRole;
         /// A message shown to every client on login (if enabled in <World><LoginMsg>).
         std::string loginMessage;
     } account;
@@ -153,8 +161,8 @@ public:
         uint8 StaticTimer;
         float ThreatRadius;
         uint32 RatFaction;
-        uint32 AnomalyFaction;
-        bool SpawnTest;
+        bool TargetPod;
+        float TargetPodSec;
         bool EnableDrones;
     } npc;
 
@@ -237,6 +245,18 @@ public:
         uint16 CrimFlagTime;
     } crime;
 
+    // From <debug/>
+    struct {
+        bool BubbleTrack;
+        bool SpawnTest;
+        bool IsTestServer;    // to distuinguish between live production server or experimental testing server
+        bool UseProfiling;
+        bool UseShipTracking;
+        bool DeleteTrackingCans;
+        bool PositionHack;
+        uint32 AnomalyFaction;
+    } debug;
+
 protected:
     bool ProcessEveServer( const TiXmlElement* ele );
     bool ProcessServer( const TiXmlElement* ele );
@@ -253,6 +273,7 @@ protected:
     bool ProcessChat( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
     bool ProcessBPTimes( const TiXmlElement* ele );
+    bool ProcessDebug( const TiXmlElement* ele );
 };
 
 /// A macro for easier access to the singleton.

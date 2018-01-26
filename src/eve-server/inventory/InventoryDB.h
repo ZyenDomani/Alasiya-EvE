@@ -27,8 +27,8 @@
 #define __INVENTORYDB_H_INCL__
 
 #include "ServiceDB.h"
-
 #include "inventory/ItemRef.h"
+
 
 class CategoryData;
 class GroupData;
@@ -36,17 +36,13 @@ class TypeData;
 
 class CharacterTypeData;
 class ShipTypeData;
-class StationTypeData;
 class AsteroidData;
 class ItemData;
 class SaveData;
 class BlueprintData;
-class CharacterData;
 class CharacterAppearance;
-class CorpData;
 class CelestialObjectData;
 class SolarSystemData;
-class StationInfo;
 class OwnerData;
 
 class InventoryDB
@@ -106,17 +102,14 @@ public:
      */
     bool GetShipType(uint32 shipTypeID, ShipTypeData &into);
 
-    /*
-     * Item stuff
-     * (entity)
-     */
+    // get item data based on itemID
     bool GetItem(uint32 itemID, ItemData &into);
     static bool DeleteItem(uint32 itemID);
 
     uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);
     void SaveItems(std::vector< SaveData >& data);
-    void SaveAttributes(std::vector< AttrData >& data);
+    void SaveAttributes(bool isChar, std::vector< AttrData >& data);
 
     bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
@@ -125,25 +118,17 @@ public:
     void DeleteTrackingCans();
 
     /*
-     * Character stuff
-     * (chrCharacter, chrSkillQueue)
+     * Character stuff also used by agents
      */
-    bool GetCharacter(uint32 characterID, CharacterData &into);
+    bool GetCharacterData(uint32 characterID, CharacterData &into);
     bool GetCorpData(uint32 characterID, CorpData &into);
-
-    bool NewCharacter(uint32 characterID, const CharacterData &data, const CorpData &corpData);
-    bool SaveCharacter(uint32 characterID, const CharacterData &data);
-    bool SaveCorpData(uint32 characterID, const CorpData &data);
-    bool DeleteCharacter(uint32 characterID);
 
     /** @todo update these below to use static data manager */
     bool GetCategory(EVEItemCategories category, CategoryData &into);
     bool GetGroup(uint32 groupID, GroupData &into);
     bool GetType(uint32 typeID, TypeData &into);
-    bool GetStationType(uint32 stationTypeID, StationTypeData &into);
     bool GetCelestialObject(uint32 celestialID, CelestialObjectData &into);
     bool GetSolarSystem(uint32 solarSystemID, SolarSystemData &into);
-    bool GetStation(uint32 stationID, StationInfo &into);
 
     static bool GetModulePowerSlotByTypeID(uint32 typeID, uint32 &into);
     static bool GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &into);

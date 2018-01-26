@@ -44,6 +44,14 @@ SET( log_SOURCE
      "${TARGET_SOURCE_DIR}/log/LogNew.cpp"
      "${TARGET_SOURCE_DIR}/log/logsys.cpp" )
 
+SET( math_INCLUDE
+     "${TARGET_INCLUDE_DIR}/math/gpoint.h"
+     "${TARGET_INCLUDE_DIR}/math/Trig.h")
+     #"${TARGET_INCLUDE_DIR}/math/Vector3D.h")
+SET( math_SOURCE
+     #"${TARGET_SOURCE_DIR}/math/Vector3D.cpp"
+     )
+
 SET( memory_INCLUDE
      #"${TARGET_INCLUDE_DIR}/memory/mmgr.h"
      "${TARGET_INCLUDE_DIR}/memory/RefPtr.h"
@@ -77,7 +85,6 @@ SET( utils_INCLUDE
      "${TARGET_INCLUDE_DIR}/utils/Deflate.h"
      "${TARGET_INCLUDE_DIR}/utils/DirWalker.h"
      "${TARGET_INCLUDE_DIR}/utils/FastInt.h"
-     "${TARGET_INCLUDE_DIR}/utils/gpoint.h"
      "${TARGET_INCLUDE_DIR}/utils/Lock.h"
      "${TARGET_INCLUDE_DIR}/utils/misc.h"
      "${TARGET_INCLUDE_DIR}/utils/Seperator.h"
@@ -109,6 +116,7 @@ SOURCE_GROUP( "src"            FILES ${INCLUDE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_INCLUDE} )
 SOURCE_GROUP( "src\\error"     FILES ${error_INCLUDE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_INCLUDE} )
+SOURCE_GROUP( "src\\math"      FILES ${math_INCLUDE} )
 SOURCE_GROUP( "src\\memory"    FILES ${memory_INCLUDE} )
 SOURCE_GROUP( "src\\network"   FILES ${network_INCLUDE} )
 SOURCE_GROUP( "src\\threading" FILES ${threading_INCLUDE} )
@@ -118,6 +126,7 @@ SOURCE_GROUP( "src"            FILES ${SOURCE} )
 SOURCE_GROUP( "src\\database"  FILES ${database_SOURCE} )
 SOURCE_GROUP( "src\\error"     FILES ${error_SOURCE} )
 SOURCE_GROUP( "src\\log"       FILES ${log_SOURCE} )
+SOURCE_GROUP( "src\\math"      FILES ${math_SOURCE} )
 #SOURCE_GROUP( "src\\memory"    FILES ${memory_SOURCE} )
 SOURCE_GROUP( "src\\network"   FILES ${network_SOURCE} )
 SOURCE_GROUP( "src\\threading" FILES ${threading_SOURCE} )
@@ -128,6 +137,7 @@ ADD_LIBRARY( "${TARGET_NAME}"
              ${database_INCLUDE}  ${database_SOURCE}
              ${error_INCLUDE}     ${error_SOURCE}
              ${log_INCLUDE}       ${log_SOURCE}
+             ${math_INCLUDE}      ${math_SOURCE}
              ${memory_INCLUDE}    #${memory_SOURCE}
              ${network_INCLUDE}   ${network_SOURCE}
              ${threading_INCLUDE} ${threading_SOURCE}

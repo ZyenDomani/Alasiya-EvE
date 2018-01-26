@@ -54,6 +54,7 @@ public:
 class PyResult
 {
 public:
+    PyResult();
     PyResult( PyRep* result );
     PyResult( const PyResult& oth );
     ~PyResult();
