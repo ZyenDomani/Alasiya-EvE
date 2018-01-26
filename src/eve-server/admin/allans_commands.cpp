@@ -154,7 +154,7 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
         else
             throw PyException(MakeCustomError("You must be in space to list bubble inventory."));
 
-        SystemBubble *b = who->GetShipSE()->SysBubble();
+    SystemBubble *b = who->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
     uint32 dynamics = b->CountDynamics();
     uint32 npcs = b->CountNPCs();

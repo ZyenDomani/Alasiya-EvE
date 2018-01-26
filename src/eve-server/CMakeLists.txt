@@ -86,7 +86,9 @@ SET( admin_INCLUDE
      #"${TARGET_INCLUDE_DIR}/admin/MiningCommands.h"
      "${TARGET_INCLUDE_DIR}/admin/PetitionerService.h"
      "${TARGET_INCLUDE_DIR}/admin/SlashService.h"
-     "${TARGET_INCLUDE_DIR}/admin/SystemCommands.h"  )
+     "${TARGET_INCLUDE_DIR}/admin/SystemCommands.h"
+     "${TARGET_INCLUDE_DIR}/admin/CommandHelper.h"
+     "${TARGET_INCLUDE_DIR}/admin/TranslocateHelper.h" )
 SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/AlertService.cpp"
      "${TARGET_SOURCE_DIR}/admin/allans_commands.cpp"
@@ -99,7 +101,9 @@ SET( admin_SOURCE
      #"${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/PetitionerService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SlashService.cpp"
-     "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"  )
+     "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"  
+     "${TARGET_INCLUDE_DIR}/admin/CommandHelper.cpp"
+     "${TARGET_SOURCE_DIR}/admin/TranslocateHelper.cpp" )
 
 SET( agent_INCLUDE
      "${TARGET_INCLUDE_DIR}/agents/Agent.h"
