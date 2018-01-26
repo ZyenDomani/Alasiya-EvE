@@ -23,6 +23,10 @@
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/BeltMgr.h"
+#include "admin/TranslocateHelper.h"
+#include "admin/CommandHelper.h"
+#include "tables/invGroups.h"
+#include "tables/invCategories.h"
 
 PyResult Command_goto(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
@@ -49,147 +53,97 @@ PyResult Command_translocate(Client* who, CommandDB* db, PyServiceMgr* services,
 }
 
 
-PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
-{
-    std::string usageString =
-    "Correct Usage:<br><br>\
-    - General Notes:<br>\
-    + tr is same as translocate command<br>\
-    + object being teleported MUST be in space<br>\
-    + destination object MUST be in space<br>\
-    + 'entityID #1' MUST be a currently logged-in character<br>\
-    + 'entityID #2' can be a character, ship, NPC, station, belt, stargate, or solar system<br>\
-    + 'me' string is allowed for [character name] to indicate YOU being teleported<br><br>\
-    .tr [entityID #1] - teleport YOU to 'entityID'<br>\
-    .tr [character name] - teleport YOU to 'character name'<br>\
-    .tr [locationID] - teleport YOU into 'locationID'<br>\
-    .tr [solar system name] - teleport YOU into 'solar system name' system<br>\
-    .tr [entityID #1|character name] [entityID #2|character name|locationID|solar system name] - teleport 'entityID #1' or 'character name' to 'entityID #2', 'character name' or solar system<br>\
-    .tr x y z - teleport YOU to a specific (x,y,z) coordinate in the current solar system<br>\
-    ";
-
-    // Error if there are NO arguments past first string "tr" or "translocate":
-    if (args.argCount() < 2) {
-        throw PyException(MakeCustomError(usageString.c_str()));
+PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    codelog(COMMAND__ERROR, "/tr issued:");
+    for (int i = 0; i < args.argCount(); i++) {
+        codelog(COMMAND__ERROR, "  %s", args.arg(i).c_str());
     }
+    TRData d = {};
+    d.who = who;
+    d.db = db;
+    d.services = services;
 
-    // Argument Discovery
-    Client* p_targetClient(nullptr);
-    SystemEntity* destinationEntity(nullptr);
-    int locationID = 0, trMode = 0;
-    GPoint destinationPoint(NULL_ORIGIN);
-    uint32 argsCount = args.argCount();
-    std::string name1 = args.arg(1);
-    std::string name2 = "";
-    bool isFirstArgName = false, isSecondArgName = false;
-    enum TR_MODE
-    {
-        TR_MODE_ME_TO_ENTITY = 1,
-        TR_MODE_ME_TO_CHARACTER = 2,
-        TR_MODE_ME_TO_SOLARSYSTEMID = 3,
-        TR_MODE_ME_TO_SOLARSYSTEM = 4,
-        TR_MODE_ENTITY_TO_ENTITY = 5,
-        TR_MODE_ENTITY_TO_CHARACTER = 6,
-        TR_MODE_ENTITY_TO_SOLARSYSTEMID = 7,
-        TR_MODE_ENTITY_TO_SOLARSYSTEM = 8,
-        TR_MODE_CHARACTER_TO_ENTITY = 9,
-        TR_MODE_CHARACTER_TO_CHARACTER = 10,
-        TR_MODE_CHARACTER_TO_SOLARSYSTEMID = 11,
-        TR_MODE_CHARACTER_TO_SOLARSYSTEM = 12
-    };
+    uint32 victim = 0;
+    uint32 dest = 0;
+    LocationTag tag = LocationTag_Invalid;
 
-    isFirstArgName = args.isNumber(1) ? false : true;
-
-    // First, determine nature of First argument
-    if (isFirstArgName) {
-        // First argument is a string, find out if it's a character or solar system:
-        if ((name1 == "me") && (argsCount < 3))
-            throw PyException(MakeCustomError(std::string(usageString+"<br><br>FIRST ARGUMENT WAS 'me' BUT MISSING SECOND ARGUMENT!").c_str()));
-
-        if (name1 == "me")
-            p_targetClient = who;
-        else {
-            // First argument is a string of a character or solar system:
-            //TODO
-        }
-    } else {
-        // First argument is a number, find out if it's a character, ship, NPC, station, belt, stargate, or solar system:
-        //TODO
-        p_targetClient = who;
-        locationID = atoi(args.arg(1).c_str());
-        SystemGPoint m_gp;
-        if (IsSolarSystem(locationID))
-            destinationPoint = m_gp.GetRandPointOnMoon(locationID);//GPoint(12457894200.0f, 17254864800.0f, 14851254800.0f);
-            /*
-        } else if (IsPlayerItem(locationID)) {
-            destinationPoint = who->SystemMgr()->GetSE(locationID)->GetPosition();
-            locationID = who->GetLocationID();
-        }*/
-
-        trMode = 1;
-    }
-
-    if (trMode == 0)
-        throw PyException(MakeCustomError(std::string(usageString+"<br><br>UNABLE TO DETERMINE FORMAT OF ARGUMENTS 1 and 2!").c_str()));
-
-
-    if (argsCount == 3) {
-        // We are transporting either THIS client 'who' or some other entity or character to somewhere:
-        name2 = args.arg(2);
-        isSecondArgName = args.isNumber(2) ? false : true;
-
-        // Determine nature of Second argument
-        if (isSecondArgName) {
-            // Second argument is a string, find out if it's a character or solar system:
-            //TODO
-            throw PyException(MakeCustomError(std::string(usageString+"<br><br>NOT SUPPORTED YET!").c_str()));
+    if (args.argCount() == 2) {
+        if (args.isNumber(1)) {
+            dest = atoi(args.arg(1).c_str());
+            tag = translocate_resolve_id(&d, atoi(args.arg(1).c_str()));
         } else {
-            // Second argument is a number, find out if it's a character, ship, NPC, station, belt, stargate, or solar system:
-            //TODO
-            throw PyException(MakeCustomError(std::string(usageString+"<br><br>NOT SUPPORTED YET!").c_str()));
+            codelog(COMMAND__ERROR, "argument 1: %s", args.arg(1).c_str());
+            tag = translocate_resolve_location_name(&d, args.arg(1).c_str(), &dest);
         }
+        if (translocate_to(&d, who->GetCharacterID(), dest, tag)) {
+            return new PyBool(true);
+        }
+        codelog(COMMAND__ERROR, "translocate_to failed");
+        return new PyBool(false);
+    }
+    if (args.argCount() == 3) {
+        if (args.isNumber(1)) {
+            victim = atoi(args.arg(1).c_str());
+            tag = translocate_resolve_id(&d, victim);
+        } else {
+            tag = translocate_resolve_location_name(&d, args.arg(1).c_str(),
+                                                    &victim);
+        }
+        if (args.isNumber(2)) {
+            dest = atoi(args.arg(2).c_str());
+            tag = translocate_resolve_id(&d, dest);
+        } else {
+            tag = translocate_resolve_location_name(&d, args.arg(2).c_str(),
+                                                    &dest);
+        }
+
+        if (translocate_to(&d, victim, dest, tag)) {
+            return new PyBool(true);
+        }
+        codelog(COMMAND__ERROR, "translocate_to failed");
+        return new PyBool(false);
     }
 
-    if (argsCount == 4) {
-        // SPECIAL CASE:  We are transporting ourselves to a specific (x,y,z) coordinate in the current solar system:
-        p_targetClient = who;
-        locationID = who->GetLocationID();
-        if (!IsSolarSystem(locationID))
-            throw PyException(MakeCustomError(std::string(usageString+"<br><br>YOU MUST BE IN SPACE!").c_str()));
-
-        if (args.isNumber(1) && args.isNumber(2) && args.isNumber(3))
-            destinationPoint = GPoint(atoll(args.arg(1).c_str()), atoll(args.arg(2).c_str()), atoll(args.arg(3).c_str()));
-    }
-
-    //  in case ap is set, unset it, as it will do odd things when undocking or loging in
-    p_targetClient->SetAutoPilot(false);
-
-    // We're still going, so we know now we have a target to translocate AND a destination solar system AND destination coordinates, so let's do the translocate:
-    //    p_targetClient - target character in a ship to translocate (Client *)
-    //    locationID - destination solar system ID
-    //    destinationPoint - destination coordinates (GPoint)
-
-    //if (!p_targetClient->GetShipSE())
-    //    p_targetClient->CreateShipSE();
-    if (IsSolarSystem(locationID) and p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
-        p_targetClient->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", locationID);
-
-    p_targetClient->MoveToLocation(locationID, destinationPoint);
-    //p_targetClient->SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
-    if (p_targetClient->GetShipSE() and p_targetClient->GetShipSE()->DestinyMgr())
-        p_targetClient->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
-
-    return new PyString("Translocation successful.");
+    return new PyBool(false);
 }
 
-PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 2) {
-        throw PyException(MakeCustomError("Correct Usage: /create [typeID]"));
-    }
+static PyResult generic_createitem(Client *who, CommandDB *db, PyServiceMgr *services, const Seperator &args) {
 
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    int typeID = atoi(args.arg(1).c_str());
+    int typeID = -1;
+    if (args.isNumber(1)) {
+        typeID = atoi(args.arg(1).c_str());
+    } else {
+        std::map<uint32_t, std::string> matches;
+        if (!db->ItemSearch(args.arg(1).c_str(), matches)) {
+            throw PyException(MakeCustomError("Item not found"));
+        }
+
+        if (matches.size() > 1) {
+            auto c = matches.begin();
+            auto e = matches.end();
+            for (; c != e; c++) {
+                _log(COMMAND__MESSAGE, "Got match: %s\n", c->second.c_str());
+
+                // POSIX standard btw
+                if (strcasecmp(c->second.c_str(), args.arg(1).c_str()) == 0) {
+                    typeID = c->first;
+                }
+            }
+            if (typeID == -1) {
+                throw PyException(MakeCustomError("Item name is ambiguous.  Please use a full item name"));
+            }
+        } else if (matches.size() == 1) {
+            auto cur = matches.begin();
+            _log(COMMAND__MESSAGE,
+                 "ItemSearch returned type: \"%s\" given \"%s\"\n", 
+                 cur->second.c_str(), args.arg(1).c_str());
+            typeID = cur->first;
+        }
+    }
+    if (typeID == -1) {
+        throw PyException(MakeCustomError("Unable to find valid type to create"));
+    }
+    
 
     int qty = 1;
     if (2 < args.argCount()) {
@@ -232,52 +186,18 @@ PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, cons
     return new PyInt(i.get()->itemID());
 }
 
+PyResult Command_create(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+    if (args.argCount() < 2) {
+        throw PyException(MakeCustomError("Correct Usage: /create [typeID|\"Type Name\"] [qty] [where]"));
+    }
+    return generic_createitem(who, db, services, args);
+}
+
 PyResult Command_createitem(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    if (args.argCount() < 2)
-        throw PyException(MakeCustomError("Correct Usage: /create [typeID]"));
-
-    //basically, a copy/paste from Command_create. The client seems to call this multiple times,
-    //each time it creates an item
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 must be type ID."));
-    int typeID = atoi(args.arg(1).c_str());
-
-    int qty = 1;
-    if (2 < args.argCount()) {
-        if (args.isNumber(2))
-            qty = atoi(args.arg(2).c_str());
+    if (args.argCount() < 2) {
+        throw PyException(MakeCustomError("Correct Usage: /createitem [typeID|\"Type Name\"] [qty] [where]"));
     }
-
-    sLog.White("command message", "Create %s %u times", args.arg(1).c_str(), qty);
-
-    //create into their cargo hold unless they are docked in a station,
-    //then stick it in their hangar instead.
-    uint32 locationID;
-    EVEItemFlags flag;
-    if (who->IsInSpace()) {
-        locationID = who->GetShipID();
-        flag = flagCargoHold;
-    } else {
-        locationID = who->GetStationID();
-        flag = flagHangar;
-    }
-
-    ItemData idata(
-        typeID,
-        who->GetCharacterID(),
-                   0, //temp location
-                   flag,
-                   qty
-    );
-
-    InventoryItemRef i = sItemFactory.SpawnItem(idata);
-    if (i.get() == nullptr)
-        throw PyException(MakeCustomError("Unable to create item of type %s.", args.arg(1).c_str()));
-
-    //Move to location
-    i->Move(locationID, flag, true);
-
-    return new PyString("Creation successful.");
+    return generic_createitem(who, db, services, args);
 }
 
 
@@ -344,32 +264,116 @@ PyResult Command_killallnpcs(Client* who, CommandDB* db, PyServiceMgr* services,
 
 PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+#define DEFAULT_RANGE 500000
+    if (!who->IsInSpace()) {
         throw PyException(MakeCustomError("You must be in space to unspawn things."));
-
-    if ((args.argCount() < 2) || (args.argCount() > 2))
-        throw PyException(MakeCustomError("Correct Usage: /unspawn (itemID)"));
-
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 should be itemID"));
-
-    uint32 itemID = atoi(args.arg(1).c_str());
-
-    // Search for the itemRef for itemID:
-    InventoryItemRef itemRef = sItemFactory.GetItem(itemID);
-    SystemEntity* pSE = who->SystemMgr()->GetSE(itemID);
-
-    // Actually do the unspawn using SystemManager's RemoveEntity:
-    if (pSE == nullptr) {
-        throw PyException(MakeCustomError("Un-Spawn Failed: itemID %u not found.", itemID));
-    } else {
-        who->SystemMgr()->RemoveEntity(pSE);
-        itemRef->Delete();
     }
 
-    sLog.White("Command", "%s: Un-Spawned %u.", who->GetName(), itemID);
+    if (who->GetShipSE() == nullptr) {
+            throw PyException(MakeCustomError("/unspawn failed. You don't appear to have a ship?"));
+    }
+    int target_index = cmd_find_nth_noneq(args, 1);
+    uint32 target = 0;
+    if (target_index > 0) {
+        if (!args.isNumber(target_index)) {
+            throw PyException(MakeCustomError("/unspawn called with non number"));
+        }
+        target = atoi(args.arg(target_index).c_str());
+    }
+    
+    std::string range_str = cmd_parse_eq_arg(args, "range=");
+    std::string only_str = cmd_parse_eq_arg(args, "only=");
 
-    return new PyString("Un-Spawn successful.");
+    codelog(COMMAND__ERROR, "unspawn got: %s %s %u", 
+            range_str.c_str(), only_str.c_str(), target);
+
+    uint32 range = DEFAULT_RANGE;
+
+    if (range_str.size() > 0) {
+        if (!IsNumber(range_str)) {
+            throw PyException(MakeCustomError("/unspawn with range=x must be a number"));
+        }
+        range = atoi(range_str.c_str());
+    }
+
+    if ((range != DEFAULT_RANGE or
+            only_str.size() > 0) and
+            target != 0) {
+            throw PyException(MakeCustomError("/unspawn cannot be called with an explcit target and either range= or only="));
+    }
+
+    if (target != 0) {
+        InventoryItemRef item_ref = sItemFactory.GetItem(target);
+        SystemEntity *sys_entity = who->SystemMgr()->GetSE(target);
+        if (sys_entity == nullptr) {
+            throw PyException(MakeCustomError("/unspawn failed.  Item %u not found.", target));
+        }
+
+        who->SystemMgr()->RemoveEntity(sys_entity);
+        item_ref->Delete();
+        codelog(COMMAND__MESSAGE, "/unspawn called with single target successful");
+        return new PyBool(true);
+    }
+
+    if (only_str.size() == 0) {
+        throw PyException(MakeCustomError("/unspawn usage:<br>  /unspawn [itemID]<br>/unspawn only=category|group<br>If using only the default range is 10k.  You can set this by adding range=x in meters"));
+    }
+
+    bool is_category_match = false;
+    bool is_group_match = false;
+    uint16 match_id = 0;
+
+    if (strcmp(only_str.c_str(), "categoryDrone") == 0) {
+        match_id = EVEDB::invCategories::Drone;
+        is_category_match = true;
+    } else if (strcmp(only_str.c_str(), "groupWreck") == 0) {
+        match_id = EVEDB::invGroups::Wreck;
+        is_group_match = true;
+    } else {
+        throw PyException(MakeCustomError("only='%s' not a supported group or category", only_str.c_str()));
+    }
+
+    SystemBubble *bubble = who->GetShipSE()->SysBubble();
+    if (bubble == nullptr) {
+        throw PyException(MakeCustomError("/unspawn failed.  You don't appear to be in a bubble.  Try /update"));
+    }
+
+    GPoint player_pos = who->GetShipSE()->GetPosition();
+    Inventory *sys_inv = who->SystemMgr()->GetSystemInv();
+
+    std::vector<SystemEntity *> entities;
+    bubble->GetEntities(entities);
+    for (int i = 0; i < entities.size(); i++) {
+        SystemEntity *e = entities[i];
+        if (is_group_match == true and match_id != e->GetGroupID()) {
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u", 
+                    is_group_match, is_category_match, match_id, e->GetGroupID());
+            continue;
+        }
+        if (is_category_match == true and match_id != e->GetCategoryID()) {
+
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u categoryID %u", 
+                    is_group_match, is_category_match, match_id, e->GetGroupID());
+            continue;
+        }
+
+        uint32_t itemID = e->GetID();
+        codelog(COMMAND__ERROR, "Grid item: %u passed initial checks", itemID);
+        GPoint pos = e->GetPosition();
+        float d = player_pos.distance(pos);
+        if (d > (float)range) {
+            continue;
+        }
+
+
+        who->SystemMgr()->RemoveEntity(e);
+        InventoryItemRef item = sItemFactory.GetItem(itemID);
+        item->Delete();
+    }
+
+#undef DEFAULT_RANGE
+
+    return new PyBool(true);
 }
 
 PyResult Command_location(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
@@ -540,6 +544,7 @@ PyResult Command_pos(Client* who, CommandDB* db, PyServiceMgr* services, const S
      * ' /pos unanchor ' + str(itemID)
      * ' /pos anchor ' + str(itemID)
      * ' /pos offline ' + str(itemID)
+     * ' /pos fuel [itemID]
      */
 
     /*

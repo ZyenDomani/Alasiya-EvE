@@ -209,9 +209,11 @@ Client* EntityList::FindClientByCharID(uint32 char_id) const {
 Client* EntityList::FindClientByName(const char* name) const {
     for (auto cur : m_clients) {
         CharacterRef cRef = cur->GetChar();
-        if (cRef.get() != nullptr)
-			if (cRef->itemName().c_str() == name)
+				if (cRef.get() != nullptr) {
+						if (strcmp(cRef->itemName().c_str(), name) == 0) {
                 return cur;
+						}
+				}
     }
     return nullptr;
 }

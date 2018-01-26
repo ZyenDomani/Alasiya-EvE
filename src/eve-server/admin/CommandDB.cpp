@@ -27,6 +27,54 @@
 
 #include "admin/CommandDB.h"
 
+uint32_t CommandDB::GetSolarSystem(const char *name) {
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, name);
+    DBQueryResult result;
+    DBResultRow row;
+
+    if (!sDatabase.RunQuery(result,
+                            "SELECT solarSystemID "
+                            "FROM mapSolarSystems "
+                            "WHERE solarSystemName LIKE '%%%s%%';",
+                            escaped.c_str()
+                            )) {
+        codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
+        return 0;
+    }
+    if (!result.GetRow(row)) { 
+        codelog(COMMAND__ERROR, "Solar System query returned nothing");
+        return 0;
+    }
+
+    return row.GetUInt(0);
+}
+
+uint32_t CommandDB::GetCharacter(const char *name) {
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, name);
+
+    DBQueryResult result;
+    DBResultRow row;
+    // @TODO: Update when character refactor is complete
+    if (!sDatabase.RunQuery(result,
+                            "SELECT itemName "
+                            "FROM entity "
+                            "WHERE itemID LIKE '%%%s%%';",
+                            escaped.c_str()
+                            )) {
+        codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
+        return 0;
+    }
+
+    if (!result.GetRow(row)) { 
+        codelog(COMMAND__ERROR, "Solar System query returned nothing");
+        return 0;
+    }
+
+    return row.GetUInt(0);
+}
+
 bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &into) {
 
     std::string escaped;
