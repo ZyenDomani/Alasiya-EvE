@@ -99,7 +99,9 @@ public:
     void OnlineModule(StructureSE* pSE)  { /* do nothing here */ }
     void OfflineModule(StructureSE* pSE)  { /* do nothing here */ }
 
+    // not coded yet
     bool HasPG(float amount)  { return true; }
+    // not coded yet
     bool HasCPU(float amount)  { return true; }
 
     float GetPGLoad()   { return m_pg; }

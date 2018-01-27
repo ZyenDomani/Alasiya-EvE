@@ -528,7 +528,7 @@ void StructureSE::Activate(int32 effectID)
             throw PyException( MakeUserError("NotEnoughPower", args));
         }
     } else {
-        ; // check for things that DONT use a tower.  not sure if we need anymore checks here.
+        ; // check for things that DONT use a tower.  not sure if we need anymore checks here.  yes....all sov structures will need checks for activation
     }
     m_data.state = EVEPOS::StructureState::Onlining;
     m_procState = EVEPOS::ProcState::Onlining;

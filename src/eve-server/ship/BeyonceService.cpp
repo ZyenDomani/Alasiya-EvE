@@ -694,6 +694,8 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
         if (call.client->IsAutoPilot())
             return PyStatic.NewNone();
 
+    call.client->SetAutoPilot(false);
+
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());

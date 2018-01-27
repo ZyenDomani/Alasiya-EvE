@@ -212,14 +212,7 @@ bool InventoryDB::GetCharacterType(uint32 bloodlineID, CharacterTypeData &into) 
 
 bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &characterTypeID) {
     DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  typeID "
-        " FROM bloodlineTypes"
-        " WHERE bloodlineID = %u",
-        bloodlineID))
-    {
+    if(!sDatabase.RunQuery(res, "SELECT typeID FROM bloodlineTypes WHERE bloodlineID = %u", bloodlineID)) {
         codelog(DATABASE__ERROR, "Failed to query bloodline %u: %s.", bloodlineID, res.error.c_str());
         return false;
     }
@@ -237,14 +230,7 @@ bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &charac
 
 bool InventoryDB::GetBloodlineByCharacterType(uint32 characterTypeID, uint32 &bloodlineID) {
     DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "  bloodlineID"
-        " FROM bloodlineTypes"
-        " WHERE typeID = %u",
-        characterTypeID))
-    {
+    if(!sDatabase.RunQuery(res, "SELECT bloodlineID FROM bloodlineTypes WHERE typeID = %u", characterTypeID)) {
         codelog(DATABASE__ERROR, "Failed to query character type %u: %s.", characterTypeID, res.error.c_str());
         return false;
     }
