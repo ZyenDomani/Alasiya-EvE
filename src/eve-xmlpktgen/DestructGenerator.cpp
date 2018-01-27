@@ -367,3 +367,4 @@ bool ClassDestructGenerator::ProcessSubStructInline( const TiXmlElement* field )
 {
     return ParseElementChildren( field, 1 );
 }
+

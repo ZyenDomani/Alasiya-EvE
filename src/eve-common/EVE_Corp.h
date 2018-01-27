@@ -21,7 +21,7 @@ recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
 recStoreItems = 'STOREITEMS'                <-- not sure here
 */
 
-namespace EveCorp {
+namespace Corp {
 
     namespace CorpBillType {
         enum  {
@@ -68,13 +68,13 @@ namespace EveCorp {
 
     namespace AppStatus {
         enum  { //          status              corp side   user side
-            appliedByCharacter          = 0, //    new       applied
-            renegotiatedByCharacter     = 1, //   update      reneg
-            acceptedByCharacter         = 2, //  accepted    accepted
-            rejectedByCharacter         = 3,
-            rejectedByCorporation       = 4, //    error      reject
-            renegotiatedByCorporation   = 5,
-            acceptedByCorporation       = 6  //    offer      offer
+            AppliedByCharacter          = 0, //    new       applied
+            RenegotiatedByCharacter     = 1, //   update      reneg
+            AcceptedByCharacter         = 2, //  accepted    accepted
+            RejectedByCharacter         = 3,
+            RejectedByCorporation       = 4, //    error      reject
+            RenegotiatedByCorporation   = 5,
+            AcceptedByCorporation       = 6  //    offer      offer
         };
     }
 
@@ -226,7 +226,7 @@ namespace EveFacWar {
             AtWarCanFight = 4
         };
     }
-    
+
     namespace CorpStatus {
         enum  {
             Joining = 0,

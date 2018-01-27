@@ -267,18 +267,17 @@ PyResult CorpRegistryBound::Handle_GetCorporateContacts(PyCallArgs &call)
 }
 
 PyResult CorpRegistryBound::Handle_GetApplications(PyCallArgs &call)
-{   // not working
+{   // working
     return m_db.GetApplications(m_corpID);
 }
 
 PyResult CorpRegistryBound::Handle_GetRecruitmentAdsForCorporation(PyCallArgs &call)
-{   // not working
-    // recruitments = self.GetCorpRegistry().GetRecruitmentAdsForCorporation()
+{   // recruitments = self.GetCorpRegistry().GetRecruitmentAdsForCorporation()
     return m_db.GetAdRegistryData();
 }
 
 PyResult CorpRegistryBound::Handle_GetMyApplications(PyCallArgs &call)
-{   // not working
+{   // working
     return m_db.GetMyApplications(call.client->GetCharacterID());
 }
 
@@ -533,7 +532,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
                                 Account::KeyType::Cash);
 
     // add corp event for creating new corp
-    m_db.AddItemEvent(corpID, call.client->GetCharacterID(), EveCorp::EventType::CreatedCorporation);
+    m_db.AddItemEvent(corpID, call.client->GetCharacterID(), Corp::EventType::CreatedCorporation);
 
     CorpData data;
         data.name = args.corpName;
@@ -885,13 +884,13 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
+    int32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
 
     std::vector<int32> recruiters;
     for (PyList::const_iterator itr = args.recruiters->begin(); itr != args.recruiters->end(); ++itr)
         recruiters.push_back((*itr)->AsInt()->value());
 
-    m_db.AddRecruiters(adID, m_corpID, recruiters);
+    m_db.AddRecruiters(adID, (int32)m_corpID, recruiters);
 
     return nullptr;
 }
@@ -1035,8 +1034,8 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
      * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 2] Integer field: 134217728
      * 09:01:13 [CorpCallDump]         [ 0]   [ 1] List: 4 elements
      * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 0] Integer field: 2             <-- joinOp  (AND/OR)
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 1] String: 'roles'              <-- queryType   (EveCorp::QueryType {roles/charID/baseID/joinDate})
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 2] Integer field: 7             <-- searchOp (EveCorp::SearchOp)
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 1] String: 'roles'              <-- queryType   (Corp::QueryType {roles/charID/baseID/joinDate})
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 2] Integer field: 7             <-- searchOp (Corp::SearchOp)
      * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 3] Integer field: 2199023255552 >-- value   (depends on searchOp, int, int64)
      * 09:01:13 [CorpCallDump]         [ 0]   [ 2] List: 4 elements
      * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 0] Integer field: 2
@@ -1047,9 +1046,9 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
      * 09:01:13 [CorpCallDump]         [ 2] Integer field: 0
      */
 
-    uint8 queryType = EveCorp::QueryType::Roles;
-    uint8 joinOp = EveCorp::JoinOp::OR;
-    uint8 searchOp = EveCorp::SearchOp::EQUAL;
+    uint8 queryType = Corp::QueryType::Roles;
+    uint8 joinOp = Corp::JoinOp::OR;
+    uint8 searchOp = Corp::SearchOp::EQUAL;
     int64 searchRole = 0;
     std::string searchString = "";
 
@@ -1112,29 +1111,29 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
 uint8 CorpRegistryBound::GetQueryType(std::string queryType)
 {
     if (queryType.compare("roles") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("rolesAtHQ") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("rolesAtBase") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("rolesAtOther") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("grantableRoles") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("grantableRolesAtHQ") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("grantableRolesAtBase") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("grantableRolesAtOther") == 0)
-        return EveCorp::QueryType::Roles;
+        return Corp::QueryType::Roles;
     else if (queryType.compare("baseID") == 0)
-        return EveCorp::QueryType::BaseID;
+        return Corp::QueryType::BaseID;
     else if (queryType.compare("startDateTime") == 0)
-        return EveCorp::QueryType::StartDateTime;
+        return Corp::QueryType::StartDateTime;
     else if (queryType.compare("characterID") == 0)     //this is actually string.  check searchOp for details
-        return EveCorp::QueryType::CharID;
+        return Corp::QueryType::CharID;
     else if (queryType.compare("titleMask") == 0)
-        return EveCorp::QueryType::TitleMask;
+        return Corp::QueryType::TitleMask;
     else
         _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
 }
@@ -1402,17 +1401,39 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call) {
 
     /// Insert query into the db
     ApplicationInfo aInfo;
-    aInfo.charID = call.client->GetCharacterID();
-    aInfo.corpID = res.corpID;
-    aInfo.appText = res.message;
+        aInfo.valid = true;
+        aInfo.charID = call.client->GetCharacterID();
+        aInfo.corpID = res.corpID;
+        aInfo.appText = res.message;
+        aInfo.role = Corp::Role::Member;
+        aInfo.grantRole = Corp::Role::Member;  // this is "None"
+        aInfo.status = Corp::AppStatus::AppliedByCharacter;
+        aInfo.appTime = GetFileTimeNow();
+        aInfo.deleted = false;
+        aInfo.lastCID = 0;
+
     if (!m_db.InsertApplication(aInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to insert application request", call.client->GetName());
         return nullptr;
     }
 
     /// BroadcastStuff::Notify( OnCorporationApplicationChanged ,...)
-    OnCorporationApplicationChanged OCAC;
+    // this is for an existing application, to change data.
+    // since this is a new application, there is no data to change
     ApplicationInfo oldInfo;
+        oldInfo.valid = false;
+        /*
+        oldInfo.charID = call.client->GetCharacterID();
+        oldInfo.corpID = res.corpID;
+        oldInfo.appText = res.message;
+        oldInfo.role = Corp::Role::Member;
+        oldInfo.grantRole = Corp::Role::Member;  // this is "None"
+        oldInfo.status = Corp::AppStatus::AppliedByCharacter;
+        oldInfo.appTime = GetFileTimeNow();
+        oldInfo.deleted = false;
+        oldInfo.lastCID = 0;
+        */
+    OnCorporationApplicationChanged OCAC;
     FillOCApplicationChange(OCAC, oldInfo, aInfo);
     OCAC.corpID = res.corpID;
     OCAC.charID = aInfo.charID;
@@ -1422,24 +1443,22 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call) {
     // Everyone who's in that corporation, right?
 
     MulticastTarget mct;
-    mct.characters.insert(OCAC.charID);
-    mct.corporations.insert(OCAC.corpID);
+        mct.characters.insert(OCAC.charID);
+        mct.corporations.insert(OCAC.corpID);
     sEntityList.Multicast("OnCorporationApplicationChanged", "clientID", &notif, mct);
 
     if (IsPlayerCorp(res.corpID))
-        m_db.AddItemEvent(res.corpID, call.client->GetCharacterID(), EveCorp::EventType::AppliedForMembershipOfCorporation);
+        m_db.AddItemEvent(res.corpID, call.client->GetCharacterID(), Corp::EventType::AppliedForMembershipOfCorporation);
 
-    /// need to find out what happens on the other side
-    /// if there's anything at all on the other side
+    /// need to find out what happens on the other side, if there's anything at all on the other side
 
     /// Send an evemail to those who can decide
     /// Well, for the moment, send it to the ceo
-    std::string
-    subject = std::string("New application from ") + call.client->GetName(),
-    body = res.message;
+    std::string subject = "New application from ";
+    subject += call.client->GetName();
     std::vector<int32> recipients;
     recipients.push_back(m_db.GetCorporationCEO(res.corpID));
-    m_manager->lsc_service->SendMail(call.client->GetCharacterID(), recipients, subject, body);
+    m_manager->lsc_service->SendMail(call.client->GetCharacterID(), recipients, subject, res.message);
 
     /// Reply: ~\x00\x00\x00\x00\x01
     return nullptr;
@@ -1447,6 +1466,7 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call) {
 
 void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged& OCAC, const ApplicationInfo& Old, const ApplicationInfo& New) {
     if (Old.valid) {
+        OCAC.applicationIDOld = new PyInt(Old.appID);
         OCAC.applicationDateTimeOld = new PyLong(Old.appTime);
         OCAC.applicationTextOld = new PyString(Old.appText);
         OCAC.characterIDOld = new PyInt(Old.charID);
@@ -1461,6 +1481,7 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
         OCAC.rolesOld = new PyLong(Old.role);
         OCAC.statusOld = new PyInt(Old.status);
     } else {
+        OCAC.applicationIDOld = PyStatic.NewNone();
         OCAC.applicationDateTimeOld = PyStatic.NewNone();
         OCAC.applicationTextOld = PyStatic.NewNone();
         OCAC.characterIDOld = PyStatic.NewNone();
@@ -1473,6 +1494,7 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
     }
 
     if (New.valid) {
+        OCAC.applicationIDNew = new PyInt(New.appID);
         OCAC.applicationDateTimeNew = new PyLong(New.appTime);
         OCAC.applicationTextNew = new PyString(New.appText);
         OCAC.characterIDNew = new PyInt(New.charID);
@@ -1487,6 +1509,7 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
         OCAC.rolesNew = new PyLong(New.role);
         OCAC.statusNew = new PyInt(New.status);
     } else {
+        OCAC.applicationIDNew = PyStatic.NewNone();
         OCAC.applicationDateTimeNew = PyStatic.NewNone();
         OCAC.applicationTextNew = PyStatic.NewNone();
         OCAC.characterIDNew = PyStatic.NewNone();
@@ -1500,171 +1523,111 @@ void CorpRegistryBound::FillOCApplicationChange(OnCorporationApplicationChanged&
 }
 
 PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
-    sLog.White( "CorpRegistryBound::Handle_UpdateApplicationOffer()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-    /** Incoming:
-     *  Tuple
-     *   - int 140000017    <- this is the charID, whose app should be handled
-     *   - string message
-     *   - int decision
-     *      4: rejection
-     *      6: acception
-     *   - (none), so far
-     */
-
-    /** @todo  update all of this.  */
+    //     return self.GetCorpRegistry().UpdateApplicationOffer(characterID, applicationText, status, applicationDateTime = None) NOTE: time not used.
     Call_UpdateApplicationOffer args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return PyStatic.NewNone();
     }
 
-    // OnCorporationApplicationChanged event, probably be good to make it two (or more) times, independently, depending on update type
+    ApplicationInfo oldInfo;
+        oldInfo.valid = true;
+    if (!m_db.GetCurrentApplicationInfo(args.charID, m_corpID, oldInfo)) {
+        codelog(SERVICE__ERROR, "%s: Failed to query application for char %u corp %u", call.client->GetName(), args.charID, m_corpID);
+        return PyStatic.NewNone();
+    }
+
+    ApplicationInfo newInfo;
+        newInfo = oldInfo;
+        newInfo.valid = true;
+        newInfo.status = args.newStatus;
+        newInfo.lastCID = call.client->GetCharacterID();
+        // newInfo.appTime = args.appDateTime;
+
+    if (args.newStatus == Corp::AppStatus::RejectedByCorporation) {
+        if (!m_db.UpdateApplication(newInfo)) {
+            codelog(SERVICE__ERROR, "%s: Failed to update application", call.client->GetName());
+            return PyStatic.NewNone();
+        }
+    }
+
+    PyTuple* answer(nullptr);
     OnCorporationApplicationChanged OCAC;
-    PyTuple * answer;
+        OCAC.charID = args.charID;
+        OCAC.corpID = m_corpID;
+    if (args.newStatus == Corp::AppStatus::AcceptedByCorporation) {  // accepted
+        /** @todo check memberlimit */
+        if (!m_db.UpdateApplication(newInfo)) {
+            codelog(SERVICE__ERROR, "%s: Failed to update application for char %u corp %u", call.client->GetName(), OCAC.charID, m_corpID);
+            return nullptr;
+        }
 
-    switch (args.newStatus) {
-        case EveCorp::AppStatus::rejectedByCorporation:
-        {
-            ApplicationInfo newInfo;
-            newInfo.valid = true;
-            ApplicationInfo oldInfo;
-            oldInfo.valid = true;
-            ApplicationInfo invalidInfo;
-            invalidInfo.valid = false;
-            OCAC.charID = args.charID;
-            OCAC.corpID = m_corpID;
-            if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
-                codelog(SERVICE__ERROR, "%s: Failed to query application for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-                return PyStatic.NewNone();
-            }
-            newInfo = oldInfo;
-            newInfo.status = EveCorp::AppStatus::rejectedByCorporation;
-            newInfo.lastCID = call.client->GetCharacterID();
-            if (!m_db.UpdateApplication(newInfo)) {
-                codelog(SERVICE__ERROR, "%s: Failed to update application", call.client->GetName());
-                return PyStatic.NewNone();
-            }
+        MemberAttributeUpdate change;
+        if (!m_db.CreateMemberAttributeUpdate(oldInfo.corpID, args.charID, change)) {
+            codelog(SERVICE__ERROR, "Couldn't get data from the character. Sorry.");
+            return nullptr;
+        }
 
-            FillOCApplicationChange(OCAC, oldInfo, newInfo);
-            answer = OCAC.Encode();
-            sEntityList.Unicast(OCAC.charID,
-                                "OnCorporationApplicationChanged",
-                                "*corpid&corprole", &answer);
-
-            FillOCApplicationChange(OCAC, oldInfo, invalidInfo);
-            answer = OCAC.Encode();
-            // Maybe this will remove the app from the corp
-            sEntityList.Multicast(
-                "OnCorporationApplicationChanged",
-                "*corpid&corprole", &answer,
-                NOTIF_DEST__CORPORATION, OCAC.corpID);
-        } break;
-        case EveCorp::AppStatus::acceptedByCorporation: /// accepted
-        {
-            /** @todo check memberlimit */
-            /// OnCorporationApplicationChanged
-            ApplicationInfo newInfo;
-            newInfo.valid = true;
-            ApplicationInfo oldInfo;
-            oldInfo.valid = true;
-            OCAC.charID = args.charID;
-            OCAC.corpID = m_corpID;
-            if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
-                codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-                return nullptr;
-            }
-            newInfo = oldInfo;
-            newInfo.status = EveCorp::AppStatus::acceptedByCorporation;
-            newInfo.lastCID = call.client->GetCharacterID();
-
-            if (!m_db.UpdateApplication(newInfo)) {
-                codelog(SERVICE__ERROR, "%s: Failed to update application for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-                return nullptr;
-            }
-
-            FillOCApplicationChange(OCAC, oldInfo, newInfo);
-
-            answer = OCAC.Encode();
-            MulticastTarget mct;
-            mct.characters.insert(OCAC.charID);
-            mct.corporations.insert(OCAC.corpID);
-            sEntityList.Multicast(
-                "OnCorporationApplicationChanged",
-                "*corpid&corprole", &answer, mct);
-
-            MemberAttributeUpdate change;
-            if (!m_db.CreateMemberAttributeUpdate(oldInfo.corpID, args.charID, change)) {
-                codelog(SERVICE__ERROR, "Couldn't get data from the character. Sorry.");
-                return nullptr;
-            }
-
-            //TODO: should probably put this into a function, since there may be other
-            //places (gm commands at a minimum) where we want to change corp.
-            /** TODO: Update employment history object, if present
-             */
-            // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
-            OnObjectPublicAttributesUpdated N_pau;
+        // OnObjectPublicAttributesUpdated event        <<<---  needs to be updated. do search in packet logs
+        OnObjectPublicAttributesUpdated N_pau;
             N_pau.realRowCount = 4;
             N_pau.bindID = GetBindStr();
             N_pau.changePKIndexValue = args.charID;
             N_pau.changes = change.Encode();
+        answer = N_pau.Encode();
+        sEntityList.Multicast("OnObjectPublicAttributesUpdated", "objectID", &answer, NOTIF_DEST__CORPORATION, m_corpID);
 
-            answer = N_pau.Encode();
-            sEntityList.Multicast(
-                "OnObjectPublicAttributesUpdated",
-                "objectID", &answer,
-                NOTIF_DEST__CORPORATION, OCAC.corpID);
-
-            // OnCorporationMemberChanged event
-            OnCorpMemberChange ocmc;
+        // OnCorporationMemberChanged event
+        OnCorpMemberChange ocmc;
             ocmc.charID = args.charID;
             ocmc.newCorpID = change.corporationIDNew->AsInt()->value();
             ocmc.oldCorpID = change.corporationIDOld->AsInt()->value();
             ocmc.newDate = OCAC.applicationDateTimeNew->AsInt()->value();
             ocmc.oldDate = OCAC.applicationDateTimeOld->AsInt()->value();
-
-            // both corporations' members will be notified about the change
-            MulticastTarget both_corps;
-            both_corps.corporations.insert(ocmc.newCorpID);
+        // both corporations' members will be notified about the change
+        MulticastTarget both_corps;
+            both_corps.corporations.insert(m_corpID);
             both_corps.corporations.insert(ocmc.oldCorpID);
-            answer = ocmc.Encode();
-            sEntityList.Multicast(
-                "OnCorporationMemberChanged", "corpid",
-                &answer, both_corps);
+        answer = ocmc.Encode();
+        sEntityList.Multicast("OnCorporationMemberChanged", "corpid", &answer, both_corps);
 
-            //NOTE: this really should happen sooner, in case it fails.
-            if (!m_db.JoinCorporation(args.charID, ocmc.newCorpID, ocmc.oldCorpID, CorpData())) {
-                codelog(SERVICE__ERROR, "%s: Failed to record corp join for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-                return nullptr;
-            }
+        CorpData data;
+            sItemFactory.db()->GetCorpData(args.charID, data);
+            data.corpAccountKey = Account::KeyType::Cash;
+            data.corpRole = Corp::Role::Member;
+            data.rolesAtAll = Corp::Role::Member;
+            data.rolesAtBase = Corp::Role::Member;
+            data.rolesAtHQ = Corp::Role::Member;
+            data.rolesAtOther = Corp::Role::Member;
+            data.grantableRoles = Corp::Role::Member;
+            data.grantableRolesAtBase = Corp::Role::Member;
+            data.grantableRolesAtHQ = Corp::Role::Member;
+            data.grantableRolesAtOther = Corp::Role::Member;
+            data.corporationID = m_corpID;
+        CorporationDB::GetCorpData(data);
+        Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);   // this returns nullptr for offline chars
+        if (recruit != nullptr)
+            recruit->GetChar()->JoinCorporation(data);
+        else
+            CharacterDB::AddEmployment(args.charID, m_corpID);
 
-            Client* recruit = sEntityList.FindClientByCharID(ocmc.charID);
-            if (recruit != nullptr) {
-                CorpData data = recruit->GetChar()->GetCorpData();
-                /** @todo  update data as needed here... */
-                data.corpAccountKey = Account::KeyType::Cash;
-                data.corpRole = Corp::Role::Member;
-                data.rolesAtAll = Corp::Role::Member;
-                data.rolesAtBase = Corp::Role::Member;
-                data.rolesAtHQ = Corp::Role::Member;
-                data.rolesAtOther = Corp::Role::Member;
-                data.grantableRoles = Corp::Role::Member;
-                data.grantableRolesAtBase = Corp::Role::Member;
-                data.grantableRolesAtHQ = Corp::Role::Member;
-                data.grantableRolesAtOther = Corp::Role::Member;
-                data.corporationID = ocmc.newCorpID;
-                CorporationDB::GetCorpData(data);
-                recruit->GetChar()->JoinCorporation(data);
-                // add corp events for changing both_corps
-                if (IsPlayerCorp(ocmc.oldCorpID))
-                    m_db.AddItemEvent(ocmc.oldCorpID, call.client->GetCharacterID(), EveCorp::EventType::LeftCorporation);
-                if (IsPlayerCorp(ocmc.newCorpID))
-                    m_db.AddItemEvent(ocmc.newCorpID, call.client->GetCharacterID(), EveCorp::EventType::JoinedCorporation);
-            }
+        // add corp events for changing both_corps
+        if (IsPlayerCorp(ocmc.oldCorpID))
+            m_db.AddItemEvent(ocmc.oldCorpID, args.charID, Corp::EventType::LeftCorporation);
+        if (IsPlayerCorp(m_corpID))
+            m_db.AddItemEvent(m_corpID, args.charID, Corp::EventType::JoinedCorporation);
+        if (!m_db.JoinCorporation(args.charID, m_corpID, ocmc.oldCorpID, data)) {
+            codelog(SERVICE__ERROR, "%s: Failed to record corp join for char %u corp %u", call.client->GetName(), OCAC.charID, m_corpID);
+            return nullptr;
+        }
+    };
 
-        } break;
-    }
+    FillOCApplicationChange(OCAC, oldInfo, newInfo);
+    answer = OCAC.Encode();
+    MulticastTarget mct;
+        mct.characters.insert(OCAC.charID);
+        mct.corporations.insert(m_corpID);
+    sEntityList.Multicast("OnCorporationApplicationChanged", "*corpid&corprole", &answer, mct);
 
     return PyStatic.NewNone();
 }
@@ -1676,36 +1639,32 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call) {
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return PyStatic.NewFalse();
     }
 
     OnCorporationApplicationChanged OCAC;
-
+        OCAC.corpID = args.arg1;
+        OCAC.charID = args.arg2;
     ApplicationInfo newInfo;
-    newInfo.valid = true;
+        newInfo.valid = false;
     ApplicationInfo oldInfo;
-    oldInfo.valid = true;
-    OCAC.corpID = args.arg1;
-    OCAC.charID = args.arg2;
+        oldInfo.valid = true;
     if (!m_db.GetCurrentApplicationInfo(OCAC.charID, OCAC.corpID, oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return nullptr;
+        return PyStatic.NewFalse();
     }
 
     FillOCApplicationChange(OCAC, oldInfo, newInfo);
-
     if (!m_db.DeleteApplication(oldInfo)) {
         codelog(SERVICE__ERROR, "%s: Failed to delete application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
-        return nullptr;
+        return PyStatic.NewFalse();
     }
 
-    PyTuple * answer = OCAC.Encode();
+    PyTuple* answer = OCAC.Encode();
     MulticastTarget mct;
-    mct.characters.insert(OCAC.charID);
-    mct.corporations.insert(OCAC.corpID);
-    sEntityList.Multicast(
-        "OnCorporationApplicationChanged",
-        "*corpid&corprole", &answer, mct);
+        mct.characters.insert(OCAC.charID);
+        mct.corporations.insert(OCAC.corpID);
+    sEntityList.Multicast("OnCorporationApplicationChanged", "*corpid&corprole", &answer, mct);
 
     return PyStatic.NewTrue();
 }
@@ -1720,8 +1679,6 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
         return nullptr;
     }
 
-    ApplicationInfo newInfo;
-    newInfo.valid = true;
     ApplicationInfo oldInfo;
     oldInfo.valid = true;
     OnCorporationApplicationChanged OCAC;
@@ -1731,6 +1688,9 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to query application info for char %u corp %u", call.client->GetName(), OCAC.charID, OCAC.corpID);
         return nullptr;
     }
+
+    ApplicationInfo newInfo;
+    newInfo.valid = true;
     newInfo = oldInfo;
     newInfo.appText = args.message;
     newInfo.status = args.status;
@@ -1743,18 +1703,13 @@ PyResult CorpRegistryBound::Handle_UpdateApplication(PyCallArgs &call) {
     FillOCApplicationChange(OCAC, oldInfo, newInfo);
 
     PyTuple* notif = OCAC.Encode();
-    sEntityList.Unicast(OCAC.charID,
-                        "OnCorporationApplicationChanged",
-                        "clientID", &notif);
+    sEntityList.Unicast(OCAC.charID, "OnCorporationApplicationChanged", "clientID", &notif);
 
     ApplicationInfo invalidInfo;
     invalidInfo.valid = false;
     FillOCApplicationChange(OCAC, invalidInfo, newInfo);
     notif = OCAC.Encode();
-    sEntityList.Multicast(
-        "OnCorporationApplicationChanged",
-        "clientID", &notif,
-        NOTIF_DEST__CORPORATION, OCAC.corpID);
+    sEntityList.Multicast("OnCorporationApplicationChanged", "clientID", &notif, NOTIF_DEST__CORPORATION, OCAC.corpID);
 
     return nullptr;
 }

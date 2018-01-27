@@ -116,10 +116,10 @@ public:
     PyRep* GetAdGroupData();
     PyRep* GetAdRegistryData(int64 typeMask=0, bool inAlliance=false, int16 minMembers=0, uint16 maxMembers=12602);
 
-    uint32 CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
+    int32 CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
                       uint32 channelID, std::string title);
 
-    void AddRecruiters(uint32 adID, uint32 corpID, std::vector< int32 >& charVec);
+    void AddRecruiters(int32 adID, int32 corpID, std::vector< int32 >& charVec);
     PyRep* GetRecruiters(uint16 adID);
 
     bool InsertApplication(ApplicationInfo& aInfo);

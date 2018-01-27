@@ -27,11 +27,13 @@
 
 #include "Generator.h"
 
+
 /************************************************************************/
 /* Generator                                                            */
 /************************************************************************/
 bool Generator::smEncTypesLoaded = false;
 std::map<std::string, std::string> Generator::smEncTypes;
+
 
 Generator::Generator( FILE* outputFile )
 : mOutputFile( outputFile )
@@ -92,8 +94,7 @@ const char* Generator::GetEncodeType( const TiXmlElement* element )
 
 void Generator::LoadEncTypes()
 {
-    if( !smEncTypesLoaded )
-    {
+    if( !smEncTypesLoaded ) {
         smEncTypes[ "elementDef" ] = "PyRep";
         smEncTypes[ "element" ] = "PyRep";
         smEncTypes[ "elementPtr" ] = "PyRep";

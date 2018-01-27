@@ -561,7 +561,16 @@
   <elementDef name="Call_InsertApplication">
     <tupleInline>
       <int name="corpID" />
-      <string name="message" />
+      <wstring name="message" none_marker="0" safe="true" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_UpdateApplicationOffer">
+    <tupleInline>
+      <int name="charID" />
+      <wstring name="appText" none_marker="0" safe="true" />
+      <int name="newStatus" />
+      <long name="appDateTime" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
@@ -570,16 +579,28 @@
       <int name="charID" />
       <int name="corpID" />
       <dictInline>
-        <dictInlineEntry key="status">
+        <dictInlineEntry key="applicationID">
           <tupleInline>
-            <raw name="statusOld" />
-            <raw name="statusNew" />
+            <raw name="applicationIDOld" />
+            <raw name="applicationIDNew" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="corporationID">
           <tupleInline>
             <raw name="corporationIDOld" />
             <raw name="corporationIDNew" />
+          </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="characterID">
+          <tupleInline>
+            <raw name="characterIDOld" />
+            <raw name="characterIDNew" />
+          </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="applicationText">
+          <tupleInline>
+            <raw name="applicationTextOld" />
+            <raw name="applicationTextNew" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="roles">
@@ -594,22 +615,10 @@
             <raw name="grantableRolesNew" />
           </tupleInline>
         </dictInlineEntry>
-        <dictInlineEntry key="deleted">
+        <dictInlineEntry key="status">
           <tupleInline>
-            <raw name="deletedOld" />
-            <raw name="deletedNew" />
-          </tupleInline>
-        </dictInlineEntry>
-        <dictInlineEntry key="applicationText">
-          <tupleInline>
-            <raw name="applicationTextOld" />
-            <raw name="applicationTextNew" />
-          </tupleInline>
-        </dictInlineEntry>
-        <dictInlineEntry key="lastCorpUpdaterID">
-          <tupleInline>
-            <raw name="lastCorpUpdaterIDOld" />
-            <raw name="lastCorpUpdaterIDNew" />
+            <raw name="statusOld" />
+            <raw name="statusNew" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="applicationDateTime">
@@ -618,22 +627,19 @@
             <raw name="applicationDateTimeNew" />
           </tupleInline>
         </dictInlineEntry>
-        <dictInlineEntry key="characterID">
+        <dictInlineEntry key="deleted">
           <tupleInline>
-            <raw name="characterIDOld" />
-            <raw name="characterIDNew" />
+            <raw name="deletedOld" />
+            <raw name="deletedNew" />
+          </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="lastCorpUpdaterID">
+          <tupleInline>
+            <raw name="lastCorpUpdaterIDOld" />
+            <raw name="lastCorpUpdaterIDNew" />
           </tupleInline>
         </dictInlineEntry>
       </dictInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="Call_UpdateApplicationOffer">
-    <tupleInline>
-      <int name="charID" />
-      <string name="appText" />
-      <int name="newStatus" />
-      <none />
     </tupleInline>
   </elementDef>
 

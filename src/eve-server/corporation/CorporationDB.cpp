@@ -1120,13 +1120,15 @@ PyRep* CorporationDB::GetBulletins(uint32 corpID)
     return DBResultToCRowset(res);
 }
 
-void CorporationDB::AddRecruiters(uint32 adID, uint32 corpID, std::vector< int32 >& charVec)
+void CorporationDB::AddRecruiters(int32 adID, int32 corpID, std::vector< int32 >& charVec)
 {
     std::ostringstream str;
     str << "INSERT INTO crpRecruiters (adID, corpID, charID) VALUES ";
 
     bool first = true;
     for (auto cur : charVec) {
+        if (!IsCharacter(cur))
+            continue;
         if (first)
             first = false;
         else
@@ -1181,8 +1183,7 @@ PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*fa
         "  createDateTime, expiryDateTime, title, description, memberCount, channelID"
         " FROM crpAdRegistry"
         "  WHERE allianceID %s 0"
-        "   AND memberCount > %u"
-        " AND memberCount < %u"
+        "   AND (memberCount >= %u AND memberCount < %u)"
         " AND typeMask & %llu = %llu",
         (inAlliance ? ">" : "="), minMembers, maxMembers, typeMask, typeMask))
     {
@@ -1192,8 +1193,7 @@ PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*fa
     return DBResultToCRowset(res);
 }
 
-uint32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
-                                 uint32 channelID, std::string title)
+int32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description, uint32 channelID, std::string title)
 {
     uint32 adID = 0;
     DBerror err;
@@ -1204,11 +1204,11 @@ uint32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMas
         corpID, pClient->GetAllianceID(), pClient->GetStationID(), pClient->GetRegionID(), 15, typeMask, // raceMask isnt implemented yet
         GetFileTimeNow(), (GetFileTimeNow() + (Win32Time_Day * days)), description.c_str(), title.c_str(), members, channelID);
 
-    return adID;
+    return (int32)adID;
 }
 
 PyRep *CorporationDB::GetMyApplications(uint32 charID) {
-    //    header = ['corporationID', 'characterID', 'applicationText', 'roles', 'grantableRoles', 'status', 'applicationDateTime', 'deleted', 'lastCorpUpdaterID']
+    //    header = [applicationID, corporationID, characterID, applicationText, roles, grantableRoles, status, applicationDateTime, deleted, lastCorpUpdaterID]
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT applicationID, corporationID, characterID, applicationText, roles, grantableRoles,"
@@ -1220,7 +1220,7 @@ PyRep *CorporationDB::GetMyApplications(uint32 charID) {
         return nullptr;
     }
 
-    PyObject* obj = DBResultToRowset(res);
+    PyObjectEx* obj = DBResultToCRowset(res);
     if (is_log_enabled(CORP__RSP_DUMP))
         obj->Dump(CORP__RSP_DUMP, "");
 
@@ -1239,30 +1239,7 @@ PyRep *CorporationDB::GetApplications(uint32 corpID) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
-    /*
-        [PyObjectData Name: util.IndexRowset]
-          [PyDict 4 kvp]
-            [PyString "items"]
-            [PyDict 0 kvp]
-            [PyString "RowClass"]
-            [PyToken util.Row]
-            [PyString "idName"]
-            [PyString "characterID"]
-            [PyString "header"]
-            [PyList 10 items]
-              [PyString "corporationID"]
-              [PyString "characterID"]
-              [PyString "applicationText"]
-              [PyString "roles"]
-              [PyString "grantableRoles"]
-              [PyString "status"]
-              [PyString "applicationDateTime"]
-              [PyString "deleted"]
-              [PyString "lastCorpUpdaterID"]
-              [PyString "applicationID"]
-              */
-
-    PyObject* obj = DBResultToIndexRowset(res, 2);
+    PyObjectEx* obj = DBResultToCIndexedRowset(res, "characterID");
     if (is_log_enabled(CORP__RSP_DUMP))
         obj->Dump(CORP__RSP_DUMP, "");
 
@@ -1308,17 +1285,17 @@ bool CorporationDB::InsertApplication(ApplicationInfo& aInfo) {
         return false;
     }
 
-    DBerror err;
     std::string safeMessage;
     sDatabase.DoEscapeString(safeMessage, aInfo.appText);
+    DBerror err;
     if (!sDatabase.RunQueryLID(err, aInfo.appID,
-        " INSERT INTO crpApplications ("
-        " corporationID, characterID, applicationText, roles, grantableRoles, status,"
-        " applicationDateTime, deleted, lastCorpUpdaterID"
-        " ) VALUES ( "
-        " %u, %u, '%s', %" PRIi64 ", %" PRIi64 ", %u, %" PRIi64 ", %u, %u "
-        " )", aInfo.corpID, aInfo.charID, safeMessage.c_str(), aInfo.role,
-               aInfo.grantRole, aInfo.status, aInfo.appTime, aInfo.deleted, aInfo.lastCID))
+        " INSERT INTO crpApplications"
+        " (corporationID, characterID, applicationText, roles, grantableRoles, status,"
+        " applicationDateTime, deleted, lastCorpUpdaterID)"
+        " VALUES"
+        " (%u, %u, '%s', %llu, %llu, %u, %llu, %u, %u)",
+            aInfo.corpID, aInfo.charID, safeMessage.c_str(), aInfo.role,
+            aInfo.grantRole, aInfo.status, aInfo.appTime, aInfo.deleted, aInfo.lastCID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
@@ -1339,7 +1316,7 @@ bool CorporationDB::UpdateApplication(const ApplicationInfo& aInfo) {
     if (!sDatabase.RunQuery(err,
         " UPDATE crpApplications"
         " SET status = %u, lastCorpUpdaterID = %u, applicationText = '%s'"
-        " WHERE appID = %u", aInfo.status, aInfo.lastCID, clear.c_str(), aInfo.appID))
+        " WHERE applicationID = %u", aInfo.status, aInfo.lastCID, clear.c_str(), aInfo.appID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
@@ -1351,7 +1328,7 @@ bool CorporationDB::DeleteApplication(const ApplicationInfo& aInfo) {
     DBerror err;
     if (!sDatabase.RunQuery(err,
         " DELETE FROM crpApplications"
-        " WHERE appID = %u", aInfo.corpID, aInfo.appID))
+        " WHERE applicationID = %u", aInfo.corpID, aInfo.appID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
