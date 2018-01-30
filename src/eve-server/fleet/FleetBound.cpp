@@ -103,11 +103,11 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
 
     Client* pClient = call.client;
     if (pClient == nullptr)
-        return false;
+        return new PyLong(GetFileTimeNow());
 
     Character* pChar = pClient->GetChar().get();
     if (pChar == nullptr)
-        return false;
+        return new PyLong(GetFileTimeNow());
 
     // member is already added here, so cannot use sFltSvc.AddMember()
     JoinFleetRSP join;
@@ -398,7 +398,7 @@ PyResult FleetBound::Handle_ChangeWingName(PyCallArgs &call) {
     RenameCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     if (args.name->IsWString())
@@ -419,7 +419,7 @@ PyResult FleetBound::Handle_ChangeSquadName(PyCallArgs &call) {
     RenameCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     if (args.name->IsWString())
@@ -479,7 +479,7 @@ PyResult FleetBound::Handle_RejectJoinRequest(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     Client* pClient = sEntityList.FindClientByCharID(arg.arg);
@@ -603,7 +603,7 @@ PyResult FleetBound::Handle_MakeLeader(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arg.", call.client->GetChar()->itemName().c_str());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     // leaders will keep existing fleetJob.
@@ -637,13 +637,13 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     SetBoosterCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return new PyBool(false);
+        return PyStatic.NewFalse();
     }
 
     Character* pOldChar(nullptr);
     Character* pChar = sEntityList.FindClientByCharID(args.charID)->GetChar().get();
     if (pChar == nullptr)
-        return new PyBool(false);
+        return PyStatic.NewFalse();
 
     // there can be only one booster per each fleet/wing/squad
     switch (args.booster) {
@@ -652,7 +652,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
             sFltSvc.GetFleetData(m_fleetID, fdata);
             if ((fdata.booster != nullptr) and ((pOldChar = fdata.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
-                    return new PyBool(false);
+                    return PyStatic.NewFalse();
             }
         } break;
         case Fleet::Booster::Wing: {
@@ -660,7 +660,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
             sFltSvc.GetWingData(pChar->wingID(), wdata);
             if ((wdata.booster != nullptr) and ((pOldChar = wdata.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
-                    return new PyBool(false);
+                    return PyStatic.NewFalse();
             }
         } break;
         case Fleet::Booster::Squad: {
@@ -668,16 +668,16 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
             sFltSvc.GetSquadData(pChar->squadID(), sdata);
             if ((sdata.booster != nullptr) and ((pOldChar = sdata.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
-                    return new PyBool(false);
+                    return PyStatic.NewFalse();
             }
         } break;
     }
 
     if (sFltSvc.UpdateMember(args.charID, m_fleetID, pChar->wingID(), pChar->squadID(), pChar->fleetJob(), pChar->fleetRole(), args.booster))
-        return new PyBool(true);
+        return PyStatic.NewTrue();
 
     // returns true/false
-    return new PyBool(false);
+    return PyStatic.NewFalse();
 }
 
 PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
@@ -688,20 +688,20 @@ PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
     MoveMemberCall args;
     if (!args.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return new PyBool(false);
+        return PyStatic.NewFalse();
     }
 
     Character* pChar = sEntityList.FindClientByCharID(args.charID)->GetChar().get();
     if (pChar == nullptr)
-        return new PyBool(false);
+        return PyStatic.NewFalse();
 
     // if voice is enabled for this fleet, SendNotification OnFleetMove to enable changing channels (on client side)
 
     if (sFltSvc.UpdateMember(args.charID, m_fleetID, args.wingID, args.squadID, pChar->fleetJob(), args.role, args.booster))
-        return new PyBool(true);
+        return PyStatic.NewTrue();
 
     // returns true/false
-    return new PyBool(false);
+    return PyStatic.NewFalse();
 }
 
 PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
@@ -717,12 +717,12 @@ PyResult FleetBound::Handle_KickMember(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode args.", call.client->GetChar()->itemName().c_str());
-        return new PyBool(false);
+        return PyStatic.NewFalse();
     }
 
     sFltSvc.LeaveFleet(sEntityList.FindClientByCharID(arg.arg));
 
-    return nullptr;
+    return PyStatic.NewTrue();
 }
 
 PyResult FleetBound::Handle_CreateWing(PyCallArgs &call) {
