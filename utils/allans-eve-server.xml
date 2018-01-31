@@ -1,12 +1,11 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.5 -->
+     Version: 8.6 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
     boolean can use either 0/1 OR true/false.
 -->
-
 
 <eve-server>
 
@@ -15,11 +14,11 @@
  6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
  7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
  7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_LEGIONEER | ROLE_GML | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
- 7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
- 7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
- 7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
+ 7124694621250392064 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
+ 7131450020691447808 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
+ 7203507614729375744 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
         -->
-        <autoAccountRole>7131450020691443712</autoAccountRole>
+        <autoAccountRole>7131450020691447808</autoAccountRole>
         <!--
         <loginMessage>
             &lt;html&gt;
@@ -47,8 +46,12 @@
         <UseMarketBot>false</UseMarketBot>
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
+        <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
         <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
         <AllowNonPublished>true</AllowNonPublished>
+        <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
+        <FleetShareDelayed>true</FleetShareDelayed><!-- switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
+        <BountyPayoutTimer>5</BountyPayoutTimer><!-- time for system bounty timer to run (in minutes - 20m default - 256 max) -->
     </server>
 
     <world>
@@ -122,11 +125,13 @@
         <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
         <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
-        <StaticSpawns>false</StaticSpawns><!-- bool -->
-        <RoamingTimer>5</RoamingTimer><!-- time between spawn checks, in minutes -->
-        <StaticTimer>5</StaticTimer><!-- time between spawn checks, in minutes -->
+        <StaticSpawns>true</StaticSpawns><!-- bool -->
+        <RoamingTimer>300</RoamingTimer><!-- time between spawn checks, in seconds  10m default -->
+        <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
+        <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
         <EnableDrones>true</EnableDrones><!-- bool -->
+        <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
     </npc>
 
     <chat>
@@ -161,9 +166,9 @@
         <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
         <SpawnTest>true</SpawnTest><!-- bool - enables 5s respawn timer -->
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
-        <UseProfiling>false</UseProfiling><!-- bool -->
+        <UseProfiling>true</UseProfiling><!-- bool -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <PositionHack>false</PositionHack><!-- bool -->
+        <PositionHack>true</PositionHack><!-- bool -->
         <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
         <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
     </debug>
