@@ -31,12 +31,12 @@ void Profile::AddTime(uint8 key, double value) {
     _itemsProfile       = 6,    //
     _modulesProfile     = 7,    //*
     _functionsProfile   = 8,    //
-    _dbProfile          = 9,    //
+    _dbProfile          = 9,    //*
     _shipProfile        = 10,   //*
     _targetsProfile     = 11,   //
     _serverProfile      = 12,   //
     _missileProfile     = 13,   //
-    _entityCProfile     = 14,   //*
+    _systemProfile      = 14,   //
     _entitySProfile     = 15,   //*
     _lootProfile        = 16,   //*
     _salvageProfile     = 17,   //
@@ -88,7 +88,7 @@ void Profile::AddTime(uint8 key, double value) {
             m_missile.push_back(value);
             break;
         case 14:
-            m_entityC.push_back(value);
+            m_system.push_back(value);
             break;
         case 15:
             m_entityS.push_back(value);
@@ -138,7 +138,7 @@ void Profile::ClearAll()
     m_ship.clear();
     m_targets.clear();
     m_missile.clear();
-    m_entityC.clear();
+    m_system.clear();
     m_entityS.clear();
     m_loot.clear();
     m_salvage.clear();
@@ -152,53 +152,56 @@ void Profile::ClearAll()
 
 void Profile::PrintProfile()
 {
+    /** @todo figure out how to color this based on times....R,Y,G,M,B,W  */
+
     double startTime = GetTimeUSeconds();
     double h = 0, l = 0, a = 0;
+    sLog.Green("   Server Profile", " Current Profile times for this run:");
     GetRunTimes(m_server, &h, &l, &a);
-    sLog.Green("   Server Profile", " *Main() called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_server.size(), h, l, a );
+    std::printf("        *Main() %u times.\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus.\n", m_server.size(), h, l, a );
     GetRunTimes(m_destiny, &h, &l, &a);
-    sLog.Green("   Server Profile", " Destiny called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_destiny.size(),  h, l, a );
-    GetRunTimes(m_entityC, &h, &l, &a);
-    sLog.Green("   Server Profile", " EntityClient called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityC.size(),  h, l, a );
+    std::printf("       Destiny  %u times.\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus.\n", m_destiny.size(),  h, l, a );
+    GetRunTimes(m_system, &h, &l, &a);
+    std::printf("      SystemMgr %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_system.size(),  h, l, a );
     GetRunTimes(m_entityS, &h, &l, &a);
-    sLog.Green("   Server Profile", " EntitySystem called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_entityS.size(),  h, l, a );
+    std::printf("    EntityList  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_entityS.size(),  h, l, a );
     GetRunTimes(m_map, &h, &l, &a);
-    sLog.Green("   Server Profile", " *Map called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_map.size(), h, l, a );
+    std::printf("          *Map  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_map.size(), h, l, a );
     GetRunTimes(m_client, &h, &l, &a);
-    sLog.Green("   Server Profile", " Client called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_client.size(),  h, l, a );
+    std::printf("        Client  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_client.size(),  h, l, a );
     GetRunTimes(m_npc, &h, &l, &a);
-    sLog.Green("   Server Profile", " NPC called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_npc.size(),  h, l, a );
+    std::printf("           NPC  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_npc.size(),  h, l, a );
     GetRunTimes(m_bubbles, &h, &l, &a);
-    sLog.Green("   Server Profile", " Bubbles called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_bubbles.size(),  h, l, a );
+    std::printf("       Bubbles  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_bubbles.size(),  h, l, a );
     GetRunTimes(m_items, &h, &l, &a);
-    sLog.Green("   Server Profile", " *Items called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_items.size(),  h, l, a );
+    std::printf("        *Items  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_items.size(),  h, l, a );
     GetRunTimes(m_itemload, &h, &l, &a);
-    sLog.Green("   Server Profile", " Item Loading called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_itemload.size(),  h, l, a );
+    std::printf("  Item Loading  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_itemload.size(),  h, l, a );
     GetRunTimes(m_modules, &h, &l, &a);
-    sLog.Green("   Server Profile", " Modules called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_modules.size(),  h, l, a );
+    std::printf("       Modules  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_modules.size(),  h, l, a );
     GetRunTimes(m_functions, &h, &l, &a);
-    sLog.Green("   Server Profile", " *Functions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_functions.size(), h, l, a );
+    std::printf("    *Functions  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_functions.size(), h, l, a );
     GetRunTimes(m_db, &h, &l, &a);
-    sLog.Green("   Server Profile", " *DB called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_db.size(),  h, l, a );
+    std::printf("           *DB  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_db.size(),  h, l, a );
     GetRunTimes(m_ship, &h, &l, &a);
-    sLog.Green("   Server Profile", " Ship called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_ship.size(),  h, l, a );
+    std::printf("          Ship  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_ship.size(),  h, l, a );
     GetRunTimes(m_missile, &h, &l, &a);
-    sLog.Green("   Server Profile", " Missile called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_missile.size(), h, l, a );
+    std::printf("       Missile  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_missile.size(), h, l, a );
     GetRunTimes(m_loot, &h, &l, &a);
-    sLog.Green("   Server Profile", " Loot called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_loot.size(), h, l, a );
+    std::printf("          Loot  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_loot.size(), h, l, a );
     GetRunTimes(m_salvage, &h, &l, &a);
-    sLog.Green("   Server Profile", " Salvage called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_salvage.size(), h, l, a );
+    std::printf("       Salvage  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_salvage.size(), h, l, a );
     GetRunTimes(m_spawn, &h, &l, &a);
-    sLog.Green("   Server Profile", " Spawn called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_spawn.size(), h, l, a );
+    std::printf("         Spawn  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_spawn.size(), h, l, a );
     GetRunTimes(m_collision, &h, &l, &a);
-    sLog.Green("   Server Profile", " Collisions called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_collision.size(), h, l, a );
+    std::printf("    Collisions  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_collision.size(), h, l, a );
     GetRunTimes(m_drone, &h, &l, &a);
-    sLog.Green("   Server Profile", " Drones called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_drone.size(), h, l, a );
+    std::printf("        Drones  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_drone.size(), h, l, a );
     GetRunTimes(m_concord, &h, &l, &a);
-    sLog.Green("   Server Profile", " Concord called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_concord.size(), h, l, a );
+    std::printf("       Concord  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_concord.size(), h, l, a );
     GetRunTimes(m_colony, &h, &l, &a);
-    sLog.Green("   Server Profile", " Colony Updates called %u times. Hi: %fus, Lo: %fus, Avg: %fus.", m_colony.size(), h, l, a );
-    sLog.Green("   Server Profile", " Profile Times Compiled in %fus.", (GetTimeUSeconds() -startTime) );
+    std::printf(" Colony Update  %u times,\tHi: %.4fus,\tLo: %.4fus,\tAvg: %.4fus,\n", m_colony.size(), h, l, a );
+    std::printf(" Profile Times Compiled in %.4fus,\n", (GetTimeUSeconds() -startTime) );
 }
 
 double Profile::GetAverage(std::vector< double > container)

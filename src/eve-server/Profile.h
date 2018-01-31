@@ -37,7 +37,7 @@ typedef enum {          // implemented?  (* = yes)
     _targetsProfile     = 11,   //
     _serverProfile      = 12,   //
     _missileProfile     = 13,   //
-    _entityCProfile     = 14,   //*
+    _systemProfile      = 14,   //*
     _entitySProfile     = 15,   //*
     _lootProfile        = 16,   //*
     _salvageProfile     = 17,   //
@@ -79,7 +79,7 @@ class Profile
       std::vector<double> m_client;
       std::vector<double> m_map;
       std::vector<double> m_destiny;
-      std::vector<double> m_entityC;
+      std::vector<double> m_system;
       std::vector<double> m_entityS;
       std::vector<double> m_npc;
       std::vector<double> m_bubbles;
