@@ -63,6 +63,7 @@ public:
     virtual ~SystemManager();
 
     SystemEntity* GetSE(uint32 entityID) const;
+    NPC* GetNPCSE(uint32 entityID) const;
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
@@ -97,16 +98,21 @@ public:
 
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
-    void DoSpawnForBubble(SystemBubble* pSysBubble);
+    void DoSpawnForBubble(SystemBubble* pBubble);
+
+    // system bounty timer system.  20m delay
+    void AddBounty(uint32 charID, BountyData& data);
 
     void MakeSetState(const SystemBubble* bubble,  SetState& into) const;
 
     // for spawn system     -allan 15July15     (not complete)
-    typedef std::vector<uint32> SpawnBubbleVec;
-    void RemoveSpawnBubble();
-    void GetSpawnBubbles(SpawnBubbleVec* bubbleMap);
+    typedef std::map<uint32, SystemBubble*> SpawnBubbleMap;
+    void RemoveSpawnBubble(SystemBubble* pBubble);
+    void GetSpawnBubbles(SpawnBubbleMap* bubbleMap);
     void IncRatSpawnCount()                             { ++m_activeRatSpawns; }
     void DecRatSpawnCount()                             { --m_activeRatSpawns; }
+    void IncGateSpawnCount()                            { ++m_activeGateSpawns; }
+    void DecGateSpawnCount()                            { --m_activeGateSpawns; }
     void IncRoidSpawnCount()                            { ++m_activeRoidSpawns; }
     void DecRoidSpawnCount()                            { --m_activeRoidSpawns; }
     uint8 BeltCount()                                   { return m_beltCount; }
@@ -123,6 +129,8 @@ public:
 
     float GetSecValue()                                 { return m_secValue; }
 
+    uint32 GetSysNPCCount()                             { return m_npcs.size(); }
+
 protected:
     AnomalyMgr* m_anomMgr;      //we own this, never NULL.
     BeltMgr* m_beltMgr;         //we own this, never NULL.
@@ -133,6 +141,7 @@ protected:
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
 
+    /** @todo  this needs more work */
     void PayBounties();
 
     bool LoadCosmicMgrs();
@@ -153,10 +162,11 @@ private:
     uint8 m_beltCount;
     uint8 m_gateCount;
     uint8 m_activeRatSpawns;
+    uint8 m_activeGateSpawns;
     uint16 m_activeRoidSpawns;
     std::vector<uint32> m_beltVector;
-    SpawnBubbleVec m_ratBubbles;  // map of ids of bubbles with rat spawns
-    SpawnBubbleVec m_roidBubbles;  // map of ids of bubbles with roid spawns
+    SpawnBubbleMap m_ratBubbles;  // map of id/bubble with rat spawns  - not actually used yet
+    SpawnBubbleMap m_roidBubbles;  // map of id/bubble with roid spawns  - not actually used yet
 
     // for POS system       -allan 23July17
     std::map<uint32, SystemEntity*> m_moonMap;        // our container, but we DONT own the SE*
@@ -172,7 +182,9 @@ private:
 
     // for bounty processing (20m timer)
     Timer m_bountyTimer;
-    std::multimap<uint32, BountyData> m_bountyMap;  // charID/data
+    typedef std::map<uint16, uint8> RatDataMap;  // typeID/amt
+    std::map<uint32, BountyData> m_bountyMap;  // charID/data
+    std::map<uint32, RatDataMap> m_ratMap;  // charID/rat data
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunely, this is very specific for which iterators it can check.  see notes in code.

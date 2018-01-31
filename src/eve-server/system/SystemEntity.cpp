@@ -209,6 +209,10 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
             pChar->SaveStandingChanges( m_self->ownerID(),  pChar->itemID(), standingCombatShipKill, -secAward, msg);
         }
     }
+
+    /** @todo msg need work for details to appear correctly.  currently working, but could be better. (incomplete, but working)
+     * see data in eve/common/script/util/eveFormat.py:300 for details
+     */
 }
 
 void SystemEntity::Abandon()
@@ -647,8 +651,6 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
     m_system->RemoveEntity(this);
 }
 
-/** @todo set this to use cache and timer like live does...will get really busy on active fleets/ratting  */
-/** @todo journal will have to be updated when switching to timed bounty awards */
 void DynamicSystemEntity::AwardBounty(Client* pClient)
 {
     // this will use a map{charID/BountyData} in system manager for using a bounty timer.
@@ -657,25 +659,41 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     if (bounty < 1)
         return;
 
-    std::string reason = "Bounty for killing pirates in ";
+    std::string reason = "Bounty for killing a pirate in ";
     reason += pClient->GetSystemName();
+
+    BountyData data;
+    data.fromID = m_self->itemID();
+    data.toID = pClient->GetCharacterID();
+    data.refTypeID = Journal::EntryType::BountyPrize;
+    data.fromKey = Account::KeyType::Cash;
+    data.toKey = Account::KeyType::Cash;
+    data.reason = reason;
 
     // handle distribution to fleets
     if (pClient->InFleet()) {
-        std::string reason2 = "(FleetShare) ";
-        reason2 += reason;
-        reason2 += " by ";
-        reason2 += pClient->GetName();
         // get fleet members onGrid and distrubute bounty
         std::vector< uint32 > members;
         sFltSvc.GetFleetMembersOnGrid(pClient, members);
         // split bounty between members
         bounty /= members.size();
         // send bounty to members
-        for (auto cur :members)
-            AccountService::TranserFunds(ownerCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
+        if (sConfig.server.BountyPayoutDelayed and sConfig.server.FleetShareDelayed) {
+            for (auto cur :members)
+                m_system->AddBounty(cur, data);
+        } else {
+            reason += " (FleetShare) ";
+            reason += " by ";
+            reason += pClient->GetName();
+            data.reason = reason;
+            for (auto cur :members)
+                AccountService::TranserFunds(ownerCONCORD, cur, bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
+        }
     }
-
-    AccountService::TranserFunds(ownerCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
+    data.amount = bounty;
+    if (sConfig.server.BountyPayoutDelayed)
+        m_system->AddBounty(pClient->GetCharacterID(), data);
+    else
+        AccountService::TranserFunds(ownerCONCORD, pClient->GetCharacterID(), bounty, reason.c_str(), Journal::EntryType::BountyPrize, GetID());
 }
 

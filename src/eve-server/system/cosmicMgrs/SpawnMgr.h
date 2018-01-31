@@ -13,6 +13,7 @@
 #define _EVE_NPC_SPAWNMGR_H__
 
 #include <unordered_map>
+#include "../../../eve-common/EVE_Spawn.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
 class NPC;
@@ -28,36 +29,49 @@ public:
     bool Init();
 
     void Process();
-    bool DoSpawnForBubble(SystemBubble* pSysBubble, uint32 regionID, double secRating);
-    void DoSpawnForAnomaly(int32 spawnID);
+    // warp a spawned npc group from one location to another (change bubbles)
+    void WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble);
+    // move a spawned npc from one location to another (change bubbles)
+    void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);
 
-    void SpawnPopped(uint32 itemID);
-    void SpawnDepopped(SystemBubble* pSysBubble, uint32 itemID);
 
-    void StartMainTimer();
-    void StopMainTimer()                                { m_mainTimer.Disable(); }
+    bool DoSpawnForBubble(SystemBubble* pBubble, uint32 regionID, double secRating);
+    void DoSpawnForAnomaly(SystemBubble* pBubble, int32 spawnID);
+    void DoSpawnForMission(SystemBubble* pBubble, uint32 regionID);
+    void DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID);
 
-    bool IsEnabled()                                    { return m_enabled; }
+    // primative test for chained spawns
+    bool IsChaining(uint16 bubbleID);
+    // this will be used for all spawn types
+    void SpawnKilled(SystemBubble* pBubble, uint32 itemID);    // this DOES NOT remove entity from system or bubble.  user must do this BEFORE calling.
+
+    void StartRatTimer();
+    void StopRatTimer()                                 { m_ratTimer.Disable(); }
+    void StartRatGroupTimer(uint32 time);
+    void StopRatGroupTimer()                            { m_ratGroupTimer.Disable(); }
+
+    bool IsRatSpawnEnabled()                            { return m_ratEnabled; }
     bool IsInitialized()                                { return m_initalized; }
-    bool IsTimerStarted()                               { return m_mainTimer.Enabled(); }
+    bool IsRatTimerStarted()                            { return m_ratTimer.Enabled(); }
 
 
 protected:
-    bool FindSpawnForBubble(uint16 itemID);
-    bool PrepSpawn(SystemBubble* pSysBubble, uint32 regionID, double secRating);
-    void MakeSpawn(SystemBubble* pSysBubble, uint32 factionID, uint8 type, uint8 subtype);
-    void ReSpawn(SystemBubble* pSysBubble, SpawnEntry& spawnEntry);
-    void RemoveSpawn(uint32 bubbleID, uint32 itemID);
-    void MoveSpawn();
+    bool FindSpawnForBubble(uint16 bubbleID);
+    bool PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRating);
+    void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 subClass);
+    void ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry);
+    void RemoveSpawn(uint16 bubbleID, uint32 itemID);
 
-    uint32 GetRandTypeID(uint32 groupID);
+    std::string GetSpawnClassName(int8 typeID);
+
+    uint16 GetRandTypeID(uint8 sClass);
 
     typedef std::vector<NPC*> RatSpawningVec;
     typedef std::vector<SystemBubble*> RatBubbleVec;
     typedef std::vector<SpawnGroup> RatSpawnGroupVec;
     typedef std::vector<RatSpawnClass> RatSpawnClassVec;
     typedef std::vector<RatFactionGroups> RatFactionGroupsVec;
-    typedef std::map<uint8, uint32> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
+    typedef std::map<uint8, uint16> RatFactionGroupsMap;    //map to enable 'find'  shipClass is key
     typedef std::multimap<uint16, SpawnEntry> SpawnEntryDef;    //bubbleID is key
     //typedef std::vector<uint32, SystemSpawnGroup> SystemSpawnGroupVec;  //systemID is key  *unused at this time*
 
@@ -65,10 +79,13 @@ private:
     SystemManager* m_system;    //we do not own this
     PyServiceMgr& m_services;    //we do not own this
 
-    Timer m_mainTimer;
-    Timer m_groupTimer;
+    Timer m_ratTimer;
+    Timer m_ratGroupTimer;
+    Timer m_missionTimer;
+    Timer m_incursionTimer;
+    Timer m_deadspaceTimer;
 
-    bool m_enabled;         //allow spawning?
+    bool m_ratEnabled;         //allow spawning?
     bool m_initalized;      //allow spawning?
 
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
@@ -77,7 +94,7 @@ private:
     SpawnEntryDef m_spawns;
     RatSpawningVec m_ratSpawns;
     RatSpawnGroupVec m_toSpawn;
-    RatSpawnClassVec m_spawnClass;
+    RatSpawnClassVec m_ratSpawnClass;               // not used
     //SystemSpawnGroupVec m_spawnGroups;
     RatFactionGroupsMap m_factionGroups;
 };

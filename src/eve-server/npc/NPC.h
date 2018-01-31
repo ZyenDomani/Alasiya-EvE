@@ -57,6 +57,7 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);
+    virtual bool Load();  // sets orbit range and initalizes the AIMgr
 
     /* specific functions handled here. */
     void SaveNPC();
@@ -76,6 +77,7 @@ public:
     float GetOrbitRange()                               { return m_orbitRange; }
 
     NPCAIMgr* GetAIMgr()                                { return m_AI; }
+    SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
 
 protected:
     NPCAIMgr* m_AI;

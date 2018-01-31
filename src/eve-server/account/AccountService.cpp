@@ -129,7 +129,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
 
     uint32 ownerID = call.client->GetCharacterID();
     if (args.corpAccount)
-            ownerID = call.client->GetCorporationID();
+        ownerID = call.client->GetCorporationID();
 
     PyRep* res = m_db.GetJournal(ownerID, args.entryTypeID, args.accountKey, args.fromDate, args.rev);
    // if (is_log_enabled(ACCOUNT__RSP_DUMP))
@@ -273,9 +273,10 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     // is receipient a char?
     if (!IsCharacter(toID))
         return;
-    // is amount worth taxing?
-    if (amount < sConfig.rates.TaxedAmount)
-        return;
+    // are bounty payments grouped on timer?
+    if (sConfig.server.BountyPayoutDelayed)
+        if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?
+            return;
     float tax = 0;
     uint32 corpID = 0;
     if (pClientTo != nullptr) {
@@ -287,11 +288,11 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         corpID = CharacterDB::GetCorpID(toID);
     }
 
-    // is tax worth the accounting hassle? (from corp pov)
-    if (tax < sConfig.rates.TaxAmount)
-        return;
     // just in case something went wrong.....
     if (!IsCorp(corpID))
+        return;
+    // is tax worth the accounting hassle? (from corp pov)
+    if (tax < sConfig.rates.TaxAmount)
         return;
 
     switch (entryTypeID) {

@@ -50,16 +50,6 @@ m_spawnMgr(spawnMgr)
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
     m_destiny = new DestinyManager(this);
-    m_AI = new NPCAIMgr(this);
-
-    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
-    if (!m_orbitRange) {
-        /** @todo this isnt right....check into later */
-        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
-            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        else
-            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
-    }
 
     // Create default dynamic attributes in the AttributeMap:
     m_self->SetAttribute(AttrDamage,              0);
@@ -73,10 +63,6 @@ m_spawnMgr(spawnMgr)
     m_self->SetAttribute(AttrCapacity,            m_self->type().capacity());
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
-
-    m_destiny->SetShipCapabilities(m_self);
-
-    SetResists();
 
     /* Gets the value from the NPC and put on our own vars */
     m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
@@ -95,6 +81,26 @@ NPC::~NPC() {
     SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
+
+bool NPC::Load()
+{
+    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
+    if (!m_orbitRange) {
+        /** @todo this isnt right....check into later */
+        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
+            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
+        else
+            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
+    }
+
+    m_destiny->SetShipCapabilities(m_self);
+
+    SetResists();
+
+    m_AI = new NPCAIMgr(this);
+    return DynamicSystemEntity::Load();
+}
+
 
 void NPC::Process() {
     double profileStartTime = 0.0;
@@ -294,8 +300,8 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
 
     //notify our spawn manager that we are gone.
-    if ((m_spawnMgr != nullptr) and (m_bubble != nullptr) and (m_self.get() != nullptr))
-        m_spawnMgr->SpawnDepopped(m_bubble, m_self->itemID());
+    if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
+        m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
     m_destiny->Halt();
 
@@ -317,7 +323,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
 
-    GPoint deadNPCPosition = m_destiny->GetPosition();
+    GPoint wreckPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
     if (wreckTypeID < 1) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
@@ -337,7 +343,7 @@ void NPC::Killed(Damage &fatal_blow) {
         locationID,
         flagAutoFit,
         wreck_name.c_str(),
-        deadNPCPosition,
+        wreckPosition,
         faction
     );
 
@@ -371,16 +377,18 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = deadNPCPosition.x;
-        wreckEntity.y = deadNPCPosition.y;
-        wreckEntity.z = deadNPCPosition.z;
+        wreckEntity.x = wreckPosition.x;
+        wreckEntity.y = wreckPosition.y;
+        wreckEntity.z = wreckPosition.z;
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
-        sLog.Error("NPC::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+        sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         return;
     }
 
-    _log(PHYSICS__TRACE, "NPC::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-    GetName(), GetID(), x(), y(), z(), deadNPCPosition.x, deadNPCPosition.y, deadNPCPosition.z);
+    if (is_log_enabled(PHYSICS__TRACE))
+        _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
 
     // cleanup and removal of dead npc
     //AI()->ClearAllTargets();

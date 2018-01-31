@@ -428,6 +428,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
             _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
             return PyStatic.NewNone();
         } else if (pDestiny->IsWarping()) {
+            /** @todo  update this to check for warpsafe modules and allow activation during warp */
             pClient->SendNotifyMsg("You can't do this while warping");
             return PyStatic.NewNone();
         }

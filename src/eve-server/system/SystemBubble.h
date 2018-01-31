@@ -52,10 +52,18 @@ public:
     void SetBelt(InventoryItemRef itemRef);
     void SetGate(uint32 gateID);
     void ResetBubbleRatSpawn();
+
     bool IsIce()                                        { return m_ice; }
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }
+    bool IsAnomaly()                                    { return m_anomaly; } // not finished - returns false
+    bool IsMission()                                    { return m_mission; }   // not finished - returns false
+    bool IsIncursion()                                  { return m_incursion; }   // not finished - returns false
     bool IsSpawned()                                    { return m_spawned; }
+
+    void SetAnomaly(bool set=true)                      { m_anomaly = set; }
+    void SetMission(bool set=true)                      { m_mission = set; }
+    void SetIncursion(bool set=true)                    { m_incursion = set; }
     void SetSpawned(bool set=true)                      { m_spawned = set; }
     void SetSpawnTimer(bool isBelt=false);
 
@@ -123,8 +131,6 @@ private:
     uint16 m_bubbleID;
 	uint32 m_systemID;
 
-    static uint32 m_bubbleIncrementer;
-
     std::map<uint32, Client*> m_players;                // testing with bubble player list (in std::map)
     std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
     std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
@@ -132,10 +138,13 @@ private:
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;
-    bool m_ice;
-    bool m_belt;
-    bool m_gate;
-    bool m_spawned;
+    bool m_ice :1;
+    bool m_belt :1;
+    bool m_gate :1;
+    bool m_anomaly :1;
+    bool m_mission :1;
+    bool m_incursion :1;
+    bool m_spawned :1;
 };
 
 #endif

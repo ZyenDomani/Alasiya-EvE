@@ -531,6 +531,10 @@ int main( int argc, char* argv[] )
         sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
     else
         sLog.Warning("      Decay Timer","Disabled.");
+    if (sConfig.server.BountyPayoutDelayed)
+        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
+    else
+        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
 
     sLog.White("", "");     // spacer
 

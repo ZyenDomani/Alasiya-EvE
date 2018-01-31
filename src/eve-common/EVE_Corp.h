@@ -12,15 +12,6 @@
 #ifndef EVE_CORP_H
 #define EVE_CORP_H
 
-/*  these are put in description field for "popup" descriptions.
- *   NOTE:  npc bounties using BountyPrize MUST have npc typeID as refereceID.
- *          those using BountyPrizes MUST have dict of [typeID/qty] in description
-recDescription = 'DESC'                     <-- defines a custom description
-recDescNpcBountyList = 'NBL'                <-- descrives a full list
-recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
-recStoreItems = 'STOREITEMS'                <-- not sure here
-*/
-
 namespace Corp {
 
     namespace CorpBillType {

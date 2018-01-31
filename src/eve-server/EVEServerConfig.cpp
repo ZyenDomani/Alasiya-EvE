@@ -59,6 +59,9 @@ EVEServerConfig::EVEServerConfig()
     server.ModuleDamageChance = 0.35;
     server.processTic = 1.0;
     server.AllowNonPublished = false;
+    server.FleetShareDelayed = false;
+    server.BountyPayoutDelayed = false; // this system isnt working yet.  disable by default
+    server.BountyPayoutTimer = 20/*m*/;
 
     // world
     world.chatLogs = false;//N
@@ -119,13 +122,15 @@ EVEServerConfig::EVEServerConfig()
     npc.WarpOut = 600 /*s*/;
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
-    npc.StaticSpawns = false;//N
-    npc.RoamingTimer = 15 /*m*/;
-    npc.StaticTimer = 10 /*m*/;//P
+    npc.StaticSpawns = false;//P
+    npc.RoamingTimer = 900 /*s*/;
+    npc.StaticTimer = 600 /*s*/;//P
+    npc.RespawnTimer = 480 /*s*/;//P
     npc.RatFaction = 0;
     npc.EnableDrones = false;
     npc.TargetPodSec = 0;
     npc.TargetPod = false;
+    npc.UseDamageMultiplier = true;
 
     // database
     database.host = "localhost";
@@ -251,6 +256,9 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
     AddValueParser( "processTic",           server.processTic );
     AddValueParser( "AllowNonPublished",    server.AllowNonPublished );
+    AddValueParser( "FleetShareDelayed",    server.FleetShareDelayed );
+    AddValueParser( "BountyPayoutDelayed",  server.BountyPayoutDelayed );
+    AddValueParser( "BountyPayoutTimer",    server.BountyPayoutTimer );
 
     const bool result = ParseElementChildren( ele );
 
@@ -268,6 +276,9 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "ModuleDamageChance" );
     RemoveParser( "processTic" );
     RemoveParser( "AllowNonPublished" );
+    RemoveParser( "FleetShareDelayed" );
+    RemoveParser( "BountyPayoutDelayed" );
+    RemoveParser( "BountyPayoutTimer" );
 
     return result;
 }
@@ -407,17 +418,19 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
-    AddValueParser( "IdleWander",       npc.IdleWander );
-    AddValueParser( "WarpOut",          npc.WarpOut );
-    AddValueParser( "ThreatRadius",     npc.ThreatRadius );
-    AddValueParser( "RoamingSpawns",    npc.RoamingSpawns );
-    AddValueParser( "StaticSpawns",     npc.StaticSpawns );
-    AddValueParser( "RoamingTimer",     npc.RoamingTimer );
-    AddValueParser( "StaticTimer",      npc.StaticTimer );
-    AddValueParser( "RatFaction",       npc.RatFaction );
-    AddValueParser( "EnableDrones",     npc.EnableDrones );
-    AddValueParser( "TargetPod",        npc.TargetPod );
-    AddValueParser( "TargetPodSec",     npc.TargetPodSec );
+    AddValueParser( "IdleWander",           npc.IdleWander );
+    AddValueParser( "WarpOut",              npc.WarpOut );
+    AddValueParser( "ThreatRadius",         npc.ThreatRadius );
+    AddValueParser( "RoamingSpawns",        npc.RoamingSpawns );
+    AddValueParser( "StaticSpawns",         npc.StaticSpawns );
+    AddValueParser( "RoamingTimer",         npc.RoamingTimer );
+    AddValueParser( "StaticTimer",          npc.StaticTimer );
+    AddValueParser( "RespawnTimer",         npc.RespawnTimer );
+    AddValueParser( "RatFaction",           npc.RatFaction );
+    AddValueParser( "EnableDrones",         npc.EnableDrones );
+    AddValueParser( "TargetPod",            npc.TargetPod );
+    AddValueParser( "TargetPodSec",         npc.TargetPodSec );
+    AddValueParser( "UseDamageMultiplier",  npc.UseDamageMultiplier );
 
     const bool result = ParseElementChildren( ele );
 
@@ -428,10 +441,12 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticSpawns" );
     RemoveParser( "RoamingTimer" );
     RemoveParser( "StaticTimer" );
+    RemoveParser( "RespawnTimer" );
     RemoveParser( "RatFaction" );
     RemoveParser( "EnableDrones" );
     RemoveParser( "TargetPod" );
     RemoveParser( "TargetPodSec" );
+    RemoveParser( "UseDamageMultiplier" );
 
     return result;
 }

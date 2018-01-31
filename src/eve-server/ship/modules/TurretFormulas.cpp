@@ -74,7 +74,7 @@ float TurretFormulas::GetToHit(ShipItemRef shipRef, TurretModule* pMod, SystemEn
     float ChanceToHit = x * y;
     _log(DAMAGE__TRACE, "Turret::GetToHit - (%.3f * %.3f)^2 = c:%.5f : (%.3f / %u)^2 = e:%.5f", a, b, c, d, falloff, e);
     float rNum = MakeRandomFloat(0.0, 1.0);
-    _log(DAMAGE__TRACE, "Turret::GetToHit - %f * %f = %.5f  - Rand:%.3f", x, y, ChanceToHit, rNum);
+    _log(DAMAGE__TRACE, "Turret::GetToHit - %f * %f = %.5f  - Rand:%.3f  - %s", x, y, ChanceToHit, rNum, ((rNum <= 0.015) ? "Crit" : (rNum < ChanceToHit ? "Hit" : "Miss")));
     if (rNum <= 0.02)
         return 3.0f;
     else if (rNum < ChanceToHit) {
@@ -119,7 +119,7 @@ float TurretFormulas::GetNPCToHit(NPC* pNPC, SystemEntity* pTarget)
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - (%.3f * %.3f)^2 = c:%.5f : (%.3f / %u)^2 = e:%.5f", a, b, c, d, falloff, e);
     _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - %f * %f = %.5f", x, y, ChanceToHit);
     float rNum = MakeRandomFloat(0.0, 1.0);
-    _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f", ChanceToHit, rNum);
+    _log(DAMAGE__TRACE_NPC, "NPC::GetToHit - ChanceToHit:%f, Rand:%.3f - %s", ChanceToHit, rNum, ((rNum <= 0.015) ? "Crit" : (rNum < ChanceToHit ? "Hit" : "Miss")));
     if (rNum <= 0.015)
         return 3.0f;
     else if (rNum < ChanceToHit) {

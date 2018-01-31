@@ -49,9 +49,9 @@ public:
     bool                IsSkillTypeID(uint16 typeID);
     bool                GetSkillName(uint16 skillID, std::string& name);
 
-    bool                GetRatTypes(uint32 groupID, std::vector<uint32>& typeVec);
-    bool                GetRatGroups(uint32 factionID, std::map<uint8, uint32>& groupMap);
-    bool                GetRatClasses(uint8 typeID, std::vector<RatSpawnClass>& classMap);
+    bool                GetRatTypes(uint16 groupID, std::vector<uint16>& typeVec);
+    bool                GetRatGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
+    bool                GetRatClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
 
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls
     void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productID/matls
@@ -127,9 +127,12 @@ private:
     std::multimap<uint16, DmgTypeAttribute>             m_typeAttrMap;      // typeID/data<attrID, value>
 
     /* spawn data */
-    std::multimap<uint32, uint32>                       m_types;            // ratGroupID/ratTypeID
-    std::multimap<uint8, RatSpawnClass>                 m_classes;          // spawnType/data
-    std::multimap<uint32, RatFactionGroups>             m_groups;           // factionID/data
+    // roid rats
+    std::multimap<uint16, uint16>                       m_ratTypes;         // ratGroupID/ratTypeID
+    std::multimap<uint8, RatSpawnClass>                 m_ratClasses;       // spawnType/data
+    std::multimap<uint32, RatFactionGroups>             m_ratGroups;        // factionID/data
+    // deadspace
+    // incursion
 
     /* salvage data */
     std::multimap<uint32, uint32>                       m_salvageMap;       // factionID/itemID

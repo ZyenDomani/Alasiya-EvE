@@ -61,6 +61,9 @@ public:
         bool ModuleAutoOff;
         float ModuleDamageChance;
         bool AllowNonPublished;
+        bool FleetShareDelayed;
+        bool BountyPayoutDelayed;
+        uint8 BountyPayoutTimer;
     } server;
 
     // From <world/>
@@ -157,13 +160,15 @@ public:
         uint16 WarpOut;
         bool RoamingSpawns;
         bool StaticSpawns;
-        uint8 RoamingTimer;
-        uint8 StaticTimer;
+        uint16 RoamingTimer;
+        uint16 StaticTimer;
+        uint16 RespawnTimer;
         float ThreatRadius;
         uint32 RatFaction;
         bool TargetPod;
         float TargetPodSec;
         bool EnableDrones;
+        bool UseDamageMultiplier;
     } npc;
 
     // From <database/>

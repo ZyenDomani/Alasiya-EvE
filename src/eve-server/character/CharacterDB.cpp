@@ -333,7 +333,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT itemName, typeID FROM entity WHERE itemID = (SELECT shipID FROM chrCharacters WHERE characterID = %u)", characterID)) {
-        _log(CLIENT__WARNING, "Unable to get current ship: %s", res.error.c_str());
+        _log(CHARACTER__WARNING, "Unable to get current ship: %s", res.error.c_str());
     } else {
         DBResultRow row;
         /** @todo  need to make proper error here. */

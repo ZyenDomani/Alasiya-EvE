@@ -317,13 +317,13 @@ void StaticDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT shipClass, groupID, factionID FROM roidRatClassGroup
         factionGroup.shipClass = row.GetInt(0);
-        factionGroup.groupID = row.GetInt(1);
-        m_groups.emplace(row.GetInt(2), factionGroup);
+        factionGroup.groupID = (uint16)row.GetInt(1);
+        m_ratGroups.emplace(row.GetInt(2), factionGroup);
 
-        ManagerDB::GetGroupTypeIDs(row.GetInt(1), *res2);
+        ManagerDB::GetGroupTypeIDs((uint8)row.GetInt(0), (uint16)row.GetInt(1), row.GetInt(2), *res2);
         while (res2->GetRow(row2)) {
-            //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10
-            m_types.emplace(row.GetInt(1), row2.GetInt(0));
+            //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID
+            m_ratTypes.emplace((uint16)row.GetInt(1), (uint16)row2.GetInt(0));
         }
         res2->Reset();
     }
@@ -332,26 +332,28 @@ void StaticDataMgr::Populate()
     ManagerDB::GetSpawnClasses(*res);
     RatSpawnClass spawnClass;
     while (res->GetRow(row)) {
-        //SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
+        //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass
         spawnClass.type = row.GetInt(0);
         spawnClass.sub = row.GetInt(1);
         spawnClass.f = row.GetInt(2);
-        spawnClass.d = row.GetInt(3);
-        spawnClass.c = row.GetInt(4);
-        spawnClass.bc = row.GetInt(5);
-        spawnClass.bs = row.GetInt(6);
-        spawnClass.h = row.GetInt(7);
-        spawnClass.o = row.GetInt(8);
-        spawnClass.cf = row.GetInt(9);
-        spawnClass.cd = row.GetInt(10);
-        spawnClass.cc = row.GetInt(11);
-        spawnClass.cbc = row.GetInt(12);
-        spawnClass.cbs = row.GetInt(13);
-        m_classes.emplace(row.GetInt(0), spawnClass);
+        spawnClass.af = row.GetInt(3);
+        spawnClass.d = row.GetInt(4);
+        spawnClass.c = row.GetInt(5);
+        spawnClass.ac = row.GetInt(6);
+        spawnClass.bc = row.GetInt(7);
+        spawnClass.bs = row.GetInt(8);
+        spawnClass.h = row.GetInt(9);
+        spawnClass.o = row.GetInt(10);
+        spawnClass.cf = row.GetInt(11);
+        spawnClass.cd = row.GetInt(12);
+        spawnClass.cc = row.GetInt(13);
+        spawnClass.cbc = row.GetInt(14);
+        spawnClass.cbs = row.GetInt(15);
+        m_ratClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
 
     sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
-              m_groups.size(), m_classes.size(), m_types.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
+              m_ratGroups.size(), m_ratClasses.size(), m_ratTypes.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -378,7 +380,7 @@ void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) 
 bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);
     for (auto it = groupRange.first; it != groupRange.second; ++it) {
-        _log(COSMIC_MGR__MESSAGE, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
+        _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);
         roids.insert(std::pair<float, uint32>(it->second.chance, it->second.typeID));
     }
 
@@ -417,35 +419,36 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
         data.emplace(cur.first, cur.second);
 }
 
-bool StaticDataMgr::GetRatTypes(uint32 groupID, std::vector<uint32>& typeVec)
+bool StaticDataMgr::GetRatTypes(uint16 groupID, std::vector< uint16 >& typeVec)
 {
-    auto groupRange = m_types.equal_range(groupID);
-    for (auto it = groupRange.first; it != groupRange.second; ++it) {
+    auto groupRange = m_ratTypes.equal_range(groupID);
+    for (auto it = groupRange.first; it != groupRange.second; ++it)
         typeVec.push_back(it->second);
-    }
 
     return !typeVec.empty();
 }
 
-bool StaticDataMgr::GetRatGroups(uint32 factionID, std::map<uint8, uint32>& groupMap)
+bool StaticDataMgr::GetRatGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap)
 {
-    auto groupRange = m_groups.equal_range(factionID);
+    auto groupRange = m_ratGroups.equal_range(factionID);
     for (auto it = groupRange.first; it != groupRange.second; ++it)
         groupMap.emplace(it->second.shipClass, it->second.groupID);
 
     return !groupMap.empty();
 }
 
-bool StaticDataMgr::GetRatClasses(uint8 typeID, std::vector<RatSpawnClass>& classMap)
+bool StaticDataMgr::GetRatClasses(uint8 sClass, std::vector< RatSpawnClass >& classMap)
 {
-    auto classRange = m_classes.equal_range(typeID);
+    auto classRange = m_ratClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
         RatSpawnClass spawnClass;
         spawnClass.type = it->second.type;
         spawnClass.sub = it->second.sub;
         spawnClass.f = it->second.f;
+        spawnClass.af = it->second.af;
         spawnClass.d = it->second.d;
         spawnClass.c = it->second.c;
+        spawnClass.ac = it->second.ac;
         spawnClass.bc = it->second.bc;
         spawnClass.bs = it->second.bs;
         spawnClass.h = it->second.h;

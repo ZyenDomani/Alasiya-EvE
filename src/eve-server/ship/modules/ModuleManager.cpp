@@ -892,10 +892,8 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                     }
                 }
             }
-        }
-
-        modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
-        if (!(pMod->IsLoaded())) {
+        } else {
+            modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
             if (modCapacity >= (chargeVolume * chargeRef->quantity())) {
                 chargeRef->Move(m_Ship->itemID(), flag, true);
                 pMod->LoadCharge( chargeRef );
@@ -908,9 +906,8 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
                     pMod->LoadCharge( loadableChargeQtyRef );
                 }
             }
-        } else {
-            _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module %s at slot %i is still loaded", pMod->getItem()->itemName().c_str(), flag);
         }
+
     } else {
         _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module not found at slot %i", flag);
     }

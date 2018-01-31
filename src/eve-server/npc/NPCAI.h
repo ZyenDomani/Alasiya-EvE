@@ -29,6 +29,20 @@
 
 #include "ship/modules/TurretFormulas.h"
 
+namespace NPCState {
+    enum {
+        Invalid     = -1,
+        Idle        = 1,  // not doing anything....idle.
+        Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
+        Following   = 3,  // too close to chase, but to far to engage
+        Engaged     = 4,  // actively fighting
+        Fleeing     = 5,  // running away
+        Signaling   = 6,  // calling for help
+        WarpOut     = 7,  // leaving bubble
+        WarpFollow  = 8   // will follow warping ship to their destination (adv)
+    };
+}
+
 class NPC;
 class SystemEntity;
 class Timer;
@@ -36,15 +50,6 @@ class EvilNumber;
 
 class NPCAIMgr {
 protected:
-    enum State {
-        Idle        = 1,  // not doing anything....idle.
-        Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-        Following   = 3,  // too close to chase, but to far to engage
-        Engaged     = 4,  // actively fighting
-        Fleeing     = 5,  // running away
-        Signaling   = 6   // calling for help
-    };
-
 public:
     NPCAIMgr(NPC *who);
     ~NPCAIMgr()                 { /* do nothing here */ }
@@ -61,13 +66,16 @@ public:
     void DisableRepTimers();
 
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
-    bool IsIdle()                                       { return (m_state == State::Idle); }
-    bool IsFighting()                                   { return (m_state != State::Idle); }
+    bool IsIdle()                                       { return (m_state == NPCState::Idle); }
+    bool IsFighting()                                   { return (m_state != NPCState::Idle); }
     uint16 GetOptimalRange()                            { return m_optimalRange; }
     uint16 GetSigRes()                                  { return m_sigResolution; }
     uint32 GetFalloff()                                 { return m_falloff; }
     uint32 GetAttackRange()                             { return m_maxAttackRange; }
     double GetTrackingSpeed()                           { return m_trackingSpeed; }
+
+    // npcAI methods
+    void DisableWarpOutTimer()                          { m_warpOutTimer.Disable(); }
 
 protected:
     void Attack(SystemEntity* pTarget);
@@ -84,9 +92,9 @@ protected:
 
     double GetTargetTime();
 
-    State m_state;
+    int8 m_state;
 
-    std::string GetStateName(State name);
+    std::string GetStateName(int8 stateID);
 
 private:
     bool m_webber : 1;
@@ -95,8 +103,10 @@ private:
     bool m_useSigRadius : 1;
     bool m_useTargSwitching : 1;
     bool m_useSecondTarget : 1;
+
     float m_switchTargChance;   //fuzzy logic
     uint16 m_preferedSigRadius;
+
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
     uint16 m_attackSpeed;
@@ -114,7 +124,9 @@ private:
     uint32 m_flyRange;  // npc tries to stay at this distance from active target    default:500
     uint32 m_sightRange;
     uint32 m_maxAttackRange;// max firing range   default:15000
+    uint32 m_warpScramRange;
 
+    float m_warpScramChance;
     float m_armorRepairChance;
     float m_shieldBoosterChance;
 
@@ -128,7 +140,8 @@ private:
     Timer m_mainAttackTimer;
     Timer m_shieldBoosterTimer;
     Timer m_armorRepairTimer;
-	Timer m_beginFindTarget;
+    Timer m_beginFindTarget;
+    Timer m_warpOutTimer;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;
 };

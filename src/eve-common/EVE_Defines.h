@@ -246,6 +246,9 @@ maxDustCharacter = 2130000000
 #define IsFakeItem(itemID) \
  (itemID >= minFakeItem)
 
+#define IsValidTarget(itemID) \
+ (((itemID >= minStargate) && (itemID <= maxStation)) || (itemID >= minControlBunker))
+
 #define FlagToSlot(flag) \
 (flag - flagSlotFirst)
 

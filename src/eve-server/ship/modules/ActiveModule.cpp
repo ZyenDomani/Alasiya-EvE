@@ -151,6 +151,10 @@ void ActiveModule::Process()
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
+    if (effectID == 16) {   // catchall for elusive online/offline error
+        Online();
+        return;
+    }
     if ((m_needsCharge) and ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr))) {
         _log(SHIP__MODULE_WARNING, "ActiveModule::Activate() - Cannot find loaded charge for this module");
         if (m_shipRef->HasPilot())
@@ -256,7 +260,7 @@ uint32 ActiveModule::DoCycle()
     }
     if ((m_targetID) and (m_targMgr != nullptr)) {
         // data consistency check
-        if (m_targMgr->GetTarget(m_targetID) != m_targetSE) {
+        if ((m_targMgr->GetTarget(m_targetID) == nullptr) or (m_targMgr->GetTarget(m_targetID) != m_targetSE)) {
             _log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
             Deactivate();
             return 0;

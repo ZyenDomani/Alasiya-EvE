@@ -63,7 +63,7 @@ public:
     static void GetSpawnClasses(DBQueryResult& res);
     static void GetFactionGroups(DBQueryResult& res);
     static void GetRegionRatFaction(DBQueryResult& res);
-    static void GetGroupTypeIDs(uint32 groupID, DBQueryResult& res);
+    static void GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionID, DBQueryResult& res);
 
     /* dungeon manager */
     void GetDunRoomData(DBQueryResult& res);

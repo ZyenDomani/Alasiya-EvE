@@ -231,9 +231,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         return false;
     }
 
-    // not coded yet...placeholder for now
-    m_spawnMgr->DoSpawnForAnomaly(itr->second.dunSpawnType);
-
     if ((sig.dungeonType == EVEDUNG::dunTypes::typeGravimetric)      //2
         or (sig.dungeonType == EVEDUNG::dunTypes::typeMagnetometric) //3
         or (sig.dungeonType == EVEDUNG::dunTypes::typeRadar)         //4
@@ -247,7 +244,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
     GPoint pos(sig.x, sig.y, sig.z);
 
-    // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
+    // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
     /** @todo update this to use temp items */
@@ -356,6 +353,10 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         items.push_back(item->itemID());
         ++cur;
     }
+
+    // not coded yet...placeholder for now
+    //m_spawnMgr->DoSpawnForAnomaly(itr->second.dunSpawnType);
+
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
               sig.sigItemID, m_anomalyItems.size(),sig.systemID, templateID);
 

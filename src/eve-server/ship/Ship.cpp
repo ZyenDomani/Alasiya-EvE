@@ -1178,14 +1178,11 @@ void ShipItem::Offline (uint32 moduleID)
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
-    m_targetRef = sItemFactory.GetItem(targetID);
-    /*  this is broke....disable for now
-    if (m_targetRef.get() == nullptr) {
-        if (m_pilot != nullptr)
-            m_pilot->SendErrorMsg("Cannot find loaded charge for this module  - Ref: ServerError 15693");
-        return;
-    } */
-
+    if (IsValidTarget(targetID))
+        m_targetRef = sItemFactory.GetItem(targetID);
+    else
+        m_targetRef = InventoryItemRef(nullptr);
+    
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 

@@ -716,7 +716,7 @@ void Character::UpdateSkillQueue() {
             skillID = m_skillQueue.front().typeID;
             currentTraining = GetSkill( skillID ).get();
             if (currentTraining == nullptr) {
-                _log( CHARACTER__WARNING, "%s(%u): Skill %u to train was not found.", itemName().c_str(), m_itemID, skillID );
+                _log( CHARACTER__SKILL_TRACE, "%s(%u): Skill %u to train was not found.", itemName().c_str(), m_itemID, skillID );
                 m_skillQueue.erase( m_skillQueue.begin() );
                 continue;
             }

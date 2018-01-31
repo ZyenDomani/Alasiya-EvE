@@ -334,20 +334,65 @@ void ManagerDB::GetFactionGroups(DBQueryResult& res) {
 }
 
 void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, d, c, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass"))
+    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass"))
         _log(DATABASE__ERROR, "Error in GetSpawnClasses query: %s", res.error.c_str());
 }
 
-void ManagerDB::GetGroupTypeIDs(uint32 groupID, DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID LIMIT 10", groupID))
+// this is loaded in static data, so performance isnt a priority
+void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionID, DBQueryResult& res) {
+    // this now gets advanced frigates and cruisers based on faction (best i could think of)
+    std::string name = "";
+    std::string condition = "LIMIT 10";
+
+    switch (factionID) {
+        case factionAngel: {  //  Cyber
+            if ((shipClass == 2) or (shipClass == 5)) // 2 = adv frig, 5 = adv cruiser
+                name = "AND typeName LIKE '%Arch%'";
+            else if ((shipClass == 1) or (shipClass == 4))  // 1 = frig, 4 = cruiser
+                name = "AND typeName NOT LIKE '%Arch%'";
+        } break;
+        case factionBloodRaider: {
+            if ((shipClass == 2) or (shipClass == 5))
+                name = "AND typeName LIKE '%Elder%'";
+            else if ((shipClass == 1) or (shipClass == 4))
+                name = "AND typeName NOT LIKE '%Elder%'";
+        } break;
+        case factionGuristas: {   //Outlaw
+            if ((shipClass == 2) or (shipClass == 5))
+                name = "AND typeName LIKE '%Dire%'";
+            else if ((shipClass == 1) or (shipClass == 4))
+                name = "AND typeName NOT LIKE '%Dire%'";
+        } break;
+        case factionSanshas: {
+            if ((shipClass == 2) or (shipClass == 5))
+                name = "AND typeName LIKE '%Loyal%'";
+            else if ((shipClass == 1) or (shipClass == 4))
+                name = "AND typeName NOT LIKE '%Loyal%'";
+        } break;
+        case factionSerpentis: {   //Crook
+            if ((shipClass == 2) or (shipClass == 5))
+                name = "AND typeName LIKE '%Guardian%'";
+            else if ((shipClass == 1) or (shipClass == 4))
+                name = "AND typeName NOT LIKE '%Guardian%'";
+        } break;
+        case factionRogueDrones: {
+            if ((shipClass == 2) or (shipClass == 5)) 
+                name = "AND typeName LIKE '%Strain%'";
+            else if ((shipClass == 1) or (shipClass == 4))
+                name = "AND typeName NOT LIKE '%Strain%'";
+            else if (shipClass == 9)    // 9 = swarm for drones, which dont have officers.
+                condition = "LIMIT 12";
+        } break;
+    }
+
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u  %s ORDER BY typeID %s", groupID, name.c_str(), condition.c_str()))
         _log(DATABASE__ERROR, "Error in GetGroupTypeIDs query: %s", res.error.c_str());
 }
 
 void ManagerDB::DeleteSpawnedRats()
 {
     DBerror err;
-    std::string query = "'beltrat'";
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%beltrat%'");
 }
 
 uint32 ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)

@@ -420,7 +420,7 @@ public:
     virtual void                EncodeDestiny( Buffer& into );
 
     virtual PyDict*             MakeSlimItem();
-    
+
 };
 
 
@@ -446,9 +446,9 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &fatal_blow);
+    virtual bool                Load();
 
     /* specific functions handled here. */
-    bool                        Load();
     void                        AwardBounty(Client* pClient);
 };
 

@@ -118,22 +118,17 @@ void EntityList::Process() {
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-
+    
     Client* pClient(nullptr);
     std::vector<Client*>::iterator itr = m_clients.begin();
     while (itr != m_clients.end()) {
-        if ((*itr)->ProcessNet())
+        if ((*itr)->ProcessNet()) {
             ++itr;
-        else {
+        } else {
             pClient = *itr;
             itr = m_clients.erase(itr);
             SafeDelete(pClient);
         }
-    }
-
-    if (sConfig.debug.UseProfiling) {
-        sProfile.AddTime(_entityCProfile, GetTimeUSeconds() - profileStartTime);
-        profileStartTime = GetTimeUSeconds();
     }
 
     /* check for 1Hz timer tic */

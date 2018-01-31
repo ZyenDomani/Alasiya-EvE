@@ -63,6 +63,7 @@ public:
     SystemBubble* FindBubble(SystemEntity *ent) const;
     //call to find the bubble containing the GPoint specified, if no bubble does, return NULL
     SystemBubble* FindBubble(uint32 systemID, const GPoint &pos) const;
+    SystemBubble* FindBubbleByID(uint32 systemID, uint16 bubbleID);
     //find the bubble containing the GPoint specified.  will create new bubble if none found.
     //  this is prefered method to create new bubble.
     SystemBubble* GetBubble(SystemManager* sysMgr, const GPoint &pos);

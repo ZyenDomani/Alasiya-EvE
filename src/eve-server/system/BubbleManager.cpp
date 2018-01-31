@@ -70,10 +70,14 @@ void BubbleManager::Process() {
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    // process each belt and gate bubble for spawns
-    for (auto cur : m_bubbles)
+    for (auto cur : m_bubbles) {
+        // process each belt and gate bubble for spawns
         if (cur->IsBelt() or cur->IsGate())
             cur->Process();
+        // process each mission and incursion bubble  -placeholder
+        if (cur->IsMission() or cur->IsIncursion())
+            cur->Process();
+    }
 
     if (m_wanderTimer.Check()) {    //30s
         m_wanderers.clear();
@@ -230,6 +234,15 @@ SystemBubble* BubbleManager::GetBubble(SystemManager* sysMgr, const GPoint& pos)
             pBubble->MarkCenter();
     }
     return pBubble;
+}
+
+SystemBubble* BubbleManager::FindBubbleByID(uint32 systemID, uint16 bubbleID)
+{
+    auto range = m_bubbleMap.equal_range(systemID);
+    for ( auto itr = range.first; itr != range.second; ++itr)
+        if (itr->second->GetID() == bubbleID)
+            return itr->second;
+    return nullptr;
 }
 
 void BubbleManager::ClearSystemBubbles(uint32 systemID)

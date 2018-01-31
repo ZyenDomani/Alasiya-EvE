@@ -366,35 +366,36 @@ void Ship::Killed(Damage &fatal_blow) {
         GPoint wreckPosition = m_destiny->GetPosition();
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
-        if (wreckItemRef.get() == nullptr)
+        if (wreckItemRef.get() != nullptr) {
+            DBSystemDynamicEntity wreckEntity;
+                wreckEntity.allianceID = killer->GetAllianceID();
+                wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+                wreckEntity.corporationID = killer->GetCorporationID();
+                wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
+                wreckEntity.groupID = EVEDB::invGroups::Wreck;
+                wreckEntity.itemID = wreckItemRef->itemID();
+                wreckEntity.itemName = wreck_name;
+                wreckEntity.ownerID = killerID;
+                wreckEntity.typeID = wreckTypeID;
+                wreckEntity.x = wreckPosition.x;
+                wreckEntity.y = wreckPosition.y;
+                wreckEntity.z = wreckPosition.z;
+
+            if (!m_system->BuildDynamicEntity(wreckEntity)) {
+                sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+                ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
+                return;
+            }
+
+            if (is_log_enabled(PHYSICS__TRACE))
+                _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
+            DropLoot(wreckItemRef, m_self->groupID(), killerID);
+        } else {
             /** @todo  make error here */
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
-
-        DBSystemDynamicEntity wreckEntity;
-            wreckEntity.allianceID = killer->GetAllianceID();
-            wreckEntity.categoryID = EVEDB::invCategories::Celestial;
-            wreckEntity.corporationID = killer->GetCorporationID();
-            wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
-            wreckEntity.groupID = EVEDB::invGroups::Wreck;
-            wreckEntity.itemID = wreckItemRef->itemID();
-            wreckEntity.itemName = wreck_name;
-            wreckEntity.ownerID = killerID;
-            wreckEntity.typeID = wreckTypeID;
-            wreckEntity.x = wreckPosition.x;
-            wreckEntity.y = wreckPosition.y;
-            wreckEntity.z = wreckPosition.z;
-
-        if (!m_system->BuildDynamicEntity(wreckEntity)) {
-            sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
-            ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
-            return;
         }
-
-        _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-                    GetName(), GetID(), x(), y(), z(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
-
         //  log faction kill in dynamic data   -allan
         //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
         if (pClient != nullptr) {
@@ -449,7 +450,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         pPilot->GetChar()->LogKill(data);
 
-		GPoint deadPodPosition = GetPosition();
+        GPoint wreckPosition = GetPosition();
         uint32 oldPodItemID = pPilot->GetShipID();
 
         m_destiny->SendTerminalExplosion(oldPodItemID, m_bubble->GetID());
@@ -459,7 +460,7 @@ void Ship::Killed(Damage &fatal_blow) {
         std::string corpse_name = pPilot->GetName();
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
-        ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), deadPodPosition);
+        ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), wreckPosition);
         InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
         if (corpseItemRef.get() != nullptr) {
             DBSystemDynamicEntity corpseEntity;
@@ -472,13 +473,15 @@ void Ship::Killed(Damage &fatal_blow) {
                 corpseEntity.itemName = corpse_name;
                 corpseEntity.ownerID = 1;
                 corpseEntity.typeID = corpseTypeID;
-                corpseEntity.x = deadPodPosition.x;
-                corpseEntity.y = deadPodPosition.y;
-                corpseEntity.z = deadPodPosition.z;
+                corpseEntity.x = wreckPosition.x;
+                corpseEntity.y = wreckPosition.y;
+                corpseEntity.z = wreckPosition.z;
             if (!m_system->BuildDynamicEntity( corpseEntity))
                 sLog.Error("Ship::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
-            _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-                GetName(), GetID(), x(), y(), z(), deadPodPosition.x, deadPodPosition.y, deadPodPosition.z);
+            if (is_log_enabled(PHYSICS__TRACE))
+                _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                        GetName(), GetID(), x(), y(), z(), corpseItemRef->itemName().c_str(), corpseItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
         }
 
         // this method will reset char variables to last clone state after being podded.  NOTE  *** NOT TESTED YET ***
@@ -496,7 +499,7 @@ void Ship::Killed(Damage &fatal_blow) {
         PayInsurance();
 
         GPoint capsulePosition = GetPosition();
-        GPoint deadShipPosition = GetPosition();
+        GPoint wreckPosition = GetPosition();
         uint32 oldShipItemID = pPilot->GetShipID();
 		//set capsule position away from old ship:
         float radius = m_self->GetAttribute(AttrRadius).get_float();
@@ -530,7 +533,7 @@ void Ship::Killed(Damage &fatal_blow) {
         std::string wreck_name = pPilot->GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
 
-		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), deadShipPosition);
+		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() != nullptr) {
             DBSystemDynamicEntity wreckEntity;
@@ -543,15 +546,18 @@ void Ship::Killed(Damage &fatal_blow) {
                 wreckEntity.itemName = wreck_name;
                 wreckEntity.ownerID = m_self->ownerID(); //pPilot->GetCharacterID();
                 wreckEntity.typeID = wreckTypeID;
-                wreckEntity.x = deadShipPosition.x;
-                wreckEntity.y = deadShipPosition.y;
-                wreckEntity.z = deadShipPosition.z;
+                wreckEntity.x = wreckPosition.x;
+                wreckEntity.y = wreckPosition.y;
+                wreckEntity.z = wreckPosition.z;
 
-            if (m_system->BuildDynamicEntity(wreckEntity)) {
-                _log(PHYSICS__TRACE, "Ship::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-                    GetName(), GetID(), x(), y(), z(), deadShipPosition.x, deadShipPosition.y, deadShipPosition.z);
-            } else
+            if (!m_system->BuildDynamicEntity(wreckEntity)) {
                 sLog.Error("Client::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
+                return;
+            }
+            if (is_log_enabled(PHYSICS__TRACE))
+                _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                    GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
         }
 
         /* killBlob contains destroyed/dropped items. u'<items><i t=3651 f=0 d=0 x=1/><i t=3634 f=0 d=0 x=1/></items>'  -allan 13July17

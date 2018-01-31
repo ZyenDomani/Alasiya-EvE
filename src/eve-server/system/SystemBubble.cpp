@@ -39,7 +39,6 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
-uint32 SystemBubble::m_bubbleIncrementer = 0;
 
 SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double radius)
 : m_system(pSystem),
@@ -68,8 +67,12 @@ void SystemBubble::clear() {
     m_ice = false;
     m_belt = false;
     m_gate = false;
+    m_anomaly = false;
+    m_mission = false;
     m_spawned = false;
+    m_incursion = false;
     m_hasMarkers = false;
+
     m_markers.clear();
     m_players.clear();
     m_entities.clear();
@@ -78,7 +81,12 @@ void SystemBubble::clear() {
 
 void SystemBubble::Process()
 {
-    if (m_system->GetSystemSecurityRating() > 0.90) // make config option here?
+    /* this will need to process:
+     *    belt and gate for spawn/respawn
+     *    missions for ??
+     *    incursions for ??
+     */
+    if (m_belt and (m_system->GetSystemSecurityRating() > 0.95)) // make config option here to spawn rats in secure empire space ?
         return;
     if (m_spawned) {
         m_spawnTimer.Disable();
@@ -162,7 +170,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
 
 	if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
-		     pSE->GetID(), GetID());
+                pSE->GetID(), GetID());
 		return;
 	}
 
@@ -432,7 +440,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__TRACE))
+    if (is_log_enabled(DESTINY__MESSAGE))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();

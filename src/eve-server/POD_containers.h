@@ -261,45 +261,49 @@ struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  m
 
 /* POD structure for spawn groups */
 struct SpawnGroup {
-    uint32 typeID;  //typeID to spawn
+    uint16 typeID;  //typeID to spawn
     uint8 quantity; //quantity to spawn for this typeID
 };
 
 /* POD structure for spawn entries */
 struct SpawnEntry {     // notes for me while creating/writing/testing
-    bool enabled;       // is group timer enabled for this entry?
-    uint8 spawnType;    // spawn type.  1 = roaming, 2 = static
+    bool enabled;       // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
+    uint8 spawnClass;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer
+    uint8 spawnGroup;   // spawn group.   1 = roid rat, 2 = roaming, 3 = static, 4 = anomaly, 5 = mission, 6 = incursion, 7 = deadspace, 8 = sleeper
     uint8 total;        // total number of this group spawned
-    uint8 number;       // this rats number in group (to match up with above total)
+    uint8 number;       // this rat's number in group (to match up with above total)
     uint8 sub;          // spawn data subtype
-    uint8 type;         // spawn data class id (in case we have to look it up again)
+    uint8 classID;      // spawn data class id (in case we have to look it up again)
     uint16 typeID;      // rat type id
+    uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
+    uint16 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
     uint32 itemID;      // rat entity id
-    uint32 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
     uint32 corpID;      // rat corp id
     uint32 factionID;   // rat faction id
-    uint32 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
-    uint32 time;        // spawn group timer start time
+    uint16 stamp;       // spawn group stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
 };
 
 /* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
     uint8 shipClass;      // shipclass - arbitrary
-    uint32 groupID;     // item groupID
+    uint16 groupID;     // item groupID
 };
 
 /* POD structure for spawn classes */
 struct RatSpawnClass { // notes for me while creating/writing/testing
-    uint8 type;     // this is spawn type.  see notes in SpawnDB.h
-    uint8 sub;      // this is spawn class id.  see notes in SpawnDB.h
+    uint8 type;     // this is spawn type.  Spawn::Type 1 - 10
+    uint8 sub;      // this is spawn subtype.  ship grouping.  varies.  enables loop for random pick. no notes
     uint8 f;        // frigate
+    uint8 af;       // advanced frigate
     uint8 d;        // destroyer
     uint8 c;        // cruiser
+    uint8 ac;       // advanced cruiser
     uint8 bc;       // battlecruiser
     uint8 bs;       // battleship
     uint8 h;        // hauler
     uint8 o;        // officer - swarm for rogue drones
     uint8 cf;       // commander frigate
+    //uint8 acf;      // advanced commander frigate
     uint8 cd;       // commander destroyer
     uint8 cc;       // commander cruiser
     uint8 cbc;      // commander battlecruiser

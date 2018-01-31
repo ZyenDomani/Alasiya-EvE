@@ -27,6 +27,7 @@
 #include "Client.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
+#include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "npc/NPC.h"
 #include "planet/Planet.h"
@@ -56,7 +57,7 @@
 
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :m_services(svc),
-m_bountyTimer(20 * 60 * 1000),
+m_bountyTimer(20 * 60 * 1000),      // 20m  default
 m_anomMgr(new AnomalyMgr(this, svc)),
 m_beltMgr(new BeltMgr(this, svc)),
 m_dunMgr(new DungeonMgr(this, svc)),
@@ -70,8 +71,10 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_gateCount = 0;
     m_activityTime = 0;
     m_activeRatSpawns = 0;
+    m_activeGateSpawns = 0;
     m_activeRoidSpawns = 0;
 
+    m_npcs.clear();
     m_clients.clear();
     m_moonMap.clear();
     m_entities.clear();
@@ -82,7 +85,7 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_ticEntities.clear();
     m_staticEntities.clear();
 
-    m_bountyTimer.Start(20 * 60 * 1000);
+    m_bountyTimer.Disable();
 
     m_secValue = 1.1 - GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
 
@@ -100,6 +103,7 @@ SystemManager::~SystemManager() {
     if (m_loaded)
         UnloadSystem();
 
+    m_npcs.clear();
     m_clients.clear();
     m_moonMap.clear();
     m_entities.clear();
@@ -154,6 +158,9 @@ bool SystemManager::BootSystem() {
         if (cur.second->IsPOSSE())
             cur.second->GetPOSSE()->Init(cur.second->GetSelf(), cur.second->SysBubble());
 
+    if (sConfig.server.BountyPayoutDelayed)
+        m_bountyTimer.Start(sConfig.server.BountyPayoutTimer * 60 * 1000);
+
     //create our chat channels
     m_services.lsc_service->CreateSystemChannel(m_data.regionID);
     m_services.lsc_service->CreateSystemChannel(m_data.constellationID);
@@ -164,9 +171,13 @@ bool SystemManager::BootSystem() {
 
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
+    double profileStartTime = 0.0;
+    if (sConfig.debug.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
-     * because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
-     * std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
+     *      because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
+     *  std::map internally orders items by key(itemID here), so use an int var to hold last-processed itemID (mLast).
      *  when iteration starts over, increment until cur > mLast and continue from there to end of list.
      */
     std::map<uint32, SystemEntity*>::iterator itr = m_ticEntities.begin();
@@ -174,12 +185,6 @@ bool SystemManager::ProcessTic() {
     while (itr != m_ticEntities.end()) {
         if (mLast >= itr->first) {
             ++itr;
-            continue;
-        }
-        if (m_entityChanged) {
-            mLast = itr->first;
-            m_entityChanged = false;
-            itr = m_ticEntities.begin();
             continue;
         }
         itr->second->Process(); /* main process call. */
@@ -193,12 +198,17 @@ bool SystemManager::ProcessTic() {
     }
 
     // check bounty timer
-    if (m_bountyTimer.Check())
+    if (m_bountyTimer.Check(sConfig.server.BountyPayoutDelayed))
         PayBounties();
     /* the following are coded for single-tic calls */
     m_anomMgr->Process();
     m_beltMgr->Process();
     m_spawnMgr->Process();
+
+    if (sConfig.debug.UseProfiling) {
+        sProfile.AddTime(_systemProfile, GetTimeUSeconds() - profileStartTime);
+        profileStartTime = GetTimeUSeconds();
+    }
 
     return SystemActivity();
 }
@@ -221,6 +231,8 @@ void SystemManager::UnloadSystem() {
 
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
 
+    // system is being unloaded.  pay bounties now
+    PayBounties();
     m_beltMgr->ClearAll();
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
@@ -429,7 +441,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, const DBS
         data.factionID = entity.factionID;
         data.ownerID = entity.ownerID;
 
-    switch(entity.categoryID) {
+    switch (entity.categoryID) {
         case EVEDB::invCategories::Asteroid: {
             InventoryItemRef asteroid = sItemFactory.GetItem( entity.itemID );
             if (asteroid.get() == nullptr)
@@ -681,6 +693,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& system, const DBS
                     return nullptr;
                 /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID ) );
                 NPC* npcSE = new NPC(npcRef, *(system.GetServiceMgr()), &system, data);
+                npcSE->Load();
                 sEntityList.AddNPC();
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPC item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return npcSE;
@@ -730,6 +743,8 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr == m_clients.end()) {
         m_clients[who->GetCharacterID()] = who;
+        if (m_spawnMgr->IsInitialized() and !m_spawnMgr->IsRatTimerStarted())
+            m_spawnMgr->StartRatTimer();
         _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
                     who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
@@ -737,8 +752,6 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     m_activityTime = 0;
     if (count) {
         ++m_players;
-        if (m_spawnMgr->IsInitialized() and !m_spawnMgr->IsTimerStarted())
-            m_spawnMgr->StartMainTimer();
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
                     who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
@@ -775,6 +788,12 @@ void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
 void SystemManager::AddNPC(NPC* who) {
     if (who == nullptr)
         return;
+    uint32 itemID = who->GetID();
+    if (m_npcs.find(itemID) != m_npcs.end()) {
+        _log(ITEM__WARNING, "%s(%u): Called AddNPC(), but they're already in %s(%u).  Check bubble.", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+    } else {
+        m_npcs[itemID] = who;
+    }
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(who);
     sEntityList.AddNPC();
@@ -783,6 +802,10 @@ void SystemManager::AddNPC(NPC* who) {
 void SystemManager::RemoveNPC(NPC* who) {
     if (who == nullptr)
         return;
+    auto itr = m_npcs.find(who->GetID());
+    if (itr != m_npcs.end())
+        m_npcs.erase(itr);
+
     _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     RemoveEntity(who);
     sEntityList.RemoveNPC();    // this is for loaded npc count.
@@ -830,48 +853,150 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
         m_ticEntities.erase(sItr);
 }
 
-void SystemManager::PayBounties()
+void SystemManager::AddBounty(uint32 charID, BountyData& data)
 {
-    /** @todo finish this.... */
+    /*
+struct BountyData {     // this is comming from rat killed.
+    uint32 fromID;
+    uint32 toID;
+    double amount;
+    uint8 refTypeID;
+    uint16 fromKey;
+    uint16 toKey;
+    std::string reason;  this can stay blank for now.  populate during PayBounties
+}; */
+    _log(CLIENT__TEXT, "AddBounty called for charID %u in system %s(%u).", charID, m_data.name.c_str(), m_data.systemID);
+    std::map<uint32, BountyData>::iterator itr = m_bountyMap.find(charID);
+    if (itr != m_bountyMap.end()) {
+        itr->second.amount += data.amount;
+        std::map<uint32, RatDataMap>::iterator rItr = m_ratMap.find(charID);
+        if (rItr != m_ratMap.end()) {
+            RatDataMap::iterator it = rItr->second.begin();
+            if (it == rItr->second.end()){
+                RatDataMap vec;
+                vec.emplace(data.fromID, 1);
+                rItr->second = vec;
+            } else {
+                ++(it->second);
+            }
+        } else {
+            RatDataMap vec;
+            vec.emplace(data.fromID, 1);
+            m_ratMap.emplace(charID, vec);
+        }
+    } else {
+        m_bountyMap.emplace(charID, data);
+        RatDataMap vec;
+        vec.emplace(data.fromID, 1);
+        m_ratMap.emplace(charID, vec);
+    }
 }
 
-void SystemManager::DoSpawnForBubble(SystemBubble* pSysBubble)
+void SystemManager::PayBounties()
+{
+    _log(CLIENT__TEXT, "PayBounties called for system %s(%u).", m_data.name.c_str(), m_data.systemID);
+    int8 count = 0;
+        /* recDescNpcBountyList = 'NBL'                <-- descrives a full list of [typeID: qty]
+         * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
+recDescription = 'DESC'
+recDescNpcBountyList = 'NBL'
+recDescNpcBountyListTruncated = 'NBLT'
+recStoreItems = 'STOREITEMS'
+         */
+
+    /** @todo  this isnt right...which is why it's not working.
+     * see code in client/script/ui/shared/neocom/wallet.py for more info.  (lots to look over. no time tonite.)
+     * more data....
+     *
+     *   ["description" => <92:         << jnlRef:CorpBountyTax?
+            - 1630077495                << total bounties paid on this timer
+            - 325275.0                  << corp taxes taken?
+            NBL:                        << see above
+                11030: 2
+                11935: 1
+                23323: 1
+                23332: 2
+                23340: 2
+            > [WStr]]
+     *
+     *
+     *
+     */
+    for (auto cur : m_bountyMap) {
+        std::string reason = "NBLT: "; //this needs to be populated as [NBL(T): type:amt, type:amt, ... ] to get proper shit in client
+        std::map<uint32, RatDataMap>::iterator itr = m_ratMap.find(cur.first);
+        if (itr != m_ratMap.end()) {
+            count = itr->second.size();
+            for (auto cur : itr->second) {
+                reason += itoa(cur.first);
+                reason += ":";
+                reason += itoa(cur.second);
+                if (count > 1)
+                    reason += ",";
+                --count;
+            }
+            // will have to figure out how to *correctly* limit this data to count<20 or so...
+        } //else {
+            reason += ",...";    // this will show as "truncated" in client
+        //}
+        AccountService::TranserFunds(ownerCONCORD, cur.first, cur.second.amount, reason, Journal::EntryType::BountyPrizes, m_data.systemID);
+        count = 0;
+    }
+    m_ratMap.clear();
+    m_bountyMap.clear();
+}
+
+void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
 {
     if (!m_spawnMgr->IsInitialized())
         return;
 
-    if (!m_spawnMgr->IsEnabled()) {
-        if (!m_spawnMgr->IsTimerStarted())
-            m_spawnMgr->StartMainTimer();
+    if (!m_spawnMgr->IsRatSpawnEnabled()) {
+        if (!m_spawnMgr->IsRatTimerStarted())
+            m_spawnMgr->StartRatTimer();
         return;
     }
 
-    _log(SPAWN__MESSAGE, "Spawn called for bubble %u in system %u(%.4f), region %u.",
-         pSysBubble->GetID(), m_data.systemID, m_data.securityRating, m_data.regionID);
+    if (is_log_enabled(SPAWN__MESSAGE))
+        _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.",
+             pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), m_data.systemID, m_data.securityRating, m_data.regionID);
     uint8 count = m_beltCount;
-    if (count > 7) count -= 2;
-    if (m_activeRatSpawns < count ) {
-        if (m_spawnMgr->DoSpawnForBubble(pSysBubble, m_data.regionID, m_data.securityRating)) {
-            m_ratBubbles.push_back(pSysBubble->GetID());
-            _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for bubble %u.  %u items in m_ratBubbles", pSysBubble->GetID(), m_ratBubbles.size());
+    if (count > 15)
+        count = 15;
+    if ((m_activeRatSpawns < count ) or (pBubble->IsGate())) {
+        if (m_spawnMgr->DoSpawnForBubble(pBubble, m_data.regionID, m_data.securityRating)) {
+            m_ratBubbles.emplace(pBubble->GetID(), pBubble);
+            if (is_log_enabled(SPAWN__TRACE))
+                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %u items in m_ratBubbles", \
+                        m_data.name.c_str(), m_data.systemID, pBubble->GetID(), m_ratBubbles.size());
         } else {
-            m_spawnMgr->StopMainTimer();
-            _log(SPAWN__ERROR, "SystemManager::DoSpawnForBubble() returned false for bubble %u.", pSysBubble->GetID());
+            m_spawnMgr->StopRatTimer();
+            if (is_log_enabled(SPAWN__TRACE))
+                _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() returned false for bubble %u.", pBubble->GetID());
         }
     }
 }
 
-void SystemManager::GetSpawnBubbles(SpawnBubbleVec* bubbleMap)
+void SystemManager::GetSpawnBubbles(SpawnBubbleMap* bubbleMap)
 {
-    _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_data.systemID);
-    SpawnBubbleVec::iterator itr = m_ratBubbles.begin();
+    if (is_log_enabled(SPAWN__MESSAGE))
+        _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_data.systemID);
+    SpawnBubbleMap::iterator itr = m_ratBubbles.begin();
     while (itr != m_ratBubbles.end())
-        bubbleMap->push_back(*itr);
+        bubbleMap->emplace(itr->first, itr->second);
 }
 
-void SystemManager::RemoveSpawnBubble()
+void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
 {
-    _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for %s(%u), but needs to be written.", GetName().c_str(), m_data.systemID);
+    if (pBubble->IsBelt()) {
+        m_ratBubbles.erase(pBubble->GetID());
+        --m_activeRatSpawns;
+    } else if (pBubble->IsGate()) {
+        m_ratBubbles.erase(pBubble->GetID());
+        --m_activeGateSpawns;
+    }
+    if (is_log_enabled(SPAWN__MESSAGE))
+        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u) in .", pBubble->GetID(), GetName().c_str(), m_data.systemID);
 }
 
 uint32 SystemManager::GetRandBeltID()
@@ -993,6 +1118,14 @@ void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
 SystemEntity* SystemManager::GetSE(uint32 entityID) const {
     std::map<uint32, SystemEntity*>::const_iterator itr = m_entities.find(entityID);
     if (itr == m_entities.end())
+        return nullptr;
+    return itr->second;
+}
+
+NPC* SystemManager::GetNPCSE(uint32 entityID) const
+{
+    std::map<uint32, NPC*>::const_iterator itr = m_npcs.find(entityID);
+    if (itr == m_npcs.end())
         return nullptr;
     return itr->second;
 }

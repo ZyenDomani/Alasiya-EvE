@@ -483,7 +483,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                                 itemRefVec.push_back(mod.second);
                     } break;
                     case dgmTargLocTarget: {
-                        // ...current target (focused)
+                        // ...current target (focused, volatile...removed on 'invalid target')
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case dgmTargLocInvalid: {   // null
@@ -515,7 +515,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
                     } break;
                     case dgmTargLocTarget: {
-                        // ...current target (focused)
+                        // ...current target (focused, volatile...removed on 'invalid target')
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     default: {

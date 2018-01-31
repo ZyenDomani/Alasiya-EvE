@@ -279,6 +279,12 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
 
 bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry/*true*/)
 {
+    /** @todo  still needs work...will work on later....
+    double profileStartTime = 0.0;
+    if (sConfig.debug.UseProfiling)
+        profileStartTime = GetTimeUSeconds();
+    */
+
     if (mysql == nullptr) {
         if (sConsole.IsDbError())
             return false;
@@ -323,6 +329,10 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
         _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     err.ClearError();
+
+    //if (sConfig.debug.UseProfiling)
+    //    sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
+    
     return true;
 }
 

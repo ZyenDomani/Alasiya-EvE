@@ -731,7 +731,7 @@ void DestinyManager::MoveObject() {
         } else {
             //ship has reached full stop
             // update position one final time (for last bit of drift) and exit movement functions by calling Halt()
-            SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);
+            SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
             if (is_log_enabled(DESTINY__MOVE_TRACE))
                 _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is at full stop after %.3f seconds.", \
                     mySE->GetName(), mySE->GetID(), timeStamp);
@@ -984,7 +984,7 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
 }
 
 void DestinyManager::ClearTurn() {
-    SetPosition(m_position, sConfig.debug.PositionHack);
+    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
     m_turnTic = 0;
     m_turning = false;
     m_radians = 0.0f;
@@ -1649,7 +1649,7 @@ void DestinyManager::_BeginMovement() {
         // dont call MoveObject() here, as changes wont take affect till next tic.
     }
 
-    SetPosition(m_position, sConfig.debug.PositionHack);
+    SetPosition(m_position, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
 }
 
 void DestinyManager::Follow(SystemEntity* pSE, double distance) {
