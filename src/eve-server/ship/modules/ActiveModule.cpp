@@ -156,19 +156,31 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
     if ((m_needsCharge) and ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr))) {
-        _log(SHIP__MODULE_WARNING, "ActiveModule::Activate() - Cannot find loaded charge for this module");
+        Clear();
         throw PyException( MakeUserError( "CantFindChargeToAdd"));
     }
     if (IsValidTarget(targetID)) {
         m_targetID = targetID;
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
-            sLog.Error("ActiveModule::Activate()", "m_targetSE == NULL");
-            m_shipRef->GetPilot()->SendErrorMsg("Current target was not found.  Ref: ServerError 25263");
             Clear();
-            return;
+            throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
         }
     }
+
+    /*
+     * AttrdisallowAgainstEwImmuneTarget
+     * AttrDisallowAssistance
+     * AttrDisallowOffensiveModifiers
+     * AttrDisallowOffensiveModifierBonus
+     */
+
+    if (m_targetSE != nullptr)
+        if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
+            Clear();
+            throw PyException( MakeUserError( "DeniedActivateTargetAssistDisallowed"));
+        }
+
     m_Stop = false;
     m_repeat = repeat;
     m_effectID = effectID;

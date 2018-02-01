@@ -823,7 +823,7 @@ enum EveAttrEnum {
     AttrSpawnWithoutGuardsToo = 903,
     AttrWarcruiserCPUBonus = 904,
     AttrTacklerBonus = 905,
-    AttrDisallowEarlyDeactivation = 906,
+    AttrDisallowEarlyDeactivation = 906,        // not used, but would be helpful
     AttrHasShipMaintenanceBay = 907,
     AttrShipMaintenanceBayCapacity = 908,
     AttrMaxShipGroupActiveID = 909,

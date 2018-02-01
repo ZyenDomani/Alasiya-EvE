@@ -1275,7 +1275,63 @@ void DestinyManager::_Orbit() {
         LogMacro(m_position);
         LogMacro(m_shipHeading);
     }
+
+
+    G = 6.6742e-11;
+    Cart3 radius = pa->pos - pb->pos;
+    double sumsq = radius.sumsq();
+    double hypot = sqrt ( sumsq );
+    double acc = -G * pb->mass / sumsq;
+    // this line assigns the acceleration to
+    // the x,y,z velocity components along the
+    // radius pa - pb without using trig functions
+    pa->vel += radius / hypot * acc * dt;
 */
+}
+
+void DestinyManager::ComputePositionAtDate(){
+    /*
+     double[] semimajorAxis = new double[2];
+    double[] eccentricity = new double[2];
+    double[] inclination = new double[2];
+    double[] meanLongitude = new double[2];
+    double[] longitudeOfPerihelion = new double[2];
+    double[] longitudeOfTheAscendingNode = new double[2];
+    
+    double a = semimajorAxis [0] + semimajorAxis [1];
+    double e = eccentricity [0] + eccentricity [1];
+    double i = EvE::Trig::Deg2Rad(inclination [0] + inclination [1]);
+    double L = EvE::Trig::Deg2Rad(std::remainder(std::remainder(meanLongitude[1], 360) + meanLongitude[0], 360));
+    double p = EvE::Trig::Deg2Rad(longitudeOfPerihelion [0] + longitudeOfPerihelion [1]);
+    double W = EvE::Trig::Deg2Rad(longitudeOfTheAscendingNode [0] + longitudeOfTheAscendingNode [1]);
+
+    double M = L - p;
+    double w = p - W;
+
+    double E = M;
+    while (true) {
+        double dE = (E - e * sin(E) - M) / (1 - e * cos(E));
+        E -= dE;
+        if (abs(dE) < 1e-6)
+            break;
+    }
+
+    double P = a * (cos(E) - e);
+    double Q = a * sin(E) * sqrt(1 - pow(e, 2));
+
+    // rotate by argument of periapsis
+    double x = cos(w) * P - sin(w) * Q;
+    double y = sin(w) * P + cos(w) * Q;
+    // rotate by inclination
+    double z = sin(i) * x;
+    x = cos(i * x);
+    // rotate by longitude of ascending node
+    double xTemp = x;
+    x = cos(W) * xTemp - sin(W) * y;
+    y = sin(W) * xTemp + cos(W) * y;
+
+    position = new Vector3d (x * 149597870700d, z * 149597870700d, y * 149597870700d);
+    */
 }
 
 void DestinyManager::_InitWarp() {

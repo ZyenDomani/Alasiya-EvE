@@ -373,17 +373,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
     Client* pClient = call.client;
 
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            /** @todo  update this to check for warpsafe modules and allow activation during warp */
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
-    } else {
+    if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked");
         return PyStatic.NewNone();
     }
@@ -458,15 +448,9 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 
     Client* pClient = call.client;
 
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
+    if (!pClient->IsInSpace()) {
+        pClient->SendNotifyMsg("You can't do this while docked");
+        return PyStatic.NewNone();
     }
 
     if (call.tuple->items.at(1)->IsInt()) {
@@ -522,15 +506,18 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         rsp.targetList.push_back(args.arg);
 
     Client* pClient = call.client;
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return rsp.Encode();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return rsp.Encode();
-        }
+    if (!pClient->IsInSpace()) {
+        pClient->SendNotifyMsg("You can't do this while docked");
+        return rsp.Encode();
+    }
+
+    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
+        return rsp.Encode();
+    } else if (pDestiny->IsWarping()) {
+        pClient->SendNotifyMsg("You can't do this while warping");
+        return rsp.Encode();
     }
 
     if (pClient->GetShipSE()->TargetMgr() == nullptr)

@@ -105,8 +105,10 @@ public:
 
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
-    //batch processes handlers
+    // basic methods
     void ShipWarping();
+
+    //batch processes handlers
     void AbortCycle();
     void Process();
     void OfflineAll();

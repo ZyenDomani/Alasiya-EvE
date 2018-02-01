@@ -240,6 +240,7 @@ protected:
 
     // movement methods
     void MoveObject();                  //apply velocity to our position for for this round of movement
+    void ComputePositionAtDate();       // test code....not used yet
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();              //set initial variables for all movement (common code)

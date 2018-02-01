@@ -733,11 +733,23 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called from a ship with no pilot." );
         return;
     }
+
+    DestinyManager* pDestiny = m_Ship->GetPilot()->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
+        _log(PLAYER__ERROR, "%s: Ship has no destiny manager!", m_Ship->GetPilot()->GetName());
+        return;
+    }
+
     GenericModule* pMod = m_Modules->GetModule(itemID);
     if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Activate() - Called on module %u that is not loaded.", itemID );
         return;
-    } else if (!pMod->isOnline()) {
+    }
+
+    _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%u - %s)  targetID: %i, repeat: %i.", \
+                pMod->getItem()->itemName().c_str(), effectID, sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
+
+    if (!pMod->isOnline()) {
         if (effectID == 16) { //16    online
             pMod->Online();
         } else {
@@ -745,13 +757,18 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
             m_Ship->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
         }
         return;
-    } else {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Activate() - %s (%s)  targetID: %i, repeat: %i.", \
-                pMod->getItem()->itemName().c_str(), sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
-        pMod->Activate(effectID, targetID, repeat);
+    } else if (pDestiny->IsWarping()) {
+        if (pMod->HasAttribute(AttrDisallowActivateOnWarp) or !sFxDataMgr.isWarpSafe(effectID))
+            throw PyException( MakeUserError( "DeniedActivateInWarp"));
+    } else if (pDestiny->IsCloaked()) {
+        throw PyException( MakeUserError( "DeniedActivateCloaked"));
+    } else if (m_Ship->GetPilot()->IsJump()) {
+        throw PyException( MakeUserError( "DeniedActivateInJump"));
     }
 
-    /*{'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
+    pMod->Activate(effectID, targetID, repeat);
+
+    /* {'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
      * {'messageKey': 'DeniedActivateControlling', 'dataID': 17880010, 'suppressable': False, 'bodyID': 258228, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2230}
      * {'messageKey': 'DeniedActivateFrozen', 'dataID': 17883391, 'suppressable': False, 'bodyID': 259488, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 772}
      * {'messageKey': 'DeniedActivateInJump', 'dataID': 17883394, 'suppressable': False, 'bodyID': 259489, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 773}
