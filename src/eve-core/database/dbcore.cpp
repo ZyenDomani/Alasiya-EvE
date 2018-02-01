@@ -30,6 +30,7 @@
 #include "log/LogNew.h"
 #include "log/logsys.h"
 #include "utils/misc.h"
+#include "utils/utils_time.h"
 
 #define COLUMN_BOUNDS_CHECKING
 
@@ -55,7 +56,28 @@ public:
     void HaltServer(bool dbError=false);
 };
 
+// this group is to enable profile tracking for db
+#define sConfig ( EVEServerConfig::get() )
+#define sProfile ( Profile::get() )
+class EVEServerConfig
+: public Singleton<EVEServerConfig>
+{
+public:
+    struct {
+        bool UseProfiling;
+    } debug;
 
+};
+class Profile
+: public Singleton<Profile>
+{
+public:
+    void AddTime(uint8 key, double value);
+};
+
+enum {
+    _dbProfile          = 9
+};
 
 // this is used to enable socket communication (may not be needed)
 enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
@@ -279,11 +301,9 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
 
 bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry/*true*/)
 {
-    /** @todo  still needs work...will work on later....
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    */
 
     if (mysql == nullptr) {
         if (sConsole.IsDbError())
@@ -330,9 +350,9 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int32 querylen, boo
 
     err.ClearError();
 
-    //if (sConfig.debug.UseProfiling)
-    //    sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
-    
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
+
     return true;
 }
 

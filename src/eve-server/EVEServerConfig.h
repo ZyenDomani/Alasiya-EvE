@@ -158,6 +158,7 @@ public:
     struct {
         bool IdleWander;
         uint16 WarpOut;
+        float WarpFollowChance;
         bool RoamingSpawns;
         bool StaticSpawns;
         uint16 RoamingTimer;

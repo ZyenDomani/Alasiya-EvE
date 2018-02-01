@@ -686,8 +686,9 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
         if (ship) {
             // are we adding module to ship using autoFit?
-            if (toFlag == flagAutoFit)
-                if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Charge)) {
+            if (toFlag == flagAutoFit) {
+                assert(iRef->categoryID() != EVEDB::invCategories::Charge); // crash here...this should NOT happen.
+                if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
                         pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
@@ -696,6 +697,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 } else {
                     toFlag = mFlag;
                 }
+            }
 
             if (iRef->categoryID() == EVEDB::invCategories::Module)
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef);

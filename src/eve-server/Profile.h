@@ -65,6 +65,8 @@ class Profile
       double GetAverage(std::vector<double> container);
       double GetTime() { return profile.time;}
 
+      std::string GetSize(size_t cSize);
+
       void GetRunTimes(std::vector< double > container, double* h, double* l, double* a);
 
   private:

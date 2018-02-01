@@ -118,7 +118,7 @@ void EntityList::Process() {
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
-    
+
     Client* pClient(nullptr);
     std::vector<Client*>::iterator itr = m_clients.begin();
     while (itr != m_clients.end()) {
@@ -173,6 +173,7 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     if (itr != m_systems.end())
         return itr->second;
 
+    /** @todo test for adding OpenMP here to enable MP per system. */
     SystemManager* pSM = new SystemManager(systemID, *m_services);
     if ((pSM == nullptr) or (!pSM->BootSystem())) {
         _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);

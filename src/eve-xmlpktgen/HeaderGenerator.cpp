@@ -27,6 +27,7 @@
 
 #include "HeaderGenerator.h"
 
+
 ClassHeaderGenerator::ClassHeaderGenerator( FILE* outputFile )
 : Generator( outputFile )
 {

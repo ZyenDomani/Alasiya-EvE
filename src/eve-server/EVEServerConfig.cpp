@@ -90,8 +90,8 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropMoney = 1.0;//N
     rates.RepairCost = 1.0;//N
     rates.WebUpdate = 15 /*m*/;
-    rates.TaxAmount = 20000;
-    rates.TaxedAmount = 250000;
+    rates.TaxAmount = 10000;
+    rates.TaxedAmount = 175000;
 
     // bpTimes
     bpTimes.ProdTime = 1.0;
@@ -120,6 +120,7 @@ EVEServerConfig::EVEServerConfig()
     // npc
     npc.IdleWander = false;//P
     npc.WarpOut = 600 /*s*/;
+    npc.WarpFollowChance = 0.15;
     npc.ThreatRadius = 1.0;//N
     npc.RoamingSpawns = false;//P
     npc.StaticSpawns = false;//P
@@ -420,6 +421,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
     AddValueParser( "IdleWander",           npc.IdleWander );
     AddValueParser( "WarpOut",              npc.WarpOut );
+    AddValueParser( "WarpFollowChance",     npc.WarpFollowChance );
     AddValueParser( "ThreatRadius",         npc.ThreatRadius );
     AddValueParser( "RoamingSpawns",        npc.RoamingSpawns );
     AddValueParser( "StaticSpawns",         npc.StaticSpawns );
@@ -436,6 +438,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 
     RemoveParser( "IdleWander" );
     RemoveParser( "WarpOut" );
+    RemoveParser( "WarpFollowChance" );
     RemoveParser( "ThreatRadius" );
     RemoveParser( "RoamingSpawns" );
     RemoveParser( "StaticSpawns" );

@@ -221,7 +221,7 @@ int main( int argc, char* argv[] )
     sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
     //sThread.AddThread(pthread_self());
 
-    sLog.White("", "");     // spacer
+    std::printf("\n");     // spacer
 
     sLog.Green("       ServerInit", "Loading server");
 
@@ -240,7 +240,7 @@ int main( int argc, char* argv[] )
     sLog.White("Sentry AI Version", " %.2f", Sentry_AI_Version );
     sLog.White("MarketBot Version", " %.2f", Bot_Version );
 
-    sLog.White("", "");     // spacer
+    std::printf("\n");     // spacer
 
     /* Start up the TCP server */
     EVETCPServer tcps;
@@ -278,6 +278,8 @@ int main( int argc, char* argv[] )
     //  this gives the imageserver's server time to load so the dynamic database msgs are in order
     Sleep(250);
 
+    std::printf("\n");     // spacer
+
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
     sItemFactory.Initialize();
@@ -285,6 +287,8 @@ int main( int argc, char* argv[] )
     /* initialize EntityList singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
     sEntityList.Initialize();
+
+    std::printf("\n");     // spacer
 
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
@@ -322,6 +326,8 @@ int main( int argc, char* argv[] )
     /* create console command interperter singleton */
     sLog.Green("       ServerInit", "Starting Console Manager");
     sConsole.Initialize(&command_dispatcher);
+
+    std::printf("\n");     // spacer
 
     /* Service creation and registration. */
     sLog.Green("       ServerInit", "Registering Service Managers."); // 85 currently known pyServMgr
@@ -420,6 +426,8 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("wormholeMgr", new WormHoleSvc(&pyServMgr));
     pyServMgr.Initalize(startTime);
 
+    std::printf("\n");     // spacer
+
     /** @note  this is NOT used correctly yet...  */
     sLog.Green("       ServerInit", "Priming cached objects.");
     pyServMgr.cache_service->PrimeCache();
@@ -431,8 +439,12 @@ int main( int argc, char* argv[] )
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
     else
         sBulkDB.Initialize();
+    std::printf("\n");     // spacer
+
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    
     sLog.Green("       ServerInit", "Effect Data");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
@@ -448,37 +460,56 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Station Data");
     stDataMgr.Initialize();
 
-    sLog.White("", "");     // spacer
+    std::printf("\n");     // spacer
 
     /* Custom config file options
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
-    uint8 m_sleepTime = sConfig.server.ServerSleepTime; // delay 10 ms.
-    if (sConfig.server.ServerSleepTime != 10) {
-        m_sleepTime = sConfig.server.ServerSleepTime;
-        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
-        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
-    } else
-        sLog.Green("  Loop Sleep Time","Default at 10ms.");
-    uint16 m_idle = sConfig.server.idleSleepTime;
-    if (m_idle == 1000)
-        sLog.Green("  Idle Sleep Time","Default at 1000ms.");
-    else
-        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
-    if (sConfig.debug.UseShipTracking)
-        sLog.Warning("    Ship Tracking","Enabled.");
-    else
-        sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.server.UseBeanCount)
-        sLog.Green("     BeanCounting","Enabled.");
-    else
-        sLog.Warning("     BeanCounting","Disabled.");
+    sLog.Blue("       ServerInit", "Debug Switches");
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
         sProfile.Init();
     } else
         sLog.Warning(" Server Profiling","Disabled.");
+    if (sConfig.debug.UseShipTracking)
+        sLog.Warning("    Ship Tracking","Enabled.");
+    else
+        sLog.Warning("    Ship Tracking","Disabled.");
+    if (sConfig.debug.PositionHack)
+        sLog.Warning("    Position Hack","Enabled.");
+    else
+        sLog.Warning("    Position Hack","Disabled.");
+
+    std::printf("\n");     // spacer
+    sLog.Blue("       ServerInit", "Rate Modifiers");
+    if (sConfig.rates.secRate != 1.0)
+        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
+    else
+        sLog.Green("        SecStatus","Normal.");
+    if (sConfig.rates.npcBountyMultiply != 1.0)
+        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+    else
+        sLog.Green("          Bountys","Normal.");
+    if (sConfig.rates.damageRate != 1.0)
+        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
+    else
+        sLog.Green("      All Damages","Normal.");
+    if (sConfig.rates.missileRoF != 1.0)
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
+    else
+        sLog.Green("      Missile Dmg","Normal.");
+    if (sConfig.rates.missileTime != 1.0)
+        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
+    else
+        sLog.Green("     Missile Time","Normal.");
+    if (sConfig.rates.turretRoF != 1.0)
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
+    else
+        sLog.Green("       Turret Dmg","Normal.");
+
+    std::printf("\n");     // spacer
+    sLog.Blue("       ServerInit", "Feature Switches");
     if (sConfig.cosmic.PIEnabled)
         sLog.Green("        PI System","Enabled.");
     else
@@ -487,42 +518,29 @@ int main( int argc, char* argv[] )
         sLog.Green("    Player Drones","Enabled.");
     else
         sLog.Warning("    Player Drones","Disabled.");
-    if (sConfig.npc.StaticSpawns)
-        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer);
-    else
-        sLog.Warning("    Static Spawns","Disabled.");
-    if (sConfig.npc.RoamingSpawns)
-        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer);
-    else
-        sLog.Warning("   Roaming Spawns","Disabled.");
-    if (sConfig.rates.secRate != 1.0)
-        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
-    else
-        sLog.Blue("        SecStatus","Normal.");
-    if (sConfig.rates.npcBountyMultiply != 1.0)
-        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
-    else
-        sLog.Blue("          Bountys","Normal.");
-    if (sConfig.rates.damageRate != 1.0)
-        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
-    else
-        sLog.Blue("      All Damages","Normal.");
-    if (sConfig.rates.missileRoF != 1.0)
-        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
-    else
-        sLog.Blue("      Missile Dmg","Normal.");
-    if (sConfig.rates.missileTime != 1.0)
-        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
-    else
-        sLog.Blue("     Missile Time","Normal.");
-    if (sConfig.rates.turretRoF != 1.0)
-        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
-    else
-        sLog.Blue("       Turret Dmg","Normal.");
     if (sConfig.server.ModuleAutoOff)
         sLog.Green("  Module Auto-Off","Enabled.");
     else
         sLog.Warning("  Module Auto-Off","Disabled.");
+    if (sConfig.server.BountyPayoutDelayed)
+        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
+    else
+        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
+
+    std::printf("\n");     // spacer
+    sLog.Blue("       ServerInit", "Misc Switches");
+    if (sConfig.server.UseBeanCount)
+        sLog.Green("     BeanCounting","Enabled.");
+    else
+        sLog.Warning("     BeanCounting","Disabled.");
+    if (sConfig.npc.StaticSpawns)
+        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer /60);
+    else
+        sLog.Warning("    Static Spawns","Disabled.");
+    if (sConfig.npc.RoamingSpawns)
+        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer /60);
+    else
+        sLog.Warning("   Roaming Spawns","Disabled.");
     if (sConfig.server.ModuleDamageChance)
         sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
     else
@@ -531,27 +549,39 @@ int main( int argc, char* argv[] )
         sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
     else
         sLog.Warning("      Decay Timer","Disabled.");
-    if (sConfig.server.BountyPayoutDelayed)
-        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
-    else
-        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
 
-    sLog.White("", "");     // spacer
+    std::printf("\n");     // spacer
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
 
+    sLog.Blue("       ServerInit", "Main Loop Settings");
+    uint8 m_sleepTime = sConfig.server.ServerSleepTime; // default 10ms.  max 256ms
+    if (m_sleepTime == 10)
+        sLog.Green("  Loop Sleep Time","Default at 10ms.");
+    else {
+        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
+        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
+    }
+    uint16 m_idle = sConfig.server.idleSleepTime;       // default 1s.  max 65.535s
+    if (m_idle == 1000)
+        sLog.Green("  Idle Sleep Time","Default at 1000ms.");
+    else {
+        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
+        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
+    }
+
     /* program events system */
     SetupSignals();
-
-    ServiceDB::SetServerOnlineStatus(true);
 
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
-    sLog.Error("       ServerInit", "Main Loop starting.");
+    sLog.Error("       ServerInit", "Main Loop Starting.");
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
     sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
+
+    ServiceDB::SetServerOnlineStatus(true);
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -571,14 +601,13 @@ int main( int argc, char* argv[] )
         if (tcpc = tcps.PopConnection())
             sEntityList.Add(new Client(pyServMgr, &tcpc));
 
-        /** @todo test for adding OpenMP here, or at other Process() points in code */
         sEntityList.Process();
 
         /*  process console commands, if any, and check for 'exit' command */
         m_run = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        if (sEntityList.GetClientCount()) {
+        if (sEntityList.GetClientCount()) {     // how much of a proc hit is this?  change/remove it?
             start = GetTimeMSeconds() - start;
             if (m_sleepTime > start)
                 Sleep(start);

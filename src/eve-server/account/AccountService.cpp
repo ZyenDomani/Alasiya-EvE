@@ -275,7 +275,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         return;
     // are bounty payments grouped on timer?
     if (sConfig.server.BountyPayoutDelayed)
-        if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?
+        if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 175k
             return;
     float tax = 0;
     uint32 corpID = 0;
@@ -291,7 +291,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     // just in case something went wrong.....
     if (!IsCorp(corpID))
         return;
-    // is tax worth the accounting hassle? (from corp pov)
+    // is tax worth the accounting hassle? (from corp pov)  default is 10k
     if (tax < sConfig.rates.TaxAmount)
         return;
 

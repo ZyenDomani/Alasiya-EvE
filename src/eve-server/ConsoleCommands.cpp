@@ -235,7 +235,7 @@ bool ConsoleCommand::Process() {
                     sLog.Error("   Server Profile", "Profiling is turned off.");
                     return true;
                 }
-                sLog.Warning("   Server Profile", "Items prefixed with an asterisk are disabled or not implemented yet.");
+                sLog.Warning("   Server Profile", "Current Stamp: %u.", sEntityList.GetStamp());
                 uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
                 GetUpTime(&w, &d, &h, &m, &s);
                 if (w)
