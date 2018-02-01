@@ -1534,6 +1534,8 @@ void DestinyManager::_WarpStop(double currentShipSpeed) {
     m_stop = true;
     SafeDelete(m_warpState);
     m_targBubble = nullptr;
+    if ((mySE->IsNPCSE()) and (mySE->GetNPCSE()->GetAIMgr() != nullptr))
+        mySE->GetNPCSE()->GetAIMgr()->WarpOutComplete();
 }
 
 //called whenever an entity is going away and can no longer be used as a target

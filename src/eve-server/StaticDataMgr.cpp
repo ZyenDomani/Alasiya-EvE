@@ -314,17 +314,23 @@ void StaticDataMgr::Populate()
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
     RatFactionGroups factionGroup;
+    uint16 typeCount = 0;
     while (res->GetRow(row)) {
         //SELECT shipClass, groupID, factionID FROM roidRatClassGroup
         factionGroup.shipClass = row.GetInt(0);
         factionGroup.groupID = (uint16)row.GetInt(1);
         m_ratGroups.emplace(row.GetInt(2), factionGroup);
 
+        rt_typeIDs rtt;
         ManagerDB::GetGroupTypeIDs((uint8)row.GetInt(0), (uint16)row.GetInt(1), row.GetInt(2), *res2);
         while (res2->GetRow(row2)) {
             //SELECT typeID FROM invTypes WHERE groupID = %u ORDER BY typeID
-            m_ratTypes.emplace((uint16)row.GetInt(1), (uint16)row2.GetInt(0));
+            rtt.push_back((uint16)row2.GetInt(0));
+            ++typeCount;
         }
+        rt_groups rtg;
+        rtg.emplace((uint16)row.GetInt(1), rtt);
+        m_ratTypes.emplace((uint8)row.GetInt(0), rtg);
         res2->Reset();
     }
 
@@ -353,7 +359,7 @@ void StaticDataMgr::Populate()
     }
 
     sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
-              m_ratGroups.size(), m_ratClasses.size(), m_ratTypes.size(), m_ratRegions.size(), (GetTimeMSeconds() - start));
+              m_ratGroups.size(), m_ratClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -419,13 +425,33 @@ void StaticDataMgr::GetMoonResouces(std::map<uint16, uint8>& data)
         data.emplace(cur.first, cur.second);
 }
 
+uint16 StaticDataMgr::GetRandRatType(uint8 sClass, uint16 groupID)
+{
+    std::vector< uint16 > typeVec;
+    auto classRange = m_ratTypes.equal_range(sClass);
+    for (auto it = classRange.first; it != classRange.second; ++it) {
+        for (auto itr : it->second)
+            if (itr.first == groupID) {
+                for (auto tItr : itr.second)
+                    typeVec.push_back(tItr);
+                break;
+            }
+    }
+    if (typeVec.size() < 1)
+        return 0;
+    return typeVec.at(MakeRandomInt(0, typeVec.size()));
+}
+
 bool StaticDataMgr::GetRatTypes(uint16 groupID, std::vector< uint16 >& typeVec)
 {
+    /*  this is now invalid.....
     auto groupRange = m_ratTypes.equal_range(groupID);
     for (auto it = groupRange.first; it != groupRange.second; ++it)
         typeVec.push_back(it->second);
 
     return !typeVec.empty();
+    */
+    return false;
 }
 
 bool StaticDataMgr::GetRatGroups(uint32 factionID, std::map< uint8, uint16 >& groupMap)

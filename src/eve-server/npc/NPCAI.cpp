@@ -176,8 +176,9 @@ void NPCAIMgr::Process() {
     if ((!m_processTimer.Check())
     or m_npc->DestinyMgr()->IsWarping())
         return;
-    if (!m_npc->SysBubble()->HasPlayers())  // this needs to be separate as bubble = null when warping
-        return;
+    // make config option to (dis)allow empty bubble tics for npcs
+    //if (!m_npc->SysBubble()->HasPlayers())  // this needs to be separate as bubble = null when warping
+    //    return;
 
     if (m_shieldBoosterTimer.Enabled()
     and m_shieldBoosterTimer.Check())
@@ -192,11 +193,12 @@ void NPCAIMgr::Process() {
     if (m_warpOutTimer.Check(false)) {
         // disallow warpout if spawn has active respawn timer (spawn is being chained)
         if (m_npc->GetSpawnMgr()->IsChaining(m_npc->SysBubble()->GetID())) {
+            m_state = NPCState::Idle;
             m_warpOutTimer.Disable();
+        } else {
+            WarpOut();
             return;
         }
-        WarpOut();
-        return;
     }
     /* NPCState definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit random object in bubble ~10-20k at 1/2 orbit speed
@@ -258,9 +260,7 @@ void NPCAIMgr::Process() {
             CheckDistance(pSE);
         } break;
         case NPCState::WarpOut:
-        case NPCState::WarpFollow: {
-            ; // do nothing yet
-        } break;
+        case NPCState::WarpFollow:
         case NPCState::Fleeing:
         case NPCState::Signaling:{
             _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
@@ -271,8 +271,12 @@ void NPCAIMgr::Process() {
 
 void NPCAIMgr::WarpOut()
 {
-    if (m_state == NPCState::WarpOut)
+    if (m_state == NPCState::WarpOut) {
+        // make error for this being called again.  multiple calls or failure to reset state.
+        m_state = NPCState::Idle;
+        m_warpOutTimer.Disable();
         return;
+    }
 
     m_state = NPCState::WarpOut;
     m_warpOutTimer.Disable();
@@ -281,25 +285,21 @@ void NPCAIMgr::WarpOut()
      * based on npc faction, system, players in system, players in bubble, and *more later*
      * to determine a warpto target for this npc, or this group
      *
+     * m_npc->SystemMgr()->GetAnomMgr();
+     *
+     *
      * for now, if there are players in system, just warp to another belt.
-     * note:  must set/reset belt spawn variable if/when spawns jump belts
      */
-
-    /*
-    m_npc->SystemMgr()->GetAnomMgr();
-    m_npc->SysBubble()->SetSpawned();
-    */
 
     // if there are no players in this system, avoid using proc tics on npcs
     if (m_npc->SystemMgr()->PlayerCount()) {
-        //  determine if player is warping INTO this bubble, and if so, deny spawn warping out.  (maybe?)
         uint32 newBeltID = m_npc->SystemMgr()->GetRandBeltID();
         if (newBeltID == sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()))
             newBeltID = m_npc->SystemMgr()->GetRandBeltID();
 
         SystemEntity* newSE = m_npc->SystemMgr()->GetSE(newBeltID);
-       // m_npc->DestinyMgr()->WarpTo(newSE->GetPosition());
-        m_npc->GetSpawnMgr()->WarpOutSpawn(m_npc, sBubbleMgr.FindBubble(newSE));
+        m_npc->DestinyMgr()->WarpTo(newSE->GetPosition());
+        m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newSE));
     }
 }
 
@@ -317,6 +317,7 @@ void NPCAIMgr::SetWander()
             pSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
         if (pSE == nullptr) {
             _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
+            WarpOut();
             return;
         }
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
@@ -552,6 +553,9 @@ void NPCAIMgr::TargetLost(SystemEntity* pSE) {
         case NPCState::Chasing:
         case NPCState::Following:
         case NPCState::Engaged: {
+            // implement chance for npc to follow warping player
+            // sConfig.npc.WarpFollowChance;
+            // NPCState::WarpFollow
             if (m_npc->TargetMgr()->HasNoTargets()) {
                 _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) lost. No targets remain.  Return to Idle.", \
                         m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -668,6 +672,6 @@ std::string NPCAIMgr::GetStateName(int8 stateID)
         case NPCState::Signaling:      return "Signaling";
         case NPCState::WarpOut:        return "Warping Out";
         case NPCState::WarpFollow:     return "Following Warp";
-        default:                    return "Invalid";
+        default:                       return "Invalid";
     }
 }

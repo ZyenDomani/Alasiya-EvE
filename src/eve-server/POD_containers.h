@@ -280,7 +280,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint32 itemID;      // rat entity id
     uint32 corpID;      // rat corp id
     uint32 factionID;   // rat faction id
-    uint16 stamp;       // spawn group stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
+    uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
 };
 
 /* POD structure for spawn faction groups */

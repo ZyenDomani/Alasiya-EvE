@@ -52,6 +52,7 @@ public:
     bool                GetRatTypes(uint16 groupID, std::vector<uint16>& typeVec);
     bool                GetRatGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
     bool                GetRatClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
+    uint16              GetRandRatType(uint8 sClass, uint16 groupID);
 
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls
     void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productID/matls
@@ -128,7 +129,9 @@ private:
 
     /* spawn data */
     // roid rats
-    std::multimap<uint16, uint16>                       m_ratTypes;         // ratGroupID/ratTypeID
+    typedef std::vector<uint16>                         rt_typeIDs;
+    typedef std::map<uint16, rt_typeIDs>                rt_groups;          // groupID/[typeIDs]
+    std::multimap<uint8, rt_groups>                     m_ratTypes;         // spawnClass/[ratGroupID/(ratTypeID)]
     std::multimap<uint8, RatSpawnClass>                 m_ratClasses;       // spawnType/data
     std::multimap<uint32, RatFactionGroups>             m_ratGroups;        // factionID/data
     // deadspace

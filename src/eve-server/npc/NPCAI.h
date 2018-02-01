@@ -76,6 +76,7 @@ public:
 
     // npcAI methods
     void DisableWarpOutTimer()                          { m_warpOutTimer.Disable(); }
+    void WarpOutComplete()                              { m_state == NPCState::Idle; }
 
 protected:
     void Attack(SystemEntity* pTarget);

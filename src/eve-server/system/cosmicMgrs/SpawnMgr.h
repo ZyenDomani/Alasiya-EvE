@@ -29,9 +29,9 @@ public:
     bool Init();
 
     void Process();
-    // warp a spawned npc group from one location to another (change bubbles)
+    // not working... warp a spawned npc group from one location to another (change bubbles)
     void WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble);
-    // move a spawned npc from one location to another (change bubbles)
+    // update SpawnMgr on npcs new location (change bubbles)
     void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);
 
 
@@ -47,7 +47,7 @@ public:
 
     void StartRatTimer();
     void StopRatTimer()                                 { m_ratTimer.Disable(); }
-    void StartRatGroupTimer(uint32 time);
+    void StartRatGroupTimer();
     void StopRatGroupTimer()                            { m_ratGroupTimer.Disable(); }
 
     bool IsRatSpawnEnabled()                            { return m_ratEnabled; }
@@ -87,6 +87,8 @@ private:
 
     bool m_ratEnabled;         //allow spawning?
     bool m_initalized;      //allow spawning?
+
+    uint16 m_groupTimerSetTime;     //ms - this is for hard-coding the respawn timer time.
 
     uint32 m_spawnID;       //in case i need to track a specific spawn group.
 

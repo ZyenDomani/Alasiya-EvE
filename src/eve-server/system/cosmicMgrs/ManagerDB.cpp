@@ -342,7 +342,6 @@ void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
 void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionID, DBQueryResult& res) {
     // this now gets advanced frigates and cruisers based on faction (best i could think of)
     std::string name = "";
-    std::string condition = "LIMIT 10";
 
     switch (factionID) {
         case factionAngel: {  //  Cyber
@@ -376,19 +375,18 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
                 name = "AND typeName NOT LIKE '%Guardian%'";
         } break;
         case factionRogueDrones: {
-            if ((shipClass == 2) or (shipClass == 5)) 
+            if ((shipClass == 2) or (shipClass == 5))
                 name = "AND typeName LIKE '%Strain%'";
             else if ((shipClass == 1) or (shipClass == 4))
                 name = "AND typeName NOT LIKE '%Strain%'";
-            else if (shipClass == 9)    // 9 = swarm for drones, which dont have officers.
-                condition = "LIMIT 12";
         } break;
     }
 
-    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u  %s ORDER BY typeID %s", groupID, name.c_str(), condition.c_str()))
+    if (!sDatabase.RunQuery(res, "SELECT typeID FROM invTypes WHERE groupID = %u %s ORDER BY typeID", groupID, name.c_str()))
         _log(DATABASE__ERROR, "Error in GetGroupTypeIDs query: %s", res.error.c_str());
 }
 
+// called during startup/shutdown by ItemFactory
 void ManagerDB::DeleteSpawnedRats()
 {
     DBerror err;
