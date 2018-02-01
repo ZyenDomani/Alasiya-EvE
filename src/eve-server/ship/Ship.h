@@ -324,6 +324,7 @@ public:
     void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);          // make sure this does NOT throw.  must return integer
+    void LoadCharge( EVEItemFlags flag, InventoryItemRef iRef);          // this can throw. returns nothing
     /* end new module manager interface */
 
     // Tactical Interface:
@@ -383,7 +384,7 @@ private:
     //the ship's module manager.  We own this
     ModuleManager* m_ModuleManager;
 
-    InventoryItemRef m_targetRef;
+    InventoryItemRef m_targetRef;       // this is only used for module effects that require a target.  is here because of the ease of aquiring/sending (common code)
 
     std::vector<uint32> m_onlineModuleVec;
 

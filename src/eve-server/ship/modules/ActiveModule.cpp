@@ -157,12 +157,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
     if ((m_needsCharge) and ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr))) {
         _log(SHIP__MODULE_WARNING, "ActiveModule::Activate() - Cannot find loaded charge for this module");
-        if (m_shipRef->HasPilot())
-            if (m_shipRef->GetPilot()->CanThrow())
-                throw PyException( MakeCustomError( "Cannot find loaded charge for this module  - Ref: ServerError 15693"));
-        return;
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
     }
-    if (targetID) {
+    if (IsValidTarget(targetID)) {
         m_targetID = targetID;
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
@@ -225,12 +222,15 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     if (m_ModuleState != ModStates::ModuleStates::MOD_ACTIVATED)
         return;
 
-    _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate() - module %u(%s) remaining time %ums.", \
-            m_modRef->itemID(), m_modRef->itemName().c_str(), GetRemainingCycleTimeMS());
+    _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
+            effect.c_str(), m_modRef->itemName().c_str(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
         AbortCycle();
         return;
+    } else if (effect.compare("TargetDestroyed") == 0) {
+        m_targetID = 0;
+        m_targetSE = nullptr;
     }
 
     m_Stop = true;
@@ -258,10 +258,10 @@ uint32 ActiveModule::DoCycle()
         Deactivate();
         return 0;
     }
-    if ((m_targetID) and (m_targMgr != nullptr)) {
+    if (IsValidTarget(m_targetID) and (m_targMgr != nullptr)) {
         // data consistency check
         if ((m_targMgr->GetTarget(m_targetID) == nullptr) or (m_targMgr->GetTarget(m_targetID) != m_targetSE)) {
-            _log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
+            //_log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
             Deactivate();
             return 0;
         }
@@ -286,11 +286,11 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Automated_Targeting_System: { // (this active module will need specific code)
         } break;
 
+        // these im not sure about yet
         case EVEDB::invGroups::ECM:
         case EVEDB::invGroups::ECCM:
         case EVEDB::invGroups::Gang_Coordinator:
         case EVEDB::invGroups::Cloaking_Device:
-        case EVEDB::invGroups::Target_Painter:
         case EVEDB::invGroups::Siege_Module:
         case EVEDB::invGroups::Super_Weapon:
         case EVEDB::invGroups::Interdiction_Sphere_Launcher:
@@ -299,24 +299,16 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Remote_ECM_Burst:
         case EVEDB::invGroups::Warp_Disrupt_Field_Generator:
         case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
-        case EVEDB::invGroups::Energy_Destabilizer:
-        case EVEDB::invGroups::Energy_Vampire:
         case EVEDB::invGroups::Smart_Bomb:
-        case EVEDB::invGroups::ECM_Burst:
-        // these neither require nor consume charges
-        case EVEDB::invGroups::Remote_Sensor_Damper:
-        case EVEDB::invGroups::Tracking_Link:
-        case EVEDB::invGroups::Signal_Amplifier:
-        case EVEDB::invGroups::Tracking_Enhancer:
-        case EVEDB::invGroups::Sensor_Booster:
-        case EVEDB::invGroups::Tracking_Computer:
-        case EVEDB::invGroups::Projected_ECCM:
-        case EVEDB::invGroups::Remote_Sensor_Booster:
-        case EVEDB::invGroups::Tracking_Disruptor: {
+        case EVEDB::invGroups::ECM_Burst: {
         } break;
+
         case EVEDB::invGroups::Capacitor_Booster:{
             UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_shipRef);
         } break;
+        // i *think* these first 2 go here....need testing
+        case EVEDB::invGroups::Energy_Vampire:
+        case EVEDB::invGroups::Energy_Destabilizer:
         case EVEDB::invGroups::Energy_Transfer_Array: {
             UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_targetSE->GetSelf());
         } break;
@@ -357,6 +349,18 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             LaunchMissile();
         } break;
+        // these neither require nor consume charges
+        case EVEDB::invGroups::Target_Painter:  // working
+        case EVEDB::invGroups::Signal_Amplifier:    //working
+        case EVEDB::invGroups::Sensor_Booster:  //working
+        case EVEDB::invGroups::Tracking_Computer:   //working
+        case EVEDB::invGroups::Tracking_Disruptor:    //working
+        case EVEDB::invGroups::Remote_Sensor_Damper:
+        case EVEDB::invGroups::Tracking_Link:
+        case EVEDB::invGroups::Tracking_Enhancer:
+        case EVEDB::invGroups::Projected_ECCM:
+        case EVEDB::invGroups::Remote_Sensor_Booster: {
+        } break;
     }
 
     EvilNumber cycleTime = 0;
@@ -372,7 +376,7 @@ void ActiveModule::AbortCycle()
 {
     if (m_Stop)
         return;
-    // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target left bubble, or miner deactivated by player:
+    // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destoryed, target left bubble, or miner deactivated by player:
     m_Stop = true;
     SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
     DeactivateCycle(true);
@@ -385,7 +389,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         return;
 
     ApplyEffect(Effects::dgmStateActive, false);
-    if (m_targetID)
+    if (IsValidTarget(m_targetID))
         ApplyEffect(Effects::dgmStateTarget, false);
 
     ShowEffect(false, abort);
@@ -394,14 +398,16 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
-            m_targetSE->DestinyMgr()->TractorBeamStop();
+            if (m_targetSE != nullptr)
+                m_targetSE->DestinyMgr()->TractorBeamStop();
         } break;
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
             m_destinyMgr->SpeedBoost(true);
         } break;
         case EVEDB::invGroups::Stasis_Web: {
-            m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
+            if (m_targetSE != nullptr)
+                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
             // this is the complete belt scanner code here.
@@ -433,6 +439,8 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         case EVEDB::invGroups::Ship_Scanner:
         case EVEDB::invGroups::Cargo_Scanner:
         case EVEDB::invGroups::System_Scanner: {
+            if (m_targetSE != nullptr)
+                ;  // not sure if we need this here.....
         } break;
     }
 
@@ -452,7 +460,7 @@ void ActiveModule::ProcessActiveCycle() {
 }
 
 void ActiveModule::SetTimer(uint32 time) {
-    if (!time)
+    if (time < 100)
         return;
     _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - Started with %u ms.", time);
     m_timer.Start(time);
@@ -462,10 +470,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
     if (chargeRef.get() == nullptr) {
         _log(SHIP__MODULE_WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
-        if (m_shipRef->HasPilot())
-            if (m_shipRef->GetPilot()->CanThrow())
-                throw PyException( MakeCustomError( "Cannot find charge to load into this module  - Ref: ServerError 15693"));
-            return;
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
     }
 
     m_chargeRef = chargeRef;
@@ -481,28 +486,31 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
      *          [PyInt 203]                     << chargeTypeID
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
-    if (m_shipRef->GetPilot()->IsInSpace() and !m_shipRef->GetPilot()->IsLogin()) {
+    Client* pClient = m_shipRef->GetPilot();
+    if (pClient == nullptr)
+        return;  // make error here?
+    if (pClient->IsInSpace() and !pClient->IsLogin()) {
         PyTuple* module = new PyTuple(1);
             module->SetItem(0, new PyInt(m_modRef->itemID()));
         PyTuple* tmp = new PyTuple(3);
             tmp->SetItem(0, module);
-            tmp->SetItem(1, new PyInt(chargeRef->typeID()));
+            tmp->SetItem(1, new PyInt(m_chargeRef->typeID()));
             tmp->SetItem(2, new PyInt(m_reloadTime));
-        m_shipRef->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
+        pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
         m_reloadTimer.Start(m_reloadTime);
     }
     // process new charge's effects here
-    chargeRef->ClearModifiers();
+    m_chargeRef->ClearModifiers();
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
-    data.srcRef = chargeRef;
-    for (auto it : chargeRef->type().m_stateFxMap) {
+    data.srcRef = m_chargeRef;
+    for (auto it : m_chargeRef->type().m_stateFxMap) {
         data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-        sFxProc.ParseExpression(chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
-    if (m_shipRef->GetPilot()->IsLogin() or m_shipRef->GetPilot()->IsDocked()) {
+    if (pClient->IsLogin() or pClient->IsDocked()) {
         m_ChargeState = ModStates::ChargeStates::CHG_LOADED;
-        sFxProc.ApplyEffects(chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+        sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
 }
 
@@ -524,7 +532,8 @@ void ActiveModule::UnloadCharge()
         /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
          *    also, DONT reset modifiermap before remoing, to use existing, modified data
          */
-        sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+        Client* pClient = m_shipRef->GetPilot();
+        sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
 
     m_chargeRef = InventoryItemRef();       // Ensure ref is NULL

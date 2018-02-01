@@ -252,8 +252,11 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
 	pClient->GetShip()->Online(args.arg2);
 
-    //response should be node data and timestamp
-    return new PyLong(GetFileTimeNow());
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }
 
 PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
@@ -287,18 +290,6 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
-    Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
-    }
 
     //  self.remoteDogmaLM.LoadAmmoToModules(shipID, moduleIDs, chargeTypeID, itemID, ammoLocationID, qty=qty)
     /* 02:13:11 [SvcCall]       Tuple: 5 elements
@@ -312,6 +303,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
      * 02:13:11 [SvcCall]     Argument 'qty':
      * 02:13:11 [SvcCall]         (None)
      */
+    call.Dump(INV__DUMP);
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -322,95 +314,54 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
         return PyStatic.NewNone();
 
     // Get Reference to Ship, Module, and Charge
-    ShipItemRef shipRef = pClient->GetShip();
+    ShipItemRef shipRef = call.client->GetShip();
     InventoryItemRef chargeRef = sItemFactory.GetItem(args.itemID);
-    Call_SingleIntList chargeList;
     InventoryItemRef moduleRef;
-    uint32 loadedChargeID = 0;
 
-    /** @todo  this appears to send only the first module in bank.
-     * check for non-loaded modules in bank and load with chargeRef
-     */
-
-    for (uint8 i=0; i<args.moduleIDs.size(); ++i) {
-        moduleRef = shipRef->GetModuleRef(args.moduleIDs.at(i));
+    for (auto cur : args.moduleIDs) {
+        moduleRef = shipRef->GetModuleRef(cur);
         if (moduleRef.get() == nullptr) {
             sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module into which charge should be loaded." );
             continue;
         }
-
-        EVEItemFlags moduleFlag = moduleRef->flag();
-        loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
-        //Create new item id return result
-        if (loadedChargeID > 0)
-            chargeList.ints.push_back(loadedChargeID);
+        if (chargeRef->quantity() > 0)
+            shipRef->LoadCharge(moduleRef->flag(), chargeRef);
     }
-    //Return new item result
-    return chargeList.Encode();
+
+    return PyStatic.NewNone();
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
-    Client* pClient = call.client;
-
-    if (pClient->IsInSpace()) {
-        DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-        if (pDestiny == nullptr) {
-            _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
-            return PyStatic.NewNone();
-        } else if (pDestiny->IsWarping()) {
-            pClient->SendNotifyMsg("You can't do this while warping");
-            return PyStatic.NewNone();
-        }
-    }
-
   /*
    * self.remoteDogmaLM.LoadAmmoToBank(shipID, masterID, chargeTypeID,  itemIDs,  chargeLocationID,   qty)
    *                                    ship,   module,  charge type, charge item, charge location, stack qty (usually none - havent found otherwise)
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
+  call.Dump(INV__DUMP);
 	Call_Dogma_LoadAmmoToBank args;
-
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return PyStatic.NewNone();
     }
+    /*
+    args.chargeLocationID
+    args.chargeTypeID
+    args.itemIDs
+    args.masterID
+    args.shipID
+    args.qty
+    */
 
-	// NOTES:
-	// args.itemIDs will contain one or more entries, each of which is an itemID of a charge or stack of charges
-	// presumably, this list allows the player to select more than one stack of exact same ammo and drag whole selection
-	// onto the module to be loaded into it; then what can be loaded is, and a single stack of the remainder quantity is
-	// created and returned to the inventory the original selection of charges was pulled from.
-	// -- this still must be fully confirmed by testing on hybrid or projectile turrets or missile batteries
-
-	// WARNING!  Initial Implementation ONLY handles the FIRST entry in the args.itemIDs,
-	// which is basically supporting only single charge stacks applied to module!
-
-	/** @todo  update this to check all charges in args.itemIDs to see if they can be loaded also. */
 	// Get Reference to Ship, Module, and Charge
-	ShipItemRef shipRef = pClient->GetShip();
+    ShipItemRef shipRef = call.client->GetShip();
 	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
 	if (moduleRef.get() == nullptr) {
 		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
 		return PyStatic.NewNone();
 	}
 
-    EVEItemFlags moduleFlag = moduleRef->flag();
-	InventoryItemRef chargeRef;
-    uint32 loadedChargeID = 0;
-
-	if (!args.itemIDs.empty()) {
-	    chargeRef = sItemFactory.GetItem(args.itemIDs.at(0));
-        if (chargeRef.get() != nullptr)
-            loadedChargeID = shipRef->AddItem( moduleFlag, chargeRef );
-
-		//Create new item id return result
-	    if (loadedChargeID) {
-		    Call_SingleIntegerArg result;
-		    result.arg = loadedChargeID;	//chargeRef->itemID();
-		    //Return new item result
-		    return result.Encode();
-		}
-	}
+	if (!args.itemIDs.empty())
+        shipRef->LoadCharge( moduleRef->flag(), sItemFactory.GetItem(args.itemIDs.at(0)) );
 
 	return PyStatic.NewNone();
 }
@@ -922,6 +873,9 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
      */
 
     // dummy right now, don't have any meaningful packet logs
-    //response should be node data and timestamp
-    return new PyLong(GetFileTimeNow());
+    // returns nodeID and timestamp
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    return tuple;
 }

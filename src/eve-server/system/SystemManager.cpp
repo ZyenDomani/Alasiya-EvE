@@ -996,7 +996,7 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
         --m_activeGateSpawns;
     }
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u) in .", pBubble->GetID(), GetName().c_str(), m_data.systemID);
+        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u).", pBubble->GetID(), GetName().c_str(), m_data.systemID);
 }
 
 uint32 SystemManager::GetRandBeltID()

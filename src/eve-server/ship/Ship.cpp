@@ -960,6 +960,15 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     return (EVEItemFlags)slotFound;
 }
 
+void ShipItem::LoadCharge(EVEItemFlags flag, InventoryItemRef iRef)
+{
+    if (iRef.get() == nullptr)
+        return;  // make error here?
+        
+    if (ValidateAddItem(flag, iRef))
+        m_ModuleManager->LoadCharge(iRef, flag);
+}
+
 uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (flag == flagAutoFit) {
@@ -1182,7 +1191,7 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
         m_targetRef = sItemFactory.GetItem(targetID);
     else
         m_targetRef = InventoryItemRef(nullptr);
-    
+
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 
