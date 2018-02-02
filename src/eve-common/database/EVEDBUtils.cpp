@@ -62,7 +62,7 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
 {
     /* check for valid column */
     if( row.IsNull( index ) )
-        return new PyNone();
+        return PyStatic.NewNone();
 
     const DBTYPE type = row.ColumnType( index );
     switch( type )

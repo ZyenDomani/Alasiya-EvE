@@ -29,15 +29,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Notify_OnTargets">
-    <tupleInline>
-      <!-- setup to go into an OnMultiEvent (notify_type) -->
-      <stringInline value="OnTargets" />
-      <!-- this is a list of Notify_OnTarget messages -->
-      <list name="messages" />
-    </tupleInline>
-  </elementDef>
-
   <elementDef name="Rsp_Dogma_AddTarget">
     <tupleInline>
       <bool name="flag" />
@@ -223,21 +214,7 @@
     </tupleInline>
   </elementDef>
 
-  <!-- notify of ALL weapon effects   broadcast?? -->
-  <elementDef name="Notify_OnEffectHit">
-    <tupleInline>
-      <stringInline value="OnEffectHit" />
-      <!-- what did the shooting -->
-      <int name="itemID" />
-      <!-- what type of effect? projectileFired for example -->
-      <int name="effectID" />
-      <!-- what got hit -->
-      <int name="targetID" />
-      <!-- the damage which was done -->
-      <real name="damage" />
-    </tupleInline>
-  </elementDef>
-
+  <!--  OnDamageMessage elements need to be rewritten.  current code works, but is fundamentally wrong. -->
   <!-- this notify represents damage done to us by something else -->
   <elementDef name="Notify_OnDamageMessage_Self">
     <tupleInline>
