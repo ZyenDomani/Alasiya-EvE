@@ -270,13 +270,10 @@ uint32 ActiveModule::DoCycle()
         Deactivate();
         return 0;
     }
-    if (IsValidTarget(m_targetID) and (m_targMgr != nullptr)) {
-        // data consistency check
-        if ((m_targMgr->GetTarget(m_targetID) == nullptr) or (m_targMgr->GetTarget(m_targetID) != m_targetSE)) {
-            //_log(SHIP__MODULE_WARNING, "GetTarget() != m_targetSE");
-            Deactivate();
-            return 0;
-        }
+    // data consistency check
+    if (m_targetSE->GetID() != m_targetID) {
+        Deactivate();
+        return 0;
     }
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.

@@ -205,6 +205,7 @@ public:
     void DamageModule(uint32 itemID, uint8 amount);
     void DamageModule(GenericModule* pMod, uint8 amount);
     void DamageRandModule();
+    void DamageRandModule(uint8 amount);
     void RepairModule(uint32 itemID, EvilNumber amount);
     void RepairModule(GenericModule* pMod, EvilNumber amount);
     void RepairModules();

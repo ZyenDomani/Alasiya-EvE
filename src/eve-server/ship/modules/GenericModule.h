@@ -96,6 +96,7 @@ public:
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();
     virtual void DeOverload();
+    virtual uint16 GetReloadTime()                      { return 0; }
     virtual uint32 GetTargetID()                        { return 0; }
 
     /* override for rigs and subsystems in approprate derived class */

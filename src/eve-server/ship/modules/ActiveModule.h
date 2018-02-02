@@ -42,6 +42,7 @@ public:
 
     /* functions to be handled in derived classes as needed */
     virtual void ApplyDamage()                          { /* do nothing here */ }
+    virtual uint16 GetReloadTime()                      { return m_reloadTime; }
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed
     virtual bool CanActivate();
     /* apply charge effects when undocking, as they are reset and not called anywhere else */

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.5
+    Version:    8.6
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__

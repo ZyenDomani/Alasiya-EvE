@@ -242,6 +242,8 @@ void GenericModule::Repair(EvilNumber amount)
             newAmount = 0;
         m_modRef->SetAttribute(AttrDamage, newAmount);
     }
+    _log(SHIP__MODULE_DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
+                m_modRef->itemName().c_str(), amount, m_modRef->GetAttribute(AttrDamage).get_int());
 }
 
 std::string GenericModule::GetChargeStateName(ModStates::ChargeStates state)
