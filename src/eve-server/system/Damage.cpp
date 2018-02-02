@@ -26,6 +26,8 @@
 
 #include "system/Damage.h"
 
+#include "../../eve-common/EVE_Damage.h"
+
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
@@ -261,27 +263,16 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     PyTuple* up;
-    /*    def OnDamageMessage(self, msgKey, args):
+    /**    def OnDamageMessage(self, msgKey, args):
      * found in /eve/client/script/environment/godma.py
      *
-     * ALL dmg msgs working  22Apr15
-     * these need updates.  see notes in eve_constants.h
+     * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
+     * @todo this needs to be rewritten.  see notes in EVE_Damage.h
      */
     if (HasPilot()) {
-        if (!d.chargeRef) {
-            //Notification to bubble?
-            Notify_OnEffectHit noeh;
-                noeh.itemID = d.srcSE->GetID();
-                noeh.effectID = d.effectID;
-                noeh.targetID = GetID();
-                noeh.damage = total_damage;
-            up = noeh.Encode();
-            GetPilot()->QueueDestinyEvent(&up);
-        }
-
         //  notify player of damage done by other
         Notify_OnDamageMessage_Self ondam;
-            ondam.messageID = DamageMessageIDs_Self[damageID];
+            ondam.messageID = Dmg::Msg::Self[damageID];
             ondam.source = d.srcSE->GetID();
             ondam.splash = "";
             ondam.damage = total_damage;
@@ -290,18 +281,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (d.srcSE->HasPilot()) {
-        //Notifications to ourself:
-        Notify_OnEffectHit noeh;
-            noeh.itemID = (d.chargeRef ? d.chargeRef->itemID() : d.weaponRef->itemID());
-            noeh.effectID = d.effectID;
-            noeh.targetID = GetID();
-            noeh.damage = total_damage;
-        up = noeh.Encode();
-        d.srcSE->GetPilot()->QueueDestinyEvent(&up);
-
         //Notifications to others:
         Notify_OnDamageMessage ondamo;
-            ondamo.messageID = DamageMessageIDs_Other[damageID];
+            ondamo.messageID = Dmg::Msg::Other[damageID];
             ondamo.weapon = (d.chargeRef ? d.chargeRef->typeID() : d.weaponRef->typeID());
             ondamo.damage = total_damage;
             ondamo.target = GetID();
