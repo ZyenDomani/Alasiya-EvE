@@ -43,8 +43,6 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
   m_hitTimer(1000), //arbitrary default
   m_lifeTimer(1000) //arbitrary default
 {
-    m_destiny = new DestinyManager(this);
-
     if (ship->HasPilot()) {
         Character* pChar = m_ship->GetPilot()->GetChar().get();
         m_ownerID = pChar->itemID();
@@ -76,8 +74,9 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
-Missile::~Missile() {
-    SafeDelete(m_destiny);
+Missile::~Missile()
+{
+
 }
 
 void Missile::Process() {

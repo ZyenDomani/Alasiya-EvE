@@ -50,10 +50,9 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
   m_system(system),
   m_bubble(nullptr),
   m_destiny(nullptr),
-  m_targMgr(new TargetManager(this))
+  m_targMgr(nullptr)
 {
     assert(m_system != nullptr);
-    assert(m_targMgr != nullptr);
     assert(m_self.get() != nullptr);
 
     Abandon();
@@ -67,9 +66,6 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 
 SystemEntity::~SystemEntity()
 {
-    if (m_targMgr != nullptr)
-        m_targMgr->ClearAllTargets(false);
-    SafeDelete(m_targMgr);
 }
 
 void SystemEntity::Process() {
@@ -423,11 +419,18 @@ void ItemSystemEntity::MakeDamageState(DoDestinyDamageState &into) {
 ObjectSystemEntity::ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    m_targMgr = new TargetManager(this);
     m_destiny = new DestinyManager(this);
+
+    assert(m_targMgr != nullptr);
+    assert(m_destiny != nullptr);
 }
 
 ObjectSystemEntity::~ObjectSystemEntity()
 {
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearAllTargets(false);
+    SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
 }
 
@@ -491,7 +494,8 @@ void ObjectSystemEntity::UpdateDamage()
 
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
 {
-    m_targMgr->ClearTargets(false);
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearTargets(false);
     if (m_destiny != nullptr) {
         if (m_bubble == nullptr)
             sBubbleMgr.Add(this);
@@ -564,6 +568,19 @@ PyDict *FieldSE::MakeSlimItem()
 DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
+    m_targMgr = new TargetManager(this);
+    m_destiny = new DestinyManager(this);
+    
+    assert(m_targMgr != nullptr);
+    assert(m_destiny != nullptr);
+}
+
+DynamicSystemEntity::~DynamicSystemEntity()
+{
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearAllTargets(false);
+    SafeDelete(m_targMgr);
+    SafeDelete(m_destiny);
 }
 
 bool DynamicSystemEntity::Load() {
@@ -637,7 +654,8 @@ void DynamicSystemEntity::UpdateDamage()
 
 void DynamicSystemEntity::Killed(Damage &fatal_blow)
 {
-    m_targMgr->ClearTargets(false);
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearTargets(false);
     if (m_bubble == nullptr)
         sBubbleMgr.Add(this);
     if (m_destiny != nullptr) {

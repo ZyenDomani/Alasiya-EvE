@@ -35,15 +35,16 @@
 #include "system/SystemManager.h"
 
 Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const GPoint &position, const FactionData& data)
-: DynamicSystemEntity(drone, services, pSystem)
+: DynamicSystemEntity(drone, services, pSystem),
+  m_AI(new DroneAIMgr(this))
 {
+    assert (m_AI != nullptr);
+    
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
     m_pClient = sEntityList.FindClientByCharID(m_ownerID);
-    m_AI = new DroneAIMgr(this);
-    m_destiny = new DestinyManager(this);
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
     if (!m_orbitRange) {
@@ -84,7 +85,6 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
 }
 
 Drone::~Drone() {
-    SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
 

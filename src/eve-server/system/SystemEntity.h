@@ -74,7 +74,7 @@ class WeaponSE;
 class ReactorSE;
 
 /*
- * base class for all SystemEntities
+ * base class for all SystemEntities  - no TargetMgr
  * complete rewrite of entity class system  - allan  9 January 2016
  */
 class SystemEntity {
@@ -243,9 +243,9 @@ public:
 
 protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */
-    TargetManager*              m_targMgr;              /* we do not own this. never NULL in space */
     SystemManager*              m_system;               /* we do not own this  never NULL in space */
-    DestinyManager*             m_destiny;              /* we do not own this. never NULL in space */
+    TargetManager*              m_targMgr;              /* we do not own this. only Destructable items will have it */
+    DestinyManager*             m_destiny;              /* we do not own this. only mobile items will have it */
 
     PyServiceMgr&               m_services;
 
@@ -266,7 +266,7 @@ protected:
 };
 
 
-/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations */
+/* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations   - no TargetMgr*/
 class StaticSystemEntity : public SystemEntity {
 public:
     StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -340,7 +340,7 @@ protected:
 };
 
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace */
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace  - no TargetMgr*/
 class ItemSystemEntity : public SystemEntity {
 public:
     ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -364,7 +364,7 @@ private:
     uint16 m_keyType;
 };
 
-/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables */
+/* Non-Static / Non-Mobile / Destructable / Celestial Objects - POS Structures, Outposts, Asteroids, Deployables  - has TargetMgr*/
 class ObjectSystemEntity : public SystemEntity {
 public:
     ObjectSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -425,11 +425,11 @@ public:
 
 
 
-/* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles */
+/* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles  - has TargetMgr*/
 class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
-    virtual ~DynamicSystemEntity()                      { /* Do nothing here */ }
+    virtual ~DynamicSystemEntity();
 
     /* class type pointer querys. */
     virtual DynamicSystemEntity* GetDynamicSE()         { return this; }

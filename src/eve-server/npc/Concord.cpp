@@ -34,17 +34,18 @@ Concord::Concord(
      InventoryItemRef self,
      const GPoint& position,
      ConcordSpawnMgr* spawnMgr )
- : DynamicSystemEntity(new DestinyManager(this, system), self),
+ : DynamicSystemEntity(this, system, self),
  m_system(system),
  m_services(services),
  m_spawnMgr(spawnMgr),
- m_orbitingID(0)
+ m_orbitingID(0),
+ m_AI(new ConcordAI(this))
  {
+     assert (m_AI != nullptr);
+
      m_corpID = corpCONCORD;
      m_allyID = 0;
      m_warID = factionCONCORD;
-     m_destiny = new DestinyManager(this);
-     m_AI = new ConcordAI(this);
 
      m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
      if (!m_orbitRange) {
@@ -85,7 +86,6 @@ Concord::Concord(
 }
 
 Concord::~Concord() {
-    SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
 

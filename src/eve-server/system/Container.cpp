@@ -173,13 +173,15 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
 : ItemSystemEntity(self, services, system),
-  m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
+ m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
+    m_destiny = new DestinyManager(this);
+    assert(m_destiny != nullptr);
+
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_destiny = new DestinyManager(this);
 
     m_contRef = self;
     if (!IsStation(m_self->locationID())) {
@@ -410,13 +412,15 @@ void WreckContainer::MakeSlimItemChange()
 
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
 : ItemSystemEntity(self, services, system),
- m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
+m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
 {
+    m_destiny = new DestinyManager(this);
+    assert(m_destiny != nullptr);
+
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_destiny = new DestinyManager(this);
 
     m_abandoned = false;
     m_contRef = self;

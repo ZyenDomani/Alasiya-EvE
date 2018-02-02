@@ -49,7 +49,6 @@ m_spawnMgr(spawnMgr)
     m_warID = data.factionID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_destiny = new DestinyManager(this);
 
     // Create default dynamic attributes in the AttributeMap:
     m_self->SetAttribute(AttrDamage,              0);
@@ -78,7 +77,6 @@ m_spawnMgr(spawnMgr)
 }
 
 NPC::~NPC() {
-    SafeDelete(m_destiny);
     SafeDelete(m_AI);
 }
 

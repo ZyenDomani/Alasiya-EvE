@@ -964,7 +964,7 @@ void ShipItem::LoadCharge(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;  // make error here?
-        
+
     if (ValidateAddItem(flag, iRef))
         m_ModuleManager->LoadCharge(iRef, flag);
 }
@@ -1413,7 +1413,6 @@ m_processTimer(m_processTimerTick)
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_destiny = new DestinyManager(this);
 
     ClearBoostData();
 
@@ -1423,8 +1422,8 @@ m_processTimer(m_processTimerTick)
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
-Ship::~Ship() {
-    SafeDelete(m_destiny);
+Ship::~Ship()
+{
 }
 
 double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
