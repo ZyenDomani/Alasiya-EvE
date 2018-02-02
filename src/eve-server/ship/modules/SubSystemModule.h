@@ -20,7 +20,7 @@ public:
 
     bool IsSubSystemModule() const                      { return true; }
 
-    ModStates::ModulePowerLevel GetModulePowerLevel();
+    int8 GetModulePowerLevel();
 };
 
 #endif  // _EVE_SHIP_SUBSYSTEM_MODULE_H

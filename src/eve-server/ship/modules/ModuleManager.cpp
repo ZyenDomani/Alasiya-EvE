@@ -95,8 +95,8 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
     else
         m_ModulesFittedByGroupID.insert(std::pair<uint32,uint32>(pMod->getItem()->groupID(), 1));
 
-    // module is fit so change state from MOD_UNFITTED to MOD_OFFLINE now.
-    pMod->SetModuleState(ModStates::MOD_OFFLINE);
+    // module is fit so change state from Unfitted to Offline
+    pMod->SetModuleState(Module::State::Offline);
 	return true;
 }
 
@@ -359,7 +359,7 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     } else
         sLog.Error( "ModuleContainer::deleteModuleRef()", "Removing Module from ship fit when it had NO entry in m_ModulesFittedByGroup !" );
 
-    pMod->SetModuleState(ModStates::MOD_UNFITTED);
+    pMod->SetModuleState(Module::State::Unfitted);
 }
 
 
@@ -417,7 +417,7 @@ bool ModuleManager::Initialize() {
                     if (pMod != nullptr) {
                         pMod->SetChargeRef(cur);
                         // set ChargeState == CHG_LOADED here, then when module Online() is called, all effects will be applied in correct order
-                        pMod->SetChargeState(ModStates::CHG_LOADED);
+                        pMod->SetChargeState(Module::State::Loaded);
                     } else {
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
@@ -708,7 +708,7 @@ void ModuleManager::Offline(uint32 itemID)
     if (pMod != nullptr) {
         if (!pMod->isOnline()) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", pMod->getItem()->itemName().c_str());
-            pMod->SetModuleState(ModStates::MOD_OFFLINE);
+            pMod->SetModuleState(Module::State::Offline);
             return;
         }
         _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->getItem()->itemName().c_str());
@@ -723,7 +723,7 @@ void ModuleManager::Offline(EVEItemFlags flag)
     if (pMod != nullptr) {
         if (!pMod->isOnline()) {
             _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", pMod->getItem()->itemName().c_str());
-            pMod->SetModuleState(ModStates::MOD_OFFLINE);
+            pMod->SetModuleState(Module::State::Offline);
             return;
         }
         _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", pMod->getItem()->itemName().c_str());
@@ -809,7 +809,7 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
     GenericModule* pMod = m_Modules->GetModule(itemID);
     if (pMod != nullptr) {
-        if (pMod->GetModuleState() != ModStates::MOD_ACTIVATED)  // we dont need an error msgs here....this is acceptable, as the module may not be active
+        if (pMod->GetModuleState() != Module::State::Activated)  // we dont need an error msgs here....this is acceptable, as the module may not be active
             return;
         _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", pMod->getItem()->itemName().c_str(), effectName.c_str());
         pMod->Deactivate(effectName);

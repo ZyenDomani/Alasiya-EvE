@@ -107,9 +107,7 @@ uint32 MiningLaser::DoCycle() {
 
 void MiningLaser::DeactivateCycle(bool abort)
 {
-    using namespace ModStates;
-
-    if (m_ModuleState != ModuleStates::MOD_DEACTIVATING)
+    if (m_ModuleState != Module::State::Deactivating)
         return;
 
     ApplyEffect(Effects::dgmStateActive, false);
@@ -117,7 +115,7 @@ void MiningLaser::DeactivateCycle(bool abort)
 
     ProcessCycle(abort);
 
-    SetModuleState(ModuleStates::MOD_ONLINE);
+    SetModuleState(Module::State::Online);
     Clear();
 }
 

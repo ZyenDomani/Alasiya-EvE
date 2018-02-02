@@ -74,12 +74,12 @@ public:
     ShipItemRef GetShipRef()                            { return m_shipRef; }
 
     void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
-    void SetModuleState(ModStates::ModuleStates state)  { m_ModuleState = state; }
-    void SetChargeState(ModStates::ChargeStates state)  { m_ChargeState = state; }
+    void SetModuleState(int8 state)                     { m_ModuleState = state; }
+    void SetChargeState(int8 state)                     { m_ChargeState = state; }
 
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
-    ModStates::ModuleStates GetModuleState()            { return m_ModuleState; }
-    ModStates::ChargeStates GetChargeState()            { return m_ChargeState; }
+    int8 GetModuleState()                               { return m_ModuleState; }
+    int8 GetChargeState()                               { return m_ChargeState; }
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
@@ -100,13 +100,13 @@ public:
     virtual uint32 GetTargetID()                        { return 0; }
 
     /* override for rigs and subsystems in approprate derived class */
-    virtual ModStates::ModulePowerLevel GetModulePowerLevel() {
-        return m_hiPower ? ModStates::MODULE_BANK_HIGH_POWER
-                : ( m_medPower ? ModStates::MODULE_BANK_MEDIUM_POWER
-                    : (m_loPower ? ModStates::MODULE_BANK_LOW_POWER
-                        : (m_rigSlot ? ModStates::MODULE_BANK_RIG
-                            : (m_subSystem ? ModStates::MODULE_BANK_SUBSYSTEM
-                                : ModStates::MODULE_BANK_UNDEFINED ))));
+    virtual int8 GetModulePowerLevel() {
+        return m_hiPower ? Module::Bank::High
+                : ( m_medPower ? Module::Bank::Mid
+                    : (m_loPower ? Module::Bank::Low
+                        : (m_rigSlot ? Module::Bank::Rig
+                            : (m_subSystem ? Module::Bank::Subsystem
+                                : Module::Bank::Undefined ))));
     }
 
 protected:
@@ -114,8 +114,8 @@ protected:
     ShipItemRef      m_shipRef;
     InventoryItemRef m_chargeRef;
 
-    ModStates::ModuleStates     m_ModuleState;
-    ModStates::ChargeStates     m_ChargeState;
+    int8             m_ModuleState;
+    int8             m_ChargeState;
 
     bool             m_isWarpSafe   :1;
     bool             m_hiPower      :1;
@@ -128,11 +128,9 @@ protected:
     bool             m_overLoaded   :1;
     bool             m_chargeLoaded :1;
 
-
     int16            m_repeat;
 
-    std::string GetModuleStateName(ModStates::ModuleStates state);
-    std::string GetChargeStateName(ModStates::ChargeStates state);
+    std::string GetModuleStateName(int8 state);
 
 };
 

@@ -16,9 +16,12 @@
 
 ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
 : GenericModule(iRef, sRef),
-m_timer(1000),
+m_timer(1000, true),
 m_reloadTimer(10000)
 {
+    // this isnt implemented yet.  will replace the multiple m_targetID/m_targetSE conditionals
+    m_needsTarget = false;
+
     m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (iRef->groupID()) {
@@ -105,41 +108,44 @@ void ActiveModule::Clear()
     m_timer.Disable();
 
     m_shipRef->ClearTargetRef();
+
+    SetModuleState(Module::State::Online);
 }
 
 void ActiveModule::Process()
 {
+    // the order of Reload/Unload is significant.
     if (m_reloadTimer.Enabled()) {
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
-            m_ChargeState = ModStates::ChargeStates::CHG_LOADED;
+            SetChargeState(Module::State::Loaded);
             // apply charge effects here after "loading" is complete
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
         }
     }
-    if (m_ModuleState == ModStates::ModuleStates::MOD_ONLINE)
+    if (m_ModuleState == Module::State::Online)
         return;
 
     // timing and verification function
     //check if we have signal to stop the cycle
-    if ((m_Stop) and (m_ModuleState != ModStates::ModuleStates::MOD_ONLINE)) {
+    if ((m_Stop) or (m_ModuleState == Module::State::Deactivating)) {
         //wait for time to run out and send deactivate to client
         if (m_timer.Check(false)) {
             m_timer.Disable();
-            SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
+            SetModuleState(Module::State::Deactivating);
             DeactivateCycle();
         }
         // we have stop signal....dont process any further
         return;
     }
 
-    // the order of these next two is significant for reloading modules.  check for reload before DoCycle for this tic
     if (m_needsCharge) {
         // is this right?  should i do something else here?
-        if ((m_chargeRef.get() == nullptr) or (m_ChargeState == ModStates::ChargeStates::CHG_UNLOADED) or (!m_chargeRef->quantity()) or (!m_chargeLoaded)) {
+        if ((m_chargeRef.get() == nullptr) or (m_ChargeState == Module::State::Unloaded)
+        or (m_chargeRef->quantity() < 1) or (!m_chargeLoaded)) {
             UnloadCharge();
-            SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
+            SetModuleState(Module::State::Deactivating);
             DeactivateCycle(true);
             return;
         }
@@ -210,7 +216,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     ShowEffect(true, false);
 
-    m_ModuleState = ModStates::ModuleStates::MOD_ACTIVATED;
+    SetModuleState(Module::State::Activated);
 
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
@@ -225,13 +231,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         } break;
     }
 
-    if (!m_repeat)
+    if (m_repeat < 1)
         m_Stop = true;
 }
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
 {
-    if (m_ModuleState != ModStates::ModuleStates::MOD_ACTIVATED)
+    if (m_ModuleState != Module::State::Activated)
         return;
 
     _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
@@ -246,8 +252,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     }
 
     m_Stop = true;
-
-    SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
+    SetModuleState(Module::State::Deactivating);
 }
 
 void ActiveModule::Overload()
@@ -271,10 +276,11 @@ uint32 ActiveModule::DoCycle()
         return 0;
     }
     // data consistency check
-    if (m_targetSE->GetID() != m_targetID) {
-        Deactivate();
-        return 0;
-    }
+    if (m_targetSE != nullptr)
+        if (m_targetSE->GetID() != m_targetID) {
+            Deactivate();
+            return 0;
+        }
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
         if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
@@ -387,23 +393,24 @@ void ActiveModule::AbortCycle()
         return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destoryed, target left bubble, or miner deactivated by player:
     m_Stop = true;
-    SetModuleState(ModStates::ModuleStates::MOD_DEACTIVATING);
+    SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
     m_timer.Disable();
 }
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
-    if (m_ModuleState != ModStates::ModuleStates::MOD_DEACTIVATING)
+    if ((m_ModuleState != Module::State::Deactivating) and (!abort)) {
+        _log(SHIP__MODULE_ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
+                m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState).c_str());
         return;
+    }
 
     ApplyEffect(Effects::dgmStateActive, false);
     if (IsValidTarget(m_targetID))
         ApplyEffect(Effects::dgmStateTarget, false);
 
     ShowEffect(false, abort);
-
-    SetModuleState(ModStates::ModuleStates::MOD_ONLINE);
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
@@ -471,6 +478,8 @@ void ActiveModule::ProcessActiveCycle() {
 void ActiveModule::SetTimer(uint32 time) {
     if (time < 100)
         return;
+    time = time /1000;
+    time *= 1000;
     _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - Started with %u ms.", time);
     m_timer.Start(time);
 }
@@ -484,7 +493,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
     m_chargeRef = chargeRef;
     m_chargeLoaded = true;
-    m_ChargeState = ModStates::ChargeStates::CHG_LOADING;
+    SetChargeState(Module::State::Loading);
 
     /*
      * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
@@ -518,7 +527,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
     if (pClient->IsLogin() or pClient->IsDocked()) {
-        m_ChargeState = ModStates::ChargeStates::CHG_LOADED;
+        SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
 }
@@ -547,7 +556,7 @@ void ActiveModule::UnloadCharge()
 
     m_chargeRef = InventoryItemRef();       // Ensure ref is NULL
     m_chargeLoaded = false;
-    m_ChargeState = ModStates::ChargeStates::CHG_UNLOADED;
+    SetChargeState(Module::State::Unloaded);
 }
 
 void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
@@ -637,7 +646,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
-            abortTime += (2 * Win32Time_Second);    // delay mining abort for 2s to simulate module "completing" its' cycle and dumping ore to cargo
+            abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
     }
 
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);

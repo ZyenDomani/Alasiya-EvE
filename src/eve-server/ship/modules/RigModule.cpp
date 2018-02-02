@@ -17,9 +17,9 @@ RigModule::RigModule(InventoryItemRef item, ShipItemRef ship)
 
 
 //not much to do here... hopefully there won't be
-ModStates::ModulePowerLevel RigModule::GetModulePowerLevel()
+int8 RigModule::GetModulePowerLevel()
 {
-    return ModStates::MODULE_BANK_RIG;
+    return Module::Bank::Rig;
 }
 
 void RigModule::DestroyRig()
