@@ -264,6 +264,7 @@ void NPCAIMgr::Process() {
         case NPCState::Fleeing:
         case NPCState::Signaling:{
             _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+            m_state = NPCState::Idle;
             // not sure how im gonna do these
         } break;
     }
