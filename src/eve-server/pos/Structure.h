@@ -166,6 +166,9 @@ public:
     void                        UpdateTimeStamp()       { m_db.UpdateTimeStamp(m_data.itemID, m_data); }
     void                        UpdateUsageFlags()      { m_db.UpdateUsageFlags(m_data.itemID, m_data); }
 
+    // for targetMgr
+    bool                        IsReinforced()          { return false; }   /** @todo  finish this...not sure how yet. */
+
 protected:
     void                        SendSlimUpdate();
     void                        SendEffectUpdate(int16 effectID, bool active);
