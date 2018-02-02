@@ -159,8 +159,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
 
 	// Check for presence of folderID in the packet
 	if (call.byname.find("folderID") != call.byname.cend())
-        if ( !(call.byname.find("folderID")->second->IsNone()) )
-            folderID = call.byname.find("folderID")->second->AsInt()->value();
+        folderID = PyRep::IntegerValue(call.byname.find("folderID")->second);
 
     if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
         typeID = EVEDB::invTypes::typeSolarSystem;
@@ -199,7 +198,6 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         result.y           = point.y;
         result.z           = point.z;
         result.locationID  = locationID;
-
     return result.Encode();
 }
 
@@ -221,11 +219,8 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     uint32 typeID = EVEDB::invTypes::typeSolarSystem, folderID = 0;
 
     // Check for presence of folderID in the packet
-    if (call.byname.find("folderID") != call.byname.cend()) {
-        if ( !(call.byname.find("folderID")->second->IsNone()) ) {
-            folderID = call.byname.find("folderID")->second->AsInt()->value();
-        }
-    }
+    if (call.byname.find("folderID") != call.byname.cend())
+        folderID = PyRep::IntegerValue(call.byname.find("folderID")->second);
 
     GPoint point(ManagerDB::GetAnomalyPos(args.scanID));
 
@@ -235,7 +230,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = 0;
+        result.itemID      = 0;             // scan bm returns none here
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;

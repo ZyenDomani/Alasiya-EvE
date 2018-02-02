@@ -9,7 +9,7 @@
     -->
   <elementDef name="Call_BookmarkLocation">
     <tupleInline>
-        <int name="itemID" />
+        <int name="itemID" none_marker="0" />
         <int name="ownerID" />
         <raw name="memo" />
         <raw name="comment" />
@@ -19,7 +19,7 @@
   <elementDef name="Rsp_BookmarkLocation">
     <tupleInline>
         <int name="bookmarkID" />
-        <int name="itemID" />
+        <int name="itemID" none_marker="0" />
         <int name="typeID" />
         <real name="x" />
         <real name="y" />
