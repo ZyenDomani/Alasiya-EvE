@@ -30,7 +30,7 @@
 class Timer
 {
 public:
-    Timer(uint32 time, bool useAcurateTiming = false);
+    Timer(uint32 time=0, bool useAcurateTiming = false);
     Timer(uint32 startAt, uint32 time, bool useAcurateTiming = false);
 
     ~Timer()                                            { /* do nothing here */ }
@@ -54,7 +54,6 @@ public:
     static const void SetCurrentTime();
     uint32 GetRemainingTime() const;
     uint32 GetCurrentTime();
-    uint32 GetTimeSeconds();
 
 
 private:

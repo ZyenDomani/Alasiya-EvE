@@ -42,7 +42,7 @@
 EntityList::EntityList()
 : m_services( nullptr ),
 m_stamp(1000),    /* start at 1k.  in seconds.  used for destiny and client counters */
-m_stampTimer(1000, true)    /* in ms */
+m_stampTimer(0, true)
 {
     m_systems.clear();
     m_clients.clear();
@@ -58,7 +58,7 @@ EntityList::~EntityList() {
 
 void EntityList::Initialize() {
     /* start the timer */
-    m_stampTimer.Start(1000);
+    m_stampTimer.Start(1000);    // fudge the 1000ms a bit in hopes for more-accurate timing
     m_clientSeedID = ServiceDB::SetClientSeed();
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;

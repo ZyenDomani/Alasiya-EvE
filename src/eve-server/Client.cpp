@@ -61,17 +61,17 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_services(services),
   m_movePoint(NULL_ORIGIN),
   m_clientState(ClientState::csIdle),
-  m_stateTimer(ClientTimers::MovingTimer),
-  m_jumpTimer(ClientTimers::JumpTimer),
+  m_stateTimer(0),
+  m_jumpTimer(0),
   m_pingTimer(PING_INTERVAL_MS),
-  m_scanTimer(ClientTimers::ScanningTimer),
-  m_cloakTimer(ClientTimers::LoginCloak),
-  m_fleetTimer(ClientTimers::FleetTimer),
-  m_invulTimer(ClientTimers::RestoringInvul),
-  m_clientTimer(ClientTimers::ProcTimer),
-  m_logoutTimer(ClientTimers::LogoutTimer),
-  m_jetcanTimer(ClientTimers::JetcanTimer),
-  m_sessionTimer(ClientTimers::SessionTimer),
+  m_scanTimer(0),
+  m_cloakTimer(0),
+  m_fleetTimer(0),
+  m_invulTimer(0),
+  m_clientTimer(0),
+  m_logoutTimer(0),
+  m_jetcanTimer(0),
+  m_sessionTimer(0),
   m_destinyEventQueue(new PyList()),
   m_destinyUpdateQueue(new PyList()),
   m_nextNotifySequence(0)
@@ -79,6 +79,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_pod = ShipItemRef(nullptr);
     m_ship = ShipItemRef(nullptr);
 
+    /*
     m_pingTimer.Start();
     m_jumpTimer.Disable();
     m_stateTimer.Disable();
@@ -89,7 +90,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_clientTimer.Disable();
     m_logoutTimer.Disable();
     m_jetcanTimer.Disable();
-    m_sessionTimer.Disable();
+    m_sessionTimer.Disable();*/
 
     m_login = true;
     m_invul = true;

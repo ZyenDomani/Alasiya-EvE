@@ -44,15 +44,16 @@
 NPCAIMgr::NPCAIMgr(NPC* who)
 : m_state(NPCState::Idle),
   m_npc(who),
-  m_warpOutTimer(1000),
-  m_mainAttackTimer(1000),
-  m_processTimer(5000),         //arbitrary.
-  m_shieldBoosterTimer(10000),  //arbitrary.
-  m_armorRepairTimer(8000),     //arbitrary.
-  m_beginFindTarget(5000),      //arbitrary.
-  m_warpScramblerTimer(5000),   //arbitrary.
-  m_webifierTimer(5000)         //arbitrary.
+  m_warpOutTimer(0),
+  m_mainAttackTimer(0),
+  m_processTimer(0),
+  m_shieldBoosterTimer(0),
+  m_armorRepairTimer(0),
+  m_beginFindTarget(0),
+  m_warpScramblerTimer(0),
+  m_webifierTimer(0)
 {
+    /*
     m_warpOutTimer.Disable();
     m_webifierTimer.Disable();      //not implemented yet
     m_beginFindTarget.Disable();    //arbitrary.
@@ -60,6 +61,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_armorRepairTimer.Disable();   //waiting till engaged
     m_shieldBoosterTimer.Disable(); //waiting till engaged
     m_warpScramblerTimer.Disable(); //not implemented yet
+    */
 
     m_webber = false;
     m_warpScram = false;

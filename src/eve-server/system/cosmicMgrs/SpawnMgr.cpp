@@ -32,22 +32,23 @@
 SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc),
-  m_ratTimer(60000),  // 60s ... just putting something here
-  m_ratGroupTimer(15000),
-  m_missionTimer(10000),  //arbitrary
-  m_incursionTimer(10000),  //arbitrary
-  m_deadspaceTimer(10000)  //arbitrary
+  m_ratTimer(0),
+  m_ratGroupTimer(0),
+  m_missionTimer(0),
+  m_incursionTimer(0),
+  m_deadspaceTimer(0)
 {
     m_spawnID = 1;
 
     m_ratEnabled = false;
     m_initalized = false;
-
+    /*
     m_ratTimer.Disable();
     m_missionTimer.Disable();
     m_ratGroupTimer.Disable();
     m_incursionTimer.Disable();
     m_deadspaceTimer.Disable();
+    */
 
     m_spawns.clear();
     m_bubbles.clear();

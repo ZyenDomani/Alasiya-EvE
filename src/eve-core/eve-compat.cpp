@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan (timer update to C++0x11)
 */
 
 #include "eve-core.h"
@@ -34,19 +35,10 @@ void Sleep( uint32 x )
 
 uint32 GetTickCount()
 {
-#ifdef HAVE_SYS_TIME_H
     timeval tv;
     ::gettimeofday( &tv, NULL );
 
-    return tv.tv_sec  * 1000
-         + tv.tv_usec / 1000;
-#else /* !HAVE_SYS_TIME_H */
-    timeb tb;
-    ::ftime( &tb );
-
-    return tb.time * 1000
-         + tb.millitm;
-#endif /* !HAVE_SYS_TIME_H */
+    return (tv.tv_sec *1000) + (tv.tv_usec /1000);
 }
 
 int CreateDirectory( const char* name, void* )

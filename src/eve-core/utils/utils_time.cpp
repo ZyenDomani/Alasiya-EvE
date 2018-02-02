@@ -24,7 +24,6 @@
 */
 
 #include "eve-core.h"
-#include <chrono>
 
 #include "utils/utils_time.h"
 
@@ -64,6 +63,7 @@ std::string Win32TimeToString(int64 win32t) {
 }
 
 int64 Win32TimeNow() {
+    //  returns second resolution.
     return UnixTimeToWin32Time(std::time(NULL), 0);
 }
 
@@ -86,16 +86,9 @@ double GetFileTimeNow()
     return time;
 }
 
+//  NOTE  auto and std::chrono require C++11
 double GetTimeMSeconds() {  // -allan
     //  this returns milliseconds in microsecond resolution
-    /*
-     * win32timenow returns second resolution.
-     * 1305821829.00000000
-     *
-     * resolution of double will give 1 ten-millionth precision (5 places, or 1/100000)
-     */
-
-    //  NOTE  auto, std::chrono and system_clock::now() require C++11
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();     // return in nanoseconds
     double time = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
@@ -104,7 +97,6 @@ double GetTimeMSeconds() {  // -allan
 
 double GetTimeUSeconds() {  // -allan
     //  this returns microseconds in nanosecond resolution
-    //  NOTE  auto, std::chrono and system_clock::now() require C++11
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();     // return in nanoseconds
     double time = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();

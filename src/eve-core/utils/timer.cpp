@@ -30,10 +30,10 @@
 #include <ctime>
 
 static uint32 currentTime = 0;
-static uint32 currentSeconds = 0;
+//static float currentSeconds = 0;
 static uint32 lastTime = 0;
 
-Timer::Timer(uint32 time, bool useAcurateTiming /*false*/) {
+Timer::Timer(uint32 time/*0*/, bool useAcurateTiming /*false*/) {
     m_timerTime = time;
     m_startTime = currentTime;
     m_setAtTrigger = m_timerTime;
@@ -64,29 +64,40 @@ bool Timer::Check(bool reset /*true*/)
         printf( "Null timer during ->Check()!?\n" );
         return true;
     }
-    if (m_enabled && (currentTime - m_startTime > m_timerTime)) {
-        if (reset) {
-            if (m_useAcurateTiming)
-                m_startTime += m_timerTime; /* set start time to end of last timer */
-            else
-                m_startTime = currentTime; /* set start time to now */
-            m_timerTime = m_setAtTrigger;
+    if (m_enabled)
+        if ((currentTime - m_startTime) > m_timerTime) {
+            if (reset) {
+                if (m_useAcurateTiming)
+                    m_startTime += m_timerTime; /* set start time to end of last timer */
+                else
+                    m_startTime = currentTime; /* set start time to now */
+                m_timerTime = m_setAtTrigger;
+            }
+            return true;
         }
-        return true;
-    }
 
     return false;
 }
 
 /* This function sets the timer and starts it */
 void Timer::Start(uint32 setTimerTime, bool changeResetTimer /*true*/) {
-    m_startTime = currentTime;
-    m_enabled = true;
-    if (setTimerTime) {
-        m_timerTime = setTimerTime;
-        if (changeResetTimer)
-            m_setAtTrigger = setTimerTime;
+    if (setTimerTime == 0) {
+        m_enabled = false;
+        return;
     }
+
+    if (m_enabled) {    // this will allow resetting of the time without changing the start time
+        if (m_timerTime != setTimerTime)
+            m_timerTime = setTimerTime;
+    } else {
+        m_startTime = currentTime;
+        m_timerTime = setTimerTime;
+    }
+
+    if (changeResetTimer)
+        m_setAtTrigger = setTimerTime;
+
+    m_enabled = true;
 }
 
 /* This updates the timer without restarting it */
@@ -112,7 +123,7 @@ uint32 Timer::GetRemainingTime() const {
 
 void Timer::SetAtTrigger(uint32 setAtTrigger, bool enableIfDisabled) {
     m_setAtTrigger = setAtTrigger;
-    if (!Enabled() && enableIfDisabled)
+    if (!m_enabled && enableIfDisabled)
         Enable();
 }
 
@@ -130,16 +141,11 @@ const void Timer::SetCurrentTime()
 {
     uint32 tickCount = ::GetTickCount();
 
-    if( lastTime == 0 )
+    if (lastTime == 0)
         currentTime = 0;
     else
         currentTime += (tickCount - lastTime);
 
     lastTime = tickCount;
-    currentSeconds = (tickCount / 1000);
-}
-
-//just to keep all time related crap in one place... not really related to timers.
-uint32 Timer::GetTimeSeconds() {
-    return currentSeconds;
+    //currentSeconds = (tickCount / 1000);
 }

@@ -444,7 +444,7 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
     std::printf("\n");     // spacer
-    
+
     sLog.Green("       ServerInit", "Effect Data");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
@@ -610,9 +610,9 @@ int main( int argc, char* argv[] )
         if (sEntityList.GetClientCount()) {     // how much of a proc hit is this?  change/remove it?
             start = GetTimeMSeconds() - start;
             if (m_sleepTime > start)
-                Sleep(start);
+                std::this_thread::sleep_for(std::chrono::milliseconds(start));
         } else /* if no clients, let server idle longer*/
-            Sleep(m_idle);
+            std::this_thread::sleep_for(std::chrono::milliseconds(m_idle));
     }
 
     /*

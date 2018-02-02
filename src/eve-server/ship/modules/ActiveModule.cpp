@@ -16,8 +16,8 @@
 
 ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
 : GenericModule(iRef, sRef),
-m_timer(1000, true),
-m_reloadTimer(10000)
+m_timer(0, true),
+m_reloadTimer(0)
 {
     // this isnt implemented yet.  will replace the multiple m_targetID/m_targetSE conditionals
     m_needsTarget = false;
@@ -85,8 +85,6 @@ m_reloadTimer(10000)
         }
     } else
         m_chargeRef = iRef;
-
-    m_reloadTimer.Disable();
 
     Clear();
 
@@ -378,13 +376,13 @@ uint32 ActiveModule::DoCycle()
         } break;
     }
 
-    EvilNumber cycleTime = 0;
+    EvilNumber cycleTime = 10000;   // default to 10s
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))
-        return cycleTime.get_int();
+        ; //return cycleTime.get_int();
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
-        return cycleTime.get_int();
-    else
-        return 10000; // return 10s and make error for no duration attribute
+        ; //return cycleTime.get_int();
+
+    return cycleTime.get_int();
 }
 
 void ActiveModule::AbortCycle()
@@ -476,11 +474,11 @@ void ActiveModule::ProcessActiveCycle() {
 }
 
 void ActiveModule::SetTimer(uint32 time) {
-    if (time < 100)
+    if (time < 100) {
+        m_Stop = true;
         return;
-    time = time /1000;
-    time *= 1000;
-    _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - Started with %u ms.", time);
+    }
+    _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - %s with %u ms.", (m_timer.Enabled()? "Updated" : "Started"), time);
     m_timer.Start(time);
 }
 
