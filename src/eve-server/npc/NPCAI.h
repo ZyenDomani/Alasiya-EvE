@@ -114,7 +114,6 @@ private:
     uint16 m_sigResolution;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
-    uint16 m_damageMultiplier;
     uint16 m_optimalRange;
     uint16 m_boostRange;    // distance for Speed Boost activation   default:2500
     uint16 m_armorRepairDuration;
@@ -132,8 +131,11 @@ private:
     float m_shieldBoosterChance;
 
     double m_trackingSpeed;
+    double m_damageMultiplier;
 
     NPC* m_npc;
+    DestinyManager* m_destiny;
+    InventoryItemRef m_self;
 
     TurretFormulas m_formula;
 

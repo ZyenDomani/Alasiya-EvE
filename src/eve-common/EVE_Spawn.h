@@ -25,9 +25,11 @@ namespace Spawn {
             Hard        = 5,
             Crazy       = 6,
             Insane      = 7,
-            Hauler      = 8,
-            Commander   = 9,
-            Officer     = 10
+            Hell        = 8,
+            Extra       = 9,
+            Hauler      = 10,
+            Commander   = 11,
+            Officer     = 12
         };
     }
 

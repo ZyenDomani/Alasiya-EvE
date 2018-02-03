@@ -44,6 +44,8 @@
 NPCAIMgr::NPCAIMgr(NPC* who)
 : m_state(NPCState::Idle),
   m_npc(who),
+  m_self(who->GetSelf()),
+  m_destiny(who->DestinyMgr()),
   m_warpOutTimer(0),
   m_mainAttackTimer(0),
   m_processTimer(0),
@@ -53,51 +55,42 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_warpScramblerTimer(0),
   m_webifierTimer(0)
 {
-    /*
-    m_warpOutTimer.Disable();
-    m_webifierTimer.Disable();      //not implemented yet
-    m_beginFindTarget.Disable();    //arbitrary.
-    m_mainAttackTimer.Disable();    //waiting till engaged
-    m_armorRepairTimer.Disable();   //waiting till engaged
-    m_shieldBoosterTimer.Disable(); //waiting till engaged
-    m_warpScramblerTimer.Disable(); //not implemented yet
-    */
-
+    assert(m_self.get() != nullptr);
     m_webber = false;
     m_warpScram = false;
     m_isWandering = false;
 
-    m_damageMultiplier = who->GetSelf()->GetAttribute(AttrDamageMultiplier).get_int();
+    m_damageMultiplier = m_self->GetAttribute(AttrDamageMultiplier).get_float();
 
     /* set npc ship data */
-    m_sigResolution = who->GetSelf()->GetAttribute(AttrOptimalSigRadius).get_int();
-    m_attackSpeed = who->GetSelf()->GetAttribute(AttrSpeed).get_int();
-    m_sigRadius = who->GetSelf()->GetAttribute(AttrSignatureRadius).get_int();
+    m_sigResolution = m_self->GetAttribute(AttrOptimalSigRadius).get_int();
+    m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_int();
+    m_sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_int();
 
     /** @todo  all of these need to be verified and/or updated */
 
     // ship speeds
     // absolute (boosted) Max Ship Speed
-    m_maxSpeed = who->GetSelf()->GetAttribute(AttrMaxVelocity).get_int();
+    m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_int();
     // Orbit Velocity
-    m_orbitSpeed = who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int();
+    m_orbitSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_int();
 
     // ship distances
     // Optimal Range
-    m_optimalRange = who->GetSelf()->GetAttribute(AttrMaxRange).get_int();
+    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_int();
     // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half)
-    m_falloff = who->GetSelf()->GetAttribute(AttrFalloff).get_int();
-    m_trackingSpeed = who->GetSelf()->GetAttribute(AttrTrackingSpeed).get_float();
+    m_falloff = m_self->GetAttribute(AttrFalloff).get_int();
+    m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_float();
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target
-    m_flyRange = who->GetSelf()->GetAttribute(AttrEntityFlyRange).get_int();
+    m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_int();
     if (!m_flyRange)
         m_flyRange = 0;
     // distance for Speed Boost activation
-    m_boostRange = who->GetSelf()->GetAttribute(AttrEntityChaseMaxDistance).get_int();
+    m_boostRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_int();
     if (!m_boostRange)
         m_boostRange = 0;
     // max firing range   default:10000
-    m_maxAttackRange = who->GetSelf()->GetAttribute(AttrEntityAttackRange).get_int();
+    m_maxAttackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();
     if (!m_maxAttackRange)
         m_maxAttackRange = 10000;
     // 'sight' range
@@ -106,59 +99,59 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_sightRange = m_maxAttackRange *2;
 
     // these next two have effects that define the rep/boost chance attribID
-    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
-    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int();
-    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int();
+    if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
+        m_armorRepairChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
+    else if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int())
+        m_armorRepairChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int();
+    else if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int())
+        m_armorRepairChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int();
     else
         m_armorRepairChance = 0;
     if (m_armorRepairChance)
-        m_armorRepairDuration = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int();
+        m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_int();
     else
         m_armorRepairDuration = 0;
 
-    if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
-        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceMedium))
-        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceMedium).get_float();
-    else if (who->GetSelf()->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
-        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
+    if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceSmall))
+        m_shieldBoosterChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
+    else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceMedium))
+        m_shieldBoosterChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceMedium).get_float();
+    else if (m_self->HasAttribute(AttrEntityShieldBoostDelayChanceLarge))
+        m_shieldBoosterChance = m_self->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
     else
         m_shieldBoosterChance = 0;
     if (m_shieldBoosterChance)
-        m_shieldBoosterDuration = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDuration).get_int();
+        m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_int();
     else
         m_shieldBoosterDuration = 0;
 
     // advanced AI variables  only used by sleepers for now (and on live).  will update advanced npcs to use these also (unique to alasiya)
-    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseTargetSwitching))
+    if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching))
         m_useTargSwitching = true;
     else
         m_useTargSwitching = false;
-    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
+    if (m_self->HasAttribute(AttrAI_ShouldUseSecondaryTarget))
         m_useSecondTarget = true;
     else
         m_useSecondTarget = false;
-    if (who->GetSelf()->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
+    if (m_self->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
         m_useSigRadius = true;
-        m_preferedSigRadius = who->GetSelf()->GetAttribute(AttrAI_PreferredSignatureRadius).get_int();
+        m_preferedSigRadius = m_self->GetAttribute(AttrAI_PreferredSignatureRadius).get_int();
     } else {
         m_useSigRadius = false;
         m_preferedSigRadius = 0;
     }
-    if (who->GetSelf()->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
-        m_switchTargChance = 1.0 - who->GetSelf()->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
+    if (m_self->HasAttribute(AttrAI_ChanceToNotTargetSwitch))
+        m_switchTargChance = 1.0 - m_self->GetAttribute(AttrAI_ChanceToNotTargetSwitch).get_float();
     else
         m_switchTargChance = 0;
 
-    if (who->GetSelf()->HasAttribute(AttrWarpScrambleRange))
-        m_warpScramRange = who->GetSelf()->GetAttribute(AttrWarpScrambleRange).get_float();
+    if (m_self->HasAttribute(AttrWarpScrambleRange))
+        m_warpScramRange = m_self->GetAttribute(AttrWarpScrambleRange).get_float();
     else
         m_warpScramRange = 0;
-    if (who->GetSelf()->HasAttribute(AttrEntityWarpScrambleChance))
-        m_warpScramChance = 1.0 - who->GetSelf()->GetAttribute(AttrEntityWarpScrambleChance).get_float();
+    if (m_self->HasAttribute(AttrEntityWarpScrambleChance))
+        m_warpScramChance = 1.0 - m_self->GetAttribute(AttrEntityWarpScrambleChance).get_float();
     else
         m_warpScramChance = 0;
 
@@ -176,7 +169,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
 void NPCAIMgr::Process() {
     if ((!m_processTimer.Check())
-    or m_npc->DestinyMgr()->IsWarping())
+    or m_destiny->IsWarping())
         return;
     // make config option to (dis)allow empty bubble tics for npcs
     //if (!m_npc->SysBubble()->HasPlayers())  // this needs to be separate as bubble = null when warping
@@ -301,7 +294,7 @@ void NPCAIMgr::WarpOut()
             newBeltID = m_npc->SystemMgr()->GetRandBeltID();
 
         SystemEntity* newSE = m_npc->SystemMgr()->GetSE(newBeltID);
-        m_npc->DestinyMgr()->WarpTo(newSE->GetPosition());
+        m_destiny->WarpTo(newSE->GetPosition());
         m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newSE));
     }
 }
@@ -324,14 +317,14 @@ void NPCAIMgr::SetWander()
             return;
         }
         // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
-        m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
+        m_destiny->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
-        m_npc->DestinyMgr()->Orbit(pSE, orbitDistance);
+        m_destiny->Orbit(pSE, orbitDistance);
         _log(NPC__AI_TRACE, "%s(%u):  Just for shits-n-giggles, I\'m gonna orbit %s(%u) at %um.", \
                 m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), orbitDistance);
     } else {
         /** @todo  figure out a way for npc to wander 'aimlessly' around their bubble */
-        m_npc->DestinyMgr()->Stop();
+        m_destiny->Stop();
     }
 }
 
@@ -342,8 +335,8 @@ void NPCAIMgr::SetIdle() {
     _log(NPC__AI_TRACE, "%s(%u): Idle: returning to idle.", \
          m_npc->GetName(), m_npc->GetID());
     m_state = NPCState::Idle;
-    m_npc->DestinyMgr()->Stop();
-    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
+    m_destiny->Stop();
+    m_destiny->SetMaxVelocity(m_orbitSpeed);
 
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
@@ -360,13 +353,13 @@ void NPCAIMgr::SetChasing(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
     /** @todo implement chase timer using entityChaseMaxDuration to limit chase time. */
-    if ((m_state == NPCState::Chasing) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
+    if ((m_state == NPCState::Chasing) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
     _log(NPC__AI_TRACE, "%s(%u): Chasing: Begin chasing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
-    m_npc->DestinyMgr()->GotoPoint(pSE->GetPosition());  //head towards target
+    m_destiny->SetMaxVelocity(m_maxSpeed);
+    m_destiny->GotoPoint(pSE->GetPosition());  //head towards target
     m_state = NPCState::Chasing;
     m_warpOutTimer.Disable();
 }
@@ -374,13 +367,13 @@ void NPCAIMgr::SetChasing(SystemEntity* pSE) {
 void NPCAIMgr::SetFollowing(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
-    if ((m_state == NPCState::Following) and (m_npc->DestinyMgr()->IsGoto() or m_npc->DestinyMgr()->IsFollowing()))
+    if ((m_state == NPCState::Following) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
     _log(NPC__AI_TRACE, "%s(%u): Following: Begin following.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // too close to chase, but to far to engage
-    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed *2);
-    m_npc->DestinyMgr()->Follow(pSE, m_falloff);  //try to get inside falloff range
+    m_destiny->SetMaxVelocity(m_orbitSpeed *2);
+    m_destiny->Follow(pSE, m_falloff);  //try to get inside falloff range
     m_state = NPCState::Following;
     m_warpOutTimer.Disable();
 }
@@ -388,13 +381,13 @@ void NPCAIMgr::SetFollowing(SystemEntity* pSE) {
 void NPCAIMgr::SetEngaged(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
-    if ((m_state == NPCState::Engaged) and m_npc->DestinyMgr()->IsOrbiting())
+    if ((m_state == NPCState::Engaged) and m_destiny->IsOrbiting())
         return;
     _log(NPC__AI_TRACE, "%s(%u): Engaged: Begin engaging.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively fighting
-    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed);
-    m_npc->DestinyMgr()->Orbit(pSE, m_optimalRange);  //try to get inside orbit range
+    m_destiny->SetMaxVelocity(m_orbitSpeed);
+    m_destiny->Orbit(pSE, m_optimalRange);  //try to get inside orbit range
     m_state = NPCState::Engaged;
     m_warpOutTimer.Disable();
 }
@@ -402,14 +395,14 @@ void NPCAIMgr::SetEngaged(SystemEntity* pSE) {
 void NPCAIMgr::SetFleeing(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
-    if ((m_state == NPCState::Fleeing) and m_npc->DestinyMgr()->IsMoving())
+    if ((m_state == NPCState::Fleeing) and m_destiny->IsMoving())
         return;
     _log(NPC__AI_TRACE, "%s(%u): Fleeing: Begin fleeing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_maxSpeed);
+    m_destiny->SetMaxVelocity(m_maxSpeed);
     m_state = NPCState::Fleeing;
     m_warpOutTimer.Disable();
 }
@@ -417,15 +410,15 @@ void NPCAIMgr::SetFleeing(SystemEntity* pSE) {
 void NPCAIMgr::SetSignaling(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
-    if ((m_state == NPCState::Signaling) and m_npc->DestinyMgr()->IsOrbiting())
+    if ((m_state == NPCState::Signaling) and m_destiny->IsOrbiting())
         return;
     _log(NPC__AI_TRACE, "%s(%u): Signaling: Begin signaling.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
     //  this state is only usable by higher-class npcs.
-    m_npc->DestinyMgr()->SetMaxVelocity(m_orbitSpeed * 2);
-    m_npc->DestinyMgr()->Orbit(pSE, m_falloff);  //try to get outside orbit range
+    m_destiny->SetMaxVelocity(m_orbitSpeed * 2);
+    m_destiny->Orbit(pSE, m_falloff);  //try to get outside orbit range
     m_state = NPCState::Signaling;
     m_warpOutTimer.Disable();
 }
@@ -482,7 +475,7 @@ void NPCAIMgr::Target(SystemEntity* pSE) {
     double targetTime = GetTargetTime();
     bool chase = false;
 
-	if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+	if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, (uint8)m_self->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
         if (chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                         m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -510,7 +503,7 @@ void NPCAIMgr::Targeted(SystemEntity* pSE) {
             SetChasing(pSE);
 
             bool chase = false;
-			if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, (uint8)m_npc->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+			if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, (uint8)m_self->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
                 if (chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                             m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -613,17 +606,11 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
     // put checks here for point/tackle
 
     // some npcs use missiles.....write code for using missiles   -- entityMissileTypeID
-    std::string guid = "effects.Laser";
-    m_npc->DestinyMgr()->SendSpecialEffect(m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->itemID(),
-                                           m_npc->GetSelf()->typeID(),
-                                           pSE->GetID(),
-                                           0,guid,1,1,1,m_attackSpeed,0
-                                           //m_npc->GetSelf()->GetAttribute(AttrGfxTurretID).get_int()    // graphicID for turret for drone type ships
-                                          );
+    m_destiny->SendSpecialEffect(m_self->itemID(), m_self->itemID(), m_self->typeID(), pSE->GetID(), 0,"effects.Laser",1,1,1,m_attackSpeed,0);
+    //m_self->GetAttribute(AttrGfxTurretID).get_int()    // graphicID for turret for drone type ships
 
     Damage d(m_npc,
-             m_npc->GetSelf(),
+             m_self,
              m_npc->GetKinetic(),
              m_npc->GetThermal(),
              m_npc->GetEM(),
@@ -633,14 +620,16 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
             );
 
     if (sConfig.npc.UseDamageMultiplier)
-        d *= m_damageMultiplier;
+        if (m_damageMultiplier > 0)
+            d *= m_damageMultiplier;
+
     pSE->ApplyDamage(d);
 }
 
 double NPCAIMgr::GetTargetTime()
 {
-    double targetTime = (m_npc->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
-    float radius = m_npc->GetSelf()->GetAttribute(AttrRadius).get_float();
+    double targetTime = (m_self->GetAttribute(AttrScanSpeed).get_int());
+    float radius = m_self->GetAttribute(AttrRadius).get_float();
     if (targetTime < 1) {
         if (radius < 30)
             targetTime = 1500;

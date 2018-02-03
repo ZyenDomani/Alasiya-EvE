@@ -429,6 +429,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRatin
         }
     }
     if ((sClass == Spawn::Class::None) and pBubble->IsBelt()) {
+        /** @todo make (small) random chance for 'hell' spawn in nullsec */
         if ((factionID != factionRogueDrones) and (MakeRandomFloat() < 0.08)) { // second chance for hauler spawn, but include ALL secRating in this one
             sClass = Spawn::Class::Hauler;
         } else { // gonna be a 'regular' trusec-based spawn in a belt.
@@ -448,8 +449,15 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRatin
         else sClass = Spawn::Class::Easy;
     }
 
-    if ((sClass < Spawn::Class::Easy) or (sClass > Spawn::Class::Insane))
-        sClass = Spawn::Class::Easy;
+    if (secRating < 0) {
+        if (pBubble->IsBelt()) {
+            if (MakeRandomFloat() < 0.15)
+                sClass = Spawn::Class::Hell;
+        } else {
+            if (MakeRandomFloat() < 0.08)
+                sClass = Spawn::Class::Hell;
+        }
+    }
 
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetRatClasses(sClass, spawnEntry)) {

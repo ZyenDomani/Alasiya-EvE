@@ -457,7 +457,7 @@ PyResult CorpStationMgr::Handle_GetStationServiceStates(PyCallArgs &call)
      * since it has NOT been called yet on evemu, it very well could be outposts only (cause we dont have any)
      *
      *  **UPDATE**
-     *   i was right.  found this in code...
+     *   i was right.  these are outposts or conqurable stations.   found this in code...
      * if util.IsOutpost(eve.session.stationid) or sm.GetService('godma').GetType(eve.stationItem.stationTypeID).isPlayerOwnable == 1:
      *     self.serviceItemsState = sm.RemoteSvc('corpStationMgr').GetStationServiceStates()
      *
@@ -618,7 +618,7 @@ PyResult CorpStationMgr::Handle_GetStationServiceStates(PyCallArgs &call)
      *                [PyInt 1]
      *    [PyNone]
      */
-  sLog.White( "CorpStationMgr::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
+    sLog.Warning( "CorpStationMgr::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;

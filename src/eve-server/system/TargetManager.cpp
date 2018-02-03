@@ -171,17 +171,19 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
         throw PyException( MakeUserError("DeniedTargetSelf"));
     if (who->IsInvul())
         throw PyException( MakeUserError("DeniedTargetInvulnerable"));
-    if (who->DestinyMgr()->IsCloaked())
-        throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
     if ((who->TargetMgr() == nullptr) or (who->GetSelf()->HasAttribute(AttrUntargetable))) { //only for 21094, 28650 (cyno fields)
         std::map<std::string, PyRep *> args;
         args["target"] = new PyInt(who->GetID());
         throw PyException( MakeUserError("DeniedTargetingAttemptFailed", args));
     }
-    if (who->DestinyMgr()->IsWarping()) {
-        std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(who->GetName());
-        throw PyException( MakeUserError("DeniedTargetOtherWarping", args));
+    if (who->DestinyMgr() != nullptr) {
+        if (who->DestinyMgr()->IsCloaked())
+            throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
+        if (who->DestinyMgr()->IsWarping()) {
+            std::map<std::string, PyRep *> args;
+            args["targetName"] = new PyString(who->GetName());
+            throw PyException( MakeUserError("DeniedTargetOtherWarping", args));
+        }
     }
     if (who->IsPOSSE())
         if (who->GetPOSSE()->IsReinforced()) {
@@ -203,10 +205,12 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
         throw PyException( MakeUserError("DeniedTargetingInsideField", args));
     } */
 
-    if (mySE->DestinyMgr()->IsWarping())
-        throw PyException( MakeUserError("DeniedTargetSelfWarping"));
-    if (mySE->DestinyMgr()->IsCloaked())
-        throw PyException( MakeUserError("DeniedTargetingCloaked"));
+    if (mySE->DestinyMgr() != nullptr) {
+        if (mySE->DestinyMgr()->IsWarping())
+            throw PyException( MakeUserError("DeniedTargetSelfWarping"));
+        if (mySE->DestinyMgr()->IsCloaked())
+            throw PyException( MakeUserError("DeniedTargetingCloaked"));
+    }
 
     TargetTry(who);
     //first make sure they are not already in the list
