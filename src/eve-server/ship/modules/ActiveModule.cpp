@@ -268,7 +268,7 @@ void ActiveModule::DeOverload()
 // yes, the xxCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
-    if ((m_destinyMgr == nullptr) or (m_bubble == nullptr)) {
+    if (m_destinyMgr == nullptr) {
         // make error for no destiny/bubble
         Deactivate();
         return 0;
@@ -478,6 +478,10 @@ void ActiveModule::SetTimer(uint32 time) {
         m_Stop = true;
         return;
     }
+    // timer must be restarted for fleet boosts to activate
+    if (m_timer.Enabled())
+        return;
+    // updated timer will reset cycle time if changed, but i DO NOT have client display coded to reset...this will fuck up timer time in client.
     _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - %s with %u ms.", (m_timer.Enabled()? "Updated" : "Started"), time);
     m_timer.Start(time);
 }
@@ -637,9 +641,6 @@ bool ActiveModule::CanActivate()
 
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
-    if (m_shipRef->GetPilot()->GetShipSE()->SysBubble() == nullptr)
-        return;
-
     int64 abortTime = Win32TimeNow();
     if (abort) {
         active = false;
@@ -715,12 +716,12 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
-    if (m_destinyMgr != nullptr)
-        m_destinyMgr->SendDestinyUpdate(updates, events, false);
-    else
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-}
 
+    // this should never hit, but just in case...
+    if (m_destinyMgr == nullptr)
+        m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+    m_destinyMgr->SendDestinyUpdate(updates, events, m_destinyMgr->IsWarping());
+}
 
 void ActiveModule::LaunchMissile()
 {
@@ -735,9 +736,18 @@ void ActiveModule::LaunchMissile()
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
     SystemManager* pSystem = pClient->SystemMgr();
-    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef.get());
+    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE());
     if (pMissile == nullptr)
         return; // make error here
+    /** @todo  finish this....
+    // modify missile based on attribs
+    missileRef->MultiplyAttribute(AttrMaxVelocity, m_self->GetAttribute(AttrMissileEntityVelocityMultiplier));
+    missileRef->MultiplyAttribute(AttrExplosionDelay, m_self->GetAttribute(AttrMissileEntityFlightTimeMultiplier));
+    missileRef->MultiplyAttribute(AttrAoeVelocity, m_self->GetAttribute(AttrMissileEntityAoeVelocityMultiplier));
+    missileRef->MultiplyAttribute(AttrAoeCloudSize, m_self->GetAttribute(AttrMissileEntityAoeCloudSizeMultiplier));
+    missileRef->MultiplyAttribute(AttrAoeFalloff, m_self->GetAttribute(AttrMissileEntityAoeFalloffMultiplier));
+    */
+
     double distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
     double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
     double travelTime = (distance/missileSpeed);
@@ -749,4 +759,8 @@ void ActiveModule::LaunchMissile()
 
     // Reduce ammo charge by 1 unit:
     m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+
+    // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
+    m_targetSE->MissileLaunched(pMissile);
+
 }

@@ -51,15 +51,15 @@ DAMAGE__DEBUG
 
 Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _kinetic, double _thermal, double _em, double _explosive, double _modifier, uint16 eID)
 {
-    weaponRef   = weapon;
-    chargeRef   = InventoryItemRef(nullptr);
     srcSE       = source;
     effectID    = eID;
-    modifier    = _modifier;
+    weaponRef   = weapon;
     em          = _em;
     kinetic     = _kinetic;
     thermal     = _thermal;
     explosive   = _explosive;
+    chargeRef   = InventoryItemRef(nullptr);
+    modifier    = _modifier;
 }
 
 Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _modifier, uint16 eID)
@@ -151,10 +151,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             d *= modifier;
                  if (modifier == 3.0)   damageID = 6;
             else if (modifier > 1.2501) damageID = 5;
-            else if (modifier > 1.0001) damageID = 4;
+            else if (modifier > 0.9999) damageID = 4;
             else if (modifier > 0.7501) damageID = 3;
             else if (modifier > 0.6251) damageID = 2;
-            else if (modifier != 0)     damageID = 1;   // modified from live's 0.5 to enable more "partial hits"
+            else if (modifier > 0.3751) damageID = 1;   // modified from live's 0.5 to enable more "partial hits"
             else                        damageID = 0;
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;

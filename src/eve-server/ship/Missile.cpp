@@ -35,35 +35,89 @@
 #include "ship/Ship.h"
 #include "system/Damage.h"
 
-Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, ShipItem* ship)
+Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, SystemEntity* pSE)
 : DynamicSystemEntity(self, services, pSystem),
   m_module(module),
   m_targetSE(target),
-  m_ship(ship),
-  m_hitTimer(1000), //arbitrary default
-  m_lifeTimer(1000) //arbitrary default
+  m_fromSE(pSE),
+  m_hitTimer(0),
+  m_lifeTimer(0)
 {
-    if (ship->HasPilot()) {
-        Character* pChar = m_ship->GetPilot()->GetChar().get();
-        m_ownerID = pChar->itemID();
-        m_allyID = pChar->allianceID();
-        m_corpID = pChar->corporationID();
-        m_warID = pChar->warFactionID();
-    } else {
-        m_ownerID = ship->itemID();
-        /** @todo finish these for npcs */
-        m_warID = 0;
-        m_allyID = 0;
-        m_corpID = 0;
+    if (pSE->HasPilot())
+        m_ownerID = pSE->GetPilot()->GetChar()->itemID();
+    else
+        m_ownerID = self->ownerID();
+
+    m_warID = pSE->GetWarFactionID();
+    m_allyID = pSE->GetAllianceID();
+    m_corpID = pSE->GetCorporationID();
+
+    m_damageMod = 1;
+
+    double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
+
+    // cannot (easily) apply char skills to missiles.  this is current option for skill-modified damage adjustments...
+    if (pSE->HasPilot()) {
+        Character* pChar = pSE->GetPilot()->GetChar().get();
+        flightTime *= (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileBombardment, true)))); // 10% increase in flightTime
+        m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
+
+        switch (m_self->groupID()) {
+            case EVEDB::invGroups::Light_Missile:
+            case EVEDB::invGroups::FoF_Light_Missile:
+            case EVEDB::invGroups::Advanced_Light_Missile: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillLightMissiles, true)))); // 5% increase in damage
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Light_Missile)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillLightMissileSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Heavy_Missile:
+            case EVEDB::invGroups::FoF_Heavy_Missile:
+            case EVEDB::invGroups::Advanced_Heavy_Missile: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillHeavyMissiles, true)))); // 5% increase in damage
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Heavy_Missile)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillHeavyMissileSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Cruise_Missile:
+            case EVEDB::invGroups::FoF_Cruise_Missile:
+            case EVEDB::invGroups::Advanced_Cruise_Missile: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCruiseMissiles, true)))); // 5% increase in
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Cruise_Missile)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillCruiseMissileSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Torpedo:
+            case EVEDB::invGroups::Advanced_Torpedo: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillTorpedoes, true)))); // 5% increase in damage
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Torpedo)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillTorpedoSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Rocket:
+            case EVEDB::invGroups::Advanced_Rocket: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillRockets, true)))); // 5% increase in damage
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Rocket)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillRocketSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Defender_Missile: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillDefenderMissiles, true)))); // 5% increase in damage
+            } break;
+            case EVEDB::invGroups::Assault_Missile:
+            case EVEDB::invGroups::Advanced_Assault_Missile: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillHeavyAssaultMissiles, true)))); // 5% increase in damage
+                if (m_self->groupID() == EVEDB::invGroups::Advanced_Assault_Missile)
+                    m_damageMod *= (1 + ( 0.03 * (pChar->GetSkillLevel(skillHeavyAssaultMissileSpecialization, true)))); // 3% increase in damage
+            } break;
+            case EVEDB::invGroups::Citadel_Cruise: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCitadelCruiseMissiles, true)))); // 5% increase in damage
+            } break;
+            case EVEDB::invGroups::Citadel_Torpedo: {
+                m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillCitadelTorpedoes, true)))); // 5% increase in damage
+            } break;
+        }
     }
 
-    m_kinDamage = self->GetAttribute(AttrKineticDamage).get_float(),
-    m_therDamage = self->GetAttribute(AttrThermalDamage).get_float(),
-    m_emDamage = self->GetAttribute(AttrEmDamage).get_float(),
-    m_expDamage = self->GetAttribute(AttrExplosiveDamage).get_float(),
+    /** @todo update this when rack overloading is implemented... */
+    if (IsOverloaded())
+        m_damageMod *= (1 + self->GetAttribute(AttrOverloadDamageModifier).get_float());
 
-    m_hitTimer.Disable();
-    double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
     flightTime *= sConfig.rates.missileTime;
     m_lifeTimer.Start(flightTime);
 
@@ -167,8 +221,8 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 }
 
 void Missile::HitTarget() {
-    // Create Damage action:
-    Damage d(m_ship->GetPilot()->GetShipSE(),
+    // Create Damage object:
+    Damage d(m_fromSE,
              m_module,
              m_self,
              EVEEffectID::missileLaunching  // from EVEEffectID::  should be an explosion effect here
@@ -193,13 +247,26 @@ void Missile::HitTarget() {
     double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
     double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
+    // cannot (easily) apply char skills to missiles.  this is current option
+    if (m_fromSE->HasPilot()) {
+        Character* pChar = m_fromSE->GetPilot()->GetChar().get();
+        Er *=  (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true))));  //  5% decrease in exp radius
+        Ev *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true))));  // 10% increase in exp velocity
+    }
+
     GPoint Vel = m_targetSE->GetVelocity();
     double V = Vel.length();
 
     double v1 = Sr/Er;
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
+
+    // order of damage modifiers application here is important
+    // apply damage modifier from char skills, if applicable
+    d *= m_damageMod;
+    // apply missile damage formula to computed total damage
     d *= EvE::min1(v1, v2);
-    d *= sConfig.rates.missileRoF;
+    // apply damage modifier from config after damage formula
+    d *= sConfig.rates.missileDamage;
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;

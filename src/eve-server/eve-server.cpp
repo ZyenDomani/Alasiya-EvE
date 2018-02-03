@@ -466,22 +466,6 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
-    sLog.Blue("       ServerInit", "Debug Switches");
-    if (sConfig.debug.UseProfiling) {
-        sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Init();
-    } else
-        sLog.Warning(" Server Profiling","Disabled.");
-    if (sConfig.debug.UseShipTracking)
-        sLog.Warning("    Ship Tracking","Enabled.");
-    else
-        sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.debug.PositionHack)
-        sLog.Warning("    Position Hack","Enabled.");
-    else
-        sLog.Warning("    Position Hack","Disabled.");
-
-    std::printf("\n");     // spacer
     sLog.Blue("       ServerInit", "Rate Modifiers");
     if (sConfig.rates.secRate != 1.0)
         sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
@@ -491,22 +475,38 @@ int main( int argc, char* argv[] )
         sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
     else
         sLog.Green("          Bountys","Normal.");
+    if (sConfig.rates.RateDropItem != 1.0)
+        sLog.Yellow("       Item Drops","Modified at %.0f%%.", (sConfig.rates.RateDropItem *100) );
+    else
+        sLog.Green("       Item Drops","Normal.");
+    if (sConfig.rates.RateDropMoney != 1.0)
+        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.RateDropMoney *100) );
+    else
+        sLog.Green("      Isk Rewards","Normal.");
     if (sConfig.rates.damageRate != 1.0)
         sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
     else
         sLog.Green("      All Damages","Normal.");
-    if (sConfig.rates.missileRoF != 1.0)
-        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
+    if (sConfig.rates.turretDamage != 1.0)
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretDamage *100) );
+    else
+        sLog.Green("       Turret Dmg","Normal.");
+    if (sConfig.rates.turretRoF != 1.0)
+        sLog.Yellow("       Turret ROF","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
+    else
+        sLog.Green("       Turret ROF","Normal.");
+    if (sConfig.rates.missileDamage != 1.0)
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileDamage *100) );
     else
         sLog.Green("      Missile Dmg","Normal.");
+    if (sConfig.rates.missileRoF != 1.0)
+        sLog.Yellow("      Missile ROF","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
+    else
+        sLog.Green("      Missile ROF","Normal.");
     if (sConfig.rates.missileTime != 1.0)
         sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
     else
         sLog.Green("     Missile Time","Normal.");
-    if (sConfig.rates.turretRoF != 1.0)
-        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
-    else
-        sLog.Green("       Turret Dmg","Normal.");
 
     std::printf("\n");     // spacer
     sLog.Blue("       ServerInit", "Feature Switches");
@@ -549,9 +549,34 @@ int main( int argc, char* argv[] )
         sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
     else
         sLog.Warning("      Decay Timer","Disabled.");
-
     std::printf("\n");     // spacer
 
+    sLog.Blue("       ServerInit", "Debug Switches");
+    if (sConfig.debug.IsTestServer)
+        sLog.Error("       ServerInit", "Is Test Server");  
+    if (sConfig.debug.UseProfiling) {
+        sLog.Green(" Server Profiling","Enabled.");
+        sProfile.Init();
+    } else
+        sLog.Warning(" Server Profiling","Disabled.");
+    if (sConfig.debug.SpawnTest)
+        sLog.Warning("       Spawn Test","Enabled.");
+    else
+        sLog.Warning("       Spawn Test","Disabled.");
+    if (sConfig.debug.BubbleTrack)
+        sLog.Warning("  Bubble Tracking","Enabled.");
+    else
+        sLog.Warning("  Bubble Tracking","Disabled.");
+    if (sConfig.debug.UseShipTracking)
+        sLog.Warning("    Ship Tracking","Enabled.");
+    else
+        sLog.Warning("    Ship Tracking","Disabled.");
+    if (sConfig.debug.PositionHack)
+        sLog.Warning("    Position Hack","Enabled.");
+    else
+        sLog.Warning("    Position Hack","Disabled.");
+
+    std::printf("\n");     // spacer
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
 

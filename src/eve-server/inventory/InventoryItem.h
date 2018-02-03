@@ -288,6 +288,7 @@ public:
     void SetAttribute(uint16 attrID, int64 num, bool notify=true);
     void SetAttribute(uint16 attrID, double num, bool notify=true);
     void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
+    void MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify=false);
     bool HasAttribute(const uint16 attrID) const                       { return pAttributeMap->HasAttribute(attrID); }
     bool HasAttribute(const uint16 attrID, EvilNumber &value) const    { return pAttributeMap->HasAttribute(attrID, value); }
     bool SaveAttributes()                                              { return pAttributeMap->SaveAttributes(); }

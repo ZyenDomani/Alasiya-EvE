@@ -1297,7 +1297,7 @@ void DestinyManager::ComputePositionAtDate(){
     double[] meanLongitude = new double[2];
     double[] longitudeOfPerihelion = new double[2];
     double[] longitudeOfTheAscendingNode = new double[2];
-    
+
     double a = semimajorAxis [0] + semimajorAxis [1];
     double e = eccentricity [0] + eccentricity [1];
     double i = EvE::Trig::Deg2Rad(inclination [0] + inclination [1]);
@@ -2432,7 +2432,7 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
         maxspeed.speed = m_maxShipSpeed;
     updates.push_back(maxspeed.Encode());
     Rsp_LaunchMissile miss;
-        miss.shipID = pMissile->GetShip()->itemID();
+        miss.shipID = pMissile->GetLauncherID();
         miss.targetID = pTarget->GetID();
         miss.missileID = pMissile->GetID();
         miss.unk1 = 1;

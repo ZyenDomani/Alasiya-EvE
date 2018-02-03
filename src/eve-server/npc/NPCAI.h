@@ -27,20 +27,23 @@
 #ifndef __NPCAI_H_INCL__
 #define __NPCAI_H_INCL__
 
+#include "ship/Missile.h"
 #include "ship/modules/TurretFormulas.h"
 
-namespace NPCState {
-    enum {
-        Invalid     = -1,
-        Idle        = 1,  // not doing anything....idle.
-        Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
-        Following   = 3,  // too close to chase, but to far to engage
-        Engaged     = 4,  // actively fighting
-        Fleeing     = 5,  // running away
-        Signaling   = 6,  // calling for help
-        WarpOut     = 7,  // leaving bubble
-        WarpFollow  = 8   // will follow warping ship to their destination (adv)
-    };
+namespace NPCAI {
+    namespace State {
+        enum {
+            Invalid     = -1,
+            Idle        = 1,  // not doing anything....idle.
+            Chasing     = 2,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
+            Following   = 3,  // too close to chase, but to far to engage
+            Engaged     = 4,  // actively fighting
+            Fleeing     = 5,  // running away
+            Signaling   = 6,  // calling for help
+            WarpOut     = 7,  // leaving bubble
+            WarpFollow  = 8   // will follow warping ship to their destination (adv)
+        };
+    }
 }
 
 class NPC;
@@ -63,11 +66,11 @@ public:
     void ClearTargets();
 	void ClearAllTargets();
 
-    void DisableRepTimers();
+    void DisableRepTimers(bool shield, bool armor);
 
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
-    bool IsIdle()                                       { return (m_state == NPCState::Idle); }
-    bool IsFighting()                                   { return (m_state != NPCState::Idle); }
+    bool IsIdle()                                       { return (m_state == NPCAI::State::Idle); }
+    bool IsFighting()                                   { return (m_state != NPCAI::State::Idle); }
     uint16 GetOptimalRange()                            { return m_optimalRange; }
     uint16 GetSigRes()                                  { return m_sigResolution; }
     uint32 GetFalloff()                                 { return m_falloff; }
@@ -76,7 +79,10 @@ public:
 
     // npcAI methods
     void DisableWarpOutTimer()                          { m_warpOutTimer.Disable(); }
-    void WarpOutComplete()                              { m_warpOutTimer.Disable(); m_state == NPCState::Idle; }
+    void WarpOutComplete()                              { m_warpOutTimer.Disable(); m_state == NPCAI::State::Idle; }
+
+    void LaunchMissile(uint16 typeID, SystemEntity* pSE);   // us to them
+    void MissileLaunched(Missile* pMissile); // them to us
 
 protected:
     void Attack(SystemEntity* pTarget);
@@ -111,6 +117,8 @@ private:
     //these attributes are cached to reduce access times. (much faster but uses more memory)
     uint16 m_maxSpeed;
     uint16 m_attackSpeed;
+    uint16 m_missileTypeID;
+    uint16 m_launcherCycleTime;
     uint16 m_sigResolution;
     uint16 m_orbitSpeed;
     uint16 m_targetRange;   // max targeting range  default: m_maxAttackRange (unused)
@@ -127,8 +135,8 @@ private:
     uint32 m_warpScramRange;
 
     float m_warpScramChance;
-    float m_armorRepairChance;
-    float m_shieldBoosterChance;
+    float m_armorRepairDelayChance;
+    float m_shieldBoosterDelayChance;
 
     double m_trackingSpeed;
     double m_damageMultiplier;
@@ -141,6 +149,7 @@ private:
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;
+    Timer m_missileTimer;
     Timer m_shieldBoosterTimer;
     Timer m_armorRepairTimer;
     Timer m_beginFindTarget;

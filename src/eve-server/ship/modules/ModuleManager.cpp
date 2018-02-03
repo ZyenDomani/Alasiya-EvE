@@ -559,24 +559,24 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
  * {'messageKey': 'ModulesIncorrectlyFitted', 'dataID': 17878135, 'suppressable': False, 'bodyID': 257513, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2512}
  * {'messageKey': 'ModulesNotLoadableInSpace', 'dataID': 17883271, 'suppressable': False, 'bodyID': 259444, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1240}
  */
-bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
+bool ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
         sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
-	if (m_Modules->GetModule(item->itemID()) == nullptr) {
+	if (m_Modules->GetModule(iRef->itemID()) == nullptr) {
         // create new module object
-		GenericModule* pMod = ModuleFactory(item, ShipItemRef(m_Ship));
+		GenericModule* pMod = ModuleFactory(iRef, ShipItemRef(m_Ship));
         if (pMod == nullptr)
             return false;
         /** @todo  this needs to get out of here, but has to have GenericModule access for data */
         if (pMod->isMaxGroupFitLimited()) {
-            if (m_Modules->GetFittedModuleCountByGroup(item->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
+            if (m_Modules->GetFittedModuleCountByGroup(iRef->groupID()) == pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int()) {
                 SafeDelete(pMod);
                 std::map<std::string, PyRep *> args;
                 args["noOfModules"]         = new PyInt(pMod->getItem()->GetAttribute(AttrMaxGroupFitted).get_int());
-                args["noOfModulesFitted"]   = new PyInt(m_Modules->GetFittedModuleCountByGroup(item->groupID()));
+                args["noOfModulesFitted"]   = new PyInt(m_Modules->GetFittedModuleCountByGroup(iRef->groupID()));
                 args["ship"]                = new PyInt(m_Ship->itemID());
                 args["groupName"]           = new PyString(pMod->GetSelf()->group().name());
                 args["module"]              = new PyInt(pMod->itemID());
@@ -593,8 +593,12 @@ bool ModuleManager::fitModule(InventoryItemRef item, EVEItemFlags flag)
             }
         }
         if (pMod->isTurretFitted()) {
+            // apply config modifier, if applicable
+            iRef->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
-		} else if (pMod->isLauncherFitted()) {
+        } else if (pMod->isLauncherFitted()) {
+            // apply config modifier, if applicable
+            iRef->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
             m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
 		} else if (pMod->isRig()) {
             m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));

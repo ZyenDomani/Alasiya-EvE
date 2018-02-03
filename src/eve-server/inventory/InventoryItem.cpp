@@ -1075,6 +1075,12 @@ void InventoryItem::SetAttribute( uint16 attrID, uint32 num, bool notify/*true*/
     pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
+void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify/*false*/)
+{
+    pAttributeMap->MultiplyAttribute(attrID, num, notify);
+}
+
+
 uint32 InventoryItem::GetPackagedVolume()
 {
     if (m_singleton)

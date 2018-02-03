@@ -139,15 +139,18 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
-    // separate list of ids into respective groups
+    // this is locations only....region, const, system, station
     std::vector<int32> staticItems, dynamicItems, asteroidItems;
     staticItems.clear();
     dynamicItems.clear();
     asteroidItems.clear();
 
     for (auto cur : entityIDs) {
-        if (cur == 0)
+        if (cur == 0) {
+            sLog.Error("GetMultiLocationsEx", "Sent 0.");
             continue;
+        }
+        //sLog.Warning("GetMultiLocationsEx", "Sent %u.", cur);
         if (IsStaticItem(cur))
             staticItems.push_back(cur);
         else if (IsAsteroid(cur))

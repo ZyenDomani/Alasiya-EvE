@@ -14,6 +14,8 @@
 
 #include "pos/Structure.h"
 
+class Misile;
+
 class TowerSE
 : public StructureSE
 {
@@ -34,6 +36,9 @@ public:
     /* virtual functions default to base class and overridden as needed */
     virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
     virtual void                InitData(SystemBubble* pBubble);
+
+    /* virtual functions to be overridden in derived classes */
+    virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
 
 
     /* basic tower methods */

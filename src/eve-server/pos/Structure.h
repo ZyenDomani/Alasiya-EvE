@@ -73,6 +73,7 @@ protected:
 /**
  * ObjectSystemEntity which represents structure object in space
  */
+class Missile;
 class MoonSE;
 class TowerSE;
 class ArraySE;
@@ -125,6 +126,9 @@ public:
     virtual void                Killed(Damage &fatal_blow);
     virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
     virtual void                InitData(SystemBubble* pBubble);
+
+    /* virtual functions to be overridden in derived classes */
+    virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
 
     /* basic structure processing methods */
     virtual void                SetOnline();

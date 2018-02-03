@@ -407,6 +407,7 @@ private:
 class PyServiceMgr;
 class InventoryItem;
 class DestinyManager;
+class Missile;
 class SystemManager;
 class ServiceDB;
 
@@ -430,6 +431,9 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);            /* This method is defined in Damage.cpp */
+
+    /* virtual functions to be overridden in derived classes */
+    virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);

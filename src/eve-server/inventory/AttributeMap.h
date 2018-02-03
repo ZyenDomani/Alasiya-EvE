@@ -45,6 +45,7 @@ public:
     ~AttributeMap() noexcept;
 
     void SetAttribute(uint16 attrID, EvilNumber& num, bool nofity = true);
+    void MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity = false);
 
     EvilNumber GetAttribute(const uint16 attrID) const;
 

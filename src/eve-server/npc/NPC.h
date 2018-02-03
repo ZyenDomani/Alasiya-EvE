@@ -34,6 +34,7 @@
 class PyServiceMgr;
 class DestinyManager;
 class InventoryItem;
+class Missile;
 class NPCAIMgr;
 class SystemManager;
 
@@ -58,6 +59,9 @@ public:
     /* virtual functions default to base class and overridden as needed */
     virtual void Killed(Damage &fatal_blow);
     virtual bool Load();  // sets orbit range and initalizes the AIMgr
+
+    /* virtual functions to be overridden in derived classes */
+    virtual void MissileLaunched(Missile* pMissile);  // tells AI a missle has been launched at us.  allows defender missile code
 
     /* specific functions handled here. */
     void SaveNPC();

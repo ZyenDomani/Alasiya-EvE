@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.6
+    Version:    8.7
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -170,6 +170,7 @@ public:
         float TargetPodSec;
         bool EnableDrones;
         bool UseDamageMultiplier;
+        float DefenderMissileChance;
     } npc;
 
     // From <database/>

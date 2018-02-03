@@ -317,10 +317,10 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes,
         if (!ice) {
             roidradius = MakeRandomInt(3000, 8000) *security;
         } else {
-            if (security > -0.3)
+            //if (security > -0.3)
                 roidradius = MakeRandomInt(40, 70) *1000; // (40k,70k)  72-102k radius
-            else
-                roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
+            //else
+            //    roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
         }

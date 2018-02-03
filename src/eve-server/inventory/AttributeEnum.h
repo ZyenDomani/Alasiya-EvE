@@ -58,7 +58,7 @@ enum EveAttrEnum {
     AttrMaxRange = 54,          //rangeAttributeID in dgmEffects
     AttrRechargeRate = 55,      //Amount of time taken to fully recharge the capacitor.
     AttrChargeRate = 56,        //Number of charges consumed per activation
-    AttrTargetModule = 61,
+    AttrTargetModule = 61,      // module groupID targeted  - db has some data, but all are 0
     AttrAccuracyBonus = 63,
     AttrDamageMultiplier = 64,
     AttrArmorBonus = 65,
@@ -750,7 +750,7 @@ enum EveAttrEnum {
     AttrPropulsionIonStrength = 820,
     AttrPropulsionMagpulseStrength = 821,
     AttrPropulsionPlasmaStrength = 822,
-    AttrHitsMissilesOnly = 823,
+    AttrHitsMissilesOnly = 823,     //smartbombs
     AttrEwStrengthBonus = 828,
     AttrPropulsionSkillPropulsionStrengthBonus = 829,
     AttrBonusComplexAngel10 = 830,
@@ -1034,7 +1034,7 @@ enum EveAttrEnum {
     AttrScanStrengthStructures = 1121,
     AttrMaxScanGroups = 1122,
     AttrScanDuration = 1123,
-    AttrInventionMaxRunModifier = 1124,
+    AttrInventionMaxRunModifier = 1124,     // invention shit
     AttrBoosterChanceBonus = 1125,
     AttrBoosterAttributeModifier = 1126,
     AttrInterfaceID = 1127,

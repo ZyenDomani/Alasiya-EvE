@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    8.6
+    Version:    8.7
 */
 
 
@@ -132,6 +132,7 @@ EVEServerConfig::EVEServerConfig()
     npc.TargetPodSec = 0;
     npc.TargetPod = false;
     npc.UseDamageMultiplier = true;
+    npc.DefenderMissileChance = 0.0;
 
     // database
     database.host = "localhost";
@@ -419,20 +420,21 @@ bool EVEServerConfig::ProcessCharacter( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
 {
-    AddValueParser( "IdleWander",           npc.IdleWander );
-    AddValueParser( "WarpOut",              npc.WarpOut );
-    AddValueParser( "WarpFollowChance",     npc.WarpFollowChance );
-    AddValueParser( "ThreatRadius",         npc.ThreatRadius );
-    AddValueParser( "RoamingSpawns",        npc.RoamingSpawns );
-    AddValueParser( "StaticSpawns",         npc.StaticSpawns );
-    AddValueParser( "RoamingTimer",         npc.RoamingTimer );
-    AddValueParser( "StaticTimer",          npc.StaticTimer );
-    AddValueParser( "RespawnTimer",         npc.RespawnTimer );
-    AddValueParser( "RatFaction",           npc.RatFaction );
-    AddValueParser( "EnableDrones",         npc.EnableDrones );
-    AddValueParser( "TargetPod",            npc.TargetPod );
-    AddValueParser( "TargetPodSec",         npc.TargetPodSec );
-    AddValueParser( "UseDamageMultiplier",  npc.UseDamageMultiplier );
+    AddValueParser( "IdleWander",               npc.IdleWander );
+    AddValueParser( "WarpOut",                  npc.WarpOut );
+    AddValueParser( "WarpFollowChance",         npc.WarpFollowChance );
+    AddValueParser( "ThreatRadius",             npc.ThreatRadius );
+    AddValueParser( "RoamingSpawns",            npc.RoamingSpawns );
+    AddValueParser( "StaticSpawns",             npc.StaticSpawns );
+    AddValueParser( "RoamingTimer",             npc.RoamingTimer );
+    AddValueParser( "StaticTimer",              npc.StaticTimer );
+    AddValueParser( "RespawnTimer",             npc.RespawnTimer );
+    AddValueParser( "RatFaction",               npc.RatFaction );
+    AddValueParser( "EnableDrones",             npc.EnableDrones );
+    AddValueParser( "TargetPod",                npc.TargetPod );
+    AddValueParser( "TargetPodSec",             npc.TargetPodSec );
+    AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
+    AddValueParser( "DefenderMissileChance",    npc.DefenderMissileChance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -450,6 +452,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "TargetPod" );
     RemoveParser( "TargetPodSec" );
     RemoveParser( "UseDamageMultiplier" );
+    RemoveParser( "DefenderMissileChance" );
 
     return result;
 }

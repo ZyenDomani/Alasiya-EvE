@@ -227,14 +227,14 @@ void NPC::EncodeDestiny( Buffer& into )
 
 void NPC::UseShieldRecharge()
 {
-    // We recharge our shield until it's reaches the shield capacity.
+    // We recharge our shield until it's full.
     if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge) {
         m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
         if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
             m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
         m_self->SetAttribute(AttrShieldCharge, m_shieldCharge);
     } else
-        m_AI->DisableRepTimers();
+        m_AI->DisableRepTimers(true, false);
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
@@ -247,7 +247,7 @@ void NPC::UseArmorRepairer()
             m_armorDamage = 0.0;
         m_self->SetAttribute(AttrArmorDamage, m_armorDamage);
     } else
-        m_AI->DisableRepTimers();
+        m_AI->DisableRepTimers(false, true);
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
@@ -260,10 +260,15 @@ void NPC::UseHullRepairer()
             m_hullDamage = 0.0;
         m_self->SetAttribute(AttrDamage, m_hullDamage);
     } else
-        m_AI->DisableRepTimers();
+        m_AI->DisableRepTimers(false, false);
     // TODO: Need to send SpecialFX / amount update
     // gfxBoosterID
     UpdateDamage();
+}
+
+void NPC::MissileLaunched(Missile* pMissile)
+{
+    m_AI->MissileLaunched(pMissile);
 }
 
 void NPC::SaveNPC()

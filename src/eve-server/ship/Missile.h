@@ -37,7 +37,7 @@ class ShipItem;
 class Missile
 : public DynamicSystemEntity {
 public:
-    Missile(InventoryItemRef self, PyServiceMgr &services, SystemManager* system, InventoryItemRef module, SystemEntity* target, ShipItem* ship);
+    Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, SystemEntity* pSE);
     virtual ~Missile();
 
     /* class type pointer querys. */
@@ -53,7 +53,7 @@ public:
     virtual PyDict *MakeSlimItem();
 
     /* specific functions handled here. */
-    ShipItem* GetShip()                                 { return m_ship; }
+    uint32 GetLauncherID()                              { return m_fromSE->GetID(); }
     SystemEntity* GetTarget()                           { return m_targetSE; }
 
     void SetHitTimer(uint32 setTime)                    { m_hitTimer.Start(setTime); }
@@ -62,20 +62,12 @@ public:
     bool IsAlive()                                      { return m_alive; }
     bool IsOverloaded()                                 { return false; }
 
-    //uint32 GetOwnerID()                                 { return m_ownerID; }
-    //uint32 GetWarFactionID()                            { return m_warID; }
-
-    float GetThermal()                                  { return m_therDamage; }
-    float GetEM()                                       { return m_emDamage; }
-    float GetKinetic()                                  { return m_kinDamage; }
-    float GetExplosive()                                { return m_expDamage; }
-
     double GetSpeed()                                   { return m_speed; }
 
 protected:
     SystemEntity* m_targetSE;
     InventoryItemRef m_module;
-    ShipItem* m_ship;
+    SystemEntity* m_fromSE;
 
     void HitTarget();
     void EndOfLife();
@@ -85,16 +77,13 @@ protected:
 
     bool m_alive;
 
-    //uint32 m_ownerID;
-    //uint32 m_warFactionID;
     uint32 m_orbitingID;
+
+    float m_damageMod;
 
     double m_speed;
     double m_hullHP;
-    double m_emDamage;
-    double m_therDamage;
-    double m_kinDamage;
-    double m_expDamage;
+
 };
 
 #endif  //EVE_SHIP_MISSILE_H

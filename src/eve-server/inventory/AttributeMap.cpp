@@ -178,8 +178,23 @@ void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*t
         Change(attrID, itr->second, num);
 
     itr->second = num;
-    return;
 }
+
+void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity/*false*/)
+{
+    if (num == 0)
+        return;
+    AttrMapItr itr = mAttributes.find(attrID);
+    if (itr == mAttributes.end())
+        return; // it doesnt exist...nothing to do.
+
+    EvilNumber oldValue = itr->second;
+    itr->second *= num;
+
+    if (nofity)
+        Change(attrID, oldValue, itr->second);
+}
+
 
 EvilNumber AttributeMap::GetAttribute( const uint16 attrID ) const
 {
