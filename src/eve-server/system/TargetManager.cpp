@@ -33,19 +33,24 @@
 #include "Profile.h"
 #include "Client.h"
 #include "inventory/AttributeEnum.h"
+#include "npc/NPC.h"
+#include "npc/NPCAI.h"
+#include "pos/Structure.h"
+#include "pos/Tower.h"
 #include "ship/Ship.h"
+#include "ship/modules/ActiveModule.h"
 #include "system/TargetManager.h"
 #include "system/SystemEntity.h"
-#include <system/SystemBubble.h>
-#include <npc/NPC.h>
-#include <npc/NPCAI.h>
-#include <pos/Structure.h>
-#include <pos/Tower.h>
+#include "system/SystemBubble.h"
 
 TargetManager::TargetManager(SystemEntity *self)
 : mySE(self)
 {
     m_canAttack = false;
+
+    m_modules.clear();
+    m_targets.clear();
+    m_targetedBy.clear();
 }
 
 void TargetManager::Process() {
@@ -576,6 +581,25 @@ void TargetManager::TargetsCleared() {
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
+void TargetManager::AddTargetModule(ActiveModule* pMod)
+{
+    m_modules.emplace(pMod->itemID(), pMod);
+}
+
+void TargetManager::RemoveTargetModule(ActiveModule* pMod)
+{
+    m_modules.erase(pMod->itemID());
+}
+
+void TargetManager::Destroyed()
+{
+    std::string effect = "TargetDestroyed";
+    // iterate thru the map of modules targeting this object, and call Deactivate on each.
+    for (auto cur : m_modules)
+        cur.second->Deactivate(effect);
+}
+
+/* unused at this time */
 void TargetManager::QueueTBDestinyEvent( PyTuple** event ) const
 {
     for (auto cur : m_targetedBy)
@@ -624,6 +648,11 @@ void TargetManager::Dump() const {
         cur.second->Dump();
     for (auto cur : m_targetedBy)
         cur.second->Dump();
+
+    _log(TARGET__DUMP, "    Targeted By Modules: (ship:module)");
+    for (auto cur : m_modules) {
+        _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
+    }
 }
 
 void TargetManager::TargetEntry::Dump() const {

@@ -29,10 +29,13 @@
 #define __TARGETMANAGER_H_INCL__
 
 #include "inventory/ItemRef.h"
+//#include "ship/modules/ActiveModule.h"
 
+class ActiveModule;
 class SystemEntity;
 class PyRep;
 class PyTuple;
+class PyList;
 
 class TargetManager {
 public:
@@ -71,6 +74,11 @@ public:
 
     bool                CanAttack()                     { return m_canAttack; }
     bool                HasNoTargets() const            { return m_targets.empty(); }
+
+    /* PC Module Methods (for module deactivation on target removed) */
+    void                Destroyed();
+    void            AddTargetModule(ActiveModule* pMod);
+    void         RemoveTargetModule(ActiveModule* pMod);
 
     /* debugging methods */
     void                Dump() const;
@@ -129,6 +137,7 @@ private:
 
     bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
 
+    std::map<uint32, ActiveModule*> m_modules;  // map of modID/Mod* targeting this object
     std::map<SystemEntity*, TargetEntry*> m_targets;    //we own these values, not the keys
     std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;    //we own these values, not the keys
 };

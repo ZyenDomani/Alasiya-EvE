@@ -29,7 +29,8 @@ public:
     void Offline();
 
     InventoryItemRef GetSelf()                          { return m_modRef; }
-
+    ShipItemRef GetShipRef()                            { return m_shipRef; }
+    
     void ProcessEffects(Effects::State state, bool online = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }
@@ -69,9 +70,6 @@ public:
     uint32 typeID()                                     { return m_modRef->typeID(); }
     uint32 groupID()                                    { return m_modRef->groupID(); }
     EVEItemFlags flag()                                 { return m_modRef->flag(); }
-    InventoryItemRef getItem()                          { return m_modRef; }
-
-    ShipItemRef GetShipRef()                            { return m_shipRef; }
 
     void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
     void SetModuleState(int8 state)                     { m_ModuleState = state; }

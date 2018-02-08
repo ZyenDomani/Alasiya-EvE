@@ -226,7 +226,7 @@ public:
     const GVector&              GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void                Killed(Damage &fatal_blow) { /* Do nothing here */ }
+    virtual void                Killed(Damage &fatal_blow);
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();

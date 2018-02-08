@@ -95,7 +95,7 @@ Damage::Damage(SystemEntity* source, InventoryItemRef weapon, InventoryItemRef c
 }
 
 // No specific damage dealt here, just killed
-Damage::Damage(SystemEntity* _source, bool fatal_blow)
+Damage::Damage(SystemEntity* _source, bool fatal_blow/*false*/)
 : srcSE(_source), effectID(EVEEffectID::targetAttack)
 {
     assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
@@ -296,13 +296,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        if (m_targMgr != nullptr)
-            m_targMgr->ClearAllTargets(false);
+        SystemEntity::Killed(d);
         Killed(d);
-        // determine list of all modules targeting this entity and let them know it has been killed.
-        // currently, only the killing module is notified of target killed.
-        if (d.srcSE->HasPilot())
-            d.srcSE->GetPilot()->GetShip()->Deactivate(d.weaponRef->itemID(), "TargetDestroyed");
     } else {
         if (d.srcSE->HasPilot())   //update this to use targetmanager's queue tb destiny event method.
             SendDamageStateChanged(d.srcSE);

@@ -130,6 +130,15 @@ void SystemEntity::EncodeDestiny( Buffer& into )
     _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 
+void SystemEntity::Killed(Damage& fatal_blow)
+{
+    if (m_targMgr != nullptr) {
+        m_targMgr->ClearAllTargets(false);
+        // loop thru list of all modules targeting this entity and let them know it has been killed.
+        m_targMgr->Destroyed();
+    }
+}
+
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
     if (other->m_bubble == nullptr)
         return 1000000.0;

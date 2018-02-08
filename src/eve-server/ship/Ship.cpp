@@ -369,7 +369,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             if (m_ModuleManager == nullptr)
                 return false;   // log error?
             if (m_ModuleManager->GetModule(flag)) {
-                InventoryItemRef module = m_ModuleManager->GetModule(flag)->getItem();
+                InventoryItemRef module = m_ModuleManager->GetModule(flag)->GetSelf();
                 if (module.get() == nullptr)
                     return false;
                 if (module->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
@@ -842,7 +842,7 @@ void ShipItem::GetModuleRefVec(std::vector< InventoryItemRef >& iRefVec)
 InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
     if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(flag) )
-		return (m_ModuleManager->GetModule(flag))->getItem();
+		return (m_ModuleManager->GetModule(flag))->GetSelf();
 	else
         return InventoryItemRef(nullptr);
 }
@@ -850,7 +850,7 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
 {
     if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(itemID) )
-		return (m_ModuleManager->GetModule(itemID))->getItem();
+		return (m_ModuleManager->GetModule(itemID))->GetSelf();
 	else
         return InventoryItemRef(nullptr);
 }

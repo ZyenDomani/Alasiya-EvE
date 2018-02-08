@@ -19,9 +19,7 @@ ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
 m_timer(0, true),
 m_reloadTimer(0)
 {
-    // this isnt implemented yet.  will replace the multiple m_targetID/m_targetSE conditionals
     m_needsTarget = false;
-
     m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (iRef->groupID()) {
@@ -103,6 +101,8 @@ void ActiveModule::Clear()
     m_targMgr = nullptr;
     m_targetSE = nullptr;
     m_destinyMgr = nullptr;
+    m_needsTarget = false;
+    
     m_timer.Disable();
 
     m_shipRef->ClearTargetRef();
@@ -125,18 +125,8 @@ void ActiveModule::Process()
     if (m_ModuleState == Module::State::Online)
         return;
 
-    // timing and verification function
-    //check if we have signal to stop the cycle
-    if ((m_Stop) or (m_ModuleState == Module::State::Deactivating)) {
-        //wait for time to run out and send deactivate to client
-        if (m_timer.Check(false)) {
-            m_timer.Disable();
-            SetModuleState(Module::State::Deactivating);
-            DeactivateCycle();
-        }
-        // we have stop signal....dont process any further
-        return;
-    }
+    if (m_timer.Check())
+        ProcessActiveCycle();
 
     if (m_needsCharge) {
         // is this right?  should i do something else here?
@@ -148,9 +138,6 @@ void ActiveModule::Process()
             return;
         }
     }
-
-    if (m_timer.Check())
-        ProcessActiveCycle();
 }
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
@@ -164,17 +151,19 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         throw PyException( MakeUserError( "CantFindChargeToAdd"));
     }
     if (IsValidTarget(targetID)) {
+        m_needsTarget = true;       // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
         m_targetID = targetID;
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
             Clear();
             throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
         }
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->AddTargetModule(this);
     }
 
     /*
      * AttrdisallowAgainstEwImmuneTarget
-     * AttrDisallowAssistance
      * AttrDisallowOffensiveModifiers
      * AttrDisallowOffensiveModifierBonus
      */
@@ -209,7 +198,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
 
     ApplyEffect(Effects::dgmStateActive, true);
-    if (targetID)
+    if (IsValidTarget(targetID))
         ApplyEffect(Effects::dgmStateTarget, true);
 
     ShowEffect(true, false);
@@ -247,7 +236,10 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     } else if (effect.compare("TargetDestroyed") == 0) {
         m_targetID = 0;
         m_targetSE = nullptr;
-    }
+        // dunno if this can throw here....
+    } else if (m_targetSE != nullptr)
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->RemoveTargetModule(this);
 
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
@@ -270,20 +262,24 @@ uint32 ActiveModule::DoCycle()
 {
     if (m_destinyMgr == nullptr) {
         // make error for no destiny/bubble
-        Deactivate();
+        AbortCycle();
         return 0;
     }
-    // data consistency check
-    if (m_targetSE != nullptr)
-        if (m_targetSE->GetID() != m_targetID) {
-            Deactivate();
+    if (m_needsTarget) {
+        if (m_targetSE == nullptr) {
+            AbortCycle();
             return 0;
         }
+        if (m_targetSE->GetID() != m_targetID) {
+            AbortCycle();
+            return 0;
+        }
+    }
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
         if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
             m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
-            Deactivate();
+            AbortCycle();
             return 0;
         }
     }
@@ -463,7 +459,12 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
 
 void ActiveModule::ProcessActiveCycle() {
     if (m_Stop)
+        SetModuleState(Module::State::Deactivating);
+
+    if (m_ModuleState == Module::State::Deactivating) {
+        DeactivateCycle();
         return;
+    }
 
     float newCap = (m_shipRef->GetAttribute(AttrCapacitorCharge).get_float() - GetAttribute(AttrCapacitorNeed)).get_float();
     if (newCap >= 0 ) {
@@ -656,7 +657,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ;
 
-    if ((m_targetID) and (m_destinyMgr != nullptr))
+    if (IsValidTarget(m_targetID) and (m_destinyMgr != nullptr))
         m_destinyMgr->SendSpecialEffect(
                 m_shipRef->itemID(),
                 m_modRef->itemID(),

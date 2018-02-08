@@ -36,7 +36,7 @@ public:
     Damage( SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID );
     Damage( SystemEntity* source, InventoryItemRef weapon, double kinetic, double thermal, double em, double explosive, double modifier, uint16 eID );
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
-    Damage( SystemEntity *source, bool fatal_blow );
+    Damage( SystemEntity *source, bool fatal_blow=false);
 
     virtual ~Damage()                                   { /* do nothing here */ }
 

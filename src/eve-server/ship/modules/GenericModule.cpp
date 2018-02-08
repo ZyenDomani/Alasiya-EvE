@@ -46,21 +46,21 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_turret = false;
     m_launcher = false;
 
-    if (item->type().HasEffect(EVEEffectID::loPower))
+    if (item->type().HasEffect(EVEEffectID::loPower)) {
         m_loPower = true;
-    else if (item->type().HasEffect(EVEEffectID::medPower))
+    } else if (item->type().HasEffect(EVEEffectID::medPower)) {
         m_medPower = true;
-    else if (item->type().HasEffect(EVEEffectID::hiPower))
+    } else if (item->type().HasEffect(EVEEffectID::hiPower)) {
         m_hiPower = true;
-    else if (item->type().HasEffect(EVEEffectID::rigSlot))
+        if (item->type().HasEffect(EVEEffectID::turretFitted))
+            m_turret = true;
+        else if (item->type().HasEffect(EVEEffectID::launcherFitted))
+            m_launcher = true;
+    } else if (item->type().HasEffect(EVEEffectID::rigSlot)) {
         m_rigSlot = true;
-    else if (item->type().HasEffect(EVEEffectID::subSystem))
+    } else if (item->type().HasEffect(EVEEffectID::subSystem)) {
         m_subSystem = true;
-
-    if (item->type().HasEffect(EVEEffectID::turretFitted))
-        m_turret = true;
-    else if (item->type().HasEffect(EVEEffectID::launcherFitted))
-        m_launcher = true;
+    }
 
     _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, item->itemName().c_str(), item->itemID());
 }
