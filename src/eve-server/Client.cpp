@@ -298,9 +298,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 void Client::ProcessClient() {
     if (m_locationID == 0)
         return;
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     // wtf is this for?
     if (m_pingTimer.Check()) {

@@ -116,9 +116,7 @@ DestinyManager::~DestinyManager() {
 
 // this is called once per tic
 void DestinyManager::Process() {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
     //check for and process Destiny State changes.
     ProcessState();
 
@@ -553,9 +551,7 @@ void DestinyManager::Halt() {
 //  check for collision.  called by Move()
 void DestinyManager::CheckBump()
 {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     //  collision detection code here
     /*  in this case, we are ONLY interested in objects

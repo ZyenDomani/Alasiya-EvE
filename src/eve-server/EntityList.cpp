@@ -116,10 +116,6 @@ void EntityList::Remove(Client* client) {
 }
 
 void EntityList::Process() {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
-
     Client* pClient(nullptr);
     std::vector<Client*>::iterator itr = m_clients.begin();
     while (itr != m_clients.end()) {
@@ -134,6 +130,8 @@ void EntityList::Process() {
 
     /* check for 1Hz timer tic */
     if (m_stampTimer.Check()) {
+        double profileStartTime = GetTimeUSeconds();
+
         ++m_stamp;
         //sLog.White("time check", "(%u) - ms: %f, win32: %" PRIi64 ", file: %.4f", m_stamp, GetTimeMSeconds(), Win32TimeNow(), GetFileTimeNow());
         sWHMgr.Process();

@@ -429,6 +429,10 @@ int main( int argc, char* argv[] )
         sLog.Green("  Module Auto-Off","Enabled.");
     else
         sLog.Warning("  Module Auto-Off","Disabled.");
+    if (sConfig.cosmic.BumpEnabled)
+        sLog.Green("Bumping Mechanics","Enabled.");
+    else
+        sLog.Warning("Bumping Mechanics","Disabled.");
     if (sConfig.cosmic.PIEnabled)
         sLog.Green("        PI System","Enabled.");
     else
@@ -437,14 +441,14 @@ int main( int argc, char* argv[] )
         sLog.Green("    Player Drones","Enabled.");
     else
         sLog.Warning("    Player Drones","Disabled.");
-    if (!sConfig.cosmic.CiviliansEnabled) {
+    if (sConfig.cosmic.CiviliansEnabled) {
         sLog.Green(" Civilian Manager", "Civilian Manager Enabled.");
         /* create the CivilianMgr singleton */
         sLog.Green("       ServerInit", "Starting Civilian Manager");
         sCivMgr.Initialize(&pyServMgr);
     } else
         sLog.Warning(" Civilian Manager", "Civilian Manager Disabled.");
-    if (!sConfig.cosmic.WormHoleEnabled) {
+    if (sConfig.cosmic.WormHoleEnabled) {
         sLog.Green(" Wormhole Manager", "Wormhole Manager Enabled.");
         /* create the WormholeMgr singleton */
         sLog.Green("       ServerInit", "Starting Wormhole Manager");
