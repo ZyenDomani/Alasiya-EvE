@@ -55,7 +55,6 @@ m_spawnMgr(spawnMgr)
     m_self->SetAttribute(AttrArmorDamage,         0);
     m_self->SetAttribute(AttrInertia,             1);
     m_self->SetAttribute(AttrWarpCapacitorNeed,   0.00001);
-    m_self->SetAttribute(AttrOrbitRange,          m_orbitRange);
     m_self->SetAttribute(AttrMass,                m_self->type().mass());
     m_self->SetAttribute(AttrRadius,              m_self->type().radius());
     m_self->SetAttribute(AttrVolume,              m_self->type().volume());
@@ -82,15 +81,6 @@ NPC::~NPC() {
 
 bool NPC::Load()
 {
-    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
-    if (!m_orbitRange) {
-        /** @todo this isnt right....check into later */
-        if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
-            m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
-        else
-            m_orbitRange = m_self->GetAttribute(AttrFalloff).get_float();
-    }
-
     m_destiny->SetShipCapabilities(m_self);
 
     SetResists();

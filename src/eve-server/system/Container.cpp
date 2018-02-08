@@ -173,7 +173,7 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
 : ItemSystemEntity(self, services, system),
- m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
+ m_deleteTimer(0)
 {
     m_destiny = new DestinyManager(this);
     assert(m_destiny != nullptr);
@@ -188,7 +188,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
         if (m_self->typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer)
             m_deleteTimer.Start(5 *24 *60 *60 *1000);  //5d timer for PI launch.  should probably get this saved value from planet launches
         else
-            m_deleteTimer.Start();
+            m_deleteTimer.Start(sConfig.rates.WorldDecay *60 *1000);
     }
 
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity(), false);

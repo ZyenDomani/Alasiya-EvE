@@ -147,7 +147,8 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
         dmgChange.entityID = m_self->itemID();
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
-    TargetMgr()->QueueTBDestinyUpdate(&up);
+    if (m_targMgr != nullptr)
+        m_targMgr->QueueTBDestinyUpdate(&up);
     PySafeDecRef(up);
     _log(DAMAGE__MESSAGE, "%s(%u): DamageUpdate - S:%f A:%f H:%f.", \
             GetName(), m_self->itemID(), dmgState.shield, dmgState.armor, dmgState.structure);
@@ -570,7 +571,7 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 {
     m_targMgr = new TargetManager(this);
     m_destiny = new DestinyManager(this);
-    
+
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
 }

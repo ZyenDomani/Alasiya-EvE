@@ -171,9 +171,7 @@ bool SystemManager::BootSystem() {
 
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     /* the idea here is entities map NEVER has invalid items in it, but our iterator may become invalid when SE->Process() returns
      *      because Process() will add/remove from the map as needed (new objects, destroyed objects, moved objects, etc)
@@ -205,10 +203,8 @@ bool SystemManager::ProcessTic() {
     m_beltMgr->Process();
     m_spawnMgr->Process();
 
-    if (sConfig.debug.UseProfiling) {
+    if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_systemProfile, GetTimeUSeconds() - profileStartTime);
-        profileStartTime = GetTimeUSeconds();
-    }
 
     return SystemActivity();
 }
@@ -257,6 +253,7 @@ void SystemManager::UnloadSystem() {
         m_entityChanged = true;
     }
     // at this point, system entity list should be clear...but just in case, hit it again
+    m_npcs.clear();
     m_entities.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
@@ -840,7 +837,8 @@ void SystemManager::RemoveEntity(SystemEntity* who) {
     auto itr = m_entities.find(itemID);
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        who->TargetMgr()->ClearAllTargets(false);
+        if (who->TargetMgr() != nullptr)
+            who->TargetMgr()->ClearAllTargets(false);
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:

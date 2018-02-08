@@ -78,8 +78,6 @@ public:
     float GetKinetic()                                  { return m_kinDamage; }
     float GetExplosive()                                { return m_expDamage; }
 
-    float GetOrbitRange()                               { return m_orbitRange; }
-
     NPCAIMgr* GetAIMgr()                                { return m_AI; }
     SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
 
@@ -90,7 +88,6 @@ protected:
 private:
     uint32 m_orbitingID;
 
-    float m_orbitRange;
     float m_emDamage;
     float m_expDamage;
     float m_kinDamage;
