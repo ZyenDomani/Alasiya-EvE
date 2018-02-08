@@ -182,11 +182,14 @@ int main( int argc, char* argv[] )
 {
     double profileStartTime = GetTimeMSeconds();
 
+    /* set current time for timer */
+    Timer::SetCurrentTime();
+
+    /* init logging */
     sLog.Initialize();
 
     sLog.Green("       ServerInit", "Loading Server Configuration Files.");
     // should i try to load individual config files here?  probably not, but would look cool.  ;)
-
     /* Load server configuration */
     if (!sConfig.ParseFile(SRV_CONFIG_FILE)) {
         sLog.Error( "       ServerInit", "ERROR: Loading server configuration '%s' failed.", SRV_CONFIG_FILE );
@@ -196,9 +199,139 @@ int main( int argc, char* argv[] )
         sLog.Green("       ServerInit", "Server Configuration Files Loaded.");
     }
 
-    /* init logging */
-    sLog.InitializeLogging(sConfig.files.logDir);
+    std::printf("\n");     // spacer
 
+    /* display server data */
+    sLog.Log(" Supported Client"," %s", EVEProjectVersion);
+    sLog.Log("   Client Version"," %.2f", EVEVersionNumber);
+    sLog.Log("     Client Build"," %d", EVEBuildVersion);
+    sLog.Log("         MachoNet"," %u", MachoNetVersion);
+    sLog.Log("     Server Build", " %.2f", EVE_Build );
+    sLog.Log("  Server Revision", " %s", EVEMU_REVISION );
+    sLog.Log("       Build Date", " %s", EVEMU_BUILD_DATE );
+    sLog.Log("   Config Version", " %.1f", Config_Version );
+    sLog.Log("      Log Version", " %.1f", Log_Version );
+    sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
+    sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
+    sLog.Log("MarketBot Version", " %.2f", Bot_Version );
+
+    std::printf("\n");     // spacer
+
+    sLog.Blue("     ServerConfig", "Main Loop Settings");
+    uint8 m_sleepTime = sConfig.server.ServerSleepTime; // default 10ms.  max 256ms
+    if (m_sleepTime == 10)
+        sLog.Green("  Loop Sleep Time","Default at 10ms.");
+    else {
+        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
+        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
+    }
+    uint16 m_idle = sConfig.server.idleSleepTime;       // default 1s.  max 65.535s
+    if (m_idle == 1000)
+        sLog.Green("  Idle Sleep Time","Default at 1000ms.");
+    else {
+        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
+        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
+    }
+
+    std::printf("\n");     // spacer
+
+    /* Custom config file options
+     * current settings displayed on console at start-up
+     *   -allan 7June2015
+     */
+    sLog.Blue("     ServerConfig", "Rate Modifiers");
+    if (sConfig.rates.secRate != 1.0)
+        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
+    else
+        sLog.Green("        SecStatus","Normal.");
+    if (sConfig.rates.npcBountyMultiply != 1.0)
+        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
+    else
+        sLog.Green("          Bountys","Normal.");
+    if (sConfig.rates.RateDropItem != 1.0)
+        sLog.Yellow("       Item Drops","Modified at %.0f%%.", (sConfig.rates.RateDropItem *100) );
+    else
+        sLog.Green("       Item Drops","Normal.");
+    if (sConfig.rates.RateDropMoney != 1.0)
+        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.RateDropMoney *100) );
+    else
+        sLog.Green("      Isk Rewards","Normal.");
+    if (sConfig.rates.damageRate != 1.0)
+        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
+    else
+        sLog.Green("      All Damages","Normal.");
+    if (sConfig.rates.turretDamage != 1.0)
+        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretDamage *100) );
+    else
+        sLog.Green("       Turret Dmg","Normal.");
+    if (sConfig.rates.turretRoF != 1.0)
+        sLog.Yellow("       Turret ROF","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
+    else
+        sLog.Green("       Turret ROF","Normal.");
+    if (sConfig.rates.missileDamage != 1.0)
+        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileDamage *100) );
+    else
+        sLog.Green("      Missile Dmg","Normal.");
+    if (sConfig.rates.missileRoF != 1.0)
+        sLog.Yellow("      Missile ROF","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
+    else
+        sLog.Green("      Missile ROF","Normal.");
+    if (sConfig.rates.missileTime != 1.0)
+        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
+    else
+        sLog.Green("     Missile Time","Normal.");
+
+    std::printf("\n");     // spacer
+    sLog.Blue("     ServerConfig", "Misc Switches");
+    if (sConfig.server.UseBeanCount)
+        sLog.Green("     BeanCounting","Enabled.");
+    else
+        sLog.Warning("     BeanCounting","Disabled.");
+    if (sConfig.npc.StaticSpawns)
+        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer /60);
+    else
+        sLog.Warning("    Static Spawns","Disabled.");
+    if (sConfig.npc.RoamingSpawns)
+        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer /60);
+    else
+        sLog.Warning("   Roaming Spawns","Disabled.");
+    if (sConfig.server.ModuleDamageChance)
+        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
+    else
+        sLog.Warning("    Module Damage","Disabled.");
+    if (sConfig.rates.WorldDecay)
+        sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
+    else
+        sLog.Warning("      Decay Timer","Disabled.");
+    std::printf("\n");     // spacer
+
+    sLog.Blue("     ServerConfig", "Debug Switches");
+    if (sConfig.debug.IsTestServer)
+        sLog.Error("     ServerConfig", "Is Test Server");
+    if (sConfig.debug.UseProfiling) {
+        sLog.Green(" Server Profiling","Enabled.");
+        sProfile.Init();
+    } else
+        sLog.Warning(" Server Profiling","Disabled.");
+    if (sConfig.debug.SpawnTest)
+        sLog.Warning("       Spawn Test","Enabled.");
+    else
+        sLog.Warning("       Spawn Test","Disabled.");
+    if (sConfig.debug.BubbleTrack)
+        sLog.Warning("  Bubble Tracking","Enabled.");
+    else
+        sLog.Warning("  Bubble Tracking","Disabled.");
+    if (sConfig.debug.UseShipTracking)
+        sLog.Warning("    Ship Tracking","Enabled.");
+    else
+        sLog.Warning("    Ship Tracking","Disabled.");
+    if (sConfig.debug.PositionHack)
+        sLog.Warning("    Position Hack","Enabled.");
+    else
+        sLog.Warning("    Position Hack","Disabled.");
+
+    std::printf("\n");     // spacer
     /* Load server log settings */
     if ( load_log_settings( sConfig.files.logSettings.c_str() ) )
         sLog.Green( "       ServerInit", "Log settings loaded from %s", sConfig.files.logSettings.c_str() );
@@ -207,38 +340,13 @@ int main( int argc, char* argv[] )
 
     /* open up the log file if specified */
     if (!sConfig.files.logDir.empty()) {
+        //sLog.InitializeLogging(sConfig.files.logDir);
         std::string logFile = sConfig.files.logDir + "eve-server.log";
         if( log_open_logfile( logFile.c_str() ) )
             sLog.Green( "       ServerInit", "Found log directory %s", sConfig.files.logDir.c_str() );
         else
             sLog.Warning( "       ServerInit", "Unable to find log directory '%s', only logging to the screen now.", sConfig.files.logDir.c_str() );
     }
-
-    /* set current time for timer */
-    Timer::SetCurrentTime();
-
-    sThread.Initialize();
-    sLog.White( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
-    //sThread.AddThread(pthread_self());
-
-    std::printf("\n");     // spacer
-
-    sLog.Green("       ServerInit", "Loading server");
-
-    /* display server data */
-    sLog.White(" Supported Client"," %s", EVEProjectVersion);
-    sLog.White("   Client Version"," %.2f", EVEVersionNumber);
-    sLog.White("     Client Build"," %d", EVEBuildVersion);
-    sLog.White("         MachoNet"," %u", MachoNetVersion);
-    sLog.White("     Server Build", " %.2f", EVE_Build );
-    sLog.White("  Server Revision", " %s", EVEMU_REVISION );
-    sLog.White("       Build Date", " %s", EVEMU_BUILD_DATE );
-    sLog.White("   Config Version", " %.1f", Config_Version );
-    sLog.White("      Log Version", " %.1f", Log_Version );
-    sLog.White("   NPC AI Version", " %.2f", NPC_AI_Version );
-    sLog.White("    NC AI Version", " %.2f", Civilian_AI_Version );
-    sLog.White("Sentry AI Version", " %.2f", Sentry_AI_Version );
-    sLog.White("MarketBot Version", " %.2f", Bot_Version );
 
     std::printf("\n");     // spacer
 
@@ -270,62 +378,90 @@ int main( int argc, char* argv[] )
         return EXIT_FAILURE;
     }
 
-    // basic shit done.  begin loading server specifics...
-
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");
     sImageServer.Run();
     //  this gives the imageserver's server time to load so the dynamic database msgs are in order
     Sleep(250);
 
+    sThread.Initialize();
+    sLog.Green( "        Threading", "Starting Main Loop thread with ID 0x%X", pthread_self() );
+    //sThread.AddThread(pthread_self());
+
+    std::printf("\n");     // spacer
+
+    // basic shit done.  begin loading server specifics...
+    sLog.Green("       ServerInit", "Loading server");
+
     std::printf("\n");     // spacer
 
     /* create a single item factory */
     sLog.Green("       ServerInit", "Starting Item Factory");
     sItemFactory.Initialize();
-
     /* initialize EntityList singleton, clientID seed and start tic timer */
     sLog.Green("       ServerInit", "Starting Entity List");
     sEntityList.Initialize();
-
-    std::printf("\n");     // spacer
-
     /* create a service manager */
     sLog.Green("       ServerInit", "Starting Service Manager");
     PyServiceMgr pyServMgr( 888444, sEntityList );
-
+    sLog.Blue("  Service Manager", "Service Manager Initialized.");
     /* create a command dispatcher */
     sLog.Green("       ServerInit", "Starting Command Dispatch Manager");
     CommandDispatcher command_dispatcher( pyServMgr );
     RegisterAllCommands( command_dispatcher );
-
-    /* create the WormholeMgr singleton */
-    sLog.Green("       ServerInit", "Starting Wormhole Manager");
-    sWHMgr.Initialize(&pyServMgr);
-
+    sLog.Blue(" Command Dispatch", "Command Dispatcher Initialized.");
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");
     sBubbleMgr.Initialize();
-
     /* create the FleetService singleton */
     sLog.Green("       ServerInit", "Starting Fleet Services");
     sFltSvc.Initialize(&pyServMgr);
-
-    /* create the CivilianMgr singleton */
-    sLog.Green("       ServerInit", "Starting Civilian Manager");
-    sCivMgr.Initialize(&pyServMgr);
-
+    /* create console command interperter singleton */
+    sLog.Green("       ServerInit", "Starting Console Manager");
+    sConsole.Initialize(&command_dispatcher);
     /* create the MarketMgr singleton */
     sLog.Green("       ServerInit", "Starting Market Manager");
     sMktMgr.Initialize();
 
-    /* create the MarketBot singleton */
-    sLog.Green("       ServerInit", "Starting Market Bot Manager");
-    sMktBotMgr.Initialize();
-
-    /* create console command interperter singleton */
-    sLog.Green("       ServerInit", "Starting Console Manager");
-    sConsole.Initialize(&command_dispatcher);
+    std::printf("\n");     // spacer
+    sLog.Blue("     ServerConfig", "Feature Switches");
+    if (sConfig.server.ModuleAutoOff)
+        sLog.Green("  Module Auto-Off","Enabled.");
+    else
+        sLog.Warning("  Module Auto-Off","Disabled.");
+    if (sConfig.cosmic.PIEnabled)
+        sLog.Green("        PI System","Enabled.");
+    else
+        sLog.Warning("        PI System","Disabled.");
+    if (sConfig.npc.EnableDrones)
+        sLog.Green("    Player Drones","Enabled.");
+    else
+        sLog.Warning("    Player Drones","Disabled.");
+    if (!sConfig.cosmic.CiviliansEnabled) {
+        sLog.Green(" Civilian Manager", "Civilian Manager Enabled.");
+        /* create the CivilianMgr singleton */
+        sLog.Green("       ServerInit", "Starting Civilian Manager");
+        sCivMgr.Initialize(&pyServMgr);
+    } else
+        sLog.Warning(" Civilian Manager", "Civilian Manager Disabled.");
+    if (!sConfig.cosmic.WormHoleEnabled) {
+        sLog.Green(" Wormhole Manager", "Wormhole Manager Enabled.");
+        /* create the WormholeMgr singleton */
+        sLog.Green("       ServerInit", "Starting Wormhole Manager");
+        sWHMgr.Initialize(&pyServMgr);
+    } else
+        sLog.Warning(" Wormhole Manager", "Wormhole Manager Disabled.");
+    if (sConfig.server.UseMarketBot) {
+        sLog.Green("   Market Bot Mgr", "Market Bot Enabled.");
+        /* create the MarketBot singleton */
+        sLog.Green("       ServerInit", "Starting Market Bot Manager");
+        sMktBotMgr.Initialize();
+    } else
+        sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
+    if (sConfig.server.BountyPayoutDelayed)
+        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
+    else
+        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
 
     std::printf("\n");     // spacer
 
@@ -428,12 +564,13 @@ int main( int argc, char* argv[] )
 
     std::printf("\n");     // spacer
 
+    // Create In-Memory Database Objects for Critical and HighUse Systems:
+    sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
+    std::printf("\n");     // spacer
     /** @note  this is NOT used correctly yet...  */
     sLog.Green("       ServerInit", "Priming cached objects.");
     pyServMgr.cache_service->PrimeCache();
 
-    // Create In-Memory Database Objects for Critical and HighUse Systems:
-    sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
     sLog.Green("       ServerInit", "Initalizing BulkData");
     if (sConfig.server.BulkDataOD)
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");
@@ -462,139 +599,8 @@ int main( int argc, char* argv[] )
 
     std::printf("\n");     // spacer
 
-    /* Custom config file options
-     * current settings displayed on console at start-up
-     *   -allan 7June2015
-     */
-    sLog.Blue("       ServerInit", "Rate Modifiers");
-    if (sConfig.rates.secRate != 1.0)
-        sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
-    else
-        sLog.Green("        SecStatus","Normal.");
-    if (sConfig.rates.npcBountyMultiply != 1.0)
-        sLog.Yellow("          Bountys","Modified at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
-    else
-        sLog.Green("          Bountys","Normal.");
-    if (sConfig.rates.RateDropItem != 1.0)
-        sLog.Yellow("       Item Drops","Modified at %.0f%%.", (sConfig.rates.RateDropItem *100) );
-    else
-        sLog.Green("       Item Drops","Normal.");
-    if (sConfig.rates.RateDropMoney != 1.0)
-        sLog.Yellow("      Isk Rewards","Modified at %.0f%%.", (sConfig.rates.RateDropMoney *100) );
-    else
-        sLog.Green("      Isk Rewards","Normal.");
-    if (sConfig.rates.damageRate != 1.0)
-        sLog.Yellow("      All Damages","Modified at %.0f%%.", (sConfig.rates.damageRate *100) );
-    else
-        sLog.Green("      All Damages","Normal.");
-    if (sConfig.rates.turretDamage != 1.0)
-        sLog.Yellow("       Turret Dmg","Modified at %.0f%%.", (sConfig.rates.turretDamage *100) );
-    else
-        sLog.Green("       Turret Dmg","Normal.");
-    if (sConfig.rates.turretRoF != 1.0)
-        sLog.Yellow("       Turret ROF","Modified at %.0f%%.", (sConfig.rates.turretRoF *100) );
-    else
-        sLog.Green("       Turret ROF","Normal.");
-    if (sConfig.rates.missileDamage != 1.0)
-        sLog.Yellow("      Missile Dmg","Modified at %.0f%%.", (sConfig.rates.missileDamage *100) );
-    else
-        sLog.Green("      Missile Dmg","Normal.");
-    if (sConfig.rates.missileRoF != 1.0)
-        sLog.Yellow("      Missile ROF","Modified at %.0f%%.", (sConfig.rates.missileRoF *100) );
-    else
-        sLog.Green("      Missile ROF","Normal.");
-    if (sConfig.rates.missileTime != 1.0)
-        sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
-    else
-        sLog.Green("     Missile Time","Normal.");
-
-    std::printf("\n");     // spacer
-    sLog.Blue("       ServerInit", "Feature Switches");
-    if (sConfig.cosmic.PIEnabled)
-        sLog.Green("        PI System","Enabled.");
-    else
-        sLog.Warning("        PI System","Disabled.");
-    if (sConfig.npc.EnableDrones)
-        sLog.Green("    Player Drones","Enabled.");
-    else
-        sLog.Warning("    Player Drones","Disabled.");
-    if (sConfig.server.ModuleAutoOff)
-        sLog.Green("  Module Auto-Off","Enabled.");
-    else
-        sLog.Warning("  Module Auto-Off","Disabled.");
-    if (sConfig.server.BountyPayoutDelayed)
-        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
-    else
-        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
-
-    std::printf("\n");     // spacer
-    sLog.Blue("       ServerInit", "Misc Switches");
-    if (sConfig.server.UseBeanCount)
-        sLog.Green("     BeanCounting","Enabled.");
-    else
-        sLog.Warning("     BeanCounting","Disabled.");
-    if (sConfig.npc.StaticSpawns)
-        sLog.Green("    Static Spawns","Enabled.  Checks every %u minutes", sConfig.npc.StaticTimer /60);
-    else
-        sLog.Warning("    Static Spawns","Disabled.");
-    if (sConfig.npc.RoamingSpawns)
-        sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer /60);
-    else
-        sLog.Warning("   Roaming Spawns","Disabled.");
-    if (sConfig.server.ModuleDamageChance)
-        sLog.Green("    Module Damage","Enabled.  Set to %i%% chance.", (int8)(sConfig.server.ModuleDamageChance *100));
-    else
-        sLog.Warning("    Module Damage","Disabled.");
-    if (sConfig.rates.WorldDecay)
-        sLog.Green("      Decay Timer","Enabled.  Checks every %u minutes", sConfig.rates.WorldDecay);
-    else
-        sLog.Warning("      Decay Timer","Disabled.");
-    std::printf("\n");     // spacer
-
-    sLog.Blue("       ServerInit", "Debug Switches");
-    if (sConfig.debug.IsTestServer)
-        sLog.Error("       ServerInit", "Is Test Server");  
-    if (sConfig.debug.UseProfiling) {
-        sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Init();
-    } else
-        sLog.Warning(" Server Profiling","Disabled.");
-    if (sConfig.debug.SpawnTest)
-        sLog.Warning("       Spawn Test","Enabled.");
-    else
-        sLog.Warning("       Spawn Test","Disabled.");
-    if (sConfig.debug.BubbleTrack)
-        sLog.Warning("  Bubble Tracking","Enabled.");
-    else
-        sLog.Warning("  Bubble Tracking","Disabled.");
-    if (sConfig.debug.UseShipTracking)
-        sLog.Warning("    Ship Tracking","Enabled.");
-    else
-        sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.debug.PositionHack)
-        sLog.Warning("    Position Hack","Enabled.");
-    else
-        sLog.Warning("    Position Hack","Disabled.");
-
-    std::printf("\n");     // spacer
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
-
-    sLog.Blue("       ServerInit", "Main Loop Settings");
-    uint8 m_sleepTime = sConfig.server.ServerSleepTime; // default 10ms.  max 256ms
-    if (m_sleepTime == 10)
-        sLog.Green("  Loop Sleep Time","Default at 10ms.");
-    else {
-        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
-        sLog.Warning("  Loop Sleep Time","Changed from default 10ms to %ums.", m_sleepTime);
-    }
-    uint16 m_idle = sConfig.server.idleSleepTime;       // default 1s.  max 65.535s
-    if (m_idle == 1000)
-        sLog.Green("  Idle Sleep Time","Default at 1000ms.");
-    else {
-        sLog.Error("  Loop Sleep Time","**Be Careful With This Setting!**");
-        sLog.Yellow("  Idle Sleep Time","Changed from default 1000ms to %ums.", m_idle);
-    }
 
     /* program events system */
     SetupSignals();
@@ -602,11 +608,11 @@ int main( int argc, char* argv[] )
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
-    sLog.Error("       ServerInit", "Main Loop Starting.");
     sLog.Blue("       ServerInit", "Server Initialized in %.3f Seconds.", (GetTimeMSeconds() - profileStartTime) /1000);
-    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
+    sLog.Error("       ServerInit", "Main Loop Starting.");
 
     ServiceDB::SetServerOnlineStatus(true);
+    sLog.Green("       ServerInit", "Alasiya EvEmu Server is Online.");
 
     /////////////////////////////////////////////////////////////////////////////////////
     //     !!!  DO NOT PUT ANY INITIALIZATION CODE OR CALLS BELOW THIS LINE   !!!
@@ -767,7 +773,7 @@ static void SetupSignals()
 
 static void CatchSignal( int sig_num )
 {
-    sLog.White( "    Signal System", "Caught signal: %d", sig_num );
+    sLog.Error( "    Signal System", "Caught signal: %d", sig_num );
     if (sConfig.server.StackTrace)
         EvE::traceStack();
     m_run = false;

@@ -42,19 +42,12 @@ int MarketMgr::Initialize()
 void MarketMgr::Populate()
 {
     double start = GetTimeMSeconds();
-    DBQueryResult* res = new DBQueryResult();
-    DBResultRow row;
-
     m_marketGroups = m_db.GetMarketGroups();
 
     // market orders stored as {regionID/typeID}
     // m_db.GetOrders(call.client->GetRegionID(), args.arg);
 
-
-    sLog.Cyan("        MarketMgr", "Market Manager loaded in %.3fms.", (GetTimeMSeconds() - start));
-
-    //cleanup
-    SafeDelete(res);
+    sLog.Blue("        MarketMgr", "Market Manager loaded in %.3fms.", (GetTimeMSeconds() - start));
 }
 
 /*

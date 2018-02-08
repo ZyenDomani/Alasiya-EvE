@@ -17,7 +17,7 @@ Profile::~Profile() {
 
 void Profile::Init() {
     ClearAll();
-    sLog.Green( "       ServerInit", "Profiling initialized." );
+    sLog.Blue( "Profiling Manager", "Profiling initialized." );
 }
 
 void Profile::AddTime(uint8 key, double value) {

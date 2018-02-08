@@ -62,6 +62,7 @@ void EntityList::Initialize() {
     m_clientSeedID = ServiceDB::SetClientSeed();
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
+    sLog.Blue("       EntityList", "EntityList Initialized.");
 }
 
 void EntityList::Shutdown() {

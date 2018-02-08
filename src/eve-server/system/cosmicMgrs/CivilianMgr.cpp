@@ -41,11 +41,6 @@ CivilianMgr::CivilianMgr()
 
 void CivilianMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
-    if (!sConfig.cosmic.CiviliansEnabled) {
-        sLog.Warning(" Civilian Manager", "Civilian Manager Disabled.");
-        return;
-    }
-
     m_initalized = true;
     sLog.Blue(" Civilian Manager", "Civilian Manager Initialized.");
     /* load current data, start timers, process current data, and create new items, if needed */

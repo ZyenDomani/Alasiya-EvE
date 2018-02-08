@@ -49,12 +49,11 @@ NewLog::NewLog()
 : mLogfile( NULL ),
   mTime( 0 )
 {
-    //// open default logfile
-    //std::string logPath = EVEMU_ROOT "/log/";
-    //SetLogfileDefault(logPath);
+    // open default logfile
+    std::string logPath = EVEMU_ROOT "/log/";
+    SetLogfileDefault(logPath);
 
-    //Debug( "Log", "Log system initiated" );
-    m_initialized = false;
+    m_initialized = true;
 }
 
 NewLog::NewLog(std::string logPath)

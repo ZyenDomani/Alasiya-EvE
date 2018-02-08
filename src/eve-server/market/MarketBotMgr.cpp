@@ -28,7 +28,7 @@ void MarketBotDataMgr::Initialize()
 {
     m_initalized = true;
 
-    sLog.Green("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
+    sLog.Blue("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
     /* load current data */
 }
 
@@ -44,11 +44,6 @@ MarketBotMgr::MarketBotMgr()
 
 void MarketBotMgr::Initialize()
 {
-    if (!sConfig.server.UseMarketBot) {
-        sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
-        return;
-    }
-
     if (!sMBotConf.ParseFile(BOT_CONFIG_FILE)) {
         sLog.Error("       ServerInit", "Loading Market Bot Config file '%s' failed.", BOT_CONFIG_FILE);
         return;
