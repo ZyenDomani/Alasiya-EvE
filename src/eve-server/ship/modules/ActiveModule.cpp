@@ -739,14 +739,6 @@ void ActiveModule::LaunchMissile()
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE());
     if (pMissile == nullptr)
         return; // make error here
-    /** @todo  finish this....
-    // modify missile based on attribs
-    missileRef->MultiplyAttribute(AttrMaxVelocity, m_self->GetAttribute(AttrMissileEntityVelocityMultiplier));
-    missileRef->MultiplyAttribute(AttrExplosionDelay, m_self->GetAttribute(AttrMissileEntityFlightTimeMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeVelocity, m_self->GetAttribute(AttrMissileEntityAoeVelocityMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeCloudSize, m_self->GetAttribute(AttrMissileEntityAoeCloudSizeMultiplier));
-    missileRef->MultiplyAttribute(AttrAoeFalloff, m_self->GetAttribute(AttrMissileEntityAoeFalloffMultiplier));
-    */
 
     double distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
     double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
@@ -762,5 +754,4 @@ void ActiveModule::LaunchMissile()
 
     // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
     m_targetSE->MissileLaunched(pMissile);
-
 }

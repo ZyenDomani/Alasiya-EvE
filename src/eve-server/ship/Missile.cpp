@@ -248,16 +248,16 @@ void Missile::HitTarget() {
 
     GPoint Vel = m_targetSE->GetVelocity();
     double V = Vel.length();
+    if (V <= 0)
+        V = 1;
 
     double v1 = Sr/Er;
-    double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
+    double v2 = pow(((Ev/V) * v1), (log(DRF) / log(DRS)));
 
-    // order of damage modifiers application here is important  mod first = lower damage
-
-    // apply missile damage formula to computed total damage
-    d *= EvE::min1(v1, v2);
     // apply damage modifier from char skills, if applicable
     d *= m_damageMod;
+    // apply missile damage formula to computed total damage
+    d *= EvE::min1(v1, v2);
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;
