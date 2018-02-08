@@ -62,18 +62,11 @@ class Profile
       void PrintProfile();
       void ClearAll();
 
-      double GetAverage(std::vector<double> container);
-      double GetTime() { return profile.time;}
-
       std::string GetSize(size_t cSize);
 
-      void GetRunTimes(std::vector< double > container, double* h, double* l, double* a);
+      void GetRunTimes(std::vector< double >& container, double& h, double& l, double& a);
 
   private:
-      struct {
-          double time;
-          std::string name;
-      } profile;
 
       std::vector<double> m_server;
       std::vector<double> m_functions;
