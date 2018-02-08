@@ -231,8 +231,8 @@ void SystemManager::UnloadSystem() {
     PayBounties();
     m_beltMgr->ClearAll();
 
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
-    while (itr != end) {
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    while (itr != m_entities.end()) {
         if ((itr->first > 0) and (itr->second != nullptr)) {
             if (itr->second->IsStationSE()) {
                 itr->second->GetStationSE()->UnloadStation();
@@ -249,7 +249,7 @@ void SystemManager::UnloadSystem() {
 
         sItemFactory.RemoveItem(itr->first);
         SafeDelete(itr->second);
-        itr = m_entities.erase(itr);      // not sure why .erase() crashes on occasion.  seems like it's only on system shutdown
+        itr = m_entities.erase(itr);
         m_entityChanged = true;
     }
     // at this point, system entity list should be clear...but just in case, hit it again
