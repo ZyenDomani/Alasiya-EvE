@@ -53,15 +53,22 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     m_corpID = pSE->GetCorporationID();
 
     m_damageMod = 1;
+    m_alive = true;
+
+    m_hullHP = self->GetAttribute(AttrHP).get_int();
 
     double flightTime = self->GetAttribute(AttrExplosionDelay).get_float();
 
-    // cannot (easily) apply char skills to missiles.  this is current option for skill-modified damage adjustments...
+    // missile skills do not apply correctly in fx processor.  not sure why yet.
     if (pSE->HasPilot()) {
         Character* pChar = pSE->GetPilot()->GetChar().get();
         flightTime *= (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileBombardment, true)))); // 10% increase in flightTime
-        m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
 
+        self->MultiplyAttribute(AttrMaxVelocity, (1 + ( 0.1 * (pChar->GetSkillLevel(skillMissileProjection, true))))); // 10% increase in velocity
+        self->MultiplyAttribute(AttrAoeCloudSize, (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true)))));  //  5% decrease in exp radius
+        self->MultiplyAttribute(AttrAoeVelocity, (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true)))));  // 10% increase in exp velocity
+
+        m_damageMod *= (1 + ( 0.05 * (pChar->GetSkillLevel(skillWarheadUpgrades, true)))); // 5% increase in damage (upped from 2%)
         switch (m_self->groupID()) {
             case EVEDB::invGroups::Light_Missile:
             case EVEDB::invGroups::FoF_Light_Missile:
@@ -121,10 +128,6 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
     flightTime *= sConfig.rates.missileTime;
     m_lifeTimer.Start(flightTime);
 
-    m_alive = true;
-
-    m_hullHP = self->GetAttribute(AttrHP).get_int();
-
     //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
 }
 
@@ -134,16 +137,16 @@ Missile::~Missile()
 }
 
 void Missile::Process() {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     if (!m_alive) {
         Delete();
-    } else if (m_lifeTimer.Check(false)) {
+    }
+    if (m_lifeTimer.Check(false)) {
         EndOfLife();
-    } else if (m_hitTimer.Check(false)) {
+    }
+    if (m_hitTimer.Check(false)) {
         m_hitTimer.Disable();
         HitTarget();
     }
@@ -222,11 +225,7 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 
 void Missile::HitTarget() {
     // Create Damage object:
-    Damage d(m_fromSE,
-             m_module,
-             m_self,
-             EVEEffectID::missileLaunching  // from EVEEffectID::  should be an explosion effect here
-            );
+    Damage d(m_fromSE, m_module, m_self, EVEEffectID::missileLaunching);
 
     /*  this is damage formula for missiles
      * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )
@@ -247,26 +246,18 @@ void Missile::HitTarget() {
     double DRF = m_self->GetAttribute(AttrAoeDamageReductionFactor).get_float(); // Damage Reduction Factor
     double DRS = m_self->GetAttribute(AttrAoeDamageReductionSensitivity).get_float(); // Damage Reduction Sensitivity
 
-    // cannot (easily) apply char skills to missiles.  this is current option
-    if (m_fromSE->HasPilot()) {
-        Character* pChar = m_fromSE->GetPilot()->GetChar().get();
-        Er *=  (1 - ( 0.05 * (pChar->GetSkillLevel(skillGuidedMissilePrecision, true))));  //  5% decrease in exp radius
-        Ev *=  (1 + ( 0.1 * (pChar->GetSkillLevel(skillTargetNavigationPrediction, true))));  // 10% increase in exp velocity
-    }
-
     GPoint Vel = m_targetSE->GetVelocity();
     double V = Vel.length();
 
     double v1 = Sr/Er;
     double v2 = pow(((Ev/V) * (Sr/Er)), (log(DRF) / log(DRS)));
 
-    // order of damage modifiers application here is important
-    // apply damage modifier from char skills, if applicable
-    d *= m_damageMod;
+    // order of damage modifiers application here is important  mod first = lower damage
+
     // apply missile damage formula to computed total damage
     d *= EvE::min1(v1, v2);
-    // apply damage modifier from config after damage formula
-    d *= sConfig.rates.missileDamage;
+    // apply damage modifier from char skills, if applicable
+    d *= m_damageMod;
 
     m_targetSE->ApplyDamage(d);
     m_alive = false;

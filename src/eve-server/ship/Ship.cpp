@@ -539,10 +539,8 @@ PyDict* ShipItem::GetChargeState() {
     std::map< EVEItemFlags, InventoryItemRef > charges;
     m_ModuleManager->GetLoadedCharges(charges);
 
-    if (charges.empty()) {
-        PyDict *result = new PyDict();
-        return result;
-    }
+    if (charges.empty())
+        return new PyDict();
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
     PyDict* chargeDict = new PyDict();

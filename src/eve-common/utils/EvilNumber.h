@@ -385,6 +385,7 @@ public:
 
     bool isInt();
     bool isNaN();
+    bool isInf();
     bool isFloat();
 
     bool get_bool();

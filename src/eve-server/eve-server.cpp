@@ -463,9 +463,9 @@ int main( int argc, char* argv[] )
     } else
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
     if (sConfig.server.BountyPayoutDelayed)
-        sLog.Green(" Delayed Bounties","Enabled.  Runs every %u minutes", sConfig.server.BountyPayoutTimer);
+        sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
     else
-        sLog.Warning(" Delayed Bounties","Disabled.  Bounty payouts are immediate.");
+        sLog.Warning(" Delayed Bounties","Delayed Bounties are Disabled.  Bounty payouts are immediate.");
 
     std::printf("\n");     // spacer
 

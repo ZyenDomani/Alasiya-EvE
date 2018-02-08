@@ -136,6 +136,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         case EVEDB::invGroups::Missile_Launcher_Siege:
         case EVEDB::invGroups::Missile_Launcher_Snowball:
         case EVEDB::invGroups::Missile_Launcher_Standard: {
+            // apply damage modifier from config
+            d *= sConfig.rates.missileDamage;
             damageID = 4;
         } break;
         case EVEDB::invGroups::Super_Weapon: {
@@ -297,6 +299,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (m_targMgr != nullptr)
             m_targMgr->ClearAllTargets(false);
         Killed(d);
+        // determine list of all modules targeting this entity and let them know it has been killed.
+        // currently, only the killing module is notified of target killed.
         if (d.srcSE->HasPilot())
             d.srcSE->GetPilot()->GetShip()->Deactivate(d.weaponRef->itemID(), "TargetDestroyed");
     } else {

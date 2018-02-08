@@ -77,9 +77,8 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, AddTarget);       //AddTargetOBO
         PyCallable_REG_CALL(DogmaIMBound, RemoveTarget);
         PyCallable_REG_CALL(DogmaIMBound, ClearTargets);
-
-        /*StopModuleRepair*/
-        /*InitiateModuleRepair*/
+        PyCallable_REG_CALL(DogmaIMBound, InitiateModuleRepair);
+        PyCallable_REG_CALL(DogmaIMBound, StopModuleRepair);
 
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
@@ -114,6 +113,8 @@ public:
     PyCallable_DECL_CALL(AddTarget);
     PyCallable_DECL_CALL(RemoveTarget);
     PyCallable_DECL_CALL(ClearTargets);
+    PyCallable_DECL_CALL(InitiateModuleRepair);
+    PyCallable_DECL_CALL(StopModuleRepair);
 
     /*
      * flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid)
@@ -830,6 +831,32 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     Client* pClient = call.client;
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
+    /*  module ring turns white for this one.
+     * 15:29:13 [SvcCall] Service DogmaIMBound::InitiateModuleRepair()
+     * 15:29:13 [SvcCallDump]   Call Arguments:
+     * 15:29:13 [SvcCallDump]      Tuple: 1 elements
+     * 15:29:13 [SvcCallDump]       [ 0]    Integer: 140000742
+     */
+    sLog.White("DogmaIMBound::Handle_InitiateModuleRepair()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
+    /*
+     * 15:29:08 [SvcCall] Service DogmaIMBound::StopModuleRepair()
+     * 15:29:08 [SvcCallDump]   Call Arguments:
+     * 15:29:08 [SvcCallDump]      Tuple: 1 elements
+     * 15:29:08 [SvcCallDump]       [ 0]    Integer: 140000742
+     */
+    sLog.White("DogmaIMBound::Handle_StopModuleRepair()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
 }

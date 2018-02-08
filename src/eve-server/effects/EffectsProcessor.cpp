@@ -559,21 +559,24 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 continue;
             // get targAttr
             targValue = item->GetAttribute(cur.second.targAttr);
+            // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
+            if (targValue.isNaN() or targValue.isInf()) {
+                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.");
+                targValue = item->GetDefaultAttribute(cur.second.targAttr);
+            }
+
             switch (opID) {
+                case dgmMathPreMul:
+                case dgmMathPostMul:
                 case dgmMathPreDiv:
                 case dgmMathPostDiv:{
                     if (targValue == 0)
                         targValue = 1;
                 } break;
-                case dgmMathPreMul:
-                case dgmMathPostMul: {
-                    if (targValue < 0.01)
-                        targValue = 0.01;
-                } break;
             }
 
             // send data to calculator
-            EvilNumber newValue = sFxProc.CalculateAttributeValue(targValue, srcValue, opID);
+            EvilNumber newValue = CalculateAttributeValue(targValue, srcValue, opID);
             // avoid creating 0-value attributes on items
             if (newValue == 0)
                 continue;

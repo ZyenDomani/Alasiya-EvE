@@ -327,9 +327,12 @@ bool ItemType::HasReqSkill(const uint16 skillID) const
     std::map<uint16, uint8>::const_iterator itr = m_reqSkillMap.find(skillID);
     if (itr != m_reqSkillMap.end())
         return true;
+    /*  this part will get prequisites for required skills...this isnt right
     for (auto cur : m_reqSkillMap)
         if (sItemFactory.GetType(cur.first)->HasReqSkill(skillID))
             return true;
+    */
+
     return false;
 }
 

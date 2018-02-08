@@ -283,7 +283,21 @@ bool EvilNumber::isNaN()
     if( mType == evil_number_nan )
         return true;
 
-    return false;
+    if ( mType == evil_number_int )
+        return false;
+
+    return isnan(mValue.fVal);
+}
+
+bool EvilNumber::isInf()
+{
+    if ( mType == evil_number_nan )
+        return true;
+
+    if ( mType == evil_number_int )
+        return false;
+
+    return isinf(mValue.fVal);
 }
 
 bool EvilNumber::isInt()
