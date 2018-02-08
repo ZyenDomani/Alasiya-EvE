@@ -418,6 +418,7 @@ bool ModuleManager::Initialize() {
                         pMod->SetChargeRef(cur);
                         // set ChargeState == CHG_LOADED here, then when module Online() is called, all effects will be applied in correct order
                         pMod->SetChargeState(Module::State::Loaded);
+                        m_charges.emplace(cur->flag(), cur);
                     } else {
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
                                 cur->itemName().c_str(), cur->itemID(), cur->flag() );
@@ -977,6 +978,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
     chargeRef->Donate(m_Ship->ownerID(), m_Ship->itemID(), flag, true);
     pMod->LoadCharge(chargeRef);
+    m_charges.emplace(flag, chargeRef);
 }
 
 void ModuleManager::UnloadCharge(EVEItemFlags flag)
@@ -987,6 +989,7 @@ void ModuleManager::UnloadCharge(EVEItemFlags flag)
             _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
                     pMod->GetSelf()->itemName().c_str(), pMod->GetLoadedChargeRef()->itemName().c_str());
             pMod->UnloadCharge();
+            m_charges.erase(flag);
         } else
             _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), flag);
     } else
@@ -1145,11 +1148,9 @@ void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< Invento
 {
     std::vector<InventoryItemRef> moduleList;
     GetModuleListOfRefsAsc(&moduleList);
-    for (auto cur : moduleList) {
-        if (cur->HasReqSkill(skillID)) {
+    for (auto cur : moduleList)
+        if (cur->HasReqSkill(skillID))
             pModuleList->push_back(cur);
-        }
-    }
 }
 
 void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vector< GenericModule* >& pModList)
