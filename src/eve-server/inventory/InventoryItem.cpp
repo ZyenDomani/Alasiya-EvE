@@ -44,7 +44,7 @@
  */
 InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemData& _data)
 : RefObject( 0 ),
-  pAttributeMap(nullptr),
+  pAttributeMap(new AttributeMap(*this)),
   pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
   m_itemID(_itemID),
   m_itemName(_data.name),
@@ -61,7 +61,6 @@ InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemDa
     // assert for data consistency
     assert(_data.typeID == _type.id());
 
-    pAttributeMap = new AttributeMap(*this);
     m_modifiers.clear();
 
     _log(ITEM__TRACE, "Created Generic Item %p for item %s (%u).", this, m_itemName.c_str(), m_itemID);
@@ -69,9 +68,6 @@ InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemDa
 
 InventoryItem::~InventoryItem() noexcept
 {
-    // item should call save before object is removed.
-    // if item is being removed during shutdown, item factory is responsible for saving loaded items
-
     SafeDelete(pAttributeMap);
 }
 
