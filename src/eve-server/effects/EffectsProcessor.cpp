@@ -550,6 +550,12 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
 
         // get srcAttr
         EvilNumber srcValue = srcItemRef->GetAttribute(cur.second.srcAttr);
+        // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
+        if (srcValue.isNaN() or srcValue.isInf()) {
+            srcValue = srcItemRef->GetDefaultAttribute(cur.second.srcAttr);
+            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): srcValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) set to %.3f.", \
+            srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float());
+        }
 
         // set target attr to modified value
         EvilNumber targValue = 0;
@@ -561,8 +567,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             targValue = item->GetAttribute(cur.second.targAttr);
             // check for inf/nan and then reset?  this will fuck up all previous fx processing on this value.
             if (targValue.isNaN() or targValue.isInf()) {
-                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.");
                 targValue = item->GetDefaultAttribute(cur.second.targAttr);
+                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ to %.3f.", \
+                srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), \
+                    GetMathMethodName(opID).c_str(), GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float());
             }
 
             switch (opID) {
@@ -581,8 +589,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (newValue == 0)
                 continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", cur.first, cur.second.srcRef->itemName().c_str(), \
-                cur.second.srcRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", cur.first, srcItemRef->itemName().c_str(), \
+            srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
                 GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)

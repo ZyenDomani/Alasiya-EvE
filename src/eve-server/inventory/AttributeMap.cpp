@@ -130,8 +130,8 @@ bool AttributeMap::Save() {
     bool save = false;
     std::vector<AttrData> items;
     items.clear();
-    AttrMapItr itr = mAttributes.begin();
-    for (; itr != mAttributes.end(); ++itr) {
+    AttrMapItr itr = mAttributes.begin(), end = mAttributes.end();
+    for (; itr != end; ++itr) {
         save = false;
         if (skill)
             if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime))
@@ -163,6 +163,8 @@ bool AttributeMap::Save() {
 
 void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
 {
+    if (num.isNaN() or num.isInf())
+        return;     // make error here for bad number?
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
         mAttributes.emplace(attrID, num);
@@ -184,6 +186,8 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity
 {
     if (num == 0)
         return;
+    if (num.isNaN() or num.isInf())
+        return;     // make error here for bad number?
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end())
         return; // it doesnt exist...nothing to do.
@@ -273,7 +277,6 @@ bool AttributeMap::SendChanges( PyTuple* attrChange ) {
 }
 
 void AttributeMap::ResetAttribute(uint16 attrID, bool notify) {
-    /** @todo update this */
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     SetAttribute(attrID, value, notify);
 }
