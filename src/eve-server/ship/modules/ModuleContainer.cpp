@@ -173,7 +173,7 @@ void ModuleContainer::RepairAll() {
 }
 
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
-    return (m_modules.find((uint8)flag) != m_modules.end());
+    return (m_modules.find((uint8)flag)->second != nullptr);
 }
 
 uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)

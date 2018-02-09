@@ -50,9 +50,10 @@ public:
     void UnloadAll();
     void RepairAll();
 
-    //useful accessors
-    bool isSlotOccupied(EVEItemFlags flag);
+    // only called by MM::fitModule
+    bool isSlotOccupied(EVEItemFlags flag); // flag is not checked in this call
 
+    //useful accessors
     uint8 GetLowSlotCount()                             { return m_LowSlots; }
     uint8 GetMedSlotCount()                             { return m_MediumSlots; }
     uint8 GetHighSlotCount()                            { return m_HighSlots; }
