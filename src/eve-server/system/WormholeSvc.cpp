@@ -45,6 +45,15 @@ WormHoleSvc::~WormHoleSvc() {
     delete m_dispatch;
 }
 
+/*{'messageKey': 'CantEnterWormholeGlobalCriminalFlag', 'dataID': 17877563, 'suppressable': False, 'bodyID': 257299, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257298, 'messageID': 2844}
+ * {'messageKey': 'CantEnterWormholeWhileCloaked', 'dataID': 17877181, 'suppressable': False, 'bodyID': 257153, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2783}
+ * {'messageKey': 'CantEnterWormholeWhileModuleActive', 'dataID': 17877772, 'suppressable': False, 'bodyID': 257379, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2784}
+ * {'messageKey': 'CantOnlineSovInWormhole', 'dataID': 17877461, 'suppressable': False, 'bodyID': 257260, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2935}
+ * {'messageKey': 'CantTargetWhileEnteringWormhole', 'dataID': 17877231, 'suppressable': False, 'bodyID': 257172, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2798}
+ *
+ *
+ *
+ */
 PyResult WormHoleSvc::Handle_WormholeJump( PyCallArgs& call ) {
   /**
       sm.RemoteSvc('wormholeMgr').WormholeJump, itemID)
@@ -57,7 +66,7 @@ PyResult WormHoleSvc::Handle_WormholeJump( PyCallArgs& call ) {
      *    snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
      *    GetShip()->SetCustomInfo(ci);
      */
-    
+
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     return new PyLong(Win32TimeNow());
 }

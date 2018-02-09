@@ -496,6 +496,10 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     return PyStatic.NewNone();
 }
 
+    /*{'messageKey': 'CantTargetWhileCloaked', 'dataID': 17879126, 'suppressable': False, 'bodyID': 257890, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2436}
+     * {'messageKey': 'CantTargetWhileEnteringWormhole', 'dataID': 17877231, 'suppressable': False, 'bodyID': 257172, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2798}
+     * {'messageKey': 'CantTargetWhileJumping', 'dataID': 17885002, 'suppressable': False, 'bodyID': 260081, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 432}
+     */
 PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -701,6 +705,15 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      *   call.Dump(SERVICE__CALL_DUMP);
      */
 
+    /*
+     *    def SetWeaponBanks(self, shipID, data):
+     *        self.slaveModulesByMasterModule[shipID] = defaultdict(set)
+     *        if data is None:
+     *            return
+     *        for masterID, slaveIDs in data.iteritems():
+     *            for slaveID in slaveIDs:
+     *                self.slaveModulesByMasterModule[shipID][masterID].add(slaveID)
+     */
     Client* pClient = call.client;
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {

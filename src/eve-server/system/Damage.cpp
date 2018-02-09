@@ -313,6 +313,10 @@ void Ship::Killed(Damage &fatal_blow) {
 
     m_shipRef->SetPopped(true);
 
+    /* {'messageKey': 'ShipExploded', 'dataID': 17881627, 'suppressable': True, 'bodyID': 258841, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258840, 'messageID': 1558}
+     * u'ShipExplodedBody'}(u'Your ship has been destroyed by {[character]charID.name}.', None, {u'{[character]charID.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charID'}})
+     */
+    
     SystemEntity *killer(fatal_blow.srcSE);
     Client* pClient(nullptr);
     uint32 killerID = 0;
