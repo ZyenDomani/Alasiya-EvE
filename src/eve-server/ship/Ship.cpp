@@ -841,7 +841,7 @@ void ShipItem::GetModuleRefVec(std::vector< InventoryItemRef >& iRefVec)
 
 InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 {
-    if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(flag) )
+    if ((m_ModuleManager != nullptr) and (m_ModuleManager->GetModule(flag) != nullptr) )
 		return (m_ModuleManager->GetModule(flag))->GetSelf();
 	else
         return InventoryItemRef(nullptr);
@@ -849,7 +849,7 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
 
 InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
 {
-    if ((m_ModuleManager != nullptr) and m_ModuleManager->GetModule(itemID) )
+    if ((m_ModuleManager != nullptr) and (m_ModuleManager->GetModule(itemID) != nullptr) )
 		return (m_ModuleManager->GetModule(itemID))->GetSelf();
 	else
         return InventoryItemRef(nullptr);
@@ -932,15 +932,14 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
              */
         }
     }
+
+    m_ModuleManager->CheckGroupFitLimited(flag, iRef);
 }
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     // CantFitModuleToThatShip
     // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     uint16 slotFound = flagIllegal;
-    // 1) get slot bank from dgmTypeEffects using itemtype
-    // 2) query this ship's ModuleManager for the next available slot for that bank
-    // 3) return that slot flag
     if (iRef->type().HasEffect(EVEEffectID::loPower)) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
     } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {

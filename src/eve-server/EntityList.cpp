@@ -133,11 +133,11 @@ void EntityList::Process() {
         double profileStartTime = GetTimeUSeconds();
 
         ++m_stamp;
-        //sLog.White("time check", "(%u) - ms: %f, win32: %" PRIi64 ", file: %.4f", m_stamp, GetTimeMSeconds(), Win32TimeNow(), GetFileTimeNow());
+        
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();
-        //sMktBotMgr.Process();  // not used yet
+        sMktBotMgr.Process();  // not used yet
 
         for (auto cur : m_clients)
             if (cur->GetLocationID())   /* hack to verify valid client */

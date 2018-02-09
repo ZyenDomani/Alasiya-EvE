@@ -700,10 +700,10 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             }
 
             if (iRef->categoryID() == EVEDB::invCategories::Module)
-                m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef);
+                m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
 
             if (IsCargoHoldFlag(toFlag))
-                m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef);
+                m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef) < 1)
                 contRef->AddItem(iRef);
