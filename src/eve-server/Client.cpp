@@ -97,6 +97,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_wing = false;
     m_fleet = false;
     m_squad = false;
+    m_loaded = false;
     m_undock = false;
     m_beyonce = false;
     m_canThrow = false;
@@ -122,6 +123,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 }
 
 Client::~Client() {
+    if (!m_loaded)
+        return;
     if (m_char.get() != nullptr) {   // we have valid character
         /** @todo  - for warping to random point when client logs out in space...
          *      1)  check client IsInSpace(?)
@@ -292,12 +295,10 @@ bool Client::SelectCharacter(uint32 char_id) {
     UpdateSkillTraining();
 
     SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
-    return true;
+    return (m_loaded = true);
 }
 
 void Client::ProcessClient() {
-    if (m_locationID == 0)
-        return;
     double profileStartTime = GetTimeUSeconds();
 
     // wtf is this for?

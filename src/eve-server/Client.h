@@ -70,6 +70,8 @@ public:
     bool                    ProcessNet();
     void                    ProcessClient();
 
+    bool                    IsLoaded()                  { return m_loaded; }
+
     PyServiceMgr&           services() const            { return m_services; }
     SystemManager*          SystemMgr() const           { return m_system; }
     bool                    IsClient() const            { return true; }
@@ -290,6 +292,7 @@ protected:
     bool m_invul;
     bool m_login;
     bool m_undock;
+    bool m_loaded;
     bool m_beyonce;
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received

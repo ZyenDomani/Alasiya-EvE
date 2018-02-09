@@ -133,14 +133,14 @@ void EntityList::Process() {
         double profileStartTime = GetTimeUSeconds();
 
         ++m_stamp;
-        
+
         sWHMgr.Process();
         sCivMgr.Process();
         sBubbleMgr.Process();
         sMktBotMgr.Process();  // not used yet
 
         for (auto cur : m_clients)
-            if (cur->GetLocationID())   /* hack to verify valid client */
+            if (cur->IsLoaded())
                 cur->ProcessClient();
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
