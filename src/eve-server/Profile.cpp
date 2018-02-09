@@ -170,6 +170,7 @@ void Profile::PrintProfile()
     GetRunTimes(m_concord, h, l, a);
     std::printf("       Concord   %u times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", m_concord.size(), h, l, a );
     */
+
     GetRunTimes(m_db, h, l, a);
     std::printf("            DB   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_db.size()).c_str(),  h, l, a );
     GetRunTimes(m_entityS, h, l, a);
@@ -210,7 +211,7 @@ void Profile::PrintProfile()
     }
     if (sConfig.cosmic.PIEnabled) {
         GetRunTimes(m_colony, h, l, a);
-        std::printf(" Colony Update   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_colony.size()).c_str(), h, l, a );
+        std::printf("        Colony   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_colony.size()).c_str(), h, l, a );
     }
     std::printf(" Profile Times Compiled in %.4fus,\n", (GetTimeUSeconds() -startTime) );
 }
@@ -251,4 +252,25 @@ std::string Profile::GetSize(size_t cSize)
     return itoa(cSize);
 }
 
+/*  color shit....
+ *
+    ::fputs( COLOR_TABLE[ color ], stdout );
+    std::printf(*message*);
+    *
+
+
+    const char* const NewLog::COLOR_TABLE[ COLOR_COUNT ] =
+    {
+    "\033[" "00"    "m", // COLOR_DEFAULT
+    "\033[" "30;22" "m", // COLOR_BLACK
+    "\033[" "31;22" "m", // COLOR_RED
+    "\033[" "32;22" "m", // COLOR_GREEN
+    "\033[" "33;01" "m", // COLOR_YELLOW
+    "\033[" "34;01" "m", // COLOR_BLUE
+    "\033[" "35;22" "m", // COLOR_MAGENTA
+    "\033[" "36;01" "m", // COLOR_CYAN
+    "\033[" "37;01" "m"  // COLOR_WHITE
+    };
+
+    */
 
