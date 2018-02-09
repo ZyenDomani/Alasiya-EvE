@@ -432,7 +432,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             case dgmSrcGroup: {     // not a source per se, but defines effect's target selection requirements
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
-                pShip->GetModuleManager()->GetModuleListOfRefsAsc(&moduleList);
+                pShip->GetModuleManager()->GetModuleListOfRefsAsc(moduleList);
                 for (auto mod : moduleList)
                     if (mod->groupID() == cur.second.grpID)
                         itemRefVec.push_back(mod);
@@ -451,7 +451,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case dgmTargLocShip:  {
                         if (cur.second.typeID) {
                             // .....ship's modules that require skillID defined in "typeID"
-                            pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, &itemRefVec);
+                            pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, itemRefVec);
                         } else {
                             // ..... ship that require skill in 'srcRef'
                             if (pShip->HasReqSkill(cur.second.srcRef->typeID()))

@@ -491,7 +491,7 @@ PyDict* ShipItem::GetShipState() {
     }
     // Create entries for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
     for (int i=0; i<moduleList.size(); ++i)
         result->SetItem(new PyInt(moduleList.at(i)->itemID()), moduleList.at(i)->GetItemStatusRow());
 
@@ -512,7 +512,7 @@ PyList* ShipItem::ShipGetModuleList() {
     PyTuple* module = new PyTuple(2);
     // Create entries in "onslimitemchange" modules list for ALL modules, rigs, and subsystems present on ship:
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc( &moduleList );
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
     for (int i=0; i<moduleList.size(); ++i) {
         module->SetItem(0, new PyInt(moduleList.at(i)->typeID()));
         module->SetItem(1, new PyInt(moduleList.at(i)->itemID()));
@@ -836,7 +836,7 @@ void ShipItem::SetShipHull(double fraction)
 void ShipItem::GetModuleRefVec(std::vector< InventoryItemRef >& iRefVec)
 {
     if (m_ModuleManager != nullptr)
-        m_ModuleManager->GetModuleListOfRefsAsc(&iRefVec);
+        m_ModuleManager->GetModuleListOfRefsAsc(iRefVec);
 }
 
 InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
@@ -875,6 +875,9 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (m_ModuleManager->IsSlotOccupied(flag))
         throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
+
+    m_ModuleManager->CheckSlotFitLimited(flag, iRef);
+    m_ModuleManager->CheckGroupFitLimited(flag, iRef);
 
     if (IsHiSlot(flag)) {
         // check avalible turret/launcher slots
@@ -932,8 +935,6 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
              */
         }
     }
-
-    m_ModuleManager->CheckGroupFitLimited(flag, iRef);
 }
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
@@ -1253,7 +1254,7 @@ void ShipItem::StripFitting()
 {
     if (m_ModuleManager != nullptr) {
         std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
+        m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
         for (auto cur : moduleList) {
             m_ModuleManager->UnfitModule(cur->itemID());
             cur->Move(m_pilot->GetLocationID(), flagHangar);
@@ -1364,7 +1365,7 @@ std::string ShipItem::GetShipDNA()
     std::stringstream modHi, modMid, modLow, subSys, modRig, charges, drones;
 
     std::vector<InventoryItemRef> moduleList;
-    m_ModuleManager->GetModuleListOfRefsAsc(&moduleList);
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
 
     for (auto cur : moduleList) {
         if (IsRigSlot(cur->flag()))

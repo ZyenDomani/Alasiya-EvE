@@ -101,7 +101,7 @@ SET( admin_SOURCE
      #"${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/PetitionerService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SlashService.cpp"
-     "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"  
+     "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"
      "${TARGET_INCLUDE_DIR}/admin/CommandHelper.cpp"
      "${TARGET_SOURCE_DIR}/admin/TranslocateHelper.cpp" )
 
@@ -452,6 +452,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ActiveModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/MiningLaser.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/ModuleContainer.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleManager.h"
@@ -465,6 +466,7 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/ActiveModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/MiningLaser.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/ModuleContainer.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"

@@ -21,106 +21,37 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Luck, Aknor Jaden
+    Rewrite:    Allan
 */
 
 
-#ifndef _MODULEMANAGER_H_INCL__
-#define _MODULEMANAGER_H_INCL__
+#ifndef EVE_SHIP_MODULES_MODULEMANAGER_H
+#define EVE_SHIP_MODULES_MODULEMANAGER_H
 
-#include <unordered_map>
+
 #include "PyService.h"
-#include "ship/modules/GenericModule.h"
-#include "ship/modules/ModuleDefs.h"
+#include "ship/modules/ModuleContainer.h"
 
 
-class InventoryItem;
-class GenericModule;
-class ModuleManager;
-
-// Container for all ships module
-class ModuleContainer
-{
-friend class ModuleManager;
-public:
-    ModuleContainer(uint8 lowSlots, uint8 medSlots, uint8 highSlots, uint8 rigSlots, uint8 subSystemSlots, uint8 turretSlots, uint8 launcherSlots, ModuleManager *myManager);
-    ~ModuleContainer();
-
-    void ClearModMap();
-
-    bool AddModule(EVEItemFlags flag, GenericModule * mod);
-    bool RemoveModule(EVEItemFlags flag);
-    bool RemoveModule(uint32 itemID);
-    GenericModule* GetModule(EVEItemFlags flag); //faster than GetModule(itemID)
-    GenericModule* GetModule(uint32 itemID); //slower than GetModule(flag)
-
-    uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
-
-    // basic methods
-    void ShipWarping();
-
-    //batch processes handlers
-    void AbortCycle();
-    void Process();
-    void OfflineAll();
-    void OnlineAll();
-    void DeactivateAll();
-    void UnloadAll();
-    void RepairAll();
-
-    //useful accessors
-	bool isSlotOccupied(EVEItemFlags flag);
-
-    uint8 GetLowSlotCount()                             { return m_LowSlots; }
-    uint8 GetMedSlotCount()                             { return m_MediumSlots; }
-    uint8 GetHighSlotCount()                            { return m_HighSlots; }
-    uint8 GetRigSlotCount()                             { return m_RigSlots; }
-    uint8 GetSubSysCount()                              { return m_SubSystemSlots; }
-
-    uint8 GetFittedModuleCountByGroup(uint16 groupID);
-
-    GenericModule* GetRandModule();
-    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
-    void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
-    void SaveModules();
-
-private:
-    ModuleManager* m_MyManager;        // we do not own this
-
-    void deleteModuleRef(EVEItemFlags flag, GenericModule* mod);
-
-    uint8 m_LowSlots;
-    uint8 m_MediumSlots;
-    uint8 m_HighSlots;
-    uint8 m_RigSlots;
-    uint8 m_SubSystemSlots;
-    uint8 m_TurretSlots;
-    uint8 m_LauncherSlots;
-
-    // map of all module slots by flag
-    std::map<uint8, GenericModule*> m_modules;      // k,v of flag, pointer to module
-    std::map<uint32, uint32> m_ModulesFittedByGroupID;
-};
-
-
-// Primary Module Manager class
 class ModuleManager
 {
 public:
-    ModuleManager(ShipItem* const ship);
+    ModuleManager(ShipItem* const pShip);
     ~ModuleManager();
 
     bool Initialize();
     bool IsSlotOccupied(EVEItemFlags flag);
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
-    void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);
+    void CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef);     // verify slot avalibe
+    void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);    // verify module isnt group limited
 
     bool InstallRig(InventoryItemRef item, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);
     bool InstallSubSystem(InventoryItemRef item, EVEItemFlags flag);
     bool FitModule(InventoryItemRef item, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);
-    bool OnlineCheck(GenericModule* mod);
+    void OnlineCheck(GenericModule* pMod);
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
     void Online(EVEItemFlags flag);
@@ -153,8 +84,8 @@ public:
     void Process();
     void AbortCycle();
 
-    GenericModule* GetModule(EVEItemFlags flag)         { return m_Modules->GetModule(flag); }      // faster than GetModule(itemID)
-    GenericModule* GetModule(uint32 itemID)             { return m_Modules->GetModule(itemID); }    // slower than GetModule(flag)
+    GenericModule* GetModule(EVEItemFlags flag)         { return pModuleCont->GetModule(flag); }      // faster than GetModule(itemID)
+    GenericModule* GetModule(uint32 itemID)             { return pModuleCont->GetModule(itemID); }    // slower than GetModule(flag)
 
     InventoryItemRef GetLoadedChargeOnModule(EVEItemFlags flag);
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
@@ -164,24 +95,29 @@ public:
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);
     void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
-    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef> * pModuleList);
-    void GetModuleListOfRefsDec(std::vector<InventoryItemRef> * pModuleList);
-    void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef> * pModuleList);
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& pModuleList);
+    void GetModuleListOfRefsDec(std::vector< InventoryItemRef >& pModuleList);
+    void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& pModuleList);
     void SaveModules();
 
 private:
     bool m_initalized;
-    bool fitModule(InventoryItemRef item, EVEItemFlags flag);
+    void fitModule(InventoryItemRef iRef, EVEItemFlags flag);
 
     ShipItem* m_Ship;
 
-    ModuleContainer* m_Modules;                         // Holds Module class objects in container arrays, one for each slot bank
+    ModuleContainer* pModuleCont;      // Module objects container  - map of module slots [slot/Mod*]
+
+    uint8 m_LowSlots;
+    uint8 m_MidSlots;
+    uint8 m_HighSlots;
+    uint8 m_SubSystemSlots;
 
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // flag, chargeItem
 };
 
 
-#endif  /* MODULE_MANAGER_H */
+#endif  // EVE_SHIP_MODULES_MODULEMANAGER_H
 
 /* {'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
  * {'messageKey': 'DeniedActivateControlling', 'dataID': 17880010, 'suppressable': False, 'bodyID': 258228, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2230}
