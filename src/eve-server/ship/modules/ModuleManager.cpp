@@ -134,121 +134,74 @@ GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 GenericModule* ModuleContainer::GetModule(uint32 itemID)
 {
     //iterate through the list and see if we have it
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-    while (itr != m_modules.end()) {
-        if (itr->second != nullptr)
-            if (itr->second->itemID() == itemID)
-                return itr->second;
-
-        ++itr;
-    }
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            if (cur.second->itemID() == itemID)
+                return cur.second;
     return nullptr;  //we don't
 }
 
 void ModuleContainer::ShipWarping()
 {
-    // this will test for 1) active modules and 2) if their effect is warpsafe
+    // this will test modules for their effect is warpsafe
     // those not safe for warp will be Deactivated
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-    while (itr != m_modules.end()) {
-        if (itr->second != nullptr)
-            if (!itr->second->isWarpSafe())
-                itr->second->AbortCycle();
-        ++itr;
-    }
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            if (!cur.second->isWarpSafe())
+                cur.second->AbortCycle();
 }
 
 void ModuleContainer::AbortCycle() {
-    process(typeAbort);
+    for (auto cur : m_modules)
+        if ((cur.second != nullptr) and (cur.second->IsActiveModule()))
+            cur.second->AbortCycle();
 }
 
 void ModuleContainer::Process() {
-    process(typeProcessAll);
-}
-
-void ModuleContainer::OnlineAll() {
-    process(typeOnlineAll);
-}
-
-void ModuleContainer::OfflineAll() {
-    process(typeOfflineAll);
-}
-
-void ModuleContainer::DeactivateAll() {
-    process(typeDeactivateAll);
-}
-
-void ModuleContainer::UnloadAll() {
-    process(typeUnloadAll);
-}
-
-void ModuleContainer::RepairAll()
-{
-    std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-    while (itr != m_modules.end()) {
+    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
+    while (itr != m_modules.rend()) {
         if (itr->second != nullptr)
-            itr->second->Repair();
+            itr->second->Process();
         ++itr;
     }
 }
 
-void ModuleContainer::process(processType p)
-{
-    switch(p) {
-        case typeOnlineAll: {
-            std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
-            while (itr != m_modules.rend()) {
-                if (itr->second != nullptr)
-                    itr->second->Online();
-                ++itr;
-            }
-        } break;
-        case typeOfflineAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second != nullptr)
-                    itr->second->Offline();
-                ++itr;
-            }
-        } break;
-        case typeDeactivateAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second != nullptr)
-                    itr->second->Deactivate();
-                ++itr;
-            }
-        } break;
-        case typeUnloadAll: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if (itr->second != nullptr)
-                    itr->second->UnloadCharge();
-                ++itr;
-            }
-        } break;
-        case typeProcessAll: {
-            std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
-            while (itr != m_modules.rend()) {
-                if (itr->second != nullptr)
-                    itr->second->Process();
-                ++itr;
-            }
-        } break;
-        case typeAbort: {
-            std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
-            while (itr != m_modules.end()) {
-                if ((itr->second != nullptr) and (itr->second->IsActiveModule()))
-                    itr->second->AbortCycle();
-                ++itr;
-            }
-        } break;
+void ModuleContainer::OnlineAll() {
+    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin();
+    while (itr != m_modules.rend()) {
+        if (itr->second != nullptr)
+            itr->second->Online();
+        ++itr;
     }
+}
+
+void ModuleContainer::OfflineAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Offline();
+}
+
+void ModuleContainer::DeactivateAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Deactivate();
+}
+
+void ModuleContainer::UnloadAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->UnloadCharge();
+}
+
+void ModuleContainer::RepairAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Repair();
 }
 
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
-    return (itr == m_modules.end() ? false : true);
+    return (itr->second == nullptr ? false : true);
 }
 
 uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
