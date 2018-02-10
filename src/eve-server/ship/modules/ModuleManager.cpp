@@ -161,18 +161,21 @@ bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
 
 void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef)
 {
-    if (IsHiSlot(flag))
+    if (IsRigSlot(flag))
+        return;
+    if (IsHiSlot(flag)) {
         if (m_HighSlots)
             return;
-    else if (IsMidSlot(flag))
+    } else if (IsMidSlot(flag)) {
         if (m_MidSlots)
             return;
-    else if (IsLowSlot(flag))
+    } else if (IsLowSlot(flag)) {
         if (m_HighSlots)
             return;
-    else if (IsSubSystem(flag))
+    } else if (IsSubSystem(flag)) {
         if (m_HighSlots)
             return;
+    }
 
     std::map<std::string, PyRep *> args;
     args["moduleName"] = new PyString(iRef->itemName());
