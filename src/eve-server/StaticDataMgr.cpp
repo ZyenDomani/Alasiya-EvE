@@ -286,7 +286,7 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    //get all groups from salvage table
+    //SELECT factionID, itemID FROM facSalvage
     ManagerDB::GetSalvageGroups(*res);
     while( res->GetRow(row) )
         m_salvageMap.emplace(row.GetInt(0), row.GetInt(1));
@@ -377,7 +377,6 @@ void StaticDataMgr::GetInfo()
 }
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
-    double randChance = 0.0;
     auto itr = m_salvageMap.equal_range(factionID);
     for (auto it = itr.first; it != itr.second; ++it)
         itemList.push_back(it->second);

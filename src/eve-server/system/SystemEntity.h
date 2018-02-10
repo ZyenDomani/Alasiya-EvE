@@ -260,7 +260,7 @@ protected:
     /* ease of access to common data for ownable objects */
     uint32                      m_warID;
     uint32                      m_corpID;
-    uint32                      m_allyID;
+    uint32                      m_allyID;   // this is salvage factionID for npc wrecks
     uint32                      m_fleetID;
     uint32                      m_ownerID;
 

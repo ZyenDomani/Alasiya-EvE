@@ -395,7 +395,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRatin
     uint32 factionID = factionRogueDrones;  // default to rogue drones.  this is my internal rogue drone factionID.
     if (sConfig.npc.RatFaction)             // is RatFaction set in config?
         factionID = sConfig.npc.RatFaction;
-    else if (MakeRandomFloat() < 0.15)      // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
+    else if (MakeRandomFloat() > 0.15)       // random chance for ANY beltspawn to be rogue drone...if chance < 0.15, rat = drone.
         factionID = sDataMgr.GetRegionRatFaction(regionID);
 
     if (is_log_enabled(SPAWN__MESSAGE))

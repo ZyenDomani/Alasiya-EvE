@@ -328,18 +328,9 @@ void NPC::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    const char* faction = itoa(m_warID);
+    const char* faction = itoa(m_allyID);
 
-    ItemData wreckItemData(
-        wreckTypeID,
-        killerID,
-        locationID,
-        flagAutoFit,
-        wreck_name.c_str(),
-        wreckPosition,
-        faction
-    );
-
+    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, faction);
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -347,7 +338,6 @@ void NPC::Killed(Damage &fatal_blow) {
     }
 
     if (pClient != nullptr) {
-        DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
         //award kill bounty.
         AwardBounty( pClient );
         //  log faction kill in dynamic data   -allan
@@ -357,11 +347,10 @@ void NPC::Killed(Damage &fatal_blow) {
         pChar->AddFactionKillToDynamicData(locationID);
         if (m_system->GetSystemSecurityRating() > 0)
             AwardSecurityStatus(m_self, pChar);
-    } else
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    }
 
     DBSystemDynamicEntity wreckEntity;
-    wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
+        wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
         wreckEntity.corporationID = killer->GetCorporationID();
         wreckEntity.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
@@ -375,15 +364,15 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.z = wreckPosition.z;
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
+        wreckItemRef->Delete();
         return;
     }
+
+    DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
-
-    // cleanup and removal of dead npc
-    //AI()->ClearAllTargets();
     m_system->RemoveNPC(this);  //this also removes npc from db
 }
