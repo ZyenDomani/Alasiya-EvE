@@ -35,8 +35,6 @@ protected:
     bool m_salvager :1;
     bool m_dataMiner :1;
 
-    // i dont like the way these are worded, but cant think of anything better atm.
-    int8 m_accessBonus;     // module bonus (module, ship, rigs, skills, implants)
     int8 m_accessChance;    // target chance (base chance)
 
     Character* pChar;

@@ -27,7 +27,6 @@ Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
     else if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
         m_dataMiner = true;
 
-    m_accessBonus = 0;
     m_accessChance = 0;
 
     pChar = m_shipRef->GetPilot()->GetChar().get();
@@ -38,11 +37,7 @@ void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
     // reset for each activation
     m_success = false;
     m_firstRun = true;
-    m_accessBonus = GetAttribute(AttrAccessDifficultyBonus).get_int();
     m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
-
-    // add all bonuses to chance here (module, ship, rigs, skills, implants)
-
 
     ActiveModule::Activate(effectID, targetID, repeat);
 }
@@ -125,7 +120,8 @@ void Prospector::SendFailure()
 
 void Prospector::CheckSuccess()
 {
-    int8 chance = m_accessBonus + m_accessChance;
+    int8 chance = m_accessChance;
+    chance += GetAttribute(AttrAccessDifficultyBonus).get_int();
 
     uint8 roll = MakeRandomInt(0,100);
     if (roll < chance)
