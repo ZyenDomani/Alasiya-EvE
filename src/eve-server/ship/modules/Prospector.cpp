@@ -34,12 +34,12 @@ Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
 
 void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
+    ActiveModule::Activate(effectID, targetID, repeat);
+
     // reset for each activation
     m_success = false;
     m_firstRun = true;
     m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
-
-    ActiveModule::Activate(effectID, targetID, repeat);
 }
 
 bool Prospector::CanActivate()

@@ -638,6 +638,11 @@ bool ActiveModule::CanActivate()
                 return false;
             }
         }
+        if (m_shipRef->groupID() == EVEDB::invGroups::Tractor_Beam)
+            if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE()) {
+                m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor %s", m_targetSE->GetName());
+                return false;
+            }
 
         // if target is non-combatant deny attack
         if (sFxDataMgr.isOffensive(m_effectID)
