@@ -170,10 +170,10 @@ void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef
         if (m_MidSlots)
             return;
     } else if (IsLowSlot(flag)) {
-        if (m_HighSlots)
+        if (m_LowSlots)
             return;
     } else if (IsSubSystem(flag)) {
-        if (m_HighSlots)
+        if (m_SubSystemSlots)
             return;
     }
 
