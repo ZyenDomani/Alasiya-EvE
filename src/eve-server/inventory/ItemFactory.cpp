@@ -216,8 +216,6 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
-    //take ourself out of the DB
-    db()->DeleteItem( itemID );
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );

@@ -498,7 +498,8 @@ void InventoryItem::Delete() {
     }
 
     pAttributeMap->Delete();
-
+    //take ourself out of the DB
+    sItemFactory.db()->DeleteItem( m_itemID );
     //delete ourselves from factory cache
     sItemFactory.RemoveItem( m_itemID );
 }
