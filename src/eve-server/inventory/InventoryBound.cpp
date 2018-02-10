@@ -694,16 +694,16 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
                         toFlag = flagCargoHold;
                     }
-                } else {
+                } else
+                    // this needs work to verify mFlag is correct for application, and that it is intially set correctly
                     toFlag = mFlag;
-                }
             }
 
-            if (iRef->categoryID() == EVEDB::invCategories::Module)
+            if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
-
-            if (IsCargoHoldFlag(toFlag))
+            else if (IsCargoHoldFlag(toFlag))
                 m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
+
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef) < 1)
                 contRef->AddItem(iRef);

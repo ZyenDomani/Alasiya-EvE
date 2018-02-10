@@ -1,57 +1,83 @@
 
  /**
-  * @name Salvager.cpp
-  *   salvage module class
+  * @name Prospector.cpp
+  *   prospector module class (salvage, hacking, data mining)
   * @Author:         Allan
-  * @date:   11 August 2016   -UD/RW 12 April 2017
+  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RN 10 Feburary 2018
   */
 
 
 #include "StaticDataMgr.h"
-#include "ship/modules/Salvager.h"
+#include "ship/modules/Prospector.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
 
 /* this class is for all salvage and data mining types */
 
-Salvager::Salvager( InventoryItemRef item, ShipItemRef ship )
+Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
 : ActiveModule(item, ship)
 {
     m_success = false;
     m_firstRun = true;
+    m_salvager = false;
+    m_dataMiner = false;
 
+    if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
+        m_salvager = true;
+    else if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
+        m_dataMiner = true;
+
+    m_accessBonus = 0;
     m_accessChance = 0;
 
     pChar = m_shipRef->GetPilot()->GetChar().get();
 }
-void Salvager::Activate(uint16 effectID, uint32 targetID, int16 repeat)
+
+void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
     // reset for each activation
     m_success = false;
     m_firstRun = true;
+    m_accessBonus = GetAttribute(AttrAccessDifficultyBonus).get_int();
+    m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+
+    // add all bonuses to chance here (module, ship, rigs, skills, implants)
+
+
     ActiveModule::Activate(effectID, targetID, repeat);
 }
 
-bool Salvager::CanActivate()
+bool Prospector::CanActivate()
 {
-    if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE())
-        return ActiveModule::CanActivate();
-    return false;
+    if (m_salvager)
+        if (m_targetSE->IsWreckSE())
+            return ActiveModule::CanActivate();
+    if (m_dataMiner)
+        if (m_targetSE->IsContainerSE())
+            return ActiveModule::CanActivate();
+
+    throw PyException( MakeUserError( "DeniedActivateTargetModuleDisallowed"));
 }
 
-uint32 Salvager::DoCycle()
+uint32 Prospector::DoCycle()
 {
     if (m_firstRun) {
         m_firstRun = false;
-    } else if (!m_success) {
+        return ActiveModule::DoCycle();
+    }
+
+    CheckSuccess();
+    if (!m_success) {
         SendFailure();
-        CheckSuccess();
     } else if (m_success) {
-        DropSalvage();
+        if (m_salvager)
+            DropSalvage();
+        if (m_dataMiner)
+            DropItems();
         AbortCycle();
-        return 0;
+        return (m_accessChance = 0);
     } else {
-        _log(SHIP__MODULE_ERROR, "Salvage DoCycle hit end of conditional.");
+        _log(SHIP__MODULE_ERROR, "Prospector::DoCycle() hit end of conditional.");
     }
 
     return ActiveModule::DoCycle();
@@ -75,39 +101,45 @@ uint32 Salvager::DoCycle()
                           [PyInt 4]         << cacheSolarSystemObjects???
                           [PyInt 26513]
                         */
-void Salvager::SendFailure()
+void Prospector::SendFailure()
 {
-    PyTuple* type = new PyTuple(2);
-        type->SetItem(0, new PyInt(cacheSolarSystemObjects));
-        type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
-    PyDict* dict = new PyDict;
-        dict->SetItemString("type", type);
-    PyTuple* tup = new PyTuple(3);
-        tup->SetItem(0, new PyString("OnRemoteMessage"));
-        tup->SetItem(1, new PyString("SalvagingFailure"));
-        tup->SetItem(2, dict);
-    std::vector<PyTuple*> events;
-        events.push_back(tup);
-    std::vector<PyTuple*> updates;
-    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    if (m_salvager) {
+        PyTuple* type = new PyTuple(2);
+            type->SetItem(0, new PyInt(cacheSolarSystemObjects));
+            type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
+        PyDict* dict = new PyDict;
+            dict->SetItemString("type", type);
+        PyTuple* tup = new PyTuple(3);
+            tup->SetItem(0, new PyString("OnRemoteMessage"));
+            tup->SetItem(1, new PyString("SalvagingFailure"));
+            tup->SetItem(2, dict);
+        std::vector<PyTuple*> events;
+            events.push_back(tup);
+        std::vector<PyTuple*> updates;
+        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    }
+    if (m_dataMiner) {
+
+    }
 }
 
-void Salvager::CheckSuccess()
-{ // same forumla used in analyzing and data salvage
-    m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+void Prospector::CheckSuccess()
+{
+    int8 chance = m_accessBonus + m_accessChance;
 
     uint8 roll = MakeRandomInt(0,100);
-    if (roll < m_accessChance)
+    if (roll < chance)
         m_success = true;
 
-    _log(SHIP__MODULE_DEBUG, "Salvager::CheckSuccess - chance: %i, roll: %u, success: %s", \
-                            m_accessChance, roll, (m_success ? "true" : "false"));
+    _log(SHIP__MODULE_DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
 }
 
-void Salvager::DropSalvage()
+void Prospector::DropSalvage()
 {
     std::vector<uint32> list;
-    sDataMgr.GetSalvage(m_targetSE->GetWarFactionID(), list);
+    list.clear();
+    sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
+
     uint8 drop = 0;
     switch (m_accessChance) {       // drop qty * rate in config
         case  30: drop = 1; break;  //  1 to 3
@@ -133,8 +165,6 @@ void Salvager::DropSalvage()
             m_shipRef->AddItem(itemRef);
         }
     }
-
-    m_accessChance = 0;
 
     if (!m_targetSE->GetSelf()->GetMyInventory()->IsEmpty()) {
         std::map<uint32, InventoryItemRef> shipLoot;
@@ -168,6 +198,12 @@ void Salvager::DropSalvage()
     }
     m_targetSE->SystemMgr()->RemoveEntity(m_targetSE);
     m_targetSE->GetSelf()->Delete();
+}
+
+void Prospector::DropItems()
+{
+    // this will be for data miners and hacking/archeology shit.  dunno what all we'll need at this point.
+    //  update StaticDataMgr for these items also.
 }
 
 /*

@@ -83,7 +83,7 @@ bool MiningLaser::CanActivate()
         m_IsInitialCycle = true;
 
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
-        return true;
+        return ActiveModule::CanActivate();
     } else {
         _log(MINING__WARNING, "Activate() - Invalid target: %s", m_targetSE->GetName());
         if (m_shipRef->HasPilot())

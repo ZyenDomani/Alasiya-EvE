@@ -32,7 +32,7 @@
 #include "ship/modules/MiningLaser.h"
 #include "ship/modules/PassiveModule.h"
 #include "ship/modules/RigModule.h"
-#include "ship/modules/Salvager.h"
+#include "ship/modules/Prospector.h"
 #include "ship/modules/SubSystemModule.h"
 //#include "modules/SuperWeapon.h"
 #include "ship/modules/TurretModule.h"
@@ -95,21 +95,25 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
             case EVEDB::invGroups::Shield_Boost_Amplifier:                  return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Shield_Disruptor:                        return (new ActiveModule(item, ship));    // Active - external
 
-            // Electronics Modules:
+            // Scanner Modules
             case EVEDB::invGroups::Cargo_Scanner:                           return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Ship_Scanner:                            return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Survey_Scanner:                          return (new ActiveModule(item, ship));    // Active - external
+            case EVEDB::invGroups::System_Scanner:                          return (new ActiveModule(item, ship));    // Active - external
+
+            // Electronics Modules:
             case EVEDB::invGroups::Cloaking_Device:                         return (new ActiveModule(item, ship));    // Active  -  SELF
             case EVEDB::invGroups::Target_Painter:                          return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Drone_Control_Unit:                      return (new PassiveModule(item, ship));
-            case EVEDB::invGroups::System_Scanner:                          return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Scan_Probe_Launcher:                     return (new ActiveModule(item, ship));    // Active - external
             case EVEDB::invGroups::Drone_Navigation_Computer:               return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Drone_Tracking_Modules:                  return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Drone_Control_Range_Module:              return (new PassiveModule(item, ship));
             case EVEDB::invGroups::Tractor_Beam:                            return (new ActiveModule(item, ship));    // Active - external
-            case EVEDB::invGroups::Salvager:                                return (new Salvager(item, ship));    // Active - external
-            case EVEDB::invGroups::Data_Miners:                             return (new Salvager(item, ship));    // Active - external
+
+            // Prospecting Modules
+            case EVEDB::invGroups::Salvager:                                return (new Prospector(item, ship));    // Active - external
+            case EVEDB::invGroups::Data_Miners:                             return (new Prospector(item, ship));    // Active - external
 
             // Engineering Modules:
             case EVEDB::invGroups::Capacitor_Recharger:                     return (new PassiveModule(item, ship));

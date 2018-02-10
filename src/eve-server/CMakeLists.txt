@@ -456,9 +456,9 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleManager.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/Prospector.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/PassiveModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/RigModule.h"
-     "${TARGET_INCLUDE_DIR}/ship/modules/Salvager.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/SubSystemModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/TurretFormulas.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/TurretModule.h" )
@@ -468,9 +468,9 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/MiningLaser.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleContainer.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/Prospector.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/RigModule.cpp"
-     "${TARGET_SOURCE_DIR}/ship/modules/Salvager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/SubSystemModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/TurretFormulas.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/TurretModule.cpp" )

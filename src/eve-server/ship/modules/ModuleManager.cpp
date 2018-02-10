@@ -177,9 +177,7 @@ void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef
             return;
     }
 
-    std::map<std::string, PyRep *> args;
-    args["moduleName"] = new PyString(iRef->itemName());
-    throw PyException( MakeUserError("NotEnoughTurretSlots", args));
+    throw PyException( MakeUserError("NoFreeShipSlots"));
 }
 
 void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef)

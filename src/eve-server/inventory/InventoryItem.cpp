@@ -497,9 +497,6 @@ void InventoryItem::Delete() {
         ChangeOwner(1);
     }
 
-    //take ourself out of the DB
-    sItemFactory.db()->DeleteItem( m_itemID );
-
     pAttributeMap->Delete();
 
     //delete ourselves from factory cache

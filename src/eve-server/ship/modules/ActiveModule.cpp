@@ -102,7 +102,7 @@ void ActiveModule::Clear()
     m_targetSE = nullptr;
     m_destinyMgr = nullptr;
     m_needsTarget = false;
-    
+
     m_timer.Disable();
 
     m_shipRef->ClearTargetRef();
@@ -359,6 +359,7 @@ uint32 ActiveModule::DoCycle()
             LaunchMissile();
         } break;
         // these neither require nor consume charges
+        case EVEDB::invGroups::Salvager:    //working
         case EVEDB::invGroups::Target_Painter:  // working
         case EVEDB::invGroups::Signal_Amplifier:    //working
         case EVEDB::invGroups::Sensor_Booster:  //working
@@ -612,6 +613,7 @@ void ActiveModule::ReprocessCharge()
 bool ActiveModule::CanActivate()
 {
     // there is still more to be done here.  wip
+    //  specific modules that require specific tests are coded in their module class, which will call this if checks pass
 
     // check distance for targetable actions
     if (m_targetSE != nullptr) {
@@ -701,6 +703,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
         shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
+        // will need to check and update for data miners here  (any other cases?)
         if ((groupID() == EVEDB::invGroups::Salvager) and (abort)) {
             // Create Destiny Updates:
             PyTuple* type = new PyTuple(2);
