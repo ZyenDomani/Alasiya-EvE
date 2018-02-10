@@ -178,8 +178,8 @@ bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
         throw PyException( MakeUserError("DeniedTargetInvulnerable"));
     if ((who->TargetMgr() == nullptr) or (who->GetSelf()->HasAttribute(AttrUntargetable))) { //only for 21094, 28650 (cyno fields)
         std::map<std::string, PyRep *> args;
-        args["target"] = new PyInt(who->GetID());
-        throw PyException( MakeUserError("DeniedTargetingAttemptFailed", args));
+        args["targetName"] = new PyString(who->GetName());
+        throw PyException( MakeUserError("DeniedTargetEvadesSensors", args));
     }
     if (who->DestinyMgr() != nullptr) {
         if (who->DestinyMgr()->IsCloaked())
