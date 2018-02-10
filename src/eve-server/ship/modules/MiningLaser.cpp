@@ -215,3 +215,9 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
             }
         }
 }
+
+/*{'messageKey': 'MiningCrystalDestroyed', 'dataID': 17883202, 'suppressable': False, 'bodyID': 259420, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1167}
+ * u'MiningCrystalDestroyedBody'}(u'{[item]module.name} deactivates due to the destruction of the {[item]type.name} it was fitted with. \r\n', None, {u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}, u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+ * {'messageKey': 'MiningItemDepleted', 'dataID': 17879592, 'suppressable': False, 'bodyID': 258064, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2312}
+ * u'MiningItemDepletedBody'}(u'{modulename} deactivates as its target has been depleted.', None, {u'{modulename}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'modulename'}})
+ */

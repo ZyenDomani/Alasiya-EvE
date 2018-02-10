@@ -234,9 +234,21 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         AbortCycle();
         return;
     } else if (effect.compare("TargetDestroyed") == 0) {
-        m_targetID = 0;
+        m_Stop = true;
         m_targetSE = nullptr;
-        // dunno if this can throw here....
+        SetModuleState(Module::State::Deactivating);
+        std::map<std::string, PyRep *> args;
+        args["moduleID"] = new PyInt(m_modRef->itemID());
+        args["targetID"] = new PyInt(m_targetID);
+        m_targetID = 0;
+        throw PyException( MakeUserError("TargetNoLongerPresent", args));
+        /* dunno if this can throw here....
+         * {'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
+         * u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})
+         * {'messageKey': 'TargetNoLongerPresentGeneric', 'dataID': 17875297, 'suppressable': False, 'bodyID': 256459, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3742}
+         * u'TargetNoLongerPresentGenericBody'}(u'{[item]moduleID.name} deactivates as the item it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
+         *
+         */
     } else if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);

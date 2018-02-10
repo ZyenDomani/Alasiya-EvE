@@ -950,6 +950,17 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
         throw PyException(MakeUserError("SelfDestructAborted2"));
 */
 
+    /*{'messageKey': 'SelfDestructAborted2', 'dataID': 17879480, 'suppressable': False, 'bodyID': 258024, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2405}
+     * {'messageKey': 'SelfDestructAbortedOther2', 'dataID': 17879483, 'suppressable': False, 'bodyID': 258025, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2406}
+     * {'messageKey': 'SelfDestructCancelledExternal', 'dataID': 17876999, 'suppressable': False, 'bodyID': 257085, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3182}
+     * {'messageKey': 'SelfDestructCancelledWarp', 'dataID': 17878652, 'suppressable': False, 'bodyID': 257707, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2564}
+     * {'messageKey': 'SelfDestructImmediate', 'dataID': 17881593, 'suppressable': False, 'bodyID': 258829, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1533}
+     * {'messageKey': 'SelfDestructImmediateOther', 'dataID': 17881596, 'suppressable': False, 'bodyID': 258830, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1534}
+     * {'messageKey': 'SelfDestructInitiated', 'dataID': 17881805, 'suppressable': False, 'bodyID': 258902, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1535}
+     * {'messageKey': 'SelfDestructInitiatedOther', 'dataID': 17881599, 'suppressable': False, 'bodyID': 258831, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1536}
+     * {'messageKey': 'SelfDestructTimer', 'dataID': 17878655, 'suppressable': False, 'bodyID': 257708, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2563}
+     * {'messageKey': 'SelfDestructTooEarly', 'dataID': 17881605, 'suppressable': False, 'bodyID': 258833, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1537}
+     */
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);

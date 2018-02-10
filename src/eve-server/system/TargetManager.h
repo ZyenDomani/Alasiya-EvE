@@ -144,4 +144,40 @@ private:
 
 #endif
 
+/*{'messageKey': 'TargetByOther', 'dataID': 2040886, 'suppressable': False, 'bodyID': None, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1612}
+{'messageKey': 'TargetCantValidate', 'dataID': 17881380, 'suppressable': False, 'bodyID': 258753, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1613}
+{'messageKey': 'TargetElectronicsScanStrengthsIncompatible', 'dataID': 17881494, 'suppressable': False, 'bodyID': 258794, 'messageType': 'notify', 'urlAudio': 'wise:/msg_TargetElectronicsScanStrengthsIncompatible_play', 'urlIcon': '', 'titleID': None, 'messageID': 1614}
+{'messageKey': 'TargetExploding', 'dataID': 17881630, 'suppressable': False, 'bodyID': 258842, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1615}
+{'messageKey': 'TargetExploding2', 'dataID': 38244390, 'suppressable': False, 'bodyID': 264194, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3798}
+{'messageKey': 'TargetJammedBy', 'dataID': 17881749, 'suppressable': False, 'bodyID': 258883, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1616}
+{'messageKey': 'TargetJammedOtherBy', 'dataID': 17881755, 'suppressable': False, 'bodyID': 258885, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1617}
+{'messageKey': 'TargetJammedSuccess', 'dataID': 17881752, 'suppressable': False, 'bodyID': 258884, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1618}
+{'messageKey': 'TargetJammingFullSuccess', 'dataID': 17881651, 'suppressable': False, 'bodyID': 258850, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1619}
+{'messageKey': 'TargetJammingPartialSuccess', 'dataID': 17881657, 'suppressable': False, 'bodyID': 258852, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1620}
+{'messageKey': 'TargetJammingWithoutTargeters', 'dataID': 17881660, 'suppressable': False, 'bodyID': 258853, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1621}
+u'TargetJammingWithoutTargetersBody'}(u'As nothing is targeting you at this time, your {[item]moduleID.name} failed to jam anything.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
+{'messageKey': 'TargetLocked', 'dataID': 2987151, 'suppressable': False, 'bodyID': None, 'messageType': 'audio', 'urlAudio': 'wise:/msg_TargetLocked_play', 'urlIcon': '', 'titleID': None, 'messageID': 1622}
+{'messageKey': 'TargetLocking', 'dataID': 2987152, 'suppressable': False, 'bodyID': None, 'messageType': 'audio', 'urlAudio': 'wise:/msg_TargetLocking_play', 'urlIcon': '', 'titleID': None, 'messageID': 1623}
+{'messageKey': 'TargetLost', 'dataID': 17881497, 'suppressable': False, 'bodyID': 258795, 'messageType': 'notify', 'urlAudio': 'wise:/msg_TargetLost_play', 'urlIcon': '', 'titleID': None, 'messageID': 1624}
+{'messageKey': 'TargetLostNotWithinRange', 'dataID': 17881663, 'suppressable': False, 'bodyID': 258854, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1625}
+u'TargetLostNotWithinRangeBody'}(u'The {[item]targetGroupID.name} is too far away, you need to be within {[numeric]desiredRange} meters of it but are actually {[numeric]actualRange} meters away.', None, {u'{[numeric]desiredRange}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'desiredRange'}, u'{[numeric]actualRange}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'actualRange'}, u'{[item]targetGroupID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetGroupID'}})
+{'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
+u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})
+{'messageKey': 'TargetNoLongerPresentGeneric', 'dataID': 17875297, 'suppressable': False, 'bodyID': 256459, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3742}
+u'TargetNoLongerPresentGenericBody'}(u'{[item]moduleID.name} deactivates as the item it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
+{'messageKey': 'TargetNotLocked', 'dataID': 17881675, 'suppressable': False, 'bodyID': 258858, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1627}
+{'messageKey': 'TargetNotLocked2', 'dataID': 38244393, 'suppressable': False, 'bodyID': 264195, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3799}
+{'messageKey': 'TargetNotShip', 'dataID': 17881383, 'suppressable': False, 'bodyID': 258754, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1628}
+{'messageKey': 'TargetNotWithinRange', 'dataID': 17881787, 'suppressable': False, 'bodyID': 258896, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1629}
+{'messageKey': 'TargetNotWithinRangeGeneric', 'dataID': 17875391, 'suppressable': False, 'bodyID': 256493, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3744}
+{'messageKey': 'TargetObscured', 'dataID': 17881678, 'suppressable': False, 'bodyID': 258859, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1630}
+{'messageKey': 'TargetOutOfRangeFar', 'dataID': 17881681, 'suppressable': False, 'bodyID': 258860, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1631}
+{'messageKey': 'TargetTooFar', 'dataID': 17881689, 'suppressable': False, 'bodyID': 258863, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1632}
+{'messageKey': 'Targeting', 'dataID': 17881919, 'suppressable': False, 'bodyID': 258942, 'messageType': 'notify', 'urlAudio': 'wise:/msg_Targeting_play', 'urlIcon': 'res:/ui/icon/misc/targeting.blue', 'titleID': None, 'messageID': 1633}
+{'messageKey': 'TargetingAptitudeAlreadyFullyUtilized', 'dataID': 17881692, 'suppressable': False, 'bodyID': 258864, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1634}
+{'messageKey': 'TargetingMissileToSelf', 'dataID': 17881695, 'suppressable': False, 'bodyID': 258865, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1635}
+{'messageKey': 'TargetingSystemsAlreadyFullyUtilized', 'dataID': 17881704, 'suppressable': False, 'bodyID': 258868, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1636}
+{'messageKey': 'TargetingSystemsBeingJammed', 'dataID': 17881758, 'suppressable': False, 'bodyID': 258886, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1637}
+{'messageKey': 'TargetingSystemsNotInstalled', 'dataID': 17881386, 'suppressable': False, 'bodyID': 258755, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1638}
+*/
 
