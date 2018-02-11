@@ -121,10 +121,10 @@ InventoryItemRef InventoryItem::SpawnItem( uint32 itemID, const ItemData &data)
 {
     if (data.quantity == 0)
         return InventoryItemRef(nullptr);
-    const ItemType *iType = sItemFactory.GetType( data.typeID );
+    const ItemType *iType = sItemFactory.GetType( data.typeID);
     if (iType == nullptr)
         return InventoryItemRef(nullptr);
-    InventoryItemRef iRef = InventoryItemRef( new InventoryItem(itemID, *iType, data) );
+    InventoryItemRef iRef = InventoryItemRef( new InventoryItem(itemID, *iType, data));
     if (iRef.get() == nullptr)
         return iRef;
 
@@ -203,7 +203,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
         case EVEDB::invCategories::Reaction: {
             // Generic item, create one:
-            return InventoryItemRef( new InventoryItem(itemID, type, data ) );
+            return InventoryItemRef( new InventoryItem(itemID, type, data ));
         } break;
         case EVEDB::invCategories::Owner: {
             return Character::_LoadItem<Character>(itemID, type, data);
@@ -218,7 +218,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
             if (IsAsteroid(itemID))
                 return AsteroidItem::_LoadItem<AsteroidItem>(itemID, type, data);
             // mined ore.  create default item
-            return InventoryItemRef( new InventoryItem(itemID, type, data ) );
+            return InventoryItemRef( new InventoryItem(itemID, type, data ));
         } break;
         case EVEDB::invCategories::Ship: {
             return ShipItem::_LoadItem<ShipItem>(itemID, type, data);
@@ -269,7 +269,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
                 } break;
                 case EVEDB::invGroups::Billboard:
                 case EVEDB::invGroups::Temporary_Cloud: {
-                    return CelestialObject::_LoadItem<CelestialObject>(itemID, type, data );
+                    return CelestialObject::_LoadItem<CelestialObject>(itemID, type, data);
                 } break;
                 // the rest are drones....i think
                 // they are *somewhat* separated for eventual classification into their own itemtypes
@@ -316,14 +316,14 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         } break;
     }
     // Generic item, create one:
-    return InventoryItemRef( new InventoryItem(itemID, type, data ) );
+    return InventoryItemRef( new InventoryItem(itemID, type, data ));
 }
 
 // called from generic SpawnItem()
 InventoryItemRef InventoryItem::Spawn( ItemData &data)
 {
     // obtain type of new item
-    const ItemType *iType = sItemFactory.GetType( data.typeID );
+    const ItemType *iType = sItemFactory.GetType( data.typeID);
     if (iType == nullptr) {
         codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
         return InventoryItemRef(nullptr);
@@ -352,13 +352,13 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
         case EVEDB::invCategories::Reaction: {
             _log(ITEM__WARNING, "InventoryItem::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
-            uint32 itemID = InventoryItem::CreateItemID(data );
+            uint32 itemID = InventoryItem::CreateItemID(data);
             return InventoryItem::SpawnItem(itemID, data);
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::SovereigntyStructure: {
-            return StructureItem::Spawn(data );
+            return StructureItem::Spawn(data);
         }
         case EVEDB::invCategories::Blueprint: {
             BlueprintData bpData;
@@ -366,28 +366,31 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 bpData.copy = false;
                 bpData.mLevel = 0;
                 bpData.pLevel = 0;
-            return Blueprint::Spawn(data, bpData );
+            return Blueprint::Spawn(data, bpData);
         }
         case EVEDB::invCategories::Skill: {
-            return Skill::Spawn(data );
+            return Skill::Spawn(data);
         }
         case EVEDB::invCategories::Ship: {
-            return ShipItem::Spawn(data );
+            return ShipItem::Spawn(data);
         }
         case EVEDB::invCategories::Entity:
             if (iType->groupID() == EVEDB::invGroups::Spawn_Container)
                 return CargoContainer::Spawn(data);
             if (iType->groupID() == EVEDB::invGroups::Cargo_Container) {
                 // Spawn jetcan as marker, using temp items and NOT save to db.
-                uint32 itemID = InventoryItem::CreateTempItemID(data );
+                uint32 itemID = InventoryItem::CreateTempItemID(data);
                 return InventoryItem::SpawnItem(itemID, data);
             }
-        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Drone: {
+            // disable drones
+            return InventoryItemRef(nullptr);
+        }
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
-            uint32 itemID = InventoryItem::CreateItemID(data );
-            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data );
+            uint32 itemID = InventoryItem::CreateItemID(data);
+            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data);
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
@@ -403,13 +406,13 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             switch (data.flag) {
                 case EVEItemFlags::flagMissile: {
                     // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
-                    itemID = InventoryItem::CreateTempItemID(data );
-                    itemRef = InventoryItem::SpawnItem(itemID, data );
+                    itemID = InventoryItem::CreateTempItemID(data);
+                    itemRef = InventoryItem::SpawnItem(itemID, data);
                 } break;
                 default: {
                     // Spawn generic item:
-                    itemID = InventoryItem::CreateItemID(data );
-                    itemRef = InventoryItem::SpawnItem(itemID, data );
+                    itemID = InventoryItem::CreateItemID(data);
+                    itemRef = InventoryItem::SpawnItem(itemID, data);
                 }
             }
             if (itemRef.get() == nullptr)
@@ -421,10 +424,10 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
         }
         case EVEDB::invCategories::Station: {
             if (iType->groupID() == EVEDB::invGroups::Station) {
-            uint32 itemID = StationItem::CreateItemID(data );
+            uint32 itemID = StationItem::CreateItemID(data);
             if (itemID == 0)
                 return StationItemRef(nullptr);
-            StationItemRef stationRef = StationItem::Load(itemID );
+            StationItemRef stationRef = StationItem::Load(itemID);
             if (stationRef.get() == nullptr)
                 return StationItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
@@ -448,14 +451,14 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             or (iType->groupID() == EVEDB::invGroups::Mission_Container)) {
                 return CargoContainer::Spawn(data);
             } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
-                return WreckContainer::Spawn(data );
+                return WreckContainer::Spawn(data);
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
-                uint32 itemID = InventoryItem::CreateTempItemID(data );
+                uint32 itemID = InventoryItem::CreateTempItemID(data);
                 return InventoryItem::SpawnItem(itemID, data);
             } else {
                 // Spawn new Celestial Object
-                return CelestialObject::Spawn(data );
+                return CelestialObject::Spawn(data);
             }
         }
     }
@@ -467,12 +470,12 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
 
 void InventoryItem::AddItem(InventoryItemRef iRef)
 {
-    pInventory->AddItem( iRef );
+    pInventory->AddItem( iRef);
 }
 
 void InventoryItem::RemoveItem(InventoryItemRef iRef)
 {
-    pInventory->RemoveItem( iRef );
+    pInventory->RemoveItem( iRef);
 }
 
 void InventoryItem::Delete() {
@@ -485,72 +488,72 @@ void InventoryItem::Delete() {
 
     pAttributeMap->Delete();
     //take ourself out of the DB
-    sItemFactory.db()->DeleteItem( m_itemID );
+    sItemFactory.db()->DeleteItem( m_itemID);
     //delete ourselves from factory cache
-    sItemFactory.RemoveItem( m_itemID );
+    sItemFactory.RemoveItem( m_itemID);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
     DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "instanceID",    DBTYPE_I8 );
-        header->AddColumn( "online",        DBTYPE_BOOL );
-        header->AddColumn( "damage",        DBTYPE_R8 );
-        header->AddColumn( "charge",        DBTYPE_R8 );
-        header->AddColumn( "skillPoints",   DBTYPE_I4 );
-        header->AddColumn( "armorDamage",   DBTYPE_R8 );
-        header->AddColumn( "shieldCharge",  DBTYPE_R8 );
-        header->AddColumn( "incapacitated", DBTYPE_BOOL );
-    PyPackedRow* row = new PyPackedRow( header );
-    GetItemStatusRow( row );
+        header->AddColumn( "instanceID",    DBTYPE_I8);
+        header->AddColumn( "online",        DBTYPE_BOOL);
+        header->AddColumn( "damage",        DBTYPE_R8);
+        header->AddColumn( "charge",        DBTYPE_R8);
+        header->AddColumn( "skillPoints",   DBTYPE_I4);
+        header->AddColumn( "armorDamage",   DBTYPE_R8);
+        header->AddColumn( "shieldCharge",  DBTYPE_R8);
+        header->AddColumn( "incapacitated", DBTYPE_BOOL);
+    PyPackedRow* row = new PyPackedRow( header);
+    GetItemStatusRow( row);
     return row;
 }
 
 void InventoryItem::GetItemStatusRow( PyPackedRow* into ) const {
-    into->SetField( "instanceID",    new PyLong( m_itemID ) );
-    into->SetField( "online",        new PyBool( (HasAttribute(AttrIsOnline) ? GetAttribute(AttrIsOnline).get_int() : false) ) );
-    into->SetField( "damage",        new PyFloat( (HasAttribute(AttrDamage) ? GetAttribute(AttrDamage).get_float() : 0) ) );
-    into->SetField( "charge",        new PyFloat( (HasAttribute(AttrCapacitorCharge) ? GetAttribute(AttrCapacitorCharge).get_float() : 0) ) );
-    into->SetField( "skillPoints",   new PyInt( (HasAttribute(AttrSkillPoints) ? GetAttribute(AttrSkillPoints).get_int() : 0) ) );
-    into->SetField( "armorDamage",   new PyFloat( (HasAttribute(AttrArmorDamageAmount) ? GetAttribute(AttrArmorDamageAmount).get_float() : 0.0) ) );
-    into->SetField( "shieldCharge",  new PyFloat( (HasAttribute(AttrShieldCharge) ? GetAttribute(AttrShieldCharge).get_float() : 0.0) ) );
-    into->SetField( "incapacitated", new PyBool( (HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_int() : false) ) );
+    into->SetField( "instanceID",    new PyLong( m_itemID ));
+    into->SetField( "online",        new PyBool( (HasAttribute(AttrIsOnline) ? GetAttribute(AttrIsOnline).get_int() : false) ));
+    into->SetField( "damage",        new PyFloat( (HasAttribute(AttrDamage) ? GetAttribute(AttrDamage).get_float() : 0) ));
+    into->SetField( "charge",        new PyFloat( (HasAttribute(AttrCapacitorCharge) ? GetAttribute(AttrCapacitorCharge).get_float() : 0) ));
+    into->SetField( "skillPoints",   new PyInt( (HasAttribute(AttrSkillPoints) ? GetAttribute(AttrSkillPoints).get_int() : 0) ));
+    into->SetField( "armorDamage",   new PyFloat( (HasAttribute(AttrArmorDamageAmount) ? GetAttribute(AttrArmorDamageAmount).get_float() : 0.0) ));
+    into->SetField( "shieldCharge",  new PyFloat( (HasAttribute(AttrShieldCharge) ? GetAttribute(AttrShieldCharge).get_float() : 0.0) ));
+    into->SetField( "incapacitated", new PyBool( (HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_int() : false) ));
 }
 
 /*  this is charge info for the module in question  */
 PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
     DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "instanceID", DBTYPE_I8 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
-    PyPackedRow* row = new PyPackedRow( header );
+        header->AddColumn( "instanceID", DBTYPE_I8);
+        header->AddColumn( "flagID",     DBTYPE_I2);
+        header->AddColumn( "typeID",     DBTYPE_I4);
+        header->AddColumn( "quantity",   DBTYPE_I4);
+    PyPackedRow* row = new PyPackedRow( header);
     GetChargeStatusRow(shipID, row);
     return row;
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField( "instanceID",    new PyLong( shipID ) );  /* this is shipID */
-    into->SetField( "flagID",        new PyInt( m_flag ) );
-    into->SetField( "typeID",        new PyInt( typeID() ) );
-    into->SetField( "quantity",      new PyInt( quantity()) );
+    into->SetField( "instanceID",    new PyLong( shipID ));  /* this is shipID */
+    into->SetField( "flagID",        new PyInt( m_flag ));
+    into->SetField( "typeID",        new PyInt( typeID() ));
+    into->SetField( "quantity",      new PyInt( quantity()));
 }
 
 PyPackedRow* InventoryItem::GetModuleStatusRow() const {
     DBRowDescriptor* header = new DBRowDescriptor;
-    header->AddColumn( "instanceID", DBTYPE_I8 );
-    header->AddColumn( "flagID",     DBTYPE_I2 );
-    header->AddColumn( "typeID",     DBTYPE_I4 );
-    header->AddColumn( "quantity",   DBTYPE_I4 );
-    PyPackedRow* row = new PyPackedRow( header );
+    header->AddColumn( "instanceID", DBTYPE_I8);
+    header->AddColumn( "flagID",     DBTYPE_I2);
+    header->AddColumn( "typeID",     DBTYPE_I4);
+    header->AddColumn( "quantity",   DBTYPE_I4);
+    PyPackedRow* row = new PyPackedRow( header);
     GetModuleStatusRow(row);
     return row;
 }
 
 void InventoryItem::GetModuleStatusRow(PyPackedRow* into) const {
-    into->SetField( "instanceID",    new PyLong( m_itemID ) );
-    into->SetField( "flagID",        new PyInt( m_flag ) );
-    into->SetField( "typeID",        new PyInt( typeID() ) );
-    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : quantity()) );
+    into->SetField( "instanceID",    new PyLong( m_itemID ));
+    into->SetField( "flagID",        new PyInt( m_flag ));
+    into->SetField( "typeID",        new PyInt( typeID() ));
+    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : quantity()));
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -560,37 +563,37 @@ PyPackedRow* InventoryItem::GetItemRow() const
         keywords->AddItem(new_tuple(new PyString("singleton"), new PyToken("util.Singleton")));
 
     DBRowDescriptor* header = new DBRowDescriptor(keywords);
-        header->AddColumn( "itemID",     DBTYPE_I8 );
-        header->AddColumn( "typeID",     DBTYPE_I4 );
-        header->AddColumn( "ownerID",    DBTYPE_I4 );
-        header->AddColumn( "locationID", DBTYPE_I4 );
-        header->AddColumn( "flagID",     DBTYPE_I2 );
-        header->AddColumn( "quantity",   DBTYPE_I4 );
-        header->AddColumn( "groupID",    DBTYPE_I2 );
-        header->AddColumn( "categoryID", DBTYPE_I4 );
-        header->AddColumn( "customInfo", DBTYPE_STR );
+        header->AddColumn( "itemID",     DBTYPE_I8);
+        header->AddColumn( "typeID",     DBTYPE_I4);
+        header->AddColumn( "ownerID",    DBTYPE_I4);
+        header->AddColumn( "locationID", DBTYPE_I4);
+        header->AddColumn( "flagID",     DBTYPE_I2);
+        header->AddColumn( "quantity",   DBTYPE_I4);
+        header->AddColumn( "groupID",    DBTYPE_I2);
+        header->AddColumn( "categoryID", DBTYPE_I4);
+        header->AddColumn( "customInfo", DBTYPE_STR);
 
-    PyPackedRow* row = new PyPackedRow( header );
-    GetItemRow( row );
+    PyPackedRow* row = new PyPackedRow( header);
+    GetItemRow( row);
 
     return row;
 }
 
 void InventoryItem::GetItemRow( PyPackedRow* into ) const
 {
-    into->SetField( "itemID",     new PyLong( m_itemID ) );
-    into->SetField( "typeID",     new PyInt( m_type.id() ) );
-    into->SetField( "ownerID",    new PyInt( m_ownerID ) );
-    into->SetField( "locationID", new PyInt( m_locationID ) );
-    into->SetField( "flagID",     new PyInt( m_flag ) );
+    into->SetField( "itemID",     new PyLong( m_itemID ));
+    into->SetField( "typeID",     new PyInt( m_type.id() ));
+    into->SetField( "ownerID",    new PyInt( m_ownerID ));
+    into->SetField( "locationID", new PyInt( m_locationID ));
+    into->SetField( "flagID",     new PyInt( m_flag ));
     int32 qty = (m_singleton ? -1 : quantity());
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
         if (sItemFactory.GetBlueprint(m_itemID)->copy())
             qty = -2;
-    into->SetField( "quantity",   new PyInt( qty ) );
-    into->SetField( "groupID",    new PyInt( type().groupID() ) );
-    into->SetField( "categoryID", new PyInt( type().categoryID() ) );
-    into->SetField( "customInfo", new PyString( m_customInfo ) );
+    into->SetField( "quantity",   new PyInt( qty ));
+    into->SetField( "groupID",    new PyInt( type().groupID() ));
+    into->SetField( "categoryID", new PyInt( type().categoryID() ));
+    into->SetField( "customInfo", new PyString( m_customInfo ));
 }
 
 bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
@@ -599,8 +602,8 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 
     //make sure trash data is removed from &result
     result.attributes.clear();
-    PySafeDecRef( result.itemID );
-    PySafeDecRef( result.invItem );
+    PySafeDecRef( result.itemID);
+    PySafeDecRef( result.invItem);
 
     if (groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
@@ -688,12 +691,12 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
 
     if (old_location != new_location) {
         if (IsValidLocation(old_location)) {
-            pInv = sItemFactory.GetInventoryFromId( old_location, false );
+            pInv = sItemFactory.GetInventoryFromId( old_location, false);
             if (pInv != nullptr)
                 pInv->RemoveItem(InventoryItemRef(this));
         }
         if (IsValidLocation(new_location)) {
-            pInv = sItemFactory.GetInventoryFromId( new_location, false );
+            pInv = sItemFactory.GetInventoryFromId( new_location, false);
             if (pInv != nullptr)
                 pInv->AddItem(InventoryItemRef(this));
         }
@@ -734,16 +737,16 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
 
     if (old_location != new_location) {
         if (IsValidLocation(old_location)) {
-            pInv = sItemFactory.GetInventoryFromId( old_location, false );
+            pInv = sItemFactory.GetInventoryFromId( old_location, false);
             if (pInv != nullptr)
                 pInv->RemoveItem(InventoryItemRef(this));
         }
         if (IsValidLocation(new_location)) {
-            pInv = sItemFactory.GetInventoryFromId( new_location, false );
+            pInv = sItemFactory.GetInventoryFromId( new_location, false);
             if (pInv != nullptr)
                 pInv->AddItem(InventoryItemRef(this));
             else
-                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", new_location, itemName().c_str() );
+                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", new_location, itemName().c_str());
         }
     }
 
@@ -761,7 +764,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
             changes[ixLocationID] = new PyInt(old_location);
         if ( new_flag != old_flag )
             changes[ixFlag] = new PyInt(old_flag);
-        SendItemChange( m_ownerID, changes );   //changes is consumed
+        SendItemChange( m_ownerID, changes);   //changes is consumed
     }
 }
 
@@ -922,7 +925,7 @@ void InventoryItem::SaveItem() {
             m_position,
             customInfo().c_str()
         )
-    );
+   );
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
     SaveAttributes();
@@ -975,7 +978,7 @@ void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (pClient == nullptr) {
         _log(SHIP__MODULE_WARNING, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
-                            m_ownerID, m_itemName.c_str(), m_itemID );
+                            m_ownerID, m_itemName.c_str(), m_itemID);
         return;
     }
 
