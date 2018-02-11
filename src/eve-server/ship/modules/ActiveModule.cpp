@@ -234,21 +234,8 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         AbortCycle();
         return;
     } else if (effect.compare("TargetDestroyed") == 0) {
-        m_Stop = true;
+        // this is sent back in OnGodmaShipEffect packet
         m_targetSE = nullptr;
-        SetModuleState(Module::State::Deactivating);
-        std::map<std::string, PyRep *> args;
-        args["moduleID"] = new PyInt(m_modRef->itemID());
-        args["targetID"] = new PyInt(m_targetID);
-        m_targetID = 0;
-        throw PyException( MakeUserError("TargetNoLongerPresent", args));
-        /* dunno if this can throw here....
-         * {'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
-         * u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})
-         * {'messageKey': 'TargetNoLongerPresentGeneric', 'dataID': 17875297, 'suppressable': False, 'bodyID': 256459, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3742}
-         * u'TargetNoLongerPresentGenericBody'}(u'{[item]moduleID.name} deactivates as the item it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
-         *
-         */
     } else if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
@@ -728,10 +715,45 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
                 type->SetItem(1, new PyInt(m_targetSE->GetTypeID()));
             PyDict* dict = new PyDict;
                 dict->SetItemString("type", type);
-            PyTuple* tup = new PyTuple(2);
-                tup->SetItem(0, new PyString("SalvagingSuccess"));
-                tup->SetItem(1, dict);
-            shipEff.error = tup;
+            PyTuple* tuple = new PyTuple(2);
+                tuple->SetItem(0, new PyString("SalvagingSuccess"));
+                tuple->SetItem(1, dict);
+            shipEff.error = tuple;
+        } else if (m_needsTarget and (m_targetSE == nullptr)) {
+            /*   these both give client warning -  [no messageID: 258855]
+            if (IsValidTarget(m_targetID)) {
+                PyDict* dict = new PyDict();
+                    dict->SetItemString("moduleID", new PyInt(m_modRef->itemID()));
+                    dict->SetItemString("targetID", new PyInt(m_targetID));
+                PyTuple* tuple = new PyTuple(2);
+                    tuple->SetItem(0, new PyString("TargetNoLongerPresent"));
+                    tuple->SetItem(1, dict);
+                shipEff.error = tuple;
+            } else {
+                PyDict* dict = new PyDict();
+                    dict->SetItemString("moduleID", new PyInt(m_modRef->itemID()));
+                PyTuple* tuple = new PyTuple(2);
+                    tuple->SetItem(0, new PyString("TargetNoLongerPresentGeneric"));
+                    tuple->SetItem(1, dict);
+                shipEff.error = tuple;
+            }
+            // this one doesnt work, either.
+            PyDict* dict = new PyDict();
+                dict->SetItemString("moduleID", new PyInt(m_modRef->itemID()));
+            PyTuple* tuple = new PyTuple(2);
+                tuple->SetItem(0, new PyString("TargetNoLongerPresentGeneric"));
+                tuple->SetItem(1, dict);
+            shipEff.error = new PyNone();
+            m_shipRef->GetPilot()->SendNotification("TargetNoLongerPresentGeneric", "charid", &tuple);
+            */
+            m_targetID = 0;
+        /*
+         * {'messageKey': 'TargetNoLongerPresent', 'dataID': 17881666, 'suppressable': False, 'bodyID': 258855, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1626}
+         * u'TargetNoLongerPresentBody'}(u'{[item]moduleID.name} deactivates as the {[item]targetID.name} it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}, u'{[item]targetID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetID'}})
+         * {'messageKey': 'TargetNoLongerPresentGeneric', 'dataID': 17875297, 'suppressable': False, 'bodyID': 256459, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3742}
+         * u'TargetNoLongerPresentGenericBody'}(u'{[item]moduleID.name} deactivates as the item it was targeted at is no longer present.', None, {u'{[item]moduleID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleID'}})
+         *
+         */
         } else
             shipEff.error = new PyNone();
     std::vector<PyTuple*> events;

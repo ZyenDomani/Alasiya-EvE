@@ -391,6 +391,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
  * Removing Module/Charges from ship (using 'remove' button on item slot)
  * Adding Modules to a specific slot on ship
  */
+/** @todo  calling "loot all" will NOT move stacks except charges */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (is_log_enabled(INV__DUMP)) {
         _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());

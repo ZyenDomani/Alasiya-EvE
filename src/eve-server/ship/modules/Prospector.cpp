@@ -34,11 +34,16 @@ Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
 
 void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
 {
-    ActiveModule::Activate(effectID, targetID, repeat);
-
-    // reset for each activation
+    // reset for each activation  MUST reset BEFORE ActiveModule::Activate() is called.....it calls salvage check.
     m_success = false;
     m_firstRun = true;
+
+    ActiveModule::Activate(effectID, targetID, repeat);
+
+    if (!m_needsTarget or (m_targetSE == nullptr)) {
+        ActiveModule::Deactivate();
+        return;
+    }
     m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
 }
 
@@ -58,19 +63,13 @@ uint32 Prospector::DoCycle()
 {
     if (m_firstRun) {
         m_firstRun = false;
-        return ActiveModule::DoCycle();
-    }
-
-    CheckSuccess();
-    if (!m_success) {
+    } else if (!m_success) {
         SendFailure();
+        CheckSuccess();
     } else if (m_success) {
-        if (m_salvager)
-            DropSalvage();
-        if (m_dataMiner)
-            DropItems();
+        DropSalvage();
         AbortCycle();
-        return (m_accessChance = 0);
+        return 0;
     } else {
         _log(SHIP__MODULE_ERROR, "Prospector::DoCycle() hit end of conditional.");
     }
@@ -111,7 +110,7 @@ void Prospector::SendFailure()
         std::vector<PyTuple*> events;
             events.push_back(tup);
         std::vector<PyTuple*> updates;
-        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+        m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, true);
     }
     if (m_dataMiner) {
 
@@ -132,6 +131,8 @@ void Prospector::CheckSuccess()
 
 void Prospector::DropSalvage()
 {
+    m_accessChance = 0;
+
     std::vector<uint32> list;
     list.clear();
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
@@ -155,9 +156,9 @@ void Prospector::DropSalvage()
             quantity = (MakeRandomInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), m_targetSE->GetID(), flagAutoFit, quantity);
             itemRef = sItemFactory.SpawnItem(iLoot);
-            if (!itemRef) // we'll get over it...continue
+            if (itemRef.get() == nullptr) // we'll get over it...continue
                 continue;
-            itemRef->Move(m_shipRef->itemID(), flagCargoHold);
+            itemRef->Move(m_shipRef->itemID(), flagCargoHold, true);
             m_shipRef->AddItem(itemRef);
         }
     }

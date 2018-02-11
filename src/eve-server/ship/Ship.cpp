@@ -554,11 +554,10 @@ PyDict* ShipItem::GetChargeState() {
 
 void ShipItem::AddItem(InventoryItemRef iRef)
 {
-    if (((iRef->flag() >= flagSlotFirst) and (iRef->flag() <= flagSlotLast))
-        and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
-            // make singleton
-            iRef->ChangeSingleton( true );
-        }
+    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
+        // make singleton
+        iRef->ChangeSingleton( true );
+    }
     pInventory->AddItem( iRef );
 }
 

@@ -79,13 +79,15 @@ protected:
     uint16 m_effectID;                                  //passed to us by activate
     uint32 m_targetID;                                  //passed to us by activate
 
+    // protected to allow derived usage
+    bool m_needsCharge :1;
+    bool m_needsTarget :1;
+
 private:
     Timer m_timer;
     Timer m_reloadTimer;
 
     bool m_Stop :1;
-    bool m_needsCharge :1;
-    bool m_needsTarget :1;
 
     std::string m_guidStr;
 

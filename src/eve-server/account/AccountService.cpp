@@ -349,7 +349,5 @@ void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uin
     MulticastTarget mct;
     mct.corporations.insert(fromID);
     sEntityList.Multicast("OnAccountChange", "*corpid&corpAccountKey", &answer, mct);
-
-
     AccountDB::AddJournalEntry(ownerID, entryTypeID, fromID, toID, currency, accountKey, amount, balance, description, referenceID);
 }
