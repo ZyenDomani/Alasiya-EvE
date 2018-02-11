@@ -35,12 +35,12 @@
 
 // This class is a singleton object, containing all Effects loaded from dgmEffects table
 //     as memory objects of type MEffect:
-class DGM_Types_to_Wrecks_Table
-: public Singleton< DGM_Types_to_Wrecks_Table >
+class WreckData
+: public Singleton< WreckData >
 {
 public:
-    DGM_Types_to_Wrecks_Table();
-    ~DGM_Types_to_Wrecks_Table();
+    WreckData();
+    ~WreckData();
 
     // Initializes the Table:
     int Initialize();
@@ -55,8 +55,8 @@ protected:
     std::map<uint32, uint32> m_WrecksToTypesMap;
 };
 
-#define sDGM_Types_to_Wrecks_Table \
-    ( DGM_Types_to_Wrecks_Table::get() )
+#define sWreckData \
+    ( WreckData::get() )
 // -----------------------------------------------------------------------
 
 //  CLASS DEFINITION FOR LOOT SYSTEM
@@ -85,8 +85,8 @@ struct LootList {
 // This class is a singleton object, containing all loot items/defs loaded from npcLoot* tables
 //  Allan 27Nov14
 //  Updated for Zuko/DaVinci's new loot tables  1July15
-class DGM_Loot_Groups_Table
-: public Singleton< DGM_Loot_Groups_Table >
+class LootData
+: public Singleton< LootData >
 {
   protected:
       void _Populate();
@@ -100,8 +100,8 @@ class DGM_Loot_Groups_Table
       typedef std::multimap<uint32, DBLootGroupType>::iterator LootGroupTypeMapItr;    /* itemGroupID is key */
 
   public:
-      DGM_Loot_Groups_Table();
-      ~DGM_Loot_Groups_Table();
+      LootData();
+      ~LootData();
 
       // Initializes the Table:
       int Initialize();
@@ -117,8 +117,8 @@ class DGM_Loot_Groups_Table
       LootGroupTypeMap m_LootGroupTypeMap;
 };
 
-#define sDGM_Loot_Groups_Table \
-( DGM_Loot_Groups_Table::get() )
+#define sLootData \
+( LootData::get() )
 //////////////////////////////////////////////////////////////////////////
 
 #endif

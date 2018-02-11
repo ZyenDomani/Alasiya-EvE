@@ -158,7 +158,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
 
     GPoint deadNPCPosition = m_destiny->GetPosition();
-    uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+    uint32 wreckTypeID = sWreckData.GetWreckID(m_self->typeID());
     if (!wreckTypeID) {
         sLog.Error("Sentry::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data

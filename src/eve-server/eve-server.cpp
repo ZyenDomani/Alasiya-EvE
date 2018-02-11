@@ -589,9 +589,9 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Effect Data");
     sFxDataMgr.Initialize();
     sLog.Green("       ServerInit", "Wreck Data");
-    sDGM_Types_to_Wrecks_Table.Initialize();
+    sWreckData.Initialize();
     sLog.Green("       ServerInit", "Loot Data");
-    sDGM_Loot_Groups_Table.Initialize();
+    sLootData.Initialize();
     sLog.Green("       ServerInit", "Dungeon Data");
     sDunDataMgr.Initialize();
     sLog.Green("       ServerInit", "Planet Data");

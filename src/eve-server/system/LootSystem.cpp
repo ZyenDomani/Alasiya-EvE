@@ -29,24 +29,24 @@
 #include "system/LootSystem.h"
 
 
-// ////////////////////// DGM_Types_to_Wrecks_Table Class ////////////////////////////
-DGM_Types_to_Wrecks_Table::DGM_Types_to_Wrecks_Table()
+// ////////////////////// WreckData Class ////////////////////////////
+WreckData::WreckData()
 {
     m_WrecksToTypesMap.clear();
 }
 
-DGM_Types_to_Wrecks_Table::~DGM_Types_to_Wrecks_Table()
+WreckData::~WreckData()
 {
 }
 
-int DGM_Types_to_Wrecks_Table::Initialize()
+int WreckData::Initialize()
 {
     _Populate();
 
     return 1;
 }
 
-void DGM_Types_to_Wrecks_Table::_Populate()
+void WreckData::_Populate()
 {
     double start = GetTimeMSeconds();
 
@@ -64,7 +64,7 @@ void DGM_Types_to_Wrecks_Table::_Populate()
     SafeDelete(res);
 }
 
-uint32 DGM_Types_to_Wrecks_Table::GetWreckID(uint32 typeID)
+uint32 WreckData::GetWreckID(uint32 typeID)
 {
     std::map<uint32, uint32>::const_iterator itr = m_WrecksToTypesMap.find(typeID);
     if (itr != m_WrecksToTypesMap.end())
@@ -74,28 +74,28 @@ uint32 DGM_Types_to_Wrecks_Table::GetWreckID(uint32 typeID)
 
 
 
-//////////////////////// DGM_Loot_Groups_Table Class ////////////////////////////
+//////////////////////// LootData Class ////////////////////////////
 //  Author:     Allan
 
-DGM_Loot_Groups_Table::DGM_Loot_Groups_Table()
+LootData::LootData()
 {
     m_LootGroupMap.clear();
     m_LootGroupTypeMap.clear();
 }
 
-DGM_Loot_Groups_Table::~DGM_Loot_Groups_Table()
+LootData::~LootData()
 {
     m_LootGroupMap.clear();
     m_LootGroupTypeMap.clear();
 }
 
-int DGM_Loot_Groups_Table::Initialize()
+int LootData::Initialize()
 {
     _Populate();
     return 1;
 }
 
-void DGM_Loot_Groups_Table::_Populate()
+void LootData::_Populate()
 {
     double start = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
@@ -133,10 +133,8 @@ void DGM_Loot_Groups_Table::_Populate()
              m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - start));
 }
 
-void DGM_Loot_Groups_Table::GetLoot(uint32 groupID, LootListDef &lootList) {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+void LootData::GetLoot(uint32 groupID, LootListDef &lootList) {
+    double profileStartTime = GetTimeUSeconds();
 
     double randChance = 0.0;
     uint8 metaLevel = 0;

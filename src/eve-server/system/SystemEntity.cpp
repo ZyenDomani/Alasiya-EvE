@@ -166,7 +166,7 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
-    sDGM_Loot_Groups_Table.GetLoot(groupID, lootList);
+    sLootData.GetLoot(groupID, lootList);
 
     if (!lootList.empty()) {
         uint32 quantity = 0;

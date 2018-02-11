@@ -316,7 +316,7 @@ void Ship::Killed(Damage &fatal_blow) {
     /* {'messageKey': 'ShipExploded', 'dataID': 17881627, 'suppressable': True, 'bodyID': 258841, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258840, 'messageID': 1558}
      * u'ShipExplodedBody'}(u'Your ship has been destroyed by {[character]charID.name}.', None, {u'{[character]charID.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charID'}})
      */
-    
+
     SystemEntity *killer(fatal_blow.srcSE);
     Client* pClient(nullptr);
     uint32 killerID = 0;
@@ -341,7 +341,7 @@ void Ship::Killed(Damage &fatal_blow) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:
-        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(m_self->typeID());
+        uint32 wreckTypeID = sWreckData.GetWreckID(m_self->typeID());
         if (wreckTypeID == 0) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
             // default to generic frigate wreck till i get better checks and/or complete wreck data
@@ -509,7 +509,7 @@ void Ship::Killed(Damage &fatal_blow) {
         /** @todo: figure out anybody else which may be referencing this ship */
         ShipItemRef deadShipRef = pPilot->GetShip();
 
-        uint32 wreckTypeID = sDGM_Types_to_Wrecks_Table.GetWreckID(deadShipRef->typeID());
+        uint32 wreckTypeID = sWreckData.GetWreckID(deadShipRef->typeID());
         if (!wreckTypeID) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
             // default to generic wreck till i get better checks and/or complete wreck data
