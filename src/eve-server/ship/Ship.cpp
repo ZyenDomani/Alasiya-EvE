@@ -1062,7 +1062,7 @@ void ShipItem::LoadCharge(EVEItemFlags flag, InventoryItemRef iRef)
         m_ModuleManager->LoadCharge(iRef, flag);
 }
 
-uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient)
+uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
 {
     if (flag == flagAutoFit) {
         // make error.  nothing at this point should be "autoFit"

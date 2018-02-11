@@ -324,7 +324,7 @@ public:
     // calls methods to verify hold capy based on flag
     void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient);          // make sure this does NOT throw.  must return integer
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);          // make sure this does NOT throw.  must return integer
     void LoadCharge( EVEItemFlags flag, InventoryItemRef iRef);          // this can throw. returns nothing
     /* end new module manager interface */
 
