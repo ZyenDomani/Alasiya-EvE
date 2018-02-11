@@ -709,7 +709,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
-            if (m_self->GetShipItem()->AddItem(toFlag, iRef) < 1)
+            if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1)
                 contRef->AddItem(iRef);
             else
                 iRef->ChangeOwner(m_ownerID);

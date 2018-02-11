@@ -249,7 +249,7 @@ public:
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
     // this checks destination flag vs item type/group/category for proper placement
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);     // this cannot throw.  must return bool
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
     const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
@@ -324,7 +324,7 @@ public:
     // calls methods to verify hold capy based on flag
     void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef);          // make sure this does NOT throw.  must return integer
+    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient);          // make sure this does NOT throw.  must return integer
     void LoadCharge( EVEItemFlags flag, InventoryItemRef iRef);          // this can throw. returns nothing
     /* end new module manager interface */
 
