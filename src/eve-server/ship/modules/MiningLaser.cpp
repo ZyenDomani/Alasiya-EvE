@@ -74,6 +74,12 @@ bool MiningLaser::CanActivate()
         return false;
     }
 
+    if (m_chargeLoaded and (m_crystalRoidGrp == 0)) {
+        m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
+        m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
+        m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
+        m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
+    }
     // verify module vs target for activation.  disallow if not compatible.
     if ((m_rMiner and (m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
         or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
@@ -90,12 +96,6 @@ bool MiningLaser::CanActivate()
             m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target - Ref: ServerError 15628", m_targetSE->GetName());
     }
 
-    if (m_chargeLoaded and (m_crystalRoidGrp == 0)) {
-        m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
-        m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
-        m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
-        m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
-    }
     return false;
 }
 
