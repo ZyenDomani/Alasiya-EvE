@@ -89,6 +89,13 @@ bool MiningLaser::CanActivate()
         if (m_shipRef->HasPilot())
             m_shipRef->GetPilot()->SendNotifyMsg("Module Activate: %s is an invalid target - Ref: ServerError 15628", m_targetSE->GetName());
     }
+
+    if (m_chargeLoaded and (m_crystalRoidGrp == 0)) {
+        m_crystalDmg = m_chargeRef->GetAttribute(AttrDamage).get_float();
+        m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
+        m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
+        m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
+    }
     return false;
 }
 
