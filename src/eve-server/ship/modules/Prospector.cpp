@@ -29,6 +29,10 @@ Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
 
     m_accessChance = 0;
 
+    m_holdFlag = flagCargoHold;
+    if (m_shipRef->HasAttribute(AttrSpecialSalvageHoldCapacity))
+        m_holdFlag = flagSpecializedSalvageHold;
+
     pChar = m_shipRef->GetPilot()->GetChar().get();
 }
 
@@ -132,6 +136,8 @@ void Prospector::CheckSuccess()
 void Prospector::DropSalvage()
 {
     m_accessChance = 0;
+    if (m_targetSE == nullptr)
+        return;
 
     std::vector<uint32> list;
     list.clear();
@@ -144,11 +150,12 @@ void Prospector::DropSalvage()
         case  10: drop = 3; break;  //  3 to 9
         case   0: drop = 4; break;  //  4 to 12
         case -10: drop = 5; break;  //  5 to 15
+        case -20: drop = 6; break;  //  6 to 18
     }
 
     if (!list.empty()) {
         InventoryItemRef itemRef;
-        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * 3 * sConfig.rates.RateDropItem);
+        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.RateDropItem);
         for (auto cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (IsEven(MakeRandomInt(0,10)))
@@ -158,7 +165,7 @@ void Prospector::DropSalvage()
             itemRef = sItemFactory.SpawnItem(iLoot);
             if (itemRef.get() == nullptr) // we'll get over it...continue
                 continue;
-            itemRef->Move(m_shipRef->itemID(), flagCargoHold, true);
+            itemRef->Move(m_shipRef->itemID(), m_holdFlag, true);
             m_shipRef->AddItem(itemRef);
         }
     }
@@ -168,6 +175,7 @@ void Prospector::DropSalvage()
         shipLoot.clear();
         m_targetSE->GetSelf()->GetMyInventory()->GetInventoryList(shipLoot);
 
+        // create new container
         ItemData p_idata(23,   // 23 = cargo container
                         m_targetSE->GetSelf()->ownerID(),
                         m_targetSE->GetLocationID(),
@@ -176,22 +184,19 @@ void Prospector::DropSalvage()
                         m_targetSE->GetPosition());
 
         CargoContainerRef jetCanRef = sItemFactory.SpawnCargoContainer(p_idata);
-        if (!jetCanRef)
-            throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
-
-        for (auto cur : shipLoot)
-            cur.second->Move(jetCanRef->itemID(),flagAutoFit);
-
-        // create new container
-        FactionData contData;
-            contData.allianceID = m_targetSE->GetAllianceID();
-            contData.corporationID = m_targetSE->GetCorporationID();
-            contData.factionID = m_targetSE->GetWarFactionID();
-            contData.ownerID = m_targetSE->GetSelf()->ownerID();
-        ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), contData);
-        jetCanRef->SetMySE(cSE);
-        m_targetSE->SystemMgr()->AddEntity(cSE);
-        m_targetSE->DestinyMgr()->SendJettisonPacket();
+        if (jetCanRef.get() != nullptr) {
+            for (auto cur : shipLoot)
+                cur.second->Move(jetCanRef->itemID(),flagAutoFit);
+            FactionData contData;
+                contData.allianceID = m_targetSE->GetAllianceID();
+                contData.corporationID = m_targetSE->GetCorporationID();
+                contData.factionID = m_targetSE->GetWarFactionID();
+                contData.ownerID = m_targetSE->GetSelf()->ownerID();
+            ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), contData);
+            jetCanRef->SetMySE(cSE);
+            m_targetSE->SystemMgr()->AddEntity(cSE);
+            m_targetSE->DestinyMgr()->SendJettisonPacket();
+        }
     }
     m_targetSE->SystemMgr()->RemoveEntity(m_targetSE);
     m_targetSE->GetSelf()->Delete();

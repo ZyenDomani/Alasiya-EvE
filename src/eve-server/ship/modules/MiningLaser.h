@@ -45,6 +45,7 @@ private:
 
     uint16 m_crystalRoidGrp;
 
+    EVEItemFlags m_holdFlag;
 };
 
 #endif  // __EVESERVER_SHIPMODULES_ACTIVE_MODULES_MININGLASER_H__

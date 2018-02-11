@@ -771,7 +771,9 @@ namespace EVEDB {
             Mercenary_Bases = 1081,
             Capsuleer_Bases = 1082,
             Orbital_Construction_Platform = 1106,
-            Salvager = 1122
+            Salvager = 1122,
+            FuelBlock = 1136,
+            FuelBlockBlueprint = 1137
         } invGroups;
     }
 }

@@ -499,6 +499,9 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagSpecializedSmallShipHold:      return m_self->GetAttribute(AttrSpecialSmallShipHoldCapacity).get_float();
         case flagSpecializedLargeShipHold:      return m_self->GetAttribute(AttrSpecialLargeShipHoldCapacity).get_float();
         case flagSpecializedIndustrialShipHold: return m_self->GetAttribute(AttrSpecialIndustrialShipHoldCapacity).get_float();
+        // for PI
+        case flagSpecializedCommandCenterHold:  return m_self->GetAttribute(AttrSpecialCommandCenterHoldCapacity).get_float();
+        case flagSpecializedPlanetaryCommoditiesHold:  return m_self->GetAttribute(AttrSpecialPlanetaryCommoditiesHoldCapacity).get_float();
 
         // for pos battery/array
         case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();

@@ -196,6 +196,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Deployable:  // may need their own class
         case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Drone:       // player drones.  use their own class (eventually)
         case EVEDB::invCategories::Charge:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
@@ -214,7 +215,10 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
             return Blueprint::_LoadItem<Blueprint>(itemID, type, data);
         } break;
         case EVEDB::invCategories::Asteroid: {
-            return AsteroidItem::_LoadItem<AsteroidItem>(itemID, type, data);
+            if (IsAsteroid(itemID))
+                return AsteroidItem::_LoadItem<AsteroidItem>(itemID, type, data);
+            // mined ore.  create default item
+            return InventoryItemRef( new InventoryItem(itemID, type, data ) );
         } break;
         case EVEDB::invCategories::Ship: {
             return ShipItem::_LoadItem<ShipItem>(itemID, type, data);
@@ -1057,7 +1061,7 @@ void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify
 }
 
 
-uint32 InventoryItem::GetPackagedVolume()
+double InventoryItem::GetPackagedVolume()
 {
     if (m_singleton)
         return m_type.volume();

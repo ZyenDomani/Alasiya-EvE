@@ -342,6 +342,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
+        /** @todo  update this to use 'older' itemID as "stationaryItem"  (just semantics..) */
         InventoryItemRef stationaryItem = sItemFactory.GetItem( element.stationaryItemID );
         if (stationaryItem.get() == nullptr) {
             _log(INV__WARNING, "Failed to load stationary item %u. Skipping.", element.stationaryItemID);
@@ -391,7 +392,6 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
  * Removing Module/Charges from ship (using 'remove' button on item slot)
  * Adding Modules to a specific slot on ship
  */
-/** @todo  calling "loot all" will NOT move stacks except charges */
 PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (is_log_enabled(INV__DUMP)) {
         _log(INV__DUMP, "InventoryBound::Handle_Add() size= %u", call.tuple->size());
@@ -435,8 +435,11 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         iRef = newItem;
         args.itemID = iRef->itemID();
     // we're not dividing the stack, so check for removing loaded charges
-    } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(toFlag)))
+    } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(toFlag))) {
         manyFlags = true;
+    } else if (call.client->IsInSpace() and (toFlag == flagCargoHold) and (quantity == 0)) {
+        manyFlags = true;
+    }
 
     float capacity = 0.0f;
     if (call.byname.find("capacity") != call.byname.end())

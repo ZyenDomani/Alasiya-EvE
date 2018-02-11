@@ -42,6 +42,13 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     } else if(m_modRef->groupID() == EVEDB::invGroups::Strip_Miner) {
         m_rMiner = true;
     }
+
+    m_holdFlag = flagCargoHold;
+    if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+        m_holdFlag = flagSpecializedOreHold;
+    else if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
+        m_holdFlag = flagSpecializedGasHold;
+    
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
 
@@ -112,7 +119,7 @@ uint32 MiningLaser::DoCycle() {
     return ActiveModule::DoCycle();
 }
 
-void MiningLaser::DeactivateCycle(bool abort)
+void MiningLaser::DeactivateCycle(bool abort/*false*/)
 {
     if (m_ModuleState != Module::State::Deactivating)
         return;
@@ -154,6 +161,12 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
 
     double oreAmount = (cycleVol /oreVolume);
     double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
+    if (remainingCargoVolume < 0) {
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
+        if (!partial)
+            ActiveModule::AbortCycle();
+        return;
+    }
 
     if (partial) {
         // adjust amount AND cycle for partial cycle
@@ -183,6 +196,9 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
     _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f/%.2f, oreAmount:%.2f", \
                 (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
 
+    if (oreAmount == 0)
+        return;
+
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
     InventoryItemRef oRef = sItemFactory.SpawnItem( idata );
     if (oRef.get() == nullptr) {
@@ -190,8 +206,8 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
         return;
     }
 
-    if (!m_shipRef->AddItem(flagCargoHold, oRef)) {
-        _log(MINING__ERROR, "Could not create ore in cargo for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
+    if (!m_shipRef->AddItem(m_holdFlag, oRef)) {
+        _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
         return;
     }
 

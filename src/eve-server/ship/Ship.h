@@ -248,6 +248,7 @@ public:
     virtual void Delete();
 
     double GetRemainingVolumeByFlag(EVEItemFlags flag) const;
+    // this checks destination flag vs item type/group/category for proper placement
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
@@ -388,7 +389,7 @@ private:
 
     std::vector<uint32> m_onlineModuleVec;
 
-    std::map<EVEItemFlags, double> m_usedVolumeByFlag;
+    std::map<EVEItemFlags, double> m_usedVolumeByFlag;      // 15 possible hold types
 
     void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);

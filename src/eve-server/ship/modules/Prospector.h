@@ -37,7 +37,10 @@ protected:
 
     int8 m_accessChance;    // target chance (base chance)
 
+private:
     Character* pChar;
+
+    EVEItemFlags m_holdFlag;
 };
 
 #endif  //_EVE_SHIP_MODULES_PROSPECTOR_MODULE_H_
