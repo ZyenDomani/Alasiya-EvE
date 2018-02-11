@@ -349,10 +349,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             _log(ITEM__WARNING, "InventoryItem::Spawn creating generic item for type %u, cat %u.", iType->id(), iType->categoryID());
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data );
-            if (itemID == 0)
-                return InventoryItemRef(nullptr);
-            InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data );
-            return itemRef;
+            return InventoryItem::SpawnItem(itemID, data);
         } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
@@ -379,18 +376,13 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             if (iType->groupID() == EVEDB::invGroups::Cargo_Container) {
                 // Spawn jetcan as marker, using temp items and NOT save to db.
                 uint32 itemID = InventoryItem::CreateTempItemID(data );
-                if (itemID == 0)
-                    return InventoryItemRef(nullptr);
-                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data );
-                return itemRef;
+                return InventoryItem::SpawnItem(itemID, data);
             }
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
             uint32 itemID = InventoryItem::CreateItemID(data );
-            if (itemID == 0)
-                return InventoryItemRef(nullptr);
             InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data );
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
@@ -408,25 +400,19 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 case EVEItemFlags::flagMissile: {
                     // Spawn launched missile item in EVEMU_MISSILE_ID range and does NOT save missile to db
                     itemID = InventoryItem::CreateTempItemID(data );
-                    if (itemID == 0)
-                        return InventoryItemRef(nullptr);
                     itemRef = InventoryItem::SpawnItem(itemID, data );
-                }
+                } break;
                 default: {
                     // Spawn generic item:
                     itemID = InventoryItem::CreateItemID(data );
-                    if (itemID == 0)
-                        return InventoryItemRef(nullptr);
                     itemRef = InventoryItem::SpawnItem(itemID, data );
                 }
-                if (itemRef.get() == nullptr)
-                    return InventoryItemRef(nullptr);
-                itemRef->SetAttribute(AttrMass,       iType->mass());           // Mass
-                itemRef->SetAttribute(AttrRadius,     iType->radius());       // Radius
-                itemRef->SetAttribute(AttrVolume,     iType->volume());       // Volume
-                itemRef->SetAttribute(AttrCapacity,   iType->capacity());   // Capacity
-                return itemRef;
             }
+            if (itemRef.get() == nullptr)
+                return InventoryItemRef(nullptr);
+            itemRef->SetAttribute(AttrMass,       iType->mass(), false);           // Mass
+            itemRef->SetAttribute(AttrRadius,     iType->radius(), false);       // Radius
+            return itemRef;
             codelog(INV__ERROR, "InventoryItem::Spawn called for type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
         }
         case EVEDB::invCategories::Station: {
@@ -440,10 +426,10 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
             stationRef->SetAttribute(AttrArmorDamage,   0.0);                                         // Armor Damage
-            stationRef->SetAttribute(AttrMass,          iType->mass());           // Mass
-            stationRef->SetAttribute(AttrRadius,        iType->radius());       // Radius
-            stationRef->SetAttribute(AttrVolume,        iType->volume());       // Volume
-            stationRef->SetAttribute(AttrCapacity,      iType->capacity());   // Capacity
+            stationRef->SetAttribute(AttrMass,          iType->mass(), false);           // Mass
+            stationRef->SetAttribute(AttrRadius,        iType->radius(), false);       // Radius
+            stationRef->SetAttribute(AttrVolume,        iType->volume(), false);       // Volume
+            stationRef->SetAttribute(AttrCapacity,      iType->capacity(), false);   // Capacity
             return stationRef;
             } else if (iType->groupID() == EVEDB::invGroups::Station_Services) {
                 // this should never hit...throw error
@@ -452,21 +438,17 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
         }
         case EVEDB::invCategories::Celestial: {
             if ( (iType->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
-                or (iType->groupID() == EVEDB::invGroups::Cargo_Container)
-                or (iType->groupID() == EVEDB::invGroups::Freight_Container)
-                or (iType->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
-                or (iType->groupID() == EVEDB::invGroups::Mission_Container))
-            {
+            or (iType->groupID() == EVEDB::invGroups::Cargo_Container)
+            or (iType->groupID() == EVEDB::invGroups::Freight_Container)
+            or (iType->groupID() == EVEDB::invGroups::Audit_Log_Secure_Container)
+            or (iType->groupID() == EVEDB::invGroups::Mission_Container)) {
                 return CargoContainer::Spawn(data);
             } else if (iType->groupID() == EVEDB::invGroups::Wreck) {
                 return WreckContainer::Spawn(data );
             } else if (iType->groupID() == EVEDB::invGroups::Force_Field) {
                 // Spawn force field item in EVEMU_TEMP_ENTITY_ID range and does NOT save Force_Field to db
                 uint32 itemID = InventoryItem::CreateTempItemID(data );
-                if (itemID == 0)
-                    return InventoryItemRef(nullptr);
-                InventoryItemRef itemRef = InventoryItem::SpawnItem(itemID, data );
-                return itemRef;
+                return InventoryItem::SpawnItem(itemID, data);
             } else {
                 // Spawn new Celestial Object
                 return CelestialObject::Spawn(data );
