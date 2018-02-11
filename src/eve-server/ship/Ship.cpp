@@ -334,7 +334,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (m_pilot == nullptr)
         return true;
-    
+
     switch (flag) {
         case flagDroneBay: {
             if ( iRef->categoryID() != EVEDB::invCategories::Drone ) {
@@ -343,12 +343,12 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             }
         } break;
         case flagShipHangar: {    //AttrShipMaintenanceBayCapacity
-            if (GetAttribute(AttrHasShipMaintenanceBay) == 0) {
-                m_pilot->SendErrorMsg("%s has no ship maintenance bay.", iRef->itemName().c_str());
+            if (!HasAttribute(AttrHasShipMaintenanceBay)) {
+                m_pilot->SendErrorMsg("Your %s has no ship maintenance bay.", itemName().c_str());
                 return false;
             }
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only ships may be placed into the maintenance bay.");
                 return false;
             }
         } break;
@@ -356,13 +356,13 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
         // not sure if all of these flagSpecialized* are used.  if not, *may* update dgmData to add them....later.
         case flagSpecializedFuelBay: {    //  AttrSpecialFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
             if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
                 return false;
             }
         } break;
         case flagSpecializedOreHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only mined ore may be placed into the ore hold.");
                 return false;
             }
         } break;
@@ -376,19 +376,19 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
 */
         case flagSpecializedMineralHold: {
             if (iRef->groupID() != EVEDB::invGroups::Mineral) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only refined minerals may be placed into the mineral hold.");
                 return false;
             }
         } break;
         case flagSpecializedSalvageHold: {
             if (iRef->groupID() != EVEDB::invGroups::Salvage_Materials) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only salvaged materials may be placed into the salvage bay.");
                 return false;
             }
         } break;
         case flagSpecializedShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only ships may be placed into the ship hold.");
                 return false;
             }
         } break;
@@ -396,25 +396,25 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
         /** @todo need to figure out how to separate ships into s/m/l/i for these.... */
         case flagSpecializedSmallShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only small ships may be placed into the ship's small ship hold.");
                 return false;
             }
         } break;
         case flagSpecializedMediumShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only medium ships may be placed into the ship's medium ship hold.");
                 return false;
             }
         } break;
         case flagSpecializedLargeShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only large ships may be placed into the ship's large ship hold.");
                 return false;
             }
         } break;
         case flagSpecializedIndustrialShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only indy ships may be placed into the ship's industurial ship hold.");
                 return false;
             }
         } break;
@@ -425,13 +425,13 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
-                m_pilot->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
+                m_pilot->SendErrorMsg("Only ammunition may be placed into the ammo bay.");
                 return false;
             }
         } break;
         case flagHangar: {    //AttrCorporateHangarCapacity
             if (GetAttribute(AttrHasCorporateHangars) == 0) {
-                m_pilot->SendErrorMsg("%s has no corporate hangars.", itemName().c_str());
+                m_pilot->SendErrorMsg("Your %s has no corporate hangars.", itemName().c_str());
                 return false;
             }
         } break;
