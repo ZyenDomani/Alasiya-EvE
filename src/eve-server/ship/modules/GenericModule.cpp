@@ -79,7 +79,7 @@ void GenericModule::Online()
     }
     if (m_ModuleState != Module::State::Offline) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
-                itemID(), itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
+                itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
     }
 
