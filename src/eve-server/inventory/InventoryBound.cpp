@@ -58,6 +58,8 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, GetItem);
     PyCallable_REG_CALL(InventoryBound, ListStations);
     PyCallable_REG_CALL(InventoryBound, ReplaceCharges);
+    PyCallable_REG_CALL(InventoryBound, RemoveChargeToCargo);
+    PyCallable_REG_CALL(InventoryBound, RemoveChargeToHangar);
     PyCallable_REG_CALL(InventoryBound, MultiMerge);
     PyCallable_REG_CALL(InventoryBound, StackAll);
     PyCallable_REG_CALL(InventoryBound, StripFitting);
@@ -309,14 +311,53 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     return tuple;
 }
 
-PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call){
+PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
+    // newItemID = inv.RemoveChargeToHangar(itemKey, quantity)
+    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    /*
+     * 17:57:52 [SvcCallDump]   Call Arguments:
+     * 17:57:52 [SvcCallDump]      Tuple: 1 elements
+     * 17:57:52 [SvcCallDump]       [ 0]  Tuple: 3 elements
+     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- chargeID
+     * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
+     * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
+     */
+    sLog.White( "InventoryBound::Handle_RemoveChargeToHangar()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    Call_RemoveChargeToHangar args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyInt(0);
+    }
+
+    call.client->GetShip()->RemoveItem(sItemFactory.GetItem(args.chargeID));
+    return new PyInt(args.chargeID);
+}
+
+PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
+    // newItemID = inv.RemoveChargeToCargo(itemKey, quantity, preferMerge=preferMerge)
+    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    sLog.White( "InventoryBound::Handle_RemoveChargeToCargo()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+    Call_RemoveChargeToCargo args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyInt(0);
+    }
+
+    call.client->GetShip()->RemoveItem(sItemFactory.GetItem(args.chargeID));
+    return new PyInt(args.chargeID);
+}
+
+PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     sLog.White( "InventoryBound::Handle_RunRefiningProcess()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
     return nullptr;
 }
 
-PyResult InventoryBound::Handle_Voucher(PyCallArgs &call){
+PyResult InventoryBound::Handle_Voucher(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
@@ -471,6 +512,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
     Call_MultiAdd_2 args;
     if (!args.Decode(&call.tuple)) {
+        //17:19:04 [DecodeError] Decode Call_MultiAdd_2 failed: Element 0 in list list_1 is not an integer: None
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }

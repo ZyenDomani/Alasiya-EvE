@@ -63,6 +63,4 @@ namespace EVEDB {
 3859    genericAudioEmitter     0   1109    Audio
 32682   Ship Perception Point   0   1121    Perception Points
 
-
-
 */

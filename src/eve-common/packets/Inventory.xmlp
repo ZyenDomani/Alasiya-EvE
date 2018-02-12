@@ -30,6 +30,26 @@
       </tupleInline>
   </elementDef>
 
+  <elementDef name="Call_RemoveChargeToHangar">
+    <tupleInline>
+      <tupleInline>
+        <int name="chargeID" />
+        <int name="flagID" />
+        <int name="typeID" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_RemoveChargeToCargo">
+    <tupleInline>
+      <tupleInline>
+        <int name="chargeID" />
+        <int name="flagID" />
+        <int name="typeID" />
+      </tupleInline>
+    </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_Add_3">
     <tupleInline>
       <int name="itemID" />

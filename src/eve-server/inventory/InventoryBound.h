@@ -47,6 +47,8 @@ public:
     PyCallable_DECL_CALL(GetItem);
     PyCallable_DECL_CALL(ListStations);
     PyCallable_DECL_CALL(ReplaceCharges);
+    PyCallable_DECL_CALL(RemoveChargeToCargo);
+    PyCallable_DECL_CALL(RemoveChargeToHangar);
     PyCallable_DECL_CALL(MultiMerge);
     PyCallable_DECL_CALL(StackAll);
     PyCallable_DECL_CALL(StripFitting);

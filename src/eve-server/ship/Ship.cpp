@@ -1116,6 +1116,9 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
 
 void ShipItem::RemoveItem(InventoryItemRef iRef)
 {
+    if (iRef.get() == nullptr)
+        return;
+    
     pInventory->RemoveItem(iRef);
 
     if (m_pilot == nullptr)
