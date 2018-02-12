@@ -51,7 +51,6 @@ public:
     bool InstallSubSystem(InventoryItemRef item, EVEItemFlags flag);
     bool FitModule(InventoryItemRef item, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);
-    void OnlineCheck(GenericModule* pMod);
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
     void Online(EVEItemFlags flag);

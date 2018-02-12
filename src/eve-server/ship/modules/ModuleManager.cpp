@@ -242,7 +242,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
-        sLog.Warning("ModuleManager::fitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        sLog.Warning("ModuleManager::FitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
 
@@ -307,53 +307,6 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
     }*/
 }
 
-void ModuleManager::OnlineCheck(GenericModule* pMod)
-{
-    if (pMod->isRig() or pMod->isSubSystem())
-        return;
-    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP)) {
-        if (m_Ship->GetPilot()->CanThrow())
-            throw PyException( MakeUserError("ModuleTooDamagedToBeOnlined"));
-        /*{'messageKey': 'ModuleTooDamagedToBeOnlined', 'dataID': 17878773, 'suppressable': False, 'bodyID': 257752, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2303}
-         *   u'ModuleTooDamagedToBeOnlinedBody'}(u'The module is too damaged to be onlined'
-         */
-    }
-    // check PG and CPU usage to see if we have enough to online this module
-    EvilNumber cpuNeed = (m_Ship->GetAttribute(AttrCpuLoad) + pMod->GetAttribute(AttrCpu));
-    if (cpuNeed  > m_Ship->GetAttribute(AttrCpuOutput)) {
-        if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
-            // throwing an error negates further processing
-            float require = m_Ship->GetAttribute(AttrCpu).get_float();
-            float total = pMod->GetAttribute(AttrCpuOutput).get_float();
-            float remaining = total - pMod->GetAttribute(AttrCpuLoad).get_float();
-            std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(pMod->typeID());
-            args["require"] = new PyFloat(require);
-            args["remaining"] = new PyFloat(remaining);
-            args["total"] = new PyFloat(total);
-            throw PyException( MakeUserError("NotEnoughCpu", args));
-            /*u'NotEnoughCpuBody'}
-             * (u'To bring {[item]moduleType.name} online requires {[numeric]require, decimalPlaces=2} cpu units, but only {[numeric]remaining, decimalPlaces=2} of the {[numeric]total, decimalPlaces=2} units that your computer produces are still available.', None,
-             * {u'{[numeric]remaining, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'remaining'},
-             * u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'},
-             * u'{[numeric]total, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'total'},
-             * u'{[numeric]require, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'require'}})
-             */
-        }
-    }
-    EvilNumber pgNeed = (m_Ship->GetAttribute(AttrPowerLoad) + pMod->GetAttribute(AttrPower));
-    if (pgNeed > m_Ship->GetAttribute(AttrPowerOutput))
-        if (!m_Ship->GetPilot()->IsLogin() and m_Ship->GetPilot()->CanThrow()) {
-            // throwing an error negates further processing
-            std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(pMod->typeID());
-            args["require"] = new PyFloat(m_Ship->GetAttribute(AttrPower).get_float());
-            args["remaining"] = new PyFloat(m_Ship->GetAttribute(AttrPowerOutput).get_float() - pMod->GetAttribute(AttrPowerLoad).get_float());
-            args["total"] = new PyFloat(pMod->GetAttribute(AttrPowerOutput).get_float());
-            throw PyException( MakeUserError("NotEnoughPower", args));
-        }
-}
-
 void ModuleManager::Online(uint32 itemID)
 {
     GenericModule* pMod = pModuleCont->GetModule(itemID);
@@ -365,8 +318,6 @@ void ModuleManager::Online(uint32 itemID)
         _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", pMod->GetSelf()->itemName().c_str());
         return;
     }
-
-    OnlineCheck(pMod);
 
     _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", pMod->GetSelf()->itemName().c_str());
     pMod->Online();
@@ -383,8 +334,6 @@ void ModuleManager::Online(EVEItemFlags flag)
         _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", pMod->GetSelf()->itemName().c_str());
         return;
     }
-
-    OnlineCheck(pMod);
 
     _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", pMod->GetSelf()->itemName().c_str());
     pMod->Online();
@@ -480,17 +429,6 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
     }
 
     pMod->Activate(effectID, targetID, repeat);
-
-    /* {'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}
-     * {'messageKey': 'DeniedActivateControlling', 'dataID': 17880010, 'suppressable': False, 'bodyID': 258228, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2230}
-     * {'messageKey': 'DeniedActivateFrozen', 'dataID': 17883391, 'suppressable': False, 'bodyID': 259488, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 772}
-     * {'messageKey': 'DeniedActivateInJump', 'dataID': 17883394, 'suppressable': False, 'bodyID': 259489, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 773}
-     * {'messageKey': 'DeniedActivateInWarp', 'dataID': 17883704, 'suppressable': False, 'bodyID': 259597, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 774}
-     * {'messageKey': 'DeniedActivateTargetAssistDisallowed', 'dataID': 17883397, 'suppressable': False, 'bodyID': 259490, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 775}
-     * {'messageKey': 'DeniedActivateTargetModuleDisallowed', 'dataID': 17883400, 'suppressable': False, 'bodyID': 259491, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 776}
-     * {'messageKey': 'DeniedActivateTargetNotPresent', 'dataID': 17883403, 'suppressable': False, 'bodyID': 259492, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 777}
-     * {'messageKey': 'DeniedActivateTargetOffModDisallowed', 'dataID': 17883406, 'suppressable': False, 'bodyID': 259493, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 778}
-     */
 }
 
 void ModuleManager::Deactivate(uint32 itemID, std::string effectName)

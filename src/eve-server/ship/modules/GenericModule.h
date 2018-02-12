@@ -25,12 +25,12 @@ public:
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
-    void Online();
-    void Offline();
+    void Online();    // this function must NOT throw
+    void Offline();   // this function must NOT throw
 
     InventoryItemRef GetSelf()                          { return m_modRef; }
     ShipItemRef GetShipRef()                            { return m_shipRef; }
-    
+
     void ProcessEffects(Effects::State state, bool online = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }

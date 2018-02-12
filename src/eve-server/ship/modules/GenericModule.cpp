@@ -70,51 +70,94 @@ GenericModule::~GenericModule()
     Offline();
 }
 
+// this function must NOT throw
 void GenericModule::Online()
 {
     if (m_ModuleState == Module::State::Unfitted) {
-        _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState != Module::State::Offline) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
-                m_modRef->itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
+                itemID(), itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
         return;     // already online
     }
-    // update avalible ship resources.
+
+    if (GetAttribute(AttrDamage) >= GetAttribute(AttrHP)) {
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s is too damaged to be put online.", m_modRef->itemName().c_str());
+        return;
+        /*{'messageKey': 'ModuleTooDamagedToBeOnlined', 'dataID': 17878773, 'suppressable': False, 'bodyID': 257752, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2303}
+         *   u'ModuleTooDamagedToBeOnlinedBody'}(u'The module is too damaged to be onlined'
+         */
+    }
+    // check PG and CPU usage to see if we have enough to online this module
+    // throwing an error negates further processing
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
-    // why would either of these be negative??  i dont think either of them will hit.
-    if (cpuNeed < 0) {
-        _log(SHIP__MODULE_ERROR, "GenericModule::Online() %u(%s) - cpuNeed is negative: %i.",m_modRef->itemID(), m_modRef->itemName().c_str(), (int32)cpuNeed.get_int());
-        m_modRef->PutOffline();
+    if (cpuNeed  > m_shipRef->GetAttribute(AttrCpuOutput)) {
+        if (!m_shipRef->GetPilot()->IsLogin()) {
+            float require = GetAttribute(AttrCpu).get_float();
+            float total = m_shipRef->GetAttribute(AttrCpuOutput).get_float();
+            float remaining = total - m_shipRef->GetAttribute(AttrCpuLoad).get_float();
+            std::string str = "To bring " + m_modRef->itemName() + " online requires %.2f cpu units, ";
+            str += "but only %.2f of the %.2f units that your computer produces are still available.";
+            m_shipRef->GetPilot()->SendNotifyMsg(str.c_str(), require, remaining, total);
+            /*
+            std::map<std::string, PyRep *> args;
+            args["moduleType"] = new PyInt(typeID());
+            args["require"] = new PyFloat(require);
+            args["remaining"] = new PyFloat(remaining);
+            args["total"] = new PyFloat(total);
+            throw PyException( MakeUserError("NotEnoughCpu", args));
+            */
+            /*u'NotEnoughCpuBody'}
+             * (u'To bring {[item]moduleType.name} online requires {[numeric]require, decimalPlaces=2} cpu units, but only {[numeric]remaining, decimalPlaces=2} of the {[numeric]total, decimalPlaces=2} units that your computer produces are still available.', None,
+             * {u'{[numeric]remaining, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'remaining'},
+             * u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'},
+             * u'{[numeric]total, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'total'},
+             * u'{[numeric]require, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'require'}})
+             */
+        }
         return;
     }
     EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
-    if (pgNeed < 0) {
-        _log(SHIP__MODULE_ERROR, "GenericModule::Online() %u(%s) - pgNeed is negative: %i.",m_modRef->itemID(), m_modRef->itemName().c_str(), (int32)pgNeed.get_int());
-        m_modRef->PutOffline();
+    if (pgNeed > m_shipRef->GetAttribute(AttrPowerOutput)) {
+        if (!m_shipRef->GetPilot()->IsLogin()) {
+            float require = GetAttribute(AttrPower).get_float();
+            float total = m_shipRef->GetAttribute(AttrPowerOutput).get_float();
+            float remaining = total - m_shipRef->GetAttribute(AttrPowerLoad).get_float();
+            std::string str = "To bring " + m_modRef->itemName() + " online requires %.2f power units, ";
+            str += "but only %.2f of the %.2f units that your power core produces are still available.";
+            m_shipRef->GetPilot()->SendNotifyMsg(str.c_str(), require, remaining, total);
+            /*
+            std::map<std::string, PyRep *> args;
+            args["moduleType"] = new PyInt(typeID());
+            args["require"] = new PyFloat(GetAttribute(AttrPower).get_float());
+            args["remaining"] = new PyFloat(m_shipRef->GetAttribute(AttrPowerOutput).get_float() - m_shipRef->GetAttribute(AttrPowerLoad).get_float());
+            args["total"] = new PyFloat(m_shipRef->GetAttribute(AttrPowerOutput).get_float());
+            throw PyException( MakeUserError("NotEnoughPower", args));
+            */
+        }
         return;
     }
+
+    // update avalible ship resources.
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     // clear map before adding new shit...avoids duplicating
-    //m_modRef->ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
+    //ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->PutOnline(isRig());
     m_ModuleState = Module::State::Online;
-    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
     ProcessEffects(Effects::dgmStatePassive, true);
     ProcessEffects(Effects::dgmStateOnline, true);
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
-
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
-                    m_modRef->itemID(), m_modRef->itemName().c_str());
+                    itemID(), m_modRef->itemName().c_str());
         } else {
-            _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", m_modRef->itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
             m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
@@ -128,20 +171,22 @@ void GenericModule::Online()
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
+    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 }
 
 void GenericModule::Offline()
 {
     if (m_ModuleState == Module::State::Offline) {
-        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == Module::State::Unfitted) {
-        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == Module::State::Deactivating) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",m_modRef->itemID(), m_modRef->itemName().c_str());
+        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
         m_ModuleState = Module::State::Offline;
         m_modRef->PutOffline();
         return;
@@ -156,13 +201,13 @@ void GenericModule::Offline()
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
-    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",m_modRef->itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
-                    m_modRef->itemID(), m_modRef->itemName().c_str());
+                    itemID(), m_modRef->itemName().c_str());
         } else {
             m_chargeRef->ClearModifiers();
             /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
@@ -236,14 +281,14 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
 
 void GenericModule::Repair(EvilNumber amount)
 {
-    if (m_modRef->GetAttribute(AttrDamage) > 0) {
-        EvilNumber newAmount = m_modRef->GetAttribute(AttrDamage) - amount;
+    if (GetAttribute(AttrDamage) > 0) {
+        EvilNumber newAmount = GetAttribute(AttrDamage) - amount;
         if (newAmount < 0)
             newAmount = 0;
-        m_modRef->SetAttribute(AttrDamage, newAmount);
+        SetAttribute(AttrDamage, newAmount);
     }
     _log(SHIP__MODULE_DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
-                m_modRef->itemName().c_str(), amount, m_modRef->GetAttribute(AttrDamage).get_int());
+                m_modRef->itemName().c_str(), amount, GetAttribute(AttrDamage).get_int());
 }
 
 std::string GenericModule::GetModuleStateName(int8 state)
