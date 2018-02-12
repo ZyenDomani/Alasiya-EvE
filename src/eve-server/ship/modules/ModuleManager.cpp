@@ -665,6 +665,7 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         GetShipSubSystems(modVec);
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
+        OfflineAll();   // set all modules to offline.  this verifies the following Online() call will only online previously-set modules.  (elusive error)
         for (auto cur : modList) {
             if (m_Ship->IsUndocking())
                 cur->SetAttribute(AttrIsOnline, false, false);

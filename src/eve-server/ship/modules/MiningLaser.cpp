@@ -48,7 +48,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
         m_holdFlag = flagSpecializedOreHold;
     else if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
         m_holdFlag = flagSpecializedGasHold;
-    
+
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
 
@@ -152,22 +152,15 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
 	// verify gas clouds have volume attr.
     float oreVolume = roidRef->GetAttribute(AttrVolume).get_float();
 
-    if (cycleVol < oreVolume) {
+    if ((cycleVol < oreVolume) or (cycleVol <= 0) or (oreVolume <= 0)) {
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", \
               m_modRef->itemName().c_str(), m_modRef->itemID(), roidRef->itemName().c_str(), m_targetSE->GetID() );
-        /** @todo. send error to client here. */
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.  Ref: ServerError 06428.", m_modRef->itemName().c_str());
+        ActiveModule::DeactivateCycle(true);
         return;
     }
 
     double oreAmount = (cycleVol /oreVolume);
-    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
-    if (remainingCargoVolume < 0) {
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
-        if (!partial)
-            ActiveModule::AbortCycle();
-        return;
-    }
-
     if (partial) {
         // adjust amount AND cycle for partial cycle
         float delta = 1 - (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
@@ -177,26 +170,27 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
             oreAmount = floor(oreAmount);
     }
 
+    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
+    if (oreAmount > roidQuantity)
+        oreAmount = roidQuantity;
+
+    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
     if (remainingCargoVolume < cycleVol) {
         if (remainingCargoVolume > oreVolume)
             oreAmount = remainingCargoVolume /oreVolume;
         else
             oreAmount = 0;
-        StopTimer();
-        // does this make a loop??
-        if (!partial)
-            ActiveModule::AbortCycle();
-        m_shipRef->GetPilot()->SendNotifyMsg("Your cargohold is full.");
-    }
 
-    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
-    if (oreAmount > roidQuantity)
-        oreAmount = roidQuantity;
+        // go straight to base class DeactivateCycle to reset module timer and checks
+        //  passing abort=true here will negate the possibability of running a loop here and overfilling cargohold (elusive error)
+        ActiveModule::DeactivateCycle(true);
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
+    }
 
     _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f/%.2f, oreAmount:%.2f", \
                 (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
 
-    if (oreAmount == 0)
+    if (oreAmount <= 0)
         return;
 
     ItemData idata(roidRef->typeID(), m_shipRef->ownerID(), 0, flagAutoFit, oreAmount);
@@ -222,8 +216,10 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
             double radius = exp((roidQuantity +112404.8) /25000);
             roidRef->SetAttribute(AttrRadius, radius);
         }
-    } else
+    } else {
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as its target has been depleted.", m_modRef->itemName().c_str());
         m_targetSE->Delete();
+    }
 
     if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))
         if (MakeRandomFloat(0,1) < m_crystalDmgChance) {

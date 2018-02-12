@@ -7,7 +7,7 @@
   * @date:   ?? May 2015
   */
 
- // Latest change - 14Apr17
+ // Latest change - 11Feb18
 
  /** @todo  the def references need updating  */
 
@@ -26,6 +26,7 @@
  *
  *
  * Ref: ServerError 02808. << CorpRegistryService::_CreateBoundObject - object is not tuple
+ * Ref: ServerError 06428. << MiningLaser::ProcessCycle() - cycleVol < oreVolume
  * Ref: ServerError 10781. << Client::BoardShip()
  * Ref: ServerError 10928. << Client::MoveTimer() - no move pending
  * Ref: ServerError 15610. << ShipItem::GetEffectiveness() - effectiveness <= 0
