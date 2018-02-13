@@ -31,7 +31,7 @@ public:
     virtual bool CanActivate();
 
 protected:
-	void ProcessCycle(bool partial=false);
+	void ProcessCycle(bool abort=false);
 
 
 private:

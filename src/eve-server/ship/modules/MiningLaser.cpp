@@ -135,7 +135,7 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
 
 // note:  gas cloud contains radius/10 units of gas.
 /** @todo verify for ice and gas */
-void MiningLaser::ProcessCycle(bool partial/*false*/)
+void MiningLaser::ProcessCycle(bool abort/*false*/)
 {
     float cycleVol = GetAttribute(AttrMiningAmount).get_float();
     if (m_chargeLoaded)
@@ -161,7 +161,7 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
     }
 
     double oreAmount = (cycleVol /oreVolume);
-    if (partial) {
+    if (abort) {
         // adjust amount AND cycle for partial cycle
         float delta = 1 - (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
         cycleVol *= delta;
@@ -184,11 +184,12 @@ void MiningLaser::ProcessCycle(bool partial/*false*/)
         // go straight to base class DeactivateCycle to reset module timer and checks
         //  passing abort=true here will negate the possibability of running a loop here and overfilling cargohold (elusive error)
         ActiveModule::DeactivateCycle(true);
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
+        if (!abort) // dont notify client if they deactivated laser
+            m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
     }
 
     _log(MINING__DEBUG, "ProcessCycle(%s) -  cycleVol:%.2f, roidQuantity:%.2f, remainingCargoVolume:%.2f/%.2f, oreAmount:%.2f", \
-                (partial?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
+                (abort?"true":"false"), cycleVol, roidQuantity, remainingCargoVolume, (remainingCargoVolume -cycleVol), oreAmount);
 
     if (oreAmount <= 0)
         return;
