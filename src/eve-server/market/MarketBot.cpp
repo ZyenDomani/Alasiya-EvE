@@ -17,19 +17,16 @@
 MarketBot::MarketBot()
 {
     m_initalized = false;
-
 }
 
 void MarketBot::Init()
 {
     m_initalized = false;
-
 }
 
 void MarketBot::Process()
 {
     if (!m_initalized)
         return;
-
 }
 

@@ -346,7 +346,6 @@ SET( map_SOURCE
      "${TARGET_SOURCE_DIR}/map/MapService.cpp" )
 
 SET( market_INCLUDE
-     "${TARGET_INCLUDE_DIR}/market/MarketBot.h"
      "${TARGET_INCLUDE_DIR}/market/MarketBotConf.h"
      "${TARGET_INCLUDE_DIR}/market/MarketBotMgr.h"
      "${TARGET_INCLUDE_DIR}/market/MarketMgr.h"
@@ -354,7 +353,6 @@ SET( market_INCLUDE
      "${TARGET_INCLUDE_DIR}/market/MarketProxyService.h" )
      #"${TARGET_INCLUDE_DIR}/market/NPCMarket.h")
 SET( market_SOURCE
-     "${TARGET_SOURCE_DIR}/market/MarketBot.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketBotConf.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketBotMgr.cpp"
      "${TARGET_SOURCE_DIR}/market/MarketMgr.cpp"

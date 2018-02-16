@@ -44,6 +44,9 @@ public:
     void Initialize();
     void Process();
 
+    void AddSystem();
+    void RemoveSystem();
+
 private:
     Timer m_updateTimer;
 

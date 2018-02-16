@@ -459,7 +459,7 @@ int main( int argc, char* argv[] )
         sLog.Green("   Market Bot Mgr", "Market Bot Enabled.");
         /* create the MarketBot singleton */
         sLog.Green("       ServerInit", "Starting Market Bot Manager");
-        sMktBotMgr.Initialize();
+        //sMktBotMgr.Initialize();
     } else
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
     if (sConfig.server.BountyPayoutDelayed)
@@ -670,6 +670,9 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
     /* Close the entity list */
     sEntityList.Close();
+    /* Close the MarketMgr */
+    sLog.Warning("   ServerShutdown", "Shutting down MarketMgr." );
+    sMktMgr.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
     /* Shut down the Item system */
     if (!sConsole.IsDbError())

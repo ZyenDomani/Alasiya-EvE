@@ -30,7 +30,8 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
-#include "market/MarketBotMgr.h"
+#include "market/MarketMgr.h"
+//#include "market/MarketBotMgr.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -41,14 +42,18 @@
 
 EntityList::EntityList()
 : m_services( nullptr ),
-m_stamp(1000),    /* start at 1k.  in seconds.  used for destiny and client counters */
-m_stampTimer(0, true)
+m_stampTimer(0, true),
+m_minutetimer(60000)    // start minute timer
 {
     m_systems.clear();
     m_clients.clear();
     m_stations.clear();
 
+    m_npcs = 0;
+    m_stamp = 1000;   /* start at 1k.  in seconds.  used for destiny and client counters */
+    m_minutes = 0;
     m_connections = 0;
+    m_clientSeedID = 0;
     m_shipTracking = sConfig.debug.UseShipTracking;
 }
 
@@ -134,10 +139,9 @@ void EntityList::Process() {
 
         ++m_stamp;
 
-        sWHMgr.Process();
+        // these need 1Hz tics
         sCivMgr.Process();
         sBubbleMgr.Process();
-        sMktBotMgr.Process();  // not used yet
 
         for (auto cur : m_clients)
             if (cur->IsLoaded())
@@ -157,6 +161,17 @@ void EntityList::Process() {
             }
             ++itr;
         }
+
+        if (m_minutetimer.Check()) {
+            // dont have a use for this yet, but have visions where this could be handy (like player online counters)
+            ++m_minutes;
+
+            // these do not need to be precise
+            sWHMgr.Process();   // ~2m
+            sMktMgr.Process();   // ~1h
+            //sMktBotMgr.Process();  // 15m to 30m
+        }
+
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_entitySProfile, GetTimeUSeconds() - profileStartTime);
     }

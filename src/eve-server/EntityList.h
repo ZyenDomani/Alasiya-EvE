@@ -128,6 +128,7 @@ protected:
 
 private:
     Timer m_stampTimer;
+    Timer m_minutetimer;
 
     std::vector<Client*> m_clients;
     std::set<int64> m_sessions;
@@ -135,12 +136,13 @@ private:
     std::map<uint32, StationItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
 
-    uint32 m_npcs = 0;
-    uint32 m_stamp = 0;
-    uint32 m_connections = 0;
-    uint32 m_clientSeedID = 0;
-
-    bool m_shipTracking = false;
+    bool m_shipTracking;
+    
+    uint32 m_npcs;
+    uint32 m_stamp;
+    uint32 m_minutes;
+    uint32 m_connections;
+    uint32 m_clientSeedID;
 };
 
 //Singleton

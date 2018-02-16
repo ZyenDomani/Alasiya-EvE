@@ -166,6 +166,9 @@ bool SystemManager::BootSystem() {
     m_services.lsc_service->CreateSystemChannel(m_data.constellationID);
     m_services.lsc_service->CreateSystemChannel(m_data.systemID);
 
+    // inform MarketBot of loaded system, and stations in this system.
+    //sMktBotMgr.AddSystem();
+
     return (m_loaded = true);
 }
 
@@ -226,6 +229,9 @@ void SystemManager::UnloadSystem() {
         return;
 
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
+
+    // inform MarketBot of system unloading, to remove system stations from proc loop.
+    //sMktBotMgr.RemoveSystem();
 
     // system is being unloaded.  pay bounties now
     PayBounties();

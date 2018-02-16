@@ -28,19 +28,18 @@ void MarketBotDataMgr::Initialize()
 {
     m_initalized = true;
 
-    sLog.Blue("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
     /* load current data */
+
+    sLog.Blue("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
 }
 
 
 
 MarketBotMgr::MarketBotMgr()
-:  m_updateTimer(120000)    // arbitrary 2m default
+: m_updateTimer(20 *60 *1000)    // arbitrary 20m default
 {
-    m_updateTimer.Disable();
     m_initalized = false;
 }
-
 
 void MarketBotMgr::Initialize()
 {
@@ -52,16 +51,31 @@ void MarketBotMgr::Initialize()
     m_initalized = true;
     sMktBotDataMgr.Initialize();
 
-    sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
     /* start timers, process current data, and create new orders, if needed */
+
+    sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
 }
 
+// this is called on a minute timer from EntityList
 void MarketBotMgr::Process()
 {
     if (!m_initalized)
         return;
-    if (m_updateTimer.Check(false)) {
+
+    if (m_updateTimer.Check()) {
     /* process current data, process orders, xfer funds, reset timers, create new orders */
+
     }
+}
+
+
+void MarketBotMgr::AddSystem()
+{
+
+}
+
+void MarketBotMgr::RemoveSystem()
+{
+
 }
 

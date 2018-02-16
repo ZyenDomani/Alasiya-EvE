@@ -23,9 +23,6 @@
     Author:     Zhur
 */
 
-#include "eve-server.h"
-
-#include "EntityList.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
@@ -43,6 +40,7 @@ MarketProxyService::MarketProxyService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
+    PyCallable_REG_CALL(MarketProxyService, StartupCheck);
     PyCallable_REG_CALL(MarketProxyService, GetStationAsks);
     PyCallable_REG_CALL(MarketProxyService, GetSystemAsks);
     PyCallable_REG_CALL(MarketProxyService, GetRegionBest);
@@ -56,7 +54,6 @@ MarketProxyService::MarketProxyService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MarketProxyService, CancelCharOrder);
     PyCallable_REG_CALL(MarketProxyService, CharGetNewTransactions);
     PyCallable_REG_CALL(MarketProxyService, CorpGetNewTransactions);
-    PyCallable_REG_CALL(MarketProxyService, StartupCheck);
     PyCallable_REG_CALL(MarketProxyService, GetCorporationOrders);
 }
 
@@ -75,7 +72,7 @@ MarketProxyService::~MarketProxyService() {
  */
 
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
-    m_db.BuildOldPriceHistory();
+    sMktMgr.UpdatePriceHistory();
     return nullptr;
 }
 
@@ -115,11 +112,9 @@ PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.GetOldPriceHistory(call.client->GetRegionID(), args.arg);
+    return sMktMgr.GetOldPriceHistory(call.client->GetRegionID(), args.arg);
 }
 
-// this is called 3x on every market transaction
-/** @todo  make this static data, updated on a timer.  can be done in MarketMgr code  */
 PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -127,7 +122,7 @@ PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
         return nullptr;
     }
 
-    return m_db.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
+    return sMktMgr.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
@@ -138,7 +133,6 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     }
 
     PyRep* result(nullptr);
-
     std::string method_name ("GetOrders_");
     method_name += itoa(args.arg);
     ObjectCachedMethodID method_id(GetName(), method_name.c_str());
@@ -183,6 +177,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         return nullptr;
     }
 
+    args.Dump(MARKET__DUMP, "CharOrder    ");
+
     //TODO: verify the validity of args.stationID (range vs. skill)
     //TODO: handle located?  'located' is officeFolderID, officeID.  not sure how its' sent yet.
     //NOTE: I am not sure that useCorp is as simple as it is currently implemented...
@@ -199,7 +195,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             _log(MARKET__TRACE, "%s: Found sell order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %i)", \
                         call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-            _ExecuteSellOrder(order_id, args.stationID, args.quantity, call.client, args.useCorp);
+            sMktMgr.ExecuteSellOrder(order_id, args.stationID, args.quantity, call.client, args.useCorp);
             return nullptr;
         }
 
@@ -229,8 +225,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         //send notification of new order...
-        _InvalidateOrdersCache(args.typeID);
-        _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), orderID, "Add", args.useCorp);
+        InvalidateOrdersCache(args.typeID);
+        sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), orderID, "Add", args.useCorp);
     } else {
         //sell order
 
@@ -280,7 +276,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         if (order_id) {
             _log(MARKET__TRACE, "%s: Found buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-            _ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, item, args.useCorp);
+            sMktMgr.ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, item, args.useCorp);
             return nullptr;
         }
 
@@ -325,8 +321,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         }
 
         //notify client about new order.
-        _InvalidateOrdersCache(args.typeID);
-        _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), orderID, "Add", args.useCorp);
+        InvalidateOrdersCache(args.typeID);
+        sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), orderID, "Add", args.useCorp);
     }
 
     //returns nothing.
@@ -363,8 +359,8 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
         return nullptr;
     }
 
-    _InvalidateOrdersCache(typeID);
-    _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Modify", isCorp); //force a refresh of market data.
+    InvalidateOrdersCache(typeID);
+    sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Modify", isCorp); //force a refresh of market data.
 
     return nullptr;
 }
@@ -402,9 +398,9 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
         codelog(MARKET__ERROR, "Failed to delete order %u.", args.orderID);
         return nullptr;
     }
-    _InvalidateOrdersCache(typeID);
-    _BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Expiry", isCorp, order); //force a refresh of market data.
-    _BroadcastOnMarketRefresh(call.client->GetRegionID());
+    InvalidateOrdersCache(typeID);
+    sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Expiry", isCorp, order); //force a refresh of market data.
+    sMktMgr.BroadcastOnMarketRefresh(call.client->GetRegionID());
 
     return nullptr;
 }
@@ -437,44 +433,7 @@ PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
                                   args.maxPrice, args.fromDate, args.buySell, args.accountKey, args.memberID);
 }
 
-void MarketProxyService::_SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp, PyRep* order) {
-    Notify_OnOwnOrderChanged ooc;
-    if (order != nullptr)
-        ooc.order = order;
-    else
-        ooc.order = m_db.GetOrderRow(orderID);
-    ooc.reason = action;
-    ooc.isCorp = isCorp;
-    PyTuple* tmp = ooc.Encode();
-    who->SendNotification("OnOwnOrderChanged", "clientID", &tmp);   //tmp consumed.
-}
-
-void MarketProxyService::_SendOnMarketRefresh(Client *who) {
-    PyTuple* tmp = new PyTuple(0);
-    who->SendNotification("OnMarketRefresh", "clientID", &tmp);   //tmp consumed.
-}
-
-void MarketProxyService::_BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, const char *action, bool isCorp, PyRep* order) {
-    std::vector<Client*> clients;
-    sEntityList.FindByRegionID(regionID, clients);
-    std::vector<Client*>::iterator cur = clients.begin();
-    for (; cur != clients.end(); ++cur) {
-        PySafeIncRef(order);
-        _SendOnOwnOrderChanged(*cur, orderID, action, isCorp, order);
-    }
-    PySafeDecRef(order);
-}
-
-void MarketProxyService::_BroadcastOnMarketRefresh(uint32 regionID) {
-    std::vector<Client*> clients;
-    sEntityList.FindByRegionID(regionID, clients);
-    std::vector<Client*>::iterator cur = clients.begin();
-    for (; cur != clients.end(); ++cur) {
-        _SendOnMarketRefresh(*cur);
-    }
-}
-
-void MarketProxyService::_InvalidateOrdersCache(uint32 typeID)
+void MarketProxyService::InvalidateOrdersCache(uint32 typeID)
 {
     std::string method_name ("GetOrders_");
     method_name += itoa(typeID);
@@ -482,197 +441,3 @@ void MarketProxyService::_InvalidateOrdersCache(uint32 typeID)
     m_manager->cache_service->InvalidateCache( method_id );
 }
 
-
-/** @todo take off market overhead fees */
-
-//NOTE: there are a lot of race conditions to deal with here if we ever
-//allow multiple market services to run at the same time.
-void MarketProxyService::_ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp) {
-    uint32 ownerID = 0, typeID = 0, stationID2 = 0, qtyReq = 0;
-    double price = 0;
-    bool isBuy = false;
-
-    /** @todo  look into this....may need updates for corp transactions  */
-    /** @todo  what is stationID being sent?  whats diff in stationID and orderInfo.stationID? */
-
-    if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, &stationID2, &qtyReq, &price, &isBuy, &isCorp)) {
-        codelog(MARKET__ERROR, "%s: Failed to get info about buy order %u.", seller->GetName(), orderID);
-        return;
-    }
-    //  check for sellerID == EVESystem, and change to station owner (npcCorpID)
-    if (ownerID == 1)
-        ownerID = stDataMgr.GetOwnerID(stationID);
-
-    if (typeID != item->typeID()) {
-        //should never happen.
-        codelog(MARKET__ERROR, "%s: Type mismatch executing order %u: order %u item %u", seller->GetName(), orderID, typeID, item->typeID());
-        seller->SendErrorMsg("Order type mismatch.");
-        return;
-    }
-
-    if (quantity > qtyReq) {
-        codelog(MARKET__ERROR, "%s: Tried to sell more (%u) than %u required (%u). Selling only what required.", seller->GetName(), quantity, ownerID, qtyReq);
-        quantity = qtyReq;
-    }
-
-    if (ownerID == item->ownerID()) {
-        //I just have a bad feeling that this is not going to work very well...
-        codelog(MARKET__WARNING, "%s: Selling an item to ourself... this may not work...", seller->GetName());
-    }
-
-    if (item->singleton() or item->quantity() == quantity) {
-        item->Donate(ownerID, stationID, (isCorp ? flagCorpMarket : flagHangar));
-    } else {
-        //need to split item up...
-        InventoryItemRef iRef = item->Split(quantity, true);
-        if (iRef.get() == nullptr) {
-            codelog(MARKET__ERROR, "Failed to split item %u.", item->itemID());
-            return;
-        }
-        iRef->Donate(ownerID, stationID, (isCorp ? flagCorpMarket : flagHangar));
-    }
-
-    //the buyer has already paid out the money before the buy order was recorded in the database.
-    //give the money to the seller...
-    double money = price * quantity;
-
-    std::string reason = "DESC:  Selling items in ";
-    reason += itoa(stationID);
-    if (isCorp) {
-        reason += " to ";
-        reason += seller->GetName();
-    }
-
-    AccountService::TranserFunds(
-                ownerID,
-                (isCorp ? seller->GetCorporationID() : seller->GetCharacterID()),
-                money,
-                reason.c_str(),
-                Journal::EntryType::MarketTransaction,
-                orderID,
-                (isCorp ? seller->GetCorpAccountKey() : Account::KeyType::Cash));  // this may not be right.  it *may* use corp master wallet.
-
-    if (quantity == qtyReq) {
-        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", seller->GetName(), orderID);
-        PyRep* order = m_db.GetOrderRow(orderID);
-        if (!m_db.DeleteOrder(orderID)) {
-            codelog(MARKET__ERROR, "Failed to delete order %u.", orderID);
-            return;
-        }
-        _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Expiry", isCorp, order);
-        _BroadcastOnMarketRefresh(seller->GetRegionID());
-    } else {
-        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", seller->GetName(), orderID, qtyReq - quantity);
-        if (!m_db.AlterOrderQuantity(orderID, qtyReq - quantity)) {
-            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", orderID);
-            return;
-        }
-       _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Modify", isCorp);
-    }
-
-    //record this transaction in market_transactions
-    if (isCorp) {
-        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCorporationID(), sDataMgr.GetStationRegion(stationID), stationID))
-            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", seller->GetName());
-    } else {
-        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID))
-            codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
-    }
-    //FIXME:  for orderOwnerID == 1, reset owner to npc corp of stationID
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, ownerID, sDataMgr.GetStationRegion(stationID), stationID)) {
-        codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", seller->GetName());
-    }
-}
-
-//NOTE: there are a lot of race conditions to deal with here if we ever
-//allow multiple market services to run at the same time.
-void MarketProxyService::_ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp) {
-    uint32 ownerID = 0, typeID = 0, qtyAvail = 0;
-    double price = 0;
-    bool isBuy = false;
-
-    if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, nullptr, &qtyAvail, &price, &isBuy, nullptr)) {
-        codelog(MARKET__ERROR, "%s: Failed to get info about sell order %u.", buyer->GetName(), orderID);
-        return;
-    }
-
-    if (quantity > qtyAvail) {
-        codelog(MARKET__ERROR, "%s: Tried to buy more (%u) than available (%u). Buying all available.", buyer->GetName(), quantity, qtyAvail);
-        quantity = qtyAvail;
-    }
-
-    if (ownerID == buyer->GetCharacterID()) {
-        //I just have a bad feeling that this is not going to work very well...
-        codelog(MARKET__WARNING, "%s: Buying an item from ourself... this may not work...", buyer->GetName());
-    }
-
-    //  check for sellerID == EVESystem, and change to station owner (npcCorpID)
-    if (ownerID == 1)
-        ownerID = stDataMgr.GetOwnerID(stationID);
-
-    //spawn the item in the buyer's hangar.
-    ItemData idata(typeID, 0, 0, flagAutoFit, quantity);
-    InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
-    if (new_item.get() == nullptr) {
-        // item not created.  make error msg
-        return;
-    }
-
-    double money = price * quantity;
-
-    //take the money from the buyer after we spawn the item. (verify the item is created.)
-    // send wallet blink event and record the transaction in their journal.
-    std::string reason = "DESC:  Buying items in ";
-    reason += stDataMgr.GetStationName(stationID);
-    if (isCorp) {
-        reason += " by ";
-        reason += buyer->GetName();
-    }
-
-    AccountService::TranserFunds(
-                (isCorp ? buyer->GetCorporationID() : buyer->GetCharacterID()),
-                ownerID,
-                money,
-                reason.c_str(),
-                Journal::EntryType::MarketTransaction,
-                orderID,
-                (isCorp ? buyer->GetCorpAccountKey() : Account::KeyType::Cash));  // this may not be right.  it *may* use corp master wallet.
-
-    if (isCorp)
-        new_item->Donate(buyer->GetCorporationID(), stationID, flagCorpMarket);
-    else
-        new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar);
-
-    if (quantity == qtyAvail) {
-        _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), orderID);
-        PyRep* order = m_db.GetOrderRow(orderID);
-        if (!m_db.DeleteOrder(orderID)) {
-            codelog(MARKET__ERROR, "Failed to delete order %u.", orderID);
-            return;
-        }
-        _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Expiry", isCorp, order);
-        _BroadcastOnMarketRefresh(buyer->GetRegionID());
-    } else {
-        _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", buyer->GetName(), orderID, qtyAvail - quantity);
-        if (!m_db.AlterOrderQuantity(orderID, qtyAvail - quantity)) {
-            codelog(MARKET__ERROR, "Failed to alter quantity of order %u.", orderID);
-            return;
-        }
-        _InvalidateOrdersCache(typeID);
-        _BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Modify", isCorp);
-    }
-
-    if (isCorp) {
-        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCorporationID(), sDataMgr.GetStationRegion(stationID), stationID))
-            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
-    } else {
-        if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID))
-            codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", buyer->GetName());
-    }
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, ownerID, sDataMgr.GetStationRegion(stationID), stationID)) {
-        codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", buyer->GetName());
-    }
-}

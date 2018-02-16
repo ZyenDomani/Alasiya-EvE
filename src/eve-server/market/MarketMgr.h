@@ -15,8 +15,11 @@
 
 #include "../eve-server.h"
 
+#include "EntityList.h"
 #include "market/MarketDB.h"
 
+
+class Client;
 
 class MarketMgr
 : public Singleton< MarketMgr >
@@ -25,23 +28,35 @@ public:
     MarketMgr();
     ~MarketMgr();
 
-    int                 Initialize();
+    int Initialize();
 
-    void                Clear();
-    void                Close();
-    void                GetInfo();
+    void Close();
+    void GetInfo();
+    void Process();
 
-    PyRep*              GetMarketGroups()               { PyIncRef(m_marketGroups); return m_marketGroups; }
+    void UpdatePriceHistory();
+
+    void ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp=false);
+    void ExecuteSellOrder(uint32 sell_order_id, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp=false);
+    void SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
+    void BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
+    void SendOnMarketRefresh(Client *who);
+    void BroadcastOnMarketRefresh(uint32 regionID);
+    //void InvalidateOrdersCache(uint32 regionID);
+
+    PyRep* GetMarketGroups()               { PyIncRef(m_marketGroups); return m_marketGroups; }
+    PyRep* GetNewPriceHistory(uint32 regionID, uint32 typeID);
+    PyRep* GetOldPriceHistory(uint32 regionID, uint32 typeID);
 
 protected:
-    void                Populate();
-
+    void Populate();
 
 private:
     MarketDB m_db;
 
     PyRep* m_marketGroups;  // static market group data
 
+    Timer m_timer;
 
     // markets are regional.  there are 66 regions.
     // market orders are stored as {regionID/typeID}
