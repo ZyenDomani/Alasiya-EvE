@@ -235,19 +235,19 @@ struct ActiveDungeon {
 
 /* POD structure for cosmic signatures/anomalies */
 struct CosmicSignature {
-    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
-    std::string sigName;
-    uint32 ownerID;
-    uint32 systemID;
-    uint32 sigItemID;   // itemID of this entry
     uint8 dungeonType;
     uint16 sigTypeID;
     uint16 sigGroupID;
     uint16 scanGroupID;
     uint16 scanAttributeID;
+    uint32 ownerID;
+    uint32 systemID;
+    uint32 sigItemID;   // itemID of this entry
     double x;
     double y;
     double z;
+    std::string sigID;  // this is unique xxx-nnn id displayed in scanner
+    std::string sigName;
 };
 
 /* POD structure for spawn groups */
@@ -268,11 +268,11 @@ struct SpawnGroup {
 /* POD structure for spawn entries */
 struct SpawnEntry {     // notes for me while creating/writing/testing
     bool enabled;       // is respawn enabled for this entry?  also provides conditional test for SpawnMgr::IsChaining() method
-    uint8 spawnClass;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer
-    uint8 spawnGroup;   // spawn group.   1 = roid rat, 2 = roaming, 3 = static, 4 = anomaly, 5 = mission, 6 = incursion, 7 = deadspace, 8 = sleeper
+    uint8 spawnClass;   // spawn class.  0 = none, 1-7 = easy to insance based on sysSec, 8 = hauler, 9 = commander, 10 = officer  - 20+ are anomalies
+    uint8 spawnGroup;   // spawn group.   1 = roaming, 2 = static, 3 = anomaly, 4 = combat, 5 = deadspace, 6 = mission, 7 = incursion, 8 = sleeper, 9 = escalation
     uint8 total;        // total number of this group spawned
     uint8 number;       // this rat's number in group (to match up with above total)
-    uint8 sub;          // spawn data subtype
+    uint8 level;        // spawn data subtype/wave
     uint8 classID;      // spawn data class id (in case we have to look it up again)
     uint16 typeID;      // rat type id
     uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
@@ -285,7 +285,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
 
 /* POD structure for spawn faction groups */
 struct RatFactionGroups {  // notes for me while creating/writing/testing
-    uint8 shipClass;      // shipclass - arbitrary
+    uint8 shipClass;      // shipClass as defined in Spawn::Class
     uint16 groupID;     // item groupID
 };
 
@@ -438,7 +438,7 @@ struct DunTemplate {
     int32 dunRoomID;
     uint16 dunEntryID;
     uint8 dunTypeID;
-    uint8 dunSpawnType;
+    uint8 dunSpawnClass;
 };
 
 struct DunRoomInfo {

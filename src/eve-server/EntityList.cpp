@@ -414,10 +414,11 @@ void EntityList::RemoveSID ( int64 sessionID ) {
 
 std::string EntityList::GetAnomalyID()
 {
+    // these should be totally unique.  design a way to enforce this
     std::string str1 = "", str2 = "";
     for (uint8 i = 0; i < 3; ++i) {
         str1 += alphaList[MakeRandomInt(0,25)];    //rand() % sizeof(alphaList) - 1
-        str2 += itoa(MakeRandomInt(0,8));
+        str2 += itoa(MakeRandomInt(0,9));
     }
 
     std::string res = str1;

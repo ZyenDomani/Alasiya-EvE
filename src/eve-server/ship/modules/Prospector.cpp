@@ -24,7 +24,7 @@ Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
 
     if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
         m_salvager = true;
-    else if (m_modRef->groupID() == EVEDB::invGroups::Salvager)
+    else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner)
         m_dataMiner = true;
 
     m_accessChance = 0;

@@ -113,7 +113,7 @@ static GenericModule* ModuleFactory(InventoryItemRef item, ShipItemRef ship)
 
             // Prospecting Modules
             case EVEDB::invGroups::Salvager:                                return (new Prospector(item, ship));    // Active - external
-            case EVEDB::invGroups::Data_Miners:                             return (new Prospector(item, ship));    // Active - external
+            case EVEDB::invGroups::Data_Miner:                              return (new Prospector(item, ship));    // Active - external
 
             // Engineering Modules:
             case EVEDB::invGroups::Capacitor_Recharger:                     return (new PassiveModule(item, ship));

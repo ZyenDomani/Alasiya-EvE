@@ -234,3 +234,41 @@ AttrScanSpeedMultiplier = 242,
     PyDict *result = new PyDict;
         result->SetItem(new PyInt(itemID()), new PyObjectEx_Type2(tuple1, chargeDict));
 */
+
+/*
+ *  to calculate the maximum possible deviation you use the constants provided for the type of probe,
+ * the scan size your probes are set to, and your skill level of Astrometric Pinpointing.
+ * Here is the formula:
+ * Max Deviation = (Scan Range/Base Scan Range) × Base Maximum Deviation × (1 ? Pinpointing Skill/10)
+ *
+ * Maximum deviation at different ranges and levels
+ * Scan            Astrometric Pinpointing Skill Level
+ * Range         0        1      2       3       4       5
+ * 0.25 AU     0.125   0.1125  0.100   0.0875  0.075   0.0625
+ * 0.5 AU      0.25    0.225   0.2     0.175   0.15    0.125      --Combat Scanner Probes have a minimum scan range of 0.5 AU.
+ * 1 AU        0.5     0.45    0.4     0.35    0.3     0.25
+ * 2 AU        1       0.9     0.8     0.7     0.6     0.5
+ * 4 AU        2       1.8     1.6     1.4     1.2     1
+ * 8 AU        4       3.6     3.2     2.8     2.4     2
+ * 16 AU       8       7.2     6.4     5.6     4.8     4
+ * 32 AU      16      14.4    12.8    11.2     9.6     8          --Core Scanner Probes haves a maximum scan range of 32 AU.
+ * 64 AU      32      28.8    25.6    22.4    19.2    16
+ *
+ *
+ * http://wiki.eve-inspiracy.com/index.php?title=Base_Signature_Strength
+ * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+ * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+ *
+ * http://wiki.eve-inspiracy.com/index.php?title=Complete_Signature_Strength_List
+ * Signature Bands in High Sec
+ * Bands for Unknown Signatures
+ * 1/5
+ * (20.0%) Band    1/10
+ * (10.0%) Band    1/15
+ * (6.67%) Band    1/20
+ * (5.0%) Band     1/25
+ * (4.0%) Band     1/40
+ * (2.5%) Band     1/60
+ * (1.67%) Band    1/80
+ * (1.25%) Band    Unknown
+ */

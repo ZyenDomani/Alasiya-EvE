@@ -408,7 +408,7 @@ namespace EVEDB {
             Construction_Platform_Blueprint = 535,
             Station_Components = 536,
             Dreadnought_Blueprint = 537,
-            Data_Miners = 538,
+            Data_Miner = 538,
             CommandShip = 540,
             Interdictor = 541,
             Exhumer = 543,

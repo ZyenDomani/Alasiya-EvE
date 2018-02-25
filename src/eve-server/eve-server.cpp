@@ -462,10 +462,19 @@ int main( int argc, char* argv[] )
         //sMktBotMgr.Initialize();
     } else
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
-    if (sConfig.server.BountyPayoutDelayed)
+    if (sConfig.server.BountyPayoutDelayed) {
         sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
-    else
+        if (sConfig.server.FleetShareDelayed)
+            sLog.Green(" Delayed Bounties","Delay for Fleet Bounty Sharing is Enabled.");
+        else
+            sLog.Warning(" Delayed Bounties","Delay for Fleet Bounty Sharing is Disabled.  Fleet Sharing of Bounties is immediate.");
+    } else {
         sLog.Warning(" Delayed Bounties","Delayed Bounties are Disabled.  Bounty payouts are immediate.");
+        if (sConfig.server.FleetShareDelayed)
+            sLog.Warning(" Delayed Bounties","Delayed Bounties are Disabled.  Fleet Sharing of Bounties is immediate.");
+        else
+            sLog.Warning(" Delayed Bounties","Delay for Fleet Bounty Sharing is Disabled.  Fleet Sharing of Bounties is immediate.");
+    }
 
     std::printf("\n");     // spacer
 

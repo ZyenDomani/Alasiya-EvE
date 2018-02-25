@@ -17,7 +17,15 @@
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
+#include "system/cosmicMgrs/DungeonMgr.h"
 
+/** @todo  this can be updated to spawn mission, anomaly and deadspace rats.
+ *   change all *roidRat* to *somethingelse* to better explain/describe the maps and how they're used.
+ *  add objects for mission, anomaly and deadspace rats as needed to aid in tracking/deleting.
+ *
+ * add booleans for checking roam/static spawns and add anomaly checks to enable spawn mgr.
+ *
+ */
 
 /*
  SPAWN__ERROR
@@ -27,8 +35,8 @@
  SPAWN__DEPOP
  SPAWN__TRACE
  */
-/** @todo  adjust this class to manage anomaly spawns, too */
-/** @todo this class needs a bit of tweaking to work as designed */
+
+/** @todo this class needs a bit more tweaking to work as designed...may/may not spawn all types correctly at this time.  */
 SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 : m_system(mgr),
   m_services(svc),
@@ -42,13 +50,6 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 
     m_ratEnabled = false;
     m_initalized = false;
-    /*
-    m_ratTimer.Disable();
-    m_missionTimer.Disable();
-    m_ratGroupTimer.Disable();
-    m_incursionTimer.Disable();
-    m_deadspaceTimer.Disable();
-    */
 
     m_spawns.clear();
     m_bubbles.clear();
@@ -276,12 +277,26 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
             pBubble->SetSpawned(false);
     } else if (pBubble->IsAnomaly()) {
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Anomaly - called by %u.", itemID);
-        // placeholder - not coded yet.
+        if (m_spawns.count(pBubble->GetID()) == 1) {
+            // last npc in this wave.  get data needed for next wave
+            SpawnEntryDef::iterator itr = m_spawns.find(pBubble->GetID());
+            if (itr == m_spawns.end())
+                return; // this is an error.
+            MakeSpawn(pBubble, itr->second.factionID, itr->second.spawnClass, itr->second.level);
+            // now remove this spawn from map.
+            m_spawns.erase(itr);
+        } else if (m_spawns.count(pBubble->GetID()) < 1) {
+            // this is an error...
+        } else {
+            // there are still npcs in this wave....continue.
+        }
+
         /*  this needs to deal with multiple things.
          * 1- unlocking warp gates when needed per wave
          * 2- dropping loot according to (wave/dungeon/template)?
          * 3- after last spawn, possible escelation per dungeon type?   this should signal anomaly mgr to create the escelation
-         * 4- more/others?
+         * 4- spawn next wave, if applicable
+         * 5- more/others?
          */
     } else if (pBubble->IsMission()) {
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Mission - called by %u.", itemID);
@@ -290,7 +305,8 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
          * 1- unlocking warp gates when needed per wave
          * 2- dropping loot according to (wave/mission/template)?
          * 3- setting mission completion status
-         * 4- more/others?
+         * 4- spawn next wave, if applicable
+         * 5- more/others?
          */
     } else if (pBubble->IsIncursion()) {
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Incursion - called by %u.", itemID);
@@ -301,18 +317,13 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
     }
 }
 
-void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, int32 spawnID)
+void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass)
 {
     if (!m_ratEnabled)
         return;
     if (pBubble == nullptr)
         return;
-    /*  this needs to deal with multiple things.
-     * 1- rat types for anomaly....
-     * 2- rat faction per dungeon template
-     * 3- waves per template.  how to do this???
-     * 4- more/others?
-     */
+    PrepSpawn(pBubble, spawnClass);
 }
 
 void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
@@ -344,13 +355,11 @@ void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
      */
 }
 
-bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble, uint32 regionID, double secRating)
+bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
 {
     if (!m_ratEnabled)
         return false;
     if (pBubble == nullptr)
-        return false;
-    if (!IsRegion(regionID))
         return false;
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
@@ -360,7 +369,7 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble, uint32 regionID, double s
         pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
         return false;
     } else {
-        if (PrepSpawn(pBubble, regionID, secRating)) {
+        if (PrepSpawn(pBubble)) {
             pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
         } else {
             _log(SPAWN__TRACE, "SpawnMgr::PrepSpawn() returned false for bubble %u.", pBubble->GetID());
@@ -379,208 +388,239 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble, uint32 regionID, double s
     return true;
 }
 
-bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
-    SpawnEntryDef::iterator itr = m_spawns.find(bubbleID);
-    if (itr != m_spawns.end())
-        return true;
-
-    return false;
-}
-
-bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRating)
+bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None*/, uint8 level/*0*/)
 {
     if (pBubble == nullptr)
         return false;
+    float secRating = m_system->GetSecValue();
+    bool anomaly = false;
     // get faction for this region
     uint32 factionID = factionRogueDrones;  // default to rogue drones.  this is my internal rogue drone factionID.
     if (sConfig.npc.RatFaction)             // is RatFaction set in config?
         factionID = sConfig.npc.RatFaction;
-    else if (MakeRandomFloat() > 0.05)       // random chance for ANY beltspawn to be rogue drone...if chance < 0.05, rat = drone.
-        factionID = sDataMgr.GetRegionRatFaction(regionID);
+    else if (MakeRandomFloat() > 0.05)       // 5% chance for ANY spawn to be rogue drone.
+        factionID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - faction: %s, region %u. (config set %s)", \
-                sDataMgr.GetFactionName(factionID).c_str(), regionID, (sConfig.npc.RatFaction?"true":"false"));
+        sDataMgr.GetFactionName(factionID).c_str(), m_system->GetRegionID(), (sConfig.npc.RatFaction?"true":"false"));
 
-    // get faction's ship typeclass and groupID map...is this feasible?  we're getting ALL groups for this faction.
-    if (sDataMgr.GetRatGroups(factionID, m_factionGroups)) {
+    // if rat, get possible spawn groups for this secRating.
+    if (sClass == Spawn::Class::None) {
+        if ((secRating < 0.2) and pBubble->IsBelt()) {   // check for hauler, commander, officer spawn, but ONLY in a belt
+            //NOTE  random checks here are for TESTING only....all rates are high.  make config option later?
+            double rand = MakeRandomFloat();
+            if (rand < 0.1) { // officer spawn
+                if (factionID != factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn (which isnt written yet)
+                    sClass = Spawn::Class::Officer;
+                else
+                    sClass = Spawn::Class::Hauler;
+            } else if (rand < 0.15) { // commander spawn
+                sClass = Spawn::Class::Commander;
+            } else if (rand < 0.25) { // hauler spawn
+                if (factionID != factionRogueDrones)
+                    sClass = Spawn::Class::Hauler;
+            }
+        }
+    } else {
+        // we were called from anomaly, incursion or mission to spawn npcs
+        anomaly = true;
+    }
+
+    if (sClass == Spawn::Class::None) {
+        if (pBubble->IsBelt()) {
+            if ((factionID != factionRogueDrones) and (MakeRandomFloat() < 0.08)) { // second chance for hauler spawn, but include ALL secRating in this one
+                sClass = Spawn::Class::Hauler;
+            } else { // gonna be a 'regular' trusec-based spawn in a belt.
+                if (secRating < -0.7)
+                    sClass = Spawn::Class::Insane;
+                else if (secRating < -0.4)
+                    sClass = Spawn::Class::Crazy;
+                else if (secRating < -0.1)
+                    sClass = Spawn::Class::Hard;
+                else if (secRating < 0.3)
+                    sClass = Spawn::Class::Medium;
+                else if (secRating < 0.6)
+                    sClass = Spawn::Class::Average;
+                else if (secRating < 0.85)
+                    sClass = Spawn::Class::Fair;
+                else
+                    sClass = Spawn::Class::Easy;
+            }
+            if (secRating < 0)
+                if (MakeRandomFloat() < 0.1)
+                    sClass = Spawn::Class::Hell;
+        } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns
+            if (secRating < -0.7)
+                sClass = Spawn::Class::Hard;
+            else if (secRating < -0.4)
+                sClass = Spawn::Class::Medium;
+            else if (secRating < -0.1)
+                sClass = Spawn::Class::Average;
+            else if (secRating < 0.3)
+                sClass = Spawn::Class::Fair;
+            else
+                sClass = Spawn::Class::Easy;
+        }
+    }
+
+    // get faction's shipClass and groupID map...is this feasible?  it's fine...there's only 21 at this time.
+    if (sDataMgr.GetNPCGroups(factionID, m_factionGroups)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 14
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - m_factionGroups size is %u.", m_factionGroups.size());    //should be 21 (22 for drones)
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatFaction data for faction %u.  Cancelling spawn.", factionID);
         return false;
     }
 
-    // get possible spawn groups for this secRating.
-    uint8 sClass = Spawn::Class::None;
-    if ((secRating < 0.2) and pBubble->IsBelt()) {   // check for hauler, commander, officer spawn, but ONLY in a belt
-        //NOTE  random checks here are for TESTING only....all rates are high.  make config option later?
-        double rand = MakeRandomFloat();
-        if (rand < 0.1) { // officer spawn
-            if (factionID != factionRogueDrones)   //but not for drones.  they dont have officers..make this the rare drone hauler spawn (which isnt written yet)
-                sClass = Spawn::Class::Officer;
-            else
-                sClass = Spawn::Class::Hauler;
-        } else if (rand < 0.15) { // commander spawn
-            sClass = Spawn::Class::Commander;
-        } else if (rand < 0.25) { // hauler spawn
-            if (factionID != factionRogueDrones)
-                sClass = Spawn::Class::Hauler;
-        }
-    }
-    if ((sClass == Spawn::Class::None) and pBubble->IsBelt()) {
-        /** @todo make (small) random chance for 'hell' spawn in nullsec */
-        if ((factionID != factionRogueDrones) and (MakeRandomFloat() < 0.08)) { // second chance for hauler spawn, but include ALL secRating in this one
-            sClass = Spawn::Class::Hauler;
-        } else { // gonna be a 'regular' trusec-based spawn in a belt.
-            if (secRating < -0.7)  sClass = Spawn::Class::Insane;
-            else if (secRating < -0.4) sClass = Spawn::Class::Crazy;
-            else if (secRating < -0.1) sClass = Spawn::Class::Hard;
-            else if (secRating < 0.3) sClass = Spawn::Class::Medium;
-            else if (secRating < 0.6) sClass = Spawn::Class::Average;
-            else if (secRating < 0.85) sClass = Spawn::Class::Fair;
-            else sClass = Spawn::Class::Easy;
-        }
-    } else if (pBubble->IsGate()) { // gate spawns are smaller than roid spawns
-        if (secRating < -0.7)  sClass = Spawn::Class::Hard;
-        else if (secRating < -0.4) sClass = Spawn::Class::Medium;
-        else if (secRating < -0.1) sClass = Spawn::Class::Average;
-        else if (secRating < 0.3) sClass = Spawn::Class::Fair;
-        else sClass = Spawn::Class::Easy;
-    }
-
-    if (secRating < 0) {
-        if (pBubble->IsBelt()) {
-            if (MakeRandomFloat() < 0.15)
-                sClass = Spawn::Class::Hell;
-        } else {
-            if (MakeRandomFloat() < 0.08)
-                sClass = Spawn::Class::Hell;
-        }
-    }
-
     RatSpawnClassVec spawnEntry;
-    if (sDataMgr.GetRatClasses(sClass, spawnEntry)) {
+    if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: '%s', ", spawnEntry.size(), GetSpawnClassName(sClass).c_str());
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s.", spawnEntry.size(), GetSpawnClassName(sClass).c_str());
     } else {
-        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No RatClass data for class '%s'.  Cancelling spawn.", GetSpawnClassName(sClass).c_str());
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %s.  Cancelling spawn.", GetSpawnClassName(sClass).c_str());
         return false;
+    }
+
+    if (anomaly) {
+        // anomaly, incursion or mission
+        ++level;    // increment wave
+        // check wave # vs possible waves.  (oob check)
+        if (spawnEntry.size() < level) {
+            _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - spawnEntry.size (%u) < level (%u) for anomaly class %s.  Cancelling spawn.", spawnEntry.size(), level, GetSpawnClassName(sClass).c_str());
+            return false;
+        }
+        /** @todo  test for overseer wave and spawn correct overseer for this anomaly  */
+        /** @todo  make templates/functions/whatever for sending msgs to players local for waves */
+    } else if (sClass == Spawn::Class::Hauler) {
+        // split hauler spawns based on trusec
+        if (secRating < -0.8)       level = MakeRandomInt(4, 7);
+        else if (secRating < -0.5)  level = MakeRandomInt(3, 6);
+        else if (secRating < -0.2)  level = MakeRandomInt(2, 5);
+        else if (secRating < 0.1)   level = MakeRandomInt(1, 4);
+        else if (secRating < 0.4)   level = MakeRandomInt(1, 3);
+        else if (secRating < 0.7)   level = 2;
+        else                        level = 1;
+    } else if (sClass <= Spawn::Class::Hell) {
+        level = MakeRandomInt(0, 8);  // random belt/gate spawn type.
+    } else {
+        // do we need anything else here?
     }
 
     // get ship class data from spawnEntry.at(subtype)
     // and put this spawn's group information in class designators
-    uint8 subtype = 0;
-    if (sClass == Spawn::Class::Hauler) {
-        // split hauler spawns based on trusec
-        if (secRating < -0.8)       subtype = MakeRandomInt(4, 7);
-        else if (secRating < -0.5)  subtype = MakeRandomInt(3, 6);
-        else if (secRating < -0.2)  subtype = MakeRandomInt(2, 5);
-        else if (secRating < 0.1)   subtype = MakeRandomInt(1, 4);
-        else if (secRating < 0.4)   subtype = MakeRandomInt(1, 3);
-        else if (secRating < 0.7)   subtype = 2;
-        else                        subtype = 1;
-    } else
-        subtype = MakeRandomInt(0, spawnEntry.size());
-
-    uint8 f = spawnEntry.at(subtype).f;
-    uint8 af = spawnEntry.at(subtype).af;
-    uint8 d = spawnEntry.at(subtype).d;
-    uint8 c = spawnEntry.at(subtype).c;
-    uint8 ac = spawnEntry.at(subtype).ac;
-    uint8 bc = spawnEntry.at(subtype).bc;
-    uint8 bs = spawnEntry.at(subtype).bs;
-    uint8 h = spawnEntry.at(subtype).h;
-    uint8 o = spawnEntry.at(subtype).o;
-    uint8 cf = spawnEntry.at(subtype).cf;
-    uint8 cd = spawnEntry.at(subtype).cd;
-    uint8 cc = spawnEntry.at(subtype).cc;
-    uint8 cbc = spawnEntry.at(subtype).cbc;
-    uint8 cbs = spawnEntry.at(subtype).cbs;
+    uint8 f = spawnEntry.at(level).f;
+    uint8 af = spawnEntry.at(level).af;
+    uint8 d = spawnEntry.at(level).d;
+    uint8 c = spawnEntry.at(level).c;
+    uint8 ac = spawnEntry.at(level).ac;
+    uint8 bc = spawnEntry.at(level).bc;
+    uint8 bs = spawnEntry.at(level).bs;
+    uint8 h = spawnEntry.at(level).h;
+    uint8 o = spawnEntry.at(level).o;
+    uint8 cf = spawnEntry.at(level).cf;
+    uint8 cd = spawnEntry.at(level).cd;
+    uint8 cc = spawnEntry.at(level).cc;
+    uint8 cbc = spawnEntry.at(level).cbc;
+    uint8 cbs = spawnEntry.at(level).cbs;
     spawnEntry.clear();
 
     // get typeIDs to spawn based on info in m_factionGroups and ship designators and put into Spawn Vector
+    // figure out how to distuinguish between roid, anomaly, incursion and mission defs for this....
+    uint8 shipClass = 0;
+    if (sClass > Spawn::Class::BeltSpawn)
+        shipClass = 14;
     SpawnGroup toSpawn;
+    // these types are for ALL spawn types.
     if (f > 0) {
-        toSpawn.typeID = GetRandTypeID(1);
+        toSpawn.typeID = GetRandTypeID(1 +shipClass);
         toSpawn.quantity = f;
         m_toSpawn.push_back(toSpawn);
     }
     if (af > 0) {
-        toSpawn.typeID = GetRandTypeID(2);
+        toSpawn.typeID = GetRandTypeID(2 +shipClass);
         toSpawn.quantity = af;
         m_toSpawn.push_back(toSpawn);
     }
     if (d > 0) {
-        toSpawn.typeID = GetRandTypeID(3);
+        toSpawn.typeID = GetRandTypeID(3 +shipClass);
         toSpawn.quantity = d;
         m_toSpawn.push_back(toSpawn);
     }
     if (c > 0) {
-        toSpawn.typeID = GetRandTypeID(4);
+        toSpawn.typeID = GetRandTypeID(4 +shipClass);
         toSpawn.quantity = c;
         m_toSpawn.push_back(toSpawn);
     }
     if (ac > 0) {
-        toSpawn.typeID = GetRandTypeID(5);
+        toSpawn.typeID = GetRandTypeID(5 +shipClass);
         toSpawn.quantity = ac;
         m_toSpawn.push_back(toSpawn);
     }
     if (bc > 0) {
-        toSpawn.typeID = GetRandTypeID(6);
+        toSpawn.typeID = GetRandTypeID(6 +shipClass);
         toSpawn.quantity = bc;
         m_toSpawn.push_back(toSpawn);
     }
     if (bs > 0) {
-        toSpawn.typeID = GetRandTypeID(7);
+        toSpawn.typeID = GetRandTypeID(7 +shipClass);
         toSpawn.quantity = bs;
         m_toSpawn.push_back(toSpawn);
     }
-    if (h > 0) {
-        toSpawn.typeID = GetRandTypeID(8);
-        toSpawn.quantity = h;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if ((o > 0) and (factionID != factionRogueDrones)) {    //drones do NOT have officers (internal type 9).
-        toSpawn.typeID = GetRandTypeID(9);
-        toSpawn.quantity = o;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if (cf > 0) {
-        toSpawn.typeID = GetRandTypeID(10);
-        toSpawn.quantity = cf;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if (cd > 0) {
-        toSpawn.typeID = GetRandTypeID(11);
-        toSpawn.quantity = cd;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if (cc > 0) {
-        toSpawn.typeID = GetRandTypeID(12);
-        toSpawn.quantity = cc;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if (cbc > 0) {
-        toSpawn.typeID = GetRandTypeID(13);
-        toSpawn.quantity = cbc;
-        m_toSpawn.push_back(toSpawn);
-    }
-    if (cbs > 0) {
-        toSpawn.typeID = GetRandTypeID(14);
-        toSpawn.quantity = cbs;
-        m_toSpawn.push_back(toSpawn);
+    // end of possible non-roid rat types.  following are for belt/gate only
+    if (sClass < Spawn::Class::BeltSpawn) {
+        if (h > 0) {
+            toSpawn.typeID = GetRandTypeID(8);
+            toSpawn.quantity = h;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if ((o > 0) and (factionID != factionRogueDrones)) {    //drones do NOT have officers (internal type 9).
+            toSpawn.typeID = GetRandTypeID(9);
+            toSpawn.quantity = o;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if (cf > 0) {
+            toSpawn.typeID = GetRandTypeID(10);
+            toSpawn.quantity = cf;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if (cd > 0) {
+            toSpawn.typeID = GetRandTypeID(11);
+            toSpawn.quantity = cd;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if (cc > 0) {
+            toSpawn.typeID = GetRandTypeID(12);
+            toSpawn.quantity = cc;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if (cbc > 0) {
+            toSpawn.typeID = GetRandTypeID(13);
+            toSpawn.quantity = cbc;
+            m_toSpawn.push_back(toSpawn);
+        }
+        if (cbs > 0) {
+            toSpawn.typeID = GetRandTypeID(14);
+            toSpawn.quantity = cbs;
+            m_toSpawn.push_back(toSpawn);
+        }
     }
 
     if (factionID == factionRogueDrones) {
         if ((bc > 0) or (bs > 0)) {
+            if (sClass < Spawn::Class::BeltSpawn)
+                toSpawn.typeID = GetRandTypeID(9);
+            else if (sClass > Spawn::Class::BeltSpawn)
+                toSpawn.typeID = GetRandTypeID(22);
             // spawn 4 swarm ships for each bc/bs
-            toSpawn.typeID = GetRandTypeID(9);
             toSpawn.quantity = ((bs > 0 ? bs : bc) *4);
             m_toSpawn.push_back(toSpawn);
         } else if (o > 0) {
-            // drones dont have officers.  spawn swarm
-            toSpawn.typeID = GetRandTypeID(9);
+            // drones dont have officers.  spawn swarm x10
+            if (sClass < Spawn::Class::BeltSpawn)
+                toSpawn.typeID = GetRandTypeID(9);
+            else if (sClass > Spawn::Class::BeltSpawn)
+                toSpawn.typeID = GetRandTypeID(22);
             toSpawn.quantity = o *10;
             m_toSpawn.push_back(toSpawn);
         }
@@ -592,26 +632,12 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRatin
     if (m_toSpawn.size() > 0) {
         if (is_log_enabled(SPAWN__MESSAGE))
             _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %u.", m_toSpawn.size());    //variable
-        MakeSpawn(pBubble, factionID, sClass, subtype);
+        MakeSpawn(pBubble, factionID, sClass, level);
         return true;
     } else
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - Nothing to spawn.");
 
     return false;
-}
-
-uint16 SpawnMgr::GetRandTypeID(uint8 sClass)
-{
-    uint16 groupID = 0;
-    RatFactionGroupsMap::iterator itr = m_factionGroups.find(sClass);
-    if (itr != m_factionGroups.end())
-        groupID = itr->second;
-    else {
-        _log(SPAWN__ERROR, "SpawnMgr::GetRandTypeID() - Failed to find groupID for shipClass %s.", GetSpawnClassName(sClass).c_str());
-        return 0;
-    }
-
-    return sDataMgr.GetRandRatType(sClass, groupID);
 }
 
 /*
@@ -621,7 +647,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint8 spawnGroup;   // spawn group.   1 = roid rat, 2 = roaming, 3 = static, 4 = anomaly, 5 = mission, 6 = incursion, 7 = deadspace, 8 = sleeper
     uint8 total;        // total number of this group spawned
     uint8 number;       // this rat's number in group (to match up with above total)
-    uint8 sub;          // spawn data subtype
+    uint8 level;        // spawn data subtype/wave
     uint8 classID;      // spawn data class id (in case we have to look it up again)
     uint16 typeID;      // rat type id
     uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
@@ -632,57 +658,8 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
 };
 */
-void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
+void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level)
 {
-    //  we are NOT enabling spawn chaining for officer, hauler, or commander spawns.
-    if (spawnEntry.spawnClass > Spawn::Class::Insane)
-        return;
-    GPoint startPos(pBubble->GetCenter());
-    const GPoint warpToPoint(startPos);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
-    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
-                spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
-                spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
-    /*
-     *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
-     *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
-     */
-    ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
-    InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
-    if (iRef.get() == nullptr) {
-        _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry.typeID);
-        return;
-    }
-
-    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->itemName().c_str(), iRef->itemID());
-
-    FactionData data;
-        data.allianceID = 0;
-        data.corporationID = spawnEntry.corpID;
-        data.factionID = spawnEntry.factionID;
-        data.ownerID = spawnEntry.corpID;
-    NPC* pNPC = new NPC(iRef, m_services, m_system, data, this);
-
-    if (!pNPC->Load()) {
-        _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", pNPC->GetID(), pNPC->GetSelf()->typeID());
-        SafeDelete(pNPC);
-        return;
-    }
-
-    m_system->AddNPC(pNPC);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
-    pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
-
-    spawnEntry.stamp = 0;
-    spawnEntry.enabled = false;
-    _log(SPAWN__TRACE, "ReSpawn() completed for spawnEntryID %u 0x%X in bubble %u.", spawnEntry.spawnID, &spawnEntry, pBubble->GetID());
-}
-
-void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 subClass)
-{
-    NPC* pNPC(nullptr);
-    SpawnEntry se;
-
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
      * to make it 'realistic', they will need the appearance of warping in from some random point,
      *  to somewhere around bubble center.  this will make their origin appear elsewhere,
@@ -690,24 +667,28 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      *  eventually, when other systems are working, npcs will appear to 'warp in' from a hideout in the current system.
      *  this particular bit is not general knowledge and will have to be thought out a bit more before coding.
      *
+     * for non-rat spawns, this is the intial spawn which and they will already be in pocket.
+     *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
+    NPC* pNPC(nullptr);
+    SpawnEntry se;
     GPoint startPos(pBubble->GetCenter());
     const GPoint warpToPoint(startPos);
-    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    /** @todo  make method to get/use template positioning data for spawns here */
+    if (sClass <= Spawn::Class::Officer)    // ratspawn will warp in, others will not.
+        startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
 
     uint32 corpID = sDataMgr.GetCorpID(factionID);
-
-    RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
-
     FactionData data;
-        data.allianceID = factionID;
+        data.allianceID = factionID;    // this is to set wreck salvage correctly (tests for faction)
         data.corporationID = corpID;
         data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
         data.ownerID = corpID;
 
+    RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
     while (cur != m_toSpawn.end()) {
         if (cur->typeID == 0)
-            return; // this is an error.
+            continue; // this is no longer an error.  continue iteration
         /*
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
@@ -736,7 +717,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             pNPC->DestinyMgr()->SetPosition(startPos);
             //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             //  actually looks kinda cool when larger ships come in later...
-            pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
+            if (sClass <= Spawn::Class::Officer)    // ratspawn will warp in, others will not.
+                pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
             se.enabled = false;
             se.groupID = iRef->type().groupID();
@@ -748,11 +730,15 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             se.corpID = corpID;
             se.factionID = factionID;
             se.spawnClass = sClass;
-            se.spawnGroup = Spawn::Group::Roid;
-            se.sub = subClass;
-            se.stamp = 0;   // this is for respawn time...do not set here.
+            se.spawnGroup = GetSpawnGroup(sClass);
+            se.level = level;
+            if (sClass <= Spawn::Class::Officer)  // this spawn is for rat.
+                se.stamp = 0;   // this is for respawn time...do not set here.
+            else
+                se.stamp = sEntityList.GetStamp(); // set time of this spawn for ??
             m_spawns.emplace(pBubble->GetID(), se);
-            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns. Class:%u, Group:%u.", se.spawnID, se.spawnClass, se.spawnGroup);
+            _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
+                        se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
         }
         ++cur;
     }
@@ -765,6 +751,69 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     m_ratSpawns.clear();
 
     _log(SPAWN__TRACE, "MakeSpawn() completed. %u bubbles in m_bubbles. %u entities in m_spawns.", m_bubbles.size(), m_spawns.size());
+}
+
+void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
+{
+    //  we are NOT enabling spawn chaining for officer, hauler, or commander spawns.
+    if (spawnEntry.spawnClass > Spawn::Class::Insane)
+        return;
+    GPoint startPos(pBubble->GetCenter());
+    const GPoint warpToPoint(startPos);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    _log(SPAWN__TRACE, "ReSpawn()  data for spawnEntryID %u  0x%X is type:%u, corp:%u, faction:%u, #:%u of %u", \
+            spawnEntry.spawnID, &spawnEntry, spawnEntry.typeID, spawnEntry.corpID, \
+            spawnEntry.factionID, spawnEntry.number, spawnEntry.total);
+    /*
+     *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
+     *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
+     */
+    ItemData idata(spawnEntry.typeID, spawnEntry.corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
+    InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db.
+    if (iRef.get() == nullptr) {
+        _log(SPAWN__ERROR, "Failed to spawn item type %u.", spawnEntry.typeID);
+        return;
+    }
+
+    _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+
+    FactionData data;
+        data.allianceID = spawnEntry.factionID;   // this is to set wreck salvage correctly (tests for faction)
+        data.corporationID = spawnEntry.corpID;
+        data.factionID = spawnEntry.factionID;
+        data.ownerID = spawnEntry.corpID;
+    NPC* pNPC = new NPC(iRef, m_services, m_system, data, this);
+
+    if (!pNPC->Load()) {
+        _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", pNPC->GetID(), pNPC->GetSelf()->typeID());
+        SafeDelete(pNPC);
+        return;
+    }
+
+    m_system->AddNPC(pNPC);
+    startPos.MakeRandomPointOnSphere(MakeRandomInt(5, 10) *1000);
+    pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
+
+    spawnEntry.stamp = 0;
+    spawnEntry.enabled = false;
+    _log(SPAWN__TRACE, "ReSpawn() completed for spawnEntryID %u 0x%X in bubble %u.", spawnEntry.spawnID, &spawnEntry, pBubble->GetID());
+}
+
+bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
+    SpawnEntryDef::iterator itr = m_spawns.find(bubbleID);
+    if (itr != m_spawns.end())
+        return true;
+
+    return false;
+}
+
+uint16 SpawnMgr::GetRandTypeID(uint8 sClass)
+{
+    uint16 groupID = 0;
+    RatFactionGroupsMap::iterator itr = m_factionGroups.find(sClass);
+    if (itr != m_factionGroups.end())
+        groupID = itr->second;
+    return sDataMgr.GetRandRatType(sClass, groupID);
 }
 
 bool SpawnMgr::IsChaining(uint16 bubbleID)
@@ -798,20 +847,162 @@ void SpawnMgr::RemoveSpawn(uint16 bubbleID, uint32 itemID)
     return;
 }
 
+uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
+{
+    // let the compiler optimize the nasty if/elseif shit for this one...
+    switch (sClass) {
+        case Spawn::Class::Extra:    // placeholder - not used yet
+        case Spawn::Class::None:
+            return Spawn::Group::None;
+        case Spawn::Class::Easy:
+        case Spawn::Class::Fair:
+        case Spawn::Class::Average:
+        case Spawn::Class::Medium:
+        case Spawn::Class::Hard:
+        case Spawn::Class::Crazy:
+        case Spawn::Class::Insane:
+        case Spawn::Class::Hell:
+        case Spawn::Class::Hauler:
+        case Spawn::Class::Commander:
+        case Spawn::Class::Officer:
+            return Spawn::Group::Roaming;
+        case Spawn::Class::Hideaway:
+        case Spawn::Class::Burrow:
+        case Spawn::Class::Refuge:
+        case Spawn::Class::Den:
+        case Spawn::Class::Yard:
+        case Spawn::Class::RallyPoint:
+        case Spawn::Class::Port:
+        case Spawn::Class::Hub:
+        case Spawn::Class::Haven:
+        case Spawn::Class::Sanctum:
+        case Spawn::Class::Cluster:
+        case Spawn::Class::Collection:
+        case Spawn::Class::Assembly:
+        case Spawn::Class::Gathering:
+        case Spawn::Class::Surveillance:
+        case Spawn::Class::Menagerie:
+        case Spawn::Class::Herd:
+        case Spawn::Class::Squad:
+        case Spawn::Class::Patrol:
+        case Spawn::Class::Horde:
+          return Spawn::Group::Anomaly;
+        case Spawn::Class::Hideout:
+        case Spawn::Class::Lookout:
+        case Spawn::Class::Watch:
+        case Spawn::Class::Vigil:
+        case Spawn::Class::Outpost:
+        case Spawn::Class::Annex:
+        case Spawn::Class::Base:
+        case Spawn::Class::Fortress:
+        case Spawn::Class::Complex:
+        case Spawn::Class::StagingPoint:
+        case Spawn::Class::HauntedYard:
+        case Spawn::Class::DesolateSite:
+        case Spawn::Class::ChemicalYard:
+        case Spawn::Class::TrialYard:
+        case Spawn::Class::DirtySite:
+        case Spawn::Class::Ruins:
+        case Spawn::Class::Independence:
+        case Spawn::Class::Radiance:
+        case Spawn::Class::Hierarchy:
+            return Spawn::Group::Combat;
+        case Spawn::Class::Crumbling:
+        case Spawn::Class::Decayed:
+        case Spawn::Class::Ruined:
+        case Spawn::Class::Looted:
+        case Spawn::Class::Ransacked:
+        case Spawn::Class::Pristine:
+        case Spawn::Class::Shard:
+        case Spawn::Class::Tower:
+        case Spawn::Class::Mainframe:
+        case Spawn::Class::Center:
+        case Spawn::Class::Server:
+            return Spawn::Group::Deadspace;
+    }
+}
+
+std::string SpawnMgr::GetSpawnGroupName(int8 typeID)
+{
+    switch(typeID) {
+        case Spawn::Group::None:            return "None";
+        case Spawn::Group::Roaming:         return "Roaming";
+        case Spawn::Group::Static:          return "Static";
+        case Spawn::Group::Anomaly:         return "Anomaly";
+        case Spawn::Group::Combat:          return "Combat";
+        case Spawn::Group::Deadspace:       return "Deadspace";
+        case Spawn::Group::Mission:         return "Mission";
+        case Spawn::Group::Incursion:       return "Incursion";
+        case Spawn::Group::Sleeper:         return "Sleeper";
+        case Spawn::Group::Escalation:      return "Escalation";
+        default:                            return "Invalid";
+    }
+}
+
 std::string SpawnMgr::GetSpawnClassName(int8 typeID)
 {
     switch(typeID) {
-        case Spawn::Class::None:        return "None";
-        case Spawn::Class::Easy:        return "Easy";
-        case Spawn::Class::Fair:        return "Fair";
-        case Spawn::Class::Average:     return "Average";
-        case Spawn::Class::Medium:      return "Medium";
-        case Spawn::Class::Hard:        return "Hard";
-        case Spawn::Class::Crazy:       return "Crazy";
-        case Spawn::Class::Insane:      return "Insane";
-        case Spawn::Class::Hauler:      return "Hauler";
-        case Spawn::Class::Commander:   return "Commander";
-        case Spawn::Class::Officer:     return "Officer";
-        default:                        return "Invalid";
+        case Spawn::Class::None:            return "None";
+        case Spawn::Class::Easy:            return "Easy";
+        case Spawn::Class::Fair:            return "Fair";
+        case Spawn::Class::Average:         return "Average";
+        case Spawn::Class::Medium:          return "Medium";
+        case Spawn::Class::Hard:            return "Hard";
+        case Spawn::Class::Crazy:           return "Crazy";
+        case Spawn::Class::Insane:          return "Insane";
+        case Spawn::Class::Hauler:          return "Hauler";
+        case Spawn::Class::Commander:       return "Commander";
+        case Spawn::Class::Officer:         return "Officer";
+        case Spawn::Class::Hideaway:        return "Hideaway";
+        case Spawn::Class::Burrow:          return "Burrow";
+        case Spawn::Class::Refuge:          return "Refuge";
+        case Spawn::Class::Den:             return "Den";
+        case Spawn::Class::Yard:            return "Yard";
+        case Spawn::Class::RallyPoint:      return "RallyPoint";
+        case Spawn::Class::Port:            return "Port";
+        case Spawn::Class::Hub:             return "Hub";
+        case Spawn::Class::Haven:           return "Haven";
+        case Spawn::Class::Sanctum:         return "Sanctum";
+        case Spawn::Class::Cluster:         return "Cluster";
+        case Spawn::Class::Collection:      return "Collection";
+        case Spawn::Class::Assembly:        return "Assembly";
+        case Spawn::Class::Gathering:       return "Gathering";
+        case Spawn::Class::Surveillance:    return "Surveillance";
+        case Spawn::Class::Menagerie:       return "Menagerie";
+        case Spawn::Class::Herd:            return "Herd";
+        case Spawn::Class::Squad:           return "Squad";
+        case Spawn::Class::Patrol:          return "Patrol";
+        case Spawn::Class::Horde:           return "Horde";
+        case Spawn::Class::Hideout:         return "Hideout";
+        case Spawn::Class::Lookout:         return "Lookout";
+        case Spawn::Class::Watch:           return "Watch";
+        case Spawn::Class::Vigil:           return "Vigil";
+        case Spawn::Class::Outpost:         return "Outpost";
+        case Spawn::Class::Annex:           return "Annex";
+        case Spawn::Class::Base:            return "Base";
+        case Spawn::Class::Fortress:        return "Fortress";
+        case Spawn::Class::Complex:         return "Complex";
+        case Spawn::Class::StagingPoint:    return "StagingPoint";
+        case Spawn::Class::HauntedYard:     return "HauntedYard";
+        case Spawn::Class::DesolateSite:    return "DesolateSite";
+        case Spawn::Class::ChemicalYard:    return "ChemicalYard";
+        case Spawn::Class::TrialYard:       return "TrialYard";
+        case Spawn::Class::DirtySite:       return "DirtySite";
+        case Spawn::Class::Ruins:           return "Ruins";
+        case Spawn::Class::Independence:    return "Independence";
+        case Spawn::Class::Radiance:        return "Radiance";
+        case Spawn::Class::Hierarchy:       return "Hierarchy";
+        case Spawn::Class::Crumbling:       return "Crumbling";
+        case Spawn::Class::Decayed:         return "Decayed";
+        case Spawn::Class::Ruined:          return "Ruined";
+        case Spawn::Class::Looted:          return "Looted";
+        case Spawn::Class::Ransacked:       return "Ransacked";
+        case Spawn::Class::Pristine:        return "Pristine";
+        case Spawn::Class::Shard:           return "Shard";
+        case Spawn::Class::Tower:           return "Tower";
+        case Spawn::Class::Mainframe:       return "Mainframe";
+        case Spawn::Class::Center:          return "Center";
+        case Spawn::Class::Server:          return "Server";
+        default:                            return "Invalid";
     }
 }

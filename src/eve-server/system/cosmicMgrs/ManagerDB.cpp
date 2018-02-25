@@ -329,12 +329,12 @@ void ManagerDB::GetRegionRatFaction(DBQueryResult& res) {
 }
 
 void ManagerDB::GetFactionGroups(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM roidRatClassGroup"))
+    if (!sDatabase.RunQuery(res, "SELECT shipClass, groupID, factionID FROM npcClassGroup"))
         _log(DATABASE__ERROR, "Error in GetFactionGroups query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetSpawnClasses(DBQueryResult& res) {
-    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM roidRatSpawnClass"))
+    if (!sDatabase.RunQuery(res, "SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass"))
         _log(DATABASE__ERROR, "Error in GetSpawnClasses query: %s", res.error.c_str());
 }
 
@@ -343,50 +343,51 @@ void ManagerDB::GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionI
     // this now gets advanced frigates and cruisers based on faction (best i could think of)
     std::string name = "";
 
+    // there are unused types in the data for these...just sayin
     switch (factionID) {
         case factionAngel: {  //  Cyber
-            if ((shipClass == 2) or (shipClass == 5)) { // 2 = adv frig, 5 = adv cruiser
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) { // 2 = adv frig, 5 = adv cruiser, 16 = adv frig, 19 = adv cruiser
                 name = "AND typeName LIKE '%Arch%'";
                 name = "AND typeName NOT LIKE '%Cyber%'";
-            } else if ((shipClass == 1) or (shipClass == 4)) { // 1 = frig, 4 = cruiser
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) { // 1 = frig, 4 = cruiser, 15 = frig, 18 = cruiser
                 name = "AND typeName NOT LIKE '%Arch%'";
                 name = "AND typeName NOT LIKE '%Cyber%'";
             }
         } break;
         case factionBloodRaider: {
-            if ((shipClass == 2) or (shipClass == 5))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
                 name = "AND typeName LIKE '%Elder%'";
-            else if ((shipClass == 1) or (shipClass == 4))
+            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
                 name = "AND typeName NOT LIKE '%Elder%'";
         } break;
         case factionGuristas: {   //Outlaw
-            if ((shipClass == 2) or (shipClass == 5)) {
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Dire%'";
                 name = "AND typeName NOT LIKE '%Outlaw%'";
-            } else if ((shipClass == 1) or (shipClass == 4)) {
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
                 name = "AND typeName NOT LIKE '%Dire%'";
                 name = "AND typeName NOT LIKE '%Outlaw%'";
             }
         } break;
         case factionSanshas: {
-            if ((shipClass == 2) or (shipClass == 5))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
                 name = "AND typeName LIKE '%Loyal%'";
-            else if ((shipClass == 1) or (shipClass == 4))
+            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
                 name = "AND typeName NOT LIKE '%Loyal%'";
         } break;
         case factionSerpentis: {   //Crook
-            if ((shipClass == 2) or (shipClass == 5)) {
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19)) {
                 name = "AND typeName LIKE '%Guardian%'";
                 name = "AND typeName NOT LIKE '%Crook%'";
-            } else if ((shipClass == 1) or (shipClass == 4)) {
+            } else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18)) {
                 name = "AND typeName NOT LIKE '%Guardian%'";
                 name = "AND typeName NOT LIKE '%Crook%'";
             }
         } break;
         case factionRogueDrones: {
-            if ((shipClass == 2) or (shipClass == 5))
+            if ((shipClass == 2) or (shipClass == 5) or (shipClass == 16) or (shipClass == 19))
                 name = "AND typeName LIKE '%Strain%'";
-            else if ((shipClass == 1) or (shipClass == 4))
+            else if ((shipClass == 1) or (shipClass == 4) or (shipClass == 15) or (shipClass == 18))
                 name = "AND typeName NOT LIKE '%Strain%'";
         } break;
     }

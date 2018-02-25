@@ -66,15 +66,15 @@ public:
     static void GetGroupTypeIDs(uint8 shipClass, uint16 groupID, uint32 factionID, DBQueryResult& res);
 
     /* dungeon manager */
-    void GetDunRoomData(DBQueryResult& res);
-    void GetDunRoomInfo(DBQueryResult& res);
-    void GetDunEntryData(DBQueryResult& res);
-    void GetDunTemplates(DBQueryResult& res);
-    void GetDunGroupData(DBQueryResult& res);
-    void GetDunSpawnInfo(DBQueryResult& res);
-    void SaveActiveDungeon(ActiveDungeon& dun);
-    void ClearDungeons();
-    bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
+    static void GetDunRoomData(DBQueryResult& res);
+    static void GetDunRoomInfo(DBQueryResult& res);
+    static void GetDunEntryData(DBQueryResult& res);
+    static void GetDunTemplates(DBQueryResult& res);
+    static void GetDunGroupData(DBQueryResult& res);
+    static void GetDunSpawnInfo(DBQueryResult& res);
+    static void SaveActiveDungeon(ActiveDungeon& dun);
+    static void ClearDungeons();
+    static bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
 
     /* anomaly manager */
     void SaveAnomaly(CosmicSignature& sig);

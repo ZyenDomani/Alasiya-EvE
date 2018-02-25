@@ -125,22 +125,14 @@ public:
     BeltMgr* GetBeltMgr()                               { return m_beltMgr; }
     SpawnMgr* GetSpawnMgr()                             { return m_spawnMgr; }
     AnomalyMgr* GetAnomMgr()                            { return m_anomMgr; }
-    DungeonMgr* GetDungMgr()                            { return m_dunMgr; }
+    DungeonMgr* GetDungMgr()                            { return m_dungMgr; }
 
+    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float GetSecValue()                                 { return m_secValue; }
 
     uint32 GetSysNPCCount()                             { return m_npcs.size(); }
 
 protected:
-    AnomalyMgr* m_anomMgr;      //we own this, never NULL.
-    BeltMgr* m_beltMgr;         //we own this, never NULL.
-    DungeonMgr* m_dunMgr;       //we own this, never NULL.
-    SpawnMgr* m_spawnMgr;       //we own this, never NULL.
-
-    SystemData m_data;
-    PyServiceMgr& m_services;
-    SolarSystemRef m_solarSystemRef;
-
     /** @todo  this needs more work */
     void PayBounties();
 
@@ -158,6 +150,15 @@ protected:
     std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
 
 private:
+    AnomalyMgr* m_anomMgr;      //we own this, never NULL.
+    BeltMgr* m_beltMgr;         //we own this, never NULL.
+    DungeonMgr* m_dungMgr;      //we own this, never NULL.
+    SpawnMgr* m_spawnMgr;       //we own this, never NULL.
+
+    SystemData m_data;
+    PyServiceMgr& m_services;
+    SolarSystemRef m_solarSystemRef;
+
     // for spawn systems     -allan 15July15
     uint8 m_beltCount;
     uint8 m_gateCount;

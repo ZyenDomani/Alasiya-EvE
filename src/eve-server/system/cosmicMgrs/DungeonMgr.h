@@ -39,37 +39,37 @@ class DungeonDataMgr
 {
 public:
     DungeonDataMgr();
-    virtual ~DungeonDataMgr() { /* nothing do to yet */ }
+    ~DungeonDataMgr() { /* nothing do to yet */ }
 
     // Initializes the Table:
     int Initialize();
 
     void AddDungeon(ActiveDungeon& dungeon);
     void GetDungeons(std::vector<ActiveDungeon>& dunList);
+    void GetTemplate(uint32 templateID, DunTemplate& dTemplate);
 
     uint32 GetDungeonID()                               { return ++m_dungeonID; }
 
 protected:
-    void _Populate();
+    typedef std::map<uint32, DunTemplate> DunTemplateDef;                       //templateID/data
+    typedef std::unordered_multimap<uint32, ActiveDungeon> ActiveDungeonDef;    //systemID/data
+    typedef std::unordered_multimap<uint32, DunRoomData> DunRoomsDef;           //roomID/data
+    typedef std::unordered_multimap<uint32, DunEntryData> DunEntryDef;          //entryID/data
+    typedef std::unordered_multimap<uint32, DunGroupData> DunGroupsDef;         //groupID/data
 
-    typedef std::unordered_multimap<uint32, ActiveDungeon> ActiveDungeonDef;    //systemID is key (defined in ManagerDB)
-    typedef std::unordered_multimap<uint32, DunTemplate> DunTemplateDef;    //templateID is key
-    typedef std::unordered_multimap<uint32, DunRoomData> DunRoomsDef;       //roomID is key
-    typedef std::unordered_multimap<uint32, DunEntryData> DunEntryDef;       //entryID is key
-    typedef std::unordered_multimap<uint32, DunGroupData> DunGroupsDef;     //groupID is key
-
+    DunTemplateDef templates;         // templateID/data
 
 public:
-    ActiveDungeonDef activeDungeons;  // systemID is key.  holds active dungeon data
-    DunTemplateDef templates;         // templateID is key.  holds all template data
-    DunEntryDef entrys;               // entryID is key.  holds all entry data
-    DunRoomsDef rooms;                // roomID is key.  holds all room data
-    DunGroupsDef groups;              // groupID is key. holds all group data
+    ActiveDungeonDef activeDungeons;  // systemID/data
+    DunEntryDef entrys;               // entryID/data
+    DunRoomsDef rooms;                // roomID/data
+    DunGroupsDef groups;              // groupID/data
 
 private:
-    ManagerDB m_db;
+    void Populate();
 
     uint32 m_dungeonID;
+
 };
 
 #define sDunDataMgr \

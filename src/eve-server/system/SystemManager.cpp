@@ -60,7 +60,7 @@ SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 m_bountyTimer(20 * 60 * 1000),      // 20m  default
 m_anomMgr(new AnomalyMgr(this, svc)),
 m_beltMgr(new BeltMgr(this, svc)),
-m_dunMgr(new DungeonMgr(this, svc)),
+m_dungMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc))
 {
     m_loaded = false;
@@ -113,7 +113,7 @@ SystemManager::~SystemManager() {
     m_roidBubbles.clear();
     m_ticEntities.clear();
 
-    SafeDelete(m_dunMgr);
+    SafeDelete(m_dungMgr);
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
     SafeDelete(m_spawnMgr);
@@ -172,6 +172,28 @@ bool SystemManager::BootSystem() {
     return (m_loaded = true);
 }
 
+bool SystemManager::LoadCosmicMgrs()
+{
+    if (!m_spawnMgr->Init()) {
+        _log(SERVICE__ERROR, "Unable to load Spawn Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    if (!m_dungMgr->Init(m_anomMgr, m_spawnMgr)) {
+        _log(SERVICE__ERROR, "Unable to load Dungeon Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
+
+    if (!m_anomMgr->Init(m_beltMgr, m_dungMgr, m_spawnMgr)) {
+        _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
+        return false;
+    }
+
+    return true;
+}
+
 //called once per second from EntityList. (1Hz Tic)
 bool SystemManager::ProcessTic() {
     double profileStartTime = GetTimeUSeconds();
@@ -204,6 +226,7 @@ bool SystemManager::ProcessTic() {
     /* the following are coded for single-tic calls */
     m_anomMgr->Process();
     m_beltMgr->Process();
+    m_dungMgr->Process();
     m_spawnMgr->Process();
 
     if (sConfig.debug.UseProfiling)
@@ -272,28 +295,6 @@ void SystemManager::UnloadSystem() {
     /** @todo finish this */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
     m_loaded = false;
-}
-
-bool SystemManager::LoadCosmicMgrs()
-{
-    if (!m_spawnMgr->Init()) {
-        _log(SERVICE__ERROR, "Unable to load Spawn Manager during boot of system %u.", m_data.systemID);
-        return false;
-    }
-
-    if (!m_dunMgr->Init(m_anomMgr, m_spawnMgr)) {
-        _log(SERVICE__ERROR, "Unable to load Dungeon Manager during boot of system %u.", m_data.systemID);
-        return false;
-    }
-
-    m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
-
-    if (!m_anomMgr->Init(m_beltMgr, m_dunMgr, m_spawnMgr)) {
-        _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
-        return false;
-    }
-
-    return true;
 }
 
 bool SystemManager::LoadSystemStatics() {
@@ -968,7 +969,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
     if (count > 15)
         count = 15;
     if ((m_activeRatSpawns < count ) or (pBubble->IsGate())) {
-        if (m_spawnMgr->DoSpawnForBubble(pBubble, m_data.regionID, m_data.securityRating)) {
+        if (m_spawnMgr->DoSpawnForBubble(pBubble)) {
             m_ratBubbles.emplace(pBubble->GetID(), pBubble);
             if (is_log_enabled(SPAWN__TRACE))
                 _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %u items in m_ratBubbles", \

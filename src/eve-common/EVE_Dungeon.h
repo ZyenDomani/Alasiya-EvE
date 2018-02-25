@@ -1,122 +1,132 @@
 /*
- *
- *
+ *  EVE_Dungeon.h
+ *   dungeon-specific enumerators
  *
  */
 
 #ifndef EVE_DUNGEON_H
 #define EVE_DUNGEON_H
 
-namespace EVEDUNG {
-    enum dunTypes {
-        typeMission             = 1, // npc mission
-        typeGravimetric         = 2, // roids
-        typeMagnetometric       = 3, // salvage/archeology
-        typeRadar               = 4, // hacking
-        typeLadar               = 5, // gas mining
-        typeWormhole            = 6, // ?
-        typeAnomaly             = 7, // non-rated dungeon that isnt required to scan with probes
-        typeUnrated             = 8, // non-rated dungeon  no waves, possible escalation to complex
-        typeEscalation          = 9, // extra rooms from previous site
-        typeDED_Complex         = 10 // DED rated dungeon
-    };
+namespace Dungeon {
+    namespace Type {
+        enum {
+            Mission             = 1, // npc mission
+            Gravimetric         = 2, // roids
+            Magnetometric       = 3, // salvage and archeology
+            Radar               = 4, // hacking
+            Ladar               = 5, // gas mining
+            Wormhole            = 6, // wtf is a 'wormhole'??
+            Anomaly             = 7, // non-rated dungeon that isnt required to scan with probes
+            Unrated             = 8, // non-rated dungeon  no waves, possible escalation to complex
+            Escalation          = 9, // extra rooms from previous site.  this is a 'new' dungeon, with very limited access
+            Rated               = 10 // DED rated dungeon
+        };
+    }
 
-    enum dunEvents {
-        msgImminentDanger       = 1,
-        msgNPC                  = 2,
-        msgEnvironment          = 3,
-        msgMood                 = 4,
-        msgStory                = 5,
-        msgMissionObjective     = 6,
-        msgMissionInstruction   = 7,
-        msgWarning              = 8
-    };
+    namespace Event {
+        namespace Msg {
+            enum {
+                ImminentDanger      = 1,
+                NPC                 = 2,
+                Environment         = 3,
+                Mood                = 4,
+                Story               = 5,
+                MissionObjective    = 6,
+                MissionInstruction  = 7,
+                Warning             = 8
+            };
+        }
 
-    enum dunEventTrigger {
-        trigEventActivateGate = 1,
-        trigEventSpawnGuards = 2,
-        trigEventSpawnGuardObject = 3,
-        trigEventRangedNPCHealing = 4,
-        trigEventRangedPlayerDamageEM = 5,
-        trigEventRangedPlayerDamageExplosive = 6,
-        trigEventRangedPlayerDamageKinetic = 7,
-        trigEventRangedPlayerDamageThermal = 8,
-        trigEventMissionCompletion = 9,
-        trigEventMsg = 10,
-        trigEventDungeonCompletion = 11,
-        trigEventEffectBeaconActivate = 13,
-        trigEventEffectBeaconDeactivate = 14,
-        trigEventObjectDespawn = 15,
-        trigEventObjectExplode = 16,
-        trigEventEntityDespawn = 18,
-        trigEventEntityExplode = 19,
-        trigFacWarVictoryPointsGranted = 20,
-        trigEventAgentTalkTo = 22,
-        trigEventAgentMsg = 23,
-        trigEventDropLoot = 24,
-        trigEventRangedPlayerHealing = 25,
-        trigEventRangedNPCDamageEM = 26,
-        trigEventRangedNPCDamageExplosive = 27,
-        trigEventRangedNPCDamageKinetic = 28,
-        trigEventRangedNPCDamageThermal = 29,
-        trigEventSpawnItemInCargo = 30,
-        trigEventMissionFailure = 31,
-        trigEventCounterAdd = 32,
-        trigEventCounterSubtract = 33,
-        trigEventCounterMultiply = 34,
-        trigEventCounterDivide = 35,
-        trigEventCounterSet = 36,
-        trigEventGrantGroupReward = 37,
-        trigEventGrantDelayedGroupReward = 38,
-        trigEventAdjustSystemInfluence = 39,
-        trigEventWarpShipAwayDespawn = 40,
-        trigEventWarpShipAwayAndComeBack = 41,
-        trigEventSupressAllRespawn = 42,
-        trigEventGrantGroupRewardLimitedRestrictions = 45,
-        trigEventOpenTutorial = 46,
-        trigEventSpawnShip = 47
-    };
+        namespace Trigger {
+            enum {
+                ActivateGate = 1,
+                SpawnGuards = 2,
+                SpawnGuardObject = 3,
+                RangedNPCHealing = 4,
+                RangedPlayerDamageEM = 5,
+                RangedPlayerDamageExplosive = 6,
+                RangedPlayerDamageKinetic = 7,
+                RangedPlayerDamageThermal = 8,
+                MissionCompletion = 9,
+                Msg = 10,
+                DungeonCompletion = 11,
+                EffectBeaconActivate = 13,
+                EffectBeaconDeactivate = 14,
+                ObjectDespawn = 15,
+                ObjectExplode = 16,
+                EntityDespawn = 18,
+                EntityExplode = 19,
+                FacWarVictoryPointsGranted = 20,
+                AgentTalkTo = 22,
+                AgentMsg = 23,
+                DropLoot = 24,
+                RangedPlayerHealing = 25,
+                RangedNPCDamageEM = 26,
+                RangedNPCDamageExplosive = 27,
+                RangedNPCDamageKinetic = 28,
+                RangedNPCDamageThermal = 29,
+                SpawnItemInCargo = 30,
+                MissionFailure = 31,
+                CounterAdd = 32,
+                CounterSubtract = 33,
+                CounterMultiply = 34,
+                CounterDivide = 35,
+                CounterSet = 36,
+                GrantGroupReward = 37,
+                GrantDelayedGroupReward = 38,
+                AdjustSystemInfluence = 39,
+                WarpShipAwayDespawn = 40,
+                WarpShipAwayAndComeBack = 41,
+                SupressAllRespawn = 42,
+                GrantGroupRewardLimitedRestrictions = 45,
+                OpenTutorial = 46,
+                SpawnShip = 47
+            };
+        }
+    }
 
-    enum dunTrigger {
-        trigAttacked = 1,
-        trigShipEnteredProximity = 2,
-        trigExploding = 3,
-        trigShieldConditionLevel = 4,
-        trigArmorConditionLevel = 5,
-        trigStructureConditionLevel = 6,
-        trigMined = 7,
-        trigRoomEntered = 8,
-        trigRoomMinedOut = 9,
-        trigRoomMined = 10,
-        trigHackingSuccess = 11,
-        trigHackingFailure = 12,
-        trigSalvagingSuccess = 13,
-        trigSalvagingFailure = 14,
-        trigArchaeologySuccess = 15,
-        trigArchaeologyFailure = 16,
-        trigShipsEnteredRoom = 17,
-        trigRoomCapturedCorp = 18,
-        trigRoomCapturedAlliance = 19,
-        trigRoomCapturedFacWar = 20,
-        trigFWShipEnteredProximity = 21,
-        trigItemPlacedInMissionContainer = 23,
-        trigPlayerKilled = 26,
-        trigEffectActivated = 27,
-        trigShipsLeftRoom = 28,
-        trigShipLeftProximity = 29,
-        trigFWShipLeftProximity = 30,
-        trigRoomWipedOut = 31,
-        trigItemRemovedFromSpawnContainer = 32,
-        trigItemInCargo = 33,
-        trigCounterEQ = 34,
-        trigCounterGT = 35,
-        trigCounterGE = 36,
-        trigCounterLT = 37,
-        trigCounterLE = 38,
-        trigFacWarLoyaltyPointsGranted = 48
-    };
-
+    namespace Trigger {
+        enum {
+            Attacked = 1,
+            ShipEnteredProximity = 2,
+            Exploding = 3,
+            ShieldConditionLevel = 4,
+            ArmorConditionLevel = 5,
+            StructureConditionLevel = 6,
+            Mined = 7,
+            RoomEntered = 8,
+            RoomMinedOut = 9,
+            RoomMined = 10,
+            HackingSuccess = 11,
+            HackingFailure = 12,
+            SalvagingSuccess = 13,
+            SalvagingFailure = 14,
+            ArchaeologySuccess = 15,
+            ArchaeologyFailure = 16,
+            ShipsEnteredRoom = 17,
+            RoomCapturedCorp = 18,
+            RoomCapturedAlliance = 19,
+            RoomCapturedFacWar = 20,
+            FWShipEnteredProximity = 21,
+            ItemPlacedInMissionContainer = 23,
+            PlayerKilled = 26,
+            EffectActivated = 27,
+            ShipsLeftRoom = 28,
+            ShipLeftProximity = 29,
+            FWShipLeftProximity = 30,
+            RoomWipedOut = 31,
+            ItemRemovedFromSpawnContainer = 32,
+            ItemInCargo = 33,
+            CounterEQ = 34,
+            CounterGT = 35,
+            CounterGE = 36,
+            CounterLT = 37,
+            CounterLE = 38,
+            FacWarLoyaltyPointsGranted = 48
+        };
+    }
 }
+
 /*
 dunArchetypeAgentMissionDungeon = 20
 dunArchetypeFacwarDefensive = 32

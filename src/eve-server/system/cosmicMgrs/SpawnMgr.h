@@ -20,6 +20,8 @@ class NPC;
 class PyServiceMgr;
 class SystemManager;
 class SystemBubble;
+class DungeonMgr;
+
 class SpawnMgr
 {
 public:
@@ -29,14 +31,15 @@ public:
     bool Init();
 
     void Process();
+    void SetDungMgr(DungeonMgr* pDmgr)                  { m_dungMgr = pDmgr; }
     // not working... warp a spawned npc group from one location to another (change bubbles)
     void WarpOutSpawn(NPC* pNPC, SystemBubble* pBubble);
     // update SpawnMgr on npcs new location (change bubbles)
     void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);
 
 
-    bool DoSpawnForBubble(SystemBubble* pBubble, uint32 regionID, double secRating);
-    void DoSpawnForAnomaly(SystemBubble* pBubble, int32 spawnID);
+    bool DoSpawnForBubble(SystemBubble* pBubble);
+    void DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass);
     void DoSpawnForMission(SystemBubble* pBubble, uint32 regionID);
     void DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID);
 
@@ -57,12 +60,14 @@ public:
 
 protected:
     bool FindSpawnForBubble(uint16 bubbleID);
-    bool PrepSpawn(SystemBubble* pBubble, uint32 regionID, double secRating);
-    void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 subClass);
+    bool PrepSpawn(SystemBubble* pBubble, uint8 sClass = Spawn::Class::None, uint8 level = 0);
+    void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level);
     void ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry);
     void RemoveSpawn(uint16 bubbleID, uint32 itemID);
 
+    uint8 GetSpawnGroup(uint8 sClass);
     std::string GetSpawnClassName(int8 typeID);
+    std::string GetSpawnGroupName(int8 typeID);
 
     uint16 GetRandTypeID(uint8 sClass);
 
@@ -78,6 +83,7 @@ protected:
 private:
     SystemManager* m_system;    //we do not own this
     PyServiceMgr& m_services;    //we do not own this
+    DungeonMgr* m_dungMgr;    //we do not own this
 
     Timer m_ratTimer;
     Timer m_ratGroupTimer;
@@ -85,7 +91,7 @@ private:
     Timer m_incursionTimer;
     Timer m_deadspaceTimer;
 
-    bool m_ratEnabled;         //allow spawning?
+    bool m_ratEnabled;         //allow belt rat spawning?
     bool m_initalized;      //allow spawning?
 
     uint16 m_groupTimerSetTime;     //ms - this is for hard-coding the respawn timer time.

@@ -52,7 +52,7 @@ protected:
     ServiceDB m_sdb;
     SystemGPoint m_gp;
 
-    uint8 GetAnomalyType();
+    uint8 GetDungeonType();
 
 private:
     /* we do not own any of these (our sysmgr does) */
