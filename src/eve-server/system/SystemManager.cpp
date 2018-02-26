@@ -747,8 +747,6 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     auto itr = m_clients.find(who->GetCharacterID());
     if (itr == m_clients.end()) {
         m_clients[who->GetCharacterID()] = who;
-        if (m_spawnMgr->IsInitialized() and !m_spawnMgr->IsRatTimerStarted())
-            m_spawnMgr->StartRatTimer();
         _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
                     who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
@@ -956,12 +954,6 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
     if (!m_spawnMgr->IsInitialized())
         return;
 
-    if (!m_spawnMgr->IsRatSpawnEnabled()) {
-        if (!m_spawnMgr->IsRatTimerStarted())
-            m_spawnMgr->StartRatTimer();
-        return;
-    }
-
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.",
              pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), m_data.systemID, m_data.securityRating, m_data.regionID);
@@ -975,7 +967,6 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
                 _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() completed for %s(%u) in bubble %u.  %u items in m_ratBubbles", \
                         m_data.name.c_str(), m_data.systemID, pBubble->GetID(), m_ratBubbles.size());
         } else {
-            m_spawnMgr->StopRatTimer();
             if (is_log_enabled(SPAWN__TRACE))
                 _log(SPAWN__TRACE, "SystemManager::DoSpawnForBubble() returned false for bubble %u.", pBubble->GetID());
         }

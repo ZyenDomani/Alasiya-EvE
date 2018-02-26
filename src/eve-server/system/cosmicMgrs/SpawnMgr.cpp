@@ -61,19 +61,26 @@ SpawnMgr::SpawnMgr(SystemManager* mgr, PyServiceMgr& svc)
 
 bool SpawnMgr::Init()
 {
+    // even if belt spawns arent activated, still allow anomaly spawnining
+    m_initalized = true;
+
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initalizing Spawn Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
         return true;
     }
 
+    m_ratEnabled = true;
     m_groupTimerSetTime = 150;  // (in seconds) 2.5m default check time. this will allow a max wait time of 7.5m for respawn
 
-    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
-    return (m_initalized = true);
+    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Fully Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+    return m_initalized;
 }
 
+// this is only for rats.
 void SpawnMgr::Process() {
     if (!m_initalized)
+        return;
+    if (!m_ratEnabled)
         return;
 
     double profileStartTime = 0.0;
@@ -81,23 +88,6 @@ void SpawnMgr::Process() {
         profileStartTime = GetTimeUSeconds();
     // called by SystemManager::Process() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
-
-    // this will be initial spawn timer for system.
-    //  while this is active, NO spawns will be made.
-    if (m_ratTimer.Enabled())  {
-        if (m_ratTimer.Check(false)) {
-            m_ratTimer.Disable();
-            m_ratEnabled = true;
-            _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Main Timer called.  Spawn functions enabled for %s(%u).",
-                 m_system->GetName().c_str(), m_system->GetID());
-        }
-        if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
-        return;
-    }
-
-    if (!m_ratEnabled)
-        return;
 
     // will have to think about this one a bit to implement properly (and quickly)
     /*  current implentation uses a single timer for entire system
@@ -138,12 +128,7 @@ void SpawnMgr::Process() {
                 m_ratGroupTimer.Disable();
                 _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Rat Spawn Groups full (or no spawns) for %s(%u).  RatGroup Timer disabled.", \
                             m_system->GetName().c_str(), m_system->GetID());
-            } /* else {
-                // this doesnt matter...we're checking stamp times for respawn time.
-                uint32 cTime = m_ratGroupTimer.GetRemainingTime();
-                m_ratGroupTimer.Disable();
-                m_ratGroupTimer.Start(cTime /2);    // set timer to half remaining time.  config option?  do this different later?
-            } */
+            }
         }
 
     if (sConfig.debug.UseProfiling)
@@ -278,13 +263,14 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
     } else if (pBubble->IsAnomaly()) {
         _log(SPAWN__DEPOP, "SpawnMgr::SpawnKilled::Anomaly - called by %u.", itemID);
         if (m_spawns.count(pBubble->GetID()) == 1) {
-            // last npc in this wave.  get data needed for next wave
+            // last npc in this wave.  get data needed for next wave, if applicable.
             SpawnEntryDef::iterator itr = m_spawns.find(pBubble->GetID());
             if (itr == m_spawns.end())
                 return; // this is an error.
             MakeSpawn(pBubble, itr->second.factionID, itr->second.spawnClass, itr->second.level);
             // now remove this spawn from map.
             m_spawns.erase(itr);
+            // unlock warp gate if applicable
         } else if (m_spawns.count(pBubble->GetID()) < 1) {
             // this is an error...
         } else {
@@ -295,7 +281,7 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
          * 1- unlocking warp gates when needed per wave
          * 2- dropping loot according to (wave/dungeon/template)?
          * 3- after last spawn, possible escelation per dungeon type?   this should signal anomaly mgr to create the escelation
-         * 4- spawn next wave, if applicable
+         * 4- spawn next wave, if applicable  (code above...currently testing)
          * 5- more/others?
          */
     } else if (pBubble->IsMission()) {
@@ -319,8 +305,6 @@ void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
 
 void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass)
 {
-    if (!m_ratEnabled)
-        return;
     if (pBubble == nullptr)
         return;
     PrepSpawn(pBubble, spawnClass);
@@ -328,8 +312,6 @@ void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass)
 
 void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
 {
-    if (!m_ratEnabled)
-        return;
     if (pBubble == nullptr)
         return;
     if (!IsRegion(regionID))
@@ -339,8 +321,6 @@ void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
 
 void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
 {
-    if (!m_ratEnabled)
-        return;
     if (pBubble == nullptr)
         return;
     if (!IsRegion(regionID))
