@@ -300,3 +300,16 @@ void StationSE::UnloadStation()
     m_self->GetMyInventory()->Unload();
 }
 
+/*
+static const int num_hack_sentry_locs = 8;
+GPoint hack_sentry_locs[num_hack_sentry_locs] = {
+    GPoint(35000.0f, 35000.0f, 35000.0f),
+    GPoint(35000.0f, 35000.0f, -35000.0f),
+    GPoint(35000.0f, -35000.0f, 35000.0f),
+    GPoint(35000.0f, -35000.0f, -35000.0f),
+    GPoint(-35000.0f, 35000.0f, 35000.0f),
+    GPoint(-35000.0f, 35000.0f, -35000.0f),
+    GPoint(-35000.0f, -35000.0f, 35000.0f),
+    GPoint(-35000.0f, -35000.0f, -35000.0f)
+};
+*/

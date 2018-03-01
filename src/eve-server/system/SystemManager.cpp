@@ -119,18 +119,6 @@ SystemManager::~SystemManager() {
     SafeDelete(m_spawnMgr);
 }
 
-static const int num_hack_sentry_locs = 8;
-GPoint hack_sentry_locs[num_hack_sentry_locs] = {
-    GPoint(35000.0f, 35000.0f, 35000.0f),
-    GPoint(35000.0f, 35000.0f, -35000.0f),
-    GPoint(35000.0f, -35000.0f, 35000.0f),
-    GPoint(35000.0f, -35000.0f, -35000.0f),
-    GPoint(-35000.0f, 35000.0f, 35000.0f),
-    GPoint(-35000.0f, 35000.0f, -35000.0f),
-    GPoint(-35000.0f, -35000.0f, 35000.0f),
-    GPoint(-35000.0f, -35000.0f, -35000.0f)
-};
-
 bool SystemManager::BootSystem() {
     m_solarSystemRef = sItemFactory.GetSolarSystem(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
@@ -292,7 +280,7 @@ void SystemManager::UnloadSystem() {
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
 
-    /** @todo finish this */
+    /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
     m_loaded = false;
 }
@@ -791,11 +779,11 @@ void SystemManager::AddNPC(NPC* who) {
     if (who == nullptr)
         return;
     uint32 itemID = who->GetID();
-    if (m_npcs.find(itemID) != m_npcs.end()) {
+    if (m_npcs.find(itemID) != m_npcs.end())
         _log(ITEM__WARNING, "%s(%u): Called AddNPC(), but they're already in %s(%u).  Check bubble.", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-    } else {
+    else
         m_npcs[itemID] = who;
-    }
+
     _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
     AddEntity(who);
     sEntityList.AddNPC();
@@ -1144,9 +1132,9 @@ StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_planetMap) {
+    for (auto cur : m_planetMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
-    }
+
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
 
     return itr->second->GetID();
@@ -1155,9 +1143,9 @@ uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)
 SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
 {
     std::map<double, SystemEntity*> sorted;
-    for (auto cur : m_moonMap) {
+    for (auto cur : m_moonMap)
         sorted.insert(std::pair<double, SystemEntity*>(myPos.distance(cur.second->GetPosition()), cur.second));
-    }
+
     std::map<double, SystemEntity*>::iterator itr = sorted.begin();
 
     return itr->second;
