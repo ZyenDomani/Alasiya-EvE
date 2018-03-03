@@ -64,12 +64,12 @@ void Threading::Process() {
     if (FD_ISSET(nfds, &rSoc)) {
         buf = (char*) malloc (bufferLen);
         /* read from socket here */
-        free (buf);
+        free(buf);
     }
     if (FD_ISSET(nfds, &wSoc)) {
         buf = (char*) malloc (bufferLen);
         /* write to socket here */
-        free (buf);
+        free(buf);
     }
 
 }
@@ -86,8 +86,8 @@ void Threading::CreateThread(void *(*start_routine) (void *), void *args) {
     if (status) {
         _log(THREAD__ERROR, "CreateThread() - Error Creating new thread: %s", strerror(errno));
     } else {
-        _log(THREAD__WARNING, "CreateThread() - Creating new threadID 0x%X", thread);
-        m_threads.push_back(thread);
+        _log(THREAD__INFO, "CreateThread() - Creating new threadID 0x%X", thread);
+        AddThread(thread);
         pthread_detach(thread);
     }
 }
