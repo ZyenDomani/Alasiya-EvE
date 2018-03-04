@@ -115,12 +115,12 @@ public:
     virtual ~CelestialSE()                              { /* Do nothing here */ }
 
     /* class type pointer querys. */
-    virtual const CelestialSE* GetCelestialSE()         { return this; }
+    virtual const CelestialSE*  GetCelestialSE()        { return this; }
     /* class type tests. */
-    virtual bool IsCelestialSE()                        { return true; }
+    virtual bool                IsCelestialSE()         { return true; }
 
     /* SystemEntity interface */
-    virtual void MakeDamageState(DoDestinyDamageState &into);
+    virtual void                MakeDamageState(DoDestinyDamageState &into);
 
 };
 
@@ -156,6 +156,14 @@ public:
     virtual void                EncodeDestiny( Buffer& into );
 
     virtual PyDict*             MakeSlimItem();
+
+private:
+    int8    m_wormholeAge;
+    float   m_wormholeSize;
+    int64   m_expiryDate;
+    uint16  m_count;
+    uint16  m_dunSpawnID;
+    uint16  m_nebulaType;
 };
 
 #endif /* !__CELESTIAL__H__INCL__ */

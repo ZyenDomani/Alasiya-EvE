@@ -15,6 +15,7 @@
 #include "StaticDataMgr.h"
 #include "database/EVEDBUtils.h"
 #include "station/StationDataMgr.h"
+#include "system/SystemManager.h"
 
 
 StaticDataMgr::StaticDataMgr()
@@ -584,10 +585,17 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
     std::map<uint32, uint8>::iterator itr = m_whRegions.find(systemID);
     if (itr != m_whRegions.end())
         return itr->second;
-    else
-        _log(DATABASE__MESSAGE, "Failed to query WH Class for systemID %u: System not found.", systemID);
-    return 0;
 
+    itr = m_whRegions.find(sEntityList.FindOrBootSystem(systemID)->GetRegionID());
+    if (itr != m_whRegions.end())
+        return itr->second;
+
+    // dont have data for systemID nor regionID...throw error and ?something else?
+    _log(DATABASE__MESSAGE, "Failed to query WH Class for systemID %u: System not found.", systemID);
+    if (IsKSpace(systemID))
+        return 0;
+    if (IsWSpace(systemID))
+        return 0;
 }
 
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
@@ -961,6 +969,31 @@ uint32 StaticDataMgr::GetCorpID(uint32 factionID)
         case factionGuristas:       return corpGuristas;
         case factionSerpentis:      return corpSerpentis;
         case factionRogueDrones:    return corpRogueDrones;
+
+        case factionCONCORD:          return corpCONCORD;
+        case factionInterBus:       return corpInterbus;
+        case factionSociety:          return corpSociety;
+        case factionMordusLegion:        return corpMordusLegion;
+
+        /**  @todo  these are waiting for corp def updates...
+        case factionSleepers:    return corpRogueDrones;
+
+        case factionCaldari:          return corpAngel;
+        case factionMinmatar:        return corpSanshas;
+        case factionAmarr:    return corpBloodRaider;
+        case factionGallente:       return corpGuristas;
+        case factionJove:      return corpSerpentis;
+        case factionAmmatar:    return corpRogueDrones;
+
+        case factionKhanid:        return corpSanshas;
+        case factionSyndicate:    return corpBloodRaider;
+        case factionORE:      return corpSerpentis;
+        case factionThukker:    return corpRogueDrones;
+        case factionSistersOfEVE:    return corpRogueDrones;
+        */
+
+        case factionNoFaction:
+        default:                return 0;
     }
 }
 
@@ -979,12 +1012,12 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
 {
     switch (factionID) {
-        case factionAngel:          return "Angel ";
-        case factionSanshas:        return "Sansha ";
-        case factionBloodRaider:    return "Blood ";
-        case factionGuristas:       return "Guristas ";
-        case factionSerpentis:      return "Serpentis ";
-        case factionRogueDrones:    return "Drone ";
+        case factionAngel:          return "Angel";
+        case factionSanshas:        return "Sansha";
+        case factionBloodRaider:    return "Blood";
+        case factionGuristas:       return "Guristas";
+        case factionSerpentis:      return "Serpentis";
+        case factionRogueDrones:    return "Drone";
     }
 }
 

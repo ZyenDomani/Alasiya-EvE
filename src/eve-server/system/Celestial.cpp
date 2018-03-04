@@ -78,7 +78,8 @@ CelestialObjectRef CelestialObject::Spawn( ItemData &data) {
 
     CelestialObjectRef celestialRef = CelestialObject::Load(celestialID);
 
-    if ((celestialRef->type().groupID() == EVEDB::invGroups::Beacon) or (celestialRef->type().groupID() == EVEDB::invGroups::Effect_Beacon))
+    if ((celestialRef->type().groupID() == EVEDB::invGroups::Beacon)
+    or  (celestialRef->type().groupID() == EVEDB::invGroups::Effect_Beacon))
         celestialRef->SetAttribute(AttrIsGlobal, 1);
 
     return celestialRef;
@@ -101,16 +102,21 @@ CelestialSE::CelestialSE(CelestialObjectRef self, PyServiceMgr &services, System
 
 void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
 {
-    double shield = 0.0, armor = 0.0;       // update to fix frozen corpse sending NaN for shield and armor.
-    if (m_self->typeID() != 10041) { //type = frozen corpse
+    double shield = 1.0, armor = 1.0, structure = 1.0, recharge = 1000000;
+    if (m_self->HasAttribute(AttrShieldRechargeRate))
+        recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
+    if (m_self->HasAttribute(AttrShieldCharge) and m_self->HasAttribute(AttrShieldCapacity))
         shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
+    if (m_self->HasAttribute(AttrArmorDamage) and m_self->HasAttribute(AttrArmorHP))
         armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
-    }
-    into.shield = shield;
-    into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
-    into.timestamp = Win32TimeNow();
+    if (m_self->HasAttribute(AttrDamage) and m_self->HasAttribute(AttrHP))
+        structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+
     into.armor = armor;
-    into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
+    into.shield = shield;
+    into.recharge = recharge;
+    into.structure = structure;
+    into.timestamp = Win32TimeNow();
 }
 
 
@@ -119,6 +125,7 @@ AnomalySE::AnomalySE(CelestialObjectRef self, PyServiceMgr& services, SystemMana
 {
 
 }
+
 void AnomalySE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
@@ -144,6 +151,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
 
     _log(SE__DESTINY, "AnomalySE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
+
 PyDict* AnomalySE::MakeSlimItem()
 {
     _log(SE__SLIMITEM, "MakeSlimItem for AnomalySE %s(%u)", GetName(), m_self->itemID());
@@ -158,6 +166,15 @@ PyDict* AnomalySE::MakeSlimItem()
 WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemManager* system)
 : CelestialSE(self, services, system)
 {
+    m_count = 0;
+    m_wormholeAge = WormHole::Age::Adolescent;
+    m_wormholeSize = (WormHole::Size::Full /10);
+    // just guessing here....
+    m_expiryDate = Win32TimeNow() + Win32Time_Day;
+    // no clue where to find this info yet.  26, 16, 253   << client graphic file #
+    m_nebulaType = 26;
+    // no clue what this is...may not be used.  seen 33, 263, 27 in logs
+    m_dunSpawnID = 33;
 
 }
 
@@ -193,12 +210,12 @@ PyDict* WormholeSE::MakeSlimItem()
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));
-        slim->SetItemString("otherSolarSystemClass",    new PyInt(sDataMgr.GetWHSystemClass(m_system->GetID())));   // will have to set this somewhere to ref here
-        slim->SetItemString("wormholeSize",             new PyFloat(1.5)); // <1 = close to collapse
-        slim->SetItemString("wormholeAge",              new PyInt(1));  //1 or 2
-        slim->SetItemString("count",                    new PyInt(1));   //ships jumped thru?
-        slim->SetItemString("dunSpawnID",               new PyInt(27));   //33, 263, 27
-        slim->SetItemString("nebulaType",               new PyInt(16));  //26, 16, 253   << client graphic file #
-        slim->SetItemString("expiryDate",               new PyLong(Win32TimeNow() + Win32Time_Day));  //? not sure here
+        slim->SetItemString("otherSolarSystemClass",    new PyInt(sDataMgr.GetWHSystemClass(m_system->GetID())));
+        slim->SetItemString("wormholeSize",             new PyFloat(m_wormholeSize));
+        slim->SetItemString("wormholeAge",              new PyInt(m_wormholeAge));
+        slim->SetItemString("count",                    new PyInt(m_count));   //ships jumped thru?
+        slim->SetItemString("dunSpawnID",               new PyInt(m_dunSpawnID));
+        slim->SetItemString("nebulaType",               new PyInt(m_nebulaType));
+        slim->SetItemString("expiryDate",               new PyLong(m_expiryDate));
     return slim;
 }

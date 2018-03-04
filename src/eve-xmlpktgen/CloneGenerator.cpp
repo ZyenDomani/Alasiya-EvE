@@ -623,4 +623,3 @@ bool ClassCloneGenerator::ProcessSubStructInline( const TiXmlElement* field )
 {
     return ParseElementChildren( field, 1 );
 }
-

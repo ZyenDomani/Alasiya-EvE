@@ -197,6 +197,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         // *Mgr will determine name and itemID.
         sig.sigItemID = 0;
         sig.sigName = "Test Name Here";
+        // default to rogue drones
         sig.ownerID = 500022;
     if (sConfig.debug.AnomalyFaction)
         sig.ownerID = sConfig.debug.AnomalyFaction;
@@ -242,35 +243,41 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case Magnetometric: { // 3,
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;// need probes and exploring skills
+            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;// need probes and exploring skills
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanMagnetometricStrength;
         } break;
         case Radar: {       // 4,
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanRadarStrength;
         } break;
         case Ladar: {       // 5,
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanLadarStrength;
         } break;
-        case Anomaly: {      // 7
+        case Anomaly: {      // 7   simple combat sites
             sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;
         } break;
         case Mission:       // 1
-        case Escalation:   // 9
+            /*
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
+            sig.scanGroupID = Scanning::Group::Signature;
+            sig.scanAttributeID = AttrScanAllStrength;  // Unknown
+            */
         // these will use default for now.  revisit later when system matures more and i better understand how to implement them.
+        case Escalation:   // 9
         case Unrated:       // 8
         case Rated: { // 10
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -289,9 +296,9 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     //key is itemID for ease of removal later
     m_sigBySigID.emplace(sig.sigID, sig);
     //if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
-        m_sigByItemID.emplace(sig.sigItemID, sig);
-   // else
    //     m_anomByItemID.emplace(sig.sigItemID, sig);
+   // else
+        m_sigByItemID.emplace(sig.sigItemID, sig);
 
     //m_mdb.SaveAnomaly(sig);
 
@@ -392,16 +399,21 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
     // registration method for pos items, wrecks and abandoned ships
     // creation method for missions, escalations and ??
     /*
- * enum ScanGroup {
- *    ScanGroupScrap                = 1,. make a sig for wrecks in system?  yes!
- *    ScanGroupSignature            = 4,
- *    ScanGroupShip                 = 8,. abandoned ships in space
- *    ScanGroupStructure            = 16,. all pos structures
- *    ScanGroupDroneOrProbe         = 32,. dromes or probes in system
- *    ScanGroupCelestial            = 64,. not sure here
- *    ScanGroupAnomaly              = 128
- * };
- */
+     * namespace Scanning {
+     * //  -allan 7Jul14
+     *    namespace Group {
+     *        enum {
+     *            Scrap         = 1,      //wrecks in system (unused)
+     *            Signature     = 4,      //advanced anomaly.  need probes to scan
+     *            Ship          = 8,      //abandoned ships
+     *            Structure     = 16,     //all pos structures
+     *            DroneOrProbe  = 32,     //player items
+     *            Celestial     = 64,     //unknown  (unused)
+     *            Anomaly       = 128     //detected using ship sensors
+     *        };
+     *    }
+     * }
+     */
 
 }
 

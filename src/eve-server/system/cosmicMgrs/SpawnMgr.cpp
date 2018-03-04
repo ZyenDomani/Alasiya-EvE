@@ -427,7 +427,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
                 else
                     sClass = Spawn::Class::Easy;
             }
-            if (secRating < 0)
+            if ((secRating < 0) and  (sClass < Spawn::Class::Hauler))
                 if (MakeRandomFloat() < 0.1)
                     sClass = Spawn::Class::Hell;
         } else if (pBubble->IsGate()) { // gate spawns are smaller/easier than roid spawns
@@ -441,6 +441,8 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
                 sClass = Spawn::Class::Fair;
             else
                 sClass = Spawn::Class::Easy;
+        } else {
+            // make error here?
         }
     }
 
@@ -456,9 +458,9 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s.", spawnEntry.size(), GetSpawnClassName(sClass).c_str());
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s (%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
-        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %s.  Cancelling spawn.", GetSpawnClassName(sClass).c_str());
+        _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;
     }
 

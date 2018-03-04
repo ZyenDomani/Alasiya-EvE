@@ -446,6 +446,187 @@ typedef enum {
     corpSanshas             = 1000161,
     corpSerpentis           = 1000135,
     corpInterbus            = 1000148
+    
+    /*
+     CBD Corporation     1000002
+     Prompt Delivery     1000003
+     Ytiri   1000004
+     Hyasyoda Corporation    1000005
+     Deep Core Mining Inc.   1000006
+     Poksu Mineral Group     1000007
+     Minedrill   1000008
+     Caldari Provisions  1000009
+     Kaalakiota Corporation  1000010
+     Wiyrkomi Corporation    1000011
+     Top Down    1000012
+     Rapid Assembly  1000013
+     Perkone     1000014
+     Caldari Steel   1000015
+     Zainou  1000016
+     Nugoeihuvi Corporation  1000017
+     Echelon Entertainment   1000018
+     Ishukone Corporation    1000019
+     Lai Dai Corporation     1000020
+     Zero-G Research Firm    1000021
+     Propel Dynamics     1000022
+     Expert Distribution     1000023
+     CBD Sell Division   1000024
+     Sukuuvestaa Corporation     1000025
+     Caldari Constructions   1000026
+     Expert Housing  1000027
+     Caldari Funds Unlimited     1000028
+     State and Region Bank   1000029
+     Modern Finances     1000030
+     Chief Executive Panel   1000031
+     Mercantile Club     1000032
+     Caldari Business Tribunal   1000033
+     House of Records    1000034
+     Caldari Navy    1000035
+     Internal Security   1000036
+     Lai Dai Protection Service  1000037
+     Ishukone Watch  1000038
+     Home Guard  1000039
+     Peace and Order Unit    1000040
+     Spacelane Patrol    1000041
+     Wiyrkomi Peace Corps    1000042
+     Corporate Police Force  1000043
+     School of Applied Knowledge     1000044
+     Science and Trade Institute     1000045
+     Sebiestor tribe     1000046
+     Krusual tribe   1000047
+     Vherokior tribe     1000048
+     Brutor tribe    1000049
+     Republic Parliament     1000050
+     Republic Fleet  1000051
+     Republic Justice Department     1000052
+     Urban Management    1000053
+     Republic Security Services  1000054
+     Minmatar Mining Corporation     1000055
+     Core Complexion Inc.    1000056
+     Boundless Creation  1000057
+     Eifyr and Co.   1000058
+     Six Kin Development     1000059
+     Native Freshfood    1000060
+     Freedom Extension   1000061
+     The Leisure Group   1000062
+     Amarr Constructions     1000063
+     Carthum Conglomerate    1000064
+     Imperial Armaments  1000065
+     Viziam  1000066
+     Zoar and Sons   1000067
+     Noble Appliances    1000068
+     Ducia Foundry   1000069
+     HZO Refinery    1000070
+     Inherent Implants   1000071
+     Imperial Shipment   1000072
+     Amarr Certified News    1000073
+     Joint Harvesting    1000074
+     Nurtura     1000075
+     Further Foodstuffs  1000076
+     Royal Amarr Institute   1000077
+     Imperial Chancellor     1000078
+     Amarr Civil Service     1000079
+     Ministry of War     1000080
+     Ministry of Assessment  1000081
+     Ministry of Internal Order  1000082
+     Amarr Trade Registry    1000083
+     Amarr Navy  1000084
+     Court Chamberlain   1000085
+     Emperor Family  1000086
+     Kador Family    1000087
+     Sarum Family    1000088
+     Kor-Azor Family     1000089
+     Ardishapur Family   1000090
+     Tash-Murkon Family  1000091
+     Civic Court     1000092
+     Theology Council    1000093
+     TransStellar Shipping   1000094
+     Federal Freight     1000095
+     Inner Zone Shipping     1000096
+     Material Acquisition    1000097
+     Astral Mining Inc.  1000098
+     Combined Harvest    1000099
+     Quafe Company   1000100
+     corporationName     corporationID
+     CreoDron    1000101
+     Roden Shipyards     1000102
+     Allotek Industries  1000103
+     Poteque Pharmaceuticals     1000104
+     Impetus     1000105
+     Egonics Inc.    1000106
+     The Scope   1000107
+     Chemal Tech     1000108
+     Duvolle Laboratories    1000109
+     FedMart     1000110
+     Aliastra    1000111
+     Bank of Luminaire   1000112
+     Pend Insurance  1000113
+     Garoun Investment Bank  1000114
+     University of Caille    1000115
+     President   1000116
+     Senate  1000117
+     Supreme Court   1000118
+     Federal Administration  1000119
+     Federation Navy     1000120
+     Federal Intelligence Office     1000121
+     Federation Customs  1000122
+     Ammatar Fleet   1000123
+     Archangels  1000124
+     CONCORD     1000125
+     Ammatar Consulate   1000126
+     Guristas    1000127
+     Mordu's Legion  1000128
+     Outer Ring Excavations  1000129
+     Sisters of EVE  1000130
+     Society of Conscious Thought    1000131
+     Secure Commerce Commission  1000132
+     Salvation Angels    1000133
+     Blood Raiders   1000134
+     Serpentis Corporation   1000135
+     Guardian Angels     1000136
+     DED     1000137
+     Dominations     1000138
+     Food Relief     1000139
+     Genolution  1000140
+     Guristas Production     1000141
+     Impro   1000142
+     Inner Circle    1000143
+     Intaki Bank     1000144
+     Intaki Commerce     1000145
+     Intaki Space Police     1000146
+     Intaki Syndicate    1000147
+     InterBus    1000148
+     Jove Navy   1000149
+     Jovian directorate  1000150
+     Khanid Innovation   1000151
+     Khanid Transport    1000152
+     Khanid Works    1000153
+     Nefantar Miner Association  1000154
+     Prosper     1000155
+     Royal Khanid Navy   1000156
+     Serpentis Inquest   1000157
+     Shapeset    1000158
+     The Sanctuary   1000159
+     Thukker Mix     1000160
+     True Creations  1000161
+     True Power  1000162
+     Trust Partners  1000163
+     X-Sense     1000164
+     Hedion University   1000165
+     Imperial Academy    1000166
+     State War Academy   1000167
+     Federal Navy Academy    1000168
+     Center for Advanced Studies     1000169
+     Republic Military School    1000170
+     Republic University     1000171
+     Pator Tech School   1000172
+     Material Institute  1000177
+     Academy of Aggressive Behaviour     1000178
+     24th Imperial Crusade   1000179
+     State Protectorate  1000180
+     Federal Defense Union   1000181
+     Tribal Liberation Force     1000182
+     */
 } corpDef;
 
 // only for drones

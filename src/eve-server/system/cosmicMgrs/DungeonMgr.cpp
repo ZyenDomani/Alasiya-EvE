@@ -235,10 +235,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         return false;
     }
 
-    if ((sig.dungeonType == Dungeon::Type::Gravimetric)      //2
-    or  (sig.dungeonType == Dungeon::Type::Magnetometric) //3
-    or  (sig.dungeonType == Dungeon::Type::Radar)         //4
-    or  (sig.dungeonType == Dungeon::Type::Ladar)         //5
+    if ((sig.dungeonType < Dungeon::Type::Wormhole) // 1 - 5
     or  (sig.ownerID == factionRogueDrones)) {
         sig.sigName = dTemplate.dunName;
     } else {
@@ -247,7 +244,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     }
 
     GPoint pos(sig.x, sig.y, sig.z);
-
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
@@ -255,7 +251,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     InventoryItemRef iRef = sItemFactory.SpawnItem(iData);  /* not sure how well generic spawn will work here. */
     if (iRef.get() == nullptr) // make error and exit
         return false;
-    // do this or create/add generic se here?
+    // create signature item and place in system
     DBSystemDynamicEntity entity;
         entity.categoryID = iRef->categoryID();
         entity.groupID = iRef->groupID();
@@ -266,8 +262,9 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         entity.y = pos.y;
         entity.z = pos.z;
         entity.ownerID = sig.ownerID;
-        entity.allianceID = 0;  // possibably use this for npc wreck faction salvage ids?
-        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+        entity.factionID = sig.ownerID;
+        entity.allianceID = -1;  // possibably use this for npc wreck faction salvage ids?
+        entity.corporationID = sDataMgr.GetRegionFaction(m_system->GetRegionID());  // set region sov holder as anomaly corporationID.
         // do the spawn using SystemManager's BuildEntity:
     /** @todo this is more shit that should NOT be in db */
     m_system->BuildDynamicEntity(entity);
@@ -354,8 +351,9 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
             entity.z = pos2.z;
             /** @todo  fix these... */
             entity.ownerID = sig.ownerID;
+            entity.factionID = sig.ownerID;
             entity.allianceID = -1;
-            entity.corporationID = sDataMgr.GetCorpID(sig.ownerID);
+            entity.corporationID = sDataMgr.GetCorpID(sig.ownerID); // sig.ownerID is only region rats for now.
         // do the spawn using SystemManager's BuildEntity:
             /** @todo this is more shit that should NOT be in db */
         m_system->BuildDynamicEntity(entity);
@@ -378,9 +376,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
 bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
-
     float secRating = m_system->GetSystemSecurityRating();
-
     int8 type = 1; // > 0.6
     if (secRating < 0.1)
         type = 3;
@@ -389,7 +385,6 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 
     float level = 1;
     int8 subType = 1;
-
     // need to determine region sov, region rat or other here also
     int8 factionID = GetFactionID(sig.ownerID);
 
@@ -458,7 +453,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         case Anomaly: {           // 7
             // fix factionID after anomaly templates are finished
             if (factionID < 6)
-                factionID = 0;
+                factionID = 8;
             subType = MakeRandomInt(1,5);
             if (type == 1) {
                 if (subType == 1) {
@@ -504,7 +499,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             sig.dungeonType = 7;
             // fix factionID after anomaly templates are finished
             if (factionID < 6)
-                factionID = 0;
+                factionID = 8;
             subType = MakeRandomInt(1,5);
             if (type == 1) {
                 if (subType == 1) {

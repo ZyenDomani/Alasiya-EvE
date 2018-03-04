@@ -33,7 +33,7 @@
  */
 
 WormholeMgr::WormholeMgr()
-:  m_updateTimer(0),    // arbitrary 2m default
+:  m_updateTimer(0),
     m_services(nullptr)
 {
     m_initalized = false;
@@ -42,7 +42,7 @@ WormholeMgr::WormholeMgr()
 void WormholeMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
 
-    m_updateTimer.Start(120000);
+    m_updateTimer.Start(120000);    // arbitrary 2m default
 
     m_initalized = true;
 
@@ -62,17 +62,18 @@ void WormholeMgr::Process() {
 
 void WormholeMgr::Create(CosmicSignature& sig)
 {
+    /** @note  this creates a k162 for deco only at this time.
+     * it is more POC than usable
+     */
     sig.sigName = "WormHole K162 (deco only)";
-    // create and spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     GPoint pos(sig.x, sig.y, sig.z);
-    pos += 10000;   // add 10km
-    ItemData iData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-
+    // create and spawn and save actual anomaly item
+    // typeID, ownerID, locationID, flag, name, &_position
+    ItemData aData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
     /** @todo update this to use temp items */
-    InventoryItemRef iRef = sItemFactory.SpawnItem(iData);  /* not sure how well generic spawn will work here. */
-    if (iRef.get() == nullptr) // we'll survive...
+    InventoryItemRef iRef = sItemFactory.SpawnItem(aData);
+    if (iRef.get() == nullptr) // make error and exit
         return;
-    sig.sigItemID = iRef->itemID();
     // do this or create/add generic se here?
     DBSystemDynamicEntity entity;
         entity.categoryID = iRef->categoryID();
@@ -83,15 +84,47 @@ void WormholeMgr::Create(CosmicSignature& sig)
         entity.x = pos.x;
         entity.y = pos.y;
         entity.z = pos.z;
-        /** @todo  fix these... */
         entity.ownerID = sig.ownerID;
-        entity.allianceID = 0;  /** @todo  may have to write a method to check and set this */
+        entity.allianceID = -1;
         entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
-        // do the spawn using SystemManager's BuildEntity:
     /** @todo this is more shit that should NOT be in db */
     sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
+    // set itemID to return to anomaly mgr
+    sig.sigItemID = entity.itemID;
 
-    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole type %u in system %u", sig.dungeonType, sig.systemID);
+    // create k162 here
+    pos += 25000;   // move 25k for WormHole position
+    ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+    /** @todo update this to use temp items */
+    iRef = sItemFactory.SpawnItem(wData);
+    if (iRef.get() == nullptr) // we'll survive...
+        return;
+    sig.sigItemID = iRef->itemID();
+    // update entity data for k162
+        entity.categoryID = iRef->categoryID();
+        entity.groupID = iRef->groupID();
+        entity.itemID = iRef->itemID();
+        entity.itemName = sig.sigName;
+        entity.typeID = sig.sigTypeID;
+        entity.x = pos.x;
+        entity.y = pos.y;
+        entity.z = pos.z;
+        entity.ownerID = sig.ownerID;
+        entity.allianceID = -1;
+        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+        // do the spawn using SystemManager's BuildEntity:
+    sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
+
+    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
+}
+
+void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
+{
+    CosmicSignature sig;
+
+
+    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
+                pFromSys->GetName().c_str(), pFromSys->GetID(), pToSys->GetName().c_str(), pToSys->GetID());
 }
 
 /*

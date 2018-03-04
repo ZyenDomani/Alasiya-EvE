@@ -23,6 +23,7 @@
  */
 
 class PyServiceMgr;
+class SystemManager;
 
 class WormholeMgr
 : public Singleton<WormholeMgr>
@@ -35,6 +36,8 @@ public:
     void Process();
 
     void Create(CosmicSignature& sig);
+    // this will create a k162 and send data to anomalyMgr for inclusion
+    void CreateExit(SystemManager* pFromSys, SystemManager* pToSys);
 
 private:
     ManagerDB* m_mdb;

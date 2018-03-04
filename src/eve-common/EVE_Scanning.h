@@ -16,13 +16,13 @@ namespace Scanning {
 //  -allan 7Jul14
     namespace Group {
         enum {
-            Scrap         = 1,
-            Signature     = 4,
-            Ship          = 8,
-            Structure     = 16,
-            DroneOrProbe  = 32,
-            Celestial     = 64,
-            Anomaly       = 128
+            Scrap         = 1,      //wrecks in system (unused)
+            Signature     = 4,      //advanced anomaly.  need probes to scan
+            Ship          = 8,      //abandoned ships
+            Structure     = 16,     //all pos structures
+            DroneOrProbe  = 32,     //player items
+            Celestial     = 64,     //unknown  (unused)
+            Anomaly       = 128     //detected using ship sensors
         };
     }
 }
@@ -39,8 +39,9 @@ namespace Probe {
         };
     }
 }
-/*
 
+/*
+ *
  probeScanGroupScrap = 1
  probeScanGroupSignatures = 4
  probeScanGroupShips = 8
@@ -155,5 +156,43 @@ namespace Probe {
                                                  groupSun,
                                                  groupStation])
  */
+
+
+// this really doesnt belong here, but dont know where else to put it yet.
+namespace WormHole {
+    namespace Class {
+        enum {
+            Unknown1    = 0,
+            Unknown2    = 1,
+            Unknown3    = 2,
+            Unknown4    = 3,
+            Dangerous1  = 4,
+            Dangerous2  = 5,
+            Deadly      = 6,
+            HiSec       = 7,
+            LoSec       = 8,
+            NullSec     = 9
+        };
+    }
+
+    namespace Age {
+        enum {
+            New = 0,
+            Adolescent = 1,
+            Decaying = 2,
+            Closing = 3
+        };
+    }
+
+    namespace Size {
+        // these are fuzzy logic
+        enum {
+            Full = 10,
+            Reduced = 5,
+            Disrupted = 1
+        };
+    }
+}
+
 
 #endif  // EVE_SCANNING_H

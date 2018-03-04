@@ -5,7 +5,7 @@
   <elementDef name="Call_ConeScan">
     <tupleInline>
       <real name="ScanAngle" />
-      <long name="range" />
+      <long name="range" safe="true" />
       <real name="x" />
       <real name="y" />
       <real name="z" />
