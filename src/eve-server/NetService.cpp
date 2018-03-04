@@ -177,6 +177,13 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
 }
 
 PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
+    PyTuple *result = new PyTuple(3);
+        result->items[0] = new PyInt(0);
+        result->items[1] = new PyInt(0);
+        result->items[2] = new PyFloat(1);
+    return result;
+
+#if 0
     /** @todo  this still needs work  */
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData");
@@ -192,7 +199,7 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
 
         sol = system - 30000000;
         sta = docked + space;
-        statDivisor = sta / docked;
+        statDivisor = 1;//sta / docked;
 
         docked = sta / statDivisor;
         space = sol - sta / statDivisor;
@@ -213,7 +220,6 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
         result->items[1] = new PyInt(sta);
         result->items[2] = new PyFloat(statDivisor);
     return result;
-#if 0
     sol, sta, statDivisor = sm.ProxySvc('machoNet').GetClusterSessionStatistics()
     pilotcountDict = {}
     for sfoo in sol.iterkeys():

@@ -616,7 +616,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
                 warpToPoint -= (radius * 1.25);
             }
         } else if (pSE->IsWormholeSE()) {
-                distance += 6000;
+                distance += 20000;  // add 20k for wh
         } else if (radius > 90000) {
             // this doesnt work for moons
             warpToPoint.x += ((radius + 500000) * std::cos(radius));

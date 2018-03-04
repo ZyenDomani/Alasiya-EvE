@@ -60,6 +60,15 @@ ConfigService::~ConfigService() {
     delete m_dispatch;
 }
 
+/** @todo put these next two in static data to avoid db hits  */
+PyResult ConfigService::Handle_GetUnits(PyCallArgs &call) {
+    return m_db.GetUnits();
+}
+
+PyResult ConfigService::Handle_GetMapLandmarks(PyCallArgs &call) {
+    return m_db.GetMapLandmarks();
+}
+
 PyResult ConfigService::Handle_GetMultiOwnersEx(PyCallArgs &call) {
   /*
 23:14:21 L ConfigService: Handle_GetMultiOwnersEx
@@ -135,10 +144,6 @@ PyResult ConfigService::Handle_GetMultiGraphicsEx(PyCallArgs &call) {
     }
 
     return m_db.GetMultiGraphicsEx(arg.ints);
-}
-
-PyResult ConfigService::Handle_GetUnits(PyCallArgs &call) {
-    return m_db.GetUnits();
 }
 
 PyResult ConfigService::Handle_GetMap(PyCallArgs &call) {
@@ -255,10 +260,6 @@ PyResult ConfigService::Handle_GetDynamicCelestials(PyCallArgs &call) {
         sLog.Error("GetDynamicCelesitals", "  !IsSolarSystem %u", arg.arg);
         return new PyInt( 0 );
     }
-}
-
-PyResult ConfigService::Handle_GetMapLandmarks(PyCallArgs &call) {
-    return m_db.GetMapLandmarks();
 }
 
 PyResult ConfigService::Handle_SetMapLandmarks(PyCallArgs &call) {
