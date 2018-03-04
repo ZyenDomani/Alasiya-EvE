@@ -85,8 +85,8 @@ struct CorpData {
     uint32 corporationID;
     uint32 corpHQ;
     uint32 baseID;
-    uint32 allianceID;
-    uint32 warFactionID;
+    int32 allianceID;
+    int32 warFactionID;
     int64 startDateTime;
     int64 corpRole;
     int64 rolesAtAll;
@@ -184,14 +184,14 @@ struct CharKillData {
     uint32 solarSystemID;
     uint32 victimCharacterID;
     uint32 victimCorporationID;
-    uint32 victimAllianceID;
-    uint32 victimFactionID;
+    int32 victimAllianceID;
+    int32 victimFactionID;
     uint16 victimShipTypeID;
     uint32 victimDamageTaken;
     uint32 finalCharacterID;
     uint32 finalCorporationID;
-    uint32 finalAllianceID;
-    uint32 finalFactionID;
+    int32 finalAllianceID;
+    int32 finalFactionID;
     uint16 finalShipTypeID;
     uint16 finalWeaponTypeID;
     double finalSecurityStatus;
@@ -388,8 +388,8 @@ struct OwnerData {
 struct FactionData {
     uint32 ownerID;
     uint32 corporationID;
-    uint32 allianceID;
-    uint32 factionID;
+    int32 allianceID;
+    int32 factionID;
 };
 
 /* structure for type attributes */
@@ -412,10 +412,10 @@ struct DBSystemDynamicEntity {
     uint32 typeID;
     uint16 groupID;
     EVEItemCategories categoryID;
+    int32 allianceID;
+    int32 factionID;
     uint32 ownerID;
     uint32 corporationID;
-    uint32 allianceID;
-    uint32 factionID;
     uint32 planetID;
     double x;
     double y;

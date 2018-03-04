@@ -178,7 +178,7 @@ PyRep *RamProxyDB::AssemblyLinesSelectCorporation(const uint32 corpID) {
 }
 
 /** @todo  need to add check/query for POS assembly modules here */
-PyRep *RamProxyDB::AssemblyLinesSelectAlliance(const uint32 allianceID) {
+PyRep *RamProxyDB::AssemblyLinesSelectAlliance(const int32 allianceID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,

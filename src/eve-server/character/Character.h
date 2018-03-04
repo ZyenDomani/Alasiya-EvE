@@ -409,8 +409,8 @@ public:
     std::string             corpTicker() const                  { return m_corpData.ticker; }
     uint32                  corporationID() const               { return m_corpData.corporationID; }
     uint32                  corporationHQ() const               { return m_corpData.corpHQ; }
-    uint32                  allianceID() const                  { return m_corpData.allianceID; }
-    uint32                  warFactionID() const                { return m_corpData.warFactionID; }
+    int32                   allianceID() const                  { return m_corpData.allianceID; }
+    int32                   warFactionID() const                { return m_corpData.warFactionID; }
     int32                   corpAccountKey() const              { return m_corpData.corpAccountKey; }
     double                  corpTaxRate() const                 { return m_corpData.taxRate; }
     void                    SetCorpHQ(uint32 stationID)         { m_corpData.corpHQ = stationID; UpdateCorpData(m_corpData);}

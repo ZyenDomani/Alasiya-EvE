@@ -39,7 +39,7 @@ public:
     PyRep* AssemblyLinesSelectPersonal(const uint32 charID);
     PyRep* AssemblyLinesSelectPrivate(const uint32 charID);
     PyRep* AssemblyLinesSelectCorporation(const uint32 corporationID);
-    PyRep* AssemblyLinesSelectAlliance(const uint32 allianceID);
+    PyRep* AssemblyLinesSelectAlliance(const int32 allianceID);
     PyRep* AssemblyLinesGet(const uint32 containerID);
 
     // InstallJob stuff

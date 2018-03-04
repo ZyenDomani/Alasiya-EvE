@@ -201,9 +201,9 @@ public:
     inline double               x()                     { return m_self->position().x; }
     inline double               y()                     { return m_self->position().y; }
     inline double               z()                     { return m_self->position().z; }
+    int32                       GetAllianceID()         { return m_allyID; }
+    int32                       GetWarFactionID()       { return m_warID; }
     uint32                      GetCorporationID()      { return m_corpID; }
-    uint32                      GetAllianceID()         { return m_allyID; }
-    uint32                      GetWarFactionID()       { return m_warID; }
     uint32                      GetOwnerID()            { return m_ownerID; }
 
     int8                        GetHarmonic()           { return m_harmonic; }
@@ -258,9 +258,9 @@ protected:
     int32 m_harmonic;
 
     /* ease of access to common data for ownable objects */
-    uint32                      m_warID;
+    int32                       m_warID;
+    int32                       m_allyID;   // this is salvage factionID for npc wrecks
     uint32                      m_corpID;
-    uint32                      m_allyID;   // this is salvage factionID for npc wrecks
     uint32                      m_fleetID;
     uint32                      m_ownerID;
 
