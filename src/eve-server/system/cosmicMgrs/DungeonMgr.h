@@ -46,9 +46,12 @@ public:
 
     void AddDungeon(ActiveDungeon& dungeon);
     void GetDungeons(std::vector<ActiveDungeon>& dunList);
-    void GetTemplate(uint32 templateID, DunTemplate& dTemplate);
+    
+    bool GetTemplate(uint32 templateID, DunTemplate& dTemplate);
 
     uint32 GetDungeonID()                               { return ++m_dungeonID; }
+
+    std::string GetDungeonType(int8 typeID);
 
 protected:
     typedef std::map<uint32, DunTemplate> DunTemplateDef;                       //templateID/data
@@ -98,7 +101,6 @@ public:
     bool MakeDungeon(CosmicSignature& sig);
 
     bool Create(uint32 templateID, CosmicSignature& sig);
-
 
 protected:
     ManagerDB m_db;

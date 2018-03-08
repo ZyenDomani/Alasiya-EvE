@@ -161,7 +161,7 @@ uint32 InventoryItem::CreateTempItemID( ItemData &data) {
     // this also checks that the type is valid
     const ItemType *iType = sItemFactory.GetType(data.typeID);
     if (iType == nullptr) {
-        codelog(ITEM__ERROR, "Invalid type returned for typeID %u", data.typeID);
+        codelog(ITEM__ERROR, "Invalid ItemType returned for typeID %u", data.typeID);
         return 0;
     }
 
@@ -172,6 +172,7 @@ uint32 InventoryItem::CreateTempItemID( ItemData &data) {
     // Get a new Entity ID from ItemFactory's ID Authority:
     if (iType->categoryID() == EVEDB::invCategories::Entity) // may need more testing to verify that ONLY NPC's and jetcan markers use this method
         return sItemFactory.GetNextNPCID();
+
     if (data.flag == EVEItemFlags::flagMissile)
         return sItemFactory.GetNextMissileID();
 
@@ -271,7 +272,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
                 case EVEDB::invGroups::Temporary_Cloud: {
                     return CelestialObject::_LoadItem<CelestialObject>(itemID, type, data);
                 } break;
-                // the rest are drones....i think
+                // the rest are drones and npcs....i think
                 // they are *somewhat* separated for eventual classification into their own itemtypes
                 case EVEDB::invGroups::Convoy:
                 case EVEDB::invGroups::Convoy_Drone:
@@ -309,6 +310,9 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
                 case EVEDB::invGroups::Incursion_Sanshas_Nation_Battleship: {
                     _log(ITEM__WARNING, "item %u (type %u, group %u) defaulting to generic InventoryItem.", itemID, type.id(), type.groupID());
                 } break;
+                default: {
+                    _log(ITEM__WARNING, "item %u (type %u, group %u,  cat %u) is not handled in InventoryItem::_LoadItem::Entity.", itemID, type.id(), type.groupID(), type.categoryID());
+                }
             }
         }
         default: {
@@ -359,7 +363,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::SovereigntyStructure: {
             return StructureItem::Spawn(data);
-        }
+        } break;
         case EVEDB::invCategories::Blueprint: {
             BlueprintData bpData;
                 bpData.runs = -1;
@@ -367,25 +371,40 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 bpData.mLevel = 0;
                 bpData.pLevel = 0;
             return Blueprint::Spawn(data, bpData);
-        }
+        } break;
         case EVEDB::invCategories::Skill: {
             return Skill::Spawn(data);
-        }
+        } break;
         case EVEDB::invCategories::Ship: {
             return ShipItem::Spawn(data);
-        }
-        case EVEDB::invCategories::Entity:
-            if (iType->groupID() == EVEDB::invGroups::Spawn_Container)
-                return CargoContainer::Spawn(data);
-            if (iType->groupID() == EVEDB::invGroups::Cargo_Container) {
-                // Spawn jetcan as marker, using temp items and NOT save to db.
-                uint32 itemID = InventoryItem::CreateTempItemID(data);
-                return InventoryItem::SpawnItem(itemID, data);
+        } break;
+        case EVEDB::invCategories::Entity: {
+            switch (iType->groupID()) {
+                case EVEDB::invGroups::Spawn_Container: {
+                    return CargoContainer::Spawn(data);
+                } break;
+                case EVEDB::invGroups::Billboard:
+                case EVEDB::invGroups::Control_Bunker:
+                case EVEDB::invGroups::Capture_Point: {
+                    uint32 itemID = InventoryItem::CreateItemID(data);
+                    return InventoryItem::SpawnItem(itemID, data);
+                } break;
+                case EVEDB::invGroups::Sentry_Gun:
+                case EVEDB::invGroups::Temporary_Cloud:
+                case EVEDB::invGroups::Cargo_Container: // Spawn jetcan as marker, using temp items and NOT save to db.
+                default: {  // *should*  be all npcs
+                    // use temp items and NOT save to db.
+                    uint32 itemID = InventoryItem::CreateTempItemID(data);
+                    return InventoryItem::SpawnItem(itemID, data);
+                } break;
             }
+        } break;
         case EVEDB::invCategories::Drone: {
-            // disable drones
-            return InventoryItemRef(nullptr);
-        }
+            if (!sConfig.npc.EnableDrones) {
+                // disable drones
+                return InventoryItemRef(nullptr);
+            }
+        }   // allow fallthru if drones are enabled
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:
@@ -399,7 +418,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             itemRef->SetAttribute(AttrVolume,         iType->volume());       // Volume
             itemRef->SetAttribute(AttrCapacity,       iType->capacity());   // Capacity
             return itemRef;
-        }
+        } break;
         case EVEDB::invCategories::Charge: {
             uint32 itemID = 0;
             InventoryItemRef itemRef;
@@ -420,8 +439,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             itemRef->SetAttribute(AttrMass,       iType->mass(), false);           // Mass
             itemRef->SetAttribute(AttrRadius,     iType->radius(), false);       // Radius
             return itemRef;
-            codelog(INV__ERROR, "InventoryItem::Spawn called for type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
-        }
+        } break;
         case EVEDB::invCategories::Station: {
             if (iType->groupID() == EVEDB::invGroups::Station) {
             uint32 itemID = StationItem::CreateItemID(data);
@@ -440,9 +458,9 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             return stationRef;
             } else if (iType->groupID() == EVEDB::invGroups::Station_Services) {
                 // this should never hit...throw error
-                codelog(INV__ERROR, "InventoryItem::Spawn called for type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
+                codelog(INV__ERROR, "InventoryItem::Spawn called for unhandled item type %u, cat %u in locID: %u.", iType->id(), iType->categoryID(), data.locationID);
             }
-        }
+        } break;
         case EVEDB::invCategories::Celestial: {
             if ( (iType->groupID() == EVEDB::invGroups::Secure_Cargo_Container)
             or (iType->groupID() == EVEDB::invGroups::Cargo_Container)
@@ -460,11 +478,11 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 // Spawn new Celestial Object
                 return CelestialObject::Spawn(data);
             }
-        }
+        } break;
     }
 
     // log error and return nullref for items not handled here
-    _log(ITEM__WARNING, "InventoryItem::Spawn item not handled - type %u, cat %u.", iType->id(), iType->categoryID());
+    _log(ITEM__WARNING, "InventoryItem::Spawn item not handled - type %u, grp %u, cat %u.", iType->id(), iType->groupID(), iType->categoryID());
     return InventoryItemRef(nullptr);
 }
 

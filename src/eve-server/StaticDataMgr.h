@@ -70,7 +70,7 @@ public:
     uint32              GetStationConstellation(uint32 stationID);
     uint32              GetStationSystem(uint32 stationID);
 
-    bool                GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids);
+    bool                GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids);
     uint8               GetRegionQuarter(uint32 regionID);
     uint32              GetRegionFaction(uint32 regionID);
     uint32              GetRegionRatFaction(uint32 regionID);

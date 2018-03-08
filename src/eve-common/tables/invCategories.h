@@ -5,7 +5,7 @@ namespace EVEDB {
     namespace invCategories {
         typedef enum {
             _System = 0,
-            Owner = 1,      // char, corp, faction, alliance items.
+            Owner = 1,          // char, corp, faction, alliance items.
             Celestial = 2,
             Station = 3,
             Material = 4,
@@ -14,9 +14,9 @@ namespace EVEDB {
             Module = 7,
             Charge = 8,
             Blueprint = 9,
-            Trading = 10,  // not sure how to use this one....may look into later
+            Trading = 10,       // not sure how to use this one....may look into later
             Entity = 11,
-            Bonus = 14,     // trait bonus/handicap.  not sure how/if to use these.
+            Bonus = 14,         // trait bonus/handicap.  not sure how/if to use these.
             Skill = 16,
             Commodity = 17,
             Drone = 18,
@@ -26,8 +26,8 @@ namespace EVEDB {
             Reaction = 24,
             Asteroid = 25,
             WorldSpace = 26,    // not sure about this cat.  gonna go with "not used"
-            Abstract = 29,  // not sure how to use this one....may look into later
-            Apparel = 30,   // i dont think these are in market, but they do have a mktGrpID.  not sure.
+            Abstract = 29,      // not sure how to use this one....may look into later
+            Apparel = 30,       // i dont think these are in market, but they do have a mktGrpID.  not sure.
             Subsystem = 32,
             AncientRelics = 34,
             Decryptors = 35,
@@ -37,10 +37,10 @@ namespace EVEDB {
             PlanetaryResources = 42,
             PlanetaryCommodities = 43,
             Orbitals = 46,
-            Placeables = 49,// WIS items.  not sure if these are used.  they are listed as 'published'
-            Effects = 53,   // lighting-type effects.  not creatable item type
-            Lights = 54,    // light sources.  not creatable item type
-            Cells = 59      // not used
+            Placeables = 49,    // WIS items.  not sure if these are used.  they are listed as 'published'
+            Effects = 53,       // lighting-type effects.  non-creatable item type
+            Lights = 54,        // light sources.  non-creatable item type
+            Cells = 59          // not used
         } invCategories;
     }
 }

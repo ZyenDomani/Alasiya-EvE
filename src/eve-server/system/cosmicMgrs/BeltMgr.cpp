@@ -94,7 +94,7 @@ bool BeltMgr::CheckSpawn(uint16 bubbleID)
      * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
      */
     if (!Load(bubbleID)) {
-        std::vector< DunGroupData > roidTypes;
+        std::unordered_multimap<float, uint16> roidTypes;
         roidTypes.clear();
         SpawnBelt(bubbleID, roidTypes);
     }
@@ -132,7 +132,7 @@ void BeltMgr::Process() {
     if (m_respawnTimer.Check()) {
         for (auto cur : m_spawned)
             if (!cur.second) {
-                std::vector< DunGroupData > roidTypes;
+                std::unordered_multimap<float, uint16> roidTypes;
                 roidTypes.clear();
                 SpawnBelt(cur.first, roidTypes);
             }
@@ -233,7 +233,7 @@ struct CosmicSignature {
 };
 */
 
-bool BeltMgr::Create(CosmicSignature& sig, std::vector< DunGroupData >& roidTypes)
+bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16>& roidTypes)
 {
     // register this as a belt.
     SystemEntity* pSE = m_system->GetSE(sig.sigItemID);
@@ -241,12 +241,12 @@ bool BeltMgr::Create(CosmicSignature& sig, std::vector< DunGroupData >& roidType
         return false;
     sBubbleMgr.AddSpawnID(pSE->SysBubble()->GetID(), sig.sigItemID);
     RegisterBelt(pSE->GetSelf());
-    SpawnBelt(pSE->SysBubble()->GetID(),roidTypes, 0, true);
+    SpawnBelt(pSE->SysBubble()->GetID(), roidTypes, 0, true);
 
     return true;
 }
 
-void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes, int type/*0*/, bool anomaly/*false*/)
+void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>& roidTypes, int type/*0*/, bool anomaly/*false*/)
 {
     if (IsSpawned(bubbleID))
         return;
@@ -263,21 +263,15 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes,
     if (pSE->GetTypeID() == 17774)
         ice = true;
 
-    float secStatus = m_system->GetSystemSecurityRating();
-    // range is 0.1 for 1.0 system to 2.0 for -0.9 system
-    float security = 1.1 - secStatus;
-    std::unordered_multimap<float, uint32> roidDist;
+    float secRating = m_system->GetSystemSecurityRating();
+    float secValue = m_system->GetSecValue();
+    std::unordered_multimap<float, uint16> roidDist;
     if (ice) {
         uint8 quarter = sDataMgr.GetRegionQuarter(m_regionID);
         // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
-        GetIceDist(quarter, secStatus, roidDist);
+        GetIceDist(quarter, secRating, roidDist);
     } else if (anomaly) {
-        std::vector< DunGroupData >::iterator itr = roidTypes.begin(), end = roidTypes.end();
-        for (int8 i=1; itr != end; ++itr, ++i) {
-            if (i > 3)
-                i = 1;
-            roidDist.insert(std::pair<float, uint32>((1.0 - (0.2 * i)), itr->typeID));
-        }
+        roidDist = roidTypes;
     } else {
         sDataMgr.GetRoidDist(m_system->GetSystemSecurityClass(), roidDist);
     }
@@ -285,58 +279,56 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes,
     int8 pcs = 5;
     double radius = 16000;
     radius *= sConfig.cosmic.roidRadiusMultiplier;
-
     double roidradius = 0, theta = 0, elevation = 0;
     if (anomaly) {
-        pcs = roidDist.size();
-        radius += (radius *security);
+        pcs += roidDist.size();
+        radius += (radius *secValue);
         radius += (pcs * 1000 /4);
         elevation = (radius/4);
     } else if (ice) {  //880 total systems with ice. 293 in hisec
         //  ice needs to be 30k to 75k, with radius of 40k to 100k
         radius *= 2; //32k base
-        if (security > 0.7)
+        if (secRating > 0.7)
             pcs = 1;
-        else if (security > 0.3)
+        else if (secRating > 0.3)
             pcs = 2;
-        else if (security > -0.4)
+        else if (secRating > -0.4)
             pcs = 4;
         else
             pcs = 6;
     } else {
         pcs += MakeRandomInt(5, 30);
-        radius += (radius *security);
+        radius += (radius *secValue);
         radius += (pcs * 1000 /4);
-        elevation = (radius/6);
+        elevation = (radius/4);
     }
 
     double degreeSeparation = (180/pcs);
     GPoint center(pSE->SysBubble()->GetCenter());
     GPoint mposition(NULL_ORIGIN);
-    for (uint32 i = 0; i <= pcs; ++i) {
-        if (!ice) {
-            roidradius = MakeRandomInt(3000, 8000) *security;
-        } else {
-            //if (security > -0.3)
+    for (uint8 i = 0; i <= pcs; ++i) {
+        if (ice) {
+            //if (secRating > -0.3)
                 roidradius = MakeRandomInt(40, 70) *1000; // (40k,70k)  72-102k radius
             //else
             //    roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
+        } else {
+            roidradius = MakeRandomInt(3000, 8000) *secValue;
         }
-        /* if (anomaly) {
-            // random for anomaly...may not need this
-            theta = MakeRandomFloat(0, ( EvE::Trig::Pi*2));
-            mposition.x = (radius + roidradius /10) * cos(theta);
-            mposition.z = (radius + roidradius /10) * sin(theta);
-            mposition.y = MakeRandomFloat(-elevation, elevation);
-        } else */ if (type == 0) {
+        if (anomaly) {
+            // random for anomaly...use the "special" placements at end of this file....eventually.
+            theta = MakeRandomFloat(0, (EvE::Trig::Pi*2));
+            mposition.x = (radius + roidradius /5) * cos(theta);
+            mposition.z = (radius + roidradius /5) * sin(theta);
+        } else if (type == 0) {
             // half-circle type
             theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
-            mposition.x = (radius + roidradius /10) * cos(theta);
-            mposition.z = (radius + roidradius /10) * sin(theta);
-            mposition.y = MakeRandomFloat(-elevation, elevation);
+            mposition.x = (radius + roidradius) * cos(theta);
+            mposition.z = (radius + roidradius) * sin(theta);
         }
+        mposition.y = MakeRandomFloat(-elevation, elevation);
         SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center +mposition), ice);
     }
 
@@ -355,8 +347,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::vector< DunGroupData >& roidTypes,
     _log(COSMIC_MGR__TRACE, "BeltMgr::SpawnBelt - Belt spawned with %u roids of %s in beltID %u for %s(%u)", pcs, (ice?"ice":"ore"), beltID, m_system->GetName().c_str(), m_systemID );
 }
 
-uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint32>& roids) {
-    std::unordered_multimap<float, uint32>::const_iterator cur = roids.begin();
+uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, uint16>& roids) {
+    std::unordered_multimap<float, uint16>::const_iterator cur = roids.begin();
     float chance = 0.0;
     for(; cur != roids.end(); ++cur ) {
         chance += cur->first;
@@ -426,7 +418,7 @@ void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 */
 }
 
-void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap< float, uint32 >& roidDist)
+void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap<float, uint16>& roidDist)
 {
     // put this in db or mem map?   ....neither.  here is fine.
     // caldari=1, minmatar=2, amarr=3, gallente=4, none=5

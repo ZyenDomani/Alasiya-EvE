@@ -307,6 +307,7 @@ void SpawnMgr::DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass)
 {
     if (pBubble == nullptr)
         return;
+    pBubble->SetAnomaly();
     PrepSpawn(pBubble, spawnClass);
 }
 
@@ -316,6 +317,7 @@ void SpawnMgr::DoSpawnForIncursion(SystemBubble* pBubble, uint32 regionID)
         return;
     if (!IsRegion(regionID))
         return;
+    pBubble->SetIncursion();
     // unknown parameters at this time
 }
 
@@ -325,12 +327,13 @@ void SpawnMgr::DoSpawnForMission(SystemBubble* pBubble, uint32 regionID)
         return;
     if (!IsRegion(regionID))
         return;
+    pBubble->SetMission();
     // unknown parameters at this time
 
     /*  this needs to deal with multiple things.
-     * 1- rat types for mission....
-     * 2- rat faction per mission template
-     * 3- waves per template.  how to do this???
+     * 1- npc types per template
+     * 2- faction per template
+     * 3- waves per template.
      * 4- more/others?
      */
 }
@@ -458,7 +461,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     RatSpawnClassVec spawnEntry;
     if (sDataMgr.GetNPCClasses(sClass, spawnEntry)) {
         if (is_log_enabled(SPAWN__MESSAGE))
-            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s (%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
+            _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - spawnEntry - size: %u, class: %s(%u).", spawnEntry.size(), GetSpawnClassName(sClass).c_str(), sClass);
     } else {
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - No NPC Class data for %u (%s).  Cancelling spawn.", sClass, GetSpawnClassName(sClass).c_str());
         return false;
@@ -484,7 +487,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
         else if (secRating < 0.7)   level = 2;
         else                        level = 1;
     } else if (sClass <= Spawn::Class::Hell) {
-        level = MakeRandomInt(0, 8);  // random belt/gate spawn type.
+        level = MakeRandomInt(0, spawnEntry.size());  // random belt/gate spawn type.
     } else {
         // do we need anything else here?
     }
@@ -614,7 +617,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     if (m_toSpawn.size() > 0) {
         if (is_log_enabled(SPAWN__MESSAGE))
             _log(SPAWN__MESSAGE, "SpawnMgr::PrepSpawn() - toSpawn size is %u.", m_toSpawn.size());    //variable
-        MakeSpawn(pBubble, factionID, sClass, level);
+        MakeSpawn(pBubble, factionID, sClass, level, anomaly);
         return true;
     } else
         _log(SPAWN__ERROR, "SpawnMgr::PrepSpawn() - Nothing to spawn.");
@@ -640,7 +643,7 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
 };
 */
-void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level)
+void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level, bool anomaly/*false*/)
 {
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
      * to make it 'realistic', they will need the appearance of warping in from some random point,
@@ -656,9 +659,14 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     SpawnEntry se;
     GPoint startPos(pBubble->GetCenter());
     const GPoint warpToPoint(startPos);
-    /** @todo  make method to get/use template positioning data for spawns here */
-    if (sClass <= Spawn::Class::Officer)    // ratspawn will warp in, others will not.
+    std::string name = "BeltRat";
+    if (anomaly) {
+        name = GetSpawnClassName(sClass);
+    } else {
+        /** @todo  make method to get/use template positioning data for spawns here */
+        // ratspawn will warp in, others will not.
         startPos.MakeRandomPointOnSphere(MakeRandomInt(10, 15) *100000); //1-1m5 km from current bubble center
+    }
 
     uint32 corpID = sDataMgr.GetCorpID(factionID);
     FactionData data;
@@ -675,10 +683,10 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
-        ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, "BeltRat");
+        ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
 
         for (uint8 x=0; x!=cur->quantity; ++x) {
-            InventoryItemRef iRef = sItemFactory.SpawnItem(idata);      // will have to work on this to NOT save npc to db....or save ALL the spawn shit
+            InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
             if (iRef.get() == nullptr) {
                 _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
                 continue;
@@ -904,9 +912,9 @@ uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
     }
 }
 
-std::string SpawnMgr::GetSpawnGroupName(int8 typeID)
+std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
 {
-    switch(typeID) {
+    switch(sGroup) {
         case Spawn::Group::None:            return "None";
         case Spawn::Group::Roaming:         return "Roaming";
         case Spawn::Group::Static:          return "Static";
@@ -921,9 +929,9 @@ std::string SpawnMgr::GetSpawnGroupName(int8 typeID)
     }
 }
 
-std::string SpawnMgr::GetSpawnClassName(int8 typeID)
+std::string SpawnMgr::GetSpawnClassName(int8 sClass)
 {
-    switch(typeID) {
+    switch(sClass) {
         case Spawn::Class::None:            return "None";
         case Spawn::Class::Easy:            return "Easy";
         case Spawn::Class::Fair:            return "Fair";

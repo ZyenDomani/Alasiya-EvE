@@ -383,7 +383,7 @@ void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) 
         itemList.push_back(it->second);
 }
 
-bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap< float, uint32 >& roids) {
+bool StaticDataMgr::GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids) {
     auto groupRange = m_oreBySecClass.equal_range(secClass);
     for (auto it = groupRange.first; it != groupRange.second; ++it) {
         _log(MINING__INFO, "GetRoidDist - adding %u with chance %.3f", it->second.typeID, it->second.chance);

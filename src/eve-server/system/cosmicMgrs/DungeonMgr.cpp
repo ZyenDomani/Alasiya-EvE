@@ -125,13 +125,29 @@ void DungeonDataMgr::GetDungeons(std::vector< ActiveDungeon >& dunList)
         dunList.push_back(cur.second);
 }
 
-void DungeonDataMgr::GetTemplate(uint32 templateID, DunTemplate& dTemplate) {
+bool DungeonDataMgr::GetTemplate(uint32 templateID, DunTemplate& dTemplate) {
     std::map<uint32, DunTemplate>::iterator itr = templates.find(templateID);
     if (itr == templates.end()) {
         _log(COSMIC_MGR__ERROR, "DungeonDataMgr - templateID %u not found.", templateID);
-        return;
+        return false;
     }
     dTemplate = itr->second;
+    return true;
+}
+
+std::string DungeonDataMgr::GetDungeonType(int8 typeID)
+{
+    switch (typeID) {
+        case Dungeon::Type::Mission:        return "Mission";
+        case Dungeon::Type::Gravimetric:    return "Gravimetric";
+        case Dungeon::Type::Magnetometric:  return "Magnetometric";
+        case Dungeon::Type::Radar:          return "Radar";
+        case Dungeon::Type::Ladar:          return "Ladar";
+        case Dungeon::Type::Rated:          return "Rated";
+        case Dungeon::Type::Anomaly:        return "Anomaly";
+        case Dungeon::Type::Unrated:        return "Unrated";
+        case Dungeon::Type::Escalation:     return "Escalation";
+    }
 }
 
 
@@ -228,7 +244,8 @@ void DungeonMgr::Load()
 bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 {
     DunTemplate dTemplate;
-    sDunDataMgr.GetTemplate(templateID, dTemplate);
+    if (!sDunDataMgr.GetTemplate(templateID, dTemplate))
+        return false;
 
     if (dTemplate.dunRoomID == 0) {
         _log(COSMIC_MGR__ERROR, "DungeonMgr::Create() - roomID is 0 for template %u.", templateID);
@@ -247,7 +264,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
 
-    /** @todo update this to use temp items */
+    /** @todo update this to use temp items...create new method to spawn temp deco shit for this.  ItemFactory::CreateTempShit()? */
     InventoryItemRef iRef = sItemFactory.SpawnItem(iData);  /* not sure how well generic spawn will work here. */
     if (iRef.get() == nullptr) // make error and exit
         return false;
@@ -314,8 +331,20 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     }
     if (sig.dungeonType == Dungeon::Type::Gravimetric) {
         // dungeon template for grav sites just give 'extra' roid data
-        m_system->GetBeltMgr()->Create(sig, m_anomalyItems);
-        // clear out extra roids to continue with room deco
+        int16 size = m_anomalyItems.size();
+        uint8 divisor = 10;
+        if (size < 100)
+            divisor = 100;
+        float chance = (100 /size) /divisor;
+        if (chance < 0.01)
+            chance = 0.01;
+        std::unordered_multimap<float, uint16> roidTypes;
+        std::vector< DunGroupData >::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
+        for (auto cur : m_anomalyItems)
+            roidTypes.emplace(chance, cur.typeID);
+
+        m_system->GetBeltMgr()->Create(sig, roidTypes);
+        // clear out extra roids data to continue with room deco
         m_anomalyItems.clear();
     }
 
@@ -530,7 +559,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
      */
     uint32 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
 
-    _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create on type %u using templateID %u", sig.dungeonType, templateID);
+    _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
+            sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, templateID);
 
     return Create(templateID, sig);
 }
@@ -590,7 +620,7 @@ struct CosmicSignature {
 void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
 {
     /* templateID format.  ABCDE
-     *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded,  7:anomaly, 8:unrated, 9:escalation
+     *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
      *       B = type - security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
      *       C = subtype  - 2: ore 0 to 5; ice 6 to 9, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
      *       D = level - 2: ore 1 to 3; ice 0, 4: type 3, 2 levels, 7: 1 to 5, 1: 1 to 9
@@ -598,7 +628,6 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
      */
 
     // templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
-
     uint8 factionID = templateID % 10;
     uint8 size = templateID / 10 % 10;
     uint8 subType = templateID / 100 % 10;
@@ -610,6 +639,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
     std::vector<uint16> groupVec;
     groupVec.clear();
     // all groups get the worthless mining types and misc deco items
+    groupVec.push_back(131);    //misc roids
     groupVec.push_back(132);    //worthless mining types
     groupVec.push_back(691);    // misc
 
@@ -619,7 +649,6 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
         } break;
         case Gravimetric: {    //2
             groupVec.push_back(130);    //named roids
-            groupVec.push_back(131);    //misc roids
             groupVec.push_back(160);    //asteroid colony items
             groupVec.push_back(620);    // Starbase
             groupVec.push_back(630);    // Habitation
@@ -636,7 +665,6 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
         } break;
         case Radar: {  //4
             groupVec.push_back(130);    //named roids
-            groupVec.push_back(131);    //misc roids
             groupVec.push_back(160);    //asteroid colony items
             groupVec.push_back(630);    // Habitation
             groupVec.push_back(640);    // Stationary
@@ -647,8 +675,8 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             groupVec.push_back(680);    // Construction
             groupVec.push_back(690);    // Storage
         } break;
-        case Anomaly: {    //7
-            groupVec.push_back(131);    //misc roids
+        case Anomaly:  //7
+        case Rated: {  //10
             groupVec.push_back(430);    //lco misc
             groupVec.push_back(431);    //lco Habitation
             groupVec.push_back(432);    //lco drug labs
@@ -656,6 +684,23 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             groupVec.push_back(630);    // Habitation
             groupVec.push_back(640);    // Stationary
             groupVec.push_back(650);    // Indestructible
+        } break;
+        case Unrated: {    //8
+            groupVec.push_back(430);    //lco misc
+            groupVec.push_back(431);    //lco Habitation
+            groupVec.push_back(432);    //lco drug labs
+            groupVec.push_back(433);    //lco Starbase
+        } break;
+        case Escalation: { //9
+            groupVec.push_back(640);    // Stationary
+            groupVec.push_back(650);    // Indestructible
+        } break;
+    }
+    switch (sig.dungeonType) {
+        case Anomaly:     //7
+        case Unrated:     //8
+        case Escalation:  //9
+        case Rated: {    //10
             switch (factionID) {
                 case 1: { //Serpentis
                     groupVec.push_back(401); //faction lco
@@ -681,32 +726,18 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
                     groupVec.push_back(406);  //faction lco
                     groupVec.push_back(606);  //faction base
                 } break;
+                // make error for default or 0 here?
             }
-        } break;
-        case Unrated: {    //8
-            groupVec.push_back(131);    //misc roids
-            groupVec.push_back(430);    //lco misc
-            groupVec.push_back(431);    //lco Habitation
-            groupVec.push_back(432);    //lco drug labs
-            groupVec.push_back(433);    //lco Starbase
-            // this will need faction shit
-        } break;
-        case Escalation: { //9
-            groupVec.push_back(131);    //misc roids
-            // this will need faction shit
-        } break;
-        case Rated: {    //10
-            groupVec.push_back(131);    //misc roids
-            // this will need faction shit
-        } break;
+        }
     }
+
     int8 step = 0;
     uint16 count = 0, amount = 0, pos = 10000;
     pos *= size;
 
     double theta = 0;
-    // range is 2 to 40
-    size *= (m_system->GetSecValue() *20);
+    // range is 1 to 20 (which puts 60-130 items in bubble)
+    size *= (m_system->GetSecValue() *10);  // config variable here?
     uint8 origSize = size;
     DunGroupData grp;
     for (auto cur : groupVec) {
@@ -714,27 +745,34 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
         count = sDunDataMgr.groups.count(cur);
         if (count < 1)
             continue;
-        else if (count < size)
-            size = count;
-        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for type %u, subtype %u, size %u, faction %u", cur, sig.dungeonType, subType, size, factionID);
+        else if (size > count)
+            size /= count;
+        else
+            size = count /size;
+        if (size < 1)
+            size = 1;
+        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), subtype %u, size %u, count %u, range %u, faction %u",\
+                    cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, subType, size, count, origSize, factionID);
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
         auto it = groupRange.first;
-
-        //  make 2-40 random items in the anomaly based on system trusec
+        double degreeSeparation = (250/size);
+        // make 1-20 random items in the anomaly based on system trusec
         for (uint8 i=0; i < size; ++i) {
             step = MakeRandomInt(1,count);
             std::advance(it,step);      // this is some fancy shit here
-            grp.typeCatID = it->second.typeCatID;
-            grp.typeGrpID = it->second.typeGrpID;
-            grp.typeName = it->second.typeName;
             grp.typeID = it->second.typeID;
+            grp.typeName = it->second.typeName;
+            grp.typeGrpID = it->second.typeGrpID;
+            grp.typeCatID = it->second.typeCatID;
             // site size and item radius determine position
             radius = it->second.radius;
-            if (sig.dungeonType == Gravimetric) {
-                theta = MakeRandomFloat(0,  EvE::Trig::Pi);
-                grp.x = (pos + radius * std::cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
-                grp.z = (pos + radius * std::sin(theta)) * -1;
+            //if (sig.dungeonType == Gravimetric) {
+                theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
+                //theta = MakeRandomFloat(0,  EvE::Trig::Pi);
+                grp.x = (radius + pos * std::cos(theta)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
+                grp.z = (radius + pos * std::sin(theta)) * -1;
+                /*
                 grp.y = MakeRandomFloat(-radius, radius);
             } else if (IsEven(MakeRandomInt(0,10))) {
                 grp.x = (pos + it->second.x + (radius*2)) * (IsEven(MakeRandomInt(0,10)) ? -1 : 1);
@@ -742,8 +780,8 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             } else {
                 grp.x = (pos + it->second.x + radius) * -1;
                 grp.z = (pos + it->second.z + (radius*2)) * -1;
-            }
-            grp.y = it->second.y + MakeRandomInt(-2500, radius *2);
+            } */
+            grp.y = it->second.y + MakeRandomInt(-5000, radius *2);
             m_anomalyItems.push_back(grp);
             it = groupRange.first;
         }

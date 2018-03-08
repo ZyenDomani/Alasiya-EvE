@@ -56,11 +56,12 @@ public:
     bool IsIce()                                        { return m_ice; }
     bool IsBelt()                                       { return m_belt; }
     bool IsGate()                                       { return m_gate; }
-    bool IsAnomaly()                                    { return m_anomaly; } // not finished - returns false
-    bool IsMission()                                    { return m_mission; }   // not finished - returns false
-    bool IsIncursion()                                  { return m_incursion; }   // not finished - returns false
+    bool IsAnomaly()                                    { return m_anomaly; }
+    bool IsMission()                                    { return m_mission; }
+    bool IsIncursion()                                  { return m_incursion; }
     bool IsSpawned()                                    { return m_spawned; }
 
+    // these are set in spawnMgr.
     void SetAnomaly(bool set=true)                      { m_anomaly = set; }
     void SetMission(bool set=true)                      { m_mission = set; }
     void SetIncursion(bool set=true)                    { m_incursion = set; }

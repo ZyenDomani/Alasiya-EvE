@@ -300,7 +300,9 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig", "Debug Switches");
     if (sConfig.debug.IsTestServer)
-        sLog.Error("     ServerConfig", "Is Test Server");
+        sLog.Error("     ServerConfig", "Test Server");
+    else
+        sLog.Error("     ServerConfig", "Live Server");
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
         sProfile.Init();

@@ -128,6 +128,19 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
 }
 
 /*
+graphicID    graphicFile     description     obsolete    graphicType     collidable  explosionID     directoryID     graphicName
+2907    res:/dx9/Model/WorldObject/Wormhole/SpatialRift.re...   A spatial rift effect which is used in dungeons.    0   NULL    NULL    NULL    NULL
+3428    res:/Model/WorldObject/Warpgate/WormholeBig.blue    Large, angry version of Eve wormhole - WormholeBig  0   NULL    NULL    NULL    NULL
+3715    res:/dx9/model/WorldObject/Wormhole/Wormhole.red    Wormhole    0   NULL    NULL    NULL    NULL
+11781   res:/dx9/Scene/Wormholes/wormhole_class_01.red      0   NULL    NULL    NULL    NULL
+11782   res:/dx9/Scene/Wormholes/wormhole_class_02.red      0   NULL    NULL    NULL    NULL
+11783   res:/dx9/Scene/Wormholes/wormhole_class_03.red      0   NULL    NULL    NULL    NULL
+11784   res:/dx9/Scene/Wormholes/wormhole_class_04.red      0   NULL    NULL    NULL    NULL
+11785   res:/dx9/Scene/Wormholes/wormhole_class_05.red      0   NULL    NULL    NULL    NULL
+11786   res:/dx9/Scene/Wormholes/wormhole_class_06.red      0   NULL    NULL    NULL    NULL
+*/
+
+/*
     AttrWormholeTargetSystemClass = 1381,
     AttrWormholeMaxStableTime = 1382,
     AttrWormholeMaxStableMass = 1383,

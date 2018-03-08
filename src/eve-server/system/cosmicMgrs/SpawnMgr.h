@@ -37,6 +37,8 @@ public:
     // update SpawnMgr on npcs new location (change bubbles)
     void MoveSpawn(NPC* pNPC, SystemBubble* pBubble);
 
+    std::string GetSpawnClassName(int8 sClass);
+    std::string GetSpawnGroupName(int8 sGroup);
 
     bool DoSpawnForBubble(SystemBubble* pBubble);
     void DoSpawnForAnomaly(SystemBubble* pBubble, uint8 spawnClass);
@@ -61,13 +63,11 @@ public:
 protected:
     bool FindSpawnForBubble(uint16 bubbleID);
     bool PrepSpawn(SystemBubble* pBubble, uint8 sClass = Spawn::Class::None, uint8 level = 0);
-    void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level);
+    void MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level, bool anomaly=false);
     void ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry);
     void RemoveSpawn(uint16 bubbleID, uint32 itemID);
 
     uint8 GetSpawnGroup(uint8 sClass);
-    std::string GetSpawnClassName(int8 typeID);
-    std::string GetSpawnGroupName(int8 typeID);
 
     uint16 GetRandTypeID(uint8 sClass);
 

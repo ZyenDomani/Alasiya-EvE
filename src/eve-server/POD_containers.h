@@ -457,9 +457,9 @@ struct DunRoomData {
 };
 
 struct DunGroupData {
-    int32 typeID;
+    int16 typeID;
     std::string typeName;
-    int32 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
+    int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
     uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
     uint16 radius;
     int16 x;
