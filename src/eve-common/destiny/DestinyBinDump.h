@@ -32,6 +32,8 @@ namespace Destiny {
     extern uint32 DumpBall(LogType into, const uint8 *data, uint32 len);
 
     extern const char *const DSTBALL_modeNames[];
+
+    extern std::string GetFlagNames(uint8 flags);
 }
 
 #endif

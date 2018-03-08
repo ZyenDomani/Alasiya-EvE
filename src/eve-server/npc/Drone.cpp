@@ -39,7 +39,7 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
   m_AI(new DroneAIMgr(this))
 {
     assert (m_AI != nullptr);
-    
+
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
@@ -185,7 +185,6 @@ PyDict* Drone::MakeSlimItem() {
 void Drone::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     uint8 mode = DSTBALL_STOP;
     if (m_destiny->IsWarping())
         mode = DSTBALL_WARP;
@@ -204,9 +203,8 @@ void Drone::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsFree | IsInteractive;
+        head.flags = IsFree;
     into.Append( head );
-
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
@@ -214,7 +212,6 @@ void Drone::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-
     DataSector data;
         data.maxVelocity = m_destiny->GetMaxVelocity();
         data.velocity_x = m_destiny->GetVelocity().x;
@@ -222,45 +219,51 @@ void Drone::EncodeDestiny( Buffer& into )
         data.velocity_z = m_destiny->GetVelocity().z;
         data.inertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
-        into.Append( data );
-
-    if (mode == DSTBALL_WARP) {
-        GPoint target = m_destiny->GetTargetPoint();
-        DSTBALL_WARP_Struct warp;
-            warp.formationID = 0xFF;
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started
-            warp.x = target.x;
-            warp.y = target.y;
-            warp.z = target.z;
-            warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            warp.followRange = 0;
-            warp.followID = 0;  //this isnt right
-        into.Append( warp );
-    } else if (mode == DSTBALL_FOLLOW) {
-        DSTBALL_FOLLOW_Struct follow;
-            follow.followID = m_destiny->GetTargetID();
-            follow.followRange = m_destiny->GetFollowDistance();
-            follow.formationID = 0xFF;
-        into.Append( follow );
-    } else if (mode == DSTBALL_ORBIT) {
-        DSTBALL_ORBIT_Struct orbit;
-            orbit.followID = m_destiny->GetTargetID();
-            orbit.followRange = m_destiny->GetFollowDistance();
-            orbit.formationID = 0xFF;
-        into.Append( orbit );
-    } else if (mode == DSTBALL_GOTO) {
-        GPoint target = m_destiny->GetTargetPoint();
-        DSTBALL_GOTO_Struct go;
-            go.x = target.x;
-            go.y = target.y;
-            go.z = target.z;
-        into.Append( go );
-    } else {
-        DSTBALL_STOP_Struct main;
-            main.formationID = 0xFF;
-        into.Append( main );
+    into.Append( data );
+    switch (mode) {
+        case DSTBALL_WARP: {
+            GPoint target = m_destiny->GetTargetPoint();
+            DSTBALL_WARP_Struct warp;
+                warp.formationID = 0xFF;
+                warp.x = target.x;
+                warp.y = target.y;
+                warp.z = target.z;
+                warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                // warp timing.  see Ship::EncodeDestiny() for notes/updates
+                warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+                warp.followRange = 0;   //this isnt right
+                warp.followID = 0;  //this isnt right
+            into.Append( warp );
+        }  break;
+        case DSTBALL_FOLLOW: {
+            DSTBALL_FOLLOW_Struct follow;
+                follow.followID = m_destiny->GetTargetID();
+                follow.followRange = m_destiny->GetFollowDistance();
+                follow.formationID = 0xFF;
+            into.Append( follow );
+        }  break;
+        case DSTBALL_ORBIT: {
+            DSTBALL_ORBIT_Struct orbit;
+                orbit.followID = m_destiny->GetTargetID();
+                orbit.followRange = m_destiny->GetFollowDistance();
+                orbit.formationID = 0xFF;
+            into.Append( orbit );
+        }  break;
+        case DSTBALL_GOTO: {
+            GPoint target = m_destiny->GetTargetPoint();
+            DSTBALL_GOTO_Struct go;
+                go.formationID = 0xFF;
+                go.x = target.x;
+                go.y = target.y;
+                go.z = target.z;
+            into.Append( go );
+        }  break;
+        default: {
+            DSTBALL_STOP_Struct main;
+                main.formationID = 0xFF;
+            into.Append( main );
+        } break;
     }
-
     _log(SE__DESTINY, "Drone::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
 

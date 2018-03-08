@@ -29,17 +29,6 @@
 
 namespace Destiny {
 
-/** @note  this file MUST use packed data.
- * client will not recognize it with byte-ordered padding
- * (error: malformed packet)
- */
-#pragma pack(1)
-
-struct AddBall_header {
-    uint8 packet_type;  /* 0 = full state, 1 = balls */
-    uint32 eventStamp;  /* statestamp */
-};
-
 enum BallMode {
     DSTBALL_GOTO        = 0,    // Also used for AlignTo
     DSTBALL_FOLLOW      = 1,
@@ -49,7 +38,7 @@ enum BallMode {
     DSTBALL_MISSILE     = 5,
     DSTBALL_MUSHROOM    = 6,    //Expanding gravity wall
     DSTBALL_BOID        = 7,    //Swarm like behavior
-    DSTBALL_TROLL       = 8,    //used for ejected cans. Free ball that will become fixed after a while.
+    DSTBALL_TROLL       = 8,    //used for jetcans and wrecks (only?). Free ball that will become fixed after a while.
     DSTBALL_MINIBALL    = 9,
     DSTBALL_FIELD       = 10,    //Force field ball
     DSTBALL_RIGID       = 11,   //A ball that will never move, stations, etc..
@@ -59,18 +48,29 @@ enum BallMode {
 static const uint8 MAX_DSTBALL = DSTBALL_FORMATION;
 
 enum BallFlag {
-    IsFree = 0x01,          // set if ball is free to move, has extra BallData
-    IsGlobal = 0x02,        // set if ball should be visible from all
-    IsMassive = 0x04,       // set if ball is solid
-    IsInteractive = 0x08,   // set if ball is interactive - i.e. piloted ships
-    IsMoribund = 0x10,      // set if ball is dying.. this is a rough guess..
-    HasMiniBalls = 0x40,    // if set, the client expects mini balls
+    IsFree          = 0x01,   // ball is free to move, has DataSector
+    IsGlobal        = 0x02,   // ball is be visible system-wide (shows in overview like static items)
+    IsMassive       = 0x04,   // ball is solid (collidable)
+    IsInteractive   = 0x08,   // ball is interactive - piloted ships, containers in space
+    IsMoribund      = 0x10,   // ball is dying?  this is a guess.
+    HasMiniBalls    = 0x40,   // if set, the client expects mini balls...not sure *what* miniballs are....collision data maybe?
 };
 
-/**
- * a orbital asteroid entity has flags IsFree | IsMassive
+/** @note  this file MUST use packed data.
+ * client will not recognize it with byte-ordered padding
+ * (error: malformed packet)
  */
+#pragma pack(1)
 
+struct AddBall_header {
+    uint8 packet_type;  /* 0 = full state, 1 = balls */
+    uint32 stamp;  /* statestamp */
+};
+
+struct NameSector {
+    uint8  name_len;        //in 16 bit increments
+    uint16 name[0];         //utf16
+};
 
 struct BallHeader {
     int64 entityID;
@@ -111,11 +111,6 @@ struct MiniBall {
 struct MiniBallList {
     uint16 count;
     MiniBall balls[0];
-};
-
-struct NameStruct {
-    uint8  name_len;        //in 16 bit increments
-    uint16 name[0];         //utf16
 };
 
 struct DSTBALL_GOTO_Struct {

@@ -123,7 +123,6 @@ void SystemEntity::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsGlobal;
     into.Append( head );
-
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
@@ -260,9 +259,6 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
         head.y = y();
         head.z = z();
         head.radius = m_radius;
-    if (m_self->groupID() == EVEDB::invGroups::Sun)
-        head.flags = IsGlobal | IsMassive;
-    else
         head.flags = IsGlobal;
     into.Append( head );
     DSTBALL_RIGID_Struct main;
@@ -396,16 +392,9 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive;
-        into.Append( head );
-    MassSector mass;
-        mass.mass = 10000000000;    // as seen in packets
-        mass.cloak = 0;
-        mass.harmonic = m_harmonic;
-        mass.corporationID = m_corpID;
-        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
-    into.Append( mass );
-    DSTBALL_FIELD_Struct main;
+        head.flags = 0;
+    into.Append( head );
+    DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -447,7 +436,6 @@ ObjectSystemEntity::~ObjectSystemEntity()
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
@@ -455,7 +443,7 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive | IsInteractive;
+        head.flags = IsMassive;
     into.Append( head );
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
@@ -553,7 +541,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         head.y = y();
         head.z = z();
         head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
-        into.Append( head );
+    into.Append( head );
     MassSector mass;
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
@@ -561,9 +549,15 @@ void FieldSE::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DSTBALL_FIELD_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
+    if (head.mode == DSTBALL_FIELD) {
+        DSTBALL_FIELD_Struct main;
+            main.formationID = 0xFF;
+        into.Append( main );
+    } else if (head.mode == DSTBALL_STOP) {
+        DSTBALL_STOP_Struct main;
+            main.formationID = 0xFF;
+        into.Append( main );
+    }
 
     _log(SE__DESTINY, "FSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }
@@ -616,7 +610,6 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
 void DynamicSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     BallHeader head;
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_STOP;
@@ -633,6 +626,17 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
+    DataSector data;
+        data.inertia = m_destiny->GetInertia();
+        data.maxVelocity = m_destiny->GetMaxVelocity();
+        data.velocity_x = m_destiny->GetVelocity().x;
+        data.velocity_y = m_destiny->GetVelocity().y;
+        data.velocity_z = m_destiny->GetVelocity().z;
+        data.speedfraction = m_destiny->GetSpeedFraction();
+    into.Append( data );
+    DSTBALL_STOP_Struct main;
+        main.formationID = 0xFF;
+    into.Append( main );
 
     _log(SE__DESTINY, "DSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
 }

@@ -145,7 +145,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         mass.corporationID = -1;
         mass.allianceID = -1;
     into.Append( mass );
-    DSTBALL_FIELD_Struct main;
+    DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -171,10 +171,9 @@ WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemMa
     m_wormholeSize = (WormHole::Size::Full /10);
     // just guessing here....
     m_expiryDate = Win32TimeNow() + Win32Time_Day;
-    // no clue where to find this info yet.  26, 16, 253   << client graphic file #
-    m_nebulaType = 26;
+    m_nebulaType = 11785;  // data found in eveGraphics table.  yes.  11781 - 11786 (class 1-6)  -3715 doesnt work
     // no clue what this is...may not be used.  seen 33, 263, 27 in logs
-    m_dunSpawnID = 33;
+    m_dunSpawnID = 0;
 
 }
 
@@ -197,7 +196,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
         mass.corporationID = -1;
         mass.allianceID = -1;
     into.Append( mass );
-    DSTBALL_FIELD_Struct main;
+    DSTBALL_STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
     _log(SE__DESTINY, "WormholeSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);

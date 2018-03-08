@@ -398,6 +398,7 @@ bool SystemBubble::InBubble(const GPoint& pt, bool inWarp/*false*/) const
 void SystemBubble::PrintEntityList() {
     bool found = false;
     for (auto cur : m_dynamicEntities) {
+        found = false;
         if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
         if (cur.second->IsShipSE())
@@ -406,38 +407,54 @@ void SystemBubble::PrintEntityList() {
             } else {
                 sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Empty Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             }
-        if (cur.second->IsNPCSE())
+        if (cur.second->IsNPCSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsJumpBridgeSE())
+        }
+        if (cur.second->IsJumpBridgeSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is JumpBridge.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsTCUSE())
+        }
+        if (cur.second->IsTCUSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is TCU.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsCOSE())
+        }
+        if (cur.second->IsCOSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Customs Office.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsSBUSE())
+        }
+        if (cur.second->IsSBUSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is SBU.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsTowerSE())
+        }
+        if (cur.second->IsTowerSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Tower.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsPOSSE() and !found)
+        }
+        if (cur.second->IsPOSSE() and !found) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is other POS.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsContainerSE())
+        }
+        if (cur.second->IsContainerSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Container.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsWreckSE())
+        }
+        if (cur.second->IsWreckSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Wreck.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsOutpostSE())
+        }
+        if (cur.second->IsOutpostSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Outpost.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsAsteroidSE())
+        }
+        if (cur.second->IsAsteroidSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Asteroid.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsDeployableSE())
+        }
+        if (cur.second->IsDeployableSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Deployable.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsStaticEntity() and !found)
+        }
+        if (cur.second->IsStaticEntity() and !found) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Static.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsItemEntity() and !found)
+        }
+        if (cur.second->IsItemEntity() and !found) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Item.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsObjectEntity() and !found)
+        }
+        if (cur.second->IsObjectEntity() and !found) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Object.", cur.second->GetName(), cur.second->GetID() ); found = true;
-        if (cur.second->IsDynamicEntity() and !found)
+        }
+        if (cur.second->IsDynamicEntity() and !found) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Dynamic.", cur.second->GetName(), cur.second->GetID() ); found = true;
+        }
         if (!found)
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is None of the Above.", cur.second->GetName(), cur.second->GetID() );
     }
@@ -460,10 +477,10 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
 
     Destiny::AddBall_header head;
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.eventStamp = sEntityList.GetStamp();
+        head.stamp = sEntityList.GetStamp();
     destinyBuffer->Append(head);
 
-     AddBalls addballs;
+    AddBalls addballs;
     addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
@@ -507,7 +524,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
 
 	Destiny::AddBall_header head;
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.eventStamp = sEntityList.GetStamp();
+        head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append(head);
 
      AddBalls2 addballs2;
@@ -558,7 +575,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	//create AddBalls header
 	Destiny::AddBall_header head;
         head.packet_type = 1;   // 0 = full state   1 = balls
-        head.eventStamp = sEntityList.GetStamp();
+        head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append( head );
 
 	 AddBalls addballs;

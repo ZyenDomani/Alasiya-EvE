@@ -93,7 +93,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive;
+        head.flags = 0;
     into.Append( head );
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;

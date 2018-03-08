@@ -691,14 +691,15 @@ void StructureSE::EncodeDestiny( Buffer& into )
         head.flags = IsGlobal /*| HasMiniBalls*/;
     } else if (m_tower) {
         head.mode = DSTBALL_STOP;
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0)/* | HasMiniBalls*/;
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0)/*HasMiniBalls*/;
     } else {
         head.mode = DSTBALL_RIGID;
         //TODO check for miniballs and add here if found.
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : IsMassive) /*| IsInteractive | HasMiniBalls*/;
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0/*IsMassive*/) /*HasMiniBalls*/;
     }
     into.Append( head );
 
+    /** @todo these may need more work....  */
     if (m_tcu or m_tower) {
         MassSector mass;
             mass.cloak = 0;
@@ -732,22 +733,28 @@ void StructureSE::EncodeDestiny( Buffer& into )
         into.Append( miniball );
         miniball.clear();
     }
-                                    [MiniBall]
-                                      [Radius: 963.8593]
-                                      [Offset: (0, -2302, 1)]
-                                    [MiniBall]
-                                      [Radius: 1166.27]
-                                      [Offset: (0, 1298, 1)]
-                                    [MiniBall]
-                                      [Radius: 876.2357]
-                                      [Offset: (0, -502, 1)]
-                                    [MiniBall]
-                                      [Radius: 796.5781]
-                                      [Offset: (0, 2598, 1)]
-                                      */
-    DSTBALL_RIGID_Struct main;
-        main.formationID = 0xFF;
-    into.Append( main );
+    [MiniBall]
+        [Radius: 963.8593]
+        [Offset: (0, -2302, 1)]
+    [MiniBall]
+        [Radius: 1166.27]
+        [Offset: (0, 1298, 1)]
+    [MiniBall]
+        [Radius: 876.2357]
+        [Offset: (0, -502, 1)]
+    [MiniBall]
+        [Radius: 796.5781]
+        [Offset: (0, 2598, 1)]
+    */
+    if (head.mode == DSTBALL_RIGID) {
+        DSTBALL_RIGID_Struct main;
+            main.formationID = 0xFF;
+        into.Append( main );
+    } else if (head.mode == DSTBALL_STOP) {
+        DSTBALL_STOP_Struct main;
+            main.formationID = 0xFF;
+        into.Append( main );
+    }
 
     _log(SE__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
     _log(POS__DESTINY, "StructureSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);

@@ -287,33 +287,31 @@ void NPCAIMgr::Process() {
 
 void NPCAIMgr::WarpOut()
 {
+    m_warpOutTimer.Disable();
+
     if (m_state == NPCAI::State::WarpOut) {
-        // make error for this being called again.  multiple calls or failure to reset state.
         m_state = NPCAI::State::Idle;
-        m_warpOutTimer.Disable();
         return;
     }
 
     m_state = NPCAI::State::WarpOut;
-    m_warpOutTimer.Disable();
+    SystemManager* pSys = m_npc->SystemMgr();
 
     /** @todo  eventually, this will check with anomaly mgr for possible npc hideouts in system
      * based on npc faction, system, players in system, players in bubble, and *more later*
      * to determine a warpto target for this npc, or this group
      *
-     * m_npc->SystemMgr()->GetAnomMgr();
-     *
-     *
      * for now, if there are players in system, just warp to another belt.
      */
 
     // if there are no players in this system, avoid using proc tics on npcs
-    if (m_npc->SystemMgr()->PlayerCount()) {
-        uint32 newBeltID = m_npc->SystemMgr()->GetRandBeltID();
+    if (pSys->PlayerCount()) {
+        // pSys->GetAnomMgr();
+        uint32 newBeltID = pSys->GetRandBeltID();
         if (newBeltID == sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()))
-            newBeltID = m_npc->SystemMgr()->GetRandBeltID();
+            newBeltID = pSys->GetRandBeltID();
 
-        SystemEntity* newSE = m_npc->SystemMgr()->GetSE(newBeltID);
+        SystemEntity* newSE = pSys->GetSE(newBeltID);
         m_destiny->WarpTo(newSE->GetPosition());
         m_npc->GetSpawnMgr()->MoveSpawn(m_npc, sBubbleMgr.FindBubble(newSE));
     }
@@ -326,6 +324,11 @@ void NPCAIMgr::SetWander()
                 m_npc->GetName(), m_npc->GetID(), m_sightRange);
         m_isWandering = true;
     }
+
+    SystemBubble* pBubble = m_npc->SysBubble();
+    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
+        return; //disallow warpout
+
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
         SystemEntity* pSE = m_npc->SysBubble()->GetRandomEntity();
@@ -366,6 +369,9 @@ void NPCAIMgr::SetIdle() {
     m_warpScramblerTimer.Disable();
     m_shieldBoosterTimer.Disable();
 
+    SystemBubble* pBubble = m_npc->SysBubble();
+    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
+        return; //disallow warpout by NOT setting timer.
     if (sConfig.npc.WarpOut > 1)
         m_warpOutTimer.Start(sConfig.npc.WarpOut *1000); // s to ms
 }

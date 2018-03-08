@@ -1118,7 +1118,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     pInventory->RemoveItem(iRef);
 
     if (m_pilot == nullptr)
@@ -1649,14 +1649,14 @@ void Ship::EncodeDestiny( Buffer& into ) {
             head.flags = IsInteractive | IsFree;
         else
             head.flags = IsFree;
-        into.Append( head );
+    into.Append( head );
     MassSector mass;
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
-        into.Append( mass );
+    into.Append( mass );
     DataSector data;
         data.inertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
@@ -1664,47 +1664,54 @@ void Ship::EncodeDestiny( Buffer& into ) {
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-        into.Append( data );
-    if (mode == DSTBALL_WARP) {
-        GPoint target = m_destiny->GetTargetPoint();
-        DSTBALL_WARP_Struct warp;
-            warp.formationID = 0xFF;
-            warp.x = target.x;
-            warp.y = target.y;
-            warp.z = target.z;
-            warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
-            //  warp timing.  wip
-            warp.effectStamp = -1; // m_destiny->GetStateStamp();   //timestamp when warp started...not working right yet.
-            warp.followRange = 0;  //this isnt right.  server sends -4616189618054758400 when warp starts.  not sure of computation used for other values (when ship in warp)
-            warp.followID = 0;  //this isnt right  server sends 4669471951536783360 when warp starts or when sending AddBalls.  0 otherwise
-        into.Append( warp );
-    } else if (mode == DSTBALL_FOLLOW) {
-        DSTBALL_FOLLOW_Struct follow;
-            follow.followID = m_destiny->GetTargetID();
-            follow.followRange = m_destiny->GetFollowDistance();
-            follow.formationID = 0xFF;
-        into.Append( follow );
-    } else if (mode == DSTBALL_ORBIT) {
-        DSTBALL_ORBIT_Struct orbit;
-            orbit.followID = m_destiny->GetTargetID();
-            orbit.followRange = m_destiny->GetFollowDistance();
-            orbit.formationID = 0xFF;
-        into.Append( orbit );
-    } else if (mode == DSTBALL_GOTO) {
-        GPoint target = m_destiny->GetTargetPoint();
-        DSTBALL_GOTO_Struct go;
-            go.x = target.x;
-            go.y = target.y;
-            go.z = target.z;
-        into.Append( go );
-    } else {
-        DSTBALL_STOP_Struct main;
-            main.formationID = 0xFF;
-        into.Append( main );
+    into.Append( data );
+    switch (mode) {
+        case DSTBALL_WARP: {
+            GPoint target = m_destiny->GetTargetPoint();
+            DSTBALL_WARP_Struct warp;
+                warp.formationID = 0xFF;
+                warp.x = target.x;
+                warp.y = target.y;
+                warp.z = target.z;
+                warp.ownerID = m_destiny->GetWarpSpeed();       //ship warp speed x10  (dont ask...this is what it is...more dumb ccp shit)
+                // warp timing.  see Ship::EncodeDestiny() for notes/updates
+                warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
+                warp.followRange = 0;   //this isnt right
+                warp.followID = 0;  //this isnt right
+            into.Append( warp );
+        }  break;
+        case DSTBALL_FOLLOW: {
+            DSTBALL_FOLLOW_Struct follow;
+                follow.followID = m_destiny->GetTargetID();
+                follow.followRange = m_destiny->GetFollowDistance();
+                follow.formationID = 0xFF;
+            into.Append( follow );
+        }  break;
+        case DSTBALL_ORBIT: {
+            DSTBALL_ORBIT_Struct orbit;
+                orbit.followID = m_destiny->GetTargetID();
+                orbit.followRange = m_destiny->GetFollowDistance();
+                orbit.formationID = 0xFF;
+            into.Append( orbit );
+        }  break;
+        case DSTBALL_GOTO: {
+            GPoint target = m_destiny->GetTargetPoint();
+            DSTBALL_GOTO_Struct go;
+                go.formationID = 0xFF;
+                go.x = target.x;
+                go.y = target.y;
+                go.z = target.z;
+            into.Append( go );
+        }  break;
+        default: {
+            DSTBALL_STOP_Struct main;
+                main.formationID = 0xFF;
+            into.Append( main );
+        } break;
     }
 
     std::string modeStr = "Goto";
-    switch (head.mode) {
+    switch (mode) {
         case 1: modeStr = "Follow"; break;
         case 2: modeStr = "Stop"; break;
         case 3: modeStr = "Warp"; break;

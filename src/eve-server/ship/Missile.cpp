@@ -157,7 +157,6 @@ void Missile::Process() {
 void Missile::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     BallHeader head;
         head.entityID = GetID();
         head.mode = DSTBALL_MISSILE;

@@ -250,7 +250,6 @@ void ContainerSE::AnchorContainer()
 void ContainerSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     BallHeader head;
         head.entityID = GetID();
         head.radius = GetRadius();
@@ -258,7 +257,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         head.y = y();
         head.z = z();
         head.mode = DSTBALL_TROLL;
-        head.flags = IsInteractive;
+        head.flags = IsFree | IsInteractive;
     into.Append( head );
     MassSector mass;
         mass.mass = m_self->type().mass();
@@ -267,6 +266,14 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
+    DataSector data;
+        data.inertia = 1;
+        data.maxVelocity = 1;
+        data.velocity_x = 0;
+        data.velocity_y = 0;
+        data.velocity_z = 0;
+        data.speedfraction = 1;
+    into.Append( data );
     DSTBALL_TROLL_Struct troll;
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
@@ -464,15 +471,14 @@ void WreckSE::Abandon()
 void WreckSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-
     BallHeader head;
         head.entityID = GetID();
-        head.mode = DSTBALL_TROLL;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsInteractive;
+        head.mode = DSTBALL_TROLL;
+        head.flags = IsFree | IsInteractive;
     into.Append( head );
     MassSector mass;
         mass.mass = m_self->type().mass();
@@ -481,7 +487,14 @@ void WreckSE::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-
+    DataSector data;
+        data.inertia = 1;
+        data.maxVelocity = 1;
+        data.velocity_x = 0;
+        data.velocity_y = 0;
+        data.velocity_z = 0;
+        data.speedfraction = 1;
+    into.Append( data );
     DSTBALL_TROLL_Struct troll;
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();

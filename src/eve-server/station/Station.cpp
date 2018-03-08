@@ -259,9 +259,8 @@ void StationSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = /*HasMiniBalls |*/ IsGlobal;
+        head.flags = /*HasMiniBalls |*/ IsGlobal|IsMassive;
     into.Append( head );
-
     DSTBALL_RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
