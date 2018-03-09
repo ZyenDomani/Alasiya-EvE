@@ -138,7 +138,6 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     Inventory* pInv = call.client->SystemMgr()->GetStationFromInventory(m_locationID)->GetMyInventory();
     ShipItem* pShip(nullptr);
     InventoryItemRef iRef;
-    float fraction = 1.0;
     double cost = 0, total = 0;
     uint32 damage = 0, hp = 0, delta = 0;
     PyList::const_iterator itr = args.itemIDs->begin();
@@ -172,17 +171,20 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
             /** @todo  AttrRepairCostPercent = 396,  */
             cost   = (iRef->type().basePrice() * 0.00000125);
         }
-        delta = hp - damage;
-        total += delta * cost;
+        if (damage > 0) {
+            delta = hp - damage;
+            total += delta * cost;
+        }
     }
 
+    float fraction = 1.0;
     if (args.iskAmount < total)
         fraction = total / args.iskAmount;
 
     /** more shit to check for and add as required...
      * NotEnoughRepairMaterialToFinishAllRepairs
      * NotEnoughRepairMaterialToFinishAllRepairsBody'}(u'There is not enough unallocated {typeName} left to initiate repairs on this module.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
-     * 
+     *
      *{'messageKey': 'RepairModuleNotDamaged', 'dataID': 17882542, 'suppressable': False, 'bodyID': 259175, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1492}
      * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
      *

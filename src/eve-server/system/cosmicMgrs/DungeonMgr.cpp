@@ -335,7 +335,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         uint8 divisor = 10;
         if (size < 100)
             divisor = 100;
-        float chance = (100 /size) /divisor;
+        float chance = (100.0 /size) /divisor;
         if (chance < 0.01)
             chance = 0.01;
         std::unordered_multimap<float, uint16> roidTypes;

@@ -370,7 +370,7 @@ uint8 AnomalyMgr::GetDungeonType()
     }
     ++m_Anoms; // still not sure how im gonna use these
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetDungeonType() - Returning %s(%u)", sDunDataMgr.GetDungeonType(typeID), typeID);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetDungeonType() - Returning %s(%u)", sDunDataMgr.GetDungeonType(typeID).c_str(), typeID);
     return typeID;
 }
 

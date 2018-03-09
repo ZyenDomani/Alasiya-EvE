@@ -103,7 +103,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     }
 
     //this seems a little strange, but this is how it works...
-    if (ballhead->flags &IsFree) {
+    if (ballhead->flags & IsFree) {
         const DataSector *shipchunk = (const DataSector *) data;
         data += sizeof(DataSector);
         len -= sizeof(DataSector);
@@ -223,32 +223,32 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
 std::string GetFlagNames(uint8 flags)
 {
     std::string res = "";
-    if (flags &IsFree) {
+    if (flags & IsFree) {
         res += "IsFree";
         if (flags > IsFree)
             res += ", ";
     }
-    if (flags &IsGlobal) {
+    if (flags & IsGlobal) {
         res += "IsGlobal";
         if (flags > IsGlobal)
             res += ", ";
     }
-    if (flags &IsMassive) {
+    if (flags & IsMassive) {
         res += "IsMassive";
         if (flags > IsMassive)
             res += ", ";
     }
-    if (flags &IsInteractive) {
+    if (flags & IsInteractive) {
         res += "IsInteractive";
         if (flags > IsInteractive)
             res += ", ";
     }
-    if (flags &IsMoribund) {
+    if (flags & IsMoribund) {
         res += "IsMoribund";
         if (flags > IsMoribund)
             res += ", ";
     }
-    if (flags &HasMiniBalls)
+    if (flags & HasMiniBalls)
         res += "HasMiniBalls";
 
     res += "(";
