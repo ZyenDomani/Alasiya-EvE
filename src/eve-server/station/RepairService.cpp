@@ -134,47 +134,28 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      *  - this needs to be checked against total repair amount, and use fraction to reduce damage for all items in list
      */
 
-    std::vector<InventoryItemRef> itemRefVec;
-    Inventory* pInv = call.client->SystemMgr()->GetStationFromInventory(m_locationID)->GetMyInventory();
-    ShipItem* pShip(nullptr);
     InventoryItemRef iRef;
     double cost = 0, total = 0;
-    uint32 damage = 0, hp = 0, delta = 0;
+    uint32 damage = 0;
+    std::vector<InventoryItemRef> itemRefVec;
     PyList::const_iterator itr = args.itemIDs->begin();
     for (; itr != args.itemIDs->end(); ++itr) {
-        hp = 0;
+        iRef = sItemFactory.GetItem((*itr)->AsInt()->value());
+        if (iRef.get() == nullptr)
+            continue;
+
         cost = 0;
-        delta = 0;
-        damage = 0;
-        iRef = pInv->GetByID((*itr)->AsInt()->value());
-        if (iRef.get() == nullptr) {
-            iRef = sItemFactory.GetItem((*itr)->AsInt()->value());
-            if (iRef.get() == nullptr)
-                continue;
-        }
-        hp         = iRef->GetAttribute(AttrHP).get_int();
-        damage     = iRef->GetAttribute(AttrDamage).get_int();
+        damage = iRef->GetAttribute(AttrDamage).get_int();
+        itemRefVec.push_back(iRef);
         if (iRef->IsShipItem()) {
-            if ((pShip != nullptr) and (pShip != iRef->GetShipItem())) {
-                codelog(ITEM__ERROR, "Got a new ship item here.  Rework this code!");
-                return PyStatic.NewNone();
-            }
-            pShip = iRef->GetShipItem();
-            hp     += iRef->GetAttribute(AttrArmorHP).get_int();
             damage += iRef->GetAttribute(AttrArmorDamage).get_int();
             // ship is (basePrice)*7.5e-10
-            /** @todo  AttrRepairCostPercent = 396,  */
-            cost   = (iRef->type().basePrice() * 0.00000000075);
+            cost = (iRef->type().basePrice() * 0.00000000075);
         } else {
-            itemRefVec.push_back(iRef);
             // modules are (basePrice)*1.25e-6
-            /** @todo  AttrRepairCostPercent = 396,  */
-            cost   = (iRef->type().basePrice() * 0.00000125);
+            cost = (iRef->type().basePrice() * 0.00000125);
         }
-        if (damage > 0) {
-            delta = hp - damage;
-            total += delta * cost;
-        }
+        total += damage * cost;
     }
 
     float fraction = 1.0;
@@ -189,8 +170,48 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
      *
      */
-    pShip->RepairShip(fraction);
-    pShip->RepairModules(itemRefVec, fraction);
+
+    if (fraction > 1.0)
+        fraction = 1;
+    EvilNumber toRepair = EvilZero, curDamage = EvilZero;
+    for (auto cur : itemRefVec) {
+        if (cur->IsShipItem()) {
+            if (fraction == 1) {
+                cur->SetAttribute(AttrDamage, EvilZero);
+                cur->SetAttribute(AttrArmorDamage, EvilZero);
+                continue;
+            }
+
+            uint32 cHull =  cur->GetAttribute(AttrDamage).get_int();
+            uint32 cArmor =  cur->GetAttribute(AttrArmorDamage).get_int();
+            curDamage = cHull + cArmor;
+            toRepair = curDamage * fraction;
+            // this will repair hull first, then armor
+            if (toRepair > cHull) {
+                toRepair -= cHull;
+                cur->SetAttribute(AttrDamage, EvilZero);
+                if (toRepair >= cArmor) {
+                    cur->SetAttribute(AttrArmorDamage, EvilZero);
+                } else {
+                    toRepair = cArmor - toRepair;
+                    cur->SetAttribute(AttrArmorDamage, toRepair);
+                }
+            } else
+                cur->SetAttribute(AttrDamage, toRepair);
+        } else {
+            if (fraction == 1) {
+                cur->SetAttribute(AttrDamage, EvilZero);
+                continue;
+            }
+            if ((cur->GetAttribute(AttrDamage).get_float() / cur->GetAttribute(AttrHP).get_float()) > fraction)
+                toRepair = cur->GetAttribute(AttrHP) * fraction;
+            else
+                toRepair = EvilZero;
+            if (toRepair <= EvilZero)
+                toRepair = EvilZero;
+            cur->SetAttribute(AttrDamage, toRepair);
+        }
+    }
 
     return PyStatic.NewNone();
 }
@@ -321,7 +342,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
         pList = dictItr->second->AsList();
         if (pList != nullptr) {
             // Iterate through list.
-            for (listItr = pList->begin(); listItr != pList->end(); listItr++) {
+            for (listItr = pList->begin(); listItr != pList->end(); ++listItr) {
                 // List is tuples of itemID, LocationID pairs.
                 tuple = (*listItr)->AsTuple();
                 if (tuple != nullptr) {
