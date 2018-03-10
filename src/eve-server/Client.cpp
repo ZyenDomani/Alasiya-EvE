@@ -148,22 +148,23 @@ Client::~Client() {
         if (pShipSE != nullptr)
             WarpOut();
 
-        // remove ship and char memory objects from running server
-        m_system->RemoveClient(this, IsDocked(), true);
-
-        // char logout removed fleet data, if any
-        m_char->LogOut();
-        // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
-        m_ship->LogOut();
-
         if (!sConsole.IsDbError()) {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
             ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
         }
+
         // LSC logout
-        if (!sConsole.IsShutdown())
+        if (!sConsole.IsShutdown()) {
             for (auto cur : m_channels)
                 cur->LeaveChannel(this);
+            // remove ship and char memory objects from running server
+            m_system->RemoveClient(this, IsDocked(), true);
+            // char logout removed fleet data, if any
+            m_char->LogOut();
+            // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
+            m_ship->LogOut();
+        }
+
         m_services.ClearBoundObjects(this);
 
         m_TS = nullptr;
