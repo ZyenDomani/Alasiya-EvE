@@ -147,6 +147,8 @@ std::string DungeonDataMgr::GetDungeonType(int8 typeID)
         case Dungeon::Type::Anomaly:        return "Anomaly";
         case Dungeon::Type::Unrated:        return "Unrated";
         case Dungeon::Type::Escalation:     return "Escalation";
+        case Dungeon::Type::Wormhole:       return "Wormhole";
+        default:                            return "Invalid";
     }
 }
 

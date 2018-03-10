@@ -15,7 +15,7 @@
 
 namespace Spawn {
 
-    // these class names correspond to the "type" of spawn data found in npcSpawnClass (no such table yet...will be new name for roidRatSpawnClass)
+    // these class names correspond to the "type" of spawn data found in npcSpawnClass table
     namespace Class {
         enum {
             // belt and grav site spawns - grav rat class is system rat class +1

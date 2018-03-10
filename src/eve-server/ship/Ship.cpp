@@ -1212,6 +1212,7 @@ void ShipItem::UnloadAllModules()
     m_ModuleManager->UnloadAllModules();
 }
 
+// not used
 void ShipItem::RepairShip(float fraction)
 {
     if (fraction > 1)
@@ -1226,7 +1227,6 @@ void ShipItem::RepairShip(float fraction)
     uint32 cHull =  GetAttribute(AttrDamage).get_int();
     uint32 cArmor =  GetAttribute(AttrArmorDamage).get_int();
     uint32 damage = cHull + cArmor;
-
     EvilNumber amount = damage * fraction;
     // this will repair hull first, then armor
     if (amount > cHull) {
@@ -1243,11 +1243,11 @@ void ShipItem::RepairShip(float fraction)
 
 }
 
+// not used
 void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction)
 {
     /** @todo  this isnt right....needs update */
     EvilNumber amount = 0, damage = 0;
-    InventoryItem* pItem;
     for (auto cur : itemRefVec) {
         damage = cur->GetAttribute(AttrDamage);
         if (damage < 0.01)
