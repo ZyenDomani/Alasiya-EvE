@@ -165,10 +165,10 @@ void GenericModule::Online()
                 data.action = Effects::Action::dgmActInvalid;
                 data.srcRef = m_chargeRef;
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
-                sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
             }
             //if (m_shipRef->GetPilot()->IsLogin())
-                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+            //sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
     // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
@@ -279,6 +279,7 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
     }
 }
 
+// not used
 void GenericModule::Repair(EvilNumber amount)
 {
     if (GetAttribute(AttrDamage) > 0) {
