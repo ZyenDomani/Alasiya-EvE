@@ -369,6 +369,9 @@ bool Character::AlterBalance(double amount, uint8 type) {
     ac.ownerid = m_itemID;
     if (type == Account::CreditType::ISK) {
         m_charData.balance += amount;
+        // cap isk balance at one trillion
+        if (m_charData.balance > 1000000000000)
+            m_charData.balance = 1000000000000;
         ac.balance = m_charData.balance;
         ac.accountKey = "cash";
     } else if (type == Account::CreditType::AURUM) {
