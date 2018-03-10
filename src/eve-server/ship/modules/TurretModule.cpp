@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+#include "StatisticMgr.h"
 #include "ship/modules/TurretModule.h"
 #include "system/Damage.h"
 
@@ -38,6 +39,9 @@ void TurretModule::UnloadCharge()
 
 void TurretModule::ApplyDamage()
 {
+    // add data to StatisticMgr
+    sStatMgr.Increment(Stat::pcShots);
+
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
              m_modRef,
              m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),

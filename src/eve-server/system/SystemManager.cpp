@@ -26,7 +26,6 @@
 
 #include "Client.h"
 #include "EVEServerConfig.h"
-#include "Profile.h"
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "npc/NPC.h"

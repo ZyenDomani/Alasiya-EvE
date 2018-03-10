@@ -54,9 +54,9 @@ class Profile
 {
   public:
       Profile();
-      virtual ~Profile();
+      ~Profile();
 
-      void Init();
+      void Initialize();
 
       void AddTime(uint8 key, double value);
       void PrintProfile();
@@ -67,7 +67,6 @@ class Profile
       void GetRunTimes(std::vector< double >& container, double& h, double& l, double& a);
 
   private:
-
       std::vector<double> m_server;
       std::vector<double> m_functions;
       std::vector<double> m_db;

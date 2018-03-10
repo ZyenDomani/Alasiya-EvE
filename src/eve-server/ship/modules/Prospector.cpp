@@ -8,6 +8,7 @@
 
 
 #include "StaticDataMgr.h"
+#include "StatisticMgr.h"
 #include "ship/modules/Prospector.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
@@ -200,6 +201,9 @@ void Prospector::DropSalvage()
     }
     m_targetSE->SystemMgr()->RemoveEntity(m_targetSE);
     m_targetSE->GetSelf()->Delete();
+
+    // add data to StatisticMgr
+    sStatMgr.Increment(Stat::shipsSalvaged);
 }
 
 void Prospector::DropItems()

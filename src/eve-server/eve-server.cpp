@@ -28,7 +28,9 @@
 
 #include "EVEServerConfig.h"
 #include "NetService.h"
+// data managers
 #include "StaticDataMgr.h"
+#include "StatisticMgr.h"
 // account services
 #include "account/AccountService.h"
 #include "account/AuthService.h"
@@ -305,7 +307,7 @@ int main( int argc, char* argv[] )
         sLog.Error("     ServerConfig", "Live Server");
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Init();
+        sProfile.Initialize();
     } else
         sLog.Warning(" Server Profiling","Disabled.");
     if (sConfig.debug.SpawnTest)
@@ -464,12 +466,14 @@ int main( int argc, char* argv[] )
     /* create the FleetService singleton */
     sLog.Green("       ServerInit", "Starting Fleet Services");
     sFltSvc.Initialize(&pyServMgr);
-    /* create console command interperter singleton */
-    sLog.Green("       ServerInit", "Starting Console Manager");
-    sConsole.Initialize(&command_dispatcher);
     /* create the MarketMgr singleton */
     sLog.Green("       ServerInit", "Starting Market Manager");
     sMktMgr.Initialize();
+    sLog.Green("       ServerInit", "Starting Statistics Manager");
+    sStatMgr.Initialize();
+    /* create console command interperter singleton */
+    sLog.Green("       ServerInit", "Starting Console Manager");
+    sConsole.Initialize(&command_dispatcher);
     std::printf("\n");     // spacer
 
 
@@ -686,17 +690,9 @@ int main( int argc, char* argv[] )
     /* stop Image Server */
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
-    /* Close the entity list */
-    sEntityList.Close();
     /* Close the MarketMgr */
     sLog.Warning("   ServerShutdown", "Shutting down MarketMgr." );
     sMktMgr.Close();
-    sLog.Warning("   ServerShutdown", "Saving Items." );
-    /* Shut down the Item system */
-    if (!sConsole.IsDbError())
-        sItemFactory.SaveItems();
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    sItemFactory.Close();
     /* Close the service manager */
     pyServMgr.Close();
     /* Close the bulk data manager */
@@ -705,6 +701,18 @@ int main( int argc, char* argv[] )
     /* Close the static data manager */
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();
+    sStatMgr.Close();
+    /* Close the entity list */
+    sLog.Warning("   ServerShutdown", "Closing the Entity List." );
+    sEntityList.Close();
+    /* Shut down the Item system */
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    sLog.Warning("   ServerShutdown", "Saving Items." );
+    if (!sConsole.IsDbError())
+        sItemFactory.SaveItems();
+    sItemFactory.Close();
+    sLog.Warning("   ServerShutdown", "Closing the Bubble Manager." );
+    sBubbleMgr.clear();
     /* Close the command dispatcher */
     command_dispatcher.Close();
     /* Stop Console Command Interperter */

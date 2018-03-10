@@ -17,7 +17,6 @@
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
-#include "Profile.h"
 #include "PyServiceMgr.h"
 #include "StaticDataMgr.h"
 #include "system/SystemBubble.h"

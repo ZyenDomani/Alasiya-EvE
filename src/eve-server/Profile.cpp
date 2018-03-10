@@ -16,9 +16,9 @@ Profile::~Profile() {
     ClearAll();
 }
 
-void Profile::Init() {
+void Profile::Initialize() {
     ClearAll();
-    sLog.Blue( "Profiling Manager", "Profiling initialized." );
+    sLog.Blue( "  Profile Manager", "Profiling initialized." );
 }
 
 void Profile::AddTime(uint8 key, double value) {

@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+#include "StatisticMgr.h"
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "system/SystemManager.h"
@@ -797,4 +798,7 @@ void ActiveModule::LaunchMissile()
 
     // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
     m_targetSE->MissileLaunched(pMissile);
+
+    // add data to StatisticMgr
+    sStatMgr.Increment(Stat::pcMissiles);
 }

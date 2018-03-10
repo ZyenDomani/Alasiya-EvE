@@ -30,6 +30,7 @@
 #include "Container.h"
 #include "EVEServerConfig.h"
 #include "PyServiceMgr.h"
+#include "StatisticMgr.h"
 #include "account/AccountService.h"
 #include "character/Character.h"
 #include "fleet/FleetService.h"
@@ -690,6 +691,9 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     bounty *= sConfig.rates.npcBountyMultiply;
     if (bounty < 1)
         return;
+
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::npcBounties, bounty);
 
     std::string reason = "Bounty for killing a pirate in ";
     reason += pClient->GetSystemName();

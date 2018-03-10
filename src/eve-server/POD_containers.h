@@ -310,6 +310,18 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
     uint8 cbs;      // commander battleship
 };
 
+/* POD structure for statistic data */
+struct StatisticData {
+    uint16 span;        // 45.5d in minutes (max)
+    uint16 shipsSalvaged;
+    uint32 pcShots;
+    uint32 pcMissiles;
+    double pcBounties;
+    double npcBounties;
+    double oreMined;
+    double iskMarket;
+};
+
 
 /* POD structure for systems. */
 struct SystemData {

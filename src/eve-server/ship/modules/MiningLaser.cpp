@@ -11,6 +11,7 @@
 #include "eve-server.h"
 
 #include "PyServiceMgr.h"
+#include "StatisticMgr.h"
 #include "character/Character.h"
 #include "ship/Ship.h"
 #include "ship/modules/MiningLaser.h"
@@ -174,13 +175,13 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
 
-    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(flagCargoHold);
+    double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(m_holdFlag);
     if (remainingCargoVolume < cycleVol) {
         if (remainingCargoVolume > oreVolume)
             oreAmount = remainingCargoVolume /oreVolume;
         else
             oreAmount = 0;
-
+        /** @todo  check for other lasers running, and deactivate them also.  */
         // go straight to base class DeactivateCycle to reset module timer and checks
         //  passing abort=true here will negate the possibability of running a loop here and overfilling cargohold (elusive error)
         ActiveModule::DeactivateCycle(true);
@@ -234,6 +235,9 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
                 m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
             }
         }
+
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::oreMined, oreAmount);
 }
 
 /*{'messageKey': 'MiningCrystalDestroyed', 'dataID': 17883202, 'suppressable': False, 'bodyID': 259420, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1167}

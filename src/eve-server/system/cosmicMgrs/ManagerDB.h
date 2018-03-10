@@ -21,6 +21,11 @@ class ManagerDB {
 public:
     /* db methods for... */
 
+    /* statistic manager */
+    static void GetStatisticData(StatisticData& data);
+    static void SaveStatisticData(StatisticData& data);
+    static void UpdateStatisticData(StatisticData& data);
+
     /* data manager */
     static void GetOreBySSC(DBQueryResult& res);
     static void GetSkillList(DBQueryResult& res);
@@ -86,13 +91,7 @@ public:
     /* wormhole manager */
     static void GetWHSystemClass(DBQueryResult& res);
 
-
-protected:
-
-private:
-
 };
-
 
 
 #endif  // _EVEMU_SYSTEM_COSMICMGRS_MANAGERDB_H

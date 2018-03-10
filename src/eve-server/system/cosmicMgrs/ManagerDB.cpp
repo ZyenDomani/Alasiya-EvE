@@ -192,7 +192,7 @@ PyObject* ManagerDB::GetNPCDivisions() {
 }
 
 void ManagerDB::GetSalvageGroups(DBQueryResult& res) {
-    //`facSalvage` (`factionID`,`itemID`,`itemName`)
+    //facSalvage (factionID,itemID,itemName)
     if (!sDatabase.RunQuery(res, "SELECT factionID, itemID FROM facSalvage")) {
         codelog(DATABASE__ERROR, "Error in GetSalvageGroups query: %s", res.error.c_str());
         return;
@@ -410,7 +410,8 @@ uint32 ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)
     if (!sDatabase.RunQueryLID(err, uid,
         "INSERT INTO sysAsteroids (itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
         " VALUES ('%s', %u, %u, %u, %f, %f, %f, %f, %f)",
-                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z )) {
+                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z ))
+    {
         codelog(DATABASE__ERROR, "Failed to insert new asteroid entity: %s", err.c_str());
         return 0;
     }
@@ -552,7 +553,8 @@ void ManagerDB::GetDunGroupData(DBQueryResult& res)
     if (!sDatabase.RunQuery(res, "SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos"
         " FROM dunGroupData AS d"
         "  LEFT JOIN invTypes AS t ON d.itemTypeID = t.typeID"
-        "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" )) {
+        "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID" ))
+    {
         _log(DATABASE__ERROR, "Error in GetDunGroupData query: %s", res.error.c_str());
     }
 }
@@ -577,8 +579,7 @@ void ManagerDB::GetDunSpawnInfo(DBQueryResult& res)
 
 void ManagerDB::GetDunTemplates(DBQueryResult& res)
 {
-    if (!sDatabase.RunQuery(res,
-        "SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates"))
+    if (!sDatabase.RunQuery(res, "SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates"))
         _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
 }
 
@@ -589,7 +590,8 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
     if (!sDatabase.RunQuery(res,
         "SELECT systemID, state, dunTemplateID, dunExpiryTime, xpos, ypos, zpos"
         " FROM dunActive"   //Active Dungeons
-        " WHERE systemID = %u", systemID)) {
+        " WHERE systemID = %u", systemID))
+    {
         _log(DATABASE__ERROR, "Error in GetSavedDungeons query: %s", res.error.c_str());
         return false;
     }
@@ -619,9 +621,10 @@ void ManagerDB::SaveActiveDungeon(ActiveDungeon& dun)
         "INSERT INTO dunActive" //Active Dungeons
         " (systemID, dungeonID, state, dunTemplateID, dunExpiryTime, xpos, ypos, zpos)"
         " VALUES "
-        "(%u, %u, %u, %u, %" PRIu64 ", %f, %f, %f)",
-        dun.systemID, dun.dunItemID, dun.state, dun.dunTemplateID, dun.dunExpiryTime, dun.x, dun.y, dun.z )) {
-        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon");
+        "(%u, %u, %u, %u, %lli, %f, %f, %f)",
+        dun.systemID, dun.dunItemID, dun.state, dun.dunTemplateID, dun.dunExpiryTime, dun.x, dun.y, dun.z ))
+    {
+        _log(DATABASE__ERROR, "SaveActiveDungeon - unable to save dungeon: %s", err.c_str());
     }
 }
 
@@ -630,4 +633,32 @@ void ManagerDB::ClearDungeons()
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE 1");
     sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE 1");
+}
+
+/*
+ * SELECT timeStamp, timeSpan, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
+ * SELECT month, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticHistory
+*/
+void ManagerDB::GetStatisticData(StatisticData& data)
+{
+
+}
+
+void ManagerDB::SaveStatisticData(StatisticData& data)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO srvStatisticData"
+        " (timeStamp, timeSpan, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket)"
+        " VALUES "
+        "(%f, %u, %u, %u, %u, %f, %f, %f, %f)", GetFileTimeNow(),
+        data.span, data.pcShots, data.pcMissiles, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket ))
+    {
+        _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
+    }
+}
+
+void ManagerDB::UpdateStatisticData(StatisticData& data)
+{
+
 }

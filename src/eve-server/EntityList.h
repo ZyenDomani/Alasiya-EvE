@@ -94,6 +94,7 @@ public:
     uint32 GetStamp()                                   { return m_stamp; }
     bool IsTicActive()                                  { return m_stampTimer.Check(false); }
     void TicCompleted()                                 { ++m_stamp; }
+    uint32 GetMinutes()                                 { return m_minutes; }
 
     void Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const;
     void Broadcast(const PyAddress &dest, EVENotificationStream &noti) const;
@@ -129,6 +130,7 @@ protected:
 private:
     Timer m_stampTimer;
     Timer m_minutetimer;
+    Timer m_updateTimer;    // for data updates and dump to db
 
     std::vector<Client*> m_clients;
     std::set<int64> m_sessions;
@@ -137,7 +139,7 @@ private:
     std::vector<std::string> m_anomIDs;
 
     bool m_shipTracking;
-    
+
     uint32 m_npcs;
     uint32 m_stamp;
     uint32 m_minutes;

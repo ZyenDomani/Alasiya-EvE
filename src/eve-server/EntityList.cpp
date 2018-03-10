@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
@@ -43,7 +44,8 @@
 EntityList::EntityList()
 : m_services( nullptr ),
 m_stampTimer(0, true),
-m_minutetimer(60000)    // start minute timer
+m_updateTimer(sConfig.rates.WebUpdate * 60000), // change minutes to ms for timer),
+m_minutetimer(60000, true)    // start minute timer
 {
     m_systems.clear();
     m_clients.clear();
@@ -63,7 +65,7 @@ EntityList::~EntityList() {
 
 void EntityList::Initialize() {
     /* start the timer */
-    m_stampTimer.Start(1000);    // fudge the 1000ms a bit in hopes for more-accurate timing
+    m_stampTimer.Start(1000);
     m_clientSeedID = ServiceDB::SetClientSeed();
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
@@ -170,6 +172,8 @@ void EntityList::Process() {
             sWHMgr.Process();   // ~2m
             sMktMgr.Process();   // ~1h
             //sMktBotMgr.Process();  // 15m to 30m
+            if (m_updateTimer.Check())  // 15m
+                sConsole.UpdateStatus();
         }
 
         if (sConfig.debug.UseProfiling)
