@@ -48,6 +48,7 @@ class SystemBubble;
 class SystemManager;
 class WreckSE;
 class FieldSE;
+class ProbeSE;
 
 class StationSE;
 class StaticSystemEntity;
@@ -85,6 +86,7 @@ public:
 
     /* Process Calls - Overridden as needed in derived classes */
     virtual void                Process();
+    virtual void                ProcessTic()            { /* do nothing here */ }   // not used yet
 
     /* (Allan) the next two sections eliminate the overhead of RTTI static casting.  */
     /* class type pointer querys, grouped by base class.  public for anyone to access. */
@@ -121,6 +123,7 @@ public:
     virtual Sentry*             GetSentrySE()           { return nullptr; }
     virtual ModuleSE*           GetModuleSE()           { return nullptr; }
     virtual ReactorSE*          GetReactorSE()          { return nullptr; }
+    virtual ProbeSE*            GetProbeSE()            { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }
@@ -149,6 +152,7 @@ public:
     virtual bool                IsCelestialSE()         { return false; }
     virtual bool                IsContainerSE()         { return false; }
     virtual bool                IsFieldSE()             { return false; }
+    virtual bool                IsProbeSE()             { return false; }
     /* Object */
     virtual bool                IsObjectEntity()        { return false; }
     virtual bool                IsSentrySE()            { return false; }
@@ -212,7 +216,7 @@ public:
 
     /* public generic functions handled in base class. */
     void                        DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner);
-    void                        AwardSecurityStatus(InventoryItemRef m_self, Character* pChar);
+    void                        AwardSecurityStatus(InventoryItemRef iRef, Character* pChar);
     void                        SendDamageStateChanged(SystemEntity* source);
     bool                        ApplyDamage(Damage &d); /* This method is defined in Damage.cpp */
     double                      DistanceTo2(const SystemEntity* other);
@@ -230,6 +234,7 @@ public:
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
+    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks and probes (so far...)
 
     /* virtual functions to be overridden in derived classes */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
@@ -240,7 +245,6 @@ public:
     virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
-    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks (so far...)
 
 protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */

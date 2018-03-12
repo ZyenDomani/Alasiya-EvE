@@ -1605,7 +1605,7 @@ void Ship::DamageRandModule(float chance)
 void Ship::PayInsurance() {
     std::string reason = "Insurance payment for loss of ship ";
     reason += m_self->itemName();
-    AccountService::TranserFunds(ownerSCC, m_self->ownerID(), m_db.GetShipInsurancePayout(GetSelf()->itemID()), reason, Journal::EntryType::Insurance);
+    AccountService::TranserFunds(ownerSCC, m_ownerID, m_db.GetShipInsurancePayout(GetSelf()->itemID()), reason, Journal::EntryType::Insurance);
     m_db.DeleteInsuranceByShipID(GetSelf()->itemID());
 }
 
@@ -1744,7 +1744,7 @@ PyDict* Ship::MakeSlimItem() {
         slim->SetItemString("itemID",               new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
         slim->SetItemString("name",                 new PyString(m_self->itemName()));
-        slim->SetItemString("ownerID",              new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",              new PyInt(m_ownerID));
         slim->SetItemString("charID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCharacterID() : 0));
         slim->SetItemString("corpID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCorporationID() : GetCorporationID()));
         slim->SetItemString("allianceID",           new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetAllianceID() : GetAllianceID()));

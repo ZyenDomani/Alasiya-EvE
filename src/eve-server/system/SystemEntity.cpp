@@ -186,33 +186,33 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
 }
 
 /** @todo (allan)  this doesnt need to be here */
-void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar) {
+void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) {
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
     double oldSec = pChar->GetSecurityRating();
     EvilNumber maxGain = 0;
-    if (m_self->HasAttribute(AttrEntitySecurityStatusKillBonus, maxGain))
+    if (iRef->HasAttribute(AttrEntitySecurityStatusKillBonus, maxGain))
         if (oldSec > maxGain.get_double())
             return;
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_double();
+    double killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_double();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
         secAward *= sConfig.rates.secRate;
         sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
-                     GetName(), m_self->itemID(), killBonus, oldSec, secAward);
+                     GetName(), iRef->itemID(), killBonus, oldSec, secAward);
         pChar->secStatusChange( secAward );
         std::string msg = "Status Change for killing";
-        if (m_self->HasPilot()) {
-            msg += m_self->GetPilot()->GetName();
+        if (iRef->HasPilot()) {
+            msg += iRef->GetPilot()->GetName();
             msg += " in ";
             msg += m_system->GetName();
-            pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), standingCombatShipKill, secAward, msg);
+            pChar->SaveStandingChanges( iRef->itemID(),  pChar->itemID(), standingCombatShipKill, secAward, msg);
         } else {
             msg += " pirates in ";
             msg += m_system->GetName();
             pChar->SaveStandingChanges( ownerCONCORD,  pChar->itemID(), standingLawEnforcement, secAward, msg);
             // decrease standings with faction of this npc kill
-            pChar->SaveStandingChanges( m_self->ownerID(),  pChar->itemID(), standingCombatShipKill, -secAward, msg);
+            pChar->SaveStandingChanges( iRef->ownerID(),  pChar->itemID(), standingCombatShipKill, -secAward, msg);
         }
     }
 
@@ -326,7 +326,7 @@ PyDict* StargateSE::MakeSlimItem() {
 }
 
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace, ForceFields */
+/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace, ForceFields, ScanProbes */
 ItemSystemEntity::ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)
 {
@@ -338,7 +338,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         if (m_self->groupID() == EVEDB::invGroups::Warp_Gate) {
             // this is incomplete........
             slim->SetItemString("dunSkillLevel", new PyInt(0));   //?
@@ -458,12 +458,13 @@ PyDict* ObjectSystemEntity::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(GetTypeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("corpID",       new PyInt(m_corpID));
         slim->SetItemString("allianceID",   new PyInt(m_allyID));
+        slim->SetItemString("warFactionID", new PyInt(m_warID));
     return slim;
 }
 
@@ -599,12 +600,13 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
         slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("corpID",       new PyInt(m_corpID));
         slim->SetItemString("allianceID",   new PyInt(m_allyID));
+        slim->SetItemString("warFactionID", new PyInt(m_warID));
     return (slim);
 }
 

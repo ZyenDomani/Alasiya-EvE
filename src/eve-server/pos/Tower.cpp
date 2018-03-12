@@ -497,7 +497,7 @@ PyDict* TowerSE::MakeSlimItem()
     slim->SetItemString("name",                     new PyString(m_self->itemName()));
     slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
     slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
-    slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));
+    slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
     slim->SetItemString("corpID",                   new PyInt(m_corpID));
     slim->SetItemString("allianceID",               new PyInt(m_allyID));
     slim->SetItemString("warFactionID",             new PyInt(m_warID));

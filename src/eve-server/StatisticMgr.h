@@ -26,7 +26,9 @@ namespace Stat {
         npcBounties     = 4,
         oreMined        = 5,
         iskMarket       = 6,
-        shipsSalvaged   = 7
+        shipsSalvaged   = 7,
+        probesLaunched  = 8,
+        sitesScanned    = 9
     };
 }
 

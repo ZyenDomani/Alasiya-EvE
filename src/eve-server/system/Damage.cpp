@@ -445,7 +445,7 @@ void Ship::Killed(Damage &fatal_blow) {
         std::string corpse_name = pPilot->GetName();
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
-        ItemData corpseItemData(corpseTypeID, m_self->ownerID(), locationID, flagAutoFit, corpse_name.c_str(), wreckPosition);
+        ItemData corpseItemData(corpseTypeID, m_ownerID, locationID, flagAutoFit, corpse_name.c_str(), wreckPosition);
         InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
         if (corpseItemRef.get() != nullptr) {
             DBSystemDynamicEntity corpseEntity;
@@ -518,7 +518,7 @@ void Ship::Killed(Damage &fatal_blow) {
         std::string wreck_name = pPilot->GetName();
         wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
 
-		ItemData wreckItemData(wreckTypeID, m_self->ownerID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
+        ItemData wreckItemData(wreckTypeID, m_ownerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() != nullptr) {
             DBSystemDynamicEntity wreckEntity;
@@ -529,7 +529,7 @@ void Ship::Killed(Damage &fatal_blow) {
                 wreckEntity.groupID = EVEDB::invGroups::Wreck;
                 wreckEntity.itemID = wreckItemRef->itemID();
                 wreckEntity.itemName = wreck_name;
-                wreckEntity.ownerID = m_self->ownerID(); //pPilot->GetCharacterID();
+                wreckEntity.ownerID = m_ownerID; //pPilot->GetCharacterID();
                 wreckEntity.typeID = wreckTypeID;
                 wreckEntity.x = wreckPosition.x;
                 wreckEntity.y = wreckPosition.y;

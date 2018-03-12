@@ -314,6 +314,8 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
 struct StatisticData {
     uint16 span;        // 45.5d in minutes (max)
     uint16 shipsSalvaged;
+    uint16 probesLaunched;
+    uint16 sitesScanned;
     uint32 pcShots;
     uint32 pcMissiles;
     double pcBounties;

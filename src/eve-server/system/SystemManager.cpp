@@ -260,24 +260,23 @@ void SystemManager::UnloadSystem() {
             sBubbleMgr.Remove(itr->second);
             if (itr->second->TargetMgr() != nullptr)
                 itr->second->TargetMgr()->ClearAllTargets(false);
-            m_solarSystemRef->RemoveItemFromInventory( itr->second->GetSelf() );
         }
 
-        sItemFactory.RemoveItem(itr->first);
         SafeDelete(itr->second);
         itr = m_entities.erase(itr);
-        m_entityChanged = true;
     }
-    // at this point, system entity list should be clear...but just in case, hit it again
+
+    // save items, then remove from system inventory, item factory and decrement item count
+    m_solarSystemRef->GetMyInventory()->Unload();
+
     m_npcs.clear();
+    // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
 
     // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
-    // save items, then remove from system inventory, item factory and decrement item count
-    m_solarSystemRef->GetMyInventory()->Unload();
 
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);

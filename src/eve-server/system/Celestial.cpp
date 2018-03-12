@@ -159,7 +159,7 @@ PyDict* AnomalySE::MakeSlimItem()
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("dungeonDataID",    new PyInt(0)); //?  seen 2990651
-        slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
     return slim;
 }
 
@@ -208,7 +208,7 @@ PyDict* WormholeSE::MakeSlimItem()
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",                   new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
         slim->SetItemString("otherSolarSystemClass",    new PyInt(sDataMgr.GetWHSystemClass(m_system->GetID())));
         slim->SetItemString("wormholeSize",             new PyFloat(m_wormholeSize));
         slim->SetItemString("wormholeAge",              new PyInt(m_wormholeAge));

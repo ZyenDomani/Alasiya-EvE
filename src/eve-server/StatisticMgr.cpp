@@ -41,6 +41,8 @@ void StatisticMgr::ClearAll()
     m_data.oreMined         = 0;
     m_data.iskMarket        = 0;
     m_data.shipsSalvaged    = 0;
+    m_data.probesLaunched   = 0;
+    m_data.sitesScanned     = 0;
 }
 
 void StatisticMgr::GetInfo()
@@ -108,6 +110,12 @@ void StatisticMgr::Increment(uint8 key)
         case Stat::shipsSalvaged:
             ++m_data.shipsSalvaged;
             break;
+        case Stat::sitesScanned:
+            ++m_data.sitesScanned;
+            break;
+        case Stat::probesLaunched:
+            ++m_data.probesLaunched;
+            break;
         default:
             sLog.Error("StatisticMgr::Increment()", "Default reached for key %u.", key );
             break;
@@ -120,6 +128,8 @@ void StatisticMgr::PrintInfo()
     sLog.Cyan("     StatisticMgr", " Time Span: %u minutes", m_data.span);
     sLog.Cyan("     StatisticMgr", " PC Shots Fired: %u", m_data.pcShots);
     sLog.Cyan("     StatisticMgr", " PC Missiles Fired: %u", m_data.pcMissiles);
+    sLog.Cyan("     StatisticMgr", " Scan Probes Launched: %u", m_data.probesLaunched);
+    sLog.Cyan("     StatisticMgr", " Cosmic Signatures Scanned: %u", m_data.sitesScanned);
     sLog.Cyan("     StatisticMgr", " PC Bounties Paid: %.2f isk", m_data.pcBounties);
     sLog.Cyan("     StatisticMgr", " NPC Bounties Paid: %.2f isk", m_data.npcBounties);
     sLog.Cyan("     StatisticMgr", " Ore Mined: %.2f m3", m_data.oreMined);

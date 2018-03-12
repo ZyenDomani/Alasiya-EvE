@@ -27,6 +27,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "PyCallable.h"
@@ -61,30 +62,32 @@ void Inventory::Unload()
     if (!mContentsLoaded)
         return;
 
-    //  save contents on the off-chance they have changed
+    //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
     std::vector<SaveData> items;
     items.clear();
-    std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin();
-    while (itr != mContents.end()) {
-        if (IsPlayerItem(itr->first)) {   // only save player items
-            SaveData data;
-                data.itemID = itr->first;
-                data.contraband = itr->second->contraband();
-                data.flag = itr->second->flag();
-                data.locationID = itr->second->locationID();
-                data.ownerID = itr->second->ownerID();
-                data.position = itr->second->position();
-                data.quantity = itr->second->quantity();
-                data.singleton = itr->second->singleton();
-                data.typeID = itr->second->typeID();
-                data.customInfo = itr->second->customInfo();
-            items.push_back(data);
-        }
+    std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin(), end = mContents.end();
+    while (itr != end) {
+        if (!sConsole.IsShutdown())
+            if (IsPlayerItem(itr->first)) {   // only save player items
+                SaveData data;
+                    data.itemID = itr->first;
+                    data.contraband = itr->second->contraband();
+                    data.flag = itr->second->flag();
+                    data.locationID = itr->second->locationID();
+                    data.ownerID = itr->second->ownerID();
+                    data.position = itr->second->position();
+                    data.quantity = itr->second->quantity();
+                    data.singleton = itr->second->singleton();
+                    data.typeID = itr->second->typeID();
+                    data.customInfo = itr->second->customInfo();
+                items.push_back(data);
+            }
         sItemFactory.RemoveItem(itr->first);
         itr = mContents.erase(itr);
     }
 
-    m_db.SaveItems(items);
+    if (!sConsole.IsShutdown())
+        m_db.SaveItems(items);
     mContents.clear();
     mContentsLoaded = false;
 }
@@ -192,7 +195,7 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
         return;    //segfault check
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
-        mContents.erase(itr->first);
+        mContents.erase(itr);
         _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_myID, this, iRef->itemID());
     } else
         _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_myID, iRef->itemID());

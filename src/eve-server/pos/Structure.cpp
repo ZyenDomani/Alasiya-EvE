@@ -769,7 +769,7 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("nameID",                   PyStatic.NewNone());
         slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",                  new PyInt(m_self->ownerID()));  //1000148 for interbus customs office (to be done on creation)
+        slim->SetItemString("ownerID",                  new PyInt(m_ownerID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));

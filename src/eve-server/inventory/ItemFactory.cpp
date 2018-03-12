@@ -72,8 +72,6 @@ void ItemFactory::Initialize()
 
 void ItemFactory::Close()
 {
-    ManagerDB::DeleteSpawnedRats();
-
     // types
     for (auto cur : m_types)
         SafeDelete(cur.second);

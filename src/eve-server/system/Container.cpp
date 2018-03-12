@@ -297,7 +297,7 @@ PyDict *ContainerSE::MakeSlimItem() {
     PyDict *slim = new PyDict();
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("nameID",       new PyNone());
         slim->SetItemString("corpID",       new PyInt(m_corpID));
@@ -516,7 +516,7 @@ PyDict *WreckSE::MakeSlimItem() {
         /* this needs more work.... */
         if (m_abandoned or (m_fleetID != 0)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
             PyTuple* tuple1 = new PyTuple(4);
-                tuple1->SetItem(0,              new PyInt(m_self->ownerID()));
+                tuple1->SetItem(0,              new PyInt(m_ownerID));
                 tuple1->SetItem(1,              new PyInt(m_corpID));
                 tuple1->SetItem(2,              new PyNone()); //PyInt(m_fleetID));
                 tuple1->SetItem(3,              new PyBool(false));
@@ -527,7 +527,7 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
-        slim->SetItemString("ownerID",          new PyInt(m_self->ownerID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
         PyDict* dict = new PyDict;
             dict->SetItemString("WreckTypeID",  new PyInt(m_self->typeID()));
         PyTuple* tuple2 = new PyTuple(2);

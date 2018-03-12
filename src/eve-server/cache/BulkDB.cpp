@@ -40,7 +40,7 @@ void BulkDB::Close()
     dgmOperands = 800002,                -74
     dgmExpressions = 800003,             -17757
     dgmAttributes = 800004,              -1791
-    dgmEffects = 800005,                 -3537
+    dgmEffects = 800005,                 -3548
     dgmTypeAttributes = 800006,          -359049
     dgmTypeEffects = 800007,             -34076
     dgmUnits = 800009,                   -57
@@ -263,7 +263,7 @@ PyRep* BulkDB::GetDogmaTypeEffects(uint8 chunkID)   // 4 chunks
             q << " LIMIT 18000, 9000";
         } break;
         case 4: {
-            q << " LIMIT 27000, 8000";
+            q << " LIMIT 27000, 9000";
         } break;
     };
 

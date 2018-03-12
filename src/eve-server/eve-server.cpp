@@ -679,6 +679,7 @@ int main( int argc, char* argv[] )
 
     /** @todo  update this to have a ShutDown() method, with these items.
      * also look into calling it when a signal is caught, for cleanup.
+     * @note  these are order-dependant...
      */
     sLog.Warning("   ServerShutdown", "Main loop has stopped." );
     sLog.Error("   ServerShutdown", "Alasiya EvEmu Server is Offline." );
@@ -691,10 +692,8 @@ int main( int argc, char* argv[] )
     sImageServer.Stop();
     sLog.Warning("   ServerShutdown", "Image Server stopped." );
     /* Close the MarketMgr */
-    sLog.Warning("   ServerShutdown", "Shutting down MarketMgr." );
+    sLog.Warning("   ServerShutdown", "Shutting down Market Manager." );
     sMktMgr.Close();
-    /* Close the service manager */
-    pyServMgr.Close();
     /* Close the bulk data manager */
     sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
@@ -702,14 +701,17 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();
     sStatMgr.Close();
-    /* Close the entity list */
-    sLog.Warning("   ServerShutdown", "Closing the Entity List." );
-    sEntityList.Close();
-    /* Shut down the Item system */
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
     sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
         sItemFactory.SaveItems();
+    /* Close the entity list */
+    sLog.Warning("   ServerShutdown", "Closing the Entity List." );
+    sEntityList.Close();
+    /* Close the service manager */
+    sLog.Warning("   ServerShutdown", "Closing the Services Manager." );
+    pyServMgr.Close();
+    /* Shut down the Item system */
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
     sItemFactory.Close();
     sLog.Warning("   ServerShutdown", "Closing the Bubble Manager." );
     sBubbleMgr.clear();
@@ -718,8 +720,10 @@ int main( int argc, char* argv[] )
     /* Stop Console Command Interperter */
     //sConsole.Stop();
     /* close the db handler */
+    sLog.Warning("   ServerShutdown", "Closing DataBase Connection." );
     sDatabase.Close();
     /** @todo  the thread system is only implemented for tcp connections at this time. */
+    sLog.Warning("   ServerShutdown", "Shutting down Thread Manager." );
     /* join open threads */
     sThread.EndThreads();
     sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
