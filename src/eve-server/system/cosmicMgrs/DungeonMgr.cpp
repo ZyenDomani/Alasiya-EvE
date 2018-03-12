@@ -745,7 +745,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
     for (auto cur : groupVec) {
         size = origSize;
         count = sDunDataMgr.groups.count(cur);
-        if (count < 1)
+        if ((count < 1) or (size < 1))
             continue;
         else if (size > count)
             size /= count;
