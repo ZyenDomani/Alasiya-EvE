@@ -18,7 +18,7 @@ namespace Dungeon {
             Wormhole            = 6, // wtf is a 'wormhole'??
             Anomaly             = 7, // non-rated dungeon that isnt required to scan with probes
             Unrated             = 8, // non-rated dungeon  no waves, possible escalation to complex
-            Escalation          = 9, // extra rooms from previous site.  this is a 'new' dungeon, with very limited access
+            Escalation          = 9, // new dungeon from previous site. very limited access
             Rated               = 10 // DED rated dungeon
         };
     }

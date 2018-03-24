@@ -48,6 +48,8 @@ ModuleManager::ModuleManager(ShipItem *const pShip)
 
     m_initalized = false;
 
+    m_rigScanBonus = 1.0f;
+
     m_LowSlots = (uint8)pShip->GetAttribute(AttrLowSlots).get_int();
     m_MidSlots = (uint8)pShip->GetAttribute(AttrMedSlots).get_int();
     m_HighSlots = (uint8)pShip->GetAttribute(AttrHiSlots).get_int();
@@ -128,11 +130,31 @@ bool ModuleManager::InstallRig(InventoryItemRef iRef, EVEItemFlags flag) {
     if (((iRef->groupID() >= EVEDB::invGroups::Rig_Armor) and (iRef->groupID() <= EVEDB::invGroups::Rig_Astronautic))
     or (iRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
         fitModule(iRef,flag);
+        // hack to get total scan bonus from rigs, if applicable
+        if (iRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
+            switch (iRef->typeID()) {
+                case 25936:   //  Large Gravity Capacitor Upgrade I
+                case 31213:   //  Small Gravity Capacitor Upgrade I
+                case 31215:   //  Medium Gravity Capacitor Upgrade I
+                case 31217:   //  Capital Gravity Capacitor Upgrade I
+                case 26350:   //  Large Gravity Capacitor Upgrade II
+                case 31220:   //  Small Gravity Capacitor Upgrade II
+                case 31222:   //  Medium Gravity Capacitor Upgrade II
+                case 31224: { //  Capital Gravity Capacitor Upgrade II
+                    m_rigScanBonus += iRef->GetAttribute(AttrScanStrengthBonus).get_float();
+                } break;
+            }
+        }
         return true;
     } else
         codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", m_Ship->GetPilot()->GetName(), iRef->itemName().c_str(), iRef->itemID());
 
     return false;
+
+    /*
+    10%
+    15%
+    */
 }
 
 void ModuleManager::UninstallRig(uint32 itemID)
@@ -795,4 +817,3 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
 
 }
 
-//////////////////////////////////////////////////////////////////////////////////

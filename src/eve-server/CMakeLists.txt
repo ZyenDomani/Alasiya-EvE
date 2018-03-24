@@ -246,11 +246,13 @@ SET( effects_SOURCE
 
 SET( explore_INCLUDE
      "${TARGET_INCLUDE_DIR}/exploration/Exploration.h"
+     "${TARGET_INCLUDE_DIR}/exploration/Probes.h"
      "${TARGET_INCLUDE_DIR}/exploration/Scan.h"
      "${TARGET_INCLUDE_DIR}/exploration/ScanMgrService.h"
      "${TARGET_INCLUDE_DIR}/exploration/ScanningDB.h")
 SET( explore_SOURCE
      "${TARGET_SOURCE_DIR}/exploration/Exploration.cpp"
+     "${TARGET_SOURCE_DIR}/exploration/Probes.cpp"
      "${TARGET_SOURCE_DIR}/exploration/Scan.cpp"
      "${TARGET_SOURCE_DIR}/exploration/ScanMgrService.cpp"
      "${TARGET_SOURCE_DIR}/exploration/ScanningDB.cpp")

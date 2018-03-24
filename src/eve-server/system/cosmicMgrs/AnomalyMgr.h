@@ -33,6 +33,7 @@ class AnomalyMgr
       virtual ~AnomalyMgr();
 
       bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
+      void Close();
       void Process();
 
       void SaveAnomaly();
@@ -41,7 +42,9 @@ class AnomalyMgr
 
       void AddAnomaly(InventoryItemRef iRef);
       void RemoveAnomaly(uint32 itemID);
+      // list for ship scanner
       void GetAnomalyList(std::vector< CosmicSignature >& sig);
+      // list for probe
       void GetSignatureList(std::vector< CosmicSignature >& sig);
 
       uint32 GetAnomalyID(std::string& sigID);

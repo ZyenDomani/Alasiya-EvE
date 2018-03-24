@@ -365,7 +365,7 @@ void Client::ProcessClient() {
         if (m_scanTimer.Check(false)) {
             _log(CLIENT__TIMER, "Client::ProcessClient():  Scan Timer hit for %s(%u).", m_char->itemName().c_str(), m_char->itemID());
             m_scanTimer.Disable();
-            m_scan->ScanResult();
+            m_scan->ProcessScan(m_scanProbe);
         }
 
     if (m_jumpTimer.Enabled())

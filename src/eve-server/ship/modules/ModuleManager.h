@@ -99,6 +99,9 @@ public:
     void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& pModuleList);
     void SaveModules();
 
+    // scan method to check for scanning rigs.
+    float GetRigScanBonus()                             { return m_rigScanBonus; }
+
 private:
     bool m_initalized;
     void fitModule(InventoryItemRef iRef, EVEItemFlags flag);
@@ -111,6 +114,9 @@ private:
     uint8 m_MidSlots;
     uint8 m_HighSlots;
     uint8 m_SubSystemSlots;
+
+    // dont like this, but best way to do it...
+    float m_rigScanBonus;
 
     std::map<EVEItemFlags, InventoryItemRef> m_charges; // flag, chargeItem
 };

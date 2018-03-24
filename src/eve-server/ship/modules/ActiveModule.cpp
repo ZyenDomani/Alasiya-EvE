@@ -14,6 +14,8 @@
 #include "ship/modules/ActiveModule.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
+#include <exploration/Probes.h>
+#include <exploration/Scan.h>
 
 ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
 : GenericModule(iRef, sRef),
@@ -290,8 +292,6 @@ uint32 ActiveModule::DoCycle()
         } break;
         case EVEDB::invGroups::Passive_Targeting_System: { // (this passive module will need specific code)
         } break;
-        case EVEDB::invGroups::Scan_Probe_Launcher: { // (this active module will need specific code)
-        } break;
         case EVEDB::invGroups::Automated_Targeting_System: { // (this active module will need specific code)
         } break;
 
@@ -302,7 +302,8 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Cloaking_Device:
         case EVEDB::invGroups::Siege_Module:
         case EVEDB::invGroups::Super_Weapon:
-        case EVEDB::invGroups::Interdiction_Sphere_Launcher:
+        case EVEDB::invGroups::Interdiction_Sphere_Launcher:    // launch a sphere (like missile and probe)
+        case EVEDB::invGroups::Countermeasure_Launcher:     // dunno
         case EVEDB::invGroups::Jump_Portal_Generator:
         case EVEDB::invGroups::Cynosural_Field:
         case EVEDB::invGroups::Remote_ECM_Burst:
@@ -354,9 +355,15 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
         case EVEDB::invGroups::Missile_Launcher_Rocket:
         case EVEDB::invGroups::Missile_Launcher_Siege:
-        case EVEDB::invGroups::Missile_Launcher_Snowball:
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             LaunchMissile();
+        } break;
+        case EVEDB::invGroups::Missile_Launcher_Snowball: {
+            LaunchSnowBall();
+        } break;
+        case EVEDB::invGroups::Scan_Probe_Launcher: {
+            /** @todo  test for active probes vs skills here */
+            LaunchProbe();
         } break;
         // these neither require nor consume charges
         case EVEDB::invGroups::Salvager:    //working
@@ -374,11 +381,10 @@ uint32 ActiveModule::DoCycle()
     }
 
     EvilNumber cycleTime = 10000;   // default to 10s
-    if (m_modRef->HasAttribute(AttrDuration, cycleTime))
+    if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
         ; //return cycleTime.get_int();
-    else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
+    else if (m_modRef->HasAttribute(AttrDuration, cycleTime))
         ; //return cycleTime.get_int();
-
     return cycleTime.get_int();
 }
 
@@ -643,6 +649,7 @@ bool ActiveModule::CanActivate()
             return false;
         }
     }
+    //AttrDeadspaceUnsafe
     return true;
 }
 
@@ -777,10 +784,10 @@ void ActiveModule::LaunchMissile()
     InventoryItemRef missileRef = sItemFactory.SpawnItem(idata);
     if (missileRef.get() == nullptr)
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
-                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
+        m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
     SystemManager* pSystem = pClient->SystemMgr();
-    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()),  pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE());
+    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE());
     if (pMissile == nullptr)
         return; // make error here
 
@@ -801,4 +808,45 @@ void ActiveModule::LaunchMissile()
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcMissiles);
+}
+
+void ActiveModule::LaunchProbe()
+{
+    Client* pClient = m_shipRef->GetPilot();
+    if (pClient == nullptr)
+        return;
+    if (pClient->scan() == nullptr)
+        pClient->SetScan(new Scan(pClient));
+
+    GPoint pos(m_shipRef->position());
+    pos.MakeRandomPointOnSphere(MakeRandomFloat(500 +m_shipRef->radius(), 1500 +m_shipRef->radius()));
+
+    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity);
+    // we are not changing singleton status of probes
+    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagAutoFit, 1);
+    ProbeItemRef probeRef = ProbeItem::Spawn(idata);
+    if (probeRef.get() == nullptr)
+        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
+                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
+
+    probeRef->Relocate(pos);
+    SystemManager* pSystem = pClient->SystemMgr();
+    ProbeSE* pProbe = new ProbeSE(probeRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_shipRef);
+    if (pProbe == nullptr)
+        return; // make error here
+
+    pProbe->SendNewProbe();
+    pSystem->AddEntity(pProbe);
+    pClient->scan()->AddProbe(pProbe);
+
+    // Reduce ammo charge by 1 unit:
+    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+
+    // add data to StatisticMgr
+    sStatMgr.Increment(Stat::probesLaunched);
+}
+
+void ActiveModule::LaunchSnowBall()
+{
+
 }

@@ -159,6 +159,16 @@ void AnomalyMgr::Process() {
     }
 }
 
+void AnomalyMgr::Close()
+{
+    InventoryItemRef iRef;
+    for (auto sig : m_sigByItemID) {
+        iRef = sItemFactory.GetItem(sig.first);
+        m_system->RemoveItemFromInventory(iRef);
+        iRef->Delete();
+    }
+}
+
 void AnomalyMgr::LoadAnomalies() {
 	//. is this needed?  probably not.  make em all dynamic
 	// check for existing data and load accordingly.
@@ -194,9 +204,11 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     CosmicSignature sig;
         sig.systemID = m_system->GetID();
         sig.sigID = sEntityList.GetAnomalyID();
-        // *Mgr will determine name and itemID.
+        // *Mgr will determine name, itemID and sigStrength.
         sig.sigItemID = 0;
         sig.sigName = "Test Name Here";
+        //default to 1/80
+        sig.sigStrength = 0.0125;
         // default to rogue drones
         sig.ownerID = 500022;
     if (sConfig.debug.AnomalyFaction)
@@ -232,7 +244,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             // hand off to WHMgr and exit after return
             sWHMgr.Create(sig);
             m_sigBySigID.emplace(sig.sigID, sig);
-            m_sigByItemID.emplace(sig.sigItemID, sig);
+            /*m_sigByItemID*/m_anomByItemID.emplace(sig.sigItemID, sig);    // update later...
             //m_mdb.SaveAnomaly(sig);
             return;
         } break;
@@ -267,12 +279,10 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.scanAttributeID = AttrScanAllStrength;
         } break;
         case Mission:       // 1
-            /*
             sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-            */
         // these will use default for now.  revisit later when system matures more and i better understand how to implement them.
         case Escalation:   // 9
         case Unrated:       // 8
@@ -293,11 +303,10 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     if (!m_dungMgr->MakeDungeon(sig)) // pass by ref here, so other vars can be set.
         return;
     // add new sig to sysSigMaps
-    //key is itemID for ease of removal later
     m_sigBySigID.emplace(sig.sigID, sig);
-    //if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
-   //     m_anomByItemID.emplace(sig.sigItemID, sig);
-   // else
+    if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
+        m_anomByItemID.emplace(sig.sigItemID, sig);
+    else
         m_sigByItemID.emplace(sig.sigItemID, sig);
 
     //m_mdb.SaveAnomaly(sig);
@@ -418,7 +427,7 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
 }
 
-void AnomalyMgr::GetSignatureList(std::vector< CosmicSignature >& sig)
+void AnomalyMgr::GetSignatureList(std::vector<CosmicSignature>& sig)
 {
     // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
     // retrieval method for scan queries

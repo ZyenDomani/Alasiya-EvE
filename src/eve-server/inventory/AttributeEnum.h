@@ -72,7 +72,7 @@ enum EveAttrEnum {
     AttrHpToCapacity = 75,
     AttrMaxTargetRange = 76,
     AttrMiningAmount = 77,
-    AttrScanSpeed = 79,
+    AttrScanSpeed = 79,     //ship scanning speed in milliseconds
     AttrSpeedBonus = 80,
     AttrHpFactor = 81,
     AttrStructureBonus = 82,
@@ -1447,6 +1447,7 @@ enum EveAttrEnum {
     AttrSpecialMediumShipHoldCapacity = 1562,
     AttrSpecialLargeShipHoldCapacity = 1563,
     AttrSpecialIndustrialShipHoldCapacity = 1564,
+    // these 4 are implants
     AttrScanRadarStrengthModifier = 1565,
     AttrScanLadarStrengthModifier = 1566,
     AttrScanGravimetricStrengthModifier = 1567,
@@ -1692,8 +1693,14 @@ enum EveAttrEnum {
     AttrCanFitShipGroup5 = 1872,
     AttrCanFitShipGroup6 = 1879,
     AttrCanFitShipGroup7 = 1880,
-    AttrCanFitShipGroup8 = 1881
-    /*  new shit from rhea
+    AttrCanFitShipGroup8 = 1881,
+    //  new shit from rhea below this line
+    AttrMaxScanDeviationModifierModule = 1905,  // not used
+    AttrScanDurationBonus = 1906,  // not used
+    AttrScanStrengthBonusModule = 1907,  // not used
+    AttrScanWormholeStrength = 1908,  // not used
+    AttrDScanImmune = 1958      // not used, but neat idea
+    /*
     warfareLinkCPUAdd   1882
     warfareLinkCPUPenalty   1883
     chargedArmorDamageMultiplier    1886

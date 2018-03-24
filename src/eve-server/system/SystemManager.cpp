@@ -275,6 +275,9 @@ void SystemManager::UnloadSystem() {
     m_ticEntities.clear();
     m_staticEntities.clear();
 
+    // close anomaly mgr before we call system d'tor
+    //m_anomMgr->Close();
+
     // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
 

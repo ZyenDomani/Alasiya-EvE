@@ -405,6 +405,10 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     return true;
 }
 
+/*
+ * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+ * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+ */
 bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
     float secRating = m_system->GetSystemSecurityRating();
@@ -419,20 +423,22 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     // need to determine region sov, region rat or other here also
     int8 factionID = GetFactionID(sig.ownerID);
 
-    /** @todo  this will need to be updated for new anomaly system additions/etc  */
     using namespace Dungeon::Type;
     switch (sig.dungeonType) {
         case Gravimetric: {       // 2
             factionID = 8;  // rats per system
             if (type == 1) {
+                sig.sigStrength = 0.2; // 1/5
                 subType = MakeRandomInt(0,5);
             } else if (type == 2) {
+                sig.sigStrength = 0.0667; // 1/15
                 subType = MakeRandomInt(0,3);
             } else if (type == 3) {
+                sig.sigStrength = 0.04; // 1/25
                 subType = MakeRandomInt(0,2);
             }
 
-            // this cannot be random....need to verify these roid types CAN spawn in this (m_system) region.
+            // all roid types can spawn in grav sites.
             level = MakeRandomFloat();
             if (level < 0.1) {
                 level = 3;
@@ -451,16 +457,23 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 if (level < 0.1) {
                     level = 3;
                     subType = MakeRandomInt(1,4);
+                    sig.sigStrength = 0.0125; // 1/80
                 } else if (level < 0.3) {
                     level = 2;
                     subType = MakeRandomInt(1,6);
-                } else
+                    sig.sigStrength = 0.025; // 1/40
+                } else {
                     level = 1;
+                    sig.sigStrength = 0.05; // 1/20
+                }
             } else {
-                if (IsEven(MakeRandomInt(0,10)))
+                if (IsEven(MakeRandomInt(0,10))) {
                     level = 2;
-                else
+                    sig.sigStrength = 0.05; // 1/20
+                } else {
                     level = 1;
+                    sig.sigStrength = 0.1; // 1/10
+                }
             }
         } break;
         case Radar: {             // 4
@@ -468,19 +481,37 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
                 level = 1;
                 subType = 1;
                 factionID = 0;
+                // drone sites will be harder.
+                sig.sigStrength = 0.0222; // 1/45
             } else {
                 subType = MakeRandomInt(1,8);
-                if (type == 3)
+                if (type == 1) {
+                    sig.sigStrength = 0.1; // 1/10
+                } else if (type == 2) {
+                    sig.sigStrength = 0.05; // 1/20
+                } else if (type == 3) {
+                    sig.sigStrength = 0.025; // 1/40
                     if (IsEven(MakeRandomInt(0,10))) {
                         level = 2;
                         factionID = 0;
                     }
+                }
             }
         } break;
         case Ladar: {             // 5
             factionID = 0;
             subType = MakeRandomInt(1,8);
+            if (type == 1)
+                sig.sigStrength = 0.1; // 1/10
+            else if (type == 2)
+                sig.sigStrength = 0.05; // 1/20
+            else if (type == 3)
+                sig.sigStrength = 0.025; // 1/40
         } break;
+        /*
+         * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+         * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+         */
         case Anomaly: {           // 7
             // fix factionID after anomaly templates are finished
             if (factionID < 6)
@@ -489,18 +520,29 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             if (type == 1) {
                 if (subType == 1) {
                     level = GetRandLevel();
+                    sig.sigStrength = 0.0667; // 1/15
+                } else {
+                    sig.sigStrength = 0.2; // 1/5
                 }
-            } else if (type ==2) {
+            } else if (type == 2) {
                 if (subType == 2) {
                     level = GetRandLevel();
+                    sig.sigStrength = 0.05; // 1/20
                 } else if (subType == 4) {
                     level = GetRandLevel();
+                    sig.sigStrength = 0.025; // 1/40
+                } else {
+                    sig.sigStrength = 0.1; // 1/10
                 }
             } else if (type == 3) {
                 if (subType == 1) {
                     level = GetRandLevel();
+                    sig.sigStrength = 0.025; // 1/40
                 } else if (subType == 3) {
                     level = GetRandLevel();
+                    sig.sigStrength = 0.0167; // 1/60
+                } else {
+                    sig.sigStrength = 0.05; // 1/20
                 }
             }
         } break;
@@ -528,27 +570,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         };
         case 0: {
             sig.dungeonType = 7;
-            // fix factionID after anomaly templates are finished
-            if (factionID < 6)
-                factionID = 8;
-            subType = MakeRandomInt(1,5);
-            if (type == 1) {
-                if (subType == 1) {
-                    level = GetRandLevel();
-                }
-            } else if (type ==2) {
-                if (subType == 2) {
-                    level = GetRandLevel();
-                } else if (subType == 4) {
-                    level = GetRandLevel();
-                }
-            } else if (type == 3) {
-                if (subType == 1) {
-                    level = GetRandLevel();
-                } else if (subType == 3) {
-                    level = GetRandLevel();
-                }
-            }
+            MakeDungeon(sig);
         } break;
     }
 

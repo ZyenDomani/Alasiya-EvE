@@ -247,7 +247,7 @@ public:
     Scan* scan()                                        { return m_scan; }
     void SetScan(Scan* pScan)                           { m_scan = pScan; }
     // set scan timer in ms  this is used in scan.cpp after time calc's are done
-    void SetScanTimer(uint32 time)                      { m_scanTimer.Start(time); }
+    void SetScanTimer(uint16 time, bool useProbe=false) { m_scanTimer.Start(time);  m_scanProbe = useProbe; }
 
     //  trade
     void SetTradeSession(TradeSession* ts)              { m_TS = ts; }
@@ -297,6 +297,7 @@ protected:
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
     bool m_autoPilot;       // set true for using autopilot.
+    bool m_scanProbe;       // scanning with probes
     bool m_bubbleWait;
     bool m_setStateSent;
     bool m_sessionChangeActive; // used to delay actions requiring destiny updates

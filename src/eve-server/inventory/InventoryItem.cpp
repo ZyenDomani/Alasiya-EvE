@@ -28,8 +28,9 @@
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "EntityList.h"
-#include "effects/EffectsProcessor.h"
 #include "character/Skill.h"
+#include "effects/EffectsProcessor.h"
+#include "exploration/Probes.h"
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
 #include "ship/Ship.h"
@@ -198,7 +199,6 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::Deployable:  // may need their own class
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Drone:       // player drones.  use their own class (eventually)
-        case EVEDB::invCategories::Charge:
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
@@ -230,6 +230,20 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::StructureUpgrade: {
             return StructureItem::_LoadItem<StructureItem>(itemID, type, data);
         } break;
+        case EVEDB::invCategories::Charge: {      // probes are charges.
+            switch (type.groupID()) {
+                case EVEDB::invGroups::Scanner_Probe:
+                case EVEDB::invGroups::Survey_Probe:
+                case EVEDB::invGroups::Warp_Disruption_Probe:
+                case EVEDB::invGroups::Obsolete_Probes: {   // make error for these?
+                    return ProbeItem::_LoadItem<ProbeItem>(itemID, type, data);
+                } break;
+                default: {
+                    // create generic item for other charge types
+                    return InventoryItemRef( new InventoryItem(itemID, type, data ));
+                } break;
+            }
+        } break;
         case EVEDB::invCategories::Station: {
             // test for office first
             if (type.id() == 27) {
@@ -256,7 +270,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
                     return WreckContainer::_LoadItem<WreckContainer>(itemID, type, data);
                 } break;
                 case EVEDB::invGroups::Force_Field:
-                default:{
+                default: {
                     // generic Celestial Object
                     return CelestialObject::_LoadItem<CelestialObject>(itemID, type, data);
                 } break;
@@ -429,9 +443,19 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                     itemRef = InventoryItem::SpawnItem(itemID, data);
                 } break;
                 default: {
-                    // Spawn generic item:
-                    itemID = InventoryItem::CreateItemID(data);
-                    itemRef = InventoryItem::SpawnItem(itemID, data);
+                    switch (iType->groupID()) {
+                        case EVEDB::invGroups::Scanner_Probe:
+                        case EVEDB::invGroups::Survey_Probe:
+                        case EVEDB::invGroups::Warp_Disruption_Probe:
+                        case EVEDB::invGroups::Obsolete_Probes: {   // make error for these?
+                            return ProbeItem::Spawn(data);
+                        } break;
+                        default: {
+                            // create generic item for other charge types
+                            itemID = InventoryItem::CreateItemID(data);
+                            itemRef = InventoryItem::SpawnItem(itemID, data);
+                        } break;
+                    }
                 }
             }
             if (itemRef.get() == nullptr)
@@ -859,6 +883,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     if (singleton() or to_merge->singleton()) {
         throw PyException( MakeCustomError("You cannot stack assembled items."));
     }
+
     if (typeID() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
         return false;

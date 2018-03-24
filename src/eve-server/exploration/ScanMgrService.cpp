@@ -29,7 +29,19 @@
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "exploration/ScanMgrService.h"
+#include "Probes.h"
 #include "system/DestinyManager.h"
+#include <system/SystemManager.h>
+#include <system/SystemBubble.h>
+
+/* SCAN__ERROR
+ * SCAN__WARNING
+ * SCAN__MESSAGE
+ * SCAN__DEBUG
+ * SCAN__INFO
+ * SCAN__TRACE
+ * SCAN__DUMP
+ */
 
 class ScanBound
 : public PyBoundObject
@@ -37,9 +49,10 @@ class ScanBound
 public:
     PyCallable_Make_Dispatcher(ScanBound)
 
-    ScanBound(PyServiceMgr *mgr, Client *c)
+    ScanBound(PyServiceMgr *mgr, Client *pClient)
     : PyBoundObject(mgr),
-    m_dispatch(new Dispatcher(this))
+    m_dispatch(new Dispatcher(this)),
+    m_client(pClient)
     {
         _SetCallDispatcher(m_dispatch);
 
@@ -83,6 +96,7 @@ protected:
     Dispatcher *const m_dispatch;
     Scan* m_scan;
     ScanningDB* m_db;
+    Client* m_client;
 };
 
 PyCallable_Make_InnerDispatcher(ScanMgrService)
@@ -105,9 +119,9 @@ ScanMgrService::~ScanMgrService() {
 PyResult ScanMgrService::Handle_GetSystemScanMgr( PyCallArgs& call ) {
     Client* pClient = call.client;
     DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     ScanBound* pSB = new ScanBound(m_manager, pClient);
@@ -122,12 +136,11 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         //TODO: throw exception
-        return NULL;
+        return nullptr;
     }
 
-    Client* pClient = call.client;
-    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return nullptr;
     } else if (pDestiny->IsWarping()) {
@@ -135,31 +148,22 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
         return nullptr;
     }
 
-    if (!pClient->GetShipSE()->SysBubble()) {
+    if (m_client->GetShipSE()->SysBubble() == nullptr) {
         // make error here and return
         return nullptr;
     }
-    if (!pClient->scan())
-        pClient->SetScan(new Scan(pClient));
+    if (m_client->scan() == nullptr)
+        m_client->SetScan(new Scan(m_client));
 
-    return pClient->scan()->ConeScan(args);
+    return m_client->scan()->ConeScan(args);
 }
 
 PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
-    sLog.White( "ScanMgrService::Handle_RequestScans()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    /*      // using ship scanner
-            [PyString "RequestScans"]
-            [PyTuple 1 items]
-              [PyNone]
-            // using probes
-            [PyString "RequestScans"]
-            [PyTuple 1 items]
-              [PyDict 6 kvp] //dict of probe data
-     */
-    Client* pClient = call.client;
-    DestinyManager* pDestiny = pClient->GetShipSE()->DestinyMgr();
-    if (!pDestiny) {
+    _log(SCAN__TRACE, "ScanBound::Handle_RequestScans() - size= %u", call.tuple->size() );
+    //call.Dump(SCAN__DUMP);
+
+    DestinyManager* pDestiny = m_client->GetShipSE()->DestinyMgr();
+    if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return nullptr;
     } else if (pDestiny->IsWarping()) {
@@ -167,39 +171,63 @@ PyResult ScanBound::Handle_RequestScans( PyCallArgs& call ) {
         return nullptr;
     }
 
-    if (!pClient->scan())
-        pClient->SetScan(new Scan(pClient));
+    if (m_client->scan() == nullptr)
+        m_client->SetScan(new Scan(m_client));
 
-    PyDict* dict = nullptr;
+    PyDict* dict(nullptr);
     if (call.tuple->GetItem( 0 )->IsDict())
         dict = call.tuple->GetItem(0)->AsDict();
 
-    pClient->scan()->RequestScans(dict);
+    m_client->scan()->RequestScans(dict);
 
     // this call returns a PyNone
     return new PyNone();
 }
 
 PyResult ScanBound::Handle_ReconnectToLostProbes( PyCallArgs& call ) {
-    sLog.White( "ScanMgrService::Handle_ReconnectToLostProbes()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    // no args
+    //  will have to test against client launcher vs probe m_moduleID
+    // will have to write *something* to loop thru active probes in system for this....
 
     return nullptr;
 }
 
 PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
-    sLog.White( "ScanMgrService::Handle_RecoverProbes()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(SCAN__TRACE, "ScanBound::Handle_RecoverProbes() - size= %u", call.tuple->size() );
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
+    Call_SingleIntList args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        //TODO: throw exception
+        return nullptr;
+    }
 
-    return nullptr;
+    // list of probes successfully scooped to cargo
+    PyList* list = new PyList();
+    ProbeSE* pSE(nullptr);
+    for (auto cur : args.ints) {
+        pSE = m_client->SystemMgr()->GetSE(cur)->GetProbeSE();
+        if (pSE == nullptr)
+            continue;
+        pSE->RecoverProbe(list);
+    }
+
+    return list;
 }
 
 PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
-    sLog.White( "ScanMgrService::Handle_DestroyProbe()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(SCAN__TRACE, "ScanBound::Handle_DestroyProbe() - size= %u", call.tuple->size() );
+    call.Dump(SCAN__DUMP);
     //scanMan = sm.RemoteSvc('scanMgr').GetSystemScanMgr()
     //scanMan.DestroyProbe(probeID)
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        //TODO: throw exception
+        return nullptr;
+    }
+
+    m_client->SystemMgr()->GetSE(arg.arg)->GetProbeSE()->Delete();
 
     return nullptr;
 }

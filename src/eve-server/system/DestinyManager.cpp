@@ -407,7 +407,7 @@ void DestinyManager::UpdateVelocity(bool isMoving) {
             m_shipMaxAccelTime *= m_userSpeedFraction;      // for accel with user speeds <= 1.0
             m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;
             //  see notes in MoveObject() for information relating to accel equations
-            m_currentSpeedFraction = (1 - std::exp(-0.01 / m_shipAgility));
+            m_currentSpeedFraction = (1 - exp(-0.01 / m_shipAgility));
             m_velocity = m_shipHeading * m_maxSpeed * m_currentSpeedFraction;
         }
         if (is_log_enabled(DESTINY__MOVE_TRACE))
@@ -743,7 +743,7 @@ void DestinyManager::MoveObject() {
 
         //if ship is turning, DO NOT reset CSF here until AFTER initial turn decel.
         //if ((!m_turning) or (m_turnTic > (m_shipAgility * 0.45)))  //normal accel
-        m_currentSpeedFraction = (1 - std::exp(-timeStamp / m_shipAgility));
+        m_currentSpeedFraction = (1 - exp(-timeStamp / m_shipAgility));
             //m_currentSpeedFraction = (1 - exp(-timeStamp * 1000000 / (m_shipInertia * m_mass)));
 
         if (m_accel)
@@ -1422,9 +1422,9 @@ void DestinyManager::_InitWarp() {
     /*  NOTE:  distances are inverse of times....the following are CORRECT.
      * do not change.  -allan
      */
-    if (cruise) {                                        //  short         long
-        accelDistance = std::exp(m_warpDecelTime);       //  2980.957    1.3188e9
-        decelDistance = std::exp(3 * m_warpAccelTime);   //  8103.083    5.3204e11
+    if (cruise) {                                       //  short         long
+        accelDistance = exp(m_warpDecelTime);           //  2980.957    1.3188e9
+        decelDistance = exp(3 * m_warpAccelTime);       //  8103.083    5.3204e11
         cruiseDistance = (m_targetDistance - accelDistance - decelDistance);
         cruiseTime = (cruiseDistance / warpSpeedInMeters);
     } else {
@@ -2162,17 +2162,10 @@ void DestinyManager::SetPosition(const GPoint &pt, bool update /*false*/) {
     // this sets InventoryItemRef.m_position correctly, which is used for all position references
     mySE->SetPosition(m_position);
 
-    if (mySE->IsPOSSE()) {         //according to packet sniffs, this is only used for 'Structure' items
-         SetBallPosition du;
-            du.entityID = mySE->GetID();
-            du.x = m_position.x;
-            du.y = m_position.y;
-            du.z = m_position.z;
-        PyTuple* up = du.Encode();
-        SendSingleDestinyUpdate(&up);   // consumed
-    }
-    if (update) {
-         SetBallPosition du;
+    //according to packet sniffs, this is only used for 'Structure' and 'Probe" items.  'update' is for syncing client position data with ours
+    if (mySE->IsPOSSE() or mySE->IsProbeSE() or update) {
+        update = false;
+        SetBallPosition du;
             du.entityID = mySE->GetID();
             du.x = m_position.x;
             du.y = m_position.y;

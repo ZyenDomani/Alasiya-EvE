@@ -91,6 +91,8 @@ void WormholeMgr::Create(CosmicSignature& sig)
     sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
     // set itemID to return to anomaly mgr
     sig.sigItemID = entity.itemID;
+    // set sigStrenth based on wh type and location
+    sig.sigStrength = 0.04;
 
     // create k162 here
     pos += 25000;   // move 25k for WormHole position

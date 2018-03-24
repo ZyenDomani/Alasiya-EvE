@@ -732,48 +732,6 @@ int main( int argc, char* argv[] )
     exit(EXIT_SUCCESS);
 }
 
-static void CleanUp() {
-    sLog.Warning("   ServerShutdown", "Main loop stopped" );
-    ServiceDB::SetServerOnlineStatus(false);
-
-    /* stop TCP listener */
-    //tcps.Close();
-    sLog.Warning("   ServerShutdown", "TCP listener stopped." );
-    /* stop Image Server */
-    sImageServer.Stop();
-    sLog.Warning("   ServerShutdown", "Image Server stopped." );
-    /* Close the command dispatcher */
-    //command_dispatcher.Close();
-    /* Stop Console Command Interperter */
-    //sConsole.Stop();
-    /* Close the entity list */
-    sEntityList.Close();
-    sLog.Warning("   ServerShutdown", "Saving Items." );
-    /* Shut down the Item system */
-    //item_factory->SaveItems();
-    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
-    //SafeDelete(item_factory);
-    /* Close the service manager */
-    //pyServMgr.Close();
-    /* Close the bulk data manager */
-    sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
-    sBulkDB.Close();
-    /* Close the station data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
-    stDataMgr.Close();
-    /* Close the static data manager */
-    sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
-    sDataMgr.Close();
-    /* close the db handler */
-    sDatabase.Close();
-    /** @todo  the thread system is only implemented for tcp connections at this time. */
-    /* join open threads */
-    sThread.EndThreads();
-    sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
-    /* close logfile */
-    log_close_logfile();
-}
-
 static void SetupSignals()
 {
     /* setup sigaction to prevent zombies */
@@ -815,6 +773,48 @@ static void CatchSignal( int sig_num )
         EvE::traceStack();
     m_run = false;
     //CleanUp();
+}
+
+static void CleanUp() {
+    sLog.Warning("   ServerShutdown", "Main loop stopped" );
+    ServiceDB::SetServerOnlineStatus(false);
+
+    /* stop TCP listener */
+    //tcps.Close();
+    sLog.Warning("   ServerShutdown", "TCP listener stopped." );
+    /* stop Image Server */
+    sImageServer.Stop();
+    sLog.Warning("   ServerShutdown", "Image Server stopped." );
+    /* Close the command dispatcher */
+    //command_dispatcher.Close();
+    /* Stop Console Command Interperter */
+    //sConsole.Stop();
+    /* Close the entity list */
+    sEntityList.Close();
+    sLog.Warning("   ServerShutdown", "Saving Items." );
+    /* Shut down the Item system */
+    //item_factory->SaveItems();
+    sLog.Warning("   ServerShutdown", "Shutting down Item Factory." );
+    //SafeDelete(item_factory);
+    /* Close the service manager */
+    //pyServMgr.Close();
+    /* Close the bulk data manager */
+    sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
+    sBulkDB.Close();
+    /* Close the station data manager */
+    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
+    stDataMgr.Close();
+    /* Close the static data manager */
+    sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
+    sDataMgr.Close();
+    /* close the db handler */
+    sDatabase.Close();
+    /** @todo  the thread system is only implemented for tcp connections at this time. */
+    /* join open threads */
+    sThread.EndThreads();
+    sLog.Warning("   ServerShutdown", "Alasiya EvEmu is Offline.");
+    /* close logfile */
+    log_close_logfile();
 }
 
 /*      Freeze Detector Code taken from TrinityCore.  figure out how to implement here (based on seeing occational freezes on main)  -allan 29Dec15

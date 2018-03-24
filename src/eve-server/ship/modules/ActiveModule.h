@@ -52,7 +52,9 @@ public:
     virtual uint32 GetTargetID()                        { return m_targetID; }
     SystemEntity* GetTarget()                           { return m_targetSE; }
 
+    void LaunchProbe();
     void LaunchMissile();
+    void LaunchSnowBall();
 
     /* new effects processing code and updates */
     void ApplyEffect(Effects::State state, bool active=false);

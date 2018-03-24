@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 8.5
+ Log Version: 8.6
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -160,6 +160,15 @@ LOG_TYPE( BULKDATA, DEBUG, DISABLED, "BulkDebug" )
 LOG_TYPE( BULKDATA, INFO, DISABLED, "BulkInfo" )
 LOG_TYPE( BULKDATA, TRACE, DISABLED, "BulkTrace" )
 LOG_TYPE( BULKDATA, DUMP, DISABLED, "BulkDump" )
+
+LOG_CATEGORY( SCAN )
+LOG_TYPE( SCAN, ERROR,   ENABLED, "ScanError" )
+LOG_TYPE( SCAN, WARNING, DISABLED, "ScanWarning" )
+LOG_TYPE( SCAN, MESSAGE, DISABLED, "ScanMsg" )
+LOG_TYPE( SCAN, DEBUG, DISABLED, "ScanDebug" )
+LOG_TYPE( SCAN, INFO, DISABLED, "ScanInfo" )
+LOG_TYPE( SCAN, TRACE, DISABLED, "ScanTrace" )
+LOG_TYPE( SCAN, DUMP, DISABLED, "ScanDump" )
 
 LOG_CATEGORY( FLEET )
 LOG_TYPE( FLEET, ERROR,   ENABLED, "FleetError" )

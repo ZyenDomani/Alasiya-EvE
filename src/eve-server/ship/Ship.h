@@ -148,60 +148,6 @@ protected:
     const ItemType *m_skillType;
 };
 
-//////////////////////////////////////////////////////////////////////////////////
-// Modifier classes containing all data to modify an attribute
-/** @todo  wtf is this shit???  */
-
-class Modifier
-: public RefObject
-{
-public:
-    Modifier(uint32 originatorID, uint32 targetAttributeID, uint32 targetID, bool penaltiesApply, double modifierValue, uint32 calcTypeID, uint32 revCalcTypeID)
-    : RefObject( 0 )
-    {
-        m_OriginatorID = originatorID;
-        m_TargetAttributeID = targetAttributeID;
-        m_TargetID = targetID;
-        m_bPenaltiesApply = penaltiesApply;
-        m_ModifierValue = modifierValue;
-        m_CalculationTypeID = calcTypeID;
-        m_ReverseCalculationTypeID = revCalcTypeID;
-    }
-
-    ~Modifier();
-
-    double GetModifierValue() { return m_ModifierValue; }
-    void SetModifierValue(double newModifierValue) { m_ModifierValue = newModifierValue; }
-    uint32 GetOriginatorID() { return m_OriginatorID; }
-
-protected:
-    uint32 m_OriginatorID;
-    uint32 m_TargetAttributeID;
-    uint32 m_TargetID;
-    bool m_bPenaltiesApply;
-    double m_ModifierValue;
-    uint32 m_CalculationTypeID;
-    uint32 m_ReverseCalculationTypeID;
-};
-
-typedef RefPtr<Modifier> ModifierRef;
-
-typedef std::multimap<double, ModifierRef> ModifierMapType;     // The ModifierRef is NOT owned by the owner of instances of this type
-
-class ModifierMap
-{
-public:
-    ModifierMap() { m_MapIsDirty = false; }
-    ~ModifierMap();
-
-    bool m_MapIsDirty;
-    ModifierMapType m_ModifierMap;   // Key= modifier value, Value= Modifier class object containing all data describing this modifier for this attribute
-};
-
-typedef std::map<uint32, ModifierMap *> ModifierMaps;   // Key= attributeID, Value= ModifierMap class object containing a map of all modifiers for this attribute
-
-/////////////////////////////// END MODIFIER /////////////////////////////////////
-
 /**
  * InventoryItem which represents ShipItem.
  */

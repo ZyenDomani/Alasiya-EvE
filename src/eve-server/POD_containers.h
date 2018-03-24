@@ -20,7 +20,7 @@ typedef std::vector<CharCerts> CertVector;
 
 /* POD structure for skills in queue */
 struct QueuedSkill {
-    uint32 typeID;
+    uint16 typeID;
     uint8 level;
 };
 typedef std::vector<QueuedSkill> SkillQueue;
@@ -107,7 +107,7 @@ struct OfficeData {
     bool lockDown;
     uint32 officeID;
     uint32 folderID;
-    uint32 typeID;
+    uint16 typeID;
     uint32 stationID;
     uint32 corporationID;
     int64 rentalFee;
@@ -204,8 +204,7 @@ struct CharKillData {
 /* POD structure for asteroid */
 struct AsteroidData {
     uint32 itemID;
-    std::string itemName;
-    uint32 typeID;
+    uint16 typeID;
     uint32 systemID;
     uint32 beltID;
     double quantity;
@@ -213,6 +212,7 @@ struct AsteroidData {
     double x;
     double y;
     double z;
+    std::string itemName;
 };
 
 /* POD structure for asteroid distrubtion methods by group */
@@ -223,11 +223,11 @@ struct OreTypeChance {
 
 /* POD structure for active dungeon */
 struct ActiveDungeon {
+    uint8 state;
     uint32 systemID;
     uint32 dunItemID;
     uint32 dunTemplateID;
     int64 dunExpiryTime;
-    uint8 state;
     double x;
     double y;
     double z;
@@ -243,6 +243,7 @@ struct CosmicSignature {
     uint32 ownerID;
     uint32 systemID;
     uint32 sigItemID;   // itemID of this entry
+    float sigStrength;
     double x;
     double y;
     double z;
@@ -380,7 +381,7 @@ struct StationData {
 /* POD structure for saving items */
 struct SaveData {
     uint32          itemID;
-    uint32          typeID;
+    uint16          typeID;
     uint32          ownerID;
     uint32          locationID;
     EVEItemFlags    flag;
@@ -415,15 +416,14 @@ struct DmgTypeAttribute {
 /* structure for loading static system items */
 struct DBSystemEntity {
     uint32 itemID;
-    uint32 typeID;
+    uint16 typeID;
     uint16 groupID;
     double radius;
 };
 
 struct DBSystemDynamicEntity {
     uint32 itemID;
-    std::string itemName;
-    uint32 typeID;
+    uint16 typeID;
     uint16 groupID;
     EVEItemCategories categoryID;
     int32 allianceID;
@@ -434,6 +434,7 @@ struct DBSystemDynamicEntity {
     double x;
     double y;
     double z;
+    std::string itemName;
 };
 
 struct DBGPointEntity {
@@ -448,37 +449,37 @@ struct DBGPointEntity {
 
 /* POD structure entries for dungeon data */
 struct DunTemplate {
-    std::string dunName;
-    int32 dunRoomID;
-    uint16 dunEntryID;
     uint8 dunTypeID;
     uint8 dunSpawnClass;
+    uint16 dunEntryID;
+    int32 dunRoomID;
+    std::string dunName;
 };
 
 struct DunRoomInfo {
-    uint16 dunRoomID;
     uint8 dunRoomType;
     uint8 dunRoomCategory;
     uint8 dunRoomSpawnID;
     uint8 dunRoomSpawnType;
+    uint16 dunRoomID;
 };
 
 struct DunRoomData {
-    int32 dunGroupID;
     int16 x;
     int16 y;
     int16 z;
+    int32 dunGroupID;
 };
 
 struct DunGroupData {
-    int16 typeID;
-    std::string typeName;
-    int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
     uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
+    int16 typeID;
+    int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
     uint16 radius;
     int16 x;
     int16 y;
     int16 z;
+    std::string typeName;
 };
 
 struct DunRoomSpawnInfo {
@@ -496,6 +497,14 @@ struct DunEntryData {
     int16 z;
 };
 
+/* POD structure for decoded probe data */
+struct ProbeData {
+    uint8 state;
+    uint8 rangeStep;
+    int64 expiry;
+    float scanRange;
+    GPoint dest;
+};
 
 /* POD structure entries for PI data */
 struct PlanetResourceData {
