@@ -73,6 +73,7 @@ protected:
 /**
  * ObjectSystemEntity which represents structure object in space
  */
+class Client;
 class Missile;
 class MoonSE;
 class TowerSE;
@@ -144,7 +145,7 @@ public:
     void                        Anchor();
     void                        Offline();
     void                        PullAnchor();
-    void                        SetAnchor(GPoint& pos);
+    void                        SetAnchor(Client* pClient, GPoint& pos);
     void                        Activate(int32 effectID);
     void                        Deactivate(int32 effectID);
     void                        GetEffectState(PyList& into);

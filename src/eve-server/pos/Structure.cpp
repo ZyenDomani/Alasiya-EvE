@@ -390,10 +390,12 @@ void StructureSE::Process() {
  * {'messageKey': 'CantOnlineTowerLacksResources', 'dataID': 17885363, 'suppressable': False, 'bodyID': 260207, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 405}
  * {'messageKey': 'CantOnlineWithinGlobalDisruptor', 'dataID': 17876951, 'suppressable': False, 'bodyID': 257068, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3180}
  */
-void StructureSE::SetAnchor(GPoint& pos)
+void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 {
-    if (m_data.state > EVEPOS::StructureState::Unanchored)
+    if (m_data.state > EVEPOS::StructureState::Unanchored) {
+        pClient->SendErrorMsg("The %s is already anchored", m_self->itemName().c_str());
         return;  // make error here?
+    }
 
     /* returns SetBallPosition for towers.
      *    ct will anchor in the middle of the grid that you warp-in to....supposed to, but i dont know how yet.
@@ -419,6 +421,10 @@ void StructureSE::SetAnchor(GPoint& pos)
         if (is_log_enabled(POS__TRACE))
             _log(POS__TRACE, "StructureSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f", GetName(), m_data.itemID, pos.x, pos.y, pos.z);
     } else {
+        if (!m_moonSE->HasTower()) {
+            pClient->SendErrorMsg("There is no tower anchored at this moon.  You cannot anchor any structure without a tower");
+            return;
+        }
         /*  few attribs to look into...
          * maxStructureDistance
          * posStructureControlDistanceMax   (maybe multiply this by tower size, or some fraction thereof?)

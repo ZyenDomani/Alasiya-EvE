@@ -21,7 +21,7 @@ class Moon
 {
 public:
     Moon();
-    ~Moon()       { /* do nothing here */ }
+    ~Moon()                                             { /* do nothing here */ }
 
 };
 

@@ -272,7 +272,7 @@ PyResult PosMgrBound::Handle_UninstallJumpBridgeLink(PyCallArgs &call) {
     call.Dump(POS__DUMP);
 
     /** @todo  finish this.. */
-    
+
     return PyStatic.NewNone();
 }
 
@@ -650,7 +650,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
         return PyStatic.NewNone();
 
     GPoint pos(args.posX, args.posY, args.posZ);
-    pTSE->SetAnchor(pos);
+    pTSE->SetAnchor(call.client, pos);
 
     // auto warp to new POS position?  config option?
     if (pTSE->IsTowerSE()) {
