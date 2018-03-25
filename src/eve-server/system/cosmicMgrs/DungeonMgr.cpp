@@ -265,29 +265,14 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     GPoint pos(sig.x, sig.y, sig.z);
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-
-    /** @todo update this to use temp items...create new method to spawn temp deco shit for this.  ItemFactory::CreateTempShit()? */
-    InventoryItemRef iRef = sItemFactory.SpawnItem(iData);  /* not sure how well generic spawn will work here. */
+    InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;
-    // create signature item and place in system
-    DBSystemDynamicEntity entity;
-        entity.categoryID = iRef->categoryID();
-        entity.groupID = iRef->groupID();
-        entity.itemID = iRef->itemID();
-        entity.itemName = sig.sigName;
-        entity.typeID = sig.sigTypeID;
-        entity.x = pos.x;
-        entity.y = pos.y;
-        entity.z = pos.z;
-        entity.ownerID = sig.ownerID;
-        entity.factionID = sig.ownerID;
-        entity.allianceID = -1;  // possibably use this for npc wreck faction salvage ids?
-        entity.corporationID = sDataMgr.GetRegionFaction(m_system->GetRegionID());  // set region sov holder as anomaly corporationID.
-        // do the spawn using SystemManager's BuildEntity:
-    /** @todo this is more shit that should NOT be in db */
-    m_system->BuildDynamicEntity(entity);
-    sig.sigItemID = entity.itemID;
+    // add item to itemFactory
+    sItemFactory.AddItem(iRef);
+    CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
+    m_system->AddEntity(cSE);
+    sig.sigItemID = iRef->itemID();
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %i for %s", templateID, dTemplate.dunRoomID, sig.sigName.c_str());
 
@@ -353,50 +338,34 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     // create deco items for this dungeon
     CreateDeco(templateID, sig);
 
-    /* item spawning method - just set up data and let SystemManager create and place the object */
+    // item spawning method
     uint32 systemID = m_system->GetID();
     std::vector<uint32> items;
     GPoint pos2(NULL_ORIGIN);
-    auto cur = m_anomalyItems.begin();
-    while (cur != m_anomalyItems.end()) {
-        pos2.x = sig.x + cur->x;
-        pos2.y = sig.y + cur->y;
-        pos2.z = sig.z + cur->z;
+    std::vector<DunGroupData>::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
+    while (itr != end) {
+        pos2.x = sig.x + itr->x;
+        pos2.y = sig.y + itr->y;
+        pos2.z = sig.z + itr->z;
         // typeID, ownerID, locationID, flag, name, &_position
-        ItemData iData(cur->typeID, sig.ownerID, systemID, flagAutoFit, cur->typeName.c_str(), pos2);
-        /** @todo update this to use temp items */
-        // not sure how well generic spawn will work here...it doesnt!  fix this shit
-        // asteroids MUST be created using BeltMgr/AsteroidItem....CANNOT use generic spawn
-        InventoryItemRef item = sItemFactory.SpawnItem(iData);
-        if (item.get() == nullptr) // we'll survive...
+        ItemData dData(itr->typeID, sig.ownerID, systemID, flagAutoFit, itr->typeName.c_str(), pos2);
+        iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
+        if (iRef.get() == nullptr) // we'll survive...
             continue;
-
-        DBSystemDynamicEntity entity;
-            entity.categoryID = (EVEItemCategories)cur->typeCatID;
-            entity.groupID = cur->typeGrpID;
-            entity.itemID = item->itemID();
-            entity.itemName = cur->typeName;
-            entity.typeID = cur->typeID;
-            entity.x = pos2.x;
-            entity.y = pos2.y;
-            entity.z = pos2.z;
-            /** @todo  fix these... */
-            entity.ownerID = sig.ownerID;
-            entity.factionID = sig.ownerID;
-            entity.allianceID = -1;
-            entity.corporationID = sDataMgr.GetCorpID(sig.ownerID); // sig.ownerID is only region rats for now.
-        // do the spawn using SystemManager's BuildEntity:
-            /** @todo this is more shit that should NOT be in db */
-        m_system->BuildDynamicEntity(entity);
-        items.push_back(item->itemID());
-        ++cur;
+        // add item to itemFactory
+        sItemFactory.AddItem(iRef);
+        // should ALL of these be CelestialSEs?
+        cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
+        m_system->AddEntity(cSE);
+        items.push_back(iRef->itemID());
+        ++itr;
     }
 
     if (dTemplate.dunSpawnClass > 0)
         m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), pos), dTemplate.dunSpawnClass);
 
     _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
-              sig.sigItemID, m_anomalyItems.size(),sig.systemID, templateID);
+              sig.sigItemID, m_anomalyItems.size(), sig.systemID, templateID);
 
     m_anomalyItems.clear();
     if (!items.empty())
@@ -660,6 +629,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
     uint16 groupID = 0, radius = 0;
 
     // create groupIDs for this dungeon, and add to vector
+    //  NOTE:  these are NOT invGroups here....
     std::vector<uint16> groupVec;
     groupVec.clear();
     // all groups get the worthless mining types and misc deco items
