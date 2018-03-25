@@ -150,7 +150,7 @@ void AnomalyMgr::Process() {
         return;
     if (m_anomTimer.Check(!sConfig.debug.IsTestServer)) {
         /* do something useful here */
-        if (m_Sigs < m_maxSigs)
+        if ((m_Sigs < m_maxSigs) or (m_Anoms < (m_maxSigs /2)))
             CreateAnomaly();
     }
 
@@ -363,7 +363,11 @@ uint8 AnomalyMgr::GetDungeonType()
             ++m_Sigs;
         } break;
         case Anomaly: {   // 7. this is noob dungeon, no probe required
-            ++m_Sigs;
+            if (m_Anoms > (m_maxSigs /2))
+                return GetDungeonType();
+
+            ++m_Anoms;
+            //++m_Sigs;
         } break;
         case Unrated: {   // 8
             if ((m_Unrated < 0) or (m_Unrated > 2)) // cap at 3
@@ -379,7 +383,6 @@ uint8 AnomalyMgr::GetDungeonType()
             ++m_Sigs;
         } break;
     }
-    ++m_Anoms; // still not sure how im gonna use these
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::GetDungeonType() - Returning %s(%u)", sDunDataMgr.GetDungeonType(typeID).c_str(), typeID);
     return typeID;
