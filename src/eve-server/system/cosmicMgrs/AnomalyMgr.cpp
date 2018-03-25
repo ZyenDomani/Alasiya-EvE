@@ -164,6 +164,8 @@ void AnomalyMgr::Close()
     InventoryItemRef iRef;
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
+        if (iRef.get() == nullptr)
+            continue;
         m_system->RemoveItemFromInventory(iRef);
         iRef->Delete();
     }
