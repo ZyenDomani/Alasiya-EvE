@@ -303,6 +303,9 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
     if (res == m_items.end())
     {
+        if (IsTempItem(itemID))
+            return RefPtr<_Ty>();
+
         // load the item
         RefPtr<_Ty> item = _Ty::Load(itemID );
         if (!item)
@@ -485,6 +488,11 @@ WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
     m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
     ++m_itemCount;
     return iRef;
+}
+
+void ItemFactory::AddItem(InventoryItemRef iRef)
+{
+    m_items.emplace(iRef->itemID(), iRef);
 }
 
 uint32 ItemFactory::GetNextTempID()

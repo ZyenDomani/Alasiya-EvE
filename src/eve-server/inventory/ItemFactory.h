@@ -61,6 +61,7 @@ public:
     void RemoveItem(uint32 itemID);
     void SetUsingClient(Client *pClient)                { m_pClient = pClient; }
     void UnsetUsingClient()                             { m_pClient = nullptr; }
+    void AddItem(InventoryItemRef iRef);
 
     uint32 Count()                                      { return m_itemCount; }
 

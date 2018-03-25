@@ -241,7 +241,7 @@ maxDustCharacter = 2130000000
 ((itemID >= minControlBunker) and (itemID < 80100000))
 
 #define IsScenarioItem(itemID) \
-((itemID >= 90000000) && (itemID < minPlayerItem))
+((itemID > minCharacter) && (itemID < minPlayerItem))
 
 #define IsFakeItem(itemID) \
  (itemID >= minFakeItem)
@@ -249,11 +249,14 @@ maxDustCharacter = 2130000000
 #define IsValidTarget(itemID) \
  (((itemID >= minStargate) && (itemID <= maxStation)) || (itemID >= minControlBunker))
 
+#define IsTempItem(itemID) \
+ ((itemID >= minTempItemID) && (itemID < minPIStructure))
+
 #define FlagToSlot(flag) \
-(flag - flagSlotFirst)
+ (flag - flagSlotFirst)
 
 #define SlotToFlag(slot) \
-((EVEItemFlags)(flagSlotFirst + slot))
+ ((EVEItemFlags)(flagSlotFirst + slot))
 
 #define IsModuleSlot(flag) \
 (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
