@@ -149,6 +149,8 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_outpost = false;
     m_reactor = false;
 
+    m_duration = 0;
+
     m_procTimer.Disable();
     m_procState = EVEPOS::ProcState::Invalid;
 
@@ -166,12 +168,15 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
 }
 
 void StructureSE::InitData(SystemBubble* pBubble) {
+    // not sure if we need to reinit to 0...probably not
     m_data.use = 0;
     m_data.view = 0;
     m_data.take = 0;
+    m_data.moonID = 0;
+    m_data.towerID = 0;
+    m_data.status = 0.0f;
     m_data.timestamp = 0;
     m_data.state = EVEPOS::StructureState::Unanchored;
-    m_data.status = 0.0f;
 
     if (m_module) {
         bool found = false;
@@ -211,7 +216,14 @@ void StructureSE::InitData(SystemBubble* pBubble) {
 
 void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
 {
+    // init all data to 0 here.
+    m_data.use = 0;
+    m_data.view = 0;
+    m_data.take = 0;
+    m_data.moonID = 0;
     m_data.towerID = 0;
+    m_data.status = 0.0f;
+    m_data.timestamp = 0;
     m_data.itemID = iRef->itemID();
     m_data.state = EVEPOS::StructureState::Unanchored;
     iRef->SetFlag(flagStructureInactive);
@@ -267,6 +279,13 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         m_db.SaveBaseData(m_data);
     }
 
+    if (m_data.moonID == 0) {
+        // make error here.  this should never hit.
+        _log(POS__TRACE, "StructureSE %s(%u) has no moonID.", iRef->itemName().c_str(), m_data.itemID);
+        iRef->Delete(); // really delete this?
+        return;
+    }
+
     if (m_moonSE == nullptr)
         m_moonSE = m_system->GetSE(m_data.moonID)->GetMoonSE();
 
@@ -283,13 +302,14 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         m_towerSE = m_system->GetSE(m_data.towerID)->GetTowerSE();
         m_towerSE->AddModule(this);
         m_duration = 3600000;
-    } else {
-        m_duration = 0;
     }
 
     /** @todo check for timestamp here and see if any processes are running.
      * if so, set varaibles accordingly and continue.
      */
+    if (m_data.timestamp > 0) {
+        // do something constructive here.
+    }
 
     if (m_data.state > EVEPOS::StructureState::Anchored)
         m_self->SetFlag(flagStructureActive);
@@ -358,6 +378,7 @@ void StructureSE::Process() {
             } break;
         }
 
+        // this will need more work
         m_data.timestamp = 0;
 
         if (m_procState < ProcState::Online)

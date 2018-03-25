@@ -111,7 +111,7 @@ class PyServiceMgr;
 
 class CelestialSE : public ItemSystemEntity {
 public:
-    CelestialSE(CelestialObjectRef self, PyServiceMgr &services, SystemManager* system);
+    CelestialSE(InventoryItemRef self, PyServiceMgr& services, SystemManager* system);
     virtual ~CelestialSE()                              { /* Do nothing here */ }
 
     /* class type pointer querys. */
