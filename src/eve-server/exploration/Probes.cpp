@@ -307,6 +307,7 @@ void ProbeSE::RecoverProbe(PyList* list)
     list->AddItem(new PyInt(m_self->itemID()));
     m_returnTimer.Start(time *1000);
     SendStateChange(Probe::State::Returning);
+    //NotAllProbesReturnedSuccessfully
 }
 
 void ProbeSE::SendNewProbe()

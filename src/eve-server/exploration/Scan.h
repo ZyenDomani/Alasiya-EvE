@@ -38,6 +38,8 @@ public:
     // called by client timer, which was set for probeStateChange
     void ProcessScan(bool useProbe=false);
 
+    uint8 GetProbeCount()                               { return (uint8)m_probeMap.size(); }
+
     PyRep* ConeScan(Call_ConeScan args);
     void RequestScans(PyDict* dict);
     void ShipScanResult();
