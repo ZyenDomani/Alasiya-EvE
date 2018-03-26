@@ -200,6 +200,7 @@ void ProbeSE::Process()
     if (m_returnTimer.Check()) {
         m_returnTimer.Disable();
         _log(SCAN__DEBUG, "ProbeSE::Process() return timer hit for probeID %u", m_self->itemID());
+        sBubbleMgr.Add(this);
         SendWarpEnd();
         SendRemoveProbe();
         m_scan->RemoveProbe(this);
@@ -277,10 +278,10 @@ void ProbeSE::UpdateProbe(ProbeData& data)
         SendWarpStart(time);
     } else if (dist > 2500) {
         m_state = Probe::State::Moving;
-        SendStateChange(m_state);
         time += floor(dist / m_self->GetAttribute(AttrMaxVelocity).get_float());
     }
 
+    SendStateChange(m_state);
     m_bubble->Remove(this);
     m_stateTimer.Start(time *1000);
 
@@ -374,11 +375,10 @@ void ProbeSE::SendWarpStart(float travelTime/*0*/)
 
 void ProbeSE::SendWarpEnd()
 {
+    m_destiny->SetPosition(m_destination);
     PyTuple* tuple = new PyTuple(1);
         tuple->SetItem(0, new PyLong(m_self->itemID()));
     m_client->SendNotification("OnProbeWarpEnd", "clientID", &tuple, false);  // this is not sequenced
-
-    m_destiny->SetPosition(m_destination);
 }
 
 void ProbeSE::SendSlimChange()
@@ -445,6 +445,20 @@ float ProbeSE::GetDeviation()
  * 64 AU      32      28.8    25.6    22.4    19.2    16
  *
  */
+
+float ProbeSE::GetRangeModifier(float dist)
+{
+    switch(m_rangeStep) {
+        case 8:  return (dist / m_scanRange) * 0.125;
+        case 7:  return (dist / m_scanRange) * 0.25;
+        case 6:  return (dist / m_scanRange) * 0.375;
+        case 5:  return (dist / m_scanRange) * 0.50;
+        case 4:  return (dist / m_scanRange) * 0.625;
+        case 3:  return (dist / m_scanRange) * 0.75;
+        case 2:  return (dist / m_scanRange) * 0.875;
+        case 1:  return (dist / m_scanRange);
+    }
+}
 
 float ProbeSE::GetScanStrength()
 {

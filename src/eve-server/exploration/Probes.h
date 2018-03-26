@@ -112,6 +112,7 @@ public:
 
     float GetDeviation();
     float GetScanRange()                                { return m_scanRange; }
+    float GetRangeModifier(float dist);
 
     // total, modified probe scan strength, based on data modified by char skills, ship, launcher, distance and range
     float GetScanStrength();

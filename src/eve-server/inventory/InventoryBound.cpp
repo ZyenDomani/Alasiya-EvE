@@ -122,6 +122,9 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 
 
 PyResult InventoryBound::Handle_List(PyCallArgs &call) {
+    if (pInventory == nullptr)
+        return PyStatic.NewNone();
+    
     uint32 ownerID = m_ownerID;
     // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
     EVEItemFlags flag = mFlag, oldFlag = mFlag;
