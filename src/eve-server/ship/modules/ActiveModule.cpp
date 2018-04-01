@@ -818,9 +818,8 @@ void ActiveModule::LaunchProbe()
     if (pClient->scan() == nullptr)
         pClient->SetScan(new Scan(pClient));
 
-    uint8 pcount = 1;
-    pcount += pClient->scan()->GetProbeCount();
-    if (pcount == pClient->GetChar()->GetSkillLevel(skillAstrometrics)) {
+    uint8 pcount = pClient->scan()->GetProbeCount();
+    if (pcount == (pClient->GetChar()->GetSkillLevel(skillAstrometrics) +1)) {
         pClient->SendErrorMsg("You can only control %u probes based on your current skills.", pcount);
         return;
     }

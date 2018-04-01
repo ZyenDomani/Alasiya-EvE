@@ -447,17 +447,20 @@ float ProbeSE::GetDeviation()
  *
  */
 
+// this is not working right....
 float ProbeSE::GetRangeModifier(float dist)
 {
+    dist /= m_scanRange;
+    
     switch(m_rangeStep) {
-        case 8:  return (dist / m_scanRange) * 0.125;
-        case 7:  return (dist / m_scanRange) * 0.25;
-        case 6:  return (dist / m_scanRange) * 0.375;
-        case 5:  return (dist / m_scanRange) * 0.50;
-        case 4:  return (dist / m_scanRange) * 0.625;
-        case 3:  return (dist / m_scanRange) * 0.75;
-        case 2:  return (dist / m_scanRange) * 0.875;
-        case 1:  return (dist / m_scanRange);
+        case 8:  return dist * 0.125;
+        case 7:  return dist * 0.25;
+        case 6:  return dist * 0.375;
+        case 5:  return dist * 0.50;
+        case 4:  return dist * 0.625;
+        case 3:  return dist * 0.75;
+        case 2:  return dist * 0.875;
+        case 1:  return dist;
     }
 }
 

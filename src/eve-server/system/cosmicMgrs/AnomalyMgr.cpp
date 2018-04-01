@@ -122,7 +122,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     else if (security > 0.451) m_maxSigs = 12;
     else if (security > 0.251) m_maxSigs = 8;
     else                       m_maxSigs = 5;
-
+    m_maxSigs = 2;
     // will these be static, var by system, var by trusec, config options, other???
     m_Sigs = 0;
     m_Anoms = 0;

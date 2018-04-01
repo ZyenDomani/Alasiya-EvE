@@ -498,25 +498,25 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
         int8 count = 0;
         float probeSig = 0;
         for (auto cur : probeVec) {
-            dist = cur->GetPosition().distance(point);
-            rangeMod = cur->GetRangeModifier(dist);
+            dist = (cur->GetPosition().distance(point) /ONE_AU_IN_METERS);
+            rangeMod = log(-(pow(dist /32, 2))); //cur->GetRangeModifier(dist);
             scanStrength = cur->GetScanStrength();
             data.deviation += cur->GetDeviation();  // combine deviation (for now...may find a better way later.)
             probeSig = data.sig.sigStrength * scanStrength * probeMultiplier * rangeMod;
             data.certainty += probeSig;
-            _log(SCAN__TRACE, "Scan::GetSignalData()  Probe #%u - dist: %.2f, range: %.2f,  rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f, probeSig: %.5f", \
-                    ++count, dist, cur->GetScanRange(), rangeMod, scanStrength, probeMultiplier, probeSig);
+            _log(SCAN__TRACE, "Scan::GetSignalData()  Probe #%u - dist: %.4fAU,  rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f, probeSig: %.5f", \
+                    ++count, dist, rangeMod, scanStrength, probeMultiplier, probeSig);
         }
         // get average deviation from all probes
         data.deviation /= count;
     } else {
-        dist = probeVec.at(0)->GetPosition().distance(point);
-        rangeMod = probeVec.at(0)->GetRangeModifier(dist);
+        dist = (probeVec.at(0)->GetPosition().distance(point) /ONE_AU_IN_METERS);
+        rangeMod = log(-(pow(dist /32, 2))); //probeVec.at(0)->GetRangeModifier(dist);
         scanStrength = probeVec.at(0)->GetScanStrength();
         data.deviation = probeVec.at(0)->GetDeviation();
         data.certainty = data.sig.sigStrength * scanStrength * probeMultiplier * rangeMod /2;
-        _log(SCAN__TRACE, "Scan::GetSignalData()  single - dist: %.2f, range: %.2f,  rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f", \
-                dist, probeVec.at(0)->GetScanRange(), rangeMod, scanStrength, probeMultiplier);
+        _log(SCAN__TRACE, "Scan::GetSignalData()  single - dist: %.4fAU, rangeMod: %.5f, scanStrength: %.5f, multiplier: %.5f", \
+                dist, rangeMod, scanStrength, probeMultiplier);
     }
 
     // set minimum to 0.01%  nothing less will show in client
