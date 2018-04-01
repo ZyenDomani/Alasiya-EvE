@@ -286,8 +286,14 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         return;
     }
 
-    if (m_moonSE == nullptr)
-        m_moonSE = m_system->GetSE(m_data.moonID)->GetMoonSE();
+    if (m_moonSE == nullptr) {
+        SystemEntity* pSE = m_system->GetSE(m_data.moonID);
+        if (pSE == nullptr) {
+            iRef->Delete(); // really delete this?
+            return;
+        }
+        m_moonSE = pSE->GetMoonSE();
+    }
 
     if (m_co or m_miner) {
         GVector dir(m_self->position(), m_moonSE->GetPosition());
@@ -299,7 +305,12 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
     if (m_tower) {
         m_duration = m_self->GetAttribute(AttrPosControlTowerPeriod).get_int();
     } else if (m_module) {
-        m_towerSE = m_system->GetSE(m_data.towerID)->GetTowerSE();
+        SystemEntity* pSE = m_system->GetSE(m_data.towerID);
+        if (pSE == nullptr) {
+            iRef->Delete(); // really delete this?
+            return;
+        }
+        m_towerSE = pSE->GetTowerSE();
         m_towerSE->AddModule(this);
         m_duration = 3600000;
     }
