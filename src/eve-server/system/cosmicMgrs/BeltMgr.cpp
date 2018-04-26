@@ -351,7 +351,7 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
     float chance = 0.0;
     for(; cur != roids.end(); ++cur ) {
         chance += cur->first;
-        _log(COSMIC_MGR__MESSAGE, "GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
+        _log(COSMIC_MGR__MESSAGE, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
         if (chance > p )
             return cur->second;
     }
@@ -360,8 +360,18 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
 }
 
 void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const GPoint& position, bool ice/*false*/) {
-    if (typeID == 0)
+    if (typeID == 0) {
+        _log(COSMIC_MGR__WARNING, "BeltMgr::SpawnAsteroid - typeID is 0");
         return;
+    }
+    if (IsNaN(radius)) {
+        _log(COSMIC_MGR__WARNING, "BeltMgr::SpawnAsteroid - radius is NaN");
+        return;
+    }
+    if (radius <= 0) {
+        _log(COSMIC_MGR__WARNING, "BeltMgr::SpawnAsteroid - radius < 0");
+        return;
+    }
 
     double quantity = 0;
     if (ice) {

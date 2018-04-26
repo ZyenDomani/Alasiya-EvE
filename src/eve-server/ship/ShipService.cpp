@@ -64,6 +64,9 @@ public:
         PyCallable_REG_CALL(ShipBound, Jettison);
         PyCallable_REG_CALL(ShipBound, GetShipConfiguration);
         PyCallable_REG_CALL(ShipBound, SelfDestruct);
+
+        PyCallable_REG_CALL(ShipBound, BoardStoredShip);
+        PyCallable_REG_CALL(ShipBound, StoreVessel);
     }
 
     virtual ~ShipBound() {delete m_dispatch;}
@@ -86,6 +89,9 @@ public:
     PyCallable_DECL_CALL(GetShipConfiguration);
     PyCallable_DECL_CALL(SelfDestruct);
 
+    PyCallable_DECL_CALL(BoardStoredShip);
+    PyCallable_DECL_CALL(StoreVessel);
+
 protected:
     ShipDB& m_db;
     Dispatcher *const m_dispatch;
@@ -101,9 +107,6 @@ ShipService::ShipService(PyServiceMgr *mgr)
 
     //PyCallable_REG_CALL(ShipService,);
 
-    /* return error msg from this call, if applicable */
-    //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
-    //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
 }
 
 ShipService::~ShipService() {
@@ -984,7 +987,26 @@ PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
         self.sr.smballowfleet.SetChecked(self.conf['allowFleetSMBUsage']) (SMB = ShipMaintenanceBay)
     */
 
-    Client* pClient = call.client;
-    PyRep *result = NULL;
-    return result;
+    return nullptr;
+}
+
+
+PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
+    /*      ******* no packet data ***********
+     */
+//sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
+    sLog.White("ShipBound::Handle_BoardStoredShip()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult ShipBound::Handle_StoreVessel(PyCallArgs &call) {
+    /*      ******* no packet data ***********
+     */
+//sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
+    sLog.White("ShipBound::Handle_StoreVessel()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
 }

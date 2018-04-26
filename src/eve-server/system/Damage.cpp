@@ -162,6 +162,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         } break;
     }
 
+    // apply damage modifier from config
     d *= sConfig.rates.damageRate;
 
     Damage DamageToShield = d.MultiplyDup(

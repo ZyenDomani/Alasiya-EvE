@@ -427,7 +427,6 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
     return true;
 }
 
-/** @todo  this needs updating with better/correct checks */
 SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity)
 {
     FactionData data;
@@ -729,7 +728,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
     return nullptr;
 }
 
-void SystemManager::AddClient(Client* who, bool docked, bool count) {
+void SystemManager::AddClient(Client* who, bool docked/*false*/, bool count/*false*/) {
     //called from Client::MoveToLocation()
     if (who == nullptr)
         return;
@@ -748,7 +747,7 @@ void SystemManager::AddClient(Client* who, bool docked, bool count) {
     }
 }
 
-void SystemManager::RemoveClient(Client* who, bool docked, bool count) {
+void SystemManager::RemoveClient(Client* who, bool docked/*false*/, bool count/*false*/) {
     //called from Client::~Client() and Client::MoveToLocation()
     if (who == nullptr)
         return;
