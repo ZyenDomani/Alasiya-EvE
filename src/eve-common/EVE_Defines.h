@@ -144,6 +144,9 @@ maxDustCharacter = 2130000000
 #define IsValidLocation(itemID) \
  (itemID >= minValidLocation)
 
+#define IsValidOwner(itemID) \
+ (itemID >= minValidLocation)
+
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
 

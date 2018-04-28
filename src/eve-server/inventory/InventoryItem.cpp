@@ -577,7 +577,7 @@ void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
     into->SetField( "instanceID",    new PyLong( shipID ));  /* this is shipID */
     into->SetField( "flagID",        new PyInt( m_flag ));
     into->SetField( "typeID",        new PyInt( typeID() ));
-    into->SetField( "quantity",      new PyInt( quantity()));
+    into->SetField( "quantity",      new PyInt( m_quantity));
 }
 
 PyPackedRow* InventoryItem::GetModuleStatusRow() const {
@@ -595,7 +595,7 @@ void InventoryItem::GetModuleStatusRow(PyPackedRow* into) const {
     into->SetField( "instanceID",    new PyLong( m_itemID ));
     into->SetField( "flagID",        new PyInt( m_flag ));
     into->SetField( "typeID",        new PyInt( typeID() ));
-    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : quantity()));
+    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : m_quantity));
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -628,7 +628,7 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
     into->SetField( "ownerID",    new PyInt( m_ownerID ));
     into->SetField( "locationID", new PyInt( m_locationID ));
     into->SetField( "flagID",     new PyInt( m_flag ));
-    int32 qty = (m_singleton ? -1 : quantity());
+    int32 qty = (m_singleton ? -1 : m_quantity);
     if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
         if (sItemFactory.GetBlueprint(m_itemID)->copy())
             qty = -2;
@@ -796,7 +796,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     m_locationID = new_location;
 
     SaveItem();
-    if (IsNPCCorp(m_ownerID) or IsFaction(m_ownerID))
+    if (IsNPCCorp(m_ownerID) or IsFaction(m_ownerID))   //IsValidOwner()
         return;
 
     //notify about the changes.
@@ -810,68 +810,68 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
 }
 
-bool InventoryItem::AlterQuantity(int32 qty_change, bool notify/*false*/) {
-    if (qty_change == 0)
+bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
+    if (qty == 0)
         return true;
 
-    int32 new_qty = m_quantity + qty_change;
-
+    int32 new_qty = m_quantity + qty;
     if (new_qty < 0) {
-        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i quantity from stack of %i", m_itemName.c_str(), m_itemID, -qty_change, m_quantity);
+        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
+        // make player error msg here.....
         return false;
+    } else if (new_qty > EVEMU_MAX_SHORT_ID) {
+        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
+        new_qty = EVEMU_MAX_SHORT_ID -1;
+        // make player error msg here.....
     }
 
     return SetQuantity(new_qty, notify);
 }
 
-bool InventoryItem::SetQuantity(int32 qty_new, bool notify/*false*/) {
+bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
     //if an object is singleton, it shouldn't be able to add/remove qty
     if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty_new);
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
+        // make player error msg here.....
         return false;
     }
-
-    int32 old_qty = m_quantity;
-
-    m_quantity = qty_new;
-
-    SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
         // this informs client of a stack change
-        changes[/*ixQuantity*/ixStackSize] = new PyInt(old_qty);
+        changes[/*ixQuantity*/ixStackSize] = new PyInt(m_quantity);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
+    m_quantity = qty;
+    SaveItem();
     return true;
 }
-bool InventoryItem::SetFlag(EVEItemFlags new_flag, bool notify/*false*/) {
-    EVEItemFlags old_flag = m_flag;
-    m_flag = new_flag;
 
-    SaveItem();
-
+bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the new owner.
-        changes[ixFlag] = new PyInt(old_flag);
+        changes[ixFlag] = new PyInt(m_flag);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
+
+    m_flag = flag;
+    SaveItem();
     return true;
 }
 
-InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
-    if (qty_to_take <= 0) {
-        _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty_to_take);
+InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
+    if (qty <= 0) {
+        _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
-    if (!AlterQuantity(-qty_to_take, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i during split.", m_itemName.c_str(), m_itemID, qty_to_take);
+    if (!AlterQuantity(-qty, notify)) {
+        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i during split.", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
 
-    ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty_to_take);
+    ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty);
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return iRef;    // couldnt spawn new item...we'll get over it.
@@ -880,7 +880,10 @@ InventoryItemRef InventoryItem::Split(int32 qty_to_take, bool notify/*false*/) {
 }
 
 bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
-    if (singleton() or to_merge->singleton()) {
+    if (to_merge.get() == nullptr)
+        return false;
+
+    if (m_singleton or to_merge->singleton()) {
         throw PyException( MakeCustomError("You cannot stack assembled items."));
     }
 
@@ -892,11 +895,9 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     if (qty < 0) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %i units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
         return false;
-    } else if (qty == 0) {
-        qty = to_merge->quantity();
     }
 
-    if (qty == to_merge->quantity()) {
+    if ((qty == 0) or (qty == to_merge->quantity())) {
         to_merge->Delete();
     } else if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
@@ -911,23 +912,20 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     return true;
 }
 
-bool InventoryItem::ChangeSingleton(bool new_singleton, bool notify/*false*/) {
-    if (new_singleton == m_singleton)
+bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
+    if (singleton == m_singleton)
         return true;    //nothing to do...
-
-    bool old_singleton = m_singleton;
-    m_singleton = new_singleton;
-
-    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
-
-    SaveItem();
 
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
-        changes[ixSingleton] = new PyInt(old_singleton);
+        changes[ixSingleton] = new PyInt(m_singleton);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
+
+    m_singleton = singleton;
+    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
+    SaveItem();
 
     return true;
 }
@@ -936,21 +934,19 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
     if (new_owner == m_ownerID)
         return; //nothing to do...
 
-    uint32 old_owner = m_ownerID;
-    m_ownerID = new_owner;
-
-    SaveItem();
-
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the new owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
+        changes[ixOwnerID] = new PyInt(m_ownerID);
         SendItemChange(new_owner, changes); //changes is consumed
         //also send the notify to the old owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
-        SendItemChange(old_owner, changes); //changes is consumed
+        changes[ixOwnerID] = new PyInt(m_ownerID);
+        SendItemChange(m_ownerID, changes); //changes is consumed
     }
+
+    m_ownerID = new_owner;
+    SaveItem();
 }
 
 void InventoryItem::SaveItem() {
