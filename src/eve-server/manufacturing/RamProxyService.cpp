@@ -30,6 +30,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
+#include "StatisticMgr.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "manufacturing/Blueprint.h"
@@ -160,7 +161,8 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
 	// load installed item
     InventoryItemRef installedItem = sItemFactory.GetItem( args.installedItemID );
     if (installedItem.get() == nullptr) {
-        // this means item/location not loaded.  get data from installedItem named args and continue
+        // this means item/location not loaded.
+        //  get data from installedItem named args and continue
         // this will require some work/rewriting
 
         //RamBlueprintAlreadyInstalled
@@ -227,7 +229,6 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
     if (args.isCorpJob)
         RamMethods::LocationRolesCheck(call.client, pathBomLocation.flag);
 
-    PathElement path;
     /*  the first item in bomLocationData list is list of location data, which is same for both, although the data itself is different based on many other factors
                     invLocation = [locationid, invLocationGroupID]
      *  the next item in list is a "path" which can be a list of 1 or 3 items...this is a tricky one.
@@ -242,11 +243,13 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                     path.append([officeID, session.corpid, flagInput])
                     bomLocationData = [invLocation, path, []]
      */
+    /*  not correct.  will need more work....
+    PathElement path;
     if (!path.Decode(args.bomPath->GetItem(1))) {
         _log(SERVICE__ERROR, "Failed to decode last element of BOM location.");
         return nullptr;
-    }
-    InventoryItemRef lastContItem = sItemFactory.GetItem(path.locationID);
+    }*/
+    InventoryItemRef lastContItem = sItemFactory.GetItem(pathBomLocation.locationID);
     uint32 solarSystemID = lastContItem->locationID();
 
     // this calculates some useful multipliers ... Rsp_InstallJob is used as container and response to job quote.
@@ -399,10 +402,14 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                           args.licensedProductionRuns))
     {
         _log(MANUF__ERROR, "Could not InstallJob for %s", installedItem->itemName().c_str());
+        // make client error here...
+        return nullptr;
     }
 
     // we may need a separate table for invention jobs to store it's specific data....
 
+    // increment statistic counter
+    sStatMgr.Increment(Stat::ramJobs);
     return nullptr;
 }
 

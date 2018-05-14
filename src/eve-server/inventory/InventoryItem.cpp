@@ -576,7 +576,7 @@ PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
     into->SetField( "instanceID",    new PyLong( shipID ));  /* this is shipID */
     into->SetField( "flagID",        new PyInt( m_flag ));
-    into->SetField( "typeID",        new PyInt( typeID() ));
+    into->SetField( "typeID",        new PyInt( m_type.id() ));
     into->SetField( "quantity",      new PyInt( m_quantity));
 }
 
@@ -594,7 +594,7 @@ PyPackedRow* InventoryItem::GetModuleStatusRow() const {
 void InventoryItem::GetModuleStatusRow(PyPackedRow* into) const {
     into->SetField( "instanceID",    new PyLong( m_itemID ));
     into->SetField( "flagID",        new PyInt( m_flag ));
-    into->SetField( "typeID",        new PyInt( typeID() ));
+    into->SetField( "typeID",        new PyInt( m_type.id() ));
     into->SetField( "quantity",      new PyInt( m_singleton ? -1 : m_quantity));
 }
 
@@ -623,15 +623,16 @@ PyPackedRow* InventoryItem::GetItemRow() const
 
 void InventoryItem::GetItemRow( PyPackedRow* into ) const
 {
+    int32 qty = (m_singleton ? -1 : m_quantity);
+    if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
+        if (sItemFactory.GetBlueprint(m_itemID)->copy())
+            qty = -2;
+
     into->SetField( "itemID",     new PyLong( m_itemID ));
     into->SetField( "typeID",     new PyInt( m_type.id() ));
     into->SetField( "ownerID",    new PyInt( m_ownerID ));
     into->SetField( "locationID", new PyInt( m_locationID ));
     into->SetField( "flagID",     new PyInt( m_flag ));
-    int32 qty = (m_singleton ? -1 : m_quantity);
-    if (m_type.categoryID() == EVEDB::invCategories::Blueprint)
-        if (sItemFactory.GetBlueprint(m_itemID)->copy())
-            qty = -2;
     into->SetField( "quantity",   new PyInt( qty ));
     into->SetField( "groupID",    new PyInt( type().groupID() ));
     into->SetField( "categoryID", new PyInt( type().categoryID() ));
@@ -646,17 +647,28 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     result.attributes.clear();
     PySafeDecRef( result.itemID);
     PySafeDecRef( result.invItem);
+    result.time = Win32TimeNow();
 
-    if (groupID() == EVEDB::invCategories::Charge) {
+    if (m_type.groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
             tuple->SetItem(0, new PyInt(m_itemID));
             tuple->SetItem(1, new PyInt(m_flag));
-            tuple->SetItem(2, new PyInt(typeID()));
+            tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         result.invItem = PyStatic.NewNone();
+        return true;
+    }
+
+    result.itemID = new PyInt(m_itemID);
+    result.invItem = GetItemRow();
+
+    if (m_type.categoryID() == EVEDB::invCategories::Skill) {
+        result.attributes[AttrSkillTimeConstant] = new PyFloat(GetAttribute(AttrSkillTimeConstant).get_int());
+        result.attributes[AttrSkillPoints] = new PyInt(GetAttribute(AttrSkillPoints).get_int());
+        result.attributes[AttrSkillLevel] = new PyInt(GetAttribute(AttrSkillLevel).get_int());
+    } else if (m_type.id() == 51) { // for vouchers
+        result.description = m_itemName;
     } else {
-        result.itemID = new PyInt(m_itemID);
-        result.invItem = GetItemRow();
         if (IsOnline()) {
             //there is an effect that goes along with this. We should
             //probably be properly tracking the effect due to some
@@ -675,13 +687,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.randomSeed = PyStatic.NewNone();
             result.activeEffects[es.env_effectID] = es.Encode();
         }
-    }
 
-    if (categoryID() == EVEDB::invCategories::Skill) {
-        result.attributes[AttrSkillTimeConstant] = new PyInt(GetAttribute(AttrSkillTimeConstant).get_int());
-        result.attributes[AttrSkillPoints] = new PyInt(GetAttribute(AttrSkillPoints).get_int());
-        result.attributes[AttrSkillLevel] = new PyInt(GetAttribute(AttrSkillLevel).get_int());
-    } else {
         for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
@@ -691,11 +697,6 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         }
     }
 
-    // for vouchers
-    if (typeID() == 51)
-        result.description = m_itemName;
-
-    result.time = Win32TimeNow();
     return true;
 }
 
@@ -887,7 +888,7 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         throw PyException( MakeCustomError("You cannot stack assembled items."));
     }
 
-    if (typeID() != to_merge->typeID()) {
+    if (m_type.id() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
         return false;
     }
@@ -954,7 +955,7 @@ void InventoryItem::SaveItem() {
         m_itemID,
         ItemData(
             m_itemName.c_str(),
-            typeID(),
+            m_type.id(),
             m_ownerID,
             m_locationID,
             m_flag,

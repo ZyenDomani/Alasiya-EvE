@@ -1,7 +1,7 @@
 
  /**
   * @name StatisticMgr.cpp
-  *   server information system for managing and saving trivial game data
+  *   server information system for managing and saving trivial ingame statistical data
   *
   * @Author:    Allan
   * @date:      8 March 2018
@@ -35,6 +35,7 @@ void StatisticMgr::ClearAll()
 {
     m_data.span             = 0;
     m_data.pcShots          = 0;
+    m_data.ramJobs          = 0;
     m_data.pcMissiles       = 0;
     m_data.pcBounties       = 0;
     m_data.npcBounties      = 0;
@@ -104,6 +105,9 @@ void StatisticMgr::Increment(uint8 key)
         case Stat::pcShots:
             ++m_data.pcShots;
             break;
+        case Stat::ramJobs:
+            ++m_data.ramJobs;
+            break;
         case Stat::pcMissiles:
             ++m_data.pcMissiles;
             break;
@@ -135,6 +139,7 @@ void StatisticMgr::PrintInfo()
     sLog.Cyan("     StatisticMgr", " Ore Mined: %.2f m3", m_data.oreMined);
     sLog.Cyan("     StatisticMgr", " ISK Spent in Market: %.2f isk", m_data.iskMarket);
     sLog.Cyan("     StatisticMgr", " Ships Salvaged: %u", m_data.shipsSalvaged);
+    sLog.Cyan("     StatisticMgr", " R.A.M. Jobs: %u", m_data.ramJobs);
 }
 
 void StatisticMgr::SaveData()

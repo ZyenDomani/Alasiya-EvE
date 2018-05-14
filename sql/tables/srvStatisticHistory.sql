@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS `srvStatisticHistory` (
   `month` tinyint(2) NOT NULL DEFAULT '1',
   `pcShots` int(10) unsigned NOT NULL DEFAULT '0',
   `pcMissiles` int(10) unsigned NOT NULL DEFAULT '0',
+  `ramJobs` int(10) unsigned NOT NULL DEFAULT '0',
   `shipsSalvaged` smallint(5) unsigned NOT NULL DEFAULT '0',
   `pcBounties` float NOT NULL DEFAULT '0',
   `npcBounties` float NOT NULL DEFAULT '0',

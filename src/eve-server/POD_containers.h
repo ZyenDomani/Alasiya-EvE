@@ -317,6 +317,7 @@ struct StatisticData {
     uint16 shipsSalvaged;
     uint16 probesLaunched;
     uint16 sitesScanned;
+    uint16 ramJobs;
     uint32 pcShots;
     uint32 pcMissiles;
     double pcBounties;

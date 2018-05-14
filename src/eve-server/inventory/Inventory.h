@@ -69,6 +69,7 @@ public:
     /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
     bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
+    bool FindTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
     uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
     uint32 FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
     uint32 FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;

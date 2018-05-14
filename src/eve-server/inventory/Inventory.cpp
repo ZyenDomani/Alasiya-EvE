@@ -366,6 +366,17 @@ uint32 Inventory::FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &i
     return items.size();
 }
 
+bool Inventory::FindTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
+{
+    for (auto cur : mContents)
+        if (cur.second->flag() == flag)
+            items.emplace(cur.second->typeID(), cur.second);
+
+    if (items.size() > 0)
+        return true;
+    return false;
+}
+
 bool Inventory::FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const {
     for (auto cur : mContents)
         if (cur.second->flag() == flag) {

@@ -40,6 +40,7 @@ public:
     static void EncodeMissingMaterials(const std::vector< EvERam::RequiredItem >& reqItems, const PathElement& bomLocation, Client*const pClient, double materialMultiplier, double charMaterialMultiplier, int32 runs, std::map< int32, PyRep* >& into);
 
     static void GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into);
+    static void GetBOMItemsMap(const PathElement &bomLocation, std::map<uint16, InventoryItemRef> &into);
     static bool GetMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier);
 
     static void GetAdjustedRamRequiredMaterials();
@@ -144,5 +145,5 @@ public:
  * {'messageKey': 'ReverseRedeemingOnlyInStation', 'dataID': 17877516, 'suppressable': False, 'bodyID': 257281, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257280, 'messageID': 2911}
  * {'messageKey': 'ReverseRedeemingYouDoNotOwnItem', 'dataID': 17877433, 'suppressable': False, 'bodyID': 257249, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257248, 'messageID': 2914}
  *
- * 
+ *
  */

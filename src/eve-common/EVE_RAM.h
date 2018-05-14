@@ -19,6 +19,7 @@ namespace EvERam {
     namespace Activity {
         //from table 'ramActivities'
         enum  {
+            None = 0,
             Manufacturing = 1,
             ResearchTech = 2,
             ResearchTime = 3,

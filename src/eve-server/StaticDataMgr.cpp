@@ -525,15 +525,19 @@ void StaticDataMgr::GetRamRequirements(uint16 typeID, std::vector< EvERam::RamRe
 
 void StaticDataMgr::GetRamRequiredItems(const uint32 typeID, const int8 activity, std::vector< EvERam::RequiredItem >& into)
 {
-    if (activity == 1) {
-        auto itr = m_ramMatl.equal_range(typeID);
-        for (auto it = itr.first; it != itr.second; ++it)
-            into.push_back(EvERam::RequiredItem(it->second.materialTypeID, it->second.quantity, 0, false, false));
+    if (activity == EvERam::Activity::Manufacturing) {
+        std::map<uint16, BlueprintTypeData>::iterator itr = m_bpTypeData.find(typeID);
+        if (itr != m_bpTypeData.end()) {
+            auto range = m_ramMatl.equal_range(itr->second.productTypeID);
+            for (auto it = range.first; it != range.second; ++it)
+                into.push_back(EvERam::RequiredItem(it->second.materialTypeID, it->second.quantity, 0, false, false));
+        }
     }
 
     auto itr = m_ramReq.equal_range(typeID);
     for (auto it = itr.first; it != itr.second; ++it)
-        into.push_back(EvERam::RequiredItem(it->second.requiredTypeID, it->second.quantity, it->second.damagePerJob, IsSkillTypeID(it->second.requiredTypeID), it->second.extra));
+        if (activity == it->second.activityID)
+            into.push_back(EvERam::RequiredItem(it->second.requiredTypeID, it->second.quantity, it->second.damagePerJob, IsSkillTypeID(it->second.requiredTypeID), it->second.extra));
 }
 
 PyRep* StaticDataMgr::GetStationCount()

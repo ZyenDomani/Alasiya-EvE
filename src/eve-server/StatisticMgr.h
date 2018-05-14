@@ -28,7 +28,8 @@ namespace Stat {
         iskMarket       = 6,
         shipsSalvaged   = 7,
         probesLaunched  = 8,
-        sitesScanned    = 9
+        sitesScanned    = 9,
+        ramJobs         = 10
     };
 }
 

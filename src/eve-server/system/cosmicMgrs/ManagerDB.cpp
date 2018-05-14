@@ -649,10 +649,10 @@ void ManagerDB::SaveStatisticData(StatisticData& data)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO srvStatisticData"
-        " (timeStamp, timeSpan, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket)"
+        " (timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket)"
         " VALUES "
-        "(%f, %u, %u, %u, %u, %f, %f, %f, %f)", GetFileTimeNow(),
-        data.span, data.pcShots, data.pcMissiles, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket ))
+        "(%f, %u, %u, %u, %u, %u, %f, %f, %f, %f)", GetFileTimeNow(),
+        data.span, data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket ))
     {
         _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
     }

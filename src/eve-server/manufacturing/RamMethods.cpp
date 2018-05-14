@@ -291,12 +291,11 @@ void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
 
 void RamMethods::MaterialSkillsCheck(Client*const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems)
 {
-    std::vector<InventoryItemRef> items;
-    GetBOMItems( bomLocation, items );
+    std::map<uint16, InventoryItemRef> items;   // typeID, itemRef
+    GetBOMItemsMap( bomLocation, items );
 
     for (auto cur : reqItems) {
-        // check skill (quantity is required level)
-        if (cur.isSkill) {
+        if (cur.isSkill) { // check skill (quantity is required level)
             if (pClient->GetChar()->GetSkillLevel(cur.typeID) < cur.quantity) {
                 std::map<std::string, PyRep *> args;
                 args["item"] = new PyInt(cur.typeID);
@@ -307,18 +306,15 @@ void RamMethods::MaterialSkillsCheck(Client*const pClient, uint32 runs, const Pa
             uint32 qtyNeeded = (uint32)ceil(cur.quantity * rsp.materialMultiplier * runs);
             if (cur.damagePerJob == 1.0)
                 qtyNeeded = (uint32)ceil(qtyNeeded * rsp.charMaterialMultiplier);
-            std::vector<InventoryItemRef>::iterator curi = items.begin();
-            for (; curi != items.end(); curi++) {
-                if ((*curi)->typeID() == cur.typeID
-                and (*curi)->ownerID() == pClient->GetCharacterID()) {
-                    if ((*curi)->quantity() < qtyNeeded)
-                        qtyNeeded -= (*curi)->quantity();
-                    else {
-                        qtyNeeded = 0;
-                        break;
+            std::map<uint16, InventoryItemRef>::iterator itr = items.find(cur.typeID);
+            if (itr != items.end())
+                if (itr->second->typeID() == cur.typeID)
+                    if (itr->second->ownerID() == pClient->GetCharacterID()) {
+                        if (itr->second->quantity() < qtyNeeded)
+                            qtyNeeded -= itr->second->quantity();
+                        else
+                            qtyNeeded = 0;
                     }
-                }
-            }
 
             if (qtyNeeded) {
                 std::map<std::string, PyRep *> args;
@@ -543,12 +539,18 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
             into[cur.typeID] = new PyInt(qtyReq);
     }
 }
-
-void RamMethods::GetBOMItems(const PathElement &bomLocation, std::vector<InventoryItemRef> &into)
+void RamMethods::GetBOMItems(const PathElement& bomLocation, std::vector< InventoryItemRef >& into)
 {
     Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
     if (inventory != nullptr )
         inventory->FindByFlag( (EVEItemFlags)bomLocation.flag, into );
+}
+
+void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16, InventoryItemRef >& into)
+{
+    Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
+    if (inventory != nullptr )
+        inventory->FindTypesByFlag( (EVEItemFlags)bomLocation.flag, into );
 }
 
 
