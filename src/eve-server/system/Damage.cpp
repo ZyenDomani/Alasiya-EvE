@@ -265,41 +265,42 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         }
     }
 
-    PyTuple* up;
-    /**    def OnDamageMessage(self, msgKey, args):
-     * found in /eve/client/script/environment/godma.py
-     *
-     * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
-     * @todo this needs to be rewritten.  see notes in EVE_Damage.h
-     */
-    if (HasPilot()) {
-        //  notify player of damage done by other
-        Notify_OnDamageMessage_Self ondam;
-            ondam.messageID = Dmg::Msg::Self[damageID];
-            ondam.source = d.srcSE->GetID();
-            ondam.splash = "";
-            ondam.damage = total_damage;
-        up = ondam.Encode();
-        GetPilot()->QueueDestinyEvent(&up);
-    }
-
-    if (d.srcSE->HasPilot()) {
-        //Notifications to others:
-        Notify_OnDamageMessage ondamo;
-            ondamo.messageID = Dmg::Msg::Other[damageID];
-            ondamo.weapon = (d.chargeRef ? d.chargeRef->typeID() : d.weaponRef->typeID());
-            ondamo.damage = total_damage;
-            ondamo.target = GetID();
-            ondamo.splash = "";
-        up = ondamo.Encode();
-        d.srcSE->GetPilot()->QueueDestinyEvent(&up);
-    }
-
     if (killed) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
         SystemEntity::Killed(d);
         Killed(d);
     } else {
+        PyTuple* up(nullptr);
+        /**    def OnDamageMessage(self, msgKey, args):
+         * found in /eve/client/script/environment/godma.py
+         *
+         * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
+         * @todo this needs to be rewritten.  see notes in EVE_Damage.h
+         */
+        // only send damage msgs for ships NOT killed.
+        if (HasPilot()) {
+            //  notify player of damage done by other
+            Notify_OnDamageMessage_Self ondam;
+            ondam.messageID = Dmg::Msg::Self[damageID];
+            ondam.source = d.srcSE->GetID();
+            ondam.splash = "";
+            ondam.damage = total_damage;
+            up = ondam.Encode();
+            GetPilot()->QueueDestinyEvent(&up);
+        }
+        if (d.srcSE->HasPilot()) {
+            //Notifications to others:
+            Notify_OnDamageMessage ondamo;
+            ondamo.messageID = Dmg::Msg::Other[damageID];
+            ondamo.weapon = (d.chargeRef ? d.chargeRef->typeID() : d.weaponRef->typeID());
+            ondamo.damage = total_damage;
+            ondamo.target = GetID();
+            ondamo.splash = "";
+            up = ondamo.Encode();
+            d.srcSE->GetPilot()->QueueDestinyEvent(&up);
+        }
+        // make message with "owner" tag to enable msgs to drone owner
+
         if (d.srcSE->HasPilot())   //update this to use targetmanager's queue tb destiny event method.
             SendDamageStateChanged(d.srcSE);
     }
@@ -310,6 +311,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 void Ship::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         /** @todo  make error here */
+        return;
+    if (m_shipRef->IsPopped())
         return;
 
     m_shipRef->SetPopped(true);
@@ -338,7 +341,7 @@ void Ship::Killed(Damage &fatal_blow) {
     // AttrFwLpKill
 
     uint32 locationID = GetLocationID();
-    if (!m_self->GetPilot()) {
+    if (!m_self->HasPilot()) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:

@@ -45,6 +45,8 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
 : DynamicSystemEntity(self, services, system),
 m_spawnMgr(spawnMgr)
 {
+    killed = false;
+
     m_allyID = data.allianceID;
     m_warID = data.factionID;
     m_corpID = data.corporationID;
@@ -91,6 +93,9 @@ bool NPC::Load()
 
 
 void NPC::Process() {
+    if (killed)
+        return;
+
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();
@@ -296,6 +301,9 @@ void NPC::SetResists() {
 void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         return;
+    if (killed)
+        return;
+    killed = true;
 
     //notify our spawn manager that we are gone.
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))

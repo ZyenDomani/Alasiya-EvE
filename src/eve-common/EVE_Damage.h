@@ -20,7 +20,7 @@
  *   "RD  - received with details
  */
 
-/*{'messageKey': 'AttackHit1', 'dataID': 17885829, 'suppressable': False, 'bodyID': 260383, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 114}
+/* {'messageKey': 'AttackHit1', 'dataID': 17885829, 'suppressable': False, 'bodyID': 260383, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 114}
  * {'messageKey': 'AttackHit1Banked', 'dataID': 17878336, 'suppressable': False, 'bodyID': 257589, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2641}
  * {'messageKey': 'AttackHit1Banked_Simple', 'dataID': 17878333, 'suppressable': False, 'bodyID': 257588, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2652}
  * {'messageKey': 'AttackHit1R', 'dataID': 17885835, 'suppressable': False, 'bodyID': 260385, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 115}
