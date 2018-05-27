@@ -114,6 +114,7 @@ class Blueprint
 public:
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //remove the item from the DB.
+    // overload to merge the blueprints properly
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
     // overload to split the blueprints properly
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true) { return SplitBlueprint( qty_to_take, notify ); }
@@ -138,16 +139,16 @@ public:
     void                    UpdatePE(int32 change)      { m_data.pLevel += change;}
     void                    UpdateRuns(int32 change)    { m_data.runs += change;}
 
+    void                    SetME(int32 me)             { m_data.mLevel = me; }
+    void                    SetPE(int32 pe)             { m_data.pLevel = pe; }
+    void                    SetCopy(bool copy)          { m_data.copy = copy; }
+    void                    SetRuns(int32 runs)         { m_data.runs = runs; }
+
     bool                    infinite()                  { return ((m_data.runs < 0) ? true : false); }
     float                   timeFactor() const;
     float                   wasteFactor() const;
     double                  materialMultiplier()  const { return (1.0 + wasteFactor()); }
     double                  timeMultiplier()      const { return (1.0 - (timeFactor() / type().productionTime())); }
-
-    void                    SetCopy(bool copy)          { m_data.copy = copy; }
-    void                    SetME(uint32 me)            { m_data.mLevel = me; }
-    void                    SetPE(int32 pe)             { m_data.pLevel = pe; }
-    void                    SetRuns(int32 runs)         { m_data.runs = runs; }
 
     /*
      * Primary public packet builders:
