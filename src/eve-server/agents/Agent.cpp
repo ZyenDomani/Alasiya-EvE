@@ -20,8 +20,11 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
 */
+
+/** @todo  this needs updating.....  */
+
 
 #include "eve-server.h"
 
@@ -56,12 +59,52 @@ bool Agent::Load(AgentDB *from) {
 
 PyRep* Agent::GetLocation() {
     PyDict *res = new PyDict();
-
-    res->SetItemString("locationID", new PyInt(m_locationID) );
     res->SetItemString("typeID", new PyInt(m_locationType) );
+    res->SetItemString("locationID", new PyInt(m_locationID) );
     res->SetItemString("solarsystemID", new PyInt(m_solarSystemID) );
-
     return res;
+    /*
+     * def LocationWrapper(location, locationType = None):
+     *    if locationType is None and 'locationType' in location:
+     *        locationType = location['locationType']
+     *    pseudoSecurityRating = cfg.solarsystems.Get(location['solarsystemID']).pseudoSecurity
+     *    if pseudoSecurityRating <= 0:
+     *        securityKey = '0.0'
+     *    else:
+     *        securityKey = str(round(pseudoSecurityRating, 1))
+     *    secColor = SECURITY_COLORS[securityKey]
+     *    secColorAsHtml = '#%02X%02X%02X' % (secColor[0], secColor[1], secColor[2])
+     *    secWarning = '<font color=#E3170D>'
+     *    secClass = util.SecurityClassFromLevel(pseudoSecurityRating)
+     *    standingSvc = sm.GetService('standing')
+     *    if secClass <= const.securityClassLowSec:
+     *        secWarning += localization.GetByLabel('UI/Agents/LowSecWarning')
+     *    elif standingSvc.GetMySecurityRating() <= -5:
+     *        secWarning += localization.GetByLabel('UI/Agents/HighSecWarning')
+     *    secWarning += '</font>'
+     *    if 'coords' in location:
+     *        x, y, z = location['coords']
+     *        refAgentString = str(location['agentID'])
+     *        if 'referringAgentID' in location:
+     *            refAgentString += ',' + str(location['referringAgentID'])
+     *        infoLinkData = ['showinfo',
+     *         location['typeID'],
+     *         location['locationID'],
+     *         x,
+     *         y,
+     *         z,
+     *         refAgentString,
+     *         0,
+     *         locationType]
+     *    else:
+     *        infoLinkData = ['showinfo', location['typeID'], location['locationID']]
+     *    spacePigShipType = location.get('shipTypeID', None)
+     *    if spacePigShipType is not None:
+     *        locationName = localization.GetByLabel('UI/Agents/Items/ItemLocation', typeID=spacePigShipType, locationID=location['locationID'])
+     *    else:
+     *        locationName = cfg.evelocations.Get(location['locationID']).locationName
+     *    return localization.GetByLabel('UI/Agents/LocationWrapper', startFontTag='<font color=%s>' % secColorAsHtml, endFontTag='</font>', securityRating=pseudoSecurityRating, locationName=locationName, linkdata=infoLinkData, securityWarning=secWarning)
+     */
 }
 
 uint32 Agent::GetLoyaltyPoints(Client *who) {

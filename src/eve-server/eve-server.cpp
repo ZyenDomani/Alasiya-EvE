@@ -31,6 +31,7 @@
 // data managers
 #include "StaticDataMgr.h"
 #include "StatisticMgr.h"
+#include "missions/MissionDataMgr.h"
 // account services
 #include "account/AccountService.h"
 #include "account/AuthService.h"
@@ -607,6 +608,7 @@ int main( int argc, char* argv[] )
 
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
+    sMissionDataMgr.Initialize();
     std::printf("\n");     // spacer
 
     sLog.Green("       ServerInit", "Effect Data");

@@ -125,14 +125,6 @@ typedef enum {
 
 //  -allan 7Jul14
 typedef enum {
-    MissionAllocated    = 0,
-    MissionOffered      = 1,
-    MissionAccepted     = 2,
-    MissionFailed       = 3
-} MissionState;
-
-//  -allan 7Jul14
-typedef enum {
     DungeonStarted      = 0,
     DungeonCompleted    = 1,
     DungeonFailed       = 2
@@ -169,20 +161,6 @@ enum SearchTypes {
     searchMaxResults            = 500,
     searchMinWildcardLength     = 3
 };
-
-//  -allan 20Dec14
-typedef enum {
-    agentTypeNonAgent = 1,
-    agentTypeBasicAgent = 2,
-    agentTypeTutorialAgent = 3,
-    agentTypeResearchAgent = 4,
-    agentTypeGenericStorylineMissionAgent = 6,
-    agentTypeStorylineMissionAgent = 7,
-    agentTypeEventMissionAgent = 8,
-    agentTypeFactionalWarfareAgent = 9,
-    agentTypeEpicArcAgent = 10,
-    agentTypeAura = 11
-} agentTypes;
 
 enum EVETutorialTypes {
     advchannelsTutorial = 50,
@@ -446,7 +424,7 @@ typedef enum {
     corpSanshas             = 1000161,
     corpSerpentis           = 1000135,
     corpInterbus            = 1000148
-    
+
     /*
      CBD Corporation     1000002
      Prompt Delivery     1000003

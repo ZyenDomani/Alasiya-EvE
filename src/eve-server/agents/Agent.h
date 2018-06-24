@@ -27,6 +27,7 @@
 
 #include "agents/AgentDB.h"
 
+/*
 class Agent;
 
 class AgentMissionSpec {
@@ -120,7 +121,6 @@ public:
 };
 
 
-class Client;
 
 class AgentActions {
 public:
@@ -129,6 +129,9 @@ public:
     std::string agentSays;
     std::map<uint32, std::string> actions;
 };
+*/
+
+class Client;
 
 class Agent {
 public:
@@ -144,7 +147,7 @@ public:
 
 protected:
     const uint32 m_agentID;
-    std::map<uint32, AgentActions *> m_actions;    //we own these.
+    //std::map<uint32, AgentActions *> m_actions;    //we own these.
 
 	//AgentLevel *m_agentLevel;
  	uint32 m_solarSystemID;

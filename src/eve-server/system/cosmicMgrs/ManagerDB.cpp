@@ -66,6 +66,54 @@ PyObject* ManagerDB::GetBillTypes() {
     return DBResultToRowset(res);
 }
 
+PyObjectEx* ManagerDB::GetAgents() {
+    /*
+            t = sm.RemoteSvc('agentMgr').GetAgents()
+            newRowSet = util.Rowset(t.columns)
+            for r in t:
+                newRowSet.lines.append(list(r))
+
+            newRowSet.AddField('factionID', None)
+            newRowSet.AddField('solarsystemID', None)
+            for each in newRowSet:
+                if not util.IsStation(each.stationID):
+                    continue
+                if each.stationID:
+                    station = sm.GetService('ui').GetStation(each.stationID)
+                    each.corporationID = each.corporationID or station.ownerID
+                    each.solarsystemID = station.solarSystemID
+                each.factionID = sm.GetService('faction').GetFaction(each.corporationID)
+
+            self.allAgentsByID = newRowSet.Index('agentID')
+            self.allAgentsByStationID = newRowSet.Filter('stationID')
+            self.allAgentsByCorpID = newRowSet.Filter('corporationID')
+    */
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "    agt.agentID,"
+        "    agt.agentTypeID,"
+        "    agt.divisionID,"
+        "    agt.level,"
+        "    agt.quality,"
+        "    agt.corporationID,"
+        "    chr.solarSystemID,"
+        "    chr.stationID,"
+        "    chr.gender,"
+        "    bl.bloodlineID"
+        " FROM agtAgents AS agt"
+        " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
+        " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
+    ))
+    {
+        codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    _log(DATABASE__RESULTS, "GetAgents returned %u items", res.GetRowCount());
+    return DBResultToCRowset(res);
+}
+
 PyObjectEx *ManagerDB::GetOperands() {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -256,6 +304,12 @@ void ManagerDB::GetStaticData(DBQueryResult& res)
     if (!sDatabase.RunQuery(res,
         "SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize WHERE solarSystemID IS NOT NULL"))
         codelog(DATABASE__ERROR, "Error in GetStaticInfo query: %s", res.error.c_str());
+}
+
+void ManagerDB::GetAgentLocation(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT agentID, locationID FROM agtAgents"))
+        codelog(DATABASE__ERROR, "Error in GetAgentLocation query: %s", res.error.c_str());
 }
 
 void ManagerDB::GetMoonResouces(DBQueryResult& res)

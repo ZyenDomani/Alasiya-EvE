@@ -48,10 +48,10 @@ protected:
     Agent *_GetAgent(uint32 agentID);
 
     PyCallable_DECL_CALL(GetAgents);
-    PyCallable_DECL_CALL(GetMyJournalDetails);
-    PyCallable_DECL_CALL(GetMyEpicJournalDetails);
-    PyCallable_DECL_CALL(GetSolarSystemOfAgent);
     PyCallable_DECL_CALL(GetCareerAgents);
+    PyCallable_DECL_CALL(GetMyJournalDetails);
+    PyCallable_DECL_CALL(GetSolarSystemOfAgent);
+    PyCallable_DECL_CALL(GetMyEpicJournalDetails);
 
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);

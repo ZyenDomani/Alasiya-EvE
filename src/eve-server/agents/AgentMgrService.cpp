@@ -39,6 +39,7 @@
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "agents/Agent.h"
 #include "agents/AgentMgrService.h"
@@ -59,9 +60,9 @@ public:
 
         m_strBoundObjectName = "AgentMgrBound";
 
-        PyCallable_REG_CALL(AgentMgrBound, GetInfoServiceDetails);
         PyCallable_REG_CALL(AgentMgrBound, DoAction);
         PyCallable_REG_CALL(AgentMgrBound, GetAgentLocationWrap);
+        PyCallable_REG_CALL(AgentMgrBound, GetInfoServiceDetails);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionBriefingInfo);
         PyCallable_REG_CALL(AgentMgrBound, GetMissionObjectiveInfo);
 
@@ -72,9 +73,9 @@ public:
         delete this;
     }
 
-    PyCallable_DECL_CALL(GetInfoServiceDetails);
     PyCallable_DECL_CALL(DoAction);
     PyCallable_DECL_CALL(GetAgentLocationWrap);
+    PyCallable_DECL_CALL(GetInfoServiceDetails);
     PyCallable_DECL_CALL(GetMissionBriefingInfo);
     PyCallable_DECL_CALL(GetMissionObjectiveInfo);
 
@@ -93,11 +94,10 @@ AgentMgrService::AgentMgrService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(AgentMgrService, GetAgents);
+    PyCallable_REG_CALL(AgentMgrService, GetCareerAgents);
     PyCallable_REG_CALL(AgentMgrService, GetMyJournalDetails);
     PyCallable_REG_CALL(AgentMgrService, GetSolarSystemOfAgent);
-    PyCallable_REG_CALL(AgentMgrService, GetCareerAgents);
     PyCallable_REG_CALL(AgentMgrService, GetMyEpicJournalDetails);
-
 }
 
 AgentMgrService::~AgentMgrService() {
@@ -139,71 +139,20 @@ PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_
     return(new AgentMgrBound(m_manager, &m_db, agent));
 }
 
-
-//20:49:34 L AgentMgrService::Handle_GetAgents(): size= 0
 PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
-  /*
-22:07:37 L AgentMgrService::Handle_GetAgents(): size= 0
-22:07:37 [SvcCall]   Call Arguments:
-22:07:37 [SvcCall]       Tuple: Empty
-22:07:37 [SvcCall]   Call Named Arguments:
-22:07:37 [SvcCall]     Argument 'machoVersion':
-22:07:37 [SvcCall]         List: 2 elements
-22:07:37 [SvcCall]           [ 0] Integer field: 130409676630000000
-22:07:37 [SvcCall]           [ 1] Integer field: -164492702
-  sLog.White( "AgentMgrService::Handle_GetAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    */
-  /*
-   * 00:25:33 [SvcCall] Service agentMgr::GetAgents()
-   * 00:25:33 [DBQuery] DBcore Query - SELECT    agt.agentID,    agt.agentTypeID,    agt.divisionID,    agt.level,    agt.quality,    agt.corporationID,    chr.stationID,    chr.gender,    bl.bloodlineID FROM agtAgents AS agt LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID
-   * 00:25:33 [DBResult] GetAgents returned 10977 items
-   */
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetAgents");
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetAgents();
-        if(result == NULL) {
-            codelog(SERVICE__ERROR, "Failed to load cache, generating empty contents.");
-            result = new PyNone();
-        }
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
+    return sDataMgr.GetAgents();
 }
 
 ///  this really needs to be a cached object....load/save in an agent data mgr singleton?
 PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
-{/*
-  uint8 size = call.tuple->size();
-  uint32 int1 = call.tuple->GetItem(0)->AsInt()->value();
-  sLog.White( "AgentMgrService::Handle_GetSolarSystemOfAgent()", "size= %u, 0=%s(%u)", size, call.tuple->GetItem( 0 )->TypeString(), int1 );
-22:28:49 [SvcCall]   Call Arguments:
-22:28:49 [SvcCall]       Tuple: 1 elements
-22:28:49 [SvcCall]         [ 0] Integer field: 3019442      // <- this value increments @ 10/sec
-22:28:49 [SvcCall]   Call Named Arguments:
-22:28:49 [SvcCall]     Argument 'machoVersion':
-22:28:49 [SvcCall]         Integer field: 1
-
-    call.Dump(SERVICE__CALL_DUMP);
-    */
-    Call_SingleArg args;
-    if(!args.Decode(&call.tuple)) {
+{
+    Call_SingleIntegerArg args;
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
-	//return (m_db.GetAgentSolarSystem(args.arg));
-	return NULL;
+    return sDataMgr.GetAgentSystemID(args.arg);
 }
 
 //15:39:45 L AgentMgrBound::Handle_DoAction(): size= 1, 0=None
@@ -468,9 +417,6 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
 PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
 {
     /*
-     *    06:48:06 L AgentMgrBound::Handle_GetInfoServiceDetails(): size= 0
-     *    06:48:31 L AgentMgrBound::Handle_GetMissionBriefingInfo(): size= 0
-     *    06:48:31 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0, AgentID = 3017337
      */
     sLog.White( "AgentMgrBound::Handle_GetAgentLocationWrap()", "size= %u, AgentID = %u", call.tuple->size(), m_agent->GetID() );
     call.Dump(SERVICE__CALL_DUMP);
@@ -791,31 +737,3 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
     return new PyNone();
 
 }
-
-/**
-agents.GetAgentsByStationID()
-agents.GetDivisions()
-
-agentTypeNonAgent = 1
-agentTypeBasicAgent = 2
-agentTypeTutorialAgent = 3
-agentTypeResearchAgent = 4
-agentTypeGenericStorylineMissionAgent = 6
-agentTypeStorylineMissionAgent = 7
-agentTypeEventMissionAgent = 8
-agentTypeFactionalWarfareAgent = 9
-agentTypeEpicArcAgent = 10
-agentTypeAura = 11
-
-//  mission states
-typedef enum {
-	MissionAllocated = 0,
-	MissionOffered = 1,
-	MissionAccepted = 2,
-	MissionFailed = 3,
-	DungeonStarted = 0,
-	DungeonCompleted = 1,
-	DungeonFailed = 2
-} missionState;
-
-*/

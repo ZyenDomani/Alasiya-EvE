@@ -30,33 +30,6 @@
 
 #include "agents/AgentDB.h"
 
-PyObjectEx *AgentDB::GetAgents() {
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "    agt.agentID,"
-        "    agt.agentTypeID,"
-        "    agt.divisionID,"
-        "    agt.level,"
-        "    agt.quality,"
-        "    agt.corporationID,"
-        "    chr.stationID,"
-        "    chr.gender,"
-        "    bl.bloodlineID"
-        " FROM agtAgents AS agt"
-        " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
-        " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
-    ))
-    {
-        codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
-        return NULL;
-    }
-
-    _log(DATABASE__RESULTS, "GetAgents returned %u items", res.GetRowCount());
-    return DBResultToCRowset(res);
-}
-
 bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
@@ -131,6 +104,8 @@ AgentLevel *AgentDB::LoadAgentLevel(uint8 level)
     IDs.clear();
     DBResultRow row;
 
+    // this needs to go into a static mission data container....
+    // separate from static data?  yeah.  mission data object.
     while(res.GetRow(row)) {
         AgentMissionSpec *spec = new AgentMissionSpec;
         spec->missionID = row.GetUInt(0);

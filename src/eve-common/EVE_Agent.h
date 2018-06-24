@@ -1,5 +1,109 @@
 
+/*
+ *  EVE_Agent.h
+ *   agent-specific enumerators
+ *
+ */
 
+#ifndef EVE_AGENT_H
+#define EVE_AGENT_H
+
+namespace Agent {
+    namespace Type {
+        enum {
+            //  -allan 20Dec14
+            None                = 1,
+            Basic               = 2,
+            Tutorial            = 3,
+            Research            = 4,
+            GenericStoryLine    = 6,
+            StoryLine           = 7,
+            Event               = 8,
+            FacWar              = 9,
+            EpicArc             = 10,
+            Aura                = 11
+        };
+    }
+
+    namespace Range {
+        enum {
+            SameSystem = 1,
+            SameOrNeighboringSystemSameConstellation = 2,
+            SameOrNeighboringSystem = 3,
+            NeighboringSystemSameConstellation = 4,
+            NeighboringSystem = 5,
+            SameConstellation = 6,
+            SameOrNeighboringConstellationSameRegion = 7,
+            SameOrNeighboringConstellation = 8,
+            NeighboringConstellationSameRegion = 9,
+            NeighboringConstellation = 10,
+            NearestEnemyCombatZone = 11,
+            NearestCareerHub = 12
+        };
+    }
+
+    namespace IskMult {
+        enum {
+            Level1 = 1,
+            Level2 = 2,
+            Level3 = 4,
+            Level4 = 8,
+            Level5 = 16,
+            RandomLow = 11000,
+            RandomHigh = 16500
+        };
+    }
+
+
+    namespace LpMult {
+        enum {
+            Level1 = 20,
+            Level2 = 60,
+            Level3 = 180,
+            Level4 = 540,
+            Level5 = 4860
+        };
+    }
+
+
+    namespace Career {
+        enum {
+            Industry    = 1,
+            Business    = 2,
+            Military    = 3,
+            Exploration = 4,
+            AdvMilitary = 5
+        };
+    }
+
+}
+
+namespace Dialog {
+    namespace Button {
+        enum {
+            ViewMission         = 1,
+            RequestMission      = 2,
+            Accept              = 3,
+            AcceptChoice        = 4,
+            AcceptRemotely      = 5,
+            Complete            = 6,
+            CompleteRemotely    = 7,
+            Continue            = 8,
+            Decline             = 9,
+            Defer               = 10,
+            Quit                = 11,
+            StartResearch       = 12,
+            CancelResearch      = 13,
+            BuyDatacores        = 14,
+            LocateCharacter     = 15,
+            LocateAccept        = 16,
+            LocateReject        = 17,
+            Yes                 = 18,
+            No                  = 19
+        };
+    }
+
+}
 
 
 
@@ -83,63 +187,6 @@
  * 3019494]
  */
 
-/*
- * agentRangeSameSystem = 1
- * agentRangeSameOrNeighboringSystemSameConstellation = 2
- * agentRangeSameOrNeighboringSystem = 3
- * agentRangeNeighboringSystemSameConstellation = 4
- * agentRangeNeighboringSystem = 5
- * agentRangeSameConstellation = 6
- * agentRangeSameOrNeighboringConstellationSameRegion = 7
- * agentRangeSameOrNeighboringConstellation = 8
- * agentRangeNeighboringConstellationSameRegion = 9
- * agentRangeNeighboringConstellation = 10
- * agentRangeNearestEnemyCombatZone = 11
- * agentRangeNearestCareerHub = 12
- * agentIskMultiplierLevel1 = 1
- * agentIskMultiplierLevel2 = 2
- * agentIskMultiplierLevel3 = 4
- * agentIskMultiplierLevel4 = 8
- * agentIskMultiplierLevel5 = 16
- * agentIskMultipliers = (agentIskMultiplierLevel1,
- * agentIskMultiplierLevel2,
- * agentIskMultiplierLevel3,
- * agentIskMultiplierLevel4,
- * agentIskMultiplierLevel5)
- * agentLpMultiplierLevel1 = 20
- * agentLpMultiplierLevel2 = 60
- * agentLpMultiplierLevel3 = 180
- * agentLpMultiplierLevel4 = 540
- * agentLpMultiplierLevel5 = 4860
- * agentLpMultipliers = (agentLpMultiplierLevel1,
- * agentLpMultiplierLevel2,
- * agentLpMultiplierLevel3,
- * agentLpMultiplierLevel4,
- * agentLpMultiplierLevel5)
- * agentIskRandomLowValue = 11000
- * agentIskRandomHighValue = 16500
- * agentCareerTypeIndustry = 1
- * agentCareerTypeBusiness = 2
- * agentCareerTypeMilitary = 3
- * agentCareerTypeExploration = 4
- * agentCareerTypeAdvMilitary = 5
- * agentDialogueButtonViewMission = 1
- * agentDialogueButtonRequestMission = 2
- * agentDialogueButtonAccept = 3
- * agentDialogueButtonAcceptChoice = 4
- * agentDialogueButtonAcceptRemotely = 5
- * agentDialogueButtonComplete = 6
- * agentDialogueButtonCompleteRemotely = 7
- * agentDialogueButtonContinue = 8
- * agentDialogueButtonDecline = 9
- * agentDialogueButtonDefer = 10
- * agentDialogueButtonQuit = 11
- * agentDialogueButtonStartResearch = 12
- * agentDialogueButtonCancelResearch = 13
- * agentDialogueButtonBuyDatacores = 14
- * agentDialogueButtonLocateCharacter = 15
- * agentDialogueButtonLocateAccept = 16
- * agentDialogueButtonLocateReject = 17
- * agentDialogueButtonYes = 18
- * agentDialogueButtonNo = 19
- */
+
+#endif  // EVE_AGENT_H
+

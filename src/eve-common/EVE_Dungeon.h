@@ -10,16 +10,36 @@
 namespace Dungeon {
     namespace Type {
         enum {
-            Mission             = 1, // npc mission
-            Gravimetric         = 2, // roids
-            Magnetometric       = 3, // salvage and archeology
-            Radar               = 4, // hacking
-            Ladar               = 5, // gas mining
-            Wormhole            = 6, // wtf is a 'wormhole'??
-            Anomaly             = 7, // non-rated dungeon that isnt required to scan with probes
-            Unrated             = 8, // non-rated dungeon  no waves, possible escalation to complex
-            Escalation          = 9, // new dungeon from previous site. very limited access
-            Rated               = 10 // DED rated dungeon
+            Mission         = 1, // npc mission
+            Gravimetric     = 2, // roids
+            Magnetometric   = 3, // salvage and archeology
+            Radar           = 4, // hacking
+            Ladar           = 5, // gas mining
+            Wormhole        = 6, // wtf is a 'wormhole'??
+            Anomaly         = 7, // non-rated dungeon that isnt required to scan with probes
+            Unrated         = 8, // non-rated dungeon  no waves, possible escalation to complex
+            Escalation      = 9, // new dungeon from previous site. very limited access
+            Rated           = 10 // DED rated dungeon
+        };
+    }
+
+    namespace Spawn {
+        enum {
+            Belts           = 0,
+            Gate            = 1,
+            Near            = 2,
+            Deep            = 3,
+            Reinforcments   = 4,
+            Stations        = 5,
+            Faction         = 6,
+            Concord         = 7
+        };
+    }
+    namespace Status {
+        enum {
+            Started         = 0,
+            Completed       = 1,
+            Failed          = 2
         };
     }
 
@@ -155,14 +175,6 @@ DUNGEON_ORIGIN_EDIT = 4
 DUNGEON_ORIGIN_DISTRIBUTION = 5
 DUNGEON_ORIGIN_PATH = 6
 DUNGEON_ORIGIN_TUTORIAL = 7
-dungeonSpawnBelts = 0
-dungeonSpawnGate = 1
-dungeonSpawnNear = 2
-dungeonSpawnDeep = 3
-dungeonSpawnReinforcments = 4
-dungeonSpawnStations = 5
-dungeonSpawnFaction = 6
-dungeonSpawnConcord = 7
 */
 
 #endif  // EVE_DUNGEON_H

@@ -38,6 +38,7 @@ public:
     void                GetInfo();
 
     PyObject*           GetKeyMap()                     { PyIncRef(m_keyMap); return m_keyMap; }
+    PyObjectEx*         GetAgents()                     { PyIncRef(m_agents); return m_agents; }
     PyObjectEx*         GetOperands()                   { PyIncRef(m_operands); return m_operands; }
     PyObject*           GetBillTypes()                  { PyIncRef(m_billTypes); return m_billTypes; }
     PyObject*           GetEntryTypes()                 { PyIncRef(m_entryTypes); return m_entryTypes; }
@@ -93,6 +94,7 @@ public:
     std::string         GetFlagName(uint16 flag);
     std::string         GetFlagName(EVEItemFlags flag);
 
+    PyInt*              GetAgentSystemID(int32 agentID);
 
 protected:
     void                Populate();
@@ -105,6 +107,7 @@ private:
     PyObject*                                           m_entryTypes;
     PyObject*                                           m_billTypes;
     PyObject*                                           m_npcDivisions;
+    PyObjectEx*                                         m_agents;
     PyObjectEx*                                         m_operands;
 
     std::map<uint16, PyDict*>                           m_bpMatlData;       // typeID/dict*
@@ -112,6 +115,7 @@ private:
     std::map<uint32, uint32>                            m_regions;          // regionID/ownerFactionID
     std::map<uint32, uint32>                            m_ratRegions;       // regionID/ratFactionID
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
+    std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID

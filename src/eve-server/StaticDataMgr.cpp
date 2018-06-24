@@ -20,6 +20,7 @@
 
 StaticDataMgr::StaticDataMgr()
 : m_keyMap(nullptr),
+m_agents(nullptr),
 m_operands(nullptr),
 m_billTypes(nullptr),
 m_entryTypes(nullptr),
@@ -34,6 +35,7 @@ m_npcDivisions(nullptr)
     m_systemData.clear();
     m_staticData.clear();
     m_salvageMap.clear();
+    m_agentSystem.clear();
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_stationConst.clear();
@@ -62,6 +64,7 @@ void StaticDataMgr::Clear()
     m_systemData.clear();
     m_staticData.clear();
     m_salvageMap.clear();
+    m_agentSystem.clear();
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_stationConst.clear();
@@ -70,6 +73,7 @@ void StaticDataMgr::Clear()
     m_oreBySecClass.clear();
 
     PySafeDecRef(m_keyMap);
+    PySafeDecRef(m_agents);
     PySafeDecRef(m_operands);
     PySafeDecRef(m_billTypes);
     PySafeDecRef(m_entryTypes);
@@ -86,6 +90,10 @@ void StaticDataMgr::Populate()
     m_keyMap = ManagerDB::GetKeyMap();
     if (m_keyMap == nullptr)
         sLog.Error("    StaticDataMgr", "m_keyMap is null");
+
+    m_agents = ManagerDB::GetAgents();
+    if (m_agents == nullptr)
+        sLog.Error("    StaticDataMgr", "m_operands is null");
 
     m_operands = ManagerDB::GetOperands();
     if (m_operands == nullptr)
@@ -358,9 +366,26 @@ void StaticDataMgr::Populate()
         spawnClass.cbs = row.GetInt(15);
         m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
-
     sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
               m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    uint32 locationID = 0;
+    ManagerDB::GetAgentLocation(*res);
+    while (res->GetRow(row)) {
+        //SELECT agentID, locationID FROM agtAgents
+        locationID = row.GetInt(1);
+        if (IsStation(locationID)) {
+            locationID = GetStationSystem(locationID);
+        } else if (!IsSolarSystem(locationID)) {
+            _log(SERVICE__WARNING, "Failed to query info:  locationID %u is neither station nor system.", locationID);
+            continue;
+        }
+
+        m_agentSystem.insert(std::pair<uint32, uint32>(row.GetInt(0), locationID));
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Agent Data Sets loaded in %.3fms.", m_agentSystem.size(), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);
@@ -375,6 +400,16 @@ void StaticDataMgr::GetInfo()
      * m_staticData;
      *
      */
+}
+
+PyInt* StaticDataMgr::GetAgentSystemID(int32 agentID)
+{
+    std::map<uint32, uint32>::iterator itr = m_agentSystem.find(agentID);
+    if (itr != m_agentSystem.end())
+        return new PyInt(itr->second);
+
+    _log(DATABASE__MESSAGE, "Failed to query system info for agent %u: Agent not found.", agentID);
+    return new PyInt(0);
 }
 
 void StaticDataMgr::GetSalvage(uint32 factionID, std::vector<uint32> &itemList) {
@@ -413,8 +448,9 @@ bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
     if (itr != m_skills.end()) {
         name = itr->second;
         return true;
-    } else
-        _log(DATABASE__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
+    }
+
+    _log(DATABASE__MESSAGE, "Failed to query name for skill %u: Skill not found.", skillID);
     return false;
 }
 
@@ -559,8 +595,8 @@ uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
     std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
     if (itr != m_stationRegion.end())
         return itr->second;
-    else
-        _log(DATABASE__MESSAGE, "Failed to query region info for station %u: Station not found.", stationID);
+
+    _log(DATABASE__MESSAGE, "Failed to query region info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -569,8 +605,8 @@ uint32 StaticDataMgr::GetStationConstellation(uint32 stationID)
     std::map<uint32, uint32>::iterator itr = m_stationConst.find(stationID);
     if (itr != m_stationConst.end())
         return itr->second;
-    else
-        _log(DATABASE__MESSAGE, "Failed to query constellation info for station %u: Station not found.", stationID);
+
+    _log(DATABASE__MESSAGE, "Failed to query constellation info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -579,8 +615,8 @@ uint32 StaticDataMgr::GetStationSystem(uint32 stationID)
     std::map<uint32, uint32>::iterator itr = m_stationSystem.find(stationID);
     if (itr != m_stationSystem.end())
         return itr->second;
-    else
-        _log(DATABASE__MESSAGE, "Failed to query system info for station %u: Station not found.", stationID);
+
+    _log(DATABASE__MESSAGE, "Failed to query system info for station %u: Station not found.", stationID);
     return 0;
 }
 
@@ -615,9 +651,9 @@ bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
     if (itr != m_systemData.end()) {
         data = itr->second;
         return true;
-    } else {
-        _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     }
+
+    _log(DATABASE__MESSAGE, "Failed to query info for system %u: System not found.", locationID);
     return false;
 }
 
@@ -627,9 +663,9 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
     if (itr != m_staticData.end()) {
         data = itr->second;
         return true;
-    } else {
-        _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
     }
+
+    _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
     return false;
 }
 
@@ -638,8 +674,8 @@ uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)
     std::map<uint32, uint32>::iterator itr = m_regions.find(regionID);
     if (itr != m_regions.end())
         return itr->second;
-    else
-        _log(DATABASE__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
+
+    _log(DATABASE__MESSAGE, "Failed to query faction for region %u: region not found.", regionID);
     return 0;
 }
 
