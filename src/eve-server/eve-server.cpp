@@ -215,6 +215,7 @@ int main( int argc, char* argv[] )
     sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
     sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
     sLog.Log("MarketBot Version", " %.2f", Bot_Version );
+    sLog.Log(" Missions Version", " %.2f", Mission_Version );
     std::printf("\n");     // spacer
 
     /* Load server log settings */
@@ -303,9 +304,9 @@ int main( int argc, char* argv[] )
 
     sLog.Blue("     ServerConfig", "Debug Switches");
     if (sConfig.debug.IsTestServer)
-        sLog.Error("     ServerConfig", "Test Server");
+        sLog.Error("     ServerConfig", "Test Server Enabled");
     else
-        sLog.Error("     ServerConfig", "Live Server");
+        sLog.Error("     ServerConfig", "Live Server Enabled");
     if (sConfig.debug.UseProfiling) {
         sLog.Green(" Server Profiling","Enabled.");
         sProfile.Initialize();
@@ -608,6 +609,7 @@ int main( int argc, char* argv[] )
 
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
+    std::printf("\n");     // spacer
     sMissionDataMgr.Initialize();
     std::printf("\n");     // spacer
 

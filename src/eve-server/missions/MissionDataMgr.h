@@ -29,6 +29,9 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
+protected:
+    void                Populate();
+    
 };
 
 //Singleton

@@ -29,10 +29,19 @@ void MissionDataMgr::Clear()
 
 int MissionDataMgr::Initialize()
 {
+    Populate();
+    return 1;
 
 }
 
 void MissionDataMgr::GetInfo()
 {
 
+}
+
+void MissionDataMgr::Populate()
+{
+    double start = GetTimeMSeconds();
+
+    sLog.Cyan("   MissionDataMgr", "0 Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 }

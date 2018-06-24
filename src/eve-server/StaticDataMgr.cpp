@@ -93,7 +93,7 @@ void StaticDataMgr::Populate()
 
     m_agents = ManagerDB::GetAgents();
     if (m_agents == nullptr)
-        sLog.Error("    StaticDataMgr", "m_operands is null");
+        sLog.Error("    StaticDataMgr", "m_agents is null");
 
     m_operands = ManagerDB::GetOperands();
     if (m_operands == nullptr)

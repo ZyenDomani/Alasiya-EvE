@@ -88,6 +88,7 @@ PyObjectEx* ManagerDB::GetAgents() {
             self.allAgentsByStationID = newRowSet.Filter('stationID')
             self.allAgentsByCorpID = newRowSet.Filter('corporationID')
     */
+    // NOTE:  havent found data for agents in space yet....still looking.
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
@@ -97,7 +98,7 @@ PyObjectEx* ManagerDB::GetAgents() {
         "    agt.level,"
         "    agt.quality,"
         "    agt.corporationID,"
-        "    chr.solarSystemID,"
+        //"    chr.solarSystemID,"
         "    chr.stationID,"
         "    chr.gender,"
         "    bl.bloodlineID"

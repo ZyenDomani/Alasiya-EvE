@@ -79,6 +79,20 @@ public:
     PyCallable_DECL_CALL(GetMissionBriefingInfo);
     PyCallable_DECL_CALL(GetMissionObjectiveInfo);
 
+    /*
+                    self.missionArgs[contentID] = self.GetAgentMoniker(agentID).GetMissionKeywords(contentID)
+            ret = self.GetAgentMoniker(agentID).GetMissionJournalInfo(charID, contentID)
+
+            restrictions = self.GetAgentMoniker(agentID).GetDungeonShipRestrictions(dungeonID)
+            self.GetAgentMoniker(agentID).RemoveOfferFromJournal()
+            html = self.GetAgentMoniker(agentID).GetOfferJournalInfo()
+            ret = self.GetAgentMoniker(agentID).GetMissionObjectiveInfo(charID, contentID)
+            entryPoint = sm.StartService('agents').GetAgentMoniker(bookmark.agentID).GetEntryPoint()
+            sm.StartService('agents').GetAgentMoniker(bookmark.agentID).GotoLocation(bookmark.locationType, bookmark.locationNumber, referringAgentID)
+            sm.StartService('agents').GetAgentMoniker(bookmark.agentID).WarpToLocation(bookmark.locationType, bookmark.locationNumber, warpRange, fleet, referringAgentID)
+            parallelCalls.append((sm.GetService('agents').GetAgentMoniker(agentID).GetMyJournalDetails, ()))
+    */
+
 protected:
     Agent *const m_agent;    //we do not own this.
     AgentDB *const m_db;        //we do not own this
@@ -122,6 +136,8 @@ Agent *AgentMgrService::_GetAgent(uint32 agentID) {
     return(a);
 }
 
+// need a way to check created objects for client/agent combinations to avoid duplicates.
+//  also need a way to check/delete released objects/agents
 PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
     if(!bind_args->IsInt()) {
         codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
@@ -140,7 +156,14 @@ PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_
 }
 
 PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
+    // this is cached on client side...
     return sDataMgr.GetAgents();
+}
+
+PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
+{
+    // this is detailed info on agent's location
+    return m_agent->GetLocation();
 }
 
 ///  this really needs to be a cached object....load/save in an agent data mgr singleton?
@@ -413,16 +436,6 @@ PyResult AgentMgrBound::Handle_DoAction(PyCallArgs &call) {
             [PyString "missionDeclined"]
             [PyBool False]
             */
-//21:13:12 L AgentMgrBound::Handle_GetAgentLocationWrap(): size= 0
-PyResult AgentMgrBound::Handle_GetAgentLocationWrap(PyCallArgs &call)
-{
-    /*
-     */
-    sLog.White( "AgentMgrBound::Handle_GetAgentLocationWrap()", "size= %u, AgentID = %u", call.tuple->size(), m_agent->GetID() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return m_agent->GetLocation();
-}
 
 //21:13:12 L AgentMgrBound::Handle_GetMissionBriefingInfo(): size= 0
 PyResult AgentMgrBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
@@ -731,9 +744,9 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
   /**
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
-  sLog.White( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
+    sLog.White( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    //takes no arguments
-    return new PyNone();
+
+    return PyStatic.NewFalse();
 
 }

@@ -63,6 +63,15 @@ PyRep* Agent::GetLocation() {
     res->SetItemString("locationID", new PyInt(m_locationID) );
     res->SetItemString("solarsystemID", new PyInt(m_solarSystemID) );
     return res;
+
+    /* other location data types to put in dict for agents in space
+     * locationType
+     * coords
+     * referringAgentID
+     * shipTypeID
+     *
+     */
+    
     /*
      * def LocationWrapper(location, locationType = None):
      *    if locationType is None and 'locationType' in location:
