@@ -583,7 +583,7 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
         _log(ITEM__ERROR, "Refusing to delete static map object %u.", itemID);
         return false;
     }
-    
+
     DBerror err;
     if (!sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID=%u", itemID)) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
@@ -840,9 +840,8 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
         into.startDateTime = 0;
 
         if (!sDatabase.RunQuery(res,
-            "SELECT"
-            "  corporationID, locationID"
-            " FROM agtAgents AS a"
+            "SELECT corporationID, locationID"
+            " FROM agtAgents"
             " WHERE agentID = %u",
             characterID))
         {

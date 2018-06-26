@@ -8,6 +8,19 @@
 #ifndef EVE_AGENT_H
 #define EVE_AGENT_H
 
+struct AgentData {
+    bool gender;
+    bool locator;
+    uint8 divisionID;
+    uint8 level;
+    uint8 quality;
+    uint8 bloodlineID;
+    uint16 typeID;
+    uint32 corporationID;
+    uint32 solarSystemID;
+    uint32 stationID;
+};
+
 namespace Agent {
     namespace Type {
         enum {

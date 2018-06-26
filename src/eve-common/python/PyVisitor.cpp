@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, mmcs
+    Updates:    Allan
 */
 
 #include "eve-common.h"
@@ -28,34 +29,33 @@
 #include "python/classes/PyDatabase.h"
 #include "python/PyVisitor.h"
 #include "python/PyRep.h"
+#include "PyRep.h"
 
 /************************************************************************/
 /* PyVisitor                                                            */
 /************************************************************************/
 bool PyVisitor::VisitTuple(const PyTuple* rep)
 {
-    PyTuple::const_iterator cur = rep->begin();
-    for (; cur != rep->end(); ++cur)
+    for (PyTuple::const_iterator cur = rep->begin(); cur != rep->end(); ++cur) {
+        //  if/when segfault here and cur == 0x0 then tuple count != tuple->SetItem()
+        if (!(*cur)->visit(*this))
+            return false;
+    }
+    return true;
+}
+
+bool PyVisitor::VisitList(const PyList* rep)
+{
+    for (PyList::const_iterator cur = rep->begin(); cur != rep->end(); ++cur)
         if (!(*cur)->visit(*this))
             return false;
 
     return true;
 }
 
-bool PyVisitor::VisitList(const PyList* rep)
-{
-    PyList::const_iterator cur = rep->begin();
-    for (; cur != rep->end(); ++cur)
-        if (!(*cur)->visit(*this))
-            return false;
-
-        return true;
-}
-
 bool PyVisitor::VisitDict(const PyDict* rep)
 {
-    PyDict::const_iterator cur = rep->begin();
-    for (; cur != rep->end(); ++cur) {
+    for (PyDict::const_iterator cur = rep->begin(); cur != rep->end(); ++cur) {
         if (!cur->first->visit(*this))
             return false;
         if (!cur->second->visit(*this))
@@ -78,22 +78,16 @@ bool PyVisitor::VisitObjectEx(const PyObjectEx* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    {
-        PyObjectEx::const_list_iterator cur = rep->list().begin();
-        for (; cur != rep->list().end(); ++cur) {
-            if (!(*cur)->visit(*this))
-                return false;
-        }
+    for (PyObjectEx::const_list_iterator cur = rep->list().begin(); cur != rep->list().end(); ++cur) {
+        if (!(*cur)->visit(*this))
+            return false;
     }
 
-    {
-        PyObjectEx::const_dict_iterator cur = rep->dict().begin();
-        for (; cur != rep->dict().end(); ++cur) {
-            if (!cur->first->visit(*this))
-                return false;
-            if (!cur->second->visit(*this))
-                return false;
-        }
+    for (PyObjectEx::const_dict_iterator cur = rep->dict().begin(); cur != rep->dict().end(); ++cur) {
+        if (!cur->first->visit(*this))
+            return false;
+        if (!cur->second->visit(*this))
+            return false;
     }
 
     return true;
@@ -104,8 +98,7 @@ bool PyVisitor::VisitPackedRow(const PyPackedRow* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    PyPackedRow::const_iterator cur = rep->begin();
-    for (; cur != rep->end(); ++cur)
+    for (PyPackedRow::const_iterator cur = rep->begin(); cur != rep->end(); ++cur)
         if (!(*cur)->visit(*this))
             return false;
 

@@ -612,21 +612,21 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
     sMissionDataMgr.Initialize();
     std::printf("\n");     // spacer
-
-    sLog.Green("       ServerInit", "Effect Data");
     sFxDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sDunDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sPlanetDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sPIDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    stDataMgr.Initialize();
+    std::printf("\n");     // spacer
+
     sLog.Green("       ServerInit", "Wreck Data");
     sWreckData.Initialize();
     sLog.Green("       ServerInit", "Loot Data");
     sLootData.Initialize();
-    sLog.Green("       ServerInit", "Dungeon Data");
-    sDunDataMgr.Initialize();
-    sLog.Green("       ServerInit", "Planet Data");
-    sPlanetDataMgr.Initialize();
-    sLog.Green("       ServerInit", "PI Data");
-    sPIDataMgr.Initialize();
-    sLog.Green("       ServerInit", "Station Data");
-    stDataMgr.Initialize();
     std::printf("\n");     // spacer
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");

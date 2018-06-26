@@ -30,7 +30,7 @@
 #include "agents/AgentDB.h"
 #include "PyService.h"
 
-class Agent;
+class CorpAgent;
 
 class AgentMgrService : public PyService {
 public:
@@ -44,8 +44,8 @@ protected:
     AgentDB m_db;
 
     //for now this lives here, might want to move eventually.
-    std::map<uint32, Agent *> m_agents;    //we own these
-    Agent *_GetAgent(uint32 agentID);
+    std::map<uint32, CorpAgent *> m_agents;    //we own these
+    CorpAgent* _GetAgent(uint32 agentID);
 
     PyCallable_DECL_CALL(GetAgents);
     PyCallable_DECL_CALL(GetCareerAgents);

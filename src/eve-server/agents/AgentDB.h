@@ -28,6 +28,7 @@
 
 #include "ServiceDB.h"
 #include "packets/Missions.h"
+#include "../../eve-common/EVE_Agent.h"
 
 class PyObject;
 class PyRep;
@@ -38,6 +39,8 @@ class AgentDB
 : public ServiceDB
 {
 public:
+    void LoadAgentData(uint32 agentID, AgentData& data);
+
     bool LoadAgentActions(uint32 agentID, std::map<uint32, AgentActions *> &into);
 
  	bool LoadAgentLocation(uint32 agentID, uint32& locationID, uint32& locationType);

@@ -133,17 +133,24 @@ public:
 
 class Client;
 
-class Agent {
+class CorpAgent {
 public:
-    Agent(uint32 id);
-    ~Agent();
+    CorpAgent(uint32 id);
+    ~CorpAgent();
 
     bool Load(AgentDB *from);
+    uint32 GetID() { return m_agentID; }
 
     uint32 GetLoyaltyPoints(Client *who);
     void DoAction(Client *who, uint32 actionID, std::string &say, std::map<uint32, std::string> &choices);
-	PyRep* GetLocation();
-    uint32 GetID() { return m_agentID; }
+
+
+    PyDict* GetLocationWrap();
+    PyObject* GetInfoServiceDetails();
+
+
+    uint32 GetSystemID()        { return m_data.solarSystemID; }
+    uint32 GetStationID()       { return m_data.stationID; }
 
 protected:
     const uint32 m_agentID;
@@ -153,6 +160,9 @@ protected:
  	uint32 m_solarSystemID;
  	uint32 m_locationID;
  	uint32 m_locationType;
+
+    AgentData m_data;
+
 };
 
 #endif

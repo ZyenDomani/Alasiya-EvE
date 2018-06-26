@@ -30,6 +30,49 @@
 
 #include "agents/AgentDB.h"
 
+
+void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
+{
+    //SELECT `agentID`, `divisionID`, `corporationID`, `locationID`, `level`, `quality`, `agentTypeID`, `isLocator`
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT"
+        "    agt.agentTypeID,"
+        "    agt.divisionID,"
+        "    agt.level,"
+        "    agt.quality,"
+        "    agt.corporationID,"
+        "    agt.isLocator,"
+        "    chr.solarSystemID,"
+        "    chr.stationID,"
+        "    chr.gender,"
+        "    bl.bloodlineID"
+        " FROM agtAgents AS agt"
+        " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
+        " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
+        " WHERE agt.agentID = %u", agentID
+    ))
+    {
+        codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
+        return;
+    }
+
+    /** @todo  there may be some errors here with agents in space or NOT in stations....will have to test and fix as they come up.  */
+    DBResultRow row;
+    if (res.GetRow(row)) {
+        data.gender = row.GetBool(8);
+        data.locator = row.GetBool(5);
+        data.level = row.GetInt(2);
+        data.quality = row.GetInt(3);
+        data.bloodlineID = row.GetInt(9);
+        data.divisionID = row.GetInt(1);
+        data.corporationID = row.GetUInt(4);
+        data.solarSystemID = row.GetUInt(6);
+        data.stationID = row.GetUInt(7);
+        data.typeID = row.GetInt(0);
+    }
+}
+
 bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
@@ -74,6 +117,11 @@ PyRep *AgentDB::GetAgentSolarSystem(uint32 AgentID){
     t->items[0] = new PyList(row.GetUInt(0));
     result = t;
     return result;
+}
+
+bool AgentDB::LoadAgentActions(uint32 agentID, std::map< uint32, AgentActions* >& into)
+{
+
 }
 
 #ifdef NOT_DONE

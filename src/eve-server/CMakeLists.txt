@@ -109,10 +109,12 @@ SET( admin_SOURCE
 
 SET( agent_INCLUDE
      "${TARGET_INCLUDE_DIR}/agents/Agent.h"
+     "${TARGET_INCLUDE_DIR}/agents/AgentBound.h"
      "${TARGET_INCLUDE_DIR}/agents/AgentDB.h"
      "${TARGET_INCLUDE_DIR}/agents/AgentMgrService.h")
 SET( agent_SOURCE
      "${TARGET_SOURCE_DIR}/agents/Agent.cpp"
+     "${TARGET_SOURCE_DIR}/agents/AgentBound.cpp"
      "${TARGET_SOURCE_DIR}/agents/AgentDB.cpp"
      "${TARGET_SOURCE_DIR}/agents/AgentMgrService.cpp")
 
