@@ -49,6 +49,7 @@ CorpAgent::CorpAgent(uint32 id)
 : m_agentID(id),
 m_locationID(0)
 {
+    m_mission = false;
     _log(AGENT__TRACE, "CorpAgent created for AgentID %u", id);
 }
 
@@ -134,10 +135,9 @@ PyDict* CorpAgent::GetLocationWrap() {
 PyObject* CorpAgent::GetInfoServiceDetails()
 {
     PyDict* res = new PyDict();
-    res->SetItemString("stationID", new PyInt(m_data.stationID) );
-    res->SetItemString("level", new PyInt(m_data.level) );
+        res->SetItemString("stationID", new PyInt(m_data.stationID) );
+        res->SetItemString("level", new PyInt(m_data.level) );
 
-    //res->SetItemString("services", tuple);
     // 'services' is a tuple of dicts containing data for [research], [locate], and [mission] services this agent offers
 
     /*  for research agents....
@@ -152,24 +152,28 @@ PyObject* CorpAgent::GetInfoServiceDetails()
 
     PyTuple* skill1 = new PyTuple(2);
         skill1->SetItem(0, new PyInt(11452)); // Mechanical Engineering
-        skill1->SetItem(1, new PyInt(3));
+        skill1->SetItem(1, new PyInt(4));
     PyTuple* skill2 = new PyTuple(2);
         skill2->SetItem(0, new PyInt(11453));  //Electronic Engineering
-        skill2->SetItem(1, new PyInt(4));
+        skill2->SetItem(1, new PyInt(3));
     PyList* skillList = new PyList();
         skillList->AddItem(skill1);
         skillList->AddItem(skill2);
     PyDict* researchData = new PyDict();
-        researchData->SetItemString("rpMultiplier", new PyInt(0));
-        researchData->SetItemString("skillTypeID", new PyInt(0));
-        researchData->SetItemString("points", new PyInt(0));
-        researchData->SetItemString("pointsPerDay", new PyInt(0));
+        researchData->SetItemString("rpMultiplier", new PyInt(2));
+        researchData->SetItemString("skillTypeID", new PyInt(11452));   // this is player research field with this agent.  not sure how to make "none" yet
+        researchData->SetItemString("points", new PyInt(150));
+        researchData->SetItemString("pointsPerDay", new PyInt(30));
     PyTuple* patent1 = new PyTuple(2);
         patent1->SetItem(0, new PyInt(11452));
-        patent1->SetItem(1, new PyInt(692));
+    PyList* patentlist1 = new PyList();
+        patentlist1->AddItem(new PyInt(692));
+        patent1->SetItem(1, patentlist1);
     PyTuple* patent2 = new PyTuple(2);
         patent2->SetItem(0, new PyInt(11453));
-        patent2->SetItem(1, new PyInt(1196));
+    PyList* patentlist2 = new PyList();
+        patentlist2->AddItem(new PyInt(1196));
+        patent2->SetItem(1, patentlist2);
     PyList* patentList = new PyList();
         patentList->AddItem(patent1);
         patentList->AddItem(patent2);
@@ -180,11 +184,22 @@ PyObject* CorpAgent::GetInfoServiceDetails()
         research->SetItemString("researchData", researchData);
 
     /* for location agents....
+     *
+ level  Standings  Time to Run                             Cooldown    Cost                Range
+    1     Any      Instant/1 minute                        5 minutes   1k/5k               Constellation
+    2     1.0      Instant/1 minute/8 minutes              5 minutes   5k/10k/25k          Region
+    3     3.0      Instant/30 seconds/4 minutes/8 minutes  15 minutes  10k/25k/50k/100k    Unlimited
+    4     5.0      Instant/20 seconds/2 minutes/4 minutes  30 minutes  25k/50k/100k/250k   Unlimited
+
      * data.frequency
      *delayRange, delay, cost in data.delays:       -- (tuple) range (system, const, region, other region), responseTime (in sec), cost
      *   data.callbackID  -- bool for agent locator services being used (locator unavailable)
      *      OR
      *   data.lastUsed  -- blue time?
+
+     Once done the locator agent will send you a Notification with the location of the target when you started the search which will include the system, constellation and region as well as the station the player might be docked at. If the target is in space, no station will be listed. E.g. "The sleazebag is currently in the Bukah system, Nohshayess constellation of the Khanid region."
+     If the target is logged off, the locator agent will tell you the last known position. If the target is in Anoikis (wormhole space), the locator agent will tell you "I'm sorry, but I just can't help you with that one. I'm pretty sure O'b Haru Sen is well out of my zone of influence." - even if the agent can locate anyone in known space.
+
      */
     PyTuple* sameSystem = new PyTuple(3);
         sameSystem->SetItem(0, new PyInt(0));
@@ -213,8 +228,9 @@ PyObject* CorpAgent::GetInfoServiceDetails()
         delays->SetItem(3, otherRegion);
     PyDict* locate = new PyDict();
         locate->SetItemString("agentServiceType", new PyString("locate"));
+        locate->SetItemString("frequency", new PyInt(1200));  // if this is PyNone (or 0?) agent location isnt avalible (client parsed msg)
         locate->SetItemString("delays", delays);
-        locate->SetItemString("callbackID", new PyNone());
+        locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
 
     // for mission agents....
@@ -222,11 +238,11 @@ PyObject* CorpAgent::GetInfoServiceDetails()
         mission->SetItemString("agentServiceType", new PyString("mission"));
         mission->SetItemString("available", new PyBool(true));
 
-    PyTuple* tuple = new PyTuple(3);
-        tuple->SetItem(0, new PyObject("util.KeyVal", research));
-        tuple->SetItem(1, new PyObject("util.KeyVal", locate));
-        tuple->SetItem(2, new PyObject("util.KeyVal", mission));
-    res->SetItemString("services", tuple);
+    PyTuple* services = new PyTuple(3);
+        services->SetItem(0, new PyObject("util.KeyVal", research));
+        services->SetItem(1, new PyObject("util.KeyVal", locate));
+        services->SetItem(2, new PyObject("util.KeyVal", mission));
+    res->SetItemString("services", services);
 
     // not sure when/why this is used yet....
     res->SetItemString("incompatible", new PyString("This Agent is Incompatable with incompatable shit from a compatibility standpoint.") );
@@ -245,111 +261,85 @@ PyObject* CorpAgent::GetInfoServiceDetails()
     return new PyObject("util.KeyVal", res);
 
     /*
-     * 09:29:06 [SvcCall] Service AgentBound::GetInfoServiceDetails()
-     * 09:29:06 [AgentRspDump]      Dictionary: 4 entries
-     * 09:29:06 [AgentRspDump]       [ 0]   Key:     String: 'services'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:  Tuple: 3 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0] Object:
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Type:     String: 'util.KeyVal'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:  Dictionary: 4 entries
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0]   Key:     String: 'researchData'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:  Dictionary: 4 entries
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0]   Key:     String: 'pointsPerDay'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0] Value:    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1]   Key:     String: 'points'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1] Value:    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2]   Key:     String: 'skillTypeID'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2] Value:    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3]   Key:     String: 'rpMultiplier'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3] Value:    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1]   Key:     String: 'researchSummary'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   List: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]  Tuple: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 0]    Integer: 11452
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 1]    Integer: 692
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]  Tuple: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 0]    Integer: 11453
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 1]    Integer: 1196
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2]   Key:     String: 'skills'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   List: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]  Tuple: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 11452
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 3
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]  Tuple: 2 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 11453
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 4
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3]   Key:     String: 'agentServiceType'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3] Value:     String: 'research'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1] Object:
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Type:     String: 'util.KeyVal'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:  Dictionary: 4 entries
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0]   Key:     String: 'lastUsed'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0] Value:    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1]   Key:     String: 'callbackID'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1] Value:       None
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2]   Key:     String: 'delays'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:  Tuple: 4 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]  Tuple: 3 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 0
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 10
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 2]    Integer: 20000
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]  Tuple: 3 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 1
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 30
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 2]    Integer: 200000
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]  Tuple: 3 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 0]    Integer: 2
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 1]    Integer: 60
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 2]    Integer: 2000000
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]  Tuple: 3 elements
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 0]    Integer: 3
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 1]    Integer: 120
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 2]    Integer: 20000000
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3]   Key:     String: 'agentServiceType'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3] Value:     String: 'locate'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2] Object:
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Type:     String: 'util.KeyVal'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Args:  Dictionary: 2 entries
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0]   Key:     String: 'available'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0] Value:    Boolean: true
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1]   Key:     String: 'agentServiceType'
-     * 09:29:06 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1] Value:     String: 'mission'
-     * 09:29:06 [AgentRspDump]       [ 1]   Key:     String: 'level'
-     * 09:29:06 [AgentRspDump]       [ 1] Value:    Integer: 2
-     * 09:29:06 [AgentRspDump]       [ 2]   Key:     String: 'incompatible'
-     * 09:29:06 [AgentRspDump]       [ 2] Value:     String: 'This Agent is Incompatable with incompatable shit from a compatibility standpoint.'
-     * 09:29:06 [AgentRspDump]       [ 3]   Key:     String: 'stationID'
-     * 09:29:06 [AgentRspDump]       [ 3] Value:    Integer: 60005728
-     * 09:29:06 [SvcCall] Service stationSvc::GetStation()
-     * 09:29:06 [SvcCall] Service alert::BeanCount()
-     * 09:29:06 [SvcCall] Service alert::SendClientStackTraceAlert()
-     * EXCEPTION #5 logged at  06/26/2018 9:29:06 Unhandled exception in <TaskletExt object at 48efcc90, abps=1001, ctxt=None>
-     * Caught at:
-     * /common/lib/bluepy.py(98) CallWrapper
-     * Thrown at:
-     * /common/lib/bluepy.py(86) CallWrapper
-     * /client/script/ui/services/infosvc.py(3231) LoadData
-     * /client/script/ui/services/infosvc.py(3658) _LoadInfoWindow
-     * /client/script/ui/services/infosvc.py(1637) GetWndData
-     * /client/script/ui/station/agents/agents.py(1215) ProcessAgentInfoKeyVal
-     * /client/script/ui/station/agents/agents.py(1259) _ProcessResearchServiceInfo
-     *        status = [(...)]
-     *        skillTypeID = 11452
-     *        pattentIDs = 692
-     *        skills = u'Electronic Engineering level 4, Mechanical Engineering level 3'
-     *        skillList = [u'Electronic Engineering level 4', u'Mechanical Engineering level 3']
-     *        researchData = {'points': 0, 'pointsPerDay': 0, 'rpMultiplier': 0, 'skillTypeID': 0}
-     *        skillLevel = 4
-     *        research = []
-     *        header = u'Research Services'
-     *        researchStuff = [(...), (...), (...)]
-     *        details = [(...)]
-     *        predictablePatentNames = []
-     *        rpMultiplier = 0
-     *        data = <Anonymous KeyVal: {'skills': [(11452, 3), (11453, 4)], 'agentServiceType': 'research', 'researchData': {'pointsPerDay': 0, 'skillTypeID': 0, 'points': 0, 'rpMultiplier': 0}, 'researchSummary': [(11452, 692), (11453, 1196)]}>
-     *        self = <svc.Agents instance at 0x48A89CD8>
-     * TypeError: 'int' object is not iterable
-     *
+     * 06:08:18 [SvcCall] Service AgentBound::GetInfoServiceDetails()
+     * 06:08:18 [AgentRspDump]      Dictionary: 4 entries
+     * 06:08:18 [AgentRspDump]       [ 0]   Key:     String: 'services'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:  Tuple: 3 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0] Object:
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Type:     String: 'util.KeyVal'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:  Dictionary: 4 entries
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0]   Key:     String: 'researchData'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:  Dictionary: 4 entries
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0]   Key:     String: 'pointsPerDay'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0] Value:    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1]   Key:     String: 'points'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1] Value:    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2]   Key:     String: 'skillTypeID'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2] Value:    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3]   Key:     String: 'rpMultiplier'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3] Value:    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1]   Key:     String: 'researchSummary'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   List: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]  Tuple: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 0]    Integer: 11452
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 1]   List: 1 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 1]   [ 0]    Integer: 692
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]  Tuple: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 0]    Integer: 11453
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 1]   List: 1 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 1]   [ 0]    Integer: 1196
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2]   Key:     String: 'skills'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   List: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]  Tuple: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 11452
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 3
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]  Tuple: 2 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 11453
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 4
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3]   Key:     String: 'agentServiceType'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3] Value:     String: 'research'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1] Object:
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Type:     String: 'util.KeyVal'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:  Dictionary: 5 entries
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0]   Key:     String: 'lastUsed'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0] Value:    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1]   Key:     String: 'callbackID'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1] Value:       None
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2]   Key:     String: 'delays'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:  Tuple: 4 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]  Tuple: 3 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 0
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 10
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 2]    Integer: 20000
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]  Tuple: 3 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 1
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 30
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 2]    Integer: 200000
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]  Tuple: 3 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 0]    Integer: 2
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 1]    Integer: 60
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 2]    Integer: 2000000
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]  Tuple: 3 elements
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 0]    Integer: 3
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 1]    Integer: 120
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 2]    Integer: 20000000
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3]   Key:     String: 'frequency'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3] Value:    Integer: 1200
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 4]   Key:     String: 'agentServiceType'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 4] Value:     String: 'locate'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2] Object:
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Type:     String: 'util.KeyVal'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:  Dictionary: 2 entries
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0]   Key:     String: 'available'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0] Value:    Boolean: true
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1]   Key:     String: 'agentServiceType'
+     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1] Value:     String: 'mission'
+     * 06:08:18 [AgentRspDump]       [ 1]   Key:     String: 'level'
+     * 06:08:18 [AgentRspDump]       [ 1] Value:    Integer: 2
+     * 06:08:18 [AgentRspDump]       [ 2]   Key:     String: 'incompatible'
+     * 06:08:18 [AgentRspDump]       [ 2] Value:     String: 'This Agent is Incompatable with incompatable shit from a compatibility standpoint.'
+     * 06:08:18 [AgentRspDump]       [ 3]   Key:     String: 'stationID'
+     * 06:08:18 [AgentRspDump]       [ 3] Value:    Integer: 60005728
      *
      */
 

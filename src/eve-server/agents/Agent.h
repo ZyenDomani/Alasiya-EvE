@@ -152,6 +152,9 @@ public:
     uint32 GetSystemID()        { return m_data.solarSystemID; }
     uint32 GetStationID()       { return m_data.stationID; }
 
+    void SetMission(bool set=false)         { m_mission = set; }
+    bool HasMission()                       { return m_mission; }
+
 protected:
     const uint32 m_agentID;
     //std::map<uint32, AgentActions *> m_actions;    //we own these.
@@ -163,6 +166,7 @@ protected:
 
     AgentData m_data;
 
+    bool m_mission;
 };
 
 #endif
