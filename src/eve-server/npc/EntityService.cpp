@@ -43,6 +43,19 @@ EntityService::~EntityService() {
     delete m_dispatch;
 }
 
+/*  drone states...
+entityApproaching = 3
+entityCombat = 1
+entityDeparting = 4
+entityDeparting2 = 5
+entityEngage = 10
+entityFleeing = 7
+entityIdle = 0
+entityMining = 2
+entityOperating = 9
+entityPursuit = 6
+*/
+
 /** @todo  will need to make sure this object is deleted when changing systems  */
 PyBoundObject *EntityService::_CreateBoundObject(Client* pClient, const PyRep* bind_args) {
     _log(NPC__INFO, "EntityService bind request");

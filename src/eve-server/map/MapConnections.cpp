@@ -26,6 +26,7 @@ void MapCon::PopulateConnections() {
     uint16 ctype = 3;
     uint32 fromreg = 0, fromcon = 0, fromsol = 0, stargateID = 0, celestialID = 0, tosol = 0, tocon = 0, toreg = 0;
 
+    DBerror err;
     DBQueryResult res;
     DBResultRow row;
 
@@ -49,12 +50,11 @@ SOLARSYSTEM_JUMP = 2
         else
             ctype = 0;  // change region
 
-        DBerror err;
         sDatabase.RunQuery(err, "UPDATE mapConnections SET ctype = %u WHERE AI = %u", ctype, count);
 
         res.Reset();
         count++;
     }
 
-    sLog.Green("PopulateConnections()", "mapConnections Populated in %.3f s.  Please disable this function.", (GetTimeMSeconds() -starttime));
+    sLog.Green("PopulateConnections()", "mapConnections Populated in %.3f ms.  Please disable this function.", (GetTimeMSeconds() -starttime));
 }

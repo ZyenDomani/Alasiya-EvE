@@ -266,6 +266,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (killed) {
+        // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
         SystemEntity::Killed(d);
         Killed(d);

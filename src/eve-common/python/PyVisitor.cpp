@@ -24,19 +24,19 @@
     Updates:    Allan
 */
 
-#include "eve-common.h"
+#include "../eve-common.h"
 
 #include "python/classes/PyDatabase.h"
 #include "python/PyVisitor.h"
 #include "python/PyRep.h"
-#include "PyRep.h"
 
 /************************************************************************/
 /* PyVisitor                                                            */
 /************************************************************************/
 bool PyVisitor::VisitTuple(const PyTuple* rep)
 {
-    for (PyTuple::const_iterator cur = rep->begin(); cur != rep->end(); ++cur) {
+    PyTuple::const_iterator cur = rep->begin(), end = rep->end();
+    for (;  cur != end; ++cur) {
         //  if/when segfault here and cur == 0x0 then tuple count != tuple->SetItem()
         if (!(*cur)->visit(*this))
             return false;
@@ -46,7 +46,8 @@ bool PyVisitor::VisitTuple(const PyTuple* rep)
 
 bool PyVisitor::VisitList(const PyList* rep)
 {
-    for (PyList::const_iterator cur = rep->begin(); cur != rep->end(); ++cur)
+    PyList::const_iterator cur = rep->begin(), end = rep->end();
+    for (;  cur != end; ++cur)
         if (!(*cur)->visit(*this))
             return false;
 
@@ -55,7 +56,8 @@ bool PyVisitor::VisitList(const PyList* rep)
 
 bool PyVisitor::VisitDict(const PyDict* rep)
 {
-    for (PyDict::const_iterator cur = rep->begin(); cur != rep->end(); ++cur) {
+    PyDict::const_iterator cur = rep->begin(), end = rep->end();
+    for (;  cur != end; ++cur) {
         if (!cur->first->visit(*this))
             return false;
         if (!cur->second->visit(*this))
@@ -98,7 +100,8 @@ bool PyVisitor::VisitPackedRow(const PyPackedRow* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    for (PyPackedRow::const_iterator cur = rep->begin(); cur != rep->end(); ++cur)
+    PyPackedRow::const_iterator cur = rep->begin(), end = rep->end();
+    for (;  cur != end; ++cur)
         if (!(*cur)->visit(*this))
             return false;
 

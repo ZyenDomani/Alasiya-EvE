@@ -379,7 +379,7 @@ PyRep* ServiceDB::LookupChars(const char *match, bool exact) {
             "   itemID AS ownerID"
             " FROM entity"
             " WHERE itemName %s '%s'",
-            exact?"=":"RLIKE", matchEsc.c_str()
+            exact?"=":"LIKE", matchEsc.c_str()
         ))
         {
             _log(DATABASE__ERROR, "Error in LookupChars query: %s", res.error.c_str());
@@ -408,7 +408,7 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
         "  name AS ownerName,"
         "  1 AS groupID"
         " FROM chrCharacters"
-        " WHERE name %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+        " WHERE name %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -416,7 +416,7 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
         "  corporationName AS ownerName,"
         "  2 AS groupID"
         " FROM crpCorporation"
-        " WHERE corporationName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+        " WHERE corporationName %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -424,7 +424,7 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
         "  corporationName AS ownerName,"
         "  2 AS groupID"
         " FROM crpCorporation"
-        " WHERE tickerName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+        " WHERE tickerName %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -432,7 +432,7 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
         "  name AS ownerName,"
         "  32 AS groupID"
         " FROM alnAlliance"
-        " WHERE name %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+        " WHERE name %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     sDatabase.RunQuery(res,
         "SELECT"
@@ -440,7 +440,7 @@ PyRep* ServiceDB::LookupOwners(const char *match, bool exact) {
         "  shortName AS ownerName,"
         "  32 AS groupID"
         " FROM alnAlliance"
-        " WHERE shortName %s '%s'", (exact?"=":"RLIKE"), matchEsc.c_str());
+        " WHERE shortName %s '%s'", (exact?"=":"LIKE"), matchEsc.c_str());
 
     return DBResultToRowset(res);
 }
@@ -454,7 +454,7 @@ PyRep* ServiceDB::LookupCorporations(const std::string & search) {
         "SELECT"
         "   corporationID, corporationName, corporationType "
         " FROM crpCorporation "
-        " WHERE corporationName RLIKE '%s'", secure.c_str()))
+        " WHERE corporationName LIKE '%s'", secure.c_str()))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -473,7 +473,7 @@ PyRep* ServiceDB::LookupFactions(const std::string & search) {
         "SELECT"
         "   factionID, factionName "
         " FROM facFactions "
-        " WHERE factionName RLIKE '%s'", secure.c_str()))
+        " WHERE factionName LIKE '%s'", secure.c_str()))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -492,7 +492,7 @@ PyRep* ServiceDB::LookupCorporationTickers(const std::string & search) {
         "SELECT"
         "   corporationID, corporationName, tickerName "
         " FROM crpCorporation "
-        " WHERE tickerName RLIKE '%s'", secure.c_str()))
+        " WHERE tickerName LIKE '%s'", secure.c_str()))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -511,7 +511,7 @@ PyRep* ServiceDB::LookupStations(const std::string & search) {
         "SELECT"
         "   stationID, stationName, stationTypeID "
         " FROM staStations "
-        " WHERE stationName RLIKE '%s'", secure.c_str()))
+        " WHERE stationName LIKE '%s'", secure.c_str()))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;
@@ -530,7 +530,7 @@ PyRep* ServiceDB::LookupKnownLocationsByGroup(const std::string & search, uint32
         "SELECT"
         "   itemID, itemName, typeID "
         " FROM entity "
-        " WHERE itemName RLIKE '%s' AND typeID = %u", secure.c_str(), typeID))
+        " WHERE itemName LIKE '%s' AND typeID = %u", secure.c_str(), typeID))
     {
         _log(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return 0;

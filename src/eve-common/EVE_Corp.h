@@ -138,7 +138,7 @@ namespace Corp {
         };
     }
 
-    namespace DivisionType {
+    namespace Division {
         enum  {
             Accounting          = 1,
             Administration      = 2,

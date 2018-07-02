@@ -328,30 +328,6 @@ typedef enum {
 } fmtMappingType;
 
 typedef enum {
-    npcDivisionAccounting = 1,
-    npcDivisionAdministration = 2,
-    npcDivisionAdvisory = 3,
-    npcDivisionArchives = 4,
-    npcDivisionAstrosurveying = 5,
-    npcDivisionCommand = 6,
-    npcDivisionDistribution = 7,
-    npcDivisionFinancial = 8,
-    npcDivisionIntelligence = 9,
-    npcDivisionInternalSecurity = 10,
-    npcDivisionLegal = 11,
-    npcDivisionManufacturing = 12,
-    npcDivisionMarketing = 13,
-    npcDivisionMining = 14,
-    npcDivisionPersonnel = 15,
-    npcDivisionProduction = 16,
-    npcDivisionPublicRelations = 17,
-    npcDivisionRD = 18,
-    npcDivisionSecurity = 19,
-    npcDivisionStorage = 20,
-    npcDivisionSurveillance = 21
-} npcDivisions;
-
-typedef enum {
     ownerNone               = 0,
     ownerSystem             = 1,
     ownerBank               = 2,

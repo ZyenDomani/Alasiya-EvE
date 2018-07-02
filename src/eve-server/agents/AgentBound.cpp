@@ -64,6 +64,11 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
 
     uint32 actionID = PyRep::IntegerValue(args.arg);
 
+    /*
+    (232833, `Agent Conversation`)
+    (232834, `Agent Conversation - {[character]agentID.name}`)
+    */
+
     // this actually returns a complicated tuple depending on other variables involving this agent and char.
     /*
         agentSays, dialogue, extraInfo = self.__GetConversation(agentDialogueWindow, actionID)
@@ -162,13 +167,15 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     PyList* dialog = new PyList();
 
     if (actionID == 0) {
+        // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
+        //  this will be modeled after UO speech data, in tiers and levels.
         response = "Why the fuck am I looking at you again, ";
         response += call.client->GetCharacterName().c_str();
         response += "?";
         m_agent->SetMission(false);
         // dialogue data....
         PyTuple* button1 = new PyTuple(2);
-            button1->SetItem(0, new PyInt(12));
+            button1->SetItem(0, new PyInt(12)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
             button1->SetItem(1, new PyInt(Dialog::Button::ViewMission));
         PyTuple* button2 = new PyTuple(2);
             button2->SetItem(0, new PyInt(13));
@@ -202,7 +209,6 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         PyTuple* button2 = new PyTuple(2);
         button2->SetItem(0, new PyInt(45));
         button2->SetItem(1, new PyInt(Dialog::Button::Decline));
-        // if agent also does research, add this one...
         PyTuple* button3 = new PyTuple(2);
         button3->SetItem(0, new PyInt(67));
         button3->SetItem(1, new PyInt(Dialog::Button::Defer));
@@ -218,9 +224,51 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         tmp = wnd.sr.agentMoniker.DoAction(actionID)
         ret, wnd.sr.oob = tmp
         agentSays, wnd.sr.dialogue = ret
+
+        wnd.sr.agentSays = self.ProcessMessage(agentSays, wnd.sr.agentID)
           */
 
     //  this will get complicated and is based on agent/char interaction
+    /*
+     *    def ProcessMessage(self, msg, agentID = None):
+     *        if isinstance(msg, types.TupleType):
+     *            msgInfo, contentID = msg
+     *            if isinstance(msgInfo, basestring):
+     *                return msgInfo
+     *            if contentID is not None:
+     *                if contentID not in self.missionArgs:
+     *                    if agentID is None:
+     *                        raise RuntimeError('Agent message received a content ID without an agent ID. Something is wrong!')
+     *                    self.missionArgs[contentID] = self.GetAgentMoniker(agentID).GetMissionKeywords(contentID)
+     *                msgArgs = self.missionArgs[contentID]
+     *            else:
+     *                msgArgs = {}
+     *            if agentID is not None:
+     *                if agentID not in self.agentArgs:
+     *                    self.agentArgs[agentID] = self.GetAgentArgs(agentID)
+     *                msgArgs.update(self.agentArgs[agentID])
+     *            if isinstance(msgInfo, tuple):
+     *                for k in msgInfo[1]:
+     *                    if k in ('missionCompletionText', 'missionOfferText', 'missionBriefingText', 'locationString'):
+     *                        msgInfo[1][k] = self.ProcessMessage((msgInfo[1][k], contentID), agentID)
+     *
+     *                msgArgs.update(msgInfo[1])
+     *                try:
+     *                    return localization.GetByLabel(msgInfo[0], **msgArgs)
+     *                except:
+     *                    log.LogException('Error parsing message with label %s' % msgInfo[0])
+     *                    return localization.GetByLabel('UI/Agents/Dialogue/StandardMission/CorruptBriefing')
+     *
+     *            else:
+     *                try:
+     *                    return localization.GetByMessageID(msgInfo, **msgArgs)
+     *                except:
+     *                    log.LogException('Error parsing agent message with ID %s' % msgInfo)
+     *                    return localization.GetByLabel('UI/Agents/Dialogue/StandardMission/CorruptBriefing') + '<br>----------------------<br>' + localization._GetRawByMessageID(msgInfo)
+     *
+     *        else:
+     *            return msg
+     */
     //   detail in /eve/client/script/ui/station/agents/agents.py
 
         PyTuple* agentSays = new PyTuple(2);
@@ -509,20 +557,130 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
 PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
 {
-    //ret = self.GetAgentMoniker(agentID).GetMissionObjectiveInfo(charID, contentID)
+    // returns PyDict loaded with mission info  or PyNone
+    // this one is where the "double pane" agent window is set.  this must(?) return HTML (havent followed code yet)
+
+    /*  ret = self.GetAgentMoniker(agentID).GetMissionObjectiveInfo(charID, contentID)
+     *
+     *  if ret:
+            objectiveHtml = '\n                        <html>\n                        <head>\n                            <link rel="stylesheet" type="text/css" href="res:/ui/css/missionobjectives.css">\n                        </head>\n                        <body>\n                    '
+            objectiveHtml += agentDialogueUtil.BuildObjectiveHTML(agentDialogueWindow.sr.agentID, ret)
+            objectiveHtml += '</body></html>'
+            agentDialogueWindow.SetDoublePaneView(objectiveHtml=objectiveHtml)
+        else:
+            agentDialogueWindow.SetSinglePaneView()
+
+
+
+def BuildObjectiveHTML(agentID, objectiveData):
+    html = ''
+    if objectiveData.get('importantStandings', 0):
+        html += '<span id=ip>%s</span><br><br>' % localization.GetByLabel('UI/Agents/StandardMission/ImportantStandingsWarning')
+    cmpStatus = objectiveData['completionStatus']
+    if isinstance(objectiveData['missionTitleID'], basestring):
+        missionName = objectiveData['missionTitleID']
+    else:
+        missionName = localization.GetByMessageID(objectiveData['missionTitleID'])
+    if cmpStatus > 0:
+        missionHeaderColor = '<font color=#5ABA56>'
+        missionHeader = localization.GetByLabel('UI/Agents/StandardMission/MissionObjectivesComplete', missionName=missionName)
+    else:
+        missionHeaderColor = '<font>'
+        missionHeader = localization.GetByLabel('UI/Agents/StandardMission/MissionObjectives', missionName=missionName)
+    if cmpStatus == 2:
+        gmStatusHeader = '<font color=#00FF00>Debug Mode: Cheat Complete Enabled</div></font>'
+    else:
+        gmStatusHeader = ''
+    objectives = ''
+    for objType, objData in objectiveData['objectives']:
+        objectives += ProcessObjectiveEntry(objType, objData)
+
+    for dunData in objectiveData['dungeons']:
+        objectives += ProcessDungeonData(dunData, agentID)
+
+    html += '\n        %(GMStatusHeader)s\n        <span id=subheader>%(missionHeaderColor)s%(missionHeader)s</font></span><br>\n        <div id=basetext>%(objectivesHeader)s<br>\n        <br>\n        <span id=basetext>\n        %(objectives)s\n        </span>\n        <br>\n    ' % {'GMStatusHeader': gmStatusHeader,
+     'missionHeader': missionHeader,
+     'missionHeaderColor': missionHeaderColor,
+     'objectivesHeader': localization.GetByLabel('UI/Agents/StandardMission/OverviewAndObjectivesBlurb'),
+     'objectives': objectives}
+    secWarning = sm.GetService('agents').GetSecurityWarning(objectiveData['locations'])
+    if secWarning:
+        html += '<font color=red>%s</font><br><br>' % secWarning
+
+    def ProcessEntry(typeID, quantity, extra):
+        if util.IsCharacter(typeID):
+            iconWrap = OwnerWrap(typeID)
+            description = localization.GetByLabel('UI/Agents/StandardMission/MissionReferral', agentID=typeID)
+        else:
+            iconWrap = IconWrap(typeID, extra)
+            description = ProcessTypeAndQuantity(typeID, quantity, extra)
+        return (iconWrap, description)
+
+    if len(objectiveData['agentGift']) > 0:
+        if objectiveData['missionState'] in (const.agentMissionStateAccepted, const.agentMissionStateFailed):
+            grantedItemsDetail = localization.GetByLabel('UI/Agents/StandardMission/AcceptedGrantedItemDetail')
+        else:
+            grantedItemsDetail = localization.GetByLabel('UI/Agents/StandardMission/GrantedItemDetail')
+        html += '<br>\n            <span id=subheader>%s</span>\n            <div id=basetext>%s</div>\n            <div><table>\n        ' % (localization.GetByLabel('UI/Agents/StandardMission/GrantedItems'), grantedItemsDetail)
+        for typeID, quantity, extra in objectiveData['agentGift']:
+            icon, description = ProcessEntry(typeID, quantity, extra)
+            html += '\n                <tr valign=middle>\n                    <td width=36>%s</td>\n                    <td width=352>%s</td>\n                </tr>\n                ' % (icon, description)
+
+        html += '</table></div><br>'
+    if len(objectiveData['normalRewards']) or objectiveData['loyaltyPoints'] > 0 or objectiveData['researchPoints'] > 0:
+        html += '\n            <span id=subheader>%s</span>\n            <div id=basetext>%s</div>\n            <div><table>\n        ' % (localization.GetByLabel('UI/Agents/StandardMission/RewardsTitle'), localization.GetByLabel('UI/Agents/StandardMission/RewardsHeader'))
+        for typeID, quantity, extra in objectiveData['normalRewards']:
+            icon, description = ProcessEntry(typeID, quantity, extra)
+            html += '\n                <tr valign=middle>\n                    <td width=36>%s</td>\n                    <td width=352>%s</td>\n                </tr>\n            ' % (icon, description)
+
+        if objectiveData['loyaltyPoints'] > 0:
+            loyaltyPointsIcon = IconWrap(const.typeLoyaltyPoints)
+            loyaltyPoints = objectiveData['loyaltyPoints']
+            html += '\n                <tr valign=middle>\n                    <td width=36>%s</td>\n                    <td width=352>%s</td>\n                </tr>\n            ' % (loyaltyPointsIcon, localization.GetByLabel('UI/Agents/StandardMission/NumLoyaltyPoints', lpAmount=loyaltyPoints))
+        if objectiveData['researchPoints'] > 0:
+            researchPointsIcon = IconWrap(const.typeResearch)
+            researchPoints = round(objectiveData['researchPoints'], 0)
+            html += '\n                <tr valign=middle>\n                    <td width=36>%s</td>\n                    <td width=352>%s</td>\n                </tr>\n            ' % (researchPointsIcon, localization.GetByLabel('UI/Agents/StandardMission/NumResearchPoints', rpAmount=researchPoints))
+        html += '</table></div><br>'
+    if len(objectiveData['bonusRewards']) > 0:
+        html += '<span id=subheader>%s</span><br>' % localization.GetByLabel('UI/Agents/StandardMission/BonusRewardsTitle')
+        for timeRemaining, typeID, quantity, extra in objectiveData['bonusRewards']:
+            if timeRemaining > 0:
+                header = localization.GetByLabel('UI/Agents/StandardMission/BonusRewardsHeader', timeRemaining=timeRemaining)
+            else:
+                header = localization.GetByLabel('UI/Agents/StandardMission/BonusTimePassed')
+            icon, description = ProcessEntry(typeID, quantity, extra)
+            html += '\n                <div id=basetext>%s<br>\n                <div><table>\n                    <tr valign=middle>\n                        <td width=36>%s</TD>\n                        <td width=352>%s</TD>\n                    </tr>\n                </table></div>\n            ' % (header, icon, description)
+
+        html += '<br>'
+    if len(objectiveData['collateral']) > 0:
+        html += '\n            <span id=subheader>%s</span>\n            <div id=basetext>%s</div><br>\n            <div><table>\n        ' % (localization.GetByLabel('UI/Agents/StandardMission/CollateralTitle'), localization.GetByLabel('UI/Agents/StandardMission/CollateralHeader'))
+        for typeID, quantity, extra in objectiveData['collateral']:
+            collateralIcon = IconWrap(typeID, extra)
+            collateralDescription = ProcessTypeAndQuantity(typeID, quantity, extra)
+            html += '\n                <tr valign=middle>\n                    <td width=36>%s</td>\n                    <td width=352>%s</td>\n                </tr>\n            ' % (collateralIcon, collateralDescription)
+
+        html += '</table></div><br>'
+    if 'missionExtra' in objectiveData:
+        headerID, bodyID = objectiveData['missionExtra']
+        html += '\n            <span id=subheader>%s</span>\n            <div id=basetext>%s</div>\n        ' % (sm.GetService('agents').ProcessMessage((headerID, objectiveData['contentID']), agentID), sm.GetService('agents').ProcessMessage((bodyID, objectiveData['contentID']), agentID))
+    return html
+
+
+     */
 
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionObjectiveInfo() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
     if (call.tuple->size() == 0)
         if (!m_agent->HasMission())
-            return nullptr;
+            return PyStatic.NewNone();
 
         /*  not right....
     Call_SingleArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     uint32 missionID = PyRep::IntegerValue(args.arg);
@@ -530,83 +688,9 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         return PyStatic.NewNone();
     */
 
-    /*     called when result of DoAction() 'msgInfo' includes a 'contentID' value
-    this returns the html style shit for the mission data text....
-
-    [PySubStream 2792 bytes]
-    [PyObjectData Name: util.KeyVal]
-    [PyDict 2 kvp]
-    [PyString "html"]
-    [PyString "
-    <html>
-    <head>
-    <LINK REL="stylesheet" TYPE="text/css" HREF="res:/ui/css/missionobjectives.css">
-    </head>
-    <body>
-
-
-    <span id=subheader><font>Good Harvest Objectives</font></span><br>
-    <div id=basetext>The following objectives must be completed to finish the mission:<br>
-    <br>
-    <span id=basetext>
-
-    <span id=caption>Transport Objective</span><br>
-    <div id=basetext>Transport these goods:<br>
-    <TABLE>
-    <TR VALIGN=middle>
-    <TD><img src=icon:38_193 size=16></TD>
-    <TD width=32><a href=showinfo:2//1000167><img src="corplogo:1000167" width=32 height=32 hspace=2 vspace=2></a></TD>
-    <TD>Pickup Location</TD>
-    <TD> <font color=#00FF7F>0.8</font> <a href=showinfo:1529//60014683>Annaro VIII - Moon 4 - State War Academy School</a></TD>
-    </TR>
-    <TR VALIGN=middle>
-    <TD><img src=icon:38_195 size=16></TD>
-    <TD width=32><a href=showinfo:2//1000002><img src="corplogo:1000002" width=32 height=32 hspace=2 vspace=2></a></TD>
-    <TD>Drop-off Location</TD>
-    <TD> <font color=#00FF7F>0.8</font> <a href=showinfo:1531//60000016>Tasabeshi VIII - Moon 13 - CBD Corporation Storage</a></TD>
-    </TR>
-    <TR VALIGN=middle>
-    <TD><img src=icon:38_195 size=16></TD>
-    <TD width=32><a href=showinfo:26785><img src="typeicon:26785" width=32 height=32 align=left></a></TD>
-    <TD>Cargo</TD>
-    <TD>seven units of Crates of Frozen Plant Seeds (350.0 m&sup3;)</TD>
-    </TR>
-    </TABLE></div>
-
-    </span><br>
-    LOWSECREPLACE <br><br>
-    <span id=subheader>Rewards</span>
-    <div id=basetext>The following rewards will be yours if you complete this mission:<br>
-    <div><TABLE>
-
-    <TR VALIGN=middle>
-    <TD width=36><img style:vertical-align:bottom src="icon:06_03" size="32"></TD>
-    <TD width=352>25000 credits</TD>
-    </TR>
-
-    <TR VALIGN=middle>
-    <TD width=36><a href=showinfo:29247><img src="typeicon:29247" width=32 height=32 align=left></a></TD>
-    <TD width=352>14 Loyalty Points.</TD>
-    </TR>
-
-    </TABLE></div><br>
-    <span id=subheader>Bonus Rewards<BR></span>
-
-    <div id=basetext>The following rewards will be awarded to you as a bonus if you complete the mission within 34 minutes.<br>
-    <div><TABLE>
-    <TR VALIGN=middle>
-    <TD width=36><img style:vertical-align:bottom src="icon:06_03" size="32"></TD>
-    <TD width=352>22000 credits</TD>
-    </TR>
-    </TABLE></div><br>
-    </body></html>"]
-    [PyString "locations"]
-    [PyList 2 items]
-    [PyInt 30002776]
-    [PyInt 30002778]
-    */
-    return nullptr;
+    return PyStatic.NewNone();
 }
+
 /*)
  * 07:50:33 [AgentDump] AgentBound::Handle_DoAction() - size= 1
  * 07:50:33 [AgentDump]   Call Arguments:

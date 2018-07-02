@@ -56,3 +56,24 @@ PyResult ContractMgr::Handle_NumRequiringAttention( PyCallArgs& call )
 }
 
 
+/*
+conAvailMyAlliance = 3
+conAvailMyCorp = 2
+conAvailMyself = 1
+conAvailPublic = 0
+conStatusOutstanding = 0
+conStatusInProgress = 1
+conStatusFinishedIssuer = 2
+conStatusFinishedContractor = 3
+conStatusFinished = 4
+conStatusCancelled = 5
+conStatusRejected = 6
+conStatusFailed = 7
+conStatusDeleted = 8
+conStatusReversed = 9
+conTypeNothing = 0
+conTypeItemExchange = 1
+conTypeAuction = 2
+conTypeCourier = 3
+conTypeLoan = 4
+*/

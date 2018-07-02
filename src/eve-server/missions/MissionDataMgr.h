@@ -14,7 +14,8 @@
 
 
 #include "eve-server.h"
-#include "POD_containers.h"
+#include "missions/MissionDB.h"
+
 
 class MissionDataMgr
 : public Singleton< MissionDataMgr >
@@ -29,9 +30,17 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
+
+    void    GetMissionNameIDs();
+
 protected:
     void                Populate();
-    
+
+    std::map<std::string, uint32> m_names;
+    std::multimap<uint8, CourierData> m_courier;        // level/data
+    std::multimap<uint32, MissionOffer> m_offers;       // charID/data
+
+
 };
 
 //Singleton

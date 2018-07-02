@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 /** @todo  this needs updating.....  */
@@ -43,41 +44,54 @@
 #include "StaticDataMgr.h"
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
-#include "../../eve-common/EVE_Agent.h"
 
 CorpAgent::CorpAgent(uint32 id)
-: m_agentID(id),
-m_locationID(0)
+: m_agentID(id)
 {
     m_mission = false;
     _log(AGENT__TRACE, "CorpAgent created for AgentID %u", id);
 }
 
-CorpAgent::~CorpAgent() {
-    /*
-    std::map<uint32, AgentActions *>::iterator cur = m_actions.begin();
-    for(; cur != m_actions.end(); cur++) {
-        delete cur->second;
-    }
-    */
-}
+
+/* errata...
+ * char mission history and current offers in agtOffers
+ * notify:OnIncomingAgentMessage(agentID, message)
+ * OnIncomingTransmission(self, transmission, isAgentMission = 0, *args)
+ *  transmission.header, transmission.text, transmission.icon
+        if transmission.header.startswith('[d]'):
+            transmission.header = transmission.header[3:]
+            self.delayedTransmission = transmission
+
+            (237604, `You can only do this on MASTER or LOCAL server`)
+            (235975, `I am in need of your services, {[character]notification_receiverID.name, linkify}, for a very special mission.`)
+            (235976, `I found {[character]charID.name, linkify} for you`)
+
+            The forumla for LP reward is:
+            LP reward = (1.6288 - System security) × Base LP
+
+
+    ****  see also shit in common/utils/evemath.*  *******
+Agent_Effective_Quality = Agent_Quality + (5 * Negotiation_Skill_Level) + Round_Down(AgentPersonalStanding)
+
+Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
+
+RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
+ */
 
 bool CorpAgent::Load(AgentDB *from) {
-    from->LoadAgentData(m_agentID, m_data);
+    AgentDB::LoadAgentData(m_agentID, m_data);
 
-    bool ret = from->LoadAgentLocation(m_agentID, m_locationID, m_locationType);
-
-    _log(AGENT__TRACE, "Data Loaded for CorpAgent %u - level: %u, stationID: %u, systemID: %u", m_agentID, m_data.level, m_data.stationID, m_data.solarSystemID);
-
-    return ret;
+    _log(AGENT__TRACE, "Data Loaded for CorpAgent %u - level: %u, locationID: %u, systemID: %u", m_agentID, m_data.level, m_data.locationID, m_data.solarSystemID);
+    return true;
+    //SELECT agentID, typeID, level FROM agtSkillLevel
 }
 
 
 PyDict* CorpAgent::GetLocationWrap() {
     PyDict *res = new PyDict();
-    res->SetItemString("typeID", new PyInt(m_locationType) );
-    res->SetItemString("locationID", new PyInt(m_locationID) );
-    res->SetItemString("solarsystemID", new PyInt(m_data.solarSystemID) );
+        res->SetItemString("typeID", new PyInt(m_data.locationTypeID) );
+        res->SetItemString("locationID", new PyInt(m_data.locationID) );
+        res->SetItemString("solarsystemID", new PyInt(m_data.solarSystemID) );
     return res;
 
     /* other location data types to put in dict for agents in space
@@ -148,8 +162,40 @@ PyObject* CorpAgent::GetInfoServiceDetails()
      * researchData['points']  -- current points
      * researchData['pointsPerDay']
      * skillTypeID, blueprintTypeID in data.researchSummary:  -- for predictablePatentNames
+     *
+     *
+(235998, `Your instructors have been telling me great things about you, {[character]charID.name, linkify}.<br><br>I've talked it over with my superiors, and we've decided to invite you to participate in {corpName} tutorial agent program for further instruction.<br><br>I'll be awaiting you at {[location]stationID.name, linkify}. You can find me there in the station's Agent listing in the lower right hand corner of your display.<br><br>With regards,<br>     {[character]agentID.name, linkify},<br>  {corpName}<br>`)
+(235999, `You have failed the mission I gave you. I am disappointed in you. I was hoping for a little more competence.`)
+(236000, `Insurance Contract Issued`)
+(236001, `Report: Starbase low on resources in {[location]solarSystemID.name}`)
+(236002, `Authentication code for {[character]charID.name}`)
+(236003, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been disabled`)
+(236004, `Demotion`)
+(236005, `Bill issued`)
+(236006, `{[character]newCeoID.name} is the new CEO of {corporationName}`)
+(236007, `Welcome to {corporationName}`)
+(236008, `Rejected application to join {corporationName}`)
+(236009, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been reenabled`)
+(236010, `Bounty payment`)
+(236011, `Time's up, {[character]notification_receiverID.name , linkify}`)
+(236012, `Tutorial Program Started`)
+(236013, `Pend Insurance Inc.`)
+(236014, `Report: Infrastructure hub %22{name}%22 has been conquered`)
+(236015, `Jump clone destruction`)
+(236016, `Contraband Confiscation`)
+(236017, `CEO roles revoked`)
+(236018, `Report: Starbase in {[location]solarSystemID.name, linkify} is under attack`)
+(236019, `Report: Station '{[location]stationID.name}' has been conquered`)
+(236020, `I've encountered a problem.`)
+(236021, `Our research has been fruitful, but I've encountered a snag and our research has been halted.  Please contact me as soon as possible.`)
+(236023, `Dread Guristas Irregular`)
+(236024, `Dark Blood Alpha`)
+(236025, `Sorry mate you don't have enough research points to buy any datacores. <br>Each {[item]datacoreTypeID.name} costs {[numeric]rpAmount} research points.`)
+(236026, `{[item]datacoreTypeID.name}: {[numeric]rpAmount} RP`)
      */
 
+    PyDict* research = new PyDict();
+    if (m_data.research) {
     PyTuple* skill1 = new PyTuple(2);
         skill1->SetItem(0, new PyInt(11452)); // Mechanical Engineering
         skill1->SetItem(1, new PyInt(4));
@@ -177,12 +223,14 @@ PyObject* CorpAgent::GetInfoServiceDetails()
     PyList* patentList = new PyList();
         patentList->AddItem(patent1);
         patentList->AddItem(patent2);
-    PyDict* research = new PyDict();
         research->SetItemString("agentServiceType", new PyString("research"));
         research->SetItemString("skills", skillList);
         research->SetItemString("researchSummary", patentList);
         research->SetItemString("researchData", researchData);
+    }
 
+        PyDict* locate = new PyDict();
+        if (m_data.locator) {
     /* for location agents....
      *
  level  Standings  Time to Run                             Cooldown    Cost                Range
@@ -200,6 +248,15 @@ PyObject* CorpAgent::GetInfoServiceDetails()
      Once done the locator agent will send you a Notification with the location of the target when you started the search which will include the system, constellation and region as well as the station the player might be docked at. If the target is in space, no station will be listed. E.g. "The sleazebag is currently in the Bukah system, Nohshayess constellation of the Khanid region."
      If the target is logged off, the locator agent will tell you the last known position. If the target is in Anoikis (wormhole space), the locator agent will tell you "I'm sorry, but I just can't help you with that one. I'm pretty sure O'b Haru Sen is well out of my zone of influence." - even if the agent can locate anyone in known space.
 
+     (235843, `{[character]charID.gender -> "He", "She"} is in the {systemName} system of the {constellationName} constellation.`)
+     (235844, `{[character]charID.gender -> "He", "She"} is in the {systemName} system, {constellationName} constellation of the {regionName} region.`)
+     (235845, `{[character]charID.gender -> "He", "She"} is in your solar system.`)
+     (235846, `{[character]charID.gender -> "He", "She"} is at your station.`)
+     (235847, `{[character]charID.gender -> "He", "She"} is at {stationName} station in your solar system.`)
+     (235848, `{[character]charID.gender -> "He", "She"} is at {stationName} station in the {systemName} system.`)
+     (235849, `{[character]charID.gender -> "He", "She"} is at{stationName} station in the {systemName} system of the {constellationName} constellation.`)
+     (235850, `{[character]charID.gender -> "He", "She"} is at {stationName} station in the {systemName} system, {constellationName} constellation of {regionName} region.`)
+     (235851, `{[character]charID.gender -> "He", "She"} is in the {systemName} system.`)
      */
     PyTuple* sameSystem = new PyTuple(3);
         sameSystem->SetItem(0, new PyInt(0));
@@ -226,17 +283,25 @@ PyObject* CorpAgent::GetInfoServiceDetails()
         delays->SetItem(1, sameConst);
         delays->SetItem(2, sameRegion);
         delays->SetItem(3, otherRegion);
-    PyDict* locate = new PyDict();
+
         locate->SetItemString("agentServiceType", new PyString("locate"));
         locate->SetItemString("frequency", new PyInt(1200));  // if this is PyNone (or 0?) agent location isnt avalible (client parsed msg)
         locate->SetItemString("delays", delays);
         locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
+        }
 
     // for mission agents....
     PyDict* mission = new PyDict();
         mission->SetItemString("agentServiceType", new PyString("mission"));
         mission->SetItemString("available", new PyBool(true));
+        /*
+Level 1 = always available
+Level 2 = +1.00 standing
+Level 3 = +3.00 standing
+Level 4 = +5.00 standing
+Level 5 = +7.00 standing
+*/
 
     PyTuple* services = new PyTuple(3);
         services->SetItem(0, new PyObject("util.KeyVal", research));
@@ -244,8 +309,8 @@ PyObject* CorpAgent::GetInfoServiceDetails()
         services->SetItem(2, new PyObject("util.KeyVal", mission));
     res->SetItemString("services", services);
 
-    // not sure when/why this is used yet....
-    res->SetItemString("incompatible", new PyString("This Agent is Incompatable with incompatable shit from a compatibility standpoint.") );
+    // standings info for this agent.  see info in EVE_Agent.h
+    res->SetItemString("incompatible", new PyString("Your personal standings must be -2.0 or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
     /* can also use locale labelIDs for this using a tuple...
      * tuple* tuple = new PyTuple();
      * tuple->SetItem(0, #labelID );
@@ -259,188 +324,6 @@ PyObject* CorpAgent::GetInfoServiceDetails()
     }
 
     return new PyObject("util.KeyVal", res);
-
-    /*
-     * 06:08:18 [SvcCall] Service AgentBound::GetInfoServiceDetails()
-     * 06:08:18 [AgentRspDump]      Dictionary: 4 entries
-     * 06:08:18 [AgentRspDump]       [ 0]   Key:     String: 'services'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:  Tuple: 3 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0] Object:
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Type:     String: 'util.KeyVal'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:  Dictionary: 4 entries
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0]   Key:     String: 'researchData'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:  Dictionary: 4 entries
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0]   Key:     String: 'pointsPerDay'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 0] Value:    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1]   Key:     String: 'points'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 1] Value:    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2]   Key:     String: 'skillTypeID'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 2] Value:    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3]   Key:     String: 'rpMultiplier'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 0] Value:   [ 3] Value:    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1]   Key:     String: 'researchSummary'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   List: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]  Tuple: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 0]    Integer: 11452
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 1]   List: 1 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 0]   [ 1]   [ 0]    Integer: 692
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]  Tuple: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 0]    Integer: 11453
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 1]   List: 1 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 1] Value:   [ 1]   [ 1]   [ 0]    Integer: 1196
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2]   Key:     String: 'skills'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   List: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]  Tuple: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 11452
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 3
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]  Tuple: 2 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 11453
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 4
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3]   Key:     String: 'agentServiceType'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 0]   Args:   [ 3] Value:     String: 'research'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1] Object:
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Type:     String: 'util.KeyVal'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:  Dictionary: 5 entries
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0]   Key:     String: 'lastUsed'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 0] Value:    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1]   Key:     String: 'callbackID'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 1] Value:       None
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2]   Key:     String: 'delays'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:  Tuple: 4 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]  Tuple: 3 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 0]    Integer: 0
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 1]    Integer: 10
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 0]   [ 2]    Integer: 20000
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]  Tuple: 3 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 0]    Integer: 1
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 1]    Integer: 30
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 1]   [ 2]    Integer: 200000
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]  Tuple: 3 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 0]    Integer: 2
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 1]    Integer: 60
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 2]   [ 2]    Integer: 2000000
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]  Tuple: 3 elements
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 0]    Integer: 3
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 1]    Integer: 120
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 2] Value:   [ 3]   [ 2]    Integer: 20000000
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3]   Key:     String: 'frequency'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 3] Value:    Integer: 1200
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 4]   Key:     String: 'agentServiceType'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 1]   Args:   [ 4] Value:     String: 'locate'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2] Object:
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Type:     String: 'util.KeyVal'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:  Dictionary: 2 entries
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0]   Key:     String: 'available'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 0] Value:    Boolean: true
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1]   Key:     String: 'agentServiceType'
-     * 06:08:18 [AgentRspDump]       [ 0] Value:   [ 2]   Args:   [ 1] Value:     String: 'mission'
-     * 06:08:18 [AgentRspDump]       [ 1]   Key:     String: 'level'
-     * 06:08:18 [AgentRspDump]       [ 1] Value:    Integer: 2
-     * 06:08:18 [AgentRspDump]       [ 2]   Key:     String: 'incompatible'
-     * 06:08:18 [AgentRspDump]       [ 2] Value:     String: 'This Agent is Incompatable with incompatable shit from a compatibility standpoint.'
-     * 06:08:18 [AgentRspDump]       [ 3]   Key:     String: 'stationID'
-     * 06:08:18 [AgentRspDump]       [ 3] Value:    Integer: 60005728
-     *
-     */
-
-    /*
-     *                details = sm.GetService('agents').GetAgentMoniker(agentID).GetInfoServiceDetails()
-     *                stationinfo = sm.RemoteSvc('stationSvc').GetStation(details.stationID):
-     *                level = localizationUtil.FormatNumeric(details.level, decimalPlaces=0)
-     *                for data in details.services:
-     *                    serviceInfo = sm.GetService('agents').ProcessAgentInfoKeyVal(data)
-     *                    for entry in serviceInfo:
-     *                        wnd.sr.data[C_AGENTINFOTAB]['items'].append(listentry.Get('Header', {'label': entry[0]}))
-     *                        for entryDetails in entry[1]:
-     *                            wnd.sr.data[C_AGENTINFOTAB]['items'].append(listentry.Get('LabelTextTop', {'line': 1,
-     *                            'label': entryDetails[0],
-     *                            'text': entryDetails[1]}))
-     *
-     *                if details.incompatible:
-     *                    if type(details.incompatible) is tuple:
-     *                        incText = localization.GetByLabel(details.incompatible[0], **details.incompatible[1])
-     *                    else:
-     *                        incText = details.incompatible
-     *                    wnd.sr.data[C_AGENTINFOTAB]['items'].append(listentry.Get('LabelTextTop', {'line': 1,
-     *                        'label': localization.GetByLabel('UI/InfoWindow/AgentCompatibility'),
-     *                        'text': incText}))
-     */
-
-    /*  data.services as follows....
-     *
-     *    def ProcessAgentInfoKeyVal(self, data):
-     *        infoFunc = {'research': self._ProcessResearchServiceInfo,
-     *         'locate': self._ProcessLocateServiceInfo,
-     *         'mission': self._ProcessMissionServiceInfo}.get(data.agentServiceType, None)
-     *        if infoFunc:
-     *            return infoFunc(data)
-     *        else:
-     *            return []
-     *
-     *    def _ProcessResearchServiceInfo(self, data):
-     *        header = localization.GetByLabel('UI/Agents/Research/ResearchServices', session.languageID)
-     *        skillList = []
-     *        for skillTypeID, skillLevel in data.skills:
-     *            skillList.append(localization.GetByLabel('UI/Agents/Research/SkillListing', session.languageID, skillID=skillTypeID, skillLevel=skillLevel))
-     *
-     *        if not skillList:
-     *            skills = localization.GetByLabel('UI/Agents/Research/ErrorNoRelevantResearchSkills', session.languageID)
-     *        else:
-     *            skillList = localizationUtil.Sort(skillList)
-     *            skills = localizationUtil.FormatGenericList(skillList)
-     *        details = [(localization.GetByLabel('UI/Agents/Research/RelevantSkills', session.languageID), skills)]
-     *        status = []
-     *        if data.researchData:
-     *            researchData = data.researchData
-     *            researchStuff = [(localization.GetByLabel('UI/Agents/Research/ResearchField', session.languageID), cfg.invtypes.Get(researchData['skillTypeID']).name), (localization.GetByLabel('UI/Agents/Research/CurrentStatus', session.languageID), localization.GetByLabel('UI/Agents/Research/CurrentStatusRP', session.languageID, rpAmount=researchData['points'])), (localization.GetByLabel('UI/Agents/Research/ResearchRate', session.languageID), localization.GetByLabel('UI/Agents/Research/ResearchRateRPDay', session.languageID, rpAmount=researchData['pointsPerDay']))]
-     *            rpMultiplier = researchData['rpMultiplier']
-     *            if rpMultiplier > 1:
-     *                researchStuff.append((localization.GetByLabel('UI/Agents/Research/ResearchFieldBonus', session.languageID), localization.GetByLabel('UI/Agents/Research/ResearchFieldBonusRPMultiplier', session.languageID, rpMultiplier=rpMultiplier)))
-     *            status = [(localization.GetByLabel('UI/Agents/Research/YourResearch', session.languageID), researchStuff)]
-     *        research = []
-     *        for skillTypeID, pattentIDs in data.researchSummary:
-     *            predictablePatentNames = []
-     *            for blueprintTypeID in pattentIDs:
-     *                predictablePatentNames.append(cfg.invtypes.Get(blueprintTypeID).name)
-     *
-     *            if predictablePatentNames:
-     *                predictablePatentNames = localizationUtil.Sort(predictablePatentNames)
-     *                predictablePatents = localizationUtil.FormatGenericList(predictablePatentNames)
-     *            else:
-     *                predictablePatents = localization.GetByLabel('UI/Agents/Research/NoPredictablePatents', session.languageID)
-     *            research.append((localization.GetByLabel('UI/Agents/Research/ResearchSummary', session.languageID, skillTypeID=skillTypeID), [(localization.GetByLabel('UI/Agents/Research/PredictablePatents', session.languageID), predictablePatents)]))
-     *
-     *        return [(header, details)] + status + research
-     *
-     *    def _ProcessLocateServiceInfo(self, data):
-     *        header = localization.GetByLabel('UI/Agents/Locator/LocationServices', session.languageID)
-     *        if data.frequency:
-     *            details = [(localization.GetByLabel('UI/Agents/Locator/MaxFrequency', session.languageID), localization.GetByLabel('UI/Agents/Locator/EveryInterval', session.languageID, interval=data.frequency))]
-     *        else:
-     *            details = [(localization.GetByLabel('UI/Agents/Locator/MaxFrequency', session.languageID), localization.GetByLabel('UI/Generic/NotAvailableShort', session.languageID))]
-     *        for delayRange, delay, cost in data.delays:
-     *            rangeText = [localization.GetByLabel('UI/Agents/Locator/SameSolarSystem', session.languageID),
-     *             localization.GetByLabel('UI/Agents/Locator/SameConstellation', session.languageID),
-     *             localization.GetByLabel('UI/Agents/Locator/SameRegion', session.languageID),
-     *             localization.GetByLabel('UI/Agents/Locator/DifferentRegion', session.languageID)][delayRange]
-     *            if not delay:
-     *                delay = localization.GetByLabel('UI/Agents/Locator/ResultsInstantaneous', session.languageID)
-     *            else:
-     *                delay = util.FmtTimeInterval(delay * SEC)
-     *            details.append((rangeText, localizationUtil.FormatGenericList((util.FmtISK(cost), delay))))
-     *
-     *        if data.callbackID:
-     *            details.append((localization.GetByLabel('UI/Agents/Locator/Availability', session.languageID), localization.GetByLabel('UI/Agents/Locator/NotAvailableInProgress', session.languageID)))
-     *        elif data.lastUsed and blue.os.GetWallclockTime() - data.lastUsed < data.frequency:
-     *            details.append((localization.GetByLabel('UI/Agents/Locator/AvailableAgain', session.languageID), util.FmtDate(data.lastUsed + data.frequency)))
-     *        return [(header, details)]
-     *
-     *    def _ProcessMissionServiceInfo(self, data):
-     *        if data.available:
-     *            return [(localization.GetByLabel('UI/Agents/MissionServices', session.languageID), [(localization.GetByLabel('UI/Agents/MissionAvailability', session.languageID), localization.GetByLabel('UI/Agents/MissionAvailabilityStandard', session.languageID))])]
-     *        else:
-     *            return [(localization.GetByLabel('UI/Agents/MissionServices', session.languageID), [(localization.GetByLabel('UI/Agents/MissionAvailability', session.languageID), localization.GetByLabel('UI/Agents/MissionAvailabilityNone', session.languageID))])]
-     */
 }
 
 uint32 CorpAgent::GetLoyaltyPoints(Client *who) {
@@ -483,10 +366,7 @@ uint32 CorpAgent::GetLoyaltyPoints(Client *who) {
                 [PyInt 602]
                 [PyString "[Button]Quit Mission"]
                 */
-void CorpAgent::DoAction(
-    Client *who, uint32 actionID,
-    std::string &say, std::map<uint32, std::string> &choices
-) {
+void CorpAgent::DoAction(Client *who, uint32 actionID, std::string &say, std::map<uint32, std::string> &choices) {
     /*
     if(actionID == 0) {
         //default dialog...
@@ -520,3 +400,33 @@ void CorpAgent::DoAction(
     //start research = 12
     choices[Dialog::Button::StartResearch] = "Start Research";
 }
+
+
+
+/*  mission errata....
+ *
+ * courier missions:
+ * L1 missions will keep you within the agent's constellation, up to 450 m3
+ * L2 and level 3 will possibly send you to a neighboring constellation,4-6km3
+ * L4 missions will always send you to a neighboring constellation. 8km3
+ * If a Distribution mission has an item as a reward instead of ISK, then the item will appear in your personal hangar at the agent's station
+ *
+ *
+ * mining missions:
+ * Mining missions require you to mine an asteroid or set of asteroids in a mission space, usually until the asteroids are depleted, and bring the ore back to the agent's station.
+ * There is a risk of combat in mining missions, though the hostiles that show up tend to be much weaker than hostiles found in security missions.
+ * It is advisable to have some offensive capability (like a set of combat drones) or have a strong enough tank that you can ignore any hostiles that show up and start shooting at you.
+ * The mission may require you to mine more ore than can fit in your cargohold; this is typical of mining missions.
+ * L1 missions will require mining up to 2km3 of ore,
+ * L2 up to 6km3 of ore,
+ * L3 up to 9km3 of ore or 10km3 of ice,
+ * L4 up to 45km3 of ore, 20km3 of ice or 5km3 gas.
+ *
+ * encounter missions:
+ *
+ * Level 1 is where most new players start. Most, if not all, level 1 missions can be done in a basic frigate, Only the most basic piloting skills are required.
+ * Level 2 mining missions can be done in a cruiser or in a destroyer piloted by a more skilled pilot. These missions generally expect that you are continually improving your piloting skills and learning how to fit out new ships.
+ * Level 3 missions require a battlecruiser. These missions go faster if you have trained for better ships and at least some Tech 2 fittings.
+ * Level 4 missions require a Battleship with full T2 tank fitted. These missions can be time-consuming, but they offer large rewards.
+ * Level 5 missions are designed for groups of players or capital ship and are exclusively located in Low Security space.
+ */

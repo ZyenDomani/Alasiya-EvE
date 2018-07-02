@@ -39,17 +39,9 @@ class AgentDB
 : public ServiceDB
 {
 public:
-    void LoadAgentData(uint32 agentID, AgentData& data);
+    static void LoadAgentData(uint32 agentID, AgentData& data);
 
-    bool LoadAgentActions(uint32 agentID, std::map<uint32, AgentActions *> &into);
 
- 	bool LoadAgentLocation(uint32 agentID, uint32& locationID, uint32& locationType);
-
-    PyRep *GetAgentSolarSystem(uint32 AgentID);
-
-   // AgentLevel *LoadAgentLevel(uint8 level);
-
-protected:
 };
 
 #endif

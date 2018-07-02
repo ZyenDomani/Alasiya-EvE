@@ -179,3 +179,36 @@ EvilNumber EvEMath::TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNu
     return (100.0 * ((0.01 - 0.0005 * BrokerRelationsSkillLevel.get_double())
     / (pow( 2, (0.14 * FactionStanding.get_double() + 0.06 * CorporationStanding.get_double()) ))));
 }
+
+/*
+ *
+ * Research Points Per Day
+ * Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Your_Skill + Agent_Skill) ^ 2))
+ * Multiplier is a specific multiplier for the research field you want to do research in. Like 3x for starship engineering
+ * Your_Skill is your skill level in the research field
+ * Agent_Skill is the agent's skill level in the research field
+ * 
+ *
+ * Station take when refining/reprocessing
+ * Station_Take = Max((5 - (0.75 * Your_Standing)), 0)
+ * For the station to take 0% you need a standing to the station owner of at least: 5 / 0.75 = 6.67
+ *
+ *
+ * Agent Effective Quality - Removed in Incursion 1.5 (2011-05-19)
+ * Agent_Effective_Quality = Agent_Quality + (5 * Negotiation_Skill_Level) + Round_Down(Effective_Standing)
+ * Effective_Standing is the highest effective of either personal, corp. or faction standing.
+ *
+ *
+ * Blueprint Material Requirement - Before Crius 1.0 (2014-07-22)
+ * Required_Amount = Round(Base_Amount * ((1 + (Default_Blueprint_Waste_Factor / (1 + Blueprint_Material_Level))) + (0.25 - (0.05 * Production_Efficiency_Skill_Level))), 0)
+ *
+ *
+ * Invention Chance - Before Phoebe 1.0 (2014-11-04)
+ * Invention_Chance = Base_Chance * (1 + (0.01 * Encryption_Skill_Level)) * (1 + ((Datacore_1_Skill_Level + Datacore_2_Skill_Level) * (0.1 / (5 - Meta_Level)))) * Decryptor_Modifier
+ * Meta_Level of the base items used. No base items is the same as metalevel 0 = useless.
+ * Decryptor_Modifier is optional :-)
+ *
+ *
+ * Reverse Engineering Chance - Merged with Invention in Phoebe 1.0 (2014-11-04)
+ * Reverse_Chance = Base_Chance * (1 + (0.01 * Reverse_Engineering_Skill_Level)) * (1 + (0.1 * (Datacore_1_Skill_Level + Datacore_2_Skill_Level)))
+ */

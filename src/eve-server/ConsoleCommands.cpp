@@ -30,6 +30,7 @@
 
 #include "ConsoleCommands.h"
 #include "StatisticMgr.h"
+#include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
 
 
@@ -362,7 +363,12 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
+    //sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
+
+    // execute code to begin filling missing data in mission db.
+    //  first step:  get courier missionIDs
+    sMissionDataMgr.GetMissionNameIDs();
+
 }
 
 void ConsoleCommand::UpdateStatus() {

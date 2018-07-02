@@ -37,19 +37,22 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "    agt.agentTypeID,"
-        "    agt.divisionID,"
-        "    agt.level,"
-        "    agt.quality,"
-        "    agt.corporationID,"
-        "    agt.isLocator,"
-        "    chr.solarSystemID,"
-        "    chr.stationID,"
-        "    chr.gender,"
-        "    bl.bloodlineID"
+        "   agt.agentTypeID,"
+        "   agt.divisionID,"
+        "   agt.level,"
+        "   agt.quality,"
+        "   agt.corporationID,"
+        "   agt.locationID, "   //5
+        "   agt.isLocator,"
+        "   chr.solarSystemID,"
+        "   chr.stationID,"
+        "   chr.gender,"
+        "   bl.bloodlineID,"    //10
+        "   itm.typeID "
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
         " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
+        " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
         " WHERE agt.agentID = %u", agentID
     ))
     {
@@ -60,110 +63,21 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
     /** @todo  there may be some errors here with agents in space or NOT in stations....will have to test and fix as they come up.  */
     DBResultRow row;
     if (res.GetRow(row)) {
-        data.gender = row.GetBool(8);
-        data.locator = row.GetBool(5);
-        data.level = row.GetInt(2);
-        data.quality = row.GetInt(3);
-        data.bloodlineID = row.GetInt(9);
-        data.divisionID = row.GetInt(1);
-        data.corporationID = row.GetUInt(4);
-        data.solarSystemID = row.GetUInt(6);
-        data.stationID = row.GetUInt(7);
-        data.typeID = row.GetInt(0);
+        data.typeID         = row.GetUInt(0);
+        data.divisionID     = row.GetUInt(1);
+        data.level          = row.GetUInt(2);
+        data.quality        = row.GetInt(3);
+        data.corporationID  = row.GetUInt(4);
+        data.locationID     = row.GetUInt(5);
+        data.locator        = row.GetBool(6);
+        data.solarSystemID  = row.GetUInt(7);
+        data.stationID      = row.GetUInt(8);
+        data.gender         = row.GetBool(9);
+        data.bloodlineID    = row.GetUInt(10);
+        data.locationTypeID = row.GetUInt(11);
     }
 }
 
-bool AgentDB::LoadAgentLocation(uint32 agentID, uint32 &locationID, uint32 &locationType) {
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        "SELECT "
-        "   agt.locationID, "
-        "   itm.typeID "
-        " FROM agtAgents AS agt"
-        " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
-        " WHERE agt.agentID=%u", agentID))
-    {
-        codelog(DATABASE__ERROR, "Error in LoadAgentLocation query: %s", res.error.c_str());
-        return false;
-    }
 
-    DBResultRow row;
-    if (!res.GetRow(row))
-        return false;
-    locationID = row.GetUInt(0);
-    locationType = row.GetUInt(1);
-    return true;
-}
+// SELECT `agentID`, `typeID`, `level` FROM `agtSkillLevel` WHERE
 
-PyRep *AgentDB::GetAgentSolarSystem(uint32 AgentID){
-    DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
-        " SELECT"
-        "  s.solarSystemID"
-        " FROM agtAgents AS a"
-        "  LEFT JOIN staStations AS s ON s.stationID = a.locationID"
-        " WHERE a.agentID = %u",AgentID)) {
-        codelog(DATABASE__ERROR, "Error in GetAgentSolarSystem query for Agent = %u", AgentID);
-    }
-
-    DBResultRow row;
-    if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "SystemID of Agent %u not found.", AgentID);
-        return NULL;
-    }
-
-    PyRep *result(nullptr);
-    PyTuple *t = new PyTuple(1);
-    t->items[0] = new PyList(row.GetUInt(0));
-    result = t;
-    return result;
-}
-
-bool AgentDB::LoadAgentActions(uint32 agentID, std::map< uint32, AgentActions* >& into)
-{
-
-}
-
-#ifdef NOT_DONE
-AgentLevel *AgentDB::LoadAgentLevel(uint8 level)
-{
-    AgentLevel *result = new AgentLevel;
-
-    DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "   m.missionID,m.missionName,m.missionLevel,"
-        "   m.missionTypeID,t.missionTypeName,"
-        "   m.importantMission"
-        " FROM agtMissions AS m"
-        "  NATURAL JOIN agtMissionTypes AS t"
-        " WHERE missionLevel=%d",
-        level ))
-    {
-        codelog(DATABASE__ERROR, "Error in LoadAgentLevel query: %s", res.error.c_str());
-        delete result;
-        return nullptr;
-    }
-
-    _log(DATABASE__RESULTS, "LoadAgentLevel returned %u items", res.GetRowCount());
-
-    std::list<uint32> IDs;
-    IDs.clear();
-    DBResultRow row;
-
-    // this needs to go into a static mission data container....
-    // separate from static data?  yeah.  mission data object.
-    while(res.GetRow(row)) {
-        AgentMissionSpec *spec = new AgentMissionSpec;
-        spec->missionID = row.GetUInt(0);
-        spec->missionName = row.GetText(1);
-        spec->missionLevel = row.GetUInt(2);
-        spec->missionTypeID = row.GetUInt(3);
-        spec->missionTypeName = row.GetText(4);
-        spec->importantMission = (row.GetUInt(6)==0)?false:true;
-        result->missions.push_back(spec);
-    }
-}
-
-#endif

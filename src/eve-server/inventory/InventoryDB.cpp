@@ -705,10 +705,8 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
 void InventoryDB::DeleteTrackingCans()
 {
     DBerror err;
-    std::string query = "'%Position Test%'";
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
-    query = "'%Bubble%'";
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE %s", query.c_str());
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Position Test%'");
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Bubble%'");
 }
 
 bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
