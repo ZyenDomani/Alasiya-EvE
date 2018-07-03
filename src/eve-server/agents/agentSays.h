@@ -137,6 +137,10 @@
 (263558, `I can no longer await your response to my offer. I am displeased by your indecisiveness.`)
 (263559, `Mission Offer Expired`)
 
+(135333, 'Too. Many. Rocks. Uhhhh… <br><br>I quit.')
+(135334, 'What kind of miner are you?')
+(135335, 'I can harvest the cloud for you.')
+(135336, 'Thank you. You wouldn't believe how difficult it is to find a good gas harvester around here.')
 
 (129421, 'Who are you?  I've got important business to attend to, so unless you're somebody important get lost.')
 (129422, 'Who are you?  I've got important business to attend to, so unless you're somebody important get lost.')

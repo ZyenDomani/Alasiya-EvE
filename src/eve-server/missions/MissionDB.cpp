@@ -16,16 +16,6 @@
 MissionDB::MissionDB() { }
 
 
-void MissionDB::GetInfo()
-{
-
-}
-
-void MissionDB::GetMissionData(uint16 missionID)
-{
-
-}
-
 void MissionDB::LoadMissionData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
@@ -45,9 +35,10 @@ void MissionDB::CreateOfferID(MissionOffer& data)
     DBerror err;
     uint32 uid = 0;
     if (!sDatabase.RunQueryLID(err, uid,
-        "INSERT INTO agtOffers(agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemAmount, originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued, dateAccepted, dateCompleted) VALUES"
-        " VALUES ('%s', %u, %u, %u, %f, %f, %f, %f, %f)",
-        /*data.typeID, data.systemID, data.beltID, data.quantity, data.radius, data.x, data.y, data.z*/0 ))
+        "INSERT INTO agtOffers(agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemQty, originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued) VALUES"
+        " VALUES (%u, %u, %u, %u %f, %u, %u, %u, %u, %u, %u, %f, %u, %u, %f)",
+        data.agentID, data.characterID, data.missionID, data.stateID, data.expiryTime, data.rewardLP, data.rewardISK, data.rewardItemID, data.rewardItemQty,
+        data.originID, data.destinationID, data.acceptFee, data.courierItemID, data.courierAmount, data.dateIssued))
     {
         codelog(DATABASE__ERROR, "Failed to insert new MissionOffer: %s", err.c_str());
         return;
@@ -56,10 +47,22 @@ void MissionDB::CreateOfferID(MissionOffer& data)
     data.offerID = uid;
 }
 
+void MissionDB::UpdateMissionOffer(MissionOffer& data)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "UPDATE agtOffers SET stateID = %u, dateAccepted = %f, dateCompleted = %f WHERE offerID = %u",
+        data.stateID, data.dateAccepted, data.dateCompleted, data.offerID))
+    {
+        codelog(DATABASE__ERROR, "Failed to insert new MissionOffer: %s", err.c_str());
+        return;
+    }
+}
+
+
 void MissionDB::LoadMissionOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT offerID, agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemAmount, originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued FROM agtOffers WHERE dateCompleted = 0"))
+        "SELECT offerID, agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemQty, originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued FROM agtOffers WHERE dateCompleted = 0"))
         codelog(DATABASE__ERROR, "Error in LoadMissionOffers query: %s", res.error.c_str());
 }
 

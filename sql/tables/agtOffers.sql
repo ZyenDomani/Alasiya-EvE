@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 02, 2018 at 12:33 PM
+-- Generation Time: Jul 03, 2018 at 02:45 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS `agtOffers` (
   `rewardLP` int(10) NOT NULL DEFAULT '0',
   `rewardISK` int(10) NOT NULL DEFAULT '0',
   `rewardItemID` int(10) NOT NULL DEFAULT '0',
-  `rewardItemAmount` smallint(6) NOT NULL DEFAULT '0',
+  `rewardItemQty` smallint(6) NOT NULL DEFAULT '0',
   `originID` int(10) NOT NULL DEFAULT '0',
   `destinationID` int(10) NOT NULL DEFAULT '0',
   `acceptFee` float NOT NULL DEFAULT '0',

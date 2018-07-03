@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 02, 2018 at 12:33 PM
+-- Generation Time: Jul 03, 2018 at 04:41 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -1308,7 +1308,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (55552, 0, 'Kill the sansha outpost  G/M 2320', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (56751, 0, 'Frontline Intelligence - The Hard Way (2 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56752, 0, 'Like Drones to a Cloud', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56753, 0, 'Soft Drink Wars', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56754, 0, 'Soft Drink Wars', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56755, 0, 'Soft Drink Wars', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1390,19 +1389,10 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (56831, 0, 'Pot and Kettle - Delivery (3 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56860, 0, 'Pot and Kettle - To Battle (5 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56861, 0, 'Pot and Kettle - Making Amends (5 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56871, 0, 'Starting Simple', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56872, 0, 'I Don''t Ask', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56873, 0, 'Asteroid Catastrophe', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56874, 0, 'Burnt Traces', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56875, 0, 'Down and Dirty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56876, 0, 'Passing the ISK', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56877, 0, 'Understanding Augumene', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56878, 0, 'Mercium Belt', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56879, 0, 'Mercium Belt', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56880, 0, 'Mercium Belt', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56881, 0, 'Unknown Events', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56882, 0, 'Oh, the Augumene!', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56883, 0, 'Mercium Experiments', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56884, 0, 'Furrier Fiasco', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56885, 0, 'Escaped Dissident', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56886, 0, 'Escaped Spy', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1428,28 +1418,13 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (56908, 0, 'Hauling Fur (1 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56909, 0, 'Hauling Fur (3 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56910, 0, 'Hunting a Heretic  - Tracking a Crackpot (1 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56913, 0, 'Persistent Pests', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56914, 0, 'For the Troops - Error of Comedy (2 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56915, 0, 'Drone Distribution', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56916, 0, 'Coming ''Round the Mountain', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56917, 0, 'A Better World', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56918, 0, 'For the Troops - Final Negotiations (3 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56919, 0, 'Beware They Live', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56920, 0, 'Pile of Pithix', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56921, 0, 'Ours Now', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56922, 0, 'Ours Now', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56923, 0, 'Ice Installation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56924, 0, 'Cheap Chills', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56925, 0, 'Like Drones to a Cloud', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56926, 0, 'Like Drones to a Cloud', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56927, 0, 'Mother Lode', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56928, 0, 'Geodite and Gemology', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56929, 0, 'Feeding the Giant', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56930, 0, 'Arisite Envy', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56931, 0, 'Not Gneiss at All', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56932, 0, 'Greater Good – Less Distasteful Matters (2 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56933, 0, 'Greater Good - Not Even Remotely Drastic Measures (4 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(56934, 0, 'Gas Injections', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56935, 0, 'Foreign Investment', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56936, 0, 'Enemies Within', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56937, 0, 'Fallen, Yet Not Forgotten', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1577,8 +1552,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57059, 0, 'A Million Little Pieces', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57060, 0, 'Extract the Renegade', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57061, 0, 'Blood for Blood', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57062, 0, 'Data Mining', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57063, 0, 'Data Mining', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57064, 0, 'Rancorous Researcher (4 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57065, 0, 'Rancorous Researcher (5 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57066, 0, 'Desperate Maneuvers', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1610,7 +1583,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57092, 0, 'Air Show!  - Sign-up Begins (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57093, 0, 'Customs Interdiction (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57094, 0, 'Fair Play - Slight Advantage (4 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57095, 0, 'Like Drones to a Cloud', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57096, 0, 'Undue Attention - What Spacelane Patrol Knows (2 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57097, 0, 'Elopement', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57098, 0, 'Dark Alliance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1685,7 +1657,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57171, 0, 'A Change in Management', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57172, 0, 'A Change in Management', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57173, 0, 'Scavengers', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57174, 0, 'Stay Frosty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57175, 0, 'Are You Receiving? (2 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57176, 0, 'Are You Receiving? (1 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57177, 0, 'Labors of War (2 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1788,7 +1759,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57285, 0, 'It''s Not Over Yet', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57286, 0, 'Eliminate the Pirate Campers', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57287, 0, 'Of Interest', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57288, 0, 'Claimjumpers', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57289, 0, 'A Beacon Beckons', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57290, 0, 'A Stranger''s Face', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57291, 0, 'A Call to Trial', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1963,8 +1933,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57597, 0, 'Knockout Punch', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57598, 0, 'Mining Base Camp - Nugoeihuvi Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57599, 0, 'Mining Base Camp - Hyasyoda Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57600, 0, 'Mining Base Camp - Lai Dai Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+(57600, 0, 'Mining Base Camp - Lai Dai Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57601, 0, 'Mining Base Camp - Kaalakiota Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57602, 0, 'Mining Base Camp - Sukuuvestaa Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57603, 0, 'Troop Build up - Nugoeihuvi Corporation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1991,7 +1960,8 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57624, 0, 'Supply Interdiction', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57625, 0, 'Roid Rage', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57626, 0, 'Demolition', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57627, 0, 'Covert Assistance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+(57627, 0, 'Covert Assistance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (57628, 0, 'Proven Loyalty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57629, 0, 'Starbase Smashing', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57630, 0, 'Knife in the Throat', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2356,7 +2326,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58086, 0, 'Wartime Advances', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58087, 0, 'The Natural Way', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58088, 0, 'The Latest Style', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58089, 0, 'The Governor’s Ball', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58092, 0, 'Unmasking the Traitor', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58093, 0, 'The Essence of Speed', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58094, 0, 'Shifting Rocks', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2384,7 +2353,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58119, 0, 'Opiate of the Masses', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58121, 0, 'Fire and Ice', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58122, 0, 'Unmasking the Traitor', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58124, 0, 'The Governor’s Ball', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58340, 0, 'Kidnappers Strike - Ambush in the Dark (1 of 10)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58341, 0, 'Kidnappers Strike - Ambush in the Dark (1 of 10)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58342, 0, 'Very Important Pirates', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2564,9 +2532,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58546, 0, 'The Exam', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58547, 0, 'The Exam', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58552, 0, 'Oh, the Augumene!', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58553, 0, 'Mercium Belt', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58554, 0, 'I Don''t Ask', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58555, 0, 'Like Drones to a Cloud', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58556, 0, 'Moving Onwards', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58557, 0, 'Covering the Basics', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58558, 0, 'Combat Basics', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2635,8 +2601,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58621, 0, 'No Sincerer Love (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58622, 0, 'Pawns on the Board (2 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58623, 0, 'Manel''s Disappearance (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58624, 0, 'Governor''s Aide (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+(58624, 0, 'Governor''s Aide (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58625, 0, 'Guild Wars (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58626, 0, 'Secrets Of The Mire Keep (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58627, 0, 'Clear Head - Throwing Down the Gauntlet (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2664,7 +2629,8 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58649, 0, 'High Noon - A Few Cards Short (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58650, 0, 'House of Flowers - Lucia (1 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58651, 0, 'Deputy - The Outpost (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58652, 0, 'The Regiment - Stolen Deed (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+(58652, 0, 'The Regiment - Stolen Deed (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (58653, 0, 'Interested in Work? (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58654, 0, 'Those Bastards! (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58655, 0, 'Wiyrkomi Freelancing - Missing Weapons Stash (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

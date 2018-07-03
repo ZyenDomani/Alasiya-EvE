@@ -23,13 +23,11 @@ public:
     ~MissionDB()                                        { /* do nothing here */ }
 
     static void LoadMissionData(DBQueryResult& res);
-    static void GetMissionData(uint16 missionID);
-
     static void LoadCourierData(DBQueryResult& res);
     static void CreateOfferID(MissionOffer& data);
     static void LoadMissionOffers(DBQueryResult& res);
+    static void UpdateMissionOffer(MissionOffer& data);
 
-    void                GetInfo();
 
 protected:
 
