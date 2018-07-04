@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 03, 2018 at 04:41 AM
+-- Generation Time: Jul 04, 2018 at 10:23 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -973,7 +973,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (55199, 0, 'Flu Strikes Hard', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55200, 0, 'Missiles R Us', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55201, 0, 'Keeping Up to Date', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(55202, 0, 'Reactor Meltdown', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55203, 0, 'Very Important People', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55204, 0, 'Food Shortage', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55209, 0, 'Supply the Security Personnel', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1682,7 +1681,6 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57197, 0, 'Driving a Wedge - Ambassadorial Ambush (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57198, 0, 'Driving a Wedge - Consulate Conflagration (2 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57199, 0, 'Martokar (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57204, 0, 'Coolant Run', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57205, 0, 'Ingredients For The Native Freshfood Special (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57206, 0, 'Native Freshfood Special', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57207, 0, 'Call to Arms', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1960,9 +1958,9 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57624, 0, 'Supply Interdiction', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57625, 0, 'Roid Rage', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57626, 0, 'Demolition', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57627, 0, 'Covert Assistance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(57627, 0, 'Covert Assistance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+(57628, 0, 'Proven Loyalty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
-(57628, 0, 'Proven Loyalty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57629, 0, 'Starbase Smashing', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57630, 0, 'Knife in the Throat', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57631, 0, 'Decapitation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2629,9 +2627,9 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58649, 0, 'High Noon - A Few Cards Short (1 of 2)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58650, 0, 'House of Flowers - Lucia (1 of 3)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58651, 0, 'Deputy - The Outpost (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(58652, 0, 'The Regiment - Stolen Deed (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+(58652, 0, 'The Regiment - Stolen Deed (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+(58653, 0, 'Interested in Work? (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
-(58653, 0, 'Interested in Work? (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58654, 0, 'Those Bastards! (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58655, 0, 'Wiyrkomi Freelancing - Missing Weapons Stash (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58656, 0, 'Artifact Excavations - Food for the Needy (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

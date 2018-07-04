@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 03, 2018 at 04:49 AM
+-- Generation Time: Jul 04, 2018 at 10:22 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `qstCourier` (
   `id` int(5) NOT NULL DEFAULT '0',
-  `descID` int(5) NOT NULL DEFAULT '0',
+  `contentID` int(5) NOT NULL DEFAULT '0',
   `name` text,
   `level` tinyint(1) NOT NULL DEFAULT '0',
   `typeID` tinyint(1) NOT NULL DEFAULT '0',
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `qstCourier` (
 -- Dumping data for table `qstCourier`
 --
 
-INSERT INTO `qstCourier` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`, `collateral`) VALUES
+INSERT INTO `qstCourier` (`id`, `contentID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`, `collateral`) VALUES
 (54833, 0, 'Need A Lift', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55005, 130400, 'Transaction Data Delivery', 1, 3, 0, 1, 0, 0, 2, 0, 0, 1, 27000, 28, 100000),
 (55006, 130404, 'Transaction Data Delivery', 2, 3, 0, 1, 0, 0, 5, 0, 0, 1, 56000, 21, 200000),
@@ -200,7 +200,9 @@ INSERT INTO `qstCourier` (`id`, `descID`, `name`, `level`, `typeID`, `important`
 (58357, 144553, 'Materials For War Preparation', 4, 3, 0, 1, 0, 0, 8000, 60000, 0, 1, 60000, 16, 0),
 (58358, 144556, 'Materials For War Preparation', 5, 3, 0, 1, 0, 0, 12000, 95000, 0, 1, 95000, 12, 0),
 (58089, 144084, 'The Governor’s Ball', 2, 3, 0, 0, 4, 0, 7, 40000, 0, 0, 44000, 23, 100000),
-(58124, 144381, 'The Governor’s Ball', 3, 3, 0, 0, 4, 0, 12, 65000, 0, 0, 65000, 18, 150000);
+(58124, 144381, 'The Governor’s Ball', 3, 3, 0, 0, 4, 0, 12, 65000, 0, 0, 65000, 18, 150000),
+(55202, 130994, 'Reactor Meltdown', 1, 3, 0, 0, 0, 0, 15, 0, 0, 0, 0, 0, 0),
+(57204, 131009, 'Coolant Run', 2, 3, 0, 0, 0, 0, 45, 0, 0, 0, 0, 0, 0);
 
 --
 -- Indexes for dumped tables

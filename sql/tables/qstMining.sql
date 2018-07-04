@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 03, 2018 at 04:50 AM
+-- Generation Time: Jul 04, 2018 at 10:23 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -28,7 +28,7 @@ SET time_zone = "+00:00";
 
 CREATE TABLE IF NOT EXISTS `qstMining` (
   `id` int(5) NOT NULL DEFAULT '0',
-  `descID` int(5) NOT NULL DEFAULT '0',
+  `contentID` int(5) NOT NULL DEFAULT '0',
   `name` text,
   `level` tinyint(1) NOT NULL DEFAULT '0',
   `typeID` tinyint(1) NOT NULL DEFAULT '0',
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS `qstMining` (
 -- Dumping data for table `qstMining`
 --
 
-INSERT INTO `qstMining` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `qstMining` (`id`, `contentID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (56752, 135338, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
 (56871, 0, 'Starting Simple', 1, 5, 0, 0, 0, 0, 2000, 0, 0, 0, 0, 0),
 (56873, 0, 'Asteroid Catastrophe', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
