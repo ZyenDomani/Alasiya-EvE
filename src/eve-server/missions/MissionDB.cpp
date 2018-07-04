@@ -19,15 +19,22 @@ MissionDB::MissionDB() { }
 void MissionDB::LoadMissionData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT id, descID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID, rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions"))
+        "SELECT id, contentID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID, rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions"))
         codelog(DATABASE__ERROR, "Error in LoadMissionData query: %s", res.error.c_str());
 }
 
 void MissionDB::LoadCourierData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT id, descID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier"))
+        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier"))
         codelog(DATABASE__ERROR, "Error in LoadCourierData query: %s", res.error.c_str());
+}
+
+void MissionDB::LoadMiningData(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res,
+        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstMining"))
+        codelog(DATABASE__ERROR, "Error in LoadMiningData query: %s", res.error.c_str());
 }
 
 void MissionDB::CreateOfferID(MissionOffer& data)

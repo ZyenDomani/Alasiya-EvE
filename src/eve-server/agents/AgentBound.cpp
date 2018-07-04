@@ -64,11 +64,6 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
 
     uint32 actionID = PyRep::IntegerValue(args.arg);
 
-    /*
-    (232833, `Agent Conversation`)
-    (232834, `Agent Conversation - {[character]agentID.name}`)
-    */
-
     // this actually returns a complicated tuple depending on other variables involving this agent and char.
     /*
         agentSays, dialogue, extraInfo = self.__GetConversation(agentDialogueWindow, actionID)
@@ -164,37 +159,48 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
      *            [PyBool False]
      */
     std::string response = "";
+    PyTuple* agentSays = new PyTuple(2);
     PyList* dialog = new PyList();
 
     if (actionID == 0) {
+        // response as string for custom data.  response as pyint to use client data (using getlocale shit)
         // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
         //  this will be modeled after UO speech data, in tiers and levels.
+        // if RequestMission is only option, this is ignored.  see note under 'dialog data'
         response = "Why the fuck am I looking at you again, ";
         response += call.client->GetCharacterName().c_str();
         response += "?";
+        agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
+        agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
+
         m_agent->SetMission(false);
-        // dialogue data....
+        // dialogue data.  if RequestMission is only option, client auto-responds with DoAction(RequestMission optionID)
+        //  if char has current mission wiht this agent, add this one.
+        /*
         PyTuple* button1 = new PyTuple(2);
             button1->SetItem(0, new PyInt(12)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
             button1->SetItem(1, new PyInt(Dialog::Button::ViewMission));
+        dialog->AddItem(button1);
+            */
         PyTuple* button2 = new PyTuple(2);
             button2->SetItem(0, new PyInt(13));
             button2->SetItem(1, new PyInt(Dialog::Button::RequestMission));
+        dialog->AddItem(button2);
+        /*
         // if agent does location, add this one...
         PyTuple* button3 = new PyTuple(2);
             button3->SetItem(0, new PyInt(34));
             button3->SetItem(1, new PyInt(Dialog::Button::LocateCharacter));
+        dialog->AddItem(button3);
         // if agent also does research, add this one...
         PyTuple* button4 = new PyTuple(2);
             button4->SetItem(0, new PyInt(56));
             button4->SetItem(1, new PyInt(Dialog::Button::StartResearch));
-
-        dialog->AddItem(button1);
-        dialog->AddItem(button2);
-        dialog->AddItem(button3);
         dialog->AddItem(button4);
+        */
     } else {
-        // agentSays data.....
+        // agentSays data.....this is for custom shit here...
+        /*
         response = "This just came up, ";
         response += call.client->GetCharacterName().c_str();
         response += ".";
@@ -202,21 +208,8 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         response += "These people simply refuse to leave, some are laid off workers of ours while others are simply outsiders who think they can come and live off our hospitality indefinitely. ";
         response += "Since there are strict regulations against sending them out the airlock for no reason, and since we can't simply frame every single one of them for a crime worthy of such a fate, we've no choice but to forcibly move them somewhere else. ";
         response += "Another station will do.  In fact I'd like you to move a heap-load of them to Isutaka I - Caldari Steel Warehouse.  I never liked those bastards over there anyway, let them deal with this 'human problem'.</div><br>";
+        */
         m_agent->SetMission(true);
-        PyTuple* button1 = new PyTuple(2);
-        button1->SetItem(0, new PyInt(23));
-        button1->SetItem(1, new PyInt(Dialog::Button::Accept));
-        PyTuple* button2 = new PyTuple(2);
-        button2->SetItem(0, new PyInt(45));
-        button2->SetItem(1, new PyInt(Dialog::Button::Decline));
-        PyTuple* button3 = new PyTuple(2);
-        button3->SetItem(0, new PyInt(67));
-        button3->SetItem(1, new PyInt(Dialog::Button::Defer));
-
-        dialog->AddItem(button1);
-        dialog->AddItem(button2);
-        dialog->AddItem(button3);
-    }
 
         /*
         agentSays, dialogue, extraInfo = self.__GetConversation(agentDialogueWindow, actionID)
@@ -271,27 +264,71 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
      */
     //   detail in /eve/client/script/ui/station/agents/agents.py
 
-        PyTuple* agentSays = new PyTuple(2);
-            agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
-            agentSays->SetItem(1, new PyNone());    //contentID
+        // offer and msgInfo are only used when agentSays[0] != string.
+        PyList* msgInfoList = new PyList();
+        /*
+         *    PyDict* offer = new PyDict();
+         *        offer->SetItemString("missionOfferText", new PyInt(235567));
+         *        msgInfoList->AddItem(new PyObject("util.KeyVal", offer));
+         */
+        PyDict* briefingInfo = new PyDict();
+        briefingInfo->SetItemString("missionBriefingText", new PyInt(235548));
+        msgInfoList->AddItem(new PyObject("util.KeyVal", briefingInfo));
+        /*
+         *    PyDict* completion = new PyDict();
+         *        completion->SetItemString("missionCompletionText", new PyInt(235571));
+         *        msgInfoList->AddItem(new PyObject("util.KeyVal", completion));
+         */
+        /*
+         *    PyDict* location = new PyDict();
+         *        location->SetItemString("locationString", new PyInt(235546));
+         *        msgInfoList->AddItem(new PyObject("util.KeyVal", location));
+         */
 
-        // extraInfo data....
-        PyDict* xtraInfo = new PyDict();
-            xtraInfo->SetItemString("loyaltyPoints", new PyInt(10));  // this is char current LP
-            xtraInfo->SetItemString("missionCompleted", new PyBool(false));
-            xtraInfo->SetItemString("missionQuit", new PyBool(false));
-            xtraInfo->SetItemString("missionDeclined", new PyBool(false));
+        PyTuple* msgInfo = new PyTuple(2);
+        msgInfo->SetItem(0, new PyInt(236729));     // agent greeting?
+        msgInfo->SetItem(1, msgInfoList);
+        //TypeError: cannot convert dictionary update sequence element #0 to a sequence     ** no clue what this means....
 
-        PyTuple* inner = new PyTuple(2);
-            inner->SetItem(0, agentSays);
-            inner->SetItem(1, dialog);
-        PyTuple* outer = new PyTuple(2);
-            outer->SetItem(0, inner);
-            outer->SetItem(1, new PyObject("util.KeyVal", xtraInfo));
+        agentSays->SetItem(0, /*msgInfo*/new PyInt(236729));       // PyInt of agent greeting (under mission name) unless offer is PyDict..  cant get msgInfo working yet.
+        agentSays->SetItem(1, new PyInt(130997));    //contentID    - mission descriptionID
 
-        if (is_log_enabled(AGENT__RSPDUMP))
-            outer->Dump(AGENT__RSPDUMP, "    ");
-        return outer;
+
+        PyTuple* button1 = new PyTuple(2);
+            button1->SetItem(0, new PyInt(23));
+            button1->SetItem(1, new PyInt(Dialog::Button::Accept));
+        PyTuple* button2 = new PyTuple(2);
+            button2->SetItem(0, new PyInt(45));
+            button2->SetItem(1, new PyInt(Dialog::Button::Decline));
+        PyTuple* button3 = new PyTuple(2);
+            button3->SetItem(0, new PyInt(67));
+            button3->SetItem(1, new PyInt(Dialog::Button::Defer));
+
+        dialog->AddItem(button1);
+        dialog->AddItem(button2);
+        dialog->AddItem(button3);
+    }
+
+    // extraInfo data....
+    PyDict* xtraInfo = new PyDict();
+        xtraInfo->SetItemString("loyaltyPoints", new PyInt(10));  // this is char current LP
+        xtraInfo->SetItemString("missionCompleted", new PyBool(false));
+        xtraInfo->SetItemString("missionQuit", new PyBool(false));
+        xtraInfo->SetItemString("missionDeclined", new PyBool(false));
+
+    PyTuple* inner = new PyTuple(2);
+        inner->SetItem(0, agentSays);
+        inner->SetItem(1, dialog);
+    PyTuple* outer = new PyTuple(2);
+        outer->SetItem(0, inner);
+        outer->SetItem(1, new PyObject("util.KeyVal", xtraInfo));
+
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_DoAction RSP:" );
+        outer->Dump(AGENT__RSPDUMP, "    ");
+    }
+
+    return outer;
 
         /*  above code creates the following packet structure when DoAction = 0
          * 07:50:26 [AgentRspDump]      Tuple: 2 elements
@@ -502,19 +539,22 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         keywords->SetItemString("rewardTypeID", new PyInt(29));
         keywords->SetItemString("rewardQuantity", new PyInt(28000));
     PyDict *dialog = new PyDict();
-        dialog->SetItemString("ContentID", new PyInt(57858));  // not sure when/if this is filled
+        dialog->SetItemString("ContentID", new PyInt(130997));  // not sure when/if this is filled
         dialog->SetItemString("Mission Keywords", keywords);  // only used when "ContentID" is filled?
         dialog->SetItemString("Decline Time", new PyInt(-1));   // -1 is generic decline msg
+        // will have to find and store mission images *somewhere*  EVE_Mission.h probably.
         dialog->SetItemString("Mission Image", new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>") );
         //dialog->SetItemString("Mission Title", new PyString("Human Problem") );
         //dialog->SetItemString("Mission Briefing", new PyString("<div id=basetext>Our cargo area and lower-tier decks are overflowing with vagabonds and tramps.  It has almost reached epidemic proportions.  These people simply refuse to leave, some are laid off workers of ours while others are simply outsiders who think they can come and live off our hospitality indefinitely.  Since there are strict regulations against sending them out the airlock for no reason, and since we can't simply frame every single one of them for a crime worthy of such a fate, we've no choice but to forcibly move them somewhere else.  Another station will do.  In fact I'd like you to move a heap-load of them to Isutaka I - Caldari Steel Warehouse.  I never liked those bastards over there anyway, let them deal with this 'human problem'.</div>    <br>") );
         //dialog->SetItemString("Expiration Message", new PyString("<span id=subheader>Mission Expiration</span><br><div id=basetext>This mission expires at 2011.05.10 01:29:33</div>"));
         dialog->SetItemString("Expiration Time", new PyLong( GetFileTimeNow()+Win32Time_Day ) );
-        dialog->SetItemString("Mission Title ID", new PyInt(57858) );  // this 'value' will display on initial convo window, under agent picture, if sent with DoAction = 0
-        dialog->SetItemString("Mission Briefing ID", new PyInt(130987) ); // or 130990  same data
+        dialog->SetItemString("Mission Title ID", new PyInt(55205) );  // this 'value' will display on initial convo window, under agent picture, if sent with DoAction = 0
+        dialog->SetItemString("Mission Briefing ID", new PyInt(130997) );
 
-    if (is_log_enabled(AGENT__RSPDUMP))
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionBriefingInfo() RSP:" );
         dialog->Dump(AGENT__RSPDUMP, "    ");
+    }
 
     return dialog;
     /*
@@ -557,8 +597,9 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
 PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
 {
+    // sends charID, contentID
     // returns PyDict loaded with mission info  or PyNone
-    // this one is where the "double pane" agent window is set.  this must(?) return HTML (havent followed code yet)
+    // this one is where the "double pane" agent window is set.
 
     /*  ret = self.GetAgentMoniker(agentID).GetMissionObjectiveInfo(charID, contentID)
      *
@@ -676,162 +717,62 @@ def BuildObjectiveHTML(agentID, objectiveData):
         if (!m_agent->HasMission())
             return PyStatic.NewNone();
 
-        /*  not right....
-    Call_SingleArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
-        return PyStatic.NewNone();
+    PyDict* info = new PyDict();
+    info->SetItemString("contentID", new PyInt());
+    info->SetItemString("importantStandings", new PyInt());
+    info->SetItemString("completionStatus", new PyInt());
+    info->SetItemString("missionTitleID", new PyInt());
+    info->SetItemString("locations", new PyInt());
+    info->SetItemString("agentGift", new PyInt());
+    info->SetItemString("missionState", new PyInt());
+    info->SetItemString("normalRewards", new PyInt());
+    info->SetItemString("loyaltyPoints", new PyInt(0));
+    info->SetItemString("researchPoints", new PyInt(0));
+    info->SetItemString("bonusRewards", new PyInt());   // this is tuple(4)  timeRemaining, typeID, quantity, extra
+    info->SetItemString("collateral", new PyTuple(0));   // this is tuple(3)  typeID, quantity, extra
+    info->SetItemString("missionExtra", new PyTuple(0));       // this is tuple(2)  headerID, bodyID
+    info->SetItemString("objectives", new PyTuple(0));     // this is tuple(2)    objType, objData
+    info->SetItemString("dungeons", new PyTuple(0)); // this is tuple(1)   dunData
+
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionObjectiveInfo() RSP:" );
+        info->Dump(AGENT__RSPDUMP, "    ");
     }
 
-    uint32 missionID = PyRep::IntegerValue(args.arg);
-    if (missionID == 0)
-        return PyStatic.NewNone();
-    */
-
-    return PyStatic.NewNone();
+    return info;
 }
 
-/*)
- * 07:50:33 [AgentDump] AgentBound::Handle_DoAction() - size= 1
- * 07:50:33 [AgentDump]   Call Arguments:
- * 07:50:33 [AgentDump]      Tuple: 1 elements
- * 07:50:33 [AgentDump]       [ 0]    Integer: 13
- * 07:50:33 [AgentDump]  Named Arguments:
- * 07:50:33 [AgentDump]   machoVersion
- * 07:50:33 [AgentDump]        Integer: 1
- * 07:50:33 [AgentRspDump]      Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]  Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 0]  Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 0]   [ 0]     String: 'This just came up, allan.'
- * 07:50:33 [AgentRspDump]       [ 0]   [ 0]   [ 1]       None
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   List: 3 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 0]  Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 0]   [ 0]    Integer: 23
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 0]   [ 1]    Integer: 3
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 1]  Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 1]   [ 0]    Integer: 45
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 1]   [ 1]    Integer: 9
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 2]  Tuple: 2 elements
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 2]   [ 0]    Integer: 67
- * 07:50:33 [AgentRspDump]       [ 0]   [ 1]   [ 2]   [ 1]    Integer: 10
- * 07:50:33 [AgentRspDump]       [ 1] Object:
- * 07:50:33 [AgentRspDump]       [ 1]   Type:     String: 'util.KeyVal'
- * 07:50:33 [AgentRspDump]       [ 1]   Args:  Dictionary: 4 entries
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 0]   Key:     String: 'missionQuit'
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 0] Value:    Boolean: false
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 1]   Key:     String: 'missionCompleted'
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 1] Value:    Boolean: false
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 2]   Key:     String: 'missionDeclined'
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 2] Value:    Boolean: false
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 3]   Key:     String: 'loyaltyPoints'
- * 07:50:33 [AgentRspDump]       [ 1]   Args:   [ 3] Value:    Integer: 10
- * 07:50:33 [SvcCall] Service AgentBound::GetMissionBriefingInfo()
- * 07:50:33 [AgentDump] AgentBound::Handle_GetMissionBriefingInfo() - size= 0
- * 07:50:33 [AgentDump]   Call Arguments:
- * 07:50:33 [AgentDump]      Tuple: Empty
- * 07:50:33 [AgentDump]  Named Arguments:
- * 07:50:33 [AgentDump]   machoVersion
- * 07:50:33 [AgentDump]        Integer: 1
- * 07:50:33 [AgentRspDump]      Dictionary: 7 entries
- * 07:50:33 [AgentRspDump]       [ 0]   Key:     String: 'Mission Briefing ID'
- * 07:50:33 [AgentRspDump]       [ 0] Value:    Integer: 130987
- * 07:50:33 [AgentRspDump]       [ 1]   Key:     String: 'Mission Title ID'
- * 07:50:33 [AgentRspDump]       [ 1] Value:    Integer: 57858
- * 07:50:33 [AgentRspDump]       [ 2]   Key:     String: 'Expiration Time'
- * 07:50:33 [AgentRspDump]       [ 2] Value:       Long: 131746638334523632
- * 07:50:33 [AgentRspDump]       [ 3]   Key:     String: 'Mission Image'
- * 07:50:33 [AgentRspDump]       [ 3] Value:     String: '<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>'
- * 07:50:33 [AgentRspDump]       [ 4]   Key:     String: 'Decline Time'
- * 07:50:33 [AgentRspDump]       [ 4] Value:    Integer: -1
- * 07:50:33 [AgentRspDump]       [ 5]   Key:     String: 'Mission Keywords'
- * 07:50:33 [AgentRspDump]       [ 5] Value:  Dictionary: 8 entries
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 0]   Key:     String: 'rewardQuantity'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 0] Value:    Integer: 28000
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 1]   Key:     String: 'objectiveDestinationSystemID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 1] Value:    Integer: 30002777
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 2]   Key:     String: 'objectiveDestinationID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 2] Value:    Integer: 60001690
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 3]   Key:     String: 'rewardTypeID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 3] Value:    Integer: 29
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 4]   Key:     String: 'objectiveQuantity'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 4] Value:    Integer: 7
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 5]   Key:     String: 'objectiveTypeID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 5] Value:    Integer: 2631
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 6]   Key:     String: 'objectiveLocationSystemID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 6] Value:    Integer: 30002507
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 7]   Key:     String: 'objectiveLocationID'
- * 07:50:33 [AgentRspDump]       [ 5] Value:   [ 7] Value:    Integer: 60005728
- * 07:50:33 [AgentRspDump]       [ 6]   Key:     String: 'ContentID'
- * 07:50:33 [AgentRspDump]       [ 6] Value:    Integer: 57858
- * 07:50:33 [SvcCall] Service AgentBound::GetAgentLocationWrap()
- * 07:50:33 [SvcCall] Service AgentBound::GetMissionObjectiveInfo()
- * 07:50:33 [AgentDump] AgentBound::Handle_GetMissionObjectiveInfo() - size= 0
- * 07:50:33 [AgentDump]   Call Arguments:
- * 07:50:33 [AgentDump]      Tuple: Empty
- * 07:50:33 [AgentDump]  Named Arguments:
- * 07:50:33 [AgentDump]   machoVersion
- * 07:50:33 [AgentDump]        Integer: 1
- * 07:50:33 [SvcCall] Service alert::BeanCount()
- * 07:50:33 [SvcCall] Service alert::SendClientStackTraceAlert()
- * EXCEPTION #5 logged at  06/27/2018 7:50:33 Unhandled exception in <TaskletExt object at 45e665b0, abps=1001, ctxt=None>
- * Caught at:
- * /common/lib/bluepy.py(98) CallWrapper
- * Thrown at:
- * /common/lib/bluepy.py(86) CallWrapper
- * /../carbon/client/script/ui/control/buttons.py(245) OnClick
- * /client/script/ui/station/agents/agents.py(580) DoAction
- * /client/script/ui/station/agents/agents.py(1157) __Interact
- *        agentDialogueWindow = form.AgentDialogueWindow object at 0x49c68710, name=agentinteraction_3012674, destroyed=False>
- *        briefingInformation = {'ContentID': 57858,
- *                        'Decline Time': -1,
- *                        'Expiration Time': 131746638334523632L,
- *                        'Mission Briefing ID': 130987,
- *                       ...
- *        charSays = ''
- *        disabledButtons = []
- *        actionID = 13
- *        appendCloseButton = False
- *        self = <svc.Agents instance at 0x48A75E18>
- *        agentLocationWrap = {'locationID': 60005728, 'solarsystemID': 30002507, 'typeID': 2497}
- *        ret = "<div id=basetext>Our cargo area and lower-tier decks are overflowing with vagabonds and tramps.  It has almost reached epidemic proportions.  These people simply refuse to leave, some are laid off workers of ours while others are simply outsiders who think they can come and live off our hospitality indefinitely.  Since there are strict regulations against sending them out the airlock for no reason, and since we can't simply frame every single one of them for a crime worthy of such a fate, we've no choice but to forcibly move them somewhere else.  Another station will do.  In fact I'd like you to move a heap-load of them to Isutaka I - Caldari Steel Warehouse.  I never liked those bastards over there anyway, let them deal with this 'human problem'.</div>    <br>    "
- *        label = u'Delay'
- *        html = u'\n            <html>\n            <head>\n                <link rel="stylesheet" type="text/css" href="res:/ui/css/agentconvo.css">\n            </head>\n                <body background-color=#00000000 link=#ffa800>\n                    \n        <table border=0 cellpadding=1 cellspacing=1>\n            <tr>\n                <td valign=top >\n                    <table border=0 cellpadding=1 cellspacing=1>\n                        <tr>\n                        </tr>\n                        <tr>\n                        </tr>\n                        <tr>\n                        </tr>\n                        <tr>\n                            <td valign=top><img src="portrait:3012674" width=120 height=120 size=256 align=left style=margin-right:10></td>\n                        </tr>\n                    </table>\n                </td>\n                <td valign=top>\n                    <table border=0 width=290 cellpadding=1 cellspacing=1>\n                        <tr>\n                            <td w...
- *        lp = 10
- *        missionTitle = u'<BR><span id=subheader>Human Problem</span><BR>'
- *        blurbDivision = u'Division: Mining'
- *        customAgentButtons = {'args': [...], 'okFunc': [...], 'okLabel': [...]}
- *        dialogue = [(...), (...), (...)]
- *        agentCorpID = 1000059
- *        numButtons = 3
- *        agentDivisionID = 23
- *        extraMissionInfo = u"<BR>Declining a mission from a particular agent more than once every 4 hours will result in a loss of standing with that agent.<br><center><img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4></center>"
- *        adminOptions = []
- *        a = <Row agentID:3012674,agentTypeID:2,divisionID:23,level:2,quality:20,corporationID:1000059,stationID:60005728,gender:0,bloodlineID:2,factionID:500002,solarsystemID:30002507>
- *        divisions = <util.IndexRowset instance at 0x49A78238>
- *        objectiveHtml = None
- *        extraInfo = <Anonymous KeyVal: {'missionCompleted': False, 'missionQuit': False, 'loyaltyPoints': 10, 'missionDeclined': False}>
- *        agentSays = 'This just came up, allan.'
- *        agentInfoIcon = u'<a href=showinfo:1375//3012674><img src=icon:38_208 size=16 alt="Show Info"></a>'
- *        adminBlock = ''
- *        isAgentInteractionMission = False
- *        each = (67, 10)
- *        numDialogChoices = 0
- *        closeWindowOnClick = True
- *        initialContentID = None
- *        closeWindowAfterInteraction = False
- *        labelPath = 'UI/Agents/Dialogue/Buttons/DeferMission'
- * AttributeError: KeyVal instance has no attribute '__getitem__'
- */
-
-// new...not handled
 PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     //self.missionArgs[contentID] = self.GetAgentMoniker(agentID).GetMissionKeywords(contentID)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionKeywords() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
-    return nullptr;
+    /** @todo  load/save mission data for keywords, to be indexed by contentID
+     *      -- this data currently saved in db by missionID (titleID)  may move to separate table to allow (easier) indexing
+     *
+     *  location/destination may be random.  other info found in mission data.
+     */
+
+    PyDict* keywords = new PyDict();
+        keywords->SetItemString("objectiveLocationID", new PyInt(m_agent->GetStationID()));
+        keywords->SetItemString("objectiveLocationSystemID", new PyInt(m_agent->GetSystemID()));
+        keywords->SetItemString("objectiveTypeID", new PyInt(2631));
+        keywords->SetItemString("objectiveQuantity", new PyInt(7));
+        keywords->SetItemString("objectiveDestinationID", new PyInt(60001690));
+        keywords->SetItemString("objectiveDestinationSystemID", new PyInt(30002777));
+        keywords->SetItemString("rewardTypeID", new PyInt(29));
+        keywords->SetItemString("rewardQuantity", new PyInt(28000));
+
+
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionKeywords() RSP:" );
+        keywords->Dump(AGENT__RSPDUMP, "    ");
+    }
+
+    return keywords;
 }
 
+// new...not handled
 PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
     //ret = self.GetAgentMoniker(agentID).GetMissionJournalInfo(charID, contentID)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionJournalInfo() - size= %u", call.tuple->size() );

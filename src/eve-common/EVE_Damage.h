@@ -172,6 +172,57 @@
  *
  */
 
+/*
+(251144, `<br>
+Victim: {[character] victim.name}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Destroyed: {[item] target.name}<br>
+System: {[location] system.name}<br>
+Security: {[numeric] security, decimalPlaces=1}<br>
+Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+Involved parties:<br>
+<br>`)
+(251145, `<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Destroyed: {[item] target.name}<br>
+System: {[location] system.name}<br>
+Security: {[numeric] security, decimalPlaces=1}<br>
+Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+Involved parties:<br>
+<br>`)
+(251147, `Name: {attacker} (laid the final blow)<br>
+Security: {[numeric] security, decimalPlaces=2}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Ship: {ship}<br>
+Weapon: {weapon}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+(251148, `Name: {attacker}<br>
+Security: {[numeric] security, decimalPlaces=2}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Ship: {ship}<br>
+Weapon: {weapon}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+(251149, `Name: {attacker} / {owner} (laid the final blow)<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+`)
+(251150, `Name: {attacker} / {owner}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+*/
+
 namespace Dmg {
 
     namespace Msg {

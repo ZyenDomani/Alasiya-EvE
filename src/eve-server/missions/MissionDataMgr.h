@@ -38,6 +38,7 @@ protected:
 
     std::map<std::string, uint32> m_names;
     std::multimap<uint8, CourierData> m_courier;        // level/data
+    std::multimap<uint8, CourierData> m_mining;        // level/data
     std::multimap<uint32, MissionOffer> m_offers;       // charID/data
 
 

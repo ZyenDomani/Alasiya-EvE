@@ -22,6 +22,7 @@ public:
     MissionDB();
     ~MissionDB()                                        { /* do nothing here */ }
 
+    static void LoadMiningData(DBQueryResult& res);
     static void LoadMissionData(DBQueryResult& res);
     static void LoadCourierData(DBQueryResult& res);
     static void CreateOfferID(MissionOffer& data);

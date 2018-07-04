@@ -196,41 +196,41 @@ PyObject* CorpAgent::GetInfoServiceDetails()
 
     PyDict* research = new PyDict();
     if (m_data.research) {
-    PyTuple* skill1 = new PyTuple(2);
-        skill1->SetItem(0, new PyInt(11452)); // Mechanical Engineering
-        skill1->SetItem(1, new PyInt(4));
-    PyTuple* skill2 = new PyTuple(2);
-        skill2->SetItem(0, new PyInt(11453));  //Electronic Engineering
-        skill2->SetItem(1, new PyInt(3));
-    PyList* skillList = new PyList();
-        skillList->AddItem(skill1);
-        skillList->AddItem(skill2);
-    PyDict* researchData = new PyDict();
-        researchData->SetItemString("rpMultiplier", new PyInt(2));
-        researchData->SetItemString("skillTypeID", new PyInt(11452));   // this is player research field with this agent.  not sure how to make "none" yet
-        researchData->SetItemString("points", new PyInt(150));
-        researchData->SetItemString("pointsPerDay", new PyInt(30));
-    PyTuple* patent1 = new PyTuple(2);
-        patent1->SetItem(0, new PyInt(11452));
-    PyList* patentlist1 = new PyList();
-        patentlist1->AddItem(new PyInt(692));
-        patent1->SetItem(1, patentlist1);
-    PyTuple* patent2 = new PyTuple(2);
-        patent2->SetItem(0, new PyInt(11453));
-    PyList* patentlist2 = new PyList();
-        patentlist2->AddItem(new PyInt(1196));
-        patent2->SetItem(1, patentlist2);
-    PyList* patentList = new PyList();
-        patentList->AddItem(patent1);
-        patentList->AddItem(patent2);
+        PyTuple* skill1 = new PyTuple(2);
+            skill1->SetItem(0, new PyInt(11452)); // Mechanical Engineering
+            skill1->SetItem(1, new PyInt(4));
+        PyTuple* skill2 = new PyTuple(2);
+            skill2->SetItem(0, new PyInt(11453));  //Electronic Engineering
+            skill2->SetItem(1, new PyInt(3));
+        PyList* skillList = new PyList();
+            skillList->AddItem(skill1);
+            skillList->AddItem(skill2);
+        PyDict* researchData = new PyDict();
+            researchData->SetItemString("rpMultiplier", new PyInt(2));
+            researchData->SetItemString("skillTypeID", new PyInt(11452));   // this is player research field with this agent.  not sure how to make "none" yet
+            researchData->SetItemString("points", new PyInt(150));
+            researchData->SetItemString("pointsPerDay", new PyInt(30));
+        PyTuple* patent1 = new PyTuple(2);
+            patent1->SetItem(0, new PyInt(11452));
+        PyList* patentlist1 = new PyList();
+            patentlist1->AddItem(new PyInt(692));
+            patent1->SetItem(1, patentlist1);
+        PyTuple* patent2 = new PyTuple(2);
+            patent2->SetItem(0, new PyInt(11453));
+        PyList* patentlist2 = new PyList();
+            patentlist2->AddItem(new PyInt(1196));
+            patent2->SetItem(1, patentlist2);
+        PyList* patentList = new PyList();
+            patentList->AddItem(patent1);
+            patentList->AddItem(patent2);
+
         research->SetItemString("agentServiceType", new PyString("research"));
         research->SetItemString("skills", skillList);
         research->SetItemString("researchSummary", patentList);
         research->SetItemString("researchData", researchData);
-    }
+    } else
+        research->SetItemString("agentServiceType", new PyNone());
 
-        PyDict* locate = new PyDict();
-        if (m_data.locator) {
     /* for location agents....
      *
  level  Standings  Time to Run                             Cooldown    Cost                Range
@@ -258,38 +258,37 @@ PyObject* CorpAgent::GetInfoServiceDetails()
      (235850, `{[character]charID.gender -> "He", "She"} is at {stationName} station in the {systemName} system, {constellationName} constellation of {regionName} region.`)
      (235851, `{[character]charID.gender -> "He", "She"} is in the {systemName} system.`)
      */
-    PyTuple* sameSystem = new PyTuple(3);
-        sameSystem->SetItem(0, new PyInt(0));
-        sameSystem->SetItem(1, new PyInt(10));
-        sameSystem->SetItem(2, new PyInt(20000));
-
-    PyTuple* sameConst = new PyTuple(3);
-        sameConst->SetItem(0, new PyInt(1));
-        sameConst->SetItem(1, new PyInt(30));
-        sameConst->SetItem(2, new PyInt(200000));
-
-    PyTuple* sameRegion = new PyTuple(3);
-        sameRegion->SetItem(0, new PyInt(2));
-        sameRegion->SetItem(1, new PyInt(60));
-        sameRegion->SetItem(2, new PyInt(2000000));
-
-    PyTuple* otherRegion = new PyTuple(3);
-        otherRegion->SetItem(0, new PyInt(3));
-        otherRegion->SetItem(1, new PyInt(120));
-        otherRegion->SetItem(2, new PyInt(20000000));
-
-    PyTuple* delays = new PyTuple(4);
-        delays->SetItem(0, sameSystem);
-        delays->SetItem(1, sameConst);
-        delays->SetItem(2, sameRegion);
-        delays->SetItem(3, otherRegion);
+    PyDict* locate = new PyDict();
+    if (m_data.locator) {
+        PyTuple* sameSystem = new PyTuple(3);
+            sameSystem->SetItem(0, new PyInt(0));
+            sameSystem->SetItem(1, new PyInt(10));
+            sameSystem->SetItem(2, new PyInt(20000));
+        PyTuple* sameConst = new PyTuple(3);
+            sameConst->SetItem(0, new PyInt(1));
+            sameConst->SetItem(1, new PyInt(30));
+            sameConst->SetItem(2, new PyInt(200000));
+        PyTuple* sameRegion = new PyTuple(3);
+            sameRegion->SetItem(0, new PyInt(2));
+            sameRegion->SetItem(1, new PyInt(60));
+            sameRegion->SetItem(2, new PyInt(2000000));
+        PyTuple* otherRegion = new PyTuple(3);
+            otherRegion->SetItem(0, new PyInt(3));
+            otherRegion->SetItem(1, new PyInt(120));
+            otherRegion->SetItem(2, new PyInt(20000000));
+        PyTuple* delays = new PyTuple(4);
+            delays->SetItem(0, sameSystem);
+            delays->SetItem(1, sameConst);
+            delays->SetItem(2, sameRegion);
+            delays->SetItem(3, otherRegion);
 
         locate->SetItemString("agentServiceType", new PyString("locate"));
         locate->SetItemString("frequency", new PyInt(1200));  // if this is PyNone (or 0?) agent location isnt avalible (client parsed msg)
         locate->SetItemString("delays", delays);
         locate->SetItemString("callbackID", new PyInt(2));
         locate->SetItemString("lastUsed", new PyInt(0));
-        }
+    } else
+        locate->SetItemString("agentServiceType", new PyNone());
 
     // for mission agents....
     PyDict* mission = new PyDict();
@@ -309,17 +308,27 @@ Level 5 = +7.00 standing
         services->SetItem(2, new PyObject("util.KeyVal", mission));
     res->SetItemString("services", services);
 
-    // standings info for this agent.  see info in EVE_Agent.h
-    res->SetItemString("incompatible", new PyString("Your personal standings must be -2.0 or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
-    /* can also use locale labelIDs for this using a tuple...
-     * tuple* tuple = new PyTuple();
-     * tuple->SetItem(0, #labelID );
-     * tuple->SetItem(1, #labelText);
-     * res->SetItemString("incompatible", tuple);
-     */
+    // standings info for this agent.
+    res->SetItemString("incompatible", new PyString("Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
+    /* can also use locale labelIDs for this using a tuple to define minStandings, minEffective, corpMinStandings, mainEffective, effectiveMinStandings in other msgIDs
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(235463));
+        -- use PyDict like used in NotificationMgs
+        tuple->SetItem(1, dict);
+    res->SetItemString("incompatible", tuple);
+    */
+
+    /*
+(235462, 'Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
+(235463, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing to this agent's corp of at least {[numeric]corpMinStandings, decimalPlaces=1} , as well as personal standing of at least {[numeric]effectiveMinStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
+(235464, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing of at least {[numeric]minStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
+(235465, 'Your effective personal standings must be {[numeric]minStandings, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services')
+(235466, 'Your effective personal standings must be {[numeric]minEffective, decimalPlaces=1} or higher toward this agent's corporation in order to use this agent, as well as an effective personal standing of {[numeric]mainEffective, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
+(235467, 'This agent can only be used through a direct referral.')
+*/
 
     if (is_log_enabled(AGENT__RSPDUMP)) {
-        sLog.White( "CorpAgent::GetInfoServiceDetails()", "Dump:" );
+        _log(AGENT__RSPDUMP, "CorpAgent::GetInfoServiceDetails() Dump:" );
         res->Dump(AGENT__RSPDUMP, "    ");
     }
 
