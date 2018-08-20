@@ -1,28 +1,13 @@
-/*
-    ------------------------------------------------------------------------------------
-    LICENSE:
-    ------------------------------------------------------------------------------------
-    This file is part of EVEmu: EVE Online Server Emulator
-    Copyright 2006 - 2011 The EVEmu Team
-    For the latest information visit http://evemu.org
-    ------------------------------------------------------------------------------------
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU Lesser General Public License as published by the Free Software
-    Foundation; either version 2 of the License, or (at your option) any later
-    version.
 
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
-
-    You should have received a copy of the GNU Lesser General Public License along with
-    this program; if not, write to the Free Software Foundation, Inc., 59 Temple
-    Place - Suite 330, Boston, MA 02111-1307, USA, or go to
-    http://www.gnu.org/copyleft/lesser.txt.
-    ------------------------------------------------------------------------------------
-    Author:        Zhur
-    Updates:    Allan
-*/
+ /**
+  * @name AgentDB.cpp
+  *   Agent DB operations
+  *    original agent code by zhur, this was completely rewritten based on new data.
+  *
+  * @Author:        Allan
+  * @date:      24 June 2018
+  *
+  */
 
 /** @todo  fix this....not all agents have an entry in chrNPCCharacters table.  */
 
@@ -80,6 +65,19 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
     }
 }
 
+void AgentDB::LoadAgentOffers(uint32 agentID, std::map<uint32, uint32>& data)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT characterID, missionID FROM agtOffers WHERE dateCompleted = 0 AND agentID = %u", agentID))
+        codelog(DATABASE__ERROR, "Error in LoadOpenOffers query: %s", res.error.c_str());
 
-// SELECT `agentID`, `typeID`, `level` FROM `agtSkillLevel` WHERE
+    DBResultRow row;
+    while (res.GetRow(row))
+        data[row.GetInt(0)] = row.GetInt(1);
+}
+
+
+// TODO  figure out how to get research agent skill level and load into agent data
+// SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u
 

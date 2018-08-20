@@ -129,8 +129,6 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
     return sDataMgr.GetAgentSystemID(args.arg);
 }
 
-
-/** not handled */
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 
     _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
@@ -294,6 +292,8 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 
 }
 
+
+/** not handled */
 PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 {
     //no args

@@ -31,44 +31,31 @@
 Agent::Agent(uint32 id)
 : m_agentID(id)
 {
+    m_buttonID = 0;
+
     m_mission = false;
+    m_actions.clear();
+    m_offers.clear();
+
     _log(AGENT__TRACE, "Agent created for AgentID %u", id);
 }
 
 
-/* errata...
- * char mission history and current offers in agtOffers
- * notify:OnIncomingAgentMessage(agentID, message)
- * OnIncomingTransmission(self, transmission, isAgentMission = 0, *args)
- *  transmission.header, transmission.text, transmission.icon
-        if transmission.header.startswith('[d]'):
-            transmission.header = transmission.header[3:]
-            self.delayedTransmission = transmission
-
-            (237604, `You can only do this on MASTER or LOCAL server`)
-            (235975, `I am in need of your services, {[character]notification_receiverID.name, linkify}, for a very special mission.`)
-            (235976, `I found {[character]charID.name, linkify} for you`)
-
-            The forumla for LP reward is:
-            LP reward = (1.6288 - System security) × Base LP
-
-
-    ****  see also shit in common/utils/evemath.*  *******
-Agent_Effective_Quality = Agent_Quality + (5 * Negotiation_Skill_Level) + Round_Down(AgentPersonalStanding)
-
-Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
-
-RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
- */
-
 bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_data);
+    AgentDB::LoadAgentOffers(m_agentID, m_offers);
 
     _log(AGENT__TRACE, "Data Loaded for Agent %u - bl: %u, level: %u, locationID: %u, systemID: %u", \
                 m_agentID, m_data.bloodlineID, m_data.level, m_data.locationID, m_data.solarSystemID);
     return true;
     //SELECT agentID, typeID, level FROM agtSkillLevel
 }
+
+void Agent::MakeOffer(uint32 charID)
+{
+
+}
+
 
 
 PyDict* Agent::GetLocationWrap() {
@@ -132,6 +119,7 @@ PyDict* Agent::GetLocationWrap() {
 
 PyObject* Agent::GetInfoServiceDetails()
 {
+    // can this be static data created when agent is loaded?  avoid creating this everytime it's called.
     PyDict* res = new PyDict();
         res->SetItemString("stationID", new PyInt(m_data.stationID) );
         res->SetItemString("level", new PyInt(m_data.level) );
@@ -146,36 +134,6 @@ PyObject* Agent::GetInfoServiceDetails()
      * researchData['points']  -- current points
      * researchData['pointsPerDay']
      * skillTypeID, blueprintTypeID in data.researchSummary:  -- for predictablePatentNames
-     *
-     *
-(235998, `Your instructors have been telling me great things about you, {[character]charID.name, linkify}.<br><br>I've talked it over with my superiors, and we've decided to invite you to participate in {corpName} tutorial agent program for further instruction.<br><br>I'll be awaiting you at {[location]stationID.name, linkify}. You can find me there in the station's Agent listing in the lower right hand corner of your display.<br><br>With regards,<br>     {[character]agentID.name, linkify},<br>  {corpName}<br>`)
-(235999, `You have failed the mission I gave you. I am disappointed in you. I was hoping for a little more competence.`)
-(236000, `Insurance Contract Issued`)
-(236001, `Report: Starbase low on resources in {[location]solarSystemID.name}`)
-(236002, `Authentication code for {[character]charID.name}`)
-(236003, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been disabled`)
-(236004, `Demotion`)
-(236005, `Bill issued`)
-(236006, `{[character]newCeoID.name} is the new CEO of {corporationName}`)
-(236007, `Welcome to {corporationName}`)
-(236008, `Rejected application to join {corporationName}`)
-(236009, `Report: "{[item]typeID.name, linkify}" at "{[location]stationID.name, linkify}" has been reenabled`)
-(236010, `Bounty payment`)
-(236011, `Time's up, {[character]notification_receiverID.name , linkify}`)
-(236012, `Tutorial Program Started`)
-(236013, `Pend Insurance Inc.`)
-(236014, `Report: Infrastructure hub %22{name}%22 has been conquered`)
-(236015, `Jump clone destruction`)
-(236016, `Contraband Confiscation`)
-(236017, `CEO roles revoked`)
-(236018, `Report: Starbase in {[location]solarSystemID.name, linkify} is under attack`)
-(236019, `Report: Station '{[location]stationID.name}' has been conquered`)
-(236020, `I've encountered a problem.`)
-(236021, `Our research has been fruitful, but I've encountered a snag and our research has been halted.  Please contact me as soon as possible.`)
-(236023, `Dread Guristas Irregular`)
-(236024, `Dark Blood Alpha`)
-(236025, `Sorry mate you don't have enough research points to buy any datacores. <br>Each {[item]datacoreTypeID.name} costs {[numeric]rpAmount} research points.`)
-(236026, `{[item]datacoreTypeID.name}: {[numeric]rpAmount} RP`)
      */
 
     PyDict* research = new PyDict();
@@ -277,14 +235,8 @@ PyObject* Agent::GetInfoServiceDetails()
     // for mission agents....
     PyDict* mission = new PyDict();
         mission->SetItemString("agentServiceType", new PyString("mission"));
+        // will need to check standings vs agent level to determine this boolean
         mission->SetItemString("available", new PyBool(true));
-        /*
-Level 1 = always available
-Level 2 = +1.00 standing
-Level 3 = +3.00 standing
-Level 4 = +5.00 standing
-Level 5 = +7.00 standing
-*/
 
     PyTuple* services = new PyTuple(3);
         services->SetItem(0, new PyObject("util.KeyVal", research));
@@ -294,15 +246,17 @@ Level 5 = +7.00 standing
 
     // standings info for this agent.
     res->SetItemString("incompatible", new PyString("Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
+
     /* can also use locale labelIDs for this using a tuple to define minStandings, minEffective, corpMinStandings, mainEffective, effectiveMinStandings in other msgIDs
+     * this will take char, corp, faction, agent, and some other shit into account to determine msg and data sent using the tuple system
+    PyDict* dict = new PyDict();
+        dict->SetItemString("corpMinStandings", new PyFloat(1.1));
+        dict->SetItemString("effectiveMinStandings", new PyFloat(1.6));
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(235463));
-        -- use PyDict like used in NotificationMgs
         tuple->SetItem(1, dict);
     res->SetItemString("incompatible", tuple);
-    */
 
-    /*
 (235462, 'Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
 (235463, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing to this agent's corp of at least {[numeric]corpMinStandings, decimalPlaces=1} , as well as personal standing of at least {[numeric]effectiveMinStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
 (235464, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing of at least {[numeric]minStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
@@ -324,77 +278,38 @@ uint32 Agent::GetLoyaltyPoints(Client *who) {
     return(0);
 }
 
-/* It seems as though actionIDs are dynamically assigned at runtime, as they
- * always appear to be sequential, and repeat visits to the same agent will
- * yield different actionIDs for seemingly the same action. No idea if there is
- * any perceived benefit to actually doing that for our case... it could be a
- * mechanism for them to track event ordering (to make sure people do not do
- * missions out of order by only accepting the actions which were actually
- * "allocated" previously.)
+
+/* agent errata...
+ *
+ * Level 1 = always available
+ * Level 2 = +1.00 standing
+ * Level 3 = +3.00 standing
+ * Level 4 = +5.00 standing
+ * Level 5 = +7.00 standing
+ *
+ * char mission history and current offers in agtOffers
+ * notify:OnIncomingAgentMessage(agentID, message)
+ * OnIncomingTransmission(self, transmission, isAgentMission = 0, *args)
+ *  transmission.header, transmission.text, transmission.icon
+ *        if transmission.header.startswith('[d]'):
+ *            transmission.header = transmission.header[3:]
+ *            self.delayedTransmission = transmission
+ *
+ *            (237604, `You can only do this on MASTER or LOCAL server`)
+ *            (235975, `I am in need of your services, {[character]notification_receiverID.name, linkify}, for a very special mission.`)
+ *            (235976, `I found {[character]charID.name, linkify} for you`)
+ *
+ *            The forumla for LP reward is:
+ *            LP reward = (1.6288 - System security) × Base LP
+ *
+ *
+ ****  see also shit in common/utils/evemath.*  *******
+ * Agent_Effective_Quality = Agent_Quality + (5 * Negotiation_Skill_Level) + Round_Down(AgentPersonalStanding)
+ *
+ * Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
+ *
+ * RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
  */
-
-        /*
-              [PyTuple 2 items]
-                [PyInt 592]
-                [PyString "[Button]View Mission"]
-              [PyTuple 2 items]
-                [PyInt 596]
-                [PyString "[Button]Request Mission"]
-              [PyTuple 2 items]
-                [PyInt 597]
-                [PyString "[Button]Locate Character"]
-              [PyTuple 2 items]
-                [PyInt 598]
-                [PyString "[Button]Accept"]
-              [PyTuple 2 items]
-                [PyInt 599]
-                [PyString "[Button]Decline"]
-              [PyTuple 2 items]
-                [PyInt 600]
-                [PyString "[Button][CloseOnClick]Delay"]
-              [PyTuple 2 items]
-                [PyInt 601]
-                [PyString "[Button]Complete Mission"]
-              [PyTuple 2 items]
-                [PyInt 602]
-                [PyString "[Button]Quit Mission"]
-                */
-void Agent::DoAction(Client *who, uint32 actionID, std::string &say, std::map<uint32, std::string> &choices) {
-    /*
-    if(actionID == 0) {
-        //default dialog...
-        choices[] = "I need something to do.";    //TODO: randomize this like they do on live
-
-    } else {
-
-    }
-
-    std::map<uint32, AgentActions *>::iterator res;
-    res = m_actions.find(actionID);
-    if(res == m_actions.end()) {
-        _log(AGENT__ERROR, "Agent %d: Unable to find action %u for '%s'", m_agentID, actionID, c->GetName());
-        say = "Invalid Action";
-        return;
-    }
-    AgentActions *action = res->second;
-
-    say = action->agentSays;
-    choices = action->actions;
-    loyaltyPoints = action->loyaltyPoints;
-    */
-
-    char v[256];
-    sprintf(v, "Result of DoAction(%d)", actionID);
-    say = v;  //"What do you want? Spit it out, stooge. ";
-    //request mission = 2
-    choices[Dialog::Button::RequestMission] = "I want work, do you have anything?";
-    //locate char = 15
-    choices[Dialog::Button::LocateCharacter] = "I need to find somebody.  Can you help me?";
-    //start research = 12
-    choices[Dialog::Button::StartResearch] = "Start Research";
-}
-
-
 
 /*  mission errata....
  *

@@ -179,6 +179,8 @@ void MissionDataMgr::Populate()
         oData.stateID = row.GetInt(21);
         oData.typeID = row.GetInt(22);
         m_offers.emplace(row.GetInt(2), oData);
+        m_aoffers.emplace(row.GetInt(1), oData);    // do we really want dupe data here?
+
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
@@ -193,8 +195,7 @@ void MissionDataMgr::Populate()
         MissionOffer oData;
         oData.acceptFee = row.GetInt(0);
         oData.agentID = row.GetInt(1);
-        // will need to determine how to store/retrieve bookmarks as a list of dicts here
-        oData.bookmarks = new PyList();
+        oData.bookmarks = new PyList(); //invalid offers will not have bms
         oData.characterID = row.GetInt(2);
         oData.courierAmount = row.GetInt(3);
         oData.courierItemID = row.GetInt(4);

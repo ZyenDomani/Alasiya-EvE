@@ -53,16 +53,16 @@ PyResult AgentBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
 }
 
 PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
-    // sends PyNone or actionID
+    // this is first call when initiating agent convo
     _log(AGENT__DUMP,  "AgentBound::Handle_DoAction() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
+    // sends PyNone or actionID
     Call_SingleArg args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
-
     uint32 actionID = PyRep::IntegerValue(args.arg);
 
     // this actually returns a complicated tuple depending on other variables involving this agent and char.
@@ -213,7 +213,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     // will return PyNone if no mission avalible
     _log(AGENT__MESSAGE,  "AgentBound::Handle_GetMissionBriefingInfo()");
 
-    if (!m_agent->HasMission())
+    if (!m_agent->HasMission(call.client->GetCharacterID()))
         return PyStatic.NewNone();
 
     // TODO  this data will have to be generated per char based on mission offer data.
@@ -292,7 +292,7 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
     call.Dump(AGENT__DUMP);
 
     if (call.tuple->size() == 0)
-        if (!m_agent->HasMission())
+        if (!m_agent->HasMission(call.client->GetCharacterID()))
             return PyStatic.NewNone();
 
     PyDict* objectiveData = new PyDict();

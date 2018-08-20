@@ -24,6 +24,13 @@ struct AgentData {
     uint32 locationID;
 };
 
+struct AgentOffers {
+
+};
+
+struct AgentActions {
+
+};
 
 namespace Agents {
     namespace Type {

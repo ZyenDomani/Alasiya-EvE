@@ -45,6 +45,7 @@ private:
     std::multimap<uint8, MissionData> m_missions;   // level/data
     std::multimap<uint32, MissionOffer> m_offers;   // charID/data
     std::multimap<uint32, MissionOffer> m_xoffers;   // charID/data
+    std::multimap<uint32, MissionOffer> m_aoffers;   // agentID/data
 
 };
 

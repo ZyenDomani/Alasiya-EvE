@@ -83,3 +83,15 @@ void MissionDB::LoadClosedOffers(DBQueryResult& res)
         " FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %f", GetFileTimeNow()))
         codelog(DATABASE__ERROR, "Error in LoadClosedOffers query: %s", res.error.c_str());
 }
+
+void MissionDB::LoadMissionBookMark(DBQueryResult& res, std::vector<int32>& bmIDs)
+{
+    std::string ids = "";
+    ListToINString(bmIDs, ids);
+    if (!sDatabase.RunQuery(res,
+        "SELECT bookmarkID, ownerID, itemID, typeID, memo, created, x, y, z, locationID, note, creatorID, folderID"
+        " FROM bookmarks WHERE bookmarkID IN (%s)", ids.c_str()))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+    }
+}
