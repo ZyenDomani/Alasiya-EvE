@@ -30,10 +30,12 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
-    void                GetMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
-
+    void                LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
+    void                CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data);
 
     void                GetMissionNameIDs();
+
+    std::string         GetTypeName(uint8 typeID);
 
 protected:
     void                Populate();

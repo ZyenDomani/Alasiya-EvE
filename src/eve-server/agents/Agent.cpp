@@ -24,7 +24,7 @@
 
 #include "eve-server.h"
 
-#include "StaticDataMgr.h"
+#include "missions/MissionDataMgr.h"
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
 
@@ -53,6 +53,50 @@ bool Agent::Load() {
 
 void Agent::MakeOffer(uint32 charID)
 {
+    MissionOffer offer;
+    sMissionDataMgr.CreateMissionOffer(Mission::Type::Courier, m_data.level, offer);
+
+    /*  static mission data from db
+    offer.name               = cData.name;
+    offer.typeID             = cData.typeID;
+    offer.bonusISK           = cData.bonusISK;
+    offer.rewardISK          = cData.rewardISK;
+    offer.bonusTime          = cData.bonusTime;
+    offer.important          = cData.important;
+    offer.storyline          = cData.storyline;
+    offer.missionID          = cData.missionID;
+    offer.contentID          = cData.contentID;
+    offer.rewardItemID       = cData.rewardItemID;
+    offer.rewardItemQty      = cData.rewardItemQty;
+    offer.courierItemID      = cData.itemTypeID;
+    offer.courierAmount      = cData.itemQty;
+
+    offer.stateID            = Mission::State::Allocated;
+    offer.dateIssued         = GetFileTimeNow();
+    */
+
+    // variable mission data based on agent
+
+    offer.agentID            = 0;
+    offer.rewardLP           = 0;
+    offer.originID           = 0;
+    offer.acceptFee          = 0;
+    offer.expiryTime         = 0;
+    offer.characterID        = 0;
+    offer.destinationID      = 0;
+
+    offer.remoteOfferable    = false;
+    offer.remoteCompletable  = false;
+
+    // create and save bookmarks for this offer.
+    //  not sure how yet.
+    offer.bookmarks          = new PyList();
+
+    offer.dateAccepted       = 0;
+    offer.dateCompleted      = 0;
+    
+    //offer.offerID            = 0;  - created when saving offer in db
+    MissionDB::CreateOfferID(offer);
 
 }
 

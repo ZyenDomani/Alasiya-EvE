@@ -66,6 +66,9 @@ void MissionDB::UpdateMissionOffer(MissionOffer& data)
 }
 
 
+//SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline,
+// missionID, contentID, name, offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime,
+// stateID, typeID FROM agtOffers
 void MissionDB::LoadOpenOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,

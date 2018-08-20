@@ -154,7 +154,7 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     //missions:
     PyList* missions = new PyList();
     std::vector<MissionOffer> data;
-    sMissionDataMgr.GetMissionOffers(call.client->GetCharacterID(), data);
+    sMissionDataMgr.LoadMissionOffers(call.client->GetCharacterID(), data);
     for (auto cur : data) {
         PyTuple* mData = new PyTuple(9);
         mData->SetItem(0, new PyInt(cur.stateID)); //missionState

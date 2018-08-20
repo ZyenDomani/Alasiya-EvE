@@ -60,9 +60,9 @@ void MissionDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
         CourierData cData;
-        cData.id            = row.GetInt(0);
+        cData.missionID     = row.GetInt(0);
         cData.name          = row.GetText(1);
-        cData.descID        = row.GetInt(2);
+        cData.contentID     = row.GetInt(2);
         cData.level         = row.GetInt(3);
         cData.typeID        = row.GetInt(4);
         cData.important     = row.GetBool(5);
@@ -84,9 +84,9 @@ void MissionDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
         CourierData cData;
-        cData.id            = row.GetInt(0);
+        cData.missionID     = row.GetInt(0);
         cData.name          = row.GetText(1);
-        cData.descID        = row.GetInt(2);
+        cData.contentID     = row.GetInt(2);
         cData.level         = row.GetInt(3);
         cData.typeID        = row.GetInt(4);
         cData.important     = row.GetBool(5);
@@ -133,7 +133,7 @@ void MissionDataMgr::Populate()
         //SELECT id, contentID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,
         // rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions
         MissionData mData;
-        mData.id = row.GetInt(0);
+        mData.missionID = row.GetInt(0);
         mData.contentID = row.GetInt(1);
         mData.name = row.GetText(2);
         mData.level = row.GetInt(3);
@@ -150,8 +150,9 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     MissionDB::LoadOpenOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,
-        // offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline,
+        // missionID, contentID, name, offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime,
+        // stateID, typeID FROM agtOffers
         MissionOffer oData;
         oData.acceptFee = row.GetInt(0);
         oData.agentID = row.GetInt(1);
@@ -166,21 +167,24 @@ void MissionDataMgr::Populate()
         oData.destinationID = row.GetInt(8);
         oData.expiryTime = row.GetInt64(9);
         oData.important = row.GetInt(10);
-        oData.missionID = row.GetInt(11);
-        oData.name = row.GetInt(12);
-        oData.offerID = row.GetInt(13);
-        oData.originID = row.GetInt(14);
-        oData.remoteCompletable = row.GetInt(15);
-        oData.remoteOfferable = row.GetInt(16);
-        oData.rewardISK = row.GetInt(17);
-        oData.rewardItemID = row.GetInt(18);
-        oData.rewardItemQty = row.GetInt(19);
-        oData.rewardLP = row.GetInt(20);
-        oData.stateID = row.GetInt(21);
-        oData.typeID = row.GetInt(22);
+        oData.storyline = row.GetInt(11);
+        oData.missionID = row.GetInt(12);
+        oData.contentID = row.GetInt(13);
+        oData.name = row.GetInt(14);
+        oData.offerID = row.GetInt(15);
+        oData.originID = row.GetInt(16);
+        oData.remoteCompletable = row.GetInt(17);
+        oData.remoteOfferable = row.GetInt(18);
+        oData.rewardISK = row.GetInt(19);
+        oData.rewardItemID = row.GetInt(20);
+        oData.rewardItemQty = row.GetInt(21);
+        oData.rewardLP = row.GetInt(22);
+        oData.bonusISK = row.GetInt(23);
+        oData.bonusTime = row.GetInt(24);
+        oData.stateID = row.GetInt(25);
+        oData.typeID = row.GetInt(26);
         m_offers.emplace(row.GetInt(2), oData);
         m_aoffers.emplace(row.GetInt(1), oData);    // do we really want dupe data here?
-
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
@@ -190,8 +194,9 @@ void MissionDataMgr::Populate()
     if (sConfig.server.LoadOldMissions)
         MissionDB::LoadClosedOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,
-        // offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline,
+        // missionID, contentID, name, offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime,
+        // stateID, typeID FROM agtOffers
         MissionOffer oData;
         oData.acceptFee = row.GetInt(0);
         oData.agentID = row.GetInt(1);
@@ -205,18 +210,22 @@ void MissionDataMgr::Populate()
         oData.destinationID = row.GetInt(8);
         oData.expiryTime = row.GetInt64(9);
         oData.important = row.GetInt(10);
-        oData.missionID = row.GetInt(11);
-        oData.name = row.GetInt(12);
-        oData.offerID = row.GetInt(13);
-        oData.originID = row.GetInt(14);
-        oData.remoteCompletable = row.GetInt(15);
-        oData.remoteOfferable = row.GetInt(16);
-        oData.rewardISK = row.GetInt(17);
-        oData.rewardItemID = row.GetInt(18);
-        oData.rewardItemQty = row.GetInt(19);
-        oData.rewardLP = row.GetInt(20);
-        oData.stateID = row.GetInt(21);
-        oData.typeID = row.GetInt(22);
+        oData.storyline = row.GetInt(11);
+        oData.missionID = row.GetInt(12);
+        oData.contentID = row.GetInt(13);
+        oData.name = row.GetInt(14);
+        oData.offerID = row.GetInt(15);
+        oData.originID = row.GetInt(16);
+        oData.remoteCompletable = row.GetInt(17);
+        oData.remoteOfferable = row.GetInt(18);
+        oData.rewardISK = row.GetInt(19);
+        oData.rewardItemID = row.GetInt(20);
+        oData.rewardItemQty = row.GetInt(21);
+        oData.rewardLP = row.GetInt(22);
+        oData.bonusISK = row.GetInt(23);
+        oData.bonusTime = row.GetInt(24);
+        oData.stateID = row.GetInt(25);
+        oData.typeID = row.GetInt(26);
         m_xoffers.emplace(row.GetInt(2), oData);
     }
     sLog.Cyan("   MissionDataMgr", "%u Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
@@ -273,7 +282,7 @@ void MissionDataMgr::GetMissionNameIDs()
 }
 
 
-void MissionDataMgr::GetMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
+void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
 {
     auto itr = m_offers.equal_range(charID);
     for (auto it = itr.first; it != itr.second; ++it)
@@ -286,3 +295,142 @@ void MissionDataMgr::GetMissionOffers(uint32 charID, std::vector<MissionOffer>& 
             data.push_back(it->second);
     }
 }
+
+void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data)
+{
+    switch (typeID) {
+        case Mission::Type::Tutorial: {
+
+        } break;
+        case Mission::Type::Encounter: {
+
+        } break;
+        case Mission::Type::Courier: {
+            CourierData cData;
+            std::vector<CourierData> cVec;
+            auto itr = m_courier.equal_range(level);
+            for (auto it = itr.first; it != itr.second; ++it)
+                cVec.push_back(it->second);
+            cData = cVec[MakeRandomInt(0, (cVec.size() -1))];
+
+            data.name               = cData.name;
+            data.typeID             = cData.typeID;
+            data.bonusISK           = cData.bonusISK;
+            data.rewardISK          = cData.rewardISK;
+            data.bonusTime          = cData.bonusTime;
+            data.important          = cData.important;
+            data.storyline          = cData.storyline;
+            data.missionID          = cData.missionID;
+            data.contentID          = cData.contentID;
+            data.rewardItemID       = cData.rewardItemID;
+            data.rewardItemQty      = cData.rewardItemQty;
+            data.courierItemID      = cData.itemTypeID;
+            data.courierAmount      = cData.itemQty;
+
+            data.stateID            = Mission::State::Allocated;
+            data.dateIssued         = GetFileTimeNow();
+            data.remoteOfferable    = false;
+            data.remoteCompletable  = false;
+
+            data.offerID            = 0;
+            data.agentID            = 0;
+            data.rewardLP           = 0;
+            data.originID           = 0;
+            data.acceptFee          = 0;
+            data.expiryTime         = 0;
+            data.characterID        = 0;
+            data.dateAccepted       = 0;
+            data.dateCompleted      = 0;
+            data.destinationID      = 0;
+
+            data.bookmarks          = new PyList();
+
+        } break;
+        case Mission::Type::Trade: {
+
+        } break;
+        case Mission::Type::Mining: {
+            CourierData cData;
+            std::vector<CourierData> cVec;
+            auto itr = m_courier.equal_range(level);
+            for (auto it = itr.first; it != itr.second; ++it)
+                cVec.push_back(it->second);
+            cData = cVec[MakeRandomInt(0, (cVec.size() -1))];
+
+            data.name               = cData.name;
+            data.typeID             = cData.typeID;
+            data.bonusISK           = cData.bonusISK;
+            data.rewardISK          = cData.rewardISK;
+            data.bonusTime          = cData.bonusTime;
+            data.important          = cData.important;
+            data.storyline          = cData.storyline;
+            data.missionID          = cData.missionID;
+            data.contentID          = cData.contentID;
+            data.rewardItemID       = cData.rewardItemID;
+            data.rewardItemQty      = cData.rewardItemQty;
+            data.courierItemID      = cData.itemTypeID;
+            data.courierAmount      = cData.itemQty;
+
+            data.stateID            = Mission::State::Allocated;
+            data.dateIssued         = GetFileTimeNow();
+            data.remoteOfferable    = false;
+            data.remoteCompletable  = false;
+
+            data.offerID            = 0;
+            data.agentID            = 0;
+            data.rewardLP           = 0;
+            data.originID           = 0;
+            data.acceptFee          = 0;
+            data.expiryTime         = 0;
+            data.characterID        = 0;
+            data.dateAccepted       = 0;
+            data.dateCompleted      = 0;
+            data.destinationID      = 0;
+
+            data.bookmarks          = new PyList();
+
+        } break;
+        case Mission::Type::Research: {
+
+        } break;
+        case Mission::Type::Data: {
+
+        } break;
+        case Mission::Type::Storyline: {
+
+        } break;
+        case Mission::Type::Cosmos: {
+
+        } break;
+        case Mission::Type::Arc: {
+
+        } break;
+        case Mission::Type::Anomic: {
+
+        } break;
+    }
+
+    _log(AGENT__DEBUG, "Created a level %u %s offer - '%s'", level, GetTypeName(data.typeID).c_str(), data.name.c_str());
+
+}
+
+
+std::string MissionDataMgr::GetTypeName(uint8 typeID)
+{
+    using namespace Mission::Type;
+    switch (typeID) {
+        case Tutorial:          return "Tutorial";
+        case Encounter:         return "Encounter";
+        case Courier:           return "Courier";
+        case Trade:             return "Trade";
+        case Mining:            return "Mining";
+        case Research:          return "Research";
+        case Data:              return "Data";
+        case Storyline:         return "Storyline";
+        case Cosmos:            return "Cosmos";
+        case Arc:               return "Arc";
+        case Anomic:            return "Anomic";
+        default:                return "Invalid";
+    }
+}
+
