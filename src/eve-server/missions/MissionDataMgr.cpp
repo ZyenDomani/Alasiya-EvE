@@ -18,6 +18,7 @@ MissionDataMgr::MissionDataMgr()
     m_offers.clear();
     m_mining.clear();
     m_courier.clear();
+    m_missions.clear();
 }
 
 MissionDataMgr::~MissionDataMgr()
@@ -31,6 +32,7 @@ void MissionDataMgr::Clear()
     m_offers.clear();
     m_mining.clear();
     m_courier.clear();
+    m_missions.clear();
 }
 
 int MissionDataMgr::Initialize()
@@ -53,7 +55,7 @@ void MissionDataMgr::Populate()
 
     MissionDB::LoadCourierData(*res);
     while (res->GetRow(row)) {
-        //SELECT id, descID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
+        //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
         CourierData cData;
         cData.id            = row.GetInt(0);
         cData.name          = row.GetText(1);
@@ -73,7 +75,28 @@ void MissionDataMgr::Populate()
     }
     sLog.Cyan("   MissionDataMgr", "%u Courier Mission Data Sets loaded in %.3fms.", m_courier.size(), (GetTimeMSeconds() - start));
 
+    res->Reset();
     start = GetTimeMSeconds();
+    MissionDB::LoadMiningData(*res);
+    while (res->GetRow(row)) {
+        //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
+        CourierData cData;
+        cData.id            = row.GetInt(0);
+        cData.name          = row.GetText(1);
+        cData.descID        = row.GetInt(2);
+        cData.level         = row.GetInt(3);
+        cData.typeID        = row.GetInt(4);
+        cData.important     = row.GetBool(5);
+        cData.storyline     = row.GetBool(6);
+        cData.itemTypeID    = row.GetInt(7);
+        cData.itemQty       = row.GetInt(8);
+        cData.rewardISK     = row.GetInt(9);
+        cData.rewardItemID  = row.GetInt(10);
+        cData.rewardItemQty = row.GetInt(11);
+        cData.bonusISK      = row.GetInt(12);
+        cData.bonusTime     = row.GetUInt(13);
+        m_mining.emplace(row.GetInt(3), cData);
+    }
     sLog.Cyan("   MissionDataMgr", "%u Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
@@ -104,14 +127,50 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     MissionDB::LoadMissionOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT offerID, agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemAmount,
-        //  originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued FROM agtOffers
-
-        MissionOffer oData;
-
-        m_offers.emplace(row.GetInt(3), oData);
+        //SELECT id, contentID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,
+        // rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions
+        MissionData mData;
+        mData.id = row.GetInt(0);
+        mData.contentID = row.GetInt(1);
+        mData.name = row.GetText(2);
+        mData.level = row.GetInt(3);
+        mData.typeID = row.GetInt(4);
+        mData.important = row.GetBool(5);
+        mData.constellationID = row.GetInt(8);
+        mData.corporationID = row.GetInt(9);
+        mData.dungeonID = row.GetInt(10);
+        m_missions.emplace(row.GetInt(3), mData);
     }
-    sLog.Cyan("   MissionDataMgr", "%u Outstanding Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%u Unsorted Missions loaded in %.3fms.", m_missions.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    MissionDB::LoadMissionOffers(*res);
+    while (res->GetRow(row)) {
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, missionID, offerID, originID,
+        // rewardISK, rewardItemID, rewardItemAmount, rewardLP, stateID FROM agtOffers
+        MissionOffer oData;
+        oData.acceptFee = row.GetInt(0);
+        oData.agentID = row.GetInt(1);
+        oData.characterID = row.GetInt(2);
+        oData.courierAmount = row.GetInt(3);
+        oData.courierItemID = row.GetInt(4);
+        oData.dateAccepted = row.GetInt64(5);
+        oData.dateCompleted = row.GetInt64(6);
+        oData.dateIssued = row.GetInt64(7);
+        oData.destinationID = row.GetInt(8);
+        oData.expiryTime = row.GetInt64(9);
+        oData.missionID = row.GetInt(10);
+        oData.offerID = row.GetInt(11);
+        oData.originID = row.GetInt(12);
+        oData.rewardISK = row.GetInt(13);
+        oData.rewardItemID = row.GetInt(14);
+        oData.rewardItemQty = row.GetInt(15);
+        oData.rewardLP = row.GetInt(16);
+        oData.stateID = row.GetInt(17);
+        m_offers.emplace(row.GetInt(2), oData);
+    }
+    sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
     // cleanup
     SafeDelete(res);

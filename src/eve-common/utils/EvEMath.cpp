@@ -126,7 +126,7 @@ EvilNumber EvEMath::Refine::EffectiveRefiningYield( EvilNumber StationEquipmentY
 
 
 
-EvilNumber EvEMath::Agent::AgentEffectiveQuality( EvilNumber AgentQuality, EvilNumber NegotiationSkillLevel, EvilNumber AgentPersonalStanding )
+EvilNumber EvEMath::Agent::EffectiveQuality( EvilNumber AgentQuality, EvilNumber NegotiationSkillLevel, EvilNumber AgentPersonalStanding )
 {
     return (AgentQuality.get_double() + (5.0 * NegotiationSkillLevel.get_double()) + AgentPersonalStanding.get_double());
 }
@@ -143,7 +143,7 @@ EvilNumber EvEMath::Agent::EffectiveStanding( EvilNumber YourStanding, EvilNumbe
     return (YourStanding.get_double() + ((10.0 - YourStanding.get_double()) * (0.04 * (SkillLevel.get_double()))));
 }
 
-EvilNumber EvEMath::Agent::RequiredAgentStanding( EvilNumber AgentLevel, EvilNumber AgentQuality )
+EvilNumber EvEMath::Agent::RequiredStanding( EvilNumber AgentLevel, EvilNumber AgentQuality )
 {
     return (((AgentLevel.get_double() - 1) * 2) + (AgentQuality.get_double()/20.0));
 }
@@ -153,16 +153,17 @@ EvilNumber EvEMath::Agent::MissionStandingIncrease( EvilNumber BaseMissionIncrea
     return (BaseMissionIncrease * (1 + 0.05 * YourSocialSkillLevel.get_double()));
 }
 
-EvilNumber EvEMath::Agent::AgentEfficiency( EvilNumber AgentLevel, EvilNumber AgentQuality )
+EvilNumber EvEMath::Agent::Efficiency( EvilNumber AgentLevel, EvilNumber AgentQuality )
 {
     return (0.01 * ((8 * AgentLevel) + (0.1 * AgentQuality) - 4));
 }
+
+
 
 EvilNumber EvEMath::EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber ImplantAttributeBonus )
 {
     return (BaseAttribute + ImplantAttributeBonus);
 }
-
 
 EvilNumber EvEMath::TargetingLockTime( EvilNumber YourEffectiveScanResolution, EvilNumber TargetEffectiveSignatureRadius )
 {
@@ -187,7 +188,7 @@ EvilNumber EvEMath::TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNu
  * Multiplier is a specific multiplier for the research field you want to do research in. Like 3x for starship engineering
  * Your_Skill is your skill level in the research field
  * Agent_Skill is the agent's skill level in the research field
- * 
+ *
  *
  * Station take when refining/reprocessing
  * Station_Take = Max((5 - (0.75 * Your_Standing)), 0)

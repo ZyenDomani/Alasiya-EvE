@@ -11,7 +11,7 @@ public:
 
     PyCallable_Make_Dispatcher(AgentBound)
 
-    AgentBound(PyServiceMgr *mgr, CorpAgent *agt);
+    AgentBound(PyServiceMgr *mgr, Agent *agt);
 
     virtual ~AgentBound() { delete m_dispatch; }
     virtual void Release() {
@@ -35,7 +35,7 @@ public:
     PyCallable_DECL_CALL(WarpToLocation);
 
     protected:
-        CorpAgent* m_agent;    //we do not own this.
+        Agent* m_agent;    //we do not own this.
         Dispatcher* m_dispatch;    //we own this
 };
 

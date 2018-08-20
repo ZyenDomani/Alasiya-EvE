@@ -22,6 +22,7 @@ typedef EVEDB::invTypes::invTypes EVEItemTypes;
 typedef enum {
     itemTypeCapsule = 670,
     itemTypeTrit    = 34,
+    itemTypeCredits = 29,
     itemTypeJetCan  = 23,
     AllianceTypeID  = 16159,
     itemTypeBillboard = 11136

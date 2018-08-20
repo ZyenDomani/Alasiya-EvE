@@ -74,18 +74,18 @@ AgentMgrService::AgentMgrService(PyServiceMgr *mgr)
 
 AgentMgrService::~AgentMgrService() {
     delete m_dispatch;
-    std::map<uint32, CorpAgent *>::iterator cur = m_agents.begin();
+    std::map<uint32, Agent *>::iterator cur = m_agents.begin();
     for(; cur != m_agents.end(); cur++) {
         delete cur->second;
     }
 }
 
-CorpAgent *AgentMgrService::_GetAgent(uint32 agentID) {
-    std::map<uint32, CorpAgent *>::iterator res;
+Agent *AgentMgrService::_GetAgent(uint32 agentID) {
+    std::map<uint32, Agent *>::iterator res;
     res = m_agents.find(agentID);
     if(res != m_agents.end())
         return(res->second);
-    CorpAgent *a = new CorpAgent(agentID);
+    Agent *a = new Agent(agentID);
     if(!a->Load(&m_db)) {
         delete a;
         return nullptr;
@@ -104,7 +104,7 @@ PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_
 
     uint32 agentID = bind_args->AsInt()->value();
 
-    CorpAgent *agent = _GetAgent(agentID);
+    Agent *agent = _GetAgent(agentID);
     if(agent == NULL) {
         codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
         return nullptr;

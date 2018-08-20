@@ -25,7 +25,7 @@ struct AgentData {
 };
 
 
-namespace Agent {
+namespace Agents {
     namespace Type {
         enum {
             //  -allan 20Dec14

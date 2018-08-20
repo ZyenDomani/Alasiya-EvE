@@ -9,15 +9,15 @@
 #define EVE_MISSIONS_H
 
 struct MissionData {
+        bool important;
         uint16 id;
-        uint16 descID;
-        std::string name;
         uint8 level;
         uint8 typeID;
-        bool important;
+        uint16 contentID;
         uint32 constellationID;
         uint32 corporationID;
         uint32 dungeonID;
+        std::string name;
 };
 
 struct MissionOffer {
@@ -67,6 +67,14 @@ namespace Mission {
             Accepted    = 2,
             Failed      = 3,
             Completed   = 4 //added
+        };
+    }
+
+    namespace Status {
+        enum {
+            Incomplete  = 0,
+            Complete    = 1,
+            Cheat       = 2
         };
     }
 
