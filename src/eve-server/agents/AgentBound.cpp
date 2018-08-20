@@ -86,18 +86,8 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     PyList* dialog = new PyList();
 
     if (actionID == 0) {
-        // response as string for custom data.  response as pyint to use client data (using getlocale shit)
-        // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
-        //  this will be modeled after UO speech data, in tiers and levels.
-        // if RequestMission is only option, this is ignored.  see note under 'dialog data'
-        response = "Why the fuck am I looking at you again, ";
-        response += call.client->GetCharacterName().c_str();
-        response += "?";
-        agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
-        agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
-
         m_agent->SetMission(false);
-        // dialogue data.  if RequestMission is only option, client auto-responds with DoAction(RequestMission optionID)
+
         //  if char has current mission wiht this agent, add this one.
         /*
         PyTuple* button1 = new PyTuple(2);
@@ -105,85 +95,56 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             button1->SetItem(1, new PyInt(Dialog::Button::ViewMission));
         dialog->AddItem(button1);
             */
+
+        // dialogue data.  if RequestMission is only option, client auto-responds with DoAction(RequestMission optionID)
         PyTuple* button2 = new PyTuple(2);
             button2->SetItem(0, new PyInt(13));
             button2->SetItem(1, new PyInt(Dialog::Button::RequestMission));
         dialog->AddItem(button2);
-        /*
+
         // if agent does location, add this one...
-        PyTuple* button3 = new PyTuple(2);
-            button3->SetItem(0, new PyInt(34));
-            button3->SetItem(1, new PyInt(Dialog::Button::LocateCharacter));
-        dialog->AddItem(button3);
-        // if agent also does research, add this one...
-        PyTuple* button4 = new PyTuple(2);
-            button4->SetItem(0, new PyInt(56));
-            button4->SetItem(1, new PyInt(Dialog::Button::StartResearch));
-        dialog->AddItem(button4);
-        */
+        if (m_agent->IsLocator()) {
+            PyTuple* button3 = new PyTuple(2);
+                button3->SetItem(0, new PyInt(34));
+                button3->SetItem(1, new PyInt(Dialog::Button::LocateCharacter));
+            dialog->AddItem(button3);
+        }
+
+        // if agent does research, add this one...
+        if (m_agent->IsResearch()) {
+            PyTuple* button4 = new PyTuple(2);
+                button4->SetItem(0, new PyInt(56));
+                button4->SetItem(1, new PyInt(Dialog::Button::StartResearch));
+            dialog->AddItem(button4);
+        }
+        if (dialog->size() > 1) {
+            // response as string for custom data.  response as pyint to use client data (using getlocale shit)
+            // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
+            //  this will be modeled after UO speech data, in tiers and levels.
+            // if RequestMission is only option, this is ignored.  see note under 'dialog data'
+            response = "Why the fuck am I looking at you again, ";
+            response += call.client->GetCharacterName().c_str();
+            response += "?";
+            agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
+            agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
+        }
     } else {
-        // agentSays data.....this is for custom shit here...
-        /*
-        response = "This just came up, ";
-        response += call.client->GetCharacterName().c_str();
-        response += ".";
-        response += "<div id=basetext>Our cargo area and lower-tier decks are overflowing with vagabonds and tramps.  It has almost reached epidemic proportions. ";
-        response += "These people simply refuse to leave, some are laid off workers of ours while others are simply outsiders who think they can come and live off our hospitality indefinitely. ";
-        response += "Since there are strict regulations against sending them out the airlock for no reason, and since we can't simply frame every single one of them for a crime worthy of such a fate, we've no choice but to forcibly move them somewhere else. ";
-        response += "Another station will do.  In fact I'd like you to move a heap-load of them to Isutaka I - Caldari Steel Warehouse.  I never liked those bastards over there anyway, let them deal with this 'human problem'.</div><br>";
-        */
         m_agent->SetMission(true);
 
-        /*
-        agentSays, dialogue, extraInfo = self.__GetConversation(agentDialogueWindow, actionID)
-
-        tmp = wnd.sr.agentMoniker.DoAction(actionID)
-        ret, wnd.sr.oob = tmp
-        agentSays, wnd.sr.dialogue = ret
-
-        wnd.sr.agentSays = self.ProcessMessage(agentSays, wnd.sr.agentID)
-          */
-
-    //  this will get complicated and is based on agent/char interaction
+    //  this one will get complicated and is based on agent/char interaction
     //   detail in /eve/client/script/ui/station/agents/agents.py
-
-    /*  this structure appears right, but havent been able to get it working....use msgID in agentSays and misionInfo in dialog instead.
-        PyList* msgInfoList = new PyList();
-        PyTuple* offer = new PyTuple(2);
-            offer->SetItem(0, new PyString("missionOfferText"));
-            offer->SetItem(1, new PyInt(130997));       // descriptionID
-        msgInfoList->AddItem(offer);
-
-        PyTuple* briefingInfo = new PyTuple(2);
-            briefingInfo->SetItem(0, new PyString("missionBriefingText"));
-            briefingInfo->SetItem(1, new PyInt(143428));    // ...remember to load....
-        msgInfoList->AddItem(briefingInfo);
-
-        PyTuple* completion = new PyTuple(2);
-            completion->SetItem(0, new PyString("missionCompletionText"));
-            completion->SetItem(1, new PyInt(136320));      // i got your parts.....
-        msgInfoList->AddItem(completion);
-
-        PyTuple* location = new PyTuple(2);
-            location->SetItem(0, new PyString("locationString"));
-            location->SetItem(1, new PyInt(143868));        // thank you....
-        msgInfoList->AddItem(location);
-
-        PyTuple* msgInfo = new PyTuple(2);
-            msgInfo->SetItem(0, new PyInt(235548));     // when msgInfoList filled, this is a labelID  ** dunno where to find labelIDs
-            msgInfo->SetItem(1, msgInfoList);
-        */
 
         /*  agentSays is a tuple of msgData and contentID
          *      msgData can be single integer of descriptionID, a string literal, or a tuple as defined above.
          *  it doesnt appear that contentID is used for display.
          */
 
-        agentSays->SetItem(0, /*msgInfo*/new PyInt(130997));       // msgID or msgInfoList    -- 236729 = greetings, {char.name}    236722 = hello there, {char.name}
-        agentSays->SetItem(1, new PyInt(130997));    //contentID    - possible unique mission id for this agent
+        agentSays->SetItem(0, new PyInt(236729));    // msgID  -- 236729 = greetings, {char.name}    236722 = hello there, {char.name}
+        agentSays->SetItem(1, new PyInt(130997));    //mission contentID (descriptionID) to be displayed in dialog box
 
         // dialog can also contain mission data.
         //   set a dialog tuple[1] to dict and fill with MissionBriefingInfo
+        // dont remember if i got this one working or not....
         /*
         PyDict* keywords = new PyDict();
             keywords->SetItemString("objectiveLocationID", new PyInt(m_agent->GetStationID()));
@@ -253,8 +214,9 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     _log(AGENT__MESSAGE,  "AgentBound::Handle_GetMissionBriefingInfo()");
 
     if (!m_agent->HasMission())
-        return nullptr;
+        return PyStatic.NewNone();
 
+    // TODO  this data will have to be generated per char based on mission offer data.
     PyDict* keywords = new PyDict();
         keywords->SetItemString("objectiveLocationID", new PyInt(m_agent->GetStationID()));
         keywords->SetItemString("objectiveLocationSystemID", new PyInt(m_agent->GetSystemID()));
@@ -265,14 +227,14 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         keywords->SetItemString("rewardTypeID", new PyInt(29));
         keywords->SetItemString("rewardQuantity", new PyInt(28000));
     PyDict *briefingInfo = new PyDict();
-        briefingInfo->SetItemString("ContentID", new PyInt(130997));  // this may be internal mission counter
+        briefingInfo->SetItemString("ContentID", new PyInt(130997));  // this is mission descriptionID
         briefingInfo->SetItemString("Mission Keywords", keywords);  // only used when "ContentID" is filled?
         briefingInfo->SetItemString("Mission Title ID", new PyInt(55205) );
         briefingInfo->SetItemString("Mission Briefing ID", new PyInt(130997) );
         // will have to find and store mission images *somewhere*  EVE_Mission.h probably.
         briefingInfo->SetItemString("Mission Image", new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>") );
-        briefingInfo->SetItemString("Decline Time", new PyNone());   // -1 is generic decline msg
         // decline time OR expiration time.  if not decline then expiration
+        briefingInfo->SetItemString("Decline Time", new PyNone());   // -1 is generic decline msg
         briefingInfo->SetItemString("Expiration Time", new PyLong( GetFileTimeNow()+Win32Time_Day ) );
 
     if (is_log_enabled(AGENT__RSPDUMP)) {
@@ -289,18 +251,16 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     call.Dump(AGENT__DUMP);
 
     Call_SingleArg args;
-    if(!args.Decode(&call.tuple)) {
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return nullptr;
     }
 
     uint32 contentID = PyRep::IntegerValue(args.arg);
-
     if (contentID == 0)
         return PyStatic.NewNone();
 
-
-    /** @todo  load/save mission data for keywords, to be indexed by contentID
+    /** @todo  load/save mission data for keywords to be indexed by contentID
      *      -- this data currently saved in db by missionID (titleID)  may move to separate table to allow (easier) indexing
      *
      *  location/destination may be random.  other info found in mission data.

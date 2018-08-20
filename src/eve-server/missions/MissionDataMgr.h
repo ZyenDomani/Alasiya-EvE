@@ -13,7 +13,7 @@
 #define _EVE_SERVER_MISSION_DATAMANAGER_H__
 
 
-#include "eve-server.h"
+#include "../eve-server.h"
 #include "missions/MissionDB.h"
 
 
@@ -30,18 +30,21 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
+    void                GetMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
 
-    void    GetMissionNameIDs();
+
+    void                GetMissionNameIDs();
 
 protected:
     void                Populate();
 
+private:
     std::map<std::string, uint32> m_names;
-    std::multimap<uint8, CourierData> m_courier;        // level/data
-    std::multimap<uint8, CourierData> m_mining;        // level/data
-    std::multimap<uint8, MissionData> m_missions;        // level/data
-    std::multimap<uint32, MissionOffer> m_offers;       // charID/data
-
+    std::multimap<uint8, CourierData> m_courier;    // level/data
+    std::multimap<uint8, CourierData> m_mining;     // level/data
+    std::multimap<uint8, MissionData> m_missions;   // level/data
+    std::multimap<uint32, MissionOffer> m_offers;   // charID/data
+    std::multimap<uint32, MissionOffer> m_xoffers;   // charID/data
 
 };
 

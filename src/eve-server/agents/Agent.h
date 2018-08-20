@@ -22,7 +22,7 @@ public:
     Agent(uint32 id);
     ~Agent()                                        { /* do nothing here */ }
 
-    bool Load(AgentDB *from);
+    bool Load();
     uint32 GetID() { return m_agentID; }
 
     uint32 GetLoyaltyPoints(Client *who);
@@ -38,6 +38,8 @@ public:
 
     void SetMission(bool set=false)         { m_mission = set; }
     bool HasMission()                       { return m_mission; }
+    bool IsLocator()                        { return m_data.locator; }
+    bool IsResearch()                       { return m_data.research; }
 
 protected:
     const uint32 m_agentID;

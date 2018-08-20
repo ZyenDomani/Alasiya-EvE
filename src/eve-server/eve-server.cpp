@@ -339,6 +339,10 @@ int main( int argc, char* argv[] )
         sLog.Green("Bumping Mechanics","Enabled.");
     else
         sLog.Warning("Bumping Mechanics","Disabled.");
+    if (sConfig.server.LoadOldMissions)
+        sLog.Green("Keep Old Missions","Enabled.");
+    else
+        sLog.Warning("Keep Old Missions","Disabled.");
     if (sConfig.npc.EnableDrones)
         sLog.Green("    Player Drones","Enabled.");
     else

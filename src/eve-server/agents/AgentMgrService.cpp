@@ -56,6 +56,7 @@
 #include "agents/Agent.h"
 #include "agents/AgentBound.h"
 #include "agents/AgentMgrService.h"
+#include "missions/MissionDataMgr.h"
 
 PyCallable_Make_InnerDispatcher(AgentMgrService)
 
@@ -80,37 +81,36 @@ AgentMgrService::~AgentMgrService() {
     }
 }
 
-Agent *AgentMgrService::_GetAgent(uint32 agentID) {
-    std::map<uint32, Agent *>::iterator res;
-    res = m_agents.find(agentID);
-    if(res != m_agents.end())
-        return(res->second);
-    Agent *a = new Agent(agentID);
-    if(!a->Load(&m_db)) {
-        delete a;
+Agent* AgentMgrService::_GetAgent(uint32 agentID) {
+    std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
+    if (res != m_agents.end())
+        return res->second;
+
+    Agent* aPtr = new Agent(agentID);
+    if (!aPtr->Load()) {
+        delete aPtr;
         return nullptr;
     }
-    m_agents[agentID] = a;
-    return(a);
+    m_agents[agentID] = aPtr;
+    return aPtr;
 }
 
 // need a way to check created objects for client/agent combinations to avoid duplicates.
 //  also need a way to check/delete released objects/agents
 PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    if(!bind_args->IsInt()) {
+    if (!bind_args->IsInt()) {
         codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
         return nullptr;
     }
 
     uint32 agentID = bind_args->AsInt()->value();
-
-    Agent *agent = _GetAgent(agentID);
-    if(agent == NULL) {
+    Agent* aPtr = _GetAgent(agentID);
+    if (aPtr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
         return nullptr;
     }
 
-    return(new AgentBound(m_manager, agent));
+    return new AgentBound(m_manager, aPtr);
 }
 
 PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {
@@ -133,6 +133,9 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 /** not handled */
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
 
+    _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
+    call.Dump(AGENT__DUMP);
+
     /** @todo  journal details
      * found in eve/client/script/ui/shared/neocom/journal.py
      *
@@ -149,6 +152,33 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
      *                if research[0] == agentID:
      */
 
+    PyTuple *tuple = new PyTuple(2);
+    //missions:
+    PyList* missions = new PyList();
+    std::vector<MissionOffer> data;
+    sMissionDataMgr.GetMissionOffers(call.client->GetCharacterID(), data);
+    for (auto cur : data) {
+        PyTuple* mData = new PyTuple(9);
+        mData->SetItem(0, new PyInt(cur.stateID)); //missionState
+        mData->SetItem(1, new PyInt(cur.important?1:0)); //importantMission  -- integer boolean
+        mData->SetItem(2, new PyInt(cur.typeID)); //missionType
+        mData->SetItem(3, new PyString(cur.name)); //missionName
+        mData->SetItem(4, new PyInt(cur.agentID)); //agentID
+        mData->SetItem(5, new PyLong(cur.expiryTime)); //expirationTime
+        mData->SetItem(6, cur.bookmarks->Clone()); //bookmarks -- if populated, this is PyList of PyDicts as defined below...
+        mData->SetItem(7, new PyBool(cur.remoteOfferable)); //remoteOfferable
+        mData->SetItem(8, new PyBool(cur.remoteCompletable)); //remoteCompletable
+        missions->AddItem(mData);
+    }
+    tuple->SetItem(0, missions);
+
+    //research:
+    PyList* research = new PyList();
+    tuple->SetItem(1, research);
+
+    if (is_log_enabled(AGENT__RSPDUMP))
+        tuple->Dump(AGENT__RSPDUMP, "   ");
+    return tuple;
   /*
       [PySubStream 59 bytes]
         [PyTuple 2 items]
@@ -260,35 +290,24 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
               [PyBool False]
               [PyBool False]
           [PyList 0 items]
-  sLog.White( "AgentMgrService::Handle_GetMyJournalDetails()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
     */
 
-    PyTuple *tuple = new PyTuple(2);
-    //missions:
-    tuple->SetItem(0, new PyList());
-    //research:
-    tuple->SetItem(1, new PyList());
-
-    if (is_log_enabled(AGENT__RSPDUMP))
-        tuple->Dump(AGENT__RSPDUMP, "   ");
-    return tuple;
 }
 
 PyResult AgentMgrService::Handle_GetMyEpicJournalDetails( PyCallArgs& call )
 {
     //no args
-  sLog.White( "AgentMgrBound::Handle_GetMyEpicJournalDetails()", "size= %u", call.tuple->size() );
+  _log(AGENT__INFO, "AgentMgrBound::Handle_GetMyEpicJournalDetails() - size= %u", call.tuple->size() );
 
     return new PyList();
 }
 
 PyResult AgentMgrService::Handle_GetCareerAgents(PyCallArgs &call)
 {
-  sLog.White( "AgentMgrBound::Handle_GetCareerAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+  _log(AGENT__INFO, "AgentMgrBound::Handle_GetCareerAgents() - size= %u", call.tuple->size() );
+    call.Dump(AGENT__DUMP);
 
-    return new PyInt( 0 );
+    return PyStatic.NewZero();
 }
 
 
@@ -311,8 +330,8 @@ PyResult EpicArcService::Handle_AgentHasEpicMissionsForCharacter(PyCallArgs &cal
   /**
      epicArcStatusSvc = sm.RemoteSvc('epicArcStatus').AgentHasEpicMissionsForCharacter(agent.agentID):
      */
-    sLog.White( "EpicArcService::Handle_AgentHasEpicMissionsForCharacter()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(AGENT__INFO, "EpicArcService::Handle_AgentHasEpicMissionsForCharacter() - size= %u", call.tuple->size() );
+    call.Dump(AGENT__DUMP);
 
     // return boolean
     return PyStatic.NewFalse();

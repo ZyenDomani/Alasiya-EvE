@@ -61,7 +61,7 @@ Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * 
 RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
  */
 
-bool Agent::Load(AgentDB *from) {
+bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_data);
 
     _log(AGENT__TRACE, "Data Loaded for Agent %u - level: %u, locationID: %u, systemID: %u", m_agentID, m_data.level, m_data.locationID, m_data.solarSystemID);

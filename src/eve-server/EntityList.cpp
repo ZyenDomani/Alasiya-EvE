@@ -44,8 +44,8 @@
 EntityList::EntityList()
 : m_services( nullptr ),
 m_stampTimer(0, true),
-m_updateTimer(sConfig.rates.WebUpdate * 60000), // change minutes to ms for timer),
-m_minutetimer(60000, true)    // start minute timer
+m_minutetimer(0, true),
+m_updateTimer(0)
 {
     m_systems.clear();
     m_clients.clear();
@@ -64,11 +64,16 @@ EntityList::~EntityList() {
 }
 
 void EntityList::Initialize() {
-    /* start the timer */
+    /* start the timers */
     m_stampTimer.Start(1000);
+    m_minutetimer.Start(60000);
+    m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);   // change minutes to ms for timer
+
     m_clientSeedID = ServiceDB::SetClientSeed();
+
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
+    
     sLog.Blue("       EntityList", "EntityList Initialized.");
 }
 
@@ -390,7 +395,7 @@ void EntityList::RemoveStation(uint32 stationID) {
 StationItemRef EntityList::GetStationByID(uint32 stationID) {
     std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
     if (res != m_stations.end())
-        return StationItemRef::StaticCast(res->second);
+        return res->second;
     return StationItemRef(nullptr);
 }
 
@@ -437,6 +442,7 @@ std::string EntityList::GetAnomalyID()
 uint32 EntityList::GetWreckFaction(uint32 typeID)
 {
     // these will need to be separated and updated after detailed salvage table is completed
+    // TODO  this should really be in static data.....one day.
 
     switch(typeID) {
         case 26469:  //   Amarr Battlecruiser Wreck

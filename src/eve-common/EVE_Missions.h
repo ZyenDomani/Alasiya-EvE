@@ -20,8 +20,13 @@ struct MissionData {
         std::string name;
 };
 
+class PyList;
 struct MissionOffer {
+    bool important;
+    bool remoteOfferable;
+    bool remoteCompletable;
     uint8 stateID;
+    uint8 typeID;
     uint16 missionID;
     uint16 rewardLP;
     uint16 rewardItemID;
@@ -39,7 +44,8 @@ struct MissionOffer {
     double dateIssued;
     double dateAccepted;
     double dateCompleted;
-
+    std::string name;
+    PyList* bookmarks;
 };
 
 struct CourierData {

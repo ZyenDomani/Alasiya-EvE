@@ -64,6 +64,7 @@ public:
         bool FleetShareDelayed;
         bool BountyPayoutDelayed;
         uint8 BountyPayoutTimer;
+        bool LoadOldMissions;
     } server;
 
     // From <world/>

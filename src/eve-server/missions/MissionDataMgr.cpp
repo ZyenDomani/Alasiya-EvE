@@ -9,6 +9,7 @@
   */
 
 
+#include "../EVEServerConfig.h"
 #include "missions/MissionDataMgr.h"
 #include "database/EVEDBUtils.h"
 
@@ -18,6 +19,7 @@ MissionDataMgr::MissionDataMgr()
     m_offers.clear();
     m_mining.clear();
     m_courier.clear();
+    m_xoffers.clear();
     m_missions.clear();
 }
 
@@ -32,6 +34,7 @@ void MissionDataMgr::Clear()
     m_offers.clear();
     m_mining.clear();
     m_courier.clear();
+    m_xoffers.clear();
     m_missions.clear();
 }
 
@@ -125,7 +128,7 @@ void MissionDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
-    MissionDB::LoadMissionOffers(*res);
+    MissionDB::LoadMissionData(*res);
     while (res->GetRow(row)) {
         //SELECT id, contentID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,
         // rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions
@@ -141,17 +144,19 @@ void MissionDataMgr::Populate()
         mData.dungeonID = row.GetInt(10);
         m_missions.emplace(row.GetInt(3), mData);
     }
-    sLog.Cyan("   MissionDataMgr", "%u Unsorted Missions loaded in %.3fms.", m_missions.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "%u Unsorted Mission Data Sets loaded in %.3fms.", m_missions.size(), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
-    MissionDB::LoadMissionOffers(*res);
+    MissionDB::LoadOpenOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, missionID, offerID, originID,
-        // rewardISK, rewardItemID, rewardItemAmount, rewardLP, stateID FROM agtOffers
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,
+        // offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
         MissionOffer oData;
         oData.acceptFee = row.GetInt(0);
         oData.agentID = row.GetInt(1);
+        // will need to determine how to store/retrieve bookmarks as a list of dicts here
+        oData.bookmarks = new PyList();
         oData.characterID = row.GetInt(2);
         oData.courierAmount = row.GetInt(3);
         oData.courierItemID = row.GetInt(4);
@@ -160,17 +165,60 @@ void MissionDataMgr::Populate()
         oData.dateIssued = row.GetInt64(7);
         oData.destinationID = row.GetInt(8);
         oData.expiryTime = row.GetInt64(9);
-        oData.missionID = row.GetInt(10);
-        oData.offerID = row.GetInt(11);
-        oData.originID = row.GetInt(12);
-        oData.rewardISK = row.GetInt(13);
-        oData.rewardItemID = row.GetInt(14);
-        oData.rewardItemQty = row.GetInt(15);
-        oData.rewardLP = row.GetInt(16);
-        oData.stateID = row.GetInt(17);
+        oData.important = row.GetInt(10);
+        oData.missionID = row.GetInt(11);
+        oData.name = row.GetInt(12);
+        oData.offerID = row.GetInt(13);
+        oData.originID = row.GetInt(14);
+        oData.remoteCompletable = row.GetInt(15);
+        oData.remoteOfferable = row.GetInt(16);
+        oData.rewardISK = row.GetInt(17);
+        oData.rewardItemID = row.GetInt(18);
+        oData.rewardItemQty = row.GetInt(19);
+        oData.rewardLP = row.GetInt(20);
+        oData.stateID = row.GetInt(21);
+        oData.typeID = row.GetInt(22);
         m_offers.emplace(row.GetInt(2), oData);
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    // config switch to allow loading/displaying of expired/completed mission offers
+    if (sConfig.server.LoadOldMissions)
+        MissionDB::LoadClosedOffers(*res);
+    while (res->GetRow(row)) {
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,
+        // offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
+        MissionOffer oData;
+        oData.acceptFee = row.GetInt(0);
+        oData.agentID = row.GetInt(1);
+        // will need to determine how to store/retrieve bookmarks as a list of dicts here
+        oData.bookmarks = new PyList();
+        oData.characterID = row.GetInt(2);
+        oData.courierAmount = row.GetInt(3);
+        oData.courierItemID = row.GetInt(4);
+        oData.dateAccepted = row.GetInt64(5);
+        oData.dateCompleted = row.GetInt64(6);
+        oData.dateIssued = row.GetInt64(7);
+        oData.destinationID = row.GetInt(8);
+        oData.expiryTime = row.GetInt64(9);
+        oData.important = row.GetInt(10);
+        oData.missionID = row.GetInt(11);
+        oData.name = row.GetInt(12);
+        oData.offerID = row.GetInt(13);
+        oData.originID = row.GetInt(14);
+        oData.remoteCompletable = row.GetInt(15);
+        oData.remoteOfferable = row.GetInt(16);
+        oData.rewardISK = row.GetInt(17);
+        oData.rewardItemID = row.GetInt(18);
+        oData.rewardItemQty = row.GetInt(19);
+        oData.rewardLP = row.GetInt(20);
+        oData.stateID = row.GetInt(21);
+        oData.typeID = row.GetInt(22);
+        m_xoffers.emplace(row.GetInt(2), oData);
+    }
+    sLog.Cyan("   MissionDataMgr", "%u Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
 
     // cleanup
     SafeDelete(res);
@@ -224,3 +272,16 @@ void MissionDataMgr::GetMissionNameIDs()
 }
 
 
+void MissionDataMgr::GetMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
+{
+    auto itr = m_offers.equal_range(charID);
+    for (auto it = itr.first; it != itr.second; ++it)
+        data.push_back(it->second);
+
+    // config switch to allow loading/displaying of expired/completed mission offers
+    if (sConfig.server.LoadOldMissions) {
+        auto itr = m_xoffers.equal_range(charID);
+        for (auto it = itr.first; it != itr.second; ++it)
+            data.push_back(it->second);
+    }
+}

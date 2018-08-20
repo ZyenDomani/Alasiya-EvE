@@ -62,6 +62,7 @@ EVEServerConfig::EVEServerConfig()
     server.FleetShareDelayed = false;
     server.BountyPayoutDelayed = false; // this system isnt working yet.  disable by default
     server.BountyPayoutTimer = 20/*m*/;
+    server.LoadOldMissions = false;
 
     // world
     world.chatLogs = false;//N
@@ -261,6 +262,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "FleetShareDelayed",    server.FleetShareDelayed );
     AddValueParser( "BountyPayoutDelayed",  server.BountyPayoutDelayed );
     AddValueParser( "BountyPayoutTimer",    server.BountyPayoutTimer );
+    AddValueParser( "LoadOldMissions",      server.LoadOldMissions );
 
     const bool result = ParseElementChildren( ele );
 
@@ -281,6 +283,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     RemoveParser( "FleetShareDelayed" );
     RemoveParser( "BountyPayoutDelayed" );
     RemoveParser( "BountyPayoutTimer" );
+    RemoveParser( "LoadOldMissions" );
 
     return result;
 }

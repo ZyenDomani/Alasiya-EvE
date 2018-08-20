@@ -19,14 +19,13 @@
 class MissionDB
 {
 public:
-    MissionDB();
-    ~MissionDB()                                        { /* do nothing here */ }
 
     static void LoadMiningData(DBQueryResult& res);
     static void LoadMissionData(DBQueryResult& res);
     static void LoadCourierData(DBQueryResult& res);
     static void CreateOfferID(MissionOffer& data);
-    static void LoadMissionOffers(DBQueryResult& res);
+    static void LoadOpenOffers(DBQueryResult& res);
+    static void LoadClosedOffers(DBQueryResult& res);
     static void UpdateMissionOffer(MissionOffer& data);
 
 
