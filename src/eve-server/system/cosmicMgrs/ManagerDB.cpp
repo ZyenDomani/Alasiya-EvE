@@ -67,27 +67,6 @@ PyObject* ManagerDB::GetBillTypes() {
 }
 
 PyObjectEx* ManagerDB::GetAgents() {
-    /*
-            t = sm.RemoteSvc('agentMgr').GetAgents()
-            newRowSet = util.Rowset(t.columns)
-            for r in t:
-                newRowSet.lines.append(list(r))
-
-            newRowSet.AddField('factionID', None)
-            newRowSet.AddField('solarsystemID', None)
-            for each in newRowSet:
-                if not util.IsStation(each.stationID):
-                    continue
-                if each.stationID:
-                    station = sm.GetService('ui').GetStation(each.stationID)
-                    each.corporationID = each.corporationID or station.ownerID
-                    each.solarsystemID = station.solarSystemID
-                each.factionID = sm.GetService('faction').GetFaction(each.corporationID)
-
-            self.allAgentsByID = newRowSet.Index('agentID')
-            self.allAgentsByStationID = newRowSet.Filter('stationID')
-            self.allAgentsByCorpID = newRowSet.Filter('corporationID')
-    */
     // NOTE:  havent found data for agents in space yet....still looking.
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
@@ -98,13 +77,12 @@ PyObjectEx* ManagerDB::GetAgents() {
         "    agt.level,"
         "    agt.quality,"
         "    agt.corporationID,"
-        //"    chr.solarSystemID,"
         "    chr.stationID,"
         "    chr.gender,"
         "    bl.bloodlineID"
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
-        " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
+        " LEFT JOIN bloodlineTypes AS bl ON bl.typeID = chr.typeID"
     ))
     {
         codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());

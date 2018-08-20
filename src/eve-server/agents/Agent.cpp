@@ -64,7 +64,8 @@ RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agen
 bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_data);
 
-    _log(AGENT__TRACE, "Data Loaded for Agent %u - level: %u, locationID: %u, systemID: %u", m_agentID, m_data.level, m_data.locationID, m_data.solarSystemID);
+    _log(AGENT__TRACE, "Data Loaded for Agent %u - bl: %u, level: %u, locationID: %u, systemID: %u", \
+                m_agentID, m_data.bloodlineID, m_data.level, m_data.locationID, m_data.solarSystemID);
     return true;
     //SELECT agentID, typeID, level FROM agtSkillLevel
 }

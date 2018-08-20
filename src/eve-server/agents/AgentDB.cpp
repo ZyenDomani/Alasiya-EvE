@@ -33,7 +33,6 @@
 
 void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
 {
-    //SELECT `agentID`, `divisionID`, `corporationID`, `locationID`, `level`, `quality`, `agentTypeID`, `isLocator`
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
@@ -51,10 +50,9 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
         "   itm.typeID "
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
-        " LEFT JOIN bloodlineTypes AS bl ON bl.bloodlineID = agt.agentTypeID"
+        " LEFT JOIN bloodlineTypes AS bl ON bl.typeID = chr.typeID"
         " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
-        " WHERE agt.agentID = %u", agentID
-    ))
+        " WHERE agt.agentID = %u", agentID))
     {
         codelog(DATABASE__ERROR, "Error in GetAgents query: %s", res.error.c_str());
         return;
@@ -63,6 +61,10 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
     /** @todo  there may be some errors here with agents in space or NOT in stations....will have to test and fix as they come up.  */
     DBResultRow row;
     if (res.GetRow(row)) {
+        if (row.GetUInt(10) == 0) {
+            _log(DATABASE__MESSAGE, "No charTypeID for Agent %u", agentID);
+            return;
+        }
         data.typeID         = row.GetUInt(0);
         data.divisionID     = row.GetUInt(1);
         data.level          = row.GetUInt(2);
