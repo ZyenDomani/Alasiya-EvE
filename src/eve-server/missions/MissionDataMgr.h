@@ -33,7 +33,7 @@ public:
     void                LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
     void                CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data);
 
-    void                GetMissionNameIDs();
+    void                UpdateMissionData();
 
     std::string         GetTypeName(uint8 typeID);
 

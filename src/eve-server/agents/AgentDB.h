@@ -24,6 +24,7 @@ class AgentDB
 public:
     static void LoadAgentData(uint32 agentID, AgentData& data);
     static void LoadAgentOffers(uint32 agentID, std::map<uint32, uint32>& data);
+    static void LoadAgentSkills(uint32 agentID, std::map<uint16, uint8>& data);
 
 };
 

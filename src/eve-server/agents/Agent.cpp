@@ -22,9 +22,8 @@
  * AGENT__RSPDUMP
  */
 
-#include "eve-server.h"
+#include "../eve-server.h"
 
-#include "missions/MissionDataMgr.h"
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
 
@@ -45,15 +44,16 @@ bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_data);
     AgentDB::LoadAgentOffers(m_agentID, m_offers);
 
+    if (m_data.research)
+        AgentDB::LoadAgentSkills(m_agentID, m_skills);
+
     _log(AGENT__TRACE, "Data Loaded for Agent %u - bl: %u, level: %u, locationID: %u, systemID: %u", \
                 m_agentID, m_data.bloodlineID, m_data.level, m_data.locationID, m_data.solarSystemID);
     return true;
-    //SELECT agentID, typeID, level FROM agtSkillLevel
 }
 
-void Agent::MakeOffer(uint32 charID)
+void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
 {
-    MissionOffer offer;
     sMissionDataMgr.CreateMissionOffer(Mission::Type::Courier, m_data.level, offer);
 
     /*  static mission data from db
@@ -94,10 +94,11 @@ void Agent::MakeOffer(uint32 charID)
 
     offer.dateAccepted       = 0;
     offer.dateCompleted      = 0;
-    
+
     //offer.offerID            = 0;  - created when saving offer in db
     MissionDB::CreateOfferID(offer);
 
+    m_offers.emplace(charID, offer.offerID);
 }
 
 

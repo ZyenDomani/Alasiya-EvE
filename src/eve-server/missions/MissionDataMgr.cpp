@@ -82,7 +82,7 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     MissionDB::LoadMiningData(*res);
     while (res->GetRow(row)) {
-        //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier
+        //SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstMining
         CourierData cData;
         cData.missionID     = row.GetInt(0);
         cData.name          = row.GetText(1);
@@ -263,7 +263,7 @@ void MissionDataMgr::Populate()
 }
 
 
-void MissionDataMgr::GetMissionNameIDs()
+void MissionDataMgr::UpdateMissionData()
 {
     double start = GetTimeMSeconds();
 
@@ -278,7 +278,7 @@ void MissionDataMgr::GetMissionNameIDs()
             sLog.Error("   MissionDataMgr", "%s not found", itr->first.c_str());
     }
 */
-    sLog.Cyan("   MissionDataMgr", "%u GetMissionNameIDs udpated in %.3f ms.", count, (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "UpdateMissionData - %u missions udpated in %.3f ms.", count, (GetTimeMSeconds() - start));
 }
 
 
@@ -298,6 +298,23 @@ void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>&
 
 void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data)
 {
+    // variable mission data based on agent, init to 0 here.
+    data.stateID            = Mission::State::Allocated;
+    data.dateIssued         = GetFileTimeNow();
+    data.remoteOfferable    = false;
+    data.remoteCompletable  = false;
+    data.offerID            = 0;
+    data.agentID            = 0;
+    data.rewardLP           = 0;
+    data.originID           = 0;
+    data.acceptFee          = 0;
+    data.expiryTime         = 0;
+    data.characterID        = 0;
+    data.dateAccepted       = 0;
+    data.dateCompleted      = 0;
+    data.destinationID      = 0;
+    data.bookmarks          = new PyList();
+
     switch (typeID) {
         case Mission::Type::Tutorial: {
 
@@ -326,25 +343,6 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer&
             data.rewardItemQty      = cData.rewardItemQty;
             data.courierItemID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
-
-            data.stateID            = Mission::State::Allocated;
-            data.dateIssued         = GetFileTimeNow();
-            data.remoteOfferable    = false;
-            data.remoteCompletable  = false;
-
-            data.offerID            = 0;
-            data.agentID            = 0;
-            data.rewardLP           = 0;
-            data.originID           = 0;
-            data.acceptFee          = 0;
-            data.expiryTime         = 0;
-            data.characterID        = 0;
-            data.dateAccepted       = 0;
-            data.dateCompleted      = 0;
-            data.destinationID      = 0;
-
-            data.bookmarks          = new PyList();
-
         } break;
         case Mission::Type::Trade: {
 
@@ -370,25 +368,6 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer&
             data.rewardItemQty      = cData.rewardItemQty;
             data.courierItemID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
-
-            data.stateID            = Mission::State::Allocated;
-            data.dateIssued         = GetFileTimeNow();
-            data.remoteOfferable    = false;
-            data.remoteCompletable  = false;
-
-            data.offerID            = 0;
-            data.agentID            = 0;
-            data.rewardLP           = 0;
-            data.originID           = 0;
-            data.acceptFee          = 0;
-            data.expiryTime         = 0;
-            data.characterID        = 0;
-            data.dateAccepted       = 0;
-            data.dateCompleted      = 0;
-            data.destinationID      = 0;
-
-            data.bookmarks          = new PyList();
-
         } break;
         case Mission::Type::Research: {
 

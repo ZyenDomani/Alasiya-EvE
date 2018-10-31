@@ -117,19 +117,48 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 button4->SetItem(1, new PyInt(Dialog::Button::StartResearch));
             dialog->AddItem(button4);
         }
-        if (dialog->size() > 1) {
+        if (dialog->size() == 1) {
             // response as string for custom data.  response as pyint to use client data (using getlocale shit)
             // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
             //  this will be modeled after UO speech data, in tiers and levels.
             // if RequestMission is only option, this is ignored.  see note under 'dialog data'
+
             response = "Why the fuck am I looking at you again, ";
             response += call.client->GetCharacterName().c_str();
             response += "?";
             agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
             agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
+        } else {
+            //  ** HOWEVER **  if RequestMission is only option, server segfaults when agentSays is not included....check packet sizes.
+            /*
+             * 19:51:51 [AgentDump] AgentBound::Handle_DoAction() - size= 1
+             * 19:51:51 [AgentDump]   Call Arguments:
+             * 19:51:51 [AgentDump]      Tuple: 1 elements
+             * 19:51:51 [AgentDump]       [ 0]       None
+             * 19:51:51 [AgentRspDump] AgentBound::Handle_DoAction RSP:
+             * 19:51:51 [AgentRspDump]      Tuple: 2 elements
+             * 19:51:51 [AgentRspDump]       [ 0]  Tuple: 2 elements
+             * 19:51:51 [AgentRspDump]       [ 0]   [ 0]  Tuple: 2 elements
+             * 19:51:51 [AgentRspDump]       [ 0]   [ 1]   List: 1 elements
+             * 19:51:51 [AgentRspDump]       [ 0]   [ 1]   [ 0]  Tuple: 2 elements
+             * 19:51:51 [AgentRspDump]       [ 0]   [ 1]   [ 0]   [ 0]    Integer: 13
+             * 19:51:51 [AgentRspDump]       [ 0]   [ 1]   [ 0]   [ 1]    Integer: 2
+             * 19:51:51 [AgentRspDump]       [ 1]  Dictionary: 4 entries
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 0]   Key:     String: 'missionQuit'
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 0] Value:    Boolean: false
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 1]   Key:     String: 'missionCompleted'
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 1] Value:    Boolean: false
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 2]   Key:     String: 'missionDeclined'
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 2] Value:    Boolean: false
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 3]   Key:     String: 'loyaltyPoints'
+             * 19:51:51 [AgentRspDump]       [ 1]   [ 3] Value:    Integer: 10
+             */
+            agentSays->SetItem(0, new PyNone());    //msgInfo  -- if tuple[0].string then return msgInfo
+            agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
         }
     } else {
-        m_agent->SetMission(true);
+        MissionOffer offer;
+        m_agent->MakeOffer(call.client->GetCharacterID(), offer);
 
     //  this one will get complicated and is based on agent/char interaction
     //   detail in /eve/client/script/ui/station/agents/agents.py
@@ -183,7 +212,6 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             button3->SetItem(0, new PyInt(67));
             button3->SetItem(1, new PyInt(Dialog::Button::Defer));
         dialog->AddItem(button3);
-
     }
 
     // extraInfo data....

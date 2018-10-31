@@ -367,7 +367,7 @@ void ConsoleCommand::Test()
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs
-    sMissionDataMgr.GetMissionNameIDs();
+    sMissionDataMgr.UpdateMissionData();
 
 }
 

@@ -14,6 +14,7 @@
 
 
 #include "agents/AgentDB.h"
+#include "missions/MissionDataMgr.h"
 
 class Client;
 
@@ -40,7 +41,7 @@ public:
     void SetMission(bool set=false)                     { m_mission = set; }
     bool HasMission(uint32 charID)                      { return (m_offers.find(charID) != m_offers.end()); }
 
-    void MakeOffer(uint32 charID);
+    void MakeOffer(uint32 charID, MissionOffer& offer);
 
 
 protected:
@@ -49,7 +50,8 @@ protected:
 
     bool m_mission;
 
-    std::map<uint32, uint32>            m_offers;       // charID/missionID
+    std::map<uint16, uint8>             m_skills;       // skillID/level
+    std::map<uint32, uint32>            m_offers;       // charID/offerID
     std::map<uint16, AgentActions>      m_actions;      // buttonID/data
 
 private:

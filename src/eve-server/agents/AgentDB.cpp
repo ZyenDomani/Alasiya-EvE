@@ -69,7 +69,7 @@ void AgentDB::LoadAgentOffers(uint32 agentID, std::map<uint32, uint32>& data)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT characterID, missionID FROM agtOffers WHERE dateCompleted = 0 AND agentID = %u", agentID))
+        "SELECT characterID, offerID FROM agtOffers WHERE dateCompleted = 0 AND agentID = %u", agentID))
         codelog(DATABASE__ERROR, "Error in LoadOpenOffers query: %s", res.error.c_str());
 
     DBResultRow row;
@@ -78,6 +78,15 @@ void AgentDB::LoadAgentOffers(uint32 agentID, std::map<uint32, uint32>& data)
 }
 
 
-// TODO  figure out how to get research agent skill level and load into agent data
-// SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u
+void AgentDB::LoadAgentSkills(uint32 agentID, std::map< uint16, uint8 >& data)
+{
+    // SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u", agentID))
+        codelog(DATABASE__ERROR, "Error in LoadAgentSkills query: %s", res.error.c_str());
 
+    DBResultRow row;
+    while (res.GetRow(row))
+        data[row.GetInt(0)] = row.GetInt(1);
+}
