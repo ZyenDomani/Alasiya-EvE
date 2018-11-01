@@ -45,11 +45,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Progress - Most packets understood and correctly processed<BR>27July15</td></tr>
-<tr><td> - Further Mutex-ing</td><td class="working">90%
+<tr><td> - Further Mutex-ing</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Progress - Testing for intermittent data races<BR>10Aug16</td></tr>
+<td>In Progress - Testing for intermittent data races<BR>10Aug17</td></tr>
 <tr><td> - COMPLETE Destiny rewrite</td><td class="working">99%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
@@ -60,7 +60,12 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Mostly Complete<BR>27Jun17</td></tr>
-<tr><td> - COMPLETE SystemEntity rewrite</td><td class="working">100%
+<tr><td> - COMPLETE Item Class rewrite</td><td class="working">90%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td>In Final test phase <BR>27April16</td></tr>
+<tr><td> - COMPLETE SystemEntity class rewrite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -75,11 +80,6 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Mostly Complete<BR>27Jun17</td></tr>
-<tr><td> - Proper spawning and item creating(Item class rewrite)</td><td class="working">90%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final test phase <BR>27April16</td></tr>
 <tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">99%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
@@ -1120,11 +1120,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>NOT IMPLEMENTED<BR>10Aug16</td></tr>
-<tr><td> - Can store/retrieve items from Corporate Hangar</td><td class="working">50%
+<tr><td> - Can store/retrieve items from Corporate Hangar</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Cannot set Corp Roles<BR>10Aug16</td></tr>
+<td>COMPLETE<BR>20Dec17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Ship_Navigation_in_Space"> Ship Navigation (Destiny) </span></h2>
@@ -1539,7 +1539,7 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td>Skeleton Code Only.<BR>27July15</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Science_and_Industry"> Science and Industry </span></h2>
+<h2> <span class="mw-headline" id="Science_and_Industry"> Science and Industry (Rewrite - still in progress)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:45%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1554,11 +1554,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Research</td><td class="working">80%
+<tr><td> - Research</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - few bugs.<BR>6Mar15</td></tr>
+<td>Final Testing<BR>30Mar18</td></tr>
 <tr><td> - Invention</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -1569,11 +1569,11 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>Skeleton Code Only<BR>6Mar15</td></tr>
-<tr><td> - Ore Mining</td><td class="working">75%
+<tr><td> - Ore Mining</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - few bugs.<BR>6Mar15</td></tr>
+<td>Final Testing<BR>30Mar18</td></tr>
 <tr><td> - Moon Mining</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -1588,12 +1588,12 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>COMPLETE<BR>27July15</td></tr>
+<td>COMPLETE<BR>30Mar18</td></tr>
 <tr><td> - Manufacturing</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Final Testing<BR>17Nov17</td></tr>
+<td>Final Testing<BR>30Mar18</td></tr>
 <tr><td> - R&amp;D using Agents</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
