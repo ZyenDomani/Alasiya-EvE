@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 03, 2018 at 02:45 AM
+-- Generation Time: Nov 12, 2018 at 12:04 PM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -26,7 +26,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `agtOffers`
 --
 
-CREATE TABLE IF NOT EXISTS `agtOffers` (
+DROP TABLE IF EXISTS `agtOffers`;
+CREATE TABLE `agtOffers` (
   `offerID` int(10) NOT NULL,
   `agentID` int(10) NOT NULL DEFAULT '0',
   `characterID` int(10) NOT NULL DEFAULT '0',
@@ -38,13 +39,29 @@ CREATE TABLE IF NOT EXISTS `agtOffers` (
   `rewardItemID` int(10) NOT NULL DEFAULT '0',
   `rewardItemQty` smallint(6) NOT NULL DEFAULT '0',
   `originID` int(10) NOT NULL DEFAULT '0',
+  `originOwnerID` int(10) NOT NULL DEFAULT '0',
+  `originSystemID` int(10) NOT NULL DEFAULT '0',
   `destinationID` int(10) NOT NULL DEFAULT '0',
+  `destinationTypeID` int(10) NOT NULL DEFAULT '0',
+  `destinationOwnerID` int(10) NOT NULL DEFAULT '0',
+  `destinationSystemID` int(10) NOT NULL DEFAULT '0',
+  `dungeonLocationID` int(10) NOT NULL DEFAULT '0',
+  `dungeonSolarSystemID` int(10) NOT NULL DEFAULT '0',
   `acceptFee` float NOT NULL DEFAULT '0',
   `courierItemID` int(5) NOT NULL DEFAULT '0',
   `courierAmount` smallint(6) NOT NULL DEFAULT '0',
-  `dateIssued` int(10) unsigned NOT NULL DEFAULT '0',
-  `dateAccepted` int(10) unsigned NOT NULL DEFAULT '0',
-  `dateCompleted` int(10) unsigned NOT NULL DEFAULT '0'
+  `dateIssued` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `dateAccepted` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `dateCompleted` bigint(20) unsigned NOT NULL DEFAULT '0',
+  `important` tinyint(1) NOT NULL DEFAULT '0',
+  `name` text NOT NULL,
+  `remoteCompletable` tinyint(1) NOT NULL DEFAULT '0',
+  `remoteOfferable` tinyint(1) NOT NULL DEFAULT '0',
+  `typeID` smallint(6) NOT NULL DEFAULT '0',
+  `bonusISK` int(10) NOT NULL DEFAULT '0',
+  `bonusTime` bigint(20) NOT NULL DEFAULT '0',
+  `contentID` int(6) NOT NULL DEFAULT '0',
+  `storyline` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='char missions - current offers and history';
 
 --

@@ -32,16 +32,19 @@ public:
 
     bool IsLocator()                                    { return m_data.locator; }
     bool IsResearch()                                   { return m_data.research; }
+
     uint32 GetID()                                      { return m_agentID; }
+    uint32 GetCorpID()                                  { return m_data.corporationID; }
     uint32 GetSystemID()                                { return m_data.solarSystemID; }
     uint32 GetStationID()                               { return m_data.stationID; }
+    uint32 GetLocTypeID()                               { return m_data.locationTypeID; }
     uint32 MakeButtonID()                               { return ++m_buttonID; }
-
 
     void SetMission(bool set=false)                     { m_mission = set; }
     bool HasMission(uint32 charID, MissionOffer& offer);
 
     void MakeOffer(uint32 charID, MissionOffer& offer);
+    bool GetOffer(uint32 charID, uint32 contentID, MissionOffer& offer);
 
 
 protected:

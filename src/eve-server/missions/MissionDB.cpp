@@ -24,14 +24,16 @@ void MissionDB::LoadMissionData(DBQueryResult& res)
 void MissionDB::LoadCourierData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstCourier WHERE contentID > 0"))
+        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime"
+        " FROM qstCourier WHERE contentID > 0 AND itemTypeID > 0"))
         codelog(DATABASE__ERROR, "Error in LoadCourierData query: %s", res.error.c_str());
 }
 
 void MissionDB::LoadMiningData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime FROM qstMining WHERE contentID > 0"))
+        "SELECT id, contentID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime"
+        " FROM qstMining WHERE contentID > 0 AND itemTypeID > 0"))
         codelog(DATABASE__ERROR, "Error in LoadMiningData query: %s", res.error.c_str());
 }
 
@@ -40,12 +42,15 @@ void MissionDB::CreateOfferID(MissionOffer& data)
     DBerror err;
     uint32 uid = 0;
     if (!sDatabase.RunQueryLID(err, uid,
-        "INSERT INTO agtOffers(agentID, characterID, missionID, stateID, expiryTime, rewardLP, rewardISK, rewardItemID, rewardItemQty,"
-        " originID, destinationID, acceptFee, courierItemID, courierAmount, dateIssued, important, name, remoteCompletable, remoteOfferable, typeID)"
-        " VALUES (%u, %u, %u, %u %f, %u, %u, %u, %u, %u, %u, %f, %u, %u, %f, %i, '%s', %i, %i, %u)",
-        data.agentID, data.characterID, data.missionID, data.stateID, data.expiryTime, data.rewardLP, data.rewardISK, data.rewardItemID, data.rewardItemQty,
-        data.originID, data.destinationID, data.acceptFee, data.courierItemID, data.courierAmount, data.dateIssued, (data.important?1:0), data.name.c_str(),
-        (data.remoteCompletable?1:0), (data.remoteOfferable?1:0), data.typeID))
+        "INSERT INTO agtOffers(acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateIssued, destinationID, destinationTypeID, "
+        " destinationOwnerID, destinationSystemID, expiryTime, important, storyline, missionID, contentID, name, offerID, originID, originOwnerID, originSystemID,"
+        " remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID)"
+        " VALUES (%u, %u, %u, %u, %u, %f, %f, %u, %u, %u, %u, %f, %i, %u, %u, %u, '%s', %u, %u, %u, %u, %i, %i, %u, %u, %u, %u, %u, %f, %u, %u, %u, %u)",
+            data.acceptFee, data.agentID, data.characterID, data.courierAmount, data.courierItemID, data.dateAccepted, data.dateIssued, data.destinationID,
+            data.destinationTypeID, data.destinationOwnerID, data.destinationSystemID, data.expiryTime, (data.important?1:0), data.storyline,
+            data.missionID, data.contentID, data.name.c_str(), data.offerID, data.originID, data.originOwnerID, data.originSystemID,
+            (data.remoteCompletable?1:0), (data.remoteOfferable?1:0), data.rewardISK, data.rewardItemID, data.rewardItemQty,data.rewardLP, data.bonusISK, data.bonusTime,
+            data.stateID, data.typeID, data.dungeonLocationID, data.dungeonSolarSystemID))
     {
         codelog(DATABASE__ERROR, "Failed to insert new MissionOffer: %s", err.c_str());
         return;
@@ -65,15 +70,12 @@ void MissionDB::UpdateMissionOffer(MissionOffer& data)
     }
 }
 
-
-//SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline,
-// missionID, contentID, name, offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime,
-// stateID, typeID FROM agtOffers
 void MissionDB::LoadOpenOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,"
-        " offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers WHERE dateCompleted = 0"))
+        "SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,"
+        " expiryTime, important, storyline, missionID, contentID, name, offerID, originID, originOwnerID, originSystemID, remoteCompletable, remoteOfferable, "
+        " rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID FROM agtOffers WHERE dateCompleted = 0"))
         codelog(DATABASE__ERROR, "Error in LoadOpenOffers query: %s", res.error.c_str());
 }
 
@@ -81,9 +83,8 @@ void MissionDB::LoadOpenOffers(DBQueryResult& res)
 void MissionDB::LoadClosedOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, missionID, name,"
-        " offerID, originID, remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID"
-        " FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %f", GetFileTimeNow()))
+        "SELECT agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,"
+        " offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %f", GetFileTimeNow()))
         codelog(DATABASE__ERROR, "Error in LoadClosedOffers query: %s", res.error.c_str());
 }
 

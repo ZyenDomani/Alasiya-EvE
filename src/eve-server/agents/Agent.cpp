@@ -54,7 +54,7 @@ bool Agent::Load() {
 
 void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
 {
-    // this will actually be
+    // this will be based on agent type eventually
     uint8 misionType = Mission::Type::Courier;
 
     sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, offer);
@@ -83,12 +83,15 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     // variable mission data based on agent
     offer.agentID            = m_agentID;
     offer.originID           = m_data.stationID;
+    offer.originOwnerID      = m_data.corporationID;
     offer.originSystemID     = m_data.solarSystemID;
     offer.expiryTime         = GetFileTimeNow() + Win32Time_Day;
 
     // make function to determine destination based on mission type, agent level, agent location, and some other shit.
-    //offer.destinationID      =
+    //offer.destinationID      = 0;
+    //offer.destinationOwnerID      = 0;
     //offer.destinationSystemID = 0;
+    //offer.destinationTypeID = 0;
     //offer.dungeonLocationID      = 0;
     //offer.dungeonSolarSystemID   = 0;
     GetMissionDestination(misionType, offer);
@@ -106,6 +109,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     //offer.dateAccepted       = 0;     //not set here
     //offer.dateCompleted      = 0;     //not set here
 
+    offer.stateID            = Mission::State::Offered;
     //offer.offerID            = 0;     //created when saving offer in db
     MissionDB::CreateOfferID(offer);
 
@@ -121,6 +125,17 @@ bool Agent::HasMission(uint32 charID, MissionOffer& offer)
         offer = itr->second;
         return true;
     }
+    return false;
+}
+
+bool Agent::GetOffer(uint32 charID, uint32 contentID, MissionOffer& offer)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end())
+        if (itr->second.contentID == contentID) {
+            offer = itr->second;
+            return true;
+        }
     return false;
 }
 
@@ -352,58 +367,55 @@ uint32 Agent::GetMissionDestination(uint8 misionType, MissionOffer& offer)
 
     uint8 destRange = SameSystem;
 
-    // determine possible distance based on mission type and agent level
+    // determine possible distance based on mission type and agent level or preset range from db
     switch(misionType) {
         case Tutorial: {
+            // always same system
         } break;
-        case Encounter: {
-        } break;
-        case Courier: {
-        } break;
-        case Trade: {
-        } break;
-        case Mining: {
-        } break;
+        case Data:
+        case Trade:
+        case Courier:
         case Research: {
+            destRange += m_data.level *2;
         } break;
-        case Data: {
+        case Anomic:
+        case Burner:
+        case Mining: {
+            destRange += m_data.level;
         } break;
+        case Arc:
+        case Cosmos:
+        case Encounter:
         case Storyline: {
-        } break;
-        case Cosmos: {
-        } break;
-        case Arc: {
-        } break;
-        case Anomic: {
-        } break;
-        case Burner: {
+            destRange = offer.range;
         } break;
     }
 
     switch(destRange) {
-        case SameSystem: {
+        case SameSystem: {  //1
         } break;
-        case SameOrNeighboringSystemSameConstellation: {
+        case SameOrNeighboringSystemSameConstellation: {    //2
         } break;
-        case SameOrNeighboringSystem: {
+        case SameOrNeighboringSystem: { //3
         } break;
-        case NeighboringSystemSameConstellation: {
+        case NeighboringSystemSameConstellation: {  //4
         } break;
-        case NeighboringSystem: {
+        case NeighboringSystem: {   //5
         } break;
-        case SameConstellation: {
+        case SameConstellation: {   //6
         } break;
-        case SameOrNeighboringConstellationSameRegion: {
+        case SameOrNeighboringConstellationSameRegion: {    //7
         } break;
-        case SameOrNeighboringConstellation: {
+        case SameOrNeighboringConstellation: {  //8
         } break;
-        case NeighboringConstellationSameRegion: {
+        case NeighboringConstellationSameRegion: {  //9
         } break;
-        case NeighboringConstellation: {
+        case NeighboringConstellation: {    //10
         } break;
-        case NearestEnemyCombatZone: {
+        // not sure how to do these two yet....
+        case NearestEnemyCombatZone: {  //11
         } break;
-        case NearestCareerHub: {
+        case NearestCareerHub: {    //12
         } break;
     }
 
@@ -431,10 +443,10 @@ uint32 Agent::GetMissionDestination(uint8 misionType, MissionOffer& offer)
     */
 
     //  howerver, may have to create data objects based on constellation to do ranges in neighboring constellation
-
-
     offer.destinationID      = 0;
+    offer.destinationOwnerID      = 0;
     offer.destinationSystemID = 0;
+    offer.destinationTypeID = 0;
     offer.dungeonLocationID      = 0;
     offer.dungeonSolarSystemID   = 0;
 }

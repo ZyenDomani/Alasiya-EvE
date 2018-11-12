@@ -57,6 +57,7 @@ public:
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool Contains(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }
+    bool Contains(uint32 itemID, uint32 qty) const;
 
     double GetCapacity(EVEItemFlags flag) const;
     double GetStoredVolume(EVEItemFlags flag) const;
