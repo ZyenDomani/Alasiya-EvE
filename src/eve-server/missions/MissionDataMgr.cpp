@@ -25,7 +25,9 @@ MissionDataMgr::MissionDataMgr()
 
 MissionDataMgr::~MissionDataMgr()
 {
-
+    PyDecRef(KillPNG);
+    PyDecRef(MiningPNG);
+    PyDecRef(CourierPNG);
 }
 
 void MissionDataMgr::Clear()
@@ -53,6 +55,23 @@ void MissionDataMgr::GetInfo()
 void MissionDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
+
+    CourierPNG = new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>");
+    MiningPNG = new PyString("<img src='res:/UI/netres/mission_content/miningmission.png' align=center hspace=4 vspace=4>");
+    KillPNG = new PyString("<img src='res:/UI/netres/mission_content/killmission.png' align=center hspace=4 vspace=4>");
+    /*  not sure if these are used/needed....
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/agent_interaction.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/agent_talkto.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_amarr.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_caldari.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_gallente.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_minmatar.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/arc_npe.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/blood_stained.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/angels_and_artifacts.png' align=center hspace=4 vspace=4>");
+    PNG = new PyString("<img src='res:/UI/netres/mission_content/smash_and_grab.png' align=center hspace=4 vspace=4>");
+    */
+
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -156,8 +175,6 @@ void MissionDataMgr::Populate()
         MissionOffer oData;
         oData.acceptFee = row.GetInt(0);
         oData.agentID = row.GetInt(1);
-        // will need to determine how to store/retrieve bookmarks as a list of dicts here
-        oData.bookmarks = new PyList();
         oData.characterID = row.GetInt(2);
         oData.courierAmount = row.GetInt(3);
         oData.courierItemID = row.GetInt(4);
@@ -183,8 +200,10 @@ void MissionDataMgr::Populate()
         oData.bonusTime = row.GetInt(24);
         oData.stateID = row.GetInt(25);
         oData.typeID = row.GetInt(26);
+        // will need to determine how to store/retrieve bookmarks as a list of dicts here
+        oData.bookmarks = new PyList();
         m_offers.emplace(row.GetInt(2), oData);
-        m_aoffers.emplace(row.GetInt(1), oData);    // do we really want dupe data here?
+        m_aoffers.emplace(row.GetInt(1), oData);    // do we really want dupe data here?  yes.  need offer by char and by agent
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
@@ -262,25 +281,18 @@ void MissionDataMgr::Populate()
     */
 }
 
-
-void MissionDataMgr::UpdateMissionData()
+void MissionDataMgr::AddMissionOffer(uint32 charID, MissionOffer& data)
 {
-    double start = GetTimeMSeconds();
-
-    DBerror err;
-    int16 count = 0;
-/*
-    std::map<std::string, uint32>::iterator itr = m_names.begin(), end = m_names.end();
-    for (; itr != end; ++itr) {
-        if (sDatabase.RunQuery(err,"UPDATE qstMining SET itemQty = %u WHERE name LIKE '%s'", itr->second, itr->first.c_str() ))
-            ++count;
-        else
-            sLog.Error("   MissionDataMgr", "%s not found", itr->first.c_str());
-    }
-*/
-    sLog.Cyan("   MissionDataMgr", "UpdateMissionData - %u missions udpated in %.3f ms.", count, (GetTimeMSeconds() - start));
+    m_offers.emplace(charID, data);
+    m_aoffers.emplace(data.agentID, data);
 }
 
+void MissionDataMgr::LoadAgentOffers(const uint32 agentID, std::map< uint32, MissionOffer >& data)
+{
+    auto itr = m_aoffers.equal_range(agentID);
+    for (auto it = itr.first; it != itr.second; ++it)
+        data[it->second.characterID] = (it->second);
+}
 
 void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data)
 {
@@ -299,20 +311,22 @@ void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>&
 void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data)
 {
     // variable mission data based on agent, init to 0 here.
-    data.stateID            = Mission::State::Allocated;
-    data.dateIssued         = GetFileTimeNow();
-    data.remoteOfferable    = false;
-    data.remoteCompletable  = false;
-    data.offerID            = 0;
-    data.agentID            = 0;
-    data.rewardLP           = 0;
-    data.originID           = 0;
-    data.acceptFee          = 0;
-    data.expiryTime         = 0;
-    data.characterID        = 0;
-    data.dateAccepted       = 0;
-    data.dateCompleted      = 0;
-    data.destinationID      = 0;
+    data.stateID                = Mission::State::Allocated;
+    data.dateIssued             = GetFileTimeNow();
+    data.remoteOfferable        = false;
+    data.remoteCompletable      = false;
+    data.offerID                = 0;
+    data.agentID                = 0;
+    data.rewardLP               = 0;
+    data.originID               = 0;
+    data.acceptFee              = 0;
+    data.expiryTime             = 0;
+    data.characterID            = 0;
+    data.dateAccepted           = 0;
+    data.dateCompleted          = 0;
+    data.destinationID          = 0;
+    data.dungeonLocationID      = 0;
+    data.dungeonSolarSystemID   = 0;
     data.bookmarks          = new PyList();
 
     switch (typeID) {
@@ -411,5 +425,24 @@ std::string MissionDataMgr::GetTypeName(uint8 typeID)
         case Anomic:            return "Anomic";
         default:                return "Invalid";
     }
+}
+
+
+void MissionDataMgr::UpdateMissionData()
+{
+    double start = GetTimeMSeconds();
+
+    DBerror err;
+    int16 count = 0;
+    /*
+     *    std::map<std::string, uint32>::iterator itr = m_names.begin(), end = m_names.end();
+     *    for (; itr != end; ++itr) {
+     *        if (sDatabase.RunQuery(err,"UPDATE qstMining SET itemQty = %u WHERE name LIKE '%s'", itr->second, itr->first.c_str() ))
+     *            ++count;
+     *        else
+     *            sLog.Error("   MissionDataMgr", "%s not found", itr->first.c_str());
+}
+*/
+    sLog.Cyan("   MissionDataMgr", "UpdateMissionData - %u missions udpated in %.3f ms.", count, (GetTimeMSeconds() - start));
 }
 

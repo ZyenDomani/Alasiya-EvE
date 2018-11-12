@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 04, 2018 at 10:22 AM
+-- Generation Time: Nov 11, 2018 at 06:50 PM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -26,6 +26,7 @@ SET time_zone = "+00:00";
 -- Table structure for table `qstCourier`
 --
 
+DROP TABLE IF EXISTS `qstCourier`;
 CREATE TABLE IF NOT EXISTS `qstCourier` (
   `id` int(5) NOT NULL DEFAULT '0',
   `contentID` int(5) NOT NULL DEFAULT '0',
@@ -69,7 +70,7 @@ INSERT INTO `qstCourier` (`id`, `contentID`, `name`, `level`, `typeID`, `importa
 (55192, 0, 'Party Goods', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55193, 0, 'Cool Cat', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55194, 0, 'Save The Children', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(55205, 130997, 'Broken Reactor', 1, 3, 0, 0, 0, 0, 75, 0, 0, 0, 0, 0, 0),
+(55205, 130997, 'Broken Reactor', 1, 3, 0, 0, 0, 3687, 75, 0, 0, 0, 0, 0, 0),
 (55206, 0, 'Homeless People Everywhere', 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55207, 131000, 'High Command', 1, 3, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0),
 (55208, 0, 'Dirt', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -166,7 +167,7 @@ INSERT INTO `qstCourier` (`id`, `contentID`, `name`, `level`, `typeID`, `importa
 (57916, 0, 'Party Goods', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57917, 0, 'Save The Children', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57918, 130967, 'Supplies For The Needy', 3, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-(57919, 131016, 'Broken Reactor', 2, 3, 0, 0, 0, 0, 150, 0, 0, 0, 0, 0, 0),
+(57919, 131016, 'Broken Reactor', 2, 3, 0, 0, 0, 3687, 150, 0, 0, 0, 0, 0, 0),
 (57920, 0, 'Dirt', 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57921, 131020, 'High Command', 2, 3, 0, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0),
 (57922, 0, 'Homeless People Everywhere', 4, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

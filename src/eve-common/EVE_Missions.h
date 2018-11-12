@@ -42,7 +42,11 @@ struct MissionOffer {
     uint32 bonusISK;
     uint32 bonusTime;
     uint32 originID;
+    uint32 originSystemID;
     uint32 destinationID;
+    uint32 destinationSystemID;
+    uint32 dungeonLocationID;
+    uint32 dungeonSolarSystemID;
     uint32 acceptFee;
     double expiryTime;
     double dateIssued;

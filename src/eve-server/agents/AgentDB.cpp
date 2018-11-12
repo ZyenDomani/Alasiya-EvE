@@ -65,19 +65,6 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
     }
 }
 
-void AgentDB::LoadAgentOffers(uint32 agentID, std::map<uint32, uint32>& data)
-{
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT characterID, offerID FROM agtOffers WHERE dateCompleted = 0 AND agentID = %u", agentID))
-        codelog(DATABASE__ERROR, "Error in LoadOpenOffers query: %s", res.error.c_str());
-
-    DBResultRow row;
-    while (res.GetRow(row))
-        data[row.GetInt(0)] = row.GetInt(1);
-}
-
-
 void AgentDB::LoadAgentSkills(uint32 agentID, std::map< uint16, uint8 >& data)
 {
     // SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u

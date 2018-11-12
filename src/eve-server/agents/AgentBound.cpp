@@ -85,6 +85,14 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     // dialog is button info
     PyList* dialog = new PyList();
 
+    /** @todo  figure out how to implement this....
+     * Level 1 = always available
+     * Level 2 = +1.00 standing
+     * Level 3 = +3.00 standing
+     * Level 4 = +5.00 standing
+     * Level 5 = +7.00 standing
+     */
+
     if (actionID == 0) {
         m_agent->SetMission(false);
 
@@ -168,8 +176,10 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
          *  it doesnt appear that contentID is used for display.
          */
 
+        // need to make function to get an initial greeting from this agent to this char based on agent/char relationship/history.
         agentSays->SetItem(0, new PyInt(236729));    // msgID  -- 236729 = greetings, {char.name}    236722 = hello there, {char.name}
-        agentSays->SetItem(1, new PyInt(130997));    //mission contentID (descriptionID) to be displayed in dialog box
+
+        agentSays->SetItem(1, new PyInt(offer.contentID));    //mission contentID (descriptionID) to be displayed in dialog box
 
         // dialog can also contain mission data.
         //   set a dialog tuple[1] to dict and fill with MissionBriefingInfo
@@ -241,29 +251,38 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     // will return PyNone if no mission avalible
     _log(AGENT__MESSAGE,  "AgentBound::Handle_GetMissionBriefingInfo()");
 
-    if (!m_agent->HasMission(call.client->GetCharacterID()))
+    MissionOffer offer;
+    if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
         return PyStatic.NewNone();
 
-    // TODO  this data will have to be generated per char based on mission offer data.
+    // these are found in the client data by MessageIDs ....  i.e.  {[location]objectiveDestinationID.name}
     PyDict* keywords = new PyDict();
-        keywords->SetItemString("objectiveLocationID", new PyInt(m_agent->GetStationID()));
-        keywords->SetItemString("objectiveLocationSystemID", new PyInt(m_agent->GetSystemID()));
-        keywords->SetItemString("objectiveTypeID", new PyInt(2631));
-        keywords->SetItemString("objectiveQuantity", new PyInt(7));
-        keywords->SetItemString("objectiveDestinationID", new PyInt(m_agent->GetStationID()));
-        keywords->SetItemString("objectiveDestinationSystemID", new PyInt(m_agent->GetSystemID()));
-        keywords->SetItemString("rewardTypeID", new PyInt(29));
-        keywords->SetItemString("rewardQuantity", new PyInt(28000));
+        keywords->SetItemString("objectiveLocationID", new PyInt(offer.originID));
+        keywords->SetItemString("objectiveLocationSystemID", new PyInt(offer.originSystemID));
+        keywords->SetItemString("objectiveTypeID", new PyInt(offer.courierItemID));
+        keywords->SetItemString("objectiveQuantity", new PyInt(offer.courierAmount));
+        keywords->SetItemString("objectiveDestinationID", new PyInt(offer.destinationID));
+        keywords->SetItemString("objectiveDestinationSystemID", new PyInt(offer.destinationSystemID));
+        keywords->SetItemString("rewardTypeID", new PyInt(itemTypeCredits/*offer.rewardItemID*/));
+        keywords->SetItemString("rewardQuantity", new PyInt(offer.rewardISK/*offer.rewardItemQty*/));
+        keywords->SetItemString("dungeonLocationID", new PyInt(offer.dungeonLocationID));
+        keywords->SetItemString("dungeonSolarSystemID", new PyInt(offer.dungeonSolarSystemID));
     PyDict *briefingInfo = new PyDict();
-        briefingInfo->SetItemString("ContentID", new PyInt(130997));  // this is mission descriptionID
-        briefingInfo->SetItemString("Mission Keywords", keywords);  // only used when "ContentID" is filled?
-        briefingInfo->SetItemString("Mission Title ID", new PyInt(55205) );
-        briefingInfo->SetItemString("Mission Briefing ID", new PyInt(130997) );
-        // will have to find and store mission images *somewhere*  EVE_Mission.h probably.
-        briefingInfo->SetItemString("Mission Image", new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>") );
+        briefingInfo->SetItemString("ContentID", new PyInt(offer.contentID));  // this is mission descriptionID
+        briefingInfo->SetItemString("Mission Keywords", keywords);  // only used when "ContentID" is filled (makes data tuple in client )
+        briefingInfo->SetItemString("Mission Title ID", new PyInt(offer.missionID) );
+        briefingInfo->SetItemString("Mission Briefing ID", new PyInt(offer.contentID) );
+        switch(offer.typeID) {
+            case Mission::Type::Courier:
+                briefingInfo->SetItemString("Mission Image", sMissionDataMgr.GetCourierRes()); break;
+            case Mission::Type::Mining:
+                briefingInfo->SetItemString("Mission Image", sMissionDataMgr.GetMiningRes()); break;
+            case Mission::Type::Encounter:
+                briefingInfo->SetItemString("Mission Image", sMissionDataMgr.GetKillRes()); break;
+        }
         // decline time OR expiration time.  if not decline then expiration
         briefingInfo->SetItemString("Decline Time", new PyNone());   // -1 is generic decline msg
-        briefingInfo->SetItemString("Expiration Time", new PyLong( GetFileTimeNow()+Win32Time_Day ) );
+        briefingInfo->SetItemString("Expiration Time", new PyLong(offer.expiryTime) );
 
     if (is_log_enabled(AGENT__RSPDUMP)) {
         _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionBriefingInfo() RSP:" );
@@ -319,8 +338,9 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionObjectiveInfo() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
+    MissionOffer offer;
     if (call.tuple->size() == 0)
-        if (!m_agent->HasMission(call.client->GetCharacterID()))
+        if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
             return PyStatic.NewNone();
 
     PyDict* objectiveData = new PyDict();

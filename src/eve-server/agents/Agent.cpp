@@ -30,7 +30,7 @@
 Agent::Agent(uint32 id)
 : m_agentID(id)
 {
-    m_buttonID = 0;
+    m_buttonID = 1;
 
     m_mission = false;
     m_actions.clear();
@@ -42,7 +42,7 @@ Agent::Agent(uint32 id)
 
 bool Agent::Load() {
     AgentDB::LoadAgentData(m_agentID, m_data);
-    AgentDB::LoadAgentOffers(m_agentID, m_offers);
+    sMissionDataMgr.LoadAgentOffers(m_agentID, m_offers);
 
     if (m_data.research)
         AgentDB::LoadAgentSkills(m_agentID, m_skills);
@@ -54,7 +54,10 @@ bool Agent::Load() {
 
 void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
 {
-    sMissionDataMgr.CreateMissionOffer(Mission::Type::Courier, m_data.level, offer);
+    // this will actually be
+    uint8 misionType = Mission::Type::Courier;
+
+    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, offer);
 
     /*  static mission data from db
     offer.name               = cData.name;
@@ -75,32 +78,51 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     offer.dateIssued         = GetFileTimeNow();
     */
 
+    offer.characterID        = charID;
+
     // variable mission data based on agent
+    offer.agentID            = m_agentID;
+    offer.originID           = m_data.stationID;
+    offer.originSystemID     = m_data.solarSystemID;
+    offer.expiryTime         = GetFileTimeNow() + Win32Time_Day;
 
-    offer.agentID            = 0;
-    offer.rewardLP           = 0;
-    offer.originID           = 0;
-    offer.acceptFee          = 0;
-    offer.expiryTime         = 0;
-    offer.characterID        = 0;
-    offer.destinationID      = 0;
+    // make function to determine destination based on mission type, agent level, agent location, and some other shit.
+    //offer.destinationID      =
+    //offer.destinationSystemID = 0;
+    //offer.dungeonLocationID      = 0;
+    //offer.dungeonSolarSystemID   = 0;
+    GetMissionDestination(misionType, offer);
 
+    // not sure how this is checked/set
     offer.remoteOfferable    = false;
     offer.remoteCompletable  = false;
+    // same with these
+    offer.rewardLP           = 0;
+    offer.acceptFee          = 0;
 
-    // create and save bookmarks for this offer.
-    //  not sure how yet.
+    // create and save bookmarks for this offer.... not sure how yet.
     offer.bookmarks          = new PyList();
 
-    offer.dateAccepted       = 0;
-    offer.dateCompleted      = 0;
+    //offer.dateAccepted       = 0;     //not set here
+    //offer.dateCompleted      = 0;     //not set here
 
-    //offer.offerID            = 0;  - created when saving offer in db
+    //offer.offerID            = 0;     //created when saving offer in db
     MissionDB::CreateOfferID(offer);
 
-    m_offers.emplace(charID, offer.offerID);
+    // keep local copy and also add to mission data mgr
+    m_offers.emplace(charID, offer);
+    sMissionDataMgr.AddMissionOffer(charID, offer);
 }
 
+bool Agent::HasMission(uint32 charID, MissionOffer& offer)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end()) {
+        offer = itr->second;
+        return true;
+    }
+    return false;
+}
 
 
 PyDict* Agent::GetLocationWrap() {
@@ -323,6 +345,126 @@ uint32 Agent::GetLoyaltyPoints(Client *who) {
     return(0);
 }
 
+uint32 Agent::GetMissionDestination(uint8 misionType, MissionOffer& offer)
+{
+    using namespace Mission::Type;
+    using namespace Agents::Range;
+
+    uint8 destRange = SameSystem;
+
+    // determine possible distance based on mission type and agent level
+    switch(misionType) {
+        case Tutorial: {
+        } break;
+        case Encounter: {
+        } break;
+        case Courier: {
+        } break;
+        case Trade: {
+        } break;
+        case Mining: {
+        } break;
+        case Research: {
+        } break;
+        case Data: {
+        } break;
+        case Storyline: {
+        } break;
+        case Cosmos: {
+        } break;
+        case Arc: {
+        } break;
+        case Anomic: {
+        } break;
+        case Burner: {
+        } break;
+    }
+
+    switch(destRange) {
+        case SameSystem: {
+        } break;
+        case SameOrNeighboringSystemSameConstellation: {
+        } break;
+        case SameOrNeighboringSystem: {
+        } break;
+        case NeighboringSystemSameConstellation: {
+        } break;
+        case NeighboringSystem: {
+        } break;
+        case SameConstellation: {
+        } break;
+        case SameOrNeighboringConstellationSameRegion: {
+        } break;
+        case SameOrNeighboringConstellation: {
+        } break;
+        case NeighboringConstellationSameRegion: {
+        } break;
+        case NeighboringConstellation: {
+        } break;
+        case NearestEnemyCombatZone: {
+        } break;
+        case NearestCareerHub: {
+        } break;
+    }
+
+    // determine distance from agents location based on destRange calculated above.
+    // for same system, remove agent station from list of possible dest.
+
+    m_data.stationID;
+
+
+    //  neighboring systems can be determined from jumpgate(s) using
+    //void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, uint8 &total)
+    /** @todo  starting range-based system jump code...
+     *
+    uint8 total = 0;
+    uint32 systemID = m_data.solarSystemID;     // start here.
+    std::vector<DBGPointEntity> gateIDs;
+    gateIDs.clear();
+    m_db.GetGates(systemID, gateIDs, total);
+
+    // pick random gate
+    // determine system gate jumps to
+    // check for jump distance
+    // rinse and repeat as needed.
+
+    */
+
+    //  howerver, may have to create data objects based on constellation to do ranges in neighboring constellation
+
+
+    offer.destinationID      = 0;
+    offer.destinationSystemID = 0;
+    offer.dungeonLocationID      = 0;
+    offer.dungeonSolarSystemID   = 0;
+}
+
+/*  mission errata....
+ *
+ * courier missions:
+ * L1 missions will keep you within the agent's constellation, up to 450 m3
+ * L2/L3 will possibly send you to a neighboring constellation,4-6km3
+ * L4 missions will always send you to a neighboring constellation. 8km3
+ * If a Distribution mission has an item as a reward instead of ISK, then the item will appear in your personal hangar at the agent's station
+ *
+ * mining missions:
+ * Mining missions require you to mine an asteroid or set of asteroids in a mission space, usually until the asteroids are depleted, and bring the ore back to the agent's station.
+ * There is a risk of combat in mining missions, though the hostiles that show up tend to be much weaker than hostiles found in security missions.
+ * It is advisable to have some offensive capability (like a set of combat drones) or have a strong enough tank that you can ignore any hostiles that show up and start shooting at you.
+ * The mission may require you to mine more ore than can fit in your cargohold; this is typical of mining missions.
+ * L1 missions will require mining up to 2km3 of ore,
+ * L2 up to 6km3 of ore,
+ * L3 up to 9km3 of ore or 10km3 of ice,
+ * L4 up to 45km3 of ore, 20km3 of ice or 5km3 gas.
+ *
+ * encounter missions:
+ * Level 1 is where most new players start. Most, if not all, level 1 missions can be done in a basic frigate, Only the most basic piloting skills are required.
+ * Level 2 mining missions can be done in a cruiser or in a destroyer piloted by a more skilled pilot. These missions generally expect that you are continually improving your piloting skills and learning how to fit out new ships.
+ * Level 3 missions require a battlecruiser. These missions go faster if you have trained for better ships and at least some Tech 2 fittings.
+ * Level 4 missions require a Battleship with full T2 tank fitted. These missions can be time-consuming, but they offer large rewards.
+ * Level 5 missions are designed for groups of players or capital ship and are exclusively located in Low Security space.
+ */
+
 
 /* agent errata...
  *
@@ -354,30 +496,4 @@ uint32 Agent::GetLoyaltyPoints(Client *who) {
  * Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
  *
  * RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
- */
-
-/*  mission errata....
- *
- * courier missions:
- * L1 missions will keep you within the agent's constellation, up to 450 m3
- * L2 and level 3 will possibly send you to a neighboring constellation,4-6km3
- * L4 missions will always send you to a neighboring constellation. 8km3
- * If a Distribution mission has an item as a reward instead of ISK, then the item will appear in your personal hangar at the agent's station
- *
- * mining missions:
- * Mining missions require you to mine an asteroid or set of asteroids in a mission space, usually until the asteroids are depleted, and bring the ore back to the agent's station.
- * There is a risk of combat in mining missions, though the hostiles that show up tend to be much weaker than hostiles found in security missions.
- * It is advisable to have some offensive capability (like a set of combat drones) or have a strong enough tank that you can ignore any hostiles that show up and start shooting at you.
- * The mission may require you to mine more ore than can fit in your cargohold; this is typical of mining missions.
- * L1 missions will require mining up to 2km3 of ore,
- * L2 up to 6km3 of ore,
- * L3 up to 9km3 of ore or 10km3 of ice,
- * L4 up to 45km3 of ore, 20km3 of ice or 5km3 gas.
- *
- * encounter missions:
- * Level 1 is where most new players start. Most, if not all, level 1 missions can be done in a basic frigate, Only the most basic piloting skills are required.
- * Level 2 mining missions can be done in a cruiser or in a destroyer piloted by a more skilled pilot. These missions generally expect that you are continually improving your piloting skills and learning how to fit out new ships.
- * Level 3 missions require a battlecruiser. These missions go faster if you have trained for better ships and at least some Tech 2 fittings.
- * Level 4 missions require a Battleship with full T2 tank fitted. These missions can be time-consuming, but they offer large rewards.
- * Level 5 missions are designed for groups of players or capital ship and are exclusively located in Low Security space.
  */

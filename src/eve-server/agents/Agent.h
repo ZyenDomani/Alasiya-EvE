@@ -39,7 +39,7 @@ public:
 
 
     void SetMission(bool set=false)                     { m_mission = set; }
-    bool HasMission(uint32 charID)                      { return (m_offers.find(charID) != m_offers.end()); }
+    bool HasMission(uint32 charID, MissionOffer& offer);
 
     void MakeOffer(uint32 charID, MissionOffer& offer);
 
@@ -51,11 +51,13 @@ protected:
     bool m_mission;
 
     std::map<uint16, uint8>             m_skills;       // skillID/level
-    std::map<uint32, uint32>            m_offers;       // charID/offerID
+    std::map<uint32, MissionOffer>      m_offers;       // charID/data      -- shouldnt this be in mission data??
     std::map<uint16, AgentActions>      m_actions;      // buttonID/data
 
 private:
     uint16 m_buttonID;
+
+    uint32 GetMissionDestination(uint8 misionType, MissionOffer& offer);
 
 };
 

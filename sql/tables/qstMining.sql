@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 04, 2018 at 10:23 AM
+-- Generation Time: Nov 11, 2018 at 06:49 PM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -26,7 +26,8 @@ SET time_zone = "+00:00";
 -- Table structure for table `qstMining`
 --
 
-CREATE TABLE IF NOT EXISTS `qstMining` (
+DROP TABLE IF EXISTS `qstMining`;
+CREATE TABLE `qstMining` (
   `id` int(5) NOT NULL DEFAULT '0',
   `contentID` int(5) NOT NULL DEFAULT '0',
   `name` text,
@@ -51,14 +52,14 @@ CREATE TABLE IF NOT EXISTS `qstMining` (
 INSERT INTO `qstMining` (`id`, `contentID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (56752, 135338, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
 (56871, 0, 'Starting Simple', 1, 5, 0, 0, 0, 0, 2000, 0, 0, 0, 0, 0),
-(56873, 0, 'Asteroid Catastrophe', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
-(56874, 0, 'Burnt Traces', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
+(56873, 134531, 'Asteroid Catastrophe', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
+(56874, 134551, 'Burnt Traces', 1, 5, 0, 0, 0, 0, 1080, 29000, 0, 0, 29000, 0),
 (56875, 0, 'Down and Dirty', 2, 5, 0, 0, 0, 0, 2250, 0, 0, 0, 0, 0),
 (56878, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
 (56879, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
 (56880, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
 (56881, 0, 'Unknown Events', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56883, 0, 'Mercium Experiments', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
+(56883, 134630, 'Mercium Experiments', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
 (56913, 0, 'Persistent Pests', 3, 5, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
 (56915, 0, 'Drone Distribution', 3, 5, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
 (56916, 0, 'Coming ''Round the Mountain', 3, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),

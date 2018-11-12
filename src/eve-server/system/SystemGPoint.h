@@ -16,16 +16,16 @@ class SystemManager;
 
 class SystemGPoint {
   public:
-      void GetMoons(uint32 systemID);
-      void GetPlanets(uint32 systemID);
+      void GetMoons(uint32 systemID);   // incomplete
+      void GetPlanets(uint32 systemID); // incomplete
       uint32 GetRandMoon(uint32 systemID);
       uint32 GetRandPlanet(uint32 systemID);
       const GPoint GetAnomalyPoint(SystemManager* pSys);
-      const GPoint Get2RandPlanets(uint32 systemID);
-      const GPoint Get3RandPlanets(uint32 systemID);
+      const GPoint Get2RandPlanets(uint32 systemID);// incomplete
+      const GPoint Get3RandPlanets(uint32 systemID);// incomplete
       const GPoint GetRandPointOnPlanet(uint32 systemID);
       const GPoint GetRandPointOnMoon(uint32 systemID);
-      const GPoint GetRandPointInSystem(uint32 systemID, int64 distance);
+      const GPoint GetRandPointInSystem(uint32 systemID, int64 distance);// incomplete
 
   protected:
     SystemDB m_db;
