@@ -8,6 +8,8 @@
 
 
 //work in progress
+/** @todo  move this into MapData class  */
+
 
 #include "eve-server.h"
 

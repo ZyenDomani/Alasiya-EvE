@@ -32,6 +32,7 @@
 #include "StatisticMgr.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
+#include "../eve-common/EVEVersion.h"
 
 
 ConsoleCommand::ConsoleCommand()
@@ -367,7 +368,7 @@ void ConsoleCommand::Test()
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs
-    sMissionDataMgr.UpdateMissionData();
+    //sMissionDataMgr.UpdateMissionData();
 
 }
 

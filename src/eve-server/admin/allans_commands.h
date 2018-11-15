@@ -20,8 +20,6 @@
           " - shows some current destiny variables")
  COMMAND( shipvars, Acct::Role::GMH,
           " - shows other current destiny variables")
- COMMAND( fixconnections, Acct::Role::WORLDMOD,
-          " - updates current (incorrect) db table for mapConnections")
  COMMAND( shutdown, Acct::Role::GMH,
           " - save all items, kick all connections, and halt server. immediate command." )
  COMMAND( beltlist, Acct::Role::PROGRAMMER,

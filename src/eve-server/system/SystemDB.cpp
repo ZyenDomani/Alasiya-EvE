@@ -368,12 +368,13 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs,
     }
 }
 
-void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, uint8 &total)
+void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs)
 {
     // groupID = 10
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 10", systemID);
 
+    uint8 total = 0;
     DBResultRow row;
     DBGPointEntity entry;
     while(res.GetRow(row)) {

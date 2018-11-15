@@ -7,7 +7,7 @@
   * @date:   ?? May 2015
   */
 
- // Latest change - 11Feb18
+ // Latest change - 13Nov18
 
  /** @todo  the def references need updating  */
 
@@ -19,7 +19,7 @@
 /*  Error Code layout  (wip)
  *    code # ABCDE
  *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-cosmic mgr, 5-market, 6-inventory, 7-service, 8-, 9-other)
- *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-module, 7-, 8-, 9-effects)
+ *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-module, 7-agent, 8-, 9-effects)
  *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-, 6-pilot, 7-skill, 8-bind, 9-timer)
  *      D = type (0-create, 1-destroy, 2-check, 3-change, 4-move, 5-, 6-, 7-, 8-, 9-)
  *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-, 8-invalid, 9-not implemented)
@@ -27,6 +27,7 @@
  *
  * Ref: ServerError 02808. << CorpRegistryService::_CreateBoundObject - object is not tuple
  * Ref: ServerError 06428. << MiningLaser::ProcessCycle() - cycleVol < oreVolume
+ * Ref: ServerError 07208. << Agent::MakeOffer() - Error when creating mission destination.
  * Ref: ServerError 10781. << Client::BoardShip()
  * Ref: ServerError 10928. << Client::MoveTimer() - no move pending
  * Ref: ServerError 15610. << ShipItem::GetEffectiveness() - effectiveness <= 0

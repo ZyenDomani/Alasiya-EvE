@@ -8,23 +8,22 @@
  * Created on June 29, 2014, 12:40
  * Updated on December 27, 2014, 12:01
  * Updated/Corrected cType info on July 11, 2015, 13:20
+ * Updated/Corrected cType info *again* on 13 November 2018
  */
 
 #include "eve-server.h"
 #include "MapConnections.h"
 
+#include "../../eve-common/EVE_Map.h"
 
-MapCon::MapCon()
-{
-}
 
 void MapCon::PopulateConnections() {
     double starttime = GetTimeMSeconds();
     sLog.Warning("PopulateConnections()", "Populating mapConnections.");
     uint16 loops = 14335;   //14334
     uint16 count = 1;
-    uint16 ctype = 3;
-    uint32 fromreg = 0, fromcon = 0, fromsol = 0, stargateID = 0, celestialID = 0, tosol = 0, tocon = 0, toreg = 0;
+    uint8 ctype = 3;
+    uint32 fromreg = 0, fromcon = 0, tocon = 0, toreg = 0;
 
     DBerror err;
     DBQueryResult res;
@@ -38,22 +37,18 @@ void MapCon::PopulateConnections() {
         fromcon = row.GetUInt(1);
         tocon = row.GetUInt(2);
         toreg = row.GetUInt(3);
-/*
-REGION_JUMP = 0
-CONSTELLATION_JUMP = 1
-SOLARSYSTEM_JUMP = 2
-*/
-        if (( fromreg == toreg ) && ( fromcon == tocon ))
-            ctype = 2;  // change system
-        else if ( fromreg == toreg )
-            ctype = 1;  // change constellation
+
+        if (fromreg != toreg)
+            ctype = Map::Jumptype::Region;
+        else if (fromcon != tocon)
+            ctype = Map::Jumptype::Constellation;
         else
-            ctype = 0;  // change region
+            ctype = Map::Jumptype::System;
 
         sDatabase.RunQuery(err, "UPDATE mapConnections SET ctype = %u WHERE AI = %u", ctype, count);
 
         res.Reset();
-        count++;
+        ++count;
     }
 
     sLog.Green("PopulateConnections()", "mapConnections Populated in %.3f ms.  Please disable this function.", (GetTimeMSeconds() -starttime));

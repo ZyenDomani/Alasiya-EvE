@@ -155,13 +155,14 @@ void StaticDataMgr::Populate()
     start = GetTimeMSeconds();
     ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
-        //SELECT itemID, regionID, constellationID, solarSystemID, x, y, z FROM mapDenormalize
+        //SELECT itemID, regionID, constellationID, solarSystemID, typeID, x, y, z FROM mapDenormalize
         StaticData staticData;
         staticData.itemID          = row.GetInt(0);
         staticData.regionID        = row.GetInt(1);
         staticData.constellationID = row.GetInt(2);
         staticData.systemID        = row.GetInt(3);
-        staticData.position        = GPoint(row.GetDouble(4),row.GetDouble(5),row.GetDouble(6));
+        staticData.typeID          = row.GetInt(4);
+        staticData.position        = GPoint(row.GetDouble(5),row.GetDouble(6),row.GetDouble(7));
         m_staticData.emplace(row.GetInt(0), staticData);
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - start));
@@ -192,7 +193,18 @@ void StaticDataMgr::Populate()
         //SELECT stationID, solarSystemID FROM staStations
         m_stationSystem.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size()), (GetTimeMSeconds() - start));
+
+    for (auto cur : m_stationSystem) {
+        std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.find(cur.second), end = m_stationList.end();
+        if (itr != end) {
+            itr->second.push_back(cur.first);
+        } else {
+            std::vector<uint32> sVec;
+            sVec.push_back(cur.first);
+            m_stationList.insert(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
+        }
+    }
+    sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
@@ -590,6 +602,26 @@ PyRep* StaticDataMgr::GetStationCount()
     return list;
 }
 
+uint8 StaticDataMgr::GetStationCount(uint32 systemID)
+{
+    std::map<uint32, uint8>::iterator itr = m_stationCount.find(systemID);
+    if (itr != m_stationCount.end())
+        return itr->second;
+
+    _log(DATABASE__MESSAGE, "Failed to query station count for system %u: System not found.", systemID);
+    return 0;
+}
+
+bool StaticDataMgr::GetStationList(uint32 systemID, std::vector< uint32 >& data)
+{
+    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.find(systemID);
+    if (itr != m_stationList.end()) {
+        data = itr->second;
+        return true;
+    }
+    return false;
+}
+
 uint32 StaticDataMgr::GetStationRegion(uint32 stationID)
 {
     std::map<uint32, uint32>::iterator itr = m_stationRegion.find(stationID);
@@ -667,6 +699,14 @@ bool StaticDataMgr::GetStaticInfo(uint32 itemID, StaticData& data)
 
     _log(DATABASE__MESSAGE, "Failed to query info for static item %u: Item not found.", itemID);
     return false;
+}
+
+uint16 StaticDataMgr::GetStaticType(uint32 itemID)
+{
+    std::map<uint32, StaticData>::iterator itr = m_staticData.find(itemID);
+    if (itr != m_staticData.end())
+        return itr->second.typeID;
+    return 0;
 }
 
 uint32 StaticDataMgr::GetRegionFaction(uint32 regionID)

@@ -28,10 +28,10 @@ public:
     PyDict* GetLocationWrap();
     PyObject* GetInfoServiceDetails();
 
-    uint32 GetLoyaltyPoints(Client *who);
-
     bool IsLocator()                                    { return m_data.locator; }
     bool IsResearch()                                   { return m_data.research; }
+
+    uint8 GetLevel()                                    { return m_data.level; }
 
     uint32 GetID()                                      { return m_agentID; }
     uint32 GetCorpID()                                  { return m_data.corporationID; }
@@ -40,27 +40,33 @@ public:
     uint32 GetLocTypeID()                               { return m_data.locationTypeID; }
     uint32 MakeButtonID()                               { return ++m_buttonID; }
 
-    void SetMission(bool set=false)                     { m_mission = set; }
+    bool HasMission(uint32 charID);
     bool HasMission(uint32 charID, MissionOffer& offer);
 
     void MakeOffer(uint32 charID, MissionOffer& offer);
-    bool GetOffer(uint32 charID, uint32 contentID, MissionOffer& offer);
+    void GetOffer(uint32 charID, MissionOffer& offer);
+    void UpdateOffer(uint32 charID, MissionOffer& offer);
+    void DeleteOffer(uint32 charID);
 
+    uint32 GetQuitRsp(uint32 charID);
+    uint32 GetAcceptRsp(uint32 charID);
+    uint32 GetDeclineRsp(uint32 charID);
+    uint32 GetCompleteRsp(uint32 charID);
+
+    void SendMissionUpdate(Client* pClient, std::string action);
 
 protected:
     const uint32 m_agentID;
     AgentData m_data;
-
-    bool m_mission;
 
     std::map<uint16, uint8>             m_skills;       // skillID/level
     std::map<uint32, MissionOffer>      m_offers;       // charID/data      -- shouldnt this be in mission data??
     std::map<uint16, AgentActions>      m_actions;      // buttonID/data
 
 private:
-    uint16 m_buttonID;
+    bool m_important;
 
-    uint32 GetMissionDestination(uint8 misionType, MissionOffer& offer);
+    uint16 m_buttonID;
 
 };
 

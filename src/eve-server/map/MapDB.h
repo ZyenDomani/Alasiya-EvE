@@ -44,6 +44,11 @@ public:
     PyRep *GetDynamicData(uint8 type, uint8 time);
 
     static void GetStationCount(DBQueryResult& res);
+
+    /* for MapData class */
+    static void GetSystemJumps(DBQueryResult& res);
+
+
 };
 
 #endif

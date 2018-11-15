@@ -157,7 +157,8 @@ namespace Dialog {
             LocateAccept        = 16,
             LocateReject        = 17,
             Yes                 = 18,
-            No                  = 19
+            No                  = 19,
+            Admin               = 20    // added for 'admin' menu
         };
     }
 

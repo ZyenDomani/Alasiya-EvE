@@ -25,6 +25,7 @@
 */
 
 #include "eve-server.h"
+#include "../eve-common/EVEVersion.h"
 
 #include "Client.h"
 #include "ConsoleCommands.h"
@@ -43,7 +44,6 @@
 #include "station/StationDataMgr.h"
 #include "station/StationOffice.h"
 #include "system/DestinyManager.h"
-#include "system/SystemGPoint.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "exploration/Scan.h"
@@ -114,9 +114,11 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_timeEndTrain = 0;
     m_dockStationID = 0;
 
+    m_lpMap.clear();
+    m_channels.clear();
     m_hangarLoaded.clear();
     mDogmaMessages.clear();
-    m_channels.clear();
+    m_courierItemMap.clear();
 
     // Start handshake
     Reset();
@@ -294,6 +296,9 @@ bool Client::SelectCharacter(uint32 char_id) {
     sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
+
+    // load char LPs
+    //m_lpMap
 
     SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return (m_loaded = true);
@@ -1191,6 +1196,29 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     return true;
 }
 
+uint32 Client::GetLoyaltyPoints(uint32 corpID) {
+    std::map<uint32, uint32>::iterator itr = m_lpMap.find(corpID);
+    if (itr != m_lpMap.end())
+        return itr->second;
+    return 0;
+}
+
+
+InventoryItemRef Client::GetCourierItemRef(uint32 agentID)
+{
+    std::map<uint32, InventoryItemRef>::iterator itr = m_courierItemMap.find(agentID);
+    if (itr != m_courierItemMap.end())
+        return itr->second;
+    return InventoryItemRef(nullptr);
+}
+
+void Client::RemoveCourierItemRef(uint32 agentID)
+{
+    std::map<uint32, InventoryItemRef>::iterator itr = m_courierItemMap.find(agentID);
+    if (itr != m_courierItemMap.end())
+        m_courierItemMap.erase(itr);
+}
+
 
 /************************************************************************/
 /* character notification messages wrapper                              */
@@ -1229,6 +1257,9 @@ void Client::OnCharNowInStation() {
     PySafeDecRef(tmp);
 }
 
+/**********************************************************************
+ *  session shit and other non-player-related things
+ * ****************************************************************/
 void Client::UpdateSessionInt(const char *sessionType, int value)
 {
     mSession.SetInt(sessionType, value);

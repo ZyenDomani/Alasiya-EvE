@@ -124,6 +124,7 @@ public:
     bool GetCorpData(uint32 characterID, CorpData &into);
 
     /** @todo update these below to use static data manager */
+    // get this shit outta here.....
     bool GetCategory(EVEItemCategories category, CategoryData &into);
     bool GetGroup(uint32 groupID, GroupData &into);
     bool GetType(uint32 typeID, TypeData &into);

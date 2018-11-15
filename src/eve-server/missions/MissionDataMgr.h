@@ -31,15 +31,14 @@ public:
     void                GetInfo();
 
     void                AddMissionOffer(uint32 charID, MissionOffer& data);
+    void                UpdateMissionData(uint32 charID, MissionOffer& data);
+    void                RemoveMissionOffer(uint32 charID, MissionOffer& data);
     void                LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
-    void                CreateMissionOffer(uint8 typeID, uint8 level, MissionOffer& data);
-
-    void                UpdateMissionData();
+    void                LoadAgentOffers(const uint32 agentID, std::map<uint32, MissionOffer>& data);
+    void                CreateMissionOffer(uint8 typeID, uint8 level, bool important, MissionOffer& data);
 
     std::string         GetTypeName(uint8 typeID);
-
-
-    void                LoadAgentOffers(const uint32 agentID, std::map<uint32, MissionOffer>& data);
+    std::string         GetTypeLabel(uint8 typeID);
 
     PyString* GetKillRes()                               { PyIncRef(KillPNG); return KillPNG; }
     PyString* GetMiningRes()                             { PyIncRef(MiningPNG); return MiningPNG; }
@@ -51,8 +50,11 @@ protected:
 private:
     std::map<std::string, uint32> m_names;
     std::multimap<uint8, CourierData> m_courier;    // level/data
+    std::multimap<uint8, CourierData> m_courierImp;    // level/data
     std::multimap<uint8, CourierData> m_mining;     // level/data
+    std::multimap<uint8, CourierData> m_miningImp;     // level/data
     std::multimap<uint8, MissionData> m_missions;   // level/data
+    std::multimap<uint8, MissionData> m_missionsImp;   // level/data
     std::multimap<uint32, MissionOffer> m_offers;   // charID/data      current mission offers by charID
     std::multimap<uint32, MissionOffer> m_aoffers;   // agentID/data    current mission offers by agentID
     std::multimap<uint32, MissionOffer> m_xoffers;   // charID/data     expired/completed offers by charID

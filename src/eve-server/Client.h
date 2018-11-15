@@ -148,6 +148,12 @@ public:
 
     std::string GetSystemName() const                   { return m_SystemData.name; }
 
+    uint32 GetLoyaltyPoints(uint32 corpID);
+
+    InventoryItemRef GetCourierItemRef(uint32 agentID);
+    void RemoveCourierItemRef(uint32 agentID);
+    void AddCourierItemRef(uint32 agentID, InventoryItemRef iRef)   { m_courierItemMap.emplace(agentID, iRef); }
+
     void SetPodItem();
     void CreateShipSE();
 
@@ -385,6 +391,9 @@ private:
     void _SendQueuedUpdates();
 
     uint32 m_nextNotifySequence = 0;
+
+    std::map<uint32, uint32>    m_lpMap;    // corpID/points
+    std::map<uint32, InventoryItemRef>  m_courierItemMap;  //agentID/itemRef  - for courier missions
 
     /************************************************************************/
     /* new system for MultiEvents      (fix for docked pilot reporting)     */

@@ -25,6 +25,8 @@
  */
 
 #include "eve-server.h"
+// version
+#include "../eve-common/EVEVersion.h"
 
 #include "EVEServerConfig.h"
 #include "NetService.h"
@@ -124,6 +126,7 @@
 #include "manufacturing/FactoryService.h"
 #include "manufacturing/RamProxyService.h"
 // map services
+#include "map/MapData.h"
 #include "map/MapService.h"
 // market services
 #include "market/MarketMgr.h"
@@ -613,6 +616,8 @@ int main( int argc, char* argv[] )
 
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sMapData.Initialize();
     std::printf("\n");     // spacer
     sMissionDataMgr.Initialize();
     std::printf("\n");     // spacer

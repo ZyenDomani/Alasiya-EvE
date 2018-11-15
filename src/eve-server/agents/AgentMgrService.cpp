@@ -130,6 +130,7 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 }
 
 PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
+// note:  this will show mission data in journal AND "offered" msg in agent data bloc on agent tab in station
 
     _log(AGENT__INFO, "AgentMgrService::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
@@ -157,9 +158,9 @@ PyResult AgentMgrService::Handle_GetMyJournalDetails(PyCallArgs &call) {
     sMissionDataMgr.LoadMissionOffers(call.client->GetCharacterID(), data);
     for (auto cur : data) {
         PyTuple* mData = new PyTuple(9);
-        mData->SetItem(0, new PyInt(cur.stateID)); //missionState
+        mData->SetItem(0, new PyInt(cur.stateID)); //missionState  .. these may be wrong also.
         mData->SetItem(1, new PyInt(cur.important?1:0)); //importantMission  -- integer boolean
-        mData->SetItem(2, new PyInt(cur.typeID)); //missionType
+        mData->SetItem(2, new PyString(sMissionDataMgr.GetTypeLabel(cur.typeID))); //missionTypeLabel
         mData->SetItem(3, new PyString(cur.name)); //missionName
         mData->SetItem(4, new PyInt(cur.agentID)); //agentID
         mData->SetItem(5, new PyLong(cur.expiryTime)); //expirationTime

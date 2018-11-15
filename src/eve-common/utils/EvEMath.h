@@ -53,3 +53,30 @@ namespace EvEMath {
     EvilNumber TradeBrokerFee( EvilNumber BrokerRelationsSkillLevel, EvilNumber FactionStanding, EvilNumber CorporationStanding );
 
 }
+
+
+/*
+ *    def Dijkstra(self, sourcePin, destinationPin):
+ *        D = {}
+ *        P = {}
+ *        Q = planetCommon.priority_dict()
+ *        Q[sourcePin] = 0.0
+ *        while len(Q) > 0:
+ *            vPin = Q.smallest()
+ *            D[vPin] = Q[vPin]
+ *            if vPin == destinationPin:
+ *                break
+ *            Q.pop_smallest()
+ *            for wDestinationID in self.colonyData.GetLinksForPin(vPin.id):
+ *                wLink = self.GetLink(vPin.id, wDestinationID)
+ *                wPin = self.GetPin(wDestinationID)
+ *                vwLength = D[vPin] + self._GetLinkWeight(wLink, wPin, vPin)
+ *                if wPin in D:
+ *                    if vwLength < D[wPin]:
+ *                        raise ValueError, 'Dijkstra: found better path to already-final vertex'
+ *                elif wPin not in Q or vwLength < Q[wPin]:
+ *                    Q[wPin] = vwLength
+ *                    P[wPin] = vPin
+ *
+ *        return (D, P)
+ * */

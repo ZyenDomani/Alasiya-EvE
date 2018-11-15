@@ -833,6 +833,11 @@ PyResult CharMgrService::Handle_AddContact( PyCallArgs& call )
 00:26:29 [SvcCall]     Argument 'machoVersion':
 00:26:29 [SvcCall]         Integer field: 1
 
+PyTuple* payload = new PyTuple(1);
+payload->SetItem(0, new PyInt(agentID));
+pClient->SendNotification("OnAgentAdded", "charid", payload, false);    // i *think* this is unsequenced
+//OnAgentAdded(self, entityID)
+
 15:48:32 [SvcCall] Service charMgr: calling AddContact      *** adding player
 15:48:32 L CharMgrService::Handle_AddContact(): size=5, 0=Integer(140000212)
 15:48:32 [SvcCall]   Call Arguments:

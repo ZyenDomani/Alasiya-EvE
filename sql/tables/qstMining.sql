@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Nov 11, 2018 at 06:49 PM
+-- Generation Time: Nov 15, 2018 at 12:32 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -29,10 +29,11 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `qstMining`;
 CREATE TABLE `qstMining` (
   `id` int(5) NOT NULL DEFAULT '0',
-  `contentID` int(5) NOT NULL DEFAULT '0',
+  `briefingID` int(5) NOT NULL DEFAULT '0',
   `name` text,
   `level` tinyint(1) NOT NULL DEFAULT '0',
   `typeID` tinyint(1) NOT NULL DEFAULT '0',
+  `sysRange` tinyint(2) NOT NULL DEFAULT '1',
   `important` tinyint(1) NOT NULL DEFAULT '0',
   `storyline` tinyint(1) NOT NULL DEFAULT '0',
   `raceID` tinyint(2) NOT NULL DEFAULT '0',
@@ -49,39 +50,39 @@ CREATE TABLE `qstMining` (
 -- Dumping data for table `qstMining`
 --
 
-INSERT INTO `qstMining` (`id`, `contentID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
-(56752, 135338, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
-(56871, 0, 'Starting Simple', 1, 5, 0, 0, 0, 0, 2000, 0, 0, 0, 0, 0),
-(56873, 134531, 'Asteroid Catastrophe', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
-(56874, 134551, 'Burnt Traces', 1, 5, 0, 0, 0, 0, 1080, 29000, 0, 0, 29000, 0),
-(56875, 0, 'Down and Dirty', 2, 5, 0, 0, 0, 0, 2250, 0, 0, 0, 0, 0),
-(56878, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56879, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56880, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56881, 0, 'Unknown Events', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56883, 134630, 'Mercium Experiments', 1, 5, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
-(56913, 0, 'Persistent Pests', 3, 5, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
-(56915, 0, 'Drone Distribution', 3, 5, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
-(56916, 0, 'Coming ''Round the Mountain', 3, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(56919, 0, 'Beware They Live', 3, 5, 0, 0, 0, 0, 9000, 0, 0, 0, 0, 0),
-(56920, 0, 'Pile of Pithix', 3, 5, 0, 0, 0, 0, 9000, 0, 0, 0, 0, 0),
-(56923, 0, 'Ice Installation', 4, 5, 0, 0, 0, 0, 20000, 0, 0, 0, 0, 0),
-(56924, 0, 'Cheap Chills', 4, 5, 0, 0, 0, 0, 20000, 0, 0, 0, 0, 0),
-(56925, 144468, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
-(56926, 144501, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
-(56927, 0, 'Mother Lode', 4, 5, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
-(56928, 0, 'Geodite and Gemology', 4, 5, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
-(56929, 0, 'Feeding the Giant', 4, 5, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
-(56930, 135325, 'Arisite Envy', 4, 5, 0, 0, 0, 0, 45000, 0, 0, 0, 0, 0),
-(56931, 135325, 'Not Gneiss at All', 4, 5, 0, 0, 0, 0, 45000, 0, 0, 0, 0, 0),
-(56934, 0, 'Gas Injections', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
-(57062, 0, 'Data Mining', 2, 5, 0, 0, 4, 0, 299, 0, 0, 0, 0, 0),
-(57063, 0, 'Data Mining', 2, 5, 0, 0, 4, 0, 299, 0, 0, 0, 0, 0),
-(57095, 144657, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
-(57174, 0, 'Stay Frosty', 3, 5, 0, 0, 0, 0, 10000, 0, 0, 0, 0, 0),
-(57288, 0, 'Claimjumpers', 2, 5, 0, 0, 0, 0, 1800, 0, 0, 0, 0, 0),
-(58553, 0, 'Mercium Belt', 2, 5, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
-(58555, 144663, 'Like Drones to a Cloud', 4, 5, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0);
+INSERT INTO `qstMining` (`id`, `briefingID`, `name`, `level`, `typeID`, `sysRange`, `important`, `storyline`, `raceID`, `itemTypeID`, `itemQty`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+(56752, 135338, 'Like Drones to a Cloud', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
+(56871, 0, 'Starting Simple', 1, 5, 1, 0, 0, 0, 0, 2000, 0, 0, 0, 0, 0),
+(56873, 134531, 'Asteroid Catastrophe', 1, 5, 1, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
+(56874, 134551, 'Burnt Traces', 1, 5, 1, 0, 0, 0, 0, 1080, 29000, 0, 0, 29000, 0),
+(56875, 0, 'Down and Dirty', 2, 5, 1, 0, 0, 0, 0, 2250, 0, 0, 0, 0, 0),
+(56878, 0, 'Mercium Belt', 2, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(56879, 0, 'Mercium Belt', 2, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(56880, 0, 'Mercium Belt', 2, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(56881, 0, 'Unknown Events', 2, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(56883, 134630, 'Mercium Experiments', 1, 5, 1, 0, 0, 0, 0, 1080, 0, 0, 0, 0, 0),
+(56913, 0, 'Persistent Pests', 3, 5, 1, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
+(56915, 0, 'Drone Distribution', 3, 5, 1, 0, 0, 0, 0, 4000, 0, 0, 0, 0, 0),
+(56916, 0, 'Coming ''Round the Mountain', 3, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(56919, 0, 'Beware They Live', 3, 5, 1, 0, 0, 0, 0, 9000, 0, 0, 0, 0, 0),
+(56920, 0, 'Pile of Pithix', 3, 5, 1, 0, 0, 0, 0, 9000, 0, 0, 0, 0, 0),
+(56923, 0, 'Ice Installation', 4, 5, 1, 0, 0, 0, 0, 20000, 0, 0, 0, 0, 0),
+(56924, 0, 'Cheap Chills', 4, 5, 1, 0, 0, 0, 0, 20000, 0, 0, 0, 0, 0),
+(56925, 144468, 'Like Drones to a Cloud', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
+(56926, 144501, 'Like Drones to a Cloud', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
+(56927, 0, 'Mother Lode', 4, 5, 1, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
+(56928, 0, 'Geodite and Gemology', 4, 5, 1, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
+(56929, 0, 'Feeding the Giant', 4, 5, 1, 0, 0, 0, 0, 44800, 0, 0, 0, 0, 0),
+(56930, 135325, 'Arisite Envy', 4, 5, 1, 0, 0, 0, 0, 45000, 0, 0, 0, 0, 0),
+(56931, 135325, 'Not Gneiss at All', 4, 5, 1, 0, 0, 0, 0, 45000, 0, 0, 0, 0, 0),
+(56934, 0, 'Gas Injections', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
+(57062, 0, 'Data Mining', 2, 5, 1, 0, 0, 4, 0, 299, 0, 0, 0, 0, 0),
+(57063, 0, 'Data Mining', 2, 5, 1, 0, 0, 4, 0, 299, 0, 0, 0, 0, 0),
+(57095, 144657, 'Like Drones to a Cloud', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0),
+(57174, 0, 'Stay Frosty', 3, 5, 1, 0, 0, 0, 0, 10000, 0, 0, 0, 0, 0),
+(57288, 0, 'Claimjumpers', 2, 5, 1, 0, 0, 0, 0, 1800, 0, 0, 0, 0, 0),
+(58553, 0, 'Mercium Belt', 2, 5, 1, 0, 0, 0, 0, 6000, 0, 0, 0, 0, 0),
+(58555, 144663, 'Like Drones to a Cloud', 4, 5, 1, 0, 0, 0, 0, 4250, 0, 0, 0, 0, 0);
 
 --
 -- Indexes for dumped tables

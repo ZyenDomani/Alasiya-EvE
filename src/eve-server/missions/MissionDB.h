@@ -29,7 +29,8 @@ public:
     static void LoadMissionBookMark(DBQueryResult& res, std::vector<int32>& bmIDs);
 
     static void UpdateMissionOffer(MissionOffer& data);
-
+    
+    static void DeleteOffer(MissionOffer& data);
 
 protected:
 

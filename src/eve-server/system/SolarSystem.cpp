@@ -26,23 +26,22 @@
 #include "eve-server.h"
 
 #include "system/SolarSystem.h"
+
+/** @note  NOTE::  this class is ONLY for the inventory item and associated references..... need to update this...  */
+
+
 /*
     Border = Borders another Region or Constellation
-
     Fringe = 1 connection to this system (dead end system)
-
     Corridor = 2 connections to this system (in one side and out the other)
-
     Hub = 3+ connections to this system
-
     International = always has Border/Constellation, almost always Regional
-
     Regional = always has Border/Constellation
-
     Constellation = always the same as Border
-
     Security = If it is positive, floor to nearest 1/10th gives the in-game security level. 0 or lower are 0.0 in-game.
     */
+
+/** @todo  update this to remove redundant SolarSystemData and move to POD SystemData and load with sDataMgr  */
 
 /*
  * SolarSystemData

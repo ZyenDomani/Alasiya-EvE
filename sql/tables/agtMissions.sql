@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Jul 04, 2018 at 10:23 AM
+-- Generation Time: Nov 15, 2018 at 12:31 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -26,9 +26,10 @@ SET time_zone = "+00:00";
 -- Table structure for table `agtMissions`
 --
 
-CREATE TABLE IF NOT EXISTS `agtMissions` (
+DROP TABLE IF EXISTS `agtMissions`;
+CREATE TABLE `agtMissions` (
   `id` int(5) NOT NULL DEFAULT '0',
-  `descID` int(5) NOT NULL DEFAULT '0',
+  `briefingID` int(5) NOT NULL DEFAULT '0',
   `name` text,
   `level` tinyint(1) NOT NULL DEFAULT '0',
   `typeID` tinyint(1) NOT NULL DEFAULT '0',
@@ -49,7 +50,7 @@ CREATE TABLE IF NOT EXISTS `agtMissions` (
 -- Dumping data for table `agtMissions`
 --
 
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `agtMissions` (`id`, `briefingID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (54260, 0, 'The Guristas Spies', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54261, 0, 'The Guristas Spies', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54262, 0, 'The Angel Cartel Spies', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -637,7 +638,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (54846, 0, 'Clean Hands - Corpse Cauldron (5 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54847, 0, 'Clear Head - Code of Chivalry (2 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54848, 0, 'Clear Head - The Joust (3 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `agtMissions` (`id`, `briefingID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (54849, 0, 'Clear Head - Black Barbican (4 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54850, 0, 'Clear Head - Dragon in a Dungeon (5 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (54851, 0, 'The Herald', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1305,7 +1306,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (55550, 0, 'Convoy Attack', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55551, 0, 'Kill the sansha outpost  A/C 2320', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (55552, 0, 'Kill the sansha outpost  G/M 2320', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `agtMissions` (`id`, `briefingID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (56751, 0, 'Frontline Intelligence - The Hard Way (2 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56753, 0, 'Soft Drink Wars', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (56754, 0, 'Soft Drink Wars', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -1960,7 +1961,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (57626, 0, 'Demolition', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57627, 0, 'Covert Assistance', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57628, 0, 'Proven Loyalty', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `agtMissions` (`id`, `briefingID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (57629, 0, 'Starbase Smashing', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57630, 0, 'Knife in the Throat', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (57631, 0, 'Decapitation', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
@@ -2629,7 +2630,7 @@ INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important
 (58651, 0, 'Deputy - The Outpost (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58652, 0, 'The Regiment - Stolen Deed (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58653, 0, 'Interested in Work? (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-INSERT INTO `agtMissions` (`id`, `descID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
+INSERT INTO `agtMissions` (`id`, `briefingID`, `name`, `level`, `typeID`, `important`, `storyline`, `raceID`, `constellationID`, `corporationID`, `dungeonID`, `rewardISK`, `rewardItemID`, `rewardItemQty`, `bonusISK`, `bonusTime`) VALUES
 (58654, 0, 'Those Bastards! (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58655, 0, 'Wiyrkomi Freelancing - Missing Weapons Stash (1 of 4)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
 (58656, 0, 'Artifact Excavations - Food for the Needy (1 of 5)', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),

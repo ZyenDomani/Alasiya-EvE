@@ -23,16 +23,21 @@
  */
 
 #include "../eve-server.h"
+#include "../StaticDataMgr.h"
+#include "../station/StationDataMgr.h"
+#include "../map/MapData.h"
 
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
+#include "../Client.h"
+
 
 Agent::Agent(uint32 id)
 : m_agentID(id)
 {
+    m_important = false;
     m_buttonID = 1;
 
-    m_mission = false;
     m_actions.clear();
     m_offers.clear();
 
@@ -57,7 +62,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     // this will be based on agent type eventually
     uint8 misionType = Mission::Type::Courier;
 
-    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, offer);
+    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, m_important, offer);
 
     /*  static mission data from db
     offer.name               = cData.name;
@@ -68,7 +73,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     offer.important          = cData.important;
     offer.storyline          = cData.storyline;
     offer.missionID          = cData.missionID;
-    offer.contentID          = cData.contentID;
+    offer.briefingID         = cData.briefingID;
     offer.rewardItemID       = cData.rewardItemID;
     offer.rewardItemQty      = cData.rewardItemQty;
     offer.courierItemID      = cData.itemTypeID;
@@ -94,7 +99,12 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     //offer.destinationTypeID = 0;
     //offer.dungeonLocationID      = 0;
     //offer.dungeonSolarSystemID   = 0;
-    GetMissionDestination(misionType, offer);
+    sMapData.GetMissionDestination(this, misionType, offer);
+    if (offer.destinationID == 0) {
+        // make error here and reset
+        sEntityList.FindClientByCharID(charID)->SendErrorMsg("Internal Server Error. Ref: ServerError 07208.");
+        //return;
+    }
 
     // not sure how this is checked/set
     offer.remoteOfferable    = false;
@@ -118,6 +128,14 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     sMissionDataMgr.AddMissionOffer(charID, offer);
 }
 
+bool Agent::HasMission(uint32 charID)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end())
+        return true;
+    return false;
+}
+
 bool Agent::HasMission(uint32 charID, MissionOffer& offer)
 {
     std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
@@ -128,15 +146,36 @@ bool Agent::HasMission(uint32 charID, MissionOffer& offer)
     return false;
 }
 
-bool Agent::GetOffer(uint32 charID, uint32 contentID, MissionOffer& offer)
+void Agent::GetOffer(uint32 charID, MissionOffer& offer)
 {
     std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
     if (itr != m_offers.end())
-        if (itr->second.contentID == contentID) {
-            offer = itr->second;
-            return true;
-        }
-    return false;
+        offer = itr->second;
+    else
+        _log(AGENT__WARNING, "Agent::GetOffer() - offer not found for characterID %u", charID);
+}
+
+void Agent::UpdateOffer(uint32 charID, MissionOffer& offer)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end()) {
+        itr->second = offer;
+        MissionDB::UpdateMissionOffer(itr->second);
+        sMissionDataMgr.UpdateMissionData(charID, itr->second);
+    } else
+        _log(AGENT__WARNING, "Agent::UpdateOffer() - offer not found for character %u", charID);
+}
+
+void Agent::DeleteOffer(uint32 charID)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end()) {
+        itr->second.stateID = Mission::State::Rejected;
+        MissionDB::UpdateMissionOffer(itr->second);
+        sMissionDataMgr.RemoveMissionOffer(charID, itr->second);
+        m_offers.erase(itr);
+    } else
+        _log(AGENT__WARNING, "Agent::DeleteOffer() - offer not found for character %u", charID);
 }
 
 
@@ -355,101 +394,109 @@ PyObject* Agent::GetInfoServiceDetails()
     return new PyObject("util.KeyVal", res);
 }
 
-uint32 Agent::GetLoyaltyPoints(Client *who) {
-    codelog(AGENT__ERROR, "Unimplemented.");
-    return(0);
+uint32 Agent::GetAcceptRsp(uint32 charID)
+{
+    switch (MakeRandomInt(1, 13)) {
+        case 1:   return 236738; // `Very well then, get going.`)
+        case 2:   return 236739; // `Ok, hurry up will you.`)
+        case 3:   return 236740; // `Good good, now get out there and give me some results.`)
+        case 4:   return 236741; // `Thank you, and good luck.`)
+        case 5:   return 236742; // `Thanks, I really appreciate it.`)
+        case 6:   return 236743; // `Have fun!`)
+        case 7:   return 236744; // `Now be careful out there, you hear me?`)
+        case 8:   return 236745; // `Stay alive, friend.`)
+        case 9:   return 236721; // `You have a long and prosperous future within {[npcOrganization]agentFactionID.name}, {[character]player.name}.`)
+        case 10:  return 236746; // `I knew I could count on you.`)
+        case 11:  return 236747; // `Great.  I know I can trust you with this, mate.`)
+        case 12:  return 236749; // `Wonderful.  I expect a quick result with you on the job.`)
+        case 13:  return 135877; // `I knew we could count on you, {[character]player.name}. Please hurry. ')
+    }
 }
 
-uint32 Agent::GetMissionDestination(uint8 misionType, MissionOffer& offer)
+uint32 Agent::GetDeclineRsp(uint32 charID)
 {
-    using namespace Mission::Type;
-    using namespace Agents::Range;
-
-    uint8 destRange = SameSystem;
-
-    // determine possible distance based on mission type and agent level or preset range from db
-    switch(misionType) {
-        case Tutorial: {
-            // always same system
-        } break;
-        case Data:
-        case Trade:
-        case Courier:
-        case Research: {
-            destRange += m_data.level *2;
-        } break;
-        case Anomic:
-        case Burner:
-        case Mining: {
-            destRange += m_data.level;
-        } break;
-        case Arc:
-        case Cosmos:
-        case Encounter:
-        case Storyline: {
-            destRange = offer.range;
-        } break;
+    switch (MakeRandomInt(1, 14)) {
+        case 1:   return 236693; // `It's your loss.`)
+        case 2:   return 236695; // `Son, I am disappoint.`)
+        case 3:   return 236793; // `Too bad, I'll try to find someone else then for that job.`)
+        case 4:   return 236794; // `Bah, that mission wasn't that bad. Oh well, wait a bit and I'll come up with something else.`)
+        case 5:   return 236796; // `Well, don't expect me to come up with something as good later on.`)
+        case 6:   return 236797; // `Your wayward ways displease me.`)
+        case 7:   return 236801; // `It's your loss.`)
+        case 8:   return 236802; // `Your wayward ways displease me, young one.`)
+        case 9:   return 236843; // `See if I offer this to you again... seriously try it.`)
+        case 10:  return 130895; // 'Fine.  Be that way.  Asshole.')
+        case 11:  return 133432; // 'Too bad, {[character]player.name}. You could have made some serious points with the powers-that-be on this one. ')
+        case 12:  return 135858; // 'I'm sorry to hear that, {[character]player.name}. I'll find someone else, I suppose.')
+        case 13:  return 135895; // 'Lollygagger')
+        case 14:  return 136322; // 'I see. Easy money's not good enough, eh? Huh. ')
     }
+    //(137499, 'Fine, I’ll get someone more capable. A word of advice: don’t repeat this display of cowardice and uselessness. We don’t tolerate such things in the Republic.  ')
+}
 
-    switch(destRange) {
-        case SameSystem: {  //1
-        } break;
-        case SameOrNeighboringSystemSameConstellation: {    //2
-        } break;
-        case SameOrNeighboringSystem: { //3
-        } break;
-        case NeighboringSystemSameConstellation: {  //4
-        } break;
-        case NeighboringSystem: {   //5
-        } break;
-        case SameConstellation: {   //6
-        } break;
-        case SameOrNeighboringConstellationSameRegion: {    //7
-        } break;
-        case SameOrNeighboringConstellation: {  //8
-        } break;
-        case NeighboringConstellationSameRegion: {  //9
-        } break;
-        case NeighboringConstellation: {    //10
-        } break;
-        // not sure how to do these two yet....
-        case NearestEnemyCombatZone: {  //11
-        } break;
-        case NearestCareerHub: {    //12
-        } break;
+uint32 Agent::GetCompleteRsp(uint32 charID)
+{
+    switch (MakeRandomInt(1, 20)) {
+        case 1:   return 236750; // `Fabulous.  I couldn't have asked for a better man for the job.`)
+        case 2:   return 236751; // `Not bad.  Get back to me later for another assignment will you?`)
+        case 3:   return 236752; // `Nice work.  I'm starting to like your style.`)
+        case 4:   return 236753; // `Thanks, your services to {[npcOrganization]agentCorpID.name} is duly appreciated.`)
+        case 5:   return 236754; // `Thank you.  Your accomplishment has been noted and saved into our database.`)
+        case 6:   return 236755; // `Excellent job!`)
+        case 7:   return 236756; // `Thanks, I really appreciate your help.`)
+        case 8:   return 236757; // `I won't forget this.`)
+        case 9:   return 236758; // `I'm grateful for your assistance.`)
+        case 10:  return 236759; // `You have my gratitude.`)
+        case 11:  return 236760; // `Thank you very much, I really appreciate it.`)
+        case 12:  return 236761; // `Well done!  Take this reward and my gratitude as well.`)
+        case 13:  return 236762; // `It's a pleasure doing business with you.`)
+        case 14:  return 236763; // `Excellent work!  Care for another assignment?`)
+        case 15:  return 236764; // `I look forward to your next visit.`)
+        case 16:  return 236765; // `Again you finish the job right on time.  Keep this up and I'll probably get a promotion.`)
+        case 17:  return 236766; // `I thank you from the bottom of my heart.`)
+        case 18:  return 236767; // `If only I had more excellent pilots like you, {[character]player.name} ...`)
+        case 19:  return 236768; // `Your talents as a pilot never cease to amaze me.  Keep up the good work!`)
+        case 20:  return 139398; // 'I knew you were the right pilot for the job.')
     }
+}
 
-    // determine distance from agents location based on destRange calculated above.
-    // for same system, remove agent station from list of possible dest.
+uint32 Agent::GetQuitRsp(uint32 charID)
+{
 
-    m_data.stationID;
+    //(236846, `Quitters never win.`)
+}
 
-
-    //  neighboring systems can be determined from jumpgate(s) using
-    //void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs, uint8 &total)
-    /** @todo  starting range-based system jump code...
-     *
-    uint8 total = 0;
-    uint32 systemID = m_data.solarSystemID;     // start here.
-    std::vector<DBGPointEntity> gateIDs;
-    gateIDs.clear();
-    m_db.GetGates(systemID, gateIDs, total);
-
-    // pick random gate
-    // determine system gate jumps to
-    // check for jump distance
-    // rinse and repeat as needed.
-
+void Agent::SendMissionUpdate(Client* pClient, std::string action)
+{
+    //OnAgentMissionChange(action, agentID, tutorialID)
+    /*
+    agentMissionOffered = 'offered'
+    agentMissionOfferAccepted = 'offer_accepted'
+    agentMissionOfferDeclined = 'offer_declined'
+    agentMissionOfferExpired = 'offer_expired'
+    agentMissionOfferRemoved = 'offer_removed'
+    agentMissionAccepted = 'accepted'
+    agentMissionDeclined = 'declined'
+    agentMissionCompleted = 'completed'
+    agentTalkToMissionCompleted = 'talk_to_completed'
+    agentMissionQuit = 'quit'
+    agentMissionResearchUpdatePPD = 'research_update_ppd'
+    agentMissionResearchStarted = 'research_started'
+    agentMissionProlonged = 'prolong'
+    agentMissionReset = 'reset'
+    agentMissionModified = 'modified'       - force agent convo
+    agentMissionFailed = 'failed'
     */
 
-    //  howerver, may have to create data objects based on constellation to do ranges in neighboring constellation
-    offer.destinationID      = 0;
-    offer.destinationOwnerID      = 0;
-    offer.destinationSystemID = 0;
-    offer.destinationTypeID = 0;
-    offer.dungeonLocationID      = 0;
-    offer.dungeonSolarSystemID   = 0;
+    PyTuple* payload = new PyTuple(3);
+        payload->SetItem(0, new PyString(action));
+        payload->SetItem(1, new PyInt(m_agentID));
+        payload->SetItem(2, PyStatic.NewNone());    // NOTE if we ever get tutorials working, this will need to be fixed.
+    pClient->SendNotification("OnAgentMissionChange", "charid", payload, false);    // i *think* this is unsequenced
 }
+    //specific to the calling action
+    //OnInteractWith(agentID)       (force agent convo)
+
 
 /*  mission errata....
  *

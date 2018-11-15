@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Nov 12, 2018 at 12:04 PM
+-- Generation Time: Nov 15, 2018 at 12:30 AM
 -- Server version: 10.0.33-MariaDB
 -- PHP Version: 5.6.33
 
@@ -50,6 +50,7 @@ CREATE TABLE `agtOffers` (
   `acceptFee` float NOT NULL DEFAULT '0',
   `courierItemID` int(5) NOT NULL DEFAULT '0',
   `courierAmount` smallint(6) NOT NULL DEFAULT '0',
+  `courierVolume` float NOT NULL DEFAULT '0.1',
   `dateIssued` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateAccepted` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateCompleted` bigint(20) unsigned NOT NULL DEFAULT '0',
@@ -60,7 +61,7 @@ CREATE TABLE `agtOffers` (
   `typeID` smallint(6) NOT NULL DEFAULT '0',
   `bonusISK` int(10) NOT NULL DEFAULT '0',
   `bonusTime` bigint(20) NOT NULL DEFAULT '0',
-  `contentID` int(6) NOT NULL DEFAULT '0',
+  `briefingID` int(11) NOT NULL DEFAULT '0',
   `storyline` tinyint(1) NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='char missions - current offers and history';
 

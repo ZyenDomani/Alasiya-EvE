@@ -134,9 +134,9 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     if (!IsValidLocation(itemID))
         return nullptr;
     InventoryItemRef iRef;
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end()) {
-        iRef = res->second;
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr != m_items.end()) {
+        iRef = itr->second;
     } else {
         if (load)
             iRef = GetItem( itemID );
@@ -150,9 +150,9 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 
 InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
     InventoryItemRef iRef;
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end()) {
-        iRef = res->second;
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr != m_items.end()) {
+        iRef = itr->second;
     } else {
         if (load)
             iRef = GetItem( itemID );
@@ -164,19 +164,19 @@ InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /
 InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
 {
     InventoryItemRef iRef;
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end()) {
-        iRef = res->second;
-        res = m_items.find( iRef->locationID() );
-        iRef = res->second;
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr != m_items.end()) {
+        iRef = itr->second;
+        itr = m_items.find( iRef->locationID() );
+        iRef = itr->second;
     } else {
         if (load) {
             iRef = GetItem( itemID );
-            std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-            if (res != m_items.end()) {
-                iRef = res->second;
-                res = m_items.find( iRef->locationID() );
-                iRef = res->second;
+            itr = m_items.find( itemID );
+            if (itr != m_items.end()) {
+                iRef = itr->second;
+                itr = m_items.find( iRef->locationID() );
+                iRef = itr->second;
             }
         }
     }
@@ -190,19 +190,19 @@ InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
 Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true*/)
 {
     InventoryItemRef iRef;
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res != m_items.end()) {
-        iRef = res->second;
-        res = m_items.find( iRef->locationID() );
-        iRef = res->second;
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr != m_items.end()) {
+        iRef = itr->second;
+        itr = m_items.find( iRef->locationID() );
+        iRef = itr->second;
     } else {
         if (load) {
             iRef = GetItem( itemID );
-            std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-            if (res != m_items.end()) {
-                iRef = res->second;
-                res = m_items.find( iRef->locationID() );
-                iRef = res->second;
+            itr = m_items.find( itemID );
+            if (itr != m_items.end()) {
+                iRef = itr->second;
+                itr = m_items.find( iRef->locationID() );
+                iRef = itr->second;
             }
         }
     }
@@ -214,59 +214,59 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res == m_items.end()) {
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {
         --m_itemCount;
-        m_items.erase( res );
+        m_items.erase( itr );
     }
 }
 
 const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {
-    std::map<EVEItemCategories, ItemCategory *>::iterator res = m_categories.find(category);
-    if (res == m_categories.end()) {
+    std::map<EVEItemCategories, ItemCategory *>::iterator itr = m_categories.find(category);
+    if (itr == m_categories.end()) {
         ItemCategory *cat = ItemCategory::Load(category);
         if (cat == nullptr)
             return nullptr;
 
         // insert it into our cache
-        res = m_categories.insert(
+        itr = m_categories.insert(
             std::make_pair(category, cat)
         ).first;
     }
-    return res->second;
+    return itr->second;
 }
 
 const ItemGroup* ItemFactory::GetGroup(uint32 groupID) {
-    std::map<uint32, ItemGroup*>::iterator res = m_groups.find(groupID);
-    if (res == m_groups.end()) {
+    std::map<uint32, ItemGroup*>::iterator itr = m_groups.find(groupID);
+    if (itr == m_groups.end()) {
         ItemGroup* group = ItemGroup::Load(groupID);
         if (group == nullptr)
             return nullptr;
 
         // insert it into cache
-        res = m_groups.insert(
+        itr = m_groups.insert(
             std::make_pair(groupID, group)
         ).first;
     }
-    return res->second;
+    return itr->second;
 }
 
 template<class _Ty>
 const _Ty* ItemFactory::_GetType(uint32 typeID) {
-    std::map<uint32, ItemType*>::iterator res = m_types.find(typeID);
-    if (res == m_types.end()) {
+    std::map<uint32, ItemType*>::iterator itr = m_types.find(typeID);
+    if (itr == m_types.end()) {
         _Ty* type = _Ty::Load(typeID);
         if (type == nullptr)
             return nullptr;
 
         // insert into cache
-        res = m_types.insert(
+        itr = m_types.insert(
             std::make_pair(typeID, type)
         ).first;
     }
-    return static_cast<const _Ty *>(res->second);
+    return static_cast<const _Ty *>(itr->second);
 }
 
 const ItemType* ItemFactory::GetType(uint32 typeID) {
@@ -300,8 +300,8 @@ const StationType* ItemFactory::GetStationType(uint32 stationTypeID) {
 template<class _Ty>
 RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
 {
-    std::map<uint32, InventoryItemRef>::iterator res = m_items.find( itemID );
-    if (res == m_items.end())
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr == m_items.end())
     {
         if (IsTempItem(itemID))
             return RefPtr<_Ty>();
@@ -312,12 +312,12 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
             return RefPtr<_Ty>();
 
         //we keep the original ref.
-        res = m_items.insert( std::make_pair( itemID, item ) ).first;
+        itr = m_items.insert( std::make_pair( itemID, item ) ).first;
         ++m_itemCount;
 
     }
     // return to the user.
-    return RefPtr<_Ty>::StaticCast( res->second );
+    return RefPtr<_Ty>::StaticCast( itr->second );
 }
 
 InventoryItemRef ItemFactory::GetItem(uint32 itemID)

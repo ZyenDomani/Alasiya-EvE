@@ -160,3 +160,11 @@ faction24DateTime
     return DBResultToRowset(res);
 }
 
+
+// for MapData class
+void MapDB::GetSystemJumps(DBQueryResult& res)
+{
+    //sDatabase.RunQuery(res, "SELECT ctype, fromreg, fromcon, fromsol, tosol, tocon, toreg FROM mapConnections");
+    sDatabase.RunQuery(res, "SELECT ctype, fromsol, tosol FROM mapConnections");
+}
+

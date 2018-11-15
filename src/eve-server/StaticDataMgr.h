@@ -62,6 +62,7 @@ public:
     void                GetRamRequiredItems(const uint32 typeID, const int8 activity, std::vector<EvERam::RequiredItem> &into);
 
     bool                GetStaticInfo(uint32 itemID, StaticData& data);
+    uint16              GetStaticType(uint32 itemID);
 
     // this specific cache method is designed to use EITHER a stationID OR a systemID to determine system data wanted.
     bool                GetSystemInfo(uint32 locationID, SystemData& data);
@@ -70,6 +71,9 @@ public:
     uint32              GetStationRegion(uint32 stationID);
     uint32              GetStationConstellation(uint32 stationID);
     uint32              GetStationSystem(uint32 stationID);
+
+    uint8               GetStationCount(uint32 systemID);
+    bool                GetStationList(uint32 systemID, std::vector< uint32 >& data);
 
     bool                GetRoidDist(const char* secClass, std::unordered_multimap<float, uint16>& roids);
     uint8               GetRegionQuarter(uint32 regionID);
@@ -117,6 +121,7 @@ private:
     std::map<uint32, SystemData>                        m_systemData;       // systemID/data
     std::map<uint32, uint32>                            m_agentSystem;      // agentID/systemID
     std::map<uint32, uint8>                             m_stationCount;     // systemID/count
+    std::map<uint32, std::vector<uint32>>               m_stationList;      // systemID/data<stationID>
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
@@ -143,6 +148,7 @@ private:
 
     /* salvage data */
     std::multimap<uint32, uint32>                       m_salvageMap;       // factionID/itemID
+
 
 };
 

@@ -14,7 +14,6 @@
 #include "inventory/InventoryDB.h"
 #include "inventory/InventoryItem.h"
 #include "manufacturing/Blueprint.h"
-#include "map/MapConnections.h"
 #include "npc/Drone.h"
 #include "station/Station.h"
 #include "system/Damage.h"
@@ -365,16 +364,6 @@ PyResult Command_halt(Client* who, CommandDB* db, PyServiceMgr* services, const 
 
     who->SendInfoModalMsg(reply);
     return new PyString(reply);
-}
-
-PyResult Command_fixconnections(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /*
-     * this command will reset the conectionType field of the database mapConnections table to the correct settings.  -allan 5July15
-     * MapConnections.cpp removed from this build.  -allan 7July15
-     */
-    //MapCon mc;
-    //mc.PopulateConnections();
-    return new PyNone();
 }
 
 PyResult Command_shutdown(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {

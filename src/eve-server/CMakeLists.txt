@@ -343,12 +343,14 @@ SET( manufacturing_SOURCE
      "${TARGET_SOURCE_DIR}/manufacturing/RamProxyService.cpp" )
 
 SET( map_INCLUDE
-     #"${TARGET_INCLUDE_DIR}/map/MapConnections.h"
+     "${TARGET_INCLUDE_DIR}/map/MapConnections.h"
      "${TARGET_INCLUDE_DIR}/map/MapDB.h"
+     "${TARGET_INCLUDE_DIR}/map/MapData.h"
      "${TARGET_INCLUDE_DIR}/map/MapService.h" )
 SET( map_SOURCE
-     #"${TARGET_SOURCE_DIR}/map/MapConnections.cpp"
+     "${TARGET_SOURCE_DIR}/map/MapConnections.cpp"
      "${TARGET_SOURCE_DIR}/map/MapDB.cpp"
+     "${TARGET_SOURCE_DIR}/map/MapData.cpp"
      "${TARGET_SOURCE_DIR}/map/MapService.cpp" )
 
 SET( market_INCLUDE

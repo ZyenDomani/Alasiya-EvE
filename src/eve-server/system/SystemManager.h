@@ -41,7 +41,7 @@ class NPC;
 class InventoryItem;
 class SystemEntity;
 class SystemBubble;
-class  SetState;
+class SetState;
 class DestinyManager;
 
 class AnomalyMgr;
@@ -67,6 +67,7 @@ public:
 
     PyServiceMgr* GetServiceMgr()                       { return &m_services; }
     Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
+    SolarSystemRef GetSystemRef()                       { return m_solarSystemRef; }
 
     ShipItemRef GetShipFromInventory(uint32 shipID);
     StationItemRef GetStationFromInventory(uint32 stationID);

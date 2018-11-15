@@ -37,8 +37,6 @@
 /************************************************************************/
 // profile
 #include "Profile.h"
-// version
-#include "EVEVersion.h"
 // auth
 #include "auth/PasswordModule.h"
 // cache

@@ -15,8 +15,7 @@
 
 class MapCon {
   public:
-      MapCon();
-      void PopulateConnections();
+      static void PopulateConnections();
 
 };
 

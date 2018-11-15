@@ -330,15 +330,16 @@ struct StatisticData {
 /* POD structure for systems. */
 struct SystemData {
     uint32 systemID;
-    std::string name;
     uint32 constellationID;
     uint32 regionID;
     float securityRating;
+    std::string name;
     std::string securityClass;
 };
 
 /* POD structure for static items. */
 struct StaticData {
+    uint16 typeID;
     uint32 itemID;
     uint32 systemID;
     uint32 constellationID;
@@ -350,8 +351,6 @@ struct StaticData {
 struct StationData {
     bool conquerable;
     uint32 stationID;
-    std::string name;
-    std::string description;
     uint8 officeSlots;
     uint8 operationID;
     uint16 typeID;
@@ -377,6 +376,8 @@ struct StationData {
     GPoint dockEntry;
     GPoint dockPosition;
     GVector dockOrientation;
+    std::string name;
+    std::string description;
 };
 
 /* POD structure for saving items */

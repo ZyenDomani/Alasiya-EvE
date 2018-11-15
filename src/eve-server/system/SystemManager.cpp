@@ -281,6 +281,9 @@ void SystemManager::UnloadSystem() {
     // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
 
+    // remove this system from active system list in db.
+    //  db.remove(this system);
+
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);
     m_loaded = false;
