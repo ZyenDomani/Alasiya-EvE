@@ -16,7 +16,7 @@
 
 #include "StaticDataMgr.h"
 #include "agents/AgentBound.h"
-#include <station/Station.h>
+#include "station/Station.h"
 
 AgentBound::AgentBound(PyServiceMgr *mgr, Agent *agt)
 : PyBoundObject(mgr),
@@ -188,18 +188,20 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             m_agent->GetOffer(call.client->GetCharacterID(), offer);
             agentSays->SetItem(0, new PyInt(offer.briefingID));
             agentSays->SetItem(1, new PyInt(offer.characterID));
-            PyTuple* button1 = new PyTuple(2);
-                button1->SetItem(0, new PyInt(Accept));
-                button1->SetItem(1, new PyInt(Accept));
-            dialog->AddItem(button1);
-            PyTuple* button2 = new PyTuple(2);
-                button2->SetItem(0, new PyInt(Decline));
-                button2->SetItem(1, new PyInt(Decline));
-            dialog->AddItem(button2);
-            PyTuple* button3 = new PyTuple(2);
-                button3->SetItem(0, new PyInt(Defer));
-                button3->SetItem(1, new PyInt(Defer));
-            dialog->AddItem(button3);
+            if (offer.stateID == Mission::State::Offered) {
+                PyTuple* button1 = new PyTuple(2);
+                    button1->SetItem(0, new PyInt(Accept));
+                    button1->SetItem(1, new PyInt(Accept));
+                dialog->AddItem(button1);
+                PyTuple* button2 = new PyTuple(2);
+                    button2->SetItem(0, new PyInt(Decline));
+                    button2->SetItem(1, new PyInt(Decline));
+                dialog->AddItem(button2);
+                PyTuple* button3 = new PyTuple(2);
+                    button3->SetItem(0, new PyInt(Defer));
+                    button3->SetItem(1, new PyInt(Defer));
+                dialog->AddItem(button3);
+            }
         } break;
         case Accept:
         case AcceptRemotely: {
@@ -207,19 +209,18 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             m_agent->GetOffer(call.client->GetCharacterID(), offer);
             offer.stateID = Mission::State::Accepted;
             offer.dateAccepted = GetFileTimeNow();
+            if (offer.courierTypeID) {
+                // add item to players hangar
+                sItemFactory.SetUsingClient(call.client);
+                ItemData data(offer.courierTypeID, call.client->GetCharacterID(), 0, flagAutoFit, offer.courierAmount);
+                InventoryItemRef iRef = sItemFactory.SpawnItem(data);
+                iRef->Move(m_agent->GetStationID(), flagHangar, true);
+                sItemFactory.UnsetUsingClient();
+            }
             m_agent->UpdateOffer(call.client->GetCharacterID(), offer);
             m_agent->SendMissionUpdate(call.client, "offer_accepted");
             agentSays->SetItem(0, new PyInt(m_agent->GetAcceptRsp(call.client->GetCharacterID())));
             agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
-            if (offer.courierItemID) {
-                // add item to players hangar
-                sItemFactory.SetUsingClient(call.client);
-                ItemData data(offer.courierItemID, call.client->GetCharacterID(), 0, flagAutoFit, offer.courierAmount);
-                InventoryItemRef iRef = sItemFactory.SpawnItem(data);
-                iRef->Move(m_agent->GetStationID(), flagHangar);
-                call.client->AddCourierItemRef(m_agent->GetID(), iRef);
-                sItemFactory.UnsetUsingClient();
-            }
         } break;
         case Complete:
         case CompleteRemotely: {
@@ -232,9 +233,9 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             m_agent->SendMissionUpdate(call.client, "completed");
             agentSays->SetItem(0, new PyInt(m_agent->GetCompleteRsp(call.client->GetCharacterID())));
             agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
-            if (offer.courierItemID) {
+            if (offer.courierTypeID) {
                 // remove item from player possession
-                sItemFactory.GetItemContainerInventory(call.client->GetCourierItemRef(m_agent->GetID())->itemID())->RemoveItem(call.client->GetCourierItemRef(m_agent->GetID()));
+                call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
             }
         } break;
         case Defer: {
@@ -260,9 +261,9 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             missionQuit = true;
             MissionOffer offer;
             m_agent->GetOffer(call.client->GetCharacterID(), offer);
-            if (offer.courierItemID) {
+            if (offer.courierTypeID) {
                 // remove item from player possession
-                sItemFactory.GetItemContainerInventory(call.client->GetCourierItemRef(m_agent->GetID())->itemID())->RemoveItem(call.client->GetCourierItemRef(m_agent->GetID()));
+                call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
             }
             // remove mission offer and set standings accordingly
             m_agent->DeleteOffer(call.client->GetCharacterID());
@@ -346,7 +347,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
 
     switch (offer.stateID) {
         case Mission::State::Allocated:
-        case Mission::State::Accepted:
+        //case Mission::State::Accepted:
         case Mission::State::Failed:
         case Mission::State::Completed:
         case Mission::State::Rejected:
@@ -360,7 +361,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     PyDict* keywords = new PyDict();
         keywords->SetItemString("objectiveLocationID", new PyInt(offer.originID));
         keywords->SetItemString("objectiveLocationSystemID", new PyInt(offer.originSystemID));
-        keywords->SetItemString("objectiveTypeID", new PyInt(offer.courierItemID));
+        keywords->SetItemString("objectiveTypeID", new PyInt(offer.courierTypeID));
         keywords->SetItemString("objectiveQuantity", new PyInt(offer.courierAmount));
         keywords->SetItemString("objectiveDestinationID", new PyInt(offer.destinationID));
         keywords->SetItemString("objectiveDestinationSystemID", new PyInt(offer.destinationSystemID));
@@ -423,7 +424,7 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     PyDict* keywords = new PyDict();
     keywords->SetItemString("objectiveLocationID", new PyInt(offer.originID));
     keywords->SetItemString("objectiveLocationSystemID", new PyInt(offer.originSystemID));
-    keywords->SetItemString("objectiveTypeID", new PyInt(offer.courierItemID));
+    keywords->SetItemString("objectiveTypeID", new PyInt(offer.courierTypeID));
     keywords->SetItemString("objectiveQuantity", new PyInt(offer.courierAmount));
     keywords->SetItemString("objectiveDestinationID", new PyInt(offer.destinationID));
     keywords->SetItemString("objectiveDestinationSystemID", new PyInt(offer.destinationSystemID));
@@ -459,24 +460,30 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
             return PyStatic.NewNone();
 
-    if (offer.stateID != Mission::State::Offered)
-        return PyStatic.NewNone();
+    //if (offer.stateID != Mission::State::Offered)
+     //   return PyStatic.NewNone();
 
     PyDict* objectiveData = new PyDict();
     objectiveData->SetItemString("missionTitleID", new PyInt(offer.missionID));
     objectiveData->SetItemString("contentID", new PyInt(offer.characterID));
     objectiveData->SetItemString("importantStandings", new PyInt(offer.important));     // boolean integer
-    objectiveData->SetItemString("completionStatus", new PyInt(Mission::Status::Incomplete));       // Mission::Status:: data here 0=no, 1=yes, 2=cheat
+    // will need to test for this to set correctly.....
+    if (call.client->IsMissionComplete(offer))      // Mission::Status:: data here 0=no, 1=yes, 2=cheat
+        objectiveData->SetItemString("completionStatus", new PyInt(Mission::Status::Complete));
+    else
+        objectiveData->SetItemString("completionStatus", new PyInt(Mission::Status::Incomplete));
     objectiveData->SetItemString("missionState", new PyInt(offer.stateID /*Mission::State::Offered*/));   // Mission::State:: data here for agentGift populating.  Accepted/failed to display gift items as accepted
     objectiveData->SetItemString("loyaltyPoints", new PyInt(0));
     objectiveData->SetItemString("researchPoints", new PyInt(0));
 
     /*  this puts title/msg at bottom of right pane
-    PyTuple* missionExtra = new PyTuple(2);  // this is tuple(2)  headerID, bodyID    -- std locale msgIDs
-        missionExtra->SetItem(0, new PyInt(offer.missionID));   // this should be separate title from mission name
-        missionExtra->SetItem(1, new PyInt(offer.briefingID));   // this is additional info about mission, etc.
-    objectiveData->SetItemString("missionExtra", missionExtra);
-    */
+    if (offer.stateID == Mission::State::Accepted)
+        if (offer.typeID == Mission::Type::Courier) {
+            PyTuple* missionExtra = new PyTuple(2);  // this is tuple(2)  headerID, bodyID    -- std locale msgIDs
+                missionExtra->SetItem(0, new PyString("Reminder...."));   // this should be separate title from mission name
+                missionExtra->SetItem(1, new PyString("Remember to get the %s from your hangar before you leave.", call.client->GetCourierItemRef(m_agent->GetID())->itemName().c_str()));   // this is additional info about mission, etc.
+            objectiveData->SetItemString("missionExtra", missionExtra);
+        } */
 
     PyList* locList = new PyList();    // tuple of list of locationIDs (pickup and dropoff)
         locList->AddItem(new PyInt(offer.originSystemID));
@@ -566,36 +573,81 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         blueprintInfo = extra.get('blueprintInfo', None)
         */
 
-    PyDict* pickupLocation = new PyDict();
-        pickupLocation->SetItemString("typeID", new PyInt(m_agent->GetLocTypeID()) );
-        pickupLocation->SetItemString("locationID", new PyInt(offer.originID) );
-        pickupLocation->SetItemString("solarsystemID", new PyInt(offer.originSystemID) );
-
+    // set mission objectiveData based on mission type.
+    PyList* objList = new PyList();
     PyDict* dropoffLocation = new PyDict();
+    if (IsStation(offer.destinationID)) {
         dropoffLocation->SetItemString("typeID", new PyInt(offer.destinationTypeID) );
         dropoffLocation->SetItemString("locationID", new PyInt(offer.destinationID) );
         dropoffLocation->SetItemString("solarsystemID", new PyInt(offer.destinationSystemID) );
-
-    PyDict* cargo = new PyDict();
-    /** @todo  check to see if player has correct cargo and set accordingly  */
-    if (call.client->GetShip()->GetMyInventory()->Contains(offer.courierItemID, offer.courierAmount))
-        cargo->SetItemString("hasCargo", new PyBool(true));
-    else
-        cargo->SetItemString("hasCargo", new PyBool(false));
-        cargo->SetItemString("typeID", new PyInt(offer.courierItemID));
-        cargo->SetItemString("quantity", new PyInt(offer.courierAmount));
-        cargo->SetItemString("volume", new PyFloat(offer.courierItemVolume * offer.courierAmount));    // calculated shipment volume.  *this is direct to window*
-    PyTuple* objData = new PyTuple(5);
-        objData->SetItem(0, new PyInt(offer.originOwnerID));
-        objData->SetItem(1, pickupLocation/*m_agent->GetLocationWrap()*/);
-        objData->SetItem(2, new PyInt(offer.destinationOwnerID));
-        objData->SetItem(3, dropoffLocation/*m_agent->GetLocationWrap()*/);
-        objData->SetItem(4, cargo);
-    PyTuple* objectives = new PyTuple(2);   // this is list of tuple(2)    objType, objData
-        objectives->SetItem(0, new PyString("transport"));
-        objectives->SetItem(1, objData);
-    PyList* objList = new PyList();
-        objList->AddItem(objectives);
+    } else {
+        dropoffLocation->SetItemString("shipTypeID", new PyInt(offer.destinationTypeID) );
+        dropoffLocation->SetItemString("agentID", new PyInt(offer.destinationOwnerID) );
+        // get agent in space location and set here
+        PyTuple* coords = new PyTuple(3);
+            coords->SetItem(0, new PyFloat(0)); //x
+            coords->SetItem(1, new PyFloat(0)); //y
+            coords->SetItem(2, new PyFloat(0)); //z
+        dropoffLocation->SetItemString("coords", coords);
+        dropoffLocation->SetItemString("referringAgentID", new PyInt(offer.agentID) );
+    }
+    switch (offer.typeID) {
+        case Mission::Type::Trade:
+        case Mission::Type::Courier: {
+            PyDict* pickupLocation = new PyDict();
+                pickupLocation->SetItemString("typeID", new PyInt(m_agent->GetLocTypeID()) );
+                pickupLocation->SetItemString("locationID", new PyInt(offer.originID) );
+                pickupLocation->SetItemString("solarsystemID", new PyInt(offer.originSystemID) );
+            PyDict* cargo = new PyDict();
+            /** @todo  check to see if player has correct cargo and set accordingly  */
+            if (call.client->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
+                cargo->SetItemString("hasCargo", new PyBool(true));
+            else
+                cargo->SetItemString("hasCargo", new PyBool(false));
+                cargo->SetItemString("typeID", new PyInt(offer.courierTypeID));
+                cargo->SetItemString("quantity", new PyInt(offer.courierAmount));
+                cargo->SetItemString("volume", new PyFloat(offer.courierItemVolume * offer.courierAmount));    // calculated shipment volume.  *this is direct to window*
+            PyTuple* objData = new PyTuple(5);
+                objData->SetItem(0, new PyInt(offer.originOwnerID));
+                objData->SetItem(1, pickupLocation/*m_agent->GetLocationWrap()*/);
+                objData->SetItem(2, new PyInt(offer.destinationOwnerID));
+                objData->SetItem(3, dropoffLocation/*m_agent->GetLocationWrap()*/);
+                objData->SetItem(4, cargo);
+            PyTuple* objectives = new PyTuple(2);   // this is list of tuple(2)    objType, objData
+                objectives->SetItem(0, new PyString("transport"));
+                objectives->SetItem(1, objData);
+            objList->AddItem(objectives);   // this is list of mission objectives.  can be multiple
+        } break;
+        case Mission::Type::Encounter:
+        case Mission::Type::Mining: {
+            PyDict* cargo = new PyDict();
+            /** @todo  check to see if player has correct cargo and set accordingly  */
+            if (call.client->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
+                cargo->SetItemString("hasCargo", new PyBool(true));
+            else
+                cargo->SetItemString("hasCargo", new PyBool(false));
+                cargo->SetItemString("typeID", new PyInt(offer.courierTypeID));
+                cargo->SetItemString("quantity", new PyInt(offer.courierAmount));
+                cargo->SetItemString("volume", new PyFloat(offer.courierItemVolume * offer.courierAmount));    // calculated shipment volume.  *this is direct to window*
+            PyTuple* objData = new PyTuple(3);
+                objData->SetItem(0, new PyInt(offer.destinationOwnerID));
+                objData->SetItem(1, dropoffLocation/*m_agent->GetLocationWrap()*/);
+                objData->SetItem(2, cargo);
+            PyTuple* objectives = new PyTuple(2);   // this is list of tuple(2)    objType, objData
+                objectives->SetItem(0, new PyString("fetch"));
+                objectives->SetItem(1, objData);
+            objList->AddItem(objectives);   // this is list of mission objectives.  can be multiple
+        } break;
+        case Mission::Type::Anomic:
+        case Mission::Type::Arc:
+        case Mission::Type::Burner:
+        case Mission::Type::Cosmos:
+        case Mission::Type::Data:
+        case Mission::Type::Research:
+        case Mission::Type::Storyline:
+        case Mission::Type::Tutorial: {
+        } break;
+    }
     objectiveData->SetItemString("objectives", objList);
 
     /*  objectives data...
@@ -690,6 +742,40 @@ PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
     //ret = self.GetAgentMoniker(agentID).GetMissionJournalInfo(charID, contentID)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionJournalInfo() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
+/**
+10:51:04 [AgentDump] AgentBound::Handle_GetMissionJournalInfo() - size= 2
+10:51:04 [AgentDump]   Call Arguments:
+10:51:04 [AgentDump]      Tuple: 2 elements
+10:51:04 [AgentDump]       [ 0]       None
+10:51:04 [AgentDump]       [ 1]       None
+
+
+            ret = self.GetAgentMoniker(agentID).GetMissionJournalInfo(charID, contentID)
+            if ret:
+                html = self.BuildJournalHTML(ret, agentID)
+
+    def BuildJournalHTML(self, missionInfo, agentID):
+        missionName = self.ProcessMessage((missionInfo['missionNameID'], missionInfo['contentID']), agentID)
+        html = '\n            <html>\n            <head>\n                <LINK REL="stylesheet" TYPE="text/css" HREF="res:/ui/css/missionjournal.css">\n            </head>\n            <body>\n        '
+        if 'iconID' in missionInfo:
+            missionGraphic = util.IconFile(missionInfo['iconID'])
+            if missionGraphic:
+                html += '<p><img src="icon:%s" width=64 height=64 align=left hspace=4 vspace=4><br>' % missionGraphic
+        html += '\n            <span id=mainheader>%(missionName)s</span><br>\n            <hr>\n            <center><span id=ip>%(missionImage)s</span></center><br>\n            </p>\n            <span id=subheader>%(briefingTitle)s</span>\n            <div id=basetext>%(missionBriefing)s</div>\n            <br>\n        ' % {'missionName': missionName,
+         'missionImage': missionInfo['missionImage'],
+         'briefingTitle': localization.GetByLabel('UI/Agents/StandardMission/MissionBriefing'),
+         'missionBriefing': self.ProcessMessage((missionInfo['briefingTextID'], missionInfo['contentID']), agentID)}
+        expirationTime = missionInfo['expirationTime']
+        if expirationTime is not None:
+            if missionInfo['missionState'] in (const.agentMissionStateAllocated, const.agentMissionStateOffered):
+                expirationMessage = localization.GetByLabel('UI/Agents/Dialogue/ThisOfferExpiresAt', expireTime=expirationTime)
+            else:
+                expirationMessage = localization.GetByLabel('UI/Agents/Dialogue/ThisMissionExpiresAt', expireTime=expirationTime)
+            html += '<span id=ip>%s</span><br><br>' % expirationMessage
+        html += agentDialogueUtil.BuildObjectiveHTML(agentID, missionInfo['objectives'])
+        html += '</body></html>'
+        return html
+        */
 
     return nullptr;
 }
@@ -745,26 +831,34 @@ PyResult AgentBound::Handle_WarpToLocation(PyCallArgs &call) {
 
 PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
     //parallelCalls.append((sm.GetService('agents').GetAgentMoniker(agentID).GetMyJournalDetails, ()))
+    // this is to update ONLY info with this agent....
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
-    /*
-        [CallRsp PySubStream]
-            [PyTuple 2 items]
-                [PyList 1 items]
-                    [PyTuple 10 items]
-                        [PyInt 1]
-                        [PyInt 0]
-                        [PyString "UI/Agents/MissionTypes/Courier"]
-                        [PyInt 57117]
-                        [PyInt 3013251]
-                        [PyIntegerVar 131276594538586776]
-                        [PyList 0 items]
-                        [PyBool False]
-                        [PyBool False]
-                        [PyInt 13773]
-                [PyList 0 items]
-        */
+    PyTuple *tuple = new PyTuple(2);
+    //missions:
+    PyList* missions = new PyList();
+    MissionOffer offer;
+    if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
+        PyTuple* mData = new PyTuple(9);
+        mData->SetItem(0, new PyInt(offer.stateID)); //missionState  .. these may be wrong also.
+        mData->SetItem(1, new PyInt(offer.important?1:0)); //importantMission  -- integer boolean
+        mData->SetItem(2, new PyString(sMissionDataMgr.GetTypeLabel(offer.typeID))); //missionTypeLabel
+        mData->SetItem(3, new PyString(offer.name)); //missionName
+        mData->SetItem(4, new PyInt(offer.agentID)); //agentID
+        mData->SetItem(5, new PyLong(offer.expiryTime)); //expirationTime
+        mData->SetItem(6, offer.bookmarks->Clone()); //bookmarks -- if populated, this is PyList of PyDicts as defined below...
+        mData->SetItem(7, new PyBool(offer.remoteOfferable)); //remoteOfferable
+        mData->SetItem(8, new PyBool(offer.remoteCompletable)); //remoteCompletable
+        missions->AddItem(mData);
+    }
+    tuple->SetItem(0, missions);
 
-    return nullptr;
+    //research:
+    PyList* research = new PyList();
+    tuple->SetItem(1, research);
+
+    if (is_log_enabled(AGENT__RSPDUMP))
+        tuple->Dump(AGENT__RSPDUMP, "   ");
+    return tuple;
 }

@@ -44,11 +44,11 @@ void MissionDB::CreateOfferID(MissionOffer& data)
     DBerror err;
     uint32 uid = 0;
     if (!sDatabase.RunQueryLID(err, uid,
-        "INSERT INTO agtOffers(acceptFee, agentID, characterID, courierAmount, courierItemID, courierVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, "
+        "INSERT INTO agtOffers(acceptFee, agentID, characterID, courierAmount, courierTypeID, courierVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, "
         " destinationOwnerID, destinationSystemID, expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID,"
         " remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID)"
         " VALUES (%u, %u, %u, %u, %u, %f, %f, %f, %u, %u, %u, %u, %f, %i, %u, %u, %u, '%s', %u, %u, %u, %u, %i, %i, %u, %u, %u, %u, %u, %f, %u, %u, %u, %u)",
-            data.acceptFee, data.agentID, data.characterID, data.courierAmount, data.courierItemID, data.courierItemVolume, data.dateAccepted, data.dateIssued, data.destinationID,
+            data.acceptFee, data.agentID, data.characterID, data.courierAmount, data.courierTypeID, data.courierItemVolume, data.dateAccepted, data.dateIssued, data.destinationID,
             data.destinationTypeID, data.destinationOwnerID, data.destinationSystemID, data.expiryTime, (data.important?1:0), data.storyline,
             data.missionID, data.briefingID, data.name.c_str(), data.offerID, data.originID, data.originOwnerID, data.originSystemID,
             (data.remoteCompletable?1:0), (data.remoteOfferable?1:0), data.rewardISK, data.rewardItemID, data.rewardItemQty,data.rewardLP, data.bonusISK, data.bonusTime,
@@ -82,7 +82,7 @@ void MissionDB::UpdateMissionOffer(MissionOffer& data)
 void MissionDB::LoadOpenOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, courierVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,"
+        "SELECT acceptFee, agentID, characterID, courierAmount, courierTypeID, courierVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,"
         " expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID, remoteCompletable, remoteOfferable, "
         " rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID "
         " FROM agtOffers WHERE dateCompleted = 0 AND stateID < 3"))
@@ -93,7 +93,7 @@ void MissionDB::LoadOpenOffers(DBQueryResult& res)
 void MissionDB::LoadClosedOffers(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
-        "SELECT agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,"
+        "SELECT agentID, characterID, courierAmount, courierTypeID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,"
         " offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers WHERE dateCompleted > 0 OR expiryTime > %f OR stateID > 2", GetFileTimeNow()))
         codelog(DATABASE__ERROR, "Error in LoadClosedOffers query: %s", res.error.c_str());
 }

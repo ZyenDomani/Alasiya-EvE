@@ -417,12 +417,20 @@ uint32 Inventory::FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<Invent
     return count;
 }
 
-bool Inventory::Contains(uint32 itemID, uint32 qty) const
+bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty) const
 {
-    std::map<uint32, InventoryItemRef>::const_iterator itr = mContents.find( itemID );
-    if (itr != mContents.end())
-        if (itr->second->quantity() >= qty)
-            return true;
+    uint16 count = 0;
+    for (auto cur : mContents) {
+        if (cur.second->typeID() == typeID )
+            if (cur.second->quantity() >= qty) {
+                return true;
+            } else {
+                count += cur.second->quantity();
+            }
+    }
+    if (count >= qty)
+        return true;
+    
     return false;
 }
 

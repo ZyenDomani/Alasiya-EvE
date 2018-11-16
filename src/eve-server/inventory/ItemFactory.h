@@ -36,6 +36,13 @@ class ItemCategory;
 class ItemGroup;
 class ItemType;
 
+class ItemData;
+class CharacterData;
+class CorpData;
+class BlueprintData;
+class OfficeData;
+class AsteroidData;
+
 class BlueprintType;
 class CharacterType;
 class ShipType;

@@ -138,7 +138,7 @@ public:
     void                    SaveItem();  //save the item to the DB.
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void            Delete();  //remove the item from the DB.
+    virtual void            Delete();  //totally removes item from game and deletes from the DB.
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
 

@@ -76,7 +76,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     offer.briefingID         = cData.briefingID;
     offer.rewardItemID       = cData.rewardItemID;
     offer.rewardItemQty      = cData.rewardItemQty;
-    offer.courierItemID      = cData.itemTypeID;
+    offer.courierTypeID      = cData.itemTypeID;
     offer.courierAmount      = cData.itemQty;
 
     offer.stateID            = Mission::State::Allocated;

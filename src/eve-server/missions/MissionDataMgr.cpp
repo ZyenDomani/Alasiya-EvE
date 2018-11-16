@@ -8,10 +8,11 @@
   *
   */
 
-
 #include "../EVEServerConfig.h"
-#include "missions/MissionDataMgr.h"
+
 #include "database/EVEDBUtils.h"
+#include "missions/MissionDataMgr.h"
+#include "inventory/ItemFactory.h"
 
 MissionDataMgr::MissionDataMgr()
 {
@@ -187,7 +188,7 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     MissionDB::LoadOpenOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT acceptFee, agentID, characterID, courierAmount, courierItemID, courierItemVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,
+        //SELECT acceptFee, agentID, characterID, courierAmount, courierTypeID, courierItemVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,
         // expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID, remoteCompletable, remoteOfferable,
         // rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID FROM agtOffers
         MissionOffer data;
@@ -195,7 +196,7 @@ void MissionDataMgr::Populate()
         data.agentID = row.GetInt(1);
         data.characterID = row.GetInt(2);
         data.courierAmount = row.GetInt(3);
-        data.courierItemID = row.GetInt(4);
+        data.courierTypeID = row.GetInt(4);
         data.courierItemVolume = row.GetFloat(5);
         data.dateAccepted = row.GetInt64(6);
         data.dateIssued = row.GetInt64(7);
@@ -223,9 +224,9 @@ void MissionDataMgr::Populate()
         data.bonusTime = row.GetInt(29);
         data.stateID = row.GetInt(30);
         data.typeID = row.GetInt(31);
+        data.dungeonLocationID = row.GetInt(32);
+        data.dungeonSolarSystemID = row.GetInt(33);
         data.dateCompleted = 0;
-        data.dungeonLocationID = 0;
-        data.dungeonSolarSystemID = 0;
         // will need to determine how to store/retrieve bookmarks as a list of dicts here
         data.bookmarks = new PyList();
         m_offers.emplace(row.GetInt(2), data);
@@ -239,13 +240,13 @@ void MissionDataMgr::Populate()
     if (sConfig.server.LoadOldMissions)
         MissionDB::LoadClosedOffers(*res);
     while (res->GetRow(row)) {
-        //SELECT agentID, characterID, courierAmount, courierItemID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,
+        //SELECT agentID, characterID, courierAmount, courierTypeID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,
         // offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
         MissionOffer data;
         data.agentID = row.GetInt(0);
         data.characterID = row.GetInt(1);
         data.courierAmount = row.GetInt(2);
-        data.courierItemID = row.GetInt(3);
+        data.courierTypeID = row.GetInt(3);
         data.dateAccepted = row.GetInt64(4);
         data.dateCompleted = row.GetInt64(5);
         data.dateIssued = row.GetInt64(6);
@@ -416,7 +417,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, bool importan
             data.briefingID         = cData.briefingID;
             data.rewardItemID       = cData.rewardItemID;
             data.rewardItemQty      = cData.rewardItemQty;
-            data.courierItemID      = cData.itemTypeID;
+            data.courierTypeID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
             data.courierItemVolume  = cData.itemVolume;
             data.range              = cData.range;
@@ -449,7 +450,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, bool importan
             data.briefingID         = cData.briefingID;
             data.rewardItemID       = cData.rewardItemID;
             data.rewardItemQty      = cData.rewardItemQty;
-            data.courierItemID      = cData.itemTypeID;
+            data.courierTypeID      = cData.itemTypeID;
             data.courierAmount      = cData.itemQty;
             data.courierItemVolume  = cData.itemVolume;
             data.range              = cData.range;

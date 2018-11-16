@@ -34,7 +34,7 @@ struct MissionOffer {
     uint16 rewardLP;
     uint16 rewardItemID;
     uint16 rewardItemQty;
-    uint16 courierItemID;
+    uint16 courierTypeID;
     uint16 courierAmount;
     uint16 destinationTypeID;
     uint32 offerID;

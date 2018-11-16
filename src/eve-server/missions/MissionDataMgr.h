@@ -37,6 +37,8 @@ public:
     void                LoadAgentOffers(const uint32 agentID, std::map<uint32, MissionOffer>& data);
     void                CreateMissionOffer(uint8 typeID, uint8 level, bool important, MissionOffer& data);
 
+    void                LoadCharMisionItems(uint32 charID, std::map<uint32, InventoryItemRef>& data);
+
     std::string         GetTypeName(uint8 typeID);
     std::string         GetTypeLabel(uint8 typeID);
 

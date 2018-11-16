@@ -28,6 +28,7 @@
 #ifndef EVE_CLIENT_H
 #define EVE_CLIENT_H
 
+
 #include "ClientSession.h"
 
 #include "character/Character.h"
@@ -40,6 +41,8 @@
 #include "ship/modules/ModuleManager.h"
 #include "system/SystemEntity.h"
 #include "system/SystemGPoint.h"
+
+#include "../eve-common/EVE_Missions.h"
 
 class CryptoChallengePacket;
 class EVENotificationStream;
@@ -150,10 +153,6 @@ public:
 
     uint32 GetLoyaltyPoints(uint32 corpID);
 
-    InventoryItemRef GetCourierItemRef(uint32 agentID);
-    void RemoveCourierItemRef(uint32 agentID);
-    void AddCourierItemRef(uint32 agentID, InventoryItemRef iRef)   { m_courierItemMap.emplace(agentID, iRef); }
-
     void SetPodItem();
     void CreateShipSE();
 
@@ -248,6 +247,11 @@ public:
 
     bool ApplyDamage(Damage &d);
     void Killed(Damage &fatal_blow);
+
+    //  mission
+    void RemoveMissionItem(uint16 typeID, uint32 qty);
+    bool ContainsTypeQty(uint16 typeID, uint32 qty) const;
+    bool IsMissionComplete(MissionOffer& data);
 
     //  scan
     Scan* scan()                                        { return m_scan; }
@@ -393,7 +397,6 @@ private:
     uint32 m_nextNotifySequence = 0;
 
     std::map<uint32, uint32>    m_lpMap;    // corpID/points
-    std::map<uint32, InventoryItemRef>  m_courierItemMap;  //agentID/itemRef  - for courier missions
 
     /************************************************************************/
     /* new system for MultiEvents      (fix for docked pilot reporting)     */

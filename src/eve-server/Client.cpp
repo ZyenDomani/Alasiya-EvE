@@ -38,6 +38,7 @@
 #include "corporation/CorporationDB.h"
 #include "fleet/FleetService.h"
 #include "imageserver/ImageServer.h"
+#include "missions/MissionDataMgr.h"
 #include "npc/NPC.h"
 #include "npc/Drone.h"
 #include "npc/DroneAI.h"
@@ -118,7 +119,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_channels.clear();
     m_hangarLoaded.clear();
     mDogmaMessages.clear();
-    m_courierItemMap.clear();
 
     // Start handshake
     Reset();
@@ -291,14 +291,14 @@ bool Client::SelectCharacter(uint32 char_id) {
     //create corp and ally chat channels (if not already created)
     m_services.lsc_service->CharacterLogin(this);
 
+    // load char LPs
+    //m_lpMap
+
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
     sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
-
-    // load char LPs
-    //m_lpMap
 
     SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return (m_loaded = true);
@@ -1203,20 +1203,91 @@ uint32 Client::GetLoyaltyPoints(uint32 corpID) {
     return 0;
 }
 
-
-InventoryItemRef Client::GetCourierItemRef(uint32 agentID)
+void Client::RemoveMissionItem(uint16 typeID, uint32 qty)
 {
-    std::map<uint32, InventoryItemRef>::iterator itr = m_courierItemMap.find(agentID);
-    if (itr != m_courierItemMap.end())
-        return itr->second;
-    return InventoryItemRef(nullptr);
+    uint16 count = qty;
+    InventoryItemRef iRef = InventoryItemRef(nullptr);
+    if (IsStation(m_locationID)) {
+        iRef = sItemFactory.GetStation(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
+        if (iRef.get() != nullptr) {
+            if (count < iRef->quantity()) {
+                iRef->AlterQuantity(count, true);
+                count = 0;
+            } else {
+                count -= iRef->quantity();
+                iRef->Delete();
+            }
+        }
+    }
+
+    if (count) {
+        iRef = GetShip()->GetMyInventory()->GetByTypeFlag(typeID, flagCargoHold);
+        if (iRef.get() != nullptr){
+            if (count < iRef->quantity()) {
+                iRef->AlterQuantity(count, true);
+                count = 0;
+            } else {
+                count -= iRef->quantity();
+                iRef->Delete();
+            }
+        }
+    }
+    if (count)
+        ;  // make error here for not enough?
 }
 
-void Client::RemoveCourierItemRef(uint32 agentID)
+bool Client::ContainsTypeQty(uint16 typeID, uint32 qty) const
 {
-    std::map<uint32, InventoryItemRef>::iterator itr = m_courierItemMap.find(agentID);
-    if (itr != m_courierItemMap.end())
-        m_courierItemMap.erase(itr);
+    uint16 count = 0;
+    InventoryItemRef iRef = InventoryItemRef(nullptr);
+    // this is for missions....we will have to determine if we have the TOTAL qty desired, in both cargo and hangar
+    if (IsStation(m_locationID)) {
+        iRef = sItemFactory.GetStation(m_locationID)->GetMyInventory()->GetByTypeFlag(typeID, flagHangar);
+        if (iRef.get() != nullptr)
+            count = iRef->quantity();
+    }
+
+    iRef = GetShip()->GetMyInventory()->GetByTypeFlag(typeID, flagCargoHold);
+    if (iRef.get() != nullptr)
+        count += iRef->quantity();
+
+    if (count >= qty)
+        return true;
+    return false;
+}
+
+bool Client::IsMissionComplete(MissionOffer& data)
+{
+    // dont know all the stipulations of "completion" yet, but skeleton code for starters...
+    switch (data.typeID) {
+        case Mission::Type::Tutorial: {
+        } break;
+        case Mission::Type::Encounter: {
+        } break;
+        case Mission::Type::Courier: {
+            if (m_locationID == data.destinationID)
+                if (ContainsTypeQty(data.courierTypeID, data.courierAmount))
+                    return true;
+        } break;
+        case Mission::Type::Trade: {
+        } break;
+        case Mission::Type::Mining: {
+        } break;
+        case Mission::Type::Research: {
+        } break;
+        case Mission::Type::Data: {
+        } break;
+        case Mission::Type::Storyline: {
+        } break;
+        case Mission::Type::Cosmos: {
+        } break;
+        case Mission::Type::Arc: {
+        } break;
+        case Mission::Type::Anomic: {
+        } break;
+    }
+
+    return false;
 }
 
 
