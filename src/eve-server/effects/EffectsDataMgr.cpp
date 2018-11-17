@@ -34,6 +34,7 @@ void FxDataMgr::Initialize()
     if (m_loaded)
         return;
 
+    double begin = GetTimeMSeconds();
     double start = GetTimeMSeconds();
     DBResultRow row;
     DBQueryResult* res = new DBQueryResult();
@@ -165,6 +166,7 @@ void FxDataMgr::Initialize()
     SafeDelete(res);
 
     m_loaded = true;
+    sLog.Cyan("        FxDataMgr", "Effects Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
 void FxDataMgr::ConfigureEffects()

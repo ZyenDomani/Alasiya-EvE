@@ -87,6 +87,8 @@ void StaticDataMgr::Clear()
 
 void StaticDataMgr::Populate()
 {
+    double begin = GetTimeMSeconds();
+
     m_keyMap = ManagerDB::GetKeyMap();
     if (m_keyMap == nullptr)
         sLog.Error("    StaticDataMgr", "m_keyMap is null");
@@ -402,6 +404,8 @@ void StaticDataMgr::Populate()
     //cleanup
     SafeDelete(res);
     SafeDelete(res2);
+    
+    sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
 void StaticDataMgr::GetInfo()

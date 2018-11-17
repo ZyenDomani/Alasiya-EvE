@@ -105,6 +105,7 @@ void MissionDataMgr::Process()
 void MissionDataMgr::Populate()
 {
     double start = GetTimeMSeconds();
+    double begin = GetTimeMSeconds();
 
     CourierPNG = new PyString("<img src='res:/UI/netres/mission_content/couriermission.png' align=center hspace=4 vspace=4>");
     MiningPNG = new PyString("<img src='res:/UI/netres/mission_content/miningmission.png' align=center hspace=4 vspace=4>");
@@ -184,34 +185,34 @@ void MissionDataMgr::Populate()
     sLog.Cyan("   MissionDataMgr", "%u(%u) Mining Mission Data Sets loaded in %.3fms.", m_mining.size(), m_miningImp.size(), (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Encounter Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Encounter Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Storyline Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Storyline Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Tutorial Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Tutorial Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Research Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Research Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Anomic Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Anomic Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Data Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Data Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Trade Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Trade Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Burner Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Burner Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Cosmos Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Cosmos Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     start = GetTimeMSeconds();
-    sLog.Cyan("   MissionDataMgr", "0 Arc Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("   MissionDataMgr", "0(0) Arc Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
     res->Reset();
     start = GetTimeMSeconds();
@@ -364,6 +365,7 @@ void MissionDataMgr::Populate()
     m_names.emplace("Understanding Augmene",   2625  );
     m_names.emplace("Unknown Events",  6000 );
     */
+    sLog.Cyan("   MissionDataMgr", "Mission Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
 void MissionDataMgr::AddMissionOffer(uint32 charID, MissionOffer& data)

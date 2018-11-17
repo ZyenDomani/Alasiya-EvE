@@ -617,11 +617,11 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Loading Data Sets");
     sDataMgr.Initialize();
     std::printf("\n");     // spacer
-    sMapData.Initialize();
-    std::printf("\n");     // spacer
     sMissionDataMgr.Initialize();
     std::printf("\n");     // spacer
     sFxDataMgr.Initialize();
+    std::printf("\n");     // spacer
+    sMapData.Initialize();
     std::printf("\n");     // spacer
     sDunDataMgr.Initialize();
     std::printf("\n");     // spacer
