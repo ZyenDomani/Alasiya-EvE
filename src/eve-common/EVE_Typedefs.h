@@ -25,7 +25,8 @@ typedef enum {
     itemTypeCredits = 29,
     itemTypeJetCan  = 23,
     AllianceTypeID  = 16159,
-    itemTypeBillboard = 11136
+    itemTypeBillboard = 11136,
+    itemCloneAlpha  = 164
 } EVEItemTypeID;
 
 

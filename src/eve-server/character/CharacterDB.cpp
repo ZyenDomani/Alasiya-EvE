@@ -491,8 +491,12 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["raceID"] = row.GetUInt(15);
     characterDataMap["locationID"] = row.GetUInt(16);
     characterDataMap["baseID"] = row.GetInt(17);
-    uint32 stationID = 0;
-    GetCharHomeStation(characterID, stationID);
+    uint32 stationID = row.GetInt(17);
+    if (!GetCharHomeStation(characterID, stationID)) {
+        ItemData iData( itemCloneAlpha, characterID, stationID, flagClone, 1 );
+        iData.customInfo="active";
+        InventoryItemRef initInvItem = sItemFactory.SpawnItem( iData );
+    }
     characterDataMap["cloneStationID"] = stationID;
 }
 
@@ -673,9 +677,10 @@ bool CharacterDB::GetActiveClone(uint32 characterID, uint32 &itemID) {
     }
 
     DBResultRow row;
-    res.GetRow(row);
-    itemID=row.GetUInt(0);
-
+    if (res.GetRow(row))
+        itemID=row.GetUInt(0);
+    else
+        return false;
     return true;
 }
 
@@ -710,7 +715,6 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
 	uint32 activeCloneID = 0;
 	if (!GetActiveClone(characterID, activeCloneID)) {
         _log( CHARACTER__ERROR, "Could't get the active clone for char %u", characterID );
-        stationID = 0;
 		return false;
 	}
 
@@ -722,7 +726,6 @@ bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
 		activeCloneID ))
 	{
         _log(CHARACTER__ERROR, "Could't get clone location for char %u", characterID );
-        stationID = 0;
 		return false;
 	}
 

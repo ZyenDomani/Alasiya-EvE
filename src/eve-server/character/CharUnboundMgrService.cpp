@@ -241,7 +241,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     CorpData corpData;
         corpData.startDateTime = cdata.createDateTime;
-        corpData.baseID = cdata.stationID;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
         corpData.rolesAtAll = Corp::Role::Member;
@@ -283,6 +282,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.constellationID = sData.constellationID;
         cdata.regionID = sData.regionID;
     }
+
+    corpData.baseID = cdata.stationID;
 
     std::string name = "";
     if (arg.name->IsWString())
@@ -375,9 +376,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     /** @todo update this to reflect char career */
 
     // add 1 unit of "Clone Grade Alpha"
-    ItemData itemCloneAlpha( 164, charRef->itemID(), cdata.stationID, flagClone, 1 );
-    itemCloneAlpha.customInfo="active";
-    InventoryItemRef initInvItem = sItemFactory.SpawnItem( itemCloneAlpha );
+    ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.stationID, flagClone, 1 );
+    iData.customInfo="active";
+    InventoryItemRef initInvItem = sItemFactory.SpawnItem( iData );
     if (initInvItem.get() == nullptr)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", charRef->itemName().c_str());
 
