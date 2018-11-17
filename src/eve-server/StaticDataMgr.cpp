@@ -250,7 +250,7 @@ void StaticDataMgr::Populate()
         ramReq.requiredTypeID   = row.GetInt(2);
         ramReq.quantity         = row.GetInt(3);
         ramReq.damagePerJob     = row.GetFloat(4);
-        ramReq.extra            = (row.GetInt(5) ? true : false);
+        ramReq.extra            = row.GetBool(5);
         m_ramReq.emplace(row.GetInt(0), ramReq);
     }
 
@@ -1114,6 +1114,22 @@ uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
         case raceORE:           return factionORE;
     }
 }
+
+EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
+{
+    switch (factionID) {
+        case factionCaldari :       return raceCaldari;
+        case factionMinmatar :      return raceMinmatar;
+        case factionAmarr :         return raceAmarr;
+        case factionGallente :      return raceGallente;
+        case factionJove :          return raceJove;
+        case factionNoFaction :     return racePirate;
+        case factionSleepers :      return raceSleepers;
+        case factionORE :           return raceORE;
+        case factionAmmatar:        return raceAmmatar;
+    }
+}
+
 
 std::string StaticDataMgr::GetFlagName(uint16 flag)
 {

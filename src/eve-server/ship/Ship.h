@@ -182,13 +182,13 @@ public:
     static ShipItemRef Spawn( ItemData &data);
 
     virtual void SetPlayer(Client* pClient);
-    virtual bool HasPilot()                             { return (m_pilot ? true : false); }
+    virtual bool HasPilot()                             { return (m_pilot == nullptr ? false : true); }
     virtual Client* GetPilot()                          { return m_pilot; }
 
     virtual void AddItem(InventoryItemRef iRef);
     virtual void RemoveItem( InventoryItemRef iRef);
 
-    bool HasModuleManager()                             { return (m_ModuleManager ? true : false); }
+    bool HasModuleManager()                             { return (m_ModuleManager == nullptr ? false : true); }
     ModuleManager* GetModuleManager()                   { return m_ModuleManager; }
 
     virtual void Delete();

@@ -30,14 +30,14 @@ public:
     void                Close()                         { Clear(); }
     void                GetInfo();
 
+    void                Process();
+
     void                AddMissionOffer(uint32 charID, MissionOffer& data);
     void                UpdateMissionData(uint32 charID, MissionOffer& data);
     void                RemoveMissionOffer(uint32 charID, MissionOffer& data);
     void                LoadMissionOffers(uint32 charID, std::vector<MissionOffer>& data);
     void                LoadAgentOffers(const uint32 agentID, std::map<uint32, MissionOffer>& data);
-    void                CreateMissionOffer(uint8 typeID, uint8 level, bool important, MissionOffer& data);
-
-    void                LoadCharMisionItems(uint32 charID, std::map<uint32, InventoryItemRef>& data);
+    void                CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID, bool important, MissionOffer& data);
 
     std::string         GetTypeName(uint8 typeID);
     std::string         GetTypeLabel(uint8 typeID);
@@ -50,6 +50,8 @@ protected:
     void                Populate();
 
 private:
+    uint8 m_procCount;
+
     std::map<std::string, uint32> m_names;
     std::multimap<uint8, CourierData> m_courier;    // level/data
     std::multimap<uint8, CourierData> m_courierImp;    // level/data

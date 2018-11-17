@@ -14,6 +14,7 @@
 #include "eve-server.h"
 
 #include "agents/AgentDB.h"
+#include "StaticDataMgr.h"
 
 
 void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
@@ -32,9 +33,13 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
         "   chr.stationID,"
         "   chr.gender,"
         "   bl.bloodlineID,"    //10
-        "   itm.typeID "
+        "   itm.typeID, "
+        "   crp.friendID, "
+        "   crp.enemyID, "
+        "   crp.factionID "
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
+        " LEFT JOIN crpNPCCorporations AS crp ON crp.corporationID = agt.corporationID"
         " LEFT JOIN bloodlineTypes AS bl ON bl.typeID = chr.typeID"
         " LEFT JOIN mapDenormalize AS itm ON itm.itemID = agt.locationID"
         " WHERE agt.agentID = %u", agentID))
@@ -62,6 +67,10 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
         data.gender         = row.GetBool(9);
         data.bloodlineID    = row.GetUInt(10);
         data.locationTypeID = row.GetUInt(11);
+        data.friendCorp     = (row.IsNull(12) ? 0 : row.GetInt(12));
+        data.enemyCorp      = (row.IsNull(13) ? 0 : row.GetInt(13));
+        data.factionID      = row.GetInt(14);
+        data.raceID         = sDataMgr.GetFactionRace(data.factionID);
     }
 }
 

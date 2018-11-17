@@ -201,6 +201,11 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     button3->SetItem(0, new PyInt(Defer));
                     button3->SetItem(1, new PyInt(Defer));
                 dialog->AddItem(button3);
+            } else if (offer.stateID == Mission::State::Accepted) {
+                PyTuple* button1 = new PyTuple(2);
+                    button1->SetItem(0, new PyInt(Quit));
+                    button1->SetItem(1, new PyInt(Quit));
+                dialog->AddItem(button1);
             }
         } break;
         case Accept:
@@ -351,7 +356,8 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         case Mission::State::Failed:
         case Mission::State::Completed:
         case Mission::State::Rejected:
-        case Mission::State::Defered: {
+        case Mission::State::Defered:
+        case Mission::State::Expired: {
             return PyStatic.NewNone();
         }
     }
@@ -573,6 +579,48 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         blueprintInfo = extra.get('blueprintInfo', None)
         */
 
+    objectiveData->SetItemString("objectives", GetMissionObjectives(call.client, offer));
+    PyList* dunList = new PyList();  // this is a list of dunData dicts
+    /*
+    PyDict* dunData = new PyDict();
+        dunData->SetItemString("dungeonID", new PyInt(1000));
+        dunData->SetItemString("completionStatus", new PyInt(Dungeon::Status::Started));
+        dunData->SetItemString("optional", new PyInt());
+        dunData->SetItemString("briefingMessage", new PyInt());
+        dunData->SetItemString("objectiveCompleted", new PyBool(false));
+        dunData->SetItemString("ownerID", new PyInt(m_agent->GetID()));
+        dunData->SetItemString("shipRestrictions", new PyInt(0));   // 0=normal 1=special with link to *something else*
+        dunData->SetItemString("location", m_agent->GetLocationWrap());
+    */
+    objectiveData->SetItemString("dungeons", dunList);
+    /* dunData data....
+     * dungeonID
+     * completionStatus
+     * optional
+     * briefingMessage
+     * objectiveCompleted
+     * ownerID
+     * location
+        location['locationID']
+        location['locationType']
+        location['solarsystemID']
+        location['coords']
+        location['agentID']
+        ?location['referringAgentID']
+        ?location['shipTypeID']
+     * shipRestrictions  0=normal 1=special with link to *something else*
+     */
+
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionObjectiveInfo() RSP:" );
+        objectiveData->Dump(AGENT__RSPDUMP, "    ");
+    }
+
+    return objectiveData;
+}
+
+PyList* AgentBound::GetMissionObjectives(Client* pClient, MissionOffer& offer)
+{
     // set mission objectiveData based on mission type.
     PyList* objList = new PyList();
     PyDict* dropoffLocation = new PyDict();
@@ -600,7 +648,7 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
                 pickupLocation->SetItemString("solarsystemID", new PyInt(offer.originSystemID) );
             PyDict* cargo = new PyDict();
             /** @todo  check to see if player has correct cargo and set accordingly  */
-            if (call.client->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
+            if (pClient->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
                 cargo->SetItemString("hasCargo", new PyBool(true));
             else
                 cargo->SetItemString("hasCargo", new PyBool(false));
@@ -622,7 +670,7 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         case Mission::Type::Mining: {
             PyDict* cargo = new PyDict();
             /** @todo  check to see if player has correct cargo and set accordingly  */
-            if (call.client->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
+            if (pClient->ContainsTypeQty(offer.courierTypeID, offer.courierAmount))
                 cargo->SetItemString("hasCargo", new PyBool(true));
             else
                 cargo->SetItemString("hasCargo", new PyBool(false));
@@ -648,7 +696,8 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         case Mission::Type::Tutorial: {
         } break;
     }
-    objectiveData->SetItemString("objectives", objList);
+
+    return objList;
 
     /*  objectives data...
     if objType == 'agent':      -- report to agent
@@ -695,48 +744,43 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
         cargo['volume']
         cargo['quantity']
         */
-    PyList* dunList = new PyList();  // this is a list of dunData dicts
-    /*
-    PyDict* dunData = new PyDict();
-        dunData->SetItemString("dungeonID", new PyInt(1000));
-        dunData->SetItemString("completionStatus", new PyInt(Dungeon::Status::Started));
-        dunData->SetItemString("optional", new PyInt());
-        dunData->SetItemString("briefingMessage", new PyInt());
-        dunData->SetItemString("objectiveCompleted", new PyBool(false));
-        dunData->SetItemString("ownerID", new PyInt(m_agent->GetID()));
-        dunData->SetItemString("shipRestrictions", new PyInt(0));   // 0=normal 1=special with link to *something else*
-        dunData->SetItemString("location", m_agent->GetLocationWrap());
-    */
-    objectiveData->SetItemString("dungeons", dunList);
-    /* dunData data....
-     * dungeonID
-     * completionStatus
-     * optional
-     * briefingMessage
-     * objectiveCompleted
-     * ownerID
-     * location
-        location['locationID']
-        location['locationType']
-        location['solarsystemID']
-        location['coords']
-        location['agentID']
-        ?location['referringAgentID']
-        ?location['shipTypeID']
-     * shipRestrictions  0=normal 1=special with link to *something else*
-     */
-
-    if (is_log_enabled(AGENT__RSPDUMP)) {
-        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionObjectiveInfo() RSP:" );
-        objectiveData->Dump(AGENT__RSPDUMP, "    ");
-    }
-
-    return objectiveData;
 }
 
+PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
+    //parallelCalls.append((sm.GetService('agents').GetAgentMoniker(agentID).GetMyJournalDetails, ()))
+    //missionState, importantMission, missionType, missionName, agentID, expirationTime, bookmarks, remoteOfferable, remoteCompletable = each
+    // this is to update ONLY info with this agent....
+    _log(AGENT__DUMP,  "AgentBound::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
+    call.Dump(AGENT__DUMP);
 
+    PyTuple *tuple = new PyTuple(2);
+    //missions:
+    PyList* missions = new PyList();
+    MissionOffer offer;
+    if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
+        PyTuple* mData = new PyTuple(9);
+        mData->SetItem(0, new PyInt(offer.stateID)); //missionState  .. these may be wrong also.
+        mData->SetItem(1, new PyInt(offer.important?1:0)); //importantMission  -- integer boolean
+        mData->SetItem(2, new PyString(sMissionDataMgr.GetTypeLabel(offer.typeID))); //missionTypeLabel
+        mData->SetItem(3, new PyString(offer.name)); //missionName
+        mData->SetItem(4, new PyInt(offer.agentID)); //agentID
+        mData->SetItem(5, new PyLong(offer.expiryTime)); //expirationTime
+        mData->SetItem(6, offer.bookmarks->Clone()); //bookmarks -- if populated, this is PyList of PyDicts as defined below...
+        mData->SetItem(7, new PyBool(offer.remoteOfferable)); //remoteOfferable
+        mData->SetItem(8, new PyBool(offer.remoteCompletable)); //remoteCompletable
+        missions->AddItem(mData);
+    }
+    tuple->SetItem(0, missions);
 
-// new...not handled
+    //research:
+    PyList* research = new PyList();
+    tuple->SetItem(1, research);
+
+    if (is_log_enabled(AGENT__RSPDUMP))
+        tuple->Dump(AGENT__RSPDUMP, "   ");
+    return tuple;
+}
+
 PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
     //called on rclick in journal to "read details"
     //ret = self.GetAgentMoniker(agentID).GetMissionJournalInfo(charID, contentID)
@@ -777,9 +821,38 @@ PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
         return html
         */
 
-    return nullptr;
+    MissionOffer offer;
+    if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
+        return PyStatic.NewNone();
+
+    PyDict* journalInfo = new PyDict();
+        journalInfo->SetItemString("contentID", new PyInt(offer.characterID));
+        journalInfo->SetItemString("missionNameID", new PyInt(offer.missionID));
+        journalInfo->SetItemString("briefingTextID", new PyInt(offer.briefingID));
+        journalInfo->SetItemString("missionState", new PyInt(offer.stateID));
+        journalInfo->SetItemString("expirationTime", new PyLong(offer.expiryTime) );
+        journalInfo->SetItemString("objectives", GetMissionObjectives(call.client, offer));
+        /*  not sure about this one yet....
+        switch(offer.typeID) {
+            case Mission::Type::Courier:
+                journalInfo->SetItemString("iconID", sMissionDataMgr.GetCourierRes()); break;
+            case Mission::Type::Mining:
+                journalInfo->SetItemString("iconID", sMissionDataMgr.GetMiningRes()); break;
+            case Mission::Type::Encounter:
+                journalInfo->SetItemString("iconID", sMissionDataMgr.GetKillRes()); break;
+        }
+        */
+
+    if (is_log_enabled(AGENT__RSPDUMP)) {
+        _log(AGENT__RSPDUMP, "AgentBound::Handle_GetMissionJournalInfo() RSP:" );
+        journalInfo->Dump(AGENT__RSPDUMP, "    ");
+    }
+
+    return journalInfo;
 }
 
+
+// new...not handled
 PyResult AgentBound::Handle_GetDungeonShipRestrictions(PyCallArgs &call) {
     //restrictions = self.GetAgentMoniker(agentID).GetDungeonShipRestrictions(dungeonID)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetDungeonShipRestrictions() - size= %u", call.tuple->size() );
@@ -827,38 +900,4 @@ PyResult AgentBound::Handle_WarpToLocation(PyCallArgs &call) {
     call.Dump(AGENT__DUMP);
 
     return nullptr;
-}
-
-PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
-    //parallelCalls.append((sm.GetService('agents').GetAgentMoniker(agentID).GetMyJournalDetails, ()))
-    // this is to update ONLY info with this agent....
-    _log(AGENT__DUMP,  "AgentBound::Handle_GetMyJournalDetails() - size= %u", call.tuple->size() );
-    call.Dump(AGENT__DUMP);
-
-    PyTuple *tuple = new PyTuple(2);
-    //missions:
-    PyList* missions = new PyList();
-    MissionOffer offer;
-    if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
-        PyTuple* mData = new PyTuple(9);
-        mData->SetItem(0, new PyInt(offer.stateID)); //missionState  .. these may be wrong also.
-        mData->SetItem(1, new PyInt(offer.important?1:0)); //importantMission  -- integer boolean
-        mData->SetItem(2, new PyString(sMissionDataMgr.GetTypeLabel(offer.typeID))); //missionTypeLabel
-        mData->SetItem(3, new PyString(offer.name)); //missionName
-        mData->SetItem(4, new PyInt(offer.agentID)); //agentID
-        mData->SetItem(5, new PyLong(offer.expiryTime)); //expirationTime
-        mData->SetItem(6, offer.bookmarks->Clone()); //bookmarks -- if populated, this is PyList of PyDicts as defined below...
-        mData->SetItem(7, new PyBool(offer.remoteOfferable)); //remoteOfferable
-        mData->SetItem(8, new PyBool(offer.remoteCompletable)); //remoteCompletable
-        missions->AddItem(mData);
-    }
-    tuple->SetItem(0, missions);
-
-    //research:
-    PyList* research = new PyList();
-    tuple->SetItem(1, research);
-
-    if (is_log_enabled(AGENT__RSPDUMP))
-        tuple->Dump(AGENT__RSPDUMP, "   ");
-    return tuple;
 }

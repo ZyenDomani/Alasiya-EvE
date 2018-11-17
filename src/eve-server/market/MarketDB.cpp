@@ -309,6 +309,7 @@ uint32 MarketDB::FindSellOrder(
     return 0;
 }
 
+/** @todo  what the fuck is this????  */
 bool MarketDB::GetOrderInfo(
     uint32 orderID,
     uint32 *ownerID,
@@ -344,13 +345,13 @@ bool MarketDB::GetOrderInfo(
         return false;
     }
 
-    if (quantity)        *quantity = row.GetUInt(0);
-    if (price)           *price = row.GetDouble(1);
-    if (typeID)          *typeID = row.GetUInt(2);
-    if (stationID)       *stationID = row.GetUInt(3);
-    if (ownerID)         *ownerID = row.GetUInt(4);
-    if (isBuy)           *isBuy = row.GetInt(5) ? true : false;
-    if (isCorp)          *isCorp = row.GetInt(6) ? true : false;
+    if (quantity != nullptr)        *quantity = row.GetUInt(0);
+    if (price != nullptr)           *price = row.GetDouble(1);
+    if (typeID != nullptr)          *typeID = row.GetUInt(2);
+    if (stationID != nullptr)       *stationID = row.GetUInt(3);
+    if (ownerID != nullptr)         *ownerID = row.GetUInt(4);
+    if (isBuy != nullptr)           *isBuy = row.GetBool(5);
+    if (isCorp != nullptr)          *isCorp = row.GetBool(6);
 
     return true;
 }

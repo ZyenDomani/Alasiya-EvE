@@ -35,6 +35,7 @@
 #include "utils/Singleton.h"
 #include "threading/Mutex.h"
 
+class Agent;
 class Client;
 class PyAddress;
 class EVENotificationStream;
@@ -76,6 +77,8 @@ public:
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
     // updated to use station guest list instead of full clientlist loop
     void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
+
+    Agent* GetAgent(uint32 agentID);
 
     Client* FindClientByName(const char* name) const;
     Client* FindClientByShip(uint32 ship_id) const;
@@ -137,6 +140,8 @@ private:
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, StationItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
+    std::map<uint32, Agent*> m_agents;
+
 
     bool m_shipTracking;
 

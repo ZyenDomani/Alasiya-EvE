@@ -117,7 +117,7 @@ public:
     int64 GetRolesAtOther() const                       { return mSession.GetCurrentLong( "rolesAtOther" ); }
 
     // fleet data
-    bool InFleet()                                      { return (IsFleet(m_fleet) ? true : false); }
+    bool InFleet()                                      { return IsFleet(m_fleet); }
     bool IsFleetBoss()                                  { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
     bool IsFleetBooster()                               { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Booster::No) ? false : true) : false); }
 
@@ -192,12 +192,12 @@ public:
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
     uint32 GetDockStationID()                           { return m_dockStationID; };
     GPoint GetDockPoint()                               { return m_dockPoint; }
-    bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule ? true : false); }
-    bool IsInSpace()                                    { return (IsSolarSystem(m_locationID) ? true : false); }
-    bool IsDocked()                                     { return (IsStation(m_locationID) ? true : false); }
-    bool IsDock()                                       { return (m_clientState == ClientState::csDock ? true : false); }
-    bool IsJump()                                       { return (m_clientState == ClientState::csJump ? true : false); }
-    bool IsBoard()                                      { return (m_clientState == ClientState::csBoard ? true : false); }
+    bool InPod()                                        { return (m_ship->groupID() == EVEDB::invGroups::Capsule); }
+    bool IsInSpace()                                    { return IsSolarSystem(m_locationID); }
+    bool IsDocked()                                     { return IsStation(m_locationID); }
+    bool IsDock()                                       { return (m_clientState == ClientState::csDock); }
+    bool IsJump()                                       { return (m_clientState == ClientState::csJump); }
+    bool IsBoard()                                      { return (m_clientState == ClientState::csBoard); }
     bool IsInvul()                                      { return m_invul; }
     bool IsLogin()                                      { return m_login; }
     bool IsUndock()                                     { return m_undock; }

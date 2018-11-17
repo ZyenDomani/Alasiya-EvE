@@ -90,6 +90,7 @@ public:
 
     uint32              GetCorpID(uint32 factionID);
     uint32              GetRaceFaction(EVERace raceID);
+    EVERace             GetFactionRace(uint32 factionID);
     std::string         GetCorpName(uint32 corpID);
     std::string         GetFactionName(uint32 factionID);
 
@@ -125,6 +126,7 @@ private:
     std::map<uint32, uint32>                            m_stationRegion;    // stationID/regionID
     std::map<uint32, uint32>                            m_stationConst;     // stationID/systemID
     std::map<uint32, uint32>                            m_stationSystem;    // stationID/systemID
+    std::map<uint32, uint8>                             m_factionRaces;     // factionID/raceID
     std::map<uint16, BlueprintTypeData>                 m_bpTypeData;       // typeID/data
     std::map<uint16, uint8>                             m_moonGoo;          // typeID/rarity
     std::map<uint16, std::string>                       m_skills;           // typeID/name

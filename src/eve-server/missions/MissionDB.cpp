@@ -25,7 +25,7 @@ void MissionDB::LoadCourierData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
         "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.important, q.storyline, q.itemTypeID, q.itemQty, it.volume, q.rewardISK, q.rewardItemID,"
-        " q.rewardItemQty, q.bonusISK, q.bonusTime, q.sysRange"
+        " q.rewardItemQty, q.bonusISK, q.bonusTime, q.sysRange, q.raceID"
         " FROM qstCourier AS q LEFT JOIN invTypes AS it ON it.typeID = itemTypeID WHERE briefingID > 0 AND itemTypeID > 0 AND rewardISK > 0"))
         codelog(DATABASE__ERROR, "Error in LoadCourierData query: %s", res.error.c_str());
 }
@@ -34,7 +34,7 @@ void MissionDB::LoadMiningData(DBQueryResult& res)
 {
     if (!sDatabase.RunQuery(res,
         "SELECT q.id, q.briefingID, q.name, q.level, q.typeID, q.important, q.storyline, q.itemTypeID, q.itemQty, it.volume, q.rewardISK, q.rewardItemID,"
-        " q.rewardItemQty, q.bonusISK, q.bonusTime, q.sysRange"
+        " q.rewardItemQty, q.bonusISK, q.bonusTime, q.sysRange, q.raceID"
         " FROM qstMining AS q LEFT JOIN invTypes AS it ON it.typeID = itemTypeID WHERE briefingID > 0 AND itemTypeID > 0 AND rewardISK > 0"))
         codelog(DATABASE__ERROR, "Error in LoadMiningData query: %s", res.error.c_str());
 }
@@ -75,7 +75,6 @@ void MissionDB::UpdateMissionOffer(MissionOffer& data)
         data.stateID, data.dateAccepted, data.dateCompleted, data.offerID))
     {
         codelog(DATABASE__ERROR, "Failed to insert new MissionOffer: %s", err.c_str());
-        return;
     }
 }
 
@@ -109,3 +108,32 @@ void MissionDB::LoadMissionBookMark(DBQueryResult& res, std::vector<int32>& bmID
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
     }
 }
+
+void MissionDB::RemoveMissionItem(uint32 charID, uint16 typeID, uint32 qty)
+{
+    //  this may get a bit complicated if the items are split.
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT itemID, quantity FROM entity WHERE typeID = %u AND ownerID = %u", typeID, charID);
+
+    DBResultRow row;
+    std::map<uint32, uint16> map;
+    while (res.GetRow(row)) {
+        // make map of all items of 'typeID'
+        map.emplace(row.GetInt(0), row.GetInt(1));
+    }
+
+    DBerror err;
+    for (auto cur : map) {
+        if (qty < 1)
+            break;
+        if (cur.second <= qty) {
+            qty -= cur.second;
+            sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", cur.first);
+        } else if (cur.second > qty) {
+            sDatabase.RunQuery(err, "UPDATE entity SET quantity = %u WHERE itemID = %u", qty, cur.first);
+            qty = 0;
+        }
+    }
+
+}
+

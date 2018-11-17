@@ -104,7 +104,7 @@ bool FactoryDB::GetBlueprint(uint32 blueprintID, BlueprintData &into) {
         return false;
     }
 
-    into.copy = (row.GetInt(0) ? true : false);
+    into.copy = row.GetBool(0);
     into.mLevel = row.GetInt(1);
     into.pLevel = row.GetInt(2);
     into.runs = row.GetInt(3);

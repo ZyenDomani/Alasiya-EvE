@@ -272,9 +272,9 @@ void LSCDB::GetChannelInformation(int32 channelID, std::string & name,
     motd = (row.IsNull(2) ? "" : row.GetText(2));    // empty motd field in channels table row returns NULL, so fill this string with "" in that case
     ownerid = row.GetUInt(3);
     compkey = (row.IsNull(4) ? "" : row.GetText(4)); // empty comparisonKey field in channels table row returns NULL, so fill this string with "" in that case
-    memberless = row.GetUInt(5) ? true : false;
+    memberless = row.GetBool(5);
     password = (row.IsNull(6) ? "" : row.GetText(6));// empty password field in channels table row returns NULL, so fill this string with "" in that case
-    maillist = row.GetUInt(7) ? true : false;
+    maillist = row.GetBool(7);
     cspa = row.GetUInt(8);
 }
 

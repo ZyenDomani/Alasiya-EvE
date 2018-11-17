@@ -62,7 +62,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     // this will be based on agent type eventually
     uint8 misionType = Mission::Type::Courier;
 
-    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, m_important, offer);
+    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, m_data.raceID, m_important, offer);
 
     /*  static mission data from db
     offer.name               = cData.name;
@@ -164,6 +164,15 @@ void Agent::UpdateOffer(uint32 charID, MissionOffer& offer)
         sMissionDataMgr.UpdateMissionData(charID, itr->second);
     } else
         _log(AGENT__WARNING, "Agent::UpdateOffer() - offer not found for character %u", charID);
+}
+
+void Agent::RemoveOffer(uint32 charID)
+{
+    std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);
+    if (itr != m_offers.end())
+        m_offers.erase(itr);
+    else
+        _log(AGENT__WARNING, "Agent::RemoveOffer() - offer not found for character %u", charID);
 }
 
 void Agent::DeleteOffer(uint32 charID)
@@ -396,6 +405,8 @@ PyObject* Agent::GetInfoServiceDetails()
 
 uint32 Agent::GetAcceptRsp(uint32 charID)
 {
+    //(130431, 'Thank you.  Be careful out there, those logs must <b>not</b> fall into the wrong hands.')
+
     switch (MakeRandomInt(1, 13)) {
         case 1:   return 236738; // `Very well then, get going.`)
         case 2:   return 236739; // `Ok, hurry up will you.`)
@@ -468,6 +479,8 @@ uint32 Agent::GetQuitRsp(uint32 charID)
 
 void Agent::SendMissionUpdate(Client* pClient, std::string action)
 {
+    if (pClient == nullptr)
+        return;
     //OnAgentMissionChange(action, agentID, tutorialID)
     /*
     agentMissionOffered = 'offered'

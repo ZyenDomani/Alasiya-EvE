@@ -60,7 +60,7 @@ bool InventoryDB::GetCategory(EVEItemCategories category, CategoryData &into) {
 
     into.name = row.GetText(0);
     into.description = row.GetText(1);
-    into.published = (row.GetInt(2) ? true : false);
+    into.published = row.GetBool(2);
 
     return true;
 }
@@ -97,13 +97,13 @@ bool InventoryDB::GetGroup(uint32 groupID, GroupData &into) {
     into.category = (EVEItemCategories)row.GetUInt(0);
     into.name = row.GetText(1);
     into.description = row.GetText(2);
-    into.useBasePrice = (row.GetInt(3) ? true : false);
-    into.allowManufacture = (row.GetInt(4) ? true : false);
-    into.allowRecycler = (row.GetInt(5) ? true : false);
-    into.anchored = (row.GetInt(6) ? true : false);
-    into.anchorable = (row.GetInt(7) ? true : false);
-    into.fittableNonSingleton = (row.GetInt(8) ? true : false);
-    into.published = (row.GetInt(9) ? true : false);
+    into.useBasePrice = row.GetBool(3);
+    into.allowManufacture = row.GetBool(4);
+    into.allowRecycler = row.GetBool(5);
+    into.anchored = row.GetBool(6);
+    into.anchorable = row.GetBool(7);
+    into.fittableNonSingleton = row.GetBool(8);
+    into.published = row.GetBool(9);
 
     return true;
 }
@@ -150,7 +150,7 @@ bool InventoryDB::GetType(uint32 typeID, TypeData &into) {
     into.portionSize = row.GetUInt(7);
     into.race = EVERace(row.IsNull(8) ? 0 : row.GetUInt(8));
 	into.basePrice = row.GetInt64(9) /1000;
-    into.published = (sConfig.server.AllowNonPublished ? true : (row.GetInt(10) ? true : false));
+    into.published = (sConfig.server.AllowNonPublished ? true : row.GetBool(10));
     into.marketGroupID = (row.IsNull(11) ? 0 : row.GetUInt(11));
     into.chanceOfDuplicating = row.GetDouble(12);
 
@@ -423,8 +423,8 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     into.ownerID = (row.IsNull(2) ? 1 : row.GetUInt(2));
     into.locationID = (row.IsNull(3) ? 0 : row.GetUInt(3));
     into.flag = (EVEItemFlags)row.GetUInt(4);
-    into.contraband = (row.GetInt(5) ? true : false);
-    into.singleton = (row.GetInt(6) ? true : false);
+    into.contraband = row.GetBool(5);
+    into.singleton = row.GetBool(6);
     into.quantity = row.GetUInt(7);
 
     into.position.x = row.GetDouble(8);
@@ -792,7 +792,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     into.accountID = row.IsNull( 0 ) ? 0 : row.GetUInt( 0 );
     into.title = row.GetText( 1 );
     into.description = row.GetText( 2 );
-    into.gender = row.GetUInt( 3 ) ? true : false;
+    into.gender = row.GetBool( 3 );
     into.bounty = row.GetDouble( 4 );
     into.balance = row.GetDouble( 5 );
     into.aurBalance = row.GetDouble( 6 );
@@ -1040,13 +1040,13 @@ bool InventoryDB::GetSolarSystem(uint32 solarSystemID, SolarSystemData &into) {
     into.maxPosition = GPoint(row.GetDouble(3), row.GetDouble(4), row.GetDouble(5));
     into.luminosity = row.GetDouble(6);
 
-    into.border = (row.GetInt(7) ? true : false);
-    into.fringe = (row.GetInt(8) ? true : false);
-    into.corridor = (row.GetInt(9) ? true : false);
-    into.hub = (row.GetInt(10) ? true : false);
-    into.international = (row.GetInt(11) ? true : false);
-    into.regional = (row.GetInt(12) ? true : false);
-    into.constellation = (row.GetInt(13) ? true : false);
+    into.border = row.GetBool(7);
+    into.fringe = row.GetBool(8);
+    into.corridor = row.GetBool(9);
+    into.hub = row.GetBool(10);
+    into.international = row.GetBool(11);
+    into.regional = row.GetBool(12);
+    into.constellation = row.GetBool(13);
 
     into.security = row.GetDouble(14);
     into.factionID = (row.IsNull(15) ? 0 : row.GetUInt(15));

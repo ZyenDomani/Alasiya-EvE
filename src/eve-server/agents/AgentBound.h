@@ -34,9 +34,13 @@ public:
     PyCallable_DECL_CALL(GotoLocation);
     PyCallable_DECL_CALL(WarpToLocation);
 
-    protected:
-        Agent* m_agent;    //we do not own this.
-        Dispatcher* m_dispatch;    //we own this
+protected:
+    Agent* m_agent;    //we do not own this.
+    Dispatcher* m_dispatch;    //we own this
+
+private:
+    PyList* GetMissionObjectives(Client* pClient, MissionOffer& offer);
+
 };
 
 

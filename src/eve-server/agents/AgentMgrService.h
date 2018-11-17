@@ -50,11 +50,6 @@ protected:
     //overloaded in order to support bound objects:
     virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
 
-private:
-    //for now this lives here, might want to move eventually.
-    std::map<uint32, Agent *> m_agents;    //we own these
-    Agent* _GetAgent(uint32 agentID);
-
 };
 
 class EpicArcService : public PyService {

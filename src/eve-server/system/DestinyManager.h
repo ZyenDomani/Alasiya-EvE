@@ -105,7 +105,7 @@ public:
     bool IsStopped()                                    { return (State == Destiny::DSTBALL_STOP); }
     bool IsOrbiting()                                   { return (State == Destiny::DSTBALL_ORBIT); }
     bool IsFollowing()                                  { return (State == Destiny::DSTBALL_FOLLOW); }
-    //bool IsJumping()                                  { return (State == Destiny::DSTBALL_STOP) ? true : false); }
+    //bool IsJumping()                                  { return (State == Destiny::DSTBALL_STOP); }
     bool IsWarping()                                    { return (m_warpState ? true : false); }
 	bool IsCloaked()                                    { return m_cloaked; }
 	bool IsTurning()                                    { return m_turning; }

@@ -104,7 +104,7 @@ void StationDataMgr::Populate()
         sData.reprocessingStationsTake  = row.GetFloat(15);
         sData.reprocessingEfficiency    = row.GetFloat(16);
         sData.reprocessingHangarFlag    = row.GetInt(17);
-        sData.conquerable               = (row.GetInt(18) == 1 ? true : false);
+        sData.conquerable               = row.GetBool(18);
         sData.hangarGraphicID           = row.GetInt(19);
         sData.orbitID                   = row.GetInt(20);
         sData.radius                    = row.GetFloat(21);

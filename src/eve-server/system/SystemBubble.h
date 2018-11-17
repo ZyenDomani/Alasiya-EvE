@@ -74,7 +74,7 @@ public:
     uint32 CountDynamics()                              { return m_dynamicEntities.size(); }
 
     /* used for bubble management */
-    bool IsEmpty() const                                { return (m_entities.empty() ? (m_dynamicEntities.empty() ? true : false) : false); }
+    bool IsEmpty() const                                { return (m_entities.empty() ? m_dynamicEntities.empty() : false); }
     bool HasStatics() const                             { return (m_entities.empty() ? false : true); }
     bool HasDynamics() const                            { return (m_dynamicEntities.empty() ? false : true); }
     bool HasPlayers() const                             { return (m_players.empty() ? false : true); }

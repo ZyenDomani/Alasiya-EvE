@@ -31,8 +31,10 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
+#include "agents/Agent.h"
 #include "market/MarketMgr.h"
 //#include "market/MarketBotMgr.h"
+#include "missions/MissionDataMgr.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
@@ -47,6 +49,7 @@ m_stampTimer(0, true),
 m_minutetimer(0, true),
 m_updateTimer(0)
 {
+    m_agents.clear();
     m_systems.clear();
     m_clients.clear();
     m_stations.clear();
@@ -73,7 +76,7 @@ void EntityList::Initialize() {
 
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
-    
+
     sLog.Blue("       EntityList", "EntityList Initialized.");
 }
 
@@ -92,14 +95,17 @@ void EntityList::Shutdown() {
 void EntityList::Close()
 {
     if (m_clients.size() > 0)
-        sLog.Yellow("       EntityList", "Cleaning up %u clients, %u systems, and %u stations", \
-                m_clients.size(), m_systems.size(), m_stations.size());
+        sLog.Yellow("       EntityList", "Cleaning up %u clients, %u systems, %u agents, and %u stations", \
+                    m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
     else
-        sLog.Green("       EntityList", "Cleaning up %u clients, %u systems, and %u stations", \
-                m_clients.size(), m_systems.size(), m_stations.size());
+        sLog.Green("       EntityList", "Cleaning up %u clients, %u systems, %u agents, and %u stations", \
+                    m_clients.size(), m_systems.size(), m_agents.size(), m_stations.size());
 
     for (auto cur : m_clients)
         SafeDelete(cur);
+
+    for (auto cur : m_agents)
+        SafeDelete(cur.second);
 
     for (auto cur : m_systems) {
         cur.second->UnloadSystem();
@@ -172,6 +178,7 @@ void EntityList::Process() {
         if (m_minutetimer.Check()) {
             // dont have a use for this yet, but have visions where this could be handy (like player online counters)
             ++m_minutes;
+            sMissionDataMgr.Process();  // 1m
 
             // these do not need to be precise
             sWHMgr.Process();   // ~2m
@@ -207,6 +214,20 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     _log(SERVER__INIT, "BootSystem() - Booted system %u", systemID);
     m_systems[systemID] = pSM;
     return pSM;
+}
+
+Agent* EntityList::GetAgent(uint32 agentID) {
+    std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
+    if (res != m_agents.end())
+        return res->second;
+
+    Agent* aPtr = new Agent(agentID);
+    if (!aPtr->Load()) {
+        delete aPtr;
+        return nullptr;
+    }
+    m_agents[agentID] = aPtr;
+    return aPtr;
 }
 
 // this method is corrected, as stations have their own guestlist now.

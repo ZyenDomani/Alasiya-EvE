@@ -49,6 +49,7 @@
 
 #include "eve-server.h"
 
+#include "EntityList.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
@@ -75,24 +76,6 @@ AgentMgrService::AgentMgrService(PyServiceMgr *mgr)
 
 AgentMgrService::~AgentMgrService() {
     delete m_dispatch;
-    std::map<uint32, Agent *>::iterator cur = m_agents.begin();
-    for(; cur != m_agents.end(); cur++) {
-        delete cur->second;
-    }
-}
-
-Agent* AgentMgrService::_GetAgent(uint32 agentID) {
-    std::map<uint32, Agent*>::iterator res = m_agents.find(agentID);
-    if (res != m_agents.end())
-        return res->second;
-
-    Agent* aPtr = new Agent(agentID);
-    if (!aPtr->Load()) {
-        delete aPtr;
-        return nullptr;
-    }
-    m_agents[agentID] = aPtr;
-    return aPtr;
 }
 
 // need a way to check created objects for client/agent combinations to avoid duplicates.
@@ -104,7 +87,7 @@ PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_
     }
 
     uint32 agentID = bind_args->AsInt()->value();
-    Agent* aPtr = _GetAgent(agentID);
+    Agent* aPtr = sEntityList.GetAgent(agentID);
     if (aPtr == nullptr) {
         codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
         return nullptr;

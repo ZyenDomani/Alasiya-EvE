@@ -69,6 +69,7 @@ struct CourierData {
     uint8 level;
     uint8 typeID;
     uint8 range;
+    uint8 raceID;
     uint16 missionID;
     uint16 itemTypeID;
     uint16 itemQty;
@@ -92,7 +93,8 @@ namespace Mission {
             //added
             Completed   = 4,
             Rejected    = 5,
-            Defered     = 6
+            Defered     = 6,
+            Expired     = 7
         };
     }
 

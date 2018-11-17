@@ -46,7 +46,8 @@ public:
     void MakeOffer(uint32 charID, MissionOffer& offer);
     void GetOffer(uint32 charID, MissionOffer& offer);
     void UpdateOffer(uint32 charID, MissionOffer& offer);
-    void DeleteOffer(uint32 charID);
+    void DeleteOffer(uint32 charID);    // completely deletes offer from agent data, missionMgr data, and db
+    void RemoveOffer(uint32 charID);    // removes offer from agent data
 
     uint32 GetQuitRsp(uint32 charID);
     uint32 GetAcceptRsp(uint32 charID);

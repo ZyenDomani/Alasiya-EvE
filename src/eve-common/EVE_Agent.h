@@ -13,8 +13,9 @@ struct AgentData {
     bool locator;
     bool research;
     int8 quality;
-    uint8 divisionID;
     uint8 level;
+    uint8 raceID;
+    uint8 divisionID;
     uint8 bloodlineID;
     uint16 typeID;
     uint16 locationTypeID;
@@ -22,6 +23,9 @@ struct AgentData {
     uint32 solarSystemID;
     uint32 stationID;
     uint32 locationID;
+    uint32 friendCorp;
+    uint32 enemyCorp;
+    uint32 factionID;
 };
 
 struct AgentOffers {

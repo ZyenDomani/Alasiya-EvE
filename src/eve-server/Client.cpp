@@ -1828,7 +1828,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
         DBResultRow row;
         if (online_indicator.GetRow(row))
-        	isOnline = row.GetInt(0) ? true : false;
+        	isOnline = row.GetBool(0);
 
     //	############################################################################################################################
     }

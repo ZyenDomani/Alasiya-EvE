@@ -62,6 +62,7 @@ enum EVERace {
     raceCaldari     = 1,
     raceMinmatar    = 2,
     raceAmarr       = 4,
+    raceAmmatar     = 6,        // not an actual race, but combo of Minmatar and Amarr
     raceGallente    = 8,
     raceJove        = 16,
     racePirate      = 32,
