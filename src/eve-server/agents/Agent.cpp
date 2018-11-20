@@ -571,13 +571,13 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     PyTuple* corp = new PyTuple(5);
         corp->SetItem(0, new PyInt(m_data.corporationID));
         corp->SetItem(1, new PyInt(pClient->GetCharacterID()));
-        corp->SetItem(2, new PyFloat(newStanding /5));
+        corp->SetItem(2, new PyFloat(newStanding /4));
         corp->SetItem(3, new PyInt(-1));
         corp->SetItem(4, new PyInt(1));
     PyTuple* faction = new PyTuple(5);
         faction->SetItem(0, new PyInt(m_data.factionID));
         faction->SetItem(1, new PyInt(pClient->GetCharacterID()));
-        faction->SetItem(2, new PyFloat(newStanding /10));
+        faction->SetItem(2, new PyFloat(newStanding /8));
         faction->SetItem(3, new PyInt(-1));
         faction->SetItem(4, new PyInt(1));
     PyList* list = new PyList();
@@ -586,6 +586,12 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         list->AddItem(faction);
     PyTuple* payload = new PyTuple(1);
         payload->SetItem(0, list);
+
+    if (is_log_enabled(STANDING__RSPDUMP)) {
+        _log(STANDING__RSPDUMP, "Agent::UpdateStandings RSP:" );
+        payload->Dump(STANDING__RSPDUMP, "    ");
+    }
+
     pClient->SendNotification("OnStandingsModified", "charid", payload, false);    // i *think* this is unsequenced
 }
 

@@ -42,11 +42,11 @@
 
  DB tables [fields] (notes)
  repFactions    [fromID, toID, standing] (NPC Faction<-->NPC Faction) {populated, hard-coded  -- cant change}
- repStandings   [fromID, toID, standing] (agent-->char, agent-->corp  -- changed by missions status')
+ repStandings   [fromID, toID, standing] (agent-->char, agent-->PC corp  -- changed by missions status')
  repStandings   [fromID, toID, standing] (corporation<-->alliance, alliance<-->alliance  -- changed thru Corp window)
  repStandings   [fromID, toID, standing] (character<-->character, character<-->corporation  -- changed thru PnP window)
  repStandings   [fromID, toID, standing] (corporation<-->character, corporation<-->corporation  -- changed thru Corp window)
- repStandings   [fromID, toID, standing] (NPC corp-->char  -- changed by missions and faction kills)
+ repStandings   [fromID, toID, standing] (NPC corp-->char, NPC corp -->PC corp  -- changed by missions and faction kills)
 
  all change logs will go here.  not sure of all fields yet
  repStandingChanges [fromID, toID, eventID, eventTypeID, eventDateTime, modification, originalFromID, originalToID, int_1, int_2, int_3, msg] ()

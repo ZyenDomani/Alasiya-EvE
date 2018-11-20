@@ -90,11 +90,11 @@ namespace Mission {
             Offered     = 1,
             Accepted    = 2,
             Failed      = 3,
-            //added
+            //added - cannot send these to client.
             Completed   = 4,
             Rejected    = 5,
-            Defered     = 6,
-            Expired     = 7
+            Defered     = 6,    // send as Allocated
+            Expired     = 7     // send as Failed
         };
     }
 

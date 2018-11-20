@@ -30,6 +30,17 @@
  * see notes in StandingDB.cpp
  */
 
+/*
+ * STANDING__ERROR
+ * STANDING__WARNING
+ * STANDING__MESSAGE
+ * STANDING__DEBUG
+ * STANDING__INFO
+ * STANDING__TRACE
+ * STANDING__DUMP
+ * STANDING__RSPDUMP
+ */
+
 PyCallable_Make_InnerDispatcher(Standing)
 
 Standing::Standing(PyServiceMgr *mgr)
@@ -75,34 +86,41 @@ PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if(!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
-    CharacterRef c = sItemFactory.GetCharacter( arg.arg );
-    if( !c ) {
-        _log(SERVICE__ERROR, "Character %u not found.", arg.arg);
-        return NULL;
+    CharacterRef cRef = sItemFactory.GetCharacter( arg.arg );
+    if  (cRef == nullptr) {
+        _log(STANDING__WARNING, "Character %u not found.", arg.arg);
+        return nullptr;
     }
 
-    return new PyFloat( c->GetSecurityRating() );
+    return new PyFloat( cRef->GetSecurityRating() );
 }
 
 PyResult Standing::Handle_GetMyKillRights(PyCallArgs &call) {
     // self.killRightsCache, self.killedRightsCache = sm.RemoteSvc('standing2').GetMyKillRights()
     // each cache holds k,v where key is toID or fromID
-    PyTuple *tu = new PyTuple(2);
-    PyDict *u1 = new PyDict();
-    PyDict *u2 = new PyDict();
-        tu->items[0] = u1;
-        tu->items[1] = u2;
-    return tu;
+    _log(STANDING__MESSAGE,  "Standing::Handle_GetMyKillRights()");
+    PyTuple* KillRights = new PyTuple(2);
+    PyDict* killRightsCache = new PyDict();
+    PyDict* killedRightsCache = new PyDict();
+        KillRights->items[0] = killRightsCache;
+        KillRights->items[1] = killedRightsCache;
+
+    if (is_log_enabled(STANDING__RSPDUMP)) {
+        _log(STANDING__RSPDUMP, "Standing::Handle_GetMyKillRights() RSP:" );
+        KillRights->Dump(STANDING__RSPDUMP, "    ");
+    }
+
+    return KillRights;
 }
 
 // cannot find a call to this one
 PyResult Standing::Handle_GetMyStandings(PyCallArgs &call) {
     /* still working on this one (cause i dont completely understand it yet) */
-  sLog.White( "Standing::Handle_GetMyStandings()", "size= %u", call.tuple->size() );
-  call.Dump(SERVICE__CALL_DUMP);
+    _log(STANDING__MESSAGE,  "Standing::Handle_GetMyStandings()");
+  call.Dump(STANDING__DUMP);
 
     PyRep *charstandings = m_db.GetCharStandings(call.client);
     PyRep *charprime = m_db.PrimeCharStandings(call.client->GetCharacterID());   //prime, as in to set initial values (initialize)
@@ -127,13 +145,13 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
     /**
      * data = sm.RemoteSvc('standing2').GetStandingTransactions(fromID, toID, direction, eventID, eventType, eventDateTime)
      */
-    sLog.White( "Standing::Handle_GetStandingTransactions()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingTransactions()");
+    call.Dump(STANDING__DUMP);
 
     Call_GetStandingTransactions args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
     /*
      * 22:45:01 [SvcCall] Service standing2::GetStandingTransactions()
@@ -178,14 +196,14 @@ PyResult Standing::Handle_GetStandingCompositions(PyCallArgs &call) {
                 for each in self.sr.data:
                     if each.ownerID == fromID:
                         prior = each.standing
-*/
-    sLog.White( "Standing::Handle_GetStandingCompositions()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+                        */
+_log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
+    call.Dump(STANDING__DUMP);
 
     Call_GetStandingComposition args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
 
     return m_db.GetStandingCompositions(args.toID, args.fromID);

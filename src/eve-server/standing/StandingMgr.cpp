@@ -12,6 +12,17 @@
 
 #include "StandingMgr.h"
 
+/*
+ * STANDING__ERROR
+ * STANDING__WARNING
+ * STANDING__MESSAGE
+ * STANDING__DEBUG
+ * STANDING__INFO
+ * STANDING__TRACE
+ * STANDING__DUMP
+ * STANDING__RSPDUMP
+ */
+
 
 StandingMgr::StandingMgr()
 : m_factionStandings(nullptr)

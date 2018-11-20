@@ -277,7 +277,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             // extend expiry time and close
             MissionOffer offer;
             if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
-                offer.stateID = Mission::State::Defered;
+                offer.stateID = Mission::State::Allocated; //Defered
                 offer.expiryTime += Win32Time_Day;
                 m_agent->UpdateOffer(call.client->GetCharacterID(), offer);
                 m_agent->SendMissionUpdate(call.client, "prolong");
@@ -385,7 +385,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
         return PyStatic.NewNone();
 
     switch (offer.stateID) {
-        case Mission::State::Allocated:
+        //case Mission::State::Allocated:
         case Mission::State::Accepted:
         case Mission::State::Failed:
         case Mission::State::Completed:

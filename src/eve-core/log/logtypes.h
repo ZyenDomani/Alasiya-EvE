@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 8.6
+ Log Version: 8.7
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -160,6 +160,16 @@ LOG_TYPE( BULKDATA, DEBUG, DISABLED, "BulkDebug" )
 LOG_TYPE( BULKDATA, INFO, DISABLED, "BulkInfo" )
 LOG_TYPE( BULKDATA, TRACE, DISABLED, "BulkTrace" )
 LOG_TYPE( BULKDATA, DUMP, DISABLED, "BulkDump" )
+
+LOG_CATEGORY( STANDING )
+LOG_TYPE( STANDING, ERROR,   ENABLED, "StandingError" )
+LOG_TYPE( STANDING, WARNING, DISABLED, "StandingWarning" )
+LOG_TYPE( STANDING, MESSAGE, DISABLED, "StandingMsg" )
+LOG_TYPE( STANDING, DEBUG, DISABLED, "StandingDebug" )
+LOG_TYPE( STANDING, INFO, DISABLED, "StandingInfo" )
+LOG_TYPE( STANDING, TRACE, DISABLED, "StandingTrace" )
+LOG_TYPE( STANDING, DUMP, DISABLED, "StandingDump" )
+LOG_TYPE( STANDING, RSPDUMP, DISABLED, "StandingRspDump" )
 
 LOG_CATEGORY( SCAN )
 LOG_TYPE( SCAN, ERROR,   ENABLED, "ScanError" )
