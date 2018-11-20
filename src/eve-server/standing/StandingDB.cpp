@@ -54,33 +54,33 @@
  http://www.eveinfo.net/wiki/ind~4067.htm
  */
 
-PyRep *StandingDB::GetFactionStandings() {
+PyObjectEx* StandingDB::GetFactionStandings() {
     // repFactions table is ONLY faction standings
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID,toID,standing FROM repFactions");
     return DBResultToCRowset(res);
 }
 
-PyRep *StandingDB::GetCharStandings(Client* pClient) {
+PyRep* StandingDB::GetCharStandings(Client* pClient) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, toID, standing FROM repStandings WHERE toID = %u OR toID = %u OR fromID = %u", \
                         sDataMgr.GetRaceFaction(pClient->GetChar()->race()), pClient->GetCharacterID(), pClient->GetCharacterID());
     return DBResultToCRowset(res);
 }
 
-PyRep *StandingDB::GetCorpStandings(Client* pClient) {
+PyRep* StandingDB::GetCorpStandings(Client* pClient) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, toID, standing FROM repStandings WHERE toID = %u OR fromID = %u", pClient->GetCorporationID(), pClient->GetCorporationID());
     return DBResultToCRowset(res);
 }
 
-PyRep *StandingDB::GetCharNPCStandings(uint32 charID) {
+PyRep* StandingDB::GetCharNPCStandings(uint32 charID) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, toID, standing FROM chrNPCStandings WHERE toID = %u", charID );
     return DBResultToCRowset(res);
 }
 
-PyRep *StandingDB::PrimeCharStandings(uint32 charID) {
+PyRep* StandingDB::PrimeCharStandings(uint32 charID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT "
@@ -98,7 +98,7 @@ PyRep *StandingDB::PrimeCharStandings(uint32 charID) {
     return DBResultToRowset(res);
 }
 
-PyRep *StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID, uint32 eventType, int64 eventDateTime) {
+PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID, uint16 eventType, int64 eventDateTime) {
     if (fromID == ownerCONCORD)
         ;
 
@@ -138,16 +138,23 @@ double StandingDB::GetStanding(uint32 toID, uint32 fromID) {
 
 void StandingDB::SetStanding(uint32 toID, uint32 fromID, double standing) {
     DBerror err;
+    sDatabase.RunQuery(err, "INSERT INTO repStandings (toID, fromID, standing) VALUES (%u,%u,%f)", toID, fromID, standing );
+}
+
+void StandingDB::UpdateStanding(uint32 toID, uint32 fromID, double standing)
+{
+    DBerror err;
     sDatabase.RunQuery(err,
-        "INSERT INTO repStandings (toID, fromID, standing)"
-        " VALUES (%u,%u,%f)", toID, fromID, standing );
+                       "INSERT INTO repStandings (toID, fromID, standing)"
+                       " VALUES (%u,%u,%f)"
+                       " ON DUPLICATE KEY UPDATE standing = standing + %f", toID, fromID, standing);
 }
 
 double StandingDB::GetStandingChanges(uint32 charID) {
     return 0.0;
 }
 
-void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg) {
+void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg) {
     /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
     DBerror err;
     sDatabase.RunQuery(err,
@@ -163,7 +170,7 @@ PyRep* StandingDB::GetStandingCompositions(uint32 toID, uint32 fromID) {
     return NULL;
 }
 
-PyRep *StandingDB::GetSystemSovInfo(uint32 systemID) {
+PyRep* StandingDB::GetSystemSovInfo(uint32 systemID) {
     /**
      *        sovInfo = sm.RemoteSvc('sovMgr').GetSystemSovereigntyInfo(session.solarsystemid2)
      *        ssAllianceID = sovInfo.allianceID if sovInfo else None

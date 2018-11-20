@@ -65,7 +65,7 @@ PyResult Standing::Handle_GetCorpStandings(PyCallArgs &call)
 
 PyResult Standing::Handle_GetNPCNPCStandings(PyCallArgs &call)
 {
-    return m_db.GetFactionStandings();
+    return sStandingMgr.GetFactionStandings();
 }
 
 /** @todo  need to add a standing from ownerCONCORD to any/all charID, corpID, allyID  for security rating (as seen in client code) */
@@ -135,6 +135,37 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return NULL;
     }
+    /*
+     * 22:45:01 [SvcCall] Service standing2::GetStandingTransactions()
+     * ****  didnt have dump activated here....
+     *
+     * EXCEPTION #19 logged at  11/18/2018 22:45:01
+     * Caught at:
+     * /common/lib/bluepy.py(86) CallWrapper
+     * /client/script/ui/control/entries.py(2279) OnClick
+     * /../carbon/client/script/ui/control/scroll.py(518) SelectNode
+     * /../carbon/client/script/ui/control/scroll.py(522) ReportSelectionChange
+     * /client/script/ui/shared/neocom/charactersheet.py(448) OnSelectEntry
+     * /client/script/ui/shared/neocom/charactersheet.py(726) Load
+     * /client/script/ui/shared/neocom/charactersheet.py(995) ShowSecurityStatus
+     * /common/script/util/eveformat.py(590) FmtStandingTransaction
+     * Thrown at:
+     * /common/script/util/eveformat.py(481) FmtStandingTransaction
+     * /../carbon/common/script/sys/cfg.py(1220) Get
+     * /../carbon/common/script/sys/cfg.py(1090) Prime
+     * /../carbon/common/script/sys/cfg.py(1158) _Prime
+     *        localKeysToGet = set()
+     *        conf = <RemoteService: config>
+     *        self = <Instance of Recordset.EveOwners>
+     *                       Key column: ownerID, Cache entries: 11413
+     *                       Field names: ownerID, ownerName, typeID, gender, ownerNameID
+     *        keysIAlreadyHave = set()
+     *        key = 0
+     *        fk = ()
+     *        keysToGet = set([0])
+     *        fetch = <function callable at 0x52711570>
+     * ValueError: need more than 0 values to unpack
+     */
 
     return m_db.GetStandingTransactions(args.fromID, args.toID, args.direction, args.eventID, args.eventType, args.eventDateTime);
 }

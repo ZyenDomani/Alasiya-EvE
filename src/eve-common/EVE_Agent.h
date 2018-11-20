@@ -1,7 +1,7 @@
 
 /*
  *  EVE_Agent.h
- *   agent-specific enumerators
+ *   agent-specific data
  *
  */
 
@@ -26,6 +26,7 @@ struct AgentData {
     uint32 friendCorp;
     uint32 enemyCorp;
     uint32 factionID;
+    std::string name;
 };
 
 struct AgentOffers {

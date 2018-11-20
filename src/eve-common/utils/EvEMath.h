@@ -39,11 +39,12 @@ namespace EvEMath {
     }
 
     namespace Agent {
-        EvilNumber EffectiveQuality( EvilNumber AgentQuality, EvilNumber NegotiationSkillLevel, EvilNumber AgentPersonalStanding );
-        EvilNumber EffectiveStanding( EvilNumber YourStanding, EvilNumber ConnectionsSkillLevel, EvilNumber DiplomacySkillLevel );
-        EvilNumber RequiredStanding( EvilNumber AgentLevel, EvilNumber AgentQuality );
-        EvilNumber MissionStandingIncrease( EvilNumber BaseMissionIncrease, EvilNumber YourSocialSkillLevel );
-        EvilNumber Efficiency( EvilNumber AgentLevel, EvilNumber AgentQuality );
+        float EffectiveQuality( float AgentQuality, EvilNumber NegotiationSkillLevel, float AgentPersonalStanding );
+        float EffectiveStanding( float YourStanding, EvilNumber ConnectionsSkillLevel, EvilNumber DiplomacySkillLevel );
+        float RequiredStanding( uint8 AgentLevel, float AgentQuality );
+        float MissionStandingIncrease( float BaseMissionIncrease, EvilNumber YourSocialSkillLevel );
+        float Efficiency( uint8 AgentLevel, float AgentQuality );
+        float AgentStandingIncrease(float CurrentStanding, float PercentIncrease);
     }
 
 

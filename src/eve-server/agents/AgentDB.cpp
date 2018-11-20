@@ -36,7 +36,8 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
         "   itm.typeID, "
         "   crp.friendID, "
         "   crp.enemyID, "
-        "   crp.factionID "
+        "   crp.factionID, "
+        "   chr.characterName " //15
         " FROM agtAgents AS agt"
         " LEFT JOIN chrNPCCharacters AS chr ON chr.characterID = agt.agentID"
         " LEFT JOIN crpNPCCorporations AS crp ON crp.corporationID = agt.corporationID"
@@ -71,6 +72,8 @@ void AgentDB::LoadAgentData(uint32 agentID, AgentData& data)
         data.enemyCorp      = (row.IsNull(13) ? 0 : row.GetInt(13));
         data.factionID      = row.GetInt(14);
         data.raceID         = sDataMgr.GetFactionRace(data.factionID);
+        data.name           = row.GetText(15);
+        data.research       = (data.typeID == Agents::Type::Research);
     }
 }
 

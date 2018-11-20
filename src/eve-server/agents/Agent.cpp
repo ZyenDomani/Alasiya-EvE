@@ -30,6 +30,8 @@
 #include "agents/Agent.h"
 #include "agents/AgentDB.h"
 #include "../Client.h"
+#include "../system/SystemManager.h"
+#include "../standing/StandingMgr.h"
 
 
 Agent::Agent(uint32 id)
@@ -121,6 +123,21 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
 
     offer.stateID            = Mission::State::Offered;
     //offer.offerID            = 0;     //created when saving offer in db
+
+    // update mission data as needed....
+    if (offer.typeID == Mission::Type::Courier) {
+        if ((offer.briefingID == 145156) or (offer.briefingID == 14515)) {
+            // the destination and origin need to be reversed on this mission.
+            offer.originID            = offer.destinationID;
+            offer.originOwnerID       = offer.destinationOwnerID;
+            offer.originSystemID      = offer.destinationSystemID;
+
+            offer.destinationID       = m_data.stationID;
+            offer.destinationOwnerID  = m_data.corporationID;
+            offer.destinationSystemID = m_data.solarSystemID;
+        }
+
+    }
     MissionDB::CreateOfferID(offer);
 
     // keep local copy and also add to mission data mgr
@@ -266,6 +283,7 @@ PyObject* Agent::GetInfoServiceDetails()
      * skillTypeID, blueprintTypeID in data.researchSummary:  -- for predictablePatentNames
      */
 
+    /**  @todo  finish this..... */
     PyDict* research = new PyDict();
     if (m_data.research) {
         PyTuple* skill1 = new PyTuple(2);
@@ -375,7 +393,8 @@ PyObject* Agent::GetInfoServiceDetails()
     res->SetItemString("services", services);
 
     // standings info for this agent.
-    res->SetItemString("incompatible", new PyString("Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
+    /** @todo  finish this.... */
+    res->SetItemString("incompatible", new PyString("Your personal standings must be *some shit* or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
 
     /* can also use locale labelIDs for this using a tuple to define minStandings, minEffective, corpMinStandings, mainEffective, effectiveMinStandings in other msgIDs
      * this will take char, corp, faction, agent, and some other shit into account to determine msg and data sent using the tuple system
@@ -471,10 +490,103 @@ uint32 Agent::GetCompleteRsp(uint32 charID)
     }
 }
 
+//(235999, `You have failed the mission I gave you. I am disappointed in you. I was hoping for a little more competence.`)
+
 uint32 Agent::GetQuitRsp(uint32 charID)
 {
-
     //(236846, `Quitters never win.`)
+}
+
+void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*false*/)
+{
+    /*
+        [PyAddress Broadcast: broadcastType='charid', idType='OnStandingsModified']
+    Payload:
+        [NotificationStream Tuple01]
+            [PyTuple 1 items]
+                [PyList 2 items]
+                    [PyList 5 items]
+                        [PyInt 3013251]                 fromID
+                        [PyInt 91576239]                toID
+                        [PyFloat 0,00768598434114595]   change
+                        [PyFloat -1]                    minAbs
+                        [PyFloat 1]                     maxAbs
+                        */
+    //Agent standing increase = ((10 - Current standing) * Percent change) + Current standing
+    float newStanding = EvEMath::Agent::Efficiency(m_data.level, m_data.quality);    // 0.018 to 0.38
+    newStanding *= sEntityList.FindOrBootSystem(m_data.solarSystemID)->GetSecValue(); // 0.0018 to .76
+    // next line doesnt change anything......
+    //newStanding = EvEMath::Agent::AgentStandingIncrease(pClient->GetChar()->GetStanding(pClient->GetCharacterID(), m_agentID), (newStanding /10));
+    newStanding /= 80;
+
+    if (important)
+        newStanding *= 3;
+
+    std::string msg = "Status Change for Mission ";
+    switch (eventID) {
+        case Standings::MissionFailedRollback: {
+            msg += "failed ";
+            newStanding *= -0.5;
+        } break;
+        case Standings::MissionOfferExpired: {
+            msg += "expired ";
+            newStanding *= -0.1;
+        } break;
+        case Standings::MissionBonus: {
+            msg += "completion bonus ";
+        } break;
+        case Standings::MissionCompleted: {
+            msg += "completion ";
+        } break;
+        case Standings::MissionDeclined: {
+            msg += "decline ";
+            // test for mission declined in last 4 hours
+        } break;
+        case Standings::MissionFailure: {
+            msg += "failure ";
+            newStanding *= -0.5;
+        } break;
+
+        msg += "from ";
+        msg += m_data.name;
+    }
+
+    /** @todo  add fleet sharing  */
+    sStandingMgr.UpdateStandings(m_agentID, pClient->GetCharacterID(), eventID, newStanding, msg);
+    sStandingMgr.UpdateStandings(m_data.corporationID, pClient->GetCharacterID(), eventID, newStanding /4, msg);
+    sStandingMgr.UpdateStandings(m_data.factionID, pClient->GetCharacterID(), eventID, newStanding /8, msg);
+
+    if (IsPlayerCorp(pClient->GetCorporationID())) {
+        sStandingMgr.UpdateStandings(m_agentID, pClient->GetCorporationID(), eventID, newStanding, msg);
+        sStandingMgr.UpdateStandings(m_data.corporationID, pClient->GetCorporationID(), eventID, newStanding /4, msg);
+        sStandingMgr.UpdateStandings(m_data.factionID, pClient->GetCorporationID(), eventID, newStanding /8, msg);
+    }
+
+    PyTuple* agent = new PyTuple(5);
+        agent->SetItem(0, new PyInt(m_agentID));
+        agent->SetItem(1, new PyInt(pClient->GetCharacterID()));
+        agent->SetItem(2, new PyFloat(newStanding));
+        agent->SetItem(3, new PyInt(-1));
+        agent->SetItem(4, new PyInt(1));
+    PyTuple* corp = new PyTuple(5);
+        corp->SetItem(0, new PyInt(m_data.corporationID));
+        corp->SetItem(1, new PyInt(pClient->GetCharacterID()));
+        corp->SetItem(2, new PyFloat(newStanding /5));
+        corp->SetItem(3, new PyInt(-1));
+        corp->SetItem(4, new PyInt(1));
+    PyTuple* faction = new PyTuple(5);
+        faction->SetItem(0, new PyInt(m_data.factionID));
+        faction->SetItem(1, new PyInt(pClient->GetCharacterID()));
+        faction->SetItem(2, new PyFloat(newStanding /10));
+        faction->SetItem(3, new PyInt(-1));
+        faction->SetItem(4, new PyInt(1));
+    PyList* list = new PyList();
+        list->AddItem(agent);
+        list->AddItem(corp);
+        list->AddItem(faction);
+    PyTuple* payload = new PyTuple(1);
+        payload->SetItem(0, list);
+    pClient->SendNotification("OnStandingsModified", "charid", payload, false);    // i *think* this is unsequenced
 }
 
 void Agent::SendMissionUpdate(Client* pClient, std::string action)

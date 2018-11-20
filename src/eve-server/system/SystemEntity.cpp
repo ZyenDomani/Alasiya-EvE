@@ -37,12 +37,14 @@
 #include "inventory/AttributeEnum.h"
 #include "planet/Planet.h"
 #include "pos/Structure.h"
+#include "standing/StandingMgr.h"
 #include "system/DestinyManager.h"
 #include "station/Station.h"
 #include "system/LootSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
+
 
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
@@ -206,13 +208,13 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
             msg += iRef->GetPilot()->GetName();
             msg += " in ";
             msg += m_system->GetName();
-            pChar->SaveStandingChanges( iRef->itemID(),  pChar->itemID(), standingCombatShipKill, secAward, msg);
+            sStandingMgr.UpdateStandings(iRef->itemID(), pChar->itemID(), Standings::CombatShipKill, secAward, msg);
         } else {
             msg += " pirates in ";
             msg += m_system->GetName();
-            pChar->SaveStandingChanges( ownerCONCORD,  pChar->itemID(), standingLawEnforcement, secAward, msg);
+            sStandingMgr.UpdateStandings(ownerCONCORD, pChar->itemID(), Standings::LawEnforcement, secAward, msg);
             // decrease standings with faction of this npc kill
-            pChar->SaveStandingChanges( iRef->ownerID(),  pChar->itemID(), standingCombatShipKill, -secAward, msg);
+            sStandingMgr.UpdateStandings(iRef->ownerID(), pChar->itemID(), Standings::CombatShipKill, -secAward, msg);
         }
     }
 

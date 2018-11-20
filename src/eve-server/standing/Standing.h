@@ -31,7 +31,7 @@
 #include "PyService.h"
 #include "PyServiceCD.h"
 #include "cache/ObjCacheService.h"
-#include "standing/StandingDB.h"
+#include "StandingMgr.h"
 
 class Standing : public PyService
 {

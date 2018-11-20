@@ -149,6 +149,7 @@
 #include "ship/ShipService.h"
 // standing services
 #include "standing/Standing.h"
+#include "standing/StandingMgr.h"
 // station services
 #include "station/HoloscreenMgrService.h"
 #include "station/InsuranceService.h"
@@ -472,6 +473,9 @@ int main( int argc, char* argv[] )
     /* create the BubbleManager singleton */
     sLog.Green("       ServerInit", "Starting Bubble Manager");
     sBubbleMgr.Initialize();
+    /* create the StandingMgr singleton */
+    sLog.Green("       ServerInit", "Starting Standings Manager");
+    sStandingMgr.Initialize();
     /* create the FleetService singleton */
     sLog.Green("       ServerInit", "Starting Fleet Services");
     sFltSvc.Initialize(&pyServMgr);
@@ -714,6 +718,7 @@ int main( int argc, char* argv[] )
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();
     sStatMgr.Close();
+    sStandingMgr.Close();
     sLog.Warning("   ServerShutdown", "Saving Items." );
     if (!sConsole.IsDbError())
         sItemFactory.SaveItems();

@@ -39,7 +39,8 @@ protected:
     Dispatcher* m_dispatch;    //we own this
 
 private:
-    PyList* GetMissionObjectives(Client* pClient, MissionOffer& offer);
+    PyTuple* GetMissionObjectives(Client* pClient, MissionOffer& offer);
+    PyDict* GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer);
 
 };
 

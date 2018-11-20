@@ -110,8 +110,8 @@ namespace Journal {
             AgentSecurityServices = 29,
             AgentMissionCollateralPaid = 30,
             AgentMissionCollateralRefunded = 31,
-            AgentMissionReward = 33,     // * character ID
-            AgentMissionTimeBonusReward = 34,     // * character ID
+            AgentMissionReward = 33,     // * agent ID
+            AgentMissionTimeBonusReward = 34,     // * agent ID
             CSPA = 35,     // * character ID  you're trying to contact.
             CSPAOfflineRefund = 36,
             CorporationAccountWithdrawal = 37,     // *Player character ID that performed withdrawal

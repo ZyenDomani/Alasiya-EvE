@@ -32,18 +32,19 @@
 #include "packets/Standing.h"
 
 class PyRep;
+class Client;
 
 class StandingDB
 : public ServiceDB
 {
 public:
-    PyRep* GetFactionStandings();
+    PyObjectEx* GetFactionStandings();
     PyRep* GetCorpStandings(Client* pClient);
     PyRep* GetCharStandings(Client* pClient);
     PyRep* GetSystemSovInfo(uint32 systemID);
     PyRep* PrimeCharStandings(uint32 charID);
     PyRep* GetCharNPCStandings(uint32 charID);
-    PyRep* GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint32 eventID=0, uint32 eventType=0, int64 eventDateTime=0);
+    PyRep* GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID=0, uint16 eventType=0, int64 eventDateTime=0);
     PyRep* GetStandingCompositions(uint32 toID, uint32 fromID);
 
     double GetStandingChanges(uint32 charID);
@@ -57,8 +58,9 @@ public:
      */
     double GetStanding(uint32 toID, uint32 fromID);
 
-    void SetStanding(uint32 toID, uint32 fromID, double standing);
-    void SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg);
+    static void SetStanding(uint32 toID, uint32 fromID, double standing);
+    static void UpdateStanding(uint32 toID, uint32 fromID, double standing);
+    static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg);
 
 };
 

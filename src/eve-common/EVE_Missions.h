@@ -1,7 +1,7 @@
 
 /*
  *  EVE_Missions.h
- *   mission-specific enumerators
+ *   mission-specific data
  *
  */
 
@@ -30,6 +30,7 @@ struct MissionOffer {
     uint8 stateID;
     uint8 typeID;
     uint8 range;
+    uint16 bonusTime;           // time in minutes
     uint16 missionID;           // this is mission title messageID for locale
     uint16 rewardLP;
     uint16 rewardItemID;
@@ -54,7 +55,6 @@ struct MissionOffer {
     uint32 dungeonSolarSystemID;
     uint32 acceptFee;
     float courierItemVolume;
-    double bonusTime;
     double expiryTime;
     double dateIssued;
     double dateAccepted;
@@ -70,6 +70,7 @@ struct CourierData {
     uint8 typeID;
     uint8 range;
     uint8 raceID;
+    uint16 bonusTime;
     uint16 missionID;
     uint16 itemTypeID;
     uint16 itemQty;
@@ -78,7 +79,6 @@ struct CourierData {
     uint32 briefingID;
     uint32 rewardISK;
     uint32 bonusISK;
-    uint32 bonusTime;
     float itemVolume;
     std::string name;
 };
@@ -86,7 +86,7 @@ struct CourierData {
 namespace Mission {
     namespace State {
         enum {
-            Allocated   = 0,
+            Allocated   = 0,    // also listed as 'Offered' in some places
             Offered     = 1,
             Accepted    = 2,
             Failed      = 3,

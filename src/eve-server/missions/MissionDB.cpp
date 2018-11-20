@@ -47,7 +47,12 @@ void MissionDB::CreateOfferID(MissionOffer& data)
         "INSERT INTO agtOffers(acceptFee, agentID, characterID, courierAmount, courierTypeID, courierVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, "
         " destinationOwnerID, destinationSystemID, expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID,"
         " remoteCompletable, remoteOfferable, rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID)"
-        " VALUES (%u, %u, %u, %u, %u, %f, %f, %f, %u, %u, %u, %u, %f, %i, %u, %u, %u, '%s', %u, %u, %u, %u, %i, %i, %u, %u, %u, %u, %u, %f, %u, %u, %u, %u)",
+        " VALUES ("
+        " %u, %u, %u, %u, %u, %f, %f, %f, %u,"
+        " %u, %u, %u, %f, %i, %u,"
+        " %u, %u, '%s', %u, %u, %u, %u, %i,"
+        " %i, %u, %u, %u, %u, %u, %u, %u,"
+        " %u, %u, %u)",
             data.acceptFee, data.agentID, data.characterID, data.courierAmount, data.courierTypeID, data.courierItemVolume, data.dateAccepted, data.dateIssued, data.destinationID,
             data.destinationTypeID, data.destinationOwnerID, data.destinationSystemID, data.expiryTime, (data.important?1:0), data.storyline,
             data.missionID, data.briefingID, data.name.c_str(), data.offerID, data.originID, data.originOwnerID, data.originSystemID,

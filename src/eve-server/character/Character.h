@@ -477,11 +477,6 @@ public:
     double                  GetNPCCorpStanding(uint32 toID, uint32 fromID);
 	double 					GetStandingChanges();
 	void 					SetStanding(uint32 toID, uint32 fromID, double standing);
-	void 					SaveStandingChanges(uint32 fromID,
-												uint32 toID,
-												uint32 eventType,
-												double amount,
-												std::string msg);
 
     //  Dynamic Data
 	void                    VisitSystem(uint32 solarSystemID);

@@ -383,6 +383,7 @@ bool Character::AlterBalance(double amount, uint8 type) {
     PyTuple *answer = ac.Encode();
     m_pClient->SendNotification("OnAccountChange", "cash", &answer, false);
 
+    /** @todo  save to db here.  */
     return true;
 }
 
@@ -1104,6 +1105,7 @@ void Character::SaveBookMarks()
 
 
 // functions and methods for standings system
+/** @todo  this needs to be moved to common standings code */
 double Character::GetStanding(uint32 toID, uint32 fromID) {
 	/*
 	 *    double res = s_db.GetCorpStanding(toID, fromID);
@@ -1133,11 +1135,10 @@ double Character::GetStandingChanges() {
 }
 
 void Character::SetStanding(uint32 fromID, uint32 toID, double standing) {
-	s_db.SetStanding(fromID, toID, standing);
-}
+    s_db.SetStanding(fromID, toID, standing);
+    PyTuple* payload = new PyTuple(0);
+    m_pClient->SendNotification("OnStandingSet", "charid", payload, false);
 
-void Character::SaveStandingChanges(uint32 fromID, uint32 toID, uint32 eventType, double amount, std::string msg) {
-	s_db.SaveStandingChanges(fromID, toID, eventType, amount, msg);
 }
 
 // functions and methods for map system

@@ -267,8 +267,11 @@ void ShipItem::InitAttribs()
     if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance));
     if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance));
 }
-
-void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....not working right. */
+    /** @todo (allan)  look into this....not working right.
+     *   see if we can remove m_usedVolumeByFlag in favor of pInventory->GetStoredVolume() as it's more accurate.
+     * 
+     */
+void ShipItem::UpdateHoldsUsedVolume()
 {
     if (HasAttribute(AttrCapacity)) {
         _log(SHIP__TRACE, "flagCargoHold current values: m_usedVolumeByFlag = %lf, GetStoredVolume = %lf", \
@@ -310,6 +313,7 @@ void ShipItem::UpdateHoldsUsedVolume()    /** @todo (allan)  look into this....n
 void ShipItem::ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount) {
     if ( m_usedVolumeByFlag.find(flag) != m_usedVolumeByFlag.end()) {
         m_usedVolumeByFlag.find(flag)->second += amount;
+        UpdateHoldsUsedVolume();
     } else {
         _log(SHIP__ERROR, "ModifyContVolumeByFlag() - given flag not found in current map: %u", (uint16)flag);
         if (m_pilot != nullptr)

@@ -32,6 +32,7 @@ public:
     bool IsResearch()                                   { return m_data.research; }
 
     uint8 GetLevel()                                    { return m_data.level; }
+    int8 GetQuality()                                   { return m_data.quality; }
 
     uint32 GetID()                                      { return m_agentID; }
     uint32 GetCorpID()                                  { return m_data.corporationID; }
@@ -55,6 +56,9 @@ public:
     uint32 GetCompleteRsp(uint32 charID);
 
     void SendMissionUpdate(Client* pClient, std::string action);
+
+    // standing/quality/level/reward methods...
+    void UpdateStandings(Client* pClient, uint8 eventID, bool important=false);
 
 protected:
     const uint32 m_agentID;

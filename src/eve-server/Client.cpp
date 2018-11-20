@@ -155,8 +155,8 @@ Client::~Client() {
             ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
         }
 
+        //if (!sConsole.IsShutdown()) {
         // LSC logout
-        if (!sConsole.IsShutdown()) {
             for (auto cur : m_channels)
                 cur->LeaveChannel(this);
             // remove ship and char memory objects from running server
@@ -165,20 +165,20 @@ Client::~Client() {
             m_char->LogOut();
             // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
             m_ship->LogOut();
-        }
-
-        m_services.ClearBoundObjects(this);
-
-        m_TS = nullptr;
-        m_system = nullptr;
-
-        //sEntityList.RemoveSID(GetSessionID());
-
-        SafeDelete(m_scan);
-        SafeDelete(pShipSE);
-        PyDecRef(m_destinyEventQueue);
-        PyDecRef(m_destinyUpdateQueue);
+       // }
     }
+
+    m_services.ClearBoundObjects(this);
+
+    m_TS = nullptr;
+    m_system = nullptr;
+
+    //sEntityList.RemoveSID(GetSessionID());
+
+    SafeDelete(m_scan);
+    SafeDelete(pShipSE);
+    PyDecRef(m_destinyEventQueue);
+    PyDecRef(m_destinyUpdateQueue);
 }
 
 bool Client::ProcessNet()
@@ -685,7 +685,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (InPod()) {
             m_ship->Move(locationID, flagCapsule, true);
         } else {
-            m_pod->Move(locationID, flagCapsule, true);
+            m_pod->Move(locationID, flagCapsule, false);
             m_ship->Move(locationID, flagAutoFit, true);
         }
 
@@ -890,6 +890,8 @@ void Client::SetPodItem() {
         CreateNewPod();
     else
         m_pod = sItemFactory.GetShip(m_char->capsuleID());
+    if (m_pod.get() == nullptr)
+        CreateNewPod();
 }
 
 bool Client::IsJetcanAvalible() {

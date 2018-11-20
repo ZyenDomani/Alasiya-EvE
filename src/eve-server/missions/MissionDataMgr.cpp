@@ -144,7 +144,7 @@ void MissionDataMgr::Populate()
         data.rewardItemID  = row.GetInt(11);
         data.rewardItemQty = row.GetInt(12);
         data.bonusISK      = row.GetInt(13);
-        data.bonusTime     = row.GetUInt(14);
+        data.bonusTime     = row.GetInt(14);
         data.range         = row.GetInt(15);
         data.raceID        = row.GetInt(16);
         if (data.important)
@@ -174,7 +174,7 @@ void MissionDataMgr::Populate()
         data.rewardItemID  = row.GetInt(11);
         data.rewardItemQty = row.GetInt(12);
         data.bonusISK      = row.GetInt(13);
-        data.bonusTime     = row.GetUInt(14);
+        data.bonusTime     = row.GetInt(14);
         data.range         = row.GetInt(15);
         data.raceID        = row.GetInt(16);
         if (data.important)
@@ -405,6 +405,7 @@ void MissionDataMgr::LoadMissionOffers(uint32 charID, std::vector<MissionOffer>&
         data.push_back(it->second);
 
     // config switch to allow loading/displaying of expired/completed mission offers
+    // not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this.
     if (sConfig.server.LoadOldMissions) {
         auto itr = m_xoffers.equal_range(charID);
         for (auto it = itr.first; it != itr.second; ++it)

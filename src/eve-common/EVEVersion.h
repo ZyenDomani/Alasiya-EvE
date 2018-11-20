@@ -51,6 +51,6 @@ static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp 
 static const float NPC_AI_Version = 0.53;
 static const float Civilian_AI_Version = 0.10;
 static const float Sentry_AI_Version = 0.10;
-static const float Mission_Version = 0.25;
+static const float Mission_Version = 0.31;
 
 #endif

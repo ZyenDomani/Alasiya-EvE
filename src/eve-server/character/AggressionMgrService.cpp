@@ -113,7 +113,7 @@ PyBoundObject *AggressionMgrService::_CreateBoundObject(Client *c, const PyRep *
      * 18:26:21 [ClientMessage]     Integer field: 30002547
      */
 
-    return(new AggressionMgrBound(m_manager));
+    return (new AggressionMgrBound(m_manager));
 }
 
 /**  @todo  this is formula for hits...
@@ -134,6 +134,6 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar
         //pChar->secStatusChange( secAward );
         //std::string msg = "Status Change for killing pirates in ";
         //msg += System()->GetName();
-        //pChar->SaveStandingChanges( m_self->itemID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
+        //StandingMgr::UpdateStandings( m_self->itemID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
     }
 } */

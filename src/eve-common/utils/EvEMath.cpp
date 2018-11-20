@@ -126,12 +126,12 @@ EvilNumber EvEMath::Refine::EffectiveRefiningYield( EvilNumber StationEquipmentY
 
 
 
-EvilNumber EvEMath::Agent::EffectiveQuality( EvilNumber AgentQuality, EvilNumber NegotiationSkillLevel, EvilNumber AgentPersonalStanding )
+float EvEMath::Agent::EffectiveQuality( float AgentQuality, EvilNumber NegotiationSkillLevel, float AgentPersonalStanding )
 {
-    return (AgentQuality.get_double() + (5.0 * NegotiationSkillLevel.get_double()) + AgentPersonalStanding.get_double());
+    return (AgentQuality + (5.0 * NegotiationSkillLevel.get_double()) + AgentPersonalStanding);
 }
 
-EvilNumber EvEMath::Agent::EffectiveStanding( EvilNumber YourStanding, EvilNumber ConnectionsSkillLevel, EvilNumber DiplomacySkillLevel )
+float EvEMath::Agent::EffectiveStanding( float YourStanding, EvilNumber ConnectionsSkillLevel, EvilNumber DiplomacySkillLevel )
 {
     EvilNumber SkillLevel(0.0);
 
@@ -140,22 +140,27 @@ EvilNumber EvEMath::Agent::EffectiveStanding( EvilNumber YourStanding, EvilNumbe
     else
         SkillLevel = ConnectionsSkillLevel;
 
-    return (YourStanding.get_double() + ((10.0 - YourStanding.get_double()) * (0.04 * (SkillLevel.get_double()))));
+    return (YourStanding + ((10.0 - YourStanding) * (0.04 * (SkillLevel.get_double()))));
 }
 
-EvilNumber EvEMath::Agent::RequiredStanding( EvilNumber AgentLevel, EvilNumber AgentQuality )
+float EvEMath::Agent::RequiredStanding( uint8 AgentLevel, float AgentQuality )
 {
-    return (((AgentLevel.get_double() - 1) * 2) + (AgentQuality.get_double()/20.0));
+    return (((AgentLevel - 1) * 2) + (AgentQuality/20.0));
 }
 
-EvilNumber EvEMath::Agent::MissionStandingIncrease( EvilNumber BaseMissionIncrease, EvilNumber YourSocialSkillLevel )
+float EvEMath::Agent::MissionStandingIncrease( float BaseMissionIncrease, EvilNumber YourSocialSkillLevel )
 {
     return (BaseMissionIncrease * (1 + 0.05 * YourSocialSkillLevel.get_double()));
 }
 
-EvilNumber EvEMath::Agent::Efficiency( EvilNumber AgentLevel, EvilNumber AgentQuality )
+float EvEMath::Agent::Efficiency( uint8 AgentLevel, float AgentQuality )
 {
     return (0.01 * ((8 * AgentLevel) + (0.1 * AgentQuality) - 4));
+}
+
+float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float PercentIncrease)
+{
+    return (((10 - CurrentStanding) * PercentIncrease) + CurrentStanding);
 }
 
 
