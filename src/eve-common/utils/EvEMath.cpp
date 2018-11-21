@@ -126,36 +126,29 @@ EvilNumber EvEMath::Refine::EffectiveRefiningYield( EvilNumber StationEquipmentY
 
 
 
-float EvEMath::Agent::EffectiveQuality( float AgentQuality, EvilNumber NegotiationSkillLevel, float AgentPersonalStanding )
+float EvEMath::Agent::EffectiveQuality(int8 AgentQuality, uint8 NegotiationSkillLevel, float AgentPersonalStanding)
 {
-    return (AgentQuality + (5.0 * NegotiationSkillLevel.get_double()) + AgentPersonalStanding);
+    return (AgentQuality + (5.0 * NegotiationSkillLevel) + AgentPersonalStanding);
 }
 
-float EvEMath::Agent::EffectiveStanding( float YourStanding, EvilNumber ConnectionsSkillLevel, EvilNumber DiplomacySkillLevel )
+float EvEMath::Agent::EffectiveStanding(float YourStanding, double standingBonus)
 {
-    EvilNumber SkillLevel(0.0);
-
-    if( YourStanding < 0.0 )
-        SkillLevel = DiplomacySkillLevel;
-    else
-        SkillLevel = ConnectionsSkillLevel;
-
-    return (YourStanding + ((10.0 - YourStanding) * (0.04 * (SkillLevel.get_double()))));
+    return (1.0 - (1.0 - YourStanding / 10.0f) * (1.0 - standingBonus / 10.0f)) * 10.0f;
 }
 
-float EvEMath::Agent::RequiredStanding( uint8 AgentLevel, float AgentQuality )
+float EvEMath::Agent::RequiredStanding( uint8 AgentLevel, int8 AgentQuality )
 {
-    return (((AgentLevel - 1) * 2) + (AgentQuality/20.0));
+    return (((AgentLevel - 1) * 2) + (AgentQuality/20.0f));
 }
 
-float EvEMath::Agent::MissionStandingIncrease( float BaseMissionIncrease, EvilNumber YourSocialSkillLevel )
+float EvEMath::Agent::MissionStandingIncrease( float BaseMissionIncrease, uint8 YourSocialSkillLevel )
 {
-    return (BaseMissionIncrease * (1 + 0.05 * YourSocialSkillLevel.get_double()));
+    return (BaseMissionIncrease * (1 + 0.05 * YourSocialSkillLevel));
 }
 
-float EvEMath::Agent::Efficiency( uint8 AgentLevel, float AgentQuality )
+float EvEMath::Agent::Efficiency( uint8 AgentLevel, int8 AgentQuality )
 {
-    return (0.01 * ((8 * AgentLevel) + (0.1 * AgentQuality) - 4));
+    return (0.01f * ((8 * AgentLevel) + (0.1f * AgentQuality) - 4));
 }
 
 float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float PercentIncrease)
@@ -163,6 +156,27 @@ float EvEMath::Agent::AgentStandingIncrease(float CurrentStanding, float Percent
     return (((10 - CurrentStanding) * PercentIncrease) + CurrentStanding);
 }
 
+float EvEMath::Agent::GetStandingBonus(float fromStanding, uint32 fromFactionID, uint8 ConnectionsSkillLevel, uint8 DiplomacySkillLevel, uint8 CriminalConnectionsSkillLevel)
+{
+    float bonus = 0.0f;
+    if (fromStanding < 0.0f) {
+        bonus = DiplomacySkillLevel * 0.4f;
+    } else if (fromStanding > 0.0f) {
+        switch (fromFactionID) {
+            case 500010:
+            case 500011:
+            case 500012:
+            case 500019:
+            case 500020: {
+                bonus = CriminalConnectionsSkillLevel * 0.4f;
+            } break;
+            default: {
+                bonus = ConnectionsSkillLevel * 0.4f;
+            } break;
+        }
+    }
+    return bonus;
+}
 
 
 EvilNumber EvEMath::EffectiveAttribute( EvilNumber BaseAttribute, EvilNumber ImplantAttributeBonus )

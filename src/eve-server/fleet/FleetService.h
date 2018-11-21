@@ -108,6 +108,8 @@ public:
     std::string GetBCastGroupName(int8 group);
 
     void GetFleetMembersOnGrid(Client* pClient, std::vector<uint32>& data);
+    void GetFleetMembersInSystem(Client* pClient, std::vector<uint32>& data);
+    void GetFleetClientsInSystem(Client* pClient, std::vector<Client*>& data);
 
 protected:
     void RemoveMember(Client* pClient);

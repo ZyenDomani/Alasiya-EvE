@@ -126,7 +126,7 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
     return DBResultToRowset(res);
 }
 
-double StandingDB::GetStanding(uint32 toID, uint32 fromID) {
+double StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
     DBResultRow row;
     sDatabase.RunQuery(res, "SELECT fromID, standing FROM repStandings WHERE toID=%u AND fromID=%u", toID, fromID);
@@ -136,24 +136,25 @@ double StandingDB::GetStanding(uint32 toID, uint32 fromID) {
         return 0.0f;
 }
 
-void StandingDB::SetStanding(uint32 toID, uint32 fromID, double standing) {
+void StandingDB::SetStanding(uint32 fromID, uint32 toID, double standing) {
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO repStandings (toID, fromID, standing) VALUES (%u,%u,%f)", toID, fromID, standing );
 }
 
-void StandingDB::UpdateStanding(uint32 toID, uint32 fromID, double standing)
+void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, double standing)
 {
     DBerror err;
     sDatabase.RunQuery(err,
                        "INSERT INTO repStandings (toID, fromID, standing)"
                        " VALUES (%u,%u,%f)"
-                       " ON DUPLICATE KEY UPDATE standing = standing + %f", toID, fromID, standing);
+                       " ON DUPLICATE KEY UPDATE standing = standing + %f", toID, fromID, standing, standing);
 }
 
 double StandingDB::GetStandingChanges(uint32 charID) {
     return 0.0;
 }
 
+//FIXME TODO  implement repStandingChanges after standing system is working....
 void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg) {
     /* eventTypeID,eventDateTime,fromID,toID,modification,originalFromID,originalToID,int_1,int_2,int_3,msg */
     DBerror err;
@@ -162,9 +163,7 @@ void StandingDB::SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventTyp
         " VALUES (%u, %f, %u, %u, %f, '%s' )", eventType, GetFileTimeNow(), fromID, toID, amount, msg.c_str() );
 }
 
-//FIXME TODO  implement repStandingChanges after standing system is working....
-
-PyRep* StandingDB::GetStandingCompositions(uint32 toID, uint32 fromID) {
+PyRep* StandingDB::GetStandingCompositions(uint32 fromID, uint32 toID) {
     // ownerID, standing ...
 
     return NULL;

@@ -99,7 +99,7 @@ void SystemBubble::Process()
      *    missions for ??
      *    incursions for ??
      */
-    if (m_belt and (m_system->GetSystemSecurityRating() > 0.95)) // make config option here to spawn rats in secure empire space ?
+    if (m_belt and (m_system->GetSystemSecurityRating() > 0.90)) // make config option here to spawn rats in secure empire space ?
         return;
     if (m_spawned) {
         m_spawnTimer.Disable();

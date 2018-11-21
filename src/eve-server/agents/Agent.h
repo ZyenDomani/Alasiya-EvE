@@ -39,6 +39,7 @@ public:
     uint32 GetSystemID()                                { return m_data.solarSystemID; }
     uint32 GetStationID()                               { return m_data.stationID; }
     uint32 GetLocTypeID()                               { return m_data.locationTypeID; }
+    uint32 GetFactionID()                               { return m_data.factionID; }
     uint32 MakeButtonID()                               { return ++m_buttonID; }
 
     bool HasMission(uint32 charID);

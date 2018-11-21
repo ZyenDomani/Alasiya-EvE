@@ -54,5 +54,4 @@ private:
 
 
 
-
 #endif  // EVE_STANDING_STANDINGMGR_H

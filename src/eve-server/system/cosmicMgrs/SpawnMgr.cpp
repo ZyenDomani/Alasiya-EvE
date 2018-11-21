@@ -65,7 +65,12 @@ bool SpawnMgr::Init()
     m_initalized = true;
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - config option off.", m_system->GetName().c_str(), m_system->GetID());
+        return true;
+    }
+
+    if (m_system->BeltCount() < 1) {
+        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - no belts.", m_system->GetName().c_str(), m_system->GetID());
         return true;
     }
 

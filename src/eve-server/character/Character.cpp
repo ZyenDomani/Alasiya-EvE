@@ -455,6 +455,20 @@ void Character::SetFleetData(CharFleetData& fleet)
     m_pClient->UpdateFleetSession(m_fleetData);
 }
 
+void Character::FleetShareMissionRewards()
+{   // not used yet.
+
+}
+
+void Character::FleetShareMissionStandings(float newStanding)
+{   // not used yet.
+    if (m_fleetData.fleetID == 0)
+        return;
+    // negative standings are NOT shared with fleet
+    if (newStanding < 0)
+        return;
+}
+
 
 bool Character::HasSkill(uint32 skillTypeID) const {
     return GetSkill(skillTypeID);

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.7
+    Version:    8.8
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -235,6 +235,25 @@ public:
         bool BumpEnabled;
     } cosmic;
 
+    // From <standings/>
+    struct {
+        float MissionBonus;
+        float MissionFailure;
+        float MissionDeclined;
+        float MissionCompleted;
+        float MissionOfferExpired;
+        float ImportantMissionBonus;
+        float MissionFailedRollback;
+        float BaseMissionMultiplier;
+        float FleetMissionMultiplier;
+        float Agent2CharMissionMultiplier;
+        float ACorp2CharMissionMultiplier;
+        float Agent2PCorpMissionMultiplier;
+        float ACorp2PCorpMissionMultiplier;
+        float AFaction2CharMissionMultiplier;
+        float AFaction2PCorpMissionMultiplier;
+    } standings;
+
     // From <chat/>
     struct {
         bool EnableFleetChat;
@@ -278,6 +297,7 @@ protected:
     bool ProcessNet( const TiXmlElement* ele );
     bool ProcessThreads( const TiXmlElement* ele );
     bool ProcessCosmic( const TiXmlElement* ele );
+    bool ProcessStandings( const TiXmlElement* ele );
     bool ProcessChat( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
     bool ProcessBPTimes( const TiXmlElement* ele );

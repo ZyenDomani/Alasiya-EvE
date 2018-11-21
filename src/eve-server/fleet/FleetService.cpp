@@ -1540,6 +1540,38 @@ void FleetService::GetFleetMembersOnGrid(Client* pClient, std::vector< uint32 >&
     }
 }
 
+void FleetService::GetFleetMembersInSystem(Client* pClient, std::vector< uint32 >& data)
+{
+    std::vector<Client*> members;
+    uint16 scopeID = pClient->GetShipSE()->SystemMgr()->GetID();
+    auto range = m_fleetMembers.equal_range(pClient->GetFleetID());
+    for (auto fItr = range.first; fItr != range.second; ++fItr)
+        members.push_back(fItr->second);
+
+    for (auto cur : members) {
+        if (cur == nullptr)
+            continue;
+        if (cur->GetShipSE()->SystemMgr()->GetID() == scopeID)
+            data.push_back(cur->GetCharacterID());
+    }
+}
+
+void FleetService::GetFleetClientsInSystem(Client* pClient, std::vector< Client* >& data)
+{
+    std::vector<Client*> members;
+    uint32 scopeID = pClient->GetShipSE()->SystemMgr()->GetID();
+    auto range = m_fleetMembers.equal_range(pClient->GetFleetID());
+    for (auto fItr = range.first; fItr != range.second; ++fItr)
+        members.push_back(fItr->second);
+
+    for (auto cur : members) {
+        if (cur == nullptr)
+            continue;
+        if (cur->GetShipSE()->SystemMgr()->GetID() == scopeID)
+            data.push_back(cur);
+    }
+}
+
 void FleetService::SendActiveStatus(uint32 fleetID, int32 wingID, int32 squadID)
 {
     PyTuple* count = new PyTuple(1);

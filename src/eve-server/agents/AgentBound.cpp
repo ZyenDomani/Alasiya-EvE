@@ -81,6 +81,21 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
      *
      */
 
+    Character* pchar = call.client->GetChar().get();
+    float charStanding = pchar->GetStanding(pchar->itemID(), m_agent->GetID());
+    float quality = EvEMath::Agent::EffectiveQuality(m_agent->GetQuality(), pchar->GetSkillLevel(skillConnections), charStanding);
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agent->GetFactionID(), pchar->GetSkillLevel(skillConnections), pchar->GetSkillLevel(skillDiplomacy), pchar->GetSkillLevel(skillCriminalConnections));
+    float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
+
+    /** @todo  figure out how to implement this....
+     * will need to put agent quality in here, too.
+     * Level 1 = always available
+     * Level 2 = +1.00 standing
+     * Level 3 = +3.00 standing
+     * Level 4 = +5.00 standing
+     * Level 5 = +7.00 standing
+     */
+
     std::string response = "";
     uint8 actionID = PyRep::IntegerValue(args.arg);
     bool missionQuit = false, missionCompleted = false, missionDeclined = false;
@@ -88,15 +103,6 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     PyTuple* agentSays = new PyTuple(2);
     // dialog is button info
     PyList* dialog = new PyList();
-
-
-    /** @todo  figure out how to implement this....
-     * Level 1 = always available
-     * Level 2 = +1.00 standing
-     * Level 3 = +3.00 standing
-     * Level 4 = +5.00 standing
-     * Level 5 = +7.00 standing
-     */
 
     using namespace Dialog::Button;
 
@@ -114,7 +120,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         case 0: {
             //  if char has current mission with this agent, add this one.
             MissionOffer offer;
-            if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
+            if (m_agent->HasMission(pchar->itemID(), offer)) {
                 PyTuple* button1 = new PyTuple(2);
                     button1->SetItem(0, new PyInt(ViewMission)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
                     button1->SetItem(1, new PyInt(ViewMission));
@@ -162,7 +168,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         } break;
         case RequestMission: {  //2
             MissionOffer offer;
-            m_agent->MakeOffer(call.client->GetCharacterID(), offer);
+            m_agent->MakeOffer(pchar->itemID(), offer);
             m_agent->SendMissionUpdate(call.client, "offered");
 
             //  this one will get complicated and is based on agent/char interaction
@@ -193,7 +199,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         } break;
         case ViewMission: { //1
             MissionOffer offer;
-            m_agent->GetOffer(call.client->GetCharacterID(), offer);
+            m_agent->GetOffer(pchar->itemID(), offer);
             agentSays->SetItem(0, new PyInt(offer.briefingID));
             agentSays->SetItem(1, new PyInt(offer.characterID));
             if (offer.stateID < Mission::State::Accepted) {
@@ -225,34 +231,34 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         case Accept:            //3
         case AcceptRemotely: {  //5
             MissionOffer offer;
-            m_agent->GetOffer(call.client->GetCharacterID(), offer);
+            m_agent->GetOffer(pchar->itemID(), offer);
             offer.stateID = Mission::State::Accepted;
             offer.dateAccepted = GetFileTimeNow();
             offer.expiryTime = GetFileTimeNow() + (20 * m_agent->GetLevel() * Win32Time_Minute);  // 20m per agent level  ?  test this.
             if (offer.courierTypeID) {
                 // add item to players hangar
                 sItemFactory.SetUsingClient(call.client);
-                ItemData data(offer.courierTypeID, call.client->GetCharacterID(), 0, flagAutoFit, offer.courierAmount);
+                ItemData data(offer.courierTypeID, pchar->itemID(), 0, flagAutoFit, offer.courierAmount);
                 InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                 iRef->Move(offer.originID, flagHangar, true);
                 sItemFactory.UnsetUsingClient();
             }
-            m_agent->UpdateOffer(call.client->GetCharacterID(), offer);
+            m_agent->UpdateOffer(pchar->itemID(), offer);
             m_agent->SendMissionUpdate(call.client, "offer_accepted");
-            agentSays->SetItem(0, new PyInt(m_agent->GetAcceptRsp(call.client->GetCharacterID())));
-            agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
+            agentSays->SetItem(0, new PyInt(m_agent->GetAcceptRsp(pchar->itemID())));
+            agentSays->SetItem(1, new PyInt(pchar->itemID()));
         } break;
         case Complete:              //6
         case CompleteRemotely: {    //7
             //  need to verify all requirements have been met.
             MissionOffer offer;
-            m_agent->GetOffer(call.client->GetCharacterID(), offer);
+            m_agent->GetOffer(pchar->itemID(), offer);
             offer.stateID = Mission::State::Completed;
             offer.dateCompleted = GetFileTimeNow();
-            m_agent->UpdateOffer(call.client->GetCharacterID(), offer);
+            m_agent->UpdateOffer(pchar->itemID(), offer);
             m_agent->SendMissionUpdate(call.client, "completed");
-            agentSays->SetItem(0, new PyInt(m_agent->GetCompleteRsp(call.client->GetCharacterID())));
-            agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
+            agentSays->SetItem(0, new PyInt(m_agent->GetCompleteRsp(pchar->itemID())));
+            agentSays->SetItem(1, new PyInt(pchar->itemID()));
             if (offer.courierTypeID) {
                 // remove item from player possession
                 call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
@@ -260,26 +266,26 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             if (offer.rewardItemID) {
                 // add reward item to players hangar
                 sItemFactory.SetUsingClient(call.client);
-                ItemData data(offer.rewardItemID, call.client->GetCharacterID(), 0, flagAutoFit, offer.rewardItemQty);
+                ItemData data(offer.rewardItemID, pchar->itemID(), 0, flagAutoFit, offer.rewardItemQty);
                 InventoryItemRef iRef = sItemFactory.SpawnItem(data);
                 iRef->Move(m_agent->GetStationID(), flagHangar, true);
                 sItemFactory.UnsetUsingClient();
             }
             /** @todo  add fleet sharing  */
             if (offer.rewardISK)
-                AccountService::TranserFunds(m_agent->GetID(), call.client->GetCharacterID(), offer.rewardISK, "Mission Reward", Journal::EntryType::AgentMissionReward, m_agent->GetID());
+                AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.rewardISK, "Mission Reward", Journal::EntryType::AgentMissionReward, m_agent->GetID());
             if ((offer.bonusTime > 0) and (offer.bonusTime < (offer.dateAccepted - GetFileTimeNow())))
-                AccountService::TranserFunds(m_agent->GetID(), call.client->GetCharacterID(), offer.bonusISK, "Mission Bonus Reward", Journal::EntryType::AgentMissionTimeBonusReward, m_agent->GetID());
+                AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.bonusISK, "Mission Bonus Reward", Journal::EntryType::AgentMissionTimeBonusReward, m_agent->GetID());
             /** @todo  add lp, etc, etc  */
             m_agent->UpdateStandings(call.client, Standings::MissionCompleted, offer.important);
         } break;
         case Defer: {   //10
             // extend expiry time and close
             MissionOffer offer;
-            if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
+            if (m_agent->HasMission(pchar->itemID(), offer)) {
                 offer.stateID = Mission::State::Allocated; //Defered
                 offer.expiryTime += Win32Time_Day;
-                m_agent->UpdateOffer(call.client->GetCharacterID(), offer);
+                m_agent->UpdateOffer(pchar->itemID(), offer);
                 m_agent->SendMissionUpdate(call.client, "prolong");
                 agentSays->SetItem(0, new PyString("I can give you 24 hours to think about it."));    //msgInfo  -- if tuple[0].string then return msgInfo
                 agentSays->SetItem(1, new PyNone());    // ContentID  -- PyNone used when msgInfo is string to return without processing
@@ -287,26 +293,26 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         } break;
         case Decline: { //9
             missionDeclined = true;
-            m_agent->DeleteOffer(call.client->GetCharacterID());
+            m_agent->DeleteOffer(pchar->itemID());
             m_agent->SendMissionUpdate(call.client, "offer_declined");
-            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(call.client->GetCharacterID())));
-            agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
+            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
+            agentSays->SetItem(1, new PyInt(pchar->itemID()));
             /** @todo  add lp, etc, etc  */
             m_agent->UpdateStandings(call.client, Standings::MissionDeclined);
         } break;
         case Quit: {    //11
             missionQuit = true;
             MissionOffer offer;
-            m_agent->GetOffer(call.client->GetCharacterID(), offer);
+            m_agent->GetOffer(pchar->itemID(), offer);
             if (offer.courierTypeID) {
                 // remove item from player possession
                 call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
             }
             // remove mission offer and set standings accordingly
-            m_agent->DeleteOffer(call.client->GetCharacterID());
+            m_agent->DeleteOffer(pchar->itemID());
             m_agent->SendMissionUpdate(call.client, "quit");
-            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(call.client->GetCharacterID())));
-            agentSays->SetItem(1, new PyInt(call.client->GetCharacterID()));
+            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
+            agentSays->SetItem(1, new PyInt(pchar->itemID()));
             /** @todo  add lp, etc, etc  */
             m_agent->UpdateStandings(call.client, Standings::MissionFailure, offer.important);
         } break;

@@ -171,7 +171,8 @@ bool SystemManager::LoadCosmicMgrs()
         return false;
     }
 
-    m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
+    if (m_beltCount)
+        m_beltMgr->Init(m_data.regionID);  //nothing to check for in this init.
 
     if (!m_anomMgr->Init(m_beltMgr, m_dungMgr, m_spawnMgr)) {
         _log(SERVICE__ERROR, "Unable to load Anomaly Manager during boot of system %u.", m_data.systemID);
@@ -212,7 +213,8 @@ bool SystemManager::ProcessTic() {
         PayBounties();
     /* the following are coded for single-tic calls */
     m_anomMgr->Process();
-    m_beltMgr->Process();
+    if (m_beltCount)
+        m_beltMgr->Process();
     m_dungMgr->Process();
     m_spawnMgr->Process();
 
@@ -945,10 +947,13 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
     if (!m_spawnMgr->IsInitialized())
         return;
 
+    uint8 count = m_beltCount;
+    if (count < 1)
+        return;
+
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "Spawn called for bubble %u(%u) in %s(%u)[%.4f], region %u.",
              pBubble->GetID(), sBubbleMgr.GetBeltID(pBubble->GetID()), m_data.name.c_str(), m_data.systemID, m_data.securityRating, m_data.regionID);
-    uint8 count = m_beltCount;
     if (count > 15)
         count = 15;
     if ((m_activeRatSpawns < count ) or (pBubble->IsGate())) {
@@ -988,8 +993,7 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
 
 uint32 SystemManager::GetRandBeltID()
 {
-    uint8 randID = MakeRandomInt(0, m_beltCount);
-    return m_beltVector.at(randID);
+    return m_beltVector.at(MakeRandomInt(0, m_beltCount));
 }
 
 void SystemManager::MakeSetState(const SystemBubble* bubble,  SetState& into) const {

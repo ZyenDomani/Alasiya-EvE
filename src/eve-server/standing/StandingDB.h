@@ -45,7 +45,7 @@ public:
     PyRep* PrimeCharStandings(uint32 charID);
     PyRep* GetCharNPCStandings(uint32 charID);
     PyRep* GetStandingTransactions(uint32 fromID, uint32 toID, uint32 direction, uint16 eventID=0, uint16 eventType=0, int64 eventDateTime=0);
-    PyRep* GetStandingCompositions(uint32 toID, uint32 fromID);
+    PyRep* GetStandingCompositions(uint32 fromID, uint32 toID);
 
     double GetStandingChanges(uint32 charID);
     /*  all standings are in same table now, but follow identical rules
@@ -56,10 +56,10 @@ public:
      * NPC Faction <--> NPC Faction - pre-set by game history
      * NPC corps --> characters and player corps - changed by missions and faction kills
      */
-    double GetStanding(uint32 toID, uint32 fromID);
+    double GetStanding(uint32 fromID, uint32 toID);
 
-    static void SetStanding(uint32 toID, uint32 fromID, double standing);
-    static void UpdateStanding(uint32 toID, uint32 fromID, double standing);
+    static void SetStanding(uint32 fromID, uint32 toID, double standing);
+    static void UpdateStanding(uint32 fromID, uint32 toID, double standing);
     static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg);
 
 };

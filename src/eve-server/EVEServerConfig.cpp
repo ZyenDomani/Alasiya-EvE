@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    8.7
+    Version:    8.8
 */
 
 
@@ -135,6 +135,59 @@ EVEServerConfig::EVEServerConfig()
     npc.UseDamageMultiplier = true;
     npc.DefenderMissileChance = 0.0;
 
+    // cosmic
+    cosmic.PIEnabled = false;
+    cosmic.AnomalyEnabled = false;
+    cosmic.DungeonEnabled = false;
+    cosmic.BeltEnabled = false;
+    cosmic.BeltRespawn = 8 /*h*/;
+    cosmic.BeltGrowth = 6 /*h*/;
+    cosmic.roidRadiusMultiplier = 1.0;
+    cosmic.WormHoleEnabled = false;
+    cosmic.CiviliansEnabled = false;
+    cosmic.BumpEnabled = false;
+
+    // standings
+    standings.MissionBonus = 1.0;
+    standings.MissionFailure = -0.5;
+    standings.MissionDeclined = -0.2;
+    standings.MissionCompleted = 1.0;
+    standings.MissionOfferExpired = -0.1;
+    standings.MissionFailedRollback = -0.5;
+    standings.ImportantMissionBonus = 3.0;
+    standings.BaseMissionMultiplier = 1.0;
+    standings.FleetMissionMultiplier = 0.5;
+    standings.Agent2CharMissionMultiplier = 1.0;
+    standings.ACorp2CharMissionMultiplier = 0.25;
+    standings.Agent2PCorpMissionMultiplier = 0.1;
+    standings.ACorp2PCorpMissionMultiplier = 0.025;
+    standings.AFaction2CharMissionMultiplier = 0.125;
+    standings.AFaction2PCorpMissionMultiplier = 0.0125;
+
+    // chat
+    chat.EnableFleetChat = true;
+    chat.EnableWingChat = false;
+    chat.EnableSquadChat = false;
+    chat.EnableVoiceChat = false;
+    chat.EnforceRookieInHelp = false;
+
+    // crime
+    crime.AggFlagTime = 900 /*s*/;//N
+    crime.CrimFlagTime = 900 /*s*/;//N
+    crime.CWSessionTime = 60 /*s*/;//N
+    crime.KillRightTime = 900 /*s*/;//N
+    crime.WeaponFlagTime = 60 /*s*/;//N
+
+    // debug
+    debug.BubbleTrack = false;
+    debug.IsTestServer = true;
+    debug.UseProfiling = false;
+    debug.PositionHack = false;
+    debug.UseShipTracking = false;
+    debug.DeleteTrackingCans = true;
+    debug.AnomalyFaction = 0;
+    debug.SpawnTest = false;
+
     // database
     database.host = "localhost";
     database.port = 3306;
@@ -162,41 +215,6 @@ EVEServerConfig::EVEServerConfig()
     threads.NetworkThreads = 2;//N
     threads.WorldThreads = 2;//N
 
-    // cosmic
-    cosmic.PIEnabled = false;
-    cosmic.AnomalyEnabled = false;
-    cosmic.DungeonEnabled = false;
-    cosmic.BeltEnabled = false;
-    cosmic.BeltRespawn = 8 /*h*/;
-    cosmic.BeltGrowth = 6 /*h*/;
-    cosmic.roidRadiusMultiplier = 1.0;
-    cosmic.WormHoleEnabled = false;
-    cosmic.CiviliansEnabled = false;
-    cosmic.BumpEnabled = false;
-
-    // chat
-    chat.EnableFleetChat = true;
-    chat.EnableWingChat = false;
-    chat.EnableSquadChat = false;
-    chat.EnableVoiceChat = false;
-    chat.EnforceRookieInHelp = false;
-
-    // crime
-    crime.AggFlagTime = 900 /*s*/;//N
-    crime.CrimFlagTime = 900 /*s*/;//N
-    crime.CWSessionTime = 60 /*s*/;//N
-    crime.KillRightTime = 900 /*s*/;//N
-    crime.WeaponFlagTime = 60 /*s*/;//N
-
-    // debug
-    debug.BubbleTrack = false;
-    debug.IsTestServer = true;
-    debug.UseProfiling = false;
-    debug.PositionHack = false;
-    debug.UseShipTracking = false;
-    debug.DeleteTrackingCans = true;
-    debug.AnomalyFaction = 0;
-    debug.SpawnTest = false;
 }
 
 bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
@@ -209,14 +227,15 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
     AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
     AddMemberParser( "npc",         &EVEServerConfig::ProcessNPC );
+    AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
+    AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
+    AddMemberParser( "standings",   &EVEServerConfig::ProcessStandings );
+    AddMemberParser( "chat",        &EVEServerConfig::ProcessChat );
+    AddMemberParser( "debug",       &EVEServerConfig::ProcessDebug );
     AddMemberParser( "database",    &EVEServerConfig::ProcessDatabase );
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
-    AddMemberParser( "cosmic",      &EVEServerConfig::ProcessCosmic );
-    AddMemberParser( "crime",       &EVEServerConfig::ProcessCrime );
-    AddMemberParser( "chat",        &EVEServerConfig::ProcessChat );
-    AddMemberParser( "debug",       &EVEServerConfig::ProcessDebug );
 
     // parse the element
     const bool result = ParseElementChildren( ele );
@@ -229,14 +248,15 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "account" );
     RemoveParser( "character" );
     RemoveParser( "npc" );
+    RemoveParser( "cosmic" );
+    RemoveParser( "crime" );
+    RemoveParser( "standings" );
+    RemoveParser( "chat" );
+    RemoveParser( "debug" );
     RemoveParser( "database" );
     RemoveParser( "files" );
     RemoveParser( "net" );
     RemoveParser( "threads" );
-    RemoveParser( "cosmic" );
-    RemoveParser( "crime" );
-    RemoveParser( "chat" );
-    RemoveParser( "debug" );
 
     // return status of parsing
     return result;
@@ -582,6 +602,44 @@ bool EVEServerConfig::ProcessChat(const TiXmlElement* ele)
     return result;
 }
 
+bool EVEServerConfig::ProcessStandings(const TiXmlElement* ele)
+{
+    AddValueParser( "MissionBonus",                     standings.MissionBonus );
+    AddValueParser( "MissionFailure",                   standings.MissionFailure );
+    AddValueParser( "MissionDeclined",                  standings.MissionDeclined );
+    AddValueParser( "MissionCompleted",                 standings.MissionCompleted );
+    AddValueParser( "MissionOfferExpired",              standings.MissionOfferExpired );
+    AddValueParser( "MissionFailedRollback",            standings.MissionFailedRollback );
+    AddValueParser( "ImportantMissionBonus",            standings.ImportantMissionBonus );
+    AddValueParser( "BaseMissionMultiplier",            standings.BaseMissionMultiplier );
+    AddValueParser( "FleetMissionMultiplier",           standings.FleetMissionMultiplier );
+    AddValueParser( "Agent2CharMissionMultiplier",      standings.Agent2CharMissionMultiplier );
+    AddValueParser( "ACorp2CharMissionMultiplier",      standings.ACorp2CharMissionMultiplier );
+    AddValueParser( "Agent2PCorpMissionMultiplier",     standings.Agent2PCorpMissionMultiplier );
+    AddValueParser( "ACorp2PCorpMissionMultiplier",     standings.ACorp2PCorpMissionMultiplier );
+    AddValueParser( "AFaction2CharMissionMultiplier",   standings.AFaction2CharMissionMultiplier );
+    AddValueParser( "AFaction2PCorpMissionMultiplier",  standings.AFaction2PCorpMissionMultiplier );
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "MissionBonus" );
+    RemoveParser( "MissionFailure" );
+    RemoveParser( "MissionDeclined" );
+    RemoveParser( "MissionCompleted" );
+    RemoveParser( "MissionOfferExpired" );
+    RemoveParser( "MissionFailedRollback" );
+    RemoveParser( "ImportantMissionBonus" );
+    RemoveParser( "BaseMissionMultiplier" );
+    RemoveParser( "FleetMissionMultiplier" );
+    RemoveParser( "Agent2CharMissionMultiplier" );
+    RemoveParser( "ACorp2CharMissionMultiplier" );
+    RemoveParser( "Agent2PCorpMissionMultiplier" );
+    RemoveParser( "ACorp2PCorpMissionMultiplier" );
+    RemoveParser( "AFaction2CharMissionMultiplier" );
+    RemoveParser( "AFaction2PCorpMissionMultiplier" );
+
+    return result;
+}
 
 bool EVEServerConfig::ProcessCrime( const TiXmlElement* ele )
 {

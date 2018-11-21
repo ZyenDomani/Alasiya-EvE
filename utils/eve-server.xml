@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.5 -->
+     Version: 8.8 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -15,11 +15,11 @@
  6917529029788565504 (0x6000000080000000)  ROLE_STD     = ROLE_LOGIN | ROLE_PLAYER | ROLE_IGB
  7061644217868615680 (0x6200000080400000)  ROLE_VIP     = ROLE_STD | ROLE_VIPLOGIN | ROLE_HEALSELF
  7079658624976683008 (0x6240000280c40000)  ROLE_SLASH   = ROLE_LEGIONEER | ROLE_GML | ROLE_SPAWN | ROLE_VIP | ROLE_HEALOTHERS
- 7124694621250387968 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
- 7131450020691443712 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
- 7203507614729371648 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
+ 7124694621250392064 (0x62e0000280c40000)  ROLE_CREATOR = ROLE_SLASH | ROLE_GMH | ROLE_CONTENT
+ 7131450020691447808 (0x62f8000280c40000)  ROLE_DEV     = ROLE_CREATOR | ROLE_QA | ROLE_PROGRAMMER
+ 7203507614729375744 (0x63f8000280c40000)  ROLE_BOSS    = ROLE_ADMIN | ROLE_DEV
         -->
-        <autoAccountRole>7131450020691443712</autoAccountRole>
+        <autoAccountRole>7131450020691447808</autoAccountRole>
         <!--
         <loginMessage>
             &lt;html&gt;
@@ -44,7 +44,7 @@
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>20</MaxThreadReport>
-        <UseMarketBot>false</UseMarketBot>
+        <UseMarketBot>false</UseMarketBot><!-- this is coded in alasiya gate.  not needed here -->
         <DisableIGB>true</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
@@ -53,6 +53,8 @@
         <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
         <FleetShareDelayed>true</FleetShareDelayed><!-- switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
         <BountyPayoutTimer>5</BountyPayoutTimer><!-- time for system bounty timer to run (in minutes - 20m default - 256 max) -->
+        <!-- LoadOldMissions not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this. -->
+        <LoadOldMissions>false</LoadOldMissions><!-- allow display of expired/completed missions in journal -->
     </server>
 
     <world>
@@ -65,6 +67,7 @@
         <loginInfo>false</loginInfo><!-- bool -->
         <loginMsg>false</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
+        <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
     </world>
 
     <rates>
@@ -109,24 +112,24 @@
         <startStation>60014137</startStation>
         <startSecRating>1.0</startSecRating>
         <startCorporation>0</startCorporation>
-        <terminationDelay>180</terminationDelay> <!-- seconds -->
-        <statMultiplier>3</statMultiplier><!-- stats are multiplied by this -->
+        <terminationDelay>1800</terminationDelay> <!-- seconds  30m default -->
+        <statMultiplier>3</statMultiplier><!-- stats are multiplied by this (after remap) -->
         <allow3edChar>false</allow3edChar><!-- (dis)allow creating a third character -->
     </character>
 
     <npc>
         <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
         <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
+        <WarpFollowChance>0.15</WarpFollowChance><!-- chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
-        <TargetPodSec>0.4</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
+        <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
         <!-- Threat not implemented yet -->
         <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
-        <!-- Spawns are implemented -->
-        <RoamingSpawns>true</RoamingSpawns><!-- bool -->
-        <StaticSpawns>false</StaticSpawns><!-- bool -->
+        <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
         <StaticSpawns>true</StaticSpawns><!-- bool -->
+        <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  overrides npc default from db. 0 default -->
         <RoamingTimer>300</RoamingTimer><!-- time between spawn checks, in seconds  10m default -->
         <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
         <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
@@ -134,6 +137,27 @@
         <EnableDrones>true</EnableDrones><!-- bool -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
     </npc>
+
+    <standings><!-- these are in percent -->
+        <!--  base mission modifiers  -->
+        <MissionBonus>1.0</MissionBonus><!-- 1.0 default -->
+        <MissionFailure>-0.5</MissionFailure><!-- -0.5 default -->
+        <MissionDeclined>-0.2</MissionDeclined><!-- -0.2 default -->
+        <MissionCompleted>1.0</MissionCompleted><!-- 1.0 default -->
+        <MissionOfferExpired>-0.1</MissionOfferExpired><!-- -0.1 default -->
+        <ImportantMissionBonus>3.0</ImportantMissionBonus><!-- 3.0 default -->
+        <MissionFailedRollback>-0.5</MissionFailedRollback><!-- -0.5 default -->
+        <FleetMissionMultiplier>0.5</FleetMissionMultiplier><!-- 0.5 default  -->
+        <!-- agent to char modifiers -->
+        <BaseMissionMultiplier>1.0</BaseMissionMultiplier><!-- 1.0 default  -->
+        <Agent2CharMissionMultiplier>1.0</Agent2CharMissionMultiplier><!-- 1.0 default  -->
+        <ACorp2CharMissionMultiplier>0.25</ACorp2CharMissionMultiplier><!-- 0.25 default  -->
+        <AFaction2CharMissionMultiplier>0.125</AFaction2CharMissionMultiplier><!-- 0.125 default  -->
+        <!-- agent to player corp modifiers -->
+        <Agent2PCorpMissionMultiplier>0.1</Agent2PCorpMissionMultiplier><!-- 0.1 default  -->
+        <ACorp2PCorpMissionMultiplier>0.025</ACorp2PCorpMissionMultiplier><!-- 0.025 default  -->
+        <AFaction2PCorpMissionMultiplier>0.0125</AFaction2PCorpMissionMultiplier><!-- 0.0125 default  -->
+    </standings>
 
     <chat>
         <EnableFleetChat>true</EnableFleetChat><!-- bool -->

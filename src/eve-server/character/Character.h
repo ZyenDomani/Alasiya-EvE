@@ -476,7 +476,9 @@ public:
     double 					GetStanding(uint32 toID, uint32 fromID);    // NOTE:  this is NOT adjusted for skills
     double                  GetNPCCorpStanding(uint32 toID, uint32 fromID);
 	double 					GetStandingChanges();
-	void 					SetStanding(uint32 toID, uint32 fromID, double standing);
+    void 					SetStanding(uint32 toID, uint32 fromID, double standing);
+    void                    FleetShareMissionRewards();
+    void                    FleetShareMissionStandings(float newStanding);
 
     //  Dynamic Data
 	void                    VisitSystem(uint32 solarSystemID);

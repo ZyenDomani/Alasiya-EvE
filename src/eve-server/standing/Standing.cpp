@@ -90,7 +90,7 @@ PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     }
 
     CharacterRef cRef = sItemFactory.GetCharacter( arg.arg );
-    if  (cRef == nullptr) {
+    if  (cRef.get() == nullptr) {
         _log(STANDING__WARNING, "Character %u not found.", arg.arg);
         return nullptr;
     }
