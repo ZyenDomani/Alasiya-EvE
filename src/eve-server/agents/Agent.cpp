@@ -565,11 +565,24 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
 
     if (pClient->InFleet() and (newStanding > 0)) {
         float fleetStanding = newStanding * sConfig.standings.FleetMissionMultiplier;
+        newStanding -= (fleetStanding /2);  // live does half,  but mission acceptor will get more here.
         // shared mission standings are from agent to character only.
-        std::vector<uint32> idVec;
-        sFltSvc.GetFleetMembersInSystem(pClient, idVec);
-        for (auto cur : idVec)
-            sStandingMgr.UpdateStandings(m_agentID, cur, eventID, fleetStanding, msg);
+        std::vector<Client*> clientVec;
+        sFltSvc.GetFleetClientsInSystem(pClient, clientVec);
+        for (auto cur : clientVec) {
+            sStandingMgr.UpdateStandings(m_agentID, cur->GetCharacterID(), eventID, fleetStanding, msg);
+            PyTuple* agent = new PyTuple(5);
+                agent->SetItem(0, new PyInt(m_agentID));
+                agent->SetItem(1, new PyInt(cur->GetCharacterID()));
+                agent->SetItem(2, new PyFloat(fleetStanding));
+                agent->SetItem(3, new PyInt(-1));
+                agent->SetItem(4, new PyInt(1));
+            PyList* list = new PyList();
+                list->AddItem(agent);
+            PyTuple* payload = new PyTuple(1);
+                payload->SetItem(0, list);
+            cur->SendNotification("OnStandingsModified", "charid", payload, false);
+        }
     }
 
     sStandingMgr.UpdateStandings(m_agentID, pChar->itemID(), eventID, newStanding, msg);
