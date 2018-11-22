@@ -115,7 +115,7 @@ public:
     void                    Relocate(const GPoint pos);
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
-    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
+    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);    // this will remove item from old location if needed.
     // Donate() is used to xfer owner and location when moving items between char and corp
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;

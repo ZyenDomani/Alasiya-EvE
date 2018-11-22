@@ -124,7 +124,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     if (pInventory == nullptr)
         return PyStatic.NewNone();
-    
+
     uint32 ownerID = m_ownerID;
     // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
     EVEItemFlags flag = mFlag, oldFlag = mFlag;
@@ -719,11 +719,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                     _log(INV__ERROR, "InventoryBound::MoveItems() - Error getting split item. Skipping.");
                     continue;
                 }
-                if (iRef->quantity() > quantity)
+                if (iRef->quantity() > quantity) {
                     _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", iRef->itemID(), iRef->quantity(), quantity);
+                }
             }
 
-            contRef->RemoveItem(iRef);
+            //contRef->RemoveItem(iRef);
         }
 
         // add item to new location
@@ -743,9 +744,10 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
                         toFlag = flagCargoHold;
                     }
-                } else
+                } else {
                     // this needs work to verify mFlag is correct for application, and that it is intially set correctly
                     toFlag = mFlag;
+                }
             }
 
             if (IsModuleSlot(toFlag))

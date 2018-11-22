@@ -778,6 +778,9 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
+    m_flag = new_flag;
+    m_locationID = new_location;
+
     if (old_location != new_location) {
         if (IsValidLocation(old_location)) {
             pInv = sItemFactory.GetInventoryFromId( old_location, false);
@@ -792,9 +795,6 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
                 _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", new_location, itemName().c_str());
         }
     }
-
-    m_flag = new_flag;
-    m_locationID = new_location;
 
     SaveItem();
     if (IsNPCCorp(m_ownerID) or IsFaction(m_ownerID))   //IsValidOwner()
@@ -837,6 +837,8 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         return false;
     }
 
+    m_quantity = qty;
+
     if (notify) {
         std::map<int32, PyRep *> changes;
         // this informs client of a stack change
@@ -844,7 +846,6 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
-    m_quantity = qty;
     SaveItem();
     return true;
 }
