@@ -152,6 +152,19 @@ double EvE::min1(double x, double y)
     return  ((min > 1) ? 1 : min);
 }
 
+double EvE::min(double x, double y, double z)
+{
+    double min = ((x < y) ? x : y);
+    return  ((min > z) ? z : min);
+}
+
+double EvE::max(double x, double y, double z)
+{
+    double max = ((x > y) ? x : y);
+    return  ((max < z) ? z : max);
+}
+
+
 void EvE::traceStack(void)
 {
     int j, nptrs;

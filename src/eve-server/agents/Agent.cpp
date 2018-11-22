@@ -395,23 +395,33 @@ PyObject* Agent::GetInfoServiceDetails()
 
     // standings info for this agent.
     /** @todo  finish this.... */
-    res->SetItemString("incompatible", new PyString("Your personal standings must be *some shit* or higher toward this agent, its faction, or its corporation in order to use this agent's services.") );
+    std::string msg = "Your personal standings must be";
+    msg += GetMinReqStanding(m_data.level);
+    msg += "or higher toward this agent, its faction, or its corporation in order to use this agent's services.";
+    res->SetItemString("incompatible", new PyString(msg));
 
     /* can also use locale labelIDs for this using a tuple to define minStandings, minEffective, corpMinStandings, mainEffective, effectiveMinStandings in other msgIDs
      * this will take char, corp, faction, agent, and some other shit into account to determine msg and data sent using the tuple system
+    //  note:  this is kinda hacked right now.
     PyDict* dict = new PyDict();
-        dict->SetItemString("corpMinStandings", new PyFloat(1.1));
-        dict->SetItemString("effectiveMinStandings", new PyFloat(1.6));
+        dict->SetItemString("minStandings", new PyFloat(GetMinReqStanding(m_data.level)));
+       // dict->SetItemString("mainEffective", new PyFloat(GetMinReqStanding(m_data.level +10)));
     PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyInt(235463));
+        tuple->SetItem(0, new PyInt(235465));
         tuple->SetItem(1, dict);
     res->SetItemString("incompatible", tuple);
-
+    */
+/*
+ * Level 1 = always available
+ * Level 2 = +1.00 standing
+ * Level 3 = +3.00 standing
+ * Level 4 = +5.00 standing
+ * Level 5 = +7.00 standing
 (235462, 'Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
 (235463, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing to this agent's corp of at least {[numeric]corpMinStandings, decimalPlaces=1} , as well as personal standing of at least {[numeric]effectiveMinStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
 (235464, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing of at least {[numeric]minStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
 (235465, 'Your effective personal standings must be {[numeric]minStandings, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services')
-(235466, 'Your effective personal standings must be {[numeric]minEffective, decimalPlaces=1} or higher toward this agent's corporation in order to use this agent, as well as an effective personal standing of {[numeric]mainEffective, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
+(235466*, 'Your effective personal standings must be {[numeric]minEffective, decimalPlaces=1} or higher toward this agent's corporation in order to use this agent, as well as an effective personal standing of {[numeric]mainEffective, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
 (235467, 'This agent can only be used through a direct referral.')
 */
 
@@ -422,6 +432,25 @@ PyObject* Agent::GetInfoServiceDetails()
 
     return new PyObject("util.KeyVal", res);
 }
+
+float Agent::GetMinReqStanding(uint8 level)
+{
+    switch(level) {
+        // these are agentCorp -> char
+        case 1:     return -2.0f;
+        case 2:     return 1.0f;
+        case 3:     return 3.0f;
+        case 4:     return 5.0f;
+        case 5:     return 7.0f;
+        //these are agent/corp/faction -> char
+        case 11:     return -1.0f;
+        case 12:     return 1.5f;
+        case 13:     return 3.5f;
+        case 14:     return 5.5f;
+        case 15:     return 7.5f;
+    };
+}
+
 
 uint32 Agent::GetAcceptRsp(uint32 charID)
 {
@@ -498,6 +527,20 @@ uint32 Agent::GetQuitRsp(uint32 charID)
     //(236846, `Quitters never win.`)
 }
 
+uint32 Agent::GetStandingsRsp(uint32 charID)
+{
+    switch (MakeRandomInt(1, 6)) {
+        case 1:   return 236682; // `I’m sorry pilot, but you do not have the required standings to receive any missions from me. You will need to raise your standings by doing missions for lower-ranked agents. Use the Agent Finder to locate agents that are available to you.`)
+        case 2:   return 236691; // `I’m sorry pilot, but you do not have the required standings to receive any missions from me. You will need to raise your standings by doing missions for lower-ranked agents. Use the Agent Finder to locate agents that are available to you.`)
+        //case 1:   return 236708; // `Trial account users cannot access agents of level 3 or higher. Either use your map settings to find a level 1 or level 2 agent, or consider purchasing an EVE subscription if you wish to access higher-level content.`)
+        case 3:   return 236785; // `What planet were you born on?  Check your standings next time or I'll drill a hole in you.`)
+        case 4:   return 236787; // `Have you even bothered to check your standings.`)
+        case 5:   return 236775; // `Hello, {[character]player.name}.  I was given the assignment of handing out a valuable item to loyal supporters of {[npcOrganization]agentFactionID.name}.  If you know of someone who has proven him or herself time and time again for {[npcOrganization]agentFactionID.nameWithArticle} then point that person to me and perhaps we can come to an 'arrangement' ...<br><br>You on the other hand do not meet my requirements or have already received my offer.`)
+        case 6:   return 236853; // `I’m sorry pilot, but you do not have the required standings to receive any missions from me. You will need to raise your standings by doing missions for lower-ranked agents. Use the Agent Finder to locate agents that are available to you.`)
+    }
+}
+
+
 void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*false*/)
 {
     /*
@@ -515,16 +558,15 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
                         */
     Character* pChar = pClient->GetChar().get();
 
-    float charStanding = pChar->GetStanding(pChar->itemID(), m_agentID);
-    float quality = EvEMath::Agent::EffectiveQuality(m_data.quality, pChar->GetSkillLevel(skillConnections), charStanding);
-    float newStanding = EvEMath::Agent::Efficiency(m_data.level, m_data.quality);    // 0.018 to 0.38
-    newStanding *= sEntityList.FindOrBootSystem(m_data.solarSystemID)->GetSecValue(); // 0.0018 to .76
-    newStanding = EvEMath::Agent::AgentStandingIncrease(charStanding, (newStanding /10));
-    newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
-    newStanding /= 80;
-
+    float charStanding = pChar->GetStanding(m_agentID, pChar->itemID());
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_data.factionID, pChar->GetSkillLevel(skillConnections), pChar->GetSkillLevel(skillDiplomacy), pChar->GetSkillLevel(skillCriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
+    float quality = EvEMath::Agent::EffectiveQuality(m_data.quality, pChar->GetSkillLevel(skillNegotiation), standing);
+    float newStanding = EvEMath::Agent::Efficiency(m_data.level, quality);    // 0.018 to 0.38
+    newStanding *= sEntityList.FindOrBootSystem(m_data.solarSystemID)->GetSecValue(); // 0.0018 to .76
+    //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
+    newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
+    newStanding /= 8;
 
     newStanding *= sConfig.standings.BaseMissionMultiplier;
 
@@ -582,6 +624,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
             PyTuple* payload = new PyTuple(1);
                 payload->SetItem(0, list);
             cur->SendNotification("OnStandingsModified", "charid", payload, false);
+            // fleet will share corp standings on some missions.  fix later.
         }
     }
 
@@ -661,6 +704,47 @@ void Agent::SendMissionUpdate(Client* pClient, std::string action)
     //specific to the calling action
     //OnInteractWith(agentID)       (force agent convo)
 
+bool Agent::CanUseAgent(Client* pClient)
+{
+    if (m_data.typeID == Agents::Type::Aura)
+        return true;
+    if (m_data.level == 1)
+        if (m_data.typeID != Agents::Type::Research)
+            return true;
+
+    Character* pChar = pClient->GetChar().get();
+    uint8 sConn = pChar->GetSkillLevel(skillConnections);
+    uint8 sDiplo = pChar->GetSkillLevel(skillDiplomacy);
+    uint8 sCrim = pChar->GetSkillLevel(skillCriminalConnections);
+    float charStanding = pChar->GetStanding(m_agentID, pChar->itemID());
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_data.factionID, sConn, sDiplo, sCrim);
+    float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
+
+    float facChr = pChar->GetStanding(m_data.factionID, pChar->itemID());
+    float corpChr = pChar->GetStanding(m_data.corporationID, pChar->itemID());
+    float charChr = pChar->GetStanding(m_agentID, pChar->itemID());
+    float facBonus = EvEMath::Agent::GetStandingBonus(facChr, m_data.factionID, sConn, sDiplo, sCrim);
+    float corpBonus = EvEMath::Agent::GetStandingBonus(corpChr, m_data.factionID, sConn, sDiplo, sCrim);
+    float charBonus = EvEMath::Agent::GetStandingBonus(charChr, m_data.factionID, sConn, sDiplo, sCrim);
+
+    if (facBonus > 0.0f)
+        facChr = (1.0 - (1.0 - facChr / 10.0) * (1.0 - facBonus / 10.0)) * 10.0;
+    if (corpBonus > 0.0f)
+        corpChr = (1.0 - (1.0 - corpChr / 10.0) * (1.0 - corpBonus / 10.0)) * 10.0;
+    if (charBonus > 0.0f)
+        charChr = (1.0 - (1.0 - charChr / 10.0) * (1.0 - charBonus / 10.0)) * 10.0;
+
+    float m = (m_data.level - 1) * 2.0f - 1.0f;
+    if ((EvE::max(facChr, corpChr, charChr) >= m ) and (EvE::min(facChr, corpChr, charChr) > -2.0f)) {
+        if ((m_data.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
+            return false;
+        return true;
+    }
+
+    return false;
+}
+
+
 
 /*  mission errata....
  *
@@ -690,12 +774,6 @@ void Agent::SendMissionUpdate(Client* pClient, std::string action)
 
 
 /* agent errata...
- *
- * Level 1 = always available
- * Level 2 = +1.00 standing
- * Level 3 = +3.00 standing
- * Level 4 = +5.00 standing
- * Level 5 = +7.00 standing
  *
  * char mission history and current offers in agtOffers
  * notify:OnIncomingAgentMessage(agentID, message)

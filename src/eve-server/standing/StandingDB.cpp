@@ -129,7 +129,7 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
 double StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
     DBResultRow row;
-    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repStandings WHERE toID=%u AND fromID=%u", toID, fromID);
+    sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE toID=%u AND fromID=%u", toID, fromID);
     if (res.GetRow(row))
         return row.GetDouble(0);
     else

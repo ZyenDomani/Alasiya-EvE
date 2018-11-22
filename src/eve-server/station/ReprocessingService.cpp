@@ -24,6 +24,7 @@
     Updates:    Allan
 */
 
+/**  @todo  update this entire file...  */
 /*
  * # Manufacturing Logging:
  * MANUF__ERROR
@@ -390,13 +391,13 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
 
 float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
-    float standing = pClient->GetChar()->GetStanding(pClient->GetCharacterID(), m_stationCorpID);
+    float standing = pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCharacterID());
     if (standing < 0)
         standing += ((10 +standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillDiplomacy));
     else
         standing += ((10 -standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillConnections));
 
-    return EvE::max(standing, pClient->GetChar()->GetStanding(pClient->GetCorporationID(), m_stationCorpID));
+    return EvE::max(standing, pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }
 
 float ReprocessingServiceBound::CalcTax(float standing) const {

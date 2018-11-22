@@ -95,10 +95,14 @@ namespace EvE {
     inline double min(double x, double y)               { return ((x < y) ? x : y); }
     // returns the minimum of x,y and 1
     double min1(double x, double y);
+    // returns the minimum of x,y and z
+    double min(double x, double y, double z);
     // returns the max of x,y with y=0 by default
     inline int64 max(int64 x, int64 y=0)                { return ((x > y) ? x : y); }
-    // returns the max of x,y with y=0 by default
+    // returns the maximum of x,y with y=0 by default
     inline double max(double x, double y=0)             { return ((x > y) ? x : y); }
+    // returns the maximum of x,y and z
+    double max(double x, double y, double z);
     // prints the top10 items in stack to stdout
     void traceStack(void);
 }

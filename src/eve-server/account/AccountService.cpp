@@ -274,9 +274,10 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     if (!IsCharacter(toID))
         return;
     // are bounty payments grouped on timer?
-    if (sConfig.server.BountyPayoutDelayed)
-        if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 175k
-            return;
+    if ((entryTypeID == Journal::EntryType::BountyPrize) or (entryTypeID == Journal::EntryType::BountyPrizes))
+        if (sConfig.server.BountyPayoutDelayed)
+            if (amount < sConfig.rates.TaxedAmount)  // is amount worth taxing?  default is 175k
+                return;
     float tax = 0;
     uint32 corpID = 0;
     if (pClientTo != nullptr) {

@@ -82,19 +82,10 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
      */
 
     Character* pchar = call.client->GetChar().get();
-    float charStanding = pchar->GetStanding(pchar->itemID(), m_agent->GetID());
+    float charStanding = pchar->GetStanding(m_agent->GetID(), pchar->itemID());
     float quality = EvEMath::Agent::EffectiveQuality(m_agent->GetQuality(), pchar->GetSkillLevel(skillConnections), charStanding);
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agent->GetFactionID(), pchar->GetSkillLevel(skillConnections), pchar->GetSkillLevel(skillDiplomacy), pchar->GetSkillLevel(skillCriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
-
-    /** @todo  figure out how to implement this....
-     * will need to put agent quality in here, too.
-     * Level 1 = always available
-     * Level 2 = +1.00 standing
-     * Level 3 = +3.00 standing
-     * Level 4 = +5.00 standing
-     * Level 5 = +7.00 standing
-     */
 
     std::string response = "";
     uint8 actionID = PyRep::IntegerValue(args.arg);
@@ -114,95 +105,75 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         dialog->AddItem(adminButton);
     }
 
-    /** @todo determine if char can access this agent using standings.... */
-
-    switch (actionID) {
-        case 0: {
-            //  if char has current mission with this agent, add this one.
-            MissionOffer offer;
-            if (m_agent->HasMission(pchar->itemID(), offer)) {
-                PyTuple* button1 = new PyTuple(2);
-                    button1->SetItem(0, new PyInt(ViewMission)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
-                    button1->SetItem(1, new PyInt(ViewMission));
-                dialog->AddItem(button1);
-                if (call.client->IsMissionComplete(offer))  {
+    if (m_agent->CanUseAgent(call.client)) {
+        switch (actionID) {
+            case 0: {
+                //  if char has current mission with this agent, add this one.
+                MissionOffer offer;
+                if (m_agent->HasMission(pchar->itemID(), offer)) {
+                    PyTuple* button1 = new PyTuple(2);
+                        button1->SetItem(0, new PyInt(ViewMission)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
+                        button1->SetItem(1, new PyInt(ViewMission));
+                    dialog->AddItem(button1);
+                    if (call.client->IsMissionComplete(offer))  {
+                        PyTuple* button2 = new PyTuple(2);
+                            button2->SetItem(0, new PyInt(Complete));
+                            button2->SetItem(1, new PyInt(Complete));
+                        dialog->AddItem(button2);
+                    }
+                    agentSays->SetItem(0, new PyInt(offer.briefingID));
+                    agentSays->SetItem(1, new PyInt(offer.characterID));
+                } else {
+                    // dialogue data.  if RequestMission is only option, client auto-responds with DoAction(RequestMission optionID)
                     PyTuple* button2 = new PyTuple(2);
-                        button2->SetItem(0, new PyInt(Complete));
-                        button2->SetItem(1, new PyInt(Complete));
+                        button2->SetItem(0, new PyInt(RequestMission));
+                        button2->SetItem(1, new PyInt(RequestMission));
                     dialog->AddItem(button2);
+                // response as string for custom data.  response as pyint to use client data (using getlocale shit)
+                    // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
+                    //  this will be modeled after UO speech data, in tiers and levels.
+                    // if RequestMission is only option, this is ignored.  see note under 'dialog data'
+                    response = "Why the fuck am I looking at you again, ";
+                    response += call.client->GetCharacterName().c_str();
+                    response += "?";
+                    agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
+                    agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
                 }
+
+                // if agent does location, add this one...
+                if (m_agent->IsLocator()) {
+                    PyTuple* button3 = new PyTuple(2);
+                        button3->SetItem(0, new PyInt(LocateCharacter));
+                        button3->SetItem(1, new PyInt(LocateCharacter));
+                    dialog->AddItem(button3);
+                }
+
+                // if agent does research, add this one...
+                if (m_agent->IsResearch()) {
+                    PyTuple* button4 = new PyTuple(2);
+                        button4->SetItem(0, new PyInt(StartResearch));
+                        button4->SetItem(1, new PyInt(StartResearch));
+                    dialog->AddItem(button4);
+                }
+            } break;
+            case RequestMission: {  //2
+                MissionOffer offer;
+                m_agent->MakeOffer(pchar->itemID(), offer);
+                m_agent->SendMissionUpdate(call.client, "offered");
+
+                //  this one will get complicated and is based on agent/char interaction
+                //   detail in /eve/client/script/ui/station/agents/agents.py
+
+                /*  agentSays is a tuple of msgData and contentID
+                *      msgData can be single integer of briefingID, a string literal, or a tuple as defined above.
+                *   contentID is used for specific char's mission keywords.  we're not using it like there here....
+                */
+
                 agentSays->SetItem(0, new PyInt(offer.briefingID));
                 agentSays->SetItem(1, new PyInt(offer.characterID));
-            } else {
-                // dialogue data.  if RequestMission is only option, client auto-responds with DoAction(RequestMission optionID)
-                PyTuple* button2 = new PyTuple(2);
-                    button2->SetItem(0, new PyInt(RequestMission));
-                    button2->SetItem(1, new PyInt(RequestMission));
-                dialog->AddItem(button2);
-                // response as string for custom data.  response as pyint to use client data (using getlocale shit)
-                // default initial agent response based on agent location, level, bloodline, quality, and char/agent standings
-                //  this will be modeled after UO speech data, in tiers and levels.
-                // if RequestMission is only option, this is ignored.  see note under 'dialog data'
-                response = "Why the fuck am I looking at you again, ";
-                response += call.client->GetCharacterName().c_str();
-                response += "?";
-                agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
-                agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)
-            }
 
-            // if agent does location, add this one...
-            if (m_agent->IsLocator()) {
-                PyTuple* button3 = new PyTuple(2);
-                    button3->SetItem(0, new PyInt(LocateCharacter));
-                    button3->SetItem(1, new PyInt(LocateCharacter));
-                dialog->AddItem(button3);
-            }
-
-            // if agent does research, add this one...
-            if (m_agent->IsResearch()) {
-                PyTuple* button4 = new PyTuple(2);
-                    button4->SetItem(0, new PyInt(StartResearch));
-                    button4->SetItem(1, new PyInt(StartResearch));
-                dialog->AddItem(button4);
-            }
-        } break;
-        case RequestMission: {  //2
-            MissionOffer offer;
-            m_agent->MakeOffer(pchar->itemID(), offer);
-            m_agent->SendMissionUpdate(call.client, "offered");
-
-            //  this one will get complicated and is based on agent/char interaction
-            //   detail in /eve/client/script/ui/station/agents/agents.py
-
-            /*  agentSays is a tuple of msgData and contentID
-             *      msgData can be single integer of briefingID, a string literal, or a tuple as defined above.
-             *   contentID is used for specific char's mission keywords.  we're not using it like there here....
-             */
-
-            agentSays->SetItem(0, new PyInt(offer.briefingID));
-            agentSays->SetItem(1, new PyInt(offer.characterID));
-
-            // dialog can also contain mission data.
-            //   set a dialog tuple[1] to dict and fill with MissionBriefingInfo
-            PyTuple* button1 = new PyTuple(2);
-                button1->SetItem(0, new PyInt(Accept));
-                button1->SetItem(1, new PyInt(Accept));
-            dialog->AddItem(button1);
-            PyTuple* button2 = new PyTuple(2);
-                button2->SetItem(0, new PyInt(Decline));
-                button2->SetItem(1, new PyInt(Decline));
-            dialog->AddItem(button2);
-            PyTuple* button3 = new PyTuple(2);
-                button3->SetItem(0, new PyInt(Defer));
-                button3->SetItem(1, new PyInt(Defer));
-            dialog->AddItem(button3);
-        } break;
-        case ViewMission: { //1
-            MissionOffer offer;
-            m_agent->GetOffer(pchar->itemID(), offer);
-            agentSays->SetItem(0, new PyInt(offer.briefingID));
-            agentSays->SetItem(1, new PyInt(offer.characterID));
-            if (offer.stateID < Mission::State::Accepted) {
+                // dialog can also contain mission data.
+                //   set a dialog tuple[1] to dict and fill with MissionBriefingInfo
                 PyTuple* button1 = new PyTuple(2);
                     button1->SetItem(0, new PyInt(Accept));
                     button1->SetItem(1, new PyInt(Accept));
@@ -215,144 +186,167 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     button3->SetItem(0, new PyInt(Defer));
                     button3->SetItem(1, new PyInt(Defer));
                 dialog->AddItem(button3);
-            } else if (offer.stateID == Mission::State::Accepted) {
-                PyTuple* button1 = new PyTuple(2);
-                    button1->SetItem(0, new PyInt(Quit));
-                    button1->SetItem(1, new PyInt(Quit));
-                dialog->AddItem(button1);
-                if (call.client->IsMissionComplete(offer))  {
+            } break;
+            case ViewMission: { //1
+                MissionOffer offer;
+                m_agent->GetOffer(pchar->itemID(), offer);
+                agentSays->SetItem(0, new PyInt(offer.briefingID));
+                agentSays->SetItem(1, new PyInt(offer.characterID));
+                if (offer.stateID < Mission::State::Accepted) {
+                    PyTuple* button1 = new PyTuple(2);
+                        button1->SetItem(0, new PyInt(Accept));
+                        button1->SetItem(1, new PyInt(Accept));
+                    dialog->AddItem(button1);
                     PyTuple* button2 = new PyTuple(2);
-                        button2->SetItem(0, new PyInt(Complete));
-                        button2->SetItem(1, new PyInt(Complete));
+                        button2->SetItem(0, new PyInt(Decline));
+                        button2->SetItem(1, new PyInt(Decline));
                     dialog->AddItem(button2);
+                    PyTuple* button3 = new PyTuple(2);
+                        button3->SetItem(0, new PyInt(Defer));
+                        button3->SetItem(1, new PyInt(Defer));
+                    dialog->AddItem(button3);
+                } else if (offer.stateID == Mission::State::Accepted) {
+                    PyTuple* button1 = new PyTuple(2);
+                        button1->SetItem(0, new PyInt(Quit));
+                        button1->SetItem(1, new PyInt(Quit));
+                    dialog->AddItem(button1);
+                    if (call.client->IsMissionComplete(offer))  {
+                        PyTuple* button2 = new PyTuple(2);
+                            button2->SetItem(0, new PyInt(Complete));
+                            button2->SetItem(1, new PyInt(Complete));
+                        dialog->AddItem(button2);
+                    }
                 }
-            }
-        } break;
-        case Accept:            //3
-        case AcceptRemotely: {  //5
-            MissionOffer offer;
-            m_agent->GetOffer(pchar->itemID(), offer);
-            offer.stateID = Mission::State::Accepted;
-            offer.dateAccepted = GetFileTimeNow();
-            offer.expiryTime = GetFileTimeNow() + (20 * m_agent->GetLevel() * Win32Time_Minute);  // 20m per agent level  ?  test this.
-            if (offer.courierTypeID) {
-                // add item to players hangar
-                sItemFactory.SetUsingClient(call.client);
-                ItemData data(offer.courierTypeID, pchar->itemID(), 0, flagAutoFit, offer.courierAmount);
-                InventoryItemRef iRef = sItemFactory.SpawnItem(data);
-                iRef->Move(offer.originID, flagHangar, true);
-                sItemFactory.UnsetUsingClient();
-            }
-            m_agent->UpdateOffer(pchar->itemID(), offer);
-            m_agent->SendMissionUpdate(call.client, "offer_accepted");
-            agentSays->SetItem(0, new PyInt(m_agent->GetAcceptRsp(pchar->itemID())));
-            agentSays->SetItem(1, new PyInt(pchar->itemID()));
-        } break;
-        case Complete:              //6
-        case CompleteRemotely: {    //7
-            //  need to verify all requirements have been met.
-            MissionOffer offer;
-            m_agent->GetOffer(pchar->itemID(), offer);
-            offer.stateID = Mission::State::Completed;
-            offer.dateCompleted = GetFileTimeNow();
-            m_agent->UpdateOffer(pchar->itemID(), offer);
-            m_agent->SendMissionUpdate(call.client, "completed");
-            agentSays->SetItem(0, new PyInt(m_agent->GetCompleteRsp(pchar->itemID())));
-            agentSays->SetItem(1, new PyInt(pchar->itemID()));
-            if (offer.courierTypeID) {
-                // remove item from player possession
-                call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
-            }
-            if (offer.rewardItemID) {
-                // add reward item to players hangar
-                sItemFactory.SetUsingClient(call.client);
-                ItemData data(offer.rewardItemID, pchar->itemID(), 0, flagAutoFit, offer.rewardItemQty);
-                InventoryItemRef iRef = sItemFactory.SpawnItem(data);
-                iRef->Move(m_agent->GetStationID(), flagHangar, true);
-                sItemFactory.UnsetUsingClient();
-            }
-            /** @todo  add fleet sharing  */
-            if (offer.rewardISK)
-                AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.rewardISK, "Mission Reward", Journal::EntryType::AgentMissionReward, m_agent->GetID());
-            if ((offer.bonusTime > 0) and (offer.bonusTime < (offer.dateAccepted - GetFileTimeNow())))
-                AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.bonusISK, "Mission Bonus Reward", Journal::EntryType::AgentMissionTimeBonusReward, m_agent->GetID());
-            /** @todo  add lp, etc, etc  */
-            m_agent->UpdateStandings(call.client, Standings::MissionCompleted, offer.important);
-        } break;
-        case Defer: {   //10
-            // extend expiry time and close
-            MissionOffer offer;
-            if (m_agent->HasMission(pchar->itemID(), offer)) {
-                offer.stateID = Mission::State::Allocated; //Defered
-                offer.expiryTime += Win32Time_Day;
+            } break;
+            case Accept:            //3
+            case AcceptRemotely: {  //5
+                MissionOffer offer;
+                m_agent->GetOffer(pchar->itemID(), offer);
+                offer.stateID = Mission::State::Accepted;
+                offer.dateAccepted = GetFileTimeNow();
+                offer.expiryTime = GetFileTimeNow() + (20 * m_agent->GetLevel() * Win32Time_Minute);  // 20m per agent level  ?  test this.
+                if (offer.courierTypeID) {
+                    // add item to players hangar
+                    sItemFactory.SetUsingClient(call.client);
+                    ItemData data(offer.courierTypeID, pchar->itemID(), 0, flagAutoFit, offer.courierAmount);
+                    InventoryItemRef iRef = sItemFactory.SpawnItem(data);
+                    iRef->Move(offer.originID, flagHangar, true);
+                    sItemFactory.UnsetUsingClient();
+                }
                 m_agent->UpdateOffer(pchar->itemID(), offer);
-                m_agent->SendMissionUpdate(call.client, "prolong");
-                agentSays->SetItem(0, new PyString("I can give you 24 hours to think about it."));    //msgInfo  -- if tuple[0].string then return msgInfo
-                agentSays->SetItem(1, new PyNone());    // ContentID  -- PyNone used when msgInfo is string to return without processing
+                m_agent->SendMissionUpdate(call.client, "offer_accepted");
+                agentSays->SetItem(0, new PyInt(m_agent->GetAcceptRsp(pchar->itemID())));
+                agentSays->SetItem(1, new PyInt(pchar->itemID()));
+            } break;
+            case Complete:              //6
+            case CompleteRemotely: {    //7
+                //  need to verify all requirements have been met.
+                MissionOffer offer;
+                m_agent->GetOffer(pchar->itemID(), offer);
+                offer.stateID = Mission::State::Completed;
+                offer.dateCompleted = GetFileTimeNow();
+                m_agent->UpdateOffer(pchar->itemID(), offer);
+                m_agent->SendMissionUpdate(call.client, "completed");
+                agentSays->SetItem(0, new PyInt(m_agent->GetCompleteRsp(pchar->itemID())));
+                agentSays->SetItem(1, new PyInt(pchar->itemID()));
+                if (offer.courierTypeID) {
+                    // remove item from player possession
+                    call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
+                }
+                if (offer.rewardItemID) {
+                    // add reward item to players hangar
+                    sItemFactory.SetUsingClient(call.client);
+                    ItemData data(offer.rewardItemID, pchar->itemID(), 0, flagAutoFit, offer.rewardItemQty);
+                    InventoryItemRef iRef = sItemFactory.SpawnItem(data);
+                    iRef->Move(m_agent->GetStationID(), flagHangar, true);
+                    sItemFactory.UnsetUsingClient();
+                }
+                /** @todo  add fleet sharing  */
+                if (offer.rewardISK)
+                    AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.rewardISK, "Mission Reward", Journal::EntryType::AgentMissionReward, m_agent->GetID());
+                if ((offer.bonusTime > 0) and (offer.bonusTime < (offer.dateAccepted - GetFileTimeNow())))
+                    AccountService::TranserFunds(m_agent->GetID(), pchar->itemID(), offer.bonusISK, "Mission Bonus Reward", Journal::EntryType::AgentMissionTimeBonusReward, m_agent->GetID());
+                /** @todo  add lp, etc, etc  */
+                m_agent->UpdateStandings(call.client, Standings::MissionCompleted, offer.important);
+            } break;
+            case Defer: {   //10
+                // extend expiry time and close
+                MissionOffer offer;
+                if (m_agent->HasMission(pchar->itemID(), offer)) {
+                    offer.stateID = Mission::State::Allocated; //Defered
+                    offer.expiryTime += Win32Time_Day;
+                    m_agent->UpdateOffer(pchar->itemID(), offer);
+                    m_agent->SendMissionUpdate(call.client, "prolong");
+                    agentSays->SetItem(0, new PyString("I can give you 24 hours to think about it."));    //msgInfo  -- if tuple[0].string then return msgInfo
+                    agentSays->SetItem(1, new PyNone());    // ContentID  -- PyNone used when msgInfo is string to return without processing
+                }
+            } break;
+            case Decline: { //9
+                missionDeclined = true;
+                m_agent->DeleteOffer(pchar->itemID());
+                m_agent->SendMissionUpdate(call.client, "offer_declined");
+                agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
+                agentSays->SetItem(1, new PyInt(pchar->itemID()));
+                /** @todo  add lp, etc, etc  */
+                m_agent->UpdateStandings(call.client, Standings::MissionDeclined);
+            } break;
+            case Quit: {    //11
+                missionQuit = true;
+                MissionOffer offer;
+                m_agent->GetOffer(pchar->itemID(), offer);
+                if (offer.courierTypeID) {
+                    // remove item from player possession
+                    call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
+                }
+                // remove mission offer and set standings accordingly
+                m_agent->DeleteOffer(pchar->itemID());
+                m_agent->SendMissionUpdate(call.client, "quit");
+                agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
+                agentSays->SetItem(1, new PyInt(pchar->itemID()));
+                /** @todo  add lp, etc, etc  */
+                m_agent->UpdateStandings(call.client, Standings::MissionFailure, offer.important);
+            } break;
+            case Continue: {    //8
+                // not sure what to do here.
+            } break;
+            case StartResearch: {   //12
+                // not sure what to do here.
+            } break;
+            case CancelResearch: {  //13
+                // not sure what to do here.
+            } break;
+            case BuyDatacores: {    //14
+                // not sure what to do here.
+            } break;
+            case LocateCharacter:   //15
+            case LocateAccept: {    //16
+                // not sure what to do here.
+            } break;
+            case LocateReject: {    //17
+                // not sure what to do here.
+            } break;
+            case Yes: {             //18
+                // not sure what to do here.
+            } break;
+            case No: {              //19
+                // not sure what to do here.
+            } break;
+            case AcceptChoice:{     //4
+                // i think this is for options
+            } break;
+            case Admin: {           //20
+                // not sure what to do here.
+            } break;
+            default: {
+                // error
+                _log(AGENT__ERROR, "AgentBound::Handle_DoAction() - unhandled buttonID %u", actionID );
+                call.client->SendErrorMsg("Internal Server Error. Ref: ServerError xxxxx.");
+                return nullptr;
             }
-        } break;
-        case Decline: { //9
-            missionDeclined = true;
-            m_agent->DeleteOffer(pchar->itemID());
-            m_agent->SendMissionUpdate(call.client, "offer_declined");
-            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
-            agentSays->SetItem(1, new PyInt(pchar->itemID()));
-            /** @todo  add lp, etc, etc  */
-            m_agent->UpdateStandings(call.client, Standings::MissionDeclined);
-        } break;
-        case Quit: {    //11
-            missionQuit = true;
-            MissionOffer offer;
-            m_agent->GetOffer(pchar->itemID(), offer);
-            if (offer.courierTypeID) {
-                // remove item from player possession
-                call.client->RemoveMissionItem(offer.courierTypeID, offer.courierAmount);
-            }
-            // remove mission offer and set standings accordingly
-            m_agent->DeleteOffer(pchar->itemID());
-            m_agent->SendMissionUpdate(call.client, "quit");
-            agentSays->SetItem(0, new PyInt(m_agent->GetDeclineRsp(pchar->itemID())));
-            agentSays->SetItem(1, new PyInt(pchar->itemID()));
-            /** @todo  add lp, etc, etc  */
-            m_agent->UpdateStandings(call.client, Standings::MissionFailure, offer.important);
-        } break;
-        case Continue: {    //8
-            // not sure what to do here.
-        } break;
-        case StartResearch: {   //12
-            // not sure what to do here.
-        } break;
-        case CancelResearch: {  //13
-            // not sure what to do here.
-        } break;
-        case BuyDatacores: {    //14
-            // not sure what to do here.
-        } break;
-        case LocateCharacter:   //15
-        case LocateAccept: {    //16
-            // not sure what to do here.
-        } break;
-        case LocateReject: {    //17
-            // not sure what to do here.
-        } break;
-        case Yes: {             //18
-            // not sure what to do here.
-        } break;
-        case No: {              //19
-            // not sure what to do here.
-        } break;
-        case AcceptChoice:{     //4
-            // i think this is for options
-        } break;
-        case Admin: {           //20
-            // not sure what to do here.
-        } break;
-        default: {
-            // error
-            _log(AGENT__ERROR, "AgentBound::Handle_DoAction() - unhandled buttonID %u", actionID );
-            call.client->SendErrorMsg("Internal Server Error. Ref: ServerError xxxxx.");
-            return nullptr;
         }
+    } else {
+        agentSays->SetItem(0, new PyInt(m_agent->GetStandingsRsp(pchar->itemID())));
+        agentSays->SetItem(1, new PyInt(pchar->itemID()));
     }
 
     // extraInfo data....

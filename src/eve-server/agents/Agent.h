@@ -55,13 +55,17 @@ public:
     uint32 GetAcceptRsp(uint32 charID);
     uint32 GetDeclineRsp(uint32 charID);
     uint32 GetCompleteRsp(uint32 charID);
+    uint32 GetStandingsRsp(uint32 charID);
 
     void SendMissionUpdate(Client* pClient, std::string action);
+
+    bool CanUseAgent(Client* pClient);
 
     // standing/quality/level/reward methods...
     void UpdateStandings(Client* pClient, uint8 eventID, bool important=false);
 
 protected:
+    float GetMinReqStanding(uint8 level);
     const uint32 m_agentID;
     AgentData m_data;
 

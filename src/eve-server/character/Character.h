@@ -472,11 +472,12 @@ public:
     void                    SetLogonMinutes();
 
 	//  Standings functions
-	//     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
-    double 					GetStanding(uint32 toID, uint32 fromID);    // NOTE:  this is NOT adjusted for skills
-    double                  GetNPCCorpStanding(uint32 toID, uint32 fromID);
+    //     toID = me|myCorp|myAlliance.  fromID = char|agent|corp|faction|alliance
+    double                  GetStanding(uint32 fromID, uint32 toID);            // this is NOT adjusted for skills
+    double                  GetStandingModified(uint32 fromID, uint32 toID);    // this IS adjusted for skills
+    double                  GetNPCCorpStanding(uint32 fromID, uint32 toID);
 	double 					GetStandingChanges();
-    void 					SetStanding(uint32 toID, uint32 fromID, double standing);
+    void 					SetStanding(uint32 fromID, uint32 toID, double standing);
     void                    FleetShareMissionRewards();
     void                    FleetShareMissionStandings(float newStanding);
 

@@ -1120,28 +1120,29 @@ void Character::SaveBookMarks()
 
 // functions and methods for standings system
 /** @todo  this needs to be moved to common standings code */
-double Character::GetStanding(uint32 toID, uint32 fromID) {
-	/*
-	 *    double res = s_db.GetCorpStanding(toID, fromID);
-	 *
-	 *    if (res < 0)
-	 *        res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
-	 *    else
-	 *        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
-	 */
-	return s_db.GetStanding(toID, fromID);
+/** @todo  these need to use common standings methods for formulas  */
+double Character::GetStanding(uint32 fromID, uint32 toID) {
+	return s_db.GetStanding(fromID, toID);
 }
 
-double Character::GetNPCCorpStanding(uint32 toID, uint32 fromID) {
-	/*
-	 *    double res = s_db.GetNPCCorpStanding(toID, fromID);
-	 *
-	 *    if (res < 0)
-	 *        res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
-	 *    else
-	 *        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
-	 */
-	return s_db.GetStanding(toID, fromID);
+double Character::GetStandingModified(uint32 fromID, uint32 toID)
+{
+    double res = s_db.GetStanding(toID, fromID);
+    if (res < 0)
+        res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
+    else
+        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
+    return res;
+}
+
+
+double Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
+    double res = s_db.GetStanding(toID, fromID);
+    if (res < 0)
+        res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
+    else
+        res += ((10-res) * 0.04 * GetSkillLevel(skillConnections));
+    return res;
 }
 
 double Character::GetStandingChanges() {

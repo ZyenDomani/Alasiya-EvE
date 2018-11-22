@@ -237,9 +237,9 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     float standing = 0;
     // standing system isnt complete, but this is the correct data methods for station standing checks
     if (IsNPCCorp(sRef->ownerID()))
-        standing = pClient->GetChar()->GetNPCCorpStanding(pClient->GetCharacterID(), sRef->ownerID());
+        standing = pClient->GetChar()->GetNPCCorpStanding(sRef->ownerID(), pClient->GetCharacterID());
     else
-        standing = pClient->GetChar()->GetStanding(pClient->GetCharacterID(), sRef->ownerID());
+        standing = pClient->GetChar()->GetStandingModified(sRef->ownerID(), pClient->GetCharacterID());
 
     for (auto cur : args.ints) {
         RepairListRsp rlr;
