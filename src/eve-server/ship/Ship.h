@@ -292,8 +292,6 @@ public:
     EvilNumber GetShipShieldPercent() { return (GetAttribute(AttrShieldCharge) / GetAttribute(AttrShieldCapacity)); }
     EvilNumber GetShipCapacitorPercent() { return (GetAttribute(AttrCapacitorCharge) / GetAttribute(AttrCapacitorCapacity)); }
 
-    void UpdateHoldsUsedVolume();
-
     // template loading system
     using InventoryItem::_Load;
     virtual bool _Load();
@@ -317,8 +315,6 @@ protected:
 
     static uint32 CreateItemID( ItemData &data);
 
-    void ModifyHoldVolumeByFlag(EVEItemFlags flag, double amount);
-
     /* new effects system */
 public:
     void RemoveEffects();
@@ -334,8 +330,6 @@ private:
     InventoryItemRef m_targetRef;       // this is only used for module effects that require a target.  is here because of the ease of aquiring/sending (common code)
 
     std::vector<uint32> m_onlineModuleVec;
-
-    std::map<EVEItemFlags, double> m_usedVolumeByFlag;      // 15 possible hold types
 
     void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);

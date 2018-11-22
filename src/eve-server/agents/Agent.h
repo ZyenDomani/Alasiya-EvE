@@ -65,7 +65,7 @@ public:
     void UpdateStandings(Client* pClient, uint8 eventID, bool important=false);
 
 protected:
-    float GetMinReqStanding(uint8 level);
+    std::string GetMinReqStanding(uint8 level);
     const uint32 m_agentID;
     AgentData m_data;
 

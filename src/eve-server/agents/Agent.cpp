@@ -395,9 +395,9 @@ PyObject* Agent::GetInfoServiceDetails()
 
     // standings info for this agent.
     /** @todo  finish this.... */
-    std::string msg = "Your personal standings must be";
+    std::string msg = "Your personal standings must be ";
     msg += GetMinReqStanding(m_data.level);
-    msg += "or higher toward this agent, its faction, or its corporation in order to use this agent's services.";
+    msg += " or higher toward this agent, its faction, or its corporation in order to use this agent's services.";
     res->SetItemString("incompatible", new PyString(msg));
 
     /* can also use locale labelIDs for this using a tuple to define minStandings, minEffective, corpMinStandings, mainEffective, effectiveMinStandings in other msgIDs
@@ -433,21 +433,21 @@ PyObject* Agent::GetInfoServiceDetails()
     return new PyObject("util.KeyVal", res);
 }
 
-float Agent::GetMinReqStanding(uint8 level)
+std::string Agent::GetMinReqStanding(uint8 level)
 {
     switch(level) {
         // these are agentCorp -> char
-        case 1:     return -2.0f;
-        case 2:     return 1.0f;
-        case 3:     return 3.0f;
-        case 4:     return 5.0f;
-        case 5:     return 7.0f;
+        case 1:     return "-2.0";
+        case 2:     return "1.0";
+        case 3:     return "3.0";
+        case 4:     return "5.0";
+        case 5:     return "7.0";
         //these are agent/corp/faction -> char
-        case 11:     return -1.0f;
-        case 12:     return 1.5f;
-        case 13:     return 3.5f;
-        case 14:     return 5.5f;
-        case 15:     return 7.5f;
+        case 11:     return "-1.0";
+        case 12:     return "1.5";
+        case 13:     return "3.5";
+        case 14:     return "5.5";
+        case 15:     return "7.5";
     };
 }
 

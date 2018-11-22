@@ -430,7 +430,7 @@ bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty) const
     }
     if (count >= qty)
         return true;
-    
+
     return false;
 }
 
@@ -465,14 +465,13 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
 
 double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
 {
-    EvilNumber totalVolume(0.0f);
-
+    double totalVolume(0.0f);
     for (auto cur : mContents)
         if (cur.second->flag() == locationFlag)
-            totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume);
+            totalVolume += cur.second->quantity() * cur.second->GetAttribute(AttrVolume).get_float();
             // This formula is a hybrid of both old and new ones...and it works \o/
 
-    return totalVolume.get_float();
+    return totalVolume;
 }
 
 bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const

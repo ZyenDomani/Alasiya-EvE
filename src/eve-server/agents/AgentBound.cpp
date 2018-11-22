@@ -224,7 +224,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 m_agent->GetOffer(pchar->itemID(), offer);
                 offer.stateID = Mission::State::Accepted;
                 offer.dateAccepted = GetFileTimeNow();
-                offer.expiryTime = GetFileTimeNow() + (20 * m_agent->GetLevel() * Win32Time_Minute);  // 20m per agent level  ?  test this.
+                offer.expiryTime = GetFileTimeNow() + (30 * m_agent->GetLevel() * Win32Time_Minute);  // 30m per agent level  ?  test this.
                 if (offer.courierTypeID) {
                     // add item to players hangar
                     sItemFactory.SetUsingClient(call.client);

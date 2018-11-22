@@ -1137,7 +1137,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         if (IsModuleSlot(item->flag())) {
             m_ship->UpdateModules(item->flag());
         } else if (IsCargoHoldFlag(item->flag())) {
-            m_ship->UpdateHoldsUsedVolume();
+            // do nothing here.  this is to avoid throwing error msg below
         } else {
             _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %u", m_char->itemName().c_str(), itemID);
         }
