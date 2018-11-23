@@ -54,6 +54,7 @@ public:
     bool IsEmpty()                                      { return mContents.empty(); }
     bool HasShip();
     bool LoadContents();
+    // this will throw if it fails.
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool ContainsItem(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }

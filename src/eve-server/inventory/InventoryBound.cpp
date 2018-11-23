@@ -723,8 +723,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                     _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", iRef->itemID(), iRef->quantity(), quantity);
                 }
             }
-
-            //contRef->RemoveItem(iRef);
         }
 
         // add item to new location
@@ -761,7 +759,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             else
                 iRef->ChangeOwner(m_ownerID);
         } else {
-            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails...how do we return the item if this fails?
+            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails.
             iRef->Donate(m_ownerID, m_itemID, toFlag);
         }
     }
