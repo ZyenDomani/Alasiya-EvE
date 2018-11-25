@@ -404,7 +404,7 @@ void StaticDataMgr::Populate()
     //cleanup
     SafeDelete(res);
     SafeDelete(res2);
-    
+
     sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
 }
 
@@ -1122,18 +1122,28 @@ uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
 EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
 {
     switch (factionID) {
-        case factionCaldari :       return raceCaldari;
-        case factionMinmatar :      return raceMinmatar;
-        case factionAmarr :         return raceAmarr;
-        case factionGallente :      return raceGallente;
-        case factionJove :          return raceJove;
-        case factionNoFaction :     return racePirate;
-        case factionSleepers :      return raceSleepers;
-        case factionORE :           return raceORE;
+        case factionCaldari:        return raceCaldari;
+        case factionMinmatar:       return raceMinmatar;
+        case factionAmarr:          return raceAmarr;
+        case factionGallente:       return raceGallente;
+        case factionJove:           return raceJove;
+        case factionNoFaction:      return racePirate;
+        case factionSleepers:       return raceSleepers;
+        case factionORE:            return raceORE;
         case factionAmmatar:        return raceAmmatar;
     }
 }
 
+std::string StaticDataMgr::GetRigSizeName(uint8 size)
+{
+    switch (size) {
+        case 0:      return "Undefined";
+        case 1:      return "Small";
+        case 2:      return "Medium";
+        case 3:      return "Large";
+        case 4:      return "Capitol";
+    }
+}
 
 std::string StaticDataMgr::GetFlagName(uint16 flag)
 {

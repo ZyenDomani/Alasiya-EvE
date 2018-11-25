@@ -3,6 +3,7 @@
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "Profile.h"
+#include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
@@ -914,9 +915,9 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
     } else if (IsRigSlot(flag)) {
         if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
             std::map<std::string, PyRep *> args;
-            args["rigSize"] = new PyString(iRef->type().name());
+            args["rigSize"] = new PyString(sDataMgr.GetRigSizeName(iRef->GetAttribute(AttrRigSize)));
             args["item"] = new PyString(iRef->itemName());
-            args["shipRigSize"] = new PyString(iRef->type().name());
+            args["shipRigSize"] = new PyString(sDataMgr.GetRigSizeName(GetAttribute(AttrRigSize)));
             throw PyException( MakeUserError("CannotFitRigWrongSize", args));
             /* CannotFitRigWrongSizeBody'}(u'{item} does not fit in this slot.
              * The slot takes size {shipRigSize} rigs, but the item is size {rigSize}.', None,

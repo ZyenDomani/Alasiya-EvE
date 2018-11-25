@@ -45,6 +45,16 @@ namespace Module {
             Subsystem        = 5
         };
     }
+
+    namespace Size {
+        enum {
+            Undefined        = 0,
+            Small            = 1,
+            Medium           = 2,
+            Large            = 3,
+            Capitol          = 4
+        };
+    }
 }
 
 #endif

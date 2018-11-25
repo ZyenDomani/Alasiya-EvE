@@ -99,6 +99,8 @@ public:
     std::string         GetFlagName(uint16 flag);
     std::string         GetFlagName(EVEItemFlags flag);
 
+    std::string         GetRigSizeName(uint8 size);
+
     PyInt*              GetAgentSystemID(int32 agentID);
 
 protected:
