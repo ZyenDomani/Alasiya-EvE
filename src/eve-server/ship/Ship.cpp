@@ -915,9 +915,9 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
     } else if (IsRigSlot(flag)) {
         if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
             std::map<std::string, PyRep *> args;
-            args["rigSize"] = new PyString(sDataMgr.GetRigSizeName(iRef->GetAttribute(AttrRigSize)));
+            args["rigSize"] = new PyString(sDataMgr.GetRigSizeName(iRef->GetAttribute(AttrRigSize).get_int()));
             args["item"] = new PyString(iRef->itemName());
-            args["shipRigSize"] = new PyString(sDataMgr.GetRigSizeName(GetAttribute(AttrRigSize)));
+            args["shipRigSize"] = new PyString(sDataMgr.GetRigSizeName(GetAttribute(AttrRigSize).get_int()));
             throw PyException( MakeUserError("CannotFitRigWrongSize", args));
             /* CannotFitRigWrongSizeBody'}(u'{item} does not fit in this slot.
              * The slot takes size {shipRigSize} rigs, but the item is size {rigSize}.', None,

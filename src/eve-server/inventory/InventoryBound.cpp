@@ -829,5 +829,5 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
         if (sConfig.debug.UseProfiling)
             sLog.White("InventoryBound::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
-        return items;  //returns sorted list
+    return items;  //returns sorted list
 }
