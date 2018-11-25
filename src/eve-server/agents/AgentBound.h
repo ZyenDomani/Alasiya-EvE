@@ -1,4 +1,18 @@
 
+ /**
+  * @name AgentBound.h
+  *   agent specific code
+  *    removed from AgentMgrService.cpp
+  *
+  * @Author:        Allan
+  * @date:      26 June 2018
+  *
+  */
+
+
+#ifndef _EVE_SERVER_AGENTBOUND_H
+#define _EVE_SERVER_AGENTBOUND_H
+
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
@@ -44,6 +58,7 @@ private:
 
 };
 
+#endif  // _EVE_SERVER_AGENTBOUND_H
 
 /*
  ( 239875, `Current* RP`)

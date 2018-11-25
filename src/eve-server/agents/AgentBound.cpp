@@ -1,4 +1,15 @@
 
+ /**
+  * @name AgentBound.cpp
+  *   agent specific code
+  *    removed from AgentMgrService.cpp
+  *
+  * @Author:        Allan
+  * @date:      26 June 2018
+  *
+  */
+
+
 /*
  * # Agent Logging:
  * AGENT__ERROR
@@ -346,7 +357,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         }
     } else {
         agentSays->SetItem(0, new PyInt(m_agent->GetStandingsRsp(pchar->itemID())));
-        agentSays->SetItem(1, new PyInt(pchar->itemID()));
+        agentSays->SetItem(1, PyStatic.NewNone() /*new PyInt(pchar->itemID())*/);
     }
 
     // extraInfo data....
