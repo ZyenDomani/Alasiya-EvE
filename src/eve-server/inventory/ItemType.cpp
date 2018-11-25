@@ -217,16 +217,10 @@ template<class _Ty>
 _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data)
 {
     switch( group.categoryID() ) {
-        /*  not handled / not needed
-        case EVEDB::invCategories::Celestial:
-        case EVEDB::invCategories::Skill:
+        /*  not handled / not needed    (not complete list)
         case EVEDB::invCategories::_System:
-        case EVEDB::invCategories::Material:
         case EVEDB::invCategories::Accessories:
-        case EVEDB::invCategories::Module:
-        case EVEDB::invCategories::Charge:
         case EVEDB::invCategories::Trading:
-        case EVEDB::invCategories::Entity:
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Commodity:   // group StationComponents, for outpost shit
         case EVEDB::invCategories::Drone:
@@ -234,7 +228,6 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Deployable:
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::Reaction:
-        case EVEDB::invCategories::Asteroid:
         case EVEDB::invCategories::Orbitals:
         */
         case EVEDB::invCategories::Owner: {
@@ -251,6 +244,15 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Ship: {
             return ShipType::_LoadType<ShipType>(typeID, group, data );
         }
+        case EVEDB::invCategories::Celestial:
+        case EVEDB::invCategories::Skill:
+        case EVEDB::invCategories::Charge:
+        case EVEDB::invCategories::Material:
+        case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Entity:
+        case EVEDB::invCategories::Asteroid: {
+            // these are called but not sure if they need to be coded specifically
+        } break;
         default:
             _log(ITEM__MESSAGE, "type %u (group: %u, cat: %u) called _LoadType, but is not handled.", typeID, group.id(), group.categoryID());
              break;

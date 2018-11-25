@@ -72,8 +72,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr)
         return false;
-
-    pMod->ProcessEffects(Effects::dgmStatePassive, false);
+    _log(SHIP__MODULE_TRACE, "RemoveModule() - removing %s.", pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -83,8 +82,7 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr)
         return false;
-
-    pMod->ProcessEffects(Effects::dgmStatePassive, false);
+    _log(SHIP__MODULE_TRACE, "RemoveModule() - removing %s.", pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;

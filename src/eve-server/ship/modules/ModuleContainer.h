@@ -27,9 +27,11 @@ public:
 
     void ClearModMap();
 
-    GenericModule* GetModule(EVEItemFlags flag); //faster than GetModule(itemID)
-    GenericModule* GetModule(uint32 itemID); //slower than GetModule(flag)
     GenericModule* GetRandModule();
+    //faster than GetModule(itemID)
+    GenericModule* GetModule(EVEItemFlags flag);
+    //slower than GetModule(flag)
+    GenericModule* GetModule(uint32 itemID);
 
     // basic methods
     void SaveModules();

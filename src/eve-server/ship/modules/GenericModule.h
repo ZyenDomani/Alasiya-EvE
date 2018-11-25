@@ -31,7 +31,7 @@ public:
     InventoryItemRef GetSelf()                          { return m_modRef; }
     ShipItemRef GetShipRef()                            { return m_shipRef; }
 
-    void ProcessEffects(Effects::State state, bool online = false);
+    void ProcessEffects(Effects::State state, bool active = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }
     void Repair(EvilNumber amount);

@@ -544,7 +544,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         }
 
         if (itemRefVec.empty()) {
-            //_log(EFFECTS__TRACE, "FxProc::ApplyEffects(): target item vector empty.");
+            //_log(EFFECTS__WARNING, "FxProc::ApplyEffects(): target item vector empty.");
             continue;
         }
 
@@ -586,8 +586,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // send data to calculator
             EvilNumber newValue = CalculateAttributeValue(targValue, srcValue, opID);
             // avoid creating 0-value attributes on items
-            if (newValue == 0)
-                continue;
+            //if (newValue == 0)
+            //    continue;
             // set new calculated value for target attribute
             _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", cur.first, srcItemRef->itemName().c_str(), \
             srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \

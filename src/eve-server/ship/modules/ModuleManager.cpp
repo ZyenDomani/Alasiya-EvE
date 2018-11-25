@@ -244,11 +244,12 @@ void ModuleManager::UnfitModule(uint32 itemID)
     }
     // update avalible slots
     if (pMod->isHighPower()) {
+        /*  redundant...fx does this
         if (pMod->isTurretFitted()) {
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
         } else if (pMod->isLauncherFitted()) {
             m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
-        }
+        } */
         ++m_HighSlots;
     } else if (pMod->isMediumPower()) {
         ++m_MidSlots;
@@ -257,7 +258,12 @@ void ModuleManager::UnfitModule(uint32 itemID)
     } else if (pMod->isSubSystem()) {
         ++m_SubSystemSlots;
     }
-
+/*
+    // remove passive fx
+    pMod->GetSelf()->ClearModifiers();
+    pMod->ProcessEffects(Effects::dgmStatePassive, false);
+    sFxProc.ApplyEffects(pMod->GetSelf().get(), m_Ship->GetPilot()->GetChar().get(), m_Ship, m_Ship->GetPilot()->IsInSpace());
+*/
     pModuleCont->RemoveModule(itemID);
 }
 
@@ -293,6 +299,7 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
 
     if (!pModuleCont->AddModule(flag, pMod))
         return;
+
     // update avalible slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted()) {
@@ -315,6 +322,13 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
         m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
     }
+
+    /*
+    // apply passive fx
+    pMod->ProcessEffects(Effects::dgmStatePassive, true);
+    sFxProc.ApplyEffects(iRef.get(), m_Ship->GetPilot()->GetChar().get(), m_Ship, m_Ship->GetPilot()->IsInSpace());
+    iRef->ClearModifiers();
+*/
     /*
     if (0) { // debug msg?
         std::map<std::string, PyRep *> args;

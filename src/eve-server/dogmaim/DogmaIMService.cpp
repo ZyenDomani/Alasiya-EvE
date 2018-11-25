@@ -694,7 +694,12 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
  */
 
 PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
-    /* 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
+    /* 22:04:22 [SvcCall] Service dogmaIM::MachoBindObject()
+     * 22:04:22 [ClientMsg] DogmaIMService bind request for:
+     * 22:04:22 [ClientMsg]      Tuple: 2 elements
+     * 22:04:22 [ClientMsg]       [ 0]    Integer: 30002507
+     * 22:04:22 [ClientMsg]       [ 1]    Integer: 5
+     * 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
      * 12:54:01 DogmaIMBound::Handle_LinkWeapons(): [00msize=3
      * 12:54:01 [SvcCall]   Call Arguments:
      * 12:54:01 [SvcCall]       Tuple: 3 elements
@@ -729,7 +734,12 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
-    /* 18:23:28 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
+    /* 22:04:22 [SvcCall] Service dogmaIM::MachoBindObject()
+     * 22:04:22 [ClientMsg] DogmaIMService bind request for:
+     * 22:04:22 [ClientMsg]      Tuple: 2 elements
+     * 22:04:22 [ClientMsg]       [ 0]    Integer: 30002507
+     * 22:04:22 [ClientMsg]       [ 1]    Integer: 5
+     * 18:23:28 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
      * 18:23:28 DogmaIMBound::Handle_LinkAllWeapons(): size=1
      * 18:23:28 [SvcCall]   Call Arguments:
      * 18:23:28 [SvcCall]       Tuple: 1 elements

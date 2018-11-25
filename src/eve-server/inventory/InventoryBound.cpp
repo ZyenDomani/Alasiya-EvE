@@ -547,6 +547,13 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     if (IsHangarFlag(toFlag))
         manyFlags = true;
 
+    if (m_self->IsShipItem() and !manyFlags) {
+        std::vector<InventoryItemRef> itemVec;
+        for (auto cur : args.itemIDs)
+            itemVec.push_back(sItemFactory.GetItem(cur));
+        args.itemIDs = CatSortItems(itemVec);
+    }
+
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(mFlag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
 
@@ -642,26 +649,27 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         } break;
     }
 
-    EVEItemFlags old_flag(flagAutoFit);
+    EVEItemFlags oldFlag(flagAutoFit);
+    EVEItemFlags origFlag(toFlag);
     InventoryItemRef iRef(nullptr);
     sItemFactory.SetUsingClient(pClient);
 
-    std::vector<int32>::const_iterator cur = items.begin();
-    for (; cur != items.end(); ++cur) {
+    std::vector<int32>::const_iterator itr = items.begin();
+    for (; itr != items.end(); ++itr) {
         quantity = origQty;
-        iRef = sItemFactory.GetItem(*cur);
+        iRef = sItemFactory.GetItem(*itr);
         if (iRef.get() == nullptr) {
-            _log(INV__ERROR, "InventoryBound::MoveItems() - item %i not found.  continuing.", (*cur));
+            _log(INV__ERROR, "InventoryBound::MoveItems() - item %i not found.  continuing.", (*itr));
             continue;
         }
         //ALL items *should* have a loaded container item.
-        contRef = sItemFactory.GetItemContainer(*cur); // item container should be loaded at this point.
+        contRef = sItemFactory.GetItemContainer(*itr); // item container should be loaded at this point.
         if (contRef.get() == nullptr) {
-            _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*cur));
+            _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*itr));
             continue;
         }
 
-        old_flag = iRef->flag();
+        oldFlag = iRef->flag();
 
         if (manyFlags)
             quantity = iRef->quantity();
@@ -691,16 +699,16 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
 
         // remove item from current location
-        if (IsRigSlot(old_flag)) { //  cant remove rigs like this.  send error.
+        if (IsRigSlot(oldFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
-        } else if (IsModuleSlot(old_flag)) {
+        } else if (IsModuleSlot(oldFlag)) {
             // can we remove modules from an inative ship?  no.
             if (pShip == nullptr)
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
             if (IsModuleSlot(toFlag)) {
                 // we are wanting to change slots on a fitted module.
-                pShip->MoveModuleSlot(old_flag, toFlag);
+                pShip->MoveModuleSlot(oldFlag, toFlag);
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
@@ -758,6 +766,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 contRef->AddItem(iRef);
             else
                 iRef->ChangeOwner(m_ownerID);
+            // reset in case of MultiAdd
+            toFlag = origFlag;
         } else {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails.
             iRef->Donate(m_ownerID, m_itemID, toFlag);
@@ -774,4 +784,50 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
     }
 
     return nullptr;
+}
+
+std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef >& itemVec)
+{
+    /* sorts a vector of items by category, with loaded modules first (in slot order), then loaded charges (in slot order), then cargo
+     * if there is only one item, no sorting required...
+     *  this is called on fitting a group of modules from MultiAdd
+     *   -allan
+     */
+    std::vector<int32> items;
+    if (itemVec.size() < 2) {
+        items.push_back(itemVec.at(0)->itemID());
+        return items;
+    }
+
+    uint16 count = 0;
+    double start = 0.0;
+    if (sConfig.debug.IsTestServer)
+        if (sConfig.debug.UseProfiling)
+            start = GetTimeUSeconds();
+
+    //begin basic sort
+    bool done = false;
+    InventoryItemRef tmp;
+    while (!done) {
+        done = true;  //assume sorted
+        for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); ++i, ++i2) { //iterate though list
+            if (itemVec[i]->categoryID() < itemVec[i2]->categoryID()) {  //check if each pair is sorted by category.   modules -> charges -> subsystems
+                //it's not, so flip the values
+                tmp = itemVec[i];
+                itemVec[i] = itemVec[i2];
+                itemVec[i2] = tmp;
+                done = false;  //we weren't sorted, so now go back and check if we are
+            }
+            ++count;
+        }
+    }
+
+    for (auto cur : itemVec)
+        items.push_back(cur->itemID());
+
+    if (sConfig.debug.IsTestServer)
+        if (sConfig.debug.UseProfiling)
+            sLog.White("InventoryBound::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
+
+        return items;  //returns sorted list
 }

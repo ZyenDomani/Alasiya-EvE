@@ -203,7 +203,7 @@ void GenericModule::Offline()
 
     _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    m_modRef->ClearModifiers();
+    //m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
@@ -255,13 +255,13 @@ void GenericModule::DeOverload()
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
-void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
+void GenericModule::ProcessEffects(Effects::State state, bool active/*false*/)
 {
     // get module/charge pre/post effects in state x
     std::map<uint16, Effect> effectMap;
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
-            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (online ? "true" : "false"));
+            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (active ? "true" : "false"));
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
     data.srcRef = m_modRef;
@@ -272,7 +272,7 @@ void GenericModule::ProcessEffects(Effects::State state, bool online/*false*/)
         /* module and charge effects will be added/removed from it's item
          * active/overload/gang/other effects will be applied and removed when called.
          */
-        if (online)
+        if (active)
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
         else
             sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);

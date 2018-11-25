@@ -962,6 +962,7 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
     } else {
         // ERROR: This is not a module that fits in any of the slot banks
+        codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s is not module type.", iRef->itemName().c_str());
     }
 
     return (EVEItemFlags)slotFound;
@@ -993,6 +994,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
             return 0;
         }
+        iRef->ClearModifiers();
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(iRef, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
@@ -1003,7 +1005,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
             iRef->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
-            if ((iRef->groupID() >= 773 and iRef->groupID() <= 782) or iRef->groupID() == 786) {
+            if (IsRigSlot(flag/*iRef->groupID() >= 773 and iRef->groupID() <= 782) or iRef->groupID() == 786*/)) {
                 if (!m_ModuleManager->InstallRig(iRef, flag))
                     return 0;
             } else if (!m_ModuleManager->FitModule(iRef, flag))
@@ -1014,14 +1016,10 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             if (!m_ModuleManager->InstallSubSystem(iRef, flag))
                 return 0;
         }
+        m_ModuleManager->UpdateModules(flag);
     }
 
     iRef->Move(m_itemID, flag, true);
-	if (IsModuleSlot(flag)) {
-        // may not need this call.  is redundant, but has redundant check built-in...
-        m_ModuleManager->Online(iRef->itemID());
-        UpdateModules(flag);
-    }
 
 	return iRef->itemID();
 }
@@ -1042,6 +1040,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
+        iRef->ClearModifiers();
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(iRef->flag());
@@ -1055,6 +1054,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         if ((m_pilot != nullptr) and (m_pilot->IsInSpace()))
             UpdateEffects();
         */
+        m_ModuleManager->UpdateModules(iRef->flag());
     }
 }
 
