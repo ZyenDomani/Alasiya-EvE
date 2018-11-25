@@ -79,6 +79,8 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, ClearTargets);
         PyCallable_REG_CALL(DogmaIMBound, InitiateModuleRepair);
         PyCallable_REG_CALL(DogmaIMBound, StopModuleRepair);
+        PyCallable_REG_CALL(DogmaIMBound, MergeModuleGroups);
+        PyCallable_REG_CALL(DogmaIMBound, PeelAndLink);
 
     }
     virtual ~DogmaIMBound() {delete m_dispatch;}
@@ -219,15 +221,6 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     }
 
     return itemRef->ItemGetInfo();
-}
-
-PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
-{
-    sLog.White("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-    //no arguments
-    Client* pClient = call.client;
-    return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
@@ -662,6 +655,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 
 PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
     /** @todo  look into this...what is it used for?  */
+    // cannot find call for this.  delete?
     return new BuiltinSet();
 }
 
@@ -884,8 +878,33 @@ PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
     return nullptr;
 }
 
+PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
+    //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
+    sLog.White("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
+    //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
+    sLog.White("DogmaIMBound::Handle_MergeModuleGroups()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
+{
+    sLog.White("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
 PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
 {
+    // oldOwnerID, oldLocationID, oldFlagID = oldInfo = dogmaItem.GetLocationInfo()
     /*
      *             [PyTuple 3 items]         << call from client
      *               [PyString "GetLocationInfo"]
