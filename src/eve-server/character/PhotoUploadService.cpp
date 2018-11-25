@@ -58,7 +58,7 @@ PyResult PhotoUploadService::Handle_Upload(PyCallArgs &call)
     sImageServer.ReportNewImage(call.client->GetUserID(), data);
 
     call.client->SetPicRec(true);
-    sLog.White("   PhotoUploadSvc", "Received image from account %u, size: %u", call.client->GetUserID(), (uint32)arg.arg.size());
+    sLog.Magenta("   PhotoUploadSvc", "Received image from account %u, size: %u", call.client->GetUserID(), (uint32)arg.arg.size());
 
     return new PyBool(true);
 }

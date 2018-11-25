@@ -35,7 +35,7 @@ void Threading::Initialize() {
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     m_threads.clear();
-    sLog.White( "        Threading", "Threading Initialized.");
+    sLog.Cyan( "        Threading", "Threading Initialized.");
 }
 
 void Threading::RunLoop() {
@@ -110,7 +110,7 @@ void Threading::RemoveThread(pthread_t thread) {
 
 void Threading::ListThreads() {
     for (auto cur : m_threads)
-        sLog.White( "                 ", "ThreadID 0x%X", cur );
+        sLog.Warning( "                 ", "ThreadID 0x%X", cur );
 }
 
 void Threading::EndThreads() {
