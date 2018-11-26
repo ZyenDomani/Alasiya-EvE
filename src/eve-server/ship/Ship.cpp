@@ -1068,12 +1068,15 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
         }
         InventoryItemRef chargeRef = m_ModuleManager->GetModule(fromFlag)->GetLoadedChargeRef();
         m_ModuleManager->UnloadCharge(fromFlag);
+        if (chargeRef.get() == nullptr)
+            return 0;
         if (m_pilot->IsInSpace())
             chargeRef->Move(itemID(), toFlag, true);
         else
             chargeRef->Move(locationID(), toFlag, true);
+        // need to figure out how to update fitting window... (i forgot)
         return chargeRef->itemID();
-    } 
+    }
     return 0;
 }
 

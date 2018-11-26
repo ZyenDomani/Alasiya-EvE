@@ -321,7 +321,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
      * 17:57:52 [SvcCallDump]   Call Arguments:
      * 17:57:52 [SvcCallDump]      Tuple: 1 elements
      * 17:57:52 [SvcCallDump]       [ 0]  Tuple: 3 elements
-     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- shipID
+     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- shipID OR chargeID  (could be either)
      * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
      * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
      */
