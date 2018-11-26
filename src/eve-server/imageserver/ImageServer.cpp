@@ -58,8 +58,8 @@ ImageServer::ImageServer()
             subdir.append(Categories[i]);
             CreateDirectory( subdir.c_str(), NULL );
         }
-        sLog.Blue("      ImageServer", "Image Server Created directorys in path");
     } /* else directory probably exists */
+    sLog.Blue("      ImageServer", "Image Server Initalized.");
 }
 
 void ImageServer::ReportNewImage(uint32 accountID, std::shared_ptr<std::vector<char> > imageData)
@@ -104,7 +104,7 @@ void ImageServer::ReportNewCharacter(uint32 creatorAccountID, uint32 characterID
     /** @todo  we will need to make size 64 and size 40 images, and possibably 128/256 of char portaits */
     // github.com/nothings/stb/blob/master/stb_image_resize.h
     // github.com/nothings/stb/blob/master/stb_image.h
-    
+
     // and delete it from our limbo map
     _limboImages.erase(creatorAccountID);
 

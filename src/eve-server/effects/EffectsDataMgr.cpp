@@ -29,7 +29,7 @@ FxDataMgr::~FxDataMgr()
 
 }
 
-void FxDataMgr::Initialize()
+int FxDataMgr::Initialize()
 {
     Populate();
     sLog.Blue("        FxDataMgr", "Effects Data Manager Initialized.");

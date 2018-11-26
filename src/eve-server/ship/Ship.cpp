@@ -722,7 +722,7 @@ void ShipItem::Undock() {
     // apply ship effects, as all variables are set at this point.
     if (m_ModuleManager != nullptr) {
         // this is hacked to reset ship effects, as *something* isnt working right...
-        OfflineAll();
+        m_ModuleManager->OfflineAll();
         UpdateEffects();
         //ClearModifiers();
         //ProcessEffects(true, IsSolarSystem(m_locationID));
