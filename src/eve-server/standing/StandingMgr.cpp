@@ -43,6 +43,7 @@ void StandingMgr::Clear()
 int StandingMgr::Initialize()
 {
     Populate();
+    sLog.Blue("      StandingMgr", "Standings Manager Initialized.");
     return 1;
 }
 

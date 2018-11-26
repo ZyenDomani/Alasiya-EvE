@@ -56,7 +56,7 @@ class Profile
       Profile();
       ~Profile();
 
-      void Initialize();
+      int Initialize();
 
       void AddTime(uint8 key, double value);
       void PrintProfile();

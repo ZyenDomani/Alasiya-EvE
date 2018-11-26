@@ -21,7 +21,8 @@ public:
     FxDataMgr();
     ~FxDataMgr();
 
-    void Initialize();
+    int Initialize();
+    void Populate();
     void ConfigureEffects();
     bool isWarpSafe(uint16 eID);
     bool isOffensive(uint16 eID);

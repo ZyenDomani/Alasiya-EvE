@@ -42,7 +42,7 @@ WreckData::~WreckData()
 int WreckData::Initialize()
 {
     _Populate();
-
+    sLog.Blue("     WreckDataMgr", "Wreck Data Manager Initialized.");
     return 1;
 }
 
@@ -92,6 +92,7 @@ LootData::~LootData()
 int LootData::Initialize()
 {
     _Populate();
+    sLog.Blue("      LootDataMgr", "Loot Data Manager Initialized.");
     return 1;
 }
 

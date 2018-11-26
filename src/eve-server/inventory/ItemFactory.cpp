@@ -61,13 +61,14 @@ ItemFactory::~ItemFactory()
     SafeDelete(m_db);
 }
 
-void ItemFactory::Initialize()
+int ItemFactory::Initialize()
 {
     ManagerDB::DeleteSpawnedRats();
 
     if (sConfig.debug.DeleteTrackingCans)
         m_db->DeleteTrackingCans();
-    sLog.Blue("     Item Factory", "Item Factory Initialized.");
+    sLog.Blue("      ItemFactory", "Item Factory Initialized.");
+    return 1;
 }
 
 void ItemFactory::Close()

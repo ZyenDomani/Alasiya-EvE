@@ -19,6 +19,7 @@ PlanetDataMgr::PlanetDataMgr()
 int PlanetDataMgr::Initialize()
 {
     _Populate();
+    sLog.Blue("    PlanetDataMgr", "Planet Data Manager Initialized.");
     return 1;
 }
 
@@ -55,6 +56,7 @@ PIDataMgr::PIDataMgr()
 int PIDataMgr::Initialize()
 {
     _Populate();
+    sLog.Blue("        PIDataMgr", "Planet Interaction Data Manager Initialized.");
     return 1;
 }
 

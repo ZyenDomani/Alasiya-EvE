@@ -52,6 +52,7 @@ StaticDataMgr::~StaticDataMgr()
 int StaticDataMgr::Initialize()
 {
     Populate();
+    sLog.Blue("    StaticDataMgr", "Static Data Manager Initialized.");
     return 1;
 }
 

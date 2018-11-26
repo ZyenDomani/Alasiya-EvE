@@ -31,6 +31,7 @@ MapData::~MapData()
 int MapData::Initialize()
 {
     Populate();
+    sLog.Blue("          MapData", "Map Data Manager Initialized.");
     return 1;
 }
 

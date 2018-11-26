@@ -62,7 +62,7 @@ public:
     ~ItemFactory();
 
     void Close();
-    void Initialize();
+    int Initialize();
 
     void SaveItems();
     void RemoveItem(uint32 itemID);

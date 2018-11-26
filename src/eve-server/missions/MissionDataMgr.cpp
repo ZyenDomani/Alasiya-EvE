@@ -49,6 +49,7 @@ void MissionDataMgr::Clear()
 int MissionDataMgr::Initialize()
 {
     Populate();
+    sLog.Blue("   MissionDataMgr", "Mission Data Manager Initialized.");
     return 1;
 }
 

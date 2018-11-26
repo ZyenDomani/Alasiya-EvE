@@ -30,6 +30,7 @@ int DungeonDataMgr::Initialize()
     ManagerDB::ClearDungeons();
 
     Populate();
+    sLog.Blue("   DungeonDataMgr", "Dungeon Data Manager Initialized.");
     return 1;
 }
 

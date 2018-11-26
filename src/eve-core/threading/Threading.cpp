@@ -35,7 +35,7 @@ void Threading::Initialize() {
     tv.tv_sec = 0;
     tv.tv_usec = 0;
     m_threads.clear();
-    sLog.Cyan( "        Threading", "Threading Initialized.");
+    sLog.Blue( "        Threading", "Threading System Initialized.");
 }
 
 void Threading::RunLoop() {

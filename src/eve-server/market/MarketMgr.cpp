@@ -36,6 +36,7 @@ void MarketMgr::Close()
 int MarketMgr::Initialize()
 {
     Populate();
+    sLog.Blue("        MarketMgr", "Market Manager Initialized.");
     return 1;
 }
 

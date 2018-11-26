@@ -24,13 +24,14 @@ MarketBotDataMgr::MarketBotDataMgr()
     m_initalized = false;
 }
 
-void MarketBotDataMgr::Initialize()
+int MarketBotDataMgr::Initialize()
 {
     m_initalized = true;
 
     /* load current data */
 
-    sLog.Blue("   Market Bot Mgr", "Market Bot Data Manager Initialized.");
+    sLog.Blue(" MarketBotDataMgr", "Market Bot Data Manager Initialized.");
+    return 1;
 }
 
 
@@ -41,11 +42,11 @@ MarketBotMgr::MarketBotMgr()
     m_initalized = false;
 }
 
-void MarketBotMgr::Initialize()
+int MarketBotMgr::Initialize()
 {
     if (!sMBotConf.ParseFile(BOT_CONFIG_FILE)) {
         sLog.Error("       ServerInit", "Loading Market Bot Config file '%s' failed.", BOT_CONFIG_FILE);
-        return;
+        return 0;
     }
 
     m_initalized = true;
@@ -53,7 +54,8 @@ void MarketBotMgr::Initialize()
 
     /* start timers, process current data, and create new orders, if needed */
 
-    sLog.Blue("   Market Bot Mgr", "Market Bot Manager Initialized.");
+    sLog.Blue("     MarketBotMgr", "Market Bot Manager Initialized.");
+    return 1;
 }
 
 // this is called on a minute timer from EntityList

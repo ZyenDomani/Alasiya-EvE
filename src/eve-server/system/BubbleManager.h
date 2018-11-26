@@ -50,7 +50,7 @@ public:
     BubbleManager();
     ~BubbleManager();
 
-    void Initialize();
+    int Initialize();
     void Process();
 
     // call to check for and remove empty bubbles from bubble vector

@@ -77,7 +77,7 @@ void EntityList::Initialize() {
     if (is_log_enabled(SERVER__STACKTRACE))
         sConfig.server.StackTrace = true;
 
-    sLog.Blue("       EntityList", "EntityList Initialized.");
+    sLog.Blue("       EntityList", "Entity Manager Initialized.");
 }
 
 void EntityList::Shutdown() {

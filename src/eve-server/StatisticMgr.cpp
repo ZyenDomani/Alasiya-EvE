@@ -28,7 +28,8 @@ void StatisticMgr::Close()
 int StatisticMgr::Initialize()
 {
     ClearAll();
-    sLog.Blue( "Statistic Manager", "Statistics Manager Initialized." );
+    sLog.Blue( "     StatisticMgr", "Statistics Manager Initialized." );
+    return 1;
 }
 
 void StatisticMgr::ClearAll()
