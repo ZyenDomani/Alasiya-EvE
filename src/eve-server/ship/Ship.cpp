@@ -995,7 +995,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
             return 0;
         }
-        iRef->ClearModifiers();
+        //  need to verify if this is needed.  comment for now.
+        //iRef->ClearModifiers();
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->LoadCharge(iRef, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
@@ -1006,7 +1007,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
             iRef->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
-            if (IsRigSlot(flag/*iRef->groupID() >= 773 and iRef->groupID() <= 782) or iRef->groupID() == 786*/)) {
+            if (IsRigSlot(flag)) {
                 if (!m_ModuleManager->InstallRig(iRef, flag))
                     return 0;
             } else if (!m_ModuleManager->FitModule(iRef, flag))

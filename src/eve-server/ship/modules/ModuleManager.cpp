@@ -571,7 +571,8 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
     if (!IsModuleSlot(flag))
         return; // throw error?
 
-    //CantMoveChargesBetweenModules
+    if (IsModuleSlot(chargeRef->flag()))
+        throw PyException( MakeUserError( "CantMoveChargesBetweenModules"));
 
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod == nullptr) {
