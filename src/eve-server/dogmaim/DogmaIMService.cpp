@@ -364,9 +364,6 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 {
-    sLog.White("DogmaIMBound::Handle_Activate()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
-
     Client* pClient = call.client;
 
     if (!pClient->IsInSpace()) {
@@ -374,9 +371,8 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         return PyStatic.NewNone();
     }
 
-    uint8 callTupleSize = call.tuple->size();
-
-    if (callTupleSize == 2) {
+    if (call.tuple->size() == 2) {
+        call.Dump(POS__DUMP);
         // anchor cargo and pos items
         // online pos items
         Call_TwoIntegerArgs args;
@@ -422,7 +418,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         } else
             ; // make error here
 
-    } else if (callTupleSize == 4) {
+    } else if (call.tuple->size() == 4) {
         // activate ship module
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
@@ -917,7 +913,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call)
     //UnlinkModule(shipID, moduleID)
     sLog.White("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
-    
+
     return nullptr;
 }
 

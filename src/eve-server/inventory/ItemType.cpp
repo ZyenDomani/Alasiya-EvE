@@ -216,13 +216,13 @@ ItemType* ItemType::Load( uint32 typeID)
 template<class _Ty>
 _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData &data)
 {
-    switch( group.categoryID() ) {
-        /*  not handled / not needed    (not complete list)
+    switch( group.categoryID() ) { // not complete list
+        /*
+         * not handled / not needed ?
         case EVEDB::invCategories::_System:
         case EVEDB::invCategories::Accessories:
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Commodity:   // group StationComponents, for outpost shit
         case EVEDB::invCategories::Drone:
         case EVEDB::invCategories::Implant:
         case EVEDB::invCategories::Deployable:
@@ -244,6 +244,7 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Ship: {
             return ShipType::_LoadType<ShipType>(typeID, group, data );
         }
+        case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Celestial:
         case EVEDB::invCategories::Skill:
         case EVEDB::invCategories::Charge:
