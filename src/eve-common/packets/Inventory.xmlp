@@ -33,7 +33,7 @@
   <elementDef name="Call_RemoveChargeToHangar">
     <tupleInline>
       <tupleInline>
-        <int name="chargeID" />
+        <int name="shipID" />
         <int name="flagID" />
         <int name="typeID" />
       </tupleInline>
@@ -43,7 +43,7 @@
   <elementDef name="Call_RemoveChargeToCargo">
     <tupleInline>
       <tupleInline>
-        <int name="chargeID" />
+        <int name="shipID" />
         <int name="flagID" />
         <int name="typeID" />
       </tupleInline>

@@ -321,7 +321,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
      * 17:57:52 [SvcCallDump]   Call Arguments:
      * 17:57:52 [SvcCallDump]      Tuple: 1 elements
      * 17:57:52 [SvcCallDump]       [ 0]  Tuple: 3 elements
-     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- chargeID
+     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- shipID
      * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
      * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
      */
@@ -334,8 +334,8 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
         return new PyInt(0);
     }
 
-    call.client->GetShip()->RemoveCharge(args.chargeID, (EVEItemFlags)args.flagID, flagHangar);
-    return new PyInt(args.chargeID);
+    // args.shipID
+    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagHangar));
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
@@ -349,8 +349,8 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
         return new PyInt(0);
     }
 
-    call.client->GetShip()->RemoveCharge(args.chargeID, (EVEItemFlags)args.flagID, flagCargoHold);
-    return new PyInt(args.chargeID);
+    // args.shipID
+    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagCargoHold));
 }
 
 PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {

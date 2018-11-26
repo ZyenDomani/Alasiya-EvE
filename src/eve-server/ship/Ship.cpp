@@ -1059,19 +1059,22 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     }
 }
 
-uint32 ShipItem::RemoveCharge(uint32 chargeID, EVEItemFlags fromFlag, EVEItemFlags toFlag)
+uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
 {
     if (IsModuleSlot(fromFlag)) {
         if (m_ModuleManager == nullptr) {
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
+        InventoryItemRef chargeRef = m_ModuleManager->GetModule(fromFlag)->GetLoadedChargeRef();
         m_ModuleManager->UnloadCharge(fromFlag);
         if (m_pilot->IsInSpace())
-            sItemFactory.GetItem(chargeID)->Move(itemID(), toFlag, true);
+            chargeRef->Move(itemID(), toFlag, true);
         else
-            sItemFactory.GetItem(chargeID)->Move(locationID(), toFlag, true);
-    }
+            chargeRef->Move(locationID(), toFlag, true);
+        return chargeRef->itemID();
+    } 
+    return 0;
 }
 
 

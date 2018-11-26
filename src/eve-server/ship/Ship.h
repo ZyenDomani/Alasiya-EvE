@@ -275,7 +275,7 @@ public:
     // will remove item from previous container
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);
     void LoadCharge( EVEItemFlags flag, InventoryItemRef iRef);          // this can throw. returns nothing
-    uint32 RemoveCharge(uint32 chargeID, EVEItemFlags fromFlag, EVEItemFlags toFlag);
+    uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag);
     /* end new module manager interface */
 
     // Tactical Interface:
