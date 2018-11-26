@@ -164,7 +164,6 @@
 #include "system/BookmarkService.h"
 #include "system/BubbleManager.h"
 #include "system/KeeperService.h"
-#include "system/LootSystem.h"
 #include "system/ScenarioService.h"
 #include "system/SovereigntyMgrService.h"
 #include "system/WormholeSvc.h"
@@ -634,12 +633,6 @@ int main( int argc, char* argv[] )
     sPIDataMgr.Initialize();
     std::printf("\n");     // spacer
     stDataMgr.Initialize();
-    std::printf("\n");     // spacer
-
-    sLog.Green("       ServerInit", "Wreck Data");
-    sWreckData.Initialize();
-    sLog.Green("       ServerInit", "Loot Data");
-    sLootData.Initialize();
     std::printf("\n");     // spacer
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");

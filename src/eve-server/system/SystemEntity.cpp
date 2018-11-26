@@ -40,7 +40,6 @@
 #include "standing/StandingMgr.h"
 #include "system/DestinyManager.h"
 #include "station/Station.h"
-#include "system/LootSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
@@ -168,7 +167,7 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
     std::vector<LootList> lootList;
-    sLootData.GetLoot(groupID, lootList);
+    sDataMgr.GetLoot(groupID, lootList);
 
     if (!lootList.empty()) {
         uint32 quantity = 0;

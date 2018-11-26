@@ -26,7 +26,6 @@
 #include "pos/Tower.h"
 #include "system/Container.h"
 #include "system/Damage.h"
-#include "system/LootSystem.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 

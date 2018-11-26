@@ -24,13 +24,13 @@
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
+#include "StaticDataMgr.h"
 #include "manufacturing/Blueprint.h"
 #include "planet/Moon.h"
 #include "pos/Tower.h"
 #include "pos/Structure.h"
 #include "system/Container.h"
 #include "system/Damage.h"
-#include "system/LootSystem.h"
 #include "system/SystemManager.h"
 
 /*
@@ -942,7 +942,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     m_destiny->SendTerminalExplosion(m_data.itemID, m_bubble->GetID());
 
     GPoint deadPOSPosition = m_destiny->GetPosition();
-    uint32 wreckTypeID = sWreckData.GetWreckID(m_self->typeID());
+    uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!wreckTypeID) {
         sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data

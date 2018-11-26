@@ -56,8 +56,8 @@
   <elementDef name="Call_Dogma_LinkWeapons">
     <tupleInline>
       <int name="shipID" />
-      <int name="droppedID" />
-      <int name="draggedID" />
+      <int name="masterID" />
+      <int name="slaveID" />
     </tupleInline>
   </elementDef>
 

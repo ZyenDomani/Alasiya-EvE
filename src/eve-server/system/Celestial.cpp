@@ -74,7 +74,7 @@ CelestialObjectRef CelestialObject::Load( uint32 celestialID)
 CelestialObjectRef CelestialObject::Spawn( ItemData &data) {
     uint32 celestialID = CelestialObject::CreateItemID(data);
     if (celestialID == 0 )
-        return CelestialObjectRef();
+        return CelestialObjectRef(nullptr);
 
     CelestialObjectRef celestialRef = CelestialObject::Load(celestialID);
 

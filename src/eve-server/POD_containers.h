@@ -311,6 +311,29 @@ struct RatSpawnClass { // notes for me while creating/writing/testing
     uint8 cbs;      // commander battleship
 };
 
+/* POD structure for loot groups */
+struct LootGroup {
+    //uint32 groupID;
+    uint32 lootGroupID;
+    double dropChance;
+};
+
+/* POD structure for loot types */
+struct LootGroupType {
+    uint32 lootGroupID;
+    uint32 typeID;
+    uint8 metaLevel;
+    uint32 minQuantity;
+    uint32 maxQuantity;
+};
+
+/* POD structure for possible loot drops */
+struct LootList {
+    uint32 itemID;
+    uint8 minDrop;
+    uint8 maxDrop;
+};
+
 /* POD structure for statistic data */
 struct StatisticData {
     uint16 span;        // 45.5d in minutes (max)

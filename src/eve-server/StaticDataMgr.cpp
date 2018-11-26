@@ -37,11 +37,15 @@ m_npcDivisions(nullptr)
     m_salvageMap.clear();
     m_agentSystem.clear();
     m_typeAttrMap.clear();
+    m_LootGroupMap.clear();
     m_stationCount.clear();
     m_stationConst.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();
     m_oreBySecClass.clear();
+    m_LootGroupTypeMap.clear();
+    m_WrecksToTypesMap.clear();
+
 }
 
 StaticDataMgr::~StaticDataMgr()
@@ -69,9 +73,12 @@ void StaticDataMgr::Clear()
     m_typeAttrMap.clear();
     m_stationCount.clear();
     m_stationConst.clear();
+    m_LootGroupMap.clear();
     m_stationRegion.clear();
     m_stationSystem.clear();
     m_oreBySecClass.clear();
+    m_LootGroupTypeMap.clear();
+    m_WrecksToTypesMap.clear();
 
     PySafeDecRef(m_keyMap);
     PySafeDecRef(m_agents);
@@ -150,7 +157,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
-        m_whRegions.insert(std::pair<uint32, uint8>(row.GetInt(0), row.GetInt(1)));
+        m_whRegions.emplace(row.GetInt(0), row.GetInt(1));
     }
     sLog.Cyan("    StaticDataMgr", "%u WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - start));
 
@@ -182,19 +189,19 @@ void StaticDataMgr::Populate()
     StationDB::GetStationRegion(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, regionID FROM staStations
-        m_stationRegion.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_stationRegion.emplace(row.GetInt(0), row.GetInt(1));
     }
     res->Reset();
     StationDB::GetStationConstellation(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, constellationID FROM staStations
-        m_stationConst.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_stationConst.emplace(row.GetInt(0), row.GetInt(1));
     }
     res->Reset();
     StationDB::GetStationSystem(*res);
     while (res->GetRow(row)) {
         //SELECT stationID, solarSystemID FROM staStations
-        m_stationSystem.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_stationSystem.emplace(row.GetInt(0), row.GetInt(1));
     }
 
     for (auto cur : m_stationSystem) {
@@ -204,7 +211,7 @@ void StaticDataMgr::Populate()
         } else {
             std::vector<uint32> sVec;
             sVec.push_back(cur.first);
-            m_stationList.insert(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
+            m_stationList.emplace(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
         }
     }
     sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - start));
@@ -321,14 +328,14 @@ void StaticDataMgr::Populate()
     ManagerDB::GetRegionFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, factionID FROM mapRegions
-        m_regions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_regions.emplace(row.GetInt(0), row.GetInt(1));
     }
 
     res->Reset();
     ManagerDB::GetRegionRatFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
-        m_ratRegions.insert(std::pair<uint32, uint32>(row.GetInt(0), row.GetInt(1)));
+        m_ratRegions.emplace(row.GetInt(0), row.GetInt(1));
     }
     sLog.Cyan("    StaticDataMgr", "%u Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - start));
 
@@ -386,6 +393,42 @@ void StaticDataMgr::Populate()
 
     res->Reset();
     start = GetTimeMSeconds();
+    SystemDB::GetWrecksToTypes(*res);
+    while (res->GetRow(row)) {
+        //SELECT typeID, wreckTypeID FROM invTypesToWrecks
+        m_WrecksToTypesMap[row.GetInt(0)] = row.GetInt(1);
+    }
+    sLog.Cyan("    StaticDataMgr", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    SystemDB::GetLootGroups(*res);
+    LootGroup lootGroup;
+    while (res->GetRow(row)) {
+        //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
+        lootGroup.lootGroupID = row.GetInt(1);
+        lootGroup.dropChance = row.GetDouble(2);
+        m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
+    }
+
+    res->Reset();
+    start = GetTimeMSeconds();
+    SystemDB::GetLootGroupTypes(*res);
+    LootGroupType GroupType;
+    while (res->GetRow(row)) {
+        //SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup
+        GroupType.lootGroupID = row.GetInt(0);
+        GroupType.typeID =  row.GetInt(1);
+        GroupType.metaLevel = row.GetInt(2);
+        GroupType.minQuantity = row.GetInt(3);
+        GroupType.maxQuantity = row.GetInt(4);
+        m_LootGroupTypeMap.emplace(row.GetInt(0), GroupType);
+    }
+    sLog.Cyan("    StaticDataMgr", "%u loot groups and %u loot group types loaded in %.3fms.",
+              m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - start));
+
+    res->Reset();
+    start = GetTimeMSeconds();
     uint32 locationID = 0;
     ManagerDB::GetAgentLocation(*res);
     while (res->GetRow(row)) {
@@ -398,7 +441,7 @@ void StaticDataMgr::Populate()
             continue;
         }
 
-        m_agentSystem.insert(std::pair<uint32, uint32>(row.GetInt(0), locationID));
+        m_agentSystem.emplace(row.GetInt(0), locationID);
     }
     sLog.Cyan("    StaticDataMgr", "%u Agent Data Sets loaded in %.3fms.", m_agentSystem.size(), (GetTimeMSeconds() - start));
 
@@ -543,6 +586,68 @@ bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& cl
     }
 
     return !classMap.empty();
+}
+
+uint32 StaticDataMgr::GetWreckID(uint32 typeID)
+{
+    std::map<uint32, uint32>::const_iterator itr = m_WrecksToTypesMap.find(typeID);
+    if (itr != m_WrecksToTypesMap.end())
+        return itr->second;
+    return 0;
+}
+
+void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
+    double profileStartTime = GetTimeUSeconds();
+
+    float randChance = 0.0f;
+    uint8 metaLevel = 0;
+    std::vector<LootGroupType> lootGrpVec;
+    lootGrpVec.clear();
+
+    // Finds a range containing all elements whose key is k.
+    // pair<iterator, iterator> equal_range(const key_type& k)
+    auto range = m_LootGroupMap.equal_range(groupID);
+    for ( auto it = range.first; it != range.second; ++it ) {
+        // make lootMap of lootGroupID's
+        if (MakeRandomFloat(0, 1) < it->second.dropChance) {
+            randChance = MakeRandomFloat(0, 1);
+            metaLevel = 0;
+            if (randChance < 0.1)
+                metaLevel = 4;
+            else if (randChance < 0.25)
+                metaLevel = 3;
+            else if (randChance < 0.4)
+                metaLevel = 2;
+            else if (randChance < 0.6)
+                metaLevel = 1;
+            /*need to figure out how to get faction loot for faction wrecks
+             *    elif meta_level == 7:
+             *        drop_chance = 0.15   # Faction stuff = 15%
+             *    elif meta_level == 8:
+             *        drop_chance = 0.15   # Faction projectiles = 15%
+             *    elif meta_level == 9:
+             *        drop_chance = 0.15   # Faction SB's and Missile launchers
+             */
+
+            auto range2 = m_LootGroupTypeMap.equal_range(it->second.lootGroupID);
+            for (auto it2 = range2.first; it2 != range2.second; ++it2)
+                if (it2->second.metaLevel == metaLevel)
+                    lootGrpVec.push_back(it2->second);
+
+            if (!lootGrpVec.empty()) {
+                LootList loot_list;
+                uint16 i = MakeRandomInt(0, lootGrpVec.size());
+                loot_list.itemID = lootGrpVec[i].typeID;
+                loot_list.minDrop = lootGrpVec[i].minQuantity;
+                loot_list.maxDrop = lootGrpVec[i].maxQuantity;
+                lootList.push_back(loot_list);
+                lootGrpVec.clear();
+            }
+        }
+    }
+
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)

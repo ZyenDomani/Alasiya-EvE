@@ -37,7 +37,6 @@
 #include "ship/Ship.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
-#include "system/LootSystem.h"
 
 /*
 DAMAGE
@@ -346,7 +345,7 @@ void Ship::Killed(Damage &fatal_blow) {
         m_destiny->Stop();
 
         // Spawn a wreck for the Ship that was destroyed:
-        uint32 wreckTypeID = sWreckData.GetWreckID(m_self->typeID());
+        uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
         if (wreckTypeID == 0) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
             // default to generic frigate wreck till i get better checks and/or complete wreck data
@@ -514,7 +513,7 @@ void Ship::Killed(Damage &fatal_blow) {
         /** @todo: figure out anybody else which may be referencing this ship */
         ShipItemRef deadShipRef = pPilot->GetShip();
 
-        uint32 wreckTypeID = sWreckData.GetWreckID(deadShipRef->typeID());
+        uint32 wreckTypeID = sDataMgr.GetWreckID(deadShipRef->typeID());
         if (!wreckTypeID) {
             sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
             // default to generic wreck till i get better checks and/or complete wreck data

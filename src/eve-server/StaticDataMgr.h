@@ -54,6 +54,8 @@ public:
     bool                GetNPCGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
     bool                GetNPCClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
     uint16              GetRandRatType(uint8 sClass, uint16 groupID);
+    uint32              GetWreckID(uint32 typeID);
+    void                GetLoot(uint32 groupID, std::vector<LootList>& lootList);
 
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls
     void                GetRamMaterials(uint16 typeID, std::vector<EvERam::RamMaterials>& ramMatls);    // bp productID/matls
@@ -153,6 +155,12 @@ private:
     /* salvage data */
     std::multimap<uint32, uint32>                       m_salvageMap;       // factionID/itemID
 
+    /* ship types to wreck types data */
+    std::map<uint32, uint32>                            m_WrecksToTypesMap; // typeID/wreckTypeID
+
+    /* loot data */
+    std::multimap<uint32, LootGroup>                    m_LootGroupMap;     // typeID/data
+    std::multimap<uint32, LootGroupType>                m_LootGroupTypeMap; // typeID/data
 
 };
 
