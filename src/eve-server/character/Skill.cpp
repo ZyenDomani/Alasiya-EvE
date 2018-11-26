@@ -45,12 +45,12 @@ SkillRef Skill::Spawn( ItemData &data)
 {
     uint32 skillID = InventoryItem::CreateItemID(data );
     if ( skillID == 0 )
-        return SkillRef();
+        return SkillRef(nullptr);
 
     SkillRef skillRef = Skill::Load(skillID );
     if (skillRef.get() == nullptr) {
         // make error msg here for failure to load skill?
-        return SkillRef();
+        return SkillRef(nullptr);
     }
 
     skillRef->SaveItem();

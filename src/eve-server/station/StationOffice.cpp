@@ -51,7 +51,7 @@ bool StationOffice::_Load() {
 StationOfficeRef StationOffice::Spawn( ItemData& idata, OfficeData& odata) {
     uint32 officeID = StationDB::CreateOffice(idata, odata);
     if (officeID == 0 )
-        return StationOfficeRef();
+        return StationOfficeRef(nullptr);
 
     return StationOffice::Load(officeID );
 }

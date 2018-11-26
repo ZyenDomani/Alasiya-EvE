@@ -53,7 +53,7 @@ ProbeItemRef ProbeItem::Spawn(ItemData& data)
 {
     uint32 itemID = ProbeItem::CreateItemID(data);
     if (itemID == 0 )
-        return ProbeItemRef();
+        return ProbeItemRef(nullptr);
 
     return ProbeItem::Load(itemID);
 }
@@ -451,7 +451,7 @@ float ProbeSE::GetDeviation()
 float ProbeSE::GetRangeModifier(float dist)
 {
     dist /= m_scanRange;
-    
+
     switch(m_rangeStep) {
         case 8:  return dist * 0.125;
         case 7:  return dist * 0.25;

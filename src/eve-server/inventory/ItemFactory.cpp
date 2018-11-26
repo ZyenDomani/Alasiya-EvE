@@ -183,7 +183,7 @@ InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
     }
 
     if (iRef.get() == nullptr)
-        return InventoryItemRef();
+        return InventoryItemRef(nullptr);
 
     return iRef;
 }

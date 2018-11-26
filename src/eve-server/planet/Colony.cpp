@@ -248,7 +248,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     /** @todo will have to write code for effects and checks for pg/cpu/m3/etc for all of these.  */
     using namespace EVEDB::invGroups;
     PI_Pin pin;
-    InventoryItemRef iRef = InventoryItemRef();
+    InventoryItemRef iRef = InventoryItemRef(nullptr);
     if (groupID != Command_Centers) {
         // type, owner, location, flag, qty
         ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagAutoFit, 1);

@@ -48,13 +48,13 @@ AsteroidItemRef AsteroidItem::Load( uint32 asteroidID)
 AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
     const ItemType *type = sItemFactory.GetType(adata.typeID);
     if (type == nullptr)
-        return AsteroidItemRef();
+        return AsteroidItemRef(nullptr);
 
     adata.itemName = type->name();
 
     uint32 asteroidID = ManagerDB::CreateRoidItemID(idata, adata);
     if (asteroidID == 0)
-        return AsteroidItemRef();
+        return AsteroidItemRef(nullptr);
 
     AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(asteroidID, *type, idata, adata));
     roidRef->SetAttribute(AttrRadius,    adata.radius);

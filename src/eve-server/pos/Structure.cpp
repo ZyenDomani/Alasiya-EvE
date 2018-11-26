@@ -66,7 +66,7 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
 {
     uint32 structureID = InventoryItem::CreateItemID(data);
     if (structureID < 1)
-        return StructureItemRef();
+        return StructureItemRef(nullptr);
     StructureItemRef sRef = StructureItem::Load(structureID );
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)

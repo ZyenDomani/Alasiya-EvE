@@ -663,14 +663,14 @@ InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if ((pMod != nullptr) and pMod->IsLoaded() )
         return pMod->GetLoadedChargeRef();
-    return InventoryItemRef();
+    return InventoryItemRef(nullptr);
 }
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleRef) {
     GenericModule* pMod = pModuleCont->GetModule(moduleRef->itemID());
     if ((pMod != nullptr) and pMod->IsLoaded() )
         return pMod->GetLoadedChargeRef();
-    return InventoryItemRef();
+    return InventoryItemRef(nullptr);
 }
 
 bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)

@@ -62,7 +62,7 @@ bool CargoContainer::_Load() {
 CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     uint32 containerID = CargoContainer::CreateItemID(data );
     if (containerID == 0 )
-        return CargoContainerRef();
+        return CargoContainerRef(nullptr);
     CargoContainerRef containerRef = CargoContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
@@ -339,7 +339,7 @@ bool WreckContainer::_Load() {
 WreckContainerRef WreckContainer::Spawn( ItemData &data) {
     uint32 containerID = WreckContainer::CreateItemID(data );
     if (containerID == 0 )
-        return WreckContainerRef();
+        return WreckContainerRef(nullptr);
     WreckContainerRef wreckRef = WreckContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
