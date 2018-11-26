@@ -750,6 +750,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
     m_locationID = new_location;
 
     SaveItem();
+    
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
         std::map<int32, PyRep *> changes, changes2;
@@ -765,7 +766,8 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
             changes[ixLocationID] = new PyInt(old_location);
             changes2[ixLocationID] = new PyInt(old_location);
         }
-        SendItemChange(old_owner, changes);
+        if (new_owner != old_owner)
+            SendItemChange(old_owner, changes);
         SendItemChange(m_ownerID, changes2);
     }
 }
@@ -781,31 +783,29 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     m_flag = new_flag;
     m_locationID = new_location;
 
-    if (old_location != new_location) {
+    if (old_location != m_locationID) {
         if (IsValidLocation(old_location)) {
             pInv = sItemFactory.GetInventoryFromId( old_location, false);
             if (pInv != nullptr)
                 pInv->RemoveItem(InventoryItemRef(this));
         }
-        if (IsValidLocation(new_location)) {
-            pInv = sItemFactory.GetInventoryFromId( new_location, false);
+        if (IsValidLocation(m_locationID)) {
+            pInv = sItemFactory.GetInventoryFromId( m_locationID, false);
             if (pInv != nullptr)
                 pInv->AddItem(InventoryItemRef(this));
             else
-                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", new_location, itemName().c_str());
+                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", m_locationID, itemName().c_str());
         }
     }
 
     SaveItem();
-    if (IsNPCCorp(m_ownerID) or IsFaction(m_ownerID))   //IsValidOwner()
-        return;
 
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
-        if ( new_location != old_location )
+        if ( m_locationID != old_location )
             changes[ixLocationID] = new PyInt(old_location);
-        if ( new_flag != old_flag )
+        if ( m_flag != old_flag )
             changes[ixFlag] = new PyInt(old_flag);
         SendItemChange( m_ownerID, changes);   //changes is consumed
     }
@@ -837,29 +837,37 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         return false;
     }
 
+    int32 old_qty = m_quantity;
     m_quantity = qty;
+
+    SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
         // this informs client of a stack change
-        changes[/*ixQuantity*/ixStackSize] = new PyInt(m_quantity);
+        if (IsModuleSlot(m_flag))
+            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
+        else
+            changes[ixStackSize] = new PyInt(old_qty);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
-    SaveItem();
     return true;
 }
 
 bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
+    EVEItemFlags old_flag = m_flag;
+    m_flag = flag;
+
+    SaveItem();
+
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the new owner.
-        changes[ixFlag] = new PyInt(m_flag);
+        changes[ixFlag] = new PyInt(old_flag);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
-    m_flag = flag;
-    SaveItem();
     return true;
 }
 
@@ -876,7 +884,7 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
     ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty);
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
-        return iRef;    // couldnt spawn new item...we'll get over it.
+        return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
     iRef->Move( m_locationID, m_flag, true);
     return iRef;
 }
@@ -917,38 +925,38 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
 bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_singleton)
         return true;    //nothing to do...
+    bool old_singleton = m_singleton;
+    m_singleton = singleton;
+    SaveItem();
 
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
-        changes[ixSingleton] = new PyInt(m_singleton);
+        changes[ixSingleton] = new PyInt(old_singleton);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
-    m_singleton = singleton;
     SetAttribute(AttrVolume, GetPackagedVolume(), notify);
-    SaveItem();
-
     return true;
 }
 
 void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
     if (new_owner == m_ownerID)
         return; //nothing to do...
-
+    uint32 old_owner = m_ownerID;
+    m_ownerID = new_owner;
+    SaveItem();
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the new owner.
-        changes[ixOwnerID] = new PyInt(m_ownerID);
+        changes[ixOwnerID] = new PyInt(old_owner);
         SendItemChange(new_owner, changes); //changes is consumed
         //also send the notify to the old owner.
-        changes[ixOwnerID] = new PyInt(m_ownerID);
-        SendItemChange(m_ownerID, changes); //changes is consumed
+        changes[ixOwnerID] = new PyInt(old_owner);
+        SendItemChange(old_owner, changes); //changes is consumed
     }
 
-    m_ownerID = new_owner;
-    SaveItem();
 }
 
 void InventoryItem::SaveItem() {
@@ -974,7 +982,7 @@ void InventoryItem::SaveItem() {
 
 //contents of changes are consumed and cleared
 void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
-    if (IsNPCCorp(toID) or (toID == 1))
+    if (IsNPCCorp(toID) or (toID == 1) or IsFaction(toID))   //IsValidOwner()
         return;
     if (sConsole.IsShutdown())
         return;
