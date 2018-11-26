@@ -39,6 +39,11 @@ WormholeMgr::WormholeMgr()
     m_initalized = false;
 }
 
+WormholeMgr::~WormholeMgr()
+{
+    // remove created wormholes
+}
+
 void WormholeMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
 
@@ -103,19 +108,20 @@ void WormholeMgr::Create(CosmicSignature& sig)
         return;
     sig.sigItemID = iRef->itemID();
     // update entity data for k162
-        entity.categoryID = iRef->categoryID();
-        entity.groupID = iRef->groupID();
-        entity.itemID = iRef->itemID();
-        entity.itemName = sig.sigName;
-        entity.typeID = sig.sigTypeID;
-        entity.x = pos.x;
-        entity.y = pos.y;
-        entity.z = pos.z;
-        entity.ownerID = sig.ownerID;
-        entity.allianceID = -1;
-        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
-        // do the spawn using SystemManager's BuildEntity:
+    entity.categoryID = iRef->categoryID();
+    entity.groupID = iRef->groupID();
+    entity.itemID = iRef->itemID();
+    entity.itemName = "K162";
+    entity.typeID = 30831;
+    entity.x = pos.x;
+    entity.y = pos.y;
+    entity.z = pos.z;
+    entity.ownerID = sig.ownerID;
+    entity.allianceID = -1;
+    entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+    // do the spawn using SystemManager's BuildEntity:
     sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
+    m_wormholes.push_back(entity.itemID);
 
     _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
 }

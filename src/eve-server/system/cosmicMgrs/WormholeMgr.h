@@ -30,7 +30,7 @@ class WormholeMgr
 {
 public:
     WormholeMgr();
-    virtual ~WormholeMgr()                              { /* do nothing here */ }
+    ~WormholeMgr();
 
     void Initialize(PyServiceMgr* svc);
     void Process();
@@ -47,6 +47,8 @@ private:
     Timer m_updateTimer;
 
     bool m_initalized;
+
+    std::vector<uint32>         m_wormholes;   //exitID
 
 };
 
