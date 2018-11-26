@@ -759,23 +759,28 @@ void ModuleManager::ShipJumping()
     AbortCycle();
 }
 
-void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& pModuleList)
+void ModuleManager::GetWeapons(std::vector< InventoryItemRef >& modVec)
 {
-	pModuleCont->GetModuleListOfRefsAsc(pModuleList);
+    pModuleCont->GetWeapons(modVec);
 }
 
-void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& pModuleList)
+void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)
 {
-    pModuleCont->GetModuleListOfRefsDec(pModuleList);
+	pModuleCont->GetModuleListOfRefsAsc(modVec);
 }
 
-void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >& pModuleList)
+void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modVec)
+{
+    pModuleCont->GetModuleListOfRefsDec(modVec);
+}
+
+void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >& modVec)
 {
     std::vector<InventoryItemRef> moduleList;
     pModuleCont->GetModuleListOfRefsAsc(moduleList);
     for (auto cur : moduleList)
         if (cur->HasReqSkill(skillID))
-            pModuleList.push_back(cur);
+            modVec.push_back(cur);
 }
 
 void ModuleManager::StripModules()

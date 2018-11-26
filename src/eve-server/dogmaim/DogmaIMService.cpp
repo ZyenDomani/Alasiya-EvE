@@ -696,13 +696,14 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      * 12:54:01 [SvcCall]   Call Arguments:
      * 12:54:01 [SvcCall]       Tuple: 3 elements
      * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
-     * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- weapon 2  *dropped ON*
-     * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- weapon 1  *dragged*
+     * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- masterID  *dropped ON*
+     * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- slaveID   *dragged*
      *   sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
      *   call.Dump(SERVICE__CALL_DUMP);
      */
 
-    /*
+    /*  data = self.remoteDogmaLM.LinkWeapons(shipID, masterID, fromID)
+     *
      *    def SetWeaponBanks(self, shipID, data):
      *        self.slaveModulesByMasterModule[shipID] = defaultdict(set)
      *        if data is None:
@@ -711,18 +712,23 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      *            for slaveID in slaveIDs:
      *                self.slaveModulesByMasterModule[shipID][masterID].add(slaveID)
      */
-    Client* pClient = call.client;
+
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return PyStatic.NewNone();
     }
     /* args.shipID
-     * args.droppedID
-     * args.draggedID
+     * args.masterID
+     * args.slaveID
      */
-
-    return nullptr;
+    if (!IsPlayerItem(args.shipID))
+        return nullptr;
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.shipID);
+    if (sRef.get() == nullptr)
+        return nullptr;
+    sRef->LinkWeapon(args.masterID, args.slaveID);
+    return sRef->GetLinkedWeapons();
 }
 
 PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
@@ -738,16 +744,20 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
      * 18:23:28 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
      */
 
-    Client* pClient = call.client;
-
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return PyStatic.NewNone();
     }
-    uint32 shipID = arg.arg;
 
-    return nullptr;
+    if (!IsPlayerItem(arg.arg))
+        return nullptr;
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(arg.arg);
+    if (sRef.get() == nullptr)
+        return nullptr;
+    // locate and link all weapons on ship, if possible.
+    sRef->LinkAllWeapons();
+    return sRef->GetLinkedWeapons();
 }
 
 PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {

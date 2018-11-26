@@ -36,8 +36,9 @@ public:
     // basic methods
     void SaveModules();
     void ShipWarping();
-    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& pModuleList);
-    void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& pModuleList);
+    void GetWeapons(std::vector<InventoryItemRef>& moduleVec);
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec);
+    void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& moduleVec);
 
     bool AddModule(EVEItemFlags flag, GenericModule* mod);
     bool RemoveModule(EVEItemFlags flag);

@@ -227,19 +227,26 @@ GenericModule* ModuleContainer::GetRandModule()
     return modVec[MakeRandomInt(0, modVec.size())];
 }
 
-void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& pModuleList)
+void ModuleContainer::GetWeapons(std::vector< InventoryItemRef >& moduleVec)
+{
+    for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
+        if (m_modules[flag] != nullptr)
+            moduleVec.push_back(m_modules[flag]->GetSelf());
+}
+
+void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec)
 {
     for (auto cur : m_modules)
         if (cur.second != nullptr)
-            pModuleList.push_back(cur.second->GetSelf());
+            moduleVec.push_back(cur.second->GetSelf());
 }
 
-void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& pModuleList)
+void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& moduleVec)
 {
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
     while (itr != end) {
         if (itr->second != nullptr)
-            pModuleList.push_back( itr->second->GetSelf() );
+            moduleVec.push_back( itr->second->GetSelf() );
         ++itr;
     }
 }

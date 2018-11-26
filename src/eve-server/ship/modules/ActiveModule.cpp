@@ -564,7 +564,7 @@ void ActiveModule::UnloadCharge()
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
 
-    m_chargeRef = InventoryItemRef();       // Ensure ref is NULL
+    m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     m_chargeLoaded = false;
     SetChargeState(Module::State::Unloaded);
 }

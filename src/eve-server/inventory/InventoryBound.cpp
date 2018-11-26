@@ -334,7 +334,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
         return new PyInt(0);
     }
 
-    call.client->GetShip()->RemoveItem(sItemFactory.GetItem(args.chargeID));
+    call.client->GetShip()->RemoveCharge(args.chargeID, (EVEItemFlags)args.flagID, flagHangar);
     return new PyInt(args.chargeID);
 }
 
@@ -349,7 +349,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
         return new PyInt(0);
     }
 
-    call.client->GetShip()->RemoveItem(sItemFactory.GetItem(args.chargeID));
+    call.client->GetShip()->RemoveCharge(args.chargeID, (EVEItemFlags)args.flagID, flagCargoHold);
     return new PyInt(args.chargeID);
 }
 

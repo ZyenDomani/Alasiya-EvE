@@ -64,7 +64,6 @@ m_ModuleManager(nullptr)
     m_IsLoaded = false;
     m_isDocking = false;
     m_isUndocking = false;
-    m_stackMap.clear();
     m_onlineModuleVec.clear();
     m_targetRef = InventoryItemRef(nullptr);
     pInventory = new Inventory(InventoryItemRef(this));
@@ -857,10 +856,10 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
         return InventoryItemRef(nullptr);
 }
 
-InventoryItemRef ShipItem::GetModuleRef(uint32 itemID)
+InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
 {
-    if ((m_ModuleManager != nullptr) and (m_ModuleManager->GetModule(itemID) != nullptr) )
-		return (m_ModuleManager->GetModule(itemID))->GetSelf();
+    if ((m_ModuleManager != nullptr) and (m_ModuleManager->GetModule(modID) != nullptr) )
+		return (m_ModuleManager->GetModule(modID))->GetSelf();
 	else
         return InventoryItemRef(nullptr);
 }
@@ -1042,7 +1041,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
-        iRef->ClearModifiers();
+        //iRef->ClearModifiers();
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(iRef->flag());
@@ -1059,6 +1058,22 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         m_ModuleManager->UpdateModules(iRef->flag());
     }
 }
+
+uint32 ShipItem::RemoveCharge(uint32 chargeID, EVEItemFlags fromFlag, EVEItemFlags toFlag)
+{
+    if (IsModuleSlot(fromFlag)) {
+        if (m_ModuleManager == nullptr) {
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
+        }
+        m_ModuleManager->UnloadCharge(fromFlag);
+        if (m_pilot->IsInSpace())
+            sItemFactory.GetItem(chargeID)->Move(itemID(), toFlag, true);
+        else
+            sItemFactory.GetItem(chargeID)->Move(locationID(), toFlag, true);
+    }
+}
+
 
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
@@ -1274,6 +1289,62 @@ void ShipItem::StripFitting()
         _log(SHIP__MODULE_ERROR, "StripFitting() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
     }
+}
+
+void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
+{
+    std::map<uint32, std::list<uint32>>::iterator itr = m_linkedWeapons.find(masterID);
+    if (itr != m_linkedWeapons.end()) {
+        itr->second.push_back(slaveID);
+    } else {
+        std::list<uint32> slaves;
+        slaves.push_back(slaveID);
+        m_linkedWeapons[masterID] = slaves;
+    }
+}
+
+void ShipItem::LinkAllWeapons()
+{
+    std::vector< InventoryItemRef > moduleVec;
+    m_ModuleManager->GetWeapons(moduleVec);
+    /* check weapon types and charge types.
+     * if types same, then link weapons
+     */
+}
+
+void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
+{
+    std::map<uint32, std::list<uint32>>::iterator itr = m_linkedWeapons.find(masterID);
+    if (itr != m_linkedWeapons.end()) {
+        std::list<uint32>::iterator itr2 = itr->second.begin();
+        while (itr2 != itr->second.end()) {
+            if ((*itr2) == slaveID) {
+                itr->second.erase(itr2);
+                return;
+            }
+            ++itr2;
+        }
+    }
+}
+
+PyList* ShipItem::GetLinkedWeapons()
+{
+    PyList* result = new PyList();
+    if (!m_linkedWeapons.empty()) {
+        for (auto cur : m_linkedWeapons) {
+            PyList* slaves = new PyList();
+            for (auto slave : cur.second)
+                slaves->AddItem(new PyInt(slave));
+            PyTuple* master = new PyTuple(2);
+            master->SetItem(0, new PyInt(cur.first));
+            master->SetItem(1, slaves);
+            result->AddItem(master);
+        }
+    }
+
+    if (is_log_enabled(SHIP__MODULE_MESSAGE))
+        result->Dump(SHIP__MODULE_MESSAGE, "    ");
+    return result;
 }
 
 // new effects system.  wip

@@ -90,13 +90,14 @@ public:
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
+    void GetWeapons(std::vector<InventoryItemRef>& modVec);
 
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);
     void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
-    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& pModuleList);
-    void GetModuleListOfRefsDec(std::vector< InventoryItemRef >& pModuleList);
-    void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& pModuleList);
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec);
+    void GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modVec);
+    void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& modVec);
     void SaveModules();
 
     // scan method to check for scanning rigs.
