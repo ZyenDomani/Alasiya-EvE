@@ -193,6 +193,7 @@ void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 {
     DBerror err;
     sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = %u WHERE solarSystemID = %u", active?1:0, sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = 0, pilotsInSpace = 0, pilotsDateTime = 0  WHERE solarSystemID = %u", sysID );
 }
 
 
@@ -206,7 +207,7 @@ void MapDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd/*false*/, boo
     sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
 
     DBResultRow row;
-    uint16 docked = 0, space = 0;
+    int16 docked = 0, space = 0;
     if (res.GetRow(row)) {
         docked = row.GetUInt(0);
         space = row.GetUInt(1);
@@ -229,33 +230,23 @@ void MapDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd/*false*/, boo
 void MapDB::AddKillToDynamicData(uint32 solarSystemID) {  /**killsHour, kills24Hours */
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE mapDynamicData SET killsHour = killsHour + 1, kills24Hour = kills24Hour + 1, kills24DateTime = %f WHERE solarSystemID = %u",
-                       GetFileTimeNow(), solarSystemID );
+            "UPDATE mapDynamicData SET killsHour = killsHour + 1, kills24Hour = kills24Hour + 1, kills24DateTime = %f WHERE solarSystemID = %u",
+                GetFileTimeNow(), solarSystemID );
 }
 
 void MapDB::AddFactionKillToDynamicData(uint32 solarSystemID) {     /**factionKills*/
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE mapDynamicData SET factionKills = factionKills + 1, factionKills24Hour = factionKills24Hour + 1, faction24DateTime = %f WHERE solarSystemID = %u",
-                       GetFileTimeNow(), solarSystemID );
+            "UPDATE mapDynamicData SET factionKills = factionKills + 1, factionKills24Hour = factionKills24Hour + 1, faction24DateTime = %f WHERE solarSystemID = %u",
+                GetFileTimeNow(), solarSystemID );
 }
 
 void MapDB::AddPodKillToDynamicData(uint32 solarSystemID) {   /**podKillsHour, podKills24Hour */
     DBerror err;
     sDatabase.RunQuery(err,
-                       "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1, pod24DateTime = %f WHERE solarSystemID = %u",
-                       GetFileTimeNow(), solarSystemID );
+            "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1, pod24DateTime = %f WHERE solarSystemID = %u",
+                GetFileTimeNow(), solarSystemID );
 }
 
-void MapDB::GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16 &pilotsDocked, uint16 &pilotsInSpace) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
+/** @todo make code for all xx/hour data.  call from entitylist process tic */
 
-    _log(DATABASE__RESULTS, "GetActivePilotsFromDynamicData query returned %u items", res.GetRowCount());
-
-    DBResultRow row;
-    if (res.GetRow(row)) {
-        pilotsDocked = row.GetUInt(0);
-        pilotsInSpace = row.GetUInt(1);
-    }
-}

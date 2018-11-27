@@ -56,7 +56,6 @@ public:
     static void AddKillToDynamicData(uint32 solarSystemID); /**killsHour, kills24Hours */
     static void AddPodKillToDynamicData(uint32 solarSystemID);/**podKillsHour, podKills24Hour */
     static void AddFactionKillToDynamicData(uint32 solarSystemID);  /**factionKills*/
-    static void GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16& pilotsDocked, uint16& pilotsInSpace);
 
 };
 
