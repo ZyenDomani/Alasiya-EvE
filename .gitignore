@@ -92,6 +92,7 @@ zlib/
 
 # evemu output
 build/
+build_iwyu/
 buildRel/
 
 # doxygen output
