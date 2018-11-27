@@ -888,6 +888,8 @@ bool DestinyManager::IsTurn() {    //this is working.  dont change
     return true;
 }
 
+//from new source at eve/client/script/ui/services\flightControls.py
+//  self.curve = trinity.Tr2QuaternionLerpCurve()
 void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for BS.  05Jun17
     if (mySE->HasPilot())
         if (mySE->GetPilot()->IsUndock())
@@ -1046,6 +1048,11 @@ void DestinyManager::_Follow() {
     MoveObject();
 }
 
+/*eve/client/script/ui/services\flightPredictionSvc.py
+"""
+Prediction service for in-space flight
+"""
+*/
 void DestinyManager::_Orbit() {
     // data consitency checks...
     if ((m_targetDistance > BUBBLE_RADIUS_METERS) or (m_followDistance > BUBBLE_RADIUS_METERS)) {

@@ -512,3 +512,26 @@ PyDict* TowerSE::MakeSlimItem()
     return slim;
 }
 
+/*
+ *    def IsShipInRangeOfStructureControlTower(self, shipID, structureID):
+ *        """
+ *        Returns True if structureID is associated with a control tower (or is itself a tower), and shipID is in range of that tower.
+ *        'In range of the tower' means within of the force-field radius.
+ *        This function should mirror the behaviour of the equivalent server-side function in park.py
+ *        """
+ *        structureSlim = self.slimItems.get(structureID)
+ *        if structureSlim is None:
+ *            return False
+ *        controlTowerID = None
+ *        if structureSlim.groupID == const.groupControlTower:
+ *            controlTowerID = structureID
+ *        elif structureSlim.controlTowerID is not None:
+ *            controlTowerID = structureSlim.controlTowerID
+ *        if controlTowerID is None:
+ *            return False
+ *        towerSlim = self.slimItems.get(controlTowerID)
+ *        if towerSlim is None:
+ *            return False
+ *        towerShieldRadius = self.broker.godma.GetStateManager().GetType(towerSlim.typeID).shieldRadius
+ *        return self.GetCenterDist(controlTowerID, shipID) < towerShieldRadius
+ */

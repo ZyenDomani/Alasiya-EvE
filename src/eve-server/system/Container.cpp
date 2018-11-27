@@ -170,6 +170,34 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
     into.structure = 1.0;
 }
 
+/*
+ *    def HaveLootRight(self, objectID):
+ *        """
+ *        This method mirrors logic on server in lootRightsMgr.py HaveLootRight
+ *
+ *        Returns True if the character has loot rights to a container, otherwise returns False
+ *        """
+ *        if self.slimItems.has_key(objectID):
+ *            slim = self.slimItems[objectID]
+ *            if session.charid == slim.ownerID:
+ *                return True
+ *            lootRights = getattr(slim, 'lootRights', None)
+ *            if lootRights is not None:
+ *                ownerID, corpID, fleetID, abandoned = lootRights
+ *                if abandoned:
+ *                    return True
+ *                if session.charid == ownerID:
+ *                    return True
+ *                if not util.IsNPCCorporation(session.corpid) and session.corpid in (ownerID, corpID):
+ *                    return True
+ *                if session.fleetid is not None and session.fleetid == fleetID:
+ *                    return True
+ *                if self.broker.crimewatchSvc.CanAttackFreely(slim):
+ *                    return True
+ *            elif not util.IsNPCCorporation(session.corpid) and session.corpid == slim.ownerID:
+ *                return True
+ *        return False
+ */
 
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
 : ItemSystemEntity(self, services, system),
