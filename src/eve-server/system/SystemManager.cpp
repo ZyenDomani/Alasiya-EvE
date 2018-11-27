@@ -153,8 +153,12 @@ bool SystemManager::BootSystem() {
     m_services.lsc_service->CreateSystemChannel(m_data.constellationID);
     m_services.lsc_service->CreateSystemChannel(m_data.systemID);
 
-    // inform MarketBot of loaded system, and stations in this system.
+    // inform MarketBot of loaded system and stations in this system.
     //sMktBotMgr.AddSystem();
+
+    // set system active for system status page
+    MapDB::chkDynamicSystemID(m_data.systemID);
+    MapDB::SetSystemActive(m_data.systemID, true);
 
     return (m_loaded = true);
 }
@@ -283,8 +287,8 @@ void SystemManager::UnloadSystem() {
     // this still needs some work...
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
 
-    // remove this system from active system list in db.
-    //  db.remove(this system);
+    // set system inactive for system status page
+    MapDB::SetSystemActive(m_data.systemID, false);
 
     /** @todo finish this for lsc */
     m_services.lsc_service->SystemUnload(m_data.systemID, m_data.constellationID, m_data.regionID);

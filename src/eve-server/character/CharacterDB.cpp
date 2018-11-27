@@ -1561,110 +1561,12 @@ float CharacterDB::GetCorpTaxRate(uint32 charID)
     return row.GetFloat(0);
 }
 
-/** @todo  update this bullshit */
 void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
-    /*
-    DBQueryResult res;
-    sDatabase.RunQuery(res,
-      "SELECT visits FROM chrVisitedSystems WHERE characterID = %u AND solarSystemID = %u",
-      charID, solarSystemID
-      );
-
-    DBResultRow row;
-    uint16 visits = 0;
-    if (res.GetRow(row)) visits = row.GetUInt(0);
-    visits++;
-*/
     DBerror err;
     sDatabase.RunQuery(err,
-        "INSERT INTO chrVisitedSystems (characterID, solarSystemID, visits, lastDateTime)"
-        "VALUES (%u, %u, 1, %f)"
-        " ON DUPLICATE KEY UPDATE"
-        " visits = visits +1,"
-        " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
-}
-
-/** @todo  look into updating this to be a mem object, saved to db every 'x' */
-void CharacterDB::chkDynamicSystemID(uint32 solarSystemID) {
-	/**  this ensures mapDynamicData.solarSystemID for `solarSystemID` is in the DB for later calls. -allan 16Mar14 */
-    DBQueryResult chk;
-	sDatabase.RunQuery(chk, "SELECT solarSystemID FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
-
-    DBResultRow row;
-    if (!chk.GetRow(row)) {
-        DBerror err;
-		sDatabase.RunQuery(err, "INSERT INTO mapDynamicData (solarSystemID) VALUES (%u)", solarSystemID );
-    }
-}
-
-/** the following functions rely on solarSystemID being in the mapDynamicData table.
-  * the check is called before these are used, and solarSystemID is then verified for existance and added if needed.
-  *   the function is as follows and is declared above...
-  *         void SystemDB::chkDynamicSystemID(uint32 solarSystemID)
-  *
-  *  NOTE: these will have to be reset each server start for true dynamic data tracking
-  *        really should trunicate table on restart after everything is working.
-  */
-
-void CharacterDB::AddJumpToDynamicData(uint32 solarSystemID) {
-    DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour + 1 WHERE solarSystemID = %u", solarSystemID );
-}
-
-void CharacterDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd, bool isDocked, bool isLogin) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
-
-    DBResultRow row;
-    uint16 docked = 0, space = 0;
-    if (res.GetRow(row)) {
-        docked = row.GetUInt(0);
-        space = row.GetUInt(1);
-    }
-
-    /* start clever coding   compounding booleans!!  */
-    (isLogin ? (isDocked ? ++docked : ++space) : (isDocked ? (isAdd ? docked++, space-- : docked--) : (isAdd ? docked--, space++ : space--)));
-    /* end clever coding */
-
-    if (docked < 0 || docked > 100) docked = 0;
-    if (space < 0 || space > 100) space = 0;
-
-    DBerror err;
-    sDatabase.RunQuery(err,
-		"UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u, pilotsDateTime = %f WHERE solarSystemID = %u",
-		docked, space, GetFileTimeNow(), solarSystemID );
-}
-
-void CharacterDB::AddKillToDynamicData(uint32 solarSystemID) {  /**killsHour, kills24Hours */
-    DBerror err;
-    sDatabase.RunQuery(err,
-        "UPDATE mapDynamicData SET killsHour = killsHour + 1, kills24Hour = kills24Hour + 1, kills24DateTime = %f WHERE solarSystemID = %u",
-        GetFileTimeNow(), solarSystemID );
-}
-
-void CharacterDB::AddPodKillToDynamicData(uint32 solarSystemID) {   /**podKillsHour, podKills24Hour */
-    DBerror err;
-    sDatabase.RunQuery(err,
-        "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1, pod24DateTime = %f WHERE solarSystemID = %u",
-		GetFileTimeNow(), solarSystemID );
-}
-
-void CharacterDB::AddFactionKillToDynamicData(uint32 solarSystemID) {     /**factionKills*/
-    DBerror err;
-    sDatabase.RunQuery(err,
-        "UPDATE mapDynamicData SET factionKills = factionKills + 1, factionKills24Hour = factionKills24Hour + 1, faction24DateTime = %f WHERE solarSystemID = %u",
-		GetFileTimeNow(), solarSystemID );
-}
-
-void CharacterDB::GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16 &pilotsDocked, uint16 &pilotsInSpace) {
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
-
-    _log(DATABASE__RESULTS, "GetActivePilotsFromDynamicData query returned %u items", res.GetRowCount());
-
-    DBResultRow row;
-    if (res.GetRow(row)) {
-        pilotsDocked = row.GetUInt(0);
-        pilotsInSpace = row.GetUInt(1);
-    }
+            "INSERT INTO chrVisitedSystems (characterID, solarSystemID, visits, lastDateTime)"
+            "VALUES (%u, %u, 1, %f)"
+            " ON DUPLICATE KEY UPDATE"
+            " visits = visits +1,"
+            " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
 }

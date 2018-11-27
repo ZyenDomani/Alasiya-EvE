@@ -950,6 +950,10 @@ void StructureSE::Killed(Damage &fatal_blow) {
     }
 
     uint32 locationID = GetLocationID();
+    //  log faction kill in dynamic data   -allan
+    MapDB::AddKillToDynamicData(locationID);
+    MapDB::AddFactionKillToDynamicData(locationID);
+
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
@@ -964,13 +968,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
         DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
         //award kill bounty.
         //AwardBounty( pClient );
-        //  log faction kill in dynamic data   -allan
-        Character* pChar = pClient->GetChar().get();
-        pChar->chkDynamicSystemID(locationID);
-        pChar->AddKillToDynamicData(locationID);
-        pChar->AddFactionKillToDynamicData(locationID);
         if (m_system->GetSystemSecurityRating() > 0)
-            AwardSecurityStatus(m_self, pChar);
+            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     } else
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 

@@ -198,16 +198,8 @@ public:
     void        EditLabel(uint32 charID, uint32 labelID, uint32 color, std::string name);
     void        DeleteLabel(uint32 charID, uint32 labelID);
 
-	// for dynamic db functions    -allan
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);
-	void        chkDynamicSystemID(uint32 solarSystemID);
-	void        AddJumpToDynamicData(uint32 solarSystemID);
-    void        AddPilotToDynamicData(uint32 solarSystemID, bool isAdd, bool isDocked, bool isLogin);
-	void        AddKillToDynamicData(uint32 solarSystemID);
-	void        AddPodKillToDynamicData(uint32 solarSystemID);
-	void        AddFactionKillToDynamicData(uint32 solarSystemID);
-    void        GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16 &pilotsDocked, uint16 &pilotsInSpace);
-
+    
 private:
     /**
      * djb2 algorithm taken from http://www.cse.yorku.ca/~oz/hash.html slightly modified

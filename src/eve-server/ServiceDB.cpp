@@ -289,7 +289,7 @@ void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValu
 void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %d WHERE characterID = %u", online, char_id);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %d WHERE characterID = %u", online?1:0, char_id);
 
     if ( online )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");

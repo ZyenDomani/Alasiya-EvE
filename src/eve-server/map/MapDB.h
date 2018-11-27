@@ -48,6 +48,15 @@ public:
     /* for MapData class */
     static void GetSystemJumps(DBQueryResult& res);
 
+    // for dynamic db functions    -allan
+    static void SetSystemActive(uint32 sysID, bool active=false);
+    static void chkDynamicSystemID(uint32 solarSystemID);
+    static void AddJumpToDynamicData(uint32 solarSystemID);/**jumpsHour, jumps24Hours */
+    static void AddPilotToDynamicData(uint32 solarSystemID, bool isAdd=false, bool isDocked=false, bool isLogin=false); /**pilotsDocked, pilotsInSpace */
+    static void AddKillToDynamicData(uint32 solarSystemID); /**killsHour, kills24Hours */
+    static void AddPodKillToDynamicData(uint32 solarSystemID);/**podKillsHour, podKills24Hour */
+    static void AddFactionKillToDynamicData(uint32 solarSystemID);  /**factionKills*/
+    static void GetActivePilotsFromDynamicData(uint32 solarSystemID, uint16& pilotsDocked, uint16& pilotsInSpace);
 
 };
 

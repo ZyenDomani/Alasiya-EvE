@@ -60,18 +60,7 @@ class SystemManager
 {
 public:
     SystemManager(uint32 systemID, PyServiceMgr &svc);//, ItemData idata);
-    virtual ~SystemManager();
-
-    SystemEntity* GetSE(uint32 entityID) const;
-    NPC* GetNPCSE(uint32 entityID) const;
-
-    PyServiceMgr* GetServiceMgr()                       { return &m_services; }
-    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
-    SolarSystemRef GetSystemRef()                       { return m_solarSystemRef; }
-
-    ShipItemRef GetShipFromInventory(uint32 shipID);
-    StationItemRef GetStationFromInventory(uint32 stationID);
-    CargoContainerRef GetContainerFromInventory(uint32 contID);
+    ~SystemManager();
 
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
@@ -79,8 +68,12 @@ public:
 
     bool IsLoaded()                                     { return m_loaded; }
 
-    uint32 GetClosestPlanetID(const GPoint& myPos);
-    SystemEntity* GetClosestMoonSE(const GPoint& myPos);
+    SystemEntity* GetSE(uint32 entityID) const;
+    NPC* GetNPCSE(uint32 entityID) const;
+    ShipItemRef GetShipFromInventory(uint32 shipID);
+    StationItemRef GetStationFromInventory(uint32 stationID);
+    CargoContainerRef GetContainerFromInventory(uint32 contID);
+
 
     uint32 GetID() const                                { return m_data.systemID; }
     uint32 GetRegionID()                                { return m_data.regionID; }
@@ -88,23 +81,9 @@ public:
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
     const double GetSystemSecurityRating()              { return m_data.securityRating; }
 
-    bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
-
-    void AddClient(Client* who, bool docked=false, bool count=false);
-    void RemoveClient(Client* who, bool docked=false, bool count=false);
-    void AddNPC(NPC* who);
-    void RemoveNPC(NPC* who);
-    void AddEntity(SystemEntity* who);
-    void RemoveEntity(SystemEntity* who);
-
-    void AddItemToInventory(InventoryItemRef item);
-    void RemoveItemFromInventory(InventoryItemRef item);
-    void DoSpawnForBubble(SystemBubble* pBubble);
-
-    // system bounty timer system.  20m delay
-    void AddBounty(uint32 charID, BountyData& data);
-
-    void MakeSetState(const SystemBubble* bubble,  SetState& into) const;
+    PyServiceMgr* GetServiceMgr()                       { return &m_services; }
+    Inventory* GetSystemInv()                           { return m_solarSystemRef->GetMyInventory(); }
+    SolarSystemRef GetSystemRef()                       { return m_solarSystemRef; }
 
     // for spawn system     -allan 15July15     (not complete)
     typedef std::map<uint32, SystemBubble*> SpawnBubbleMap;
@@ -120,7 +99,7 @@ public:
     uint8 GetRatSpawnCount()                            { return m_activeRatSpawns; }
     uint16 GetRoidSpawnCount()                          { return m_activeRoidSpawns; }
     uint32 PlayerCount()                                { return m_players; }
-    uint32 GetRandBeltID();
+    uint32 GetSysNPCCount()                             { return m_npcs.size(); }
 
     // CosmicMgr interface
     BeltMgr* GetBeltMgr()                               { return m_beltMgr; }
@@ -131,7 +110,28 @@ public:
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float GetSecValue()                                 { return m_secValue; }
 
-    uint32 GetSysNPCCount()                             { return m_npcs.size(); }
+    bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
+
+    void AddNPC(NPC* who);
+    void RemoveNPC(NPC* who);
+    void AddEntity(SystemEntity* who);
+    void RemoveEntity(SystemEntity* who);
+    void AddClient(Client* who, bool docked=false, bool count=false);
+    void RemoveClient(Client* who, bool docked=false, bool count=false);
+
+    void AddItemToInventory(InventoryItemRef item);
+    void RemoveItemFromInventory(InventoryItemRef item);
+    void DoSpawnForBubble(SystemBubble* pBubble);
+
+    void MakeSetState(const SystemBubble* bubble,  SetState& into) const;
+
+    uint32 GetRandBeltID();
+    uint32 GetClosestPlanetID(const GPoint& myPos);
+
+    // system bounty timer system.  20m delay
+    void AddBounty(uint32 charID, BountyData& data);
+
+    SystemEntity* GetClosestMoonSE(const GPoint& myPos);
 
 protected:
     /** @todo  this needs more work */
@@ -141,14 +141,6 @@ protected:
     bool LoadSystemStatics();
     bool LoadSystemDynamics();
     bool LoadPlayerDynamics();
-
-    // system entity lists:
-    bool m_entityChanged;
-    std::map<uint32, NPC*> m_npcs;
-    std::map<uint32, Client*> m_clients;
-    std::map<uint32, SystemEntity*> m_entities;         // this list is all entities in this system.  we own these.
-    std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
-    std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
 
 private:
     AnomalyMgr* m_anomMgr;      //we own this, never NULL.
@@ -181,6 +173,14 @@ private:
     uint32 m_activityTime;
 
     float m_secValue;
+
+    // system entity lists:
+    bool m_entityChanged;
+    std::map<uint32, NPC*> m_npcs;
+    std::map<uint32, Client*> m_clients;
+    std::map<uint32, SystemEntity*> m_entities;         // this list is all entities in this system.  we own these.
+    std::map<uint32, SystemEntity*> m_ticEntities;      // this list is for entities that need process tics (objects, npc, client ships)
+    std::map<uint32, SystemEntity*> m_staticEntities;   // this list is for static entities to send in setstate
 
     // for bounty processing (20m timer)
     Timer m_bountyTimer;

@@ -483,12 +483,6 @@ public:
 
     //  Dynamic Data
 	void                    VisitSystem(uint32 solarSystemID);
-	void                    chkDynamicSystemID(uint32 solarSystemID);
-    void                    AddJumpToDynamicData(uint32 solarSystemID);
-    void                    AddPilotToDynamicData(uint32 solarSystemID, bool isAdd = false, bool isDocked = false, bool isLogin = false);
-	void                    AddKillToDynamicData(uint32 solarSystemID);
-	void                    AddPodKillToDynamicData(uint32 solarSystemID);
-	void                    AddFactionKillToDynamicData(uint32 solarSystemID);
 
     // character skill, implant and booster effects.  parsed on char load.  applied on ship init in space (with all other ship-related effects)
     // NOTE:  implants and boosters not implemented yet

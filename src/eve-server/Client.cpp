@@ -261,7 +261,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     // register new pilot in system data
     m_system->AddClient(this, IsStation(m_locationID), m_login);
-    m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
+    MapDB::AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(m_locationID), m_login);
 
     m_char->Move(m_shipId, flagPilot);
     m_ship->SetPlayer(this);
@@ -593,7 +593,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemInfo(locationID, m_SystemData);
-    m_char->chkDynamicSystemID(m_SystemData.systemID);   // these calls needs more work...when/where else should it be called from?
     uint32 stationID = 0;
     if (IsStation(locationID))
         stationID = locationID;
@@ -607,7 +606,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             pShipSE->DestinyMgr()->Halt();
             m_system->RemoveEntity(pShipSE);
         }
-        m_char->AddPilotToDynamicData(m_SystemData.systemID);
+        MapDB::AddPilotToDynamicData(m_SystemData.systemID);
         m_system->RemoveClient(this, false, (count = true));
         m_system = nullptr;
     }
@@ -626,7 +625,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
         m_beyonce = false;
 
-        m_char->AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), count);
+        MapDB::AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), count);
         // register ourself with new system manager.
         m_system->AddClient(this, IsStation(locationID), count);
     }
@@ -950,11 +949,9 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
             return;
         }
     //add jump in previous system
-    m_char->chkDynamicSystemID(fromData.systemID);
-    m_char->AddJumpToDynamicData(fromData.systemID);
+    MapDB::AddJumpToDynamicData(fromData.systemID);
     //add jump in this system
-    m_char->chkDynamicSystemID(toData.systemID);
-    m_char->AddJumpToDynamicData(toData.systemID);
+    MapDB::AddJumpToDynamicData(toData.systemID);
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
     m_char->VisitSystem(toData.systemID);
 

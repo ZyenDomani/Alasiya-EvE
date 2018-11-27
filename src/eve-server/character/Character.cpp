@@ -1156,47 +1156,7 @@ void Character::SetStanding(uint32 fromID, uint32 toID, double standing) {
 
 }
 
-// functions and methods for map system
+// for map system
 void Character::VisitSystem(uint32 solarSystemID) {
 	m_db.VisitSystem(solarSystemID, m_itemID);
-}
-
-void Character::chkDynamicSystemID(uint32 solarSystemID) {
-	/**  this ensures mapDynamicData.solarSystemID for `solarSystemID` is in the DB for later calls. -allan 16Mar14 */
-
-	// seen some weird shit lately...not sure wtf is going on.  check to ensure solarSystemID REALLY IS a solarSystem...
-	if (IsSolarSystem(solarSystemID))
-		m_db.chkDynamicSystemID(solarSystemID);
-	else
-		sLog.Error("Character::chkDynamicSystemID","%s(%u): IsSolarSystem returned false for system %u",
-				   itemName().c_str(), m_itemID, solarSystemID);
-}
-
-/** the following functions rely on solarSystemID being in the mapDynamicData table.
-  * the check is called before these are used, and solarSystemID is then verified for existance and added if needed.
-  *   the function is as follows and is defined above...
-  *         void SystemDB::chkDynamicSystemID(uint32 solarSystemID)
-  *
-  *  NOTE: these will have to be reset each server start.
-  *        really should trunicate table on restart after everything is working.
-  */
-
-void Character::AddJumpToDynamicData(uint32 solarSystemID) {  /**jumpsHour, jumps24Hours */
-	m_db.AddJumpToDynamicData(solarSystemID);
-}
-
-void Character::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd, bool isDocked, bool isLogin) {  /**pilotsDocked, pilotsInSpace */
-	m_db.AddPilotToDynamicData(solarSystemID, isAdd, isDocked, isLogin);
-}
-
-void Character::AddKillToDynamicData(uint32 solarSystemID) {  /**killsHour, kills24Hours */
-	m_db.AddKillToDynamicData(solarSystemID);
-}
-
-void Character::AddPodKillToDynamicData(uint32 solarSystemID) {   /**podKillsHour, podKills24Hour */
-	m_db.AddPodKillToDynamicData(solarSystemID);
-}
-
-void Character::AddFactionKillToDynamicData(uint32 solarSystemID) {     /**factionKills*/
-	m_db.AddFactionKillToDynamicData(solarSystemID);
 }

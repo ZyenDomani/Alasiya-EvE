@@ -341,6 +341,9 @@ void Ship::Killed(Damage &fatal_blow) {
     // AttrFwLpKill
 
     uint32 locationID = GetLocationID();
+    MapDB::AddKillToDynamicData(locationID);
+    MapDB::AddFactionKillToDynamicData(locationID);
+
     if (!m_self->HasPilot()) {
         m_destiny->Stop();
 
@@ -386,14 +389,9 @@ void Ship::Killed(Damage &fatal_blow) {
             ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Unable to spawn item of type %u.", wreckTypeID ) );
         }
         //  log faction kill in dynamic data   -allan
-        //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
         if (pClient != nullptr) {
-            Character* pChar(pClient->GetChar().get());
-            pChar->chkDynamicSystemID(locationID);
-            pChar->AddKillToDynamicData(locationID);
-            pChar->AddFactionKillToDynamicData(locationID);
             if (m_system->GetSystemSecurityRating() > 0)
-                AwardSecurityStatus(m_self, pChar);   // this awards secStatusChange for npcs in empire space
+                AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
         }
 
         m_system->RemoveEntity(this);
@@ -401,7 +399,7 @@ void Ship::Killed(Damage &fatal_blow) {
     }
 
     Client* pPilot(m_self->GetPilot());
-    if (pClient == nullptr)
+    if (pPilot == nullptr)
         /** @todo  make error here */
         return;
 
