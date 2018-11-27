@@ -1556,9 +1556,20 @@ float CharacterDB::GetCorpTaxRate(uint32 charID)
 
     DBResultRow row;
     if (!res.GetRow(row))
-        return 0;
+        return 0.0f;
 
     return row.GetFloat(0);
+}
+
+PyRep* CharacterDB::GetMyCorpMates(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT solarSystemID AS locationID, characterID FROM chrCharacters WHERE corporationID = %u", corpID)) {
+        sLog.Error("CharacterDB::GetMyCorpMates()", "Failed to query corpMates for corpID %u: %s.", corpID, res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
 }
 
 void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {

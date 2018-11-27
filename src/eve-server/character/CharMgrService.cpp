@@ -484,14 +484,20 @@ PyResult CharMgrService::Handle_SetActivityStatus( PyCallArgs& call ) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     sLog.Cyan("CharMgrService::SetActivityStatus()", "Player %s(%u) AFK:%s, time:%i.", \
             call.client->GetName(), call.client->GetCharacterID(), (args.arg1 ? "true" : "false"), args.arg2);
 
+    if (args.arg1)
+        call.client->SetAFK(true);
+    else
+        call.client->SetAFK(false);
+
     // call code here to set an AFK watchdog?  config option?
-    return PyStatic.NewNone();
+    // returns nothing
+    return nullptr;
 }
 
 PyResult CharMgrService::Handle_GetSettingsInfo( PyCallArgs& call ) {

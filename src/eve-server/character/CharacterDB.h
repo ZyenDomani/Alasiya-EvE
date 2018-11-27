@@ -192,6 +192,7 @@ public:
     static int64 GetCorpRole(uint32 charID);
     static uint32 GetCorpID(uint32 charID);
     static float GetCorpTaxRate(uint32 charID);
+    static PyRep* GetMyCorpMates(uint32 corpID);
 
     PyRep*      GetLabels(uint32 charID);
     void        SetLabel(uint32 charID, uint32 color, std::string name);
@@ -199,7 +200,7 @@ public:
     void        DeleteLabel(uint32 charID, uint32 labelID);
 
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);
-    
+
 private:
     /**
      * djb2 algorithm taken from http://www.cse.yorku.ca/~oz/hash.html slightly modified

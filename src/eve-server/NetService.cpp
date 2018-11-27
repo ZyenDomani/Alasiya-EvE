@@ -181,7 +181,9 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
     // got this shit working once i understood what the client wanted....only took 4 years
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE active = 1");
-    /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk  */
+    /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk
+     *   client already has IsAFK()
+     */
 
     uint16 system = 0;
     PyDict* sol = new PyDict();

@@ -62,6 +62,7 @@ public:
     static void UpdateStanding(uint32 fromID, uint32 toID, double standing);
     static void SaveStandingChanges(uint32 fromID, uint32 toID, uint16 eventType, double amount, std::string msg);
 
+    static PyRep* GetMyStandings(uint32 charID);
 };
 
 #endif

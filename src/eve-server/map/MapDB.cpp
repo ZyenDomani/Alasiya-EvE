@@ -143,10 +143,7 @@ faction24DateTime
     if( (type == 1) && (time == 1) )
         sDatabase.RunQuery(res, "SELECT solarSystemID, jumpsHour AS value1 FROM mapDynamicData" );
     else if (type == 2) {
-        //DBResultRow row;
         sDatabase.RunQuery(res, "SELECT solarSystemID, moduleCnt, structureCnt FROM mapDynamicData" );
-        //res.GetRow(row);
-        //return DBResultToCRowset(res);
     } else if (type == 3) {
       if (time == 1)
           sDatabase.RunQuery(res, "SELECT solarSystemID, killsHour AS value1, factionKills AS value2, podKillsHour AS value3 FROM mapDynamicData" );

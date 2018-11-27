@@ -61,6 +61,13 @@ PyObjectEx* StandingDB::GetFactionStandings() {
     return DBResultToCRowset(res);
 }
 
+PyRep* StandingDB::GetMyStandings(uint32 charID)
+{
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repStandings WHERE toID = %u", charID);
+    return DBResultToCRowset(res);
+}
+
 PyRep* StandingDB::GetCharStandings(Client* pClient) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT fromID, toID, standing FROM repStandings WHERE toID = %u OR toID = %u OR fromID = %u", \

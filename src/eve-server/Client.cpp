@@ -93,6 +93,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_jetcanTimer.Disable();
     m_sessionTimer.Disable();*/
 
+    m_afk = false;
     m_login = true;
     m_invul = true;
     m_wing = false;

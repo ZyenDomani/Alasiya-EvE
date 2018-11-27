@@ -80,6 +80,9 @@ public:
     bool                    IsClient() const            { return true; }
     const char*             GetName() const             { return (m_char ? m_char->itemName().c_str() : "(null)"); }
 
+    bool                    IsAFK()                     { return m_afk; }
+    void                    SetAFK(bool set=true)       { m_afk = set; }
+
 
     /********************************************************************/
     /* Session values                                                   */
@@ -299,6 +302,7 @@ protected:
     void ExecuteJump();
     void DestroyShipSE();
 
+    bool m_afk;             // for map info (pilots docked and active)
     bool m_invul;
     bool m_login;
     bool m_undock;

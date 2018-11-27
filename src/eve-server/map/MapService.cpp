@@ -38,13 +38,15 @@ MapService::MapService(PyServiceMgr *mgr)
 {
     _SetCallDispatcher(m_dispatch);
 
-    PyCallable_REG_CALL(MapService, GetStationExtraInfo);
-    PyCallable_REG_CALL(MapService, GetSolarSystemPseudoSecurities);
-    PyCallable_REG_CALL(MapService, GetSolarSystemVisits);
-    PyCallable_REG_CALL(MapService, GetBeaconCount);
     PyCallable_REG_CALL(MapService, GetHistory);
+    PyCallable_REG_CALL(MapService, GetBeaconCount);
     PyCallable_REG_CALL(MapService, GetStationCount);    //ColorStarsByStationCount
+    PyCallable_REG_CALL(MapService, GetMyExtraMapInfo);     //ColorStarsByCorpMates
+    PyCallable_REG_CALL(MapService, GetStationExtraInfo);
+    PyCallable_REG_CALL(MapService, GetSolarSystemVisits);
     PyCallable_REG_CALL(MapService, GetLinkableJumpArrays);
+    PyCallable_REG_CALL(MapService, GetMyExtraMapInfoAgents);  //ColorStarsByMyAgents
+    PyCallable_REG_CALL(MapService, GetSolarSystemPseudoSecurities);
 
     /**  not handled yet...these are empty calls  */
     PyCallable_REG_CALL(MapService, GetStuckSystems);
@@ -55,8 +57,6 @@ MapService::MapService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MapService, GetSystemsInIncursions);
     PyCallable_REG_CALL(MapService, GetSystemsInIncursionsGM);
     PyCallable_REG_CALL(MapService, GetVictoryPoints);
-    PyCallable_REG_CALL(MapService, GetMyExtraMapInfo);
-    PyCallable_REG_CALL(MapService, GetMyExtraMapInfoAgents);  //ColorStarsByMyAgents
     PyCallable_REG_CALL(MapService, GetAllianceJumpBridges);
     PyCallable_REG_CALL(MapService, GetAllianceBeacons);
     PyCallable_REG_CALL(MapService, GetCurrentSovData);
@@ -67,9 +67,25 @@ MapService::~MapService() {
     delete m_dispatch;
 }
 
-PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
-{
+PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call) {
     return m_db.GetSolSystemVisits(call.client->GetCharacterID());
+}
+
+PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call) {
+    return StandingDB::GetMyStandings(call.client->GetCharacterID());
+}
+
+PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call) {
+    return CharacterDB::GetMyCorpMates(call.client->GetCorporationID());
+}
+
+PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call) {
+    return m_db.GetDynamicData(2, 24);
+}
+
+// cached on client side.  if cache is empty, this call is made.
+PyResult MapService::Handle_GetStationCount(PyCallArgs &call) {
+    return sDataMgr.GetStationCount();
 }
 
 PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
@@ -80,8 +96,7 @@ PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
     return m_db.GetDynamicData(int1, int2);
 }
 
-PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
-{   // working
+PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call) {   // working
     DBQueryResult res;
     PosMgrDB::GetLinkableJumpArrays(call.client->GetCorporationID(), res);
     PyList* list = new PyList();
@@ -100,7 +115,7 @@ PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
 PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call) {
 
     /** @todo  put this in static data */
-    
+
     //returns tuple(
     //     stations: rowset stationID,solarSystemID,operationID,stationTypeID,ownerID
     //     opservices: rowset: (operationID, serviceID) (from staOperationServices)
@@ -170,37 +185,7 @@ PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call) {
     return result;
 }
 
-//02:38:07 L MapService::Handle_GetBeaconCount(): size= 0
-PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call) {
-  /**
-    def GetActiveCynos(self, itemID):
-        data = sm.RemoteSvc('map').GetBeaconCount()
-        systems = set(sm.GetService('map').IterateSolarSystemIDs(itemID))
-        totalModules = 0
-        totalStructures = 0
-        for solarSystemID, counts in data.iteritems():
-            if solarSystemID in systems:
-                moduleCount, structureCount = counts
-                totalModules += moduleCount
-                totalStructures += structureCount
 
-        return util.KeyVal(cynoModules=totalModules, cynoStructures=totalStructures)
-*/
-  /*
-  PyTuple* res = new PyTuple();
-  PyTuple* counts = new PyTuple();
-  PyTuple* system = new PyTuple();
-  */
-    return (m_db.GetDynamicData(2, 24));
-}
-
-//02:51:49 L MapService::Handle_GetStationCount(): size= 0
-PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
-{  // cached on client side.  if cache is empty, this call is made.
-  sLog.White( "MapService::Handle_GetStationCount()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    return sDataMgr.GetStationCount();
-}
 
 /** not handled */
 
@@ -362,30 +347,6 @@ PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
 {/**           factionID, viewmode, solarsystemid, threshold, current in oldhistory.iteritems():
                  */
   sLog.White( "MapService::Handle_GetVictoryPoints()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return PyStatic.NewNone();
-}
-
-//06:04:50 L MapService::Handle_GetMyExtraMapInfoAgents(): size= 0
-PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)  //ColorStarsByMyAgents
-{
-     /**
-    standingInfo = sm.RemoteSvc('map').GetMyExtraMapInfoAgents().Index('fromID')        <<<  .Index(columnName) means a rowset or crowset
-              fromID, (to)factionID, (to)corporationID, (to)agentID
-     */
-  sLog.White( "MapService::Handle_GetMyExtraMapInfoAgents()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return PyStatic.NewNone();
-}
-
-PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
-{
-     /**       ColorStarsByCorpMembers
-              locationID, characterID
-     */
-  sLog.White( "MapService::Handle_GetMyExtraMapInfo()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.NewNone();
