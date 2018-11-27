@@ -54,8 +54,8 @@ MapService::MapService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MapService, GetDeadspaceAgentsMap);
     PyCallable_REG_CALL(MapService, GetDeadspaceComplexMap);
     PyCallable_REG_CALL(MapService, GetIncursionGlobalReport);
-    PyCallable_REG_CALL(MapService, GetSystemsInIncursions);
-    PyCallable_REG_CALL(MapService, GetSystemsInIncursionsGM);
+    PyCallable_REG_CALL(MapService, GetSystemsInIncursions);    //ColorStarsByIncursions
+    PyCallable_REG_CALL(MapService, GetSystemsInIncursionsGM);  //ColorStarsByIncursions
     PyCallable_REG_CALL(MapService, GetVictoryPoints);
     PyCallable_REG_CALL(MapService, GetAllianceJumpBridges);
     PyCallable_REG_CALL(MapService, GetAllianceBeacons);
@@ -206,18 +206,33 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
     return res;
 }
 
-//22:49:23 L MapService::Handle_GetRecentSovActivity(): size= 0
 PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
 {
-    /** no packet data
-        data = sm.RemoteSvc('map').GetRecentSovActivity()
-        */
-  sLog.White( "MapService::Handle_GetRecentSovActivity()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    /** @todo will have to make db table for this one.  */
+    /*
+     *    data = sm.RemoteSvc('map').GetRecentSovActivity()
+     *    changes = []
+     *    resultMap = {}
+     *    toPrime = set()
+     *    for item in data:
+     *        if item.stationID is None:
+     *            if bool(changeMode & mapcommon.SOV_CHANGES_SOV_GAIN) and item.oldOwnerID is None:
+     *                changes.append((item.solarSystemID, 'UI/Map/StarModeHandler/sovereigntySovGained', (None, item.ownerID)))
+     *                toPrime.add(item.ownerID)
+     *            elif bool(changeMode & mapcommon.SOV_CHANGES_SOV_LOST) and item.ownerID is None:
+     *                changes.append((item.solarSystemID, 'UI/Map/StarModeHandler/sovereigntySovLost', (item.oldOwnerID, None)))
+     *                toPrime.add(item.oldOwnerID)
+     *        elif bool(changeMode & mapcommon.SOV_CHANGES_SOV_GAIN) and item.oldOwnerID is None:
+     *            changes.append((item.solarSystemID, 'UI/Map/StarModeHandler/sovereigntyNewOutpost', (None, item.ownerID)))
+     *            toPrime.add(item.ownerID)
+     *        elif bool(changeMode & mapcommon.SOV_CHANGES_SOV_GAIN) and item.ownerID is not None:
+     *            changes.append((item.solarSystemID, 'UI/Map/StarModeHandler/sovereigntyConqueredOutpost', (item.ownerID, item.oldOwnerID)))
+     *            toPrime.add(item.ownerID)
+     *            toPrime.add(item.oldOwnerID)
+     *
+     */
 
-    PyRep *result = NULL;
-
-    result = new PyDict();
+    PyDict* result = new PyDict();
 
     return result;
 }
@@ -321,24 +336,29 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
 }
 
 PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
-  /**  solarSystemID, sceneType
-                    sceneType = staging, vanguard
+    /**  EVE_Incursion.h
+        participatingSystems = ms.GetSystemsInIncursions()
+        for solarSystemID, sceneType in participatingSystems:
+                sceneType = staging, vanguard
+    */
 
-  */
-  sLog.White( "MapService::Handle_GetSystemsInIncursions()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return PyStatic.NewNone();
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, PyStatic.NewNone());
+        tuple->SetItem(1, PyStatic.NewNone());
+    return tuple;
 }
 
-//20:38:53 L MapService::Handle_GetSystemsInIncursionsGM(): size= 0
 PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
-  /**  solarSystemID, sceneType
-                    sceneType = staging, vanguard, assault, headquarters
-
+    /**
+        participatingSystems = ms.GetSystemsInIncursionsGM()
+        for solarSystemID, sceneType in participatingSystems:
+                sceneType = staging, vanguard, assault, headquarters
   */
-    call.Dump(SERVICE__CALL_DUMP);
-    return PyStatic.NewNone();
+
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, PyStatic.NewNone());
+        tuple->SetItem(1, PyStatic.NewNone());
+    return tuple;
 }
 
 //   factional warfare shit
