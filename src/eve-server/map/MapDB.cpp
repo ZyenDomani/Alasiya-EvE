@@ -144,6 +144,15 @@ faction24DateTime
         sDatabase.RunQuery(res, "SELECT solarSystemID, jumpsHour AS value1 FROM mapDynamicData" );
     else if (type == 2) {
         sDatabase.RunQuery(res, "SELECT solarSystemID, moduleCnt, structureCnt FROM mapDynamicData" );
+        DBResultRow row;
+        PyDict* dict = new PyDict();
+        while (res.GetRow(row)) {
+            PyTuple* inner = new PyTuple(2);
+                inner->SetItem(0, new PyInt(row.GetInt(1)));
+                inner->SetItem(1, new PyInt(row.GetInt(2)));
+            dict->SetItem(new PyInt(row.GetInt(0)), inner);
+        }
+        return dict;
     } else if (type == 3) {
       if (time == 1)
           sDatabase.RunQuery(res, "SELECT solarSystemID, killsHour AS value1, factionKills AS value2, podKillsHour AS value3 FROM mapDynamicData" );

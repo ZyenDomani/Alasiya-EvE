@@ -39,7 +39,7 @@ MapService::MapService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(MapService, GetHistory);
-    PyCallable_REG_CALL(MapService, GetBeaconCount);
+    PyCallable_REG_CALL(MapService, GetBeaconCount);    //ColorStarsByCynosuralFields
     PyCallable_REG_CALL(MapService, GetStationCount);    //ColorStarsByStationCount
     PyCallable_REG_CALL(MapService, GetMyExtraMapInfo);     //ColorStarsByCorpMates
     PyCallable_REG_CALL(MapService, GetStationExtraInfo);
