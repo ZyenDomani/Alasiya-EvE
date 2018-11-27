@@ -417,6 +417,7 @@ std::string ProbeSE::GetStateName(uint8 state)
     }
 }
 
+/** @todo  change these to double for higher precision? */
 float ProbeSE::GetDeviation()
 {
     //Max Deviation = (Scan Range/Base Scan Range) × Base Maximum Deviation × (1 - Pinpointing Skill/10)
