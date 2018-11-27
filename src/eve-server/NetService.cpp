@@ -181,8 +181,48 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
         result->items[0] = new PyInt(0);
         result->items[1] = new PyInt(0);
         result->items[2] = new PyFloat(1);
-    return result;
 
+    PyList* list = new PyList();
+    list->AddItem(result);
+    return list;
+
+/*
+    sol, sta, statDivisor = sm.ProxySvc('machoNet').GetClusterSessionStatistics()
+    maxCount = 0
+    total = 0
+    docked = 0
+    multiplier = 1.0
+    pilotcountDict = {}
+    for sfoo in sol.iterkeys():
+        solarSystemID = sfoo + 30000000
+        amount_docked = sta.get(sfoo, 0) / statDivisor
+        amount_inspace = (sol.get(sfoo, 0) - sta.get(sfoo, 0)) / statDivisor
+        if starColorMode == mapcommon.STARMODE_PLAYERCOUNT:
+            amount = amount_inspace
+        else:
+            amount = amount_docked
+        pilotcountDict[solarSystemID] = amount
+        total = total + amount
+        if amount > maxCount:
+            maxCount = amount
+
+    if maxCount > 0:
+        multiplier /= math.sqrt(maxCount)
+    sorted = pilotcountDict.values()
+    sorted.sort()
+    if starColorMode == mapcommon.STARMODE_PLAYERCOUNT:
+        hintFunc = lambda count, solarSystemID: localization.GetByLabel('UI/Map/StarModeHandler/pilotsInSpace', count=count, solarSystem=solarSystemID)
+    else:
+        hintFunc = lambda count, solarSystemID: localization.GetByLabel('UI/Map/StarModeHandler/pilotsInStation', count=count, solarSystem=solarSystemID)
+    for solarSystemID, pilotCount in pilotcountDict.iteritems():
+        if pilotCount == 0:
+            continue
+        size = 2 * math.sqrt(pilotCount)
+        colorInfo.solarSystemDict[solarSystemID] = (size,
+         math.sqrt(pilotCount) * multiplier,
+         (hintFunc, (pilotCount, solarSystemID)),
+         None)
+*/
 #if 0
     /** @todo  this still needs work  */
     DBQueryResult res;
@@ -219,15 +259,12 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
         result->items[0] = new PyInt(sol); //DBResultToRowset
         result->items[1] = new PyInt(sta);
         result->items[2] = new PyFloat(statDivisor);
-    return result;
-    sol, sta, statDivisor = sm.ProxySvc('machoNet').GetClusterSessionStatistics()
-    pilotcountDict = {}
-    for sfoo in sol.iterkeys():
-        solarSystemID = sfoo + 30000000
-        amount_docked = sta.get(sfoo, 0) / statDivisor
-        amount_inspace = (sol.get(sfoo, 0) - sta.get(sfoo, 0)) / statDivisor
-        pilotcountDict[solarSystemID] = amount
 
-    for solarSystemID, pilotCount in pilotcountDict
+    if (is_log_enabled(COMMON__INFO)) {
+        _log(COMMON__INFO, "NetService::Handle_GetClusterSessionStatistics() Rsp:");
+        result->Dump(COMMON__INFO, "    ");
+    }
+    return result;
+
 #endif
 }
