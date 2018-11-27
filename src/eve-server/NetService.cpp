@@ -176,95 +176,28 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     return result;
 }
 
-PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call) {
-    PyTuple *result = new PyTuple(3);
-        result->items[0] = new PyInt(0);
-        result->items[1] = new PyInt(0);
-        result->items[2] = new PyFloat(1);
-
-    PyList* list = new PyList();
-    list->AddItem(result);
-    return list;
-
-/*
-    sol, sta, statDivisor = sm.ProxySvc('machoNet').GetClusterSessionStatistics()
-    maxCount = 0
-    total = 0
-    docked = 0
-    multiplier = 1.0
-    pilotcountDict = {}
-    for sfoo in sol.iterkeys():
-        solarSystemID = sfoo + 30000000
-        amount_docked = sta.get(sfoo, 0) / statDivisor
-        amount_inspace = (sol.get(sfoo, 0) - sta.get(sfoo, 0)) / statDivisor
-        if starColorMode == mapcommon.STARMODE_PLAYERCOUNT:
-            amount = amount_inspace
-        else:
-            amount = amount_docked
-        pilotcountDict[solarSystemID] = amount
-        total = total + amount
-        if amount > maxCount:
-            maxCount = amount
-
-    if maxCount > 0:
-        multiplier /= math.sqrt(maxCount)
-    sorted = pilotcountDict.values()
-    sorted.sort()
-    if starColorMode == mapcommon.STARMODE_PLAYERCOUNT:
-        hintFunc = lambda count, solarSystemID: localization.GetByLabel('UI/Map/StarModeHandler/pilotsInSpace', count=count, solarSystem=solarSystemID)
-    else:
-        hintFunc = lambda count, solarSystemID: localization.GetByLabel('UI/Map/StarModeHandler/pilotsInStation', count=count, solarSystem=solarSystemID)
-    for solarSystemID, pilotCount in pilotcountDict.iteritems():
-        if pilotCount == 0:
-            continue
-        size = 2 * math.sqrt(pilotCount)
-        colorInfo.solarSystemDict[solarSystemID] = (size,
-         math.sqrt(pilotCount) * multiplier,
-         (hintFunc, (pilotCount, solarSystemID)),
-         None)
-*/
-#if 0
-    /** @todo  this still needs work  */
+PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
+{
+    // got this shit working once i understood what the client wanted....only took 4 years
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData");
+    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE active = 1");
+    /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk  */
+
+    uint16 system = 0;
+    PyDict* sol = new PyDict();
+    PyDict* sta = new PyDict();
 
     DBResultRow row;
-    uint16 system = 0, space = 0, sta = 0;
-    uint32 sol = 0, docked = 0;
-    float divisor = 0.0f, statDivisor = 0.0f;
     while (res.GetRow(row)) {
-        system = row.GetUInt(0);
-        docked = row.GetUInt(1);
-        space = row.GetUInt(2);
-
-        sol = system - 30000000;
-        sta = docked + space;
-        statDivisor = 1;//sta / docked;
-
-        docked = sta / statDivisor;
-        space = sol - sta / statDivisor;
-        if (docked)
-            divisor = sta / docked;
-        else
-            sLog.Error("DynamicData", "PilotDocked = 0");
-
-        if (divisor < 1) {
-            sLog.Error("DynamicData", "divisor = 0");
-            divisor = 1;
-            sta = 0;
-            sol = 0;
-        }
+        system = row.GetUInt(0) - 30000000;
+        sol->SetItem(new PyInt(system), new PyInt(row.GetUInt(1) + row.GetUInt(2)));    // inspace + docked = total
+        sta->SetItem(new PyInt(system), new PyInt(row.GetUInt(2)));                     // total - docked
     }
+
     PyTuple *result = new PyTuple(3);
-        result->items[0] = new PyInt(sol); //DBResultToRowset
-        result->items[1] = new PyInt(sta);
-        result->items[2] = new PyFloat(statDivisor);
+        result->SetItem(0, sol);
+        result->SetItem(1, sta);
+        result->SetItem(2, new PyFloat(1)); //statDivisor
 
-    if (is_log_enabled(COMMON__INFO)) {
-        _log(COMMON__INFO, "NetService::Handle_GetClusterSessionStatistics() Rsp:");
-        result->Dump(COMMON__INFO, "    ");
-    }
     return result;
-
-#endif
 }
