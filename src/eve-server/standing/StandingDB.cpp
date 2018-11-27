@@ -64,7 +64,7 @@ PyObjectEx* StandingDB::GetFactionStandings() {
 PyRep* StandingDB::GetMyStandings(uint32 charID)
 {
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT fromID, standing FROM repStandings WHERE toID = %u", charID);
+    sDatabase.RunQuery(res, "SELECT fromID, standing AS rank FROM repStandings WHERE toID = %u", charID);
     return DBResultToCRowset(res);
 }
 
