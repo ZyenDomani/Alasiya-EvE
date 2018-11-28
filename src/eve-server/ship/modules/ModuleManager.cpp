@@ -75,7 +75,7 @@ bool ModuleManager::Initialize() {
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
         if (cur->flag() == flagAutoFit)
-            cur->SetFlag(flagCargoHold);
+            cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
         if (IsModuleSlot(cur->flag()))
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
@@ -239,17 +239,12 @@ void ModuleManager::UnfitModule(uint32 itemID)
     pMod->AbortCycle();
     pMod->Offline();
     if (pMod->IsLoaded()) {
-        pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
-        pMod->UnloadCharge();    // this does not physically remove charge from module, hence the need for the above call.
+        if (pMod->GetLoadedChargeRef().get() != nullptr)    // just in case...
+            pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
+        pMod->UnloadCharge();
     }
     // update avalible slots
     if (pMod->isHighPower()) {
-        /*  redundant...fx does this
-        if (pMod->isTurretFitted()) {
-            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
-        } else if (pMod->isLauncherFitted()) {
-            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
-        } */
         ++m_HighSlots;
     } else if (pMod->isMediumPower()) {
         ++m_MidSlots;
@@ -258,13 +253,9 @@ void ModuleManager::UnfitModule(uint32 itemID)
     } else if (pMod->isSubSystem()) {
         ++m_SubSystemSlots;
     }
-/*
-    // remove passive fx
-    pMod->GetSelf()->ClearModifiers();
-    pMod->ProcessEffects(Effects::dgmStatePassive, false);
-    sFxProc.ApplyEffects(pMod->GetSelf().get(), m_Ship->GetPilot()->GetChar().get(), m_Ship, m_Ship->GetPilot()->IsInSpace());
-*/
     pModuleCont->RemoveModule(itemID);
+    // delete the module object
+    SafeDelete(pMod);
 }
 
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
@@ -323,12 +314,6 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
     }
 
-    /*
-    // apply passive fx
-    pMod->ProcessEffects(Effects::dgmStatePassive, true);
-    sFxProc.ApplyEffects(iRef.get(), m_Ship->GetPilot()->GetChar().get(), m_Ship, m_Ship->GetPilot()->IsInSpace());
-    iRef->ClearModifiers();
-*/
     /*
     if (0) { // debug msg?
         std::map<std::string, PyRep *> args;
@@ -569,7 +554,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
             throw PyException( MakeUserError( "CantFindChargeToAdd"));
 
     if (!IsModuleSlot(flag))
-        return; // throw error?
+        return; // throw error?  NO. must NOT throw
 
     if (IsModuleSlot(chargeRef->flag()))
         throw PyException( MakeUserError( "CantMoveChargesBetweenModules"));
@@ -587,14 +572,6 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         if ( chargeRef->typeID() != loadedChargeRef->typeID() ) {
             // change charges
             UnloadCharge(flag);
-            if (IsStation(m_Ship->locationID())) {
-                loadedChargeRef->Move(m_Ship->locationID(), flagHangar, true);
-            } else {
-                if (m_Ship->ValidateAddItem(flagCargoHold, loadedChargeRef))
-                    loadedChargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
-                else
-                    return; // cant put in cargo.  return without changing charge.
-            }
         } else {
             modCapacity -= (loadedChargeRef->GetAttribute(AttrVolume).get_float() * loadedChargeRef->quantity());
             if (modCapacity > chargeVolume) {
@@ -641,13 +618,23 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
 void ModuleManager::UnloadCharge(EVEItemFlags flag)
 {
+    std::map<EVEItemFlags, InventoryItemRef>::iterator itr = m_charges.find(flag);
+    if (itr != m_charges.end())
+        m_charges.erase(itr);
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod != nullptr) {
         if (pMod->IsLoaded() ) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s",
-                    pMod->GetSelf()->itemName().c_str(), pMod->GetLoadedChargeRef()->itemName().c_str());
+            InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
+            if (chargeRef.get() == nullptr) {
+                _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found on module at slot %i", flag);
+                return;
+            }
+            _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s", pMod->GetSelf()->itemName().c_str(), chargeRef->itemName().c_str());
+            if (IsStation(m_Ship->locationID()))
+                chargeRef->Move(m_Ship->locationID(), flagHangar, true);
+            else
+                chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
             pMod->UnloadCharge();
-            m_charges.erase(flag);
         } else
             _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), flag);
     } else
@@ -667,10 +654,7 @@ InventoryItemRef ModuleManager::GetLoadedChargeOnModule(EVEItemFlags flag) {
 }
 
 InventoryItemRef ModuleManager::GetLoadedChargeOnModule(InventoryItemRef moduleRef) {
-    GenericModule* pMod = pModuleCont->GetModule(moduleRef->itemID());
-    if ((pMod != nullptr) and pMod->IsLoaded() )
-        return pMod->GetLoadedChargeRef();
-    return InventoryItemRef(nullptr);
+    return GetLoadedChargeOnModule(moduleRef->flag());
 }
 
 bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
@@ -682,6 +666,11 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 
 void ModuleManager::UnloadAllModules()
 {
+    bool inSpace = IsSolarSystem(m_Ship->locationID());
+    for (auto cur : m_charges)
+        cur.second->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), (inSpace ? flagCargoHold : flagHangar), true);
+
+    m_charges.clear();
     pModuleCont->UnloadAll();
 }
 
@@ -759,7 +748,7 @@ void ModuleManager::ShipJumping()
     AbortCycle();
 }
 
-void ModuleManager::GetWeapons(std::vector< InventoryItemRef >& modVec)
+void ModuleManager::GetWeapons(std::vector< GenericModule* >& modVec)
 {
     pModuleCont->GetWeapons(modVec);
 }

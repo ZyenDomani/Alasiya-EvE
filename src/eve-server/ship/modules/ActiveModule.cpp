@@ -138,7 +138,6 @@ void ActiveModule::Process()
             UnloadCharge();
             SetModuleState(Module::State::Deactivating);
             DeactivateCycle(true);
-            return;
         }
     }
 }
@@ -428,10 +427,10 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
             // this is the complete belt scanner code here.
-            PyTuple* tuple = new PyTuple(2);
-            tuple->SetItem(0, new PyString("OnSurveyScanComplete"));
+            PyTuple* result = new PyTuple(2);
+            result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
-            tuple->SetItem(1, list);
+            result->SetItem(1, list);
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
                 std::vector<AsteroidSE*> vList;
@@ -449,7 +448,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             }
             // Send results.
             std::vector<PyTuple*> events;
-            events.push_back(tuple);
+            events.push_back(result);
             std::vector<PyTuple*> updates;
             m_destinyMgr->SendDestinyUpdate(updates, events, false);
         } break;
@@ -498,7 +497,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
     if (chargeRef.get() == nullptr) {
         _log(SHIP__MODULE_WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        return;
     }
 
     m_chargeRef = chargeRef;
@@ -515,8 +514,12 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
     Client* pClient = m_shipRef->GetPilot();
-    if (pClient == nullptr)
+    if (pClient == nullptr) {
+        m_chargeRef = InventoryItemRef(nullptr);
+        m_chargeLoaded = false;
+        SetChargeState(Module::State::Unloaded);
         return;  // make error here?
+    }
     if (pClient->IsInSpace() and !pClient->IsLogin()) {
         PyTuple* module = new PyTuple(1);
             module->SetItem(0, new PyInt(m_modRef->itemID()));
@@ -776,6 +779,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
 void ActiveModule::LaunchMissile()
 {
+    /** @todo check for grouped launchers and adjust missile accordingly */
     // Actually Launch a missile, creating a new Destiny object for it
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr)

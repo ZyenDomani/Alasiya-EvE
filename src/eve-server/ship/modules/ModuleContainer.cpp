@@ -276,7 +276,5 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
             m_ModulesFittedByGroupID.erase(pMod->groupID());
         }
     }
-
-    pMod->SetModuleState(Module::State::Unfitted);
 }
 

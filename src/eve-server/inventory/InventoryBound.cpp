@@ -49,7 +49,6 @@ m_passive(passive)
 {
     _SetCallDispatcher(m_dispatch);
 
-
     m_strBoundObjectName = "InventoryBound";
 
     PyCallable_REG_CALL(InventoryBound, List);
@@ -114,8 +113,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
     }
 
-    InventoryItemRef item = sItemFactory.GetItem(args.arg);
-    call.client->GetShip()->RemoveRig(item);
+    call.client->GetShip()->RemoveRig(sItemFactory.GetItem(args.arg));
 
     return nullptr;
 }
@@ -152,7 +150,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     } else if (IsPlayerCorp(m_itemID)) {
         // this one probably will not be used.
         //  what items in a corp would be listed?  corpItem dont have inventory
-    } else if (IsCharacter(m_itemID)) { // this is chccked in Inventory::List()
+    } else if (IsCharacter(m_itemID)) { // this is checked in Inventory::List()
         // this is asking for skill list...char is a container for skills
         flag = flagAnywhere;
     } else if (IsSolarSystem(m_itemID)) {
@@ -190,48 +188,6 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
                 sDataMgr.GetFlagName(oldFlag).c_str());
 
     return pInventory->List(flag, ownerID);
-}
-
-PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    Inventory_CallReplaceCharges args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    //validate flag.
-    if (!IsModuleSlot(args.flag)) {
-        _log(INV__ERROR, "%s: Invalid flag %i", call.client->GetName(), args.flag);
-        return nullptr;
-    }
-
-    // returns new ref
-    InventoryItemRef iRef = pInventory->GetByID( args.itemID );
-    if (iRef.get() == nullptr) {
-        _log(INV__ERROR, "%s: Unable to find charge %i", call.client->GetName(), args.itemID);
-        return nullptr;
-    }
-
-    if ((iRef->ownerID() != call.client->GetCharacterID())
-    or (iRef->ownerID() != call.client->GetCorporationID())) {
-        _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
-        return nullptr;
-    }
-
-    if (iRef->quantity() < args.quantity) {
-        _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
-    } else if (iRef->quantity() > args.quantity) {
-        iRef = iRef->Split(args.quantity);  // split item and get new item reference
-        if (iRef.get() == nullptr) {
-            _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
-            return nullptr;
-        }
-    }
-
-    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
-
-    return new PyInt(1);
 }
 
 PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
@@ -304,7 +260,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
         }
     }
 
-    //  when bm is copied to another players places tab, copy data from db using bookmarkID stored in ItemData.customInfo
+    //  when bm is copied to another players' places tab, copy data from db using bookmarkID stored in ItemData.customInfo
 
     call.client->SendInfoModalMsg("Creating Vouchers from Bookmarks isn't complete.  You will have to dock or relog to show the container inventory.");
 
@@ -325,8 +281,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
      * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
      * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
      */
-    sLog.White( "InventoryBound::Handle_RemoveChargeToHangar()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(INV__DUMP);
 
     Call_RemoveChargeToHangar args;
     if (!args.Decode(&call.tuple)) {
@@ -341,8 +296,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     // newItemID = inv.RemoveChargeToCargo(itemKey, quantity, preferMerge=preferMerge)
     _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    sLog.White( "InventoryBound::Handle_RemoveChargeToCargo()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(INV__DUMP);
     Call_RemoveChargeToCargo args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -354,9 +308,8 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    sLog.White( "InventoryBound::Handle_RunRefiningProcess()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(POS__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(POS__DUMP);
     return nullptr;
 }
 
@@ -830,4 +783,48 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
             sLog.Warning("InventoryBound::CatSortItems", "%u items sorted in %.3fus with %u loops.", items.size(), (GetTimeUSeconds() - start), count);
 
     return items;  //returns sorted list
+}
+
+
+// cannot find call to this in client code.
+PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    Inventory_CallReplaceCharges args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    //validate flag.
+    if (!IsModuleSlot(args.flag)) {
+        _log(INV__ERROR, "%s: Invalid flag %i", call.client->GetName(), args.flag);
+        return nullptr;
+    }
+
+    // returns new ref
+    InventoryItemRef iRef = pInventory->GetByID( args.itemID );
+    if (iRef.get() == nullptr) {
+        _log(INV__ERROR, "%s: Unable to find charge %i", call.client->GetName(), args.itemID);
+        return nullptr;
+    }
+
+    if ((iRef->ownerID() != call.client->GetCharacterID())
+        or (iRef->ownerID() != call.client->GetCorporationID())) {
+        _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
+    return nullptr;
+        }
+
+        if (iRef->quantity() < args.quantity) {
+            _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
+        } else if (iRef->quantity() > args.quantity) {
+            iRef = iRef->Split(args.quantity);  // split item and get new item reference
+            if (iRef.get() == nullptr) {
+                _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
+                return nullptr;
+            }
+        }
+
+        call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
+
+        return new PyInt(1);
 }

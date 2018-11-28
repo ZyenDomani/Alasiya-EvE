@@ -377,8 +377,10 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-                    if (m_ModuleManager == nullptr)
-                        return false;   // log error?
+                    if (m_ModuleManager == nullptr){
+                        m_ModuleManager = new ModuleManager(this);
+                        m_ModuleManager->Initialize();
+                    }
                     if (m_ModuleManager->GetModule(flag)) {
                         InventoryItemRef module = m_ModuleManager->GetModule(flag)->GetSelf();
                         if (module.get() == nullptr)
@@ -972,7 +974,7 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
 void ShipItem::LoadCharge(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
-        return;  // make error here?
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
 
     if (ValidateAddItem(flag, iRef))
         m_ModuleManager->LoadCharge(iRef, flag);
@@ -991,9 +993,9 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         return 0;
 
     if (IsModuleSlot(flag)) {
-        if (m_ModuleManager == nullptr) {
-            _log(SHIP__MODULE_ERROR, "Ship::AddItem - %u - m_ModuleManager is null.", m_itemID );
-            return 0;
+        if (m_ModuleManager == nullptr){
+            m_ModuleManager = new ModuleManager(this);
+            m_ModuleManager->Initialize();
         }
         //  need to verify if this is needed.  comment for now.
         //iRef->ClearModifiers();
@@ -1071,11 +1073,6 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
         m_ModuleManager->UnloadCharge(fromFlag);
         if (chargeRef.get() == nullptr)
             return 0;
-        if (m_pilot->IsInSpace())
-            chargeRef->Move(itemID(), toFlag, true);
-        else
-            chargeRef->Move(locationID(), toFlag, true);
-        // need to figure out how to update fitting window... (i forgot)
         return chargeRef->itemID();
     }
     return 0;
@@ -1126,15 +1123,13 @@ void ShipItem::UpdateModules()
 
 void ShipItem::UpdateModules(EVEItemFlags flag)
 {
+    // this is placeholder.  it doenst do anything at this time.
+
 	// List of callees to put this function into context as to what it should be doing:
     // Ship::AddItem()
     // Ship::MoveModuleSlot()
     // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
-    /*
-    if ((m_pilot != nullptr) and (m_pilot->IsInSpace()))
-        UpdateEffects();
-    */
 }
 
 void ShipItem::UnloadModule(uint32 itemID)
@@ -1231,44 +1226,39 @@ void ShipItem::Deactivate(int32 itemID, std::string effectName)
     m_ModuleManager->Deactivate(itemID, effectName);
 }
 
-void ShipItem::Overload()
+void ShipItem::Overload(EVEItemFlags flag)
 {
-    // FIXME TODO get module flag(s) and send to function
-    EVEItemFlags flag = flagNone;
     m_ModuleManager->Overload(flag);
 }
 
-void ShipItem::CancelOverloading()
+void ShipItem::CancelOverloading(EVEItemFlags flag)
 {
-    // FIXME TODO get module flag(s) and send to function
-    EVEItemFlags flag = flagNone;
     m_ModuleManager->DeOverload(flag);
 }
 
 void ShipItem::RemoveRig(InventoryItemRef iRef) {
-    //may not look like it, but just moving this item will call ModuleManager::UninstallRig().  not anymore.  fix this shit.
+    if (iRef.get() == nullptr)
+        return;
     m_ModuleManager->UninstallRig(iRef->itemID());
     iRef->Move(itemID(), flagCargoHold, true);
 }
 
 void ShipItem::OnlineAll()
 {
-    if (m_ModuleManager != nullptr)
-        m_ModuleManager->OnlineAll();
-    else {
-        _log(SHIP__MODULE_ERROR, "OnlineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        EvE::traceStack();
+    if (m_ModuleManager == nullptr) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
+    m_ModuleManager->OnlineAll();
 }
 
 void ShipItem::OfflineAll()
 {
-    if (m_ModuleManager != nullptr)
-        m_ModuleManager->OfflineAll();
-    else {
-        _log(SHIP__MODULE_ERROR, "OfflineAll() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        EvE::traceStack();
+    if (m_ModuleManager == nullptr) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
+    m_ModuleManager->OfflineAll();
 }
 
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
@@ -1278,74 +1268,163 @@ void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 
 void ShipItem::DeactivateAllModules()
 {
-    if (m_ModuleManager != nullptr)
-        m_ModuleManager->DeactivateAllModules();
+    if (m_ModuleManager == nullptr) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
+    }
+    m_ModuleManager->DeactivateAllModules();
 }
 /* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
-    if (m_ModuleManager != nullptr) {
-        std::vector<InventoryItemRef> moduleList;
-        m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-        for (auto cur : moduleList) {
-            m_ModuleManager->UnfitModule(cur->itemID());
-            cur->Move(m_pilot->GetLocationID(), flagHangar);
-        }
-    } else {
-        _log(SHIP__MODULE_ERROR, "StripFitting() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        EvE::traceStack();
+    if (m_ModuleManager == nullptr) {
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
+
+    std::vector<InventoryItemRef> moduleList;
+    m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
+    for (auto cur : moduleList)
+        m_ModuleManager->UnfitModule(cur->itemID());
 }
 
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
 {
-    GenericModule* pMod = m_ModuleManager->GetModule(masterID);
-    if (pMod != nullptr) {
-        if (pMod->IsLoaded())
-            throw PyException( MakeUserError( "CantLinkAmmoInWeapon" ));
-        if (pMod->IsActive())
-            throw PyException( MakeUserError( "CantLinkModuleActive" ));
-        if (pMod->IsDamaged())
-            throw PyException( MakeUserError( "CantLinkModuleDamaged" ));
-        if (pMod->IsLoading())
-            throw PyException( MakeUserError( "CantLinkModuleLoading" ));
-        if (!pMod->isOnline())
-            throw PyException( MakeUserError( "CantLinkModuleNotOnline" ));
-    }
-    std::map<uint32, std::list<uint32>>::iterator itr = m_linkedWeapons.find(masterID);
-    if (itr != m_linkedWeapons.end()) {
-        itr->second.push_back(slaveID);
+    if (masterID == slaveID)
+        return;
+    GenericModule* pMod1 = m_ModuleManager->GetModule(masterID);
+    GenericModule* pMod2 = m_ModuleManager->GetModule(slaveID);
+    LinkWeapon(pMod1, pMod2);
+}
+
+void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
+{
+    if ((pMaster == nullptr) or (pSlave == nullptr))
+        return; // make error here?
+    if (pMaster == pSlave)
+        return; // make error here?
+    if ((pMaster->IsLoaded()) or (pSlave->IsLoaded()))
+        throw PyException( MakeUserError( "CantLinkAmmoInWeapon" ));
+    if ((pMaster->IsActive()) or (pSlave->IsActive()))
+        throw PyException( MakeUserError( "CantLinkModuleActive" ));
+    if ((pMaster->IsDamaged()) or (pSlave->IsDamaged()))
+        throw PyException( MakeUserError( "CantLinkModuleDamaged" ));
+    if ((pMaster->IsLoading()) or (pSlave->IsLoading()))
+        throw PyException( MakeUserError( "CantLinkModuleLoading" ));
+    if ((!pMaster->isOnline()) or (!pSlave->isOnline()))
+        throw PyException( MakeUserError( "CantLinkModuleNotOnline" ));
+
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMaster);
+    if (itr == m_linkedWeapons.end()) {
+        std::list<GenericModule*> slaves;
+        slaves.push_back(pSlave);
+        m_linkedWeapons[pMaster] = slaves;
     } else {
-        std::list<uint32> slaves;
-        slaves.push_back(slaveID);
-        m_linkedWeapons[masterID] = slaves;
+        itr->second.push_back(pSlave);
     }
+    pMaster->SetLinked(true);
+    pSlave->SetLinked(true);
 }
 
 void ShipItem::LinkAllWeapons()
 {
-    std::vector< InventoryItemRef > moduleVec;
+    std::vector< GenericModule* > moduleVec;
     m_ModuleManager->GetWeapons(moduleVec);
+    // remove current links
+    for (auto cur : moduleVec) {
+        cur->SetLinked(false);
+        if (sConfig.server.UnloadOnLinkAll)
+            cur->UnloadCharge();
+    }
+    m_linkedWeapons.clear();
+
     /* check weapon types and charge types.
      * if types same, then link weapons
      */
+    bool linked = false;
+    GenericModule* master(nullptr);
+    std::vector<GenericModule*> xtraVec;
+    std::vector< GenericModule*>::iterator itr = moduleVec.begin(), end = moduleVec.end();
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr2;
+    while (itr != end) {
+        linked = false;
+        if ((*itr)->IsLoaded()) {
+            ++itr;
+            continue;
+        }
+
+        if (master == nullptr) {
+            master = (*itr);
+            linked = true;
+            ++itr;
+        } else {
+            if (master == (*itr)) { // same item
+                ++itr;
+                continue;
+            }
+            itr2 = m_linkedWeapons.find((*itr));
+            if (itr2 != m_linkedWeapons.end()) { // this item was found as a master
+                ++itr;
+                continue;
+            }
+            if (master->typeID() == (*itr)->typeID()) {    // this item is slave
+                LinkWeapon(master, (*itr));
+                linked = true;
+            } else {    //  this item does not match previous master.  check for other matches
+                for (auto item : m_linkedWeapons) {
+                    if (item.first->typeID() == (*itr)->typeID()) {
+                        LinkWeapon(item.first, (*itr));
+                        linked = true;
+                    }
+                }
+            }
+        }
+        if (!linked)
+            xtraVec.push_back((*itr));
+    }
+    if (xtraVec.size()) {
+        for (auto cur : xtraVec) {
+            for (auto item : m_linkedWeapons) {
+                if (item.first->typeID() == cur->typeID()) {
+                    LinkWeapon(item.first, cur);
+                }
+            }
+        }
+    }
 }
 
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
 {
-    std::map<uint32, std::list<uint32>>::iterator itr = m_linkedWeapons.find(masterID);
+    if (masterID == slaveID)
+        return;
+    GenericModule* pMod1 = m_ModuleManager->GetModule(masterID);
+    GenericModule* pMod2 = m_ModuleManager->GetModule(slaveID);
+
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod1);
     if (itr != m_linkedWeapons.end()) {
-        std::list<uint32>::iterator itr2 = itr->second.begin();
+        std::list<GenericModule*>::iterator itr2 = itr->second.begin();
         while (itr2 != itr->second.end()) {
-            if ((*itr2) == slaveID) {
+            if ((*itr2) == pMod2) {
                 itr->second.erase(itr2);
+                if (itr->second.empty())
+                    m_linkedWeapons.erase(itr);
                 return;
             }
             ++itr2;
         }
     }
 }
+
+void ShipItem::UnlinkAllWeapons()
+{
+    std::vector< GenericModule* > moduleVec;
+    m_ModuleManager->GetWeapons(moduleVec);
+    for (auto cur : moduleVec)
+        cur->SetLinked(false);
+    m_linkedWeapons.clear();
+}
+
 
 PyDict* ShipItem::GetLinkedWeapons()
 {
@@ -1354,8 +1433,8 @@ PyDict* ShipItem::GetLinkedWeapons()
         for (auto cur : m_linkedWeapons) {
             PyList* slaves = new PyList();
             for (auto slave : cur.second)
-                slaves->AddItem(new PyInt(slave));
-            result->SetItem(new PyInt(cur.first), slaves);
+                slaves->AddItem(new PyInt(slave->itemID()));
+            result->SetItem(new PyInt(cur.first->itemID()), slaves);
         }
     }
 
@@ -1427,9 +1506,9 @@ void ShipItem::UpdateEffects() {
 
 std::string ShipItem::GetShipDNA()
 {
-    if (m_ModuleManager == nullptr) {
-        _log(SHIP__MODULE_ERROR, "GetShipDNA() - %s(%u) has no module manager.", itemName().c_str(), itemID());
-        EvE::traceStack();
+    if (m_ModuleManager == nullptr){
+        m_ModuleManager = new ModuleManager(this);
+        m_ModuleManager->Initialize();
     }
 
     /* ship dna is shorthand notation to describe a ship and it's fittings purely thru the use of typeIDs and quantities

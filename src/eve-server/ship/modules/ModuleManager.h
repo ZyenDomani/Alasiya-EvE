@@ -50,7 +50,7 @@ public:
     void UninstallRig(uint32 itemID);
     bool InstallSubSystem(InventoryItemRef item, EVEItemFlags flag);
     bool FitModule(InventoryItemRef item, EVEItemFlags flag);
-    void UnfitModule(uint32 itemID);
+    void UnfitModule(uint32 itemID);// this will remove charge items from modules
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
     void Online(EVEItemFlags flag);
@@ -69,9 +69,13 @@ public:
     void RepairModule(uint32 itemID, EvilNumber amount);
     void RepairModule(GenericModule* pMod, EvilNumber amount);
     void RepairModules();
+    // this will move charge item to module
+    // must NOT throw
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
+    // this will remove charge item from module
+    // must NOT throw
     void UnloadCharge(EVEItemFlags flag);
-    void UnloadAllModules();
+    void UnloadAllModules();  // this will remove charge items from modules
     void StripModules();
     void UpdateModules(std::vector<uint32> modVec);
     void UpdateModules(EVEItemFlags flag);
@@ -90,7 +94,7 @@ public:
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
-    void GetWeapons(std::vector<InventoryItemRef>& modVec);
+    void GetWeapons(std::vector<GenericModule*>& modVec);
 
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);

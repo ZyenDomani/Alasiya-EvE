@@ -36,7 +36,7 @@ public:
     // basic methods
     void SaveModules();
     void ShipWarping();
-    void GetWeapons(std::vector<InventoryItemRef>& moduleVec);
+    void GetWeapons(std::vector<GenericModule*>& moduleVec);
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& moduleVec);
 

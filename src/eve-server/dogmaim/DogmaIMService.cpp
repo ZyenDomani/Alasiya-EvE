@@ -299,7 +299,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
      * 02:13:11 [SvcCall]     Argument 'qty':
      * 02:13:11 [SvcCall]         (None)
      */
-    call.Dump(INV__DUMP);
+    call.Dump(SHIP__MODULE_TRACE);
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -312,12 +312,12 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     // Get Reference to Ship, Module, and Charge
     ShipItemRef shipRef = call.client->GetShip();
     InventoryItemRef chargeRef = sItemFactory.GetItem(args.itemID);
-    InventoryItemRef moduleRef;
+    InventoryItemRef moduleRef(nullptr);
 
     for (auto cur : args.moduleIDs) {
         moduleRef = shipRef->GetModuleRef(cur);
         if (moduleRef.get() == nullptr) {
-            sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module into which charge should be loaded." );
+            sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module %u into which charge should be loaded.", cur );
             continue;
         }
         if (chargeRef->quantity() > 0)
@@ -328,12 +328,12 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
-  /*
+  /*   NOTE:  this to load ALL modules in weapon bank, if possible.
    * self.remoteDogmaLM.LoadAmmoToBank(shipID, masterID, chargeTypeID,  itemIDs,  chargeLocationID,   qty)
    *                                    ship,   module,  charge type, charge item, charge location, stack qty (usually none - havent found otherwise)
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
-  call.Dump(INV__DUMP);
+  call.Dump(SHIP__MODULE_TRACE);
 	Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -347,7 +347,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     args.shipID
     args.qty
     */
-
+    /** @todo  test for weapon links, load all weapons in linked group.  */
 	// Get Reference to Ship, Module, and Charge
     ShipItemRef shipRef = call.client->GetShip();
 	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
@@ -776,8 +776,8 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
         }
     }
 
-    sLog.White("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_Overload()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__WARNING);
 
     Call_TwoIntegerArgs args;   //itemID, effectID
     if (!args.Decode(&call.tuple)) {
@@ -802,8 +802,8 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
         }
     }
 
-    sLog.White("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_CancelOverloading()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__WARNING);
     return nullptr;
 }
 

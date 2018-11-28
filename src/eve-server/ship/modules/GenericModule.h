@@ -57,6 +57,7 @@ public:
     bool IsTurretModule()                               { return m_turret; }
     bool IsLauncherModule()                             { return m_launcher; }
     bool IsOverloaded()                                 { return m_overLoaded; }
+    bool IsLinked()                                     { return m_linked; }
     bool IsDamaged()                                    { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
     bool IsActive()                                     { return m_ModuleState == Module::State::Activated; }
     bool IsLoading()                                    { return m_ModuleState == Module::State::Loading; }
@@ -77,6 +78,7 @@ public:
     void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
     void SetChargeState(int8 state)                     { m_ChargeState = state; }
+    void SetLinked(bool set=false)                      { m_linked = set; }
 
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
     int8 GetModuleState()                               { return m_ModuleState; }
@@ -86,7 +88,11 @@ public:
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
     virtual void AbortCycle()                           { /* Do nothing here */ }
+    // this does not physically add charge to module,
+    // must NOT throw
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
+    // this does not physically remove charge from module,
+    // must NOT throw
     virtual void UnloadCharge()                         { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
     virtual void ReprocessCharge()                      { /* Do nothing here */ }
@@ -118,6 +124,7 @@ protected:
     int8             m_ModuleState;
     int8             m_ChargeState;
 
+    bool             m_linked       :1;
     bool             m_isWarpSafe   :1;
     bool             m_hiPower      :1;
     bool             m_medPower     :1;

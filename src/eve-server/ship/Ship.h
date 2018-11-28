@@ -237,8 +237,8 @@ public:
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
     void Deactivate(int32 itemID, std::string effectName);
     void DeactivateAllModules();
-    void Overload();
-    void CancelOverloading();
+    void Overload(EVEItemFlags flag);
+    void CancelOverloading(EVEItemFlags flag);
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef iRef);
     void UpdateModules();
@@ -329,7 +329,9 @@ public:
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
     void LinkWeapon(uint32 masterID, uint32 slaveID); // this should throw if applicable
+    void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);
     void UnlinkWeapon(uint32 masterID, uint32 slaveID);
+    void UnlinkAllWeapons();
     PyDict* GetLinkedWeapons();
 
 private:
@@ -341,7 +343,7 @@ private:
     InventoryItemRef m_targetRef;       // this is only used for module effects that require a target.  is here because of the ease of aquiring/sending (common code)
 
     std::vector<uint32> m_onlineModuleVec;      // for onlining modules when undocking
-    std::map<uint32, std::list<uint32>> m_linkedWeapons; // masterID/data (slaveIDs)
+    std::map<GenericModule*, std::list<GenericModule*>> m_linkedWeapons; // masterID/data (slaveIDs)
 
     void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);
