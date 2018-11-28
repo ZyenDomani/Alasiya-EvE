@@ -50,6 +50,8 @@ extern std::string Win32TimeToString(int64 win32t);
 int32 GetElapsedHours(int64 time);
 // this returns 100 nanosecond resolution in filetime format
 double GetFileTimeNow();
+//  this returns milliseconds
+int64 GetSteadyTime();
 //  this returns milliseconds in microsecond resolution
 double GetTimeMSeconds();
 //  this returns microseconds in nanosecond resolution

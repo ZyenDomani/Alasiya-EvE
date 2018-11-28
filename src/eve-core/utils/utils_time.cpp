@@ -87,19 +87,32 @@ double GetFileTimeNow()
 }
 
 //  NOTE  auto and std::chrono require C++11
+int64 GetSteadyTime() {
+    // simulation of Windows GetTickCount()
+    //  this returns milliseconds
+    using namespace std::chrono;
+    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
+    //int64 time = duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+    return duration_cast<milliseconds>(duration).count();
+}
+
 double GetTimeMSeconds() {  // -allan
     //  this returns milliseconds in microsecond resolution
-    auto now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();     // return in nanoseconds
-    double time = std::chrono::duration_cast<std::chrono::microseconds>(duration).count();
+    using namespace std::chrono;
+    /*
+    auto now = steady_clock::now();
+    duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+    */
+    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
+    double time = duration_cast<microseconds>(duration).count();
     return (time /1000);
 }
 
 double GetTimeUSeconds() {  // -allan
     //  this returns microseconds in nanosecond resolution
-    auto now = std::chrono::system_clock::now();
-    auto duration = now.time_since_epoch();     // return in nanoseconds
-    double time = std::chrono::duration_cast<std::chrono::nanoseconds>(duration).count();
+    using namespace std::chrono;
+    auto duration = system_clock::now().time_since_epoch();     // return in nanoseconds
+    double time = duration_cast<nanoseconds>(duration).count();
     return (time /1000);
 }
 

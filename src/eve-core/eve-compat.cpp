@@ -26,6 +26,8 @@
 
 #include "eve-core.h"
 
+#include <time.h>
+
 #ifndef HAVE_WINDOWS_H
 void Sleep( uint32 x )
 {
@@ -33,12 +35,12 @@ void Sleep( uint32 x )
         ::usleep( 1000 * x );
 }
 
+
 uint32 GetTickCount()
 {
-    timeval tv;
-    ::gettimeofday( &tv, NULL );
-
-    return (tv.tv_sec *1000) + (tv.tv_usec /1000);
+    struct timespec ts;
+    ::clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (ts.tv_sec *1000) + (ts.tv_nsec /1000000);
 }
 
 int CreateDirectory( const char* name, void* )

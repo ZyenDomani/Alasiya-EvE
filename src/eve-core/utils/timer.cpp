@@ -27,11 +27,12 @@
 #include "eve-core.h"
 
 #include "utils/timer.h"
+#include "utils/utils_time.h"
 #include <ctime>
 
 static uint32 currentTime = 0;
 //static float currentSeconds = 0;
-static uint32 lastTime = 0;
+static int64 lastTime = 0;
 
 Timer::Timer(uint32 time/*0*/, bool useAcurateTiming /*false*/) {
     m_timerTime = time;
@@ -139,13 +140,15 @@ uint32 Timer::GetCurrentTime() {
 
 const void Timer::SetCurrentTime()
 {
-    uint32 tickCount = ::GetTickCount();
+    //double tickCount2 = GetFileTimeNow();
+    //int64 timerCount = GetTimeMSeconds();
+    //int64 timerCount2 = GetTickCount();
 
+    int64 tickCount = GetSteadyTime();
     if (lastTime == 0)
         currentTime = 0;
     else
         currentTime += (tickCount - lastTime);
-
     lastTime = tickCount;
     //currentSeconds = (tickCount / 1000);
 }
