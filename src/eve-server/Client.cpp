@@ -301,7 +301,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
-    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
+    SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *3 : ClientTimers::LoginTimer));
     return (m_loaded = true);
 }
 
@@ -420,7 +420,7 @@ void Client::ProcessClient() {
                 } break;
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
-                    SetBallPark();
+                    //SetBallPark();
                 } break;
                 case ClientState::csJump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
@@ -434,7 +434,7 @@ void Client::ProcessClient() {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
                 } break;
                 default: {
-                    sLog.Error("Client","%s: Move timer expired when no move is pending.", m_char->itemName().c_str());
+                    sLog.Error("Client","%s: State timer expired with invalid state: %s.", m_char->itemName().c_str(), GetStateName(m_clientState).c_str());
                     //SendErrorMsg("Server Error - Move not initalized properly.  You may need to relog.  Ref: ServerError 10928");
                 } break;
             }
