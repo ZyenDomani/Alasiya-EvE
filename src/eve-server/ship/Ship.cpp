@@ -8,6 +8,7 @@
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
 #include "ship/Ship.h"
+#include "ship/modules/GenericModule.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
 #include "system/BubbleManager.h"
@@ -1299,6 +1300,19 @@ void ShipItem::StripFitting()
 
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
 {
+    GenericModule* pMod = m_ModuleManager->GetModule(masterID);
+    if (pMod != nullptr) {
+        if (pMod->IsLoaded())
+            throw PyException( MakeUserError( "CantLinkAmmoInWeapon" ));
+        if (pMod->IsActive())
+            throw PyException( MakeUserError( "CantLinkModuleActive" ));
+        if (pMod->IsDamaged())
+            throw PyException( MakeUserError( "CantLinkModuleDamaged" ));
+        if (pMod->IsLoading())
+            throw PyException( MakeUserError( "CantLinkModuleLoading" ));
+        if (!pMod->isOnline())
+            throw PyException( MakeUserError( "CantLinkModuleNotOnline" ));
+    }
     std::map<uint32, std::list<uint32>>::iterator itr = m_linkedWeapons.find(masterID);
     if (itr != m_linkedWeapons.end()) {
         itr->second.push_back(slaveID);
@@ -1333,18 +1347,15 @@ void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
     }
 }
 
-PyList* ShipItem::GetLinkedWeapons()
+PyDict* ShipItem::GetLinkedWeapons()
 {
-    PyList* result = new PyList();
+    PyDict* result = new PyDict();
     if (!m_linkedWeapons.empty()) {
         for (auto cur : m_linkedWeapons) {
             PyList* slaves = new PyList();
             for (auto slave : cur.second)
                 slaves->AddItem(new PyInt(slave));
-            PyTuple* master = new PyTuple(2);
-            master->SetItem(0, new PyInt(cur.first));
-            master->SetItem(1, slaves);
-            result->AddItem(master);
+            result->SetItem(new PyInt(cur.first), slaves);
         }
     }
 

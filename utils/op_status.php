@@ -1352,16 +1352,16 @@ Page Status: <font color="green">Current</font><BR><BR></table>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>COMPLETE<BR>10Aug16</td></tr>
-<tr><td> - Can Group Weapons</td><td class="working">90%
+<tr><td> - Can Link Weapons</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat working - Testing.<BR>20Nov18</td></tr>
-<tr><td> - Can Un-Group Weapons</td><td class="working">90%
+<td>Working - Final Testing.<BR>27Nov18</td></tr>
+<tr><td> - Can Un-Link Weapons</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat working - Testing.<BR>20Nov18</td></tr>
+<td>Working - Final Testing.<BR>27Nov18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Ship_Combat_in_Space"> Ship Module Groups </span></h2>

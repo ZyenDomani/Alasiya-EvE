@@ -328,9 +328,9 @@ public:
     /* linking weapons methods */
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
-    void LinkWeapon(uint32 masterID, uint32 slaveID);
+    void LinkWeapon(uint32 masterID, uint32 slaveID); // this should throw if applicable
     void UnlinkWeapon(uint32 masterID, uint32 slaveID);
-    PyList* GetLinkedWeapons();
+    PyDict* GetLinkedWeapons();
 
 private:
     Client* m_pilot;

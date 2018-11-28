@@ -11,6 +11,7 @@
 
 #include "ship/Ship.h"
 #include "ship/modules/ModuleContainer.h"
+#include "GenericModule.h"
 
 
 ModuleContainer::ModuleContainer(ShipItem* pShip) {
@@ -227,11 +228,12 @@ GenericModule* ModuleContainer::GetRandModule()
     return modVec[MakeRandomInt(0, modVec.size())];
 }
 
-void ModuleContainer::GetWeapons(std::vector< InventoryItemRef >& moduleVec)
+void ModuleContainer::GetWeapons(std::vector< GenericModule* >& moduleVec)
 {
     for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
         if (m_modules[flag] != nullptr)
-            moduleVec.push_back(m_modules[flag]->GetSelf());
+            if (m_modules[flag]->IsLauncherModule() or m_modules[flag]->IsTurretModule())
+                moduleVec.push_back(m_modules[flag]);
 }
 
 void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec)

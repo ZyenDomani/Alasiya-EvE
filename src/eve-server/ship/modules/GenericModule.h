@@ -57,6 +57,9 @@ public:
     bool IsTurretModule()                               { return m_turret; }
     bool IsLauncherModule()                             { return m_launcher; }
     bool IsOverloaded()                                 { return m_overLoaded; }
+    bool IsDamaged()                                    { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
+    bool IsActive()                                     { return m_ModuleState == Module::State::Activated; }
+    bool IsLoading()                                    { return m_ModuleState == Module::State::Loading; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
     bool isOnline()                                     { return m_modRef->IsOnline(); }
