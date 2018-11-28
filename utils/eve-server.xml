@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.8 -->
+     Version: 8.9 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -49,6 +49,7 @@
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
         <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
+        <UnloadOnLinkAll>true</UnloadOnLinkAll>  <!-- bool - unload weapons and link when LinkAll button pressed -->
         <AllowNonPublished>true</AllowNonPublished>
         <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
         <FleetShareDelayed>true</FleetShareDelayed><!-- switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->

@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.8
+    Version:    8.9
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -60,6 +60,7 @@ public:
         uint16 maxPlayers;
         bool ModuleAutoOff;
         float ModuleDamageChance;
+        bool UnloadOnLinkAll;
         bool AllowNonPublished;
         bool FleetShareDelayed;
         bool BountyPayoutDelayed;

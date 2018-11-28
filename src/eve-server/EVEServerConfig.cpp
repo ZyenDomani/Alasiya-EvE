@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    8.8
+    Version:    8.9
 */
 
 
@@ -57,6 +57,7 @@ EVEServerConfig::EVEServerConfig()
     server.MaxThreadReport = 20;
     server.ModuleAutoOff = false;
     server.ModuleDamageChance = 0.35;
+    server.UnloadOnLinkAll = false;
     server.processTic = 1.0;
     server.AllowNonPublished = false;
     server.FleetShareDelayed = false;
@@ -277,6 +278,7 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
     AddValueParser( "MaxThreadReport",      server.MaxThreadReport );
     AddValueParser( "ModuleAutoOff",        server.ModuleAutoOff );
     AddValueParser( "ModuleDamageChance",   server.ModuleDamageChance );
+    AddValueParser( "UnloadOnLinkAll",      server.UnloadOnLinkAll );
     AddValueParser( "processTic",           server.processTic );
     AddValueParser( "AllowNonPublished",    server.AllowNonPublished );
     AddValueParser( "FleetShareDelayed",    server.FleetShareDelayed );

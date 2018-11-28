@@ -393,6 +393,7 @@ void Client::ProcessClient() {
 
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
+            _log(CLIENT__TIMER, "Client::ProcessClient() - timer check: timenow %u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
                 case ClientState::csDock: {
@@ -989,7 +990,7 @@ void Client::SetClientTimer(ClientState state, uint32 time)
 {
     m_clientState = state;
     m_stateTimer.Start(time);
-    _log(CLIENT__TIMER, "%s: ClientTimer set %s to %ums.", m_char->itemName().c_str(), GetStateName(state).c_str(), time);
+    _log(CLIENT__TIMER, "%s: ClientTimer set %s to %ums.  timenow %u", m_char->itemName().c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
 }
 
 std::string Client::GetStateName(ClientState state)
