@@ -120,7 +120,9 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         }
     }
 
-    return DBResultToTupleSet(res);
+    if (res.ColumnCount())
+        return DBResultToTupleSet(res);
+    return nullptr;
 }
 
 PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityIDs) {
@@ -134,7 +136,6 @@ PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityID
 
     return DBResultToTupleSet(res);
 }
-
 
 PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
     // this is locations only....region, const, system, station
@@ -207,7 +208,9 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
         }
     }
 
-    return DBResultToTupleSet(res);
+    if (res.ColumnCount())
+        return DBResultToTupleSet(res);
+    return nullptr;
 }
 
 PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
@@ -219,7 +222,9 @@ PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
         codelog(DATABASE__ERROR, "Error in GetMultiStationEx query: %s", res.error.c_str());
     }
 
-    return DBResultToTupleSet(res);
+    if (res.ColumnCount())
+        return DBResultToTupleSet(res);
+    return nullptr;
 }
 
 
