@@ -1070,9 +1070,9 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
             m_ModuleManager->Initialize();
         }
         InventoryItemRef chargeRef = m_ModuleManager->GetModule(fromFlag)->GetLoadedChargeRef();
-        m_ModuleManager->UnloadCharge(fromFlag);
         if (chargeRef.get() == nullptr)
             return 0;
+        m_ModuleManager->UnloadCharge(fromFlag);
         return chargeRef->itemID();
     }
     return 0;
@@ -1331,6 +1331,9 @@ void ShipItem::LinkAllWeapons()
 {
     std::vector< GenericModule* > moduleVec;
     m_ModuleManager->GetWeapons(moduleVec);
+
+    if (sConfig.server.UnloadOnLinkAll)
+        UnloadAllModules();
     // remove current links
     for (auto cur : moduleVec) {
         cur->SetLinked(false);
@@ -1382,6 +1385,7 @@ void ShipItem::LinkAllWeapons()
         }
         if (!linked)
             xtraVec.push_back((*itr));
+        ++itr;
     }
     if (xtraVec.size()) {
         for (auto cur : xtraVec) {

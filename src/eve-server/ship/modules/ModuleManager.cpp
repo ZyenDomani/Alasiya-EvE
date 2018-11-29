@@ -626,15 +626,19 @@ void ModuleManager::UnloadCharge(EVEItemFlags flag)
         if (pMod->IsLoaded() ) {
             InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
             if (chargeRef.get() == nullptr) {
-                _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found on module at slot %i", flag);
+                _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found on module %s at slot %i", pMod->GetSelf()->itemName().c_str(), flag);
                 return;
             }
             _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s", pMod->GetSelf()->itemName().c_str(), chargeRef->itemName().c_str());
-            if (IsStation(m_Ship->locationID()))
-                chargeRef->Move(m_Ship->locationID(), flagHangar, true);
-            else
-                chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
             pMod->UnloadCharge();
+            if (IsStation(m_Ship->locationID())) {
+                chargeRef->Move(m_Ship->locationID(), flagHangar, true);
+            } else {
+                if (m_Ship->GetMyInventory()->ContainsTypeQty(chargeRef->typeID(), 1))
+                    chargeRef->MergeTypesInCargo();
+                else
+                    chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
+            }
         } else
             _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), flag);
     } else
@@ -667,8 +671,12 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 void ModuleManager::UnloadAllModules()
 {
     bool inSpace = IsSolarSystem(m_Ship->locationID());
-    for (auto cur : m_charges)
-        cur.second->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), (inSpace ? flagCargoHold : flagHangar), true);
+    for (auto cur : m_charges) {
+        if (m_Ship->GetMyInventory()->ContainsTypeQty(cur.second->typeID(), 1))
+            cur.second->MergeTypesInCargo();
+        else
+            cur.second->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), (inSpace ? flagCargoHold : flagHangar), true);
+    }
 
     m_charges.clear();
     pModuleCont->UnloadAll();

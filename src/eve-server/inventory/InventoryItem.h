@@ -115,11 +115,13 @@ public:
     void                    Relocate(const GPoint pos);
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
-    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);    // this will remove item from old location if needed.
+    // this will remove item from old location and (optionally) notify client of changes
+    void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // Donate() is used to xfer owner and location when moving items between char and corp
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
-
+    // this is for unloading charges (possibably more).  will stack items
+    void                    MergeTypesInCargo();
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     bool                    AlterQuantity(int32 qty_change, bool notify=false);
     bool                    SetQuantity(int32 qty_new, bool notify=false);

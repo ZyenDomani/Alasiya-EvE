@@ -750,7 +750,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
     m_locationID = new_location;
 
     SaveItem();
-    
+
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
         std::map<int32, PyRep *> changes, changes2;
@@ -809,6 +809,15 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
             changes[ixFlag] = new PyInt(old_flag);
         SendItemChange( m_ownerID, changes);   //changes is consumed
     }
+}
+
+void InventoryItem::MergeTypesInCargo()
+{
+    InventoryItemRef iRef = pInventory->GetByTypeFlag(m_type.id(), flagCargoHold);
+    if (iRef.get() == nullptr)
+        return;
+    if (iRef->AlterQuantity(m_quantity, true))
+        this->Delete();
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
