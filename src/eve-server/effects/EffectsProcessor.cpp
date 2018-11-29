@@ -507,11 +507,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(cur.second.srcRef);
                     } break;
                     case dgmTargLocCharge: {
-                        // ....charge on src item
+                        // ....charge on src item (from module)
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef->flag()));
                     } break;
                     case dgmTargLocOther: {
-                        // ....module containing the src item (charge)
+                        // ....module containing the src item (from charge)
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
                     } break;
                     case dgmTargLocTarget: {

@@ -547,9 +547,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
-    /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-     *    also, DONT reset modifiermap before remoing, to use existing, modified data
-     */
     if (m_chargeRef.get() != nullptr) {
         // remove charge effects here
         m_chargeRef->ClearModifiers();
@@ -562,6 +559,7 @@ void ActiveModule::UnloadCharge()
         }
         /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
          *    also, DONT reset modifiermap before remoing, to use existing, modified data
+         *  NOTE:  i've no clue how to do that yet....
          */
         Client* pClient = m_shipRef->GetPilot();
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
