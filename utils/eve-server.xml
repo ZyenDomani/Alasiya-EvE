@@ -137,6 +137,7 @@
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
         <EnableDrones>true</EnableDrones><!-- bool -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
+        <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
     </npc>
 
     <standings><!-- these are in percent -->
