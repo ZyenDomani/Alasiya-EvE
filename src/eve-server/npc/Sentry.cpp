@@ -151,7 +151,7 @@ void Sentry::Killed(Damage &fatal_blow) {
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
-        if (!pClient ) {
+        if (pClient == nullptr) {
             sLog.Error("Sentry::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
@@ -182,12 +182,13 @@ void Sentry::Killed(Damage &fatal_blow) {
     const char* faction = itoa(m_allyID);
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadNPCPosition, faction);
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
-    if (!wreckItemRef) {
+    if (wreckItemRef.get() == nullptr) {
         sLog.Error("Sentry::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
     }
 
-    DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    if (MakeRandomFloat() < sConfig.npc.LootDropChance)
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = killer->GetAllianceID();

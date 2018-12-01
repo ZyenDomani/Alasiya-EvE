@@ -303,7 +303,7 @@ void NPC::Killed(Damage &fatal_blow) {
         return; // make error here?
 
     if (killed)
-        return; // fix for multiple wrecks created at same time.
+        return; // fix for multiple wrec
     killed = true;
 
     m_destiny->Halt();
@@ -314,10 +314,10 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
-    uint32 killerID = 0;
+    SystemEntity *killer(fatal_blow.srcSE);
     Client* pClient(nullptr);
-    SystemEntity* killer = fatal_blow.srcSE;
-    
+    uint32 killerID = 0;
+
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
@@ -360,7 +360,8 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
     }
 
-    DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    if (MakeRandomFloat() < sConfig.npc.LootDropChance)
+        DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());

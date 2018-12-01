@@ -166,8 +166,6 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
 
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
-    if (IsNPCSE() and (MakeRandomFloat() > sConfig.npc.LootDropChance))
-        return;
     std::vector<LootList> lootList;
     sDataMgr.GetLoot(groupID, lootList);
 

@@ -934,7 +934,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
         pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
-        if (!pClient ) {
+        if (pClient == nullptr) {
             sLog.Error("StructureSE::Killed()", "killer == IsDrone and pPlayer == nullptr");
         } else
             killerID = pClient->GetCharacterID();
