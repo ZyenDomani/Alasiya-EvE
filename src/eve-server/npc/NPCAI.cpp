@@ -319,6 +319,8 @@ void NPCAIMgr::WarpOut()
 
 void NPCAIMgr::SetWander()
 {
+    if (m_npc->GetSpawnMgr() == nullptr)
+        return;
     if (!m_isWandering) {
         _log(NPC__AI_TRACE, "%s(%u): Wandering:  No Targets within my sight range of %um", \
                 m_npc->GetName(), m_npc->GetID(), m_sightRange);
