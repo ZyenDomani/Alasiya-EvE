@@ -33,11 +33,12 @@ class InventoryItem;
 class DestinyManager;
 class SystemManager;
 class ShipItem;
+class GenericModule;
 
 class Missile
 : public DynamicSystemEntity {
 public:
-    Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, SystemEntity* pSE);
+    Missile(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod=nullptr);
     virtual ~Missile();
 
     /* class type pointer querys. */
@@ -66,8 +67,8 @@ public:
 
 protected:
     SystemEntity* m_targetSE;
-    InventoryItemRef m_module;
     SystemEntity* m_fromSE;
+    InventoryItemRef m_modRef;
 
     void HitTarget();
     void EndOfLife();

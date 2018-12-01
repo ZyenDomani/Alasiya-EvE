@@ -565,14 +565,14 @@ void Character::ProcessEffects()
 
 SkillRef Character::GetSkillInTraining() const {
     InventoryItemRef item;
-    pInventory->FindSingleByFlag(flagSkillInTraining, item);
+    pInventory->GetSingleItemByFlag(flagSkillInTraining, item);
     return SkillRef::StaticCast( item );
 }
 
 void Character::GetSkillsList(std::vector<InventoryItemRef> &skills) const
 {
-    pInventory->FindByFlag( flagSkillInTraining, skills );
-    pInventory->FindByFlag( flagSkill, skills );
+    pInventory->GetItemsByFlag(flagSkillInTraining, skills );
+    pInventory->GetItemsByFlag(flagSkill, skills );
 }
 
 EvilNumber Character::GetSPPerMin(Skill* skill)
@@ -582,7 +582,7 @@ EvilNumber Character::GetSPPerMin(Skill* skill)
 
 double Character::GetEndOfTraining() const {
     InventoryItemRef item;
-    if (pInventory->FindSingleByFlag(flagSkillInTraining, item))
+    if (pInventory->GetSingleItemByFlag(flagSkillInTraining, item))
         return item->GetAttribute(AttrExpiryTime).get_double();
     return 0;
 }
@@ -908,8 +908,8 @@ PyDict *Character::GetCharInfo() {
     std::vector<InventoryItemRef> skills;
     skills.clear();
     //find all the skills contained within ourself.
-    pInventory->FindByFlag( flagSkill, skills );
-    pInventory->FindByFlag( flagSkillInTraining, skills );
+    pInventory->GetItemsByFlag(flagSkill, skills );
+    pInventory->GetItemsByFlag(flagSkillInTraining, skills );
 
     /** @todo  get implants and boosters here once implemented */
 

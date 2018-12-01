@@ -72,18 +72,17 @@ InventoryItem::~InventoryItem() noexcept
     SafeDelete(pAttributeMap);
 }
 
-/* see notes about these in header
 InventoryItem::InventoryItem(const InventoryItem& oth)
-: RefObject(0)
+: RefObject(0),
+m_itemID(oth.m_itemID),
+m_type(oth.m_type)
 {
-
-    std::map<uint16, EvilNumber> attrMap;
-    oth.GetAttributeMap()->CopyAttributes(attrMap);
-
-    m_itemID = oth.m_itemID;
-    m_type = oth.m_type;
+    sLog.Error("InventoryItem()", "InventoryItem copy c'tor called.");
+    EvE::traceStack();
+    assert(0);
 }
 
+/* see notes about these in header
 InventoryItem::InventoryItem(const InventoryItemRef oth)
 : RefObject(0)
 {
@@ -723,9 +722,9 @@ void InventoryItem::Rename(std::string name)
     SaveItem();
 }
 
-void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags flag, bool notify/*true*/)
+void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify/*true*/)
 {
-    if ((new_location == m_locationID) and (flag == m_flag) and (new_owner == m_ownerID))
+    if ((new_location == m_locationID) and (new_flag == m_flag) and (new_owner == m_ownerID))
         return; //nothing to do...
 
     Inventory* pInv(nullptr);
@@ -745,7 +744,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
         }
     }
 
-    m_flag = flag;
+    m_flag = new_flag;
     m_ownerID = new_owner;
     m_locationID = new_location;
 
@@ -754,7 +753,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags f
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
         std::map<int32, PyRep *> changes, changes2;
-        if (flag != old_flag) {
+        if (new_flag != old_flag) {
             changes[ixFlag] = new PyInt(old_flag);
             changes2[ixFlag] = new PyInt(old_flag);
         }
@@ -797,6 +796,9 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
                 _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", m_locationID, itemName().c_str());
         }
     }
+    if (old_flag != new_flag)
+        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
+                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
     SaveItem();
 
@@ -811,11 +813,12 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
 }
 
-void InventoryItem::MergeTypesInCargo()
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip)
 {
-    InventoryItemRef iRef = pInventory->GetByTypeFlag(m_type.id(), flagCargoHold);
+    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flagCargoHold);
     if (iRef.get() == nullptr)
         return;
+    // here we 'merge' with stack already in cargo
     if (iRef->AlterQuantity(m_quantity, true))
         this->Delete();
 }
@@ -881,7 +884,7 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
 }
 
 InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
-    if (qty <= 0) {
+    if (qty < 1) {
         _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
         return InventoryItemRef(nullptr);
     }
@@ -894,7 +897,7 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
-    iRef->Move( m_locationID, m_flag, true);
+    iRef->Move(m_locationID, m_flag, true);
     return iRef;
 }
 
@@ -902,9 +905,8 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     if (to_merge.get() == nullptr)
         return false;
 
-    if (m_singleton or to_merge->singleton()) {
+    if (m_singleton or to_merge->singleton())
         throw PyException( MakeCustomError("You cannot stack assembled items."));
-    }
 
     if (m_type.id() != to_merge->typeID()) {
         _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
@@ -916,7 +918,10 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         return false;
     }
 
-    if ((qty == 0) or (qty == to_merge->quantity())) {
+    if (qty == 0)
+        qty = to_merge->quantity();
+
+    if (qty == to_merge->quantity()) {
         to_merge->Delete();
     } else if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i.", to_merge->itemName().c_str(), to_merge->itemID(), qty);

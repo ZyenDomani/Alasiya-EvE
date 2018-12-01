@@ -58,7 +58,8 @@ public:
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool ContainsItem(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }
-    bool ContainsTypeQty(uint16 typeID, uint32 qty) const;
+    bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
+    bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit) const;
 
     double GetCapacity(EVEItemFlags flag) const;
     double GetStoredVolume(EVEItemFlags flag) const;
@@ -70,12 +71,13 @@ public:
     /* Inventory-by-Flag methods */
     /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
-    bool FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
-    bool FindTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
-    uint32 FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
-    uint32 FindByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
-    uint32 FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
+    bool GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
+    bool GetTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
+    uint32 GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
+    uint32 GetItemsByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;
+    uint32 GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const;
     InventoryItemRef FindFirstByFlag(EVEItemFlags flag) const;
+    InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 
     /* Primary packet builders */
     CRowSet* List( EVEItemFlags flag, uint32 forOwner = 0 ) const;

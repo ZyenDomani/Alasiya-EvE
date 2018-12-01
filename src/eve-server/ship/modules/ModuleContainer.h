@@ -36,9 +36,12 @@ public:
     // basic methods
     void SaveModules();
     void ShipWarping();
-    void GetWeapons(std::vector<GenericModule*>& moduleVec);
+    void GetWeapons(std::list<GenericModule*>& weaponList);
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec);
     void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& moduleVec);
+
+    // returns vector of fitted GenericModule* in specified flag's bank
+    void GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec);
 
     bool AddModule(EVEItemFlags flag, GenericModule* mod);
     bool RemoveModule(EVEItemFlags flag);

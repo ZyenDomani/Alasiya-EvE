@@ -41,8 +41,6 @@ class ShipItem;
 class ServiceDB;
 class ItemContainer;
 class Rsp_CommonGetInfo_Entry;
-class ItemRowset_Row;
-class Inventory;
 
 /*
  * NOTE:
@@ -70,7 +68,7 @@ public:
     /* begin rewrite and update */
     /** @todo  derive and execute tests to determing if these are needed... */
     // copy c'tor
-    //InventoryItem(const InventoryItem& oth);
+    InventoryItem(const InventoryItem& oth);
     // move c'tor
     InventoryItem(InventoryItem&& oth) noexcept;
     // assignment op
@@ -118,10 +116,10 @@ public:
     // this will remove item from old location and (optionally) notify client of changes
     void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // Donate() is used to xfer owner and location when moving items between char and corp
-    void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags flag, bool notify=true);
+    void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
-    // this is for unloading charges (possibably more).  will stack items
-    void                    MergeTypesInCargo();
+    // this is for stacking unloading charges in ships cargo
+    void                    MergeTypesInCargo(ShipItem* pShip);
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     bool                    AlterQuantity(int32 qty_change, bool notify=false);
     bool                    SetQuantity(int32 qty_new, bool notify=false);
@@ -141,7 +139,8 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
-    virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true);
+    // makes new stack of 'qty' and returns ref of new stack, or null if failed
+    virtual InventoryItemRef Split(int32 qty, bool notify=true);
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
 
     virtual void            AddItem(InventoryItemRef item);

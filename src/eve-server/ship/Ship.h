@@ -274,7 +274,10 @@ public:
     // must return integer
     // will remove item from previous container
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);
-    void LoadCharge( EVEItemFlags flag, InventoryItemRef iRef);          // this can throw. returns nothing
+    // this can throw. returns nothing
+    void LoadCharge(InventoryItemRef iRef, EVEItemFlags flag);
+    // this can throw. returns nothing
+    void LoadChargesToBank(EVEItemFlags flag, std::vector<int32>& chargeIDs);
     uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag);
     /* end new module manager interface */
 
@@ -319,19 +322,26 @@ protected:
 
     static uint32 CreateItemID( ItemData &data);
 
-    /* new effects system */
 public:
+    /* new effects system */
     void RemoveEffects();
     void UpdateEffects();
     void CharacterBoardingShip()                        { m_ModuleManager->CharacterBoardingShip(); }
 
     /* linking weapons methods */
+    uint8 GetLinkedCount(GenericModule* pMod);
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
     void LinkWeapon(uint32 masterID, uint32 slaveID); // this should throw if applicable
     void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);
+    uint32 UnlinkWeapon(uint32 moduleID);
     void UnlinkWeapon(uint32 masterID, uint32 slaveID);
+    void UnlinkGroup(uint32 memberID);
     void UnlinkAllWeapons();
+    void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
+    // this single iteration loop will link same type weapons, then remove the weapon from the vector.
+    //  non-linked weapons are kept.
+    void LinkWeaponLoop(std::list< GenericModule* >& moduleVec);
     PyDict* GetLinkedWeapons();
 
 private:

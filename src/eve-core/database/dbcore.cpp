@@ -143,6 +143,8 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
     if (pSSL)
         flags |= CLIENT_SSL;
+    sLog.Cyan("    Connect Flags", " %x", flags);
+
     if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
         pStatus = Error;
         *errnum = mysql_errno(mysql);
@@ -154,6 +156,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         return;
     } else {
         pStatus = Connected;
+        sLog.Blue(" DataBase Manager", "DataBase Connected");
     }
 
     // Setup character set we wish to use

@@ -120,6 +120,8 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
         }
     }
 
+    //RuntimeError: ('_Prime called with unsupported data type', <type 'NoneType'>)
+    /** @todo  see what we can do about this....old error  */
     if (res.ColumnCount())
         return DBResultToTupleSet(res);
     return nullptr;

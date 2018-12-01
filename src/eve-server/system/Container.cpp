@@ -110,7 +110,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
     if (flag == flagCargoHold )  {
         EvilNumber capacityUsed(0);
         std::vector<InventoryItemRef> items;
-        pInventory->FindByFlag(flag, items);
+        pInventory->GetItemsByFlag(flag, items);
         for (auto cur : items)
             capacityUsed += cur->GetAttribute(AttrVolume);
         capacityUsed += item->GetAttribute(AttrVolume);

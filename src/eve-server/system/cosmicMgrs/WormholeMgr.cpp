@@ -123,7 +123,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
     m_wormholes.push_back(entity.itemID);
 
-    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::Create() - Creating WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Creating WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
@@ -131,7 +131,7 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
     CosmicSignature sig;
 
 
-    _log(COSMIC_MGR__MESSAGE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
                 pFromSys->GetName().c_str(), pFromSys->GetID(), pToSys->GetName().c_str(), pToSys->GetID());
 }
 

@@ -289,21 +289,42 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
         return new PyInt(0);
     }
 
-    // args.shipID
+    // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
     return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagHangar));
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     // newItemID = inv.RemoveChargeToCargo(itemKey, quantity, preferMerge=preferMerge)
+    /*
+     * 20:18:58 [InvMsg] Calling InventoryBound::RemoveChargeToCargo() for Thrasher(140002044)
+     * 20:18:58 [InvDump]   Call Arguments:
+     * 20:18:58 [InvDump]      Tuple: 2 elements
+     * 20:18:58 [InvDump]       [ 0]  Tuple: 3 elements
+     * 20:18:58 [InvDump]       [ 0]   [ 0]    Integer: 140002044
+     * 20:18:58 [InvDump]       [ 0]   [ 1]    Integer: 31
+     * 20:18:58 [InvDump]       [ 0]   [ 2]    Integer: 178
+     * 20:18:58 [InvDump]       [ 1]       None
+     * 20:18:58 [InvDump]  Named Arguments:
+     * 20:18:58 [InvDump]   preferMerge
+     * 20:18:58 [InvDump]        Boolean: true
+     */
     _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
+
+    PyTuple* tuple(call.tuple);
+    if (tuple->size() == 2) {
+        PyTuple* inside = new PyTuple(1);
+            inside->SetItem(0, tuple->GetItem(0)->AsTuple());
+        tuple = inside;
+    }
+
     Call_RemoveChargeToCargo args;
-    if (!args.Decode(&call.tuple)) {
+    if (!args.Decode(&tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyInt(0);
     }
 
-    // args.shipID
+    // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
     return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagCargoHold));
 }
 
@@ -686,13 +707,15 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             }
         }
 
-        // add item to new location
-        if (donating) {
+        if (pInventory != nullptr)  // not sure if this would be null, but check anyway
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
+
+        if (donating) {
             iRef->Donate(m_ownerID, m_itemID, toFlag);
             continue;
         }
 
+        // add item to new location
         if (ship) {
             // are we adding module to ship using autoFit?
             if (toFlag == flagAutoFit) {
@@ -722,12 +745,14 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             // reset in case of MultiAdd
             toFlag = origFlag;
         } else {
-            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails.
             iRef->Donate(m_ownerID, m_itemID, toFlag);
         }
     }
 
     sItemFactory.UnsetUsingClient();
+
+    if (iRef.get() == nullptr)
+        return nullptr;
 
     if (items.size() == 1) {
         //call returns itemID for single-item adds
@@ -760,7 +785,7 @@ std::vector< int32 > InventoryBound::CatSortItems(std::vector< InventoryItemRef 
 
     //begin basic sort
     bool done = false;
-    InventoryItemRef tmp;
+    InventoryItemRef tmp(nullptr);
     while (!done) {
         done = true;  //assume sorted
         for (int i = 0, i2 = 1; (i < itemVec.size()) and (i2 < itemVec.size()); ++i, ++i2) { //iterate though list

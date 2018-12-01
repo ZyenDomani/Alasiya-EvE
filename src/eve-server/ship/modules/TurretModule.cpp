@@ -41,20 +41,27 @@ void TurretModule::ApplyDamage()
 {
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcShots);
-
+    
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
-             m_modRef,
-             m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),
-             m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),
-             m_chargeRef->GetAttribute(AttrEmDamage).get_float(),
-             m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),
-             m_formula.GetToHit(m_shipRef, this, m_targetSE),
-             m_effectID
+            m_modRef,
+            m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),
+            m_chargeRef->GetAttribute(AttrThermalDamage).get_float(),
+            m_chargeRef->GetAttribute(AttrEmDamage).get_float(),
+            m_chargeRef->GetAttribute(AttrExplosiveDamage).get_float(),
+            m_formula.GetToHit(m_shipRef, this, m_targetSE),
+            m_effectID
     );
 
     d *= GetAttribute(AttrDamageMultiplier).get_float();
     d *= sConfig.rates.turretDamage;
-    m_targetSE->ApplyDamage(d);
+
+    if (m_linked) {
+        if (m_linkMaster) {
+            d *= m_shipRef->GetLinkedCount(this);
+            m_targetSE->ApplyDamage(d);
+        }
+    } else
+        m_targetSE->ApplyDamage(d);
 
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:

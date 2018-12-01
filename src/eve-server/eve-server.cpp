@@ -660,7 +660,7 @@ int main( int argc, char* argv[] )
      */
     while (m_run) {
         Timer::SetCurrentTime();
-        start = GetTimeMSeconds();
+        start = GetTickCount();
 
         /* Freeze Detector Code */
         //++m_worldLoopCounter;
@@ -675,9 +675,11 @@ int main( int argc, char* argv[] )
 
         /* do the stuff for thread sleeping */
         if (sEntityList.GetClientCount()) {     // how much of a proc hit is this?  change/remove it?
-            start = GetTimeMSeconds() - start;
+            start = GetTickCount() - start;
             if (m_sleepTime > start)
                 std::this_thread::sleep_for(std::chrono::milliseconds(start));
+            //else
+            //    sLog.Warning("Server", "Overrun");    // this is just curiosity...happens VERY seldom
         } else /* if no clients, let server idle longer*/
             std::this_thread::sleep_for(std::chrono::milliseconds(m_idle));
     }

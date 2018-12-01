@@ -1048,7 +1048,7 @@ ShipItemRef Client::SpawnNewRookieShip() {
     std::string name =  m_char->itemName() + "'s Noob Ship";
     //create data for new rookie ship
     ItemData sData(shipID, m_char->itemID(), 0, flagAutoFit, name.c_str());
-    ItemData mData(3651, m_char->itemID(), 0, flagAutoFit);
+    ItemData mData(itemCivilianMiner, m_char->itemID(), 0, flagAutoFit);
     ItemData wData(gunID, m_char->itemID(), 0, flagAutoFit);
     ItemData cData(itemTypeTrit, m_char->itemID(), 0, flagAutoFit, 100);
     //spawn rookie ship

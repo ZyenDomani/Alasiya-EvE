@@ -24,6 +24,7 @@ typedef enum {
     itemTypeTrit    = 34,
     itemTypeCredits = 29,
     itemTypeJetCan  = 23,
+    itemCivilianMiner = 3651,
     AllianceTypeID  = 16159,
     itemTypeBillboard = 11136,
     itemCloneAlpha  = 164

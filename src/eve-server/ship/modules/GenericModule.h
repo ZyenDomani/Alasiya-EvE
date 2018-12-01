@@ -58,6 +58,7 @@ public:
     bool IsLauncherModule()                             { return m_launcher; }
     bool IsOverloaded()                                 { return m_overLoaded; }
     bool IsLinked()                                     { return m_linked; }
+    bool IsMaster()                                     { return m_linkMaster; }
     bool IsDamaged()                                    { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
     bool IsActive()                                     { return m_ModuleState == Module::State::Activated; }
     bool IsLoading()                                    { return m_ModuleState == Module::State::Loading; }
@@ -79,6 +80,7 @@ public:
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
     void SetChargeState(int8 state)                     { m_ChargeState = state; }
     void SetLinked(bool set=false)                      { m_linked = set; }
+    void SetLinkMaster(bool set=false)                  { m_linkMaster = set; }
 
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
     int8 GetModuleState()                               { return m_ModuleState; }
@@ -124,6 +126,7 @@ protected:
     int8             m_ModuleState;
     int8             m_ChargeState;
 
+    bool             m_linkMaster   :1;
     bool             m_linked       :1;
     bool             m_isWarpSafe   :1;
     bool             m_hiPower      :1;

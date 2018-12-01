@@ -354,19 +354,17 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
     if (sConfig.debug.IsTestServer)
         if (sConfig.debug.UseProfiling)
             sLog.Warning("Inventory::SortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
-
     return itemVec;  //returns sorted list
 }
 
-uint32 Inventory::FindByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const {
     for (auto cur : mContents)
         if (cur.second->flag() == flag)
             items.push_back(cur.second);
-
     return items.size();
 }
 
-bool Inventory::FindTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
+bool Inventory::GetTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryItemRef >& items)
 {
     for (auto cur : mContents)
         if (cur.second->flag() == flag)
@@ -377,13 +375,25 @@ bool Inventory::FindTypesByFlag(EVEItemFlags flag, std::map< uint16, InventoryIt
     return false;
 }
 
-bool Inventory::FindSingleByFlag(EVEItemFlags flag, InventoryItemRef &item) const {
+InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
+{
+    std::vector<InventoryItemRef> items;
+    if (GetItemsByFlag(flag, items) < 1)
+        return InventoryItemRef(nullptr);
+
+    for (auto cur : items)
+        if (cur->typeID() == typeID )
+            return cur;
+
+    return InventoryItemRef(nullptr);
+}
+
+bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &item) const {
     for (auto cur : mContents)
         if (cur.second->flag() == flag) {
             item = cur.second;
             return true;
         }
-
     return false;
 }
 
@@ -391,33 +401,30 @@ bool Inventory::IsEmptyByFlag(EVEItemFlags flag) const {
     for (auto cur : mContents)
         if (cur.second->flag() == flag)
             return false;
-
     return true;
 }
 
-uint32 Inventory::FindByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::GetItemsByFlagRange(EVEItemFlags lowflag, EVEItemFlags highflag, std::vector<InventoryItemRef> &items) const {
     uint32 count = 0;
     for (auto cur : mContents)
         if (cur.second->flag() >= lowflag && cur.second->flag() <= highflag) {
             items.push_back(cur.second);
             ++count;
         }
-
     return count;
 }
 
-uint32 Inventory::FindByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const {
+uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<InventoryItemRef> &items) const {
     uint32 count = 0;
     for (auto cur : mContents)
         if (flags.find(cur.second->flag()) != flags.end()) {
             items.push_back(cur.second);
             ++count;
         }
-
     return count;
 }
 
-bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty) const
+bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 {
     uint16 count = 0;
     for (auto cur : mContents) {
@@ -430,7 +437,17 @@ bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty) const
     }
     if (count >= qty)
         return true;
+    return false;
+}
 
+bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
+{
+    std::vector<InventoryItemRef> itemVec;
+    if (GetItemsByFlag(flag, itemVec) < 1)
+        return false;
+    for (auto cur : itemVec)
+        if (cur->typeID() == typeID )
+                return true;
     return false;
 }
 
@@ -440,25 +457,20 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
     InventoryItemRef iRef;
     std::map<uint32, InventoryItemRef> types;
     std::map<uint32, InventoryItemRef>::iterator tItr;
-    //std::map<uint32, InventoryItemRef>::iterator fItr;
-
     std::map<uint32, InventoryItemRef>::iterator lItr = mContents.begin();
     while (lItr != mContents.end()) {
         iRef = lItr->second;
         ++lItr;
         if (IsModuleSlot(iRef->flag()))    // check to avoid removing loaded modules from ship
             continue;
-        if ((!iRef->singleton()) and ((forOwner == 0) or (forOwner == iRef->ownerID()))) {
+        if (iRef->singleton())
+            continue;
+        if ((forOwner == 0) or (forOwner == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
             if (tItr == types.end())
                 types.insert(std::make_pair(iRef->typeID(), iRef));
             else
                 tItr->second->Merge(iRef);
-            /*
-            fItr = mContents.find(iRef->itemID());
-            if (fItr != mContents.end())
-                lItr = mContents.erase(fItr->first);
-            else */
         }
     }
 }
@@ -538,7 +550,7 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();
     }
 
-    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %u called for item %u", flag, m_myID);
+    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %s(%u) called for item %u", sDataMgr.GetFlagName(flag).c_str(), flag, m_myID);
     return 0.0;
 }
 

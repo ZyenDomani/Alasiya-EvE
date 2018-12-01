@@ -32,6 +32,7 @@
 #include "PyService.h"
 #include "ship/modules/ModuleContainer.h"
 
+class GenericModule;
 
 class ModuleManager
 {
@@ -45,6 +46,9 @@ public:
 
     void CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef);     // verify slot avalibe
     void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);    // verify module isnt group limited
+
+    // returns vector of fitted GenericModule* in specified flag's bank
+    void GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec);
 
     bool InstallRig(InventoryItemRef item, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);
@@ -69,13 +73,14 @@ public:
     void RepairModule(uint32 itemID, EvilNumber amount);
     void RepairModule(GenericModule* pMod, EvilNumber amount);
     void RepairModules();
-    // this will move charge item to module
+    // this will move charge item to module and split stack if needed
     // must NOT throw
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);
-    // this will remove charge item from module
+    // this will remove charge item from module and update client
     // must NOT throw
-    void UnloadCharge(EVEItemFlags flag);
-    void UnloadAllModules();  // this will remove charge items from modules
+    void UnloadCharge(EVEItemFlags fromFlag, bool merge=false);
+    // this will remove charge items from modules
+    void UnloadAllModules();
     void StripModules();
     void UpdateModules(std::vector<uint32> modVec);
     void UpdateModules(EVEItemFlags flag);
@@ -94,7 +99,7 @@ public:
     InventoryItemRef GetLoadedChargeOnModule(InventoryItemRef moduleRef);
 
     void GetLoadedCharges(std::map<EVEItemFlags, InventoryItemRef> &charges);
-    void GetWeapons(std::vector<GenericModule*>& modVec);
+    void GetWeapons(std::list<GenericModule*>& weaponList);
 
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);

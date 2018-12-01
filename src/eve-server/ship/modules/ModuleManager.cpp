@@ -126,6 +126,11 @@ uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 	return pModuleCont->GetAvailableSlotInBank(slotBank);
 }
 
+void ModuleManager::GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec)
+{
+    pModuleCont->GetModulesInBank(flag, modVec);
+}
+
 bool ModuleManager::InstallRig(InventoryItemRef iRef, EVEItemFlags flag) {
     if (((iRef->groupID() >= EVEDB::invGroups::Rig_Armor) and (iRef->groupID() <= EVEDB::invGroups::Rig_Astronautic))
     or (iRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
@@ -239,6 +244,8 @@ void ModuleManager::UnfitModule(uint32 itemID)
     pMod->AbortCycle();
     pMod->Offline();
     if (pMod->IsLoaded()) {
+        //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
+
         if (pMod->GetLoadedChargeRef().get() != nullptr)    // just in case...
             pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
         pMod->UnloadCharge();
@@ -279,7 +286,7 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
     }
     if (pModuleCont->isSlotOccupied(flag)) {
         throw PyException( MakeUserError("SlotAlreadyOccupied"));
-        /** @todo change this to use movemodule */
+        /** @todo change this to use movemodule? */
         return;
     }
 
@@ -549,100 +556,85 @@ void ModuleManager::RepairModules()
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 {
-    if (chargeRef.get() == nullptr)
-        if (m_Ship->HasPilot())
-            throw PyException( MakeUserError( "CantFindChargeToAdd"));
-
-    if (!IsModuleSlot(flag))
-        return; // throw error?  NO. must NOT throw
-
-    if (IsModuleSlot(chargeRef->flag()))
-        throw PyException( MakeUserError( "CantMoveChargesBetweenModules"));
-
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::LoadCharge() - module not found at slot %i", flag);
         return;
     }
-    float modCapacity = pMod->GetSelf()->GetAttribute(AttrCapacity).get_float();
+    float modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
     float chargeVolume = chargeRef->GetAttribute(AttrVolume).get_float();
 
     if (pMod->IsLoaded()) {
-        InventoryItemRef loadedChargeRef = pMod->GetLoadedChargeRef();
-        if ( chargeRef->typeID() != loadedChargeRef->typeID() ) {
-            // change charges
-            UnloadCharge(flag);
-        } else {
-            modCapacity -= (loadedChargeRef->GetAttribute(AttrVolume).get_float() * loadedChargeRef->quantity());
-            if (modCapacity > chargeVolume) {
-                uint32 quantityWeCanLoad = floor(modCapacity / chargeVolume);
-                if (quantityWeCanLoad > 0) {
-                    /** @todo verify this one....make sure we're right. check if we can actually use LoadCharge here... */
-                    if (quantityWeCanLoad < chargeRef->quantity()) {
-                        InventoryItemRef loadableChargeQtyRef = chargeRef->Split(quantityWeCanLoad);
-                        loadedChargeRef->Merge(loadableChargeQtyRef);
-                    } else {
-                        loadedChargeRef->Merge(chargeRef);
-                    }
-                    // we have loaded charge and updated qty. send reload update to client
-                    PyTuple* module = new PyTuple(1);
-                        module->SetItem(0, new PyInt(pMod->itemID()));
-                    PyTuple* tmp = new PyTuple(3);
-                        tmp->SetItem(0, module);
-                        tmp->SetItem(1, new PyInt(chargeRef->typeID()));
-                        tmp->SetItem(2, new PyInt(pMod->GetReloadTime()));
-                    m_Ship->GetPilot()->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
-                    return;
-                } else {
-                    return;   // cant even load one.  make error?
-                }
-            } else {
-                return;   // cant even load one.  make error?
-            }
-        }
-    } else {
-        modCapacity = pMod->GetAttribute(AttrCapacity).get_float();
-        if (modCapacity < (chargeVolume * chargeRef->quantity())) {
-            uint32 quantityWeCanLoad = floor((modCapacity / chargeVolume));
-            if (quantityWeCanLoad > 0) {
-                InventoryItemRef loadableChargeQtyRef = chargeRef->Split( quantityWeCanLoad );
-                chargeRef = loadableChargeQtyRef;
-            }
+        if (chargeRef->typeID() == pMod->GetLoadedChargeRef()->typeID())
+            modCapacity -= (chargeVolume * pMod->GetLoadedChargeRef()->quantity());
+        else
+            UnloadCharge(flag); // change charges
+    }
+
+    // check quantities
+    if (modCapacity < chargeVolume)
+        return;
+    uint32 loadQty = floor((modCapacity / chargeVolume));
+    if (loadQty < 1)
+        return;
+    InventoryItemRef oRef(chargeRef);   // make copy of chargeRef
+    if (loadQty < chargeRef->quantity()) {
+        chargeRef = chargeRef->Split(loadQty);
+        if (chargeRef.get() == nullptr) {
+            chargeRef = oRef;
+            return;
         }
     }
 
-    chargeRef->Donate(m_Ship->ownerID(), m_Ship->itemID(), flag, true);
-    pMod->LoadCharge(chargeRef);
-    m_charges.emplace(flag, chargeRef);
+    if (pMod->IsLoaded()) {
+        pMod->GetLoadedChargeRef()->Merge(chargeRef);
+    } else {
+        chargeRef->Donate(m_Ship->ownerID(), m_Ship->itemID(), flag, true);
+        pMod->LoadCharge(chargeRef);
+        m_charges.emplace(flag, chargeRef);
+    }
+
+    // change back to orig chargeRef incase of Merge(), which deletes item
+    chargeRef = oRef;   // oRef copy is deleted upon return (out of scope)
 }
 
-void ModuleManager::UnloadCharge(EVEItemFlags flag)
+void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
 {
-    std::map<EVEItemFlags, InventoryItemRef>::iterator itr = m_charges.find(flag);
-    if (itr != m_charges.end())
+    GenericModule* pMod = pModuleCont->GetModule(fromFlag);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", fromFlag);
+        return;
+    }
+
+    if (!pMod->IsLoaded()) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), fromFlag);
+        return;
+    }
+
+    InventoryItemRef chargeRef(nullptr);
+    std::map<EVEItemFlags, InventoryItemRef>::iterator itr = m_charges.find(fromFlag);
+    if (itr == m_charges.end())
+        chargeRef = pMod->GetLoadedChargeRef();
+    else {
+        chargeRef = itr->second;
         m_charges.erase(itr);
-    GenericModule* pMod = pModuleCont->GetModule(flag);
-    if (pMod != nullptr) {
-        if (pMod->IsLoaded() ) {
-            InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
-            if (chargeRef.get() == nullptr) {
-                _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found on module %s at slot %i", pMod->GetSelf()->itemName().c_str(), flag);
-                return;
-            }
-            _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s", pMod->GetSelf()->itemName().c_str(), chargeRef->itemName().c_str());
-            pMod->UnloadCharge();
-            if (IsStation(m_Ship->locationID())) {
-                chargeRef->Move(m_Ship->locationID(), flagHangar, true);
-            } else {
-                if (m_Ship->GetMyInventory()->ContainsTypeQty(chargeRef->typeID(), 1))
-                    chargeRef->MergeTypesInCargo();
-                else
-                    chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
-            }
-        } else
-            _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), flag);
-    } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", flag);
+    }
+    if (chargeRef.get() == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found in chargeList or on module %s at slot %i", pMod->GetSelf()->itemName().c_str(), fromFlag);
+        return;
+    }
+    _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s(%u) (merge:%s)",\
+            pMod->GetSelf()->itemName().c_str(), chargeRef->itemName().c_str(), chargeRef->itemID(), (merge?"true":"false"));
+    pMod->UnloadCharge();
+    // give client reason to update fit window
+    chargeRef->Move(0, flagAutoFit, true);
+    // move item and update client
+    if (IsStation(m_Ship->locationID()))
+        chargeRef->Move(m_Ship->locationID(), flagHangar, true);
+    else if (merge and m_Ship->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
+        chargeRef->MergeTypesInCargo(m_Ship);
+    else
+        chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
 }
 
 void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)
@@ -670,16 +662,16 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 
 void ModuleManager::UnloadAllModules()
 {
+    pModuleCont->UnloadAll();
     bool inSpace = IsSolarSystem(m_Ship->locationID());
     for (auto cur : m_charges) {
-        if (m_Ship->GetMyInventory()->ContainsTypeQty(cur.second->typeID(), 1))
-            cur.second->MergeTypesInCargo();
+        if (m_Ship->GetMyInventory()->ContainsTypeByFlag(cur.second->typeID(), flagCargoHold))
+            cur.second->MergeTypesInCargo(m_Ship);
         else
             cur.second->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), (inSpace ? flagCargoHold : flagHangar), true);
     }
 
     m_charges.clear();
-    pModuleCont->UnloadAll();
 }
 
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
@@ -756,9 +748,9 @@ void ModuleManager::ShipJumping()
     AbortCycle();
 }
 
-void ModuleManager::GetWeapons(std::vector< GenericModule* >& modVec)
+void ModuleManager::GetWeapons(std::list< GenericModule* >& weaponList)
 {
-    pModuleCont->GetWeapons(modVec);
+    pModuleCont->GetWeapons(weaponList);
 }
 
 void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)

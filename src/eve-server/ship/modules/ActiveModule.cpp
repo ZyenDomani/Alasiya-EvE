@@ -84,8 +84,7 @@ m_reloadTimer(0)
                 } break;
             }
         }
-    } else
-        m_chargeRef = iRef;
+    }
 
     Clear();
 
@@ -279,6 +278,10 @@ uint32 ActiveModule::DoCycle()
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
         if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
+            //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
+            //{'FullPath': u'UI/Messages', 'messageID': 259232, 'label': u'NotEnoughChargesBody'}(u'{launcher} has {[numeric]got} charges, but needs {[numeric]need} to fire.', None, {u'{[numeric]got}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'got'}, u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}, u'{[numeric]need}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'need'}})
+            //{'FullPath': u'UI/Messages', 'messageID': 258889, 'label': u'TooManyChargesForLauncherBody'}(u'The launcher is currently holding {[numeric]excess} too many excess units.', None, {u'{[numeric]excess}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'excess'}})
+            // can this throw?
             m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
             AbortCycle();
             return 0;
@@ -777,8 +780,16 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
 void ActiveModule::LaunchMissile()
 {
-    /** @todo check for grouped launchers and adjust missile accordingly */
-    // Actually Launch a missile, creating a new Destiny object for it
+    if (m_linked)
+        if (!m_linkMaster) {    // only firing ONE missile for linked lanuchers, but they ALL use a charge
+            // Reduce ammo charge by 1 unit:
+            m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+            // add data to StatisticMgr
+            sStatMgr.Increment(Stat::pcMissiles);
+            return;
+        }
+
+    // Launch a missile, creating a new Destiny object for it
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr)
         return;
@@ -789,7 +800,7 @@ void ActiveModule::LaunchMissile()
         m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
     SystemManager* pSystem = pClient->SystemMgr();
-    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE());
+    Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE(), this);
     if (pMissile == nullptr)
         return; // make error here
 

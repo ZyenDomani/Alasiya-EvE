@@ -414,7 +414,7 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
 
     DBResultRow row;
     if(!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "Item %u not found.", itemID);
+        _log(DATABASE__MESSAGE, "InventoryDB::GetItem() - Item %u not found.", itemID);
         return false;
     }
 

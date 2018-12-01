@@ -35,6 +35,7 @@ GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
     m_ChargeState = Module::State::Unloaded;
 
     m_linked = false;
+    m_linkMaster = false;
     m_isWarpSafe = false;
     m_overLoaded = false;
     m_chargeLoaded = false;

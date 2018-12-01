@@ -35,10 +35,10 @@
 #include "ship/Ship.h"
 #include "system/Damage.h"
 
-Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem, InventoryItemRef module, SystemEntity* target, SystemEntity* pSE)
+Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, InventoryItemRef modRef, SystemEntity* tSE, SystemEntity* pSE, GenericModule* pMod)
 : DynamicSystemEntity(self, services, pSystem),
-  m_module(module),
-  m_targetSE(target),
+  m_modRef(modRef),
+  m_targetSE(tSE),
   m_fromSE(pSE),
   m_hitTimer(0),
   m_lifeTimer(0)
@@ -126,6 +126,16 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr &services, SystemManager* 
         m_damageMod *= (1 + self->GetAttribute(AttrOverloadDamageModifier).get_float());
 
     flightTime *= sConfig.rates.missileTime;
+
+    // if linked, update appropriate attributes
+    if (pMod != nullptr)
+        if (pMod->IsLinked()) {
+            uint8 mod = m_fromSE->GetShipSE()->GetShipItemRef()->GetLinkedCount(pMod);
+            m_damageMod *= mod;
+            flightTime *= mod;
+            m_hullHP *= mod;
+        }
+
     m_lifeTimer.Start(flightTime);
 
     //_log(DAMAGE__MESSAGE, "Created Missile object for %s (%u)", self.get()->itemName().c_str(), self.get()->itemID());
@@ -203,7 +213,7 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        slim->SetItemString("sourceModuleID",   new PyInt(m_module->itemID()));
+        slim->SetItemString("sourceModuleID",   new PyInt(m_modRef->itemID()));
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyInt(m_allyID));
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
@@ -224,7 +234,7 @@ void Missile::MakeDamageState(DoDestinyDamageState &into) {
 
 void Missile::HitTarget() {
     // Create Damage object:
-    Damage d(m_fromSE, m_module, m_self, EVEEffectID::missileLaunching);
+    Damage d(m_fromSE, m_modRef, m_self, EVEEffectID::missileLaunching);
 
     /*  this is damage formula for missiles
      * Damage = D * MIN(1, Sr/Er, (Ev/V * Sr/Er)^(ln(DRF) / ln(DRS)) )

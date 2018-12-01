@@ -100,16 +100,14 @@ GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 
 GenericModule* ModuleContainer::GetModule(uint32 itemID)
 {
-    //iterate through the list and see if we have it
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
         if (itr->second != nullptr)
             if (itr->second->itemID() == itemID)
                 return itr->second;
-
         ++itr;
     }
-    return nullptr;  //we don't
+    return nullptr;
 }
 
 void ModuleContainer::ShipWarping()
@@ -128,7 +126,7 @@ void ModuleContainer::AbortCycle() {
 }
 
 void ModuleContainer::Process() {
-    // proc modules in order of subsys -> rig -> high -> mid -> low for proper fx application
+    // proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
     while (itr != end) {
         if (itr->second != nullptr)
@@ -138,7 +136,7 @@ void ModuleContainer::Process() {
 }
 
 void ModuleContainer::OnlineAll() {
-    // must proc modules in order of subsys -> rig -> high -> mid -> low for proper fx application
+    // must proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
     while (itr != end) {
         if (itr->second != nullptr)
@@ -228,12 +226,12 @@ GenericModule* ModuleContainer::GetRandModule()
     return modVec[MakeRandomInt(0, modVec.size())];
 }
 
-void ModuleContainer::GetWeapons(std::vector< GenericModule* >& moduleVec)
+void ModuleContainer::GetWeapons(std::list< GenericModule* >& weaponList)
 {
     for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
         if (m_modules[flag] != nullptr)
             if (m_modules[flag]->IsLauncherModule() or m_modules[flag]->IsTurretModule())
-                moduleVec.push_back(m_modules[flag]);
+                weaponList.push_back(m_modules[flag]);
 }
 
 void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec)
@@ -250,6 +248,49 @@ void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& mo
         if (itr->second != nullptr)
             moduleVec.push_back( itr->second->GetSelf() );
         ++itr;
+    }
+}
+
+void ModuleContainer::GetModulesInBank(EVEItemFlags flag, std::vector< GenericModule* >& modVec)
+{
+    // this is funky hack, but works.  :/
+    switch (flag) {
+        case flagLowSlot0:
+        case flagLowSlot1:
+        case flagLowSlot2:
+        case flagLowSlot3:
+        case flagLowSlot4:
+        case flagLowSlot5:
+        case flagLowSlot6:
+        case flagLowSlot7: {
+            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + 8); ++slot)
+                if ( m_modules[slot] != nullptr )
+                    modVec.push_back(m_modules[slot]);
+        } break;
+        case flagMedSlot0:
+        case flagMedSlot1:
+        case flagMedSlot2:
+        case flagMedSlot3:
+        case flagMedSlot4:
+        case flagMedSlot5:
+        case flagMedSlot6:
+        case flagMedSlot7: {
+            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + 8); ++slot)
+                if ( m_modules[slot] != nullptr )
+                    modVec.push_back(m_modules[slot]);
+        } break;
+        case flagHiSlot0:
+        case flagHiSlot1:
+        case flagHiSlot2:
+        case flagHiSlot3:
+        case flagHiSlot4:
+        case flagHiSlot5:
+        case flagHiSlot6:
+        case flagHiSlot7: {
+            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + 8); ++slot)
+                if ( m_modules[slot] != nullptr )
+                    modVec.push_back(m_modules[slot]);
+        } break;
     }
 }
 

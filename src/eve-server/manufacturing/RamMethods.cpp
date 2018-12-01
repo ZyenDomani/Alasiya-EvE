@@ -501,8 +501,8 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
     std::vector<InventoryItemRef> skills, items;
 
     //get the skills
-    pClient->GetChar()->GetMyInventory()->FindByFlag(flagSkill, skills);
-    pClient->GetChar()->GetMyInventory()->FindByFlag(flagSkillInTraining, skills);
+    pClient->GetChar()->GetMyInventory()->GetItemsByFlag(flagSkill, skills);
+    pClient->GetChar()->GetMyInventory()->GetItemsByFlag(flagSkillInTraining, skills);
 
     //get the items
     GetBOMItems( bomLocation, items );
@@ -543,14 +543,14 @@ void RamMethods::GetBOMItems(const PathElement& bomLocation, std::vector< Invent
 {
     Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
     if (inventory != nullptr )
-        inventory->FindByFlag( (EVEItemFlags)bomLocation.flag, into );
+        inventory->GetItemsByFlag((EVEItemFlags)bomLocation.flag, into );
 }
 
 void RamMethods::GetBOMItemsMap(const PathElement& bomLocation, std::map< uint16, InventoryItemRef >& into)
 {
     Inventory *inventory = sItemFactory.GetInventoryFromId( bomLocation.locationID );
     if (inventory != nullptr )
-        inventory->FindTypesByFlag( (EVEItemFlags)bomLocation.flag, into );
+        inventory->GetTypesByFlag( (EVEItemFlags)bomLocation.flag, into );
 }
 
 

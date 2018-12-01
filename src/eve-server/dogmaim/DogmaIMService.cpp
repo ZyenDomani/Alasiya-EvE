@@ -34,7 +34,7 @@
 #include "system/Container.h"
 #include "system/SystemManager.h"
 
-/** @todo this is actually DogmaLM (location manager)... */
+/** @todo this is actually DogmaLM (Location Manager) for bound objecs... */
 class DogmaIMBound
 : public PyBoundObject
 {
@@ -63,7 +63,7 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
 		PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
 		PyCallable_REG_CALL(DogmaIMBound, GetLocationInfo);
-		PyCallable_REG_CALL(DogmaIMBound, GetWeaponBankInfoForShip);
+        PyCallable_REG_CALL(DogmaIMBound, DestroyWeaponBank);
         PyCallable_REG_CALL(DogmaIMBound, GetCharacterBaseAttributes);
 		PyCallable_REG_CALL(DogmaIMBound, CheckSendLocationInfo);
         PyCallable_REG_CALL(DogmaIMBound, Activate);
@@ -102,7 +102,7 @@ public:
     PyCallable_DECL_CALL(CharGetInfo);
     PyCallable_DECL_CALL(ItemGetInfo);
 	PyCallable_DECL_CALL(GetAllInfo);
-	PyCallable_DECL_CALL(GetWeaponBankInfoForShip);
+    PyCallable_DECL_CALL(DestroyWeaponBank);
     PyCallable_DECL_CALL(GetLocationInfo);
     PyCallable_DECL_CALL(GetCharacterBaseAttributes);
 	PyCallable_DECL_CALL(CheckSendLocationInfo);
@@ -124,10 +124,9 @@ public:
     PyCallable_DECL_CALL(MergeModuleGroups);
     PyCallable_DECL_CALL(PeelAndLink);
 
-    /*
-     * flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid)
-    self.GetDogmaLM().RemoveTargetOBO(sid, tid)
-    DestroyWeaponBank(shipID, itemID)
+    /*  OBO == ??  (pos targeting)
+     * flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid) (structureID, targetID)
+     * self.GetDogmaLM().RemoveTargetOBO(sid, tid)  (structureID, targetID)
     */
 protected:
     Dispatcher* const m_dispatch;
@@ -138,8 +137,9 @@ protected:
 
 PyCallable_Make_InnerDispatcher(DogmaIMService)
 
+
 DogmaIMService::DogmaIMService(PyServiceMgr* mgr)
-: PyService(mgr, "dogmaIM"),
+: PyService(mgr, "dogmaIM"),  // IM = Instance Manager
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
@@ -218,7 +218,7 @@ PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
 
     InventoryItemRef itemRef = sItemFactory.GetItem(args.arg);
     if (itemRef.get() == nullptr ) {
-        _log(SERVICE__ERROR, "Unable to load item %u", args.arg);
+        _log(INV__ERROR, "Unable to load item %u", args.arg);
         return PyStatic.NewNone();
     }
 
@@ -291,7 +291,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     /* 02:13:11 [SvcCall]       Tuple: 5 elements
      * 02:13:11 [SvcCall]         [ 0] Integer field: 140000602     <- ship
      * 02:13:11 [SvcCall]         [ 1] List: 1 elements
-     * 02:13:11 [SvcCall]         [ 1]   [ 0] Integer field: 140000454  <- module
+     * 02:13:11 [SvcCall]         [ 1]   [ 0] Integer field: 140000454  <- moduleList
      * 02:13:11 [SvcCall]         [ 2] Integer field: 196   <- charge type
      * 02:13:11 [SvcCall]         [ 3] Integer field: 140000623 <- charge item
      * 02:13:11 [SvcCall]         [ 4] Integer field: 60014749  <- charge location
@@ -310,18 +310,25 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
         return PyStatic.NewNone();
 
     // Get Reference to Ship, Module, and Charge
-    ShipItemRef shipRef = call.client->GetShip();
-    InventoryItemRef chargeRef = sItemFactory.GetItem(args.itemID);
-    InventoryItemRef moduleRef(nullptr);
+    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
+    if (cRef.get() == nullptr) {
+        sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "cant find charge %u.", args.itemID );
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+    }
+
+    ShipItemRef sRef = call.client->GetShip();
+    InventoryItemRef mRef(nullptr);
 
     for (auto cur : args.moduleIDs) {
-        moduleRef = shipRef->GetModuleRef(cur);
-        if (moduleRef.get() == nullptr) {
-            sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "ERROR: cannot find module %u into which charge should be loaded.", cur );
-            continue;
+        mRef = sRef->GetModuleRef(cur);
+        if (mRef.get() == nullptr) {
+            sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "cant find module %u.", cur );
+            throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
         }
-        if (chargeRef->quantity() > 0)
-            shipRef->LoadCharge(moduleRef->flag(), chargeRef);
+        if (cRef->quantity() > 0)
+            sRef->LoadCharge(cRef, mRef->flag());
+        else
+            return PyStatic.NewNone();
     }
 
     return PyStatic.NewNone();
@@ -347,17 +354,23 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     args.shipID
     args.qty
     */
-    /** @todo  test for weapon links, load all weapons in linked group.  */
-	// Get Reference to Ship, Module, and Charge
-    ShipItemRef shipRef = call.client->GetShip();
-	InventoryItemRef moduleRef = shipRef->GetModuleRef(args.masterID);
-	if (moduleRef.get() == nullptr) {
-		sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "ERROR: cannot find module into which charge should be loaded." );
-		return PyStatic.NewNone();
-	}
+    if (args.itemIDs.empty())
+        return PyStatic.NewNone();
 
-	if (!args.itemIDs.empty())
-        shipRef->LoadCharge( moduleRef->flag(), sItemFactory.GetItem(args.itemIDs.at(0)) );
+	// Get Reference to Ship, Module, and Charge
+    ShipItemRef sRef = call.client->GetShip();
+    if (sRef->itemID() != args.shipID)
+        sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "passed shipID %u != current shipID %u.", args.shipID, sRef->itemID() );
+
+    GenericModule* pMod = sRef->GetModuleManager()->GetModule(args.masterID);
+    if (pMod == nullptr)
+        throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
+
+	if (pMod->IsLinked())
+        sRef->LoadLinkedWeapons(pMod, args.itemIDs);
+    else
+        sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
+        //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
 
 	return PyStatic.NewNone();
 }
@@ -435,7 +448,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
-    sLog.White("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
+    sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
     call.Dump(POS__DUMP);
 
     Client* pClient = call.client;
@@ -585,7 +598,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
 
 PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 {
-    //sLog.White("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
+    //sLog.Warning("DogmaIMBound::Handle_GetAllInfo()", "size=%u", call.tuple->size());
     //call.Dump(SERVICE__CALL_DUMP);
     /* added more return data and updated logic (almost complete and mostly accurate) -allan 26Mar16 */
     /* Start the Code */
@@ -651,12 +664,6 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 }
 
 
-PyResult DogmaIMBound::Handle_GetWeaponBankInfoForShip(PyCallArgs& call) {
-    /** @todo  look into this...what is it used for?  */
-    // cannot find call for this.  delete?
-    return new BuiltinSet();
-}
-
 PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
     /*
      * 21:59:29 L Server: ChangeDroneSettings call made to
@@ -671,30 +678,14 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
      *
-     *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
-     *    call.Dump(SERVICE__CALL_DUMP);
+     *    sLog.Warning("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
+     *    call.Dump(SHIP__INFO);
      */
 
     return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
-    /* 22:04:22 [SvcCall] Service dogmaIM::MachoBindObject()
-     * 22:04:22 [ClientMsg] DogmaIMService bind request for:
-     * 22:04:22 [ClientMsg]      Tuple: 2 elements
-     * 22:04:22 [ClientMsg]       [ 0]    Integer: 30002507
-     * 22:04:22 [ClientMsg]       [ 1]    Integer: 5
-     * 12:54:01 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
-     * 12:54:01 DogmaIMBound::Handle_LinkWeapons(): [00msize=3
-     * 12:54:01 [SvcCall]   Call Arguments:
-     * 12:54:01 [SvcCall]       Tuple: 3 elements
-     * 12:54:01 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
-     * 12:54:01 [SvcCall]         [ 1] Integer field: 140000078     <- masterID  *dropped ON*
-     * 12:54:01 [SvcCall]         [ 2] Integer field: 140000079     <- slaveID   *dragged*
-     *   sLog.White("DogmaIMBound::Handle_LinkWeapons()", "size=%u", call.tuple->size());
-     *   call.Dump(SERVICE__CALL_DUMP);
-     */
-
     /*  data = self.remoteDogmaLM.LinkWeapons(shipID, masterID, fromID)
      *
      *    def SetWeaponBanks(self, shipID, data):
@@ -725,18 +716,6 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
-    /* 22:04:22 [SvcCall] Service dogmaIM::MachoBindObject()
-     * 22:04:22 [ClientMsg] DogmaIMService bind request for:
-     * 22:04:22 [ClientMsg]      Tuple: 2 elements
-     * 22:04:22 [ClientMsg]       [ 0]    Integer: 30002507
-     * 22:04:22 [ClientMsg]       [ 1]    Integer: 5
-     * 18:23:28 [SvcCall] Service dogmaIM: handling MachoBindObject request directly
-     * 18:23:28 DogmaIMBound::Handle_LinkAllWeapons(): size=1
-     * 18:23:28 [SvcCall]   Call Arguments:
-     * 18:23:28 [SvcCall]       Tuple: 1 elements
-     * 18:23:28 [SvcCall]         [ 0] Integer field: 140000069     <- shipID
-     */
-
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -752,6 +731,85 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     sRef->LinkAllWeapons();
     return sRef->GetLinkedWeapons();
 }
+
+PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
+    //self.remoteDogmaLM.DestroyWeaponBank(shipID, itemID)
+    Call_TwoIntegerArgs args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+
+    if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
+        return nullptr;
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.arg1);
+    if (sRef.get() == nullptr)
+        return nullptr;
+    sRef->UnlinkGroup(args.arg2);
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
+    //UnlinkAllModules(shipID)
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+
+    if (!IsPlayerItem(arg.arg))
+        return nullptr;
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(arg.arg);
+    if (sRef.get() == nullptr)
+        return nullptr;
+    sRef->UnlinkAllWeapons();
+    return nullptr;
+}
+
+PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
+    //UnlinkModule(shipID, moduleID)
+    sLog.Warning("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
+
+    Call_TwoIntegerArgs args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return new PyInt(0);
+    }
+
+    if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
+        return PyStatic.NewNone();
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.arg1);
+    if (sRef.get() == nullptr)
+        return new PyInt(0);
+
+    return new PyInt(sRef->UnlinkWeapon(args.arg2));
+}
+
+PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
+    //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
+    sLog.Warning("DogmaIMBound::Handle_MergeModuleGroups()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
+
+    Call_Dogma_LinkWeapons args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return PyStatic.NewNone();
+    }
+    /* args.shipID
+     * args.masterID
+     * args.slaveID
+     */
+    if (!IsPlayerItem(args.shipID))
+        return nullptr;
+    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.shipID);
+    if (sRef.get() == nullptr)
+        return nullptr;
+
+    // not sure what to do here
+    return nullptr;
+}
+
 
 PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     /*
@@ -829,8 +887,8 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
      *        moduleIDs = None
      * TypeError: 'NoneType' object is not iterable
      *
-     *    sLog.White("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
-     *    call.Dump(SERVICE__CALL_DUMP);
+     *    sLog.Warning("DogmaIMBound::Handle_OverloadRack()", "size=%u", call.tuple->size());
+     *    call.Dump(SHIP__INFO);
      */
     Client* pClient = call.client;
 
@@ -846,8 +904,8 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     /*
      */
-    sLog.White("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_StopOverloadRack()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
     Client* pClient = call.client;
 
     return nullptr;
@@ -860,8 +918,8 @@ PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
      * 15:29:13 [SvcCallDump]      Tuple: 1 elements
      * 15:29:13 [SvcCallDump]       [ 0]    Integer: 140000742
      */
-    sLog.White("DogmaIMBound::Handle_InitiateModuleRepair()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_InitiateModuleRepair()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
 
     return nullptr;
 }
@@ -873,49 +931,24 @@ PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
      * 15:29:08 [SvcCallDump]      Tuple: 1 elements
      * 15:29:08 [SvcCallDump]       [ 0]    Integer: 140000742
      */
-    sLog.White("DogmaIMBound::Handle_StopModuleRepair()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_StopModuleRepair()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
 
     return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     //info = self.remoteDogmaLM.PeelAndLink(shipID, masterID, slaveID)
-    sLog.White("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
-    //info = self.remoteDogmaLM.MergeModuleGroups(shipID, masterID, slaveID)
-    sLog.White("DogmaIMBound::Handle_MergeModuleGroups()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_PeelAndLink()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
 
     return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
 {
-    sLog.White("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
-    //UnlinkAllModules(shipID)
-    sLog.White("DogmaIMBound::Handle_UnlinkAllModules()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call)
-{
-    //UnlinkModule(shipID, moduleID)
-    sLog.White("DogmaIMBound::Handle_UnlinkModule()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    sLog.Warning("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
 
     return nullptr;
 }
@@ -944,8 +977,8 @@ PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
      *     [PyDict 1 kvp]
      *       [PyString "N=699771:17106"]
      *       [PyIntegerVar 129503265956883696]
-     *   sLog.White("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
-     *   call.Dump(SERVICE__CALL_DUMP);
+     *   sLog.Warning("DogmaIMBound::Handle_GetLocationInfo()", "size=%u", call.tuple->size());
+     *   call.Dump(SHIP__INFO);
      */
 
     // dummy right now, don't have any meaningful packet logs

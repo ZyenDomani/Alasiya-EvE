@@ -351,7 +351,7 @@ uint32 BeltMgr::GetAsteroidType(double p, const std::unordered_multimap<float, u
     float chance = 0.0;
     for(; cur != roids.end(); ++cur ) {
         chance += cur->first;
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
+        _log(COSMIC_MGR__DEBUG, "BeltMgr::GetAsteroidType - checking %u with chance %.3f(%.3f)", cur->second, chance, p);
         if (chance > p )
             return cur->second;
     }
