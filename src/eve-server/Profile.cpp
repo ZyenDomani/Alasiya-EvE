@@ -158,7 +158,7 @@ void Profile::PrintProfile()
 
     double startTime = GetTimeUSeconds();
     double h = 0, l = 0, a = 0;
-    sLog.Green("   Server Profile", " Current Profile times for this run:");
+    sLog.Green("   Server Profile", " Current Process Profile times for this run:");
     /* not used yet.
     GetRunTimes(m_server, h, l, a);
     std::printf("        *Main()  %u times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus.\n", m_server.size(), h, l, a );

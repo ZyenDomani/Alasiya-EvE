@@ -122,9 +122,6 @@ bool SystemManager::BootSystem() {
     m_solarSystemRef = sItemFactory.GetSolarSystem(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
 
-    if (!LoadCosmicMgrs())
-        return false;
-
     if (!LoadSystemStatics()) {
         _log(SERVICE__ERROR, "Unable to load System Statics during boot of system %u.", m_data.systemID);
         return false;
@@ -139,6 +136,9 @@ bool SystemManager::BootSystem() {
         _log(SERVICE__ERROR, "Unable to load System Dynamics during boot of system %u.", m_data.systemID);
         return false;
     }
+
+    if (!LoadCosmicMgrs())
+        return false;
 
     // system is loaded.  check for items that need initialization
     for (auto cur : m_ticEntities)
