@@ -143,7 +143,7 @@ faction24DateTime
     if( (type == 1) && (time == 1) )
         sDatabase.RunQuery(res, "SELECT solarSystemID, jumpsHour AS value1 FROM mapDynamicData" );
     else if (type == 2) {
-        sDatabase.RunQuery(res, "SELECT solarSystemID, moduleCnt, structureCnt FROM mapDynamicData" );
+        sDatabase.RunQuery(res, "SELECT solarSystemID, moduleCnt, structureCnt FROM mapDynamicData WHERE active=1" );
         DBResultRow row;
         PyDict* dict = new PyDict();
         while (res.GetRow(row)) {

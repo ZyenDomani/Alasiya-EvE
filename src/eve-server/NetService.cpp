@@ -50,6 +50,34 @@ PyResult NetService::Handle_GetTime(PyCallArgs &call) {
     return new PyLong(GetFileTimeNow());
 }
 
+PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
+{
+    // got this shit working once i understood what the client wanted....only took 4 years
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE active = 1");
+    /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk
+     *   client already has IsAFK()
+     */
+
+    uint16 system = 0;
+    PyDict* sol = new PyDict();
+    PyDict* sta = new PyDict();
+
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        system = row.GetUInt(0) - 30000000;
+        sol->SetItem(new PyInt(system), new PyInt(row.GetUInt(1) + row.GetUInt(2)));    // inspace + docked = total
+        sta->SetItem(new PyInt(system), new PyInt(row.GetUInt(2)));                     // total - docked
+    }
+
+    PyTuple *result = new PyTuple(3);
+    result->SetItem(0, sol);
+    result->SetItem(1, sta);
+    result->SetItem(2, new PyFloat(1)); //statDivisor
+
+    return result;
+}
+
 /** @note:  wtf is this used for???  */
 PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyString* str = new PyString( "machoNet.serviceInfo" );
@@ -173,33 +201,5 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
     PyTuple* result = new PyTuple( 2 );
         result->SetItem( 0, serverinfo );
         result->SetItem( 1, initvals );
-    return result;
-}
-
-PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
-{
-    // got this shit working once i understood what the client wanted....only took 4 years
-    DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE active = 1");
-    /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk
-     *   client already has IsAFK()
-     */
-
-    uint16 system = 0;
-    PyDict* sol = new PyDict();
-    PyDict* sta = new PyDict();
-
-    DBResultRow row;
-    while (res.GetRow(row)) {
-        system = row.GetUInt(0) - 30000000;
-        sol->SetItem(new PyInt(system), new PyInt(row.GetUInt(1) + row.GetUInt(2)));    // inspace + docked = total
-        sta->SetItem(new PyInt(system), new PyInt(row.GetUInt(2)));                     // total - docked
-    }
-
-    PyTuple *result = new PyTuple(3);
-        result->SetItem(0, sol);
-        result->SetItem(1, sta);
-        result->SetItem(2, new PyFloat(1)); //statDivisor
-
     return result;
 }
