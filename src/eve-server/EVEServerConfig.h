@@ -173,6 +173,7 @@ public:
         bool EnableDrones;
         bool UseDamageMultiplier;
         float DefenderMissileChance;
+        float LootDropChance;
     } npc;
 
     // From <database/>

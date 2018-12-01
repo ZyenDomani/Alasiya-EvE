@@ -919,13 +919,15 @@ void StructureSE::GetEffectState(PyList& into) {
 
 void StructureSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
-        return;
+        return; // make error here?
 
     m_destiny->Halt();
+    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
+    m_system->RemoveEntity(this);  //this also removes from db
 
-    SystemEntity *killer = fatal_blow.srcSE;
-    Client* pClient = nullptr;
     uint32 killerID = 0;
+    Client* pClient(nullptr);
+    SystemEntity* killer = fatal_blow.srcSE;
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
@@ -939,7 +941,80 @@ void StructureSE::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    m_destiny->SendTerminalExplosion(m_data.itemID, m_bubble->GetID());
+    std::stringstream blob;
+    blob << "<items>";
+    std::vector<InventoryItemRef> survivedItems;
+    std::map<uint32, InventoryItemRef> deadShipInventory;
+    deadShipInventory.clear();
+    m_self->GetMyInventory()->GetInventoryList(deadShipInventory);
+    if (!deadShipInventory.empty()) {
+        uint32 s = 0, d = 0, x = 0;
+        for (auto cur : deadShipInventory) {
+            d = 0;
+            x = cur.second->quantity();
+            s = (cur.second->singleton() ? 1 : 0);
+            if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
+                // singleton for bpo = 1, bpc = 2.
+                BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
+                s = (bpRef->copy() ? 2 : s);
+            }
+            blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
+            // all items have 50% chance of drop, even from popped ship
+            if (IsEven(MakeRandomInt(0, 100))) {
+                // item survived.  check qty for drop
+                if (x > 1) {
+                    d = MakeRandomInt(0, x);
+                    x -= d;
+                }
+                // move item to vector for insertion into wreck later on
+                survivedItems.push_back(cur.second);
+            }
+            blob << " d=" << d << " x=" << x << "/>";
+        }
+    }
+    blob << "</items>";
+
+    /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
+    /** @todo  check for tower/tcu/sbu/jammer and make killmail */
+    CharKillData data;
+        data.solarSystemID = m_system->GetID();
+        data.victimCharacterID = 0; // charID = 0 means strucuture/item
+        data.victimCorporationID = m_corpID;
+        data.victimAllianceID = m_allyID;
+        data.victimFactionID = m_warID;
+        data.victimShipTypeID = GetTypeID();
+
+        data.finalCharacterID = killerID;
+        data.finalCorporationID = killer->GetCorporationID();
+        data.finalAllianceID = killer->GetAllianceID();
+        data.finalFactionID = killer->GetWarFactionID();
+        data.finalShipTypeID = killer->GetTypeID();
+        data.finalWeaponTypeID = fatal_blow.weaponRef->typeID();
+        data.finalSecurityStatus = 0;  /* fix this */
+        data.finalDamageDone = fatal_blow.GetTotal();
+
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+        data.victimDamageTaken = totalHP;
+
+        data.killBlob = blob.str().c_str();
+        data.killTime = Win32TimeNow();
+        data.moonID = m_moonSE->GetID();    /* denotes moonID for POS/Structure kills */
+
+    ServiceDB::SaveKillOrLoss(data);
+
+    uint32 locationID = GetLocationID();
+    //  log faction kill in dynamic data   -allan
+    MapDB::AddKillToDynamicData(locationID);
+    MapDB::AddFactionKillToDynamicData(locationID);
+
+    if (pClient != nullptr) {
+        //award kill bounty.
+        //AwardBounty( pClient );
+        if (m_system->GetSystemSecurityRating() > 0)
+            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+    }
 
     GPoint deadPOSPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -949,29 +1024,21 @@ void StructureSE::Killed(Damage &fatal_blow) {
         wreckTypeID = 26557;
     }
 
-    uint32 locationID = GetLocationID();
-    //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
-
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadPOSPosition, faction);
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
-    if (!wreckItemRef) {
+    if (wreckItemRef.get() == nullptr) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
         return;
     }
 
-    if ( pClient ) {
-        DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
-        //award kill bounty.
-        //AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0)
-            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
-    } else
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
+    if (survivedItems.size())
+        for (auto cur: survivedItems)
+            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = killer->GetAllianceID();
@@ -989,76 +1056,12 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("StructureSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+        wreckItemRef->Delete();
         return;
     }
 
-        std::stringstream blob;
-        blob << "<items>";
-        std::map<uint32, InventoryItemRef> deadShipInventory;
-        deadShipInventory.clear();
-        m_self->GetMyInventory()->GetInventoryList(deadShipInventory);
-        if (!deadShipInventory.empty()) {
-            uint32 s = 0, d = 0, x = 0;
-            for (auto cur : deadShipInventory) {
-                d = 0;
-                x = cur.second->quantity();
-                s = (cur.second->singleton() ? 1 : 0);
-                if (cur.second->categoryID() == EVEDB::invCategories::Blueprint) {
-                    // singleton for bpo = 1, bpc = 2.
-                    BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
-                    s = (bpRef->copy() ? 2 : s);
-                }
-                blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
-                // all items have 50% chance of drop, even from popped ship
-                if (IsEven(MakeRandomInt(0, 100))) {
-                    // item survived.  check qty for drop
-                    if (x > 1) {
-                        d = MakeRandomInt(0, x);
-                        x -= d;
-                    }
-                    // move item to wreck
-                    cur.second->Move(wreckItemRef->itemID(),flagAutoFit);
-                }
-                blob << " d=" << d << " x=" << x << "/>";
-            }
-        }
-        blob << "</items>";
-
-        /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
-        /** @todo  check for tower/tcu/sbu/jammer and make killmail */
-        CharKillData data;
-            data.solarSystemID = m_system->GetID();
-            data.victimCharacterID = 0; // charID = 0 means strucuture/item
-            data.victimCorporationID = m_corpID;
-            data.victimAllianceID = m_allyID;
-            data.victimFactionID = m_warID;
-            data.victimShipTypeID = GetTypeID();
-
-            data.finalCharacterID = killerID;
-            data.finalCorporationID = killer->GetCorporationID();
-            data.finalAllianceID = killer->GetAllianceID();
-            data.finalFactionID = killer->GetWarFactionID();
-            data.finalShipTypeID = killer->GetTypeID();
-            data.finalWeaponTypeID = fatal_blow.weaponRef->typeID();
-            data.finalSecurityStatus = 0;  /* fix this */
-            data.finalDamageDone = fatal_blow.GetTotal();
-
-        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
-            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
-            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
-            data.victimDamageTaken = totalHP;
-
-            data.killBlob = blob.str().c_str();
-            data.killTime = Win32TimeNow();
-            data.moonID = m_moonSE->GetID();    /* denotes moonID for POS/Structure kills */
-
-        ServiceDB::SaveKillOrLoss(data);
-
     _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-    GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
-
-    // cleanup and removal
-    m_system->RemoveEntity(this);
+            GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
 }
 
 

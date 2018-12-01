@@ -135,13 +135,16 @@ void Sentry::SetResists() {
 }
 
 void Sentry::Killed(Damage &fatal_blow) {
-    if (!m_bubble or !m_destiny) return;
+    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+        return; // make error here?
 
     m_destiny->Halt();
+    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
+    m_system->RemoveEntity(this);  //this also removes from db
 
-    SystemEntity *killer = fatal_blow.srcSE;
-    Client* pClient = nullptr;
     uint32 killerID = 0;
+    Client* pClient(nullptr);
+    SystemEntity* killer = fatal_blow.srcSE;
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
@@ -155,7 +158,16 @@ void Sentry::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
+    uint32 locationID = GetLocationID();
+    //  log faction kill in dynamic data   -allan
+    MapDB::AddKillToDynamicData(locationID);
+    MapDB::AddFactionKillToDynamicData(locationID);
+    if (pClient != nullptr) {
+        //award kill bounty.
+        //AwardBounty( pClient );
+        if (m_system->GetSystemSecurityRating() > 0)
+            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+    }
 
     GPoint deadNPCPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -164,11 +176,6 @@ void Sentry::Killed(Damage &fatal_blow) {
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
-
-    uint32 locationID = GetLocationID();
-    //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
@@ -180,14 +187,7 @@ void Sentry::Killed(Damage &fatal_blow) {
         return;
     }
 
-    if ( pClient ) {
-        DropLoot(wreckItemRef, m_self->groupID(), pClient->GetCharacterID());
-        //award kill bounty.
-        //AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0)
-            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
-    } else
-        DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = killer->GetAllianceID();
@@ -205,13 +205,10 @@ void Sentry::Killed(Damage &fatal_blow) {
 
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("Sentry::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
+        wreckItemRef->Delete();
         return;
     }
 
     _log(PHYSICS__TRACE, "Sentry::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-    GetName(), GetID(), x(), y(), z(), deadNPCPosition.x, deadNPCPosition.y, deadNPCPosition.z);
-
-    // cleanup and removal of dead npc
-    //AI()->ClearAllTargets();
-    m_system->RemoveEntity(this);  //this also removes npc from db
+            GetName(), GetID(), x(), y(), z(), deadNPCPosition.x, deadNPCPosition.y, deadNPCPosition.z);
 }

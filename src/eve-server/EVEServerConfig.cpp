@@ -135,6 +135,7 @@ EVEServerConfig::EVEServerConfig()
     npc.TargetPod = false;
     npc.UseDamageMultiplier = true;
     npc.DefenderMissileChance = 0.0;
+    npc.LootDropChance = 0.75;
 
     // cosmic
     cosmic.PIEnabled = false;
@@ -459,6 +460,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "TargetPod",                npc.TargetPod );
     AddValueParser( "TargetPodSec",             npc.TargetPodSec );
     AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
+    AddValueParser( "LootDropChance",           npc.LootDropChance );
     AddValueParser( "DefenderMissileChance",    npc.DefenderMissileChance );
 
     const bool result = ParseElementChildren( ele );
@@ -477,6 +479,7 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "TargetPod" );
     RemoveParser( "TargetPodSec" );
     RemoveParser( "UseDamageMultiplier" );
+    RemoveParser( "LootDropChance" );
     RemoveParser( "DefenderMissileChance" );
 
     return result;

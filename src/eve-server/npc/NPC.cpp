@@ -300,21 +300,24 @@ void NPC::SetResists() {
 
 void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
-        return;
+        return; // make error here?
+
     if (killed)
-        return;
+        return; // fix for multiple wrecks created at same time.
     killed = true;
+
+    m_destiny->Halt();
+    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
+    m_system->RemoveEntity(this);  //this also removes from db
 
     //notify our spawn manager that we are gone.
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
-    m_destiny->Halt();
-
-    SystemEntity *killer(fatal_blow.srcSE);
-    Client* pClient(nullptr);
     uint32 killerID = 0;
-
+    Client* pClient(nullptr);
+    SystemEntity* killer = fatal_blow.srcSE;
+    
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
@@ -327,7 +330,17 @@ void NPC::Killed(Damage &fatal_blow) {
     } else
         killerID = killer->GetID();
 
-    m_destiny->SendTerminalExplosion(GetID(), m_bubble->GetID());
+    uint32 locationID = GetLocationID();
+    //  log faction kill in dynamic data   -allan
+    MapDB::AddKillToDynamicData(locationID);
+    MapDB::AddFactionKillToDynamicData(locationID);
+
+    if (pClient != nullptr) {
+        //award kill bounty.
+        AwardBounty( pClient );
+        if (m_system->GetSystemSecurityRating() > 0)
+            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+    }
 
     GPoint wreckPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -337,15 +350,9 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckTypeID = 26557;
     }
 
-    uint32 locationID = GetLocationID();
-    //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
-
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
-
     ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, faction);
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
@@ -353,12 +360,7 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
     }
 
-    if (pClient != nullptr) {
-        //award kill bounty.
-        AwardBounty( pClient );
-        if (m_system->GetSystemSecurityRating() > 0)
-            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
-    }
+    DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     DBSystemDynamicEntity wreckEntity;
         wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
@@ -373,17 +375,14 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.x = wreckPosition.x;
         wreckEntity.y = wreckPosition.y;
         wreckEntity.z = wreckPosition.z;
+
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         wreckItemRef->Delete();
         return;
     }
 
-    DropLoot(wreckItemRef, m_self->groupID(), killerID);
-
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-
-    m_system->RemoveNPC(this);  //this also removes npc from db
 }

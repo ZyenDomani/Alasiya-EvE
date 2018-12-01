@@ -166,24 +166,26 @@ void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24A
 
 void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 owner) {
     /*   allan 27Nov14    */
+    if (IsNPCSE() and (MakeRandomFloat() > sConfig.npc.LootDropChance))
+        return;
     std::vector<LootList> lootList;
     sDataMgr.GetLoot(groupID, lootList);
 
-    if (!lootList.empty()) {
-        uint32 quantity = 0;
-        std::vector<LootList>::iterator cur = lootList.begin();
-        while (cur != lootList.end()) {
-            if (cur->minDrop == cur->maxDrop)
-                quantity = cur->minDrop;
-            else
-                quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
-            if (quantity < 1) quantity = 1;
-            ItemData iLoot(cur->itemID, owner, wreckRef->itemID(), flagAutoFit, quantity);
-            wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
-            ++cur;
-        }
+    if (lootList.empty())
+        return;
+
+    uint32 quantity = 0;
+    std::vector<LootList>::iterator cur = lootList.begin();
+    while (cur != lootList.end()) {
+        if (cur->minDrop == cur->maxDrop)
+            quantity = cur->minDrop;
+        else
+            quantity = (uint32)(MakeRandomInt(cur->minDrop, cur->maxDrop));
+        if (quantity < 1) quantity = 1;
+        ItemData iLoot(cur->itemID, owner, wreckRef->itemID(), flagAutoFit, quantity);
+        wreckRef->AddItem(sItemFactory.SpawnItem(iLoot));
+        ++cur;
     }
-    //wreckRef->MakeSlimItemChange();
 }
 
 /** @todo (allan)  this doesnt need to be here */
