@@ -86,8 +86,6 @@ protected:
     SpawnMgr* m_spawnMgr;
 
 private:
-    bool killed;
-
     uint32 m_orbitingID;
 
     float m_emDamage;

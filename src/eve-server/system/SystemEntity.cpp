@@ -59,6 +59,8 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 
     Abandon();
 
+    m_killed = false;
+
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
 
     m_harmonic = EVEPOS::Harmonic::Inactive;

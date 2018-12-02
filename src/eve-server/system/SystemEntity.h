@@ -225,8 +225,8 @@ public:
     /* public specific functions handled in base class. */
     virtual void                Abandon();
 
-
     /* generic functions handled here, but set elsewhere */
+    const bool                  IsDead()                { return m_killed; }
     const GVector&              GetVelocity()           { return (m_destiny != nullptr ? m_destiny->GetVelocity() : NULL_ORIGIN_V); }
 
     /* virtual functions default to base class and overridden as needed */
@@ -257,6 +257,8 @@ protected:
     InventoryItemRef            m_self;
 
     double                      m_radius;
+
+    bool m_killed;
 
     /* this is POS ForceField status */
     int32 m_harmonic;

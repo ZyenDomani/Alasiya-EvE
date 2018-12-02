@@ -519,7 +519,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined - %s.", GetSourceName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;
@@ -538,7 +538,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // these are not used (not coded)
             case dgmSrcTarget:
             case dgmSrcOwner: {
-                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location not coded.");
+                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location %s not coded.", GetSourceName(cur.second.fxSrc).c_str());
                 continue;
             } break;
         }

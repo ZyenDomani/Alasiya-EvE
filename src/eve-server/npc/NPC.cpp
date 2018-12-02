@@ -302,10 +302,6 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         return; // make error here?
 
-    if (killed)
-        return; // fix for multiple wrec
-    killed = true;
-
     m_destiny->Halt();
     m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
     m_system->RemoveEntity(this);  //this also removes from db

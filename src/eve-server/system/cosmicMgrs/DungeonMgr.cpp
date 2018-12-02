@@ -547,8 +547,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     /* templateID format.  ABCDE
      *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded,  7:anomaly, 8:unrated, 9:escalation
      *       B = type - security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
-     *       C = subtype  - 2: ore 0 to 5; ice 6 to 9, 7: 1 to 5, 1: 1 to 9, 3: (l1,l2) 1-8; (l3) 1-4, 5: 1 to 8
-     *       D = level - 1: 1 to 9, 2: ore 1 to 3; ice 0, 3: 1-relic or 2-salvage (dominant), 4: 1-norm; 2-digital , 7: 1 to 5
+     *       C = subtype - sitetype 2: ore 0 to 5; ice 6 to 9, sitetype 7: 1 to 5, sitetype 1: 1 to 9, sitetype 3: (l1,l2) 1-8; (l3) 1-4, sitetype 5: 1 to 8
+     *       D = level - sitetype 1: 1 to 9, sitetype 2: ore 1 to 3; ice 0, sitetype 3: 1-relic or 2-salvage (dominant), sitetype 4: 1-norm; 2-digital , sitetype 7: 1 to 5
      *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
      */
     uint32 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
