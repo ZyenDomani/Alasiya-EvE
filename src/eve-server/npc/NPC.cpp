@@ -45,8 +45,6 @@ NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, c
 : DynamicSystemEntity(self, services, system),
 m_spawnMgr(spawnMgr)
 {
-    killed = false;
-
     m_allyID = data.allianceID;
     m_warID = data.factionID;
     m_corpID = data.corporationID;
@@ -93,7 +91,7 @@ bool NPC::Load()
 
 
 void NPC::Process() {
-    if (killed)
+    if (m_killed)
         return;
 
     double profileStartTime = 0.0;
@@ -301,10 +299,6 @@ void NPC::SetResists() {
 void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         return; // make error here?
-
-    if (killed)
-        return; // fix for multiple wrec
-    killed = true;
 
     m_destiny->Halt();
     m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());

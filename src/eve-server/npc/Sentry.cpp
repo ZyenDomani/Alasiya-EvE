@@ -60,6 +60,8 @@ Sentry::~Sentry() {
 }
 
 void Sentry::Process() {
+    if (m_killed)
+        return;
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();

@@ -1017,7 +1017,7 @@ void ShipItem::LoadCharge(InventoryItemRef iRef, EVEItemFlags flag)
     if (ValidateAddItem(flag, iRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
         m_ModuleManager->LoadCharge(iRef, flag);
     } else {
-        /*  this doesnt work right....comment for now. 
+        /*  this doesnt work right....comment for now.
         std::map<std::string, PyRep *> args;
         args["charge"] = new PyInt(iRef->itemID());
         throw PyException( MakeUserError( "ChargeLoadingFailedWithRefund"));
@@ -1847,6 +1847,8 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
 }
 
 void Ship::Process() {
+    if (m_killed)
+        return;
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 

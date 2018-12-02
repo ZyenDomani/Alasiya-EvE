@@ -98,6 +98,8 @@ void Drone::SetOwner(Client* pClient) {
 }
 
 void Drone::Process() {
+    if (m_killed)
+        return;
     double profileStartTime = 0.0;
     if (sConfig.debug.UseProfiling)
         profileStartTime = GetTimeUSeconds();

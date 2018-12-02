@@ -265,6 +265,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (killed) {
+        if (m_killed)
+            return true;
+        m_killed = true;
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
         SystemEntity::Killed(d);
@@ -276,6 +279,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
          *
          * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
          * @todo this needs to be rewritten.  see notes in EVE_Damage.h
+         * @todo  also need to check for linked weapons and send msgs accordingly
          */
         // only send damage msgs for ships NOT killed.
         if (HasPilot()) {
@@ -324,7 +328,7 @@ void Ship::Killed(Damage &fatal_blow) {
     uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity* killer = fatal_blow.srcSE;
-    
+
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();

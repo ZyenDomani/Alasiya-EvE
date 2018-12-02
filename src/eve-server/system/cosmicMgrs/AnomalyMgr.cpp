@@ -261,6 +261,8 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanMagnetometricStrength;
+            if (sig.ownerID == 6)   // mag sites cannot be drone...or can they?  no drone template for mag sites
+                sig.ownerID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
         } break;
         case Radar: {       // 4,
             sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;

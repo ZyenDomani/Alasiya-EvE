@@ -59,6 +59,8 @@ SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, System
 
     Abandon();
 
+    m_killed = false;
+
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
 
     m_harmonic = EVEPOS::Harmonic::Inactive;
@@ -71,6 +73,9 @@ SystemEntity::~SystemEntity()
 }
 
 void SystemEntity::Process() {
+    if (m_killed)
+        return;
+
     /*  Enable base call to Process Targeting and Movement
      * this order WILL affect Point/Tackle  (kinda like on live)
      * processing target first will benefit agressor

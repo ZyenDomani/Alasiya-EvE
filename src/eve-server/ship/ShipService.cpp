@@ -469,14 +469,8 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
-
     if (IsStation(call.client->GetLocationID())) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
-        return nullptr;
-    }
-
-    if (call.tuple->size() != 3) {
-        sLog.Error("ShipBound::Handle_Drop()", "call.tuple wrong size, expected 3 items, actual size = %u", call.tuple->size());
         return nullptr;
     }
 
@@ -594,8 +588,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
 
     if (dropped)
         pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-    else
-        dict->clear();
+    else {
+        dict->clear();  // send empty list.
+        PyList* list = new PyList();
+        dict->SetItem(new PyInt(call.client->GetShipID()), list);
+    }
 
     // returns nodeID and timestamp and dict of dropped items
     PyTuple* tuple = new PyTuple(2);
