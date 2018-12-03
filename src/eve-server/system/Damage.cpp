@@ -272,6 +272,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
         SystemEntity::Killed(d);
         Killed(d);
+        delete this;
     } else {
         PyTuple* up(nullptr);
         /**    def OnDamageMessage(self, msgKey, args):
@@ -395,13 +396,11 @@ void Ship::Killed(Damage &fatal_blow) {
         if (is_log_enabled(PHYSICS__TRACE))
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                     GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-        SafeDelete(this);
         return;
     }
 
     Client* pPilot(m_self->GetPilot());
     if (pPilot == nullptr) {
-        SafeDelete(this);
         return;    //  make error here
     }
 
@@ -574,7 +573,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
 
-        pPilot->ResetAfterPopped(podRef);
+        pPilot->ResetAfterPopped();
         // at this point, player has new shipID and new shipSE.
 
         uint32 wreckTypeID = sDataMgr.GetWreckID(deadShipRef->typeID());
@@ -591,7 +590,6 @@ void Ship::Killed(Damage &fatal_blow) {
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() != nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
-            SafeDelete(this);
             return;
         }
 
@@ -617,10 +615,7 @@ void Ship::Killed(Damage &fatal_blow) {
         if (!m_system->BuildDynamicEntity(wreckEntity)) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             wreckItemRef->Delete();
-            SafeDelete(this);
             return;
         }
     }
-    // cleanup
-    SafeDelete(this);
 }

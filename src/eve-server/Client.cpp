@@ -961,8 +961,8 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
     m_char->VisitSystem(toData.systemID);
 
-    // call Stop() per packet sniff
-    pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
+    // call Stop() per packet sniff - shuts off AP.  Halt() does also.  try not calling any movement updates
+    //pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
     pShipSE->DestinyMgr()->SendJumpOut(fromGate);
     //  show gate animation in from gate.   -working -allan 15Nov15
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);

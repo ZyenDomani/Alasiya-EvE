@@ -417,7 +417,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 // disable drones
                 return InventoryItemRef(nullptr);
             }
-        }   // allow fallthru if drones are enabled
+        }   // allow fallthru if drones are enabled  - may need specific DroneItem later.
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Deployable: {
             // Spawn generic item:

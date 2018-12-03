@@ -518,7 +518,6 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
     }
 
     m_system->RemoveEntity(this);
-    SafeDelete(this);
 }
 
 DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
@@ -691,7 +690,6 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
     }
 
     m_system->RemoveEntity(this);
-    SafeDelete(this);
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)

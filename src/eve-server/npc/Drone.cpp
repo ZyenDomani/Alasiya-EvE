@@ -114,7 +114,7 @@ void Drone::Process() {
 }
 
 void Drone::Orbit(SystemEntity *who) {
-    if (!who)
+    if (who == nullptr)
         m_orbitingID = 0;
     else
         m_orbitingID = who->GetID();
@@ -165,6 +165,7 @@ void Drone::SaveDrone() {
 void Drone::RemoveDrone() {
     /** @todo (Allan) this may need more here */
     m_self->Delete();
+    delete this;
 }
 
 PyDict* Drone::MakeSlimItem() {
@@ -199,7 +200,7 @@ void Drone::EncodeDestiny( Buffer& into )
 
     // drone id's WILL be int64 (> 1000000000000L)
     BallHeader head;
-    head.entityID = GetID();
+        head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
         head.x = x();
