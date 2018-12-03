@@ -563,15 +563,6 @@ PyDict* ShipItem::GetChargeState() {
     return result;
 }
 
-void ShipItem::AddItem(InventoryItemRef iRef)
-{
-    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
-        // make singleton
-        iRef->ChangeSingleton( true );
-    }
-    pInventory->AddItem( iRef );
-}
-
 bool ShipItem::ValidateBoardShip(CharacterRef character) {
 
     bool result = false;
@@ -1083,6 +1074,15 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
             ++pos;
         }
     }
+}
+
+void ShipItem::AddItem(InventoryItemRef iRef)
+{
+    if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
+        // make singleton
+        iRef->ChangeSingleton( true );
+    }
+    pInventory->AddItem( iRef );
 }
 
 uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)

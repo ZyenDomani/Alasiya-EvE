@@ -83,7 +83,7 @@ uint32 CargoContainer::CreateItemID( ItemData &data)
 
 void CargoContainer::Delete()
 {
-    if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
+    if (m_type.id() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
         PlanetDB mDB;
         mDB.DeleteLaunch(m_itemID);
     }
@@ -427,10 +427,9 @@ void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item )
 void WreckContainer::RemoveItem(InventoryItemRef iRef)
 {
     pInventory->RemoveItem( iRef );
-    if (IsEmpty()) {
+    if (pInventory->IsEmpty()) {
         MakeSlimItemChange();
         _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
-        //Delete();
     }
 }
 

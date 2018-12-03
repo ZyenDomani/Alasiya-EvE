@@ -532,6 +532,7 @@ void InventoryItem::Delete() {
     sItemFactory.db()->DeleteItem( m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem( m_itemID);
+    PyDecRef(this);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
@@ -727,26 +728,30 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
     if ((new_location == m_locationID) and (new_flag == m_flag) and (new_owner == m_ownerID))
         return; //nothing to do...
 
-    Inventory* pInv(nullptr);
+    InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID, old_owner = m_ownerID;
     EVEItemFlags old_flag = m_flag;
-
-    if (old_location != new_location) {
-        if (IsValidLocation(old_location)) {
-            pInv = sItemFactory.GetInventoryFromId( old_location, false);
-            if (pInv != nullptr)
-                pInv->RemoveItem(InventoryItemRef(this));
-        }
-        if (IsValidLocation(new_location)) {
-            pInv = sItemFactory.GetInventoryFromId( new_location, false);
-            if (pInv != nullptr)
-                pInv->AddItem(InventoryItemRef(this));
-        }
-    }
 
     m_flag = new_flag;
     m_ownerID = new_owner;
     m_locationID = new_location;
+
+    if (old_location != new_location) {
+        if (IsValidLocation(old_location)) {
+            iRef = sItemFactory.GetItem( old_location);
+            if (iRef.get() != nullptr)
+                iRef->RemoveItem(InventoryItemRef(this));
+        }
+        if (IsValidLocation(new_location)) {
+            iRef = sItemFactory.GetItem( new_location);
+            if (iRef.get() != nullptr)
+                iRef->AddItem(InventoryItemRef(this));
+        }
+    }
+
+    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
+        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
+        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
     SaveItem();
 
@@ -775,7 +780,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if ((new_location == m_locationID) and (new_flag == m_flag))
         return; //nothing to do...
 
-    Inventory* pInv(nullptr);
+    InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
@@ -784,19 +789,19 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
 
     if (old_location != m_locationID) {
         if (IsValidLocation(old_location)) {
-            pInv = sItemFactory.GetInventoryFromId( old_location, false);
-            if (pInv != nullptr)
-                pInv->RemoveItem(InventoryItemRef(this));
+            iRef = sItemFactory.GetItem(old_location);
+            if (iRef.get() != nullptr)
+                iRef->RemoveItem(InventoryItemRef(this));
         }
         if (IsValidLocation(m_locationID)) {
-            pInv = sItemFactory.GetInventoryFromId( m_locationID, false);
-            if (pInv != nullptr)
-                pInv->AddItem(InventoryItemRef(this));
+            iRef = sItemFactory.GetItem(m_locationID);
+            if (iRef.get() != nullptr)
+                iRef->AddItem(InventoryItemRef(this));
             else
-                _log(INV__WARNING, "Inventory for %u not found. %s not added to it's container's inventory.", m_locationID, itemName().c_str());
+                _log(INV__WARNING, "Item %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
         }
     }
-    if (old_flag != new_flag)
+    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
@@ -820,7 +825,7 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip)
         return;
     // here we 'merge' with stack already in cargo
     if (iRef->AlterQuantity(m_quantity, true))
-        this->Delete();
+        Delete();
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
