@@ -172,7 +172,7 @@ protected:
     {
         if (type.categoryID() != EVEDB::invCategories::Blueprint )
         {
-            sLog.Error("Blueprint", "Trying to load %s as Blueprint.", type.category().name().c_str() );
+            sLog.Error("Blueprint", "Trying to load %s(%u) as Blueprint.", type.category().name().c_str(), blueprintID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

@@ -122,7 +122,10 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     else if (security > 0.451) m_maxSigs = 12;
     else if (security > 0.251) m_maxSigs = 8;
     else                       m_maxSigs = 5;
-    m_maxSigs = 2;
+
+    if (sConfig.debug.IsTestServer)
+        m_maxSigs = 2;
+    
     // will these be static, var by system, var by trusec, config options, other???
     m_Sigs = 0;
     m_Anoms = 0;
@@ -140,6 +143,8 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
         m_anomTimer.Start(1000);  // 1s
     else
         m_anomTimer.Start(120000);  // 120s
+
+    // if we're not saving/loading data, need to figure out how to delete it from db....shits getting outta hand.
 
     _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals", m_system->GetName().c_str(), m_system->GetID(), m_maxSigs);
     return (m_initalized = true);
@@ -161,7 +166,7 @@ void AnomalyMgr::Process() {
 
 void AnomalyMgr::Close()
 {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
         if (iRef.get() == nullptr)
@@ -185,7 +190,6 @@ void AnomalyMgr::SaveAnomaly()
     //will have to rewrite scan system to use data from here
     for (auto sig : m_sigByItemID)
         m_mdb.SaveAnomaly(sig.second);
-
 }
 
 void AnomalyMgr::RemoveAnomaly(uint32 itemID)

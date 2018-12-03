@@ -64,7 +64,7 @@ protected:
     static _Ty *_LoadType( uint32 stationTypeID, const ItemGroup &group, const TypeData &data)
     {
         if (group.id() != EVEDB::invGroups::Station) {
-            _log( ITEM__ERROR, "Trying to load %s as StationType.", group.name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s(%u) as StationType.", group.name().c_str(), stationTypeID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return nullptr;
@@ -133,7 +133,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 stationID, const ItemType &type, const ItemData &data)
     {
         if (type.groupID() != EVEDB::invGroups::Station) {
-            _log( ITEM__ERROR, "Trying to load %s as Station.", type.group().name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s(%u) as Station.", type.group().name().c_str(),  stationID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

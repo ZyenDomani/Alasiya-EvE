@@ -59,7 +59,7 @@ protected:
         and (type.categoryID() != EVEDB::invCategories::Orbitals)
         and (type.categoryID() != EVEDB::invCategories::SovereigntyStructure)
         and (type.categoryID() != EVEDB::invCategories::StructureUpgrade)) {
-            _log( ITEM__ERROR, "Trying to load %s as Structure %u.", type.category().name().c_str(), structureID);
+            _log( ITEM__ERROR, "Trying to load %s(%u) as Structure.", type.category().name().c_str(), structureID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

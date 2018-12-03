@@ -139,7 +139,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 solarSystemID, const ItemType &type, const ItemData &data) {
         if (type.groupID() != EVEDB::invGroups::Solar_System) {
-            _log( ITEM__ERROR, "Trying to load %s as Solar system %u.", type.name().c_str(), solarSystemID );
+            _log( ITEM__ERROR, "Trying to load %s(%u) as SolarSystem.", type.name().c_str(), solarSystemID );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

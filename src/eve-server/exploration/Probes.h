@@ -49,7 +49,7 @@ protected:
         and (type.groupID() != EVEDB::invGroups::Survey_Probe)
         //and (type.groupID() != EVEDB::invGroups::Warp_Disruption_Probe)  this wont work here...
         and (type.groupID() != EVEDB::invGroups::Obsolete_Probes)) {
-            _log( ITEM__ERROR, "Trying to load %s as Probe.", type.group().name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s(%u) as Probe.", type.group().name().c_str(), itemID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

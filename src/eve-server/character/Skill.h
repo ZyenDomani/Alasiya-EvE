@@ -101,7 +101,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 skillID, const ItemType &type, const ItemData &data) {
         if (type.categoryID() != EVEDB::invCategories::Skill) {
-            sLog.Error("Skill", "Trying to load %s as Skill.", type.category().name().c_str() );
+            sLog.Error("Skill", "Trying to load %s(%u) as Skill.", type.category().name().c_str(), skillID);
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

@@ -520,7 +520,7 @@ protected:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 characterID, const ItemType& type, const ItemData& data) {
         if( type.groupID() != EVEDB::invGroups::Character ) {
-            sLog.Error("Character", "Trying to load %s as Character.", type.group().name().c_str() );
+            sLog.Error("Character", "Trying to load %s(%u) as Character.", type.group().name().c_str(), characterID );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();

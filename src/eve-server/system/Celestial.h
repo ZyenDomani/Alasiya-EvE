@@ -81,7 +81,7 @@ protected:
     static RefPtr<_Ty> _LoadItem( uint32 celestialID, const ItemType &type, const ItemData &data)
     {
         if (type.categoryID() != EVEDB::invCategories::Celestial)  {
-            _log( ITEM__ERROR, "Trying to load %s as Celestial.", type.category().name().c_str() );
+            _log( ITEM__ERROR, "Trying to load %s(%u) as Celestial.", type.category().name().c_str(), celestialID );
             if (sConfig.server.StackTrace)
                 EvE::traceStack();
             return RefPtr<_Ty>();
