@@ -509,8 +509,6 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
     }
 
-    m_system->RemoveEntity(this);
-
     /** @todo  test and complete this to null current customs office for this planet ... */
     if (IsCOSE()) {
         if (GetCOSE()->GetPlanetID() > 0) {
@@ -518,6 +516,9 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
             pSE->GetPlanetSE()->SetCustomsOffice(nullptr);
         }
     }
+
+    m_system->RemoveEntity(this);
+    SafeDelete(this);
 }
 
 DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
@@ -690,6 +691,7 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
     }
 
     m_system->RemoveEntity(this);
+    SafeDelete(this);
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)

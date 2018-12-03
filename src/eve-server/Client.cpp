@@ -347,7 +347,11 @@ void Client::ProcessClient() {
                     case ClientState::csLogout: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csLogout");
                     } break;
+                    case ClientState::csKilled: {
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
+                    } break;
                 }
+                m_clientState = ClientState::csIdle;
             }
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -835,7 +839,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
             if (pShipSE == nullptr) {
                 //  cant find ship.  put player back in pod and send error.
                 if (m_pod.get() == nullptr)
-                    ; // make error here for no pod....shouldnt happen
+                    CreateNewPod();
                 SetShip(m_pod);
                 m_ship->Move(m_locationID, flagCapsule, true);
                 CreateShipSE();
@@ -1090,6 +1094,46 @@ void Client::ResetAfterPodded() {
     //update session with new values
     _UpdateSession();
     SendSessionChange();
+}
+
+void Client::ResetAfterPopped()
+{
+    m_bubbleWait = true;
+    m_autoPilot = false;
+
+    pShipSE->DestinyMgr()->Stop();
+    pShipSE->DestinyMgr()->SendJettisonPacket();
+    pShipSE->DestinyMgr()->SendTerminalExplosion(m_shipId, pShipSE->SysBubble()->GetID());
+    m_system->RemoveEntity(pShipSE);
+
+    if (m_pod.get() == nullptr) // this will never be null (checked in Killed())
+        CreateNewPod();
+
+    SetShip(m_pod);
+
+    m_char->Move(m_shipId, flagPilot, true);
+    m_ship->SetPlayer(this);
+    m_ship->Move(m_locationID, flagCapsule, true);
+    m_ship->ChangeOwner(m_char->itemID());
+    m_ship->UpdateEffects();
+    char ci[25];
+    snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
+    m_ship->SetCustomInfo(ci);
+
+    CreateShipSE();
+    if (pShipSE == nullptr) {
+        _log(PLAYER__MESSAGE, "%s pShipSE for shipID %u is null on boardShip.", m_char->itemName().c_str(), m_pod->itemID());
+        return;
+    }
+    pShipSE->SetPodShipID(m_shipId);
+    m_system->AddEntity(pShipSE);
+    pShipSE->SetPilot(this);
+    pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
+    pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+    pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+
+    SetSessionTimer();
+    SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
 }
 
 void Client::UpdateSkillTraining() {

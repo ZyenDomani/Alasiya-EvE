@@ -984,7 +984,7 @@ void Character::SetActivePod(uint32 podID)
 
 void Character::ResetClone()
 {
-    m_db.ChangeCloneType(m_itemID, 164);       // typeID = 164 is for Clone Grade Alpha
+    m_db.ChangeCloneType(m_itemID, itemCloneAlpha);
 }
 
 void Character::SaveCharacter() {

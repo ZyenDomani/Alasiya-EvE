@@ -204,6 +204,7 @@ public:
     void CreateNewPod();
     void PickAlternateShip();
     void ResetAfterPodded();
+    void ResetAfterPopped();
     void BoardShip(ShipItemRef newShipRef);
     void UndockFromStation();
     void DockToStation();

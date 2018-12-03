@@ -1018,7 +1018,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     GPoint deadPOSPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
-    if (!wreckTypeID) {
+    if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("StructureSE::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
@@ -1031,6 +1031,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("StructureSE::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
+        SafeDelete(this);
         return;
     }
 
@@ -1057,11 +1058,14 @@ void StructureSE::Killed(Damage &fatal_blow) {
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("StructureSE::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         wreckItemRef->Delete();
+        SafeDelete(this);
         return;
     }
 
     _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
             GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
+    
+    SafeDelete(this);
 }
 
 

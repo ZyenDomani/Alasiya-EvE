@@ -308,9 +308,9 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
-    SystemEntity *killer(fatal_blow.srcSE);
-    Client* pClient(nullptr);
     uint32 killerID = 0;
+    Client* pClient(nullptr);
+    SystemEntity *killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
@@ -338,7 +338,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     GPoint wreckPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
-    if (wreckTypeID < 1) {
+    if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
@@ -351,6 +351,7 @@ void NPC::Killed(Damage &fatal_blow) {
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
+        SafeDelete(this);
         return;
     }
 
@@ -374,10 +375,13 @@ void NPC::Killed(Damage &fatal_blow) {
     if (!m_system->BuildDynamicEntity(wreckEntity)) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         wreckItemRef->Delete();
+        SafeDelete(this);
         return;
     }
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
+    SafeDelete(this);
 }
