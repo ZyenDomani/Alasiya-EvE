@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+#include "StaticDataMgr.h"
 #include "StatisticMgr.h"
 #include "ship/modules/TurretModule.h"
 #include "system/Damage.h"
@@ -39,9 +40,15 @@ void TurretModule::UnloadCharge()
 
 void TurretModule::ApplyDamage()
 {
+    if (m_chargeRef.get() == nullptr) {
+        m_shipRef->GetPilot()->SendErrorMsg("You're %s in slot %s doesnt have a charge registered. You can try Unload/Reload, but if this error happens again, relog.", \
+                m_modRef->itemName().c_str(), sDataMgr.GetFlagName(m_modRef->flag()).c_str());
+        _log(SHIP__MODULE_ERROR, "TurretModule::ApplyDamage() - module %s(%u) does not have a m_chargeRef.",  m_modRef->itemName().c_str(), m_modRef->itemID());
+        return;
+    }
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::pcShots);
-    
+
     Damage d(m_shipRef->GetPilot()->GetShipSE(),
             m_modRef,
             m_chargeRef->GetAttribute(AttrKineticDamage).get_float(),
@@ -66,8 +73,7 @@ void TurretModule::ApplyDamage()
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
         case EVEDB::invGroups::Hybrid_Weapon: {
-            if (m_chargeLoaded)
-                m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+            m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
             if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
