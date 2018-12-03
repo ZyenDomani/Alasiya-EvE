@@ -1322,6 +1322,16 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
+<tr><td> - Killed ships put pilot in pod</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="green">COMPLETE</font><BR>2Dec18</td></tr>
+<tr><td> - Killed pods put pilot in home station (in current clone)</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="green">COMPLETE</font><BR>2Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Module_Management"> Module Management (Rewrite)</span></h2>
