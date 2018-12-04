@@ -493,7 +493,7 @@ void Client::ProcessClient() {
 
 void Client::SetAutoPilot(bool set/*false*/)
 {
-    // itemID=10644  flag=
+    // itemID=10644  flag=*module*  not published - not in client data
     m_autoPilot = set;
     _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
 }

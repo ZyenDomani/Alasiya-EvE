@@ -342,6 +342,8 @@ uint32 EvilNumber::get_uint32()
         value = (uint32)mValue.iVal;
     }
     /** @todo  this will need testing/checks for overflow... */
+    while (value > INT_MAX)
+        value -= INT_MAX;
     return value;
 }
 

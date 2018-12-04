@@ -65,8 +65,8 @@ void Skill::VerifySP()
 {
     if (GetAttribute(AttrSkillPoints) == 0)
         return;
-    uint32 spThisLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel), GetAttribute(AttrSkillTimeConstant)).get_int();
-    uint32 spNextLevel = EvEMath::Skill::PointsAtLevel(GetAttribute(AttrSkillLevel) +1, GetAttribute(AttrSkillTimeConstant)).get_int();
+    uint32 spThisLevel = GetSPForLevel(GetAttribute(AttrSkillLevel)).get_int();
+    uint32 spNextLevel = GetSPForLevel(GetAttribute(AttrSkillLevel) +1).get_int();
     if ((GetAttribute(AttrSkillPoints).get_int() < spThisLevel) or (GetAttribute(AttrSkillPoints).get_int() > spNextLevel)) {
         _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u", itemName().c_str(), (uint32)GetAttribute(AttrSkillPoints).get_int(), spThisLevel);
         SetAttribute(AttrSkillPoints, spThisLevel);

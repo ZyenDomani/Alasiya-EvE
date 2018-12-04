@@ -663,9 +663,9 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     result.invItem = GetItemRow();
 
     if (m_type.categoryID() == EVEDB::invCategories::Skill) {
-        result.attributes[AttrSkillTimeConstant] = new PyFloat(GetAttribute(AttrSkillTimeConstant).get_int());
-        result.attributes[AttrSkillPoints] = new PyInt(GetAttribute(AttrSkillPoints).get_int());
-        result.attributes[AttrSkillLevel] = new PyInt(GetAttribute(AttrSkillLevel).get_int());
+        result.attributes[AttrSkillTimeConstant] = new PyInt(GetAttribute(AttrSkillTimeConstant).get_uint32());
+        result.attributes[AttrSkillPoints] = new PyInt(GetAttribute(AttrSkillPoints).get_uint32());
+        result.attributes[AttrSkillLevel] = new PyInt(GetAttribute(AttrSkillLevel).get_uint32());
     } else if (m_type.id() == 51) { // for vouchers
         result.description = m_itemName;
     } else {
@@ -708,7 +708,7 @@ PyList* InventoryItem::GetItemInfo() const
 }
 
 PyObject* InventoryItem::ItemGetInfo()
-{   // called from dogmaBound
+{   // called from dogmaBound at least once (usually 2x) on every weapon update
     Rsp_ItemGetInfo result;
     if (!Populate(result.entry))
         return nullptr;

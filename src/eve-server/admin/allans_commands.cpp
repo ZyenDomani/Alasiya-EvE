@@ -500,7 +500,7 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
 
     for (auto cur : invMap) {
         str << cur.first << " - " << cur.second->itemName();    //45
-        str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_int() << ") "; //3
+        str  << " (" << cur.second->GetAttribute(AttrSkillLevel).get_uint32() << ") "; //3
         if (cur.second->GetAttribute(AttrSkillPoints).get_type() == evil_number_int)    //15
             str << "[i-" << cur.second->GetAttribute(AttrSkillPoints).get_int();
         else
