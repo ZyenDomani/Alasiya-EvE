@@ -1597,270 +1597,6 @@ void FleetService::SendActiveStatus(uint32 fleetID, int32 wingID, int32 squadID)
     }
 }
 
-std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
-{
-    if (!IsFleet(fleetID) or (fleetID > m_fleetID))
-        return "Invalid Data";
-
-    /** @todo  add system checks in here */
-    Character* pChar(nullptr);
-    std::ostringstream str;
-    str.clear();
-
-    bool fboost = false;
-    FleetData fdata;
-    GetFleetData(fleetID, fdata);
-    str << "<color=teal>" << fdata.name << "  Created By: " << fdata.creator->GetChar()->itemName().c_str();
-    str << "  Members: " << itoa(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
-    length += 54;
-    length += fdata.name.size();
-    length += fdata.creator->GetChar()->itemName().size();
-
-    if ((fdata.leader != nullptr) and (fdata.leader->IsInSpace()) and (pChar = fdata.leader->GetChar().get()) != nullptr) {
-        if (m_fleetWings.count(fleetID) > pChar->GetSkillLevel(skillFleetCommand)) {
-            str << "<color=red>";
-            fboost = false;
-        } else {
-            str << "<color=green>";
-            fboost = true;
-        }
-        length += 13;
-        str << "Fleet Cmdr: " << pChar->itemName().c_str(); //12
-        length += pChar->itemName().size();
-
-        str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
-        str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//15
-        length += 30;
-    } else {
-        str << "<color=red>No Fleet Cmdr</color><br>";
-        length += 37;
-    }
-
-    if ((fdata.booster != nullptr) and (fdata.booster->IsInSpace()) and (pChar = fdata.booster->GetChar().get()) != nullptr) {
-        if (fdata.leader->GetSystemID() == fdata.booster->GetSystemID()) {
-            if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
-            or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
-            or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
-                if (fboost) {
-                    str << "<color=green>";
-                } else {
-                    str << "<color=yellow>";
-                }
-            } else {
-                if (fboost) {
-                    str << "<color=yellow>";
-                } else {
-                    str << "<color=red>";
-                }
-                fboost = false;
-            }
-            length += 14;
-        } else {
-            str << "<color=red> (Not In System)";
-            fboost = false;
-            length += 30;
-        }
-        str << "Fleet Booster: " << pChar->itemName().c_str();//15
-        length += pChar->itemName().size();
-        str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare)) << "/";
-        str << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
-        str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//30
-        length += 50;
-    } else {
-        str << "<color=red>No Fleet Booster</color><br>";
-        length += 40;
-        fboost = false;
-    }
-
-    std::vector< uint32 > wingIDs, squadIDs;
-    wingIDs.clear();
-    GetWingIDs(fleetID, wingIDs);
-    for (auto wingID : wingIDs) {
-        if (!IsWing(wingID))
-            continue;
-        bool wboost = false;
-        WingData wdata;
-        GetWingData(wingID, wdata);
-        if ((wdata.leader != nullptr) and (wdata.leader->IsInSpace()) and (pChar = wdata.leader->GetChar().get()) != nullptr) {
-            if (m_wingSquads.count(wingID) > pChar->GetSkillLevel(skillWingCommand)) {
-                str << "<color=red>";
-            } else {
-                if (fboost) {
-                    str << "<color=green>";
-                } else {
-                    str << "<color=yellow>";
-                }
-                wboost = true;
-            }
-            length += 13;
-            str << "  " << wdata.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
-            length += wdata.name.size();
-            length += pChar->itemName().size();
-            str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
-            str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//15
-            length += 30;
-        } else {
-            str << "  <color=red>" << wdata.name.c_str() << " No Cmdr</color><br>";//33
-            length += wdata.name.size();
-            length += 35;
-        }
-        if ((wdata.booster != nullptr) and (wdata.booster->IsInSpace()) and (pChar = wdata.booster->GetChar().get()) != nullptr) {
-            if (wdata.leader->GetSystemID() == wdata.booster->GetSystemID()) {
-                if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
-                or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
-                or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
-                    if (wboost) {
-                        str << "<color=green>";
-                    } else {
-                        str << "<color=yellow>";
-                    }
-                } else {
-                    if (wboost) {
-                        str << "<color=yellow>";
-                    } else {
-                        str << "<color=red>";
-                    }
-                    wboost = false;
-                }
-                length += 14;
-            } else {
-                str << "<color=red> (Not In System)";
-                wboost = false;
-                length += 30;
-            }
-            str << "  " << "Booster: " << pChar->itemName().c_str();//11
-            length += pChar->itemName().size();
-            str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare));
-            str << "/" << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
-            str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//32
-            length += 38;
-        } else {
-            str << "  <color=red>" << wdata.name.c_str() << " No Booster</color><br>";//43
-            length += wdata.name.size();
-            length += 45;
-            wboost = false;
-        }
-
-        squadIDs.clear();
-        GetSquadIDs(wingID, squadIDs);
-        for (auto squadID : squadIDs) {
-            if (!IsSquad(squadID))
-                continue;
-            bool sboost = false;
-            SquadData sdata;
-            GetSquadData(squadID, sdata);
-            if ((sdata.leader != nullptr) and (sdata.leader->IsInSpace()) and (pChar = sdata.leader->GetChar().get()) != nullptr) {
-                if (sdata.members.size() > (pChar->GetSkillLevel(skillLeadership) * 2)) {
-                    str << "<color=red>";
-                } else {
-                    if (wboost) {
-                        str << "<color=green>";
-                    } else {
-                        str << "<color=yellow>";
-                    }
-                    sboost = true;
-                }
-                length += 13;
-                str << "    " << sdata.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
-                length += sdata.name.size();
-                length += pChar->itemName().size();
-                str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
-                str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//21
-                length += 22;
-            } else {
-                str << "    <color=red>" << sdata.name.c_str() << " No Cmdr</color><br>";
-                length += sdata.name.size();
-                length += 37;
-            }
-            if ((sdata.booster != nullptr) and (sdata.booster->IsInSpace()) and (pChar = sdata.booster->GetChar().get()) != nullptr) {
-                if (sdata.leader->GetSystemID() == sdata.booster->GetSystemID()) {
-                    if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
-                    or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
-                        if (sboost) {
-                            str << "<color=green>";
-                        } else {
-                            str << "<color=yellow>";
-                        }
-                    } else {
-                        if (sboost) {
-                            str << "<color=yellow>";
-                        } else {
-                            str << "<color=red>";
-                        }
-                        sboost = false;
-                    }
-                    length += 14;
-                } else {
-                    str << "<color=red> (Not In System)";
-                    sboost = false;
-                    length += 30;
-                }
-                str << "    Booster: " << pChar->itemName().c_str();//13
-                length += pChar->itemName().size();
-                str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare));
-                str << "/" << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
-                str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//25
-                length += 40;
-            } else {
-                str << "    <color=red>" << sdata.name.c_str() << " No Booster</color><br>";//45
-                length += sdata.name.size();
-                length += 43;
-                sboost = false;
-            }
-            if (sboost)
-                str << "    <color=green>";
-            else
-                str << "    <color=red>";
-            str << "Members: " << itoa(sdata.members.size()) << "  Effective: ";
-            length += 40;
-            std::string bdata;
-            if (sboost) {   // this is the only way i could get these working right...dunno why
-                bdata = itoa(sdata.boost.leader);
-                bdata += "/";
-                bdata += itoa(sdata.boost.armored);
-                bdata += "/";
-                bdata += itoa(sdata.boost.info);
-                bdata += "/";
-                bdata += itoa(sdata.boost.siege);
-                bdata += "/";
-                bdata += itoa(sdata.boost.skirmish);
-                bdata += "/";
-                bdata += itoa(sdata.boost.mining);
-                length += 11;
-            } else {
-                bdata = "0/0/0/0/0/0  (";
-                bdata += itoa(sdata.boost.leader);
-                bdata += "/";
-                bdata += itoa(sdata.boost.armored);
-                bdata += "/";
-                bdata += itoa(sdata.boost.info);
-                bdata += "/";
-                bdata += itoa(sdata.boost.siege);
-                bdata += "/";
-                bdata += itoa(sdata.boost.skirmish);
-                bdata += "/";
-                bdata += itoa(sdata.boost.mining);
-                bdata += ")";
-                length += 26;
-            }
-            str << bdata.c_str();
-            str << "</color><br>";//12
-            length += 12;
-        }
-        if (squadIDs.empty()) {
-            str << "    <color=fuchsia>No Squads</color><br><br>";
-            length += 45;
-        }
-    }
-    if (wingIDs.empty()) {
-        str << "  <color=fuchsia>No Wings</color><br><br>";
-        length += 45;
-    }
-
-    return str.str();
-}
-
 bool FleetService::GetInviteData(uint32 charID, InviteData& data)
 {
     std::map<uint32, InviteData>::iterator itr = m_inviteData.find(charID);
@@ -1967,4 +1703,268 @@ std::string FleetService::GetBCastGroupName(int8 group)
         default:    return "Invalid Group";
     }
 
+}
+
+std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
+{
+    if (!IsFleet(fleetID) or (fleetID > m_fleetID))
+        return "Invalid Data";
+
+    /** @todo  add system checks in here */
+    Character* pChar(nullptr);
+    std::ostringstream str;
+    str.clear();
+
+    bool fboost = false;
+    FleetData fdata;
+    GetFleetData(fleetID, fdata);
+    str << "<color=teal>" << fdata.name << "  Created By: " << fdata.creator->GetChar()->itemName().c_str();
+    str << "  Members: " << itoa(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
+    length += 54;
+    length += fdata.name.size();
+    length += fdata.creator->GetChar()->itemName().size();
+
+    if ((fdata.leader != nullptr) and (fdata.leader->IsInSpace()) and (pChar = fdata.leader->GetChar().get()) != nullptr) {
+        if (m_fleetWings.count(fleetID) > pChar->GetSkillLevel(skillFleetCommand)) {
+            str << "<color=red>";
+            fboost = false;
+        } else {
+            str << "<color=green>";
+            fboost = true;
+        }
+        length += 13;
+        str << "Fleet Cmdr: " << pChar->itemName().c_str(); //12
+        length += pChar->itemName().size();
+
+        str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
+        str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//15
+        length += 30;
+    } else {
+        str << "<color=red>No Fleet Cmdr</color><br>";
+        length += 37;
+    }
+
+    if ((fdata.booster != nullptr) and (fdata.booster->IsInSpace()) and (pChar = fdata.booster->GetChar().get()) != nullptr) {
+        if (fdata.leader->GetSystemID() == fdata.booster->GetSystemID()) {
+            if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
+                if (fboost) {
+                    str << "<color=green>";
+                } else {
+                    str << "<color=yellow>";
+                }
+                } else {
+                    if (fboost) {
+                        str << "<color=yellow>";
+                    } else {
+                        str << "<color=red>";
+                    }
+                    fboost = false;
+                }
+                length += 14;
+        } else {
+            str << "<color=red> (Not In System)";
+            fboost = false;
+            length += 30;
+        }
+        str << "Fleet Booster: " << pChar->itemName().c_str();//15
+        length += pChar->itemName().size();
+        str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare)) << "/";
+        str << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
+        str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//30
+        length += 50;
+    } else {
+        str << "<color=red>No Fleet Booster</color><br>";
+        length += 40;
+        fboost = false;
+    }
+
+    std::vector< uint32 > wingIDs, squadIDs;
+    wingIDs.clear();
+    GetWingIDs(fleetID, wingIDs);
+    for (auto wingID : wingIDs) {
+        if (!IsWing(wingID))
+            continue;
+        bool wboost = false;
+        WingData wdata;
+        GetWingData(wingID, wdata);
+        if ((wdata.leader != nullptr) and (wdata.leader->IsInSpace()) and (pChar = wdata.leader->GetChar().get()) != nullptr) {
+            if (m_wingSquads.count(wingID) > pChar->GetSkillLevel(skillWingCommand)) {
+                str << "<color=red>";
+            } else {
+                if (fboost) {
+                    str << "<color=green>";
+                } else {
+                    str << "<color=yellow>";
+                }
+                wboost = true;
+            }
+            length += 13;
+            str << "  " << wdata.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
+            length += wdata.name.size();
+            length += pChar->itemName().size();
+            str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
+            str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//15
+            length += 30;
+        } else {
+            str << "  <color=red>" << wdata.name.c_str() << " No Cmdr</color><br>";//33
+            length += wdata.name.size();
+            length += 35;
+        }
+        if ((wdata.booster != nullptr) and (wdata.booster->IsInSpace()) and (pChar = wdata.booster->GetChar().get()) != nullptr) {
+            if (wdata.leader->GetSystemID() == wdata.booster->GetSystemID()) {
+                if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                    or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                    or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
+                    if (wboost) {
+                        str << "<color=green>";
+                    } else {
+                        str << "<color=yellow>";
+                    }
+                    } else {
+                        if (wboost) {
+                            str << "<color=yellow>";
+                        } else {
+                            str << "<color=red>";
+                        }
+                        wboost = false;
+                    }
+                    length += 14;
+            } else {
+                str << "<color=red> (Not In System)";
+                wboost = false;
+                length += 30;
+            }
+            str << "  " << "Booster: " << pChar->itemName().c_str();//11
+            length += pChar->itemName().size();
+            str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare));
+            str << "/" << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
+            str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//32
+            length += 38;
+        } else {
+            str << "  <color=red>" << wdata.name.c_str() << " No Booster</color><br>";//43
+            length += wdata.name.size();
+            length += 45;
+            wboost = false;
+        }
+
+        squadIDs.clear();
+        GetSquadIDs(wingID, squadIDs);
+        for (auto squadID : squadIDs) {
+            if (!IsSquad(squadID))
+                continue;
+            bool sboost = false;
+            SquadData sdata;
+            GetSquadData(squadID, sdata);
+            if ((sdata.leader != nullptr) and (sdata.leader->IsInSpace()) and (pChar = sdata.leader->GetChar().get()) != nullptr) {
+                if (sdata.members.size() > (pChar->GetSkillLevel(skillLeadership) * 2)) {
+                    str << "<color=red>";
+                } else {
+                    if (wboost) {
+                        str << "<color=green>";
+                    } else {
+                        str << "<color=yellow>";
+                    }
+                    sboost = true;
+                }
+                length += 13;
+                str << "    " << sdata.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
+                length += sdata.name.size();
+                length += pChar->itemName().size();
+                str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
+                str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//21
+                length += 22;
+            } else {
+                str << "    <color=red>" << sdata.name.c_str() << " No Cmdr</color><br>";
+                length += sdata.name.size();
+                length += 37;
+            }
+            if ((sdata.booster != nullptr) and (sdata.booster->IsInSpace()) and (pChar = sdata.booster->GetChar().get()) != nullptr) {
+                if (sdata.leader->GetSystemID() == sdata.booster->GetSystemID()) {
+                    if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
+                        or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
+                        or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
+                        if (sboost) {
+                            str << "<color=green>";
+                        } else {
+                            str << "<color=yellow>";
+                        }
+                        } else {
+                            if (sboost) {
+                                str << "<color=yellow>";
+                            } else {
+                                str << "<color=red>";
+                            }
+                            sboost = false;
+                        }
+                        length += 14;
+                } else {
+                    str << "<color=red> (Not In System)";
+                    sboost = false;
+                    length += 30;
+                }
+                str << "    Booster: " << pChar->itemName().c_str();//13
+                length += pChar->itemName().size();
+                str << "    " << itoa(pChar->GetSkillLevel(skillArmoredWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillInformationWarfare));
+                str << "/" << itoa(pChar->GetSkillLevel(skillSiegeWarfare)) << "/" << itoa(pChar->GetSkillLevel(skillSkirmishWarfare)) << "/";
+                str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//25
+                length += 40;
+            } else {
+                str << "    <color=red>" << sdata.name.c_str() << " No Booster</color><br>";//45
+                length += sdata.name.size();
+                length += 43;
+                sboost = false;
+            }
+            if (sboost)
+                str << "    <color=green>";
+            else
+                str << "    <color=red>";
+            str << "Members: " << itoa(sdata.members.size()) << "  Effective: ";
+            length += 40;
+            std::string bdata;
+            if (sboost) {   // this is the only way i could get these working right...dunno why
+                bdata = itoa(sdata.boost.leader);
+                bdata += "/";
+                bdata += itoa(sdata.boost.armored);
+                bdata += "/";
+                bdata += itoa(sdata.boost.info);
+                bdata += "/";
+                bdata += itoa(sdata.boost.siege);
+                bdata += "/";
+                bdata += itoa(sdata.boost.skirmish);
+                bdata += "/";
+                bdata += itoa(sdata.boost.mining);
+                length += 11;
+            } else {
+                bdata = "0/0/0/0/0/0  (";
+                bdata += itoa(sdata.boost.leader);
+                bdata += "/";
+                bdata += itoa(sdata.boost.armored);
+                bdata += "/";
+                bdata += itoa(sdata.boost.info);
+                bdata += "/";
+                bdata += itoa(sdata.boost.siege);
+                bdata += "/";
+                bdata += itoa(sdata.boost.skirmish);
+                bdata += "/";
+                bdata += itoa(sdata.boost.mining);
+                bdata += ")";
+                length += 26;
+            }
+            str << bdata.c_str();
+            str << "</color><br>";//12
+            length += 12;
+        }
+        if (squadIDs.empty()) {
+            str << "    <color=fuchsia>No Squads</color><br><br>";
+            length += 45;
+        }
+    }
+    if (wingIDs.empty()) {
+        str << "  <color=fuchsia>No Wings</color><br><br>";
+        length += 45;
+    }
+
+    return str.str();
 }
