@@ -390,6 +390,7 @@ public:
 
     bool get_bool();
     int64 get_int();
+    uint32 get_uint32();    // be careful with using this one...no overflow checks
     float get_float();
     double get_double();
     /************************************************************************/
@@ -484,6 +485,7 @@ EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2);
 EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2);
 
 extern EvilNumber EvilZero;
+extern EvilNumber EvilOne;
 extern const EvilNumber EvilTime_Second;
 extern const EvilNumber EvilTime_Minute;
 extern const EvilNumber EvilTime_Hour;

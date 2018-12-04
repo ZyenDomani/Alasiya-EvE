@@ -29,6 +29,7 @@
 #include "utils/EvilNumber.h"
 
 EvilNumber EvilZero = 0;
+EvilNumber EvilOne = 1;
 const EvilNumber EvilTime_Second = 10000000;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;
@@ -330,6 +331,18 @@ int64 EvilNumber::get_int()
     if (mType == evil_number_float)
         return (int64)floor(mValue.fVal);
     return mValue.iVal;
+}
+
+uint32 EvilNumber::get_uint32()
+{
+    uint32 value = 0;
+    if (mType == evil_number_float) {
+        value = (uint32)floor(mValue.fVal);
+    } else {
+        value = (uint32)mValue.iVal;
+    }
+    /** @todo  this will need testing/checks for overflow... */
+    return value;
 }
 
 float EvilNumber::get_float()
