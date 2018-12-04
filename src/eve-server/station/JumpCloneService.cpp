@@ -204,8 +204,7 @@ PyResult JumpCloneBound::Handle_CancelShipCloneInstallation(PyCallArgs &call) {
 }
 
 PyResult JumpCloneBound::Handle_CloneJump(PyCallArgs &call) {
-    //
-lm.CloneJump, destLocationID
+    //lm.CloneJump, destLocationID
 _log(CHARACTER__INFO, "JumpCloneBound::Handle_CloneJump()");
 
     return nullptr;
