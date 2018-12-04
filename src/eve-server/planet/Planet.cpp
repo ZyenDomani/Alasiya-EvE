@@ -151,6 +151,10 @@ void PlanetSE::CreateCustomsOffice()
 
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {
+    /*  from eve/client/script/environment/planet\clientPlanet.py
+     * This method is used to fetch spherical harmonic data for a given
+     * resource type on the current planet.
+     */
     // will update this to use PI skills (sent in dict) as system grows
     /** @todo  this needs a minor rewrite....bands are dictated by client request.
      * bufferData is random fill based on bands, but kept per planet

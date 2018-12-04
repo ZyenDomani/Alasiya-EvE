@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Cometo (basic system idea)
-    Updates:    Allan
+    Updates:    Allan   (mostly complete and working - 27Dec16)
 */
 
 #include "eve-server.h"
@@ -961,10 +961,9 @@ void Colony::ProcessECUs(bool& updateTimes)
         if (ecu.second.isECU) {
             if ((ecu.second.expiryTime == 0 ) or (ecu.second.cycleTime == 0) or (ecu.second.expiryTime > m_procTime))
                 continue;
-            // dont loop...get #cycles to 'run' and set amounts accordingly
             /** @todo  as i dont have data on planet resources, and am not tracking depletion, extraction qtys used here are
              * sent from the client during 'survey program' installation, and do not simulate the diminishing returns as shown in
-             * the survey program.
+             * the survey program. (testing diminishing returns @ 99%)
              * because of this, the values used here (and all subsquent processes) will be more than shown in client.
              */
             /** @note this is a simple process, as it only provides raw mats, simulating extraction from planet and
@@ -973,6 +972,7 @@ void Colony::ProcessECUs(bool& updateTimes)
              * and wait for the ProcessPlants() call to use them, as this will avoid overcomplicating things,
              * but it could get messy later....
              */
+            // dont loop...get #cycles to 'run' and set amounts accordingly
             double delta = m_procTime - ecu.second.lastRunTime;
             uint16 cycles = floor(delta / ecu.second.cycleTime);
             // first - see if this ecu has a route and move contents per route.  this will simulate aquisition of raw matls from heads to storage
@@ -1017,8 +1017,8 @@ void Colony::ProcessPlants(bool& updateTimes)
 
     /** @note  generally-accepted design has plant input and output to/from silo(spaceport or storage) for input buffers and follows this guideline...
      * silo->plant->silo->plant->silo
-     * however, there may be rare cases where colony is restricted or other design constraints limit routing and plants
-     * must be linked together, where the output of one provides the direct input of the next, as follows...
+     * however, there may be rare cases where colony is restricted or other design constraints limit routing and
+     * plants must be linked together, where the output of one provides the direct input of the next, as follows...
      * silo->plant->plant->plant->silo
      * with plants as needed for production requirements of the colony.
      *
@@ -1373,36 +1373,37 @@ uint8 Colony::GetProductLevel(uint16 typeID)
     AttrdefaultCustomsOfficeTaxRate = 1781,
 
 Command Center Properties
-Level  Capy    CPU     PG           Upgrade Cost
-0   500 m3  1,675 tf    6,000 MW    N/A
-1   500 m3  7,057 tf    9,000 MW    580,000 ISK
-2   500 m3  12,136 tf   12,000 MW   930,000 ISK
-3   500 m3  17,215 tf   15,000 MW   1,200,000 ISK
-4   500 m3  21,315 tf   17,000 MW   1,500,000 ISK
-5   500 m3  25,415 tf   19,000 MW   2,100,000 ISK
+Level    Capy    CPU        PG           Upgrade Cost
+0       500 m3  1,675 tf    6,000 MW       0  ISK
+1       500 m3  7,057 tf    9,000 MW     580k ISK
+2       500 m3  12,136 tf   12,000 MW    930k ISK
+3       500 m3  17,215 tf   15,000 MW    1.2m ISK
+4       500 m3  21,315 tf   17,000 MW    1.5m ISK
+5       500 m3  25,415 tf   19,000 MW    2.1m ISK
 
 Structure Properties
-Name                        CPU Required        Power Required      Cost
-Extractor Control Unit      400 tf          2600 MW               45,000.00 ISK
-Extractor Head              110 tf          550 MW                  0.00 ISK
-Basic Industry Facility     200 tf          800 MW              75,000.00 ISK
-Advanced Industry Facility  500 tf          700 MW              250,000.00 ISK
-High-Tech Industry Facility 1100 tf         400 MW              525,000.00 ISK
-Storage Facility            500 tf          700 MW              250,000.00 ISK
-Space Port                  3600 tf         700 MW              900,000.00 ISK
+Name                        CPU         Power       Cost
+Extractor Control Unit      400 tf      2600 MW      45m ISK
+Extractor Head              110 tf      550 MW        0  ISK
+Basic Industry Facility     200 tf      800 MW       75m ISK
+Advanced Industry Facility  500 tf      700 MW      250m ISK
+High-Tech Industry Facility 1100 tf     400 MW      525m ISK
+Storage Facility            500 tf      700 MW      250m ISK
+Space Port                  3600 tf     700 MW      900m ISK
 
 
  *
- * Link Cost by Distance Distance   CPU Required    Power Required
-2.5 km  16 tf   11 MW
-10 km   18 tf   12 MW
-20 km   20 tf   14 MW
-50 km   26 tf   18 MW
-100 km  36 tf   26 MW
-200 km  56 tf   41 MW
-500 km  116 tf  86 MW
-1000 km     215 tf  160 MW
-2000 km     416 tf  311 MW
+ * Link Requirements by Distance
+ Distance   CPU         Power
+2.5 km      16 tf       11 MW
+10 km       18 tf       12 MW
+20 km       20 tf       14 MW
+50 km       26 tf       18 MW
+100 km      36 tf       26 MW
+200 km      56 tf       41 MW
+500 km      116 tf      86 MW
+1000 km     215 tf      160 MW
+2000 km     416 tf      311 MW
 5000 km     1016 tf     761 MW
 40000 km    8016 tf     6001 MW
 
@@ -1410,17 +1411,17 @@ Space Port                  3600 tf         700 MW              900,000.00 ISK
 Link Upgrade Costs
 
 Data on relative costs of upgrading the link capacity (uses a link that is 500km as a base):
-Level   Capacity    CPU Required    Power Required
-0   250 m3  116 tf  86 MW
-1   500 m3  280 tf  183 MW
-2   1000 m3     481 tf  291 MW
-3   2000 m3     713 tf  407 MW
-4   4000 m3     968 tf  528 MW
-5   8000 m3     1245 tf     655 MW
-6   16000 m3    1542 tf     786 MW
-7   32000 m3    1855 tf     921 MW
-8   64000 m3    2185 tf     1059 MW
-9   128000 m3   2530 tf     1200 MW
-10  256000 m3   2889 tf     1344 MW
+Level   Capacity    CPU         Power
+0       250 m3      116 tf      86 MW
+1       500 m3      280 tf      183 MW
+2       1000 m3     481 tf      291 MW
+3       2000 m3     713 tf      407 MW
+4       4000 m3     968 tf      528 MW
+5       8000 m3     1245 tf     655 MW
+6       16 km3      1542 tf     786 MW
+7       32 km3      1855 tf     921 MW
+8       64 km3      2185 tf     1059 MW
+9       128 km3     2530 tf     1200 MW
+10      256 km3     2889 tf     1344 MW
 
 */
