@@ -993,11 +993,15 @@ void DestinyManager::ClearTurn() {
 void DestinyManager::_Follow() {
     //  Follow is also used by client as AlignTo.
     const GPoint& target_point = m_targetEntity.second->GetPosition();
-
     GVector heading(m_position, target_point);
     m_targetDistance = (heading.length() - m_radius);
 
     if (m_targetDistance < m_followDistance) {
+        if (mySE->GetPilot()->IsAutoPilot()) {
+            SetSpeedFraction(0.1);
+            _log(AUTOPILOT__TRACE, "DestinyManager::_Follow() - Target within FollowDistance.  SpeedFraction = 0.1.");
+            return;
+        }
     // this will allow following entites to keep their follow state, yet stop movement if within their follow distance.
     //  by keeping their follow state, once the distance is greater than their follow distance, they will begin movement again.
         if (m_tractored) {
@@ -1585,7 +1589,8 @@ void DestinyManager::_WarpStop(double currentShipSpeed) {
         _log(DESTINY__WARP_TRACE, "Destiny::_WarpStop(): %s(%u): Ship currently at %.2f,%.2f,%.2f.", \
                 mySE->GetName(), mySE->GetID(), m_position.x, m_position.y, m_position.z);
     }
-    _log(AUTOPILOT__MESSAGE, "Destiny::_WarpStop(): %s(%u) - Warp complete.", mySE->GetName(), mySE->GetID());
+    if (mySE->IsShipSE())
+        _log(AUTOPILOT__MESSAGE, "Destiny::_WarpStop(): %s(%u) - Warp complete.", mySE->GetName(), mySE->GetID());
     m_targetPoint += (m_warpState->warp_vector *10000);
     // SetSpeedFraction() checks for State = Warp and warpstate != null to set decel variables correctly with warp decel.
     //   have to call this BEFORE deleting or reseting State or WarpState.

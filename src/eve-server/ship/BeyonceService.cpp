@@ -57,7 +57,7 @@ public:
 
         m_strBoundObjectName = "BeyonceBound";
 
-        PyCallable_REG_CALL(BeyonceBound, CmdFollowBall);
+        PyCallable_REG_CALL(BeyonceBound, CmdFollowBall);   //*
         PyCallable_REG_CALL(BeyonceBound, CmdOrbit);
         PyCallable_REG_CALL(BeyonceBound, CmdAlignTo);
         PyCallable_REG_CALL(BeyonceBound, CmdGotoDirection);
@@ -68,7 +68,7 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdDock);
         PyCallable_REG_CALL(BeyonceBound, CmdStargateJump);
         PyCallable_REG_CALL(BeyonceBound, UpdateStateRequest);
-        PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuffAutopilot);
+        PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuffAutopilot); //*
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
@@ -694,7 +694,6 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
         if (call.client->IsAutoPilot())
             return PyStatic.NewNone();
 
-    call.client->SetAutoPilot(false);
 
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
@@ -709,6 +708,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
     }
 
     call.client->SetUndock(false);
+    call.client->SetAutoPilot(false);
 
     pDestiny->Stop();
 

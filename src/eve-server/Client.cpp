@@ -352,6 +352,7 @@ void Client::ProcessClient() {
                     } break;
                 }
                 m_clientState = ClientState::csIdle;
+                _log(AUTOPILOT__TRACE, "ProcessClient() - Docked - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
@@ -386,6 +387,7 @@ void Client::ProcessClient() {
             pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
             m_toGate = 0;
             SetJumpTimers();
+            SetClientTimer(ClientState::csJump, ClientTimers::JumpInvul);  // infant AP system needs this to stay as "Jumping" for now...timer is 5s
         }
 
     if (pShipSE->DestinyMgr()->IsCloaked())
@@ -393,6 +395,8 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "Client::ProcessClient():  SetCloak to false for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
             m_cloakTimer.Disable();
             pShipSE->DestinyMgr()->UnCloak();
+            m_clientState = ClientState::csIdle;
+            _log(AUTOPILOT__TRACE, "ProcessClient() - Cloaked - m_clientState set to Idle");
         }
 
     if (m_stateTimer.Enabled())
@@ -532,6 +536,7 @@ void Client::SetBallPark() {
     if (!m_setStateSent)
         pShipSE->DestinyMgr()->SendSetState();
     m_clientState = ClientState::csIdle;
+    _log(AUTOPILOT__TRACE, "SetBallPark() - m_clientState set to Idle");
 }
 
 void Client::WarpIn() {
@@ -751,6 +756,7 @@ void Client::DockToStation() {
     // ap cleared on client side when docking.
     m_autoPilot = false;
     m_clientState = ClientState::csIdle;
+    _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
     m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
@@ -969,11 +975,15 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     //delay the move 5sec so they can see the JumpOut animation
     SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
-
-    //return new PyLong(Win32TimeNow());
 }
 
 void Client::ExecuteJump() {
+    if (m_movePoint == NULL_ORIGIN) {   // this is part of infant AP hack
+        m_clientState = ClientState::csIdle;
+        _log(AUTOPILOT__TRACE, "ExecuteJump() - m_clientState set to Idle");
+        return;
+    }
+
     m_ship->Jump();
     m_invul = true;
     m_beyonce = m_setStateSent = false;
@@ -992,9 +1002,9 @@ void Client::SetJumpTimers() {
 
 void Client::SetClientTimer(ClientState state, uint32 time)
 {
+    _log(CLIENT__TIMER, "%s: ClientTimer set from %s to %s at %ums.  timenow %u", m_char->itemName().c_str(), GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);
-    _log(CLIENT__TIMER, "%s: ClientTimer set %s to %ums.  timenow %u", m_char->itemName().c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
 }
 
 std::string Client::GetStateName(ClientState state)
