@@ -1,4 +1,4 @@
-#python dbfix.py 127.0.0.1 eve_db none EVE_Squirrel invTypesBasePrice verbose
+#python dbfix.py 127.0.0.1 eve_db none EVE_Crucible invTypesBasePrice verbose
 
 
 #import cElementTree as ET
@@ -25,7 +25,7 @@ options = [
 #==================================================================================================
 def print_usage():
     print "ERROR: Command line arguments to not match what was expected!"
-    print "USAGE: > python eve-central_to_database.py <mysql_server_IP> <mysql_user> <mysql_password> <mysql_db_name> <option>"
+    print "USAGE: > python dbfix.py <mysql_server_IP> <mysql_user> <mysql_password> <mysql_db_name> <option>"
     print "  where:"
     print "    <mysql_server_IP> : IP address of your MySQL server"
     print "    <mysql_user>      : username required of your MySQL server"
@@ -78,7 +78,7 @@ def eve_central_query_market_data(regionID,option):
     if (option == options[0]):
         # HTTP GET from EVE-Central website using URL API for a typeID to get market data XML response:
         # See API here:  http://dev.eve-central.com/evec-api/start
-        url_str = "http://api.eve-central.com/api/marketstat?typeid=" + str(typeID)
+        url_str = "https://market.fuzzwork.co.uk/aggregates/?region=10000002&types=" + str(typeID)
         resp, contents = httplib2.Http().request(url_str)
         return contents
 
@@ -262,19 +262,23 @@ for region in range(0,regionID_List_length):
         typeID_Progress = 100.0 * ((1.0*index)/typeID_List_length)
 
         if (verbose == 1):
-            print "Getting eve-central data for typeID ", typeID_List[index], " - ", typeName_List[index]
+            print "Getting market data for typeID ", typeID_List[index], " - ", typeName_List[index]
         contents = eve_central_query_market_data(regionID,option)
         if (verbose == 1):
-            print "Response from eve-central:"
+            print "Response from fuzzwork:"
             print contents
             print "END RESPONSE"
+
+#Response from fuzzwork:
+#{"3532":{"buy":{"weightedAverage":"7522844.02163","max":"11500000.06","min":"343368.68","stddev":"3969289.36861","median":"9750000.015","volume":"104.0","orderCount":"10","percentile":"11500000.0538"},"sell":{"weightedAverage":"29857450.9729","max":"68499999.98","min":"15399998.88","stddev":"13610076.8519","median":"18900000.01","volume":"120.0","orderCount":"21","percentile":"15399998.8933"}}}
+#END RESPONSE
 
         if (contents[0:5] == "<?xml"):
             # Parse the XML response from EVE-Central
             # See usage here for ElementTree:  http://effbot.org/zone/element-index.htm
             tree = XML(contents)        # From a string
             if (verbose == 1):
-                print "XML received from eve-central:"
+                print "Data received from fuzzwork:"
                 print tree
             #print "XML Element count = ", len(tree)
 
@@ -294,19 +298,19 @@ for region in range(0,regionID_List_length):
                         for f in e.getchildren():
                             if (verbose == 1):
                                 print "            ", f.tag, " = ", f.text
-                            if ((e.tag == "sell") and (f.tag == "avg")):
+                            if ((e.tag == "sell") and (f.tag == "weightedAverage")):
                                 avg_sell_price = float(f.text)
-                            if ((e.tag == "buy") and (f.tag == "avg")):
-                                avg_buy_price = float(f.text)
+                            #if ((e.tag == "buy") and (f.tag == "weightedAverage")):
+                            #    avg_buy_price = float(f.text)
 
                             # Perform Specified Action on MySQL Database now that we have the Price data:
-                            if ((e.tag == "sell") and (f.tag == "avg")):
+                            if ((e.tag == "sell") and (f.tag == "weightedAverage")):
                                 if (option == options[0]):
                                     #create mysql query to update table data
-                                    mysql_update_invTypes_basePrice(db, cursor, typeID, avg_sell_price, verbose)
+                                    mysql_update_invTypes_basePrice(db, cursor, typeID, avg_sell_price *1000, verbose)
                                     print "[%.2f" % typeID_Progress, "%] ", "typeID", int(typeID), "[", typeName_List[index], "]  BASE PRICE UPDATED: ", avg_sell_price, "ISK"
 
-                    print "typeID=", int(d.attrib.get("id")), ": AVG_SELL =", avg_sell_price, " AVG_BUY =", avg_buy_price
+                    print "typeID=", int(d.attrib.get("id")), ": AVG_SELL =", avg_sell_price#, " AVG_BUY =", avg_buy_price
         else:
             print "[%.2f" % typeID_Progress, "%] ", "typeID", int(typeID), "[", typeName_List[index], "]  NO DATA... SKIPPING..."
 
