@@ -626,15 +626,13 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
     _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s(%u) (merge:%s)",\
             pMod->GetSelf()->itemName().c_str(), chargeRef->itemName().c_str(), chargeRef->itemID(), (merge?"true":"false"));
     pMod->UnloadCharge();
-    // give client reason to update fit window
-    chargeRef->Move(0, flagAutoFit, true);
     // move item and update client
     if (IsStation(m_Ship->locationID()))
         chargeRef->Move(m_Ship->locationID(), flagHangar, true);
     else if (merge and m_Ship->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
         chargeRef->MergeTypesInCargo(m_Ship);
     else
-        chargeRef->Move(m_Ship->itemID(), flagCargoHold, true);
+        chargeRef->SetFlag(flagCargoHold, true);
 }
 
 void ModuleManager::GetLoadedCharges(std::map< EVEItemFlags, InventoryItemRef >& charges)
@@ -662,13 +660,15 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
 
 void ModuleManager::UnloadAllModules()
 {
+    // can this be called when docked?
     pModuleCont->UnloadAll();
-    bool inSpace = IsSolarSystem(m_Ship->locationID());
     for (auto cur : m_charges) {
-        if (m_Ship->GetMyInventory()->ContainsTypeByFlag(cur.second->typeID(), flagCargoHold))
+        if IsStation(m_Ship->locationID())
+            cur.second->Move(m_Ship->locationID(), flagHangar, true);
+        else if (m_Ship->GetMyInventory()->ContainsTypeByFlag(cur.second->typeID(), flagCargoHold))
             cur.second->MergeTypesInCargo(m_Ship);
         else
-            cur.second->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), (inSpace ? flagCargoHold : flagHangar), true);
+            cur.second->SetFlag(flagCargoHold, true);
     }
 
     m_charges.clear();

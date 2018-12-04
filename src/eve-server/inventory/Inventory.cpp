@@ -452,9 +452,9 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
 }
 
 
-void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner)
+void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner/*0*/)
 {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef> types;
     std::map<uint32, InventoryItemRef>::iterator tItr;
     std::map<uint32, InventoryItemRef>::iterator lItr = mContents.begin();

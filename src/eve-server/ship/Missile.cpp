@@ -147,15 +147,18 @@ Missile::~Missile()
 }
 
 void Missile::Process() {
-    double profileStartTime = GetTimeUSeconds();
-    /*  Enable base call to Process Targeting and Movement  */
-    SystemEntity::Process();
     if (!m_alive) {
         Delete();
+        return;
     }
     if (m_lifeTimer.Check(false)) {
         EndOfLife();
+        return;
     }
+    double profileStartTime = GetTimeUSeconds();
+    /*  Enable base call to Process Targeting and Movement  */
+    SystemEntity::Process();
+
     if (m_hitTimer.Check(false)) {
         m_hitTimer.Disable();
         HitTarget();

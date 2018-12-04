@@ -1192,7 +1192,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
             return 0;
 
         uint32 itemID = chargeRef->itemID();
-        m_ModuleManager->UnloadCharge(fromFlag);
+        m_ModuleManager->UnloadCharge(fromFlag, true);
         return itemID;
     }
     return 0;

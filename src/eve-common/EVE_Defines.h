@@ -229,7 +229,7 @@ maxDustCharacter = 2130000000
 ((itemID >= minStation) && (itemID < minOutpost))
 
 #define IsOutpost(itemID) \
-((itemID >= minOutpost) && (itemID < minTradeCont)
+((itemID >= minOutpost) && (itemID < minTradeCont))
 
 #define IsTrading(itemID) \
 ((itemID >= minTradeCont) && (itemID < minOfficeFolder))
@@ -253,10 +253,10 @@ maxDustCharacter = 2130000000
  (itemID >= minFakeItem)
 
 #define IsValidTarget(itemID) \
- (((itemID >= minStargate) && (itemID <= maxStation)) || (itemID >= minControlBunker))
+ (((itemID >= minStargate) && (itemID <= maxStation)) || (itemID >= minCustomsOffice))
 
 #define IsTempItem(itemID) \
- ((itemID >= minTempItemID) && (itemID < minPIStructure))
+ (((itemID >= minTempItemID) && (itemID < minPIStructure)) || (itemID >= minNPC))
 
 #define FlagToSlot(flag) \
  (flag - flagSlotFirst)

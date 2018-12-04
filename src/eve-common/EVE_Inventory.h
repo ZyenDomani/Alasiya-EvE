@@ -8,7 +8,6 @@
 #ifndef EVE_INVENTORY_H
 #define EVE_INVENTORY_H
 
-
 //these came from the 'constants' object:
 // updated for change in crucible.  -allan 16May16
 enum EVEItemChangeType {
@@ -23,7 +22,7 @@ enum EVEItemChangeType {
     ixCustomInfo    = 8,
     ixStackSize     = 9,
     ixSingleton     = 10,
-    ixSubitems      = 11
+    ixSubitems      = 11        // not in client data
 };
 
 enum EVEContainerTypes {

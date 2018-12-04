@@ -113,9 +113,9 @@ public:
     void                    Relocate(const GPoint pos);
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
-    // this will remove item from old location and (optionally) notify client of changes
+    // Move() will remove item from old location, add to new location and (optionally) notify client of changes
     void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
-    // Donate() is used to xfer owner and location when moving items between char and corp
+    // same as Move() but xfer ownership also
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
     // this is for stacking unloading charges in ships cargo
@@ -271,6 +271,7 @@ public:
     bool SkillCheck(InventoryItemRef refItem);
 
     // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
+    //  when called at the wrong time, this will really fuck up ship attributes.  ;)
     void ClearModifiers();
     void AddModifier(fxData data);
     void RemoveModifier(fxData data);

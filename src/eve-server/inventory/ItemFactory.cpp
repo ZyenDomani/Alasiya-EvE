@@ -304,8 +304,10 @@ RefPtr<_Ty> ItemFactory::_GetItem(uint32 itemID)
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end())
     {
-        if (IsTempItem(itemID))
+        if (IsTempItem(itemID)) {
+            _log(ITEM__WARNING, "ItemFactory::_GetItem() called on tempItem %u", itemID);
             return RefPtr<_Ty>();
+        }
 
         // load the item
         RefPtr<_Ty> item = _Ty::Load(itemID );

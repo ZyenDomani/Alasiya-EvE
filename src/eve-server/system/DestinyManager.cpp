@@ -1825,6 +1825,17 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
             mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
 
+    /*supercap warp modifiers
+     * these will go here, and modify distance, target, and range accordingly
+     *
+     * AttrWarpAccuracyMaxRange = 1021,
+     * AttrWarpAccuracyFactor = 1022,
+     * AttrWarpAccuracyFactorMultiplier = 1023,
+     * AttrWarpAccuracyMaxRangeMultiplier = 1024,
+     * AttrWarpAccuracyFactorPercentage = 1025,
+     * AttrWarpAccuracyMaxRangePercentage = 1026,
+     */
+
     if (mySE->IsNPCSE()) {
         State = Destiny::BallMode::DSTBALL_WARP;
 
@@ -1845,32 +1856,18 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             sfx.active = true;
         updates.push_back(sfx.Encode());
         SendDestinyUpdate(updates);
-        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC  bubble: %u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
-             m_targBubble->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC  toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
+             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
-    }
-    /*supercap warp modifiers
-     * these will go here, and modify distance, target, and range accordingly
-     *
-     * AttrWarpAccuracyMaxRange = 1021,
-     * AttrWarpAccuracyFactor = 1022,
-     * AttrWarpAccuracyFactorMultiplier = 1023,
-     * AttrWarpAccuracyMaxRangeMultiplier = 1024,
-     * AttrWarpAccuracyFactorPercentage = 1025,
-     * AttrWarpAccuracyMaxRangePercentage = 1026,
-     */
-
-    if (m_targetDistance < minWarpDistance) {
-        // warp distance too close.  cancel warp and return
-        if (mySE->HasPilot())
+    } else if (mySE->HasPilot()) {
+        if (m_targetDistance < minWarpDistance) {
             mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
+            // warp distance too close.  cancel warp and return
+            State = Destiny::BallMode::DSTBALL_STOP;
+            SafeDelete(m_warpState);
+            return;
+        }
 
-        State = Destiny::BallMode::DSTBALL_STOP;
-        SafeDelete(m_warpState);
-        return;
-    }
-
-    if (mySE->HasPilot()) {
         Client *pClient = mySE->GetPilot();
         ShipItemRef pShip = pClient->GetShip();
 
@@ -1948,8 +1945,8 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     SendSingleDestinyUpdate(&up, true);   // consumed
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() bubble: %u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
-            m_targBubble->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+        _log(DESTINY__WARP_TRACE, "Destiny::WarpTo() toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
+             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
 }
 
 void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {

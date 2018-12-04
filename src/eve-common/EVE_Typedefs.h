@@ -267,6 +267,26 @@ typedef enum {
     ownerDED                = 1000137   //division of concord
 } ownerDefs;
 
+/*
+locationAbstract = 0
+locationSystem = 1
+locationBank = 2
+locationTemp = 5
+locationTrading = 7
+locationGraveyard = 8
+locationUniverse = 9
+locationHiddenSpace = 9000001
+locationJunkyard = 10
+locationCorporation = 13
+locationSingletonJunkyard = 25
+locationTradeSessionJunkyard = 1008
+locationCharacterGraveyard = 1501
+locationCorporationGraveyard = 1502
+locationRAMInstalledItems = 2003
+locationAlliance = 3007
+locationMinJunkyardID = 1000
+locationMaxJunkyardID = 1999
+*/
 typedef enum {
     factionNoFaction     = 0,
     factionCaldari       = 500001,

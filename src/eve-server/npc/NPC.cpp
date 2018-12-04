@@ -300,13 +300,13 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         return; // make error here?
 
-    m_destiny->Halt();
-    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
-    m_system->RemoveEntity(this);  //this also removes from db
-
     //notify our spawn manager that we are gone.
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
+
+    m_destiny->Halt();
+    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
+    m_system->RemoveEntity(this);  //this also removes from db
 
     uint32 killerID = 0;
     Client* pClient(nullptr);

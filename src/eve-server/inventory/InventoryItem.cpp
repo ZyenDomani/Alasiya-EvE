@@ -532,7 +532,7 @@ void InventoryItem::Delete() {
     sItemFactory.db()->DeleteItem( m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem( m_itemID);
-    PyDecRef(this);
+    //PyDecRef(this);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
@@ -704,19 +704,18 @@ PyList* InventoryItem::GetItemInfo() const
 {
     PyList* itemInfo = new PyList();
         itemInfo->AddItem(GetItemRow());
-
     return itemInfo;
 }
 
 PyObject* InventoryItem::ItemGetInfo()
-{
+{   // called from dogmaBound
     Rsp_ItemGetInfo result;
     if (!Populate(result.entry))
         return nullptr;
-
     return result.Encode();
 }
 
+// item manipulation methods
 void InventoryItem::Rename(std::string name)
 {
     m_itemName = name;
@@ -753,7 +752,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
         itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
-    SaveItem();
+    //SaveItem();
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
@@ -784,7 +783,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
-    m_flag = new_flag;
+    m_flag = new_flag;      // move these?
     m_locationID = new_location;
 
     if (old_location != m_locationID) {
@@ -805,7 +804,10 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
-    SaveItem();
+    if (IsTempItem(m_itemID))
+        return;
+
+    //SaveItem();
 
     //notify about the changes.
     if (notify) {
@@ -816,76 +818,6 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
             changes[ixFlag] = new PyInt(old_flag);
         SendItemChange( m_ownerID, changes);   //changes is consumed
     }
-}
-
-void InventoryItem::MergeTypesInCargo(ShipItem* pShip)
-{
-    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flagCargoHold);
-    if (iRef.get() == nullptr)
-        return;
-    // here we 'merge' with stack already in cargo
-    if (iRef->AlterQuantity(m_quantity, true))
-        Delete();
-}
-
-bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
-    if (qty == 0)
-        return true;
-
-    int32 new_qty = m_quantity + qty;
-    if (new_qty < 0) {
-        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
-        // make player error msg here.....
-        return false;
-    } else if (new_qty > EVEMU_MAX_SHORT_ID) {
-        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
-        new_qty = EVEMU_MAX_SHORT_ID -1;
-        // make player error msg here.....
-    }
-
-    return SetQuantity(new_qty, notify);
-}
-
-bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
-    //if an object is singleton, it shouldn't be able to add/remove qty
-    if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
-        // make player error msg here.....
-        return false;
-    }
-
-    int32 old_qty = m_quantity;
-    m_quantity = qty;
-
-    SaveItem();
-
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        // this informs client of a stack change
-        if (IsModuleSlot(m_flag))
-            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
-        else
-            changes[ixStackSize] = new PyInt(old_qty);
-        SendItemChange(m_ownerID, changes); //changes is consumed
-    }
-
-    return true;
-}
-
-bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
-    EVEItemFlags old_flag = m_flag;
-    m_flag = flag;
-
-    SaveItem();
-
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        //send the notify to the new owner.
-        changes[ixFlag] = new PyInt(old_flag);
-        SendItemChange(m_ownerID, changes); //changes is consumed
-    }
-
-    return true;
 }
 
 InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
@@ -941,12 +873,83 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     return true;
 }
 
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip)
+{
+    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flagCargoHold);
+    if (iRef.get() == nullptr)
+        return;
+    // here we 'merge' with stack already in cargo
+    iRef->Merge(InventoryItemRef(this));
+}
+
+bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
+    if (qty == 0)
+        return true;
+
+    int32 new_qty = m_quantity + qty;
+    if (new_qty < 0) {
+        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
+        // make player error msg here.....
+        return false;
+    } else if (new_qty > EVEMU_MAX_SHORT_ID) {
+        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
+        new_qty = EVEMU_MAX_SHORT_ID -1;
+        // make player error msg here.....
+    }
+
+    return SetQuantity(new_qty, notify);
+}
+
+bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
+    //if an object is singleton, it shouldn't be able to add/remove qty
+    if (m_singleton) {
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
+        // make player error msg here.....
+        return false;
+    }
+
+    int32 old_qty = m_quantity;
+    m_quantity = qty;
+    if (m_quantity < 1)
+        Delete();
+
+    //SaveItem();
+
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        // this informs client of a stack change...still need to go over client code to verify exacty spec on which one is used for what purpose....modules/charges can use both
+        if (IsModuleSlot(m_flag))
+            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
+
+        changes[ixStackSize] = new PyInt(old_qty);
+        SendItemChange(m_ownerID, changes); //changes is consumed
+    }
+
+    return true;
+}
+
+bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
+    EVEItemFlags old_flag = m_flag;
+    m_flag = flag;
+
+    //SaveItem();
+
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        //send the notify to the owner.
+        changes[ixFlag] = new PyInt(old_flag);
+        SendItemChange(m_ownerID, changes); //changes is consumed
+    }
+
+    return true;
+}
+
 bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_singleton)
         return true;    //nothing to do...
     bool old_singleton = m_singleton;
     m_singleton = singleton;
-    SaveItem();
+    //SaveItem();
 
     //notify about the changes.
     if (notify) {
@@ -964,7 +967,7 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
         return; //nothing to do...
     uint32 old_owner = m_ownerID;
     m_ownerID = new_owner;
-    SaveItem();
+    //SaveItem();
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -1088,7 +1091,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    SaveItem();
+    //SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint pos)
