@@ -556,21 +556,18 @@ static void _PropigateItems(std::map< int, std::set<uint32> > &types, std::map<i
 PyRep *MarketDB::GetMarketGroups() {
 
     DBQueryResult res;
-    DBResultRow row;
 
-    if(!sDatabase.RunQuery(res,
-        "SELECT * "
-        " FROM invMarketGroups"))
-    {
+    if(!sDatabase.RunQuery(res, "SELECT * FROM invMarketGroups")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
     DBRowDescriptor *header = new DBRowDescriptor(res);
 
-    for( int i=0; i<header->ColumnCount(); i++) {
-        sLog.Debug("MarketDB::GetMarketGroups", "  column %s type %d",
-                   header->GetColumnName(i), header->GetColumnType(i));
+    if (is_log_enabled(MARKET__DB_TRACE)) {
+        _log(MARKET__DB_TRACE, "MarketDB::GetMarketGroups");
+        for (int i=0; i < header->ColumnCount(); ++i)
+            _log(MARKET__DB_TRACE, "    column %s type %d", header->GetColumnName(i), header->GetColumnType(i));
     }
 
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
@@ -581,12 +578,12 @@ PyRep *MarketDB::GetMarketGroups() {
     keywords->SetItemString("columnName", new PyString("parentGroupID"));
     std::map< int, PyRep* > tt;
 
-    while( res.GetRow(row) )
-    {
+    DBResultRow row;
+    while( res.GetRow(row) ) {
         int parentGroupID = ( row.IsNull( 0 ) ? -1 : row.GetUInt( 0 ) );
-        PyRep *pid;
-        CRowSet *rowset;
-        if(tt.count(parentGroupID) == 0) {
+        PyRep* pid(nullptr);
+        CRowSet* rowset(nullptr);
+        if (tt.count(parentGroupID) == 0) {
             pid = parentGroupID!=-1 ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone();
             tt.insert( std::pair<int, PyRep*>(parentGroupID, pid) );
             rowset = filterRowset->NewRowset(pid);
@@ -596,7 +593,6 @@ PyRep *MarketDB::GetMarketGroups() {
         }
 
         PyPackedRow* pyrow = rowset->NewRow();
-
         pyrow->SetField((uint32)0, pid); //prentGroupID
         pyrow->SetField(1, new PyInt(row.GetUInt( 1 ) ) ); //marketGroupID
         pyrow->SetField(2, new PyString(row.GetText( 2 ) ) ); //marketGroupName
@@ -609,5 +605,8 @@ PyRep *MarketDB::GetMarketGroups() {
         pyrow->SetField(9, new PyInt( row.GetUInt(9) )  ); //descriptionID
     }
 
+    if (is_log_enabled(MARKET__DB_TRACE))
+        filterRowset->Dump(MARKET__DB_TRACE, "    ");
     return filterRowset;
 }
+

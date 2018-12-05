@@ -120,7 +120,7 @@ bool AttributeMap::Save() {
             owner = true;
         } break;
         case EVEDB::invCategories::Module:      // save damage for these
-        case EVEDB::invCategories::Charge:
+        case EVEDB::invCategories::Charge:      // remember, crystals and lenses are charges, too.
         case EVEDB::invCategories::Subsystem:
         case EVEDB::invCategories::Drone: {
             damage = true;
@@ -184,10 +184,10 @@ void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*t
 
 void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity/*false*/)
 {
-    if (num == 0)
-        return;
     if (num.isNaN() or num.isInf())
         return;     // make error here for bad number?
+    if (num == 0)
+        return;     // could this be on purpose?
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end())
         return; // it doesnt exist...nothing to do.
@@ -284,7 +284,7 @@ void AttributeMap::ResetAttribute(uint16 attrID, bool notify) {
 void AttributeMap::CopyAttributes(std::map< uint16, EvilNumber >& attrMap)
 {
     for (auto cur : mAttributes)
-        attrMap.insert(std::pair<uint16, EvilNumber>(cur.first, cur.second));
+        attrMap[cur.first] =  cur.second;
 }
 
 void AttributeMap::SaveShipState()
