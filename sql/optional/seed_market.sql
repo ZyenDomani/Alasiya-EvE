@@ -54,14 +54,14 @@ insert into tStations values (60009112, 30002509, 10000030);
 -- actual seeding
 INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
 minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid, IF(basePrice>100000, 1000, basePrice/100) as price,
+  SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid,  basePrice/1000 as price,
   550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband,
   0 as accountID, 18250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 5 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1 and categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 UPDATE `mktOrders` SET `price`=1000 WHERE `price`=0;
 
-
+-- IF(basePrice>100000, 1000, basePrice/100)
 categoryID  categoryName
 4   Material
 5   Accessories

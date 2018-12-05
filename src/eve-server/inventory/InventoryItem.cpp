@@ -196,12 +196,12 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
         case EVEDB::invCategories::Deployable:  // may need their own class
-        case EVEDB::invCategories::Module:
+        case EVEDB::invCategories::Module:    // may need their own class
         case EVEDB::invCategories::Drone:       // player drones.  use their own class (eventually)
         case EVEDB::invCategories::Commodity:
-        case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Implant:     // may need their own class
         case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
-        case EVEDB::invCategories::Reaction: {
+        case EVEDB::invCategories::Reaction: {    // may need their own class
             // Generic item, create one:
             return InventoryItemRef( new InventoryItem(itemID, type, data ));
         } break;

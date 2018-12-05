@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    8.9
+    Version:    9.0
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -109,6 +109,8 @@ public:
         float RateDropItem;
         float RateDropMoney;
         float RepairCost;
+        float ShipRepairModifier;
+        float ModuleRepairModifier;
 
         uint8 WebUpdate;
 

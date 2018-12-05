@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    8.9
+    Version:    9.0
 */
 
 
@@ -91,6 +91,8 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropItem = 1.0;//N
     rates.RateDropMoney = 1.0;//N
     rates.RepairCost = 1.0;//N
+    rates.ShipRepairModifier = 0.00000000075;
+    rates.ModuleRepairModifier = 0.00000125;
     rates.WebUpdate = 15 /*m*/;
     rates.TaxAmount = 10000;
     rates.TaxedAmount = 175000;
@@ -340,23 +342,25 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
 {
-    AddValueParser( "secRate",          rates.secRate );
-    AddValueParser( "npcBountyMultiply",rates.npcBountyMultiply );
-    AddValueParser( "damageRate",       rates.damageRate );
-    AddValueParser( "missileRoF",       rates.missileRoF );
-    AddValueParser( "missileDamage",    rates.missileDamage );
-    AddValueParser( "missileTime",      rates.missileTime );
-    AddValueParser( "turretDamage",     rates.turretDamage );
-    AddValueParser( "turretRoF",        rates.turretRoF );
-    AddValueParser( "corpCost",         rates.corpCost );
-    AddValueParser( "WorldDecay",       rates.WorldDecay );
-    AddValueParser( "NPCDecay",         rates.NPCDecay );
-    AddValueParser( "RateDropItem",     rates.RateDropItem );
-    AddValueParser( "RateDropMoney",    rates.RateDropMoney );
-    AddValueParser( "RepairCost",       rates.RepairCost );
-    AddValueParser( "WebUpdate",        rates.WebUpdate );
-    AddValueParser( "TaxAmount",        rates.TaxAmount );
-    AddValueParser( "TaxedAmount",      rates.TaxedAmount );
+    AddValueParser( "secRate",              rates.secRate );
+    AddValueParser( "npcBountyMultiply",    rates.npcBountyMultiply );
+    AddValueParser( "damageRate",           rates.damageRate );
+    AddValueParser( "missileRoF",           rates.missileRoF );
+    AddValueParser( "missileDamage",        rates.missileDamage );
+    AddValueParser( "missileTime",          rates.missileTime );
+    AddValueParser( "turretDamage",         rates.turretDamage );
+    AddValueParser( "turretRoF",            rates.turretRoF );
+    AddValueParser( "corpCost",             rates.corpCost );
+    AddValueParser( "WorldDecay",           rates.WorldDecay );
+    AddValueParser( "NPCDecay",             rates.NPCDecay );
+    AddValueParser( "RateDropItem",         rates.RateDropItem );
+    AddValueParser( "RateDropMoney",        rates.RateDropMoney );
+    AddValueParser( "RepairCost",           rates.RepairCost );
+    AddValueParser( "ShipRepairModifier",   rates.ShipRepairModifier );
+    AddValueParser( "ModuleRepairModifier", rates.ModuleRepairModifier );
+    AddValueParser( "WebUpdate",            rates.WebUpdate );
+    AddValueParser( "TaxAmount",            rates.TaxAmount );
+    AddValueParser( "TaxedAmount",          rates.TaxedAmount );
 
     const bool result = ParseElementChildren( ele );
 
@@ -374,6 +378,8 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "RateDropItem" );
     RemoveParser( "RateDropMoney" );
     RemoveParser( "RepairCost" );
+    RemoveParser( "ShipRepairModifier" );
+    RemoveParser( "ModuleRepairModifier" );
     RemoveParser( "WebUpdate" );
     RemoveParser( "TaxAmount" );
     RemoveParser( "TaxedAmount" );

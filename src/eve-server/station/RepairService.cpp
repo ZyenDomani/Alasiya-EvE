@@ -145,15 +145,15 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
             continue;
 
         cost = 0;
-        damage = iRef->GetAttribute(AttrDamage).get_int();
+        damage = iRef->GetAttribute(AttrDamage).get_uint32();
         itemRefVec.push_back(iRef);
         if (iRef->IsShipItem()) {
-            damage += iRef->GetAttribute(AttrArmorDamage).get_int();
+            damage += iRef->GetAttribute(AttrArmorDamage).get_uint32();
             // ship is (basePrice)*7.5e-10
-            cost = (iRef->type().basePrice() * 0.00000000075);
+            cost = (iRef->type().basePrice() * sConfig.rates.ShipRepairModifier);
         } else {
             // modules are (basePrice)*1.25e-6
-            cost = (iRef->type().basePrice() * 0.00000125);
+            cost = (iRef->type().basePrice() * sConfig.rates.ModuleRepairModifier);
         }
         total += damage * cost;
     }
@@ -182,8 +182,8 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
                 continue;
             }
 
-            uint32 cHull =  cur->GetAttribute(AttrDamage).get_int();
-            uint32 cArmor =  cur->GetAttribute(AttrArmorDamage).get_int();
+            uint32 cHull =  cur->GetAttribute(AttrDamage).get_uint32();
+            uint32 cArmor =  cur->GetAttribute(AttrArmorDamage).get_uint32();
             curDamage = cHull + cArmor;
             toRepair = curDamage * fraction;
             // this will repair hull first, then armor
@@ -207,7 +207,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
                 toRepair = cur->GetAttribute(AttrHP) * fraction;
             else
                 toRepair = EvilZero;
-            if (toRepair <= EvilZero)
+            if (toRepair < EvilZero)
                 toRepair = EvilZero;
             cur->SetAttribute(AttrDamage, toRepair);
         }
@@ -234,7 +234,7 @@ PyResult RepairSvcBound::Handle_GetDamageReports(PyCallArgs &call) {
     Client* pClient = call.client;
     StationItemRef sRef = pClient->SystemMgr()->GetStationFromInventory(m_locationID);
     Inventory* pInv = sRef->GetMyInventory();
-    float standing = 0;
+    float standing = 0.0f;
     // standing system isnt complete, but this is the correct data methods for station standing checks
     if (IsNPCCorp(sRef->ownerID()))
         standing = pClient->GetChar()->GetNPCCorpStanding(sRef->ownerID(), pClient->GetCharacterID());
@@ -279,10 +279,10 @@ void RepairService::GetDamageReports(uint32 itemID, Inventory* pInv, PyList* lis
             rid.damage                 += cur->GetAttribute(AttrArmorDamage).get_int();
             rid.maxHealth              += cur->GetAttribute(AttrArmorHP).get_int();
             // ship is (basePrice)*7.5e-10
-            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * 0.00000000075);
+            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * sConfig.rates.ShipRepairModifier);
         } else {
             // modules are (basePrice)*1.25e-6
-            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * 0.00000125);
+            rid.costToRepairOneUnitOfDamage = (cur->type().basePrice() * sConfig.rates.ModuleRepairModifier);
         }
 
         list->AddItem(rid.Encode());
@@ -334,15 +334,13 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
         ;  // skipChecks is populated....do something constructive here
 
     /** @todo  may have to switch to station inventory to get item to check if this is container, and remove items BEFORE repacking!!  */
-    PyList::const_iterator listItr;
-    PyDict::const_iterator dictItr = args.dict->begin();
-    for (; dictItr != args.dict->end(); ++dictItr) {
+    for (PyDict::const_iterator dictItr = args.dict->begin(); dictItr != args.dict->end(); ++dictItr) {
         // Dictionary key is LocationID, value is tuple of itemID/item locationID
         //locationID = dictItr->first->AsInt()->value();
         pList = dictItr->second->AsList();
         if (pList != nullptr) {
             // Iterate through list.
-            for (listItr = pList->begin(); listItr != pList->end(); ++listItr) {
+            for (PyList::const_iterator listItr = pList->begin(); listItr != pList->end(); ++listItr) {
                 // List is tuples of itemID, LocationID pairs.
                 tuple = (*listItr)->AsTuple();
                 if (tuple != nullptr) {
@@ -353,11 +351,11 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                     if (iRef.get() != nullptr) {
                         // Add type exceptions here.
                         if (iRef->categoryID() == EVEDB::invCategories::Blueprint
-                            or iRef->categoryID() == EVEDB::invCategories::Skill
-                            or iRef->categoryID() == EVEDB::invCategories::Material) {
+                        or iRef->categoryID() == EVEDB::invCategories::Skill
+                        or iRef->categoryID() == EVEDB::invCategories::Material) {
                             // Item cannot be repackaged once used!
                             continue;
-                            }
+                        }
                         iRef->ChangeSingleton(false, true);
                     }
                 }

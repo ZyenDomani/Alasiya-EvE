@@ -470,7 +470,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__MESSAGE))
+    if (is_log_enabled(DESTINY__TRACE))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
