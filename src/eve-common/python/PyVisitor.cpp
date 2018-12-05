@@ -35,10 +35,10 @@
 /************************************************************************/
 bool PyVisitor::VisitTuple(const PyTuple* rep)
 {
-    PyTuple::const_iterator cur = rep->begin(), end = rep->end();
-    for (;  cur != end; ++cur) {
-        //  if/when segfault here and cur == 0x0 then tuple count != tuple->SetItem()
-        if (!(*cur)->visit(*this))
+    PyTuple::const_iterator itr = rep->begin(), end = rep->end();
+    for (;  itr != end; ++itr) {
+        //  if/when segfault here and (*itr) == 0x0 then tuple count != tuple->SetItem()
+        if (!(*itr)->visit(*this))
             return false;
     }
     return true;
@@ -46,9 +46,9 @@ bool PyVisitor::VisitTuple(const PyTuple* rep)
 
 bool PyVisitor::VisitList(const PyList* rep)
 {
-    PyList::const_iterator cur = rep->begin(), end = rep->end();
-    for (;  cur != end; ++cur)
-        if (!(*cur)->visit(*this))
+    PyList::const_iterator itr = rep->begin(), end = rep->end();
+    for (;  itr != end; ++itr)
+        if (!(*itr)->visit(*this))
             return false;
 
     return true;
@@ -56,11 +56,11 @@ bool PyVisitor::VisitList(const PyList* rep)
 
 bool PyVisitor::VisitDict(const PyDict* rep)
 {
-    PyDict::const_iterator cur = rep->begin(), end = rep->end();
-    for (;  cur != end; ++cur) {
-        if (!cur->first->visit(*this))
+    PyDict::const_iterator itr = rep->begin(), end = rep->end();
+    for (;  itr != end; ++itr) {
+        if (!itr->first->visit(*this))
             return false;
-        if (!cur->second->visit(*this))
+        if (!itr->second->visit(*this))
             return false;
     }
     return true;
@@ -80,15 +80,16 @@ bool PyVisitor::VisitObjectEx(const PyObjectEx* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    for (PyObjectEx::const_list_iterator cur = rep->list().begin(); cur != rep->list().end(); ++cur) {
-        if (!(*cur)->visit(*this))
+    PyObjectEx::const_list_iterator lItr = rep->list().begin(), lEnd = rep->list().end();
+    for (; lItr != lEnd; ++lItr) {
+        if (!(*lItr)->visit(*this))
             return false;
     }
-
-    for (PyObjectEx::const_dict_iterator cur = rep->dict().begin(); cur != rep->dict().end(); ++cur) {
-        if (!cur->first->visit(*this))
+    PyObjectEx::const_dict_iterator dItr = rep->dict().begin(), dEnd = rep->dict().end();
+    for (; dItr != dEnd; ++dItr) {
+        if (!dItr->first->visit(*this))
             return false;
-        if (!cur->second->visit(*this))
+        if (!dItr->second->visit(*this))
             return false;
     }
 
@@ -100,9 +101,9 @@ bool PyVisitor::VisitPackedRow(const PyPackedRow* rep)
     if (!rep->header()->visit(*this))
         return false;
 
-    PyPackedRow::const_iterator cur = rep->begin(), end = rep->end();
-    for (;  cur != end; ++cur)
-        if (!(*cur)->visit(*this))
+    PyPackedRow::const_iterator itr = rep->begin(), end = rep->end();
+    for (;  itr != end; ++itr)
+        if (!(*itr)->visit(*this))
             return false;
 
     return true;

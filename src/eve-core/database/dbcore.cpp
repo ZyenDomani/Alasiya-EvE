@@ -219,7 +219,7 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     char query[16384];
     va_list vlist;
     va_start(vlist, query_fmt);
-    uint32 querylen = vsnprintf(query, 16384, query_fmt, vlist);
+    int32 querylen = vsnprintf(query, 16384, query_fmt, vlist);
     va_end(vlist);
 
     if (!DoQuery_locked(into.error, query, querylen))
@@ -228,7 +228,7 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     uint col_count = mysql_field_count(mysql);
     if (col_count == 0) {
         into.error.SetError(0xFFFF, "DBcore::RunQuery: No Result");
-        codelog(DATABASE__ERROR, "DBCore Query: %s failed because did not return a result", query);
+        codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because did not return a result", query);
         EvE::traceStack();
         return false;
     }
@@ -248,7 +248,7 @@ bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
-    uint32 querylen = vasprintf(&query, query_fmt, args);
+    int32 querylen = vasprintf(&query, query_fmt, args);
     va_end(args);
 
     if (!DoQuery_locked(err, query, querylen)) {
@@ -267,7 +267,7 @@ bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
-    uint32 querylen = vasprintf(&query, query_fmt, args);
+    int32 querylen = vasprintf(&query, query_fmt, args);
     va_end(args);
 
     if (!DoQuery_locked(err, query, querylen)) {
@@ -288,7 +288,7 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
     va_list args;
     va_start(args, query_fmt);
     char* query(nullptr);
-    uint32 querylen = vasprintf(&query, query_fmt, args);
+    int32 querylen = vasprintf(&query, query_fmt, args);
     va_end(args);
 
     if (!DoQuery_locked(err, query, querylen)) {
@@ -453,7 +453,7 @@ void DBerror::SetError( uint err, const char* str )
 
 void DBerror::ClearError()
 {
-    mErrStr = "No Error";   // this gives mem leak.  not sure why yet...
+    mErrStr = "";   // this gives mem leak.  not sure why yet...
     mErrNo = 0;
 }
 
@@ -540,6 +540,27 @@ DBQueryResult::~DBQueryResult()
         mysql_free_result( mResult );
 }
 
+void DBQueryResult::Reset()
+{
+    mColumnCount = 0;
+    SafeDeleteArray( mFields );
+
+    if (mResult != nullptr)
+        mysql_data_seek( mResult, 0);
+}
+
+bool DBQueryResult::IsUnsigned( uint32 index ) const
+{
+    return (mFields[index]->flags & UNSIGNED_FLAG == UNSIGNED_FLAG);
+}
+
+bool DBQueryResult::IsBinary( uint32 index ) const
+{
+    // According to MySQL C API Documentation, binary string
+    // fields like BLOB or VAR_BINARY have charset "63".
+    return (mFields[ index ]->charsetnr == 63);
+}
+
 bool DBQueryResult::GetRow( DBResultRow& into )
 {
     if (mResult == nullptr)
@@ -549,7 +570,7 @@ bool DBQueryResult::GetRow( DBResultRow& into )
     if (row == nullptr)
         return false;
 
-    const unsigned long* lengths = mysql_fetch_lengths( mResult );
+    const long unsigned int* lengths = mysql_fetch_lengths( mResult );
     if (lengths == nullptr)
         return false;
 
@@ -557,18 +578,12 @@ bool DBQueryResult::GetRow( DBResultRow& into )
     return true;
 }
 
-void DBQueryResult::Reset()
-{
-    if (mResult != nullptr)
-        mysql_data_seek( mResult, 0);
-}
-
 const char* DBQueryResult::ColumnName( uint32 index ) const
 {
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "DBCore ColumnName: Column index %d exceeds number of columns in row (%s)\n", index, ColumnCount() );
         EvE::traceStack();
-        return "(ERROR)";      //nothing better to do...
+        return "(ERROR)";
     }
 
     return mFields[ index ]->name;
@@ -579,7 +594,7 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
     if (index >= ColumnCount()) {
         _log(DATABASE__ERROR,  "DBCore ColumnType: Column index %d exceeds number of columns in row (%s)\n", index, ColumnCount() );
         EvE::traceStack();
-        return DBTYPE_STR;     //nothing better to do...
+        return DBTYPE_STR;
     }
 
     uint32 columnType = mFields[ index ]->type;
@@ -595,26 +610,12 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
         result = DBTYPE_BYTES;
 
     /* debug check */
-    assert( DBTYPE_ERROR != result );
+    assert( result != DBTYPE_ERROR);
     return result;
-}
-
-bool DBQueryResult::IsUnsigned( uint32 index ) const
-{
-    return (0 != ( mFields[ index ]->flags & UNSIGNED_FLAG ));
-}
-
-bool DBQueryResult::IsBinary( uint32 index ) const
-{
-    // According to MySQL C API Documentation, binary string
-    // fields like BLOB or VAR_BINARY have charset "63".
-    return (63 == mFields[ index ]->charsetnr);
 }
 
 void DBQueryResult::SetResult( MYSQL_RES** res, uint32 colCount )
 {
-    SafeDeleteArray( mFields );
-
     if (mResult != nullptr)
         mysql_free_result( mResult );
 
@@ -624,8 +625,6 @@ void DBQueryResult::SetResult( MYSQL_RES** res, uint32 colCount )
 
     if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ ColumnCount() ];
-
-        // we are
         for( uint32 i = 0; i < ColumnCount(); ++i )
             mFields[ i ] = mysql_fetch_field( mResult );
     }
@@ -641,9 +640,9 @@ mResult( nullptr )
 uint32 DBResultRow::ColumnLength( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetColumnLength: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0;
     }
 
     return mLengths[ index ];
@@ -652,9 +651,9 @@ uint32 DBResultRow::ColumnLength( uint32 index ) const
 int32 DBResultRow::GetInt( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
@@ -664,20 +663,20 @@ int32 DBResultRow::GetInt( uint32 index ) const
 bool DBResultRow::GetBool( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return false;       //nothing better to do...
+        return false;
     }
 
-    return (strtol( GetText( index ), nullptr, 0 ) == 0 ? false : true);
+    return (strtol( GetText( index ), nullptr, 0 ) != 0);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetUInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetUInt: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0;
     }
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
@@ -687,9 +686,9 @@ uint32 DBResultRow::GetUInt( uint32 index ) const
 int64 DBResultRow::GetInt64( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetInt64: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0;
     }
 
     //int64 value;
@@ -703,9 +702,9 @@ int64 DBResultRow::GetInt64( uint32 index ) const
 float DBResultRow::GetFloat( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetFloat: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetFloat: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0.0f;
     }
 
     return strtof( GetText( index ), nullptr );
@@ -714,9 +713,9 @@ float DBResultRow::GetFloat( uint32 index ) const
 double DBResultRow::GetDouble( uint32 index ) const
 {
     if (index >= ColumnCount()) {
-        _log(DATABASE__ERROR,  "   DBCore GetDouble: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
+        _log(DATABASE__ERROR,  "   DBCore::GetDouble: Column index %u exceeds number of columns in row (%u)", index, ColumnCount() );
         EvE::traceStack();
-        return 0;       //nothing better to do...
+        return 0.0;
     }
 
     return strtod( GetText( index ), nullptr );
