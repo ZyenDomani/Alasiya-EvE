@@ -117,15 +117,15 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
         " SET"
         "  corporationID = %u, "
         "  baseID = %u,"
-        "  corpRole = %" PRIi64 ","
+        "  corpRole = %lli,"
         "  corpAccountKey = %i,"
-        "  rolesAtAll = %" PRIi64 ","
-        "  rolesAtBase = %" PRIi64 ","
-        "  rolesAtHQ = %" PRIi64 ","
-        "  rolesAtOther = %" PRIi64 ","
-        "  grantableRoles = %" PRIi64 ","
-        "  grantableRolesAtBase = %" PRIi64 ","
-        "  grantableRolesAtHQ = %" PRIi64 ","
+        "  rolesAtAll = %lli,"
+        "  rolesAtBase = %lli,"
+        "  rolesAtHQ = %lli,"
+        "  rolesAtOther = %lli,"
+        "  grantableRoles = %lli,"
+        "  grantableRolesAtBase = %lli,"
+        "  grantableRolesAtHQ = %lli,"
         "  grantableRolesAtOther = %" PRIi64
         " WHERE characterID = %u",
         data.corporationID, data.baseID, data.corpRole, data.corpAccountKey, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
@@ -196,7 +196,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
-    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %" PRIi64 " WHERE characterId = %u",
+    if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
         GetFileTimeNow(), Win32TimeNow() + Win32Time_Month *3, characterId))
         return false;
     return true;
@@ -229,7 +229,7 @@ int64 CharacterDB::PrepareCharacterForDelete(uint32 accountID, uint32 charID)
 
     DBerror error;
     uint32 affectedRows;
-    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacters SET deletePrepareDateTime = %" PRIi64 " WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
+    sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacters SET deletePrepareDateTime = %lli WHERE accountID = %u AND characterID = %u", deleteTime, accountID, charID);
     if (affectedRows != 1)
         return 0;
 
@@ -1409,7 +1409,7 @@ PyRep* CharacterDB::GetSkillHistory(uint32 characterID) {
 
 void CharacterDB::UpdateSkillQueueEndTime(int64 endtime, uint32 charID) {
     DBerror err;
-    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %" PRIi64 " WHERE characterID = %u ", endtime, charID );
+    sDatabase.RunQuery( err, "UPDATE chrCharacters SET skillQueueEndTime = %lli WHERE characterID = %u ", endtime, charID );
 }
 
 void CharacterDB::SetLogInTime(uint32 charID)
@@ -1507,7 +1507,7 @@ PyRep* CharacterDB::GetKillOrLoss(uint32 charID) {
 void CharacterDB::SetCorpRole(uint32 charID, int64 role)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %" PRIi64 " WHERE characterID = %u", role, charID);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET corpRole = %lli WHERE characterID = %u", role, charID);
 }
 
 int64 CharacterDB::GetCorpRole(uint32 charID)

@@ -131,7 +131,7 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 r
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
             "INSERT INTO account ( accountName, hash, role, clientID )"
-            " VALUES ( '%s', '%s', %" PRIi64 ", %i )",
+            " VALUES ( '%s', '%s', %lli, %i )",
                     eLogin.c_str(), ePass.c_str(), role, clientID ) )
     {
         sLog.Error( "ServiceDB", "Failed to create a new account '%s':'%s': %s.", eLogin.c_str(), ePass.c_str(), err.c_str() );
@@ -148,7 +148,7 @@ void ServiceDB::SaveKillOrLoss(CharKillData &data) {
             " INSERT INTO chrKillTable (solarSystemID, victimCharacterID, victimCorporationID, victimAllianceID, victimFactionID,"
             "victimShipTypeID, victimDamageTaken, finalCharacterID, finalCorporationID, finalAllianceID, finalFactionID, finalShipTypeID,"
             "finalWeaponTypeID, finalSecurityStatus, finalDamageDone, killBlob, killTime, moonID)"
-            " VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%f,%u,'%s',%" PRIi64 ",%u)",
+            " VALUES (%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%u,%f,%u,'%s',%lli,%u)",
             data.solarSystemID, data.victimCharacterID, data.victimCorporationID,
             data.victimAllianceID, data.victimFactionID, data.victimShipTypeID, data.victimDamageTaken,
             data.finalCharacterID, data.finalCorporationID, data.finalAllianceID, data.finalFactionID,

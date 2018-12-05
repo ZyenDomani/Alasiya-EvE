@@ -501,7 +501,7 @@ void ModuleManager::DamageModule(uint32 itemID, uint8 amount)
         return;
     }
     pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
-    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %" PRIi64,  \
+    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %lli",  \
                 pMod->GetSelf()->itemName().c_str(), amount, pMod->GetAttribute(AttrDamage).get_int());
     if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
         pMod->Offline();
@@ -514,7 +514,7 @@ void ModuleManager::DamageModule(GenericModule* pMod, uint8 amount)
         return;
     }
     pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
-    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %" PRIi64,  \
+    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %lli",  \
                 pMod->GetSelf()->itemName().c_str(), amount, pMod->GetAttribute(AttrDamage).get_int());
     if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
         pMod->Offline();

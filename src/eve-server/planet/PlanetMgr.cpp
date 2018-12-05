@@ -68,7 +68,7 @@ def GetCycleTimeFromProgramLength(programLength):
     numCycles = (uint16)(length / cycleTime);
     int64 iCycleTime = cycleTime * 60 * 60 * 10000000L;
 
-    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() -  cycleTime:%.2f, iCycleTime:%" PRIi64 ", length:%.2f, numCycles:%u, (one:%.5f, two:%.5f)", \
+    _log(PLANET__TRACE, "PlanetMgr::GetProgramResultInfo() -  cycleTime:%.2f, iCycleTime:%lli, length:%.2f, numCycles:%u, (one:%.5f, two:%.5f)", \
                             cycleTime, iCycleTime, length, numCycles, one, two);
 
     PyTuple* res = new PyTuple(3);

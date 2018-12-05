@@ -529,8 +529,8 @@ bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorp
     if (!sDatabase.RunQuery(err,
         "UPDATE chrCharacters SET "
         "   corporationID = %u, startDateTime = %f, corpAccountKey = %i,"
-        "   corpRole = %" PRIi64 ", rolesAtAll = %" PRIi64 ", rolesAtBase = %" PRIi64 ", rolesAtHQ = %" PRIi64 ", rolesAtOther = %" PRIi64 ", "
-        "   grantableRoles = %" PRIi64 ", grantableRolesAtBase = %" PRIi64 ", grantableRolesAtHQ = %" PRIi64 ", grantableRolesAtOther = %" PRIi64 " "
+        "   corpRole = %lli, rolesAtAll = %lli, rolesAtBase = %lli, rolesAtHQ = %lli, rolesAtOther = %lli, "
+        "   grantableRoles = %lli, grantableRolesAtBase = %lli, grantableRolesAtHQ = %lli, grantableRolesAtOther = %lli "
         "   WHERE characterID = %u",
             corpID, GetFileTimeNow(), data.corpAccountKey,
             data.corpRole, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
@@ -1102,7 +1102,7 @@ void CorporationDB::EditBulletin(uint32 bulletinID, uint32 eCharID, int64 eDataT
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE crpBulletins SET editCharacterID = %u, editDateTime = %" PRIi64 ", title = '%s', body = '%s'"
+        "UPDATE crpBulletins SET editCharacterID = %u, editDateTime = %lli, title = '%s', body = '%s'"
         " WHERE bulletinID = %u", eCharID, eDataTime, title.c_str(), body.c_str(), bulletinID);
 }
 
@@ -1200,7 +1200,7 @@ int32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask
     sDatabase.RunQueryLID(err, adID, "INSERT INTO crpAdRegistry"
     " (corporationID, allianceID, stationID, regionID, raceMask, typeMask,"
     "  createDateTime, expiryDateTime, description, title, memberCount, channelID)"
-    " VALUES (%u,%u,%u,%u,%u,%" PRIi64 ",%f,%f,'%s','%s',%u,%u)",
+    " VALUES (%u,%u,%u,%u,%u,%lli,%f,%f,'%s','%s',%u,%u)",
         corpID, pClient->GetAllianceID(), pClient->GetStationID(), pClient->GetRegionID(), 15, typeMask, // raceMask isnt implemented yet
         GetFileTimeNow(), (GetFileTimeNow() + (Win32Time_Day * days)), description.c_str(), title.c_str(), members, channelID);
 
@@ -1697,7 +1697,7 @@ PyRep* CorporationDB::GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate
     if (!sDatabase.RunQuery(res,
         " SELECT eventID, corporationID, characterID, eventTypeID, eventDateTime"
         " FROM crpItemEvent"
-        " WHERE corporationID = %u AND characterID = %u AND eventDateTime > %" PRIi64 " AND eventDateTime <= %" PRIi64 " "
+        " WHERE corporationID = %u AND characterID = %u AND eventDateTime > %lli AND eventDateTime <= %lli "
         " LIMIT %u", corpID, charID, fromDate, toDate, rowsPerPage))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -1736,7 +1736,7 @@ void CorporationDB::AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO crpRoleHistroy (corporationID, characterID, issuerID, changeTime, oldRoles, newRoles, grantable)"
-        " VALUES (%u, %u, %u, %f, %" PRIi64 ", %" PRIi64 ", %i)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
+        " VALUES (%u, %u, %u, %f, %lli, %lli, %i)", corpID, charID, issuerID, GetFileTimeNow(), oldRoles, newRoles, (grantable ? 1 : 0));
 }
 
 PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage)
@@ -1745,7 +1745,7 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
     if (!sDatabase.RunQuery(res,
         " SELECT corporationID, characterID, issuerID, changeTime, oldRoles, newRoles, grantable"
         " FROM crpRoleHistroy"
-        " WHERE corporationID = %u and characterID = %u AND changeTime > %" PRIi64 " AND changeTime <= %" PRIi64 " "
+        " WHERE corporationID = %u and characterID = %u AND changeTime > %lli AND changeTime <= %lli "
         " LIMIT %u", corpID, charID, fromDate, toDate, rowsPerPage))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());

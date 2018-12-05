@@ -313,7 +313,7 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
         " (ownerID, installerID, assemblyLineID, installedItemID, installTime, beginProductionTime, endProductionTime, description, runs, outputFlag,"
         " completedStatusID, installedInSolarSystemID, licensedProductionRuns)"
         " VALUES"
-        " (%u, %u, %u, %u, %f, %" PRIi64 ", %" PRIi64 ", '%s', %i, %i, 0, %u, %i)",
+        " (%u, %u, %u, %u, %f, %lli, %lli, '%s', %i, %i, 0, %u, %i)",
         ownerID, installerID, assemblyLineID, installedItemID, GetFileTimeNow(), beginProductionTime, endProductionTime, description,
         runs, (int)outputFlag, installedInSolarSystem, licensedProductionRuns))
     {

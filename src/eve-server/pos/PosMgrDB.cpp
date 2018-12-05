@@ -106,7 +106,7 @@ void PosMgrDB::SaveBaseData(EVEPOS::StructureData& data)
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
         "(itemID, towerID, moonID, state, status, timestamp, canUse, canView, canTake)"
-        " VALUES ( %i, %i, %i, %u, %f, %" PRIi64 ", %i, %i, %i)",
+        " VALUES ( %i, %i, %i, %u, %f, %lli, %i, %i, %i)",
         data.itemID, data.towerID, data.moonID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
 }
 
@@ -114,7 +114,7 @@ void PosMgrDB::UpdateBaseData(EVEPOS::StructureData& data)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE posStructureData SET state=%u, status=%f, timestamp=%" PRIi64 " WHERE itemID = %i",
+        "UPDATE posStructureData SET state=%u, status=%f, timestamp=%lli WHERE itemID = %i",
         data.state, data.status, data.timestamp, data.itemID);
 }
 
@@ -275,7 +275,7 @@ void PosMgrDB::UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sDat
 void PosMgrDB::UpdateTimeStamp(int32 itemID, EVEPOS::StructureData& data)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE posStructureData SET timestamp=%" PRIi64 " WHERE itemID = %u", data.timestamp, itemID);
+    sDatabase.RunQuery(err, "UPDATE posStructureData SET timestamp=%lli WHERE itemID = %u", data.timestamp, itemID);
 }
 
 
