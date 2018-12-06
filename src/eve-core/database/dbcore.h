@@ -142,7 +142,7 @@ public:
 
     //new shorter syntax:
     //query which returns a result (error is stored in the result if it occurs)
-    // NOTE:  result is cleared before populating with most recent data.
+    // NOTE:  result is NOT cleared before populating with most recent data for multiple statements using same DBQueryResult object.
     bool    RunQuery(DBQueryResult &into, const char *query_fmt, ...);
     //query which returns no information except error status
     bool    RunQuery(DBerror &err, const char *query_fmt, ...);
