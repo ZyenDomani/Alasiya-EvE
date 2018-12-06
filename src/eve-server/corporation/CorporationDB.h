@@ -110,7 +110,7 @@ public:
     uint32 GetCorporationCEO(uint32 corpID);
     uint16 GetCorpMemberCount(uint32 corpID);
 
-    uint32 GetCloneTypeCostByID(uint32 cloneTypeID);
+    double GetCloneTypeCostByID(uint32 cloneTypeID);
 
     PyRep* GetAdTypeData();
     PyRep* GetAdGroupData();

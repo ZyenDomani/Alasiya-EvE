@@ -100,19 +100,19 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
     const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
-    if (type)
+    if (type != nullptr)
         return new PyFloat(type->basePrice()/15);
-    else
-        return PyStatic.NewNone();
+
+    return PyStatic.NewNone();
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called when docked */
     const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
-    if (type)
+    if (type != nullptr)
         return new PyFloat(type->basePrice()/15);
-    else
-        return PyStatic.NewNone();
+
+    return PyStatic.NewNone();
 }
 
 PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
@@ -120,7 +120,7 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
         Call_IntBoolArg args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return NULL;
+            return nullptr;
         }
 
         return m_db->GetInsuranceByOwnerID(call.client->GetCorporationID());
@@ -137,13 +137,16 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 	Call_InsureShip args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return NULL;
+        return nullptr;
     }
+
+    InventoryItemRef shipRef = sItemFactory.GetItem(args.shipID);
+    if (shipRef.get() == nullptr)
+        return nullptr;
 
     /* added check for groupID 237 (rookie ship - items 588, 596, 601, 606) as they cannot be insured.
      *   may not need this, as client will not try to insure rookie ships
      */
-    InventoryItemRef shipRef = sItemFactory.GetItem(args.shipID) ;
     if (shipRef->groupID() == EVEDB::invGroups::Rookieship) {
         call.client->SendInfoModalMsg("You cannot insure Rookie ships.");
         return PyStatic.NewNone();
@@ -161,7 +164,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      */
     // calculate the fraction value
     const ItemType type = shipRef->type();
-    double paymentFraction = (args.amount / (type.basePrice()));    //need to verify pricing before this works correctly.
+    double paymentFraction = (args.amount / (type.basePrice()));
     float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 30%.
     if (paymentFraction < 0.05) fraction = 0.3f;    /* minimum payout, and catchall for fuckedup prices.  */
     else if (paymentFraction == 0.05) fraction = 0.5f;

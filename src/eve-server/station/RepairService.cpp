@@ -168,9 +168,8 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      *
      *{'messageKey': 'RepairModuleNotDamaged', 'dataID': 17882542, 'suppressable': False, 'bodyID': 259175, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1492}
      * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
-     *
      */
-
+    
     if (fraction > 1.0)
         fraction = 1;
     EvilNumber toRepair = EvilZero, curDamage = EvilZero;

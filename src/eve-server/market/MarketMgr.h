@@ -41,6 +41,7 @@ public:
     void SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
     void BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, const char *action, bool isCorp=false, PyRep* order = nullptr);
     void SendOnMarketRefresh(Client *who);
+    // this sends to ALL players in region.  could be very expensive with many players online.
     void BroadcastOnMarketRefresh(uint32 regionID);
     //void InvalidateOrdersCache(uint32 regionID);
 

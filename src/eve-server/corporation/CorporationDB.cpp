@@ -1393,7 +1393,7 @@ uint16 CorporationDB::GetCorpMemberCount(uint32 corpID) {
     return row.GetInt(0);
 }
 
-uint32 CorporationDB::GetCloneTypeCostByID(uint32 cloneTypeID) {
+double CorporationDB::GetCloneTypeCostByID(uint32 cloneTypeID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT basePrice "
@@ -1407,7 +1407,7 @@ uint32 CorporationDB::GetCloneTypeCostByID(uint32 cloneTypeID) {
         codelog(CORP__DB_WARNING, "GetCloneTypeCostByID returned no results");
         return 0;
     }
-    return (row.GetUInt(0) /100);
+    return row.GetDouble(0);
 }
 
 bool CorporationDB::CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID, MemberAttributeUpdate& attrib) {

@@ -64,6 +64,31 @@ namespace EVEDB {
             typeCharacterStatic = 1381,
             typeCharacterVherokior = 1386,
             typeCloneGradeAlpha = 164,
+            /*
+            Clone Grade Beta    165
+            Clone Grade Gamma   166
+            Clone Grade Delta   9917
+            Clone Grade Epsilon     9919
+            Clone Grade Zeta    9921
+            Clone Grade Eta     9923
+            Clone Grade Theta   9925
+            Clone Grade Iota    9927
+            Clone Grade Kappa   9929
+            Clone Grade Lambda  9931
+            Clone Grade Mu  9933
+            Clone Grade Nu  9935
+            Clone Grade Xi  9937
+            Clone Grade Omicron     9939
+            Clone Grade Pi  16715
+            Clone Grade Rho     16718
+            Clone Grade Sigma   23734
+            Clone Grade Tau     29138
+            Clone Grade Upsilon     29139
+            Clone Grade Phi     29140
+            Clone Grade Chi     29141
+            Clone Grade Psi     29142
+            Clone Grade Omega   29143
+            */
             typeCloneVatBayI = 23735,
             typeCloningService = 28158,
             typeCommandCenterUpgrade = 2505,

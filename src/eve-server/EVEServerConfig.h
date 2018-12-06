@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.0
+    Version:    9.1
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -119,6 +119,15 @@ public:
         // min amount to be taxed.  received amounts less than this will not be taxed.
         uint32 TaxedAmount;
     } rates;
+
+    // from <market/>
+    struct {
+        uint8 FindBuyOrder;
+        uint8 FindSellOrder;
+        bool UseOrderRange;
+        bool DeleteOldTransactions;
+        bool BroadcastOnMarketRefresh;
+    } market;
 
     // From <bpTimes/>
     struct {
@@ -293,6 +302,7 @@ protected:
     bool ProcessServer( const TiXmlElement* ele );
     bool ProcessWorld( const TiXmlElement* ele );
     bool ProcessRates( const TiXmlElement* ele );
+    bool ProcessMarket( const TiXmlElement* ele );
     bool ProcessAccount( const TiXmlElement* ele );
     bool ProcessCharacter( const TiXmlElement* ele );
     bool ProcessNPC( const TiXmlElement* ele );

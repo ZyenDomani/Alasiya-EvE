@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.0
+    Version:    9.1
 */
 
 
@@ -47,7 +47,7 @@ EVEServerConfig::EVEServerConfig()
     server.UseBeanCount = false;
     server.UseMarketBot = false;
     server.maxPlayers = 500;//N
-    server.UseStackTrace = false;//N
+    server.UseStackTrace = false;
     server.BulkDataOD = false;
     server.NoobShipCheck = true;
     server.StackTrace = false;
@@ -86,16 +86,23 @@ EVEServerConfig::EVEServerConfig()
     rates.turretDamage = 1.0;
     rates.turretRoF = 1.0;
     rates.corpCost = 1599800;
-    rates.WorldDecay = 120 /*m*/;//P   2 hours
-    rates.NPCDecay = 90 /*m*/; //P 90 mins
+    rates.WorldDecay = 120 /*m*/;
+    rates.NPCDecay = 90 /*m*/;
     rates.RateDropItem = 1.0;//N
-    rates.RateDropMoney = 1.0;//N
-    rates.RepairCost = 1.0;//N
+    rates.RateDropMoney = 1.0;
+    rates.RepairCost = 1.0;
     rates.ShipRepairModifier = 0.00000000075;
     rates.ModuleRepairModifier = 0.00000125;
     rates.WebUpdate = 15 /*m*/;
     rates.TaxAmount = 10000;
     rates.TaxedAmount = 175000;
+
+    //market
+    market.FindBuyOrder = 10;
+    market.FindSellOrder = 10;
+    market.UseOrderRange = true;//N
+    market.DeleteOldTransactions = false;//N
+    market.BroadcastOnMarketRefresh = false;//N
 
     // bpTimes
     bpTimes.ProdTime = 1.0;
@@ -122,15 +129,15 @@ EVEServerConfig::EVEServerConfig()
     character.allow3edChar = false;
 
     // npc
-    npc.IdleWander = false;//P
+    npc.IdleWander = false;
     npc.WarpOut = 600 /*s*/;
     npc.WarpFollowChance = 0.15;
     npc.ThreatRadius = 1.0;//N
-    npc.RoamingSpawns = false;//P
-    npc.StaticSpawns = false;//P
+    npc.RoamingSpawns = false;
+    npc.StaticSpawns = false;
     npc.RoamingTimer = 900 /*s*/;
-    npc.StaticTimer = 600 /*s*/;//P
-    npc.RespawnTimer = 480 /*s*/;//P
+    npc.StaticTimer = 600 /*s*/;
+    npc.RespawnTimer = 480 /*s*/;
     npc.RatFaction = 0;
     npc.EnableDrones = false;
     npc.TargetPodSec = 0;
@@ -227,6 +234,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "server",      &EVEServerConfig::ProcessServer );
     AddMemberParser( "world",       &EVEServerConfig::ProcessWorld );
     AddMemberParser( "rates",       &EVEServerConfig::ProcessRates );
+    AddMemberParser( "market",      &EVEServerConfig::ProcessMarket );
     AddMemberParser( "bpTimes",     &EVEServerConfig::ProcessBPTimes );
     AddMemberParser( "account",     &EVEServerConfig::ProcessAccount );
     AddMemberParser( "character",   &EVEServerConfig::ProcessCharacter );
@@ -248,6 +256,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "server" );
     RemoveParser( "world" );
     RemoveParser( "rates" );
+    RemoveParser( "market" );
     RemoveParser( "bpTimes" );
     RemoveParser( "account" );
     RemoveParser( "character" );
@@ -383,6 +392,25 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "WebUpdate" );
     RemoveParser( "TaxAmount" );
     RemoveParser( "TaxedAmount" );
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
+{
+    AddValueParser( "FindBuyOrder",                 market.FindBuyOrder );
+    AddValueParser( "FindSellOrder",                market.FindSellOrder);
+    AddValueParser( "UseOrderRange",                market.UseOrderRange);
+    AddValueParser( "DeleteOldTransactions",        market.DeleteOldTransactions);
+    AddValueParser( "BroadcastOnMarketRefresh",     market.BroadcastOnMarketRefresh);
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "FindBuyOrder" );
+    RemoveParser( "FindSellOrder" );
+    RemoveParser( "UseOrderRange" );
+    RemoveParser( "DeleteOldTransactions" );
+    RemoveParser( "BroadcastOnMarketRefresh" );
 
     return result;
 }

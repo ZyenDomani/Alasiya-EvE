@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.9 -->
+     Version: 9.1 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -88,13 +88,24 @@
         <RateDropItem>1.0</RateDropItem><!--  only used if != 1.0 -->
         <!-- these rates are not implemented yet -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
+        <!-- for repair system -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
+        <ShipRepairModifier>0.0000000075</ShipRepairModifier><!-- 7.5e-10 on live.  needs to be less here. -->
+        <ModuleRepairModifier>0.0000125</ModuleRepairModifier><!-- modules are (basePrice)*1.25e-6 -->
         <!-- corp tax variables. -->
         <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
         <TaxAmount>20000</TaxAmount><!-- default is 20000 isk.  less than this isnt worth the processing for corps -->
         <!-- min amount to be taxed.  received amounts less than this will not be taxed. -->
        <TaxedAmount>250000</TaxedAmount><!-- live uses 100000.  default is 250000 -->
     </rates>
+
+    <market>
+        <FindBuyOrder>15<FindBuyOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <FindSellOrder>15<FindSellOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <UseOrderRange>true<UseOrderRange><!-- bool  - default: true  -->
+        <DeleteOldTransactions>false</DeleteOldTransactions><!-- bool  - delete transactions from db older than 3 days  default: false  -->
+        <BroadcastOnMarketRefresh>false</BroadcastOnMarketRefresh><!-- bool  - BCast market refresh to all clients in region  default: false  (may not be used)  -->
+    </market>
 
     <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
         <ResPE>1.0</ResPE>

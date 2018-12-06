@@ -14,6 +14,7 @@
 #include "account/AccountService.h"
 #include "inventory/InventoryItem.h"
 #include "market/MarketMgr.h"
+#include "station/StationDataMgr.h"
 
 MarketMgr::MarketMgr()
 : m_marketGroups(nullptr),
@@ -69,7 +70,7 @@ void MarketMgr::UpdatePriceHistory()
 {
     DBerror err;
 
-    int64 cutoff_time = Win32TimeNow();
+    int64 cutoff_time = GetFileTimeNow();
     cutoff_time -= cutoff_time % Win32Time_Day;    //round down to an even day boundary.
     cutoff_time -= Win32Time_Day * 2;  //the cutoff between "new" and "old" price history in days
 
@@ -81,22 +82,22 @@ void MarketMgr::UpdatePriceHistory()
         " SELECT"
         "    regionID,"
         "    typeID,"
-        "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
-        "    MIN(price) AS lowPrice,"
-        "    MAX(price) AS highPrice,"
-        "    AVG(price) AS avgPrice,"
-        "    SUM(quantity) AS volume,"
-        "    COUNT(transactionID) AS orders"
+        "    transactionDate - ( transactionDate %% %lli ),"
+        "    MIN(price),"
+        "    MAX(price),"
+        "    AVG(price),"
+        "    SUM(quantity),"
+        "    COUNT(transactionID)"
         " FROM mktTransactions "
-        " WHERE"
-        "    transactionType=1 AND "    //both buy and sell transactions get recorded, only compound data for 'buy' orders.
-        "    ( transactionDate - ( transactionDate %% %" PRId64 " ) ) < %" PRId64
+        " WHERE transactionType=0"    //both buy and sell transactions get recorded, only compound data for 'sell' orders.
+        "   AND (transactionDate - ( transactionDate %% %lli ) ) < %lli"
         " GROUP BY regionID, typeID, historyDate",
         Win32Time_Day, Win32Time_Day, cutoff_time);
 
-    /*  //now remove the transactions which have been aged out?
-     *   sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE historyDate < %" PRId64, cutoff_time);
-     */
+    //now remove the transactions which have been aged out?
+    if (sConfig.market.DeleteOldTransactions)
+        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE historyDate < %lli", cutoff_time);
+
 }
 
     /*DBColumnTypeMap colmap;
@@ -113,17 +114,17 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
+        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
         "    MIN(price) AS lowPrice,"
         "    MAX(price) AS highPrice,"
         "    AVG(price) AS avgPrice,"
-        "    CAST(SUM(quantity) AS SIGNED INTEGER) AS volume,"
-        "    CAST(COUNT(transactionID) AS SIGNED INTEGER) AS orders"
+        "    quantity AS volume,"
+        "    COUNT(transactionID) AS orders"
         " FROM mktTransactions "
         " WHERE regionID=%u AND typeID=%u"
-        "    AND transactionType=%d "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
+        "    AND transactionType=%u "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
         " GROUP BY historyDate",
-        Win32Time_Day, regionID, typeID, TransactionTypeBuy))
+        Win32Time_Day, regionID, typeID, TransactionTypeSell))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -137,7 +138,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate < %llu", regionID, typeID, (Win32TimeNow() - (Win32Time_Day * 2))))
+        " WHERE regionID=%u AND typeID=%u AND historyDate > %llu", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -166,10 +167,13 @@ void MarketMgr::BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, cons
         PySafeIncRef(order);
         SendOnOwnOrderChanged(*cur, orderID, action, isCorp, order);
     }
-    PySafeDecRef(order);
+    // may not need this...
+    //PySafeDecRef(order);
 }
 
 void MarketMgr::BroadcastOnMarketRefresh(uint32 regionID) {
+    if (!IsRegion(regionID))
+        return;
     std::vector<Client*> clients;
     sEntityList.FindByRegionID(regionID, clients);
     std::vector<Client*>::iterator cur = clients.begin();
@@ -223,10 +227,7 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
     }
 
     if (item->singleton() or item->quantity() == quantity) {
-        //entire item is moving...move out of first inventory
-        item->Move(0, flagAutoFit, false);
-        item->ChangeOwner(ownerID);
-        item->Move(stationID, flagHangar, true);
+        item->Donate(ownerID, stationID, flagHangar, true);
     } else {
         //need to split item up...
         InventoryItemRef iRef = item->Split(quantity, true);
@@ -235,8 +236,7 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
             return;
         }
         //use the owner change packet to alert the buyer of the new item
-        iRef->ChangeOwner(ownerID);
-        iRef->Move(stationID, flagHangar, true);
+        item->Donate(ownerID, stationID, flagHangar, true);
     }
 
     //the buyer has already paid out the money before the buy order was recorded in the database.
@@ -244,10 +244,10 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
     double money = price * quantity;
     // send wallet blink event and record the transaction in their journal.
     std::string reason = "DESC:  Selling items in ";
-    reason += itoa(stationID);
+    reason += stDataMgr.GetStationName(stationID).c_str();
     AccountService::TranserFunds(
-        ownerID,
-        seller->GetCharacterID(),
+                                 ownerID,
+                                 seller->GetCharacterID(),
                                  money,
                                  reason.c_str(),
                                  Journal::EntryType::MarketTransaction,
@@ -263,7 +263,6 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
         }
         //InvalidateOrdersCache(typeID);
         BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Expiry", isCorp, order);
-        //BroadcastOnMarketRefresh(seller->GetRegionID());
     } else {
         _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", seller->GetName(), orderID, qtyReq - quantity);
         if (!m_db.AlterOrderQuantity(orderID, qtyReq - quantity)) {
@@ -274,13 +273,17 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
         BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Modify", isCorp);
     }
 
+    if (sConfig.market.BroadcastOnMarketRefresh)
+        BroadcastOnMarketRefresh(sDataMgr.GetStationRegion(stationID));
+
     //record this transaction in market_transactions
-    //NOTE: regionID may not be accurate here...
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), seller->GetRegionID(), stationID)) {
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
     }
-    //FIXME:  for orderOwnerID == 1, reset owner to npc corp of stationID
-    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, ownerID, seller->GetRegionID(), stationID)) {
+
+    if (ownerID == 1)
+        ownerID = stDataMgr.GetOwnerID(stationID);
+    if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, ownerID, sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record buy side of transaction.", seller->GetName());
     }
 }
@@ -304,28 +307,20 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
         codelog(MARKET__WARNING, "%s: Buying an item from ourself... this may not work...", buyer->GetName());
     }
 
-    //  check for sellerID == EVESystem, and change to station owner (npcCorpID)
-    if (ownerID == 1) {
-        ServiceDB s_db;
-        ownerID = s_db.GetStationOwner(stationID);
-    }
+    if (ownerID == 1)
+        ownerID = stDataMgr.GetOwnerID(stationID);
 
-    //spawn the item in the buyer's hangar.
     ItemData idata(typeID, ownerID, stationID, flagAutoFit, quantity);
     InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
-    if (new_item.get() == nullptr) {
-        // item not created.  make error msg
+    if (new_item.get() == nullptr)
         return;
-    }
 
     double money = price * quantity;
-
-    //take the money from the buyer after we spawn the item. (verify the item is created.)
     // send wallet blink event and record the transaction in their journal.
     std::string reason = "DESC:  Buying items in ";
-    reason += itoa(stationID);
+    reason += stDataMgr.GetStationName(stationID).c_str();
     AccountService::TranserFunds(
-        buyer->GetCharacterID(),
+                                 buyer->GetCharacterID(),
                                  ownerID,
                                  money,
                                  reason.c_str(),
@@ -334,11 +329,7 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
                                  Account::KeyType::Cash);
 
     //use the owner change packet to alert the buyer of the new item
-    new_item->ChangeOwner(buyer->GetCharacterID());
-    if (buyer->IsDocked())
-        new_item->Move(buyer->GetStationID(), flagHangar, true);
-    else
-        new_item->Move(stationID, flagHangar, true);
+    new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
 
     if (quantity == qtyAvail) {
         _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), orderID);
@@ -349,7 +340,6 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
         }
         //InvalidateOrdersCache(typeID);
         BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Expiry", isCorp, order);
-        //BroadcastOnMarketRefresh(buyer->GetRegionID());
     } else {
         _log(MARKET__TRACE, "%s: Partially satisfied order %u, altering quantity to %u.", buyer->GetName(), orderID, qtyAvail - quantity);
         if (!m_db.AlterOrderQuantity(orderID, qtyAvail - quantity)) {
@@ -359,6 +349,9 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
         //InvalidateOrdersCache(typeID);
         BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Modify", isCorp);
     }
+
+    if (sConfig.market.BroadcastOnMarketRefresh)
+        BroadcastOnMarketRefresh(sDataMgr.GetStationRegion(stationID));
 
     //record this transaction in market_transactions
     if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {

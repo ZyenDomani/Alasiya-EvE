@@ -250,7 +250,7 @@ PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
     }
 
     //Get cost of clone
-    int cost = m_db.GetCloneTypeCostByID(arg.CloneTypeID);
+    double cost = m_db.GetCloneTypeCostByID(arg.CloneTypeID);
 
     //take the money, send wallet blink event record the transaction in their journal.
     std::string reason = "DESC: Updating Clone in ";

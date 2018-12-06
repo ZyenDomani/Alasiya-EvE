@@ -21,10 +21,12 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
 
+#include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "market/MarketDB.h"
 
@@ -43,7 +45,7 @@ PyRep *MarketDB::GetStationAsks(uint32 stationID) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "    typeID, MAX(price) AS price, volRemaining, stationID "
+        "    typeID, MIN(price) AS price, volRemaining, stationID "
         " FROM mktOrders "
         " WHERE stationID=%u"
         " GROUP BY typeID", stationID))
@@ -64,7 +66,7 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
 
     if (!sDatabase.RunQuery(res,
         "SELECT"
-        "    typeID, MAX(price) AS price, volRemaining, stationID "
+        "    typeID, MIN(price) AS price, volRemaining, stationID "
         " FROM mktOrders "
         " WHERE solarSystemID=%u"
         " GROUP BY typeID", solarSystemID))
@@ -172,6 +174,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
     //this is wrong.
     tup->AddItem( DBResultToCRowset( res ) );
 
+    res.Reset();
     //query buy orders
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -258,11 +261,12 @@ uint32 MarketDB::FindBuyOrder(
         "        AND volRemaining >= %u"
         "        AND price < %.2f"
         "    ORDER BY price DESC"
-        "    LIMIT 10",     /** @todo make config option for qty to return? */
+        "    LIMIT %u",
         typeID,
         stationID,
         quantity,
-        price))
+        price,
+        sConfig.market.FindBuyOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
@@ -293,11 +297,12 @@ uint32 MarketDB::FindSellOrder(
         "        AND stationID=%u"
         "        AND volRemaining >= %u"
         "        AND price < %.2f"
-        "    LIMIT 10",       /** @todo make config option for qty to return? */
+        "    LIMIT %u",
         typeID,
         stationID,
         quantity,
-        price))
+        price,
+        sConfig.market.FindSellOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return false;
@@ -387,7 +392,7 @@ bool MarketDB::DeleteOrder(uint32 orderID) {
 
 bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, MktTransType transactionType, uint32 charID, uint32 regionID, uint32 stationID) {
     DBerror err;
-    //TODO implement the accountKey field here
+    /** @todo implement the accountKey field here */
     if (!sDatabase.RunQuery(err,
         "INSERT INTO"
         " mktTransactions ("
@@ -398,7 +403,7 @@ bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, 
         "    NULL, %" PRIu64 ", %u, %u,"
         "    %.2f, %d, %u, %u, %u, 0"
         " )",
-            Win32TimeNow(), typeID, quantity,
+            GetFileTimeNow(), typeID, quantity,
             price, transactionType, charID, regionID, stationID
             ))
     {
@@ -441,7 +446,6 @@ uint32 MarketDB::StoreSellOrder(
 uint32 MarketDB::_StoreOrder(
     uint32 ownerID, uint32 accountID, uint32 stationID, uint32 typeID, double price, uint32 quantity, int16 orderRange, uint32 minVolume, uint8 duration, bool isCorp, bool isBuy
 ) {
-
     // get the solar system and region IDs.
     // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
     SystemData data;
@@ -501,7 +505,7 @@ PyRep *MarketDB::GetTransactions(
         " FROM mktTransactions "
         " WHERE clientID=%u AND (typeID=%u OR 0=%u) AND"
         " quantity>=%u AND price>=%.2f AND (price<=%.2f OR 0=%.2f) AND"
-        " transactionDate>=%" PRIu64 " AND (transactionType=%d OR -1=%d)"
+        " transactionDate>=%lli AND (transactionType=%d OR -1=%d)"
         " AND keyID=%u",
         characterID, typeID, typeID, quantity, minPrice, maxPrice, maxPrice, fromDate, buySell, buySell, accountKey))
     {
