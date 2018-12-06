@@ -91,8 +91,8 @@ EVEServerConfig::EVEServerConfig()
     rates.RateDropItem = 1.0;//N
     rates.RateDropMoney = 1.0;
     rates.RepairCost = 1.0;
-    rates.ShipRepairModifier = 0.00000000075;
-    rates.ModuleRepairModifier = 0.00000125;
+    rates.ShipRepairModifier = 0.0000075;
+    rates.ModuleRepairModifier = 0.00125;
     rates.WebUpdate = 15 /*m*/;
     rates.TaxAmount = 10000;
     rates.TaxedAmount = 175000;

@@ -82,7 +82,7 @@ void MarketMgr::UpdatePriceHistory()
         " SELECT"
         "    regionID,"
         "    typeID,"
-        "    transactionDate - ( transactionDate %% %lli ),"
+        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
         "    MIN(price),"
         "    MAX(price),"
         "    AVG(price),"
