@@ -668,7 +668,7 @@ bool DBResultRow::GetBool( uint32 index ) const
         return false;
     }
 
-    return (strtol( GetText( index ), nullptr, 0 ) != 0);
+    return (GetText(index)[0] != 0);
 }
 
 uint32 DBResultRow::GetUInt( uint32 index ) const

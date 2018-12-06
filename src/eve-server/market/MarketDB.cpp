@@ -516,30 +516,33 @@ PyRep *MarketDB::GetTransactions(
 PyRep *MarketDB::GetMarketGroups() {
 
     DBQueryResult res;
-    //SELECT `parentGroupID`, `marketGroupID`, `marketGroupName`, `description`, `graphicID`, `hasTypes`, `iconID`, `dataID`, `marketGroupNameID`, `descriptionID` FROM `invMarketGroups` WHERE 1
-    if (!sDatabase.RunQuery(res, "SELECT * FROM invMarketGroups")) {
+    DBResultRow row;
+
+    if(!sDatabase.RunQuery(res,
+        "SELECT * "
+        " FROM invMarketGroups"))
+    {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
     DBRowDescriptor *header = new DBRowDescriptor(res);
+
+    _log(MARKET__DEBUG, "MarketDB::GetMarketGroups header has %u columns.", header->ColumnCount());
+
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
-
     PyDict *keywords = filterRowset->GetKeywords();
-    keywords->SetItemString("giveMeSets", new PyBool(false)); //+
-    keywords->SetItemString("allowDuplicateCompoundKeys", new PyBool(false)); //+
-    keywords->SetItemString("indexName", new PyNone()); //+
-    keywords->SetItemString("columnName", new PyString("parentGroupID")); //+
-
+    keywords->SetItemString("allowDuplicateCompoundKeys", new PyBool(false));
+    keywords->SetItemString("indexName", PyStatic.NewNone());
+    keywords->SetItemString("columnName", new PyString("parentGroupID"));
     std::map< int, PyRep* > tt;
-    DBResultRow row;
-    while( res.GetRow(row) )
-    {
+
+    while( res.GetRow(row) ) {
         int parentGroupID = ( row.IsNull( 0 ) ? -1 : row.GetUInt( 0 ) );
         PyRep *pid;
         CRowSet *rowset;
         if(tt.count(parentGroupID) == 0) {
-            pid = parentGroupID!=-1 ? (PyRep*)new PyInt(parentGroupID) : (PyRep*)new PyNone();
+            pid = parentGroupID!=-1 ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone();
             tt.insert( std::pair<int, PyRep*>(parentGroupID, pid) );
             rowset = filterRowset->NewRowset(pid);
         } else {
@@ -552,17 +555,17 @@ PyRep *MarketDB::GetMarketGroups() {
         pyrow->SetField(1, new PyInt(row.GetUInt( 1 ) ) ); //marketGroupID
         pyrow->SetField(2, new PyString(row.GetText( 2 ) ) ); //marketGroupName
         pyrow->SetField(3, new PyString(row.GetText( 3 ) ) ); //description
-        pyrow->SetField(4, row.IsNull( 4 ) ? (PyRep*)(new PyNone()) : new PyInt(row.GetUInt( 4 ))  ); //graphicID
+        pyrow->SetField(4, row.IsNull( 4 ) ? PyStatic.NewNone() : new PyInt(row.GetUInt( 4 ))  ); //graphicID
         pyrow->SetField(5, new PyBool(row.GetBool( 5 ) ) ); //hasTypes
-        pyrow->SetField(6, row.IsNull( 6 ) ? (PyRep*)(new PyNone()) : new PyInt(row.GetUInt( 6 ))  ); // iconID
+        pyrow->SetField(6, row.IsNull( 6 ) ? PyStatic.NewNone() : new PyInt(row.GetUInt( 6 ))  ); // iconID
         pyrow->SetField(7, new PyInt( row.GetUInt(7) )  ); //dataID
         pyrow->SetField(8, new PyInt( row.GetUInt(8) )  ); //marketGroupNameID
         pyrow->SetField(9, new PyInt( row.GetUInt(9) )  ); //descriptionID
     }
 
+    _log(MARKET__DEBUG, "MarketDB::GetMarketGroups returned %u keys.", filterRowset->GetKeyCount());
     //if (is_log_enabled(MARKET__DB_TRACE))
-    _log(DATABASE__MESSAGE, "MarketDB::GetMarketGroups returned %u keys.", filterRowset->GetKeyCount());
+    //    filterRowset->Dump(MARKET__DB_TRACE, "    ");
 
     return filterRowset;
 }
-
