@@ -94,7 +94,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
 
     uint32 orderID;
     std::ostringstream values;
-    int64 trnTime = Win32TimeNow();
+    int64 trnTime = GetFileTimeNow();
     bool first = true;
     // create a single insert command to improve sql performance.
     std::list<stationOrder>::iterator itr = newOrders.begin();
