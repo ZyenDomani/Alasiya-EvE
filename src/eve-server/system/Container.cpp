@@ -165,7 +165,7 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
     //FIXME  container attributes here are NOT saved in the db....
     into.shield = 1.0;//(m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double());
     into.recharge = 10000;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0;//1.0 - (m_self->GetAttribute(AttrArmorDamage).get_double() / m_self->GetAttribute(AttrArmorHP).get_double());
     into.structure = 1.0;
 }
@@ -315,7 +315,7 @@ void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
     //FIXME  container attributes are NOT saved in the db....
     into.shield = 1;
     into.recharge = 2000000;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1;
     into.structure = 1;
 }

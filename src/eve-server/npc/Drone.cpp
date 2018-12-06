@@ -274,7 +274,7 @@ void Drone::MakeDamageState(DoDestinyDamageState &into)
 {
     into.shield = (m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float());
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +5;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float());
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }

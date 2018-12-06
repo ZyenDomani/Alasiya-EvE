@@ -64,7 +64,7 @@ PyDict* GPSTransportClosed::_CreateKeywords( const char* reason )
     PyDict* keywords = new PyDict;
     //keywords->SetItemString( "origin", new PyString( "proxy" ) );
     keywords->SetItemString( "reasonArgs", new PyDict );
-    keywords->SetItemString( "clock", new PyLong( Win32TimeNow() ) );
+    keywords->SetItemString( "clock", new PyLong( GetFileTimeNow() ) );
     //keywords->SetItemString( "loggedOnUserCount", );
     keywords->SetItemString( "region", new PyString( EVEProjectRegion ) );
     keywords->SetItemString( "reason", new PyString( reason ) );

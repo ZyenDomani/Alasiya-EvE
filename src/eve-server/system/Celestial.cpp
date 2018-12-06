@@ -116,7 +116,7 @@ void CelestialSE::MakeDamageState(DoDestinyDamageState &into)
     into.shield = shield;
     into.recharge = recharge;
     into.structure = structure;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
 }
 
 

@@ -105,7 +105,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
 void AsteroidSE::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = 1.0;
     into.recharge = 30000;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0;
     into.structure = 1.0;
 }

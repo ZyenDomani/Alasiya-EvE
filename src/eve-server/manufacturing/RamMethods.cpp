@@ -357,7 +357,7 @@ void RamMethods::CompleteJob(const Call_CompleteJob &args, Client *const c) {
     if (status != EvERam::CompletedStatus::InProgress)
         throw(PyException(MakeUserError("RamCompletionJobCompleted")));
 
-    if (!args.cancel and (endProductionTime > Win32TimeNow()))
+    if (!args.cancel and (endProductionTime > GetFileTimeNow()))
         throw(PyException(MakeUserError("RamCompletionInProduction")));
 }
 

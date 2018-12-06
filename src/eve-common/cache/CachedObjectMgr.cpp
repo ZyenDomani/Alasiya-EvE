@@ -228,7 +228,7 @@ void CachedObjectMgr::_UpdateCache(const PyRep *objectID, PyBuffer **pbuf)
 {
     //this is the hard one..
     CacheRecord *r = new CacheRecord();
-    r->timestamp = Win32TimeNow();
+    r->timestamp = GetFileTimeNow();
     r->objectID = objectID->Clone();
 
     // retake ownership

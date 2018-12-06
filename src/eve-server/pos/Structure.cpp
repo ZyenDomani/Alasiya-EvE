@@ -999,7 +999,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
         data.victimDamageTaken = totalHP;
 
         data.killBlob = blob.str().c_str();
-        data.killTime = Win32TimeNow();
+        data.killTime = GetFileTimeNow();
         data.moonID = m_moonSE->GetID();    /* denotes moonID for POS/Structure kills */
 
     ServiceDB::SaveKillOrLoss(data);

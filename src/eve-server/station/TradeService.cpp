@@ -689,7 +689,7 @@ PyResult TradeService::Handle_InitiateTrade(PyCallArgs &call) {
         rsp_nc.herID     = target->GetCharacterID();
         rsp_nc.money     = 0;
         rsp_nc.state     = 0;
-        rsp_nc.when      = Win32TimeNow();
+        rsp_nc.when      = GetFileTimeNow();
 
     PyObject* resp = rsp_nc.Encode();
     InitiateTrade(target, resp->Clone());

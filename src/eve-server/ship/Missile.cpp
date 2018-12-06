@@ -230,7 +230,7 @@ PyDict* Missile::MakeSlimItem() {
 void Missile::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = 1;
     into.recharge = 10000;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1;
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float());
 }

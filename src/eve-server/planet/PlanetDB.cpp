@@ -329,8 +329,8 @@ void PlanetDB::SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 
     DBerror err;
     if(!sDatabase.RunQuery(err,
         "INSERT INTO piLaunches(containerID, charID, solarSystemID, planetID, launchTime, x, y, z) "
-        " VALUES (%u, %u, %u, %u, %" PRIu64 ", %f, %f, %f)",
-        contID, charID, systemID, planetID, Win32TimeNow(), pos.x, pos.y, pos.z))
+        " VALUES (%u, %u, %u, %u, %f, %f, %f, %f)",
+                           contID, charID, systemID, planetID, GetFileTimeNow(), pos.x, pos.y, pos.z))
         {
             _log(DATABASE__ERROR, "SaveLaunch - Unable to save Launch: %s", err.GetError());
         }
@@ -341,8 +341,8 @@ void PlanetDB::SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, u
     DBerror err;
     if(!sDatabase.RunQuery(err,
         "INSERT INTO piCCPin (pinID, charID, planetID, typeID, latitude, longitude, lastSimTime) "
-        " VALUES (%u, %u, %u, %u, %f, %f, %" PRIu64 " )",
-        pinID, charID, planetID, typeID, latitude, longitude, Win32TimeNow()))
+        " VALUES (%u, %u, %u, %u, %f, %f, %f)",
+                           pinID, charID, planetID, typeID, latitude, longitude, GetFileTimeNow()))
     {
         _log(DATABASE__ERROR, "SaveCommandCenter - Unable to save CommandCenter: %s", err.GetError());
     }

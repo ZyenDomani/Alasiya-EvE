@@ -260,7 +260,7 @@ PyDict* ProbeSE::MakeSlimItem()
 void ProbeSE::MakeDamageState(DoDestinyDamageState &into) {
     into.shield = 1.0;
     into.recharge = 1000000;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0;
     into.structure = 1.0 - (m_self->GetAttribute(AttrDamage).get_double() / m_self->GetAttribute(AttrHP).get_double());
 }

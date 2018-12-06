@@ -660,7 +660,7 @@ bool ActiveModule::CanActivate()
 
 void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 {
-    int64 abortTime = Win32TimeNow();
+    int64 abortTime = GetFileTimeNow();
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
@@ -712,7 +712,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     Notify_OnGodmaShipEffect shipEff;
         shipEff.itemID = ge.selfID;
         shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
+        shipEff.timeNow = GetFileTimeNow();
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();

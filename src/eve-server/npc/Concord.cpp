@@ -209,7 +209,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
 void Concord::MakeDamageState(DoDestinyDamageState &into) const {
     into.shield = m_shieldCharge / m_self->GetAttribute(AttrShieldCapacity).get_float();
     into.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float() +8;
-    into.timestamp = Win32TimeNow();
+    into.timestamp = GetFileTimeNow();
     into.armor = 1.0 - (m_armorDamage / m_self->GetAttribute(AttrArmorHP).get_float());
     into.structure = 1.0 - (m_hullDamage / m_self->GetAttribute(AttrHP).get_float());
 }
@@ -246,7 +246,7 @@ void Concord::_UpdateDamage()
      DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_float() / m_self->GetAttribute(AttrShieldCapacity).get_float();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_float();
-        dmgState.timestamp = Win32TimeNow();
+        dmgState.timestamp = GetFileTimeNow();
         dmgState.armor = 1.0 - m_self->GetAttribute(AttrArmorDamage).get_float() / m_self->GetAttribute(AttrArmorHP).get_float();
         dmgState.structure = 1.0 - m_self->GetAttribute(AttrDamage).get_float() / m_self->GetAttribute(AttrHP).get_float();
      OnDamageStateChange dmgChange;

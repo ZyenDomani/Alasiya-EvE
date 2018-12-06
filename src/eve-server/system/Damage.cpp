@@ -489,7 +489,7 @@ void Ship::Killed(Damage &fatal_blow) {
     }
 
     data.killBlob = blob.str().c_str();
-    data.killTime = Win32TimeNow();
+    data.killTime = GetFileTimeNow();
     data.moonID = 0;
 
     pPilot->GetChar()->LogKill(data);
