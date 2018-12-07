@@ -673,7 +673,7 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args(new PyDict());
     args->SetItem("simTime", new PyLong(ccPin->currentSimTime));
-    src->second.lastRunTime = GetFileTimeNow() + (Win32Time_Minute * 15);  // arbitrary 15 minute delivery time
+    src->second.lastRunTime = GetFileTimeNow() + (EvE::Time::Minute * 15);  // arbitrary 15 minute delivery time
     args->SetItem("sourceRunTime", new PyLong(src->second.lastRunTime));
 
     return args;

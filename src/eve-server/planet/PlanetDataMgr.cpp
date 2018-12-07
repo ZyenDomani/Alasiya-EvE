@@ -98,7 +98,7 @@ void PIDataMgr::_Populate()
         // SELECT `schematicID`, `cycleTime`
         std::map<uint8, PI_Schematic>::iterator itr = m_schematicData.find(row.GetInt(0));
         if (itr != m_schematicData.end())
-            itr->second.cycleTime = (row.GetInt(1) * Win32Time_Minute);
+            itr->second.cycleTime = (row.GetInt(1) * EvE::Time::Minute);
     }
 
     //cleanup

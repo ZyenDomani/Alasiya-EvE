@@ -197,7 +197,7 @@ bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
     if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
-        GetFileTimeNow(), Win32TimeNow() + Win32Time_Month *3, characterId))
+        GetFileTimeNow(), Win32TimeNow() + EvE::Time::Month *3, characterId))
         return false;
     return true;
 }
@@ -222,7 +222,7 @@ PyRep* CharacterDB::GetRespecInfo(uint32 characterId)
 int64 CharacterDB::PrepareCharacterForDelete(uint32 accountID, uint32 charID)
 {
     // calculate the point in time from which this character may be deleted
-    int64 deleteTime = GetFileTimeNow() + (Win32Time_Second * sConfig.character.terminationDelay);
+    int64 deleteTime = GetFileTimeNow() + (EvE::Time::Second * sConfig.character.terminationDelay);
 
     // note: the queries relating to character deletion have been specifically designed to avoid wreaking havoc when used by a malicious client
     // the client can't lie to us about accountID, only charID

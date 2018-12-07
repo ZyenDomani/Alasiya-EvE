@@ -54,13 +54,13 @@ PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
 }
 
 bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
-    int64 endDate = (Win32TimeNow() + (Win32Time_Day * numWeeks * 7));
+    float endDate = (GetFileTimeNow() + (EvE::Time::Week * numWeeks));
 
     DBerror err;
     sDatabase.RunQuery(err, "INSERT INTO "
         "  shipInsurance (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
-        " VALUES (%u, '%s', %u, %u, %" PRIu64 ", %" PRIu64 ", %.2f, %f)",
-            shipID, name.c_str(), ownerID, isCorpItem, Win32TimeNow(), endDate, fraction, payOut );
+        " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
+                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), endDate, fraction, payOut );
 
     return true;
 }
@@ -76,6 +76,6 @@ float ShipDB::GetShipInsurancePayout(uint32 shipID) {
     sDatabase.RunQuery(res, "SELECT payOutAmount FROM shipInsurance WHERE shipID = %u", shipID);
     if(res.GetRow(row))
         return row.GetFloat(0);
-    else
+    else    /** @todo  send mail to owner about no insurance, so limited payout. from SCC  */
         return 150000;  //default to flat 150K for no insurance.
 }

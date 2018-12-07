@@ -93,7 +93,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     offer.originID           = m_data.stationID;
     offer.originOwnerID      = m_data.corporationID;
     offer.originSystemID     = m_data.solarSystemID;
-    offer.expiryTime         = GetFileTimeNow() + Win32Time_Day;
+    offer.expiryTime         = GetFileTimeNow() + EvE::Time::Day;
 
     // make function to determine destination based on mission type, agent level, agent location, and some other shit.
     //offer.destinationID      = 0;

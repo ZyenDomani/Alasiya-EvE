@@ -299,7 +299,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     odata.ticker = call.client->GetChar()->corpTicker();
     odata.officeID = 0;
     odata.corporationID = call.client->GetCorporationID();
-    odata.expiryTime = Win32TimeNow() + Win32Time_Month;
+    odata.expiryTime = Win32TimeNow() + EvE::Time::Month;
     odata.folderID = 0;
     odata.lockDown = false;
     odata.rentalFee = arg.arg;

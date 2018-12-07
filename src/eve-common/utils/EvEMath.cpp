@@ -22,12 +22,12 @@ EvilNumber EvEMath::Skill::PointsPerMinute( EvilNumber EffectivePrimaryAttribute
 
 EvilNumber EvEMath::Skill::StartTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow )
 {
-    return (timeNow - (((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * Win32Time_Minute));
+    return (timeNow - (((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * EvE::Time::Minute));
 }
 
 EvilNumber EvEMath::Skill::EndTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow )
 {
-    return ((((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * Win32Time_Minute) + timeNow);
+    return ((((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * EvE::Time::Minute) + timeNow);
 }
 
 

@@ -34,12 +34,20 @@ DAY = (HOUR * 24L)
 MONTH = (30 * DAY)
 YEAR = (12 * MONTH)
 */
-extern const int64 Win32Time_Second;
-extern const int64 Win32Time_Minute;
-extern const int64 Win32Time_Hour;
-extern const int64 Win32Time_Day;
-extern const int64 Win32Time_Month;
-extern const int64 Win32Time_Year;
+namespace EvE {
+    namespace Time {
+        enum {
+            mSecond = 1000L,
+            Second = 10000000L,
+            Minute = (Second * 60L),
+            Hour = (Minute * 60L),
+            Day = (Hour * 24L),
+            Week = (Day * 7L),
+            Month = (Day * 30L),
+            Year = (Day * 365L)
+        };
+    }
+}
 
 extern int64 UnixTimeToWin32Time( time_t sec, uint32 nsec );
 extern int64 Win32TimeNow();
@@ -59,5 +67,8 @@ double GetTimeUSeconds();
 
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string currentDateTime();
+
+// Get linux filetime from dataTime format YYYY-MM-DDTHH:mm:ssZ (where "T" is a separator and "Z" denotes 'zulo')
+//std::time_t getEpochTime(const std::wstring& dateTime);
 
 #endif /* !__UTILS_TIME_H__INCL__ */

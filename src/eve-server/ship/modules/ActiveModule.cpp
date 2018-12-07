@@ -664,7 +664,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     if (abort) {
         active = false;
         if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
-            abortTime += (3 * Win32Time_Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
+            abortTime += (3 * EvE::Time::Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
     }
 
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
@@ -716,7 +716,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         shipEff.start = (active ? 1 : 0);
         shipEff.active = (active ? 1 : 0);
         shipEff.environment = ge.Encode();
-        shipEff.startTime = (abort ? (abortTime / Win32Time_Second) : (shipEff.timeNow - (timeLeft * Win32Time_Second)));  //if now - startTime > 150000000: return
+        shipEff.startTime = (abort ? (abortTime / EvE::Time::Second) : (shipEff.timeNow - (timeLeft * EvE::Time::Second)));  //if now - startTime > 150000000: return
         shipEff.duration = (abort ? 2 : (active ? cycleTime.get_float() : timeLeft));  // duration in seconds
         shipEff.repeat = m_repeat;
         // will need to check and update for data miners here  (any other cases?)

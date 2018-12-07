@@ -425,7 +425,7 @@ PyResult RamProxyService::Handle_InstallJob(PyCallArgs &call) {
                           args.installationAssemblyLineID,
                           bpRef->itemID(),
                           beginProductionTime,
-                          beginProductionTime + rsp.productionTime * Win32Time_Second,
+                          beginProductionTime + rsp.productionTime * EvE::Time::Second,
                           args.description.c_str(),
                           args.runs,
                           (EVEItemFlags)args.flagOutput,

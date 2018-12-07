@@ -281,7 +281,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
         ActiveDungeon dungeon;
-            dungeon.dunExpiryTime = Win32TimeNow() + (Win32Time_Day * 3);       // 3 days - i know this isnt right. just for testing.
+            dungeon.dunExpiryTime = Win32TimeNow() + (EvE::Time::Day * 3);       // 3 days - i know this isnt right. just for testing.
             dungeon.dunTemplateID = templateID;
             dungeon.dunItemID = sig.sigItemID;
             dungeon.state = 0;  //dunType here.

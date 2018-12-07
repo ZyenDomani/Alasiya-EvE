@@ -1202,7 +1202,7 @@ int32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask
     "  createDateTime, expiryDateTime, description, title, memberCount, channelID)"
     " VALUES (%u,%u,%u,%u,%u,%lli,%f,%f,'%s','%s',%u,%u)",
         corpID, pClient->GetAllianceID(), pClient->GetStationID(), pClient->GetRegionID(), 15, typeMask, // raceMask isnt implemented yet
-        GetFileTimeNow(), (GetFileTimeNow() + (Win32Time_Day * days)), description.c_str(), title.c_str(), members, channelID);
+        GetFileTimeNow(), (GetFileTimeNow() + (EvE::Time::Day * days)), description.c_str(), title.c_str(), members, channelID);
 
     return (int32)adID;
 }

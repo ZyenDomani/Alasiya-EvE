@@ -235,7 +235,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 m_agent->GetOffer(pchar->itemID(), offer);
                 offer.stateID = Mission::State::Accepted;
                 offer.dateAccepted = GetFileTimeNow();
-                offer.expiryTime = GetFileTimeNow() + (30 * m_agent->GetLevel() * Win32Time_Minute);  // 30m per agent level  ?  test this.
+                offer.expiryTime = GetFileTimeNow() + (30 * m_agent->GetLevel() * EvE::Time::Minute);  // 30m per agent level  ?  test this.
                 if (offer.courierTypeID) {
                     // add item to players hangar
                     sItemFactory.SetUsingClient(call.client);
@@ -285,7 +285,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 MissionOffer offer;
                 if (m_agent->HasMission(pchar->itemID(), offer)) {
                     offer.stateID = Mission::State::Allocated; //Defered
-                    offer.expiryTime += Win32Time_Day;
+                    offer.expiryTime += EvE::Time::Day;
                     m_agent->UpdateOffer(pchar->itemID(), offer);
                     m_agent->SendMissionUpdate(call.client, "prolong");
                     agentSays->SetItem(0, new PyString("I can give you 24 hours to think about it."));    //msgInfo  -- if tuple[0].string then return msgInfo
@@ -681,9 +681,9 @@ PyDict* AgentBound::GetMissionObjectiveInfo(Client* pClient, MissionOffer& offer
             //extra->SetItemString("blueprintInfo", new PyNone());
         PyTuple* bonusRewards = new PyTuple(4);
         if (offer.dateAccepted > 0)
-            bonusRewards->SetItem(0, new PyLong(offer.bonusTime - (offer.dateAccepted - offer.dateIssued) * Win32Time_Minute));  // bonus time - elapsed time * minutes
+            bonusRewards->SetItem(0, new PyLong(offer.bonusTime - (offer.dateAccepted - offer.dateIssued) * EvE::Time::Minute));  // bonus time - elapsed time * minutes
         else
-            bonusRewards->SetItem(0, new PyLong(offer.bonusTime * Win32Time_Minute));  // bonus time * minutes
+            bonusRewards->SetItem(0, new PyLong(offer.bonusTime * EvE::Time::Minute));  // bonus time * minutes
             bonusRewards->SetItem(1, new PyInt(itemTypeCredits));   // bonus is *usually* isk.  for now, we'll keep it as isk (easier)
             bonusRewards->SetItem(2, new PyInt(offer.rewardISK *2));
             bonusRewards->SetItem(3, extra);

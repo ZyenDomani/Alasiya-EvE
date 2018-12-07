@@ -665,7 +665,7 @@ void Character::ClearSkillQueue() {
             level = 5;
         //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
         EvilNumber nextLevelSP = currentTraining->GetSPForLevel(level + 1);
-        EvilNumber CurrentSP = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+        EvilNumber CurrentSP = (nextLevelSP - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / EvE::Time::Minute) * GetSPPerMin(currentTraining)));
 
         SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
         _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
@@ -702,7 +702,7 @@ void Character::UpdateSkillQueue() {
             if (level > 5)  // make error here?
                 level = 5;
             //EvilNumber oldPoints = currentTraining->GetAttribute(AttrSkillPoints);
-            CurrentSP = (currentTraining->GetSPForLevel(level) - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / Win32Time_Minute) * GetSPPerMin(currentTraining)));
+            CurrentSP = (currentTraining->GetSPForLevel(level) - (((currentTraining->GetAttribute(AttrExpiryTime) - GetFileTimeNow()) / EvE::Time::Minute) * GetSPPerMin(currentTraining)));
 
             SaveSkillHistory(skillEventTrainingCancelled, GetFileTimeNow(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), CurrentSP.get_double());
             _log(CHARACTER__SKILL_TRACE, "%s(%u) SkillTraining cancelled - skill: %u, level: %u, completionTime: %.0f, timeNow: %.0f", \
@@ -884,7 +884,7 @@ void Character::UpdateSkillQueueEndTime(const SkillQueue &queue) {
             continue;
         chrMinRemaining += (skill->GetSPForLevel(cur.second) - skill->GetAttribute( AttrSkillPoints )) / GetSPPerMin(skill);
     }
-    chrMinRemaining = (chrMinRemaining * Win32Time_Minute) + GetFileTimeNow();
+    chrMinRemaining = (chrMinRemaining * EvE::Time::Minute) + GetFileTimeNow();
 
     m_db.UpdateSkillQueueEndTime(chrMinRemaining.get_int(), m_itemID);
 }

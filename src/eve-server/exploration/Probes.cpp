@@ -76,8 +76,8 @@ m_returnTimer(0)
     m_moduleRef = moduleRef;
     m_secStatus = m_client->GetSecurityRating();
 
-    m_expiry = GetFileTimeNow() + (Win32Time_Hour *2);  // 2h default lifespan  any way to increase this?
-    m_lifeTimer.Start((Win32Time_Hour *2) *60 *60 *1000);  // convert 2h to ms
+    m_expiry = GetFileTimeNow() + (EvE::Time::Hour *2);  // 2h default lifespan  any way to increase this?
+    m_lifeTimer.Start((EvE::Time::Hour *2) /100000);  // convert 2h to ms
 
     m_scanStrength = self->GetAttribute(AttrBaseSensorStrength).get_int();
     m_scanDeviation = self->GetAttribute(AttrBaseMaxScanDeviation).get_float();

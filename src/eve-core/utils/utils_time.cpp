@@ -27,12 +27,8 @@
 
 #include "utils/utils_time.h"
 
-const int64 Win32Time_Second = 10000000L;
-const int64 Win32Time_Minute = Win32Time_Second*60;
-const int64 Win32Time_Hour = Win32Time_Minute*60;
-const int64 Win32Time_Day = Win32Time_Hour*24;
-const int64 Win32Time_Month = Win32Time_Day*30;
-const int64 Win32Time_Year = Win32Time_Month*12;
+#include <iomanip>
+#include <sstream>
 
 static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
 static const int64 SECS_TO_100NS = 10000000L; // 10^7
@@ -80,9 +76,9 @@ double GetFileTimeNow()
 {
     // convert system time to filetime.
     double time = GetTimeMSeconds();
-    time /= 1000;
-    time += 11644473600;
-    time *= 10000000;
+    time /= 1000;   // to second
+    time += 11644473600;    // offset
+    time *= EvE::Time::Second; // to 10 uSeconds
     return time;
 }
 
@@ -128,3 +124,30 @@ const std::string currentDateTime() {
 
     return buf;
 }
+
+
+/*  this doesnt work....std::get_time() is unavalible
+// Converts UTC time string to a time_t value.
+std::time_t getEpochTime(const std::wstring& dateTime)
+{
+    // Let's consider we are getting all the input in
+    // this format: '2014-07-25T20:17:22Z' (T denotes
+    // start of Time part, Z denotes UTC zone).
+    // A better approach would be to pass in the format as well.
+    static const std::wstring dateTimeFormat{ L"%Y-%m-%dT%H:%M:%SZ" };
+
+    // Create a stream which we will use to parse the string,
+    // which we provide to constructor of stream to fill the buffer.
+    std::wstringstream ss{ dateTime };
+
+    // Create a tm object to store the parsed date and time.
+    std::tm dt;
+
+    // Now we read from buffer using get_time manipulator
+    // and formatting the input appropriately.
+    ss >> std::get_time(&dt, dateTimeFormat.c_str());
+
+    // Convert the tm structure to time_t value and return.
+    return std::mktime(&dt);
+}
+*/

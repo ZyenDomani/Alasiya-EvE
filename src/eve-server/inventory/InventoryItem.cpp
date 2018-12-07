@@ -681,7 +681,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_other = PyStatic.NewNone();
                 es.env_area = PyStatic.NewNone();
                 es.env_effectID = 16;
-                es.startTime = Win32TimeNow() - Win32Time_Minute; /** @todo fix this once we start tracking effects */
+                es.startTime = Win32TimeNow() - EvE::Time::Minute; /** @todo fix this once we start tracking effects */
                 es.duration = -1;
                 es.repeat = 1;
                 es.randomSeed = PyStatic.NewNone();

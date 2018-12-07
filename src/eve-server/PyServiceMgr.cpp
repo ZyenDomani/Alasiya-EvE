@@ -108,7 +108,7 @@ PySubStruct* PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict**
                 pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, who->GetName());
 
     //not sure what this really is...
-    int64 expiration = Win32TimeNow() + Win32Time_Hour;
+    int64 expiration = Win32TimeNow() + EvE::Time::Hour;
 
     PyTuple *objt(nullptr);
     if ((dict == nullptr) or ((*dict) == nullptr)) {
