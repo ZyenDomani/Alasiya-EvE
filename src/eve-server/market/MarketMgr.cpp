@@ -81,7 +81,7 @@ void MarketMgr::UpdatePriceHistory()
             " SELECT"
             "    regionID,"
             "    typeID,"
-            "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
+            "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
             "    MIN(price) AS lowPrice,"
             "    MAX(price) AS highPrice,"
             "    AVG(price) AS avgPrice,"
@@ -90,7 +90,7 @@ void MarketMgr::UpdatePriceHistory()
             " FROM mktTransactions "
             " WHERE"
             "    transactionType=1 AND "    //both buy and sell transactions get recorded, only compound data for 'buy' orders.
-            "    ( transactionDate - ( transactionDate %% %" PRId64 " ) ) < %" PRId64
+            "    ( transactionDate - ( transactionDate %% %lli) ) < %lli"
             " GROUP BY regionID, typeID, historyDate",
             Win32Time_Day, Win32Time_Day, cutoff_time);
 
@@ -116,7 +116,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
+        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
         "    MIN(price) AS lowPrice,"
         "    MAX(price) AS highPrice,"
         "    AVG(price) AS avgPrice,"
@@ -124,7 +124,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         "    CAST(COUNT(transactionID) AS SIGNED INTEGER) AS orders"
         " FROM mktTransactions "
         " WHERE regionID=%u AND typeID=%u"
-        "    AND transactionType=%d "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
+        "    AND transactionType=%i "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
         " GROUP BY historyDate",
         Win32Time_Day, regionID, typeID, TransactionTypeBuy))
     {
@@ -140,7 +140,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate < %llu", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
+        " WHERE regionID=%u AND typeID=%u AND historyDate < %lli", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;

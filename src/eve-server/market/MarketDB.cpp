@@ -156,12 +156,12 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeSell))
+        " WHERE regionID=%u AND typeID=%u AND bid=%i", regionID, typeID, TransactionTypeSell))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
         return nullptr;
     }
-    sLog.Debug("MarketDB::GetOrders", "Fetched %d sell orders for type %d", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetOrders() - Fetched %u sell orders for type %u", res.GetRowCount(), typeID);
 
     PyList* tup = new PyList();
     //this is wrong.
@@ -175,17 +175,19 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeBuy))
+        " WHERE regionID=%u AND typeID=%u AND bid=%i", regionID, typeID, TransactionTypeBuy))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef( tup );
         return nullptr;
     }
-    sLog.Debug("MarketDB::GetOrders", "Fetched %d buy orders for type %d", res.GetRowCount(), typeID);
+    _log(MARKET__DB_TRACE, "MarketDB::GetOrders() - Fetched %u buy orders for type %u", res.GetRowCount(), typeID);
 
     //this is wrong.
     tup->AddItem( DBResultToCRowset( res ) );
 
+    if (is_log_enabled(MARKET__DUMP))
+        tup->Dump(MARKET__DUMP, "    ");
     return tup;
 }
 

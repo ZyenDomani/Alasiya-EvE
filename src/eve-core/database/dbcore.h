@@ -70,6 +70,7 @@ public:
 
     bool GetRow( DBResultRow& into );
     size_t GetRowCount() { return (size_t)mResult->row_count; }
+    // this should be called between multiple calls using same DBQueryResult object
     void Reset();
 
     uint32 ColumnCount() const { return mColumnCount; }

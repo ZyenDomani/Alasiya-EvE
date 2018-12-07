@@ -28,7 +28,7 @@
 
 #include "python/classes/PyDatabase.h"
 #include "python/PyVisitor.h"
-#include "python/PyRep.h"
+//#include "python/PyRep.h"
 
 /************************************************************************/
 /* PyVisitor                                                            */
