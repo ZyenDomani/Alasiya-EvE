@@ -18,7 +18,7 @@
 
 MarketMgr::MarketMgr()
 : m_marketGroups(nullptr),
- m_timer(60 *60 *1000) // hour timer
+ m_timer(0/*60 *60 *1000*/) // hour timer
 {
 
 }
@@ -62,8 +62,9 @@ void MarketMgr::GetInfo()
 
 void MarketMgr::Process()
 {
-    if (m_timer.Check())
-        UpdatePriceHistory();
+    //if (m_timer.Check())
+        if (!isUpdated)
+            UpdatePriceHistory();
 }
 
 void MarketMgr::UpdatePriceHistory()
@@ -71,8 +72,8 @@ void MarketMgr::UpdatePriceHistory()
     DBerror err;
 
     int64 cutoff_time = GetFileTimeNow();
-    cutoff_time -= cutoff_time % Win32Time_Day;    //round down to an even day boundary.
-    cutoff_time -= Win32Time_Day * 2;  //the cutoff between "new" and "old" price history in days
+    cutoff_time -= cutoff_time % EvE::Time::Day;    //round down to an even day boundary.
+    cutoff_time -= EvE::Time::Day * 2;  //the cutoff between "new" and "old" price history in days
 
     //build the history record from the recent market transactions.
     sDatabase.RunQuery(err,
@@ -92,12 +93,13 @@ void MarketMgr::UpdatePriceHistory()
         " WHERE transactionType=0"    //both buy and sell transactions get recorded, only compound data for 'sell' orders.
         "   AND (transactionDate - ( transactionDate %% %lli ) ) < %lli"
         " GROUP BY regionID, typeID, historyDate",
-        Win32Time_Day, Win32Time_Day, cutoff_time);
+        EvE::Time::Day, EvE::Time::Day, cutoff_time);
 
-    //now remove the transactions which have been aged out?
+    // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
         sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE historyDate < %lli", cutoff_time);
 
+    isUpdated = true;
 }
 
     /*DBColumnTypeMap colmap;
@@ -107,6 +109,7 @@ void MarketMgr::UpdatePriceHistory()
      *    colmap["avgPrice"] = DBTYPE_CY;
      *    colmap["volume"] = DBTYPE_I8;
      *    colmap["orders"] = DBTYPE_I4;
+     * SELECT    transactionDate AS historyDate,    MIN(price) AS lowPrice,    MAX(price) AS highPrice,    AVG(price) AS avgPrice,    quantity AS volume,    COUNT(transactionID) AS orders FROM mktTransactions  WHERE regionID=10000030 AND typeID=487    AND transactionType=0     AND historyDate > 20604112 GROUP BY historyDate
      */
 
 // there is a 1 day difference (from 0000UTC) between "Old" and "New" prices
@@ -114,17 +117,18 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
+        "    transactionDate AS historyDate,"
         "    MIN(price) AS lowPrice,"
         "    MAX(price) AS highPrice,"
         "    AVG(price) AS avgPrice,"
-        "    quantity AS volume,"
-        "    COUNT(transactionID) AS orders"
+        "    CAST(SUM(quantity) AS SIGNED INTEGER) AS volume,"
+        "    CAST(COUNT(transactionID) AS SIGNED INTEGER) AS orders"
         " FROM mktTransactions "
         " WHERE regionID=%u AND typeID=%u"
         "    AND transactionType=%u "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
-        " GROUP BY historyDate",
-        Win32Time_Day, regionID, typeID, TransactionTypeSell))
+        "    AND transactionDate > %lli"
+        " GROUP BY transactionDate",
+            regionID, typeID, TransactionTypeSell, (GetFileTimeNow() - EvE::Time::Day)))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -138,7 +142,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate > %llu", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
+        " WHERE regionID=%u AND typeID=%u AND historyDate > %lli", regionID, typeID, (GetFileTimeNow() - (EvE::Time::Day * 2))))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -198,7 +202,32 @@ void MarketMgr::InvalidateOrdersCache(uint32 typeID)
 */
 
 /** @todo take off market overhead fees */
-
+/*
+ *    def BrokersFee(self, stationID, amount, commissionPercentage):
+ *        if amount < 0.0:
+ *            raise AttributeError('Amount must be positive')
+ *        orderValue = float(amount)
+ *        station = sm.GetService('ui').GetStation(stationID)
+ *        stationOwnerID = None
+ *        if station is not None:
+ *            stationOwnerID = station.ownerID
+ *        factionChar = 0
+ *        corpChar = 0
+ *        if stationOwnerID:
+ *            if util.IsNPC(stationOwnerID):
+ *                factionID = sm.GetService('faction').GetFaction(stationOwnerID)
+ *                factionChar = sm.GetService('standing').GetStanding(factionID, eve.session.charid) or 0.0
+ *            corpChar = sm.GetService('standing').GetStanding(stationOwnerID, eve.session.charid) or 0.0
+ *        weightedStanding = (0.7 * factionChar + 0.3 * corpChar) / 10.0
+ *        commissionPercentage = commissionPercentage * 2.0 ** (-2 * weightedStanding)
+ *        tax = util.KeyVal()
+ *        tax.amt = commissionPercentage * orderValue
+ *        tax.percentage = commissionPercentage
+ *        if tax.amt <= const.mktMinimumFee:
+ *            tax.amt = const.mktMinimumFee
+ *            tax.percentage = -1.0
+ *        return tax
+ */
 
 void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp) {
     uint32 ownerID = 0, typeID = 0, qtyReq = 0;

@@ -42,7 +42,6 @@
 
 PyRep *MarketDB::GetStationAsks(uint32 stationID) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
@@ -63,7 +62,6 @@ PyRep *MarketDB::GetStationAsks(uint32 stationID) {
 
 PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
@@ -84,7 +82,6 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
 
 PyRep *MarketDB::GetRegionBest(uint32 regionID) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
@@ -105,11 +102,6 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
 
 PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
 {
-    DBQueryResult res;
-
-    // returns a tuple (sell, buy) of lists of dicts (itemID, data)
-    PyList* tup = new PyList();
-
     /*
               [PyList 2 items]
                 [PyObjectEx Type2]
@@ -154,6 +146,8 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
                     ["solarSystemID" => <30002738> [I4]]
                     ["jumps" => <6> [I4]]*/
 
+    // returns a tuple (sell, buy) of lists of dicts (itemID, data)
+    DBQueryResult res;
     //query sell orders
     //TODO: consider the `jumps` field... is it actually used? yes...sellers trade skill for maxSellJumps
     if (!sDatabase.RunQuery(res,
@@ -165,12 +159,11 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeSell))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
-
-        PyDecRef( tup );
         return nullptr;
     }
     sLog.Debug("MarketDB::GetOrders", "Fetched %d sell orders for type %d", res.GetRowCount(), typeID);
 
+    PyList* tup = new PyList();
     //this is wrong.
     tup->AddItem( DBResultToCRowset( res ) );
 
@@ -185,7 +178,6 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         " WHERE regionID=%u AND typeID=%u AND bid=%d", regionID, typeID, TransactionTypeBuy))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
-
         PyDecRef( tup );
         return nullptr;
     }
@@ -219,7 +211,6 @@ PyRep* MarketDB::GetOrdersForOwner(uint32 ownerID)
 
 PyRep *MarketDB::GetOrderRow(uint32 orderID) {
     DBQueryResult res;
-
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "    price, volRemaining, typeID, orderRange AS `range`, orderID,"
@@ -249,9 +240,9 @@ uint32 MarketDB::FindBuyOrder(
     uint32 quantity,
     uint32 orderRange
 ) {
-    price = price + 0.01;
-    DBQueryResult res;
+    price += 0.01;
 
+    DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
         "    FROM mktOrders"
@@ -286,9 +277,9 @@ uint32 MarketDB::FindSellOrder(
     uint32 quantity,
     uint32 orderRange
 ) {
-    price = price + 0.01;
-    DBQueryResult res;
+    price += 0.01;
 
+    DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT orderID"
         "    FROM mktOrders"
@@ -400,7 +391,7 @@ bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, 
         "    price, transactionType, clientID, regionID, stationID,"
         "    corpTransaction"
         " ) VALUES ("
-        "    NULL, %" PRIu64 ", %u, %u,"
+        "    NULL, %f, %u, %u,"
         "    %.2f, %d, %u, %u, %u, 0"
         " )",
             GetFileTimeNow(), typeID, quantity,
@@ -520,12 +511,7 @@ PyRep *MarketDB::GetTransactions(
 PyRep *MarketDB::GetMarketGroups() {
 
     DBQueryResult res;
-    DBResultRow row;
-
-    if(!sDatabase.RunQuery(res,
-        "SELECT * "
-        " FROM invMarketGroups"))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT * FROM invMarketGroups"))  {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
@@ -536,18 +522,19 @@ PyRep *MarketDB::GetMarketGroups() {
 
     CFilterRowSet *filterRowset = new CFilterRowSet(&header);
     PyDict *keywords = filterRowset->GetKeywords();
-    keywords->SetItemString("allowDuplicateCompoundKeys", new PyBool(false));
+    keywords->SetItemString("allowDuplicateCompoundKeys", PyStatic.NewFalse());
     keywords->SetItemString("indexName", PyStatic.NewNone());
     keywords->SetItemString("columnName", new PyString("parentGroupID"));
-    std::map< int, PyRep* > tt;
 
+    DBResultRow row;
+    std::map< int, PyRep* > tt;
     while( res.GetRow(row) ) {
         int parentGroupID = ( row.IsNull( 0 ) ? -1 : row.GetUInt( 0 ) );
-        PyRep *pid;
-        CRowSet *rowset;
-        if(tt.count(parentGroupID) == 0) {
-            pid = parentGroupID!=-1 ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone();
-            tt.insert( std::pair<int, PyRep*>(parentGroupID, pid) );
+        PyRep* pid(nullptr);
+        CRowSet*rowset(nullptr);
+        if (tt.count(parentGroupID) == 0) {
+            pid = parentGroupID != -1 ? (PyRep*)new PyInt(parentGroupID) : PyStatic.NewNone();
+            tt[parentGroupID] = pid;
             rowset = filterRowset->NewRowset(pid);
         } else {
             pid = tt[parentGroupID];

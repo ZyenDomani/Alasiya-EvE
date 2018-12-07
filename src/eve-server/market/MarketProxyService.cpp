@@ -72,7 +72,8 @@ MarketProxyService::~MarketProxyService() {
  */
 
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
-    sMktMgr.UpdatePriceHistory();
+    if (!sMktMgr.IsUpdated())
+        sMktMgr.UpdatePriceHistory();
     return nullptr;
 }
 

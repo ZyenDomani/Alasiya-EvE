@@ -34,6 +34,8 @@ public:
     void GetInfo();
     void Process();
 
+    bool IsUpdated()                        { return isUpdated; }
+
     void UpdatePriceHistory();
 
     void ExecuteBuyOrder(uint32 buy_order_id, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp=false);
@@ -58,6 +60,8 @@ private:
     PyRep* m_marketGroups;  // static market group data
 
     Timer m_timer;
+
+    bool isUpdated;
 
     // markets are regional.  there are 66 regions.
     // market orders are stored as {regionID/typeID}

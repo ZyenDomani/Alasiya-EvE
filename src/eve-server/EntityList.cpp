@@ -182,7 +182,8 @@ void EntityList::Process() {
 
             // these do not need to be precise
             sWHMgr.Process();   // ~2m
-            sMktMgr.Process();   // ~1h
+            if (m_minutes % 60 == 0) // ~1h
+                sMktMgr.Process();
             //sMktBotMgr.Process();  // 15m to 30m
             if (m_updateTimer.Check())  // 15m
                 sConsole.UpdateStatus();
