@@ -57,7 +57,6 @@ void MarketMgr::Populate()
 void MarketMgr::GetInfo()
 {
     /* get info in current market data? */
-
 }
 
 void MarketMgr::Process()
@@ -70,30 +69,30 @@ void MarketMgr::Process()
 void MarketMgr::UpdatePriceHistory()
 {
     DBerror err;
-
-    int64 cutoff_time = GetFileTimeNow();
-    cutoff_time -= cutoff_time % EvE::Time::Day;    //round down to an even day boundary.
-    cutoff_time -= EvE::Time::Day * 2;  //the cutoff between "new" and "old" price history in days
+    int64 cutoff_time = Win32Time_Day;
+    cutoff_time -= cutoff_time % Win32Time_Day;    //round down to an even day boundary.
+    cutoff_time -= Win32Time_Day * 2;  //the cutoff between "new" and "old" price history in days
 
     //build the history record from the recent market transactions.
     sDatabase.RunQuery(err,
-        "INSERT INTO"
-        "    mktHistory"
-        "     (regionID, typeID, historyDate, lowPrice, highPrice, avgPrice, volume, orders)"
-        " SELECT"
-        "    regionID,"
-        "    typeID,"
-        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
-        "    MIN(price),"
-        "    MAX(price),"
-        "    AVG(price),"
-        "    SUM(quantity),"
-        "    COUNT(transactionID)"
-        " FROM mktTransactions "
-        " WHERE transactionType=0"    //both buy and sell transactions get recorded, only compound data for 'sell' orders.
-        "   AND (transactionDate - ( transactionDate %% %lli ) ) < %lli"
-        " GROUP BY regionID, typeID, historyDate",
-        EvE::Time::Day, EvE::Time::Day, cutoff_time);
+            "INSERT INTO"
+            "    mktHistory"
+            "     (regionID, typeID, historyDate, lowPrice, highPrice, avgPrice, volume, orders)"
+            " SELECT"
+            "    regionID,"
+            "    typeID,"
+            "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
+            "    MIN(price) AS lowPrice,"
+            "    MAX(price) AS highPrice,"
+            "    AVG(price) AS avgPrice,"
+            "    SUM(quantity) AS volume,"
+            "    COUNT(transactionID) AS orders"
+            " FROM mktTransactions "
+            " WHERE"
+            "    transactionType=1 AND "    //both buy and sell transactions get recorded, only compound data for 'buy' orders.
+            "    ( transactionDate - ( transactionDate %% %" PRId64 " ) ) < %" PRId64
+            " GROUP BY regionID, typeID, historyDate",
+            Win32Time_Day, Win32Time_Day, cutoff_time);
 
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
@@ -117,7 +116,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT"
-        "    transactionDate AS historyDate,"
+        "    transactionDate - ( transactionDate %% %" PRId64 " ) AS historyDate,"
         "    MIN(price) AS lowPrice,"
         "    MAX(price) AS highPrice,"
         "    AVG(price) AS avgPrice,"
@@ -125,10 +124,9 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         "    CAST(COUNT(transactionID) AS SIGNED INTEGER) AS orders"
         " FROM mktTransactions "
         " WHERE regionID=%u AND typeID=%u"
-        "    AND transactionType=%u "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
-        "    AND transactionDate > %lli"
-        " GROUP BY transactionDate",
-            regionID, typeID, TransactionTypeSell, (GetFileTimeNow() - EvE::Time::Day)))
+        "    AND transactionType=%d "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
+        " GROUP BY historyDate",
+        Win32Time_Day, regionID, typeID, TransactionTypeBuy))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -142,7 +140,7 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate > %lli", regionID, typeID, (GetFileTimeNow() - (EvE::Time::Day * 2))))
+        " WHERE regionID=%u AND typeID=%u AND historyDate < %llu", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;

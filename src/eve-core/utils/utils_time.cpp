@@ -27,8 +27,12 @@
 
 #include "utils/utils_time.h"
 
-#include <iomanip>
-#include <sstream>
+const int64 Win32Time_Second = 10000000L;
+const int64 Win32Time_Minute = Win32Time_Second*60;
+const int64 Win32Time_Hour = Win32Time_Minute*60;
+const int64 Win32Time_Day = Win32Time_Hour*24;
+const int64 Win32Time_Month = Win32Time_Day*30;
+const int64 Win32Time_Year = Win32Time_Month*12;
 
 static const int64 SECS_BETWEEN_EPOCHS = 11644473600LL;
 static const int64 SECS_TO_100NS = 10000000L; // 10^7
