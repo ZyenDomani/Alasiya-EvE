@@ -54,6 +54,14 @@ enum RoutePriority {
     RoutePriorityHi   =  1
 };
 
+/*
+piLaunchOrbitDecayTime = DAY * 5
+piCargoInOrbit = 0
+piCargoDeployed = 1
+piCargoClaimed = 2
+piCargoDeleted = 3
+*/
+
 /*  these are internal client state events
 enum PlanetEvents {
     EVENT_NORMAL = 0,
