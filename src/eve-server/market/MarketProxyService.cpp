@@ -336,7 +336,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
         codelog(MARKET__ERROR, "Invalid arguments");
         return nullptr;
     }
-
+    // client coded to throw error if price > 9223372036854.0 
     uint32 typeID = 0, quantity = 0;
     double price = 0;
     bool isBuy = false, isCorp = false;
