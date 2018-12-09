@@ -896,7 +896,7 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyDict* 
         if (body->size() > 2 )
             body->SetItem( 2, keywords );
     if (enclosed)
-        codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
+        codelog(COMMON__WARNING, "This constructor is used.  please finish code.");
 
     return body;
 }
@@ -912,7 +912,7 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyList* 
     if (body->size() > 2 )
         body->SetItem( 2, keywords );
     if (enclosed)
-        codelog(COMMON__ERROR, "This constructor is used.  please finish code.");
+        codelog(COMMON__WARNING, "This constructor is used.  please finish code.");
 
     return body;
 }
@@ -920,7 +920,8 @@ PyTuple* PyObjectEx_Type1::_CreateHeader( PyToken* type, PyTuple* args, PyList* 
 /************************************************************************/
 /* PyObjectEx_Type2                                                     */
 /************************************************************************/
-PyObjectEx_Type2::PyObjectEx_Type2( PyTuple* args, PyDict* keywords ) : PyObjectEx( true, _CreateHeader( args, keywords ) ) {}
+PyObjectEx_Type2::PyObjectEx_Type2( PyTuple* args, PyDict* keywords, bool enclosed /*false*/  ) : PyObjectEx( true, _CreateHeader( args, keywords, enclosed ) ) {}
+PyObjectEx_Type2::PyObjectEx_Type2( PyToken* args, PyDict* keywords, bool enclosed /*false*/  ) : PyObjectEx( true, _CreateHeader( args, keywords, enclosed ) ) {}
 
 PyTuple* PyObjectEx_Type2::GetArgs() const
 {
@@ -947,18 +948,36 @@ PyRep* PyObjectEx_Type2::FindKeyword( const char* keyword ) const
     return nullptr;
 }
 
-PyTuple* PyObjectEx_Type2::_CreateHeader( PyTuple* args, PyDict* keywords )
+PyTuple* PyObjectEx_Type2::_CreateHeader( PyTuple* args, PyDict* keywords, bool enclosed /*false*/  )
 {
     assert( args );
     if (keywords == nullptr )
-        keywords = new PyDict;
+        keywords = new PyDict();
 
     PyTuple* body = new PyTuple( 2 );
         body->SetItem( 0, args );
         body->SetItem( 1, keywords );
-        /*
-    PyTuple* head = new PyTuple( 1 );
-        head->SetItem( 0, body );*/
+    if (enclosed) {
+        PyTuple* head = new PyTuple( 1 );
+            head->SetItem( 0, body );
+    }
+
+    return body; // head;
+}
+
+PyTuple* PyObjectEx_Type2::_CreateHeader( PyToken* args, PyDict* keywords, bool enclosed /*false*/  )
+{
+    assert( args );
+    if (keywords == nullptr )
+        keywords = new PyDict();
+
+    PyTuple* body = new PyTuple( 2 );
+        body->SetItem( 0, args );
+        body->SetItem( 1, keywords );
+    if (enclosed) {
+        PyTuple* head = new PyTuple( 1 );
+            head->SetItem( 0, body );
+    }
 
     return body; // head;
 }
@@ -1156,7 +1175,7 @@ PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3)
 }
 
 /************************************************************************/
-/* tulpe mixed helper functions                                         */
+/* mixed tuple helper functions                                         */
 /************************************************************************/
 PyTuple * new_tuple(const char* arg1, const char* arg2, PyTuple* arg3)
 {

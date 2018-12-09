@@ -1125,4 +1125,3 @@ bool ClassEncodeGenerator::ProcessSubStructInline( const TiXmlElement* field )
     pop();
     return true;
 }
-

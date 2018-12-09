@@ -859,7 +859,8 @@ protected:
 class PyObjectEx_Type2 : public PyObjectEx
 {
 public:
-    PyObjectEx_Type2( PyTuple* args, PyDict* keywords );
+    PyObjectEx_Type2( PyTuple* args, PyDict* keywords, bool enclosed=false );
+    PyObjectEx_Type2( PyToken* args, PyDict* keywords, bool enclosed=false );
 
     PyTuple* GetArgs() const;
     PyDict* GetKeywords() const;
@@ -867,7 +868,8 @@ public:
     PyRep* FindKeyword( const char* keyword ) const;
 
 protected:
-    static PyTuple* _CreateHeader( PyTuple* args, PyDict* keywords );
+    static PyTuple* _CreateHeader( PyTuple* args, PyDict* keywords, bool enclosed=false );
+    static PyTuple* _CreateHeader( PyToken* args, PyDict* keywords, bool enclosed=false );
 };
 
 /**
@@ -1002,6 +1004,7 @@ inline PyToken::PyToken( Iter first, Iter last ) : PyRep( PyRep::PyTypeToken ), 
 /************************************************************************/
 PyTuple * new_tuple(int64 arg1);
 PyTuple * new_tuple(int64 arg1, int64 arg2);
+/* strings */
 PyTuple * new_tuple(const char* arg1);
 PyTuple * new_tuple(const char* arg1, const char* arg2);
 PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3);

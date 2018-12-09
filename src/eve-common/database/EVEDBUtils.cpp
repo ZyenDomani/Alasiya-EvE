@@ -404,7 +404,7 @@ void DBResultToIntIntlistDict( DBQueryResult &result, std::map<int32, PyRep *> &
 void FillPackedRow( const DBResultRow& row, PyPackedRow* into )
 {
     uint32 cc = row.ColumnCount();
-    for( uint32 i = 0; i < cc; i++ )
+    for( uint32 i = 0; i < cc; ++i )
         into->SetField( i, DBColumnToPyRep( row, i ) );
 }
 

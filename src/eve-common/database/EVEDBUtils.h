@@ -36,6 +36,7 @@ class PyList;
 class PyDict;
 class PyObjectEx;
 class PyPackedRow;
+class DBRowDescriptor;
 
 /*typedef enum {
     StringContentsInteger,
@@ -44,6 +45,10 @@ class PyPackedRow;
     StringContentsUnknown
 } StringContentsType;
 StringContentsType ClassifyStringContents(const char *str);*/
+
+void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into);
+void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &into);
+void DBResultToIntIntlistDict(DBQueryResult &result, std::map<int32, PyRep *> &into);
 
 PyRep *DBColumnToPyRep(const DBResultRow &row, uint32 column_index);
 
@@ -54,20 +59,17 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index);
 
 PyTuple *DBResultToTupleSet(DBQueryResult &result);
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type = "util.Row");
+PyTuple *DBResultToPackedRowListTuple(DBQueryResult &result);
+
 PyDict *DBResultToIntRowDict(DBQueryResult &result, uint32 key_index, const char *type = "util.Row");
 PyDict *DBResultToIntIntDict(DBQueryResult &result);
-void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into);
-void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &into);
-void DBResultToIntIntlistDict(DBQueryResult &result, std::map<int32, PyRep *> &into);
-
-PyList *DBResultToPackedRowList(DBQueryResult &result);
-PyTuple *DBResultToPackedRowListTuple(DBQueryResult &result);
-// this fills PyObjectEx2(util.KeyVal)'s 'list" with PacketRow objects
-PyObjectEx *DBResultToCRowset(DBQueryResult &result);
-
 PyDict *DBResultToPackedRowDict(DBQueryResult &result, const char *key);
 PyDict *DBResultToPackedRowDict(DBQueryResult &result, uint32 key_index);
 
+PyList *DBResultToPackedRowList(DBQueryResult &result);
+
+// this fills PyObjectEx2(util.KeyVal)'s 'list" with PacketRow objects
+PyObjectEx *DBResultToCRowset(DBQueryResult &result);
 // this fills PyObjectEx2(util.KeyVal)'s 'list" with Indexed PacketRow objects
 PyObjectEx *DBResultToCIndexedRowset(DBQueryResult &result, const char *key);
 PyObjectEx *DBResultToCIndexedRowset(DBQueryResult &result, uint32 key_index);
@@ -77,6 +79,7 @@ PyObject *DBRowToKeyVal(DBResultRow &row);
 PyObject *DBRowToRow(DBResultRow &row, const char *type = "util.Row");
 PyPackedRow *DBRowToPackedRow(DBResultRow &row);
 
+PyPackedRow* CreatePackedRow( const DBResultRow& row, DBRowDescriptor* header );
 
 #endif
 

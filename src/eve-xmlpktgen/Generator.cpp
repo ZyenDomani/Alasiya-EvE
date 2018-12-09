@@ -137,3 +137,4 @@ void Generator::LoadEncTypes()
         smEncTypesLoaded = true;
     }
 }
+
