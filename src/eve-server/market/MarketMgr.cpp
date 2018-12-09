@@ -69,7 +69,7 @@ void MarketMgr::Process()
 void MarketMgr::UpdatePriceHistory()
 {
     DBerror err;
-    int64 cutoff_time = Win32Time_Day;
+    int64 cutoff_time = GetFileTimeNow();
     cutoff_time -= cutoff_time % Win32Time_Day;    //round down to an even day boundary.
     cutoff_time -= Win32Time_Day * 2;  //the cutoff between "new" and "old" price history in days
 
@@ -89,10 +89,10 @@ void MarketMgr::UpdatePriceHistory()
             "    COUNT(transactionID) AS orders"
             " FROM mktTransactions "
             " WHERE"
-            "    transactionType=1 AND "    //both buy and sell transactions get recorded, only compound data for 'buy' orders.
+            "    transactionType=%u AND "    //both buy and sell transactions get recorded, only compound data for 'sell' orders.
             "    ( transactionDate - ( transactionDate %% %lli) ) < %lli"
             " GROUP BY regionID, typeID, historyDate",
-            Win32Time_Day, Win32Time_Day, cutoff_time);
+            Win32Time_Day, TransactionTypeSell, Win32Time_Day, cutoff_time);
 
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
@@ -126,7 +126,7 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         " WHERE regionID=%u AND typeID=%u"
         "    AND transactionType=%i "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
         " GROUP BY historyDate",
-        Win32Time_Day, regionID, typeID, TransactionTypeBuy))
+        Win32Time_Day, regionID, typeID, TransactionTypeSell))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;

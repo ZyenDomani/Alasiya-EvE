@@ -102,51 +102,9 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
 
 PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
 {
-    /*
-              [PyList 2 items]
-                [PyObjectEx Type2]
-                  [PyTuple 2 items]
-                    [PyTuple 1 items]
-                      [PyToken dbutil.RowList]
-                    [PyDict 2 kvp]
-                      [PyString "header"]
-                      [PyObjectEx Normal]
-                        [PyTuple 2 items]
-                          [PyToken blue.DBRowDescriptor]
-                          [PyTuple 1 items]
-                      [PyString "columns"]
-                      [PyList 14 items]
-                        [PyString "price"]
-                        [PyString "volRemaining"]
-                        [PyString "typeID"]
-                        [PyString "range"]
-                        [PyString "orderID"]
-                        [PyString "volEntered"]
-                        [PyString "minVolume"]
-                        [PyString "bid"]
-                        [PyString "issued"]
-                        [PyString "duration"]
-                        [PyString "stationID"]
-                        [PyString "regionID"]
-                        [PyString "solarSystemID"]
-                        [PyString "jumps"]
-                  [PyPackedRow 57 bytes]
-                    ["price" => <11200000000> [CY]]
-                    ["volRemaining" => <1> [R8]]
-                    ["typeID" => <3244> [I2]]
-                    ["range" => <32767> [I2]]
-                    ["orderID" => <2018034541> [I4]]
-                    ["volEntered" => <1> [I4]]
-                    ["minVolume" => <1> [I4]]
-                    ["bid" => <0> [Bool]]
-                    ["issued" => <129492629676100000> [FileTime]]
-                    ["duration" => <90> [I2]]
-                    ["stationID" => <60003910> [I4]]
-                    ["regionID" => <10000033> [I4]]
-                    ["solarSystemID" => <30002738> [I4]]
-                    ["jumps" => <6> [I4]]*/
+    // returns a tuple (sell, buy) of PyObjectEx with data in PyPackedRows
 
-    // returns a tuple (sell, buy) of lists of dicts (itemID, data)
+    PyTuple* tup = new PyTuple(2);
     DBQueryResult res;
     //query sell orders
     //TODO: consider the `jumps` field... is it actually used? yes...sellers trade skill for maxSellJumps
@@ -162,10 +120,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         return nullptr;
     }
     _log(MARKET__DB_TRACE, "MarketDB::GetOrders() - Fetched %u sell orders for type %u", res.GetRowCount(), typeID);
-
-    PyList* tup = new PyList();
-    //this is wrong.
-    tup->AddItem( DBResultToCRowset( res ) );
+    tup->SetItem(0, DBResultToCRowset( res ) );
 
     res.Reset();
     //query buy orders
@@ -182,9 +137,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         return nullptr;
     }
     _log(MARKET__DB_TRACE, "MarketDB::GetOrders() - Fetched %u buy orders for type %u", res.GetRowCount(), typeID);
-
-    //this is wrong.
-    tup->AddItem( DBResultToCRowset( res ) );
+    tup->SetItem(1, DBResultToCRowset( res ) );
 
     if (is_log_enabled(MARKET__DUMP))
         tup->Dump(MARKET__DUMP, "    ");
