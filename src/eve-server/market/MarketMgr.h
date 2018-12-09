@@ -18,6 +18,12 @@
 #include "EntityList.h"
 #include "market/MarketDB.h"
 
+/* market range
+rangeStation = -1
+rangeSolarSystem = 0
+rangeConstellation = 4
+rangeRegion = 32767
+*/
 
 class Client;
 
