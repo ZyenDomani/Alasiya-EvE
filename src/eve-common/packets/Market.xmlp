@@ -14,7 +14,7 @@
       <int name="minVolume" />
       <int name="duration" /> <!-- in days -->
       <int name="useCorp" safe="true" /><!-- integer boolean -->
-      <tuple name="located" optional="true" /><!-- tuple for corp items in corp office.  none otherwise. -->
+      <raw name="located" /><!-- tuple for corp items in corp office.  none otherwise.   process as PyRep*-->
     </tupleInline>
   </elementDef>
 
