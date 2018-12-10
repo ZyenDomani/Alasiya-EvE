@@ -397,7 +397,8 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete - Few Odd Bugs<BR>30Dec14</td></tr>
+<td><font color=lime>Somewhat Working</font><BR>
+<font color=olive>Corp Buy/Sell Incomplete</font><BR>10Dec18</td></tr>
 <tr><td> - Medical Services</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>

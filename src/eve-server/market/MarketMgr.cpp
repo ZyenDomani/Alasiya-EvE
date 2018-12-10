@@ -54,6 +54,7 @@ void MarketMgr::Populate()
     // m_db.GetOrders(call.client->GetRegionID(), args.arg);
 
     sLog.Blue("        MarketMgr", "Market Manager loaded in %.3fms.", (GetTimeMSeconds() - start));
+    sLog.Cyan("        MarketMgr", "Market Manager Updates Price History every %u hours.", sConfig.market.HistoryUpdateTime);
 }
 
 void MarketMgr::GetInfo()
@@ -63,9 +64,6 @@ void MarketMgr::GetInfo()
 
 void MarketMgr::Process()
 {
-    if (m_timeStamp > GetFileTimeNow())
-        return;
-
     if (NeedsUpdate())
         UpdatePriceHistory();
 }
