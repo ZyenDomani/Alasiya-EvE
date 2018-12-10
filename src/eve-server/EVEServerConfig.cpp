@@ -102,9 +102,9 @@ EVEServerConfig::EVEServerConfig()
     market.FindSellOrder = 10;
     market.OldPriceLimit = 10;
     market.NewPriceLimit = 10;
+    market.HistoryUpdateTime = 6/*h*/;
     market.UseOrderRange = true;//N
-    market.DeleteOldTransactions = false;//N
-    market.BroadcastOnMarketRefresh = false;//N
+    market.DeleteOldTransactions = false;
 
     // bpTimes
     bpTimes.ProdTime = 1.0;
@@ -408,7 +408,7 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
     AddValueParser( "NewPriceLimit",                market.NewPriceLimit);
     AddValueParser( "UseOrderRange",                market.UseOrderRange);
     AddValueParser( "DeleteOldTransactions",        market.DeleteOldTransactions);
-    AddValueParser( "BroadcastOnMarketRefresh",     market.BroadcastOnMarketRefresh);
+    AddValueParser( "HistoryUpdateTime",     market.HistoryUpdateTime);
 
     const bool result = ParseElementChildren( ele );
 
@@ -418,7 +418,7 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
     RemoveParser( "NewPriceLimit" );
     RemoveParser( "UseOrderRange" );
     RemoveParser( "DeleteOldTransactions" );
-    RemoveParser( "BroadcastOnMarketRefresh" );
+    RemoveParser( "HistoryUpdateTime" );
 
     return result;
 }

@@ -72,7 +72,7 @@ MarketProxyService::~MarketProxyService() {
  */
 
 PyResult MarketProxyService::Handle_StartupCheck(PyCallArgs &call) {
-    if (!sMktMgr.IsUpdated())
+    if (sMktMgr.NeedsUpdate())
         sMktMgr.UpdatePriceHistory();
     return nullptr;
 }
@@ -230,6 +230,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), orderID, "Add", args.useCorp);
     } else {
         //sell order
+        if (!args.located->IsNone())
+            ; //  corp item in corp hangar
 
         //verify that they actually have the item in the quantity specified...
         InventoryItemRef item = sItemFactory.GetItem( args.itemID );
@@ -315,6 +317,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             args.minVolume,
             args.duration,
             args.useCorp);
+
         if (orderID == 0) {
             codelog(MARKET__ERROR, "%s: Failed to record order in the DB.", call.client->GetName());
             call.client->SendErrorMsg("Failed to record the order in the DB!");
@@ -401,7 +404,6 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     }
     InvalidateOrdersCache(typeID);
     sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Expiry", isCorp, order); //force a refresh of market data.
-    sMktMgr.BroadcastOnMarketRefresh(call.client->GetRegionID());
 
     return nullptr;
 }

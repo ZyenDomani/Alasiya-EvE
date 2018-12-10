@@ -10,6 +10,7 @@
   */
 
 #include "Client.h"
+#include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "inventory/InventoryItem.h"
@@ -65,13 +66,22 @@ void MarketMgr::Process()
     if (m_timeStamp > GetFileTimeNow())
         return;
 
-    m_timeStamp = GetFileTimeNow();
-    UpdatePriceHistory();
-    MarketDB::SetUpdateTime();
+    if (NeedsUpdate())
+        UpdatePriceHistory();
+}
+
+bool MarketMgr::NeedsUpdate()
+{
+    if (m_timeStamp > GetFileTimeNow())
+        return false;
+    return true;
 }
 
 void MarketMgr::UpdatePriceHistory()
 {
+    m_timeStamp = GetFileTimeNow() + (EvE::Time::Hour * sConfig.market.HistoryUpdateTime);
+    MarketDB::SetUpdateTime(m_timeStamp);
+
     DBerror err;
     int64 cutoff_time = m_timeStamp;
     cutoff_time -= cutoff_time % EvE::Time::Day;    //round down to an even day boundary.
@@ -163,6 +173,7 @@ void MarketMgr::SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *a
     who->SendNotification("OnOwnOrderChanged", "clientID", &tmp);   //tmp consumed.
 }
 
+// why is this bcast to region???
 void MarketMgr::BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, const char *action, bool isCorp/*false*/, PyRep* order/*nullptr*/) {
     std::vector<Client*> clients;
     sEntityList.FindByRegionID(regionID, clients);
@@ -173,22 +184,6 @@ void MarketMgr::BroadcastOnOwnOrderChanged(uint32 regionID, uint32 orderID, cons
     }
     // may not need this...
     //PySafeDecRef(order);
-}
-
-void MarketMgr::BroadcastOnMarketRefresh(uint32 regionID) {
-    if (!IsRegion(regionID))
-        return;
-    std::vector<Client*> clients;
-    sEntityList.FindByRegionID(regionID, clients);
-    std::vector<Client*>::iterator cur = clients.begin();
-    for (; cur != clients.end(); ++cur) {
-        SendOnMarketRefresh(*cur);
-    }
-}
-// cant find where this is used or referenced....
-void MarketMgr::SendOnMarketRefresh(Client *who) {
-    PyTuple* tmp = new PyTuple(0);
-    who->SendNotification("OnMarketRefresh", "clientID", &tmp);   //tmp consumed.
 }
 
 /*
@@ -302,9 +297,6 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
         BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Modify", isCorp);
     }
 
-    if (sConfig.market.BroadcastOnMarketRefresh)
-        BroadcastOnMarketRefresh(sDataMgr.GetStationRegion(stationID));
-
     //record this transaction in market_transactions
     if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
@@ -378,9 +370,6 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
         //InvalidateOrdersCache(typeID);
         BroadcastOnOwnOrderChanged(buyer->GetRegionID(), orderID, "Modify", isCorp);
     }
-
-    if (sConfig.market.BroadcastOnMarketRefresh)
-        BroadcastOnMarketRefresh(sDataMgr.GetStationRegion(stationID));
 
     //record this transaction in market_transactions
     if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeBuy, buyer->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {

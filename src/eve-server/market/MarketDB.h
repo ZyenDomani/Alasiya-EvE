@@ -63,7 +63,7 @@ public:
 
     /* for marketMgr update service */
     static int64 GetUpdateTime();
-    static void SetUpdateTime();
+    static void SetUpdateTime(int64 setTime);
 
     static void UpdateHistory();
 

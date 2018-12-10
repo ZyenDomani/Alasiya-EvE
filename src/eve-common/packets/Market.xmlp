@@ -14,7 +14,7 @@
       <int name="minVolume" />
       <int name="duration" /> <!-- in days -->
       <int name="useCorp" safe="true" /><!-- integer boolean -->
-      <bool name="located" none_marker="false" />
+      <tuple name="located" optional="true" /><!-- tuple for corp items in corp office.  none otherwise. -->
     </tupleInline>
   </elementDef>
 

@@ -104,9 +104,9 @@
         <FindSellOrder>15<FindSellOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
         <OldPriceLimit>15</OldPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
         <NewPriceLimit>15</NewPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <HistoryUpdateTime>8</HistoryUpdateTime><!-- integer  - time in hours to update market price histories  default:6 -->
         <UseOrderRange>true<UseOrderRange><!-- bool  - default: true  -->
         <DeleteOldTransactions>false</DeleteOldTransactions><!-- bool  - delete transactions from db older than 3 days  default: false  -->
-        <BroadcastOnMarketRefresh>false</BroadcastOnMarketRefresh><!-- bool  - BCast market refresh to all clients in region  default: false  (may not be used)  -->
     </market>
 
     <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->

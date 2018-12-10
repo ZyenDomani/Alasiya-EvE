@@ -122,13 +122,13 @@ public:
 
     // from <market/>
     struct {
+        bool UseOrderRange;
+        bool DeleteOldTransactions;
         uint8 FindBuyOrder;
         uint8 FindSellOrder;
         uint8 OldPriceLimit;
         uint8 NewPriceLimit;
-        bool UseOrderRange;
-        bool DeleteOldTransactions;
-        bool BroadcastOnMarketRefresh;
+        uint8 HistoryUpdateTime;
     } market;
 
     // From <bpTimes/>

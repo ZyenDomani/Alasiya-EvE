@@ -529,10 +529,10 @@ int64 MarketDB::GetUpdateTime()
     return row.GetInt64(0);
 }
 
-void MarketDB::SetUpdateTime()
+void MarketDB::SetUpdateTime(int64 setTime)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %f WHERE server = 1", GetFileTimeNow());
+    sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %lli WHERE server = 1", setTime);
 }
 
 void MarketDB::UpdateHistory()
