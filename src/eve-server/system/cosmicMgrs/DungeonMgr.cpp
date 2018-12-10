@@ -51,7 +51,7 @@ void DungeonDataMgr::Populate()
         templates.emplace(row.GetInt(0), dtemplates);
     }
 
-    res->Reset();
+    //res->Reset();
     ManagerDB::GetDunRoomData(*res);
     DunRoomData drooms;
     while (res->GetRow(row)) {
@@ -63,7 +63,7 @@ void DungeonDataMgr::Populate()
        rooms.emplace(row.GetInt(0), drooms);
     }
 
-    res->Reset();
+    //res->Reset();
     ManagerDB::GetDunGroupData(*res);
     DunGroupData dgroups;
     while (res->GetRow(row)) {
@@ -79,7 +79,7 @@ void DungeonDataMgr::Populate()
         groups.emplace(row.GetInt(0), dgroups);
     }
 
-    res->Reset();
+    //res->Reset();
     ManagerDB::GetDunEntryData(*res);
     DunEntryData dentry;
     while (res->GetRow(row)) {
@@ -91,7 +91,7 @@ void DungeonDataMgr::Populate()
     }
 
     /* not ready yet
-    res->Reset();
+    //res->Reset();
     ManagerDB::GetDunSpawnInfo(*res);
     DunRoomSpawnInfo spawn;
     while (res->GetRow(row)) {

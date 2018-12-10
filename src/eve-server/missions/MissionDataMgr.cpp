@@ -155,7 +155,7 @@ void MissionDataMgr::Populate()
     }
     sLog.Cyan("   MissionDataMgr", "%u(%u) Courier Mission Data Sets loaded in %.3fms.", m_courier.size(), m_courierImp.size(),(GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     MissionDB::LoadMiningData(*res);
     while (res->GetRow(row)) {
@@ -215,7 +215,7 @@ void MissionDataMgr::Populate()
     start = GetTimeMSeconds();
     sLog.Cyan("   MissionDataMgr", "0(0) Arc Mission Data Sets loaded in %.3fms.", (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     MissionDB::LoadMissionData(*res);
     while (res->GetRow(row)) {
@@ -238,7 +238,7 @@ void MissionDataMgr::Populate()
     }
     sLog.Cyan("   MissionDataMgr", "%u(%u) Unsorted Mission Data Sets loaded in %.3fms.", m_missions.size(), m_missionsImp.size(), (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     MissionDB::LoadOpenOffers(*res);
     while (res->GetRow(row)) {
@@ -288,7 +288,7 @@ void MissionDataMgr::Populate()
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     // config switch to allow loading/displaying of expired/completed mission offers
     if (sConfig.server.LoadOldMissions)

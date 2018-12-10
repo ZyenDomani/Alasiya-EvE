@@ -233,7 +233,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
                 }
             }
         }
-        res2.Reset();
+        //res2.Reset();
         into.push_back(entry);
     }
     return true;

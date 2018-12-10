@@ -56,7 +56,7 @@ void FxDataMgr::Populate()
     }
     sLog.Cyan("        FxDataMgr", "%u Type Effects loaded in %.3fms.", m_typeFxMap.size(), (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     GetOperands(*res);
     while (res->GetRow(row)) {
@@ -79,7 +79,7 @@ void FxDataMgr::Populate()
     m_opMap.insert(std::pair<uint16, Operand>(0, mOpr));
     sLog.Cyan("        FxDataMgr", "%u Operands loaded in %.3fms.", m_opMap.size(), (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     GetExpressions(*res);
     while (res->GetRow(row)) {
@@ -112,7 +112,7 @@ void FxDataMgr::Populate()
     m_expMap.insert(std::pair<uint16, Expression>(0, mExp));
     sLog.Cyan("        FxDataMgr", "%u Expressions loaded in %.3fms.", m_expMap.size(), (GetTimeMSeconds() - start));
 
-    res->Reset();
+    //res->Reset();
     start = GetTimeMSeconds();
     GetDgmEffects(*res);
     while (res->GetRow(row)) {

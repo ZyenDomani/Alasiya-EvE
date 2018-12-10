@@ -47,7 +47,7 @@ void MapCon::PopulateConnections() {
 
         sDatabase.RunQuery(err, "UPDATE mapConnections SET ctype = %u WHERE AI = %u", ctype, count);
 
-        res.Reset();
+        //res.Reset();
         ++count;
     }
 

@@ -91,7 +91,7 @@ void PIDataMgr::_Populate()
     }
 
     //clear previous data set
-    res->Reset();
+    //res->Reset();
 
     m_db.GetSchematicTimes(*res);
     while (res->GetRow(row)) {

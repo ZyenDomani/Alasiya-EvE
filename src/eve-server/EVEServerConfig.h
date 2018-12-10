@@ -201,6 +201,8 @@ public:
         std::string db;
         bool compress;
         bool ssl;
+        bool useSocket;
+        bool autoReconnect;
     } database;
 
     // From <files/>

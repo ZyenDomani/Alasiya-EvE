@@ -510,7 +510,7 @@ bool RamProxyDB::GetMultipliers(const uint32 assemblyLineID, uint32 groupID, dou
         return true;
     }
 
-    res.Reset();
+    //res.Reset();
 
     // then ramAssemblyLineTypeDetailPerCategory
     if (!sDatabase.RunQuery(res,

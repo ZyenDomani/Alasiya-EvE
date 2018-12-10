@@ -63,7 +63,7 @@ void StationDataMgr::Populate()
             m_serviceMask.emplace(row.GetInt(0), row.GetInt(1));
     }
 
-    res->Reset();
+    //res->Reset();
     StationDB::GetStationOfficeData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime, officeFolderID
@@ -79,7 +79,7 @@ void StationDataMgr::Populate()
         m_stationOfficeData.emplace(row.GetInt(2), data);
     }
 
-    res->Reset();
+    //res->Reset();
     StationDB::GetStationData(*res);
     while (res->GetRow(row)) {
         //SELECT s.stationID, s.x, s.y, s.z, st.dockOrientationX, st.dockOrientationY, st.dockOrientationZ, s.dockingCostPerVolume, s.maxShipVolumeDockable,8 \

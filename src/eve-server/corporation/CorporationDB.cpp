@@ -1887,7 +1887,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     charUpdate.ownerID = args.toShareholderID;
     charUpdate.corpID = corpID;
     charUpdate.newShares = args.numberOfShares; // plus existing shares this owner has of this corp
-    res.Reset();
+    //res.Reset();
     sDatabase.RunQuery(res,"SELECT shares, shareholderCorporationID FROM crpShares WHERE corporationID = %u AND shareholderID = %u ", corpID, args.toShareholderID);
     if (res.GetRow(row)) {
         charUpdate.oldShares = (oldShares = row.GetInt(0));

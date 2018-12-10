@@ -83,7 +83,7 @@ public:
 protected:
     //for DBcore:
     friend class DBcore;
-    void SetResult( MYSQL_RES** res, uint32 colCount );
+    void SetResult( MYSQL_RES* res, uint32 colCount );
 
     uint32 mColumnCount;
     MYSQL_RES* mResult;
@@ -121,10 +121,10 @@ public:
 protected:
     //for DBQueryResult
     friend class DBQueryResult;
-    void SetData( DBQueryResult* res, MYSQL_ROW& row, const unsigned long* lengths );
+    void SetData( DBQueryResult* res, MYSQL_ROW& row, const ulong* lengths );
 
     MYSQL_ROW mRow;
-    const unsigned long* mLengths;
+    const ulong* mLengths;
 
     DBQueryResult* mResult;
 };
@@ -152,9 +152,6 @@ public:
     //query which returns last insert ID:
     bool    RunQueryLID(DBerror& err, uint32& last_insert_id, const char* query_fmt, ...);
 
-    //old style to be used with MakeAnyLengthString
-    bool    RunQuery(const char* query, int32 querylen, char* errbuf = 0, MYSQL_RES** result = 0, int32* affected_rows = 0, int32* last_insert_id = 0, int32* errnum = 0, bool retry = true);
-
     int32   DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen);
     void    DoEscapeString(std::string &to, const std::string &from);
     static bool IsSafeString(const char *str);
@@ -172,7 +169,7 @@ protected:
 
 private:
     //MDatabase must be locked before these calls:
-    bool    DoQuery_locked(DBerror &err, const char *query, int32 querylen, bool retry = true);
+    bool    DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry = true);
 
     MYSQL*  mysql;
     Mutex   MDatabase;

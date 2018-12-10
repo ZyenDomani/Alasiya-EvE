@@ -449,18 +449,18 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             {
                 unpacked.Append<uint8>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
-
             case DBTYPE_R8:
             {
                 unpacked.Append<double>( r->IsNone() ? 0.0 : r->AsFloat()->value() );
             } break;
-
             case DBTYPE_R4:
             {
                 unpacked.Append<float>(static_cast<float>(r->IsNone() ? 0.0 : r->AsFloat()->value()));
             } break;
-
             case DBTYPE_BOOL:
+            {
+                unpacked.Append<bool>( r->IsNone() ? 0 : r->AsBool()->value() );
+            } break;
             case DBTYPE_BYTES:
             case DBTYPE_STR:
             case DBTYPE_WSTR:

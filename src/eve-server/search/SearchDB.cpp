@@ -141,7 +141,7 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
                 break;
         }
         dict->SetItem(new PyInt(searchID->at(i)),DBResultToIntIntDict(res));
-        res.Reset();
+        //res.Reset();
     }
 
     return dict;
@@ -234,7 +234,7 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
         while (res.GetRow(row)) {
             result->AddItem( new PyInt(row.GetUInt(0) ));
         }
-        res.Reset();
+        //res.Reset();
     }
 
     return result;

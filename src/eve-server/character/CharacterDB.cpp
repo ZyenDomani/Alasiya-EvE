@@ -349,7 +349,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
     uint32 upcomingEventCount = 0;
     uint32 unprocessedNotifications = 0;
 
-    res.Reset();
+    //res.Reset();
     if (!sDatabase.RunQuery(res,
         "SELECT " // fixed DB query per client code -allan 18Jan15
         "  %u AS unreadMailCount,"

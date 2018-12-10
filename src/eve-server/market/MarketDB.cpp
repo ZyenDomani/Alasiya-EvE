@@ -122,7 +122,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
     _log(MARKET__DB_TRACE, "MarketDB::GetOrders() - Fetched %u sell orders for type %u", res.GetRowCount(), typeID);
     tup->SetItem(0, DBResultToCRowset( res ) );
 
-    res.Reset();
+    //res.Reset();
     //query buy orders
     if (!sDatabase.RunQuery(res,
         "SELECT"

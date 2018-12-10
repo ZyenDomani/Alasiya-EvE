@@ -126,14 +126,17 @@ PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
         " WHERE regionID=%u AND typeID=%u"
         "    AND transactionType=%i "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
         " GROUP BY historyDate",
-        Win32Time_Day, regionID, typeID, TransactionTypeSell))
+        EvE::Time::Day, regionID, typeID, TransactionTypeSell))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
     _log(MARKET__DB_TRACE, "MarketMgr::GetNewPriceHistory() - Fetched %u buy orders for type %u in region %u from mktTransactions", res.GetRowCount(), typeID, regionID);
 
-    return DBResultToCRowset(res);
+    PyObjectEx* ret = DBResultToCRowset(res);
+    if (is_log_enabled(MARKET__DB_TRACE))
+        ret->Dump(MARKET__DB_TRACE, "    ");
+    return ret;
 }
 
 PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
@@ -141,14 +144,17 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
         " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate < %lli", regionID, typeID, (GetFileTimeNow() - (Win32Time_Day * 2))))
+        " WHERE regionID=%u AND typeID=%u AND historyDate < %lli", regionID, typeID, (GetFileTimeNow() - (EvE::Time::Day * 2))))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
     _log(MARKET__DB_TRACE, "MarketMgr::GetOldPriceHistory() - Fetched %u orders for type %u in region %u from mktHistory", res.GetRowCount(), typeID, regionID);
 
-    return DBResultToCRowset(res);
+    PyObjectEx* ret = DBResultToCRowset(res);
+    if (is_log_enabled(MARKET__DB_TRACE))
+        ret->Dump(MARKET__DB_TRACE, "    ");
+    return ret;
 }
 
 void MarketMgr::SendOnOwnOrderChanged(Client *who, uint32 orderID, const char *action, bool isCorp/*false*/, PyRep* order/*nullptr*/) {

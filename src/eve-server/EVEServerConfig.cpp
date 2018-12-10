@@ -207,6 +207,8 @@ EVEServerConfig::EVEServerConfig()
     database.db = "evemu";
     database.compress = false;
     database.ssl = false;
+    database.useSocket = false;
+    database.autoReconnect = false;//N
 
     // files
     files.logDir = "../log/";
@@ -528,6 +530,8 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     AddValueParser( "db",               database.db );
     AddValueParser( "compress",         database.compress );
     AddValueParser( "ssl",              database.ssl );
+    AddValueParser( "useSocket",        database.useSocket );
+    AddValueParser( "autoReconnect",    database.autoReconnect );
 
     const bool result = ParseElementChildren( ele );
 
@@ -538,6 +542,8 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     RemoveParser( "db" );
     RemoveParser( "compress" );
     RemoveParser( "ssl" );
+    RemoveParser( "useSocket" );
+    RemoveParser( "autoReconnect" );
 
     return result;
 }
