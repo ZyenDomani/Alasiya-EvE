@@ -515,3 +515,41 @@ PyRep *MarketDB::GetMarketGroups() {
 
     return filterRowset;
 }
+
+int64 MarketDB::GetUpdateTime()
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT timeStamp FROM mktUpdates WHERE server = 1"))  {
+        codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return 0;
+    return row.GetInt64(0);
+}
+
+void MarketDB::SetUpdateTime()
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %f WHERE server = 1", GetFileTimeNow());
+}
+
+void MarketDB::UpdateHistory()
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+                   "INSERT INTO"
+                   "    mktHistory"
+                   "     (regionID, typeID, historyDate, lowPrice, highPrice, avgPrice, volume, orders)"
+                   " SELECT"
+                   "    regionID,"
+                   "    typeID,"
+                   "    ((UNIX_TIMESTAMP(date) +11644473600) *10000000),"
+                   "    price,"
+                   "    price,"
+                   "    price,"
+                   "    amtEntered,"
+                   "    COUNT(DISTINCT typeID)"
+                   " FROM mktData");
+}

@@ -412,11 +412,10 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     end = sizeMap.lower_bound( 1 );
     for(; cur != end; cur++)
     {
-        const uint32 index = cur->second;
-        const PyRep* r = rep->GetField( index );
+        const PyRep* r = rep->GetField( cur->second );
 
         /* note the assert are disabled because of performance flows */
-        switch( header->GetColumnType( index ) )
+        switch( header->GetColumnType( cur->second ) )
         {
             case DBTYPE_CY:
             case DBTYPE_I8:
@@ -425,13 +424,11 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             {
                 unpacked.Append<int64>( r->IsNone() ? 0 : r->AsLong()->value() );
             } break;
-
             case DBTYPE_I4:
             case DBTYPE_UI4:
             {
                 unpacked.Append<int32>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
-
             case DBTYPE_I2:
             {
                 unpacked.Append<int16>( r->IsNone() ? 0 : r->AsInt()->value() );
@@ -440,10 +437,9 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
             {
                 unpacked.Append<uint16>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
-
             case DBTYPE_I1:
             {
-                unpacked.Append<int8>( r->IsNone() ? 0 : r->AsInt()->value() );
+                unpacked.Append<uint8>( r->IsNone() ? 0 : r->AsInt()->value() );
             } break;
             case DBTYPE_UI1:
             {
@@ -468,6 +464,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
                 /* incorrect implemented so we make sure we crash here */
                 //FIXME  change to proper error-handling to avoid crash.
                 assert( false );
+                EvE::traceStack();
             } break;
         }
     }
@@ -479,8 +476,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     end = sizeMap.lower_bound( 0 );
     for(; cur != end; ++cur)
     {
-        const uint32 index = cur->second;
-        const PyBool* r = rep->GetField( index )->AsBool();
+        const PyBool* r = rep->GetField( cur->second )->AsBool();
 
         if( 7 < bitOffset )
             bitOffset = 0;
@@ -502,8 +498,7 @@ bool MarshalStream::VisitPackedRow( const PyPackedRow* rep )
     end = sizeMap.end();
     for(; cur != end; cur++)
     {
-        const uint32 index = cur->second;
-        const PyRep* r = rep->GetField( index );
+        const PyRep* r = rep->GetField( cur->second );
 
         if( !r->visit( *this ) )
             return false;

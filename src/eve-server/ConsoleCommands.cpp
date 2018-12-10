@@ -33,6 +33,7 @@
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
 #include "../eve-common/EVEVersion.h"
+#include "market/MarketDB.h"
 
 
 ConsoleCommand::ConsoleCommand()
@@ -369,6 +370,7 @@ void ConsoleCommand::Test()
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs
     //sMissionDataMgr.UpdateMissionData();
+    MarketDB::UpdateHistory();
 
 }
 

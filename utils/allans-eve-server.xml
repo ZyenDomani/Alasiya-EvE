@@ -1,11 +1,12 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 8.6 -->
+     Version: 9.2 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
     boolean can use either 0/1 OR true/false.
 -->
+
 
 <eve-server>
 
@@ -43,15 +44,18 @@
         <idleSleepTime>1000</idleSleepTime><!-- in ms (1 sec default) -->
         <processTic>1.0</processTic><!-- used to slow down server process tics.  <1.0 is faster, >1.0 slower -->
         <MaxThreadReport>20</MaxThreadReport>
-        <UseMarketBot>false</UseMarketBot>
+        <UseMarketBot>false</UseMarketBot><!-- this is coded in alasiya gate.  not needed here -->
         <DisableIGB>false</DisableIGB>
         <BulkDataOD>true</BulkDataOD>  <!-- bool  -OD = OnDemand.  false loads data on server startup.  true loads data on first call -->
         <ModuleAutoOff>true</ModuleAutoOff><!-- bool  - automatically deactivate rr-type module when target is full -->
         <ModuleDamageChance>0.35</ModuleDamageChance>  <!-- chance to apply damage to random modules when shields are depleted -->
+        <UnloadOnLinkAll>true</UnloadOnLinkAll>  <!-- bool - unload weapons and link when LinkAll button pressed -->
         <AllowNonPublished>true</AllowNonPublished>
         <BountyPayoutDelayed>false</BountyPayoutDelayed><!-- (en/dis)able system bounty payouts on timer (vs immediate) -->
         <FleetShareDelayed>true</FleetShareDelayed><!-- switch to put fleet bounty shares in system bounty timer (vs immediate), if enabled -->
         <BountyPayoutTimer>5</BountyPayoutTimer><!-- time for system bounty timer to run (in minutes - 20m default - 256 max) -->
+        <!-- LoadOldMissions not completely working yet.....AgentMgrService::Handle_GetMyJournalDetails() will need work to implement this. -->
+        <LoadOldMissions>false</LoadOldMissions><!-- allow display of expired/completed missions in journal -->
     </server>
 
     <world>
@@ -64,7 +68,7 @@
         <loginInfo>true</loginInfo><!-- bool -->
         <loginMsg>true</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
-        <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
+        <apWarptoDistance>1000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
     </world>
 
     <rates>
@@ -84,14 +88,26 @@
         <RateDropItem>2.0</RateDropItem><!--  only used if != 1.0 -->
         <!-- these rates are not implemented yet -->
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
+        <!-- for repair system -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
-
+        <ShipRepairModifier>0.000175</ShipRepairModifier><!-- (basePrice)*7.5e-10 on live.  needs to be less here. -->
+        <ModuleRepairModifier>0.0015</ModuleRepairModifier><!-- (basePrice)*1.25e-6 -->
         <!-- corp tax variables. -->
         <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
-        <TaxAmount>20000</TaxAmount><!-- default is 20000 isk.  less than this isnt worth the processing for corps -->
+        <TaxAmount>10000</TaxAmount><!-- default is 10000 isk.  less than this isnt worth the processing for corps -->
         <!-- min amount to be taxed.  received amounts less than this will not be taxed. -->
-       <TaxedAmount>250000</TaxedAmount><!-- live uses 100000.  default is 250000 -->
+       <TaxedAmount>200000</TaxedAmount><!-- live uses 100000.  default is 175000 -->
     </rates>
+
+    <market>
+        <FindBuyOrder>15</FindBuyOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <FindSellOrder>15</FindSellOrder><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <OldPriceLimit>15</OldPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <NewPriceLimit>15</NewPriceLimit><!-- integer  - number of orders to return (lower = less bandwidth)  default: 10  limit: 256 -->
+        <UseOrderRange>true</UseOrderRange><!-- bool  - default: true  -->
+        <DeleteOldTransactions>false</DeleteOldTransactions><!-- bool  - delete transactions from db older than 3 days  default: false  -->
+        <BroadcastOnMarketRefresh>false</BroadcastOnMarketRefresh><!-- bool  - BCast market refresh to all clients in region  default: false  (may not be used) -->
+    </market>
 
     <bpTimes> <!-- these are multiplied to db values to get a modified result - < 1.0 = faster -->
         <ResPE>0.5</ResPE>
@@ -101,7 +117,7 @@
         <ProdMod>1.0</ProdMod>
         <ResCopy>0.3</ResCopy>
         <ProdTime>0.3</ProdTime>
-        <WasteMod>1.0</WasteMod>
+        <WasteMod>1.1</WasteMod>
     </bpTimes>
 
     <character>
@@ -110,29 +126,53 @@
         <startStation>60014137</startStation>
         <startSecRating>1.0</startSecRating>
         <startCorporation>0</startCorporation>
-        <terminationDelay>180</terminationDelay> <!-- seconds -->
-        <statMultiplier>3</statMultiplier><!-- stats are multiplied by this -->
+        <terminationDelay>1800</terminationDelay> <!-- seconds  30m default -->
+        <statMultiplier>3</statMultiplier><!-- stats are multiplied by this (after remap) -->
         <allow3edChar>false</allow3edChar><!-- (dis)allow creating a third character -->
     </character>
 
     <npc>
         <IdleWander>true</IdleWander><!-- bool  npc will wander when idle   must be set to 'true' for WarpOut (below) to work -->
         <WarpOut>600</WarpOut><!-- time npc wanders around bubble before leaving, in sec (5 min default) -->
+        <WarpFollowChance>0.15</WarpFollowChance><!-- chance for npc to follow warping player (15% default) -->
         <!-- npc podkilling not implemented yet -->
         <TargetPod>false</TargetPod><!-- bool   npc target/attack pod -->
         <TargetPodSec>0</TargetPodSec><!-- npc target/attack pod in truSec of this and lower -->
         <!-- Threat not implemented yet -->
         <ThreatRadius>1.0</ThreatRadius> <!-- used in conjunction with npc ai target switching -->
-        <!-- Spawn Checks and RoamingSpawns are implemented but StaticSpawns are not-->
+        <!-- Spawns are implemented -->
         <RoamingSpawns>true</RoamingSpawns><!-- bool -->
-        <StaticSpawns>true</StaticSpawns><!-- bool -->
+        <StaticSpawns>false</StaticSpawns><!-- bool -->
+        <DefenderMissileChance>0</DefenderMissileChance><!-- chance to use defender.  overrides npc default from db. 0 default -->
         <RoamingTimer>300</RoamingTimer><!-- time between spawn checks, in seconds  10m default -->
         <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
         <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
+        <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
         <EnableDrones>true</EnableDrones><!-- bool -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
     </npc>
+
+    <standings><!-- these are in percent -->
+        <!--  base mission modifiers  -->
+        <MissionBonus>1.0</MissionBonus><!-- 1.0 default -->
+        <MissionFailure>-0.5</MissionFailure><!-- -0.5 default -->
+        <MissionDeclined>-0.2</MissionDeclined><!-- -0.2 default -->
+        <MissionCompleted>1.0</MissionCompleted><!-- 1.0 default -->
+        <MissionOfferExpired>-0.1</MissionOfferExpired><!-- -0.1 default -->
+        <ImportantMissionBonus>3.0</ImportantMissionBonus><!-- 3.0 default -->
+        <MissionFailedRollback>-0.5</MissionFailedRollback><!-- -0.5 default -->
+        <FleetMissionMultiplier>0.5</FleetMissionMultiplier><!-- 0.5 default  -->
+        <!-- agent to char modifiers -->
+        <BaseMissionMultiplier>1.0</BaseMissionMultiplier><!-- 1.0 default  -->
+        <Agent2CharMissionMultiplier>1.0</Agent2CharMissionMultiplier><!-- 1.0 default  -->
+        <ACorp2CharMissionMultiplier>0.25</ACorp2CharMissionMultiplier><!-- 0.25 default  -->
+        <AFaction2CharMissionMultiplier>0.125</AFaction2CharMissionMultiplier><!-- 0.125 default  -->
+        <!-- agent to player corp modifiers -->
+        <Agent2PCorpMissionMultiplier>0.1</Agent2PCorpMissionMultiplier><!-- 0.1 default  -->
+        <ACorp2PCorpMissionMultiplier>0.025</ACorp2PCorpMissionMultiplier><!-- 0.025 default  -->
+        <AFaction2PCorpMissionMultiplier>0.0125</AFaction2PCorpMissionMultiplier><!-- 0.0125 default  -->
+    </standings>
 
     <chat>
         <EnableFleetChat>true</EnableFleetChat><!-- bool -->
@@ -168,9 +208,9 @@
         <IsTestServer>true</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>true</UseProfiling><!-- bool -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
-        <PositionHack>true</PositionHack><!-- bool -->
+        <PositionHack>false</PositionHack><!-- bool -->
         <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
-        <AnomalyFaction>500022</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
+        <AnomalyFaction>0</AnomalyFaction><!-- force anomaly to this faction if !=0   -this is for testing dung spawn system -->
     </debug>
 
     <threads><!-- not implemented yet -->
@@ -188,7 +228,9 @@
         <db>EVE_Crucible</db>
         <port>3306</port><!-- 3306 default -->
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
-        <compress>false</compress><!-- bool   compressed protocol for client server communication -->
+        <compress>false</compress><!-- bool   compressed protocol for client server communication - not sure if needed. -->
+        <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local) -->
+        <autoReconnect>true</autoReconnect><!-- bool  enable auto Reconnect on lost connection (not implemented yet) -->
     </database>
 
     <files>
@@ -200,7 +242,7 @@
 
     <net>
         <port>26000</port>
-        <imageServer>192.168.1.13</imageServer>
+        <imageServer>192.168.1.14</imageServer>
         <imageServerPort>26001</imageServerPort>
     </net>
 

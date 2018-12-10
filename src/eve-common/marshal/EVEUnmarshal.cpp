@@ -568,9 +568,14 @@ PyRep* UnmarshalStream::LoadPackedRow()
             } break;
 
             case DBTYPE_I4:
-            case DBTYPE_UI4:
             {
                 Buffer::const_iterator<int32> v = unpackedItr.As<int32>();
+                row->SetField( index, new PyInt( *v++ ) );
+                unpackedItr = v.As<uint8>();
+            } break;
+            case DBTYPE_UI4:
+            {
+                Buffer::const_iterator<uint32> v = unpackedItr.As<uint32>();
                 row->SetField( index, new PyInt( *v++ ) );
                 unpackedItr = v.As<uint8>();
             } break;

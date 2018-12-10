@@ -17,10 +17,9 @@
 #include "station/StationDataMgr.h"
 
 MarketMgr::MarketMgr()
-: m_marketGroups(nullptr),
- m_timer(0/*60 *60 *1000*/) // hour timer
+: m_marketGroups(nullptr)
 {
-
+    m_timeStamp = 0;
 }
 
 MarketMgr::~MarketMgr()
@@ -36,6 +35,8 @@ void MarketMgr::Close()
 
 int MarketMgr::Initialize()
 {
+    m_timeStamp = MarketDB::GetUpdateTime();
+
     Populate();
     sLog.Blue("        MarketMgr", "Market Manager Initialized.");
     return 1;
@@ -46,7 +47,7 @@ void MarketMgr::Populate()
     double start = GetTimeMSeconds();
     m_marketGroups = m_db.GetMarketGroups();
 
-    UpdatePriceHistory();
+    Process();
 
     // market orders stored as {regionID/typeID}    --do we want to store orders in memory for loaded region??
     // m_db.GetOrders(call.client->GetRegionID(), args.arg);
@@ -61,17 +62,20 @@ void MarketMgr::GetInfo()
 
 void MarketMgr::Process()
 {
-    //if (m_timer.Check())
-        if (!isUpdated)
-            UpdatePriceHistory();
+    if (m_timeStamp > GetFileTimeNow())
+        return;
+
+    m_timeStamp = GetFileTimeNow();
+    UpdatePriceHistory();
+    MarketDB::SetUpdateTime();
 }
 
 void MarketMgr::UpdatePriceHistory()
 {
     DBerror err;
-    int64 cutoff_time = GetFileTimeNow();
-    cutoff_time -= cutoff_time % Win32Time_Day;    //round down to an even day boundary.
-    cutoff_time -= Win32Time_Day * 2;  //the cutoff between "new" and "old" price history in days
+    int64 cutoff_time = m_timeStamp;
+    cutoff_time -= cutoff_time % EvE::Time::Day;    //round down to an even day boundary.
+    cutoff_time -= EvE::Time::Day * 2;  //the cutoff between "new" and "old" price history in days
 
     //build the history record from the recent market transactions.
     sDatabase.RunQuery(err,
@@ -81,24 +85,20 @@ void MarketMgr::UpdatePriceHistory()
             " SELECT"
             "    regionID,"
             "    typeID,"
-            "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
-            "    MIN(price) AS lowPrice,"
-            "    MAX(price) AS highPrice,"
-            "    AVG(price) AS avgPrice,"
-            "    SUM(quantity) AS volume,"
-            "    COUNT(transactionID) AS orders"
-            " FROM mktTransactions "
-            " WHERE"
-            "    transactionType=%u AND "    //both buy and sell transactions get recorded, only compound data for 'sell' orders.
-            "    ( transactionDate - ( transactionDate %% %lli) ) < %lli"
-            " GROUP BY regionID, typeID, historyDate",
-            Win32Time_Day, TransactionTypeSell, Win32Time_Day, cutoff_time);
+            "    transactionDate,"
+            "    MIN(price),"
+            "    MAX(price),"
+            "    AVG(price),"
+            "    SUM(quantity),"
+            "    COUNT(transactionID)"
+            " FROM mktTransactions"
+            " WHERE transactionType=%u AND transactionDate < %lli"
+            " GROUP BY regionID, typeID, transactionDate",
+            TransactionTypeSell, cutoff_time);
 
     // remove the transactions which have been aged out?
     if (sConfig.market.DeleteOldTransactions)
-        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE historyDate < %lli", cutoff_time);
-
-    isUpdated = true;
+        sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE transactionDate < %lli", (cutoff_time - EvE::Time::Year));
 }
 
     /*DBColumnTypeMap colmap;
@@ -115,18 +115,11 @@ void MarketMgr::UpdatePriceHistory()
 PyRep *MarketMgr::GetNewPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
-        "SELECT"
-        "    transactionDate - ( transactionDate %% %lli ) AS historyDate,"
-        "    MIN(price) AS lowPrice,"
-        "    MAX(price) AS highPrice,"
-        "    AVG(price) AS avgPrice,"
-        "    CAST(SUM(quantity) AS SIGNED INTEGER) AS volume,"
-        "    CAST(COUNT(transactionID) AS SIGNED INTEGER) AS orders"
-        " FROM mktTransactions "
+        "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
+        " FROM mktHistory "
         " WHERE regionID=%u AND typeID=%u"
-        "    AND transactionType=%i "    //both buy and sell transactions get recorded, only compound one set of data... choice was arbitrary.
-        " GROUP BY historyDate",
-        EvE::Time::Day, regionID, typeID, TransactionTypeSell))
+        " AND historyDate > %lli  LIMIT %u",
+        regionID, typeID, (m_timeStamp - EvE::Time::Day), sConfig.market.NewPriceLimit))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -143,8 +136,9 @@ PyRep *MarketMgr::GetOldPriceHistory(uint32 regionID, uint32 typeID) {
     DBQueryResult res;
     if(!sDatabase.RunQuery(res,
         "SELECT historyDate, lowPrice, highPrice, avgPrice, volume, orders"
-        " FROM mktHistory "
-        " WHERE regionID=%u AND typeID=%u AND historyDate < %lli", regionID, typeID, (GetFileTimeNow() - (EvE::Time::Day * 2))))
+        " FROM mktHistory WHERE regionID=%u AND typeID=%u"
+        " AND historyDate > %lli AND historyDate < %lli LIMIT %u",
+        regionID, typeID, (m_timeStamp - (EvE::Time::Day *3)), (m_timeStamp - EvE::Time::Day), sConfig.market.OldPriceLimit))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;

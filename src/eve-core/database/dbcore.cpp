@@ -89,7 +89,7 @@ enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
 DBcore::DBcore()
 : mysql(nullptr)
 {
-    mysql_thread_init();
+    mysql_thread_init();    // this is for each thread used for db connections
     mysql = mysql_init(nullptr);
     pStatus = Closed;
 }
@@ -97,8 +97,8 @@ DBcore::DBcore()
 void DBcore::Close() {
     pStatus = Closed;
     mysql_close(mysql);
-    mysql_library_end();
-    mysql_thread_end();
+    mysql_server_end();
+    mysql_thread_end();   // this is for each thread used for db connections
 }
 
 void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/, bool SSL/*false*/, int16 port/*3306*/)
@@ -172,6 +172,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         return;
     } else {
         pStatus = Connected;
+        //mysql_get_socket();
         sLog.Blue(" DataBase Manager", "DataBase Connected");
     }
 
@@ -450,7 +451,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_SIGNED[] =
     DBTYPE_WSTR,    //[22]MYSQL_TYPE_LONG_BLOB=251      /* LONGBLOB or LONGTEXT field */
     DBTYPE_WSTR,    //[23]MYSQL_TYPE_BLOB=252           /* BLOB or TEXT field */
     DBTYPE_WSTR,    //[24]MYSQL_TYPE_VAR_STRING=253     /* VARCHAR or VARBINARY field */
-    DBTYPE_WSTR,    //[25]MYSQL_TYPE_STRING=254         /* CHAR or BINARY field */
+    DBTYPE_STR,     //[25]MYSQL_TYPE_STRING=254         /* CHAR or BINARY field */
     DBTYPE_ERROR,   //[26]MYSQL_TYPE_GEOMETRY=255       /* Spatial field */
 };
 
@@ -481,7 +482,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_UNSIGNED[] =
     DBTYPE_WSTR,    //[22]MYSQL_TYPE_LONG_BLOB=251      /* LONGBLOB or LONGTEXT field */
     DBTYPE_WSTR,    //[23]MYSQL_TYPE_BLOB=252           /* BLOB or TEXT field */
     DBTYPE_WSTR,    //[24]MYSQL_TYPE_VAR_STRING=253     /* VARCHAR or VARBINARY field */
-    DBTYPE_WSTR,    //[25]MYSQL_TYPE_STRING=254         /* CHAR or BINARY field */
+    DBTYPE_STR,     //[25]MYSQL_TYPE_STRING=254         /* CHAR or BINARY field */
     DBTYPE_ERROR,   //[26]MYSQL_TYPE_GEOMETRY=255       /* Spatial field */
 };
 
@@ -530,7 +531,7 @@ void DBQueryResult::SetResult( MYSQL_RES* res, uint32 colCount )
 
     if (mResult != nullptr) {
         mFields = new MYSQL_FIELD*[ mColumnCount ];
-        for( uint32 i = 0; i < mColumnCount; ++i )
+        for( uint16 i = 0; i < mColumnCount; ++i )
             mFields[ i ] = mysql_fetch_field( mResult );
     }
 }
@@ -571,11 +572,10 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
         return DBTYPE_STR;
     }
 
-    uint32 columnType = mFields[ index ]->type;
+    uint16 columnType = mFields[ index ]->type;
 
-    /* tricky needs to be checked */
     if ( columnType > MYSQL_TYPE_BIT )
-        columnType -= ( MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1 );
+        columnType -= 229;  //( MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1 )
 
     DBTYPE result = ( IsUnsigned( index ) ? MYSQL_DBTYPE_TABLE_UNSIGNED : MYSQL_DBTYPE_TABLE_SIGNED )[ columnType ];
 

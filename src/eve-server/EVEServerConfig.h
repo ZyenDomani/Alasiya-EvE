@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.1
+    Version:    9.2
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -124,6 +124,8 @@ public:
     struct {
         uint8 FindBuyOrder;
         uint8 FindSellOrder;
+        uint8 OldPriceLimit;
+        uint8 NewPriceLimit;
         bool UseOrderRange;
         bool DeleteOldTransactions;
         bool BroadcastOnMarketRefresh;

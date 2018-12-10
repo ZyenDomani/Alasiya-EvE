@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.1
+    Version:    9.2
 */
 
 
@@ -100,6 +100,8 @@ EVEServerConfig::EVEServerConfig()
     //market
     market.FindBuyOrder = 10;
     market.FindSellOrder = 10;
+    market.OldPriceLimit = 10;
+    market.NewPriceLimit = 10;
     market.UseOrderRange = true;//N
     market.DeleteOldTransactions = false;//N
     market.BroadcastOnMarketRefresh = false;//N
@@ -402,6 +404,8 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
 {
     AddValueParser( "FindBuyOrder",                 market.FindBuyOrder );
     AddValueParser( "FindSellOrder",                market.FindSellOrder);
+    AddValueParser( "OldPriceLimit",                market.OldPriceLimit );
+    AddValueParser( "NewPriceLimit",                market.NewPriceLimit);
     AddValueParser( "UseOrderRange",                market.UseOrderRange);
     AddValueParser( "DeleteOldTransactions",        market.DeleteOldTransactions);
     AddValueParser( "BroadcastOnMarketRefresh",     market.BroadcastOnMarketRefresh);
@@ -410,6 +414,8 @@ bool EVEServerConfig::ProcessMarket(const TiXmlElement* ele)
 
     RemoveParser( "FindBuyOrder" );
     RemoveParser( "FindSellOrder" );
+    RemoveParser( "OldPriceLimit" );
+    RemoveParser( "NewPriceLimit" );
     RemoveParser( "UseOrderRange" );
     RemoveParser( "DeleteOldTransactions" );
     RemoveParser( "BroadcastOnMarketRefresh" );

@@ -336,7 +336,7 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
         codelog(MARKET__ERROR, "Invalid arguments");
         return nullptr;
     }
-    // client coded to throw error if price > 9223372036854.0 
+    // client coded to throw error if price > 9223372036854.0
     uint32 typeID = 0, quantity = 0;
     double price = 0;
     bool isBuy = false, isCorp = false;
@@ -416,8 +416,7 @@ PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
 
     double minPrice = PyRep::IntegerValue(args.minPrice);
 
-    return m_db.GetTransactions(args.clientID==0?call.client->GetCharacterID():args.clientID, \
-            args.typeID, args.quantity, minPrice, args.maxPrice, args.fromDate, args.buySell);
+    return m_db.GetTransactions(call.client->GetCharacterID(), args.typeID, args.quantity, minPrice, args.maxPrice, args.fromDate, args.buySell);
 }
 
 PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)

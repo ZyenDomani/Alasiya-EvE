@@ -47,7 +47,6 @@ public:
     PyRep* GetSystemAsks(uint32 solarSystemID);
     PyRep* GetStationAsks(uint32 stationID);
     PyRep* GetOrdersForOwner(uint32 ownerID);
-    PyRep* CharGetNewTransactions(uint32 clientID);
 
     PyRep* GetTransactions(uint32 characterID, uint32 typeID, uint32 quantity, double minPrice, double maxPrice, int64 fromDate, int buySell, uint32 accountKey = 1000, uint32 memberID = 0);
 
@@ -61,6 +60,12 @@ public:
     uint32 FindSellOrder(uint32 stationID, uint32 typeID, double price, uint32 quantity, uint32 orderRange);
     uint32 StoreBuyOrder(uint32 ownerID, uint32 accountID, uint32 stationID, uint32 typeID, double price, uint32 quantity, int16 orderRange, uint32 minVolume, uint8 duration, bool isCorp);
     uint32 StoreSellOrder(uint32 ownerID, uint32 accountID, uint32 stationID, uint32 typeID, double price, uint32 quantity, int16 orderRange, uint32 minVolume, uint8 duration, bool isCorp);
+
+    /* for marketMgr update service */
+    static int64 GetUpdateTime();
+    static void SetUpdateTime();
+
+    static void UpdateHistory();
 
 protected:
 
