@@ -393,8 +393,7 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
     } else {
         ItemData idata(typeID, 1, 0, flagHangar, quantity);
         InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
-        new_item->ChangeOwner(call.client->GetCharacterID());
-        new_item->Move(stationID, flagHangar, true);
+        new_item->Donate(call.client->GetCharacterID(), stationID, flagHangar, true);
     }
 
     PyRep* order = m_db.GetOrderRow(args.orderID);
