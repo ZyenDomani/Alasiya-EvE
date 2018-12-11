@@ -32,9 +32,9 @@
 #include "planet/Colony.h"
 #include "planet/Planet.h"
 #include "planet/PlanetDataMgr.h"
-
+ // fund xfer and journal logging methods
+#include "account/AccountService.h"
 // for launching shit...
-#include "account/AccountService.h" // fund xfer and journal logging methods
 #include "system/Container.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
@@ -53,7 +53,6 @@
      'OnColonyPinCountUpdated',
  */
 /* The list of restricted systems is:
-
     Amarr
     Arnon
     Aunia
@@ -81,13 +80,14 @@ Example: Exporting a unit of Biomass (P1) using a Launchpad from a low-sec plane
 Importing that unit of Biomass to a high-sec factory planet will cost at minimum an additional 20 ISK (400 * (10% + % Player Tax) * 0.5 )
 
 Base costs for each tier of products can be found in this table. Base costs are per unit.
-Commodity level     Base Cost
-R0  5 ISK
-P1  400 ISK
-P2  7,200 ISK
-P3  60,000 ISK
-P4  1,200,000 ISK
+level     Base Cost
+R0                  5 ISK
+P1                400 ISK
+P2              7,200 ISK
+P3             60,000 ISK
+P4          1,200,000 ISK
 */
+
 Colony::Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE)
 :m_svcMgr(mgr),
 m_client(pClient),
@@ -238,7 +238,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
     m_colonyID = itemID;
     ccPin->ccPinID = itemID;
     m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
-    ccPin->level = PinLevel0;
+    ccPin->level = PI::Pin::Level0;
     ccPin->currentSimTime = GetFileTimeNow();
     CreatePin(EVEDB::invGroups::Command_Centers, itemID, typeID, latitude, longitude);
     m_db.SavePins(ccPin);
@@ -283,8 +283,8 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     pin.ownerID = m_client->GetCharacterID();
     pin.latitude = latitude;
     pin.longitude = longitude;
-    pin.level = PinLevels::PinLevel0;
-    pin.state = PinStates::PINSTATE_ACTIVE;
+    pin.level = PI::Pin::Level0;
+    pin.state = PI::Pin::State::Active;
     pin.lastRunTime = 0;
     pin.lastLaunchTime = 0;
     pin.heads.clear();
@@ -382,7 +382,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
     iRef->SaveItem();
 
     PI_Link link;
-        link.state = PINSTATE_IDLE;
+        link.state = PI::Pin::State::Idle;
         link.level = level;
         link.endpoint1 = src;
         link.endpoint2 = dest;
@@ -420,8 +420,8 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     }
 
     PI_Route route;
-        route.state = PINSTATE_IDLE;
-        route.priority = RoutePriorityNorm;
+        route.state = PI::Pin::State::Idle;
+        route.priority = PI::Route::PriorityNorm;
         route.commodityTypeID = typeID;
         route.commodityQuantity = qty;
         route.srcPinID = list1.front();
@@ -567,7 +567,7 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
     if (itr != ccPin->plants.end()) {
         if (schematicID) {
             sPIDataMgr.GetSchematicData(schematicID, itr->second.data);
-            itr->second.state = PINSTATE_IDLE;
+            itr->second.state = PI::Pin::State::Idle;
             itr->second.order = GetProductLevel(itr->second.data.outputType);
             itr->second.cycleTime = itr->second.data.cycleTime * 10000000L;
             itr->second.installTime = GetFileTimeNow();
@@ -581,7 +581,7 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
         } else {
             PI_Schematic data;
             itr->second.data = data;
-            itr->second.state = PINSTATE_IDLE;
+            itr->second.state = PI::Pin::State::Idle;
             itr->second.cycleTime = 0;
             itr->second.expiryTime = 0;
             itr->second.qtyPerCycle = 0;
@@ -730,7 +730,8 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
                 cont->second -= cur.second;
                 if (cont->second <= 0)
                     pin->second.contents.erase(cont);   // remove item from pin.contents if launching entire qty.
-            } // make error if item not found in pin.contents?
+            } else // make error if item not found in pin.contents?
+                continue;
 
             switch (GetProductLevel(cur.first)) {
                 case 0:     cost += (    0.15 * cur.second);    break;
@@ -780,7 +781,7 @@ Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import
 */
 void Colony::PrioritizeRoute()
 {
-
+    // not sure about this one yet
 }
 
 
@@ -1050,8 +1051,8 @@ void Colony::ProcessPlants(bool& updateTimes)
             for (auto route : ccPin->routes) {
                 // verify this route begins at this pin.  should be only ONE route here for this output
                 // also check that plant was active last round, to produce product to send out
-                if ((route.second.srcPinID == plant.first) and (plant.second.state == PinStates::PINSTATE_ACTIVE)) {
-                    plant.second.state = PinStates::PINSTATE_IDLE;  // set to idle.  this may not be needed.
+                if ((route.second.srcPinID == plant.first) and (plant.second.state == PI::Pin::State::Active)) {
+                    plant.second.state = PI::Pin::State::Idle;  // set to idle.  this may not be needed.
                     // get destination pin and update qty there for this round
                     std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.second.destPinID);
                     if (dest != ccPin->pins.end()) {
@@ -1155,7 +1156,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                  * set timers for runtimes and state to active
                  * this will allow routing (and subsquent process checks) on next loop, as defined in beginning of this loop
                  */
-                plant.second.state = PinStates::PINSTATE_ACTIVE;
+                plant.second.state = PI::Pin::State::Active;
                 plant.second.receivedInputsLastCycle = false;
 
                 // update lastRunTime to expire time of this cycle
@@ -1164,7 +1165,7 @@ void Colony::ProcessPlants(bool& updateTimes)
                 plant.second.expiryTime += plant.second.cycleTime;
                 updateTimes = true;
             } else {
-                plant.second.state = PinStates::PINSTATE_IDLE;
+                plant.second.state = PI::Pin::State::Idle;
                 // lastRunTime remains, as it doesnt change when plant is idle
                 plant.second.expiryTime = 0;  // no run to process means no expiryTime either.
                 updateTimes = true;

@@ -180,9 +180,11 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    if (!sConfig.cosmic.PIEnabled)
-        call.client->SendErrorMsg("The PI system is currently disabled.");
-    return m_planet->GetPlanetInfo(m_colony);
+    if (sConfig.cosmic.PIEnabled)
+        return m_planet->GetPlanetInfo(m_colony);
+
+    call.client->SendErrorMsg("The PI system is currently disabled.");
+    return nullptr;
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
@@ -207,10 +209,9 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
 
     if (sConfig.cosmic.PIEnabled)
         return m_planetMgr->UpdateNetwork(uuncl);
-    else {
-        call.client->SendErrorMsg("The PI system is currently disabled.");
-        return nullptr;
-    }
+
+    call.client->SendErrorMsg("The PI system is currently disabled.");
+    return nullptr;
 }
 
 PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
@@ -381,7 +382,7 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
         else if (itr->second->IsFloat())
             amount = (uint32)itr->second->AsFloat()->value();
         else
-            ; // make error here
+            continue; // make error here
         items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
     }
 
@@ -425,7 +426,7 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
         else if (itr->second->IsFloat())
             amount = (uint32)itr->second->AsFloat()->value();
         else
-            ; // make error here
+            continue; // make error here
         items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
     }
 

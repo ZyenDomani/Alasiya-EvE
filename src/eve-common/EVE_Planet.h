@@ -1,3 +1,4 @@
+
 /*  EVE_Planet.h
  *    enumerators and other defines for PI system
  *
@@ -9,58 +10,70 @@
 #ifndef EVE_PLANET_H
 #define EVE_PLANET_H
 
-enum PinCommands {
-    CreatePin               = 1,
-    RemovePin               = 2,
-    CreateLink              = 3,
-    RemoveLink              = 4,
-    SetLinkLevel            = 5,
-    CreateRoute             = 6,
-    RemoveRoute             = 7,
-    SetSchematic            = 8,
-    UpgradeCommandCenter    = 9,
-    AddExtractorHead        = 10,
-    KillExtractorHead       = 11,
-    MoveExtractorHead       = 12,
-    InstallProgram          = 13,
-    PrioritizeRoute         = 14
-};
+namespace PI {
+    namespace Command {
+        enum  {
+            CreatePin               = 1,
+            RemovePin               = 2,
+            CreateLink              = 3,
+            RemoveLink              = 4,
+            SetLinkLevel            = 5,
+            CreateRoute             = 6,
+            RemoveRoute             = 7,
+            SetSchematic            = 8,
+            UpgradeCommandCenter    = 9,
+            AddExtractorHead        = 10,
+            KillExtractorHead       = 11,
+            MoveExtractorHead       = 12,
+            InstallProgram          = 13,
+            PrioritizeRoute         = 14
+        };
+    }
 
-enum PinStates {
-    PINSTATE_EDITMODE   = -2,
-    PINSTATE_DISABLED   = -1,
-    PINSTATE_IDLE       =  0,
-    PINSTATE_ACTIVE     =  1
-};
+    namespace Pin {
+        namespace State {
+            enum {
+                Edit   = -2,
+                Disabled   = -1,
+                Idle       =  0,
+                Active     =  1
+            };
+        }
 
-enum PinLevels {
-    PinLevel0  = 0,
-    PinLevel1  = 1,
-    PinLevel2  = 2,
-    PinLevel3  = 3,
-    PinLevel4  = 4,
-    PinLevel5  = 5,
-    // the following are only used by Planetary_Links
-    PinLevel6  = 6,
-    PinLevel7  = 7,
-    PinLevel8  = 8,
-    PinLevel9  = 9,
-    PinLevel10 = 10
-};
+        enum {
+            Level0  = 0,
+            Level1  = 1,
+            Level2  = 2,
+            Level3  = 3,
+            Level4  = 4,
+            Level5  = 5,
+            // the following are only used by Planetary_Links
+            Level6  = 6,
+            Level7  = 7,
+            Level8  = 8,
+            Level9  = 9,
+            Level10 = 10
+        };
+    }
 
-enum RoutePriority {
-    RoutePriorityLow  = -1,
-    RoutePriorityNorm =  0,
-    RoutePriorityHi   =  1
-};
+    namespace Route {
+        enum {
+            PriorityLow  = -1,
+            PriorityNorm =  0,
+            PriorityHi   =  1
+        };
+    }
 
-/*
-piLaunchOrbitDecayTime = DAY * 5
-piCargoInOrbit = 0
-piCargoDeployed = 1
-piCargoClaimed = 2
-piCargoDeleted = 3
-*/
+    //piLaunchOrbitDecayTime = DAY * 5
+    namespace Cargo {
+        enum {
+            InOrbit = 0,
+            Deployed = 1,
+            Claimed = 2,
+            Deleted = 3
+        };
+    }
+}
 
 /*  these are internal client state events
 enum PlanetEvents {

@@ -99,21 +99,21 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
         }
         _log(PLANET__TRACE, "PlanetMgr::UserUpdateNetwork() - loop: %u, command: %u", i, uunc.command);
         switch (uunc.command) {
-            case PinCommands::CreatePin:                cancel = CreatePin(uunc);                break;
-            case PinCommands::RemovePin:                RemovePin(uunc);                break;
-            case PinCommands::CreateLink:               CreateLink(uunc);               break;
-            case PinCommands::RemoveLink:               RemoveLink(uunc);               break;
-            case PinCommands::CreateRoute:              CreateRoute(uunc);              break;
-            case PinCommands::SetLinkLevel:             SetLinkLevel(uunc);             break;
-            case PinCommands::UpgradeCommandCenter:     cancel = UpgradeCommandCenter(uunc);     break;
-            case PinCommands::SetSchematic:             SetSchematic(uunc);             break;
-            case PinCommands::RemoveRoute:              RemoveRoute(uunc);              break;
-            case PinCommands::AddExtractorHead:         AddExtractorHead(uunc);         break;
-            case PinCommands::MoveExtractorHead:        MoveExtractorHead(uunc);        break;
-            case PinCommands::InstallProgram:           InstallProgram(uunc);           break;
-            case PinCommands::KillExtractorHead:        KillExtractorHead(uunc);        break;
+            case PI::Command::CreatePin:                cancel = CreatePin(uunc);                break;
+            case PI::Command::RemovePin:                RemovePin(uunc);                break;
+            case PI::Command::CreateLink:               CreateLink(uunc);               break;
+            case PI::Command::RemoveLink:               RemoveLink(uunc);               break;
+            case PI::Command::CreateRoute:              CreateRoute(uunc);              break;
+            case PI::Command::SetLinkLevel:             SetLinkLevel(uunc);             break;
+            case PI::Command::UpgradeCommandCenter:     cancel = UpgradeCommandCenter(uunc);     break;
+            case PI::Command::SetSchematic:             SetSchematic(uunc);             break;
+            case PI::Command::RemoveRoute:              RemoveRoute(uunc);              break;
+            case PI::Command::AddExtractorHead:         AddExtractorHead(uunc);         break;
+            case PI::Command::MoveExtractorHead:        MoveExtractorHead(uunc);        break;
+            case PI::Command::InstallProgram:           InstallProgram(uunc);           break;
+            case PI::Command::KillExtractorHead:        KillExtractorHead(uunc);        break;
             /** @todo not handled yet... */
-            case PinCommands::PrioritizeRoute:          PrioritizeRoute(uunc);          break;
+            case PI::Command::PrioritizeRoute:          PrioritizeRoute(uunc);          break;
             default: {
                 _log(PLANET__ERROR, "PlanetMgr::UserUpdateNetwork() Invalid command switch %i", uunc.command);
             } break;
@@ -132,11 +132,11 @@ bool PlanetMgr::UpgradeCommandCenter(UUNCommand& nc)
     while (oldLevel != newLevel) {
         //  calculate total upgrade cost in cases where upgrading multiple levels at once
         switch (oldLevel) {
-            case PinLevel0: cost += 580000; break;
-            case PinLevel1: cost += 930000; break;
-            case PinLevel2: cost += 1200000; break;
-            case PinLevel3: cost += 1500000; break;
-            case PinLevel4: cost += 2100000; break;
+            case PI::Pin::Level0: cost += 580000; break;
+            case PI::Pin::Level1: cost += 930000; break;
+            case PI::Pin::Level2: cost += 1200000; break;
+            case PI::Pin::Level3: cost += 1500000; break;
+            case PI::Pin::Level4: cost += 2100000; break;
         }
         ++oldLevel;
     }
