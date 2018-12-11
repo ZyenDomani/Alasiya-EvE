@@ -162,6 +162,13 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
     if (args.iskAmount < total)
         fraction = total / args.iskAmount;
 
+    /** @todo  entire repair be based on items damage vs mats list at market value
+     * get bp required mats for building.
+     * from there, determine % of that type/amt that *may* be required for repairing.
+     * check player hangar for amounts, and if present, subtract market value from cost estimate.
+     * 5-10% of total cost as min charge for use of facilities
+     */
+
     /** more shit to check for and add as required...
      * NotEnoughRepairMaterialToFinishAllRepairs
      * NotEnoughRepairMaterialToFinishAllRepairsBody'}(u'There is not enough unallocated {typeName} left to initiate repairs on this module.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
@@ -169,7 +176,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      *{'messageKey': 'RepairModuleNotDamaged', 'dataID': 17882542, 'suppressable': False, 'bodyID': 259175, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1492}
      * {'messageKey': 'RepairNoMoneyForRepair', 'dataID': 17882601, 'suppressable': False, 'bodyID': 259197, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259196, 'messageID': 1493}
      */
-    
+
     if (fraction > 1.0)
         fraction = 1;
     EvilNumber toRepair = EvilZero, curDamage = EvilZero;
