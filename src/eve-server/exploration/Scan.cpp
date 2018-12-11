@@ -23,6 +23,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "StatisticMgr.h"
 #include "exploration/Scan.h"
 #include "Probes.h"
 #include "system/SystemBubble.h"
@@ -524,6 +525,9 @@ void Scan::GetSignalData(SignalData& data, std::vector<ProbeSE*>& probeVec, GPoi
         data.certainty = 0.0001;
 
     data.deviation *= (1 - (data.certainty > 1.0f ? 0.98 : data.certainty));
+
+    if (data.certainty > 0.99)
+        sStatMgr.Increment(Stat::sitesScanned);
 
     // modify reported signal position based on deviation
     point.MakeRandomPointOnSphereLayer(data.deviation /2, data.deviation);

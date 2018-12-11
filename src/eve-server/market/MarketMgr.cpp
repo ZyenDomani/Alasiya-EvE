@@ -12,6 +12,7 @@
 #include "Client.h"
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
+#include "StatisticMgr.h"
 #include "account/AccountService.h"
 #include "inventory/InventoryItem.h"
 #include "market/MarketMgr.h"
@@ -295,6 +296,9 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
         BroadcastOnOwnOrderChanged(seller->GetRegionID(), orderID, "Modify", isCorp);
     }
 
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::iskMarket, money);
+
     //record this transaction in market_transactions
     if (!m_db.RecordTransaction(typeID, quantity, price, TransactionTypeSell, seller->GetCharacterID(), sDataMgr.GetStationRegion(stationID), stationID)) {
         codelog(MARKET__ERROR, "%s: Failed to record sale side of transaction.", seller->GetName());
@@ -350,6 +354,9 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
     //use the owner change packet to alert the buyer of the new item
     new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
 
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::iskMarket, money);
+    
     if (quantity == qtyAvail) {
         _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), orderID);
         PyRep* order = m_db.GetOrderRow(orderID);

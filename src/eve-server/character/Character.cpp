@@ -30,6 +30,7 @@
 #include "ConsoleCommands.h"
 #include "EntityList.h"
 #include "StaticDataMgr.h"
+#include "StatisticMgr.h"
 #include "account/AccountService.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
@@ -1045,6 +1046,8 @@ void Character::PayBounty(CharacterRef cRef)
     std::string reason = "Bounty paid for the killing of ";
     reason += cRef->itemName();
     AccountService::TranserFunds(ownerCONCORD, m_itemID, cRef->bounty(), reason, Journal::EntryType::Bounty, cRef->itemID());
+    // add data to StatisticMgr
+    sStatMgr.Add(Stat::pcBounties, cRef->bounty());
 }
 
 void Character::SetLoginTime()
