@@ -1110,7 +1110,7 @@ void Character::SaveCertificates() {
 }
 
 // functions and methods for bookmark system (char mem maps)
-/** @todo this will need more thought/work */
+/** @todo this will need more thought/work   */
 void Character::LoadBookmarks()
 {
 
@@ -1126,12 +1126,12 @@ void Character::SaveBookMarks()
 /** @todo  this needs to be moved to common standings code */
 /** @todo  these need to use common standings methods for formulas  */
 double Character::GetStanding(uint32 fromID, uint32 toID) {
-	return s_db.GetStanding(fromID, toID);
+    return StandingDB::GetStanding(fromID, toID);
 }
 
 double Character::GetStandingModified(uint32 fromID, uint32 toID)
 {
-    double res = s_db.GetStanding(toID, fromID);
+    double res = StandingDB::GetStanding(fromID, toID);
     if (res < 0)
         res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
     else
@@ -1139,9 +1139,8 @@ double Character::GetStandingModified(uint32 fromID, uint32 toID)
     return res;
 }
 
-
 double Character::GetNPCCorpStanding(uint32 fromID, uint32 toID) {
-    double res = s_db.GetStanding(toID, fromID);
+    double res = StandingDB::GetStanding(fromID, toID);
     if (res < 0)
         res += ((10+res) * 0.04 * GetSkillLevel(skillDiplomacy));
     else
@@ -1154,10 +1153,9 @@ double Character::GetStandingChanges() {
 }
 
 void Character::SetStanding(uint32 fromID, uint32 toID, double standing) {
-    s_db.SetStanding(fromID, toID, standing);
+    StandingDB::SetStanding(fromID, toID, standing);
     PyTuple* payload = new PyTuple(0);
     m_pClient->SendNotification("OnStandingSet", "charid", payload, false);
-
 }
 
 // for map system

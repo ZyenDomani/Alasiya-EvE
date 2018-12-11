@@ -56,7 +56,7 @@ public:
      * NPC Faction <--> NPC Faction - pre-set by game history
      * NPC corps --> characters and player corps - changed by missions and faction kills
      */
-    double GetStanding(uint32 fromID, uint32 toID);
+    static double GetStanding(uint32 fromID, uint32 toID);
 
     static void SetStanding(uint32 fromID, uint32 toID, double standing);
     static void UpdateStanding(uint32 fromID, uint32 toID, double standing);

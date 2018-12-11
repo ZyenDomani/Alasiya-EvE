@@ -136,7 +136,7 @@ PyRep* StandingDB::GetStandingTransactions(uint32 fromID, uint32 toID, uint32 di
 double StandingDB::GetStanding(uint32 fromID, uint32 toID) {
     DBQueryResult res;
     DBResultRow row;
-    sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE toID=%u AND fromID=%u", toID, fromID);
+    sDatabase.RunQuery(res, "SELECT standing FROM repStandings WHERE fromID=%u AND toID=%u", fromID, toID);
     if (res.GetRow(row))
         return row.GetDouble(0);
     else
@@ -145,16 +145,16 @@ double StandingDB::GetStanding(uint32 fromID, uint32 toID) {
 
 void StandingDB::SetStanding(uint32 fromID, uint32 toID, double standing) {
     DBerror err;
-    sDatabase.RunQuery(err, "INSERT INTO repStandings (toID, fromID, standing) VALUES (%u,%u,%f)", toID, fromID, standing );
+    sDatabase.RunQuery(err, "INSERT INTO repStandings (fromID, toID, standing) VALUES (%u,%u,%f)", fromID, toID, standing );
 }
 
 void StandingDB::UpdateStanding(uint32 fromID, uint32 toID, double standing)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-                       "INSERT INTO repStandings (toID, fromID, standing)"
+                       "INSERT INTO repStandings (fromID, toID, standing)"
                        " VALUES (%u,%u,%f)"
-                       " ON DUPLICATE KEY UPDATE standing = standing + %f", toID, fromID, standing, standing);
+                       " ON DUPLICATE KEY UPDATE standing = standing + %f", fromID, toID, standing, standing);
 }
 
 double StandingDB::GetStandingChanges(uint32 charID) {
