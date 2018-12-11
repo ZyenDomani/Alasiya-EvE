@@ -19,7 +19,7 @@
 <font color="red">Please Note:</font> <BR>
 Items listed as "<font color=red>NOT IMPLEMENTED</font>" have no code for that system and the server will not respond to requests for that system.<BR>
 Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outline coded, but limited or no processing and/or returns. The server will not respond or only partially respond to these requests.</font><BR><BR>
-<font color="orange">Last Update:  </font> <font color="green">2 December 2018</font><BR>
+<font color="orange">Last Update:  </font> <font color="green">11 December 2018</font><BR>
 <font color="orange">Page Status:  </font> <font color="yellow">Being Updated</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
@@ -55,12 +55,12 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final test phase <BR>27July16</td></tr>
+<td><font color="pink">Final Testing</font><BR>27Jun17</td></tr>
 <tr><td> - COMPLETE Module Class rewrite</td><td class="working">99%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete<BR>27Jun17</td></tr>
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
 <tr><td> - COMPLETE Item Class rewrite</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
@@ -75,22 +75,22 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete<BR>27Jun17</td></tr>
+<td><font color="lime">Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
 <td> - COMPLETE investigation of remaining database fields</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete<BR>27Jun17</td></tr>
-<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">99%
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
+<tr><td> - Eliminate all compiler Warnings from the Alasiya EVEmu solution</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete - some warnings cannot be eliminated due to virual class' data and function variables.<BR>27Jun17</td></tr>
+<td><font color="pink">Not Complete</font><BR><font color=olive>Enabling all compiler warnings gives 10.8Mb log file of errors</font><BR>10Dec18</td></tr>
 <tr><td> - GM commands</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete<BR>27Jun17</td></tr></table>
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="General_Interface_Features"> General Interface Features </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -377,7 +377,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Complete - corp trade not coded.<BR>13Dec15</td></tr>
+<td><font color="lime">Mostly Complete</font><BR><font color=olive>corp trade not coded.</font><BR>27Jun17</td></tr>
 <tr><td> - Repair Services</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
@@ -403,7 +403,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Few Odd Bugs<BR>30Dec14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Few Odd Bugs</font><BR>30Dec14</td></tr>
 <tr><td> - LP Services</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -511,7 +511,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr>
-<tr><td> - Mission and Deadspace/Encounter creation  (See 'Dungeon Manager' Data Block below for details)</td><td class="broken">10%
+<tr><td> - Mission and Deadspace/Encounter creation<BR>(See 'Dungeon Manager' Data Block below for details)</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -561,7 +561,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Still Testing.<BR>24Nov17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>24Nov17</td></tr>
 <tr><td> - Chat in Local</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -571,17 +571,17 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Still Testing.<BR>24Nov17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>24Nov17</td></tr>
 <tr><td> - Chat in Corp</td><td class="working">90%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working<BR>24Nov17</td></tr>
+<td><font color=lime>Mostly Working</font><BR>24Nov17</td></tr>
 <tr><td> - Initiate Private Conversation Chat</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Few Odd Bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Few Odd Bugs</font><BR>7Sep14</td></tr>
 <tr><td> - Create Private Chat Channels</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -591,7 +591,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Few Odd Bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Few Odd Bugs</font><BR>7Sep14</td></tr>
 <tr><td> - Chat in Private Chat Channels</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -606,7 +606,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working - Few Odd Bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Few Odd Bugs</font><BR>7Sep14</td></tr>
 <tr><td> - Leave Chat Channels</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -643,22 +643,22 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working, some bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
 <tr><td> - Can Receive Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working, some bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
 <tr><td> - Can View Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working, some bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
 <tr><td> - Can Reply-to Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working, some bugs<BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
 <tr><td> - Can Send Eve-mails to Groups (like Corp)</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
@@ -708,13 +708,13 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Market_Details"> Market Details </span></h2>
+<h2> <span class="mw-headline" id="Market_Details"> Market Details (ReWrite - Incomplete)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:70%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:70%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<table style="background: transparent; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> &#160;<font color="red"><b>70.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
@@ -723,36 +723,57 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Placing Sell Orders</td><td class="working">70%
+<tr><td> - View Items on Market</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr>
-<tr><td> - Cancelling Sell Orders</td><td class="working">70%
+<td><font color=green>COMPLETE</font><BR>11Dec18</td></tr>
+<tr><td> - View Item Details (Price History, Buy/Sell orders)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr>
-<tr><td> - Modify Sell Orders</td><td class="working">70%
+<td><font color=green>COMPLETE</font><BR>11Dec18</td></tr>
+<tr><td> - Buy Items on Market (auto-pick seller)</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr>
+<td><font color=green>COMPLETE</font><BR>11Dec18</td></tr>
+<tr><td> - Buy Items on Market in Specific Location</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Placing Buy Orders</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Cancelling Buy Orders</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Modify Buy Orders</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=olive>Needs More Testing</font><BR>10Aug16</td></tr></table>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Placing Sell Orders</td><td class="working">70%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Cancelling Sell Orders</td><td class="working">70%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Modify Sell Orders</td><td class="working">70%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=olive>Needs More Testing</font><BR>11Dec18</td></tr>
+</table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Assets_Window"> Assets Window </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -1007,7 +1028,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working<BR>27Nov18</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>27Nov18</td></tr>
 <tr><td> - Bookmarks loaded from database at character login</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1729,7 +1750,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Working - Still Testing/Tweaking<BR>6Mar18</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>6Mar18</td></tr>
 <tr><td> - Bookmark Scanned Result</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1897,11 +1918,11 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <h2> <span class="mw-headline" id="Planetary_Interaction"> Planetary Interaction System </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:71%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:73%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>73.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:71%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>71.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1995,27 +2016,27 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Working<BR>20Dec17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td>   - Apply to Join Corp</td><td class="broken">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Non-Working - testing<BR>20Nov18</td></tr>
+<td><font color="brown">Mostly Non-Working</font> - <font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td>   - Invite to Join Corp</td><td class="broken">50%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Non-Working - testing<BR>20Nov18</td></tr>
+<td><font color="brown">Mostly Non-Working</font> - <font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td>   - Quit Corp</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Non-Working - testing<BR>20Nov18</td></tr>
+<td><font color="brown">Mostly Non-Working</font> - <font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td>   - Kick from Corp</td><td class="broken">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Non-Working - testing<BR>20Nov18</td></tr>
+<td><font color="brown">Mostly Non-Working</font> - <font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td> - Managing Roles</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2045,7 +2066,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Broken - Needs Work<BR>10Dec17</td></tr>
+<td><font color=red>Broken</font><BR><font color=lime>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Viewing Roles</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2060,12 +2081,12 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working<BR>10Dec17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td> - Viewing Corp History</td><td class="broken">20%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Broken - Needs Work<BR>10Dec17</td></tr>
+<td><font color=red>Broken</font><BR><font color=lime>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Viewing Journal</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2080,12 +2101,12 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Broken - Needs Work<BR>10Dec17</td></tr>
+<td><font color=red>Broken</font><BR><font color=lime>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Viewing Assets</td><td class="working">40%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Somewhat Working<BR>10Dec17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>20Dec17</td></tr>
 <tr><td> - Renting Office</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2095,7 +2116,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Broken - Needs Work<BR>7Sep14</td></tr>
+<td><font color=red>Broken</font><BR><font color=lime>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Moving Items Into/Outof corp hangars</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2130,7 +2151,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td><font color=red>NOT IMPLEMENTED</font><BR>7Sep14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="POS_Operations"> Player Owned Stations (POS) </span></h2>
+<h2> <span class="mw-headline" id="POS_Operations"> Player Owned Structures (POS) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2174,7 +2195,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Managing Tower Field Access</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -2194,27 +2215,27 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Somewhat Working</font><BR><font color=orange>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can store/retrieve ships from Ship Maintenance Arrays</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Somewhat Working</font><BR><font color=orange>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can store/retrieve items from Corporate Hangar Arrays</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can Add/Remove Charges for Offensive Batteries</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Somewhat Working</font><BR><font color=orange>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Using Structures</td><td class="working">60%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Testing<BR>28Dec17</td></tr>
+<td><font color=lime>Somewhat Working</font><BR><font color=orange>Testing</font><BR>28Dec17</td></tr>
 <tr><td> - Can Take Control of  Offensive Batteries</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
@@ -2257,11 +2278,11 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <h2> <span class="mw-headline" id="Cosmic_Management"> Cosmic Management System (Details in Specific System Listing)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:45%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:52%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:45%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>45.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:52%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>52.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2289,14 +2310,14 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 12px; width: 86%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Mostly Complete</font> - <font color=brown>PlayTesting</font><BR>27Aug17</td></tr>
-<tr><td> - Scan Manager</td><td class="working">25%
+<tr><td> - Scan Manager</td><td class="working">67%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 67%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Mostly Complete</font> - <font color=brown>PlayTesting</font><BR>27Aug17</td></tr>
-<tr><td> - WormHole Manager</td><td class="broken">20%
+<tr><td> - WormHole Manager</td><td class="broken">26%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 26%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>27Aug17</td></tr>
 <tr><td> - Civilian Manager</td><td class="broken">16%
@@ -2532,11 +2553,11 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:25%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:25%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>25.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>67.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2544,36 +2565,36 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td>
 <td style="width: 26%;">Comments</td></tr>
-<tr><td> - Probe Aquiring Data based on Probe's Attributes and Character Skills</td><td class="working">25%
+<tr><td> - Probe Aquiring Data based on Probe's Attributes and Character Skills</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
-<tr><td> - Anomaly Data compilation based on Probe Results</td><td class="working">25%
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Anomaly Data compilation based on Probe Results</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
-<tr><td> - Anomaly Reporting of Compiled Data</td><td class="working">25%
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
+<tr><td> - Reporting of Compiled Data</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
+<td><font color="pink">Final Testing</font><BR>11Dec18</td></tr>
 <tr><td> - Probe Management</td><td class="working">25%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
+<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>11Dec18</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="WormHole_Manager"> WormHole Manager </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:26%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>20.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:26%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>26.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2592,6 +2613,16 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
 <tr><td> - WormHole Destruction</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>12Feb17</td></tr>
+<tr><td> - View WormHole Details</td><td class="working">60%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="lime">Mostly Working</font> - <font color=olive>Testing</font><BR>12Feb17</td></tr>
+<tr><td> - Jumping thru WormHole</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
