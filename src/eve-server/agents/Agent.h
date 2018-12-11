@@ -28,18 +28,18 @@ public:
     PyDict* GetLocationWrap();
     PyObject* GetInfoServiceDetails();
 
-    bool IsLocator()                                    { return m_data.locator; }
-    bool IsResearch()                                   { return m_data.research; }
+    bool IsLocator()                                    { return m_agentData.locator; }
+    bool IsResearch()                                   { return m_agentData.research; }
 
-    uint8 GetLevel()                                    { return m_data.level; }
-    int8 GetQuality()                                   { return m_data.quality; }
+    uint8 GetLevel()                                    { return m_agentData.level; }
+    int8 GetQuality()                                   { return m_agentData.quality; }
 
     uint32 GetID()                                      { return m_agentID; }
-    uint32 GetCorpID()                                  { return m_data.corporationID; }
-    uint32 GetSystemID()                                { return m_data.solarSystemID; }
-    uint32 GetStationID()                               { return m_data.stationID; }
-    uint32 GetLocTypeID()                               { return m_data.locationTypeID; }
-    uint32 GetFactionID()                               { return m_data.factionID; }
+    uint32 GetCorpID()                                  { return m_agentData.corporationID; }
+    uint32 GetSystemID()                                { return m_agentData.solarSystemID; }
+    uint32 GetStationID()                               { return m_agentData.stationID; }
+    uint32 GetLocTypeID()                               { return m_agentData.locationTypeID; }
+    uint32 GetFactionID()                               { return m_agentData.factionID; }
     uint32 MakeButtonID()                               { return ++m_buttonID; }
 
     bool HasMission(uint32 charID);
@@ -67,7 +67,7 @@ public:
 protected:
     std::string GetMinReqStanding(uint8 level);
     const uint32 m_agentID;
-    AgentData m_data;
+    AgentData m_agentData;
 
     std::map<uint16, uint8>             m_skills;       // skillID/level
     std::map<uint32, MissionOffer>      m_offers;       // charID/data      -- shouldnt this be in mission data??

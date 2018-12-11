@@ -49,14 +49,14 @@ Agent::Agent(uint32 id)
 
 
 bool Agent::Load() {
-    AgentDB::LoadAgentData(m_agentID, m_data);
+    AgentDB::LoadAgentData(m_agentID, m_agentData);
     sMissionDataMgr.LoadAgentOffers(m_agentID, m_offers);
 
-    if (m_data.research)
+    if (m_agentData.research)
         AgentDB::LoadAgentSkills(m_agentID, m_skills);
 
     _log(AGENT__TRACE, "Data Loaded for Agent %u - bl: %u, level: %u, locationID: %u, systemID: %u", \
-                m_agentID, m_data.bloodlineID, m_data.level, m_data.locationID, m_data.solarSystemID);
+                m_agentID, m_agentData.bloodlineID, m_agentData.level, m_agentData.locationID, m_agentData.solarSystemID);
     return true;
 }
 
@@ -65,7 +65,7 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
     // this will be based on agent type eventually
     uint8 misionType = Mission::Type::Courier;
 
-    sMissionDataMgr.CreateMissionOffer(misionType, m_data.level, m_data.raceID, m_important, offer);
+    sMissionDataMgr.CreateMissionOffer(misionType, m_agentData.level, m_agentData.raceID, m_important, offer);
 
     /*  static mission data from db
     offer.name               = cData.name;
@@ -90,9 +90,9 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
 
     // variable mission data based on agent
     offer.agentID            = m_agentID;
-    offer.originID           = m_data.stationID;
-    offer.originOwnerID      = m_data.corporationID;
-    offer.originSystemID     = m_data.solarSystemID;
+    offer.originID           = m_agentData.stationID;
+    offer.originOwnerID      = m_agentData.corporationID;
+    offer.originSystemID     = m_agentData.solarSystemID;
     offer.expiryTime         = GetFileTimeNow() + EvE::Time::Day;
 
     // make function to determine destination based on mission type, agent level, agent location, and some other shit.
@@ -133,9 +133,9 @@ void Agent::MakeOffer(uint32 charID, MissionOffer& offer)
             offer.originOwnerID       = offer.destinationOwnerID;
             offer.originSystemID      = offer.destinationSystemID;
 
-            offer.destinationID       = m_data.stationID;
-            offer.destinationOwnerID  = m_data.corporationID;
-            offer.destinationSystemID = m_data.solarSystemID;
+            offer.destinationID       = m_agentData.stationID;
+            offer.destinationOwnerID  = m_agentData.corporationID;
+            offer.destinationSystemID = m_agentData.solarSystemID;
         }
 
     }
@@ -208,9 +208,9 @@ void Agent::DeleteOffer(uint32 charID)
 
 PyDict* Agent::GetLocationWrap() {
     PyDict *res = new PyDict();
-        res->SetItemString("typeID", new PyInt(m_data.locationTypeID) );
-        res->SetItemString("locationID", new PyInt(m_data.locationID) );
-        res->SetItemString("solarsystemID", new PyInt(m_data.solarSystemID) );
+        res->SetItemString("typeID", new PyInt(m_agentData.locationTypeID) );
+        res->SetItemString("locationID", new PyInt(m_agentData.locationID) );
+        res->SetItemString("solarsystemID", new PyInt(m_agentData.solarSystemID) );
     return res;
 
     /* other location data types to put in dict for agents in space
@@ -269,8 +269,8 @@ PyObject* Agent::GetInfoServiceDetails()
 {
     // can this be static data created when agent is loaded?  avoid creating this everytime it's called.
     PyDict* res = new PyDict();
-        res->SetItemString("stationID", new PyInt(m_data.stationID) );
-        res->SetItemString("level", new PyInt(m_data.level) );
+        res->SetItemString("stationID", new PyInt(m_agentData.stationID) );
+        res->SetItemString("level", new PyInt(m_agentData.level) );
 
     // 'services' is a tuple of dicts containing data for [research], [locate], and [mission] services this agent offers
 
@@ -286,7 +286,7 @@ PyObject* Agent::GetInfoServiceDetails()
 
     /**  @todo  finish this..... */
     PyDict* research = new PyDict();
-    if (m_data.research) {
+    if (m_agentData.research) {
         PyTuple* skill1 = new PyTuple(2);
             skill1->SetItem(0, new PyInt(11452)); // Mechanical Engineering
             skill1->SetItem(1, new PyInt(4));
@@ -350,7 +350,7 @@ PyObject* Agent::GetInfoServiceDetails()
      (235851, `{[character]charID.gender -> "He", "She"} is in the {systemName} system.`)
      */
     PyDict* locate = new PyDict();
-    if (m_data.locator) {
+    if (m_agentData.locator) {
         PyTuple* sameSystem = new PyTuple(3);
             sameSystem->SetItem(0, new PyInt(0));
             sameSystem->SetItem(1, new PyInt(10));
@@ -396,7 +396,7 @@ PyObject* Agent::GetInfoServiceDetails()
     // standings info for this agent.
     /** @todo  finish this.... */
     std::string msg = "Your personal standings must be ";
-    msg += GetMinReqStanding(m_data.level);
+    msg += GetMinReqStanding(m_agentData.level);
     msg += " or higher toward this agent, its faction, or its corporation in order to use this agent's services.";
     res->SetItemString("incompatible", new PyString(msg));
 
@@ -404,26 +404,13 @@ PyObject* Agent::GetInfoServiceDetails()
      * this will take char, corp, faction, agent, and some other shit into account to determine msg and data sent using the tuple system
     //  note:  this is kinda hacked right now.
     PyDict* dict = new PyDict();
-        dict->SetItemString("minStandings", new PyFloat(GetMinReqStanding(m_data.level)));
-       // dict->SetItemString("mainEffective", new PyFloat(GetMinReqStanding(m_data.level +10)));
+        dict->SetItemString("minStandings", new PyFloat(GetMinReqStanding(m_agentData.level)));
+       // dict->SetItemString("mainEffective", new PyFloat(GetMinReqStanding(m_agentData.level +10)));
     PyTuple* tuple = new PyTuple(2);
         tuple->SetItem(0, new PyInt(235465));
         tuple->SetItem(1, dict);
     res->SetItemString("incompatible", tuple);
     */
-/*
- * Level 1 = always available
- * Level 2 = +1.00 standing
- * Level 3 = +3.00 standing
- * Level 4 = +5.00 standing
- * Level 5 = +7.00 standing
-(235462, 'Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
-(235463, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing to this agent's corp of at least {[numeric]corpMinStandings, decimalPlaces=1} , as well as personal standing of at least {[numeric]effectiveMinStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
-(235464, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing of at least {[numeric]minStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
-(235465, 'Your effective personal standings must be {[numeric]minStandings, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services')
-(235466*, 'Your effective personal standings must be {[numeric]minEffective, decimalPlaces=1} or higher toward this agent's corporation in order to use this agent, as well as an effective personal standing of {[numeric]mainEffective, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
-(235467, 'This agent can only be used through a direct referral.')
-*/
 
     if (is_log_enabled(AGENT__RSPDUMP)) {
         _log(AGENT__RSPDUMP, "Agent::GetInfoServiceDetails() Dump:" );
@@ -557,13 +544,14 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
                         [PyFloat 1]                     maxAbs
                         */
     Character* pChar = pClient->GetChar().get();
+    uint32 charID = pChar->itemID();
 
-    float charStanding = pChar->GetStanding(m_agentID, pChar->itemID());
-    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_data.factionID, pChar->GetSkillLevel(skillConnections), pChar->GetSkillLevel(skillDiplomacy), pChar->GetSkillLevel(skillCriminalConnections));
+    float charStanding = pChar->GetStanding(m_agentID, charID);
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, pChar->GetSkillLevel(skillConnections), pChar->GetSkillLevel(skillDiplomacy), pChar->GetSkillLevel(skillCriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
-    float quality = EvEMath::Agent::EffectiveQuality(m_data.quality, pChar->GetSkillLevel(skillNegotiation), standing);
-    float newStanding = EvEMath::Agent::Efficiency(m_data.level, quality);    // 0.018 to 0.38
-    newStanding *= sEntityList.FindOrBootSystem(m_data.solarSystemID)->GetSecValue(); // 0.0018 to .76
+    float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(skillNegotiation), standing);
+    float newStanding = EvEMath::Agent::Efficiency(m_agentData.level, quality);    // 0.018 to 0.38
+    newStanding *= sEntityList.FindOrBootSystem(m_agentData.solarSystemID)->GetSecValue(); // 0.0018 to .76
     //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
     newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
     newStanding /= 8;
@@ -602,7 +590,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         } break;
 
         msg += "from ";
-        msg += m_data.name;
+        msg += m_agentData.name;
     }
 
     if (pClient->InFleet() and (newStanding > 0)) {
@@ -628,31 +616,31 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         }
     }
 
-    sStandingMgr.UpdateStandings(m_agentID, pChar->itemID(), eventID, newStanding, msg);
-    sStandingMgr.UpdateStandings(m_data.corporationID, pChar->itemID(), eventID, newStanding * sConfig.standings.ACorp2CharMissionMultiplier, msg);
-    sStandingMgr.UpdateStandings(m_data.factionID, pChar->itemID(), eventID, newStanding * sConfig.standings.AFaction2CharMissionMultiplier, msg);
+    sStandingMgr.UpdateStandings(m_agentID, charID, eventID, newStanding, msg);
+    sStandingMgr.UpdateStandings(m_agentData.corporationID, charID, eventID, newStanding * sConfig.standings.ACorp2CharMissionMultiplier, msg);
+    sStandingMgr.UpdateStandings(m_agentData.factionID, charID, eventID, newStanding * sConfig.standings.AFaction2CharMissionMultiplier, msg);
 
     if (IsPlayerCorp(pClient->GetCorporationID())) {
         sStandingMgr.UpdateStandings(m_agentID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.Agent2PCorpMissionMultiplier, msg);
-        sStandingMgr.UpdateStandings(m_data.corporationID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.ACorp2PCorpMissionMultiplier, msg);
-        sStandingMgr.UpdateStandings(m_data.factionID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.AFaction2PCorpMissionMultiplier, msg);
+        sStandingMgr.UpdateStandings(m_agentData.corporationID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.ACorp2PCorpMissionMultiplier, msg);
+        sStandingMgr.UpdateStandings(m_agentData.factionID, pClient->GetCorporationID(), eventID, newStanding * sConfig.standings.AFaction2PCorpMissionMultiplier, msg);
     }
 
     PyTuple* agent = new PyTuple(5);
         agent->SetItem(0, new PyInt(m_agentID));
-        agent->SetItem(1, new PyInt(pChar->itemID()));
+        agent->SetItem(1, new PyInt(charID));
         agent->SetItem(2, new PyFloat(newStanding));
         agent->SetItem(3, new PyInt(-1));
         agent->SetItem(4, new PyInt(1));
     PyTuple* corp = new PyTuple(5);
-        corp->SetItem(0, new PyInt(m_data.corporationID));
-        corp->SetItem(1, new PyInt(pChar->itemID()));
+        corp->SetItem(0, new PyInt(m_agentData.corporationID));
+        corp->SetItem(1, new PyInt(charID));
         corp->SetItem(2, new PyFloat(newStanding /4));
         corp->SetItem(3, new PyInt(-1));
         corp->SetItem(4, new PyInt(1));
     PyTuple* faction = new PyTuple(5);
-        faction->SetItem(0, new PyInt(m_data.factionID));
-        faction->SetItem(1, new PyInt(pChar->itemID()));
+        faction->SetItem(0, new PyInt(m_agentData.factionID));
+        faction->SetItem(1, new PyInt(charID));
         faction->SetItem(2, new PyFloat(newStanding /8));
         faction->SetItem(3, new PyInt(-1));
         faction->SetItem(4, new PyInt(1));
@@ -704,28 +692,43 @@ void Agent::SendMissionUpdate(Client* pClient, std::string action)
     //specific to the calling action
     //OnInteractWith(agentID)       (force agent convo)
 
+    /*
+     * Level 1 = always available
+     * Level 2 = +1.00 standing
+     * Level 3 = +3.00 standing
+     * Level 4 = +5.00 standing
+     * Level 5 = +7.00 standing
+     * (235462, 'Your personal standings must be -1.9 or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
+     * (235463, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing to this agent's corp of at least {[numeric]corpMinStandings, decimalPlaces=1} , as well as personal standing of at least {[numeric]effectiveMinStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
+     * (235464, 'Your personal standings must be -1.9 or higher toward this agent, its faction, and its corporation in order to use this agent's services. Additionally, you need a minimum effective standing of at least {[numeric]minStandings, decimalPlaces=1} to this agent's faction, corp, or to the agent in order to use this agent's services.')
+     * (235465, 'Your effective personal standings must be {[numeric]minStandings, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services')
+     * (235466*, 'Your effective personal standings must be {[numeric]minEffective, decimalPlaces=1} or higher toward this agent's corporation in order to use this agent, as well as an effective personal standing of {[numeric]mainEffective, decimalPlaces=1} or higher toward this agent, its faction, or its corporation in order to use this agent's services.')
+     * (235467, 'This agent can only be used through a direct referral.')
+     */
+
 bool Agent::CanUseAgent(Client* pClient)
 {
-    if (m_data.typeID == Agents::Type::Aura)
+    if (m_agentData.typeID == Agents::Type::Aura)
         return true;
-    if (m_data.level == 1)
-        if (m_data.typeID != Agents::Type::Research)
+    if (m_agentData.level == 1)
+        if (m_agentData.typeID != Agents::Type::Research)
             return true;
 
     Character* pChar = pClient->GetChar().get();
+    uint32 charID = pChar->itemID();
     uint8 sConn = pChar->GetSkillLevel(skillConnections);
     uint8 sDiplo = pChar->GetSkillLevel(skillDiplomacy);
     uint8 sCrim = pChar->GetSkillLevel(skillCriminalConnections);
-    float charStanding = pChar->GetStanding(m_agentID, pChar->itemID());
-    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_data.factionID, sConn, sDiplo, sCrim);
+    float charStanding = pChar->GetStanding(m_agentID, charID);
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, sConn, sDiplo, sCrim);
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
 
-    float facChr = pChar->GetStanding(m_data.factionID, pChar->itemID());
-    float corpChr = pChar->GetStanding(m_data.corporationID, pChar->itemID());
-    float charChr = pChar->GetStanding(m_agentID, pChar->itemID());
-    float facBonus = EvEMath::Agent::GetStandingBonus(facChr, m_data.factionID, sConn, sDiplo, sCrim);
-    float corpBonus = EvEMath::Agent::GetStandingBonus(corpChr, m_data.factionID, sConn, sDiplo, sCrim);
-    float charBonus = EvEMath::Agent::GetStandingBonus(charChr, m_data.factionID, sConn, sDiplo, sCrim);
+    float facChr = pChar->GetStanding(m_agentData.factionID, charID);
+    float corpChr = pChar->GetStanding(m_agentData.corporationID, charID);
+    float charChr = pChar->GetStanding(m_agentID, charID);
+    float facBonus = EvEMath::Agent::GetStandingBonus(facChr, m_agentData.factionID, sConn, sDiplo, sCrim);
+    float corpBonus = EvEMath::Agent::GetStandingBonus(corpChr, m_agentData.factionID, sConn, sDiplo, sCrim);
+    float charBonus = EvEMath::Agent::GetStandingBonus(charChr, m_agentData.factionID, sConn, sDiplo, sCrim);
 
     if (facBonus > 0.0f)
         facChr = (1.0 - (1.0 - facChr / 10.0) * (1.0 - facBonus / 10.0)) * 10.0;
@@ -734,9 +737,9 @@ bool Agent::CanUseAgent(Client* pClient)
     if (charBonus > 0.0f)
         charChr = (1.0 - (1.0 - charChr / 10.0) * (1.0 - charBonus / 10.0)) * 10.0;
 
-    float m = (m_data.level - 1) * 2.0f - 1.0f;
+    float m = (m_agentData.level - 1) * 2.0f - 1.0f;
     if ((EvE::max(facChr, corpChr, charChr) >= m ) and (EvE::min(facChr, corpChr, charChr) > -2.0f)) {
-        if ((m_data.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
+        if ((m_agentData.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
             return false;
         return true;
     }
