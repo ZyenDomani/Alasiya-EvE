@@ -1,7 +1,7 @@
 -- seeds specified region with skills and ships
 -- regionID, 02: The Forge - 01:derelik - 30:heimatar - 16:lonetrek - 42:metropolis - 43:domain - 32:Sinq Laison
-set @regionid=10000032;
-set @saturation=1.0; -- fuzzy logic.  % of stations to fill with orders (random selection)
+set @regionid=10000001;
+set @saturation=0.8; -- fuzzy logic.  % of stations to fill with orders (random selection)
 
 use EVE_Crucible;   -- set this to your db name
 
@@ -14,11 +14,14 @@ insert into tStations
   select stationID,solarSystemID,regionID from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid order by rand();
 
 -- actual seeding
-INSERT INTO market_orders (typeID, charID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState, minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID,1 as charID, regionID, stationID, 0 as bid, basePrice as price, 550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband, 0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 15 as jumps
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
+minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
+  SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid,  basePrice as price,
+  550 as volEntered, 550 as volRemaining, 131889844991575488 as issued,1 as orderState, 1 as minVolume,0 as contraband,
+  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 25 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
-  WHERE invTypes.published = 1 and categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
-UPDATE `market_orders` SET `price`=1000 WHERE `price`=0;
+  WHERE invTypes.published = 1 AND invTypes.basePrice != 0
+  AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 
   ****************************
  -- use this to spawn items in market for single station
@@ -55,10 +58,11 @@ insert into tStations values (60009112, 30002509, 10000030);
 INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
 minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
   SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid,  basePrice as price,
-  550 as volEntered, 550 as volRemaining, 130565976636875000 as issued,1 as orderState, 1 as minVolume,0 as contraband,
-  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 5 as jumps
+  550 as volEntered, 550 as volRemaining, 131889844991575488 as issued,1 as orderState, 1 as minVolume,0 as contraband,
+  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 25 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
-  WHERE invTypes.published = 1 AND invTypes.basePrice != 0 AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+  WHERE invTypes.published = 1 AND invTypes.basePrice != 0
+  AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 
 categoryID  categoryName
 4   Material
