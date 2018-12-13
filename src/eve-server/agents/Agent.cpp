@@ -738,6 +738,12 @@ bool Agent::CanUseAgent(Client* pClient)
         charChr = (1.0 - (1.0 - charChr / 10.0) * (1.0 - charBonus / 10.0)) * 10.0;
 
     float m = (m_agentData.level - 1) * 2.0f - 1.0f;
+
+    _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - charSkills(con:%u,dip:%u,cri:%u), stand(%f, %f, %f)",\
+                m_agentData.name.c_str(), m_agentID, sConn, sDiplo, sCrim, charStanding, bonus, standing);
+    _log(AGENT__DEBUG, "%s(%u) CanUseAgent() - standings(fac:%u,crp:%u,chr:%u), bonus(%f, %f, %f) - m=%f", \
+                m_agentData.name.c_str(), m_agentID, facChr, corpChr, charChr, facBonus, corpBonus, charBonus, m);
+
     if ((EvE::max(facChr, corpChr, charChr) >= m ) and (EvE::min(facChr, corpChr, charChr) > -2.0f)) {
         if ((m_agentData.typeID == Agents::Type::Research) and (corpChr < m - 2.0f))
             return false;

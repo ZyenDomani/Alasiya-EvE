@@ -519,7 +519,7 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
         } else
             Inserts << ", ";
         Inserts << "(" << cur.itemID << ", " << cur.typeID << ", " << cur.ownerID << ", " << cur.locationID << ", ";
-        Inserts << cur.flag << ", " << cur.contraband << ", " << cur.singleton << ", ";
+        Inserts << cur.flag << ", " << cur.contraband << ", " << (cur.singleton ? 1 : 0) << ", ";
         Inserts << cur.quantity << ", " << cur.position.x << ", " << cur.position.y << ", " << cur.position.z << ", '" << cur.customInfo << "')";
     }
 
