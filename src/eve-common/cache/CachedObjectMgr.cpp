@@ -537,6 +537,8 @@ PyCachedCall *CachedObjectMgr::LoadCachedCall(const char *filename, const char *
     return obj;
 }
 
+// Base64 encoding utilities
+#include <Base64.h>
 void CachedObjectMgr::GetCacheFileName(PyRep *key, std::string &into)
 {
     Buffer data;
