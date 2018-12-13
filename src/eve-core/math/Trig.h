@@ -52,3 +52,27 @@ If elevation = pi/2, then the point is on the positive z-axis.
 
     }
 }
+
+/*
+ * def RayToPlaneIntersection(P, d, Q, n):
+ *    """
+ *        The intersection point(S) on a plane where d shot from P would intersect
+ *        the plane defined by Q and n.
+ *
+ *        If the P lies on the plane defined by n and Q, there are infinite number of
+ *        intersection points so the function returns P.
+ *
+ *        d' = - Q.Dot(n)
+ *        t = -(n.Dot(P) + d' )/n.Dot(d)
+ *        S = P + t*d
+ *    """
+ *    denom = geo2.Vec3Dot(n, d)
+ *    if abs(denom) < 1e-05:
+ *        return P
+ *    else:
+ *        distance = -geo2.Vec3Dot(Q, n)
+ *        t = -(geo2.Vec3Dot(n, P) + distance) / denom
+ *        scaledRay = geo2.Scale(d, t)
+ *        ret = geo2.Add(scaledRay, P)
+ *        return geo2.Vector(*ret)
+ */
