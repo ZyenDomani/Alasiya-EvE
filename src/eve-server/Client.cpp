@@ -80,19 +80,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_pod = ShipItemRef(nullptr);
     m_ship = ShipItemRef(nullptr);
 
-    /*
-    m_pingTimer.Start();
-    m_jumpTimer.Disable();
-    m_stateTimer.Disable();
-    m_scanTimer.Disable();
-    m_cloakTimer.Disable();
-    m_fleetTimer.Disable();
-    m_invulTimer.Disable();
-    m_clientTimer.Disable();
-    m_logoutTimer.Disable();
-    m_jetcanTimer.Disable();
-    m_sessionTimer.Disable();*/
-
     m_afk = false;
     m_login = true;
     m_invul = true;
