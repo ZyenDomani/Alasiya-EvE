@@ -71,3 +71,7 @@ PyResult SlashService::SlashCommand(Client * client, std::string command)
 
     return m_commandDispatch->Execute( client, command.c_str() );
 }
+
+/*(258713, `Role GMH needed`)
+ * (258714, `Role GML needed`)
+ */

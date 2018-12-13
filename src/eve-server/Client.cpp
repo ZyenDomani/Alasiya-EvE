@@ -980,6 +980,36 @@ void Client::ExecuteJump() {
     m_jumpTimer.Start(ClientTimers::JumpTimer);
 
     m_movePoint = NULL_ORIGIN;
+    /*
+(67187, `{[location]system.name} Traffic Control: your jump-in clearance has expired.`)
+(67191, `{[location]system.name} Traffic Control: you have been cleared for jump-in within {[timeinterval]expiration.writtenForm, from=second, to=second}.`)
+(67210, `{[location]system.name} Traffic Control: you are at position {[numeric]pos} in queue for jump-in.`)
+(258673, `{system} is currently loading. Bizzarre, seeing that you're there already... Please try again in a minute or two.`)
+(258674, `The stargates in {system} are currently experiencing minor technical difficulties. Please try again in a moment.`)
+(258675, `Jump Prohibited`)
+(258676, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to enjoy the local scenery.`)
+(258677, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. Please try again in a moment.`)
+(258678, `{system} Traffic Control is currently offline and unable to process your jump request. Please try again in a moment.`)
+(258679, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. You are #{[numeric]position} in queue for jump-in.`)
+(258680, `Jump Prohibited`)
+(258681, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to seek alternate routes.`)
+(258683, `Your character is located within {system}, which is currently loading. Please try again in a moment.`)
+(258685, `Your character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
+(258687, `Your character is located within {system}, which has reached maximum capacity. You are #{[numeric]position} in queue for entrance. Please try again in a moment.`)
+(258689, `Your character is located within {system}, which is currently stuck. Please select a different character or try later.`)
+(258691, `The character is located within {system}, which is currently loading. Please try again in a moment.`)
+(258693, `The character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
+(258695, `The character is located within {system}, which is currently stuck. Please try again later.`)
+(258696, `Undock Delayed`)
+(258697, `{system} Traffic Control is currently offline and unable to process your undocking request. Please try again in a moment.`)
+(258699, `The item <b>{example}</b> was not found in the station <b>{[location]station.name}</b>. Please make sure all items are in the correct hangar before finalizing this contract.`)
+(258700, `Undock Delayed`)
+(258701, `{system} Traffic Control is currently experiencing heavy load and was unable to process your request. Please try again in a moment.`)
+(258702, `Undock Prohibited`)
+(258703, `Officials have closed the undocking ramps in {system} due to heavy congestion. Please try again later.`)
+(258704, `You cannot leave {system} yet because of instability in the space-time continuum. Please try again in a moment.`)
+
+*/
 }
 
 void Client::SetJumpTimers() {
