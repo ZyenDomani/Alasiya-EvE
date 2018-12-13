@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 8.7
+ Log Version: 8.8
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -284,6 +284,20 @@ LOG_TYPE( FACWAR, DB_ERROR,   ENABLED, "FacWarDBError" )
 LOG_TYPE( FACWAR, DB_WARNING, DISABLED, "FacWarDBWarning" )
 LOG_TYPE( FACWAR, DB_MESSAGE, DISABLED, "FacWarDBMsg" )
 LOG_TYPE( FACWAR, DB_INFO, DISABLED, "FacWarDBInfo" )
+
+LOG_CATEGORY( DUNG )
+LOG_TYPE( DUNG, ERROR,   ENABLED, "DungError" )
+LOG_TYPE( DUNG, WARNING, DISABLED, "DungWarning" )
+LOG_TYPE( DUNG, MESSAGE, DISABLED, "DungMsg" )
+LOG_TYPE( DUNG, INFO, DISABLED, "DungInfo" )
+LOG_TYPE( DUNG, TRACE, DISABLED, "DungTrace" )
+LOG_TYPE( DUNG, CALL, DISABLED, "DungCall" )
+LOG_TYPE( DUNG, CALL_DUMP, DISABLED, "DungCallDump" )
+LOG_TYPE( DUNG, RSP_DUMP, DISABLED, "DungRspDump" )
+LOG_TYPE( DUNG, DB_ERROR,   ENABLED, "DungDBError" )
+LOG_TYPE( DUNG, DB_WARNING, DISABLED, "DungDBWarning" )
+LOG_TYPE( DUNG, DB_MESSAGE, DISABLED, "DungDBMsg" )
+LOG_TYPE( DUNG, DB_INFO, DISABLED, "DungDBInfo" )
 
 LOG_CATEGORY( ACCOUNT )
 LOG_TYPE( ACCOUNT, ERROR,   ENABLED, "AcctError" )
