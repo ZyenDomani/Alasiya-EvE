@@ -228,11 +228,13 @@ SET( dogmaim_SOURCE
      "${TARGET_SOURCE_DIR}/dogmaim/DogmaService.cpp" )
 
 SET( dungeon_INCLUDE
-     #"${TARGET_INCLUDE_DIR}/dungeon/DungeonEditor.h"
+     "${TARGET_INCLUDE_DIR}/dungeon/DungeonDB.h"
+     "${TARGET_INCLUDE_DIR}/dungeon/DungeonEditor.h"
      "${TARGET_INCLUDE_DIR}/dungeon/DungeonExplorationMgrService.h"
      "${TARGET_INCLUDE_DIR}/dungeon/DungeonService.h")
 SET( dungeon_SOURCE
-     #"${TARGET_SOURCE_DIR}/dungeon/DungeonEditor.cpp"
+     "${TARGET_SOURCE_DIR}/dungeon/DungeonDB.cpp"
+     "${TARGET_SOURCE_DIR}/dungeon/DungeonEditor.cpp"
      "${TARGET_SOURCE_DIR}/dungeon/DungeonExplorationMgrService.cpp"
      "${TARGET_SOURCE_DIR}/dungeon/DungeonService.cpp" )
 

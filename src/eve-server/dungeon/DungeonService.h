@@ -35,13 +35,11 @@ class DungeonService
 {
 public:
     DungeonService(PyServiceMgr *mgr);
-    virtual ~DungeonService();
+    ~DungeonService();
 
 protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
-
-    SystemDB m_db;
 
     PyCallable_DECL_CALL(DEGetFactions);
     PyCallable_DECL_CALL(DEGetDungeons);
@@ -49,6 +47,7 @@ protected:
     PyCallable_DECL_CALL(DEGetRooms);
     PyCallable_DECL_CALL(DEGetRoomObjectPaletteData);
     PyCallable_DECL_CALL(TemplateRemove);
+    PyCallable_DECL_CALL(TemplateEdit);
     PyCallable_DECL_CALL(GetArchetypes);
     PyCallable_DECL_CALL(RemoveObject);
     PyCallable_DECL_CALL(EditObjectName);
@@ -58,36 +57,12 @@ protected:
     PyCallable_DECL_CALL(EditObjectXYZ);
     PyCallable_DECL_CALL(EditObjectYawPitchRoll);
     PyCallable_DECL_CALL(IsObjectLocked);
+    PyCallable_DECL_CALL(AddTemplateObjects);
+    PyCallable_DECL_CALL(AddObject);
+    PyCallable_DECL_CALL(TemplateAdd);
+    PyCallable_DECL_CALL(TemplateObjectAddDungeonList);
 
-//newObjectID = sm.RemoteSvc('dungeon').(objectID, roomID, offsetX, offsetY, offsetZ)
-
-    //overloaded in order to support bound objects:
-    //virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
 };
-
-/*
-return sm.RemoteSvc('dungeon').(objectID)
-sm.RemoteSvc('dungeon').(objectID=objectID, x=x, y=y, z=z)
-sm.RemoteSvc('dungeon').(objectID=objectID, yaw=yaw, pitch=pitch, roll=roll)
-sm.RemoteSvc('dungeon').(objectID=objectID, radius=radius)
-(newObjectID, revisionID,) = sm.RemoteSvc('dungeon').AddObject(roomID, typeID, x, y, z, yaw, pitch, roll, radius)
-sm.RemoteSvc('dungeon').(newObjectID, objectName)
-sm.RemoteSvc('dungeon').(objectID)
-dungeons = sm.RemoteSvc('dungeon').DEGetDungeons(archetypeID=archetypeID, factionID=factionID)
-archetypes = sm.RemoteSvc('dungeon').()
-factions = sm.RemoteSvc('dungeon').DEGetFactions()
-seldungeon = sm.RemoteSvc('dungeon').DEGetDungeons(dungeonID=dungeonID)[0]
-rooms = sm.RemoteSvc('dungeon').DEGetRooms(dungeonID=seldungeon.dungeonID)
-self.templateRows = sm.RemoteSvc('dungeon').DEGetTemplates()
-roomObjectGroups = sm.RemoteSvc('dungeon').DEGetRoomObjectPaletteData()
-objectIDs = sm.RemoteSvc('dungeon').AddTemplateObjects(roomID, self.sr.node.id, (posInRoom.x, posInRoom.y, posInRoom.z))
-sm.RemoteSvc('dungeon').(self.sr.node.id)
-selDungeon = sm.RemoteSvc('dungeon').DEGetDungeons(dungeonID=dungeonID)[0]
-roomObjectGroups = sm.RemoteSvc('dungeon').()
-dungeonSvc = sm.RemoteSvc('dungeon')
-dungeonSvc = sm.RemoteSvc('dungeon')
-*/
-
 
 
 #endif
