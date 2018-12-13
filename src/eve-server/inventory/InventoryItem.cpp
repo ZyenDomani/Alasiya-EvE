@@ -720,6 +720,42 @@ void InventoryItem::Rename(std::string name)
 {
     m_itemName = name;
     SaveItem();
+    // how do we update item?
+    //OnCfgDataChanged
+    /*
+              [PyTuple 2 items]
+                [PyString "evelocations"]
+                [PyList 5 items]
+                  [PyIntegerVar 1002298813707]  itemID
+                  [PyString "02:35"]            name
+                  [PyFloat 0]                   uk
+                  [PyFloat 0]                   uk
+                  [PyFloat 0]                   uk
+                  */
+    PyList* list = new PyList();
+        list->AddItem(new PyInt(m_itemID));
+        list->AddItem(new PyString(name));
+        list->AddItem(new PyFloat(0));
+        list->AddItem(new PyFloat(0));
+        list->AddItem(new PyFloat(0));
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyString("evelocations"));
+        tuple->SetItem(1, list);
+
+    // get owner
+    if (IsCharacter(m_ownerID)) {
+        // this will be the most-used case
+        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        if (pClient == nullptr)
+            return;  //  make error here?
+        if (pClient->IsDocked())
+            pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
+        else // client in space.  sent update to all clients in bubble
+            pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
+    } else if (IsPlayerCorp(m_ownerID))
+        // not sure about this one yet.
+        ;
+
 }
 
 void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify/*true*/)

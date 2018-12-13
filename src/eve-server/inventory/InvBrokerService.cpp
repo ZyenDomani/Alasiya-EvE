@@ -344,37 +344,40 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     CallSetLabel args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
     sItemFactory.SetUsingClient( call.client );
     InventoryItemRef item = sItemFactory.GetItem( args.itemID );
     if (item.get() == nullptr) {
         codelog(INV__ERROR, "%s: Unable to load item %u", call.client->GetName(), args.itemID);
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
-    /** @todo  this is called to set name on items.
-     * if owner is corp, make sure char has permissions to rename corp items...
-     */
-    if ((item->ownerID() != call.client->GetCharacterID())
-    or (item->ownerID() != call.client->GetCorporationID())) {
-        _log(INV__ERROR, "Character %u tried to rename item %u of character %u.", call.client->GetCharacterID(), item->itemID(), item->ownerID());
-        return nullptr;
+    /** @todo if owner is corp, make sure char has permissions to rename corp items  */
+    if (IsPlayerCorp(item->ownerID())) {
+        if (item->ownerID() != call.client->GetCorporationID()) {
+            _log(INV__ERROR, "%u(%u) tried to rename CorpItem %s(%u) but owned by %u.", \
+                call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), item->itemID(), item->ownerID());
+            return PyStatic.NewNone();
+        }
+    } else if (IsCharacter(item->ownerID())) {
+        if (item->ownerID() != call.client->GetCharacterID()) {
+            _log(INV__ERROR, "%u(%u) tried to rename PlayerItem %s(%u) but owned by %u.", \
+            call.client->GetName(), call.client->GetCharacterID(), item->itemName().c_str(), item->itemID(), item->ownerID());
+            return PyStatic.NewNone();
+        }
+    } else {
+        // error here....
     }
 
     item->Rename(PyRep::StringContent(args.itemName));
 
-    // This call as-is is NOT correct for any item category other than ships,
-    // so until we can get the right string argument for other kinds of session updates,
-    // we need to block this call so our characters don't "board" non-ship objects:
-    if (item->categoryID() == EVEDB::invCategories::Ship)
-        call.client->UpdateSessionInt("shipid", item->itemID());
-
     // Release the item factory now that the ItemFactory is finished being used:
     sItemFactory.UnsetUsingClient();
 
-    return nullptr;
+    // returns None()
+    return PyStatic.NewNone();
 }
 
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
