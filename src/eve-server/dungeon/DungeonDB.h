@@ -16,7 +16,12 @@ class DungeonDB {
 public:
     DungeonDB()                                         { /* do nothing here */ }
     ~DungeonDB()                                        { /* do nothing here */ }
+
+
+
+    static void GetDunTemplates(DBQueryResult& res);
     
+
 protected:
 
 private:

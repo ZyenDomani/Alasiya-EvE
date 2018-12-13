@@ -29,3 +29,9 @@
 
 #include "DungeonDB.h"
 
+
+void DungeonDB::GetDunTemplates(DBQueryResult& res)
+{
+    if (!sDatabase.RunQuery(res, "SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates"))
+        _log(DATABASE__ERROR, "Error in GetDunTemplates query: %s", res.error.c_str());
+}
