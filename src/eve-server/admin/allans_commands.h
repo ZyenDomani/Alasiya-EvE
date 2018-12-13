@@ -52,3 +52,5 @@
           " - gets positional data between ship and moon (for pos placement testing)")
  COMMAND( bubbletrack, Acct::Role::PROGRAMMER,
           " - enable/disable bubble outline tracking." )
+ COMMAND( players, Acct::Role::PLAYER,
+          " - shows list of online players")

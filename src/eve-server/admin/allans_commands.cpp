@@ -805,6 +805,26 @@ PyResult Command_getposition(Client* who, CommandDB* db, PyServiceMgr* services,
     return new PyString(reply);
 }
 
+PyResult Command_players(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::vector<Client*> cVec;
+    sEntityList.GetClients(cVec);
+    std::ostringstream str;
+    str.clear();
+    str << "Active Player List:   " << cVec.size() << " Online Players.<br>";
+
+    for (auto cur : cVec)
+        str << cur->GetName() << " (" << cur->GetSystemName().c_str() << ")<br>";
+
+    int size = cVec.size() * 80;
+    size += 80;
+    char reply[size];
+    snprintf(reply, size, str.str().c_str());
+
+    who->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
 
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]
