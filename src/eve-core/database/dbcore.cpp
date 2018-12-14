@@ -34,31 +34,7 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
-// this group is to enable server shutdown (and online player notification)
-//      in the case of db lost connection
-#define sConsole ( ConsoleCommand::get() )
-#define sEntityList (EntityList::get())
-class Client {
-public:
-    void SendInfoModalMsg(const char* fmt, ...);
-};
-class EntityList
-: public Singleton<EntityList>
-{
-public:
-    void GetClients(std::vector<Client*>& result) const;
-};
-class ConsoleCommand
-: public Singleton<ConsoleCommand>
-{
-public:
-    bool IsDbError();
-    void HaltServer(bool dbError=false);
-};
-
 // this group is to enable profile tracking for db
-#define sConfig ( EVEServerConfig::get() )
-#define sProfile ( Profile::get() )
 class EVEServerConfig
 : public Singleton<EVEServerConfig>
 {
@@ -66,12 +42,15 @@ public:
     struct {
         bool useSocket;
         bool autoReconnect;
+        uint8 dbTimeout;
     } database;
     struct {
         bool UseProfiling;
     } debug;
 
 };
+#define sConfig ( EVEServerConfig::get() )
+
 class Profile
 : public Singleton<Profile>
 {
@@ -82,9 +61,12 @@ public:
 enum {
     _dbProfile          = 9
 };
+#define sProfile ( Profile::get() )
 
 // this is used to enable socket communication (may not be needed)
-enum mysql_protocol_type prot_type= MYSQL_PROTOCOL_SOCKET;
+enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
+unsigned int conn_timeout = sConfig.database.dbTimeout;
+my_bool reconnect = true;
 
 DBcore::DBcore()
 : mysql(nullptr)
@@ -139,7 +121,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
 {
     // options should be called BEFORE mysql_real_connect()
     if (sConfig.database.useSocket) {
-        mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void *)&prot_type);
+        mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type);
         sLog.Cyan("        DB Server", " Unix Socket Connection");
     } else
         sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
@@ -154,11 +136,22 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     if (pSSL)
         flags |= CLIENT_SSL;
     sLog.Cyan("    Connect Flags", " %x", flags);
-/*
+
+    // not sure if this one will really be used here
+    mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout);
+    if (conn_timeout > 60)
+        sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+    else if (conn_timeout > 40)
+        sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+    else if (conn_timeout > 30)
+        sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+    else
+        sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+
     if (sConfig.database.autoReconnect) {
-        mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&conn_type); // this will enable auto-reconnect...and render my Reconnect() worthless
+        mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect); // this will enable auto-reconnect...and render my Reconnect() worthless
         sLog.Green(" DataBase Manager", "DataBase AutoReconnect Enabled");
-    } else */
+    } else
         sLog.Yellow(" DataBase Manager", "DataBase AutoReconnect Disabled");
 
     if (mysql_real_connect(mysql, pHost.c_str(), pUser.c_str(), pPassword.c_str(), pDatabase.c_str(), pPort, 0, flags) == nullptr) {
@@ -199,6 +192,7 @@ bool DBcore::Reconnect()
     return (pStatus == Connected);
 }
 
+/*
 void DBcore::CallShutdown()
 {
     _log(DATABASE__MESSAGE, "DBCore recovery failed.  Server restarting.");
@@ -208,7 +202,7 @@ void DBcore::CallShutdown()
         cur->SendInfoModalMsg("DBCore lost connection and recovery failed.  Server restarting.");
     Sleep(4000);    // pause running thread to allow players (if any) to view msg
     sConsole.HaltServer(true);
-}
+} */
 
 // Sends the MySQL server a ping
 void DBcore::ping()
@@ -314,24 +308,20 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         profileStartTime = GetTimeUSeconds();
 
     if (mysql == nullptr) {
-        if (sConsole.IsDbError())
-            return false;
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
         if (Reconnect())
             return DoQuery_locked(err, query, querylen, false);
-        CallShutdown();
+        //CallShutdown();
         return false;
     }
 
     if (pStatus != Connected) {
-        if (sConsole.IsDbError())
-            return false;
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
         if (Reconnect())
             return DoQuery_locked(err, query, querylen, false);
-        CallShutdown();
+        //CallShutdown();
         return false;
     }
 
@@ -344,7 +334,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR)) {
             if (Reconnect())
                 return DoQuery_locked(err, query, querylen, false);
-            CallShutdown();
+            //CallShutdown();
         }
 
         pStatus = Error;

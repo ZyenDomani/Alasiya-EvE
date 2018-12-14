@@ -165,7 +165,7 @@ protected:
     void Connect(uint* errnum = 0, char* errbuf = 0);
 
     bool Reconnect();
-    void CallShutdown();
+    //void CallShutdown();
 
 private:
     //MDatabase must be locked before these calls:

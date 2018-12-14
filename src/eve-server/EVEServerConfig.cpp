@@ -210,7 +210,8 @@ EVEServerConfig::EVEServerConfig()
     database.compress = false;
     database.ssl = false;
     database.useSocket = false;
-    database.autoReconnect = false;//N
+    database.autoReconnect = false;
+    database.dbTimeout = 60/*s*/;
 
     // files
     files.logDir = "../log/";
@@ -538,6 +539,7 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     AddValueParser( "ssl",              database.ssl );
     AddValueParser( "useSocket",        database.useSocket );
     AddValueParser( "autoReconnect",    database.autoReconnect );
+    AddValueParser( "dbTimeout",        database.dbTimeout );
 
     const bool result = ParseElementChildren( ele );
 
@@ -550,6 +552,7 @@ bool EVEServerConfig::ProcessDatabase( const TiXmlElement* ele )
     RemoveParser( "ssl" );
     RemoveParser( "useSocket" );
     RemoveParser( "autoReconnect" );
+    RemoveParser( "dbTimeout" );
 
     return result;
 }

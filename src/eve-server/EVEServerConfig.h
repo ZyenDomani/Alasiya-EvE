@@ -205,6 +205,7 @@ public:
         bool ssl;
         bool useSocket;
         bool autoReconnect;
+        uint8 dbTimeout;
     } database;
 
     // From <files/>
