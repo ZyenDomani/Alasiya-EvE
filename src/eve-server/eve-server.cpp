@@ -426,6 +426,7 @@ int main( int argc, char* argv[] )
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
     }
+    std::printf("\n");     // spacer
     Sleep(250);
 
     /* connect to the database */
@@ -442,6 +443,7 @@ int main( int argc, char* argv[] )
         std::cout << std::endl << "press any key to exit...";  std::cin.get();
         return EXIT_FAILURE;
     }
+    std::printf("\n");     // spacer
 
     // start up the image server
     sLog.Green("       ServerInit", "Starting Image Server");

@@ -63,10 +63,6 @@ enum {
 };
 #define sProfile ( Profile::get() )
 
-// this is used to enable socket communication (may not be needed)
-enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
-unsigned int conn_timeout = sConfig.database.dbTimeout;
-my_bool reconnect = true;
 
 DBcore::DBcore()
 : mysql(nullptr)
@@ -119,6 +115,11 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
 
 void DBcore::Connect(uint* errnum, char* errbuf)
 {
+    // this is used to enable socket communication (may not be needed)
+    enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
+    unsigned int conn_timeout = sConfig.database.dbTimeout;
+    my_bool reconnect = true;
+
     // options should be called BEFORE mysql_real_connect()
     if (sConfig.database.useSocket) {
         mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type);
@@ -137,8 +138,6 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         flags |= CLIENT_SSL;
     sLog.Cyan("    Connect Flags", " %x", flags);
 
-    // not sure if this one will really be used here
-    mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout);
     if (conn_timeout > 60)
         sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
     else if (conn_timeout > 40)
@@ -147,6 +146,8 @@ void DBcore::Connect(uint* errnum, char* errbuf)
         sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
     else
         sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+    // not sure if this one will really be used here
+    mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout);
 
     if (sConfig.database.autoReconnect) {
         mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect); // this will enable auto-reconnect...and render my Reconnect() worthless
