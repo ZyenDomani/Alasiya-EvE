@@ -105,3 +105,7 @@ doc/
 # Allan's backups
 saves_backups/
 sql/old_sql/
+
+# misc shit
+sql/tables.tar.gz
+sql/testScripts/price*

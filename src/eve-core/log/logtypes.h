@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 8.8
+ Log Version: 8.9
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -180,6 +180,16 @@ LOG_TYPE( SCAN, INFO, DISABLED, "ScanInfo" )
 LOG_TYPE( SCAN, TRACE, DISABLED, "ScanTrace" )
 LOG_TYPE( SCAN, DUMP, DISABLED, "ScanDump" )
 LOG_TYPE( SCAN, RSPDUMP, DISABLED, "ScanRspDump" )
+
+LOG_CATEGORY( QATOOLS )
+LOG_TYPE( QATOOLS, ERROR,   ENABLED, "qaToolsError" )
+LOG_TYPE( QATOOLS, WARNING, DISABLED, "qaToolsWarning" )
+LOG_TYPE( QATOOLS, MESSAGE, DISABLED, "qaToolsMsg" )
+LOG_TYPE( QATOOLS, DEBUG, DISABLED, "qaToolsDebug" )
+LOG_TYPE( QATOOLS, INFO, DISABLED, "qaToolsInfo" )
+LOG_TYPE( QATOOLS, CALL, DISABLED, "qaToolsCall" )
+LOG_TYPE( QATOOLS, DUMP, DISABLED, "qaToolsDump" )
+LOG_TYPE( QATOOLS, RSPDUMP, DISABLED, "qaToolsRspDump" )
 
 LOG_CATEGORY( FLEET )
 LOG_TYPE( FLEET, ERROR,   ENABLED, "FleetError" )

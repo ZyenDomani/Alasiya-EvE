@@ -706,7 +706,7 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     std::string reason = "Bounty for killing a pirate in ";
     reason += pClient->GetSystemName();
 
-    BountyData data;
+    BountyData data { /* initalize all to 0 */ };
     data.fromID = m_self->itemID();
     data.toID = pClient->GetCharacterID();
     data.refTypeID = Journal::EntryType::BountyPrize;

@@ -188,6 +188,9 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
         dict->SetItemString("warRegistry", PyStatic.NewNone());
         dict->SetItemString("watchdog", PyStatic.NewNone());
         dict->SetItemString("zsystem", PyStatic.NewNone());
+        dict->SetItemString("encounterSpawnServer", PyStatic.NewNone());
+        dict->SetItemString("netStateServer", PyStatic.NewNone());
+        dict->SetItemString("zActionServer", PyStatic.NewNone());
 
         //register it
         m_manager->cache_service->GiveCache(str, (PyRep **)&dict);

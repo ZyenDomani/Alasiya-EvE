@@ -142,6 +142,10 @@
 // pos services
 #include "pos/PosMgr.h"
 #include "pos/Structure.h"
+// qaTools
+#include "qaTools/encounterSpawnServer.h"
+#include "qaTools/netStateServer.h"
+#include "qaTools/zActionServer.h"
 // search services
 #include "search/Search.h"
 // ship services
@@ -601,6 +605,9 @@ int main( int argc, char* argv[] )
     pyServMgr.RegisterService("voucher", new VoucherService(&pyServMgr));
     pyServMgr.RegisterService("warRegistry", new WarRegistryService(&pyServMgr));
     pyServMgr.RegisterService("wormholeMgr", new WormHoleSvc(&pyServMgr));
+    pyServMgr.RegisterService("encounterSpawnServer", new encounterSpawnServer(&pyServMgr));
+    pyServMgr.RegisterService("netStateServer", new netStateServer(&pyServMgr));
+    pyServMgr.RegisterService("zActionServer", new zActionServer(&pyServMgr));
     pyServMgr.Initalize(startTime);
     std::printf("\n");     // spacer
 
