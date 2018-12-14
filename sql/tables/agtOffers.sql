@@ -62,7 +62,7 @@ CREATE TABLE `agtOffers` (
   `bonusISK` int(10) NOT NULL DEFAULT '0',
   `bonusTime` bigint(20) NOT NULL DEFAULT '0',
   `briefingID` int(11) NOT NULL DEFAULT '0',
-  `storyline` bit(1) NOT NULL DEFAULT 0, DEFAULT '0'
+  `storyline` bit(1) NOT NULL DEFAULT 0
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='char missions - current offers and history';
 
 --
