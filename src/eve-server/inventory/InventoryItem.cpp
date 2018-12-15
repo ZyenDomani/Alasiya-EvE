@@ -281,10 +281,10 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
                 case EVEDB::invGroups::Spawn_Container: {
                     return CargoContainer::_LoadItem<CargoContainer>(itemID, type, data);
                 } break;
-                case EVEDB::invGroups::Billboard:
                 case EVEDB::invGroups::Temporary_Cloud: {
                     return CelestialObject::_LoadItem<CelestialObject>(itemID, type, data);
                 } break;
+                case EVEDB::invGroups::Billboard:
                 // the rest are drones and npcs....i think
                 // they are *somewhat* separated for eventual classification into their own itemtypes
                 case EVEDB::invGroups::Convoy:
