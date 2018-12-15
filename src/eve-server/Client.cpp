@@ -1842,15 +1842,9 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     // TODO  look into using plain pass to facilitate forgotten-password retrieval from web.
     mNet->QueueRep(new PyInt(2));
 
-    std::string account_hash;
     std::string fail_msg = "LoginAuthFailed";
-
-    AccountData account_info;
-
-    sLog.Debug("Client","%s: Received Client Challenge.", GetAddress().c_str());
-
-    ServiceDB m_sdb;
-    if (!m_sdb.GetAccountInformation(ccp.user_name.c_str(), ccp.user_password_hash.c_str(), account_info))
+    AccountData account_info {};
+    if (!ServiceDB::GetAccountInformation(ccp.user_name.c_str(), ccp.user_password_hash.c_str(), account_info))
         return _LoginFail(fail_msg);
 
     /* check wether the account has been banned and if so send the semi correct message */
@@ -1859,6 +1853,12 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
         return _LoginFail(fail_msg);
     }
 
+    if (account_info.online) {
+        fail_msg = "This account is being used right now. Try logging in again later.";
+        return _LoginFail(fail_msg);
+    }
+
+    std::string account_hash = "";
     /* if we have stored a password we need to create a hash from the username and pass and remove the pass */
     if (account_info.password.empty())
         account_hash = account_info.hash;
@@ -1870,7 +1870,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
             return _LoginFail(fail_msg);
         }
 
-        if (!m_sdb.UpdateAccountHash(ccp.user_name.c_str(), password_hash)) {
+        if (!ServiceDB::UpdateAccountHash(ccp.user_name.c_str(), password_hash)) {
             sLog.Error("Client", "unable to update account hash, sending LoginAuthFailed");
             return _LoginFail(fail_msg);
         }
@@ -1878,49 +1878,15 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
         account_hash = password_hash;
     }
 
-    /* here we check if the user successfully entered his password or if he failed
-     * If the name check runs out correctly, we go to online check (DB call + respective variable definition)
-     * This is not the prettiest way to do this, but i didn't wanted to do any new constructs just for temporary online check.
-     * TODO: figure out why the heck online status does not get updated in account_info. */
-    bool isOnline = false;
+    /* here we check if the user successfully entered his password or if he failed  */
     if (account_hash != ccp.user_password_hash) {
-        fail_msg = "Your login/password was entered incorrectly.";
+        fail_msg = "Your password was entered incorrectly.";
         return _LoginFail(fail_msg);
-    } else {
-        // I am NOT happy with this,but i'll have to put this hack here, as AcountInfo do not get updated properly, so it keeps
-        // online status = False at all times. So, to make sure the check's being performed properly, i copy the query runner from
-        // ServiceDB.cpp and modifying those parts to only return us the status. This will make sure that we get a valid data every time the function is called
-    //	############################################################################################################################
-        DBQueryResult online_indicator;
-        if ( !sDatabase.RunQuery( online_indicator, "SELECT online FROM account WHERE accountName = '%s'", ccp.user_name.c_str() ) )
-            {
-                sLog.Error( "ServiceDB", "Error in query: %s.", online_indicator.error.c_str() );
-                return false;
-            }
-
-        DBResultRow row;
-        if (online_indicator.GetRow(row))
-        	isOnline = row.GetBool(0);
-
-    //	############################################################################################################################
     }
 
-    /* Check if we already have a client online and if we do disconnect it
-     * @note we should send GPSTransportClosed with reason "The user's connection has been usurped on the proxy"
-     */
-
-    if (isOnline)
-        if (sEntityList.FindClientByAccount(account_info.id) != nullptr) {
-        	   fail_msg = "This account is being used right now. Try logging in again later.";
-        	// If user logs-out while on the login screen, the online status will stay True until the server gets restarted.
-        	// So disconnecting the parent client is a neccessary measure to make sure user can log in after that.
-        	//client->DisconnectClient();
-        	return _LoginFail(fail_msg);
-        }
-
-        // check this character/account for newbie status and revoke as needed before account update.
+    // check this character/account for newbie status and revoke as needed before account update.
     /* update account information, increase login count, last login timestamp and mark account as online */
-    m_sdb.UpdateAccountInformation(account_info.name.c_str(), true);
+    ServiceDB::IncrementLoginCount(account_info.id);
 
     /* marshaled Python string "None" */
     static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };

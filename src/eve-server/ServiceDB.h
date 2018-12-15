@@ -42,9 +42,9 @@ class ServiceDB
 {
 public:
 
-    bool GetAccountInformation( const char* username, const char* password, AccountData &account_info );
-    bool UpdateAccountHash( const char* username, std::string &hash );
-    bool UpdateAccountInformation( const char* username, bool isOnline );
+    static bool GetAccountInformation( const char* username, const char* password, AccountData &account_info );
+    static bool UpdateAccountHash( const char* username, std::string &hash );
+    static bool IncrementLoginCount(uint32 accountID );
 
     static void SaveKillOrLoss(CharKillData& data);
 
@@ -56,16 +56,16 @@ public:
     // not used cause eveConstants table doesnt exist...omitted from ccp dump
     static bool GetConstant(const char *name, uint32 &into);
 
-    static void SetServerOnlineStatus(bool online);
-    static void SetCharacterOnlineStatus(uint32 char_id, bool online);
-    static void SetAccountOnlineStatus(uint32 accountID, bool online);
-    static void SetAccountBanStatus(uint32 accountID, bool banned);
+    static void SetServerOnlineStatus(bool online=false);
+    static void SetCharacterOnlineStatus(uint32 char_id, bool online=false);
+    static void SetAccountOnlineStatus(uint32 accountID, bool online=false);
+    static void SetAccountBanStatus(uint32 accountID, bool banned=false);
     static void SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles);
 
     static uint32 SetClientSeed();
 
-    static PyRep* LookupChars(const char *match, bool exact);
-    static PyRep* LookupOwners(const char *match, bool exact);
+    static PyRep* LookupChars(const char *match, bool exact=false);
+    static PyRep* LookupOwners(const char *match, bool exact=false);
     static PyRep* LookupCorporations(const std::string &);
     static PyRep* LookupFactions(const std::string &);
     static PyRep* LookupCorporationTickers(const std::string &);
@@ -92,7 +92,7 @@ protected:
      * @param role is the users role in the game.
      * @author firefoxpdm, xanarox
      */
-    uint32 CreateNewAccount( const char* login, const char* pass, int64 role );
+    static uint32 CreateNewAccount( const char* login, const char* pass, int64 role );
 
 };
 

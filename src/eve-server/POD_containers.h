@@ -12,29 +12,31 @@
 
 /* POD structure for certificate data */
 struct CharCerts {
+    uint8 visibilityFlags;
     uint32 certificateID;
     int64 grantDate;
-    uint8 visibilityFlags;
 };
 typedef std::vector<CharCerts> CertVector;
 
 /* POD structure for skills in queue */
 struct QueuedSkill {
-    uint16 typeID;
     uint8 level;
+    uint16 typeID;
 };
 typedef std::vector<QueuedSkill> SkillQueue;
 
 /* POD structure for saving attribute data */
 struct AttrData {
-    uint32 itemID;
     uint16 attrID;
+    uint32 itemID;
     uint32 valueInt;
     double valueFloat;
 };
 
 /* POD structure for account data */
 struct AccountData {
+    bool online:1;
+    bool banned:1;
     int32 id;
     int64 role;
     int32 visits;
@@ -43,13 +45,11 @@ struct AccountData {
     std::string hash;
     std::string password;
     std::string last_login;
-    bool online;
-    bool banned;
 };
 
 /* POD structure for character data */
 struct CharacterData {
-    bool gender;
+    bool gender:1;
     uint8 flag;
     uint8 bloodlineID;
     uint8 raceID;
@@ -117,17 +117,17 @@ struct OfficeData {
 
 /* POD structure for corp app data */
 struct ApplicationInfo {
+    bool valid;
     uint32 appID;
     uint32 corpID;
     uint32 charID;
-    std::string appText;
-    int64 appTime;
-    int64 role;
-    int64 grantRole;
     uint32 status;
     uint32 deleted;
     uint32 lastCID;
-    bool valid;
+    int64 appTime;
+    int64 role;
+    int64 grantRole;
+    std::string appText;
 };
 
 /* POD structure for fleet data    -allan 31Jul14 */
@@ -143,18 +143,18 @@ struct CharFleetData {
 
 /* POD structure for bounty timer data  */
 struct BountyData {
-    uint32 fromID;
-    uint32 toID;
-    double amount;
     uint8 refTypeID;
     uint16 fromKey;
     uint16 toKey;
+    uint32 fromID;
+    uint32 toID;
+    double amount;
     std::string reason;
 };
 
 /* POD structure for blueprint data */
 struct BlueprintData {
-    bool copy;
+    bool copy:1;
     int32 mLevel;
     int32 pLevel;
     int32 runs;
@@ -181,30 +181,30 @@ struct BlueprintTypeData {
 
 /* POD structure for character kill data  -allan 01May16 */
 struct CharKillData {
+    uint16 victimShipTypeID;
+    uint16 finalShipTypeID;
+    uint16 finalWeaponTypeID;
+    int32 finalAllianceID;
+    int32 victimAllianceID;
+    int32 victimFactionID;
+    int32 finalFactionID;
     uint32 solarSystemID;
     uint32 victimCharacterID;
     uint32 victimCorporationID;
-    int32 victimAllianceID;
-    int32 victimFactionID;
-    uint16 victimShipTypeID;
     uint32 victimDamageTaken;
     uint32 finalCharacterID;
     uint32 finalCorporationID;
-    int32 finalAllianceID;
-    int32 finalFactionID;
-    uint16 finalShipTypeID;
-    uint16 finalWeaponTypeID;
-    double finalSecurityStatus;
     uint32 finalDamageDone;
-    std::string killBlob;
-    int64 killTime;
     uint32 moonID;
+    int64 killTime;
+    double finalSecurityStatus;
+    std::string killBlob;
 };
 
 /* POD structure for asteroid */
 struct AsteroidData {
-    uint32 itemID;
     uint16 typeID;
+    uint32 itemID;
     uint32 systemID;
     uint32 beltID;
     double quantity;
@@ -262,8 +262,8 @@ struct SystemSpawnGroup { //reference to this bubble's data for spawn groups.  m
 
 /* POD structure for spawn groups */
 struct SpawnGroup {
-    uint16 typeID;  //typeID to spawn
     uint8 quantity; //quantity to spawn for this typeID
+    uint16 typeID;  //typeID to spawn
 };
 
 /* POD structure for spawn entries */
@@ -278,10 +278,10 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
     uint16 typeID;      // rat type id
     uint16 groupID;     // rat group id (may look into changing typeID within group later on respawn (for chaining))
     uint16 spawnID;     // spawn id (if needed to match up with other spawns of this group (multiple spawn types in this group))
+    uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
     uint32 itemID;      // rat entity id
     uint32 corpID;      // rat corp id
     uint32 factionID;   // rat faction id
-    uint16 stamp;       // entry stamp time to respawn (process conditional to allow for common timer and multiple respawn times)
 };
 
 /* POD structure for spawn faction groups */
@@ -320,18 +320,18 @@ struct LootGroup {
 
 /* POD structure for loot types */
 struct LootGroupType {
+    uint8 metaLevel;
     uint32 lootGroupID;
     uint32 typeID;
-    uint8 metaLevel;
     uint32 minQuantity;
     uint32 maxQuantity;
 };
 
 /* POD structure for possible loot drops */
 struct LootList {
-    uint32 itemID;
     uint8 minDrop;
     uint8 maxDrop;
+    uint32 itemID;
 };
 
 /* POD structure for statistic data */
@@ -373,7 +373,6 @@ struct StaticData {
 /* POD structure for stations. */
 struct StationData {
     bool conquerable;
-    uint32 stationID;
     uint8 officeSlots;
     uint8 operationID;
     uint16 typeID;
@@ -382,6 +381,7 @@ struct StationData {
     uint16 hangarGraphicID;
     uint16 dockingBayGraphicID;
     uint16 reprocessingHangarFlag;
+    uint32 stationID;
     uint32 corporationID;
     uint32 maxShipVolumeDockable;
     uint32 officeRentalFee;
@@ -405,13 +405,13 @@ struct StationData {
 
 /* POD structure for saving items */
 struct SaveData {
-    uint32          itemID;
-    uint16          typeID;
-    uint32          ownerID;
-    uint32          locationID;
     EVEItemFlags    flag;
     bool            contraband;
     bool            singleton;
+    uint16          typeID;
+    uint32          itemID;
+    uint32          ownerID;
+    uint32          locationID;
     uint32          quantity;
     GPoint          position;
     std::string     customInfo;
@@ -426,10 +426,10 @@ struct OwnerData {
 
 /* POD structure for container faction data */
 struct FactionData {
-    uint32 ownerID;
-    uint32 corporationID;
     int32 allianceID;
     int32 factionID;
+    uint32 ownerID;
+    uint32 corporationID;
 };
 
 /* structure for type attributes */
@@ -440,19 +440,19 @@ struct DmgTypeAttribute {
 
 /* structure for loading static system items */
 struct DBSystemEntity {
-    uint32 itemID;
     uint16 typeID;
     uint16 groupID;
+    uint32 itemID;
     double radius;
 };
 
 struct DBSystemDynamicEntity {
-    uint32 itemID;
+    EVEItemCategories categoryID;
     uint16 typeID;
     uint16 groupID;
-    EVEItemCategories categoryID;
     int32 allianceID;
     int32 factionID;
+    uint32 itemID;
     uint32 ownerID;
     uint32 corporationID;
     uint32 planetID;
@@ -466,10 +466,10 @@ struct DBGPointEntity {
     uint8 idx;
     uint32 itemID;
     double radius;
-    GPoint position;
     double x;
     double y;
     double z;
+    GPoint position;
 };
 
 /* POD structure entries for dungeon data */
@@ -500,26 +500,26 @@ struct DunGroupData {
     uint8 typeCatID;    // this is categoryID of the itemType, and needed to simplify create/spawn code
     int16 typeID;
     int16 typeGrpID;   // this is groupID of the itemType, and needed to simplify create/spawn code
-    uint16 radius;
     int16 x;
     int16 y;
     int16 z;
+    uint16 radius;
     std::string typeName;
 };
 
 struct DunRoomSpawnInfo {
-    uint16 dunRoomSpawnID;
-    uint16 dunRoomSpawnType;
     int16 x;
     int16 y;
     int16 z;
+    uint16 dunRoomSpawnID;
+    uint16 dunRoomSpawnType;
 };
 
 struct DunEntryData {
-    uint16 dunEntryID;
     int16 x;
     int16 y;
     int16 z;
+    uint16 dunEntryID;
 };
 
 /* POD structure for decoded probe data */

@@ -40,7 +40,7 @@ uint32 ServiceDB::SetClientSeed()
 }
 
 bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountData &account_info )
-{       //added auto account    -allan 18Jan14      //UD 16Jan18
+{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18
     std::string eLogin, ePass;
     sDatabase.DoEscapeString(eLogin, username);
     sDatabase.DoEscapeString(ePass, password);
@@ -58,34 +58,26 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!res.GetRow( row )) {
         // account not found, create new one if autoAccountRole is not zero (0)
         if (sConfig.account.autoAccountRole > 0) {
-            uint32 accountID = CreateNewAccount( eLogin.c_str(), ePass.c_str(), sConfig.account.autoAccountRole);
+            uint32 accountID = ServiceDB::CreateNewAccount( eLogin.c_str(), ePass.c_str(), sConfig.account.autoAccountRole);
             if ( accountID > 0 ) {
                 // add new account successful, get account info again
-                bool ret = GetAccountInformation(eLogin.c_str(), ePass.c_str(), account_info);
-                return ret;
+                return GetAccountInformation(eLogin.c_str(), ePass.c_str(), account_info);
             } else
                 return false;
         } else
             return false;
     }
 
+    account_info.name       = eLogin;
     account_info.id         = row.GetInt(0);
     account_info.clientID   = row.GetInt(1);
-
-    if (!row.IsNull(2))
-        account_info.password = row.GetText(2);
-
-    if (!row.IsNull(3))
-        account_info.hash   = row.GetText(3);
-
-    account_info.name       = eLogin;
+    account_info.password   = (row.IsNull(2) ? "" : row.GetText(2));
+    account_info.hash       = (row.IsNull(3) ? "" : row.GetText(3));
     account_info.role       = row.GetInt64(4);
     account_info.online     = row.GetBool(5);
     account_info.banned     = row.GetBool(6);
     account_info.visits     = row.GetInt(7);
-
-    if (!row.IsNull(8))
-        account_info.last_login = row.GetText(8);
+    account_info.last_login = (row.IsNull(8) ? "" : row.GetText(8));
 
     return true;
 }
@@ -105,14 +97,11 @@ bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
     return true;
 }
 
-bool ServiceDB::UpdateAccountInformation( const char* username, bool isOnline )
+bool ServiceDB::IncrementLoginCount( uint32 accountID )
 {
-    std::string eLogin;
-    sDatabase.DoEscapeString(eLogin, username);
-
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1, online=%u where accountName='%s'", isOnline, eLogin.c_str())) {
-        sLog.Error( "AccountDB", "Unable to update account information for: '%s'.", eLogin.c_str() );
+    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1, online=1 where accountID=%u", accountID)) {
+        sLog.Error( "AccountDB", "Unable to update account information for accountID %u.", accountID);
         return false;
     }
 
@@ -289,7 +278,7 @@ void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValu
 void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %d WHERE characterID = %u", online?1:0, char_id);
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %u WHERE characterID = %u", (online?1:0), char_id);
 
     if ( online )
         sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
@@ -314,24 +303,14 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
 
 void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
     DBerror err;
-    if (!sDatabase.RunQuery(err,
-        "UPDATE account "
-        " SET online = %d"
-        " WHERE accountID= %u ",
-        online, accountID))
-    {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET online = %u WHERE accountID= %u ", (online?1:0), accountID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 }
 
 void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
     DBerror err;
-    if (!sDatabase.RunQuery(err,
-        " UPDATE account"
-        " SET banned = %d"
-        " WHERE accountID = %u",
-        banned, accountID))
-    {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET banned = %u WHERE accountID = %u", (banned?1:0), accountID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
     }
 }
