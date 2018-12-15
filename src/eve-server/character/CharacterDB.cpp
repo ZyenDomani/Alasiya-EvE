@@ -139,33 +139,14 @@ bool CharacterDB::SaveCorpData(uint32 characterID, const CorpData &data) {
 }
 
 void CharacterDB::DeleteCharacter(uint32 characterID) {
-
-    //  just a small list of possible locations to delete char references from....
     /**
-     *        6 matches in avatar_colors
-     *        15 matches in avatar_modifiers
-     *        13 matches in avatar_sculpts
-     *        1 match in avatars
-     *        0 matches in bookmarkFolders
-     *        0 matches in bookmarkVouchers
-     *        1 match in bookmarks
      *        0 matches in bounties
-     *        1 match in cacheOwners
      *        4 matches in channelChars
-     *        0 matches in crpApplications
-     *        1 match in chrCertificates
-     *        1 match in chrEmployment
-     *        31 matches in chrSkillHistory
-     *        0 matches in chrSkillQueue
      *        0 matches in chrOwnerNote
-     *        0 matches in chrPausedSkillQueue
-     *        1 match in entity
-     *        61 matches in entity_attributes
      *        0 matches in ramJobs
      */
 
     DBerror err;
-
     sDatabase.RunQuery(err, "DELETE FROM eveMailDetails"
                             " USING eveMail, eveMailDetails"
                             " WHERE eveMail.messageID = eveMailDetails.messageID"
@@ -173,7 +154,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
 
     sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM bookmarks WHERE ownerID = %u",  characterID);
+    sDatabase.RunQuery(err, "DELETE FROM bookmarks, bookmarkFolders, bookmarkVouchers WHERE ownerID = %u",  characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM mktOrders WHERE ownerID = %u", characterID);
 
@@ -182,22 +163,25 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM repStandings, repStandingChanges"
                             " WHERE (fromID = %u OR toID = %u)", characterID, characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacters, chrEmployment, chrJournal, crpCharShares"
+    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacters, chrEmployment, chrJournal, crpCharShares, chrSkillHistory, chrSkillQueue, crpApplications"
                             " WHERE characterID=%u", characterID);
 
-    sDatabase.RunQuery(err, "DELETE FROM chrCharactersAttributes WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrCharactersAttributes, chrPausedSkillQueue WHERE charID = %u", characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM entity_attributes"
                             " WHERE itemID IN (SELECT itemID FROM entity WHERE ownerID = %u)", characterID);
 
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE ownerID = %u", characterID);
+
+
+    sDatabase.RunQuery(err, "DELETE FROM avatar_colors, avatar_modifiers, avatar_sculpts, avatars WHERE charID = %u", characterID);
 }
 
 bool CharacterDB::ReportRespec(uint32 characterId)
 {
     DBerror error;
     if (!sDatabase.RunQuery(error, "UPDATE chrCharacters SET freeRespecs = freeRespecs - 1, lastRespecDateTime = %f, nextRespecDateTime = %lli WHERE characterId = %u",
-        GetFileTimeNow(), Win32TimeNow() + EvE::Time::Month *3, characterId))
+        GetFileTimeNow(), (Win32TimeNow() + EvE::Time::Month *3), characterId))
         return false;
     return true;
 }
@@ -213,7 +197,7 @@ PyRep* CharacterDB::GetRespecInfo(uint32 characterId)
 
     PyDict* result = new PyDict();
     result->SetItemString( "freeRespecs", new PyInt( row.GetInt(0) ) );
-    result->SetItemString( "lastRespecDate", new PyInt( row.GetInt64(1) ) );
+    result->SetItemString( "lastRespecDate", new PyLong( row.GetInt64(1) ) );
     result->SetItemString( "nextTimedRespec", new PyLong( row.GetInt64(2) ) );
 
     return result;
@@ -242,7 +226,7 @@ void CharacterDB::CancelCharacterDeletePrepare(uint32 accountID, uint32 charID)
     uint32 affectedRows;
     sDatabase.RunQuery(error, affectedRows, "UPDATE chrCharacters SET deletePrepareDateTime = 0 WHERE accountID = %u AND characterID = %u", accountID, charID);
     if (affectedRows != 1)
-        codelog(CLIENT__ERROR, "Failed to cancel character deletion, affected rows: %u", affectedRows);
+        _log(CLIENT__ERROR, "Failed to cancel character deletion, affected rows: %u", affectedRows);
 }
 
 PyRep *CharacterDB::GetCharacterList(uint32 accountID) {
@@ -345,6 +329,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         shipTypeID = row.GetUInt(1);
     }
 
+    /** @todo  not sure how to implement these yet... */
     uint32 unreadMailCount = 0;
     uint32 upcomingEventCount = 0;
     uint32 unprocessedNotifications = 0;
@@ -362,7 +347,7 @@ PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {
         "  createDateTime, "    //this is char create date
         "  startDateTime, "     //this is char joined corp date
         "  corporationID, "
-        "  0 AS worldSpaceID, " /* this gives "walking around in [station xxxx] msgs on login screen when !=0 */
+        "  0 AS worldSpaceID, " /* this gives "walking around in [station xxxx]" msgs on login screen when !=0 */
         "  stationID, "
         "  solarSystemID, "
         "  constellationID, "

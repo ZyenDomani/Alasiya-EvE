@@ -131,6 +131,46 @@ uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 r
     return accountID;
 }
 
+void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
+    _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %u WHERE characterID = %u", (online?1:0), char_id);
+
+    if ( online )
+        sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
+}
+
+void ServiceDB::SetServerOnlineStatus(bool online) {
+    DBerror err;
+    sDatabase.RunQuery(err,
+                       "UPDATE srvStatus SET Online = %u, Connections = 0, startTime = %s WHERE AI = 1",
+                       (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : "0"));
+
+    //this is only called on startup/shutdown.  reset all char online counts/status'
+    sDatabase.RunQuery(err,
+                       "UPDATE chrCharacters, account"
+                       " SET chrCharacters.online = 0,"
+                       "     account.online = 0");
+
+    sDatabase.RunQuery( err,
+                        "DELETE FROM chrPausedSkillQueue"
+                        " WHERE 1");
+}
+
+void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "UPDATE account SET online = %u WHERE accountID= %u ", (online?1:0), accountID)) {
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
+    }
+}
+
+void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
+    DBerror err;
+    if (!sDatabase.RunQuery(err, "UPDATE account SET banned = %u WHERE accountID = %u", (banned?1:0), accountID)) {
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
+    }
+}
+
 void ServiceDB::SaveKillOrLoss(CharKillData &data) {
     DBerror err;
     sDatabase.RunQuery(err,
@@ -272,47 +312,6 @@ void ServiceDB::ProcessLongChange(const char* key, int64 oldValue, int64 newValu
     qValue += " = ";
     qValue += itoa(newValue);
     dbQ.push_back(qValue);
-}
-
-
-void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
-    _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");
-    DBerror err;
-    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = %u WHERE characterID = %u", (online?1:0), char_id);
-
-    if ( online )
-        sDatabase.RunQuery(err, "UPDATE srvStatus SET Connections = Connections + 1");
-}
-
-void ServiceDB::SetServerOnlineStatus(bool online) {
-    DBerror err;
-    sDatabase.RunQuery(err,
-        "UPDATE srvStatus SET Online = %u, Connections = 0, startTime = %s WHERE AI = 1",
-        (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : "0"));
-
-    //this is only called on startup/shutdown.  reset all char online counts/status'
-    sDatabase.RunQuery(err,
-        "UPDATE chrCharacters, account"
-        " SET chrCharacters.online = 0,"
-        "     account.online = 0");
-
-    sDatabase.RunQuery( err,
-        "DELETE FROM chrPausedSkillQueue"
-        " WHERE 1");
-}
-
-void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
-    DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET online = %u WHERE accountID= %u ", (online?1:0), accountID)) {
-        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
-    }
-}
-
-void ServiceDB::SetAccountBanStatus(uint32 accountID, bool banned) {
-    DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET banned = %u WHERE accountID = %u", (banned?1:0), accountID)) {
-        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
-    }
 }
 
 void ServiceDB::SaveServerStats(double threads, float rss, float vm, float user, float kernel, uint32 items, uint32 bubbles) {
