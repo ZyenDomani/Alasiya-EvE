@@ -38,7 +38,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     for (auto cur : entityIDs) {
         if (cur == 0) {
-            sLog.Error("GetMultiOwnersEx", "Sent 0.");
+            //sLog.Error("GetMultiOwnersEx", "Sent 0.");
             continue;
         }
         if (IsCorp(cur))
@@ -150,7 +150,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
 
     for (auto cur : entityIDs) {
         if (cur == 0) {
-            sLog.Error("GetMultiLocationsEx", "Sent 0.");
+            //sLog.Error("GetMultiLocationsEx", "Sent 0.");
             continue;
         }
         //sLog.Warning("GetMultiLocationsEx", "Sent %u.", cur);
