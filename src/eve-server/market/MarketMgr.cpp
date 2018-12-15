@@ -321,7 +321,7 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
     }
 
     if (quantity > qtyAvail) {
-        codelog(MARKET__ERROR, "%s: Tried to buy more (%u) than available (%u). Buying all available.", buyer->GetName(), quantity, qtyAvail);
+        codelog(MARKET__ERROR, "%s: Tried to buy more than available (%u != %u). Buying all available.", buyer->GetName(), quantity, qtyAvail);
         quantity = qtyAvail;
     }
 
@@ -333,10 +333,13 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
     if (ownerID == 1)
         ownerID = stDataMgr.GetOwnerID(stationID);
 
-    ItemData idata(typeID, ownerID, stationID, flagAutoFit, quantity);
+    ItemData idata(typeID, 1, stationID, flagAutoFit, quantity);
     InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
     if (new_item.get() == nullptr)
         return;
+
+    //use the owner change packet to alert the buyer of the new item
+    new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
 
     double money = price * quantity;
     // send wallet blink event and record the transaction in their journal.
@@ -351,12 +354,9 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
                                  orderID,
                                  Account::KeyType::Cash);
 
-    //use the owner change packet to alert the buyer of the new item
-    new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
-
     // add data to StatisticMgr
     sStatMgr.Add(Stat::iskMarket, money);
-    
+
     if (quantity == qtyAvail) {
         _log(MARKET__TRACE, "%s: Completely satisfied order %u, deleting.", buyer->GetName(), orderID);
         PyRep* order = m_db.GetOrderRow(orderID);
