@@ -45,6 +45,7 @@ public:
 
     float GetShipInsurancePayout(uint32 shipID);
 
+    bool IsShipInsured(uint32 shipID);
 };
 
 #endif

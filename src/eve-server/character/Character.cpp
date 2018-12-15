@@ -840,8 +840,8 @@ void Character::UpdateSkillQueue() {
                     default: {
                         if (!sent) {
                             sent = true;
-                            m_pClient->SendInfoModalMsg("Skill Training Complete for %s, Level %u.<BR>Your ship will update to your new skill level the next time you undock.",\
-                                currentTraining->itemName().c_str(), level.get_uint32());
+                            m_pClient->SendInfoModalMsg("Skill Training Complete for Level %u of %s .<br>Your ship will update to your new skill level the next time you undock.",\
+                                level.get_uint32(), currentTraining->itemName().c_str());
                         }
                     } break;
                 }

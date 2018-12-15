@@ -124,7 +124,9 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     /** @todo  see what we can do about this....old error  */
     if (res.ColumnCount())
         return DBResultToTupleSet(res);
-    return nullptr;
+    PyTuple* tuple = new PyTuple(1);
+    tuple->SetItem(0, PyStatic.NewNone());
+    return tuple;
 }
 
 PyRep *ConfigDB::GetMultiAllianceShortNamesEx(const std::vector<int32> &entityIDs) {

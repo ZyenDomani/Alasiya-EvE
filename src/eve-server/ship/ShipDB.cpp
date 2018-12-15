@@ -37,10 +37,10 @@ PyRep *ShipDB::GetInsuranceByShipID(uint32 shipID) {
 		" FROM shipInsurance"
         " WHERE shipID = %u", shipID );
 
-    if(res.GetRow(row))
+    if (res.GetRow(row))
         return DBRowToRow(row);
-    else
-        return 0;
+
+    return PyStatic.NewZero();
 }
 
 PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
@@ -54,15 +54,11 @@ PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
 }
 
 bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
-    float endDate = (GetFileTimeNow() + (EvE::Time::Week * numWeeks));
-
     DBerror err;
-    sDatabase.RunQuery(err, "INSERT INTO "
+    return sDatabase.RunQuery(err, "INSERT INTO "
         "  shipInsurance (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
         " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
-                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), endDate, fraction, payOut );
-
-    return true;
+                       shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
 }
 
 void ShipDB::DeleteInsuranceByShipID(uint32 shipID) {
@@ -74,8 +70,20 @@ float ShipDB::GetShipInsurancePayout(uint32 shipID) {
     DBQueryResult res;
     DBResultRow row;
     sDatabase.RunQuery(res, "SELECT payOutAmount FROM shipInsurance WHERE shipID = %u", shipID);
-    if(res.GetRow(row))
+    if (res.GetRow(row))
         return row.GetFloat(0);
-    else    /** @todo  send mail to owner about no insurance, so limited payout. from SCC  */
-        return 150000;  //default to flat 150K for no insurance.
+
+    /** @todo  send mail to owner about no insurance, so limited payout. from SCC  */
+    return 150000;  //default to flat 150K for no insurance.
+}
+
+bool ShipDB::IsShipInsured(uint32 shipID)
+{
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT ownerID FROM shipInsurance WHERE shipID = %u", shipID );
+    DBResultRow row;
+    if (res.GetRow(row))
+        return true;
+
+    return false;
 }

@@ -213,6 +213,7 @@ void Scan::SystemScanStarted(uint16 duration)
 void Scan::ShipScanResult() {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 11Dec15
     /** @todo  see client code to verify what it expects, and what it can calculate */
+    /** @todo  add gmh/dev/mod switch (client var) to show ALL objects in system */
     std::vector<CosmicSignature> anom;
     m_system->GetAnomMgr()->GetAnomalyList(anom);
 

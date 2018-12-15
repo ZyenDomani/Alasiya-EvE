@@ -176,14 +176,17 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     if (fraction == 0) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
-        return PyStatic.NewNone();
+        throw PyException( MakeUserError( "InsureShipFailed"));
     } else if (fraction == 0.3)
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
 
-    // delete old insurance, if any
-    // TODO  verify they want to cancel old insurance before deleting
-    if (call.byname.find("voidOld")->second->AsInt()->value())
-        m_db->DeleteInsuranceByShipID(args.shipID);
+    if (m_db->IsShipInsured(args.shipID)) {
+        if (call.byname.find("voidOld") != call.byname.end()) {
+            if (call.byname.find("voidOld")->second->AsBool()->value())
+                m_db->DeleteInsuranceByShipID(args.shipID);
+        } else  // this will send voidOld=true after asking player to cancel old insurance
+            throw PyException( MakeUserError( "InsureShipFailedSingleContract"));
+    }
 
     uint8 numWeeks = 12;    // TODO make this a config variable
 
@@ -194,7 +197,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
 	} else {
         call.client->SendErrorMsg("Failed to install new insurance contract.");
-        return PyStatic.NewNone();
+        throw PyException( MakeUserError( "InsureShipFailed"));
     }
 
     // TODO:  send mail detailing insurance coverage and length of coverage

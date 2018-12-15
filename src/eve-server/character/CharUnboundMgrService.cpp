@@ -66,8 +66,7 @@ void CharUnboundMgrService::GetCharacterData(uint32 characterID, std::map< std::
 }
 
 PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call) {
-    _log(CLIENT__ERROR, "Called IsUserReceivingCharacter");
-    /*  this is called when selecting the 3ed slot, when there are 2 chars on account already.
+    /*  this is called when selecting the 3ed slot when there are 2 chars on account already.
      * returning true will disable creating a 3ed character.
      * returning false will allow creating a 3ed character.
      */
