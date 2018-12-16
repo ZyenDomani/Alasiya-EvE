@@ -169,6 +169,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         oreAmount *= delta;
         if (m_iMiner or m_gMiner)
             oreAmount = floor(oreAmount);
+        _log(MINING__DEBUG, "ProcessCycle(abort) -  cycleVol:%.2f, oreAmount:%.2f, delta:%.5f", cycleVol, oreAmount, delta);
     }
 
     double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
@@ -212,7 +213,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
 
     if (roidQuantity > 0.0f) {
         roidRef->SetAttribute(AttrQuantity, roidQuantity);
-        // do not reset ice radius
+        // do not reset ice radius (our huge-ass chunks will probably never expire)
         if (!m_iMiner) {
             /* reversing the radius-to-quantity formula, we get radius = exp((quantity + 112404.8) /25000)  */
             double radius = exp((roidQuantity +112404.8) /25000);

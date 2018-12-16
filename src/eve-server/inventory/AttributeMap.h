@@ -60,7 +60,7 @@ public:
     // load the default attributes that come with the item's typeID
     bool Load(bool reset=false);
 
-    /* only save the ship damage other attribs are calculated when ship activated */
+    /* only save the ship damage. other attribs are calculated when ship activated */
     void SaveShipState();
     bool SaveAttributes();
 
