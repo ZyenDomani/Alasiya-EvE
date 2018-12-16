@@ -85,6 +85,47 @@ GaFloat GaVec3::angle(float ax, float ay, float bx, float by)
     return result;
 }
 
+GaVec3 GaVec3::slerp(GaVec3 v0, GaVec3 v1, double t)
+{
+    // Only unit quaternions are valid rotations.
+    // Normalize to avoid undefined behavior.
+    v0.normalize();
+    v1.normalize();
+
+    // Compute the cosine of the angle between the two vectors.
+    double dot = v0.dotProduct(v1);
+
+    // If the dot product is negative, slerp won't take
+    // the shorter path. Note that v1 and -v1 are equivalent when
+    // the negation is applied to all four components. Fix by
+    // reversing one quaternion.
+    if (dot < 0.0f) {
+        v1 = (v1 * -1);
+        dot = -dot;
+    }
+
+    if (dot > 0.9995) {
+        // If the inputs are too close for comfort, linearly interpolate
+        // and normalize the result.
+
+        GaVec3 result = v0 + t*(v1 - v0);
+        result.normalize();
+        return result;
+    }
+
+    // Since dot is in range [0, 0.9995], acos is safe
+    double theta_0 = acos(dot);        // theta_0 = angle between input vectors
+    double theta = theta_0*t;          // theta = angle between v0 and result
+    double sin_theta = sin(theta);     // compute this value only once
+    double sin_theta_0 = sin(theta_0); // compute this value only once
+
+    double s0 = cos(theta) - dot * sin_theta / sin_theta_0;  // == sin(theta_0 - theta) / sin(theta_0)
+    double s1 = sin_theta / sin_theta_0;
+
+    return (s0 * v0) + (s1 * v1);
+}
+
+
 GaMat4x4 GaMat4x4::adjoint() const
 {
 	return GaMat4x4

@@ -174,6 +174,8 @@ namespace Ga
 		// angle in degrees
 		GaFloat angle(float ax, float ay, float bx, float by);
 
+        GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
+
 		//optimized checks for a very common case
 		bool isZero() const {
 			return(x == 0.0f && y == 0.0f && z == 0.0f);
