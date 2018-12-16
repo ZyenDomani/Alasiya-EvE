@@ -124,8 +124,9 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
     /** @todo  see what we can do about this....old error  */
     if (res.ColumnCount())
         return DBResultToTupleSet(res);
-    PyTuple* tuple = new PyTuple(1);
+    PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, PyStatic.NewNone());
+    tuple->SetItem(1, PyStatic.NewNone());
     return tuple;
 }
 
@@ -214,7 +215,10 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
 
     if (res.ColumnCount())
         return DBResultToTupleSet(res);
-    return nullptr;
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, PyStatic.NewNone());
+    tuple->SetItem(1, PyStatic.NewNone());
+    return tuple;
 }
 
 PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)

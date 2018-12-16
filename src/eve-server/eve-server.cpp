@@ -34,6 +34,8 @@
 #include "StaticDataMgr.h"
 #include "StatisticMgr.h"
 #include "missions/MissionDataMgr.h"
+//console commands
+#include "ConsoleCommands.h"
 // account services
 #include "account/AccountService.h"
 #include "account/AuthService.h"
@@ -177,8 +179,6 @@
 #include "system/cosmicMgrs/DungeonMgr.h"
 #include "system/cosmicMgrs/SpawnMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
-//console commands
-#include "ConsoleCommands.h"
 
 
 static const char* const SRV_CONFIG_FILE = EVEMU_ROOT "/etc/eve-server.xml";

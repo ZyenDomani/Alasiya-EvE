@@ -31,6 +31,7 @@
 #include "log/logsys.h"
 #include "utils/misc.h"
 #include "utils/utils_time.h"
+//#include "../eve-server/Profile.h"
 
 #define COLUMN_BOUNDS_CHECKING
 
@@ -349,6 +350,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
 
     err.ClearError();
 
+    // this has stopped working... not sure why
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
 
