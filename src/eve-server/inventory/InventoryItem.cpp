@@ -909,9 +909,9 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
     return true;
 }
 
-void InventoryItem::MergeTypesInCargo(ShipItem* pShip)
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
 {
-    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flagCargoHold);
+    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
     if (iRef.get() == nullptr)
         return;
     // here we 'merge' with stack already in cargo

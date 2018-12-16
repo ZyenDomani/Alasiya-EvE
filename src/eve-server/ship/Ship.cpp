@@ -1126,14 +1126,13 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         m_ModuleManager->UpdateModules(flag);
     }
 
-    /** @note  this isnt gonna work as intended all the time....may look into later.
+    /** @note  this isnt gonna work as intended all the time....may look into later. */
     if (flag == flagCargoHold) {
-        InventoryItemRef item = pInventory->GetItemByTypeFlag(iRef->typeID(), flagCargoHold);
-        if (item.get() != nullptr)
-            item->Merge(iRef);
+        if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
+            iRef->MergeTypesInCargo(this, flag);
         else
             iRef->Move(m_itemID, flag, true);
-    } else */
+    } else
         iRef->Move(m_itemID, flag, true);
 
 	return iRef->itemID();

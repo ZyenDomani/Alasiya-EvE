@@ -204,7 +204,9 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     }
 
     if (!m_shipRef->AddItem(m_holdFlag, oRef)) {
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as it couldn't add ore to your cargohold.", m_modRef->itemName().c_str());
         _log(MINING__ERROR, "Could not add ore to hold for %s(%u)", m_shipRef->itemName().c_str(), m_shipRef->itemID() );
+        ActiveModule::DeactivateCycle(true);
         return;
     }
 

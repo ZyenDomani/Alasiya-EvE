@@ -630,7 +630,7 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
     if (IsStation(m_Ship->locationID()))
         chargeRef->Move(m_Ship->locationID(), flagHangar, true);
     else if (merge and m_Ship->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
-        chargeRef->MergeTypesInCargo(m_Ship);
+        chargeRef->MergeTypesInCargo(m_Ship, flagCargoHold);
     else
         chargeRef->SetFlag(flagCargoHold, true);
 }
@@ -666,7 +666,7 @@ void ModuleManager::UnloadAllModules()
         if IsStation(m_Ship->locationID())
             cur.second->Move(m_Ship->locationID(), flagHangar, true);
         else if (m_Ship->GetMyInventory()->ContainsTypeByFlag(cur.second->typeID(), flagCargoHold))
-            cur.second->MergeTypesInCargo(m_Ship);
+            cur.second->MergeTypesInCargo(m_Ship, flagCargoHold);
         else
             cur.second->SetFlag(flagCargoHold, true);
     }

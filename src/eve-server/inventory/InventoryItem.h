@@ -119,7 +119,7 @@ public:
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
     // this is for stacking unloading charges in ships cargo
-    void                    MergeTypesInCargo(ShipItem* pShip);
+    void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
     bool                    ChangeSingleton(bool singleton, bool notify=false);
     bool                    AlterQuantity(int32 qty_change, bool notify=false);
     bool                    SetQuantity(int32 qty_new, bool notify=false);
