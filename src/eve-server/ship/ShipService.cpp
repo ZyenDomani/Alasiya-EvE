@@ -400,16 +400,15 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
                   [PyInt 0]
             */
 
+    call.Dump(COLLECT__CALL_DUMP);
+    if (call.tuple->empty())
+        return nullptr;
+
     Call_AssembleShip args;
-    Call_AssembleShipTech3 argsT3;
     //Call_AssembleShipWithName argsNamed;
 
-    uint32 itemID = 0;
-    std::vector<uint32> subSystemList;
     std::vector<int32> itemIDList;
     bool completeTech3Assembly = false;
-    call.Dump(COLLECT__CALL_DUMP);
-
     if (call.tuple->GetItem(0)->IsList()) {
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -430,37 +429,38 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
         throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
         return nullptr;
+        Call_AssembleShipTech3 argsT3;
+        argsT3.item;
     }
 
-    for (int i = 0; i < itemIDList.size(); ++i) {
-        itemID = itemIDList[i];
-
-        ShipItemRef ship = sItemFactory.GetShip(itemID);
+    ShipItemRef ship(nullptr);
+    for (auto cur : itemIDList) {
+        ship = sItemFactory.GetShip(cur);
 
         if (ship.get() == nullptr) {
-            _log(ITEM__ERROR, "Failed to load ship %u to assemble.", itemID);
-            return nullptr;
+            _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
+            continue;
         }
 
         //check if the ship is a stack
         if (ship->quantity() > 1) {
-            // Split the stack into a new inventory item (new_item) with quantity minus one,
-            // original item (ship) will be left with quantity = 1, then will be assembled:
-            //InventoryItemRef new_item = ship->Split(ship->quantity()-1,true);
+            // Split the stack into a new inventory item with quantity of one, cast to ShipItemRef then assembled:
+            // original item stack will be left with qty-1 at original location
             ship = ShipItemRef::StaticCast(ship->Split(1, true));
             if (ship.get() == nullptr) {
-                _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", itemID);
-                return nullptr;
+                _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", cur);
+                continue;
             }
         }
 
         ship->ChangeSingleton(true, true);
 
         if (completeTech3Assembly) {
+            std::vector<uint32> subSystemList;
             // Move the five specified subsystems to the newly assembled Tech 3 ship
-            InventoryItemRef subSystemItem;
-            for(uint32 index=0; index<subSystemList.size(); index++) {
-                subSystemItem = sItemFactory.GetItem(subSystemList.at(index));
+            InventoryItemRef subSystemItem(nullptr);
+            for (auto cur : subSystemList) {
+                subSystemItem = sItemFactory.GetItem(cur);
                 subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
             }
         }
