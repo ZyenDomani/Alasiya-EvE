@@ -302,7 +302,7 @@ bool MarketDB::GetOrderInfo(
     if (typeID != nullptr)          *typeID     = row.GetUInt(2);
     if (stationID != nullptr)       *stationID  = row.GetUInt(3);
     if (ownerID != nullptr)         *ownerID    = row.GetUInt(4);
-    if (isBuy != nullptr)           *isBuy      = row.GetBool(5);
+    if (isBuy != nullptr)           *isBuy      = row.GetInt(5) ? true : false;
     if (isCorp != nullptr)          *isCorp     = row.GetBool(6);
 
     return true;

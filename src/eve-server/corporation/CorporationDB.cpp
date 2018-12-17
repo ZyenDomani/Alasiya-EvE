@@ -1765,7 +1765,7 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
             dict->SetItemString("changeTime", new PyLong(row.GetInt64(3)));
             dict->SetItemString("oldRoles", new PyLong(row.GetInt64(4)));
             dict->SetItemString("newRoles", new PyLong(row.GetInt64(5)));
-            dict->SetItemString("grantable", new PyInt(row.GetBool(6)));
+            dict->SetItemString("grantable", new PyBool(row.GetBool(6)));
         list->AddItem(dict);
         }
     } else {
@@ -1776,7 +1776,7 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
             dict->SetItemString("changeTime", new PyInt(0));
             dict->SetItemString("oldRoles", new PyInt(0));
             dict->SetItemString("newRoles", new PyInt(0));
-            dict->SetItemString("grantable", new PyInt(0));
+            dict->SetItemString("grantable", new PyBool(false));
         list->AddItem(dict);
     }
 

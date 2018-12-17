@@ -192,8 +192,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!pClient->RecPic()) {
         pClient->SendInfoModalMsg("The Portrait for this character was not received.  Your character will still be created, but the server will not have their picture.");
     }
-    _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called with schoolID: %i bloodlineID: %i genderID: %i ancestryID: %i", \
-                        arg.schoolID, arg.bloodlineID, arg.genderID, arg.ancestryID);
+    _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called with schoolID: %i bloodlineID: %i gender: %s ancestryID: %i", \
+                        arg.schoolID, arg.bloodlineID, arg.genderID == 1 ? "male" : "female", arg.ancestryID);
 
     // obtain character type
     sItemFactory.SetUsingClient( pClient );

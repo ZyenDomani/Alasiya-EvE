@@ -60,7 +60,7 @@ std::string BaseRowsetReader::iterator::GetAsString( size_t index ) const
     switch( t )
     {
     case PyRep::PyTypeNone:
-        return "NULL";
+        return "None";
     case PyRep::PyTypeBool:
         return itoa( GetBool( index ) ? 1 : 0 );
     case PyRep::PyTypeInt:

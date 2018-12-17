@@ -471,7 +471,7 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["rolesAtHQ"] = row.GetInt64(10);
     characterDataMap["rolesAtOther"] = row.GetInt64(11);
     characterDataMap["shipID"] = row.GetUInt(12);
-    characterDataMap["gender"] = row.GetUInt(13);
+    characterDataMap["gender"] = row.GetInt(13);
     characterDataMap["bloodlineID"] = row.GetUInt(14);
     characterDataMap["raceID"] = row.GetUInt(15);
     characterDataMap["locationID"] = row.GetUInt(16);

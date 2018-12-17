@@ -61,7 +61,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  corporationID as ownerID,"
             "  corporationName as ownerName,"
             "  2 AS typeID,"                    // corp typeID
-            "  NULL AS gender,"
+            "  false AS gender,"
             "  NULL AS ownerNameID"
             " FROM crpCorporation"
             " WHERE corporationID IN (%s)", ids.c_str()))
@@ -78,7 +78,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  allianceID as ownerID,"
             "  allianceShortName as ownerName,"
             "  16159 AS typeID,"                 // alliance typeID.
-            "  NULL AS gender,"
+            "  false AS gender,"
             "  NULL AS ownerNameID"
             " FROM alnAlliance"
             " WHERE allianceID IN (%s)", ids.c_str()))
@@ -111,7 +111,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
             "  ownerID,"
             "  ownerName,"
             "  typeID,"
-            "  1 AS gender,"
+            "  true AS gender,"
             "  NULL AS ownerNameID"
             " FROM eveStaticOwners"
             " WHERE ownerID IN (%s)", ids.c_str()))

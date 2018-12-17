@@ -792,7 +792,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     into.accountID = row.IsNull( 0 ) ? 0 : row.GetUInt( 0 );
     into.title = row.GetText( 1 );
     into.description = row.GetText( 2 );
-    into.gender = row.GetBool( 3 );
+    into.gender = row.GetInt( 3 ) ? true : false;
     into.bounty = row.GetDouble( 4 );
     into.balance = row.GetDouble( 5 );
     into.aurBalance = row.GetDouble( 6 );

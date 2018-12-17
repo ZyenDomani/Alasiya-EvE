@@ -32,7 +32,7 @@ CREATE TABLE `agtOffers` (
   `agentID` int(10) NOT NULL DEFAULT '0',
   `characterID` int(10) NOT NULL DEFAULT '0',
   `missionID` int(10) NOT NULL DEFAULT '0',
-  `stateID` tinyint(1) NOT NULL DEFAULT '0',
+  `stateID` tinyint(2) NOT NULL DEFAULT '0',
   `expiryTime` bigint(20) NOT NULL DEFAULT '0',
   `rewardLP` int(10) NOT NULL DEFAULT '0',
   `rewardISK` int(10) NOT NULL DEFAULT '0',
@@ -54,7 +54,6 @@ CREATE TABLE `agtOffers` (
   `dateIssued` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateAccepted` bigint(20) unsigned NOT NULL DEFAULT '0',
   `dateCompleted` bigint(20) unsigned NOT NULL DEFAULT '0',
-  `important` bit(1) NOT NULL DEFAULT 0,
   `name` text NOT NULL,
   `remoteCompletable` bit(1) NOT NULL DEFAULT 0,
   `remoteOfferable` bit(1) NOT NULL DEFAULT 0,
@@ -62,6 +61,7 @@ CREATE TABLE `agtOffers` (
   `bonusISK` int(10) NOT NULL DEFAULT '0',
   `bonusTime` bigint(20) NOT NULL DEFAULT '0',
   `briefingID` int(11) NOT NULL DEFAULT '0',
+  `important` bit(1) NOT NULL DEFAULT 0,
   `storyline` bit(1) NOT NULL DEFAULT 0
 ) ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='char missions - current offers and history';
 

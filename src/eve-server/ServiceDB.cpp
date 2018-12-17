@@ -74,8 +74,8 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     account_info.password   = (row.IsNull(2) ? "" : row.GetText(2));
     account_info.hash       = (row.IsNull(3) ? "" : row.GetText(3));
     account_info.role       = row.GetInt64(4);
-    account_info.online     = row.GetBool(5);
-    account_info.banned     = row.GetBool(6);
+    account_info.online     = row.GetInt(5) ? true : false;
+    account_info.banned     = row.GetInt(6) ? true : false;
     account_info.visits     = row.GetInt(7);
     account_info.last_login = (row.IsNull(8) ? "" : row.GetText(8));
 

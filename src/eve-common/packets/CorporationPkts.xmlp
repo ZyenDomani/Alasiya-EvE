@@ -430,7 +430,7 @@
       <long name="titleMask" />
       <long name="accountKey" />
       <long name="rowDate" />
-      <long name="blockRoles" />
+      <bool name="blockRoles" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -992,7 +992,7 @@
       <long name="grantableRolesAtOther" />
       <int name="baseID" none_marker="0" />
       <long name="titleMask" none_marker="0" />
-      <long name="blockRoles" none_marker="0" />
+      <bool name="blockRoles" none_marker="0" />
     </tupleInline>
   </elementDef>
 
