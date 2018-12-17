@@ -73,10 +73,10 @@ bool FactoryDB::DeleteBlueprint(uint32 blueprintID) {
 
     if(!sDatabase.RunQuery(err,
         "DELETE FROM invBlueprints"
-        " WHERE blueprintID=%u",
+        " WHERE itemID=%u",
         blueprintID))
     {
-        codelog(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
+        _log(DATABASE__ERROR, "Failed to delete blueprint %u: %s.", blueprintID, err.c_str());
         return false;
     }
     return true;
