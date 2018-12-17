@@ -86,7 +86,7 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
         "SELECT"
         "    typeID, MIN(price) AS price, volRemaining, stationID "
         " FROM mktOrders "
-        " WHERE regionID=%u AND bid=%d"
+        " WHERE regionID=%u AND bid=%u"
         " GROUP BY typeID", regionID, TransactionTypeSell))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -114,7 +114,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%i", regionID, typeID, TransactionTypeSell))
+        " WHERE regionID=%u AND typeID=%u AND bid=%u", regionID, typeID, TransactionTypeSell))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
         return nullptr;
@@ -130,7 +130,7 @@ PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
         "   volEntered, minVolume, bid, issued as issueDate, duration,"
         "   stationID, regionID, solarSystemID, jumps"
         " FROM mktOrders "
-        " WHERE regionID=%u AND typeID=%u AND bid=%i", regionID, typeID, TransactionTypeBuy))
+        " WHERE regionID=%u AND typeID=%u AND bid=%u", regionID, typeID, TransactionTypeBuy))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
         PyDecRef( tup );
@@ -342,11 +342,11 @@ bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, 
     if (!sDatabase.RunQuery(err,
         "INSERT INTO"
         " mktTransactions ("
-        "    transactionID, transactionDate, typeID, quantity,"
+        "    transactionDate, typeID, quantity,"
         "    price, transactionType, clientID, regionID, stationID,"
         "    corpTransaction"
         " ) VALUES ("
-        "    NULL, %f, %u, %u,"
+        "    %f, %u, %u,"
         "    %.2f, %d, %u, %u, %u, 0"
         " )",
             GetFileTimeNow(), typeID, quantity,
