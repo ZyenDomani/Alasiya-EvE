@@ -449,7 +449,6 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
     sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
-    call.Dump(POS__DUMP);
 
     Client* pClient = call.client;
 
@@ -459,7 +458,8 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
     }
 
     if (call.tuple->items.at(1)->IsInt()) {
-        // if effect is integer, call is for pos
+        // if effect is integer, call is for pos or container
+        call.Dump(POS__DUMP);
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());

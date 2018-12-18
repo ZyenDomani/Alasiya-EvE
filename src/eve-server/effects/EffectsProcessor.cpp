@@ -144,10 +144,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         // do as stated
         case operandCOMBINE: { //17, %(arg1)s); (%(arg2)s      --executes two statements
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
-            fxData data1;
+            fxData data1 {};
             data1.action = Effects::Action::dgmActInvalid;
             data1.srcRef = data.srcRef;
-            data1.math = data1.targLoc = data1.fxSrc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data1, pMod);
         } break;
         case operandGETTYPE: { //36, %(arg1)s.GetTypeID()  --used by SRLG in AORSM

@@ -24,30 +24,25 @@ SHIP__MODULE_TRACE=1
 #include "ship/modules/GenericModule.h"
 
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
+: m_repeat(0),
+m_modRef(item),
+m_shipRef(ship),
+m_chargeRef(InventoryItemRef(nullptr)),
+m_ModuleState(Module::State::Unfitted),
+m_ChargeState(Module::State::Unloaded),
+m_linked(false),
+m_linkMaster(false),
+m_isWarpSafe(false),
+m_overLoaded(false),
+m_chargeLoaded(false),
+m_hiPower(false),
+m_medPower(false),
+m_loPower(false),
+m_rigSlot(false),
+m_subSystem(false),
+m_turret(false),
+m_launcher(false)
 {
-    m_repeat = 0;
-
-    m_modRef = item;
-    m_shipRef = ship;
-    m_chargeRef = InventoryItemRef(nullptr);
-
-    m_ModuleState = Module::State::Unfitted;
-    m_ChargeState = Module::State::Unloaded;
-
-    m_linked = false;
-    m_linkMaster = false;
-    m_isWarpSafe = false;
-    m_overLoaded = false;
-    m_chargeLoaded = false;
-
-    m_hiPower = false;
-    m_medPower = false;
-    m_loPower = false;
-    m_rigSlot = false;
-    m_subSystem = false;
-    m_turret = false;
-    m_launcher = false;
-
     if (item->type().HasEffect(EVEEffectID::loPower)) {
         m_loPower = true;
     } else if (item->type().HasEffect(EVEEffectID::medPower)) {
@@ -163,7 +158,7 @@ void GenericModule::Online()
             m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
-                fxData data;
+                fxData data {};
                 data.action = Effects::Action::dgmActInvalid;
                 data.srcRef = m_chargeRef;
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
@@ -217,7 +212,7 @@ void GenericModule::Offline()
              *    also, DONT reset modifiermap before remoing, to use existing, modified data
              */
             for (auto it : m_chargeRef->type().m_stateFxMap) {
-                fxData data;
+                fxData data {};
                 data.action = Effects::Action::dgmActInvalid;
                 data.srcRef = m_chargeRef;
                 data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
@@ -265,7 +260,7 @@ void GenericModule::ProcessEffects(Effects::State state, bool active/*false*/)
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
             m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (active ? "true" : "false"));
-    fxData data;
+    fxData data {};
     data.action = Effects::Action::dgmActInvalid;
     data.srcRef = m_modRef;
     for (auto it : effectMap) {

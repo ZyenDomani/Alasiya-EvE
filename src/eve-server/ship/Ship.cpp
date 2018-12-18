@@ -1696,7 +1696,7 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
-    _log(EFFECTS__TRACE, "ShipItem::ProcessEffects():  Processing Ship Effects Processing.");
+    _log(EFFECTS__TRACE, "ShipItem::ProcessEffects():  Processing Ship Effects.");
     fxData data;
     data.action = Effects::Action::dgmActInvalid;
     for (auto it : m_type.m_stateFxMap) {

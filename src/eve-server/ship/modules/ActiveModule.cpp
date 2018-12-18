@@ -20,9 +20,19 @@
 ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
 : GenericModule(iRef, sRef),
 m_timer(0, true),
-m_reloadTimer(0)
+m_reloadTimer(0),
+m_Stop(true),
+m_targetID(0),
+m_effectID(0),
+m_guidStr(""),
+m_bubble(nullptr),
+m_targMgr(nullptr),
+m_targetSE(nullptr),
+m_destinyMgr(nullptr),
+m_needsTarget(false)
 {
-    m_needsTarget = false;
+    m_repeat = 1000;    //arbitrary.
+
     m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (iRef->groupID()) {
@@ -237,7 +247,8 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     } else if (effect.compare("TargetDestroyed") == 0) {
         // this is sent back in OnGodmaShipEffect packet
         m_targetSE = nullptr;
-    } else if (m_targetSE != nullptr)
+    }
+    if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
 
@@ -535,7 +546,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     }
     // process new charge's effects here
     m_chargeRef->ClearModifiers();
-    fxData data;
+    fxData data {};
     data.action = Effects::Action::dgmActInvalid;
     data.srcRef = m_chargeRef;
     for (auto it : m_chargeRef->type().m_stateFxMap) {
