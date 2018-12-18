@@ -217,7 +217,7 @@ protected:
     int32 m_stopDistance;               //from destination, in m
 
     uint8 m_turnTic;                    //time into turn
-    uint8 m_orbiting;                   //specific to orbit state
+    int8 m_orbiting;                    //  -2=way too close, -1=too close, 0=no orbit, 1=at distance 2=too far, 3=way too far
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitRadTic;                //in rad/sec  - for orbiting
@@ -230,7 +230,7 @@ protected:
 
     double m_targetDistance;            //in m
     double m_followDistance;            //in m
-    double m_moveTimer;                 //in ms     - movement timestamp container for calculating csf
+    double m_moveTime;                  //in ms     - movement timestamp container for calculating csf
 
     GPoint m_targetPoint;
     GVector m_shipHeading;              //direction ship is facing
@@ -240,7 +240,6 @@ protected:
 
     // movement methods
     void MoveObject();                  //apply velocity to our position for for this round of movement
-    void ComputePositionAtDate();       // test code....not used yet
     void _Orbit();
     void _Follow();                     //follow or approach object in space
     void _BeginMovement();              //set initial variables for all movement (common code)
@@ -257,6 +256,11 @@ private:
     bool IsTurn();                     //check for current heading vs target direction. return true if degrees > 2 for warp align and > 0.8 for normal movement
     void Turn();                       //apply velocity and heading updates as needed for turning
     void ClearTurn();
+
+    // Internal Orbit shit
+    void ComputePosition();             // test code....not used yet
+    double m_inclination;
+    double m_longAscNode;
 
     // Internal Warp Methods
     Timer m_warpTimer;

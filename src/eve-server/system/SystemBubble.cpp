@@ -110,7 +110,7 @@ void SystemBubble::Process()
     // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
     if (m_spawnTimer.Enabled())
         if (m_spawnTimer.Check())
-            if (HasPlayers()) {
+            if (!m_players.empty()) {
                 m_system->DoSpawnForBubble(this);
             } else {
                 m_spawnTimer.Disable();
@@ -167,7 +167,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
 	}
     pDSE = nullptr;
 
-    if (HasPlayers() and (m_spawned))
+    if (!m_players.empty() and m_spawned)
         ResetBubbleRatSpawn();
 }
 
@@ -198,14 +198,15 @@ void SystemBubble::Add(SystemEntity* pSE) {
             EvE::traceStack();
     }
 
-	//insert the global entitys into their own list
-	if (pSE->IsStaticEntity()) {
+	if (IsTempItem(pSE->GetID())) {
+        if (!m_players.empty())
+            AddBallExclusive(pSE);
+    } else if (pSE->IsStaticEntity()) {
+        //insert the global entitys into their own list
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static.", pSE->GetName(), pSE->GetID() );
-		m_entities[pSE->GetID()] = pSE;
-		return;
-	}
-
-    if (pSE->HasPilot()) {
+        m_entities[pSE->GetID()] = pSE;
+        return;
+    } else if (pSE->HasPilot()) {
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
             // check for roids and load/spawn as needed.
@@ -217,7 +218,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
         Client* pClient = pSE->GetPilot();
         SendAddBalls( pSE );
         if (!pClient->IsJump()) {
-            if (HasPlayers())
+            if (!m_players.empty())
                 AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
         }
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
@@ -226,7 +227,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
             if (!m_spawnTimer.Enabled())
                 SetSpawnTimer(false);
     } else {
-        if (HasPlayers())
+        if (!m_players.empty())
             AddBallExclusive(pSE);
     }
 

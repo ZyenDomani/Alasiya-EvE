@@ -399,7 +399,9 @@ void Client::ProcessClient() {
                 case ClientState::csUndock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                     m_setStateSent = false;
+                    m_clientState = ClientState::csIdle;
                     SetBallPark();
+                    pShipSE->DestinyMgr()->Undock(m_movePoint);
                 } break;
                 case ClientState::csKilled: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
@@ -516,7 +518,7 @@ void Client::SetBallPark() {
         m_system->AddEntity(pShipSE);
     if (m_clientState == ClientState::csUndock) {
         m_ship->Undock();
-        pShipSE->DestinyMgr()->Undock(m_movePoint);
+        return;
     }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
@@ -596,7 +598,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         stationID = locationID;
 
     // location changed...verify current system and set session data for current system.
-    if (IsJump() or (m_system and (m_system->GetID() != m_SystemData.systemID))) {
+    if (IsJump() or ((m_system != nullptr) and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
         _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_system->GetID(), m_locationID);
         // remove from 'current' system before resetting system vars
@@ -733,8 +735,8 @@ void Client::UndockFromStation() {
      */
     sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     OnCharNoLongerInStation();
-    MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
+    MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
 }

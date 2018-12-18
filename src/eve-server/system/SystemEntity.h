@@ -242,7 +242,7 @@ public:
     virtual bool                LoadExtras()            { return true; }
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
-    virtual void                SetPilot(Client* pClient){ /* Do nothing here */ }
+    virtual void              SetPilot(Client* pClient) { /* Do nothing here */ }
     virtual bool                HasPilot()              { return false; }
     virtual Client*             GetPilot()              { return nullptr; }
 
@@ -258,10 +258,10 @@ protected:
 
     double                      m_radius;
 
-    bool m_killed;
+    bool                        m_killed;
 
     /* this is POS ForceField status */
-    int32 m_harmonic;
+    int32                       m_harmonic;
 
     /* ease of access to common data for ownable objects */
     int32                       m_warID;
