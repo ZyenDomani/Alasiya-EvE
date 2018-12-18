@@ -95,6 +95,12 @@ void BubbleManager::Process() {
 
         if (!m_wanderers.empty()) {
             for (auto cur : m_wanderers) {
+                if (IsNaN(cur->x()) or IsNaN(cur->y()) or IsNaN(cur->z())) {
+                    // position error.  this will screw things up.  if haspilot, send error.
+                    if (cur->HasPilot())
+                        cur->GetPilot()->SendErrorMsg("Internal Server Error.  Ref: ServerError 35148<br>Please either dock or relog.");
+                    continue;
+                }
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer %s(%u) in system %s(%u) is being added to a bubble.", \
                         cur->GetName(), cur->GetID(), cur->SystemMgr()->GetName().c_str(), cur->SystemMgr()->GetID());
                 CheckBubble(cur);

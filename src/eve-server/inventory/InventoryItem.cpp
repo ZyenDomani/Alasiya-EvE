@@ -336,6 +336,13 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
     return InventoryItemRef( new InventoryItem(itemID, type, data ));
 }
 
+InventoryItemRef InventoryItem::SpawnTemp(ItemData& data)
+{
+    // will need to update this to get 'proper' item creation for temps...
+    //  for now, return generic item
+    return InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
+}
+
 // called from generic SpawnItem()
 InventoryItemRef InventoryItem::Spawn( ItemData &data)
 {
@@ -404,7 +411,6 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 } break;
                 case EVEDB::invGroups::Sentry_Gun:
                 case EVEDB::invGroups::Temporary_Cloud:
-                case EVEDB::invGroups::Cargo_Container: // Spawn jetcan as marker, using temp items and NOT save to db.
                 default: {  // *should*  be all npcs
                     // use temp items and NOT save to db.
                     uint32 itemID = InventoryItem::CreateTempItemID(data);

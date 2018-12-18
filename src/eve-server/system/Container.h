@@ -59,6 +59,7 @@ public:
      * @return Pointer to new CargoContainer object; NULL if failed.
      */
     static CargoContainerRef Spawn( ItemData &data);
+    static CargoContainerRef SpawnTemp( ItemData &data);
 
     /*
      * Primary public interface:

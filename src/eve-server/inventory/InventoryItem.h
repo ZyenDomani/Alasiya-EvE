@@ -188,6 +188,8 @@ public:
     static InventoryItemRef SpawnItem( uint32 itemID, const ItemData &data);
     /* Spawns new Item.  whats difference here?? */
     static InventoryItemRef Spawn( ItemData &data);
+    /* Spawns new temp Item.  not saved to db */
+    static InventoryItemRef SpawnTemp( ItemData &data);
 
     virtual bool _Load();
 

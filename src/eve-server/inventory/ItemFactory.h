@@ -131,6 +131,7 @@ public:
     CharacterRef            SpawnCharacter(CharacterData& charData, CorpData& corpData);
     BlueprintRef            SpawnBlueprint(ItemData &data, BlueprintData &bpData);
     InventoryItemRef        SpawnItem(ItemData &data);
+    InventoryItemRef        SpawnTempItem(ItemData &data);
     StationOfficeRef        SpawnOffice(ItemData &idata, OfficeData& odata);
     AsteroidItemRef         SpawnAsteroid(ItemData& idata, AsteroidData& adata);
     StructureItemRef        SpawnStructure(ItemData &data);

@@ -399,6 +399,17 @@ InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
     return iRef;
 }
 
+InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
+    InventoryItemRef iRef = InventoryItem::SpawnTemp(data);
+    if (iRef.get() == nullptr)
+        return iRef;
+
+    // spawn successful; store the ref
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
+    ++m_itemCount;
+    return iRef;
+}
+
 BlueprintRef ItemFactory::SpawnBlueprint(ItemData &data, BlueprintData &bpData) {
     BlueprintRef iRef = Blueprint::Spawn(data, bpData);
     if (iRef.get() == nullptr)
