@@ -40,9 +40,9 @@
  * CargoContainer
  */
 CargoContainer::CargoContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
-: InventoryItem(_containerID, _containerType, _data)
+: InventoryItem(_containerID, _containerType, _data),
+m_isAnchored(false)
 {
-    m_isAnchored = false;
     pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", m_itemName.c_str(), m_itemID);
 }
@@ -449,7 +449,9 @@ void WreckContainer::MakeSlimItemChange()
 
 WreckSE::WreckSE(WreckContainerRef self, PyServiceMgr &services, SystemManager* system, const FactionData &data)
 : ItemSystemEntity(self, services, system),
-m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
+m_deleteTimer(sConfig.rates.WorldDecay *60 *1000),
+m_abandoned(false),
+m_contRef(self)
 {
     m_targMgr = new TargetManager(this);
     m_destiny = new DestinyManager(this);
@@ -462,14 +464,12 @@ m_deleteTimer(sConfig.rates.WorldDecay *60 *1000)
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
-    m_abandoned = false;
-    m_contRef = self;
-    m_deleteTimer.Start();
     m_self->SetAttribute(AttrCapacity, m_self->type().capacity());
 }
 
 WreckSE::~WreckSE()
 {
+    SafeDelete(m_targMgr);
     SafeDelete(m_destiny);
 }
 
@@ -545,7 +545,7 @@ PyDict *WreckSE::MakeSlimItem() {
             PyTuple* tuple1 = new PyTuple(4);
                 tuple1->SetItem(0,              new PyInt(m_ownerID));
                 tuple1->SetItem(1,              new PyInt(m_corpID));
-                tuple1->SetItem(2,              new PyNone()); //PyInt(m_fleetID));
+                tuple1->SetItem(2,              new PyInt(m_fleetID));
                 tuple1->SetItem(3,              new PyBool(false));
             slim->SetItemString("lootRights",   tuple1);
         }
