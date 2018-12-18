@@ -124,6 +124,8 @@ protected:
     void RemoveBalls(SystemEntity* to_who);
     void RemoveBallExclusive(SystemEntity* about_who);
 
+    void MarkBubble(GPoint& position, std::string& name, std::string& desc);
+
 private:
     SystemManager* m_system;
 

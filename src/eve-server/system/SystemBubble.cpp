@@ -698,22 +698,11 @@ void SystemBubble::MarkCenter()
     if (m_hasMarkers)
         return;
     // create jetcan to mark bubble center
-    std::string str;
-    str = "BubbleID: ";
+    std::string str = "BubbleID: ", desc = "Bubble Center";
     str += itoa(m_bubbleID);
     str += " Center";
-    ItemData idata(23, 1, m_systemID, flagAutoFit, str.c_str(), m_center, "Bubble Center");
-    CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    MarkBubble(m_center, str, desc);
+
     // create jetcan to mark bubble x
     GPoint center = m_center;
     center.x += BUBBLE_RADIUS_METERS;
@@ -721,18 +710,9 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str += " +X";
-    ItemData idata2(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble x");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata2));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    desc = "Bubble x";
+    MarkBubble(center, str, desc);
+
     // create jetcan to mark bubble -x
     center = m_center;
     center.x -= BUBBLE_RADIUS_METERS;
@@ -740,18 +720,9 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str += " -X";
-    ItemData idata3(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble -x");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata3));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    desc = "Bubble -x";
+    MarkBubble(center, str, desc);
+
     // create jetcan to mark bubble y
     center = m_center;
     center.y += BUBBLE_RADIUS_METERS;
@@ -759,18 +730,9 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str += " +Y";
-    ItemData idata4(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble y");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata4));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    desc = "Bubble y";
+    MarkBubble(center, str, desc);
+
     // create jetcan to mark bubble -y
     center = m_center;
     center.y -= BUBBLE_RADIUS_METERS;
@@ -778,18 +740,9 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str +=  " -Y";
-    ItemData idata5(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble -y");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata5));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    desc = "Bubble -y";
+    MarkBubble(center, str, desc);
+
     // create jetcan to mark bubble z
     center = m_center;
     center.z += BUBBLE_RADIUS_METERS;
@@ -797,18 +750,9 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str += " +Z";
-    ItemData idata6(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble z");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata6));
-    if (iRef.get() != nullptr) {
-        // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
-        ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
-        iRef->SetMySE(cSE);
-        cSE->AnchorContainer();
-        m_markers.emplace(iRef->itemID(), cSE);
-        Add(cSE);
-    }
+    desc = "Bubble z";
+    MarkBubble(center, str, desc);
+
     // create jetcan to mark bubble -z
     center = m_center;
     center.z -= BUBBLE_RADIUS_METERS;
@@ -816,20 +760,25 @@ void SystemBubble::MarkCenter()
     str = "BubbleID: ";
     str += itoa(m_bubbleID);
     str +=  " -Z";
-    ItemData idata7(23, 1, m_systemID, flagAutoFit, str.c_str(), center, "Bubble -z");
-    iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata7));
+    desc = "Bubble -z";
+    MarkBubble(center, str, desc);
+
+    m_hasMarkers = true;
+}
+
+void SystemBubble::MarkBubble(GPoint& position, std::string& name, std::string& desc)
+{
+    ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc);
+    CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
     if (iRef.get() != nullptr) {
         // create new container
-        FactionData jetcanData;
-        jetcanData.allianceID = jetcanData.corporationID = jetcanData.factionID = jetcanData.ownerID = 0;
+        FactionData jetcanData { };
         ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
         iRef->SetMySE(cSE);
         cSE->AnchorContainer();
         m_markers.emplace(iRef->itemID(), cSE);
         Add(cSE);
     }
-
-    m_hasMarkers = true;
 }
 
 
@@ -867,6 +816,9 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
 //send a destiny update to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
+    if (m_players.empty())
+        return;
+
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
@@ -878,6 +830,9 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE':
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
 {
+    if (m_players.empty())
+        return;
+
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
@@ -893,6 +848,9 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 //send a destiny event to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
+    if (m_players.empty())
+        return;
+
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
@@ -903,6 +861,9 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
 {
+    if (m_players.empty())
+        return;
+
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
