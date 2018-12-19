@@ -359,7 +359,7 @@ bool Character::AlterBalance(double amount, uint8 type) {
     // amount can be negative.  check for funds to remove, if applicable
     if ((balance(type) + amount) < 0) {
         std::map<std::string, PyRep *> args;
-        args["amount"] = new PyFloat(amount);
+        args["amount"] = new PyFloat(-amount);
         args["balance"] = new PyFloat(balance(type));
         throw(PyException(MakeUserError("NotEnoughMoney", args)));
         return false;

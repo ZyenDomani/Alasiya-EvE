@@ -333,18 +333,11 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
     if (ownerID == 1)
         ownerID = stDataMgr.GetOwnerID(stationID);
 
-    ItemData idata(typeID, 1, stationID, flagAutoFit, quantity);
-    InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
-    if (new_item.get() == nullptr)
-        return;
-
-    //use the owner change packet to alert the buyer of the new item
-    new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
-
     double money = price * quantity;
     // send wallet blink event and record the transaction in their journal.
     std::string reason = "DESC:  Buying items in ";
     reason += stDataMgr.GetStationName(stationID).c_str();
+    // this will throw if funds not avalible.
     AccountService::TranserFunds(
                                  buyer->GetCharacterID(),
                                  ownerID,
@@ -353,6 +346,15 @@ void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quanti
                                  Journal::EntryType::MarketTransaction,
                                  orderID,
                                  Account::KeyType::Cash);
+
+    // after money is xferd, create and add item.
+    ItemData idata(typeID, 1, stationID, flagAutoFit, quantity);
+    InventoryItemRef new_item = sItemFactory.SpawnItem(idata);
+    if (new_item.get() == nullptr)
+        return;
+
+    //use the owner change packet to alert the buyer of the new item
+    new_item->Donate(buyer->GetCharacterID(), stationID, flagHangar, true);
 
     // add data to StatisticMgr
     sStatMgr.Add(Stat::iskMarket, money);
