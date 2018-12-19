@@ -35,7 +35,8 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
-// this group is to enable profile tracking for db
+#define sConfig ( EVEServerConfig::get() )
+
 class EVEServerConfig
 : public Singleton<EVEServerConfig>
 {
@@ -43,14 +44,15 @@ public:
     struct {
         bool useSocket;
         bool autoReconnect;
-        uint8 dbTimeout;
+        uint dbTimeout;
     } database;
     struct {
         bool UseProfiling;
     } debug;
-
 };
-#define sConfig ( EVEServerConfig::get() )
+
+// this is to enable profile tracking for db
+#define sProfile ( Profile::get() )
 
 class Profile
 : public Singleton<Profile>
@@ -62,7 +64,6 @@ public:
 enum {
     _dbProfile          = 9
 };
-#define sProfile ( Profile::get() )
 
 
 DBcore::DBcore()
@@ -118,7 +119,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
 {
     // this is used to enable socket communication (may not be needed)
     enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
-    unsigned int conn_timeout = sConfig.database.dbTimeout;
+    unsigned int conn_timeout = 20; //sConfig.database.dbTimeout;
     my_bool reconnect = true;
 
     // options should be called BEFORE mysql_real_connect()
@@ -305,9 +306,7 @@ bool DBcore::RunQueryLID(DBerror &err, uint32 &last_insert_id, const char *query
 
 bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool retry/*true*/)
 {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     if (mysql == nullptr) {
         pStatus = Error;
@@ -337,6 +336,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             if (Reconnect())
                 return DoQuery_locked(err, query, querylen, false);
             //CallShutdown();
+            return false;
         }
 
         pStatus = Error;
@@ -350,8 +350,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
 
     err.ClearError();
 
-    // this has stopped working... not sure why
-    if (sConfig.debug.UseProfiling)
+    bool profile = sConfig.debug.UseProfiling;
+    if (profile)
         sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
 
     return true;

@@ -83,15 +83,13 @@ uint32 CargoContainer::CreateItemID( ItemData &data)
 
 void CargoContainer::Delete()
 {
-    if (m_type.id() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
-        PlanetDB mDB;
-        mDB.DeleteLaunch(m_itemID);
-    }
+    if (m_type.id() == EVEDB::invTypes::typePlanetaryLaunchContainer)
+        PlanetDB::DeleteLaunch(m_itemID);
 
-    mySE->Delete();
     pInventory->LoadContents();
     // delete contents first
     pInventory->DeleteContents();
+    mySE->Delete();
     InventoryItem::Delete();
 }
 
@@ -101,6 +99,7 @@ double CargoContainer::GetCapacity(EVEItemFlags flag) const
         case flagAutoFit:
         case flagCargoHold:
             return GetAttribute(AttrCapacity).get_double();
+        // are there any other cases to check for here?
         default:
             return 0.0;
     }
@@ -122,7 +121,7 @@ void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) c
 PyObject *CargoContainer::CargoContainerGetInfo() {
     if (!pInventory->LoadContents( ) ) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for CargoContainerGetInfo", m_itemName.c_str(), m_itemID );
-        return NULL;
+        return nullptr;
     }
 
     Rsp_CommonGetInfo result;
@@ -130,7 +129,7 @@ PyObject *CargoContainer::CargoContainerGetInfo() {
 
     //first populate the CargoContainer.
     if (!Populate( entry ) )
-        return NULL;    //print already done.
+        return nullptr;    //print already done.
 
     result.items[ m_itemID ] = entry.Encode();
 
@@ -201,6 +200,7 @@ void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
 
 ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data)
 : ItemSystemEntity(self, services, system),
+ m_contRef(self),
  m_deleteTimer(0)
 {
     m_targMgr = new TargetManager(this);
@@ -214,8 +214,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
-    m_contRef = self;
-    if (!IsStation(m_self->locationID())) {
+    if (!IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
         if (m_self->typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer)
             m_deleteTimer.Start(5 *24 *60 *60 *1000);  //5d timer for PI launch.  should probably get this saved value from planet launches
         else
@@ -392,6 +391,7 @@ void WreckContainer::Delete()
     pInventory->LoadContents();
     // delete contents first
     pInventory->DeleteContents();
+    // to accurately bcast contents change, move mySE->Delete() here, but that would eat up bwidth when we're deleting container (moot point)
     InventoryItem::Delete();
 }
 
@@ -404,7 +404,7 @@ PyObject *WreckContainer::WreckContainerGetInfo()
 {
     if (!pInventory->LoadContents()) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for WreckContainerGetInfo", itemName().c_str(), itemID() );
-        return NULL;
+        return nullptr;
     }
 
     Rsp_CommonGetInfo result;
@@ -412,9 +412,9 @@ PyObject *WreckContainer::WreckContainerGetInfo()
 
     //first populate the WreckContainer.
     if (!Populate( entry ) )
-        return NULL;    //print already done.
+        return nullptr;    //print already done.
 
-        result.items[ itemID() ] = entry.Encode();
+    result.items[ itemID() ] = entry.Encode();
 
     return result.Encode();
 }
@@ -435,6 +435,8 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
 
 void WreckContainer::MakeSlimItemChange()
 {
+    if ((mySE == nullptr) or (mySE->SysBubble() == nullptr))
+        return;
     PyDict* slimPod = mySE->MakeSlimItem();
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0, new PyLong(itemID()));

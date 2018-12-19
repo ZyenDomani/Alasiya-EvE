@@ -766,9 +766,9 @@ void SystemBubble::MarkCenter()
     m_hasMarkers = true;
 }
 
-void SystemBubble::MarkBubble(GPoint& position, std::string& name, std::string& desc)
+void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::string& desc)
 {
-    ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc);
+    ItemData idata(23, 1, m_systemID, flagAutoFit, name.c_str(), position, desc.c_str());
     CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
     if (iRef.get() != nullptr) {
         // create new container

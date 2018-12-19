@@ -41,7 +41,9 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
   m_targetSE(tSE),
   m_fromSE(pSE),
   m_hitTimer(0),
-  m_lifeTimer(0)
+  m_lifeTimer(0),
+  m_damageMod(1),
+  m_alive(true)
 {
     if (pSE->HasPilot())
         m_ownerID = pSE->GetPilot()->GetChar()->itemID();
@@ -51,9 +53,6 @@ Missile::Missile( InventoryItemRef self, PyServiceMgr& services, SystemManager* 
     m_warID = pSE->GetWarFactionID();
     m_allyID = pSE->GetAllianceID();
     m_corpID = pSE->GetCorporationID();
-
-    m_damageMod = 1;
-    m_alive = true;
 
     m_hullHP = self->GetAttribute(AttrHP).get_int();
 
@@ -287,4 +286,5 @@ void Missile::Delete() {
     m_system->RemoveEntity(this);
     m_self->Delete();
     // do we need to do anything else here?
+    SystemEntity::Delete();
 }

@@ -234,12 +234,12 @@ public:
     virtual void                EncodeDestiny(Buffer& into);
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
-    virtual void                Delete()                { /* Do nothing here */ }  // this is only for asteroids and missiles and containers/wrecks and probes (so far...)
 
     /* virtual functions to be overridden in derived classes */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
     virtual void                UpdateDamage()          { /* Do nothing here */ }
     virtual bool                LoadExtras()            { return true; }
+    virtual void                Delete()                { delete this; }  // this is for asteroids and missiles and containers/wrecks and probes (so far...)
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void              SetPilot(Client* pClient) { /* Do nothing here */ }

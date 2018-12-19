@@ -132,6 +132,7 @@ void AsteroidSE::Delete()
     m_beltMgr->RemoveAsteroid(m_beltID, this);
     m_system->RemoveEntity(this);
     m_self->Delete();
+    SystemEntity::Delete();
 }
 
 /*

@@ -69,7 +69,7 @@ public:
     void GetExtractorsForPlanet(uint32 planetID, DBQueryResult& res);
 
     void SaveLaunch(uint32 contID, uint32 charID, uint32 systemID, uint32 planetID, GPoint& pos);
-    void DeleteLaunch(uint32 contID);
+    static void DeleteLaunch(uint32 contID);
     void UpdatePinTimes(PI_CCPin* ccPin);
     void UpdatePlanetsForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint16 typeID, uint8 pins=1);
 

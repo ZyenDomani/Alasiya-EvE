@@ -79,7 +79,7 @@ void BeltMgr::ClearAll() {
 
     for (auto cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
-        delete cur.second;  // SafeDelete() crashes here...dunno why
+        cur.second->Delete();
     }
     m_asteroids.clear();
     m_belts.clear();

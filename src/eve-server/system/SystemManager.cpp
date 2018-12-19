@@ -56,23 +56,22 @@
 
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :m_services(svc),
-m_bountyTimer(20 * 60 * 1000),      // 20m  default
+m_bountyTimer(0),
 m_anomMgr(new AnomalyMgr(this, svc)),
 m_beltMgr(new BeltMgr(this, svc)),
 m_dungMgr(new DungeonMgr(this, svc)),
-m_spawnMgr(new SpawnMgr(this, svc))
+m_spawnMgr(new SpawnMgr(this, svc)),
+m_loaded(false),
+m_entityChanged(false),
+m_players(0),
+m_beltCount(0),
+m_gateCount(0),
+m_activityTime(0),
+m_activeRatSpawns(0),
+m_activeGateSpawns(0),
+m_activeRoidSpawns(0),
+m_secValue(1.1f)
 {
-    m_loaded = false;
-    m_entityChanged = false;
-
-    m_players = 0;
-    m_beltCount = 0;
-    m_gateCount = 0;
-    m_activityTime = 0;
-    m_activeRatSpawns = 0;
-    m_activeGateSpawns = 0;
-    m_activeRoidSpawns = 0;
-
     m_npcs.clear();
     m_clients.clear();
     m_moonMap.clear();
@@ -84,11 +83,9 @@ m_spawnMgr(new SpawnMgr(this, svc))
     m_ticEntities.clear();
     m_staticEntities.clear();
 
-    m_bountyTimer.Disable();
-
-    m_secValue = 1.1 - GetSystemSecurityRating();  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
-
     sDataMgr.GetSystemInfo(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
+    m_secValue -= m_data.securityRating;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
+
     _log(COMMON__MESSAGE, "Created SystemManager %p for System %s(%u)", this, m_data.name.c_str(), m_data.systemID);
 }
 
@@ -268,7 +265,7 @@ void SystemManager::UnloadSystem() {
                 itr->second->TargetMgr()->ClearAllTargets(false);
         }
 
-        SafeDelete(itr->second);
+        itr->second->Delete();
         itr = m_entities.erase(itr);
     }
 
