@@ -265,7 +265,7 @@ void SystemManager::UnloadSystem() {
                 itr->second->TargetMgr()->ClearAllTargets(false);
         }
 
-        itr->second->Delete();
+        //itr->second->Delete();
         SafeDelete(itr->second);
         itr = m_entities.erase(itr);
     }
