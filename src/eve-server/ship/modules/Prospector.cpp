@@ -199,8 +199,9 @@ void Prospector::DropSalvage()
             m_targetSE->DestinyMgr()->SendJettisonPacket();
         }
     }
-    m_targetSE->SystemMgr()->RemoveEntity(m_targetSE);
-    m_targetSE->GetSelf()->Delete();
+    
+    m_targetSE->Delete();
+    SafeDelete(m_targetSE);
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::shipsSalvaged);

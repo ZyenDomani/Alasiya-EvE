@@ -115,7 +115,7 @@ public:
     void AddNPC(NPC* who);
     void RemoveNPC(NPC* who);
     void AddEntity(SystemEntity* who);
-    void RemoveEntity(SystemEntity* who);
+    void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble
     void AddClient(Client* who, bool docked=false, bool count=false);
     void RemoveClient(Client* who, bool docked=false, bool count=false);
 

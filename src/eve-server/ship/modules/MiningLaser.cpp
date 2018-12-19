@@ -224,6 +224,8 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
     } else {
         m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as its target has been depleted.", m_modRef->itemName().c_str());
         m_targetSE->Delete();
+        SafeDelete(m_targetSE);
+        // do we need to update m_targetSE now?
     }
 
     if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))

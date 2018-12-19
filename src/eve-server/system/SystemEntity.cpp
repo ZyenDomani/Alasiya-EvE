@@ -236,6 +236,14 @@ void SystemEntity::Abandon()
     m_ownerID = 0;
 }
 
+void SystemEntity::Delete()
+{
+    if (m_system != nullptr)
+        m_system->RemoveEntity(this);
+   m_self->Delete();
+}
+
+
 /* Static / Non-Mobile / Non-Destructable / Celestial Objects - Suns, Planets, Moons, Belts, Gates, Stations */
 StaticSystemEntity::StaticSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
 : SystemEntity(self, services, system)

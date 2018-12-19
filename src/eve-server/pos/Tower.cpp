@@ -228,9 +228,9 @@ void TowerSE::SetOffline()
 {
     if (m_hasShield) {
         m_system->RemoveEntity(m_pShieldSE);
-        m_pShieldSE->GetSelf()->Delete();
+        m_pShieldSE->Delete();
+        SafeDelete(m_pShieldSE);
         m_hasShield = false;
-        m_pShieldSE = nullptr;
     }
 
     StructureSE::SetOffline();

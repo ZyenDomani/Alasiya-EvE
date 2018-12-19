@@ -25,5 +25,5 @@ int8 RigModule::GetModulePowerLevel()
 void RigModule::DestroyRig()
 {
     //delete the item
-    GetSelf()->Delete();
+    m_modRef->Delete();
 }

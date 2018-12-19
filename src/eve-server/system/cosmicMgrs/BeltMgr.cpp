@@ -80,6 +80,7 @@ void BeltMgr::ClearAll() {
     for (auto cur : m_asteroids) {
         m_system->RemoveEntity(cur.second);
         cur.second->Delete();
+        SafeDelete(cur.second);
     }
     m_asteroids.clear();
     m_belts.clear();

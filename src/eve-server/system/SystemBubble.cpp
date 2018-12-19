@@ -75,8 +75,10 @@ SystemBubble::~SystemBubble()
 
 void SystemBubble::clear() {
     if (m_hasMarkers)
-        for (auto cur : m_markers)
+        for (auto cur : m_markers) {
             cur.second->Delete(); // delete marker cans here
+            SafeDelete(cur.second);
+        }
     m_ice = false;
     m_belt = false;
     m_gate = false;
@@ -215,7 +217,7 @@ void SystemBubble::Add(SystemEntity* pSE) {
                 if (!m_spawnTimer.Enabled())
                     SetSpawnTimer(true);
         }
-        Client* pClient = pSE->GetPilot();
+        Client* pClient(pSE->GetPilot());
         SendAddBalls( pSE );
         if (!pClient->IsJump()) {
             if (!m_players.empty())
@@ -684,8 +686,10 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 void SystemBubble::RemoveMarkers()
 {
     if (m_hasMarkers)
-        for (auto cur : m_markers)
+        for (auto cur : m_markers){
             cur.second->Delete(); // delete marker cans here
+            SafeDelete(cur.second);
+        }
     m_markers.clear();
     m_hasMarkers = false;
 }

@@ -239,7 +239,7 @@ public:
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
     virtual void                UpdateDamage()          { /* Do nothing here */ }
     virtual bool                LoadExtras()            { return true; }
-    virtual void                Delete()                { delete this; }  // this is for asteroids and missiles and containers/wrecks and probes (so far...)
+    virtual void                Delete();               // this will remove SE* from system and call Delete() on it's itemRef
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void              SetPilot(Client* pClient) { /* Do nothing here */ }

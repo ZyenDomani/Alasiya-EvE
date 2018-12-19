@@ -153,7 +153,7 @@ public:
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
     virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual void Delete();
+    //virtual void Delete();
 
     /* specific functions handled in this class. */
     void Activate(int32 effectID);
@@ -220,6 +220,7 @@ protected:
 
 private:
     SystemEntity* mySE;
+    bool m_delete;
 };
 
 /**

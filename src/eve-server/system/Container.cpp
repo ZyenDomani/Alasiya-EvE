@@ -90,6 +90,7 @@ void CargoContainer::Delete()
     // delete contents first
     pInventory->DeleteContents();
     mySE->Delete();
+    SafeDelete(mySE);
     InventoryItem::Delete();
 }
 
@@ -239,12 +240,6 @@ void ContainerSE::Process() {
     }
 }
 
-void ContainerSE::Delete()
-{
-    m_system->RemoveEntity(this);
-    SystemEntity::Delete();
-}
-
 void ContainerSE::Activate(int32 effectID)
 {
     // check effectID, check current state, check current timer, set new state, update timer
@@ -345,7 +340,8 @@ PyDict *ContainerSE::MakeSlimItem() {
  * WreckContainer
  */
 WreckContainer::WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data)
-: InventoryItem(_containerID, _containerType, _data)
+: InventoryItem(_containerID, _containerType, _data),
+m_delete(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
@@ -387,10 +383,12 @@ uint32 WreckContainer::CreateItemID( ItemData &data)
 
 void WreckContainer::Delete()
 {
-    mySE->Delete();
+    m_delete = true;
     pInventory->LoadContents();
     // delete contents first
     pInventory->DeleteContents();
+    mySE->Delete();
+    SafeDelete(mySE);
     // to accurately bcast contents change, move mySE->Delete() here, but that would eat up bwidth when we're deleting container (moot point)
     InventoryItem::Delete();
 }
@@ -435,6 +433,8 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
 
 void WreckContainer::MakeSlimItemChange()
 {
+    if (m_delete)
+        return;
     if ((mySE == nullptr) or (mySE->SysBubble() == nullptr))
         return;
     PyDict* slimPod = mySE->MakeSlimItem();

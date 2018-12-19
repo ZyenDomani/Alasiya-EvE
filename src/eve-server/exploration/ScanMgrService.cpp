@@ -227,7 +227,11 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
         return nullptr;
     }
 
-    m_client->SystemMgr()->GetSE(arg.arg)->GetProbeSE()->Delete();
+    SystemEntity* pSE(m_client->SystemMgr()->GetSE(arg.arg));
+    if (pSE != nullptr)
+        if (pSE->IsProbeSE())
+            pSE->GetProbeSE()->Delete();
+    SafeDelete(pSE);
 
     return nullptr;
 }

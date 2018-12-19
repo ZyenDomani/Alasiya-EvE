@@ -222,7 +222,6 @@ void ProbeSE::Process()
 void ProbeSE::Delete()
 {
     m_system->RemoveEntity(this);
-    m_self->Delete();
     SystemEntity::Delete();
 }
 

@@ -877,8 +877,6 @@ void Client::CreateShipSE() {
 void Client::DestroyShipSE() {
     if (pShipSE != nullptr) {
         _log(PLAYER__MESSAGE, "DestroyShipSE() - pShipSE %p (%s) destroyed for %s(%u)", pShipSE, m_ship->itemName().c_str(), m_char->itemName().c_str(), m_char->itemID());
-        if (pShipSE->SysBubble() != nullptr)
-            pShipSE->SysBubble()->Remove(pShipSE);
         m_system->RemoveEntity(pShipSE);
         SafeDelete(pShipSE);
     } else
