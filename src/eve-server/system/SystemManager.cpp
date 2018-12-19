@@ -1008,14 +1008,12 @@ void SystemManager::MakeSetState(const SystemBubble* bubble,  SetState& into) co
 
     std::vector<SystemEntity*> visibleEntities;
 
+    // get all static entities for this system
     for (auto cur : m_staticEntities)
         visibleEntities.push_back(cur.second);
 
-    /*  setstate only sends static global entities and your ship.  addballs sends dynamics
-    if (bubble != nullptr)
-       bubble->GetEntities(visibleEntities);
-    */
-
+    // this gets all dynamic entities, but shouldnt.  we're only concerned about entities in bubble
+    //   this works, but packet size is based on dynamics in system, which can be high.
     std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
         visibleEntities.push_back(itr->second);

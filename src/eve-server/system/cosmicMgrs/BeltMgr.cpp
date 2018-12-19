@@ -10,7 +10,7 @@
 
  /** @note  roid save/load uses InventoryItem::Load(), which saves/reads from entity table, which we DONT want for roids.
   * for now, save and load are disabled, roids are temp items, and use generic InventoryItem class.
-  * this will have to be revisited and corrected to properly implement persistant roids
+  * this will have to be revisited and corrected to properly implement persistant roids/belts
   */
 
 

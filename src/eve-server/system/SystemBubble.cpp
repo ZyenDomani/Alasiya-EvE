@@ -614,6 +614,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
  * RemoveBalls is then called on the entire group, and will call RemoveBall(ballID, terminal) on each ball.
  *  the bool 'terminal' is initially false, then set to true if there is an associated TerminalExplosion for that ballID.
  *
+ * see alsso DestinyManager::SendTerminalExplosion()
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
 //TODO  update these based on above notes   (also look into better (non-ambigious) naming)
@@ -816,9 +817,6 @@ void SystemBubble::BubblecastDestinyEvent(std::vector<PyTuple *> &events, const 
 //send a destiny update to every client in the bubble.
 void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc ) const
 {
-    if (m_players.empty())
-        return;
-
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s update to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
@@ -830,9 +828,6 @@ void SystemBubble::BubblecastDestinyUpdate( PyTuple** payload, const char* desc 
 //send a destiny update to every client in the bubble EXCLUDING the given SystemEntity 'pSE':
 void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const char* desc, SystemEntity* pSE ) const
 {
-    if (m_players.empty())
-        return;
-
     for (auto cur : m_players) {
         // Only queue a Destiny update for this bubble if the current SystemEntity is not 'pSE':
         // (this is an update to all client objects in the bubble EXCLUDING 'pSE')
@@ -848,9 +843,6 @@ void SystemBubble::BubblecastDestinyUpdateExclusive( PyTuple** payload, const ch
 //send a destiny event to every client in the bubble.
 void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc ) const
 {
-    if (m_players.empty())
-        return;
-
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "Bubblecast %s event to %s(%u)", desc, cur.second->GetName(), cur.first );
         PyIncRef(*payload);
@@ -861,9 +853,6 @@ void SystemBubble::BubblecastDestinyEvent( PyTuple** payload, const char* desc )
 
 void SystemBubble::BubblecastSendNotification(const char* notifyType, const char* idType, PyTuple** payload, bool seq)
 {
-    if (m_players.empty())
-        return;
-
     for (auto cur : m_players) {
         _log( DESTINY__BUBBLECAST, "BubblecastNotify %s to %s(%u)", notifyType, cur.second->GetName(), cur.first );
         PyIncRef(*payload);

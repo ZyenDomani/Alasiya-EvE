@@ -1647,6 +1647,7 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
         m_destinyUpdateQueue->AddItem(act.Encode());
     }
     //PyDecRef(*update);
+    m_setStateSent = true;
 }
 
 void Client::_SendQueuedUpdates() {
