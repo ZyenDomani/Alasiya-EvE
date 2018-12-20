@@ -495,7 +495,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
 
     _log(DATABASE__RESULTS, "LoadSystemRoids returned %u items", res.GetRowCount());
     DBResultRow row;
-    AsteroidData entry;
+    AsteroidData entry { };
     while(res.GetRow(row)) {
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);

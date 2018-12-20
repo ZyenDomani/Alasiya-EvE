@@ -187,7 +187,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
 
 void BeltMgr::Save() {
     double start = GetTimeUSeconds();
-    AsteroidData entry;
+    AsteroidData entry { };
     std::vector<AsteroidData> roids;
     roids.clear();
     for (auto cur : m_asteroids) {
@@ -383,7 +383,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         quantity = ((25000 * log(radius)) - 112404.8);
     }
 
-    AsteroidData adata;
+    AsteroidData adata { };
         adata.beltID = beltID;
         adata.systemID = m_systemID;
         adata.typeID = typeID;
