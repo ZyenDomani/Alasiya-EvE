@@ -303,6 +303,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return nullptr;
     }
 
+    pClient->SetChar(charRef);        // set new charRef in client
     // add call to JoinCorp here, and remove corp shit from charDB
 
     //this builds appearance data from strdict
@@ -393,7 +394,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         pod_item->SaveItem();
         charRef->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     }
-    pClient->SetChar(charRef);        // set new charRef in client
     pClient->SetShip(pClient->SpawnNewRookieShip());
 
     CharacterDB::AddEmployment(charRef->itemID(), corpData.corporationID);
