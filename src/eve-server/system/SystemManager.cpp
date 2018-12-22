@@ -253,17 +253,19 @@ void SystemManager::UnloadSystem() {
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     while (itr != m_entities.end()) {
         if ((itr->first > 0) and (itr->second != nullptr)) {
-            if (itr->second->IsStationSE()) {
-                itr->second->GetStationSE()->UnloadStation();
-                sEntityList.RemoveStation(itr->first);
-            } else if (itr->second->IsNPCSE()) {
-                sEntityList.RemoveNPC();    // this is for loaded npc count.
-                itr->second->GetNPCSE()->RemoveNPC();
-            }
-            
             if (itr->second->TargetMgr() != nullptr)
                 itr->second->TargetMgr()->ClearAllTargets(false);
-            itr->second->Delete();
+            if (itr->second->IsNPCSE()) {
+                sEntityList.RemoveNPC();    // this is for loaded npc count.
+                itr->second->Delete();
+            } else {
+                if (itr->second->IsStationSE()) {
+                    itr->second->GetStationSE()->UnloadStation();
+                    sEntityList.RemoveStation(itr->first);
+                }
+
+                RemoveEntity(itr->second);
+            }
         }
 
         SafeDelete(itr->second);
