@@ -288,7 +288,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     m_char->SetLoginTime();
     UpdateSkillTraining();
 
-    SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *3 : ClientTimers::LoginTimer));
+    SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *2 : ClientTimers::LoginTimer));
     return (m_loaded = true);
 }
 
@@ -417,7 +417,7 @@ void Client::ProcessClient() {
                 } break;
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
-                    //SetBallPark();
+                    SetBallPark();
                 } break;
                 case ClientState::csJump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
@@ -425,7 +425,6 @@ void Client::ProcessClient() {
                 } break;
                 case ClientState::csIdle: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
-
                 } break;
                 case ClientState::csLogout: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
@@ -488,7 +487,7 @@ void Client::SetAutoPilot(bool set/*false*/)
 }
 
 
-void Client::SetDestiny(const GPoint& pt, bool count) {
+void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr))
         CreateShipSE();
 
