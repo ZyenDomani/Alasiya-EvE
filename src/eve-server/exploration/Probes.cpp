@@ -219,12 +219,6 @@ void ProbeSE::Process()
     }
 }
 
-void ProbeSE::Delete()
-{
-    m_system->RemoveEntity(this);
-    SystemEntity::Delete();
-}
-
 bool ProbeSE::IsMoving()
 {
     switch (m_state) {

@@ -260,12 +260,12 @@ void SystemManager::UnloadSystem() {
                 sEntityList.RemoveNPC();    // this is for loaded npc count.
                 itr->second->GetNPCSE()->RemoveNPC();
             }
-            sBubbleMgr.Remove(itr->second);
+            
             if (itr->second->TargetMgr() != nullptr)
                 itr->second->TargetMgr()->ClearAllTargets(false);
+            itr->second->Delete();
         }
 
-        //itr->second->Delete();
         SafeDelete(itr->second);
         itr = m_entities.erase(itr);
     }

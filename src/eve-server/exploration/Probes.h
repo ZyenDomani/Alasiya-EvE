@@ -86,7 +86,6 @@ public:
     /* virtual functions default to base class and overridden as needed */
     virtual void                MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict*             MakeSlimItem();
-    virtual void                Delete();
 
     /* specific functions handled in this class. */
     void RecoverProbe(PyList* list);

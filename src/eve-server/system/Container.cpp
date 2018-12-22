@@ -487,8 +487,8 @@ void WreckSE::Process() {
 
 void WreckSE::Delete()
 {
-    m_system->RemoveEntity(this);
-    SystemEntity::Delete();
+    if (m_system != nullptr)
+        m_system->RemoveEntity(this);
 }
 
 void WreckSE::Abandon()
