@@ -26,6 +26,7 @@
 
 #include "eve-server.h"
 
+#include "EntityList.h"
 #include "EVEServerConfig.h"
 #include "PyServiceCD.h"
 #include "account/AccountService.h"
@@ -370,6 +371,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
                                     skillLevel,
                                     skillPoints.get_double());
     }
+
+    // make sure system is loaded
+    sEntityList.FindOrBootSystem(cdata.solarSystemID);
 
     //now set up some initial inventory:
     /** @todo update this to reflect char career */

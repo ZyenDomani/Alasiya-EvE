@@ -151,30 +151,31 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
                             " USING eveMail, eveMailDetails"
                             " WHERE eveMail.messageID = eveMailDetails.messageID"
                             " AND (senderID = %u OR channelID = %u)", characterID, characterID);
-
     sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM bookmarks, bookmarkFolders, bookmarkVouchers WHERE ownerID = %u",  characterID);
-
+    sDatabase.RunQuery(err, "DELETE FROM bookmarks WHERE ownerID = %u",  characterID);
+    sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE ownerID = %u",  characterID);
+    sDatabase.RunQuery(err, "DELETE FROM bookmarkVouchers WHERE ownerID = %u",  characterID);
     sDatabase.RunQuery(err, "DELETE FROM mktOrders WHERE ownerID = %u", characterID);
-
     sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE clientID = %u", characterID);
-
     sDatabase.RunQuery(err, "DELETE FROM repStandings, repStandingChanges"
                             " WHERE (fromID = %u OR toID = %u)", characterID, characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM chrCertificates, chrCharacters, chrEmployment, chrJournal, crpCharShares, chrSkillHistory, chrSkillQueue, crpApplications"
-                            " WHERE characterID=%u", characterID);
-
-    sDatabase.RunQuery(err, "DELETE FROM chrCharactersAttributes, chrPausedSkillQueue WHERE charID = %u", characterID);
-
+    sDatabase.RunQuery(err, "DELETE FROM chrCertificates WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrCharacters WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrEmployment WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM jnlCharacters WHERE ownerID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM crpShares WHERE shareholderID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrSkillHistory WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrSkillQueue WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM crpApplications WHERE characterID=%u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM chrPausedSkillQueue WHERE characterID = %u", characterID);
     sDatabase.RunQuery(err, "DELETE FROM entity_attributes"
                             " WHERE itemID IN (SELECT itemID FROM entity WHERE ownerID = %u)", characterID);
-
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE ownerID = %u", characterID);
-
-
-    sDatabase.RunQuery(err, "DELETE FROM avatar_colors, avatar_modifiers, avatar_sculpts, avatars WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM avatar_colors WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM avatar_modifiers WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM avatar_sculpts WHERE charID = %u", characterID);
+    sDatabase.RunQuery(err, "DELETE FROM avatars WHERE charID = %u", characterID);
 }
 
 bool CharacterDB::ReportRespec(uint32 characterId)
