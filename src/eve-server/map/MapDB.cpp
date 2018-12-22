@@ -198,10 +198,8 @@ void MapDB::chkDynamicSystemID(uint32 solarSystemID) {
 void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = %u WHERE solarSystemID = %u", active?1:0, sysID );
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = 0, pilotsInSpace = 0, pilotsDateTime = 0  WHERE solarSystemID = %u", sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = %u, pilotsDocked = 0, pilotsInSpace = 0, pilotsDateTime = 0  WHERE solarSystemID = %u", active?1:0, sysID );
 }
-
 
 void MapDB::AddJumpToDynamicData(uint32 solarSystemID) {
     DBerror err;
