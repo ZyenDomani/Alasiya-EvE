@@ -188,22 +188,7 @@ namespace Ga
 
 		GaVec3 &operator=(const Parameter &oth);
 		GaVec3(const Parameter &oth);
-		/*
-		 *        GaExpInl GaFloat operator[](GaUint i)
-		 *        {
-		 *			assert(i < 3 && "GaVec3: subscript out of range");
-		 *			return m[i];
-	}
-
-	union
-	{
-	struct
-	{
-	GaFloat x,y,z;
-	};
-	GaFloat m[3];
-	};
-	*/
+        
 		GaFloat x,y,z;
 	};
 
