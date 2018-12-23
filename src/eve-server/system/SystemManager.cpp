@@ -251,25 +251,29 @@ void SystemManager::UnloadSystem() {
     m_beltMgr->ClearAll();
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
         if ((itr->first > 0) and (itr->second != nullptr)) {
-            if (itr->second->TargetMgr() != nullptr)
-                itr->second->TargetMgr()->ClearAllTargets(false);
-            if (itr->second->IsNPCSE()) {
+            pSE = itr->second;
+            if (pSE->TargetMgr() != nullptr)
+                pSE->TargetMgr()->ClearAllTargets(false);
+            if (pSE->IsNPCSE()) {
                 sEntityList.RemoveNPC();    // this is for loaded npc count.
-                itr->second->Delete();
+                pSE->Delete();
             } else {
-                if (itr->second->IsStationSE()) {
-                    itr->second->GetStationSE()->UnloadStation();
+                if (pSE->IsStationSE()) {
+                    pSE->GetStationSE()->UnloadStation();
                     sEntityList.RemoveStation(itr->first);
                 }
 
-                RemoveEntity(itr->second);
+                RemoveEntity(pSE);
             }
         }
 
-        SafeDelete(itr->second);
+        // this doesnt work right, but will leak mem if SE* isnt deleted.
+        //SafeDelete(itr->second);
         itr = m_entities.erase(itr);
+        SafeDelete(pSE);
     }
 
     // save items, then remove from system inventory, item factory and decrement item count
