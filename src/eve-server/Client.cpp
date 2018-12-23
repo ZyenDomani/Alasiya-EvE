@@ -284,6 +284,7 @@ bool Client::SelectCharacter(uint32 char_id) {
 
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
+    ServiceDB::SetAccountOnlineStatus(GetUserID(), true);
     sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
@@ -399,9 +400,7 @@ void Client::ProcessClient() {
                 case ClientState::csUndock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                     m_setStateSent = false;
-                    m_clientState = ClientState::csIdle;
                     SetBallPark();
-                    pShipSE->DestinyMgr()->Undock(m_movePoint);
                 } break;
                 case ClientState::csKilled: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
@@ -517,7 +516,7 @@ void Client::SetBallPark() {
         m_system->AddEntity(pShipSE);
     if (m_clientState == ClientState::csUndock) {
         m_ship->Undock();
-        return;
+        pShipSE->DestinyMgr()->Undock(m_movePoint);
     }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
@@ -1885,7 +1884,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     }
 
     // check this character/account for newbie status and revoke as needed before account update.
-    /* update account information, increase login count, last login timestamp and mark account as online */
+    /* update account information, increase login count, last login timestamp */
     ServiceDB::IncrementLoginCount(account_info.id);
 
     /* marshaled Python string "None" */

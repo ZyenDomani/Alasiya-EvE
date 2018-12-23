@@ -100,7 +100,7 @@ bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
 bool ServiceDB::IncrementLoginCount( uint32 accountID )
 {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1, online=1 where accountID=%u", accountID)) {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1 where accountID=%u", accountID)) {
         sLog.Error( "AccountDB", "Unable to update account information for accountID %u.", accountID);
         return false;
     }
