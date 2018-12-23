@@ -66,7 +66,8 @@ int ItemFactory::Initialize()
     ManagerDB::DeleteSpawnedRats();
 
     if (sConfig.debug.DeleteTrackingCans)
-        m_db->DeleteTrackingCans();
+        InventoryDB::DeleteTrackingCans();
+    
     sLog.Blue("      ItemFactory", "Item Factory Initialized.");
     return 1;
 }
