@@ -60,6 +60,8 @@ MapService::MapService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(MapService, GetAllianceJumpBridges);
     PyCallable_REG_CALL(MapService, GetAllianceBeacons);
     PyCallable_REG_CALL(MapService, GetCurrentSovData);
+    // custom call for displaying all items in system
+    PyCallable_REG_CALL(MapService, GetCurrentEntities);
 
 }
 
@@ -415,5 +417,11 @@ PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
   sLog.White( "MapService::Handle_GetCurrentSovData()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
+    return PyStatic.NewNone();
+}
+
+
+PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call) {
+    
     return PyStatic.NewNone();
 }

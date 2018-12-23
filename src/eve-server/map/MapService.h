@@ -64,6 +64,8 @@ protected:
     PyCallable_DECL_CALL(GetAllianceBeacons);
     PyCallable_DECL_CALL(GetLinkableJumpArrays);
     PyCallable_DECL_CALL(GetCurrentSovData);
+    // custom call for displaying all items in system
+    PyCallable_DECL_CALL(GetCurrentEntities);
 
 };
 
