@@ -272,13 +272,6 @@ bool Character::_Load() {
         }
     }
 
-    // get all skills, implants, and boosters, then process each, and store processed effect in m_modifiers.
-    // m_modifiers will be looped and applied when ship is boarded.
-    // no reason to delete m_modifiers as they are generic, and nothing changes in char when appling to ship.
-    //   ....yes, they do.  skills apply to other skills, ships, modules, etc.
-    //  it all gets reset when docking, and undock applies everything, so char will need reset also.
-    //ProcessEffects();
-
     // load char personal bookmarks and folders ... corp shit will be done ???
     LoadBookmarks();
 
@@ -291,9 +284,8 @@ void Character::VerifySP()
 {
     std::vector<InventoryItemRef> skillList;
     GetSkillsList(skillList);
-    for (auto cur : skillList) {
+    for (auto cur : skillList)
         SkillRef::StaticCast(cur)->VerifySP();
-    }
 }
 
 CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
@@ -427,7 +419,7 @@ void Character::SetBaseID(uint32 baseID)
     m_pClient->UpdateCorpSession(m_corpData);
 }
 
-void Character::UpdateCorpData(CorpData data)
+void Character::UpdateCorpData(CorpData& data)
 {
     m_corpData = data;
     m_pClient->UpdateCorpSession(m_corpData);

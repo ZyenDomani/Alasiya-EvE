@@ -404,7 +404,7 @@ public:
     void                    secStatusChange( double amount )    { m_charData.securityRating += amount; }
 
     // Corporation:
-    void                    UpdateCorpData(CorpData data);
+    void                    UpdateCorpData(CorpData& data);
     CorpData                GetCorpData()                       { return m_corpData; }
     std::string             corpTicker() const                  { return m_corpData.ticker; }
     uint32                  corporationID() const               { return m_corpData.corporationID; }
@@ -525,11 +525,11 @@ protected:
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        CharacterData charData;
+        CharacterData charData { };
         if( !sItemFactory.db()->GetCharacterData( characterID, charData ) )
             return RefPtr<_Ty>();
 
-        CorpData corpData;
+        CorpData corpData { };
         if( !sItemFactory.db()->GetCorpData( characterID, corpData ) )
             return RefPtr<_Ty>();
 

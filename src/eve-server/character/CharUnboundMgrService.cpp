@@ -203,7 +203,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return nullptr;
 
     // we need to fill these to successfully create character item
-    CharacterData cdata;
+    CharacterData cdata { };
         cdata.accountID = pClient->GetUserID();
         cdata.gender = arg.genderID;
         cdata.ancestryID = arg.ancestryID;
@@ -239,7 +239,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     uint8 memory = char_type->memory();
     uint8 willpower = char_type->willpower();
 
-    CorpData corpData;
+    CorpData corpData { };
         corpData.startDateTime = cdata.createDateTime;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
@@ -276,7 +276,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     if (IsStation(sConfig.character.startStation)) { // Skip if 0
         cdata.stationID = sConfig.character.startStation;
-        StationData sData;
+        StationData sData { } ;
         stDataMgr.GetStationData(cdata.stationID, sData);
         cdata.solarSystemID = sData.systemID;
         cdata.constellationID = sData.constellationID;
@@ -349,7 +349,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //spawn all the skills
     uint8 skillLevel = 0;
-    EvilNumber skillPoints = 0, totalPoints = 0;
+    EvilNumber skillPoints(EvilZero), totalPoints(EvilZero);
     for (auto cur : startingSkills) {
         ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
         SkillRef skill = sItemFactory.SpawnSkill( skillItem );

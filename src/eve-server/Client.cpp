@@ -733,7 +733,7 @@ void Client::UndockFromStation() {
      */
     sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     OnCharNoLongerInStation();
-    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
+    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer +800);
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     m_invulTimer.Start(ClientTimers::UndockInvul);
     SetSessionTimer();
@@ -1484,29 +1484,31 @@ void Client::InitSession(uint32 characterID)
         return;
     }
 
-    int32 stationID = (int32)(characterDataMap["stationID"]);
-    int32 solarSystemID = (int32)(characterDataMap["solarSystemID"]);
+    int32 stationID         = (int32)(characterDataMap["stationID"]);
+    int32 solarSystemID     = (int32)(characterDataMap["solarSystemID"]);
+    m_shipId                = (int32)(characterDataMap["shipID"]);
 
-    mSession.SetInt("genderID", (int32)(characterDataMap["gender"]));
-    mSession.SetInt("bloodlineID", (int32)(characterDataMap["bloodlineID"]));
-    mSession.SetInt("raceID", (int32)(characterDataMap["raceID"]));
-    mSession.SetInt("charid", characterID);
-    mSession.SetInt("corpid", (int32)(characterDataMap["corporationID"]));
-    m_shipId = (int32)(characterDataMap["shipID"]);
+    mSession.SetInt("genderID",         (int32)(characterDataMap["gender"]));
+    mSession.SetInt("bloodlineID",      (int32)(characterDataMap["bloodlineID"]));
+    mSession.SetInt("raceID",           (int32)(characterDataMap["raceID"]));
+    mSession.SetInt("charid",           characterID);
+    mSession.SetInt("corpid",           (int32)(characterDataMap["corporationID"]));
 
-    mSession.SetInt("cloneStationID", (int32)(characterDataMap["cloneStationID"]));
-    mSession.SetInt("solarsystemid2", solarSystemID);
-    mSession.SetInt("constellationid", (int32)(characterDataMap["constellationID"]));
-    mSession.SetInt("regionid", (int32)(characterDataMap["regionID"]));
+    mSession.SetInt("cloneStationID",   (int32)(characterDataMap["cloneStationID"]));
+    mSession.SetInt("solarsystemid2",   solarSystemID);
+    mSession.SetInt("constellationid",  (int32)(characterDataMap["constellationID"]));
+    mSession.SetInt("regionid",         (int32)(characterDataMap["regionID"]));
 
-    mSession.SetInt("hqID", (int32)(characterDataMap["corporationHQ"]));
-    mSession.SetInt("baseID", characterDataMap["baseID"]);
-    mSession.SetInt("corpAccountKey", characterDataMap["corpAccountKey"]);
-    mSession.SetLong("corprole",     characterDataMap["corpRole"]);
-    mSession.SetLong("rolesAtAll",   characterDataMap["rolesAtAll"]);
-    mSession.SetLong("rolesAtBase",  characterDataMap["rolesAtBase"]);
-    mSession.SetLong("rolesAtHQ",    characterDataMap["rolesAtHQ"]);
-    mSession.SetLong("rolesAtOther", characterDataMap["rolesAtOther"]);
+    mSession.SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
+    mSession.SetInt("baseID",           characterDataMap["baseID"]);
+    mSession.SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
+    mSession.SetLong("corprole",        characterDataMap["corpRole"]);
+    mSession.SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
+    mSession.SetLong("rolesAtBase",     characterDataMap["rolesAtBase"]);
+    mSession.SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
+    mSession.SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
+    mSession.SetInt("allianceid",       characterDataMap["allianceID"]);
+    mSession.SetInt("warfactionid",     characterDataMap["warFactionID"]);
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:

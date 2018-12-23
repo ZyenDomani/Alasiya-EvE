@@ -445,7 +445,9 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
         "  ch.bloodlineID, "
         "  ch.raceID, "     //15
         "  ch.locationID, "
-        "  ch.baseID"
+        "  ch.baseID,"
+        "  co.allianceID,"
+        "  co.warFactionID"
         " FROM chrCharacters AS ch"
         "    LEFT JOIN crpCorporation AS co USING (corporationID) "
         " WHERE characterID = %u", characterID))
@@ -477,6 +479,9 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["raceID"] = row.GetUInt(15);
     characterDataMap["locationID"] = row.GetUInt(16);
     characterDataMap["baseID"] = row.GetInt(17);
+    characterDataMap["allianceID"] = row.GetInt(18);
+    characterDataMap["warFactionID"] = row.GetInt(19);
+
     uint32 stationID = row.GetInt(17);
     if (!GetCharHomeStation(characterID, stationID)) {
         ItemData iData( itemCloneAlpha, characterID, stationID, flagClone, 1 );
