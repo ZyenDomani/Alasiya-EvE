@@ -251,29 +251,30 @@ void SystemManager::UnloadSystem() {
     m_beltMgr->ClearAll();
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    SystemEntity* pSE(nullptr);
+    //SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
         if ((itr->first > 0) and (itr->second != nullptr)) {
-            pSE = itr->second;
-            if (pSE->TargetMgr() != nullptr)
-                pSE->TargetMgr()->ClearAllTargets(false);
-            if (pSE->IsNPCSE()) {
+            //pSE = itr->second;
+            //RemoveEntity(pSE);    // cant use RemoveEntity here as it will fuckup iterator (removes SE* from m_entities list)
+            sBubbleMgr.Remove(itr->second);
+            RemoveItemFromInventory( itr->second->GetSelf() );
+            if (itr->second->TargetMgr() != nullptr)
+                itr->second->TargetMgr()->ClearAllTargets(false);
+            if (itr->second->IsNPCSE()) {
                 sEntityList.RemoveNPC();    // this is for loaded npc count.
-                pSE->Delete();
+                itr->second->GetSelf()->Delete();
             } else {
-                if (pSE->IsStationSE()) {
-                    pSE->GetStationSE()->UnloadStation();
+                if (itr->second->IsStationSE()) {
+                    itr->second->GetStationSE()->UnloadStation();
                     sEntityList.RemoveStation(itr->first);
                 }
-
-                RemoveEntity(pSE);
             }
         }
 
         // this doesnt work right, but will leak mem if SE* isnt deleted.
-        //SafeDelete(itr->second);
+        SafeDelete(itr->second);
         itr = m_entities.erase(itr);
-        SafeDelete(pSE);
+        //SafeDelete(pSE);
     }
 
     // save items, then remove from system inventory, item factory and decrement item count
@@ -1019,8 +1020,7 @@ void SystemManager::MakeSetState(const SystemBubble* bubble,  SetState& into) co
     for (auto cur : m_staticEntities)
         visibleEntities.push_back(cur.second);
 
-    // this gets all dynamic entities, but shouldnt.  we're only concerned about entities in bubble
-    //   this works, but packet size is based on dynamics in system, which can be high.
+    // this gets our ship.  (bubble entities are sent when adding us to a bubble)
     std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
         visibleEntities.push_back(itr->second);
@@ -1164,6 +1164,28 @@ SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
     return itr->second;
 }
 
+PyRep* SystemManager::GetCurrentEntities()
+{
+    /*  return list of dict
+     * itemID, typeID, catID, name, pos[x,y,z]
+     *
+     * already have statics, so add players, empty ships, pos', npcs, drones  (anything that requires a tic)
+     */
+    
+    PyList* list = new PyList();
+    for (auto cur : m_ticEntities) {
+        PyDict* dict = new PyDict();
+            dict->SetItemString("itemID", new PyInt(cur.second->itemID()));
+            dict->SetItemString("typeID", new PyInt(cur.second->typeID()));
+            dict->SetItemString("catID", new PyInt(cur.second->categoryID()));
+            dict->SetItemString("name", new PyInt(cur.second->itemName()));
+            dict->SetItemString("x", new PyInt(cur.second->GetPosition().x));
+            dict->SetItemString("y", new PyInt(cur.second->GetPosition().y));
+            dict->SetItemString("z", new PyInt(cur.second->GetPosition().z));
+        list->AddItem(dict);
+    }
+    return list;
+}
 
 
 bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)

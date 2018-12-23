@@ -29,6 +29,7 @@
 #include "StaticDataMgr.h"
 #include "cache/ObjCacheService.h"
 #include "map/MapService.h"
+#include "system/SystemManager.h"
 
 PyCallable_Make_InnerDispatcher(MapService)
 
@@ -67,6 +68,10 @@ MapService::MapService(PyServiceMgr *mgr)
 
 MapService::~MapService() {
     delete m_dispatch;
+}
+
+PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call) {
+    return call.client->SystemMgr()->GetCurrentEntities();
 }
 
 PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call) {
@@ -420,8 +425,3 @@ PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
     return PyStatic.NewNone();
 }
 
-
-PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call) {
-    
-    return PyStatic.NewNone();
-}

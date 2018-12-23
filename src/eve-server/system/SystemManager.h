@@ -133,6 +133,9 @@ public:
 
     SystemEntity* GetClosestMoonSE(const GPoint& myPos);
 
+    // this returns entities in system for display on Groove's Entity Map in client
+    PyRep* GetCurrentEntities();
+
 protected:
     /** @todo  this needs more work */
     void PayBounties();
