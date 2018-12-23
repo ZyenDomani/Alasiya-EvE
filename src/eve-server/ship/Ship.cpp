@@ -775,7 +775,7 @@ void ShipItem::SetShipCapacitorLevel(double fraction)
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
 
-    EvilNumber newCapacitorCharge = 0.0;
+    EvilNumber newCapacitorCharge(EvilZero);
     newCapacitorCharge = GetAttribute(AttrCapacitorCapacity) * fraction;
     if ( (newCapacitorCharge + 0.5) > GetAttribute(AttrCapacitorCapacity))
         newCapacitorCharge = GetAttribute(AttrCapacitorCapacity);
@@ -790,7 +790,7 @@ void ShipItem::SetShipShield(double fraction)
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
 
-    EvilNumber newShieldCharge = 0.0;
+    EvilNumber newShieldCharge(EvilZero);
     newShieldCharge = GetAttribute(AttrShieldCapacity) * fraction;
     if ( (newShieldCharge + 0.2) > GetAttribute(AttrShieldCapacity))
         newShieldCharge = GetAttribute(AttrShieldCapacity);
@@ -807,7 +807,7 @@ void ShipItem::SetShipArmor(double fraction)
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
 
-    EvilNumber newArmorDamage = 0.0;
+    EvilNumber newArmorDamage(EvilZero);
     newArmorDamage = GetAttribute(AttrArmorHP) * fraction;
     if ( (newArmorDamage + 0.2) > GetAttribute(AttrArmorHP))
         newArmorDamage = GetAttribute(AttrArmorHP);
@@ -824,7 +824,7 @@ void ShipItem::SetShipHull(double fraction)
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
 
-    EvilNumber newHullDamage = 0.0;
+    EvilNumber newHullDamage(EvilZero);
     newHullDamage = GetAttribute(AttrHP) * fraction;
     if ( (newHullDamage + 0.2) > GetAttribute(AttrHP))
         newHullDamage = GetAttribute(AttrHP);
