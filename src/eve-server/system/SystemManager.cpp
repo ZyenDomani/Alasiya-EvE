@@ -1171,17 +1171,17 @@ PyRep* SystemManager::GetCurrentEntities()
      *
      * already have statics, so add players, empty ships, pos', npcs, drones  (anything that requires a tic)
      */
-    
+
     PyList* list = new PyList();
     for (auto cur : m_ticEntities) {
         PyDict* dict = new PyDict();
-            dict->SetItemString("itemID", new PyInt(cur.second->itemID()));
-            dict->SetItemString("typeID", new PyInt(cur.second->typeID()));
-            dict->SetItemString("catID", new PyInt(cur.second->categoryID()));
-            dict->SetItemString("name", new PyInt(cur.second->itemName()));
-            dict->SetItemString("x", new PyInt(cur.second->GetPosition().x));
-            dict->SetItemString("y", new PyInt(cur.second->GetPosition().y));
-            dict->SetItemString("z", new PyInt(cur.second->GetPosition().z));
+            dict->SetItemString("itemID", new PyInt(cur.second->GetID()));
+            dict->SetItemString("typeID", new PyInt(cur.second->GetTypeID()));
+            dict->SetItemString("catID", new PyInt(cur.second->GetCategoryID()));
+            dict->SetItemString("name", new PyString(cur.second->GetName()));
+            dict->SetItemString("x", new PyLong(cur.second->x()));
+            dict->SetItemString("y", new PyLong(cur.second->y()));
+            dict->SetItemString("z", new PyLong(cur.second->z()));
         list->AddItem(dict);
     }
     return list;
