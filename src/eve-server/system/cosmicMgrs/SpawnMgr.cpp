@@ -112,22 +112,22 @@ void SpawnMgr::Process() {
     if (m_ratGroupTimer.Enabled())
         if (m_ratGroupTimer.Check()) {
             bool killTimer = true;
-                SpawnEntryDef::iterator itr = m_spawns.begin();
-                while (itr != m_spawns.end()) {
-                    if (itr->second.enabled) {
-                        killTimer = false;
-                        if (itr->second.stamp < sEntityList.GetStamp()) {
-                            ++itr;
-                            continue;
-                        }
-                        _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
-                                    itr->second.spawnID, &itr->second);
-                        // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
-                        ReSpawn(sBubbleMgr.FindBubbleByID(m_system->GetID(), itr->first), itr->second);
-                        itr->second.enabled = false;
+            SpawnEntryDef::iterator itr = m_spawns.begin();
+            while (itr != m_spawns.end()) {
+                if (itr->second.enabled) {
+                    killTimer = false;
+                    if (itr->second.stamp < sEntityList.GetStamp()) {
+                        ++itr;
+                        continue;
                     }
-                    ++itr;
+                    _log(SPAWN__TRACE, "Process() calling Respawn for SpawnEntryID %u (0x%X)", \
+                            itr->second.spawnID, &itr->second);
+                    // this means check SpawnEntry for 'missing' SpawnGroup members and respawn as needed.
+                    ReSpawn(sBubbleMgr.FindBubbleByID(m_system->GetID(), itr->first), itr->second);
+                    itr->second.enabled = false;
                 }
+                ++itr;
+            }
 
             if (killTimer) {
                 m_ratGroupTimer.Disable();
@@ -661,7 +661,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
     NPC* pNPC(nullptr);
-    SpawnEntry se;
+    SpawnEntry se { };
     GPoint startPos(pBubble->GetCenter());
     const GPoint warpToPoint(startPos);
     std::string name = "BeltRat";
@@ -680,30 +680,31 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
         data.ownerID = corpID;
 
-    RatSpawnGroupVec::iterator cur = m_toSpawn.begin();
-    while (cur != m_toSpawn.end()) {
-        if (cur->typeID == 0)
+    InventoryItemRef iRef(nullptr);
+    for (auto cur : m_toSpawn) {
+        if (IsValidTarget(cur.typeID))
             continue; // this is no longer an error.  continue iteration
         /*
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
          */
-        ItemData idata(cur->typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
-
-        for (uint8 x=0; x!=cur->quantity; ++x) {
-            InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
+        ItemData idata(cur.typeID, corpID, m_system->GetID(), flagAutoFit, "", startPos, name.c_str());
+        for (uint8 x=0; x < cur.quantity; ++x) {
+            iRef = sItemFactory.SpawnItem(idata);
             if (iRef.get() == nullptr) {
-                _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur->typeID);
+                _log(SPAWN__ERROR, "Failed to spawn item type %u.", cur.typeID);
                 continue;
             }
 
-            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC type %u (%u)", cur->typeID, iRef->itemID());
+            _log(SPAWN__POP, "SpawnMgr::MakeSpawn - Spawning NPC type %u (%u)", cur.typeID, iRef->itemID());
 
             pNPC = new NPC(iRef, m_services, m_system, data, this);
+            if (pNPC == nullptr)
+                continue;
 
             if (!pNPC->Load()) {
                 _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", pNPC->GetID(), pNPC->GetSelf()->typeID());
-                SafeDelete(pNPC);
+                pNPC->Delete();
                 continue;
             }
 
@@ -718,9 +719,9 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             se.enabled = false;
             se.groupID = iRef->type().groupID();
             se.itemID = iRef->itemID();
-            se.total = cur->quantity;
+            se.total = cur.quantity;
             se.number = x+1;
-            se.typeID = cur->typeID;
+            se.typeID = cur.typeID;
             se.spawnID = m_spawnID;
             se.corpID = corpID;
             se.factionID = factionID;
@@ -735,7 +736,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             _log(SPAWN__TRACE, "MakeSpawn() adding SpawnEntry with ID %u to m_spawns. Class: %s, Group:%s, Level: %u.", \
                         se.spawnID, GetSpawnClassName(se.spawnClass).c_str(), GetSpawnGroupName(se.spawnGroup).c_str(), level);
         }
-        ++cur;
     }
 
     ++m_spawnID;
@@ -778,6 +778,10 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
         data.factionID = spawnEntry.factionID;
         data.ownerID = spawnEntry.corpID;
     NPC* pNPC = new NPC(iRef, m_services, m_system, data, this);
+    if (pNPC == nullptr) {
+        _log(SPAWN__ERROR, "Failed to create NPC SE for item type %u.", spawnEntry.typeID);
+        return;
+    }
 
     if (!pNPC->Load()) {
         _log(SPAWN__ERROR, "Failed to load NPC data for NPC %u with type %u, depoping.", pNPC->GetID(), pNPC->GetSelf()->typeID());
