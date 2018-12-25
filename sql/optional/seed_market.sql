@@ -6,22 +6,23 @@ set @saturation=0.8; -- fuzzy logic.  % of stations to fill with orders (random 
 use EVE_Crucible;   -- set this to your db name
 
 -- select stations to fill
-create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
+create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int, corporationID int, security float);
 truncate table tStations;
 select round(count(stationID)*@saturation) into @lim from staStations where regionID=@regionid ;
 set @i=0;
 insert into tStations
-  select stationID,solarSystemID,regionID from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid order by rand();
+  select stationID,solarSystemID,regionID, corporationID, security from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid  order by rand();
 
 -- actual seeding
 INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
 minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid,  basePrice as price,
+  SELECT typeID, corporationID as ownerID, regionID, stationID, 0 as bid,  basePrice / security  as price,
   550 as volEntered, 550 as volRemaining, 131889844991575488 as issued,1 as orderState, 1 as minVolume,0 as contraband,
-  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 25 as jumps
+  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 5 as jumps
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1 AND invTypes.basePrice != 0
   AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+
 
   ****************************
  -- use this to spawn items in market for single station
@@ -89,3 +90,6 @@ categoryID  categoryName
 43  Planetary Commodities
 46  Orbitals
 
+
+-- fix stations security value (missing in dump)
+UPDATE `staStations` SET `security`= (SELECT `security` FROM `mapSolarSystems` WHERE mapSolarSystems.solarSystemID = staStations.solarSystemID);
