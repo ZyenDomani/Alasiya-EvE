@@ -251,30 +251,31 @@ void SystemManager::UnloadSystem() {
     m_beltMgr->ClearAll();
 
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
-    //SystemEntity* pSE(nullptr);
+    SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
-        if ((itr->first > 0) and (itr->second != nullptr)) {
-            //pSE = itr->second;
-            //RemoveEntity(pSE);    // cant use RemoveEntity here as it will fuckup iterator (removes SE* from m_entities list)
-            sBubbleMgr.Remove(itr->second);
-            RemoveItemFromInventory( itr->second->GetSelf() );
-            if (itr->second->TargetMgr() != nullptr)
-                itr->second->TargetMgr()->ClearAllTargets(false);
-            if (itr->second->IsNPCSE()) {
-                sEntityList.RemoveNPC();    // this is for loaded npc count.
-                itr->second->GetSelf()->Delete();
-            } else {
-                if (itr->second->IsStationSE()) {
-                    itr->second->GetStationSE()->UnloadStation();
-                    sEntityList.RemoveStation(itr->first);
-                }
-            }
+        if ((itr->first == 0) or (itr->second == nullptr)) {
+            itr = m_entities.erase(itr);
+            continue;
+        }
+        pSE = itr->second;
+        itr = m_entities.erase(itr);
+        //RemoveEntity(pSE);    // cant use RemoveEntity here as it will fuckup iterator (removes SE* from m_entities list)
+        sBubbleMgr.Remove(pSE);
+        RemoveItemFromInventory( pSE->GetSelf() );
+        if (pSE->TargetMgr() != nullptr)
+            pSE->TargetMgr()->ClearAllTargets(false);
+        if (pSE->IsNPCSE()) {
+            sEntityList.RemoveNPC();    // this is for loaded npc count.
+            pSE->GetSelf()->Delete();
+        }
+        if (pSE->IsStationSE()) {
+            pSE->GetStationSE()->UnloadStation();
+            sEntityList.RemoveStation(itr->first);
         }
 
         // this doesnt work right, but will leak mem if SE* isnt deleted.
-        SafeDelete(itr->second);
-        itr = m_entities.erase(itr);
-        //SafeDelete(pSE);
+        //SafeDelete(itr->second);
+        SafeDelete(pSE);
     }
 
     // save items, then remove from system inventory, item factory and decrement item count
