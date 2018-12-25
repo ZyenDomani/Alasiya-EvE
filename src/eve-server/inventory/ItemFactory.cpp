@@ -43,16 +43,14 @@
 #include "system/SolarSystem.h"
 #include "system/SystemManager.h"
 
-// Initialize ID Authority variables:
-uint32 ItemFactory::m_nextTempID = EVEMU_TEMP_ENTITY_ID;
-uint32 ItemFactory::m_nextMissileID = EVEMU_MISSILE_ID;
-uint32 ItemFactory::m_nextNPCID = EVEMU_NPC_ID;
-uint32 ItemFactory::m_nextPlanetPinID = EVEMU_PLANET_PIN_ID;
-
 ItemFactory::ItemFactory()
-:m_pClient(nullptr)
+:m_pClient(nullptr),
+// Initialize ID Authority variables:
+m_nextTempID(EVEMU_TEMP_ENTITY_ID),
+m_nextMissileID(EVEMU_MISSILE_ID),
+m_nextNPCID(EVEMU_NPC_ID),
+m_itemCount(0)
 {
-    m_itemCount = 0;
     m_db = new InventoryDB();
 }
 
@@ -63,11 +61,11 @@ ItemFactory::~ItemFactory()
 
 int ItemFactory::Initialize()
 {
-    ManagerDB::DeleteSpawnedRats();
+    ManagerDB::DeleteSpawnedRats(); // takes ~31.2s to run on main, 0.005s on dev
 
     if (sConfig.debug.DeleteTrackingCans)
         InventoryDB::DeleteTrackingCans();
-    
+
     sLog.Blue("      ItemFactory", "Item Factory Initialized.");
     return 1;
 }
@@ -91,6 +89,7 @@ void ItemFactory::Close()
     for (auto cur : m_items)
         delete(cur.second.get());
     */
+    m_items.clear();
     // Set Client pointer to NULL
     m_pClient = nullptr;
 }
@@ -528,10 +527,5 @@ uint32 ItemFactory::GetNextMissileID()
 uint32 ItemFactory::GetNextNPCID()
 {
     return ++m_nextNPCID;
-}
-
-uint32 ItemFactory::GetNextPlanetPinID()
-{
-    return ++m_nextPlanetPinID;
 }
 
