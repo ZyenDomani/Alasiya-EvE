@@ -145,7 +145,6 @@ public:
     uint32                  GetNextNPCID();
     uint32                  GetNextTempID();
     uint32                  GetNextMissileID();
-    uint32                  GetNextPlanetPinID();
 
 
 protected:
@@ -168,10 +167,9 @@ protected:
 private:
     // ID Authority:
     // these hold the next valid ID for in-memory only objects
-    static uint32 m_nextNPCID;
-    static uint32 m_nextTempID;
-    static uint32 m_nextMissileID;
-    static uint32 m_nextPlanetPinID;
+    uint32 m_nextNPCID;
+    uint32 m_nextTempID;
+    uint32 m_nextMissileID;
 
     //item to hold current number of currently loaded items
     uint32 m_itemCount;
