@@ -247,7 +247,7 @@ protected:
 
 private:
     bool m_changeDelay;             // this is to try to sync destiny with client, as client has a delay when changing destiny states.
-    
+
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
     void CheckBump();                              //iterate thru objects in current bubble to check for collisions
@@ -260,7 +260,7 @@ private:
     void ClearTurn();
 
     // Internal Orbit shit
-    void ComputePosition();             // test code....not used yet
+    GPoint ComputePosition(double curRad);             // test code....not used yet
     double m_inclination;
     double m_longAscNode;
 
