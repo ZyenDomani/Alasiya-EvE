@@ -266,7 +266,8 @@ void NPCAIMgr::Process() {
                 _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 SetIdle();
                 return;
-            } else if (pSE->SysBubble() == nullptr) {
+            }
+            if (pSE->SysBubble() == nullptr) {
                 m_npc->TargetMgr()->ClearTarget(pSE);
                 return;
             }
