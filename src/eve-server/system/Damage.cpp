@@ -267,12 +267,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     if (killed) {
         if (m_killed)
             return true;
-        m_killed = true;
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        SystemEntity::Killed(d);
         Killed(d);
-        delete this;
+        SystemEntity::Killed(d);
     } else {
         PyTuple* up(nullptr);
         /**    def OnDamageMessage(self, msgKey, args):
@@ -316,10 +314,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 void Ship::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr))
         return; // make error here?
-    if (m_killed)
-        return;
 
-    m_killed = true;
     m_shipRef->SetPopped(true);
 
     /* {'messageKey': 'ShipExploded', 'dataID': 17881627, 'suppressable': True, 'bodyID': 258841, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258840, 'messageID': 1558}
@@ -327,7 +322,7 @@ void Ship::Killed(Damage &fatal_blow) {
      */
     uint32 killerID = 0;
     Client* pClient(nullptr);
-    SystemEntity* killer = fatal_blow.srcSE;
+    SystemEntity* killer(fatal_blow.srcSE);
 
     if (killer->HasPilot()) {
         pClient = killer->GetPilot();
@@ -361,8 +356,6 @@ void Ship::Killed(Damage &fatal_blow) {
         }
         std::string wreck_name = m_self->itemName();
         GPoint wreckPosition = m_destiny->GetPosition();
-        m_system->RemoveEntity(this);
-
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {

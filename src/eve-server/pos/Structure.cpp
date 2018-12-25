@@ -923,7 +923,6 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     m_destiny->Halt();
     m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
-    m_system->RemoveEntity(this);  //this also removes from db
 
     uint32 killerID = 0;
     Client* pClient(nullptr);

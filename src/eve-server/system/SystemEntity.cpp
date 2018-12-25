@@ -143,6 +143,8 @@ void SystemEntity::Killed(Damage& fatal_blow)
         // loop thru list of all modules targeting this entity and let them know it has been killed.
         m_targMgr->Destroyed();
     }
+    m_killed = true;
+    Delete();
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
@@ -508,11 +510,7 @@ void ObjectSystemEntity::UpdateDamage()
 
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
 {
-    if (m_targMgr != nullptr)
-        m_targMgr->ClearTargets(false);
     if (m_destiny != nullptr) {
-        if (m_bubble == nullptr)
-            sBubbleMgr.Add(this);
         m_destiny->Stop();
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
     }
@@ -524,8 +522,6 @@ void ObjectSystemEntity::Killed(Damage &fatal_blow)
             pSE->GetPlanetSE()->SetCustomsOffice(nullptr);
         }
     }
-
-    m_system->RemoveEntity(this);
 }
 
 DeployableSE::DeployableSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *system, const FactionData& data)
@@ -685,10 +681,6 @@ void DynamicSystemEntity::UpdateDamage()
 
 void DynamicSystemEntity::Killed(Damage &fatal_blow)
 {
-    if (m_targMgr != nullptr)
-        m_targMgr->ClearTargets(false);
-    if (m_bubble == nullptr)
-        sBubbleMgr.Add(this);
     if (m_destiny != nullptr) {
         m_destiny->Stop();
         if (IsStaticEntity() or IsObjectEntity())    /* these will never be true here */
@@ -696,8 +688,6 @@ void DynamicSystemEntity::Killed(Damage &fatal_blow)
         else
             m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
     }
-
-    m_system->RemoveEntity(this);
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)
