@@ -419,6 +419,7 @@ public:
     void SaveShip()                                     { m_shipRef->SaveShip(); }
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
 
+    //cancel all active modules
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
 

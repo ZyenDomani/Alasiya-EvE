@@ -204,7 +204,7 @@ public:
     void CreateNewPod();
     void PickAlternateShip();
     void ResetAfterPodded();
-    void ResetAfterPopped();
+    void ResetAfterPopped();  //  delete killed ship, reset player to pod, add pod to system
     void BoardShip(ShipItemRef newShipRef);
     void UndockFromStation();
     void DockToStation();

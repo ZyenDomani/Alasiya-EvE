@@ -54,7 +54,7 @@ public:
     bool                GetNPCGroups(uint32 factionID, std::map<uint8, uint16>& groupMap);
     bool                GetNPCClasses(uint8 sClass, std::vector<RatSpawnClass>& classMap);
     uint16              GetRandRatType(uint8 sClass, uint16 groupID);
-    uint32              GetWreckID(uint32 typeID);
+    uint32              GetWreckID(uint32 typeID);  // returns wreck typeID based on given shipTypeID (incomplete, most ships done.)
     void                GetLoot(uint32 groupID, std::vector<LootList>& lootList);
 
     void                GetRamReturns(uint16 typeID, int8 activityID, std::vector< EvERam::RequiredItem >& ramReqs); // bp typeID/matls

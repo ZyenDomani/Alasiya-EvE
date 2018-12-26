@@ -216,7 +216,7 @@ Character::Character(
   m_pClient(nullptr)
 {
     // allow characters to be only singletons
-    assert(singleton());
+    assert(m_singleton);
 
     m_loaded = false;
 

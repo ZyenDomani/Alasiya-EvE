@@ -1111,24 +1111,30 @@ void Client::ResetAfterPopped()
     if (m_pod.get() == nullptr) // this will never be null (checked in Killed())
         CreateNewPod();
 
-    SetShip(m_pod);
+    // move char before calling Delete() on shipSE, as it deletes everything, starting with contents
+    m_char->Move(m_pod->itemID(), flagPilot, true);
 
-    m_char->Move(m_shipId, flagPilot, true);
-    m_ship->UpdateEffects();
+    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+    pShipSE->Delete();
+    SafeDelete(pShipSE);
+
+    SetShip(m_pod);
 
     char ci[25];
     snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
     m_ship->SetCustomInfo(ci);
 
-    pShipSE->Delete();
-    SafeDelete(pShipSE);
-
     CreateShipSE();
     if (pShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
+        // we should probably send char to their clone if this happens....
+        ResetAfterPodded();
         return;
     }
+
     pShipSE->SetPilot(this);
+    m_ship->UpdateEffects();
+
     pShipSE->SetPodShipID(m_shipId);
     pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
     pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
