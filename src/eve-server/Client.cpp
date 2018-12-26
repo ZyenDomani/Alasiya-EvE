@@ -1115,9 +1115,6 @@ void Client::ResetAfterPopped()
     m_char->Move(m_pod->itemID(), flagPilot, true);
 
     m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
-    pShipSE->Delete();
-    SafeDelete(pShipSE);
-
     SetShip(m_pod);
 
     char ci[25];
@@ -1127,8 +1124,10 @@ void Client::ResetAfterPopped()
     CreateShipSE();
     if (pShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
+        SendErrorMsg("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
         // we should probably send char to their clone if this happens....
-        ResetAfterPodded();
+        MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
+        SpawnNewRookieShip();
         return;
     }
 

@@ -918,7 +918,7 @@ void StructureSE::GetEffectState(PyList& into) {
 }
 
 void StructureSE::Killed(Damage &fatal_blow) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     m_destiny->Halt();

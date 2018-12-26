@@ -297,7 +297,7 @@ void NPC::SetResists() {
 }
 
 void NPC::Killed(Damage &fatal_blow) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     //notify our spawn manager that we are gone.

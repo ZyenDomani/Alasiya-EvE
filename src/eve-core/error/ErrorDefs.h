@@ -22,7 +22,7 @@
  *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-module, 7-agent, 8-, 9-effects)
  *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-, 6-pilot, 7-skill, 8-bind, 9-timer)
  *      D = type (0-create, 1-destroy, 2-check, 3-change, 4-move, 5-, 6-, 7-, 8-, 9-)
- *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-, 8-invalid, 9-not implemented)
+ *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-unknown, 8-invalid, 9-not implemented)
  *
  *
  * Ref: ServerError 02808. << CorpRegistryService::_CreateBoundObject - object is not tuple
@@ -30,6 +30,7 @@
  * Ref: ServerError 07208. << Agent::MakeOffer() - Error when creating mission destination.
  * Ref: ServerError 10781. << Client::BoardShip()
  * Ref: ServerError 10928. << Client::MoveTimer() - no move pending
+ * Ref: ServerError 15107. << Client::ResetAfterPopped() - error when creating pod SE
  * Ref: ServerError 15610. << ShipItem::GetEffectiveness() - effectiveness <= 0
  * Ref: ServerError 15611. << ShipItem::GetEffectiveness() - module has invalid state
  * Ref: ServerError 15623. << MSAC::ModifyTargetShipAttribute() - no target

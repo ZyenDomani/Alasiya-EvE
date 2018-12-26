@@ -269,8 +269,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             return true;
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        Killed(d);
-        SystemEntity::Killed(d);
+        Killed(d);  // this must NOT remove dead SE from system.
+        SystemEntity::Killed(d);    // this is for removing shipSE from system and deletes shipItem and all its contents
     } else {
         PyTuple* up(nullptr);
         /**    def OnDamageMessage(self, msgKey, args):
@@ -312,7 +312,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
 }
 
 void Ship::Killed(Damage &fatal_blow) {
-    if ((m_bubble == nullptr) or (m_destiny == nullptr))
+    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
     m_shipRef->SetPopped(true);
@@ -353,7 +353,7 @@ void Ship::Killed(Damage &fatal_blow) {
     }
     GPoint wreckPosition = m_destiny->GetPosition();
     std::string wreck_name = m_self->itemName() + " Wreck";
-    
+
     if (!m_self->HasPilot()) {
         m_destiny->Stop();
         m_destiny->SendTerminalExplosion(m_shipRef->itemID(), m_bubble->GetID());
