@@ -311,6 +311,8 @@ void Character::LogOut()
         if (IsFleet(m_fleetData.fleetID))
             sFltSvc.LeaveFleet(m_pClient);
 
+    pInventory->Unload();
+
     sItemFactory.RemoveItem(m_itemID);
     // remove char from station inventory, if docked
     /*

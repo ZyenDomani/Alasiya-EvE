@@ -344,18 +344,20 @@ void Ship::Killed(Damage &fatal_blow) {
     MapDB::AddKillToDynamicData(locationID);
     MapDB::AddFactionKillToDynamicData(locationID);
 
+    // set up basic wreck data
+    uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
+    if (!IsWreckTypeID(wreckTypeID)) {
+        sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        // default to generic frigate wreck till i get better checks and/or complete wreck data
+        wreckTypeID = 26557;
+    }
+    GPoint wreckPosition = m_destiny->GetPosition();
+    std::string wreck_name = m_self->itemName() + " Wreck";
+    
     if (!m_self->HasPilot()) {
         m_destiny->Stop();
         m_destiny->SendTerminalExplosion(m_shipRef->itemID(), m_bubble->GetID());
         // Spawn a wreck for the Ship that was destroyed:
-        uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
-        if (!IsWreckTypeID(wreckTypeID)) {
-            sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-            // default to generic frigate wreck till i get better checks and/or complete wreck data
-            wreckTypeID = 26557;
-        }
-        std::string wreck_name = m_self->itemName();
-        GPoint wreckPosition = m_destiny->GetPosition();
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {
@@ -397,19 +399,20 @@ void Ship::Killed(Damage &fatal_blow) {
         return;    //  make error here
     }
 
-    if (m_system->GetSystemSecurityRating() > 0) {
-        /* http://www.eveinfo.net/wiki/ind~4067.htm
-         *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
-         *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
-         *  security status loss = relative_penalty * (agressor_sec_status + 10)
-         */
-        /** @todo (allan) check for faction/corp status modifiers here. */
-        double modifier = (1 + ((pPilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
-        double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
-        double loss = penalty * ( pClient->GetSecurityRating() + 10);
-        loss *= sConfig.rates.secRate;
-        pClient->GetChar()->secStatusChange( loss );
-    }
+    if (pClient != nullptr)
+        if (m_system->GetSystemSecurityRating() > 0) {
+            /* http://www.eveinfo.net/wiki/ind~4067.htm
+             *  relative_sec_status_penalty = base_penalty * system_truesec * (1 + (victim_sec_status - agressor_sec_status) / 90)
+             *  The actual drop in security status seen by the attacker is a function of their current security status and the relative penalty:
+             *  security status loss = relative_penalty * (agressor_sec_status + 10)
+             */
+            /** @todo (allan) check for faction/corp status modifiers here. */
+            double modifier = (1 + ((pPilot->GetSecurityRating() - pClient->GetSecurityRating()) /90));
+            double penalty = 6.0f * m_system->GetSystemSecurityRating() * modifier;
+            double loss = penalty * ( pClient->GetSecurityRating() + 10);
+            loss *= sConfig.rates.secRate;
+            pClient->GetChar()->secStatusChange( loss );
+        }
 
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
     CharKillData data;
@@ -488,9 +491,9 @@ void Ship::Killed(Damage &fatal_blow) {
     pPilot->GetChar()->LogKill(data);
 
     if (pPilot->InPod()) {
-        pClient->GetChar()->PayBounty(pPilot->GetChar());
+        if (pClient != nullptr)
+            pClient->GetChar()->PayBounty(pPilot->GetChar());
 
-        GPoint wreckPosition = GetPosition();
         uint32 oldPodItemID = pPilot->GetShipID();
 
         std::string corpse_name = pPilot->GetName();
@@ -498,7 +501,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
         ItemData corpseItemData(corpseTypeID, m_ownerID, locationID, flagAutoFit, corpse_name.c_str(), wreckPosition);
         InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
-        if (corpseItemRef.get() != nullptr) {
+        if (corpseItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Corpse Item Failed for %s of type %u", corpse_name.c_str(), corpseTypeID);
             DBSystemDynamicEntity corpseEntity;
             corpseEntity.allianceID = m_allyID;
@@ -532,56 +535,18 @@ void Ship::Killed(Damage &fatal_blow) {
             will have to look into this more later
          */
 
-        AbortCycle();  /* this will cancel all active modules ...works */
+        AbortCycle();
         PayInsurance();
 
-        GPoint capsulePosition = GetPosition();
-        GPoint wreckPosition(capsulePosition);
         uint32 oldShipItemID = pPilot->GetShipID();
-		//set capsule position away from old ship:
-        float radius = m_self->GetAttribute(AttrRadius).get_float();
-        capsulePosition.MakeRandomPointOnSphere(radius + (MakeRandomFloat(200, 400)));
-
-        sItemFactory.SetUsingClient(pPilot);
-        ShipItemRef podRef = sItemFactory.GetShip(pPilot->GetPodID());
-        if (podRef.get() == nullptr) {
-            pPilot->CreateNewPod();
-            podRef = sItemFactory.GetShip(pPilot->GetPodID());
-        }
-        podRef->Relocate(capsulePosition);
-
-        SystemEntity* pPodEntity = m_system->GetSE(pPilot->GetPodID());
-        if (pPodEntity == nullptr) {
-            FactionData data;
-                data.ownerID = GetOwnerID();
-                data.allianceID = GetAllianceID();
-                data.factionID = GetWarFactionID();
-                data.corporationID = GetCorporationID();
-            pPodEntity = new Ship(podRef, m_services, m_system, data);
-        }
-
-        m_bubble->Add(pPodEntity);
-        sItemFactory.UnsetUsingClient();
-
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
 
         pPilot->ResetAfterPopped();
-        // at this point, player has new shipID and new shipSE.
-
-        uint32 wreckTypeID = sDataMgr.GetWreckID(deadShipRef->typeID());
-        if (!IsWreckTypeID(wreckTypeID)) {
-            sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
-            // default to generic wreck till i get better checks and/or complete wreck data
-            wreckTypeID = 26468;
-        }
-        std::string wreck_name = pPilot->GetName();
-        wreck_name += "'s " + deadShipRef->itemName() + " Wreck";
-        deadShipRef->Delete();  // this will invalidate m_self and any SE* calls
 
         ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
-        if (wreckItemRef.get() != nullptr) {
+        if (wreckItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
             return;
         }

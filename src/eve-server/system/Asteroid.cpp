@@ -52,6 +52,7 @@ AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
 
     adata.itemName = type->name();
 
+    // this isnt right...this is for saving roids...
     uint32 asteroidID = ManagerDB::CreateRoidItemID(idata, adata);
     if (asteroidID == 0)
         return AsteroidItemRef(nullptr);

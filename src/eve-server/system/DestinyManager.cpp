@@ -1179,8 +1179,8 @@ void DestinyManager::_Orbit() {
     double current = m_position.distance(Tp);
     double actual = (current - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - current:%.2f, actual:%.2f, target:%.2f, follow:%.2f", \
-            current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  current:%.2f, actual:%.2f, target:%.2f, follow:%.2f", \
+            mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
 
     // distances for orbit calculations for orbits within engage distance
     double orbitDistNow = 0.0f, orbitDistNext = 0.0f, curSpeed = m_maxSpeed * m_activeSpeedFraction * m_maxOrbitSpeedFraction;
@@ -1200,8 +1200,8 @@ void DestinyManager::_Orbit() {
     // adjust 'distance' variable as needed to correct orbit circumfrence based on target distance
     if ((actual - m_targetDistance /8) > m_followDistance) {
         // too far to engage target.  move closer
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - way too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  way too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
+                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
         if (m_orbiting > 1) {
             MoveObject();
             return; // this is all we need to do at this point.
@@ -1225,8 +1225,8 @@ void DestinyManager::_Orbit() {
         return; // this is all we need to do at this point.
     } else if (actual < m_targetDistance) {
         // way too close inside orbit.  move away quickly.
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - way too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  way too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
+                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
         if (m_orbiting < 0) {
             MoveObject();
             return; // this is all we need to do at this point.
@@ -1243,8 +1243,8 @@ void DestinyManager::_Orbit() {
     /** @note these should use a bit of trig to calculate true position, but im lazy, so will hack it for now.  will have to revisit later */
     } else if (current > m_followDistance) {
         // too far outside orbit.  move closer
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
+                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
         m_orbiting = 2;
         // simulate orbiting distance here...the distance isnt a straight line, so we need to fudge it as ship will be trying for a larger orbit
         orbitDistNow = current - (m_targetDistance /8);
@@ -1252,16 +1252,16 @@ void DestinyManager::_Orbit() {
         orbitDistNext = orbitDistNow - (m_targetDistance /10);
     } else if (current < m_targetDistance) {
         // too close inside orbit; move away slowly.
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
+                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
         m_orbiting = -1;
         orbitDistNow = current + (m_targetDistance /8);
         // determine distance for next tic based on ship speed and position
         orbitDistNext = orbitDistNow + (m_targetDistance /10);
     } else {
         // within orbit distance tolerance
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - within tolerance.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  within tolerance.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
+                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
         m_orbiting = 1;
         orbitDistNow = m_followDistance;  // this is calculated orbit distance for this ship
         orbitDistNext = m_followDistance;
@@ -1300,8 +1300,8 @@ void DestinyManager::_Orbit() {
     //}
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - orbiting. curRad:%.5f, timestamp:%u, speed:%.2f, Now:%.2f Next:%.2f", \
-            curRad, timeStamp, curSpeed, orbitDistNow, orbitDistNext);
+        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  orbiting. curRad:%.5f, timestamp:%u, speed:%.2f, Now:%.2f Next:%.2f", \
+            mySE->GetName(), mySE->GetID(), curRad, timeStamp, curSpeed, orbitDistNow, orbitDistNext);
 
     // set current heading as vector from current location to calculated location for this tic
     GVector heading(m_position, Tp + mPos);
@@ -1973,8 +1973,10 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             sfx.active = true;
         updates.push_back(sfx.Encode());
         SendDestinyUpdate(updates);
-        _log(NPC__MESSAGE, "Destiny::WarpTo() NPC  toBubble:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",
-             m_targBubble->GetID(), mySE->SysBubble()->GetID(), m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
+        if (is_log_enabled(NPC__MESSAGE))
+            _log(NPC__MESSAGE, "Destiny::WarpTo() NPC %s(%u) to:%u from:%u, m_targetPoint: %.2f,%.2f,%.2f  m_stopDistance: %i  m_targetDistance: %.1f",\
+                    mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
+                    m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
     } else if (mySE->HasPilot()) {
         if (m_targetDistance < minWarpDistance) {
@@ -2984,13 +2986,11 @@ void DestinyManager::SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool 
 void DestinyManager::SendSetState() const {
     if (!mySE->HasPilot())
         return;
-    if (mySE->GetPilot()->IsSetStateSent())
-        return;
 
     _log(DESTINY__MESSAGE, "Destiny::SendSetState() Called for Ship:%s(%u) Pilot:%s(%u)", \
                         mySE->GetName(), mySE->GetID(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
-     SetState ss;
+    SetState ss;
         ss.stamp = sEntityList.GetStamp();
         ss.ego = mySE->GetID();
 
@@ -2998,6 +2998,7 @@ void DestinyManager::SendSetState() const {
     PyTuple* tmp = ss.Encode();
     //setstate should be alone and immediate.  send directly
     mySE->GetPilot()->QueueDestinyUpdate(&tmp, true, true);   // consumed
+    mySE->GetPilot()->SetStateSent(true);
 }
 
 void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only) const

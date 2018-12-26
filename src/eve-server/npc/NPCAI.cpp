@@ -103,10 +103,13 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_int();    //AttrOrbitRange is 0 for npc
     if (!m_flyRange)
         m_flyRange = 0;
-    // distance for Speed Boost activation
+    // distance for Speed Boost activation  (this needs to be revisited)
     m_boostRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_int();
     if (!m_boostRange)
         m_boostRange = 0;
+    // some npcs have flyRange > boostRange.  this corrects it. (extends boost range)
+    if (m_flyRange > m_boostRange)
+        m_boostRange += m_boostRange + m_flyRange;
     // max firing range   default:10000
     m_maxAttackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();
     if (!m_maxAttackRange)
@@ -338,7 +341,7 @@ void NPCAIMgr::SetWander()
         if (pSE == nullptr)
             pSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
         if (pSE == nullptr) {
-            _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found", m_npc->GetName(), m_npc->GetID());
+            _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found.", m_npc->GetName(), m_npc->GetID());
             WarpOut();
             return;
         }
@@ -473,6 +476,9 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
     }
 
     m_isWandering = false;
+
+    _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) - dist: %.0f, flyRange: %u, boostRange: %u.", \
+            m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist, m_flyRange, m_boostRange);
 
     if (dist < m_flyRange)
         SetEngaged(pSE);

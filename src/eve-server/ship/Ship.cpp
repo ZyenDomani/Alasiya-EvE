@@ -1904,6 +1904,8 @@ void Ship::DamageRandModule(float chance)
 }
 
 void Ship::PayInsurance() {
+    if (m_self->groupID() == EVEDB::invGroups::Rookieship)
+        return;
     std::string reason = "Insurance payment for loss of ship ";
     reason += m_self->itemName();
     AccountService::TranserFunds(ownerSCC, m_ownerID, m_db.GetShipInsurancePayout(GetSelf()->itemID()), reason, Journal::EntryType::Insurance);

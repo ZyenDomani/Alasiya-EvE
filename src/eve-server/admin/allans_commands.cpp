@@ -281,7 +281,7 @@ PyResult Command_secstatus(Client* who, CommandDB* db, PyServiceMgr* services, c
 PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!who->IsInSpace())
-        throw PyException(MakeCustomError("You're not in space."));
+        throw PyException(MakeCustomError("You're not in space.  This call needs DestinyMgr."));
     if (!who->GetShipSE()->SysBubble())
         who->EnterSystem(who->GetSystemID());
     if (!who->GetShipSE()->DestinyMgr())

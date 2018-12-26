@@ -99,16 +99,6 @@ SystemManager::~SystemManager() {
     if (m_loaded)
         UnloadSystem();
 
-    m_npcs.clear();
-    m_clients.clear();
-    m_moonMap.clear();
-    m_entities.clear();
-    m_planetMap.clear();
-    m_ratBubbles.clear();
-    m_beltVector.clear();
-    m_roidBubbles.clear();
-    m_ticEntities.clear();
-
     SafeDelete(m_dungMgr);
     SafeDelete(m_anomMgr);
     SafeDelete(m_beltMgr);
@@ -248,8 +238,12 @@ void SystemManager::UnloadSystem() {
 
     // system is being unloaded.  pay bounties now
     PayBounties();
+    // unload belts, which saves and removes roids from system
     m_beltMgr->ClearAll();
+    // close anomaly mgr, which saves and removes sigs from system
+    m_anomMgr->Close();
 
+    // testing this shit....still have some items not being removed correctly  26Dec18
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
@@ -257,40 +251,35 @@ void SystemManager::UnloadSystem() {
             itr = m_entities.erase(itr);
             continue;
         }
-        pSE = itr->second;
-        itr = m_entities.erase(itr);
-        //RemoveEntity(pSE);    // cant use RemoveEntity here as it will fuckup iterator (removes SE* from m_entities list)
-        sBubbleMgr.Remove(pSE);
-        RemoveItemFromInventory( pSE->GetSelf() );
-        if (pSE->TargetMgr() != nullptr)
-            pSE->TargetMgr()->ClearAllTargets(false);
-        if (pSE->IsNPCSE()) {
+        if (itr->second->TargetMgr() != nullptr)
+            itr->second->TargetMgr()->ClearAllTargets(false);
+        if (itr->second->IsNPCSE()) {
             sEntityList.RemoveNPC();    // this is for loaded npc count.
-            pSE->GetSelf()->Delete();
+            itr->second->GetSelf()->Delete();
         }
-        if (pSE->IsStationSE()) {
-            pSE->GetStationSE()->UnloadStation();
+        if (itr->second->IsStationSE()) {
+            itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         }
 
-        // this doesnt work right, but will leak mem if SE* isnt deleted.
-        //SafeDelete(itr->second);
+        pSE = itr->second;
+        itr = m_entities.erase(itr);
+        sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
     }
-
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
+
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - left in maps: %u npcs, %u entities.", m_npcs.size(), m_entities.size());
 
     m_npcs.clear();
     // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
+    // these next two are dupe containers. contents are not important for unload
     m_ticEntities.clear();
     m_staticEntities.clear();
 
-    // close anomaly mgr before we call system d'tor
-    //m_anomMgr->Close();
-
-    // this still needs some work...
+    // this still needs some work... seems ok to me.  26Dec18
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
 
     // set system inactive for system status page

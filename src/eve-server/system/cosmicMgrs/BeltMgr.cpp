@@ -26,12 +26,11 @@
 
 
 BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
-: m_system(mgr),
-  m_services(svc),
-  m_respawnTimer(sConfig.cosmic.BeltGrowth *60 *60 *1000)  // hours->ms
+:m_system(mgr),
+m_services(svc),
+m_respawnTimer(0),
+m_initialized(false)
 {
-    m_initialized = false;
-    m_respawnTimer.Disable();
 }
 
 BeltMgr::~BeltMgr()
@@ -74,11 +73,10 @@ void BeltMgr::ClearBelt(uint16 bubbleID)
 }
 
 void BeltMgr::ClearAll() {
-    // roids are temp items for now.  dont save them.
-    //Save();
-
+    Save();
     for (auto cur : m_asteroids) {
-        cur.second->Delete();
+        m_system->RemoveEntity(cur.second);
+        //cur.second->Delete();
         SafeDelete(cur.second);
     }
     m_asteroids.clear();
@@ -186,10 +184,10 @@ bool BeltMgr::Load(uint16 bubbleID) {
 
 void BeltMgr::Save() {
     double start = GetTimeUSeconds();
-    AsteroidData entry { };
     std::vector<AsteroidData> roids;
     roids.clear();
     for (auto cur : m_asteroids) {
+        AsteroidData entry;
         entry.itemID = cur.second->GetID();
         entry.itemName = cur.second->GetName();
         entry.typeID = cur.second->GetSelf()->typeID();
@@ -382,7 +380,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         quantity = ((25000 * log(radius)) - 112404.8);
     }
 
-    AsteroidData adata { };
+    AsteroidData adata;
         adata.beltID = beltID;
         adata.systemID = m_systemID;
         adata.typeID = typeID;

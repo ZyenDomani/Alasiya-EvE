@@ -440,7 +440,7 @@ uint32 InventoryDB::NewItem(const ItemData &data) {
     // check for common error ('common' is relative.)
     if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
         return 0;  // make error here?
-        
+
     DBerror err;
     uint32 uid = 0;
 
@@ -709,8 +709,8 @@ bool InventoryDB::GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 owner
 void InventoryDB::DeleteTrackingCans()
 {
     DBerror err;
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Position Test%'");
-    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Bubble%'");
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Position Test%'");  // 90.63s on main, 0.037s on dev
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%Bubble%'");         // 66.75s on main, 0.036s on dev
 }
 
 bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
