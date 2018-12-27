@@ -353,6 +353,10 @@ void NPC::Killed(Damage &fatal_blow) {
         return;
     }
 
+    if (is_log_enabled(PHYSICS__TRACE))
+        _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+        
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
@@ -375,8 +379,10 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
+    WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
+    if (wSE == nullptr)
+        return;
+    wSE->SetLaunchedByID(m_self->itemID());
+    wSE->DestinyMgr()->SendJettisonPacket();
 
-    if (is_log_enabled(PHYSICS__TRACE))
-        _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-                GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 }

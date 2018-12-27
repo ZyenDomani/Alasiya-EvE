@@ -196,10 +196,10 @@ void Prospector::DropSalvage()
             ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), contData);
             jetCanRef->SetMySE(cSE);
             m_targetSE->SystemMgr()->AddEntity(cSE);
-            m_targetSE->DestinyMgr()->SendJettisonPacket();
+            cSE->DestinyMgr()->SendJettisonPacket();
         }
     }
-    
+
     m_targetSE->Delete();
     SafeDelete(m_targetSE);
 

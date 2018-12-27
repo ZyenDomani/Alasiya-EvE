@@ -1033,6 +1033,9 @@ void StructureSE::Killed(Damage &fatal_blow) {
         return;
     }
 
+    _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
+            GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
+
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     if (survivedItems.size())
@@ -1058,9 +1061,11 @@ void StructureSE::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
-
-    _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-            GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
+    WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
+    if (wSE == nullptr)
+        return;
+    wSE->SetLaunchedByID(m_self->itemID());
+    wSE->DestinyMgr()->SendJettisonPacket();
 }
 
 

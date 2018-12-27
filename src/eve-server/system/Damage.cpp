@@ -365,6 +365,10 @@ void Ship::Killed(Damage &fatal_blow) {
             return;
         }
 
+        if (is_log_enabled(PHYSICS__TRACE))
+            _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+                    GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
         DBSystemDynamicEntity wreckEntity;
@@ -387,10 +391,12 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckItemRef->Delete();
             return;
         }
+        WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
+        if (wSE == nullptr)
+            return;
+        wSE->SetLaunchedByID(m_self->itemID());
+        wSE->DestinyMgr()->SendJettisonPacket();
 
-        if (is_log_enabled(PHYSICS__TRACE))
-            _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-                    GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
         return;
     }
 
@@ -494,8 +500,6 @@ void Ship::Killed(Damage &fatal_blow) {
         if (pClient != nullptr)
             pClient->GetChar()->PayBounty(pPilot->GetChar());
 
-        uint32 oldPodItemID = pPilot->GetShipID();
-
         std::string corpse_name = pPilot->GetName();
         corpse_name += "'s Frozen Corpse";
         uint32 corpseTypeID = 10041; // typeID from 'invTypes' table for "Frozen Corpse"
@@ -538,7 +542,6 @@ void Ship::Killed(Damage &fatal_blow) {
         AbortCycle();
         PayInsurance();
 
-        uint32 oldShipItemID = pPilot->GetShipID();
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
 
@@ -575,5 +578,10 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckItemRef->Delete();
             return;
         }
+        WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
+        if (wSE == nullptr)
+            return;
+        wSE->SetLaunchedByID(m_self->itemID());
+        wSE->DestinyMgr()->SendJettisonPacket();
     }
 }

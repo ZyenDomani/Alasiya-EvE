@@ -566,6 +566,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             if (pSE->IsPOSSE())
                 pSE->GetPOSSE()->Init(iRef, call.client->GetShipSE()->SysBubble());
             pSystem->AddEntity(pSE);
+            pSE->DestinyMgr()->SendJettisonPacket();
             list->AddItem(new PyInt(entity.itemID));
         }
         if (dropped) {
@@ -574,9 +575,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         }
     }
 
-    if (dropped)
-        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
-    else {
+    if (!dropped) {
         dict->clear();  // send empty list.
         PyList* list = new PyList();
         dict->SetItem(new PyInt(call.client->GetShipID()), list);
@@ -762,6 +761,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             cSE->SetPosition(location);
             ccRef->SaveItem();
             pSysMgr->AddEntity(cSE);
+            cSE->DestinyMgr()->SendJettisonPacket();
 
             // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
             args.ints.erase(cur);
@@ -790,6 +790,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             sSE->SetPosition(location);
             sRef->SaveItem();
             pSysMgr->AddEntity(sSE);
+            sSE->DestinyMgr()->SendJettisonPacket();
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             cRef = sItemFactory.GetItem(cur);
@@ -804,6 +805,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             dSE->SetPosition(location);
             cRef->SaveItem();
             pSysMgr->AddEntity(dSE);
+            dSE->DestinyMgr()->SendJettisonPacket();
             continue;
         } //else if ()
         /** @todo  Handle other cargo */
@@ -836,6 +838,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
             jcRef->SetMySE(cSE);
             pSysMgr->AddEntity(cSE);
+            cSE->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();
         }
         /** @todo  check current can for capacity limits. */
@@ -843,8 +846,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         pClient->MoveItem(cur, (ccRef ? ccRef->itemID() : jcRef->itemID()), flagAutoFit);
         continue;
     }
-
-    pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
 
     return tuple;
 }
