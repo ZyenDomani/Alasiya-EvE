@@ -402,14 +402,14 @@ void Client::ProcessClient() {
                 } break;
                 case ClientState::csKilled: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
-                    // check this, too.  fairly sure live does NOT resend destiny state when killed.  see csBoard notes.
-                    //m_setStateSent = false;
-                    //SetBallPark();
+                    // live does NOT resend destiny state when killed.  see csBoard notes.
+                    SendSessionChange();
                 } break;
                 case ClientState::csBoard: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
-                    // this shit isnt right.  check/correct per packet logs.  live DOES NOT resend destiny state!
-                    SetBallPark();
+                    // calling OnSessionChanged() in client with shipid in change will update ego with new ship.
+                    // NOTE: all items must be in same bubble.
+                    SendSessionChange();
                 } break;
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
@@ -779,11 +779,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         return;
     }
 
-    if (IsInSpace()) {
-        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
-        pShipSE->DestinyMgr()->SendJettisonPacket();
-    }
-
+    uint32 oldShipID = m_shipId;
     /* check for and delete pod entity if boarding new ship */
     if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
         m_ship->Relocate(NULL_ORIGIN);
@@ -793,17 +789,17 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipItemRef->itemID());
     } else  {
         m_ship->GetModuleManager()->CharacterLeavingShip();
-        m_ship->SetPlayer(nullptr);
         m_ship->SaveShip();
         if (IsInSpace()) {
             pShipSE->Abandon();
-            m_ship->ChangeOwner(1);
+            m_ship->ChangeOwner(1); // update this to use system owner?
             m_ship->SetFlag(flagShipOffline);
             char ci[40];
             snprintf(ci, sizeof(ci), "Abandoned: %s", GetName());
             m_ship->SetCustomInfo(ci);
             pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
             pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
+            pShipSE->DestinyMgr()->SendJettisonPacket();
             // send OnItemsChanged notifications here for abandonded ship
         } else {
             char ci[1];
@@ -812,11 +808,7 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         }
     }
 
-    /* set internal vars for new ship */
     SetShip(newShipItemRef);
-
-    m_char->Move(m_shipId, flagPilot, true);
-    m_ship->SetPlayer(this);
 
     char ci[25];
     if (IsSolarSystem(m_locationID)) {
@@ -825,19 +817,20 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         if (m_ship->typeID() == itemTypeCapsule) {
             m_ship->Move(m_locationID, flagCapsule, true);
             CreateShipSE();
-            pShipSE->SetPodShipID(m_shipId);
+            pShipSE->SetPodShipID(oldShipID);
             m_system->AddEntity(pShipSE);
         } else {
             m_ship->SetFlag(flagAutoFit);
             pShipSE = m_system->GetSE(m_shipId)->GetShipSE();
             if (pShipSE == nullptr) {
                 //  cant find ship.  put player back in pod and send error.
+                SendErrorMsg("There was an error with the ship you were trying to board.  Ref: ServerError 15103.");
                 if (m_pod.get() == nullptr)
                     CreateNewPod();
                 SetShip(m_pod);
                 m_ship->Move(m_locationID, flagCapsule, true);
                 CreateShipSE();
-                pShipSE->SetPodShipID(m_shipId);
+                pShipSE->SetPodShipID(oldShipID);
                 m_system->AddEntity(pShipSE);
             }
         }
@@ -851,6 +844,8 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
         pShipSE->SetPilot(this);
         snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
+
+        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
     } else {
         snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     }
@@ -1039,12 +1034,15 @@ std::string Client::GetStateName(ClientState state)
 
 void Client::SetShip(ShipItemRef shipRef) {
     pShipSE = nullptr;
+    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
-    if (IsSolarSystem(m_locationID))
+    m_char->SetActiveShip(m_shipId);
+    if (IsSolarSystem(m_locationID)) {
+        m_char->Move(m_shipId, flagPilot, true);
         UpdateSessionInt("shipid", m_shipId);   // update shipID in session
-    if (m_char.get() != nullptr)
-        m_char->SetActiveShip(m_shipId);
+    }
+    m_ship->SetPlayer(this);
 }
 
 void Client::PickAlternateShip() {
@@ -1099,7 +1097,7 @@ ShipItemRef Client::SpawnNewRookieShip() {
     return sRef;
 }
 
-void Client::ResetAfterPopped()
+void Client::ResetAfterPopped(GPoint& position)
 {
     m_bubbleWait = true;
     m_autoPilot = false;
@@ -1108,13 +1106,12 @@ void Client::ResetAfterPopped()
     pShipSE->DestinyMgr()->SendJettisonPacket();
     pShipSE->DestinyMgr()->SendTerminalExplosion(m_shipId, pShipSE->SysBubble()->GetID());
 
-    if (m_pod.get() == nullptr) // this will never be null (checked in Killed())
+    if (m_pod.get() == nullptr)
         CreateNewPod();
 
-    // move char before calling Delete() on shipSE, as it deletes everything, starting with contents
-    m_char->Move(m_pod->itemID(), flagPilot, true);
-
-    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+    uint32 oldShipID = m_shipId;
+    
+    m_pod->Relocate(position);
     SetShip(m_pod);
 
     char ci[25];
@@ -1125,23 +1122,22 @@ void Client::ResetAfterPopped()
     if (pShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
         SendErrorMsg("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
-        // we should probably send char to their clone if this happens....
+        // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
         SpawnNewRookieShip();
         return;
     }
 
-    pShipSE->SetPilot(this);
     m_ship->UpdateEffects();
 
-    pShipSE->SetPodShipID(m_shipId);
-    pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
-    pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-    pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+    //pShipSE->SetPosition(position);
+    pShipSE->SetPodShipID(oldShipID);
 
     m_system->AddEntity(pShipSE);
+    pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
 
     SetSessionTimer();
+    // set timer to call SendSessionChange() after all other calls have (hopefully) finshed
     SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
 }
 

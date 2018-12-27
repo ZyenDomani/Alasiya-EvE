@@ -54,7 +54,7 @@ enum ClientTimers {
     JumpingTimer     = 4000,    // Timer to delay jumping
     MovingTimer      = 1000,
     ScanningTimer    = 10000,   // used to delay scan results based on skills, items, and other shit
-    KilledTimer      = 1500,    // used to reset destiny set state after killed or otherwise changing ships
+    KilledTimer      = 900,    // used to reset ego after killed or otherwise changing ships
     ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
     JetcanTimer      = 180000,  // used to delay jetcan creation.  3min default
     LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
@@ -204,7 +204,7 @@ public:
     void CreateNewPod();
     void PickAlternateShip();
     void ResetAfterPodded();
-    void ResetAfterPopped();  //  delete killed ship, reset player to pod, add pod to system
+    void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
     void BoardShip(ShipItemRef newShipRef);
     void UndockFromStation();
     void DockToStation();

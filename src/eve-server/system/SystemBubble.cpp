@@ -189,13 +189,15 @@ void SystemBubble::Add(SystemEntity* pSE) {
 		return;
 	}
 
+	_log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u", pSE->GetID(), GetID());
+
 	if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
         GPoint startPoint( pSE->GetPosition() );
         GVector direction(startPoint, NULL_ORIGIN);
         double rangeToStar = direction.length();
         rangeToStar /= ONE_AU_IN_METERS;
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Adding entity %u to bubble %u. Distance to Star %.2f AU.  %u/%u Entities in bubble",\
-                pSE->GetID(), GetID(), rangeToStar, m_entities.size(), m_dynamicEntities.size());
+        _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %u/%u Entities in bubble",\
+                rangeToStar, m_entities.size(), m_dynamicEntities.size());
         if (sConfig.server.StackTrace)
             EvE::traceStack();
     }
@@ -473,7 +475,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__TRACE))
+    if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
         PrintEntityList();
 
     Buffer* destinyBuffer = new Buffer();
@@ -520,7 +522,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     Client* pClient = to_who->GetPilot();
     if (pClient == nullptr)
         return;
-    if (is_log_enabled(DESTINY__TRACE))
+    if (is_log_enabled(DESTINY__BUBBLE_TRACE))
         PrintEntityList();
 
 	Buffer* destinyBuffer = new Buffer();

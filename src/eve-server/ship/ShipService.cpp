@@ -121,10 +121,11 @@ PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args
 
 /* only called in space */
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
-    /*if (call.client->IsSessionChange()) {
+    if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return PyStatic.NewNone();
-    }*/
+    }
+
     sLog.White("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
 
@@ -137,8 +138,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     Client* pClient = call.client;
-    pClient->SendNotifyMsg("This function is disabled.  It will be fixed eventually");
-    return nullptr;
 
     if (pClient->GetShipSE()->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot change ships while moving."));
@@ -158,7 +157,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     if (newShipRef.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
-        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship"));
+        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 25107."));
         return nullptr;
     }
 
@@ -174,11 +173,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    /* all previous SE and DestinyMgr objects are updated to new ship object here */
-    // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(newShipRef);
-
-    pClient->SendNotifyMsg("This function is hacked.  You will need to warp, wait a couple minutes, then send '/update' command to correct destiny state (or relog).  This will be fixed eventually");
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp
@@ -190,18 +185,15 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
 /* only called in space */
 PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
-
-    /*if (call.client->IsSessionChange()) {
+    if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }*/
+    }
     sLog.White("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
     call.Dump(SERVICE__CALL_DUMP);
     //no arguments.
 
     Client* pClient = call.client;
-    pClient->SendNotifyMsg("This function is disabled.  It will be fixed eventually");
-    return nullptr;
     /** @todo create and implement "Weapon Flag"....
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
      *   this will be in client's criminaltimer object
@@ -214,14 +206,14 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
     if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
-        call.client->SendNotifyMsg("You cannot eject with an active Cyno Field.");
-        return nullptr;
+        throw PyException(MakeCustomError("You cannot eject with an active Cyno Field.");
+        return PyStatic.NewNone();
     }
 
     //  do we need this?
     if (pShipSE->DestinyMgr()->IsMoving()) {
-        throw PyException(MakeCustomError("You cannot eject while moving."));
-        return nullptr;
+        throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
+        return PyStatic.NewNone();
     }
 
     SystemManager* pSystem = pClient->SystemMgr();
@@ -240,17 +232,13 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     if (capsuleRef.get() == nullptr) {
         _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", pClient->GetName());
-        throw PyException(MakeCustomError("Something bad happened as you prepared to eject."));
-        return nullptr;
+        throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107."));
+        return PyStatic.NewNone();
     }
 
     capsuleRef->Relocate(capsulePosition);
 
-    /* all previous SE and DestinyMgr objects are updated to new ship object here */
-    // note:  this isnt right...hackish and funky, but works.
     pClient->BoardShip(capsuleRef);
-
-    pClient->SendNotifyMsg("This function is hacked.  You will need to warp, wait a couple minutes, then send '/update' command to correct destiny state (or relog).  This will be fixed eventually");
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp

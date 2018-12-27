@@ -270,7 +270,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
         Killed(d);  // this must NOT remove dead SE from system.
-        SystemEntity::Killed(d);    // this is for removing shipSE from system and deletes shipItem and all its contents
+        SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
     } else {
         PyTuple* up(nullptr);
         /**    def OnDamageMessage(self, msgKey, args):
@@ -542,7 +542,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
 
-        pPilot->ResetAfterPopped();
+        pPilot->ResetAfterPopped(wreckPosition);
 
         ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
