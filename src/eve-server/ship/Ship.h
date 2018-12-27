@@ -421,11 +421,11 @@ public:
 
     //cancel all active modules
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
+
+    // this is the itemID of the ship that ejected the pod, for setting in slimItemUpdate (launcherID)
     void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
 
     ShipItemRef GetShipItemRef()                        { return m_shipRef; }
-
-    uint32 GetPodShipID()                               { return m_podShipID; }
 
     double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 

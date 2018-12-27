@@ -2055,7 +2055,7 @@ PyDict* Ship::MakeSlimItem() {
         slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
         slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
     if (m_self->typeID() == itemTypeCapsule) {
-        slim->SetItemString("launcherID",           new PyInt(GetPodShipID()));
+        slim->SetItemString("launcherID",           new PyInt(m_podShipID));
         return slim;
     } else {
         slim->SetItemString("categoryID",           new PyInt(m_self->categoryID()));
