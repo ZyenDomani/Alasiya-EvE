@@ -188,8 +188,9 @@ void Sentry::Killed(Damage &fatal_blow) {
         return;
     }
 
-    _log(PHYSICS__TRACE, "Sentry::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-            GetName(), GetID(), x(), y(), z(), deadNPCPosition.x, deadNPCPosition.y, deadNPCPosition.z);
+    if (is_log_enabled(PHYSICS__TRACE))
+        _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
@@ -219,5 +220,4 @@ void Sentry::Killed(Damage &fatal_blow) {
         return;
     wSE->SetLaunchedByID(m_self->itemID());
     wSE->DestinyMgr()->SendJettisonPacket();
-
 }

@@ -269,6 +269,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             return true;
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
+        // dead SE must be removed before doing anything else....adjust shit accordingly
         Killed(d);  // this must NOT remove dead SE from system.
         SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
     } else {
@@ -332,6 +333,7 @@ void Ship::Killed(Damage &fatal_blow) {
         if (pClient == nullptr) {
             /** @todo  make error here */
             sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");
+            EvE::traceStack();
         } else
             killerID = pClient->GetCharacterID();
     } else
@@ -554,6 +556,10 @@ void Ship::Killed(Damage &fatal_blow) {
             return;
         }
 
+        if (is_log_enabled(PHYSICS__TRACE))
+            _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+            GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+        
         DropLoot(wreckItemRef, groupID, killerID);
 
         if (survivedItems.size())

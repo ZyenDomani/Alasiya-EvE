@@ -1033,9 +1033,10 @@ void StructureSE::Killed(Damage &fatal_blow) {
         return;
     }
 
-    _log(PHYSICS__TRACE, "StructureSE::Killed() - Wreck %s(%u) Item Position: %.2f,%.2f,%.2f.  Destiny Position: %.2f,%.2f,%.2f.", \
-            GetName(), m_data.itemID, x(), y(), z(), deadPOSPosition.x, deadPOSPosition.y, deadPOSPosition.z);
-
+    if (is_log_enabled(PHYSICS__TRACE))
+        _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+    
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
     if (survivedItems.size())
