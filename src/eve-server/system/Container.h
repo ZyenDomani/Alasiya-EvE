@@ -250,7 +250,7 @@ public:
     virtual void Abandon();
 
     /* specific functions handled in this class. */
-    void SetLaunchedByID(uint32 launcherID)             { m_launchedByID = launcherID; }
+    void SetLaunchedByID(int64 launcherID)             { m_launchedByID = launcherID; }
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
     /** @todo (allan) finish this */
@@ -261,7 +261,7 @@ protected:
 
     Timer m_deleteTimer;
 
-    uint32 m_launchedByID;
+    int64 m_launchedByID;
 
 private:
     bool m_abandoned;

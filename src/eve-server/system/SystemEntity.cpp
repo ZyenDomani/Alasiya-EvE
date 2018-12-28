@@ -510,10 +510,8 @@ void ObjectSystemEntity::UpdateDamage()
 
 void ObjectSystemEntity::Killed(Damage &fatal_blow)
 {
-    if (m_destiny != nullptr) {
-        m_destiny->Stop();
-        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
-    }
+    // do we need to make wreck items here?
+    // do these structures have loot?  probably so eventually
 
     /** @todo  test and complete this to null current customs office for this planet ... */
     if (IsCOSE()) {
@@ -677,17 +675,6 @@ void DynamicSystemEntity::UpdateDamage()
         dmgChange.state = dmgState.Encode();
     PyTuple *up = dmgChange.Encode();
     //source->QueueDestinyUpdate(&up);
-}
-
-void DynamicSystemEntity::Killed(Damage &fatal_blow)
-{
-    if (m_destiny != nullptr) {
-        m_destiny->Stop();
-        if (IsStaticEntity() or IsObjectEntity())    /* these will never be true here */
-            m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), true);
-        else
-            m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
-    }
 }
 
 void DynamicSystemEntity::AwardBounty(Client* pClient)

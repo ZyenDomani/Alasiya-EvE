@@ -53,7 +53,7 @@ class PyServiceMgr;
 class DynamicEntityFactory {
 public:
     // you MUST call (your SystemManager)->AddEntity() after this to actually put the entity in space
-    static SystemEntity* BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity);
+    static SystemEntity* BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID=0);
 };
 
 class SystemManager
@@ -110,7 +110,7 @@ public:
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float GetSecValue()                                 { return m_secValue; }
 
-    bool BuildDynamicEntity(const DBSystemDynamicEntity& entity);
+    bool BuildDynamicEntity(const DBSystemDynamicEntity& entity, int64 launcherID=0);
 
     void AddNPC(NPC* who);
     void RemoveNPC(NPC* who);
@@ -123,7 +123,7 @@ public:
     void RemoveItemFromInventory(InventoryItemRef item);
     void DoSpawnForBubble(SystemBubble* pBubble);
 
-    void MakeSetState(const SystemBubble* bubble,  SetState& into) const;
+    void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
     uint32 GetRandBeltID();
     uint32 GetClosestPlanetID(const GPoint& myPos);

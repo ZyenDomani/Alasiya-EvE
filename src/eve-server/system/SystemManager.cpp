@@ -419,8 +419,8 @@ bool SystemManager::LoadPlayerDynamics() {
     return true;
 }
 
-bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
-    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity );
+bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int64 launcherID/*0*/) {
+    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity, launcherID);
     if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );
         return false;
@@ -428,10 +428,16 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity) {
 
     _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_data.systemID );
     AddEntity(pSE);
+    // this is only used for wrecks...
+    if (launcherID) {
+        WreckSE* pWE = pSE->GetWreckSE();
+        pWE->SetLaunchedByID(launcherID);
+        pWE->DestinyMgr()->SendJettisonPacket();
+    }
     return true;
 }
 
-SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity)
+SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID/*0*/)
 {
     FactionData data;
         data.allianceID = entity.allianceID;
@@ -732,41 +738,41 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
     return nullptr;
 }
 
-void SystemManager::AddClient(Client* who, bool docked/*false*/, bool count/*false*/) {
+void SystemManager::AddClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
     //called from Client::MoveToLocation()
-    if (who == nullptr)
+    if (pClient == nullptr)
         return;
-    auto itr = m_clients.find(who->GetCharacterID());
+    auto itr = m_clients.find(pClient->GetCharacterID());
     if (itr == m_clients.end()) {
-        m_clients[who->GetCharacterID()] = who;
+        m_clients[pClient->GetCharacterID()] = pClient;
         _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
-                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
+                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     m_activityTime = 0;
     if (count) {
         ++m_players;
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
-                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
-void SystemManager::RemoveClient(Client* who, bool docked/*false*/, bool count/*false*/) {
+void SystemManager::RemoveClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
     //called from Client::~Client() and Client::MoveToLocation()
-    if (who == nullptr)
+    if (pClient == nullptr)
         return;
-    auto itr = m_clients.find(who->GetCharacterID());
+    auto itr = m_clients.find(pClient->GetCharacterID());
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
         _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
-                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
+                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     if (count) {
         if (m_players < 1) {
             m_players = 0;
             _log(PLAYER__ERROR, "%s(%u): player count for %s(%u) is <1  -- new count: %u", \
-                    who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
         } else {
             --m_players;
         }
@@ -775,73 +781,73 @@ void SystemManager::RemoveClient(Client* who, bool docked/*false*/, bool count/*
             m_activityTime = sEntityList.GetStamp();
         }
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
-                who->GetName(), who->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
-void SystemManager::AddNPC(NPC* who) {
-    if (who == nullptr)
+void SystemManager::AddNPC(NPC* pSE) {
+    if (pSE == nullptr)
         return;
-    uint32 itemID = who->GetID();
+    uint32 itemID = pSE->GetID();
     if (m_npcs.find(itemID) != m_npcs.end())
-        _log(ITEM__WARNING, "%s(%u): Called AddNPC(), but they're already in %s(%u).  Check bubble.", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__WARNING, "%s(%u): Called AddNPC(), but they're already in %s(%u).  Check bubble.", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
     else
-        m_npcs[itemID] = who;
+        m_npcs[itemID] = pSE;
 
-    _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-    AddEntity(who);
+    _log(NPC__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), pSE->GetID(), m_data.name.c_str(), m_data.systemID);
+    AddEntity(pSE);
     sEntityList.AddNPC();
 }
 
-void SystemManager::RemoveNPC(NPC* who) {
-    if (who == nullptr)
+void SystemManager::RemoveNPC(NPC* pSE) {
+    if (pSE == nullptr)
         return;
-    auto itr = m_npcs.find(who->GetID());
+    auto itr = m_npcs.find(pSE->GetID());
     if (itr != m_npcs.end())
         m_npcs.erase(itr);
 
-    _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), who->GetID(), m_data.name.c_str(), m_data.systemID);
-    RemoveEntity(who);
+    _log(NPC__TRACE, "%s(%u): Removed from system manager for %s(%u)", pSE->GetName(), pSE->GetID(), m_data.name.c_str(), m_data.systemID);
+    RemoveEntity(pSE);
     sEntityList.RemoveNPC();    // this is for loaded npc count.
-    who->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
+    pSE->RemoveNPC();   // this deletes NPC from DB.  NPC's dont jump, so no reason to remove from system unless killed
 }
 
-void SystemManager::AddEntity(SystemEntity* who) {
-    if (who == nullptr)
+void SystemManager::AddEntity(SystemEntity* pSE) {
+    if (pSE == nullptr)
         return;
-    uint32 itemID = who->GetID();
+    uint32 itemID = pSE->GetID();
     if (m_entities.find(itemID) != m_entities.end()) {
-        _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__WARNING, "%s(%u): Called AddEntity(), but they're already in %s(%u).  Check bubble.", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
     } else {
-        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        m_entities[itemID] = who;
+        _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        m_entities[itemID] = pSE;
         m_entityChanged = true;
         // *most* dynamic items need proc tics.  add to proc list
         if (!IsStaticItem(itemID))
-            m_ticEntities[itemID] = who;
+            m_ticEntities[itemID] = pSE;
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
-        AddItemToInventory( who->GetSelf() );
+        AddItemToInventory( pSE->GetSelf() );
     }
-    sBubbleMgr.Add(who);
+    sBubbleMgr.Add(pSE);
 }
 
-void SystemManager::RemoveEntity(SystemEntity* who) {
-    if (who == nullptr)
+void SystemManager::RemoveEntity(SystemEntity* pSE) {
+    if (pSE == nullptr)
         return;
-    sBubbleMgr.Remove(who);
-    uint32 itemID = who->GetID();
+    sBubbleMgr.Remove(pSE);
+    uint32 itemID = pSE->GetID();
 
     auto itr = m_entities.find(itemID);
     if (itr != m_entities.end()) {
-        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        if (who->TargetMgr() != nullptr)
-            who->TargetMgr()->ClearAllTargets(false);
+        _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        if (pSE->TargetMgr() != nullptr)
+            pSE->TargetMgr()->ClearAllTargets(false);
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
-        RemoveItemFromInventory( who->GetSelf() );
+        RemoveItemFromInventory( pSE->GetSelf() );
     } else
-        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", who->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
+        _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
 
     auto sItr = m_ticEntities.find(itemID);
     if (sItr != m_ticEntities.end())
@@ -995,7 +1001,7 @@ uint32 SystemManager::GetRandBeltID()
     return m_beltVector.at(MakeRandomInt(0, m_beltCount));
 }
 
-void SystemManager::MakeSetState(const SystemBubble* bubble,  SetState& into) const {
+void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) const {
     using namespace Destiny;
     Buffer* stateBuffer = new Buffer();
 
@@ -1085,21 +1091,21 @@ void SystemManager::MakeSetState(const SystemBubble* bubble,  SetState& into) co
     }
 }
 
-void SystemManager::AddItemToInventory(InventoryItemRef item)
+void SystemManager::AddItemToInventory(InventoryItemRef iRef)
 {
-    m_solarSystemRef->AddItemToInventory( item );
+    m_solarSystemRef->AddItemToInventory( iRef );
 }
 
-void SystemManager::RemoveItemFromInventory(InventoryItemRef item)
+void SystemManager::RemoveItemFromInventory(InventoryItemRef iRef)
 {
     // just in case this is called from elsewhere (which it may be), make sure we remove entity from our map.
-    auto itr = m_entities.find(item->itemID());
+    auto itr = m_entities.find(iRef->itemID());
     if (itr != m_entities.end()) {
         m_entities.erase(itr);
         m_entityChanged = true;
     }
-    _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", item->itemName().c_str(), item->itemID(), m_data.name.c_str(), m_data.systemID);
-    m_solarSystemRef->RemoveItemFromInventory( item );
+    _log(ITEM__TRACE, "SystemManager::RemoveItemFromInventory() - removing item %s(%u) from inventory of %s(%u)", iRef->itemName().c_str(), iRef->itemID(), m_data.name.c_str(), m_data.systemID);
+    m_solarSystemRef->RemoveItemFromInventory( iRef );
 }
 
 SystemEntity* SystemManager::GetSE(uint32 entityID) const {

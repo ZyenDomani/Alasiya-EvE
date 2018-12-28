@@ -213,6 +213,73 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
     return res;
 }
 
+PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
+{
+    /**
+     *
+     *       bridgesByLocation = m.GetAllianceJumpBridges()
+     *       for toLocID, fromLocID in bridgesByLocation:
+     */
+    sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceJumpBridges(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, itemID
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));
+        list->AddItem(tuple);
+    }
+
+    return list;
+}
+
+PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
+{/**
+    beacons = sm.RemoteSvc('map').GetAllianceBeacons()
+    for solarSystemID, structureID, structureTypeID in beacons:
+        if solarSystemID != session.solarsystemid:
+            solarsystem = cfg.evelocations.Get(solarSystemID)
+            invType = cfg.invtypes.Get(structureTypeID)
+            structureName = uiutil.MenuLabel('UI/Menusvc/BeaconLabel', {'name': invType.name,
+            'system': solarSystemID})
+            allianceMenu.append((solarsystem.name, (solarSystemID, structureID, structureName)))
+            */
+            sLog.White( "MapService::Handle_GetAllianceBeacons()", "size= %u", call.tuple->size() );
+        call.Dump(SERVICE__CALL_DUMP);
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceBeacons(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, itemID
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));
+        list->AddItem(tuple);
+    }
+
+    return list;
+}
+
+PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
+{/**
+    data = sm.RemoteSvc('map').GetCurrentSovData(constellationID)
+    returns locationID, ?
+    return sm.RemoteSvc('map').GetCurrentSovData(locationID)
+    */
+    sLog.White( "MapService::Handle_GetCurrentSovData()", "size= %u", call.tuple->size() );
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return PyStatic.NewNone();
+}
 PyResult MapService::Handle_GetRecentSovActivity(PyCallArgs &call)
 {
     /** @todo will have to make db table for this one.  */
@@ -379,49 +446,4 @@ PyResult MapService::Handle_GetVictoryPoints(PyCallArgs &call)
     return PyStatic.NewNone();
 }
 
-PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
-{
-     /**
-
-        bridgesByLocation = m.GetAllianceJumpBridges()
-        for toLocID, fromLocID in bridgesByLocation:
-            */
-  sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    // copy format from GetLinkableJumpArrays()
-
-    return PyStatic.NewNone();
-}
-
-PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
-{/**
-            beacons = sm.RemoteSvc('map').GetAllianceBeacons()
-            for solarSystemID, structureID, structureTypeID in beacons:
-                if solarSystemID != session.solarsystemid:
-                    solarsystem = cfg.evelocations.Get(solarSystemID)
-                    invType = cfg.invtypes.Get(structureTypeID)
-                    structureName = uiutil.MenuLabel('UI/Menusvc/BeaconLabel', {'name': invType.name,
-                     'system': solarSystemID})
-                    allianceMenu.append((solarsystem.name, (solarSystemID, structureID, structureName)))
-                    */
-  sLog.White( "MapService::Handle_GetAllianceBeacons()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    // copy format from GetLinkableJumpArrays()
-
-    return PyStatic.NewNone();
-}
-
-PyResult MapService::Handle_GetCurrentSovData(PyCallArgs &call)
-{/**
-            data = sm.RemoteSvc('map').GetCurrentSovData(constellationID)
-            returns locationID, ?
-            return sm.RemoteSvc('map').GetCurrentSovData(locationID)
-             */
-  sLog.White( "MapService::Handle_GetCurrentSovData()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return PyStatic.NewNone();
-}
 

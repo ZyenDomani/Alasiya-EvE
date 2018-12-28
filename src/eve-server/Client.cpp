@@ -93,7 +93,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_packaged = false;
     m_portrait = false;
     m_autoPilot = false;
-    m_bubbleWait = true;
+    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
     m_setStateSent = false;
     m_sessionChangeActive = false;
 
@@ -488,6 +488,7 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
         CreateShipSE();
 
     if (IsSolarSystem(m_locationID)) {
+        m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
         if (pt.isZero()) {
             if (pShipSE->GetPosition().isZero())
                 pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), false);
@@ -497,7 +498,6 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
             pShipSE->DestinyMgr()->SetPosition(pt, false);
         if (count and !m_login)
             pShipSE->ResetShipSystemMgr(m_system);
-        m_bubbleWait = false;
         m_setStateSent = false;
         if (m_beyonce)
             return;
@@ -508,7 +508,8 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
 }
 
 void Client::SetBallPark() {
-    m_login = m_bubbleWait = false;
+    m_login = false;
+    m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
     if (m_clientState == ClientState::csUndock) {
@@ -592,6 +593,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (IsStation(locationID))
         stationID = locationID;
 
+    m_bubbleWait = false;           // allow client processing of subsquent destiny msgs
+
     // location changed...verify current system and set session data for current system.
     if (IsJump() or ((m_system != nullptr) and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
@@ -640,6 +643,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->Move(locationID, flagHangar, true);
         m_ship->Relocate(pt);
         m_ship->Dock();
+
+        m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
 
         if (IsFleet(m_fleet)) {
             m_fleetTimer.Disable();
@@ -747,7 +752,6 @@ void Client::DockToStation() {
     _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
     pShipSE->DestinyMgr()->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
-    m_bubbleWait = true;  //do we need this?  there is no ballpark after previous call returns.  -yes, we still get random _bp calls
 
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
@@ -784,6 +788,9 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
     if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
+        char ci[1];
+        snprintf(ci, sizeof(ci), "");
+        m_ship->SetCustomInfo(ci);
         DestroyShipSE();
     } else if (m_login) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipItemRef->itemID());
@@ -1099,27 +1106,33 @@ ShipItemRef Client::SpawnNewRookieShip() {
 
 void Client::ResetAfterPopped(GPoint& position)
 {
-    m_bubbleWait = true;
+    m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
     m_autoPilot = false;
 
     pShipSE->DestinyMgr()->Stop();
-    pShipSE->DestinyMgr()->SendJettisonPacket();
-    pShipSE->DestinyMgr()->SendTerminalExplosion(m_shipId, pShipSE->SysBubble()->GetID());
 
     if (m_pod.get() == nullptr)
         CreateNewPod();
 
-    uint32 oldShipID = m_shipId;
-    
     m_pod->Relocate(position);
-    SetShip(m_pod);
 
-    char ci[25];
-    snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
-    m_ship->SetCustomInfo(ci);
+    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+    m_ship = m_pod;
+    m_shipId = m_pod->itemID();
+    m_char->SetActiveShip(m_shipId);
 
-    CreateShipSE();
-    if (pShipSE == nullptr) {
+    Ship* oldShipSE(pShipSE);
+
+    //  set shipSE to null.  this allows sending AddBalls when pod added to system
+    pShipSE = nullptr;
+    FactionData data;
+        data.allianceID = GetAllianceID();
+        data.corporationID = GetCorporationID();
+        data.factionID = GetWarFactionID();
+        data.ownerID = GetCharacterID();
+    Ship* newShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system, data);
+
+    if (newShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
         SendErrorMsg("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107.");
         // we should probably send char to their clone station if this happens....
@@ -1128,17 +1141,22 @@ void Client::ResetAfterPopped(GPoint& position)
         return;
     }
 
-    m_ship->UpdateEffects();
+    newShipSE->SetPodShipID(oldShipSE->GetID());
+    m_system->AddEntity(newShipSE);
 
-    //pShipSE->SetPosition(position);
-    pShipSE->SetPodShipID(oldShipID);
+    pShipSE = newShipSE;
+    m_char->Move(m_shipId, flagPilot, true);
+    pShipSE->SetPilot(this);
+    //m_ship->UpdateEffects();
 
-    m_system->AddEntity(pShipSE);
     pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
 
     SetSessionTimer();
-    // set timer to call SendSessionChange() after all other calls have (hopefully) finshed
+
+    // update shipID in session
+    UpdateSessionInt("shipid", m_shipId);
     SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
+    //SendSessionChange();
 }
 
 void Client::ResetAfterPodded() {
@@ -1148,7 +1166,6 @@ void Client::ResetAfterPodded() {
      * reset skill effects if clone != current SP and skills lost
      */
 
-    m_bubbleWait = true;
     m_autoPilot = false;
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
@@ -1632,11 +1649,10 @@ void Client::QueueDestinyUpdate(PyTuple **update, bool DoPackage /*false*/, bool
             act.update = pa.Encode();
             m_packaged = false;
         }
-        DoDestinyUpdateMain dum;
+        DoDestinyUpdateMain_2 dum;
             dum.updates = new PyList();
             dum.updates->AddItem(act.Encode());
             dum.waitForBubble = m_bubbleWait;
-            dum.events = new PyList();
         PyTuple* t = dum.Encode();
         if (is_log_enabled(CLIENT__QUEUE_DUMP))
             t->Dump(CLIENT__QUEUE_DUMP, "");
@@ -1655,7 +1671,7 @@ void Client::_SendQueuedUpdates() {
         if (m_destinyEventQueue->empty()) {
             DoDestinyUpdateMain_2 dum;
                 dum.updates = m_destinyUpdateQueue;
-                dum.waitForBubble = m_bubbleWait; /*false*/
+                dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");
@@ -1665,7 +1681,7 @@ void Client::_SendQueuedUpdates() {
             DoDestinyUpdateMain dum;
                 dum.updates = m_destinyUpdateQueue;
                 dum.events = m_destinyEventQueue;
-                dum.waitForBubble = m_bubbleWait; /*false*/
+                dum.waitForBubble = m_bubbleWait;
             PyTuple* t = dum.Encode();
             if (is_log_enabled(CLIENT__QUEUE_DUMP))
                 t->Dump(CLIENT__QUEUE_DUMP, "");

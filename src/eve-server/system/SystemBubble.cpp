@@ -618,7 +618,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
  * RemoveBalls is then called on the entire group, and will call RemoveBall(ballID, terminal) on each ball.
  *  the bool 'terminal' is initially false, then set to true if there is an associated TerminalExplosion for that ballID.
  *
- * see alsso DestinyManager::SendTerminalExplosion()
+ * see also DestinyManager::SendTerminalExplosion()
  *      NOTE  RemoveBall doesnt not work as i thought it should....doesnt trigger explosion.
  */
 //TODO  update these based on above notes   (also look into better (non-ambigious) naming)

@@ -140,9 +140,6 @@ void Sentry::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
-    m_destiny->Halt();
-    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
-
     uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity* killer = fatal_blow.srcSE;
@@ -170,7 +167,7 @@ void Sentry::Killed(Damage &fatal_blow) {
             AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
     }
 
-    GPoint deadNPCPosition = m_destiny->GetPosition();
+    GPoint wreckPosition = m_destiny->GetPosition();
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("Sentry::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
@@ -181,7 +178,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
     const char* faction = itoa(m_allyID);
-    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), deadNPCPosition, faction);
+    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, faction);
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("Sentry::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -205,19 +202,13 @@ void Sentry::Killed(Damage &fatal_blow) {
         wreckEntity.itemName = wreck_name;
         wreckEntity.ownerID = killerID;
         wreckEntity.typeID = wreckTypeID;
-        wreckEntity.x = deadNPCPosition.x;
-        wreckEntity.y = deadNPCPosition.y;
-        wreckEntity.z = deadNPCPosition.z;
+        wreckEntity.x = wreckPosition.x;
+        wreckEntity.y = wreckPosition.y;
+        wreckEntity.z = wreckPosition.z;
 
-    if (!m_system->BuildDynamicEntity(wreckEntity)) {
+    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("Sentry::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
         wreckItemRef->Delete();
         return;
     }
-
-    WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
-    if (wSE == nullptr)
-        return;
-    wSE->SetLaunchedByID(m_self->itemID());
-    wSE->DestinyMgr()->SendJettisonPacket();
 }

@@ -304,9 +304,6 @@ void NPC::Killed(Damage &fatal_blow) {
     if ((m_spawnMgr != nullptr) and (m_self.get() != nullptr))
         m_spawnMgr->SpawnKilled(m_bubble, m_self->itemID());
 
-    m_destiny->Halt();
-    m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID());
-
     uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity *killer(fatal_blow.srcSE);
@@ -356,7 +353,7 @@ void NPC::Killed(Damage &fatal_blow) {
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
                 GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-        
+
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
@@ -374,15 +371,9 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckEntity.y = wreckPosition.y;
         wreckEntity.z = wreckPosition.z;
 
-    if (!m_system->BuildDynamicEntity(wreckEntity)) {
+    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
         sLog.Error("NPC::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
         wreckItemRef->Delete();
         return;
     }
-    WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
-    if (wSE == nullptr)
-        return;
-    wSE->SetLaunchedByID(m_self->itemID());
-    wSE->DestinyMgr()->SendJettisonPacket();
-
 }

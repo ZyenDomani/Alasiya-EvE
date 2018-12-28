@@ -269,8 +269,12 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             return true;
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-        // dead SE must be removed before doing anything else....adjust shit accordingly
+
+        //m_destiny->Halt();
         Killed(d);  // this must NOT remove dead SE from system.
+
+        m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
+
         SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
     } else {
         PyTuple* up(nullptr);
@@ -353,12 +357,16 @@ void Ship::Killed(Damage &fatal_blow) {
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
+
     GPoint wreckPosition = m_destiny->GetPosition();
     std::string wreck_name = m_self->itemName() + " Wreck";
 
+    SystemBubble* pBubble(m_bubble);
+    DestinyManager* pDestiny(m_destiny);
+    // this will nullify bubble and destiny.  system will remain valid (never null in SE base object)
+    //m_system->RemoveEntity(this);
+
     if (!m_self->HasPilot()) {
-        m_destiny->Stop();
-        m_destiny->SendTerminalExplosion(m_shipRef->itemID(), m_bubble->GetID());
         // Spawn a wreck for the Ship that was destroyed:
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
@@ -387,18 +395,11 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.y = wreckPosition.y;
             wreckEntity.z = wreckPosition.z;
 
-        if (!m_system->BuildDynamicEntity(wreckEntity)) {
+        if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed: typeID or typeName not supported: '%u'", wreckTypeID);
             ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             wreckItemRef->Delete();
-            return;
         }
-        WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
-        if (wSE == nullptr)
-            return;
-        wSE->SetLaunchedByID(m_self->itemID());
-        wSE->DestinyMgr()->SendJettisonPacket();
-
         return;
     }
 
@@ -546,8 +547,9 @@ void Ship::Killed(Damage &fatal_blow) {
 
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
-
-        pPilot->ResetAfterPopped(wreckPosition);
+        GPoint podPosition(wreckPosition);
+        podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius());
+        pPilot->ResetAfterPopped(podPosition);
 
         ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
@@ -559,12 +561,11 @@ void Ship::Killed(Damage &fatal_blow) {
         if (is_log_enabled(PHYSICS__TRACE))
             _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
             GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
-        
+
         DropLoot(wreckItemRef, groupID, killerID);
 
-        if (survivedItems.size())
-            for (auto cur: survivedItems)
-                cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
+        for (auto cur: survivedItems)
+            cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
         DBSystemDynamicEntity wreckEntity;
             wreckEntity.allianceID = killer->GetAllianceID();
@@ -579,15 +580,10 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.x = wreckPosition.x;
             wreckEntity.y = wreckPosition.y;
             wreckEntity.z = wreckPosition.z;
-        if (!m_system->BuildDynamicEntity(wreckEntity)) {
+        if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
             sLog.Error("Ship::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
             wreckItemRef->Delete();
             return;
         }
-        WreckSE* wSE = m_system->GetSE(wreckItemRef->itemID())->GetWreckSE();
-        if (wSE == nullptr)
-            return;
-        wSE->SetLaunchedByID(m_self->itemID());
-        wSE->DestinyMgr()->SendJettisonPacket();
     }
 }

@@ -324,11 +324,12 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
             du.fraction = fraction;
         updates.push_back(du.Encode());
     }
-    if (mySE->IsNPCSE() or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
+    if ((mySE->IsNPCSE() and !m_hasSentShipUpdates) or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
         SetBallSpeed ms;   //NPCs and Missiles only.
             ms.entityID = mySE->GetID();
             ms.speed = m_maxSpeed;
         updates.push_back(ms.Encode());
+        m_hasSentShipUpdates = true;
     }
 
     if (!updates.empty())
@@ -516,7 +517,7 @@ void DestinyManager::Stop() {
     SetSpeedFraction(0.0f);
     m_stop = true;
 
-     CmdStop du;
+    CmdStop du;
         du.entityID = mySE->GetID();
     PyTuple *up = du.Encode();
     SendSingleDestinyUpdate(&up);
@@ -1957,7 +1958,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         State = Destiny::BallMode::DSTBALL_WARP;
 
         std::vector<PyTuple*> updates;
-         CmdWarpTo wt;
+        CmdWarpTo wt;
             wt.entityID = mySE->GetID();
             wt.dest_x = m_targetPoint.x;
             wt.dest_y = m_targetPoint.y;
@@ -1965,7 +1966,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             wt.distance = m_stopDistance;
             wt.warpSpeed = GetWarpSpeed();
         updates.push_back(wt.Encode());
-         OnSpecialFX10 sfx;
+        OnSpecialFX10 sfx;
             sfx.guid = "effects.Warping";
             sfx.entityID = mySE->GetID();
             sfx.isOffensive = false;
