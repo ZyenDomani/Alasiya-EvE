@@ -47,7 +47,7 @@
 //  -updated 18Dec16
 enum ClientTimers {
     DefaultTimer     = 1000,
-    BoardTimer       = 1200,
+    BoardTimer       = 600,
     JumpTimer        = 300,
     UndockTimer      = 500,     // used to delay sending Destiny::State (client error fix)
     DockingTimer     = 1000,    // Timer to delay docking (as on live)
@@ -183,7 +183,7 @@ public:
     ShipItemRef GetShip() const                         { return m_ship; }
     Ship* GetShipSE()                                   { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
-    uint32 GetPodID() const                             { return m_char->capsuleID(); }
+    uint32 GetPodID() const                             { return m_pod->itemID(); }
     double GetBounty() const                            { return m_char->bounty(); }
     double GetSecurityRating() const                    { return m_char->GetSecurityRating(); }
     //check all these and update to AccountService::TransferFunds() where applicable
@@ -205,9 +205,10 @@ public:
     void PickAlternateShip();
     void ResetAfterPodded();
     void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
-    void BoardShip(ShipItemRef newShipRef);
+    void BoardShip(ShipItemRef newShipRef); // only called when docked
     void UndockFromStation();
     void DockToStation();
+    void Eject();       // only called in space
     void EnterSystem(uint32 systemID);     // only called by gm command, and only if (bubble == null)
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);

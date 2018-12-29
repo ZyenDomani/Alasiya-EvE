@@ -548,7 +548,7 @@ void Ship::Killed(Damage &fatal_blow) {
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
         GPoint podPosition(wreckPosition);
-        podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius());
+        podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
         pPilot->ResetAfterPopped(podPosition);
 
         ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);

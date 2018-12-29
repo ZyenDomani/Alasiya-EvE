@@ -404,12 +404,14 @@ void Client::ProcessClient() {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
                     // live does NOT resend destiny state when killed.  see csBoard notes.
                     SendSessionChange();
+                    m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csBoard: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
                     // calling OnSessionChanged() in client with shipid in change will update ego with new ship.
                     // NOTE: all items must be in same bubble.
                     SendSessionChange();
+                    m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
@@ -783,82 +785,85 @@ void Client::BoardShip(ShipItemRef newShipItemRef) {
         return;
     }
 
-    uint32 oldShipID = m_shipId;
     /* check for and delete pod entity if boarding new ship */
-    if ((m_ship->typeID() == itemTypeCapsule) and (!m_login)) {
+    if (m_login) {
+        _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipItemRef->itemID());
+    } else if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
-        char ci[1];
-        snprintf(ci, sizeof(ci), "");
-        m_ship->SetCustomInfo(ci);
-        DestroyShipSE();
-    } else if (m_login) {
-        _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipItemRef->itemID());
-    } else  {
+    } else {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();
-        if (IsInSpace()) {
-            pShipSE->Abandon();
-            m_ship->ChangeOwner(1); // update this to use system owner?
-            m_ship->SetFlag(flagShipOffline);
-            char ci[40];
-            snprintf(ci, sizeof(ci), "Abandoned: %s", GetName());
-            m_ship->SetCustomInfo(ci);
-            pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
-            pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
-            pShipSE->DestinyMgr()->SendJettisonPacket();
-            // send OnItemsChanged notifications here for abandonded ship
-        } else {
-            char ci[1];
-            snprintf(ci, sizeof(ci), "");
-            m_ship->SetCustomInfo(ci);
-        }
     }
 
     SetShip(newShipItemRef);
 
     char ci[25];
-    if (IsSolarSystem(m_locationID)) {
-        m_ship->ChangeOwner(m_char->itemID());
-        /* if ejecting into pod, setup and create new pod object */
-        if (m_ship->typeID() == itemTypeCapsule) {
-            m_ship->Move(m_locationID, flagCapsule, true);
-            CreateShipSE();
-            pShipSE->SetPodShipID(oldShipID);
-            m_system->AddEntity(pShipSE);
-        } else {
-            m_ship->SetFlag(flagAutoFit);
-            pShipSE = m_system->GetSE(m_shipId)->GetShipSE();
-            if (pShipSE == nullptr) {
-                //  cant find ship.  put player back in pod and send error.
-                SendErrorMsg("There was an error with the ship you were trying to board.  Ref: ServerError 15103.");
-                if (m_pod.get() == nullptr)
-                    CreateNewPod();
-                SetShip(m_pod);
-                m_ship->Move(m_locationID, flagCapsule, true);
-                CreateShipSE();
-                pShipSE->SetPodShipID(oldShipID);
-                m_system->AddEntity(pShipSE);
-            }
-        }
-        if (pShipSE == nullptr) {
-            _log(PLAYER__MESSAGE, "%s pShipSE for shipID %u is null on boardShip.", m_char->itemName().c_str(), newShipItemRef->itemID());
-            return;
-        }
-        m_ship->UpdateEffects();
-        pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
-        pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-        pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
-        pShipSE->SetPilot(this);
-        snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
-
-        SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
-    } else {
-        snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
-    }
-
+    snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
     m_ship->SetCustomInfo(ci);
     SetSessionTimer();
+}
+
+void Client::Eject()
+{
+    ShipItemRef capsuleRef = m_system->GetShipFromInventory(m_pod->itemID());
+    if (capsuleRef.get() == nullptr)
+        capsuleRef = sItemFactory.GetShip(m_pod->itemID());
+
+    if (capsuleRef.get() == nullptr) {
+        _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", GetName());
+        if (CanThrow())
+            throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107."));
+        else
+            return;
+    }
+
+    pShipSE->Abandon();
+    m_ship->SetFlag(flagShipOffline);
+
+    char ci[40];
+    snprintf(ci, sizeof(ci), "Abandoned by %s", GetName());
+    m_ship->SetCustomInfo(ci);
+
+    pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
+    pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
+    // send OnItemsChanged notifications here for abandonded ship
+
+    uint32 oldShipID = m_shipId;
+    GPoint capsulePosition(pShipSE->GetPosition());
+    capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + capsuleRef->radius() + MakeRandomFloat(300, 400));
+    capsuleRef->Relocate(capsulePosition);
+    SetShip(capsuleRef);
+
+    m_ship->ChangeOwner(m_char->itemID());
+    m_ship->Move(m_locationID, flagCapsule, true);
+    CreateShipSE();
+
+    if (pShipSE == nullptr) {
+        //  cant find ship.  put player back in pod and send error.
+        SendErrorMsg("There was an error with the ship you were trying to board.  Ref: ServerError 15103.");
+        if (m_pod.get() == nullptr)
+            CreateNewPod();
+        SetShip(m_pod);
+        m_ship->Move(m_locationID, flagCapsule, true);
+        CreateShipSE();
+        pShipSE->SetPodShipID(oldShipID);
+        m_system->AddEntity(pShipSE);
+        _log(PLAYER__MESSAGE, "%s pShipSE for shipID %u is null on boardShip.", m_char->itemName().c_str(), newShipItemRef->itemID());
+        return;
+    }
+
+    pShipSE->SetPodShipID(oldShipID);
+    m_system->AddEntity(pShipSE);
+    pShipSE->DestinyMgr()->SendJettisonPacket();
+
+    pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
+    pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
+    pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
+    pShipSE->SetPilot(this);
+    snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
+
+    SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
 }
 
 void Client::CreateShipSE() {
@@ -1061,7 +1066,7 @@ void Client::CreateNewPod() {
     std::string pod_name = m_char->itemName() + "'s Capsule";
     ItemData podItem( itemTypeCapsule, m_char->itemID(), m_locationID, flagCapsule, pod_name.c_str() );
     m_pod = sItemFactory.SpawnShip( podItem );
-    m_char->SetActivePod(m_pod->itemID());
+    m_char->SetActivePod(m_pod->itemID());  // is this used?
 }
 
 ShipItemRef Client::SpawnNewRookieShip() {

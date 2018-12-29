@@ -139,6 +139,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
+    //  do we need this?
     if (pClient->GetShipSE()->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot change ships while moving."));
         return nullptr;
@@ -149,7 +150,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
         return PyStatic.NewNone();
     }
-    GPoint oldPosition(pClient->GetShipSE()->GetPosition());
 
     ShipItemRef newShipRef = pSystem->GetShipFromInventory(args.newShipID);
     if (newShipRef.get() == nullptr)
@@ -216,29 +216,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    SystemManager* pSystem = pClient->SystemMgr();
-    if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
-        return PyStatic.NewNone();
-    }
-
-    GPoint oldPosition(pShipSE->GetPosition());
-    GPoint capsulePosition(oldPosition);
-    capsulePosition.MakeRandomPointOnSphere(pClient->GetShip()->GetAttribute(AttrRadius).get_float() + (MakeRandomFloat(300, 400)));
-
-    ShipItemRef capsuleRef = pSystem->GetShipFromInventory(pClient->GetPodID());
-    if (capsuleRef.get() == nullptr)
-        capsuleRef = sItemFactory.GetShip(pClient->GetPodID());
-
-    if (capsuleRef.get() == nullptr) {
-        _log(SHIP__ERROR, "Handle_Eject() - Failed to get podItem for %s.", pClient->GetName());
-        throw PyException(MakeCustomError("Something bad happened as you prepared to eject.  Ref: ServerError 25107."));
-        return PyStatic.NewNone();
-    }
-
-    capsuleRef->Relocate(capsulePosition);
-
-    pClient->BoardShip(capsuleRef);
+    pClient->Eject();
 
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp
@@ -270,10 +248,9 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
     if (podRef.get() == nullptr)
         podRef = sItemFactory.GetShip(podID);
 
-    //verify owner (not sure why pod doenst have correct owner...)
+    //verify owner (not sure why pod doesnt have correct owner...)
     podRef->ChangeOwner(pClient->GetCharacterID(), false);
     //move capsule into the players hangar
-    sLog.White("ShipBound::Handle_LeaveShip()", "moving pod %u to station %u", podID, pClient->GetStationID());
     podRef->Move(pClient->GetStationID(), flagHangar, true);
 
     // capsuleID = shipsvc.LeaveShip(shipid)
@@ -304,11 +281,9 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     pClient->BoardShip(newShipRef);
 
     // response should return ship modules and loaded charges
-    PyDict* modules = newShipRef->GetShipState();
-    PyDict* charges = newShipRef->GetChargeState();
     PyTuple* rsp = new PyTuple(3);
-        rsp->SetItem(0, modules);    //dict of ship modules
-        rsp->SetItem(1, charges);    //dict of ship charges
+        rsp->SetItem(0, newShipRef->GetShipState());    //dict of ship modules
+        rsp->SetItem(1, newShipRef->GetChargeState());    //dict of ship charges
         rsp->items[2] = new BuiltinSet();
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "    ");
