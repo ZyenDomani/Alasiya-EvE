@@ -35,7 +35,9 @@ CREATE TABLE IF NOT EXISTS `srvStatisticHistory` (
   `pcBounties` float NOT NULL DEFAULT '0',
   `npcBounties` float NOT NULL DEFAULT '0',
   `oreMined` float NOT NULL DEFAULT '0',
-  `iskMarket` float NOT NULL DEFAULT '0'
+  `iskMarket` float NOT NULL DEFAULT '0',
+  `probesLaunched` mediumint(5) unsigned NOT NULL DEFAULT '0',
+  `sitesScanned` mediumint(5) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Historical Data for graphing player activity from previous months';
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -14,6 +14,7 @@
 
 
 StatisticMgr::StatisticMgr()
+: m_counter(0)
 {
 
 }
@@ -58,23 +59,15 @@ void StatisticMgr::Process()
     // check timers and manipulate data accordingly...
     SaveData();
 
-
-/*
-SELECT timeStamp, period, 1, 2, 3, 4, 5, 6, 7, 8, 9 FROM srvStatisticData
-SELECT month, 1, 2, 3, 4, 5, 6, 7, 8, 9 FROM srvStatisticDataHistory
-
-dataID     dataName    dataDescription
-1   Turret Shots Fired  Shots fired from turrents on player ships.
-2   Missiles Launched   Missiles fired from launchers on player ships.
-3   Ships Salvaged?
-4
-5   PC Bounties   Amount of ISK paid for PC Bounties
-6   NPC Bounties        Amount of ISK paid for NPC Bounties
-7   Ore Mined   M3 of ore mined.
-8   ISK Spent In Market     ISK spent in the market, not including broker fees...
-9
-
-*/
+    if (++m_counter >= 4) {  // every hour?  provided proc call is 15m
+        m_counter = 0;
+        // every [increment][time] save stat history data
+        CompileData();
+    }
+    /*
+     * SELECT timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
+     * SELECT month, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticHistory
+     */
 }
 
 void StatisticMgr::Add(uint8 key, double value)
@@ -147,6 +140,31 @@ void StatisticMgr::SaveData()
 {
     m_data.span = sEntityList.GetMinutes();
     ManagerDB::SaveStatisticData(m_data);
+}
+
+void StatisticMgr::CompileData()
+{
+    int64 startTime = sEntityList.GetStartTime();
+    DBQueryResult* res = new DBQueryResult();
+    DBResultRow row;
+    ManagerDB::GetStatisticData(*res, startTime);
+    StatisticData data {};
+    while (res->GetRow(row)) {
+        //SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, sitesScanned, probesLaunched FROM srvStatisticData
+        data.pcShots        += row.GetInt(0);
+        data.pcMissiles     += row.GetInt(1);
+        data.ramJobs        += row.GetInt(2);
+        data.shipsSalvaged  += row.GetInt(3);
+        data.pcBounties     += row.GetFloat(4);
+        data.npcBounties    += row.GetFloat(5);
+        data.oreMined       += row.GetFloat(6);
+        data.iskMarket      += row.GetFloat(7);
+        data.sitesScanned   += row.GetInt(8);
+        data.probesLaunched += row.GetInt(9);
+    }
+
+    // data has been compiled for this running session.  save to history.
+    ManagerDB::UpdateStatisticHistory(data);
 }
 
 

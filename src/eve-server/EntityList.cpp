@@ -47,7 +47,8 @@ EntityList::EntityList()
 : m_services( nullptr ),
 m_stampTimer(0, true),
 m_minutetimer(0, true),
-m_updateTimer(0)
+m_updateTimer(0),
+m_startTime(0)
 {
     m_agents.clear();
     m_systems.clear();
@@ -67,6 +68,8 @@ EntityList::~EntityList() {
 }
 
 void EntityList::Initialize() {
+    m_startTime = GetFileTimeNow();
+
     /* start the timers */
     m_stampTimer.Start(1000);
     m_minutetimer.Start(60000);

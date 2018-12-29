@@ -125,6 +125,8 @@ public:
 
     uint32 GetWreckFaction(uint32 typeID);
 
+    int64 GetStartTime()                                { return m_startTime; }
+
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
 
@@ -150,6 +152,8 @@ private:
     uint32 m_minutes;
     uint32 m_connections;
     uint32 m_clientSeedID;
+
+    int64 m_startTime;
 };
 
 //Singleton

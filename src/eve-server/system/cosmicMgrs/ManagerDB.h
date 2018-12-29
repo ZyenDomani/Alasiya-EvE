@@ -22,9 +22,9 @@ public:
     /* db methods for... */
 
     /* statistic manager */
-    static void GetStatisticData(StatisticData& data);
+    static void GetStatisticData(DBQueryResult& res, int64 starttime);
     static void SaveStatisticData(StatisticData& data);
-    static void UpdateStatisticData(StatisticData& data);
+    static void UpdateStatisticHistory(StatisticData& data);
 
     /* data manager */
     static void GetOreBySSC(DBQueryResult& res);

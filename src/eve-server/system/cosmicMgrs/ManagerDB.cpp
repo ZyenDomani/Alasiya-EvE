@@ -669,12 +669,17 @@ void ManagerDB::ClearDungeons()
 }
 
 /*
- * SELECT timeStamp, timeSpan, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
- * SELECT month, pcShots, pcMissiles, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticHistory
-*/
-void ManagerDB::GetStatisticData(StatisticData& data)
+ * SELECT timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
+ * SELECT month, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticHistory
+ */
+void ManagerDB::GetStatisticData(DBQueryResult& res, int64 starttime)
 {
-
+    // determine how to get data from only this running session.
+    if (!sDatabase.RunQuery(res,
+        "SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned"
+        " FROM srvStatisticData"
+        " WHERE timeStamp > %lli", starttime))
+        codelog(DATABASE__ERROR, "Error in GetStatisticData query: %s", res.error.c_str());
 }
 
 void ManagerDB::SaveStatisticData(StatisticData& data)
@@ -682,16 +687,27 @@ void ManagerDB::SaveStatisticData(StatisticData& data)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO srvStatisticData"
-        " (timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket)"
+        " (timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
         " VALUES "
-        "(%f, %u, %u, %u, %u, %u, %f, %f, %f, %f)", GetFileTimeNow(),
-        data.span, data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket ))
+        "(%f, %u, %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)", GetFileTimeNow(),
+        data.span, data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties, data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
     {
         _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
     }
 }
 
-void ManagerDB::UpdateStatisticData(StatisticData& data)
+void ManagerDB::UpdateStatisticHistory(StatisticData& data)
 {
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO srvStatisticHistory"
+        " (pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
+        " VALUES "
+        "(%u, %u, %u, %u, %f, %f, %f, %f, %u, %u)",
+        data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties,
+        data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
+    {
+        _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
+    }
 
 }

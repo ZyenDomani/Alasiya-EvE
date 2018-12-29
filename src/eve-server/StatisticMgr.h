@@ -55,9 +55,12 @@ public:
 
 protected:
     void SaveData();
+    void CompileData();
 
 private:
     StatisticData m_data;
+
+    int8 m_counter;
 };
 
 
