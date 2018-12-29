@@ -14,7 +14,7 @@
 
 
 StatisticMgr::StatisticMgr()
-: m_counter(0)
+: m_counter(3)  // do first update 15m after server starts
 {
 
 }
@@ -63,6 +63,7 @@ void StatisticMgr::Process()
         m_counter = 0;
         // every [increment][time] save stat history data
         CompileData();
+        sEntityList.ResetStartTime();
     }
     /*
      * SELECT timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
@@ -148,23 +149,25 @@ void StatisticMgr::CompileData()
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
     ManagerDB::GetStatisticData(*res, startTime);
-    StatisticData data {};
-    while (res->GetRow(row)) {
-        //SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, sitesScanned, probesLaunched FROM srvStatisticData
-        data.pcShots        += row.GetInt(0);
-        data.pcMissiles     += row.GetInt(1);
-        data.ramJobs        += row.GetInt(2);
-        data.shipsSalvaged  += row.GetInt(3);
-        data.pcBounties     += row.GetFloat(4);
-        data.npcBounties    += row.GetFloat(5);
-        data.oreMined       += row.GetFloat(6);
-        data.iskMarket      += row.GetFloat(7);
-        data.sitesScanned   += row.GetInt(8);
-        data.probesLaunched += row.GetInt(9);
-    }
+    if (res->GetRowCount() > 0) {
+        StatisticData data {};
+        while (res->GetRow(row)) {
+            //SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, sitesScanned, probesLaunched FROM srvStatisticData
+            data.pcShots        += row.GetInt(0);
+            data.pcMissiles     += row.GetInt(1);
+            data.ramJobs        += row.GetInt(2);
+            data.shipsSalvaged  += row.GetInt(3);
+            data.pcBounties     += row.GetFloat(4);
+            data.npcBounties    += row.GetFloat(5);
+            data.oreMined       += row.GetFloat(6);
+            data.iskMarket      += row.GetFloat(7);
+            data.sitesScanned   += row.GetInt(8);
+            data.probesLaunched += row.GetInt(9);
+        }
 
-    // data has been compiled for this running session.  save to history.
-    ManagerDB::UpdateStatisticHistory(data);
+        // data has been compiled for this running session.  save to history.
+        ManagerDB::UpdateStatisticHistory(data);
+    }
 }
 
 

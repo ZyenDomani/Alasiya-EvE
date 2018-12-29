@@ -125,6 +125,7 @@ public:
 
     uint32 GetWreckFaction(uint32 typeID);
 
+    void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
 
 protected:

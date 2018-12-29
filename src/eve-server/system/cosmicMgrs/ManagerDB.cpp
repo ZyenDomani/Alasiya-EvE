@@ -674,7 +674,6 @@ void ManagerDB::ClearDungeons()
  */
 void ManagerDB::GetStatisticData(DBQueryResult& res, int64 starttime)
 {
-    // determine how to get data from only this running session.
     if (!sDatabase.RunQuery(res,
         "SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned"
         " FROM srvStatisticData"
@@ -709,5 +708,4 @@ void ManagerDB::UpdateStatisticHistory(StatisticData& data)
     {
         _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
     }
-
 }
