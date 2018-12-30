@@ -700,7 +700,7 @@ void ManagerDB::UpdateStatisticHistory(StatisticData& data)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO srvStatisticHistory"
-        " (timeStamp = %u, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
+        " (timeStamp, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
         " VALUES "
         "(UNIX_TIMESTAMP(CURRENT_TIMESTAMP), %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)",
         data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties,

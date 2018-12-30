@@ -35,22 +35,6 @@
 
 #define COLUMN_BOUNDS_CHECKING
 
-#define sConfig ( EVEServerConfig::get() )
-
-class EVEServerConfig
-: public Singleton<EVEServerConfig>
-{
-public:
-    struct {
-        bool useSocket;
-        bool autoReconnect;
-        uint dbTimeout;
-    } database;
-    struct {
-        bool UseProfiling;
-    } debug;
-};
-
 // this is to enable profile tracking for db
 #define sProfile ( Profile::get() )
 
@@ -61,17 +45,16 @@ public:
     void AddTime(uint8 key, double value);
 };
 
-enum {
-    _dbProfile          = 9
-};
-
 
 DBcore::DBcore()
-: mysql(nullptr)
+: mysql(nullptr),
+pSocket(false),
+pStatus(Closed),
+pReconnect(false),
+pProfile(false)
 {
     mysql_thread_init();    // this is for each thread used for db connections
     mysql = mysql_init(nullptr);
-    pStatus = Closed;
 }
 
 void DBcore::Close() {
@@ -81,7 +64,8 @@ void DBcore::Close() {
     mysql_thread_end();   // this is for each thread used for db connections
 }
 
-void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/, bool SSL/*false*/, int16 port/*3306*/)
+void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
+                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
 {
     if (mysql == nullptr)
         mysql = mysql_init(nullptr);    // try again
@@ -99,6 +83,9 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
     pPort = port;
     pSSL = SSL;
     pCompress = compress;
+    pSocket = socket;
+    pReconnect = reconnect;
+    pProfile = profile;
 
     if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
         sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
@@ -117,20 +104,29 @@ void DBcore::Initialize(std::string host, std::string user, std::string password
 
 void DBcore::Connect(uint* errnum, char* errbuf)
 {
-    // this is used to enable socket communication (may not be needed)
-    enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
-    unsigned int conn_timeout = 20; //sConfig.database.dbTimeout;
-    my_bool reconnect = true;
-
-    // options should be called BEFORE mysql_real_connect()
-    if (sConfig.database.useSocket) {
-        mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type);
-        sLog.Cyan("        DB Server", " Unix Socket Connection");
-    } else
-        sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
-
     sLog.Cyan("          DB User", " %s", pUser.c_str());
     sLog.Cyan("         DataBase", " %s", pDatabase.c_str());
+
+    // options should be called BEFORE mysql_real_connect()
+    if (pSocket) {
+        enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_SOCKET;
+        if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0) {
+            sLog.Cyan("        DB Server", " Unix Socket Connection");
+        } else {
+            sLog.Error("        DB Server", " Unix Socket Connection Option Failed");
+            enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_TCP;
+            if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0)
+                sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
+            else
+                sLog.Error("        DB Server", " TCP Connection Option Failed");
+        }
+    } else {
+        enum mysql_protocol_type prot_type = MYSQL_PROTOCOL_TCP;
+        if (mysql_options(mysql, MYSQL_OPT_PROTOCOL, (void*)&prot_type) == 0)
+            sLog.Cyan("        DB Server", " %s:%d", pHost.c_str(), pPort);
+        else
+            sLog.Error("        DB Server", " TCP Connection Option Failed");
+    }
 
     int32 flags = CLIENT_FOUND_ROWS; //2
     if (pCompress)
@@ -139,21 +135,27 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     if (pSSL)
         flags |= CLIENT_SSL;
     sLog.Cyan("    Connect Flags", " %x", flags);
-
-    if (conn_timeout > 60)
-        sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-    else if (conn_timeout > 40)
-        sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-    else if (conn_timeout > 30)
-        sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-    else
-        sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+/*
+    unsigned int conn_timeout = 2;
     // not sure if this one will really be used here
-    mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout);
-
-    if (sConfig.database.autoReconnect) {
-        mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect); // this will enable auto-reconnect...and render my Reconnect() worthless
-        sLog.Green(" DataBase Manager", "DataBase AutoReconnect Enabled");
+    if (mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout) == 0) {
+        if (conn_timeout > 60)
+            sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+        else if (conn_timeout > 40)
+            sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+        else if (conn_timeout > 30)
+            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+        else
+            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+    } else
+        sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
+*/
+    if (pReconnect) {
+        my_bool reconnect = true;
+        if (mysql_options(mysql, MYSQL_OPT_RECONNECT, (void*)&reconnect) == 0) // this will enable auto-reconnect...and render my Reconnect() worthless
+            sLog.Green(" DataBase Manager", "DataBase AutoReconnect Enabled");
+        else
+            sLog.Error(" DataBase Manager", "DataBase AutoReconnect Option Failed");
     } else
         sLog.Yellow(" DataBase Manager", "DataBase AutoReconnect Disabled");
 
@@ -173,7 +175,7 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     }
 
     // Setup character set we wish to use
-    if (!mysql_set_character_set(mysql, "utf8"))
+    if (mysql_set_character_set(mysql, "utf8") == 0)
         sLog.Cyan(" DataBase Manager", "DataBase Character set: %s", mysql_character_set_name(mysql));
 }
 
@@ -311,8 +313,9 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        if (Reconnect())
-            return DoQuery_locked(err, query, querylen, false);
+        if (!pReconnect)
+            if (Reconnect())
+                return DoQuery_locked(err, query, querylen, false);
         //CallShutdown();
         return false;
     }
@@ -320,8 +323,9 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        if (Reconnect())
-            return DoQuery_locked(err, query, querylen, false);
+        if (!pReconnect)
+            if (Reconnect())
+                return DoQuery_locked(err, query, querylen, false);
         //CallShutdown();
         return false;
     }
@@ -333,15 +337,16 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             pStatus = Error;
 
         if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR)) {
-            if (Reconnect())
-                return DoQuery_locked(err, query, querylen, false);
+            if (!pReconnect)
+                if (Reconnect())
+                    return DoQuery_locked(err, query, querylen, retry);
             //CallShutdown();
             return false;
         }
 
         pStatus = Error;
         err.SetError(num, mysql_error(mysql));
-        codelog(DATABASE__ERROR, "DBCore Query - #%d in '%s': %s", err.GetErrNo(), query, err.c_str());
+        codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
         return false;
     }
 
@@ -350,9 +355,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
 
     err.ClearError();
 
-    bool profile = sConfig.debug.UseProfiling;
-    if (profile)
-        sProfile.AddTime(_dbProfile, GetTimeUSeconds() - profileStartTime);
+    if (pProfile)
+        sProfile.AddTime(9, GetTimeUSeconds() - profileStartTime);
 
     return true;
 }

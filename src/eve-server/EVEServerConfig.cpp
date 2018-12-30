@@ -211,7 +211,7 @@ EVEServerConfig::EVEServerConfig()
     database.ssl = false;
     database.useSocket = false;
     database.autoReconnect = false;
-    database.dbTimeout = 60/*s*/;
+    database.dbTimeout = 2/*s*/;
 
     // files
     files.logDir = "../log/";

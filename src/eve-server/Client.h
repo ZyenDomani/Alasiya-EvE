@@ -265,7 +265,8 @@ public:
 
     //jetcan timer
     bool IsJetcanAvalible();
-    uint32 JetcanTime()                                 { return m_jetcanTimer.GetRemainingTime(); }
+    // return time remaining in seconds
+    uint32 JetcanTime()                                 { return (m_jetcanTimer.GetRemainingTime() /1000); }
     void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
 
     //messages and LSC

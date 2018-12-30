@@ -437,7 +437,11 @@ int main( int argc, char* argv[] )
                          sConfig.database.db,
                          sConfig.database.compress,
                          sConfig.database.ssl,
-                         sConfig.database.port);
+                         sConfig.database.port,
+                         sConfig.database.useSocket,
+                         sConfig.database.autoReconnect,
+                         sConfig.debug.UseProfiling
+                        );
     if (sDatabase.GetStatus() != DBcore::Connected) {
         // error msg printed in DBcore::Initalize routine
         std::cout << std::endl << "press any key to exit...";  std::cin.get();

@@ -23,7 +23,8 @@ int Profile::Initialize() {
 }
 
 void Profile::AddTime(uint8 key, double value) {
-    if (!value) return;
+    if (value < 0.0001)
+        return;
     /*
     _destinyProfile     = 1,    //*
     _mapProfile         = 2,    //

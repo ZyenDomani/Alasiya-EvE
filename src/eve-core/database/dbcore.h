@@ -139,7 +139,8 @@ public:
     ~DBcore() { /* do nothing here */ }
 
     void    Close();
-    void    Initialize(std::string host, std::string user, std::string password, std::string database, bool compress=false, bool SSL=false, int16 port=3306);
+    void    Initialize(std::string host, std::string user, std::string password, std::string database, bool compress=false, bool SSL=false,
+                       int16 port=3306, bool socket=false, bool reconnect=false, bool profile=false);
 
     //new shorter syntax:
     //query which returns a result (error is stored in the result if it occurs)
@@ -176,6 +177,9 @@ private:
     eStatus pStatus;
 
     bool    pCompress;
+    bool    pProfile;
+    bool    pReconnect;
+    bool    pSocket;
     bool    pSSL;
 
     int16   pPort;

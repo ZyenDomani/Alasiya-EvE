@@ -59,7 +59,7 @@ void StatisticMgr::Process()
     // check timers and manipulate data accordingly...
     SaveData();
 
-    if (++m_counter >= 4) {  // every hour?  provided proc call is 15m
+    if (++m_counter > 4) {  // every hour?  provided proc call is 15m
         m_counter = 0;
         // every [increment][time] save stat history data
         CompileData();
@@ -164,7 +164,18 @@ void StatisticMgr::CompileData()
             data.sitesScanned   += row.GetInt(8);
             data.probesLaunched += row.GetInt(9);
         }
-
+        
+        if ((data.pcShots == 0)
+        and (data.ramJobs == 0)
+        and (data.pcMissiles == 0)
+        and (data.pcBounties == 0)
+        and (data.npcBounties == 0)
+        and (data.oreMined == 0)
+        and (data.iskMarket == 0)
+        and (data.shipsSalvaged == 0)
+        and (data.probesLaunched == 0)
+        and (data.sitesScanned == 0))
+            return;
         // data has been compiled for this running session.  save to history.
         ManagerDB::UpdateStatisticHistory(data);
     }
