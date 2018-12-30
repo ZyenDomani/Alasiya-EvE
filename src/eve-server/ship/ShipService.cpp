@@ -175,7 +175,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     pClient->BoardShip(newShipRef);
 
-    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
@@ -218,7 +218,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
     pClient->Eject();
 
-    /* return error msg from this call, if applicable, else nodeid and timestamp */
+    /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
     tuple->SetItem(0, new PyString(GetBindStr()));    // node info here

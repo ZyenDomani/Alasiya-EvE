@@ -700,12 +700,12 @@ void ManagerDB::UpdateStatisticHistory(StatisticData& data)
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO srvStatisticHistory"
-        " (pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
+        " (timeStamp = %u, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
         " VALUES "
-        "(%u, %u, %u, %u, %f, %f, %f, %f, %u, %u)",
+        "(UNIX_TIMESTAMP(CURRENT_TIMESTAMP), %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)",
         data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties,
         data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
     {
-        _log(DATABASE__ERROR, "SaveStatisticData - unable to save data: %s", err.c_str());
+        _log(DATABASE__ERROR, "srvStatisticHistory - unable to save data: %s", err.c_str());
     }
 }

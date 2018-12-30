@@ -840,8 +840,6 @@ void Client::Eject()
     CreateShipSE();
 
     if (pShipSE == nullptr) {
-        //  cant find ship.  put player back in pod and send error.
-        SendErrorMsg("There was an error with the ship you were trying to board.  Ref: ServerError 15103.");
         if (m_pod.get() == nullptr)
             CreateNewPod();
         SetShip(m_pod);
@@ -849,8 +847,13 @@ void Client::Eject()
         CreateShipSE();
         pShipSE->SetPodShipID(oldShipID);
         m_system->AddEntity(pShipSE);
-        _log(PLAYER__MESSAGE, "%s pShipSE for shipID %u is null on boardShip.", m_char->itemName().c_str(), newShipItemRef->itemID());
-        return;
+        if (pShipSE == nullptr) {
+            //  cant find ship.  put player back in pod and send error.
+            _log(PLAYER__MESSAGE, "%s pShipSE for podID %u is null on Eject().", m_char->itemName().c_str(), m_pod->itemID());
+            SendErrorMsg("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15103.");
+            MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
+            return;
+        }
     }
 
     pShipSE->SetPodShipID(oldShipID);

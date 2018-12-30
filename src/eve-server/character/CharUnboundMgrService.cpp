@@ -394,7 +394,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         pod_item->SaveItem();
         charRef->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
     }
-    pClient->SetShip(pClient->SpawnNewRookieShip());
+    
+    pClient->SpawnNewRookieShip();
 
     CharacterDB::AddEmployment(charRef->itemID(), corpData.corporationID);
     charRef->SetFlag(flagAutoFit);

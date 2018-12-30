@@ -67,7 +67,7 @@ AnomalyMgr::~AnomalyMgr()
     InventoryItemRef iRef;
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
-        m_system->RemoveItemFromInventory(iRef);
+        //m_system->RemoveItemFromInventory(iRef);
         iRef->Delete();
     }
 }
@@ -125,7 +125,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 
     if (sConfig.debug.IsTestServer)
         m_maxSigs = 2;
-    
+
     // will these be static, var by system, var by trusec, config options, other???
     m_Sigs = 0;
     m_Anoms = 0;
@@ -199,6 +199,7 @@ void AnomalyMgr::RemoveAnomaly(uint32 itemID)
         std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
         if (itr2 != m_sigBySigID.end())
             m_sigBySigID.erase(itr2);
+        m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
         m_sigByItemID.erase(itr);
     }
 }

@@ -540,6 +540,8 @@ void Ship::Killed(Damage &fatal_blow) {
                 - remove destiny and system managers,
                 - set coords on client and ship items.
             will have to look into this more later
+
+        @note  i cannot reproduce this error anymore.  not sure if it still exists  -28Dec18
          */
 
         AbortCycle();
