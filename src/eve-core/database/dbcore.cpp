@@ -223,10 +223,10 @@ void DBcore::ping()
 bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     MutexLock lock(MDatabase);
 
-    char query[16384];
+    char query[1024];
     va_list vlist;
     va_start(vlist, query_fmt);
-    int querylen = vsnprintf(query, 16384, query_fmt, vlist);
+    int querylen = std::vsnprintf(query, 1024, query_fmt, vlist);
     va_end(vlist);
 
     if (!DoQuery_locked(into.error, query, querylen))
@@ -264,7 +264,7 @@ bool DBcore::RunQuery(DBerror &err, const char *query_fmt, ...) {
     return true;
 }
 
-//query which returns affected rows:
+//query which returns affected rows:  (not used)
 bool DBcore::RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt, ...) {
     MutexLock lock(MDatabase);
 
@@ -313,38 +313,33 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        //if (!pReconnect)
-            if (Reconnect())
-                return DoQuery_locked(err, query, querylen, false);
-        //CallShutdown();
-        return false;
+        if (!Reconnect())
+            return false;
     }
 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        //if (!pReconnect)
-            if (Reconnect())
-                return DoQuery_locked(err, query, querylen, false);
-        //CallShutdown();
-        return false;
+        if (!Reconnect())
+            return false;
     }
 
     if (mysql_real_query(mysql, query, querylen)) {
         uint num = mysql_errno(mysql);
-
-        if (num == CR_SERVER_GONE_ERROR)
+        if (num > 0)
             pStatus = Error;
 
-        if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR)) {
-            //if (!pReconnect)
-                if (Reconnect())
-                    return DoQuery_locked(err, query, querylen, retry);
-            //CallShutdown();
-            return false;
+        // there are many correctable errors to check for
+        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
+            if (Reconnect())
+                pStatus = Connected;
+            else
+                return false;
         }
 
-        pStatus = Error;
+        if ((pStatus == Connected) and retry)
+            return DoQuery_locked(err, query, querylen, retry);
+
         err.SetError(num, mysql_error(mysql));
         codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
         return false;

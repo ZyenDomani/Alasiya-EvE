@@ -57,7 +57,7 @@ PyRep *MarketDB::GetStationAsks(uint32 stationID) {
     //made up of packed blue.DBRow objects, but we do not understand
     //the marshalling of those well enough right now, and this object
     //provides the same interface. It is significantly bigger on the wire though.
-    return(DBResultToIndexRowset(res, "typeID"));
+    return DBResultToIndexRowset(res, "typeID");
 }
 
 PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
@@ -77,7 +77,7 @@ PyRep *MarketDB::GetSystemAsks(uint32 solarSystemID) {
     //made up of packed blue.DBRow objects, but we do not understand
     //the marshalling of those well enough right now, and this object
     //provides the same interface. It is significantly bigger on the wire though.
-    return(DBResultToIndexRowset(res, "typeID"));
+    return DBResultToIndexRowset(res, "typeID");
 }
 
 PyRep *MarketDB::GetRegionBest(uint32 regionID) {
@@ -97,7 +97,7 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
     //made up of packed blue.DBRow objects, but we do not understand
     //the marshalling of those well enough right now, and this object
     //provides the same interface. It is significantly bigger on the wire though.
-    return(DBResultToIndexRowset(res, "typeID"));
+    return DBResultToIndexRowset(res, "typeID");
 }
 
 PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
@@ -215,14 +215,14 @@ uint32 MarketDB::FindBuyOrder(
         sConfig.market.FindBuyOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
+        return 0;
     }
 
     DBResultRow row;
     if (!res.GetRow(row))
-        return(0);    //no order found.
+        return 0;    //no order found.
 
-    return(row.GetUInt(0));
+    return row.GetUInt(0);
 }
 
 uint32 MarketDB::FindSellOrder(
@@ -251,12 +251,12 @@ uint32 MarketDB::FindSellOrder(
         sConfig.market.FindSellOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
+        return 0;
     }
 
     DBResultRow row;
     if (res.GetRow(row))
-        return (row.GetUInt(0));
+        return row.GetUInt(0);
 
     return 0;
 }
@@ -371,7 +371,7 @@ uint32 MarketDB::StoreBuyOrder(
     uint8 duration,
     bool isCorp
 ) {
-    return (_StoreOrder(ownerID, accountID, stationID, typeID, price, quantity, orderRange, minVolume, duration, isCorp, true));
+    return _StoreOrder(ownerID, accountID, stationID, typeID, price, quantity, orderRange, minVolume, duration, isCorp, true);
 }
 
 uint32 MarketDB::StoreSellOrder(
@@ -386,7 +386,7 @@ uint32 MarketDB::StoreSellOrder(
     uint8 duration,
     bool isCorp
 ) {
-    return (_StoreOrder(ownerID, accountID, stationID, typeID, price, quantity, orderRange, minVolume, duration, isCorp, false));
+    return _StoreOrder(ownerID, accountID, stationID, typeID, price, quantity, orderRange, minVolume, duration, isCorp, false);
 }
 
 uint32 MarketDB::_StoreOrder(
@@ -397,7 +397,7 @@ uint32 MarketDB::_StoreOrder(
     SystemData data;
     if (!sDataMgr.GetSystemInfo(stationID, data)) {
         codelog(MARKET__ERROR, "Char %u: Failed to find parents for station %u", ownerID, stationID);
-        return(0);
+        return 0;
     }
 
     //TODO: figure out what the orderState field means...
@@ -425,7 +425,7 @@ uint32 MarketDB::_StoreOrder(
 
     {
         codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
-        return(0);
+        return 0;
     }
 
     return orderID;
@@ -456,7 +456,6 @@ PyRep *MarketDB::GetTransactions(
         characterID, typeID, typeID, quantity, minPrice, maxPrice, maxPrice, fromDate, buySell, buySell, accountKey))
     {
         codelog( DATABASE__ERROR, "Error in query: %s", res.error.c_str() );
-
         return nullptr;
     }
 

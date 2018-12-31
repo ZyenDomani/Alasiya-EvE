@@ -67,7 +67,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     }
 
     DBResultRow row;
-    EvilNumber value = 0;
+    EvilNumber value = EvilZero;
     while (res.GetRow(row)) {
         if (row.IsNull(1)) {
             if (row.IsNull(2))
@@ -145,7 +145,7 @@ bool AttributeMap::Save() {
             AttrData data;
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
-            if ( itr->second.get_type() == evil_number_int ) {
+            if ((itr->first == AttrSkillPoints) or ( itr->second.get_type() == evil_number_int)) {
                 data.valueInt = itr->second.get_int();
                 data.valueFloat = 0;
             } else {
