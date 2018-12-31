@@ -524,7 +524,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case dgmTargLocArea:
                     case dgmTargLocPowerCore:  //defined but not used
-                    case MaxTargLocation:
                     case dgmTargLocChar:
                     default: {
                         _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSelf target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
