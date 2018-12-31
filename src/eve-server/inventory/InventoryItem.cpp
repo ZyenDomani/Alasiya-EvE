@@ -933,10 +933,6 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
         codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
         // make player error msg here.....
         return false;
-    } else if (new_qty > EVEMU_MAX_SHORT_ID) {
-        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
-        new_qty = EVEMU_MAX_SHORT_ID -1;
-        // make player error msg here.....
     }
 
     return SetQuantity(new_qty, notify);
@@ -949,12 +945,19 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         // make player error msg here.....
         return false;
     }
-
     int32 old_qty = m_quantity;
     m_quantity = qty;
     if (m_quantity < 1)
         Delete();
-
+    else if (m_quantity > EVEMU_MAX_SHORT_ID) {
+        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
+        m_quantity = EVEMU_MAX_SHORT_ID -1;
+        if (IsCharacter(m_ownerID)) {
+            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+            if (pClient != nullptr)
+                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
+        }
+    }
     //SaveItem();
 
     if (notify) {
