@@ -42,13 +42,11 @@
 
 ModuleManager::ModuleManager(ShipItem *const pShip)
 : m_Ship(pShip),
-  pModuleCont(new ModuleContainer(pShip))
+pModuleCont(new ModuleContainer(pShip)),
+m_initalized(false),
+m_rigScanBonus(1.0f)
 {
     assert(pShip != nullptr);
-
-    m_initalized = false;
-
-    m_rigScanBonus = 1.0f;
 
     m_LowSlots = (uint8)pShip->GetAttribute(AttrLowSlots).get_int();
     m_MidSlots = (uint8)pShip->GetAttribute(AttrMedSlots).get_int();
@@ -322,7 +320,7 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
     }
 
     /*
-    if (0) { // debug msg?
+    if (is_log_enabled(SHIP__MODULE_DEBUG)) { // debug msg?
         std::map<std::string, PyRep *> args;
         args["item"]  = new PyString(iRef->itemName());
         args["slot"]  = new PyString(sDataMgr.GetFlagName(flag));
