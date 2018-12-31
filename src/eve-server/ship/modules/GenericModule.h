@@ -44,7 +44,6 @@ public:
     bool isWarpSafe()                                   { return m_isWarpSafe; }
     bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
     bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
-    bool isMaxGroupFitLimited()                         { return (m_modRef->type().HasEffect(AttrMaxGroupFitted) ? true : false); } /** @todo this needs work */
 
     /* class type helpers.  public for anyone to access. */
     virtual bool IsGenericModule() const                { return true; }
