@@ -423,8 +423,8 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     into.ownerID = (row.IsNull(2) ? 1 : row.GetUInt(2));
     into.locationID = (row.IsNull(3) ? 0 : row.GetUInt(3));
     into.flag = (EVEItemFlags)row.GetUInt(4);
-    into.contraband = row.GetBool(5);
-    into.singleton = row.GetBool(6);
+    into.contraband = row.GetInt(5) ? true : false;
+    into.singleton = row.GetInt(6) ? true : false;
     into.quantity = row.GetUInt(7);
 
     into.position.x = row.GetDouble(8);
