@@ -438,7 +438,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             } break;
             case dgmSrcSkill: {    // source of this effect is skill, implant, or booster
                 if (cur.second.typeID == EVEDB::invTypes::typeInvalid) {    //invalid
-                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): typeID is invalid");
+                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): dgmSrcSkill - typeID is invalid");
                     continue;  // make error here
                 }
                 switch (cur.second.targLoc) {
@@ -486,11 +486,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
                     case dgmTargLocInvalid: {   // null
-                        _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): target location invalid.");
+                        _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): dgmSrcSkill target location invalid.");
                         continue;
                     } break;
+                    case dgmTargLocArea:
+                    case dgmTargLocPowerCore:  //defined but not used
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined.");
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSkill target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;
@@ -517,8 +519,15 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         // ...current target (focused, volatile...removed on 'invalid target')
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
+                    case dgmTargLocInvalid: {
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSelf target invalid.");
+                    } break;
+                    case dgmTargLocArea:
+                    case dgmTargLocPowerCore:  //defined but not used
+                    case MaxTargLocation:
+                    case dgmTargLocChar:
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSelf target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;
