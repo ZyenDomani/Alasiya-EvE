@@ -52,44 +52,47 @@ typedef enum {          // implemented?  (* = yes)
 class Profile
 : public Singleton<Profile>
 {
-  public:
-      Profile();
-      ~Profile();
+public:
+    Profile();
+    ~Profile();
 
-      int Initialize();
+    int Initialize();
 
-      void AddTime(uint8 key, double value);
-      void PrintProfile();
-      void ClearAll();
+    void AddTime(uint8 key, double value);
+    void PrintProfile();
+    void ClearAll();
 
-      std::string GetSize(size_t cSize);
+    std::string GetSize(size_t cSize);
 
-      void GetRunTimes(std::vector< double >& container, double& h, double& l, double& a);
+    void GetRunTimes(std::vector< double >& container, double& h, double& l, double& a);
 
-  private:
-      std::vector<double> m_server;
-      std::vector<double> m_functions;
-      std::vector<double> m_db;
-      std::vector<double> m_client;
-      std::vector<double> m_map;
-      std::vector<double> m_destiny;
-      std::vector<double> m_system;
-      std::vector<double> m_entityS;
-      std::vector<double> m_npc;
-      std::vector<double> m_bubbles;
-      std::vector<double> m_items;
-      std::vector<double> m_itemload;
-      std::vector<double> m_modules;
-      std::vector<double> m_ship;
-      std::vector<double> m_targets;
-      std::vector<double> m_missile;
-      std::vector<double> m_loot;
-      std::vector<double> m_salvage;
-      std::vector<double> m_spawn;
-      std::vector<double> m_collision;
-      std::vector<double> m_drone;
-      std::vector<double> m_concord;
-      std::vector<double> m_colony;
+protected:
+    std::string GetKeyName(uint8 key);
+
+private:
+    std::vector<double> m_server;
+    std::vector<double> m_functions;
+    std::vector<double> m_db;
+    std::vector<double> m_client;
+    std::vector<double> m_map;
+    std::vector<double> m_destiny;
+    std::vector<double> m_system;
+    std::vector<double> m_entityS;
+    std::vector<double> m_npc;
+    std::vector<double> m_bubbles;
+    std::vector<double> m_items;
+    std::vector<double> m_itemload;
+    std::vector<double> m_modules;
+    std::vector<double> m_ship;
+    std::vector<double> m_targets;
+    std::vector<double> m_missile;
+    std::vector<double> m_loot;
+    std::vector<double> m_salvage;
+    std::vector<double> m_spawn;
+    std::vector<double> m_collision;
+    std::vector<double> m_drone;
+    std::vector<double> m_concord;
+    std::vector<double> m_colony;
 };
 
 #define sProfile \

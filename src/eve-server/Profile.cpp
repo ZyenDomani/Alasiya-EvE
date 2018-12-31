@@ -8,7 +8,7 @@
 
 #include "Profile.h"
 #include "EVEServerConfig.h"
-
+#include "../eve-core/utils/misc.h"
 
 Profile::Profile() { }
 
@@ -18,13 +18,17 @@ Profile::~Profile() {
 
 int Profile::Initialize() {
     ClearAll();
-    sLog.Blue( "  Profile Manager", "Profiling initialized." );
+    sLog.Blue("  Profile Manager", "Profiling initialized.");
     return 1;
 }
 
 void Profile::AddTime(uint8 key, double value) {
     if (value < 0.0001)
         return;
+    if ((sConfig.debug.ProfileTraceTime > 0) and (value > sConfig.debug.ProfileTraceTime *1000)) {
+        sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3f.", GetKeyName(key).c_str(), value);
+        EvE::traceStack();
+    }
     /*
     _destinyProfile     = 1,    //*
     _mapProfile         = 2,    //
@@ -252,6 +256,35 @@ std::string Profile::GetSize(size_t cSize)
         return ret;
     }
     return itoa(cSize);
+}
+
+std::string Profile::GetKeyName(uint8 key)
+{
+    switch (key) {
+        case _destinyProfile:       return "Destiny";   //  1,
+        case _mapProfile:           return "Map";       //  2,
+        case _clientProfile:        return "Client";    //  3,
+        case _npcProfile:           return "NPC";       //  4,
+        case _bubblesProfile:       return "Bubble";    //  5,
+        case _itemsProfile:         return "Item";      //  6,
+        case _modulesProfile:       return "Module";    //  7,
+        case _functionsProfile:     return "Function";  //  8,
+        case _dbProfile:            return "DB";        //  9,
+        case _shipProfile:          return "Ship";      //  10,
+        case _targetsProfile:       return "Target";    //  11,
+        case _serverProfile:        return "Server";    //  12,
+        case _missileProfile:       return "Missile";   //  13,
+        case _systemProfile:        return "System";    //  14,
+        case _entitySProfile:       return "EntityTic"; //  15,
+        case _lootProfile:          return "Loot";      //  16,
+        case _salvageProfile:       return "Salvage";   //  17,
+        case _spawnProfile:         return "Spawn";     //  18,
+        case _collisionProfile:     return "Collision"; //  19,
+        case _droneProfile:         return "Drone";     //  20,
+        case _itemloadProfile:      return "ItemLoad";  //  21,
+        case _concordProfile:       return "Concord";   //  22,
+        case _colonyProfile:        return "Colony";    //  23
+    }
 }
 
 /*  color shit....

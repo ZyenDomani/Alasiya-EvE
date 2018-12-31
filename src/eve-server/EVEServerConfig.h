@@ -299,6 +299,7 @@ public:
         bool UseShipTracking;
         bool DeleteTrackingCans;
         bool PositionHack;
+        uint16 ProfileTraceTime;
         uint32 AnomalyFaction;
     } debug;
 

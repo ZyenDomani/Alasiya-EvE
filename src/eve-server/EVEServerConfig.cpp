@@ -198,8 +198,9 @@ EVEServerConfig::EVEServerConfig()
     debug.PositionHack = false;
     debug.UseShipTracking = false;
     debug.DeleteTrackingCans = true;
-    debug.AnomalyFaction = 0;
     debug.SpawnTest = false;
+    debug.AnomalyFaction = 0;
+    debug.ProfileTraceTime = 150/*ms*/;
 
     // database
     database.host = "localhost";
@@ -725,6 +726,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     AddValueParser( "BubbleTrack",          debug.BubbleTrack );
     AddValueParser( "SpawnTest",            debug.SpawnTest );
     AddValueParser( "DeleteTrackingCans",   debug.DeleteTrackingCans );
+    AddValueParser( "ProfileTraceTime",     debug.ProfileTraceTime );
 
     const bool result = ParseElementChildren( ele );
 
@@ -736,6 +738,7 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     RemoveParser( "AnomalyFaction" );
     RemoveParser( "SpawnTest" );
     RemoveParser( "BubbleTrack" );
+    RemoveParser( "ProfileTraceTime" );
 
     return result;
 }
