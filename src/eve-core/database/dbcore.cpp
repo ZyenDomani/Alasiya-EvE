@@ -313,7 +313,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (mysql == nullptr) {
         pStatus = Error;
         codelog(DATABASE__ERROR, "DBCore - mysql = null");
-        if (!pReconnect)
+        //if (!pReconnect)
             if (Reconnect())
                 return DoQuery_locked(err, query, querylen, false);
         //CallShutdown();
@@ -323,7 +323,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
     if (pStatus != Connected) {
         codelog(DATABASE__ERROR, "DBCore - Status != Connected");
         _log(DATABASE__MESSAGE, "DBCore error detected.  Look for error msgs in logs prior to this point.");
-        if (!pReconnect)
+        //if (!pReconnect)
             if (Reconnect())
                 return DoQuery_locked(err, query, querylen, false);
         //CallShutdown();
@@ -337,7 +337,7 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             pStatus = Error;
 
         if (retry && (num == CR_SERVER_LOST || num == CR_SERVER_GONE_ERROR)) {
-            if (!pReconnect)
+            //if (!pReconnect)
                 if (Reconnect())
                     return DoQuery_locked(err, query, querylen, retry);
             //CallShutdown();
