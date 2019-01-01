@@ -399,6 +399,8 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     }
 
     ShipItemRef sRef = pClient->SpawnNewRookieShip();
+    // not sure why charRef isnt working right in client at this point, so hack this here.
+    sRef->ChangeOwner(charRef->itemID());
     // set shipID in char object and save (error fix)
     pClient->SetShip(sRef);
 
