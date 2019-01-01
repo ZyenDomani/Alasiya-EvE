@@ -5,6 +5,7 @@
  */
 
 -- DELETE FROM `account` WHERE 1;
+DELETE FROM `agtOffers` WHERE 1;
 DELETE FROM `alnAlliance` WHERE 1;
 DELETE FROM `alnContacts` WHERE 1;
 DELETE FROM `alnLabels` WHERE 1;
@@ -28,9 +29,7 @@ DELETE FROM `chrContacts` WHERE 1;
 DELETE FROM `chrEmployment` WHERE 1;
 DELETE FROM `chrKillTable` WHERE 1;
 DELETE FROM `chrLabels` WHERE 1;
-DELETE FROM `chrMissionState` WHERE 1;
 DELETE FROM `chrNotes` WHERE 1;
-DELETE FROM `chrOffers` WHERE 1;
 DELETE FROM `chrOwnerNote` WHERE 1;
 DELETE FROM `chrPausedSkillQueue` WHERE 1;
 DELETE FROM `chrShipFittings` WHERE 1;
@@ -94,7 +93,7 @@ DELETE FROM `repStandings` WHERE toID > 90000000;
 DELETE FROM `repStandings` WHERE fromID > 90000000;
 DELETE FROM `shipInsurance` WHERE 1;
 DELETE FROM `srvStatisticData` WHERE 1;
-DELETE FROM `srvStatisticDataHistory` WHERE 1;
+DELETE FROM `srvStatisticHistory` WHERE 1;
 DELETE FROM `staOffices` WHERE 1;
 DELETE FROM `sysAsteroids` WHERE 1;
 DELETE FROM `sysSignatures` WHERE 1;

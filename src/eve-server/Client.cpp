@@ -808,7 +808,7 @@ void Client::DockToStation() {
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
     m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
-    
+
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
     if (m_ship->typeID() == itemTypeCapsule) {
@@ -1009,6 +1009,10 @@ void Client::ResetAfterPodded() {
 void Client::SetShip(ShipItemRef shipRef, bool setPlayer/*false*/) {
     pShipSE = nullptr;
     m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+    // make sure shipRef is singleton
+    if (!shipRef->singleton())
+        shipRef->ChangeSingleton(true, true);
+    
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     m_char->SetActiveShip(m_shipId);
@@ -1060,8 +1064,10 @@ ShipItemRef Client::SpawnNewRookieShip() {
     InventoryItemRef wRef = sItemFactory.SpawnItem(wData);
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     // create and fit noob items in ship
-    if (sRef.get() != nullptr)
+    if (sRef.get() != nullptr) {
+        sRef->ChangeSingleton(true);
         sRef->Move(m_char->stationID(), flagHangar);
+    }
     if (mRef.get() != nullptr)
         mRef->Move(sRef->itemID(), flagHiSlot0);
     if (wRef.get() != nullptr)

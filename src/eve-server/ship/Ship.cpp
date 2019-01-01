@@ -178,6 +178,10 @@ void ShipItem::SetPlayer(Client* pClient) {
      * online all modules
      */
 
+    // make sure this is singleton
+    if (!m_singleton)
+        ChangeSingleton(true, true);
+
     m_pilot = pClient;
     if (m_pilot == nullptr) {
         // remove ship effects and char skill effects for char leaving ship here.

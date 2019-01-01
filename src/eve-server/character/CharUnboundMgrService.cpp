@@ -382,20 +382,25 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     // add 1 unit of "Clone Grade Alpha"
     ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.stationID, flagClone, 1 );
     iData.customInfo="active";
-    InventoryItemRef initInvItem = sItemFactory.SpawnItem( iData );
-    if (initInvItem.get() == nullptr)
+    InventoryItemRef cloneRef = sItemFactory.SpawnItem( iData );
+    if (cloneRef.get() == nullptr)
         codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", charRef->itemName().c_str());
 
     // give the player their pod
     std::string pod_name = charRef->itemName() + "'s Capsule";
-    ItemData podItem( itemTypeCapsule, charRef->itemID(), cdata.solarSystemID, flagCapsule, pod_name.c_str() );
-    ShipItemRef pod_item = sItemFactory.SpawnShip( podItem );
-    if (pod_item.get() != nullptr) {
-        pod_item->SaveItem();
-        charRef->SetActivePod( pod_item->itemID() );  // we are now keeping pod until it's destroyed.
+    ItemData podData( itemTypeCapsule, charRef->itemID(), cdata.solarSystemID, flagCapsule, pod_name.c_str() );
+    ShipItemRef podRef = sItemFactory.SpawnShip( podData );
+    if (podRef.get() != nullptr) {
+        // make sure this is singleton
+        if (!podRef->singleton())
+            podRef->ChangeSingleton(true, true);
+        podRef->SaveItem();
+        charRef->SetActivePod( podRef->itemID() );  // we are now keeping pod until it's destroyed.
     }
-    
-    pClient->SpawnNewRookieShip();
+
+    ShipItemRef sRef = pClient->SpawnNewRookieShip();
+    // set shipID in char object and save (error fix)
+    pClient->SetShip(sRef);
 
     CharacterDB::AddEmployment(charRef->itemID(), corpData.corporationID);
     charRef->SetFlag(flagAutoFit);
