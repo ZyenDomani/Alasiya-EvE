@@ -88,6 +88,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_squad = false;
     m_loaded = false;
     m_undock = false;
+    m_showall = false;
     m_beyonce = false;
     m_canThrow = false;
     m_packaged = false;
