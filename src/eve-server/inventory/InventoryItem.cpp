@@ -983,6 +983,10 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
         return true;    //nothing to do...
     bool old_singleton = m_singleton;
     m_singleton = singleton;
+
+    // must update volume when singleton (packaged state) changes for (mostly) ship items.
+    SetAttribute(AttrVolume, GetPackagedVolume());
+
     SaveItem();
 
     //notify about the changes.

@@ -89,6 +89,8 @@ ShipItemRef ShipItem::Spawn( ItemData &data) {
 
     ShipItemRef sShipRef = ShipItem::Load( shipID );
 
+    InitAttribs();
+
     return sShipRef;
 }
 
@@ -118,7 +120,7 @@ void ShipItem::Init()
         InitPod();
         return;
     }
-    if (! m_pilot->GetChar().get()) {
+    if (!m_pilot->GetChar().get()) {
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
@@ -140,7 +142,7 @@ void ShipItem::InitPod() {
     }
     // pods have 57 attribs and 0 effects
 
-    // pod will be full when activated
+    // pod will always be full when activated
     if (m_pilot->IsInSpace())
         Heal();
 }
@@ -178,10 +180,6 @@ void ShipItem::SetPlayer(Client* pClient) {
      * online all modules
      */
 
-    // make sure this is singleton
-    if (!m_singleton)
-        ChangeSingleton(true, true);
-
     m_pilot = pClient;
     if (m_pilot == nullptr) {
         // remove ship effects and char skill effects for char leaving ship here.
@@ -215,22 +213,23 @@ void ShipItem::InitAttribs()
 {
     // Create default dynamic attributes in the AttributeMap
     SetAttribute(AttrVolume,                            GetPackagedVolume());
-    SetAttribute(AttrCpuLoad,                           0);
-    SetAttribute(AttrPowerLoad,                         0);
-    SetAttribute(AttrUpgradeLoad,                       0); // rig shit
+    SetAttribute(AttrCpuLoad,                           EvilZero);
+    SetAttribute(AttrPowerLoad,                         EvilZero);
+    // rig shit
+    SetAttribute(AttrUpgradeLoad,                       EvilZero);
 
     // Check for existence of attributes.  if not loaded then set them to default values:
-    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, 0.0f);
-    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, 0.0f);
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero);
     // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
     if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage,  GetAttribute(AttrShieldCapacity));
     if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage,  GetAttribute(AttrCapacitorCapacity));
     if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
-    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, 0.0f);
-    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, 1.0f);
-    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, 1.0f);
-    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, 1.0f);
+    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, EvilOne);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, EvilOne);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, EvilOne);
     // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
     if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance));
     if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance));

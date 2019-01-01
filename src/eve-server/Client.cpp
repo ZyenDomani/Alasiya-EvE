@@ -727,6 +727,31 @@ void Client::MoveToPosition(const GPoint &pt) {
         pShipSE->DestinyMgr()->Halt();
 }
 
+void Client::DockToStation() {
+    // ap cleared on client side when docking.
+    m_autoPilot = false;
+    m_setStateSent = false;
+    m_clientState = ClientState::csIdle;
+    _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
+    pShipSE->DestinyMgr()->Dock();
+    MoveToLocation(m_dockStationID, NULL_ORIGIN);
+
+    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+
+    //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
+    //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
+    if (m_ship->typeID() == itemTypeCapsule) {
+        if (sConfig.server.NoobShipCheck) {
+            Inventory* inv = m_system->GetStationFromInventory(m_locationID)->GetMyInventory();
+            if (!inv->HasShip())
+                SpawnNewRookieShip();
+        } else
+            SpawnNewRookieShip();
+    }
+
+    SetSessionTimer();
+}
+
 void Client::UndockFromStation() {
     if (m_TS != nullptr) {
         TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
@@ -798,31 +823,6 @@ void Client::SetPodItem() {
         CreateNewPod();
 }
 
-void Client::DockToStation() {
-    // ap cleared on client side when docking.
-    m_autoPilot = false;
-    m_setStateSent = false;
-    m_clientState = ClientState::csIdle;
-    _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
-    pShipSE->DestinyMgr()->Dock();
-    MoveToLocation(m_dockStationID, NULL_ORIGIN);
-
-    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
-
-    //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
-    //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
-    if (m_ship->typeID() == itemTypeCapsule) {
-        if (sConfig.server.NoobShipCheck) {
-            Inventory* inv = m_system->GetStationFromInventory(m_locationID)->GetMyInventory();
-            if (!inv->HasShip())
-                SpawnNewRookieShip();
-        } else
-            SpawnNewRookieShip();
-    }
-
-    SetSessionTimer();
-}
-
 void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {
@@ -841,7 +841,6 @@ void Client::CheckShipRef(ShipItemRef newShipRef)
 void Client::BoardShip(ShipItemRef newShipRef) {
     CheckShipRef(newShipRef);
 
-    /* check for and delete pod entity if boarding new ship */
     if (m_login) {
         _log(PLAYER__MESSAGE, "%s boarding active ship %u on login.", m_char->itemName().c_str(), newShipRef->itemID());
     } else if (m_ship->typeID() == itemTypeCapsule) {
@@ -1007,12 +1006,12 @@ void Client::ResetAfterPodded() {
 }
 
 void Client::SetShip(ShipItemRef shipRef, bool setPlayer/*false*/) {
-    pShipSE = nullptr;
-    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
-    // make sure shipRef is singleton
+    // this should throw if ship isnt assembled (singleton=0)
     if (!shipRef->singleton())
         shipRef->ChangeSingleton(true, true);
-    
+
+    pShipSE = nullptr;
+    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     m_char->SetActiveShip(m_shipId);
@@ -1065,6 +1064,7 @@ ShipItemRef Client::SpawnNewRookieShip() {
     InventoryItemRef cRef = sItemFactory.SpawnItem(cData);
     // create and fit noob items in ship
     if (sRef.get() != nullptr) {
+        // noob ships come pre-assembled (and fit)
         sRef->ChangeSingleton(true);
         sRef->Move(m_char->stationID(), flagHangar);
     }

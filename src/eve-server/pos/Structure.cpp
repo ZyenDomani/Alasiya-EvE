@@ -82,24 +82,26 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
-    if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, 0.0f, false);
-    if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage, 0.0f, false);
-    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, 1.0f, false);
-    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, 1.0f, false);
+    if (!sRef->HasAttribute(AttrDamage))                        sRef->SetAttribute(AttrDamage, EvilZero, false);
+    if (!sRef->HasAttribute(AttrArmorDamage))                   sRef->SetAttribute(AttrArmorDamage,EvilZero, false);
+    if (!sRef->HasAttribute(AttrArmorMaxDamageResonance))       sRef->SetAttribute(AttrArmorMaxDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrShieldMaxDamageResonance))      sRef->SetAttribute(AttrShieldMaxDamageResonance, EvilOne, false);
 
     // Shield Resonance
-    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, 1.0, false);
-    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, 1.0, false);
+    if (!sRef->HasAttribute(AttrShieldEmDamageResonance))       sRef->SetAttribute(AttrShieldEmDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrShieldExplosiveDamageResonance)) sRef->SetAttribute(AttrShieldExplosiveDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrShieldKineticDamageResonance))  sRef->SetAttribute(AttrShieldKineticDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrShieldThermalDamageResonance))  sRef->SetAttribute(AttrShieldThermalDamageResonance, EvilOne, false);
+    // Armor Resonance
+    if (!sRef->HasAttribute(AttrArmorEmDamageResonance))        sRef->SetAttribute(AttrArmorEmDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrArmorExplosiveDamageResonance)) sRef->SetAttribute(AttrArmorExplosiveDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrArmorKineticDamageResonance))   sRef->SetAttribute(AttrArmorKineticDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrArmorThermalDamageResonance))   sRef->SetAttribute(AttrArmorThermalDamageResonance, EvilOne, false);
+    // Hull Resonance
+    if (!sRef->HasAttribute(AttrEmDamageResonance))             sRef->SetAttribute(AttrEmDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrExplosiveDamageResonance))      sRef->SetAttribute(AttrExplosiveDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrKineticDamageResonance))        sRef->SetAttribute(AttrKineticDamageResonance, EvilOne, false);
+    if (!sRef->HasAttribute(AttrThermalDamageResonance))        sRef->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
 
     return sRef;
 }

@@ -286,18 +286,18 @@ public:
     void SetShipArmor(double fraction);
     void SetShipHull(double fraction);
     void SetShipCapacitorLevel(double fraction);
-    double GetShipHullHP() { return GetAttribute(AttrHP).get_float(); }
-    double GetShipArmorHP() { return GetAttribute(AttrArmorHP).get_float(); }
-    double GetShipPGLevel() { return GetAttribute(AttrPowerOutput).get_float(); }
-    double GetShipCPULevel() { return GetAttribute(AttrCpuOutput).get_float(); }
-    double GetShipShieldHP() { return GetAttribute(AttrShieldCharge).get_float(); }
-    double GetShipCapacitorLevel() { return GetAttribute(AttrCapacitorCharge).get_float(); }
-    EvilNumber GetShipHullPercent() { return 1 -(GetAttribute(AttrDamage) / GetAttribute(AttrHP)); }
-    EvilNumber GetShipCPUPercent() { return 1 -(GetAttribute(AttrCpuLoad) / GetAttribute(AttrCpuOutput)); }
-    EvilNumber GetShipPGPercent() { return 1 -(GetAttribute(AttrPowerLoad) / GetAttribute(AttrPowerOutput)); }
-    EvilNumber GetShipArmorPercent() { return 1 -(GetAttribute(AttrArmorDamage) / GetAttribute(AttrArmorHP)); }
-    EvilNumber GetShipShieldPercent() { return (GetAttribute(AttrShieldCharge) / GetAttribute(AttrShieldCapacity)); }
-    EvilNumber GetShipCapacitorPercent() { return (GetAttribute(AttrCapacitorCharge) / GetAttribute(AttrCapacitorCapacity)); }
+    double GetShipHullHP()                              { return GetAttribute(AttrHP).get_float(); }
+    double GetShipArmorHP()                             { return GetAttribute(AttrArmorHP).get_float(); }
+    double GetShipPGLevel()                             { return GetAttribute(AttrPowerOutput).get_float(); }
+    double GetShipCPULevel()                            { return GetAttribute(AttrCpuOutput).get_float(); }
+    double GetShipShieldHP()                            { return GetAttribute(AttrShieldCharge).get_float(); }
+    double GetShipCapacitorLevel()                      { return GetAttribute(AttrCapacitorCharge).get_float(); }
+    EvilNumber GetShipHullPercent()                     { return 1 -(GetAttribute(AttrDamage) / GetAttribute(AttrHP)); }
+    EvilNumber GetShipCPUPercent()                      { return 1 -(GetAttribute(AttrCpuLoad) / GetAttribute(AttrCpuOutput)); }
+    EvilNumber GetShipPGPercent()                       { return 1 -(GetAttribute(AttrPowerLoad) / GetAttribute(AttrPowerOutput)); }
+    EvilNumber GetShipArmorPercent()                    { return 1 -(GetAttribute(AttrArmorDamage) / GetAttribute(AttrArmorHP)); }
+    EvilNumber GetShipShieldPercent()                   { return (GetAttribute(AttrShieldCharge) / GetAttribute(AttrShieldCapacity)); }
+    EvilNumber GetShipCapacitorPercent()                { return (GetAttribute(AttrCapacitorCharge) / GetAttribute(AttrCapacitorCapacity)); }
 
     // template loading system
     using InventoryItem::_Load;
