@@ -207,6 +207,7 @@
         <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
         <IsTestServer>false</IsTestServer>  <!--  bool   -some functions disabled for live server -->
         <UseProfiling>false</UseProfiling><!-- bool -->
+        <ProfileTraceTime>0</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 150  disable with 0 -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
         <PositionHack>false</PositionHack><!-- bool -->
         <DeleteTrackingCans>true</DeleteTrackingCans><!-- bool  -delete cans on server shutdown.  this is for ship and bubble tracking -->
@@ -230,7 +231,8 @@
         <ssl>false</ssl><!-- bool   enable ssl for db connection (NOTE: NOT coded. DO NOT USE) -not needed when using socket under linux-->
         <compress>false</compress><!-- bool   compressed protocol for client server communication -->
         <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local) -->
-        <autoReconnect>true</autoReconnect><!-- bool  enable auto Reconnect on lost connection (not implemented yet) -->
+        <autoReconnect>false</autoReconnect><!-- bool  enable auto Reconnect on lost connection  not sure if this works right.  leave off for now. -->
+        <dbTimeout>2</dbTimeout><!--  timeout value for db response, in seconds  default: 2s  **NOT USED** -->
     </database>
 
     <files>
