@@ -105,6 +105,9 @@ public:
 
     PyInt*              GetAgentSystemID(int32 agentID);
 
+    // this will return owner's name from any type of ID...system, region, station, player item, etc.
+    std::string         GetOwnerName(int32 ownerID);
+
 protected:
     void                Populate();
 

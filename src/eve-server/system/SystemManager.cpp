@@ -1172,6 +1172,7 @@ PyRep* SystemManager::GetCurrentEntities()
     for (auto cur : m_ticEntities) {
         PyDict* dict = new PyDict();
             dict->SetItemString("itemID", new PyInt(cur.second->GetID()));
+            dict->SetItemString("ownerName", new PyString(sDataMgr.GetOwnerName(cur.second->GetOwnerID())));
             dict->SetItemString("typeID", new PyInt(cur.second->GetTypeID()));
             dict->SetItemString("catID", new PyInt(cur.second->GetCategoryID()));
             dict->SetItemString("name", new PyString(cur.second->GetName()));

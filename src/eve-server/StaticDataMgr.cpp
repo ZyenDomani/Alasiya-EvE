@@ -1113,6 +1113,15 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
     return rsp;
 }
 
+/** @todo  finish this.  */
+std::string StaticDataMgr::GetOwnerName(int32 ownerID)
+{
+    if (ownerID == 1)
+        return "System";
+
+    return "Unknown - WIP";
+}
+
 uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
 {
     uint32 factionID = 0;

@@ -208,6 +208,7 @@ void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef
 void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (iRef->HasAttribute(AttrMaxGroupFitted)) {
+        // some of these are checked client-side (by attrib) so this may not be needed.
         if (pModuleCont->GetFittedModuleCountByGroup(iRef->groupID()) >= iRef->GetAttribute(AttrMaxGroupFitted).get_int()) {
             std::map<std::string, PyRep *> args;
             args["noOfModules"]         = new PyInt(iRef->GetAttribute(AttrMaxGroupFitted).get_int());
@@ -215,7 +216,7 @@ void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRe
             args["ship"]                = new PyInt(m_Ship->itemID());
             args["groupName"]           = new PyString(iRef->group().name());
             args["module"]              = new PyInt(iRef->itemID());
-            throw PyException( MakeUserError("CantFitTooManyByGroup", args));
+            throw PyException( MakeUserError("CantFitTooManyByGroup", args));   // bad msgID
             /*CantFitTooManyByGroupBody'}(
              * u"You're unable to fit {[item]module.name} to {[item]ship.name}.
              * You can only fit {[numeric]noOfModules} of type {groupName} but already have {[numeric]noOfModulesFitted}.", None,

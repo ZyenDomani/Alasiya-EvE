@@ -145,7 +145,7 @@ bool AttributeMap::Save() {
             AttrData data;
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
-            if ((itr->first == AttrSkillPoints) or ( itr->second.get_type() == evil_number_int)) {
+            if ( itr->second.get_type() == evil_number_int) {
                 data.valueInt = itr->second.get_int();
                 data.valueFloat = 0;
             } else {
