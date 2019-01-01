@@ -1190,6 +1190,50 @@ PyRep* SystemManager::GetCurrentEntities()
     return list;
 }
 
+void SystemManager::GetAllEntities(std::vector< CosmicSignature > vector)
+{
+    for (auto cur : m_ticEntities) {
+        CosmicSignature sig;
+        sig.dungeonType = Dungeon::Type::Anomaly;
+        sig.ownerID = cur.second->GetOwnerID();
+        sig.scanAttributeID = AttrScanAllStrength;  // Unknown
+        sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+        sig.sigID = sEntityList.GetAnomalyID();
+        sig.sigItemID = cur.first;
+        sig.sigName = cur.second->GetName();
+        sig.sigStrength = 100.0;
+        sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+        sig.systemID = m_data.systemID;
+        sig.x = cur.second->x();
+        sig.y = cur.second->y();
+        sig.z = cur.second->z();
+        switch (cur.second->GetCategoryID()) {
+            case EVEDB::invCategories::Entity: {
+                sig.scanGroupID = Scanning::Group::Scrap;
+            }  break;
+            case EVEDB::invCategories::Deployable:
+            case EVEDB::invCategories::Celestial: {
+                sig.scanGroupID = Scanning::Group::DroneOrProbe;
+            } break;
+            case EVEDB::invCategories::Orbitals:
+            case EVEDB::invCategories::Structure:
+            case EVEDB::invCategories::StructureUpgrade:
+            case EVEDB::invCategories::SovereigntyStructure: {
+                sig.scanGroupID = Scanning::Group::Structure;
+            }   break;
+            case EVEDB::invCategories::Ship:  {
+                sig.scanGroupID = Scanning::Group::Ship;
+            }   break;
+            case EVEDB::invCategories::Asteroid:
+            case EVEDB::invCategories::Celestial:
+            default: {
+                sig.scanGroupID = Scanning::Group::Celestial;
+            }  break;
+        }
+        vector.push_back(sig);
+    }
+}
+
 
 bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)
 {

@@ -219,6 +219,8 @@ void Scan::ShipScanResult() {
     /** @todo  add gmh/dev/mod switch (client var) to show ALL objects in system */
     std::vector<CosmicSignature> anom;
     m_system->GetAnomMgr()->GetAnomalyList(anom);
+    if (m_client->IsShowall())
+        m_system->GetAllEntities(anom);
 
     PyList* resultList = new PyList();
     //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
