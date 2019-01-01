@@ -1210,9 +1210,8 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature > vector)
         switch (cur.second->GetCategoryID()) {
             case EVEDB::invCategories::Entity: {
                 sig.scanGroupID = Scanning::Group::Scrap;
-            }  break;
-            case EVEDB::invCategories::Deployable:
-            case EVEDB::invCategories::Celestial: {
+            } break;
+            case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
                 sig.scanGroupID = Scanning::Group::DroneOrProbe;
             } break;
             case EVEDB::invCategories::Orbitals:
@@ -1220,15 +1219,19 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature > vector)
             case EVEDB::invCategories::StructureUpgrade:
             case EVEDB::invCategories::SovereigntyStructure: {
                 sig.scanGroupID = Scanning::Group::Structure;
-            }   break;
-            case EVEDB::invCategories::Ship:  {
+            } break;
+            case EVEDB::invCategories::Ship: {
                 sig.scanGroupID = Scanning::Group::Ship;
-            }   break;
-            case EVEDB::invCategories::Asteroid:
+            } break;
+            case EVEDB::invCategories::Drone:
+            case EVEDB::invCategories::Charge: {    // probes, missiles (at time of scan), and ??
+                sig.scanGroupID = Scanning::Group::DroneOrProbe;
+            } break;
             case EVEDB::invCategories::Celestial:
+            case EVEDB::invCategories::Asteroid:
             default: {
                 sig.scanGroupID = Scanning::Group::Celestial;
-            }  break;
+            } break;
         }
         vector.push_back(sig);
     }
