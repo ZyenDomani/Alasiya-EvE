@@ -94,7 +94,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_packaged = false;
     m_portrait = false;
     m_autoPilot = false;
-    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+    m_bubbleWait = false;     // allow client processing of subsquent destiny msgs
     m_setStateSent = false;
     m_sessionChangeActive = false;
 
@@ -651,7 +651,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_ship->Relocate(pt);
         m_ship->Dock();
 
-        m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+        //m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
 
         if (IsFleet(m_fleet)) {
             m_fleetTimer.Disable();
@@ -807,6 +807,8 @@ void Client::DockToStation() {
     pShipSE->DestinyMgr()->Dock();
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
+    m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
+    
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a new, fully-fitted ship as replacement.  we dont....yet
     if (m_ship->typeID() == itemTypeCapsule) {
@@ -939,8 +941,8 @@ void Client::Eject()
 
 void Client::ResetAfterPopped(GPoint& position)
 {
-    m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
     m_autoPilot = false;
+    m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
 
     pShipSE->DestinyMgr()->Stop();
 
