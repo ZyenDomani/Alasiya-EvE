@@ -907,7 +907,7 @@ void Client::Eject()
 
     m_ship->ChangeOwner(m_char->itemID());
     m_ship->Move(m_locationID, flagCapsule, true);
-    Ship* oldShipSE(pShipSE);
+    Ship* oldShipSE = pShipSE;  // copy pShipSE
 
     //  set shipSE to null.  this allows sending AddBalls when pod added to system
     pShipSE = nullptr;
@@ -946,7 +946,7 @@ void Client::ResetAfterPopped(GPoint& position)
     if (m_pod.get() == nullptr)
         CreateNewPod();
 
-    Ship* oldShipSE(pShipSE);
+    Ship* oldShipSE = pShipSE;  // copy pShipSE
 
     m_pod->Relocate(position);
     SetShip(m_pod);

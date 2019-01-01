@@ -93,7 +93,10 @@ void Scan::ProcessScan(bool useProbe/*false*/)
 PyRep* Scan::ConeScan(Call_ConeScan args) {
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
     std::vector<SystemEntity*> vector;
-    m_client->GetShipSE()->SysBubble()->GetEntities(vector);
+    if (m_client->IsShowall())
+        m_client->SystemMgr()->GetCurrentEntities(vector);
+    else
+        m_client->GetShipSE()->SysBubble()->GetEntities(vector);
     PyList* list = new PyList();
     DirectionScanResult res;
     for (auto i : vector) {

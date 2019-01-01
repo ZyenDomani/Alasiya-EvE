@@ -275,6 +275,9 @@ public:
     uint32 JetcanTime()                                 { return (m_jetcanTimer.GetRemainingTime() /1000); }
     void StartJetcanTimer()                             { m_jetcanTimer.Start(ClientTimers::JetcanTimer); }
 
+    void SetShowAll(bool set=false)                     { m_showall = set; }
+    bool IsShowall()                                    { return m_showall; }
+    
     //messages and LSC
     // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);
@@ -356,6 +359,7 @@ protected:
     bool m_undock;
     bool m_loaded;
     bool m_beyonce;
+    bool m_showall;         // boolean for showing all dynamics in system on ships scanner (ROLE_GMH)
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
     bool m_autoPilot;       // set true for using autopilot.

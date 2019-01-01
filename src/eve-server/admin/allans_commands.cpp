@@ -27,7 +27,7 @@
 
 
 
-PyResult Command_spawndungeon(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_spawndungeon(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
      *
      * upon execution, this command will spawn a random dungeon from db in callers solarSystem,
@@ -43,13 +43,13 @@ PyResult Command_spawndungeon(Client* who, CommandDB* db, PyServiceMgr* services
 
     /** @todo update this to new creation code */
     /*
-        if (!who->SystemMgr()->GetDungMgr()->Create(atoi(args.arg(1).c_str())))
-            who->SendErrorMsg("RoomID = 0 for templateID %u", atoi(args.arg(1).c_str()));
+        if (!pClient->SystemMgr()->GetDungMgr()->Create(atoi(args.arg(1).c_str())))
+            pClient->SendErrorMsg("RoomID = 0 for templateID %u", atoi(args.arg(1).c_str()));
     */
     return nullptr;
 }
 
-PyResult Command_removedungeon(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_removedungeon(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
      *
      * upon execution, this command will spawn a random dungeon from db in callers solarSystem,
@@ -58,13 +58,13 @@ PyResult Command_removedungeon(Client* who, CommandDB* db, PyServiceMgr* service
     return nullptr;
 }
 
-PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
      *   will list currently active dungeons, by systemID.
      */
 
     std::vector<CosmicSignature> sig;
-    who->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
+    pClient->SystemMgr()->GetAnomMgr()->GetSignatureList(sig);
 
     int count = sig.size();
 
@@ -83,14 +83,14 @@ PyResult Command_siglist(Client* who, CommandDB* db, PyServiceMgr* services, con
     char reply[size];
     snprintf(reply, size, str.str().c_str(), count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_heal(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (args.argCount()== 1)
-        who->GetShip()->Heal();
+        pClient->GetShip()->Heal();
     else if (args.argCount() == 2) {
         if (!args.isNumber(1))
             throw PyException(MakeCustomError("Argument 1 should be a character ID"));
@@ -107,16 +107,16 @@ PyResult Command_heal(Client* who, CommandDB* db, PyServiceMgr* services, const 
     return(new PyString("Heal successful!"));
 }
 
-PyResult Command_status(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_status(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    //if (!who->IsInSpace())
+    //if (!pClient->IsInSpace())
     //    throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
-    ShipItem* pShip = who->GetShip().get();
+    ShipItem* pShip = pClient->GetShip().get();
 
     char reply[150];
     snprintf(reply, 150,
@@ -134,26 +134,26 @@ PyResult Command_status(Client* who, CommandDB* db, PyServiceMgr* services, cons
              pShip->GetShipShieldHP(), pShip->GetShipShieldPercent().get_float()
     );
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
 
     return new PyString(reply);
 }
 
-PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug bubble entities
      * wip.   -allan 25Apr15
      */
 
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         return nullptr;
 
-    if (!who->GetShipSE()->SysBubble())
-        if (who->IsInSpace())
-            who->EnterSystem(who->GetSystemID());
+    if (!pClient->GetShipSE()->SysBubble())
+        if (pClient->IsInSpace())
+            pClient->EnterSystem(pClient->GetSystemID());
         else
             throw PyException(MakeCustomError("You must be in space to list bubble inventory."));
 
-    SystemBubble *b = who->GetShipSE()->SysBubble();
+    SystemBubble *b = pClient->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
     uint32 dynamics = b->CountDynamics();
     uint32 npcs = b->CountNPCs();
@@ -203,22 +203,22 @@ PyResult Command_list(Client* who, CommandDB* db, PyServiceMgr* services, const 
     char reply[size];
     snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_bubblelist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug bubble entities
      * wip.   -allan 2June16
      */
 
-    if (!who->GetShipSE()->SysBubble())
-        if (who->IsInSpace())
-            who->EnterSystem(who->GetSystemID());
+    if (!pClient->GetShipSE()->SysBubble())
+        if (pClient->IsInSpace())
+            pClient->EnterSystem(pClient->GetSystemID());
         else
             throw PyException(MakeCustomError("You must be in space to list space inventory."));
 
-        SystemBubble *b = who->GetShipSE()->SysBubble();
+        SystemBubble *b = pClient->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
     uint32 dynamics = b->CountDynamics();
     uint32 npcs = b->CountNPCs();
@@ -244,11 +244,11 @@ PyResult Command_bubblelist(Client* who, CommandDB* db, PyServiceMgr* services, 
     char reply[size];
     snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_commandlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_commandlist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /*
      * this command will send the client a list of loaded game commands, role required, and description.  -allan 23May15
      */
@@ -258,36 +258,36 @@ PyResult Command_commandlist(Client* who, CommandDB* db, PyServiceMgr* services,
              "Working on making this list...check back later.<br>" //53
              " -Allan"); //9
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
 
     return new PyString(reply);
 }
 
 
-PyResult Command_secstatus(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_secstatus(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /*
      * this command will send the client the security status of the current Character.  -allan 5July15
      */
 
     char reply[65];
     snprintf(reply, 65,
-             "SecStatus: %f.", who->GetSecurityRating()); //53
+             "SecStatus: %f.", pClient->GetSecurityRating()); //53
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
 
     return new PyString(reply);
 }
 
-PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_destinyvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space.  This call needs DestinyMgr."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
-    DestinyManager* dm = who->GetShipSE()->DestinyMgr();
+    DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
 
     char reply[250];
     snprintf(reply, 250,
@@ -304,25 +304,25 @@ PyResult Command_destinyvars(Client* who, CommandDB* db, PyServiceMgr* services,
              "HasBeyonce: %u<br>" //27
              "IsBubbleWait: %u<br>" //27
              "IsSetStateSent: %u<br>", //27
-                who->GetShipID(), dm->IsCloaked(), dm->IsWarping(), who->InPod(), who->IsInSpace(), who->IsDocked(), who->IsJump(),
-                who->IsInvul(), who->IsLogin(),  who->IsUndock(), who->HasBeyonce(), who->IsBubbleWait(), who->IsSetStateSent()
+                pClient->GetShipID(), dm->IsCloaked(), dm->IsWarping(), pClient->InPod(), pClient->IsInSpace(), pClient->IsDocked(), pClient->IsJump(),
+                pClient->IsInvul(), pClient->IsLogin(),  pClient->IsUndock(), pClient->HasBeyonce(), pClient->IsBubbleWait(), pClient->IsSetStateSent()
             );
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
 
     return new PyString(reply);
 }
 
-PyResult Command_shipvars(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_shipvars(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
-    DestinyManager* dm = who->GetShipSE()->DestinyMgr();
+    DestinyManager* dm = pClient->GetShipSE()->DestinyMgr();
 
     char reply[250];
     snprintf(reply, 250,
@@ -338,50 +338,50 @@ PyResult Command_shipvars(Client* who, CommandDB* db, PyServiceMgr* services, co
              "CapNeed: %.2f<br>" //27
              "Agility: %.3f<br>" //27
              "Inertia: %.3f<br>", //27
-                who->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
+                pClient->GetShipID(), dm->GetMass(), dm->GetAlignTime(), dm->GetAccelTime(), dm->GetMaxVelocity(), (float)(dm->GetWarpSpeed() /10), dm->GetWarpTime(),
                 dm->GetWarpDropSpeed(), dm->GetRadius(), dm->GetCapNeed(), dm->GetAgility(), dm->GetInertia()
             );
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
 
     return new PyString(reply);
 }
 
-PyResult Command_halt(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_halt(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
-    who->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt();
 
     char reply[25];
     snprintf(reply, 25,
              "Ship Halted.");
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_shutdown(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_shutdown(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* ingame command to immediatly save loaded items and halt server.
      */
     sConsole.HaltServer();
     return new PyNone();
 }
 
-PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_beltlist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug asteroid creation/management
      * wip.   -allan 15April16
      */
 
     std::vector<AsteroidSE*> invMap;
     invMap.clear();
-    uint32 beltID = sBubbleMgr.GetBeltID(who->GetShipSE()->SysBubble()->GetID());
-    BeltMgr* belt = who->GetShipSE()->SystemMgr()->GetBeltMgr();
+    uint32 beltID = sBubbleMgr.GetBeltID(pClient->GetShipSE()->SysBubble()->GetID());
+    BeltMgr* belt = pClient->GetShipSE()->SystemMgr()->GetBeltMgr();
     belt->GetList(beltID, invMap);
 
     std::ostringstream str;
@@ -397,11 +397,11 @@ PyResult Command_beltlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     char reply[size];
     snprintf(reply, size, str.str().c_str(), beltID, count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug inventory
      * wip.   -allan 15Mar16
      */
@@ -412,8 +412,8 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
     InventoryItem* item(nullptr);
     Inventory* inv(nullptr);
     uint32 inventoryID = 0;
-    if (who->IsDocked()) {
-        inventoryID = who->GetStationID();
+    if (pClient->IsDocked()) {
+        inventoryID = pClient->GetStationID();
         StationItemRef station = sEntityList.GetStationByID(inventoryID);
         if (station.get() == nullptr)
             throw PyException(MakeCustomError("Cannot find Station Reference for stationID %u", inventoryID));
@@ -423,8 +423,8 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
         inv->GetInventoryList(invMap);
         item = station.get();
     } else {
-        Command_list(who,db,services,args);
-        inventoryID = who->GetSystemID();
+        Command_list(pClient,db,services,args);
+        inventoryID = pClient->GetSystemID();
         SolarSystemRef system = sItemFactory.GetSolarSystem(inventoryID);
         if (system.get() == nullptr)
             throw PyException(MakeCustomError("Cannot find Station Reference for systemID %u", inventoryID));
@@ -449,18 +449,18 @@ PyResult Command_inventory(Client* who, CommandDB* db, PyServiceMgr* services, c
     char reply[size];
     snprintf(reply, size, str.str().c_str(), item->itemName().c_str(), inventoryID, inv, item, count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug inventory
      * wip.   -allan 15Mar16
      */
 
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
-    uint32 inventoryID = who->GetShipID();
+    uint32 inventoryID = pClient->GetShipID();
     ShipItemRef ship = sItemFactory.GetShip(inventoryID);
     Inventory* inv = ship->GetMyInventory();
     inv->GetInventoryList(invMap);
@@ -479,19 +479,19 @@ PyResult Command_shipinventory(Client* who, CommandDB* db, PyServiceMgr* service
     char reply[size];
     snprintf(reply, size, str.str().c_str(), ship->itemName().c_str(), inventoryID, inv, ship.get(), count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug char skills
      * wip.   -allan 15Mar16
      */
 
     std::map<uint32, InventoryItemRef> invMap;
     invMap.clear();
-    uint32 inventoryID = who->GetCharacterID();
-    Inventory* inv = who->GetChar()->GetMyInventory();
+    uint32 inventoryID = pClient->GetCharacterID();
+    Inventory* inv = pClient->GetChar()->GetMyInventory();
     inv->GetInventoryList(invMap);
 
     std::ostringstream str;
@@ -512,13 +512,13 @@ PyResult Command_skilllist(Client* who, CommandDB* db, PyServiceMgr* services, c
     int size = count * 80;
     size += 80;
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), inventoryID, inv, who->GetChar()->itemName().c_str(), count);
+    snprintf(reply, size, str.str().c_str(), inventoryID, inv, pClient->GetChar()->itemName().c_str(), count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     /* this command is used to debug attributes
      * wip.   -allan 15Mar17
      */
@@ -555,11 +555,11 @@ PyResult Command_attrlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     char reply[size];
     snprintf(reply, size, str.str().c_str(), itemID, iRef->itemName().c_str(), count);
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
+PyResult Command_showsession(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
 
     std::ostringstream str;
     str.clear();
@@ -605,35 +605,35 @@ PyResult Command_showsession(Client* who, CommandDB* db, PyServiceMgr* services,
     size += 50;     // %s
     char reply[size];
     snprintf(reply, size, str.str().c_str(),
-             who->GetCharacterID(), who->GetName(), who->GetShipID(), who->GetCloneStationID(), who->GetClientID(), who->GetUserID(),
-             who->GetSessionID(), who->GetLocationID(), who->GetStationID(), who->GetStationID2(), who->GetSystemID(), who->GetConstellationID(),
-             who->GetRegionID(), who->GetCorporationID(), who->GetCorpHQ(), who->GetCorpAccountKey(), who->GetCorpRole(), who->GetRolesAtAll(),
-             who->GetRolesAtBase(), who->GetRolesAtHQ(), who->GetRolesAtOther(), who->GetChar()->fleetID(), who->GetChar()->wingID(),
-             who->GetChar()->squadID(), sFltSvc.GetJobName(who->GetChar()->fleetJob()).c_str(), sFltSvc.GetRoleName(who->GetChar()->fleetRole()).c_str(),
-             sFltSvc.GetBoosterName(who->GetChar()->fleetBooster()).c_str(),who->GetChar()->fleetJoinTime());
+             pClient->GetCharacterID(), pClient->GetName(), pClient->GetShipID(), pClient->GetCloneStationID(), pClient->GetClientID(), pClient->GetUserID(),
+             pClient->GetSessionID(), pClient->GetLocationID(), pClient->GetStationID(), pClient->GetStationID2(), pClient->GetSystemID(), pClient->GetConstellationID(),
+             pClient->GetRegionID(), pClient->GetCorporationID(), pClient->GetCorpHQ(), pClient->GetCorpAccountKey(), pClient->GetCorpRole(), pClient->GetRolesAtAll(),
+             pClient->GetRolesAtBase(), pClient->GetRolesAtHQ(), pClient->GetRolesAtOther(), pClient->GetChar()->fleetID(), pClient->GetChar()->wingID(),
+             pClient->GetChar()->squadID(), sFltSvc.GetJobName(pClient->GetChar()->fleetJob()).c_str(), sFltSvc.GetRoleName(pClient->GetChar()->fleetRole()).c_str(),
+             sFltSvc.GetBoosterName(pClient->GetChar()->fleetBooster()).c_str(),pClient->GetChar()->fleetJoinTime());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_shipdna(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_shipdna(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     char reply[200];
-    snprintf(reply, 200, "%s", who->GetShip()->GetShipDNA().c_str());
+    snprintf(reply, 200, "%s", pClient->GetShip()->GetShipDNA().c_str());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_targlist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace()) {
-        who->SendInfoModalMsg("You are not in Space.");
+    if (!pClient->IsInSpace()) {
+        pClient->SendInfoModalMsg("You are not in Space.");
         return nullptr;
     }
 
     uint16 length = 1, count = 0;
-    std::string into = who->GetShipSE()->TargetMgr()->TargetList(length, count);
+    std::string into = pClient->GetShipSE()->TargetMgr()->TargetList(length, count);
 
     std::ostringstream str;
     str.clear();
@@ -646,13 +646,13 @@ PyResult Command_targlist(Client* who, CommandDB* db, PyServiceMgr* services, co
     size += length;
 
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), who->GetName(), who->GetShipID(), count, into.c_str());
+    snprintf(reply, size, str.str().c_str(), pClient->GetName(), pClient->GetShipID(), count, into.c_str());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_track(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     bool tracking = sEntityList.GetTracking();
     std::string track = "enabled";
@@ -665,76 +665,76 @@ PyResult Command_track(Client* who, CommandDB* db, PyServiceMgr* services, const
     char reply[30];
     snprintf(reply, 30, "Ship Tracking is %s.", track.c_str());
 
-    who->SendNotifyMsg(reply);
+    pClient->SendNotifyMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_bubbletrack(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_bubbletrack(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     bool tracking = sConfig.debug.BubbleTrack;
     std::string track = "enabled";
     if (tracking) {
         sConfig.debug.BubbleTrack = false;
         track = "disabled";
-        who->GetShipSE()->SysBubble()->RemoveMarkers();
+        pClient->GetShipSE()->SysBubble()->RemoveMarkers();
     } else {
         sConfig.debug.BubbleTrack = true;
-        who->GetShipSE()->SysBubble()->MarkCenter();
+        pClient->GetShipSE()->SysBubble()->MarkCenter();
     }
 
     char reply[30];
     snprintf(reply, 30, "Bubble Tracking is %s.", track.c_str());
 
-    who->SendNotifyMsg(reply);
+    pClient->SendNotifyMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_warpto(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_warpto(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
     /** @todo  finish this.... */
-    who->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt();
 
     char reply[55];
     snprintf(reply, 55, "Command Unavalible.\nShip Halted.");
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
 
-PyResult Command_entityspawn(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_entityspawn(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
-        who->EnterSystem(who->GetSystemID());
-    if (!who->GetShipSE()->DestinyMgr())
-        who->SetDestiny(NULL_ORIGIN);
+    if (!pClient->GetShipSE()->SysBubble())
+        pClient->EnterSystem(pClient->GetSystemID());
+    if (!pClient->GetShipSE()->DestinyMgr())
+        pClient->SetDestiny(NULL_ORIGIN);
 
 //sm.RemoteSvc('slash').SlashCmd('/entityspawn {0} {1} {2} 0 {3}'.format(recipeID, typeID, x, y))
     /** @todo  finish this.... */
-    who->GetShipSE()->DestinyMgr()->Halt();
+    pClient->GetShipSE()->DestinyMgr()->Halt();
 
     char reply[55];
     snprintf(reply, 55, "Command Unfinished.\nShip Halted.");
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_fleetboost(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_fleetboost(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    uint32 fleetID = who->GetChar()->fleetID();
+    uint32 fleetID = pClient->GetChar()->fleetID();
 
     if (fleetID == 0) {
-        who->SendInfoModalMsg("You are not in a fleet");
+        pClient->SendInfoModalMsg("You are not in a fleet");
         return nullptr;
     }
 
@@ -752,15 +752,15 @@ PyResult Command_fleetboost(Client* who, CommandDB* db, PyServiceMgr* services, 
     char reply[size];
     snprintf(reply, size, str.str().c_str(), fleetID, into.c_str());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_fleetinvite(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_fleetinvite(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->InFleet())
+    if (!pClient->InFleet())
         throw PyException(MakeCustomError("You're not in a fleet."));
-    if (!who->IsFleetBoss())
+    if (!pClient->IsFleetBoss())
         throw PyException(MakeCustomError("You're not fleet boss."));
 
     if (args.isNumber(1))
@@ -769,21 +769,21 @@ PyResult Command_fleetinvite(Client* who, CommandDB* db, PyServiceMgr* services,
     char reply[55];
     snprintf(reply, 55, "Command Unfinished.");
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_getposition(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_getposition(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
-    if (!who->IsInSpace())
+    if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
-    if (!who->GetShipSE()->SysBubble())
+    if (!pClient->GetShipSE()->SysBubble())
         throw PyException(MakeCustomError("You're not in a bubble."));
-    if (!who->GetShipSE()->DestinyMgr())
+    if (!pClient->GetShipSE()->DestinyMgr())
         throw PyException(MakeCustomError("You have no destiny manager."));
 
-    GPoint sPos(who->GetShipSE()->GetPosition());
-    GPoint mPos(who->SystemMgr()->GetClosestMoonSE(sPos)->GetPosition());
+    GPoint sPos(pClient->GetShipSE()->GetPosition());
+    GPoint mPos(pClient->SystemMgr()->GetClosestMoonSE(sPos)->GetPosition());
     GVector vec(sPos, mPos);
 
     float normProd = sPos.normalize() * mPos.normalize();
@@ -801,11 +801,11 @@ PyResult Command_getposition(Client* who, CommandDB* db, PyServiceMgr* services,
     char reply[size];
     snprintf(reply, size, str.str().c_str());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
 }
 
-PyResult Command_players(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     std::vector<Client*> cVec;
     sEntityList.GetClients(cVec);
@@ -821,7 +821,23 @@ PyResult Command_players(Client* who, CommandDB* db, PyServiceMgr* services, con
     char reply[size];
     snprintf(reply, size, str.str().c_str());
 
-    who->SendInfoModalMsg(reply);
+    pClient->SendInfoModalMsg(reply);
+    return new PyString(reply);
+}
+
+PyResult Command_showall(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::string showall = "Enabled";
+    if (pClient->IsShowall()) {
+        pClient->SetShowAll(false);
+        showall = "Disabled";
+    } else
+        pClient->SetShowAll(true);
+
+    char reply[35];
+    snprintf(reply, 35, "Show All on Scanner is %s.", showall.c_str());
+
+    pClient->SendNotifyMsg(reply);
     return new PyString(reply);
 }
 

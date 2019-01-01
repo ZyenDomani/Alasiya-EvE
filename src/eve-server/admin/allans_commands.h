@@ -54,3 +54,5 @@
           " - enable/disable bubble outline tracking." )
  COMMAND( players, Acct::Role::PLAYER,
           " - shows list of online players")
+ COMMAND( showall, Acct::Role::GMH,
+          " - shows all dynamic items in system on ship scanner.")
