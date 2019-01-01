@@ -78,21 +78,21 @@ enum EVEItemFlags {
 
     flagCapsule                   = 56,    //Capsule item in space
     flagPilot                     = 57,
-    flagPassenger                 = 58,
+    flagPassenger                 = 58,     // not sure about this one.  is defined, but not sure if we can use it (or want to)
     flagBoardingGate              = 59,
     flagCrew                      = 60,
     flagSkillInTraining           = 61,
 
     // these are flags for items in stations' corp offices
     flagCorpMarket                = 62,    //Corporation Market Deliveries / Returns  this item will be in location(officeID)
-    flagLocked                    = 63,    //Locked item, can not be moved unless unlocked
+    flagLocked                    = 63,    //Locked item, can not be moved unless unlocked (and dont know how yet [uncoded])
     flagUnlocked                  = 64,
     flagOffice                    = 71,    // offices
     flagImpounded                 = 72,    // impounded or junk
     flagProperty                  = 74,    // property
     flagDelivery                  = 75,    // deliveries   cannot find where this is used.  items set to this flag do not show when loaded
 
-    /*  they were OfficeSlot*, but i dont know where that data came from, as i cannot find any refreences to them
+    /*  they were OfficeSlot*, but i dont know where that data came from, as i cannot find any references to them
     flagUnknown1                   = 70,
     flagUnknown4                = 73,
     flagUnknown7                = 76,
@@ -161,19 +161,19 @@ enum EVEItemFlags {
     flagStructureActive             = 144,
     flagStructureInactive           = 145,
 
-    flagJunkyardReprocessed         = 146,
-    flagJunkyardTrashed             = 147,
+    flagJunkyardReprocessed         = 146, // not sure about this one.
+    flagJunkyardTrashed             = 147, // not sure about this one.
 
     // pi containers
     flagSpecializedCommandCenterHold = 148,
-    flagSpecializedPlanetaryCommoditiesHold = 149,
-    flagPlanetSurface               = 150,
+    flagSpecializedPlanetaryCommoditiesHold = 149,  // silos?
+    flagPlanetSurface               = 150,   // not sure about this one.
     flagSpecializedMaterialBay      = 151,        // customs office hold
 
     flagDustCharacterBackpack       = 152,
     flagDustCharacterBattle         = 153,
     flagQuafeBay                    = 154,
-    flagFleetHangar                 = 155,
+    flagFleetHangar                 = 155, // not sure about this one.
 
     flagResearchFacilitySlotFirst   = 200,
     flagResearchFacilitySlotLast    = 255,
