@@ -667,6 +667,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
     } else
         throw PyException(MakeCustomError("Correct Usage: /giveskill [CharacterID] [skillID] [desired level]"));
 
+    // this needs to tell client they have a new skill.  dont know how yet.
     if ((pTarget != nullptr) and (character.get() != nullptr)) {       // Make sure references are not NULL before trying to use them:
         SkillRef skill;
         if (character->HasSkillTrainedToLevel(skillID, level))
