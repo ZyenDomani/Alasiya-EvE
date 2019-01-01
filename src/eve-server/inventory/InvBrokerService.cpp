@@ -62,6 +62,7 @@ public:
         PyCallable_REG_CALL(InvBrokerBound, List);
         PyCallable_REG_CALL(InvBrokerBound, AssembleCargoContainer);
         PyCallable_REG_CALL(InvBrokerBound, BreakPlasticWrap);
+        PyCallable_REG_CALL(InvBrokerBound, TakeOutTrash);
 
     }
     virtual ~InvBrokerBound()
@@ -82,6 +83,7 @@ public:
     PyCallable_DECL_CALL(List);
     PyCallable_DECL_CALL(AssembleCargoContainer);
     PyCallable_DECL_CALL(BreakPlasticWrap);
+    PyCallable_DECL_CALL(TakeOutTrash);
 
 
 protected:
@@ -457,3 +459,12 @@ PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
 
     return nullptr;
 }
+
+PyResult InvBrokerBound::Handle_TakeOutTrash(PyCallArgs &call) {
+    //self.invCache.GetInventory(const.containerHangar).TakeOutTrash([ invItem.itemID for invItem in invItems ])
+    sLog.White( "InvBrokerBound::Handle_TakeOutTrash()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+
+    return nullptr;
+}
+
