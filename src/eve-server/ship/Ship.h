@@ -423,7 +423,7 @@ public:
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
 
     // this is the itemID of the ship that ejected the pod, for setting in slimItemUpdate (launcherID)
-    void SetPodShipID(uint32 shipID)                    { m_podShipID = shipID; }
+    void SetLauncherID(uint32 shipID)                    { m_podShipID = shipID; }
 
     ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 

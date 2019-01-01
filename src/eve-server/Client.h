@@ -194,21 +194,27 @@ public:
 
     uint32 GetLoyaltyPoints(uint32 corpID);
 
+    // ship functions
     void SetPodItem();
     void CreateShipSE();
-
-    // misc char functions
-    void WarpIn();
-    void WarpOut();
-    void SetShip(ShipItemRef shipRef);
+    void SetShip(ShipItemRef shipRef, bool setPlayer=false);
     void CreateNewPod();
+    void UndockFromStation();
+    void DockToStation();
     void PickAlternateShip();
     void ResetAfterPodded();
     void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
-    void BoardShip(ShipItemRef newShipRef); // only called when docked
-    void UndockFromStation();
-    void DockToStation();
     void Eject();       // only called in space
+    void Board(ShipItemRef newShipRef); // only called when in space
+    void BoardShip(ShipItemRef newShipRef); // only called when docked
+private:
+    void UpdateNewShip();     //  calls destiny update methods
+    void CheckShipRef(ShipItemRef newShipRef);  // called by Board methods
+
+public:
+    // misc char functions
+    void WarpIn();
+    void WarpOut();
     void EnterSystem(uint32 systemID);     // only called by gm command, and only if (bubble == null)
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);

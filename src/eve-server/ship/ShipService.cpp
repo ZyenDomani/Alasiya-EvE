@@ -173,7 +173,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
-    pClient->BoardShip(newShipRef);
+    pClient->Board(newShipRef);
 
     /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
