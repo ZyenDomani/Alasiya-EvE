@@ -88,6 +88,7 @@ public:
     static bool FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch);
 
     void VerifySP();
+    void VerifyAttribs();
 
 protected:
     Skill(uint32 _skillID, const ItemType &_type, const ItemData &_data );

@@ -73,6 +73,18 @@ void Skill::VerifySP()
     }
 }
 
+void Skill::VerifyAttribs()
+{
+    if (!m_singleton)
+        ChangeSingleton(true, true);
+    if (GetAttribute(AttrSkillLevel).get_type() != evil_number_int)
+        SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32());
+    if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int)
+        SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32());
+    if (m_flag != flagSkillInTraining)
+        SetAttribute(AttrExpiryTime, 0);
+}
+
 bool Skill::SkillPrereqsComplete(Character &ch) {
     bool test = true;
     EvilNumber skillID = 0;

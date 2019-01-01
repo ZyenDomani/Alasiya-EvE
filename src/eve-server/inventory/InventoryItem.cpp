@@ -726,18 +726,7 @@ void InventoryItem::Rename(std::string name)
 {
     m_itemName = name;
     SaveItem();
-    // how do we update item?
-    //OnCfgDataChanged
-    /*
-              [PyTuple 2 items]
-                [PyString "evelocations"]
-                [PyList 5 items]
-                  [PyIntegerVar 1002298813707]  itemID
-                  [PyString "02:35"]            name
-                  [PyFloat 0]                   uk
-                  [PyFloat 0]                   uk
-                  [PyFloat 0]                   uk
-                  */
+
     PyList* list = new PyList();
         list->AddItem(new PyInt(m_itemID));
         list->AddItem(new PyString(name));
@@ -849,7 +838,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    //SaveItem();
+    SaveItem();
 
     //notify about the changes.
     if (notify) {
@@ -958,7 +947,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
                 pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
         }
     }
-    //SaveItem();
+    SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -977,7 +966,7 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
-    //SaveItem();
+    SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -994,7 +983,7 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
         return true;    //nothing to do...
     bool old_singleton = m_singleton;
     m_singleton = singleton;
-    //SaveItem();
+    SaveItem();
 
     //notify about the changes.
     if (notify) {
@@ -1136,7 +1125,7 @@ void InventoryItem::SetCustomInfo(const char *ci) {
         m_customInfo = ci;
     else
         m_customInfo = "";
-    //SaveItem();
+    SaveItem();
 }
 
 void InventoryItem::Relocate(const GPoint pos)

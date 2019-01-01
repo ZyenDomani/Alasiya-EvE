@@ -438,10 +438,6 @@ bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
 }
 
 uint32 InventoryDB::NewItem(const ItemData &data) {
-    // check for common error ('common' is relative.)
-    if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
-        return 0;  // make error here?
-
     DBerror err;
     uint32 uid = 0;
 
@@ -474,6 +470,10 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
         _log(ITEM__ERROR, "Refusing to modify static map object %u.", itemID);
         return false;
     }
+
+    // check for common error ('common' is relative.)
+    if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
+        return false;  // make error here?
 
     DBerror err;
 

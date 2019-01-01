@@ -284,8 +284,10 @@ void Character::VerifySP()
 {
     std::vector<InventoryItemRef> skillList;
     GetSkillsList(skillList);
-    for (auto cur : skillList)
+    for (auto cur : skillList) {
         SkillRef::StaticCast(cur)->VerifySP();
+        SkillRef::StaticCast(cur)->VerifyAttribs();
+    }
 }
 
 CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
@@ -641,7 +643,7 @@ void Character::AddToSkillQueue(uint32 typeID, uint8 level) {
 		qs.typeID = typeID;
 		qs.level = level;
     m_skillQueue.push_back( qs );
-    _log(CHARACTER__SKILL_TRACE, "%s(%u) added Skill %u Level %u to queue", itemName().c_str(), m_itemID, typeID, level);
+    _log(CHARACTER__SKILL_TRACE, "%s(%u) added Skill:%u Level:%u to queue", itemName().c_str(), m_itemID, typeID, level);
 }
 
 void Character::SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped) {
@@ -910,13 +912,12 @@ PyDict *Character::GetCharInfo() {
     /** @todo  get implants and boosters here once implemented */
 
     //encode an entry for each one.
-    std::vector<InventoryItemRef>::iterator itr = skills.begin();
-    for (; itr != skills.end(); ++itr) {
+    for (auto cur : skills) {
         Rsp_CommonGetInfo_Entry entry;
-        if ((*itr)->Populate(entry))
-            result->SetItem(new PyInt((*itr)->itemID()), new PyObject("util.KeyVal", entry.Encode()));
+        if (cur->Populate(entry))
+            result->SetItem(new PyInt(cur->itemID()), new PyObject("util.KeyVal", entry.Encode()));
         else
-            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", m_itemName.c_str(), m_itemID, (*itr)->itemID());
+            codelog(CHARACTER__ERROR, "%s (%u): Failed to load character item %u for GetCharInfo", m_itemName.c_str(), m_itemID, cur->itemID());
     }
 
     /** @todo i dont know how boosters and implants work yet, so may have to set item different for them.  */
@@ -934,10 +935,10 @@ PyObject *Character::GetDescription() const {
 
 PyTuple *Character::GetSkillQueue() {
     PyList *list = new PyList();
-    for (SkillQueue::iterator itr = m_skillQueue.begin(); itr != m_skillQueue.end(); ++itr) {
+    for (auto cur : m_skillQueue) {
         SkillQueue_Element el;
-            el.typeID = itr->typeID;
-            el.level = itr->level;
+            el.typeID = cur.typeID;
+            el.level = cur.level;
         list->AddItem( el.Encode() );
     }
 
@@ -951,16 +952,10 @@ PyTuple *Character::GetSkillQueue() {
 void Character::AddItem(InventoryItemRef item) {
     pInventory->AddItem( item );
 
-    if ((item->flag() == flagSkill) || (item->flag() == flagSkillInTraining)) {
+    if ((item->flag() == flagSkill) or (item->flag() == flagSkillInTraining)) {
         SkillRef skill = SkillRef::StaticCast( item );
-
-        if( !skill->singleton() ) {
-            skill->ChangeSingleton( true, true );
-            skill->SetAttribute(AttrSkillLevel, (int8)0);
-            skill->SetAttribute(AttrSkillPoints, (int8)0);
-            if( skill->flag() != flagSkillInTraining )
-                skill->SetAttribute(AttrExpiryTime, 0);
-        }
+        skill->VerifySP();
+        skill->VerifyAttribs();
     }
 
     _log( CHARACTER__INFO, "%s(%u) has been added with flag %d.", itemName().c_str(), m_itemID, (int)item->flag() );
