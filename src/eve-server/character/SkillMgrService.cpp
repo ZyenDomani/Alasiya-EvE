@@ -84,6 +84,23 @@ void SkillMgrBound::Release()
     delete this;
 }
 
+PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call ) {
+    return m_db.GetRespecInfo(call.client->GetCharacterID());
+}
+
+PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
+    // returns list of skills currently in the skill queue.
+    return call.client->GetChar()->GetSkillQueue();
+}
+
+PyResult SkillMgrBound::Handle_GetEndOfTraining(PyCallArgs &call) {
+    return new PyLong( call.client->GetChar()->GetEndOfTraining() );
+}
+
+PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
+    return call.client->GetChar()->GetSkillHistory();
+}
+
 PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
     sLog.White( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
@@ -114,14 +131,6 @@ PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
     ch->UpdateSkillQueue();
 
     return ch->GetSkillQueue();
- }
-
-PyResult SkillMgrBound::Handle_GetEndOfTraining(PyCallArgs &call) {
-    return new PyLong( call.client->GetChar()->GetEndOfTraining() );
-}
-
-PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
-    return call.client->GetChar()->GetSkillHistory();
 }
 
 PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
@@ -152,11 +161,6 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
     }
 
     return nullptr;
-}
-
-PyResult SkillMgrBound::Handle_GetSkillQueueAndFreePoints(PyCallArgs &call) {
-    // returns list of skills currently in the skill queue.
-    return call.client->GetChar()->GetSkillQueue();
 }
 
 PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
@@ -221,11 +225,6 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 
     // no return value
     return nullptr;
-}
-
-PyResult SkillMgrBound::Handle_GetRespecInfo( PyCallArgs& call )
-{
-    return m_db.GetRespecInfo(call.client->GetCharacterID());
 }
 
 //13:43:18 L SkillMgrBound::Handle_CharStartTrainingSkillByTypeID(): size= 1, 0 = Integer(3308) <- this is skill#

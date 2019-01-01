@@ -702,7 +702,12 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         //  save gm skill gift in history  -allan
         character->SaveSkillHistory(skillEventGMGive, GetFileTimeNow(), ownerID, skillID, level, newPoints.get_double());
 
-        sLog.White("Command::GiveSkill", "skill %u set to level %u with %" PRIi64 " SP.", skillID, level, newPoints.get_int());
+        OnSkillTrained ost;
+        ost.itemID = skill->itemID();
+        PyTuple* tmp = ost.Encode();
+        pTarget->QueueDestinyEvent(&tmp);
+
+        sLog.White("Command::GiveSkill", "skill %u set to level %u with %lli SP.", skillID, level, newPoints.get_int());
 
         return new PyString ("Skill Gifting Complete");
     } else
