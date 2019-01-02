@@ -381,10 +381,12 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     // add 1 unit of "Clone Grade Alpha"
     ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.stationID, flagClone, 1 );
-    iData.customInfo="active";
     InventoryItemRef cloneRef = sItemFactory.SpawnItem( iData );
-    if (cloneRef.get() == nullptr)
-        codelog(CLIENT__ERROR, "%s: Failed to spawn a starting item", charRef->itemName().c_str());
+    if (cloneRef.get() != nullptr) {
+        char ci[45];
+        snprintf(ci, sizeof(ci), "Active: %s(%u)", charRef->itemName().c_str(), charRef->itemID());
+        cloneRef->SetCustomInfo(ci);
+    }
 
     // give the player their pod
     std::string pod_name = charRef->itemName() + "'s Capsule";

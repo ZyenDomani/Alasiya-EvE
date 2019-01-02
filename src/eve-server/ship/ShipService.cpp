@@ -317,13 +317,9 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
-        call.client->SendNotifyMsg("Internal Server Error - Ref:?????   -undock failed.");
+        call.client->SendNotifyMsg("Internal Server Error - Ref: ServerError xxxxx   -undock failed.");
         return nullptr;
     }
-
-    char ci[35];
-    snprintf(ci, sizeof(ci), "Undocking:%u", pClient->GetLocationID());
-    pShip->SetCustomInfo(ci);
 
     bool ignoreContraband = args.arg2;
 

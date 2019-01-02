@@ -530,8 +530,10 @@ void Client::SetBallPark() {
 }
 
 void Client::WarpIn() {
-	sLog.Blue("Client::WarpIn()", "%s(%u) called WarpIn().  Finish code here.", GetName(), m_char->itemID());
-    m_ship->SetCustomInfo(nullptr);
+    sLog.Blue("Client::WarpIn()", "%s(%u) called WarpIn().  Finish code here.", GetName(), m_char->itemID());
+    char ci[45];
+    snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
+    m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
     SetInvulTimer(ClientTimers::WarpInInvul);
@@ -547,8 +549,8 @@ void Client::WarpIn() {
 
 void Client::WarpOut() {
 	sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
-    char ci[35];
-    snprintf(ci, sizeof(ci), "Logout: %s", GetName());
+    char ci[45];
+    snprintf(ci, sizeof(ci), "Logout: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
     if (!InPod())
         m_ship->SetFlag(flagShipOffline);
@@ -634,11 +636,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
-    char ci[25];
+    char ci[45];
     if (stationID > 0) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         stDataMgr.GetStationData(locationID, m_StationData);
-        snprintf(ci, sizeof(ci), "Docked:%u", locationID);
+        snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
         StationItemRef sRef = sEntityList.GetStationByID(locationID);
         sRef->LoadStationOffice(GetCorporationID());
         sRef->AddGuest(this);
@@ -670,7 +672,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
                 m_char->itemName().c_str(), m_char->itemID(), m_locationID, m_setStateSent ? "true" : "false", m_beyonce ? "true" : "false");
-        snprintf(ci, sizeof(ci), "InSpace:%u", locationID);
+        snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
 
         if (IsFleet(m_fleet)) {
             m_fleetTimer.Start(ClientTimers::FleetTimer);
@@ -761,8 +763,14 @@ void Client::UndockFromStation() {
     m_movePoint = m_StationData.dockOrientation;
 
     m_ship->Undock();
+    /*
+    char ci[35];
+    snprintf(ci, sizeof(ci), "Undocking:%u", m_locationID);
+    m_ship->SetCustomInfo(ci);
+    */
 
     /** @todo  this needs a bit of work to match live....
+     * @update we are really close now.  02Jan19
      *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
      *  GetAllInfo -> GetNPCStandings -> GetFormations -> AddBalls2 (slim, not ball, wait=true)
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
@@ -801,8 +809,8 @@ void Client::UpdateNewShip()
     pShipSE->SetPilot(this);
     pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
 
-    char ci[25];
-    snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
+    char ci[45];
+    snprintf(ci, sizeof(ci), "InSpace: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
     SetSessionTimer();
 }
@@ -842,8 +850,8 @@ void Client::BoardShip(ShipItemRef newShipRef)
         m_ship->Move(m_system->GetID(), flagCapsule, true);
         m_ship->SetCustomInfo(nullptr);
     } else {
-        char ci[25];
-        snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
+        char ci[45];
+        snprintf(ci, sizeof(ci), "Inactive: %s(%u)", GetName(), m_char->itemID());
         m_ship->SetCustomInfo(ci);
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();
@@ -887,8 +895,8 @@ void Client::Eject()
     pShipSE->Abandon();
     m_ship->SetFlag(flagShipOffline);
 
-    char ci[40];
-    snprintf(ci, sizeof(ci), "Abandoned by %s", GetName());
+    char ci[45];
+    snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
 
     pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
@@ -897,7 +905,7 @@ void Client::Eject()
 
     uint32 oldShipID = m_shipId;
     GPoint capsulePosition(pShipSE->GetPosition());
-    capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomFloat(300, 400));
+    capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomInt(300, 400));
     m_pod->Relocate(capsulePosition);
     m_pod->Move(m_locationID, flagCapsule, true);
 
@@ -1103,11 +1111,11 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_moveSystemID = toData.systemID;
     m_movePoint = toData.position;
     m_movePoint.MakeRandomPointOnSphereLayer(7500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
-
+/*
     char ci[25];
     snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
     m_ship->SetCustomInfo(ci);
-
+*/
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     // this is the code for removing pilot from previous system
     StaticData fromData;

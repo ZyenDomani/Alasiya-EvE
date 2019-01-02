@@ -194,7 +194,8 @@ void ShipItem::SetPlayer(Client* pClient) {
     OnlineAll();
 
     // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
-    if (IsSolarSystem(m_locationID))
+    if (IsSolarSystem(m_locationID)) {
+        SetFlag(flagAutoFit);
         if (pClient->IsLogin()) {
             if (sConfig.debug.IsTestServer) {
                 // Heal Ship completely on test server
@@ -207,6 +208,7 @@ void ShipItem::SetPlayer(Client* pClient) {
                 }
             }
         }
+    }
 }
 
 void ShipItem::InitAttribs()
