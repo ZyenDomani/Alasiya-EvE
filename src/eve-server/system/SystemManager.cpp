@@ -1190,7 +1190,7 @@ PyRep* SystemManager::GetCurrentEntities()
     return list;
 }
 
-void SystemManager::GetAllEntities(std::vector< CosmicSignature > vector)
+void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
     for (auto cur : m_ticEntities) {
         CosmicSignature sig;

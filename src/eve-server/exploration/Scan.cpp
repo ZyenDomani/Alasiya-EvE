@@ -91,6 +91,7 @@ void Scan::ProcessScan(bool useProbe/*false*/)
 
 
 PyRep* Scan::ConeScan(Call_ConeScan args) {
+    /** @todo  this needs to use given args to determine objects found... */
     //  WORKING CODE...DONT FUCK WITH THIS!!  -allan 7Dec15
     std::vector<SystemEntity*> vector;
     if (m_client->IsShowall())
@@ -99,11 +100,11 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
         m_client->GetShipSE()->SysBubble()->GetEntities(vector);
     PyList* list = new PyList();
     DirectionScanResult res;
-    for (auto i : vector) {
-        res.id         = i->GetID();
-        res.typeID     = i->GetSelf()->typeID();
-        res.groupID    = i->GetSelf()->groupID();
-        res.categoryID = i->GetSelf()->categoryID();
+    for (auto cur : vector) {
+        res.id         = cur->GetID();
+        res.typeID     = cur->GetSelf()->typeID();
+        res.groupID    = cur->GetSelf()->groupID();
+        res.categoryID = cur->GetSelf()->categoryID();
         list->AddItem(res.Encode());
     }
 
@@ -224,26 +225,26 @@ void Scan::ShipScanResult() {
 
     PyList* resultList = new PyList();
     //. NOTE. cannot scan pos, wrecks, ships, mission sites, or escalations.  they DO have sigIDs, and can get to type (25%), but no farther
+    SystemScanResult ssr;
+    SSR_ObjectEx_Pos ssr_oed;
     for (auto anoms : anom) {
-        SystemScanResult ssr;
-            ssr.typeID = anoms.sigTypeID;
-            ssr.scanGroupID = anoms.scanGroupID;
-            ssr.groupID = anoms.sigGroupID;
-            ssr.strengthAttributeID = anoms.scanAttributeID;
-            ssr.dungeonName = anoms.sigName;
-            ssr.id = anoms.sigID;
-            ssr.deviation = 0;     /* for scan probes */
-            ssr.degraded = false;  /* dunno what this does.  have only seen 'false' in packets */
-            ssr.probeID = new PyInt(m_client->GetShipID());
-            ssr.certainty = 1;
-            ssr.pos = new PyNone();
-        SSR_ObjectEx_Pos ssr_oed;
+        ssr.typeID = anoms.sigTypeID;
+        ssr.scanGroupID = anoms.scanGroupID;
+        ssr.groupID = anoms.sigGroupID;
+        ssr.strengthAttributeID = anoms.scanAttributeID;
+        ssr.dungeonName = anoms.sigName;
+        ssr.id = anoms.sigID;
+        ssr.deviation = 0;     /* for scan probes */
+        ssr.degraded = false;  /* dunno what this does.  have only seen 'false' in packets */
+        ssr.probeID = new PyInt(m_client->GetShipID());
+        ssr.certainty = 1;
+        ssr.pos = new PyNone();
+
+        PyTuple* oed_tuple = new PyTuple(2);
+            oed_tuple->SetItem(0, new PyToken("foo.Vector3"));
             ssr_oed.x = anoms.x;
             ssr_oed.y = anoms.y;
             ssr_oed.z = anoms.z;
-        PyToken* token = new PyToken("foo.Vector3");
-        PyTuple* oed_tuple = new PyTuple(2);
-            oed_tuple->SetItem(0, token);
             oed_tuple->SetItem(1, ssr_oed.Encode());
         ssr.data = new PyObjectEx(false, oed_tuple);  // oed goes here
         resultList->AddItem(ssr.Encode());

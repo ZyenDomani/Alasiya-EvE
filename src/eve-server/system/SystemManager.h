@@ -138,7 +138,7 @@ public:
     // this returns entities in system for display on Groove's Entity Map in client
     PyRep* GetCurrentEntities();
     // this returns entities in system for display on ship scanner when enabled.
-    void GetAllEntities(std::vector<CosmicSignature> vector);
+    void GetAllEntities(std::vector<CosmicSignature>& vector);
 
 protected:
     /** @todo  this needs more work */
