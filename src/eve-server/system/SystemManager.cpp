@@ -1210,7 +1210,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.z = cur.second->z();
         switch (cur.second->GetCategoryID()) {
             case EVEDB::invCategories::Entity: {
-                sig.scanGroupID = Scanning::Group::Scrap;
+                sig.scanGroupID = Scanning::Group::Signature;    // Scrap(1) is invalid in client
             } break;
             case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
                 sig.scanGroupID = Scanning::Group::DroneOrProbe;
@@ -1231,7 +1231,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
             case EVEDB::invCategories::Celestial:
             case EVEDB::invCategories::Asteroid:
             default: {
-                sig.scanGroupID = Scanning::Group::Celestial;
+                sig.scanGroupID = Scanning::Group::Anomaly;  // Celestial(64) is invalid in client
             } break;
         }
         vector.push_back(sig);
