@@ -869,6 +869,14 @@ void Client::Board(Ship* newShipSE)
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
     } else {
+        m_ship->SetFlag(flagShipOffline);
+        char ci[45];
+        snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
+        m_ship->SetCustomInfo(ci);
+        
+        pShipSE->Abandon();
+        pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
+        pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();
     }
@@ -876,7 +884,8 @@ void Client::Board(Ship* newShipSE)
     SetShip(newShipSE->GetShipItemRef());
     pShipSE = newShipSE;
     UpdateNewShip();
-    SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    SendSessionChange();
 }
 
 void Client::Eject()
@@ -901,7 +910,6 @@ void Client::Eject()
 
     pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
     pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
-    // send OnItemsChanged notifications here for abandonded ship
 
     uint32 oldShipID = m_shipId;
     GPoint capsulePosition(pShipSE->GetPosition());
@@ -930,7 +938,8 @@ void Client::Eject()
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    SendSessionChange();
 }
 
 void Client::ResetAfterPopped(GPoint& position)
@@ -965,7 +974,8 @@ void Client::ResetAfterPopped(GPoint& position)
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
+    //SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
+    SendSessionChange();
 }
 
 void Client::ResetAfterPodded() {
