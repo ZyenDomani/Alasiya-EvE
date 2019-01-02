@@ -717,7 +717,7 @@ void ShipItem::Dock() {
 
 void ShipItem::Undock() {
     m_isUndocking = true;
-    
+
     if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
@@ -1097,6 +1097,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         codelog(SHIP__ERROR, "ShipItem::AddItem() - old_flag = flagAutoFit.");
         if (sConfig.debug.IsTestServer)
             EvE::traceStack();
+        flag = flagCargoHold;   //default to cargo (cause this is a ship)
     }
 
     if (!ValidateAddItem(flag, iRef, pClient))
@@ -1108,6 +1109,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             m_ModuleManager->Initialize();
         }
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
+            iRef->ChangeSingleton(false, false);
             m_ModuleManager->LoadCharge(iRef, flag);
             InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
             if (loadedChargeOnModule.get() != nullptr)

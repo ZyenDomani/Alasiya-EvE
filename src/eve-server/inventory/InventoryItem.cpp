@@ -981,21 +981,19 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
 bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_singleton)
         return true;    //nothing to do...
+
     bool old_singleton = m_singleton;
     m_singleton = singleton;
 
-    // must update volume when singleton (packaged state) changes for (mostly) ship items.
-    SetAttribute(AttrVolume, GetPackagedVolume());
-
     SaveItem();
 
-    //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
         changes[ixSingleton] = new PyInt(old_singleton);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
+    // must update volume when singleton (packaged state) changes for (mostly) ship items.
     SetAttribute(AttrVolume, GetPackagedVolume(), notify);
     return true;
 }
