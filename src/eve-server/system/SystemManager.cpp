@@ -1197,8 +1197,6 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         CosmicSignature sig;
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
-        sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-        sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
         sig.sigID = sEntityList.GetAnomalyID();
         sig.sigItemID = cur.first;
         sig.sigName = cur.second->GetName();
@@ -1208,29 +1206,43 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.x = cur.second->x();
         sig.y = cur.second->y();
         sig.z = cur.second->z();
+        // if sigGroupID is anom or sig, use scanAttributeID to determine site type (in client code)
+        // scanGroupID must be one of the 5 groups coded in client (sig, anom, ship, drone, structure)
         switch (cur.second->GetCategoryID()) {
             case EVEDB::invCategories::Entity: {
+                sig.sigGroupID = cur.second->GetGroupID();  //EVEDB::invGroups::Cosmic_Anomaly;
+                sig.scanAttributeID = AttrScanAllStrength;  // Unknown
                 sig.scanGroupID = Scanning::Group::Signature;    // Scrap(1) is invalid in client
             } break;
             case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
+                sig.sigGroupID = cur.second->GetGroupID();
+                sig.scanAttributeID = AttrScanAllStrength;  // Unknown
                 sig.scanGroupID = Scanning::Group::DroneOrProbe;
             } break;
             case EVEDB::invCategories::Orbitals:
             case EVEDB::invCategories::Structure:
             case EVEDB::invCategories::StructureUpgrade:
             case EVEDB::invCategories::SovereigntyStructure: {
+                sig.sigGroupID = cur.second->GetGroupID();
+                sig.scanAttributeID = AttrScanMagnetometricStrength;  // mag Site
                 sig.scanGroupID = Scanning::Group::Structure;
             } break;
             case EVEDB::invCategories::Ship: {
+                sig.sigGroupID = cur.second->GetGroupID();
+                sig.scanAttributeID = AttrScanAllStrength;  // Unknown
                 sig.scanGroupID = Scanning::Group::Ship;
             } break;
             case EVEDB::invCategories::Drone:
             case EVEDB::invCategories::Charge: {    // probes, missiles (at time of scan), and ??
+                sig.sigGroupID = cur.second->GetGroupID();
+                sig.scanAttributeID = AttrScanAllStrength;  // Unknown
                 sig.scanGroupID = Scanning::Group::DroneOrProbe;
             } break;
             case EVEDB::invCategories::Celestial:
             case EVEDB::invCategories::Asteroid:
             default: {
+                sig.sigGroupID = cur.second->GetGroupID();
+                sig.scanAttributeID = AttrScanAllStrength;  // Unknown
                 sig.scanGroupID = Scanning::Group::Anomaly;  // Celestial(64) is invalid in client
             } break;
         }

@@ -41,6 +41,13 @@ namespace Probe {
 }
 
 /*
+EXPLORATION_SITE_TYPES = {attributeScanGravimetricStrength: 'UI/Inflight/Scanner/Gravimetric',
+    attributeScanLadarStrength: 'UI/Inflight/Scanner/Ladar',
+    attributeScanMagnetometricStrength: 'UI/Inflight/Scanner/Magnetometric',
+    attributeScanRadarStrength: 'UI/Inflight/Scanner/Radar',
+    attributeScanAllStrength: 'UI/Common/Unknown'}
+    */
+/*
  *
  probeScanGroupScrap = 1
  probeScanGroupSignatures = 4
