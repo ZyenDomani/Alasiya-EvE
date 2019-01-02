@@ -584,11 +584,6 @@ double Character::GetEndOfTraining() const {
     return 0;
 }
 
-bool Character::InjectSkillIntoBrain( SkillRef skill, uint8 level )
-{
-    return false;
-}
-
 bool Character::InjectSkillIntoBrain(SkillRef skill) {
     if (m_pClient == nullptr)
         return false;

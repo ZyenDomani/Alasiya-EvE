@@ -1014,7 +1014,6 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
         changes[ixOwnerID] = new PyInt(old_owner);
         SendItemChange(old_owner, changes); //changes is consumed
     }
-
 }
 
 void InventoryItem::SaveItem() {

@@ -619,6 +619,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         def ProcessLocationInfo(self, cData):
             for locationID, datas in cData.iteritems():
         --still dont know what 'datas' are
+        ** this has *something* to do with POS 
      */
     rsp->SetItemString("locationInfo", PyStatic.NewNone());
 

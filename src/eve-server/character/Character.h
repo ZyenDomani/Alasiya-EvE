@@ -309,10 +309,7 @@ public:
      * @param InventoryItem
      */
     bool            InjectSkillIntoBrain(SkillRef skill);
-    /*
-     * GM Version, allows level set
-     */
-    bool            InjectSkillIntoBrain(SkillRef skill, uint8 level);
+    
     /* AddSkillToSkillQueue()
      *
      * This will add a skill into the skill queue.
