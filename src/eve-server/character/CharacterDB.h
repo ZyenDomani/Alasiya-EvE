@@ -124,9 +124,9 @@ public:
      */
     bool        GetAttributesFromAncestry(uint32 ancestryID, uint8 &intelligence, uint8 &charisma, uint8 &perception, uint8 &memory, uint8 &willpower);
 
-    bool        GetBaseSkills(std::map<uint32, uint32> &into);
-    bool        GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into);
-    bool        GetSkillsByCareer(uint32 careerID, std::map<uint32, uint32> &into);
+    bool        GetBaseSkills(std::map< uint32, uint8 >& into);
+    bool        GetSkillsByRace(uint32 raceID, std::map< uint32, uint8 >& into);
+    bool        GetSkillsByCareer(uint32 careerID, std::map< uint32, uint8 >& into);
 
     /**
      * Retrieves the character note from the database as a PyString pointer.

@@ -958,7 +958,7 @@ void CharacterDB::SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep
 	}
 }
 
-bool CharacterDB::GetBaseSkills(std::map<uint32, uint32> &into) {
+bool CharacterDB::GetBaseSkills(std::map<uint32, uint8> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT skillTypeID, level FROM sklBaseSkills"))  {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -972,7 +972,7 @@ bool CharacterDB::GetBaseSkills(std::map<uint32, uint32> &into) {
     return true;
 }
 
-bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into) {
+bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint8> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT skillTypeID, level FROM sklRaceSkills WHERE raceID = %u ", raceID)) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -993,7 +993,7 @@ bool CharacterDB::GetSkillsByRace(uint32 raceID, std::map<uint32, uint32> &into)
     return true;
 }
 
-bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint32> &into) {
+bool CharacterDB::GetSkillsByCareer(uint32 careerID, std::map<uint32, uint8> &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT "
