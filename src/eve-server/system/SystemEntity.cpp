@@ -47,19 +47,22 @@
 
 
 SystemEntity::SystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system)
-: m_self(self),
-  m_services(services),
-  m_system(system),
-  m_bubble(nullptr),
-  m_destiny(nullptr),
-  m_targMgr(nullptr)
+:m_self(self),
+m_services(services),
+m_system(system),
+m_bubble(nullptr),
+m_destiny(nullptr),
+m_targMgr(nullptr),
+m_killed(false)
 {
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);
 
-    Abandon();
-
-    m_killed = false;
+    m_warID = -1;
+    m_allyID = -1;
+    m_corpID = 0;
+    m_fleetID = 0;
+    m_ownerID = 0;
 
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
 
