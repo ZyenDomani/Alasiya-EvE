@@ -190,6 +190,9 @@ void EntityList::Process() {
             //sMktBotMgr.Process();  // 15m to 30m
             if (m_updateTimer.Check())  // 15m
                 sConsole.UpdateStatus();
+
+            if (m_minutes % 10 == 0) // ~10m
+                sDatabase.ping();
         }
 
         if (sConfig.debug.UseProfiling)

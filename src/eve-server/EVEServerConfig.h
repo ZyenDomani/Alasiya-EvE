@@ -206,6 +206,7 @@ public:
         bool useSocket;
         bool autoReconnect;
         uint dbTimeout;
+        uint8 pingTime;
     } database;
 
     // From <files/>

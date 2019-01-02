@@ -233,6 +233,7 @@
         <useSocket>true</useSocket><!-- bool  use socket connection instead of port (MUST be local) -->
         <autoReconnect>false</autoReconnect><!-- bool  enable auto Reconnect on lost connection  not sure if this works right.  leave off for now. -->
         <dbTimeout>2</dbTimeout><!--  timeout value for db response, in seconds  default: 2s  **NOT USED** -->
+        <pingTime>10</pingTime><!-- minutes  ping db every x minutes  default: 10m  **NOT USED**  hard-coded to 10m -->
     </database>
 
     <files>
