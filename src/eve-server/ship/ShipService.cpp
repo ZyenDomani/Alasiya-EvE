@@ -171,7 +171,13 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return nullptr;
     }
 
+    Ship* oldShipSE = pClient->GetShipSE();
     pClient->Board(shipSE);
+    // if boarding from pod, delete pod (RP - pilot's pod is inserted into ship)
+    if (oldShipSE->GetTypeID() == itemTypeCapsule) {
+        pSystem->RemoveEntity(oldShipSE);
+        SafeDelete(oldShipSE);
+    }
 
     /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp

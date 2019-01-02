@@ -860,7 +860,6 @@ void Client::Board(Ship* newShipSE)
     if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
-        DestroyShipSE();
     } else {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();
