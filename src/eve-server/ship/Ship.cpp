@@ -716,6 +716,7 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
+    m_isDocking = false;
     m_isUndocking = true;
 
     if (m_ModuleManager == nullptr) {
