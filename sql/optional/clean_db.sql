@@ -22,6 +22,7 @@ DELETE FROM `cacheOwners` WHERE 1;
 DELETE FROM `channelChars` WHERE 1;
 DELETE FROM `channelMods` WHERE 1;
 DELETE FROM `channels` WHERE 1;
+DELETE FROM `chrCertificates` WHERE 1;
 DELETE FROM `chrCharacters` WHERE 1;
 ALTER TABLE `chrCharacters` auto_increment = 90000000;
 DELETE FROM `chrCharacterAttributes` WHERE 1;

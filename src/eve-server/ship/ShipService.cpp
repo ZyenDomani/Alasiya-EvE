@@ -291,6 +291,17 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 }
 
 PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
+
+    //ShipIllegalTypeUndock
+
+    /*  we could have some fun with these....
+     * (258696, `Undock Delayed`)
+     * (258702, `Undock Prohibited`)
+     * (258700, `Undock Delayed`)
+     * (258703, `Officials have closed the undocking ramps in {system} due to heavy congestion. Please try again later.`)
+     * (258697, `{system} Traffic Control is currently offline and unable to process your undocking request. Please try again in a moment.`)
+     */
+    
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());

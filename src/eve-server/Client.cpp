@@ -261,7 +261,7 @@ bool Client::SelectCharacter(uint32 char_id) {
     MoveToLocation(m_locationID, pos);
 
     if (IsSolarSystem(m_locationID)) {
-        m_invulTimer.Start(ClientTimers::WarpInInvul);
+        SetInvulTimer(ClientTimers::WarpInInvul);
         WarpIn();
     } else {
         //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
@@ -519,10 +519,8 @@ void Client::SetBallPark() {
     m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock) {
-        m_ship->Undock();
+    if (m_clientState == ClientState::csUndock)
         pShipSE->DestinyMgr()->Undock(m_movePoint);
-    }
     if (m_clientState == ClientState::csJump)
         pShipSE->DestinyMgr()->Jump();
     if (!m_setStateSent)
@@ -533,12 +531,10 @@ void Client::SetBallPark() {
 
 void Client::WarpIn() {
 	sLog.Blue("Client::WarpIn()", "%s(%u) called WarpIn().  Finish code here.", GetName(), m_char->itemID());
-    char ci[1];
-    snprintf(ci, sizeof(ci), "");
-    m_ship->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(nullptr);
     if (!InPod())
         m_ship->SetFlag(flagAutoFit);
-    m_invulTimer.Start(ClientTimers::WarpInInvul);
+    SetInvulTimer(ClientTimers::WarpInInvul);
     return;
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
     /** @todo  when implemented, make sure we move the ship item, if needed....check this  */
@@ -559,7 +555,7 @@ void Client::WarpOut() {
     pShipSE->SetPosition(m_ship->position());
     DestroyShipSE();
     return;
-    m_invulTimer.Start(ClientTimers::WarpOutInvul);
+    SetInvulTimer(ClientTimers::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
     warpToPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
@@ -758,14 +754,13 @@ void Client::UndockFromStation() {
         mts->CancelTrade(this);
     }
 
-    //ShipIllegalTypeUndock
-
     m_invul = true;
     m_undock = true;
     //set position and direction of docking ramp for later use
     m_dockPoint = m_StationData.dockPosition;
     m_movePoint = m_StationData.dockOrientation;
-    m_ship->SetUndocking(true);
+
+    m_ship->Undock();
 
     /** @todo  this needs a bit of work to match live....
      *  Undock Request -> GetCriminalTimeStamps -> Undock -> OnItemsChanged (Undocking:xxxxxxxx) -> OnCharNoLongerInStation ->
@@ -775,9 +770,9 @@ void Client::UndockFromStation() {
      */
     sEntityList.GetStationByID(m_StationData.stationID)->RemoveGuest(this);
     OnCharNoLongerInStation();
-    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer +800);
+    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
-    m_invulTimer.Start(ClientTimers::UndockInvul);
+    SetInvulTimer(ClientTimers::UndockInvul);
     SetSessionTimer();
 }
 
@@ -838,7 +833,8 @@ void Client::CheckShipRef(ShipItemRef newShipRef)
     }
 }
 
-void Client::BoardShip(ShipItemRef newShipRef) {
+void Client::BoardShip(ShipItemRef newShipRef)
+{
     CheckShipRef(newShipRef);
 
     if (m_login) {
@@ -846,16 +842,16 @@ void Client::BoardShip(ShipItemRef newShipRef) {
     } else if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
+        m_ship->SetCustomInfo(nullptr);
     } else {
+        char ci[25];
+        snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
+        m_ship->SetCustomInfo(ci);
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();
     }
 
     SetShip(newShipRef, true);
-
-    char ci[25];
-    snprintf(ci, sizeof(ci), "Docked:%u", m_locationID);
-    m_ship->SetCustomInfo(ci);
     SetSessionTimer();
 }
 
@@ -1068,10 +1064,14 @@ ShipItemRef Client::SpawnNewRookieShip() {
         sRef->ChangeSingleton(true);
         sRef->Move(m_char->stationID(), flagHangar);
     }
-    if (mRef.get() != nullptr)
+    if (mRef.get() != nullptr) {
+        mRef->ChangeSingleton(true);
         mRef->Move(sRef->itemID(), flagHiSlot0);
-    if (wRef.get() != nullptr)
+    }
+    if (wRef.get() != nullptr) {
+        wRef->ChangeSingleton(true);
         wRef->Move(sRef->itemID(), flagHiSlot1);
+    }
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);
     // in case caller needs ref to new noob ship
@@ -1166,36 +1166,6 @@ void Client::ExecuteJump() {
     m_jumpTimer.Start(ClientTimers::JumpTimer);
 
     m_movePoint = NULL_ORIGIN;
-    /*
-(67187, `{[location]system.name} Traffic Control: your jump-in clearance has expired.`)
-(67191, `{[location]system.name} Traffic Control: you have been cleared for jump-in within {[timeinterval]expiration.writtenForm, from=second, to=second}.`)
-(67210, `{[location]system.name} Traffic Control: you are at position {[numeric]pos} in queue for jump-in.`)
-(258673, `{system} is currently loading. Bizzarre, seeing that you're there already... Please try again in a minute or two.`)
-(258674, `The stargates in {system} are currently experiencing minor technical difficulties. Please try again in a moment.`)
-(258675, `Jump Prohibited`)
-(258676, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to enjoy the local scenery.`)
-(258677, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. Please try again in a moment.`)
-(258678, `{system} Traffic Control is currently offline and unable to process your jump request. Please try again in a moment.`)
-(258679, `{system} Traffic Control is currently experiencing heavy load and is unable to process your request. You are #{[numeric]position} in queue for jump-in.`)
-(258680, `Jump Prohibited`)
-(258681, `Officials have closed the stargates in {system} due to heavy congestion. Travelers are advised to seek alternate routes.`)
-(258683, `Your character is located within {system}, which is currently loading. Please try again in a moment.`)
-(258685, `Your character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
-(258687, `Your character is located within {system}, which has reached maximum capacity. You are #{[numeric]position} in queue for entrance. Please try again in a moment.`)
-(258689, `Your character is located within {system}, which is currently stuck. Please select a different character or try later.`)
-(258691, `The character is located within {system}, which is currently loading. Please try again in a moment.`)
-(258693, `The character is located within {system}, which is currently experiencing heavy load. Please try again in a moment.`)
-(258695, `The character is located within {system}, which is currently stuck. Please try again later.`)
-(258696, `Undock Delayed`)
-(258697, `{system} Traffic Control is currently offline and unable to process your undocking request. Please try again in a moment.`)
-(258699, `The item <b>{example}</b> was not found in the station <b>{[location]station.name}</b>. Please make sure all items are in the correct hangar before finalizing this contract.`)
-(258700, `Undock Delayed`)
-(258701, `{system} Traffic Control is currently experiencing heavy load and was unable to process your request. Please try again in a moment.`)
-(258702, `Undock Prohibited`)
-(258703, `Officials have closed the undocking ramps in {system} due to heavy congestion. Please try again later.`)
-(258704, `You cannot leave {system} yet because of instability in the space-time continuum. Please try again in a moment.`)
-
-*/
 }
 
 void Client::SetJumpTimers() {
@@ -1203,7 +1173,13 @@ void Client::SetJumpTimers() {
     m_invulTimer.Start(ClientTimers::JumpInvul);
 }
 
-void Client::SetClientTimer(ClientState state, uint32 time)
+void Client::SetInvulTimer(uint32 time/*ClientTimers::DefaultTimer*/)
+{
+    _log(CLIENT__TIMER, "%s: InvulTimer set at %ums.  timenow %u", m_char->itemName().c_str(), time, m_stateTimer.GetCurrentTime());
+    m_invulTimer.Start(time);
+}
+
+void Client::SetClientTimer(ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
 {
     _log(CLIENT__TIMER, "%s: ClientTimer set from %s to %s at %ums.  timenow %u", m_char->itemName().c_str(), GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;

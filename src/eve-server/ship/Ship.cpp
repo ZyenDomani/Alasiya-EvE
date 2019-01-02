@@ -89,7 +89,7 @@ ShipItemRef ShipItem::Spawn( ItemData &data) {
 
     ShipItemRef sShipRef = ShipItem::Load( shipID );
 
-    InitAttribs();
+    sShipRef->InitAttribs();
 
     return sShipRef;
 }
@@ -716,6 +716,8 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
+    m_isUndocking = true;
+    
     if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
