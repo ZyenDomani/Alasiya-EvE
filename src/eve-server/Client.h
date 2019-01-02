@@ -197,7 +197,7 @@ public:
     // ship functions
     void SetPodItem();
     void CreateShipSE();
-    void SetShip(ShipItemRef shipRef, bool setPlayer=false);
+    void SetShip(ShipItemRef shipRef);
     void CreateNewPod();
     void UndockFromStation();
     void DockToStation();
@@ -205,7 +205,7 @@ public:
     void ResetAfterPodded();
     void ResetAfterPopped(GPoint& position);  //  delete killed ship, reset player to pod, add pod to system
     void Eject();       // only called in space
-    void Board(ShipItemRef newShipRef); // only called when in space
+    void Board(Ship* newShipSE); // only called when in space
     void BoardShip(ShipItemRef newShipRef); // only called when docked
 private:
     void UpdateNewShip();     //  calls destiny update methods

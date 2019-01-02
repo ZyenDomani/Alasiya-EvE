@@ -851,13 +851,13 @@ void Client::BoardShip(ShipItemRef newShipRef)
         m_ship->SaveShip();
     }
 
-    SetShip(newShipRef, true);
+    SetShip(newShipRef);
     SetSessionTimer();
 }
 
-void Client::Board(ShipItemRef newShipRef)
+void Client::Board(Ship* newShipSE)
 {
-    CheckShipRef(newShipRef);
+    CheckShipRef(newShipSE->GetShipItemRef());
 
     if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
@@ -867,9 +867,9 @@ void Client::Board(ShipItemRef newShipRef)
         m_ship->SaveShip();
     }
 
-    SetShip(newShipRef, true);
+    SetShip(newShipSE->GetShipItemRef());
+    pShipSE = newShipSE;
     UpdateNewShip();
-
     SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
 }
 
@@ -901,20 +901,14 @@ void Client::Eject()
     GPoint capsulePosition(pShipSE->GetPosition());
     capsulePosition.MakeRandomPointOnSphere(m_ship->radius() + m_pod->radius() + MakeRandomFloat(300, 400));
     m_pod->Relocate(capsulePosition);
-    SetShip(m_pod);
+    m_pod->Move(m_locationID, flagCapsule, true);
 
-    m_ship->ChangeOwner(m_char->itemID());
-    m_ship->Move(m_locationID, flagCapsule, true);
-    Ship* oldShipSE = pShipSE;  // copy pShipSE
-
-    //  set shipSE to null.  this allows sending AddBalls when pod added to system
-    pShipSE = nullptr;
     FactionData data;
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
-    Ship* newShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system, data);
+    Ship* newShipSE = new Ship(m_pod, *(m_system->GetServiceMgr()), m_system, data);
 
     if (newShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s Eject() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
@@ -923,14 +917,13 @@ void Client::Eject()
         throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
     }
 
-    newShipSE->SetLauncherID(oldShipSE->GetID());
+    newShipSE->SetLauncherID(pShipSE->GetID());
+    //  set shipSE to null.  this allows sending AddBalls when pod added to system
+    SetShip(m_pod);
     m_system->AddEntity(newShipSE);
-
     pShipSE = newShipSE;
-    m_char->Move(m_shipId, flagPilot, true);
 
     UpdateNewShip();
-
     SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
 }
 
@@ -939,24 +932,17 @@ void Client::ResetAfterPopped(GPoint& position)
     m_autoPilot = false;
     m_bubbleWait = false;    // allow client processing of subsquent destiny msgs
 
-    pShipSE->DestinyMgr()->Stop();
-
     if (m_pod.get() == nullptr)
         CreateNewPod();
 
-    Ship* oldShipSE = pShipSE;  // copy pShipSE
-
     m_pod->Relocate(position);
-    SetShip(m_pod);
 
-    //  set shipSE to null.  this allows sending AddBalls when pod added to system
-    pShipSE = nullptr;
     FactionData data;
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
         data.ownerID = GetCharacterID();
-    Ship* newShipSE = new Ship(m_ship, *(m_system->GetServiceMgr()), m_system, data);
+    Ship* newShipSE = new Ship(m_pod, *(m_system->GetServiceMgr()), m_system, data);
 
     if (newShipSE == nullptr) {
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
@@ -966,17 +952,14 @@ void Client::ResetAfterPopped(GPoint& position)
         throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
     }
 
-    newShipSE->SetLauncherID(oldShipSE->GetID());
+    pShipSE->DestinyMgr()->Stop();
+    newShipSE->SetLauncherID(pShipSE->GetID());
+    SetShip(m_pod);
     m_system->AddEntity(newShipSE);
-
     pShipSE = newShipSE;
 
     UpdateNewShip();
-
-    // update shipID in session
-    UpdateSessionInt("shipid", m_shipId);
     SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
-    //SendSessionChange();
 }
 
 void Client::ResetAfterPodded() {
@@ -991,7 +974,7 @@ void Client::ResetAfterPodded() {
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
     SpawnNewRookieShip();
     CreateNewPod();
-    SetShip(m_system->GetShipFromInventory(m_char->capsuleID()), true);
+    SetShip(m_pod);
 
     m_ship->SaveShip();
     m_char->ResetClone();
@@ -1001,11 +984,12 @@ void Client::ResetAfterPodded() {
     SendSessionChange();
 }
 
-void Client::SetShip(ShipItemRef shipRef, bool setPlayer/*false*/) {
+void Client::SetShip(ShipItemRef shipRef) {
     // this should throw if ship isnt assembled (singleton=0)
     if (!shipRef->singleton())
         shipRef->ChangeSingleton(true, true);
 
+    shipRef->ChangeOwner(m_char->itemID());
     pShipSE = nullptr;
     m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
     m_ship = shipRef;
@@ -1015,8 +999,8 @@ void Client::SetShip(ShipItemRef shipRef, bool setPlayer/*false*/) {
         m_char->Move(m_shipId, flagPilot, true);
         UpdateSessionInt("shipid", m_shipId);   // update shipID in session
     }
-    if (setPlayer)
-        m_ship->SetPlayer(this);
+
+    m_ship->SetPlayer(this);
 }
 
 void Client::PickAlternateShip() {

@@ -151,29 +151,27 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    ShipItemRef newShipRef = pSystem->GetShipFromInventory(args.newShipID);
-    if (newShipRef.get() == nullptr)
-        newShipRef = sItemFactory.GetShip(args.newShipID);
+    Ship* shipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
 
-    if (newShipRef.get() == nullptr) {
+    if (shipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 25107."));
         return nullptr;
     }
 
-    if (newShipRef->typeID() == itemTypeCapsule) {
+    if (shipSE->GetTypeID() == itemTypeCapsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSystem->GetID());
         throw PyException(MakeCustomError("You already have a pod.  These cannot be boarded manally."));
         return nullptr;
     }
 
-    if (!newShipRef->ValidateBoardShip(pClient->GetChar())) {
+    if (!shipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar())) {
         // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
-        throw PyException(MakeCustomError("You do not have the skills to fly a %s.", newShipRef->itemName().c_str()));
+        throw PyException(MakeCustomError("You do not have the skills to fly a %s.", shipSE->GetName()));
         return nullptr;
     }
 
-    pClient->Board(newShipRef);
+    pClient->Board(shipSE);
 
     /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
@@ -301,7 +299,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
      * (258703, `Officials have closed the undocking ramps in {system} due to heavy congestion. Please try again later.`)
      * (258697, `{system} Traffic Control is currently offline and unable to process your undocking request. Please try again in a moment.`)
      */
-    
+
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
