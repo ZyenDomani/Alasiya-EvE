@@ -223,10 +223,10 @@ void DBcore::ping()
 bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     MutexLock lock(MDatabase);
 
-    char query[1024];
+    char query[4096];
     va_list vlist;
     va_start(vlist, query_fmt);
-    int querylen = std::vsnprintf(query, 1024, query_fmt, vlist);
+    int querylen = std::vsnprintf(query, 4096, query_fmt, vlist);
     va_end(vlist);
 
     if (!DoQuery_locked(into.error, query, querylen))

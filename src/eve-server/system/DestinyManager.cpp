@@ -2554,14 +2554,13 @@ void DestinyManager::MakeMissile(Missile* pMissile) {
 void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     std::vector<PyTuple*> updates;
     SetShipCapabilities(newShipRef);
-
     SendBallInteractive(newShipRef, true);
 
     Client* pClient = mySE->GetPilot();
     PyDict* slim = new PyDict();
+        slim->SetItemString("name",             new PyString(newShipRef->itemName()));
         slim->SetItemString("itemID",           new PyInt(newShipRef->itemID()));
         slim->SetItemString("typeID",           new PyInt(newShipRef->typeID()));
-        slim->SetItemString("categoryID",       new PyInt(newShipRef->categoryID()));
         slim->SetItemString("ownerID",          new PyInt(pClient->GetCharacterID()));
         slim->SetItemString("charID",           new PyInt(pClient->GetCharacterID()));
         slim->SetItemString("corpID",           new PyInt(pClient->GetCorporationID()));
@@ -2569,12 +2568,17 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         slim->SetItemString("warFactionID",     new PyInt(pClient->GetWarFactionID()));
         slim->SetItemString("bounty",           new PyFloat(pClient->GetBounty()));
         slim->SetItemString("securityStatus",   new PyFloat(pClient->GetSecurityRating()));
+    if (newShipRef->typeID() == itemTypeCapsule) {
+        slim->SetItemString("launcherID",       new PyInt(mySE->GetShipSE()->GetLauncherID()));
+    } else {
+        slim->SetItemString("categoryID",       new PyInt(newShipRef->categoryID()));
+        slim->SetItemString("groupID",          new PyInt(newShipRef->groupID()));
+    }
     if (newShipRef->typeID() == EVEDB::invTypes::typeCapsule)
         slim->SetItemString("modules",          new PyList());
-    else {
-        PyList* moduleList = newShipRef->ShipGetModuleList();
-        slim->SetItemString("modules",          moduleList);
-    }
+    else
+        slim->SetItemString("modules",          newShipRef->ShipGetModuleList());
+
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0, new PyLong(newShipRef->itemID()));
         shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
@@ -2582,22 +2586,18 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         shipItem->SetItem(0, new PyString("OnSlimItemChange"));
         shipItem->SetItem(1, shipData);
     updates.push_back(shipItem);
-
-     SetBallAgility sbagility;
+    SetBallAgility sbagility;
         sbagility.entityID = newShipRef->itemID();
         sbagility.agility = m_shipAgility;
     updates.push_back(sbagility.Encode());
-
-     SetBallMass sbmass;
+    SetBallMass sbmass;
         sbmass.entityID = newShipRef->itemID();
         sbmass.mass = m_mass;
     updates.push_back(sbmass.Encode());
-
     SetBallSpeed ms;
         ms.entityID = newShipRef->itemID();
         ms.speed = m_maxSpeed;
     updates.push_back(ms.Encode());
-
     SendDestinyUpdate(updates);
 }
 
@@ -2607,7 +2607,7 @@ void DestinyManager::UpdateOldShip(const ShipItemRef oldShipRef)
         slimPod->SetItemString("itemID",           new PyInt(oldShipRef->itemID()));
         slimPod->SetItemString("typeID",           new PyInt(oldShipRef->typeID()));
         slimPod->SetItemString("categoryID",       new PyInt(oldShipRef->categoryID()));
-        slimPod->SetItemString("ownerID",          new PyInt(0));
+        slimPod->SetItemString("ownerID",          new PyInt(1));
         slimPod->SetItemString("charID",           new PyInt(0));
         slimPod->SetItemString("corpID",           new PyInt(0));
         slimPod->SetItemString("allianceID",       new PyInt(0));

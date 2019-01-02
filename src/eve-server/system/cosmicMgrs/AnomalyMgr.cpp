@@ -440,7 +440,47 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
      *    }
      * }
      */
-
+        //  WIP....
+    CosmicSignature sig;
+    sig.dungeonType = Dungeon::Type::Anomaly;
+    sig.ownerID = iRef->ownerID();
+    sig.scanAttributeID = AttrScanAllStrength;  // Unknown
+    sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+    sig.sigID = sEntityList.GetAnomalyID();
+    sig.sigItemID = iRef->itemID();
+    sig.sigName = iRef->itemName();
+    sig.sigStrength = 100.0;    // determine how to calculate this
+    sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+    sig.systemID = m_system->GetID();
+    sig.x = iRef->position().x;
+    sig.y = iRef->position().y;
+    sig.z = iRef->position().z;
+    switch (iRef->categoryID()) {
+        case EVEDB::invCategories::Entity: {
+            sig.scanGroupID = Scanning::Group::Scrap;
+        } break;
+        case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
+            sig.scanGroupID = Scanning::Group::DroneOrProbe;
+        } break;
+        case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::StructureUpgrade:
+        case EVEDB::invCategories::SovereigntyStructure: {
+            sig.scanGroupID = Scanning::Group::Structure;
+        } break;
+        case EVEDB::invCategories::Ship: {
+            sig.scanGroupID = Scanning::Group::Ship;
+        } break;
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Charge: {    // probes, missiles (at time of scan), and ??
+            sig.scanGroupID = Scanning::Group::DroneOrProbe;
+        } break;
+        case EVEDB::invCategories::Celestial:
+        case EVEDB::invCategories::Asteroid:
+        default: {
+            sig.scanGroupID = Scanning::Group::Celestial;
+        } break;
+    }
 }
 
 void AnomalyMgr::GetSignatureList(std::vector<CosmicSignature>& sig)

@@ -799,9 +799,7 @@ void Client::DestroyShipSE() {
 void Client::UpdateNewShip()
 {
     pShipSE->SetPilot(this);
-    pShipSE->DestinyMgr()->SetShipCapabilities(m_ship);
     pShipSE->DestinyMgr()->UpdateNewShip(m_ship);
-    pShipSE->DestinyMgr()->SendBallInteractive(m_ship, true);
 
     char ci[25];
     snprintf(ci, sizeof(ci), "InSpace:%u", m_locationID);
@@ -862,6 +860,7 @@ void Client::Board(Ship* newShipSE)
     if (m_ship->typeID() == itemTypeCapsule) {
         m_ship->Relocate(NULL_ORIGIN);
         m_ship->Move(m_system->GetID(), flagCapsule, true);
+        DestroyShipSE();
     } else {
         m_ship->GetModuleManager()->CharacterLeavingShip();
         m_ship->SaveShip();

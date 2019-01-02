@@ -1192,6 +1192,7 @@ PyRep* SystemManager::GetCurrentEntities()
 
 void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
+    /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     for (auto cur : m_ticEntities) {
         CosmicSignature sig;
         sig.dungeonType = Dungeon::Type::Anomaly;
