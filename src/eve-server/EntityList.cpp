@@ -191,8 +191,8 @@ void EntityList::Process() {
             if (m_updateTimer.Check())  // 15m
                 sConsole.UpdateStatus();
 
-            if (m_minutes % 10 == 0) // ~10m
-                sDatabase.ping();
+            //if (m_minutes % 10 == 0) // ~10m
+            //    sDatabase.ping();
         }
 
         if (sConfig.debug.UseProfiling)
