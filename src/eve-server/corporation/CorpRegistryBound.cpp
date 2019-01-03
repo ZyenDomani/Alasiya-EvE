@@ -488,17 +488,17 @@ PyResult CorpRegistryBound::Handle_GetMembersByIds(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
-
+    Client* pClient(call.client);
     Call_AddCorporation args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
         return nullptr;
     }
     //CorpTickerNameInvalidTaken
 
     double corp_cost = sConfig.rates.corpCost;
-    if (call.client->GetBalance(Account::CreditType::ISK) < corp_cost) {
-        _log(SERVICE__ERROR, "%s: Cannot afford corporation startup costs!", call.client->GetName());
+    if (pClient->GetBalance(Account::CreditType::ISK) < corp_cost) {
+        _log(SERVICE__ERROR, "%s: Cannot afford corporation startup costs!", pClient->GetName());
         return nullptr;
     }
 
@@ -509,7 +509,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
 
     // Register new corp
     uint32 corpID = 0;
-    if (!m_db.AddCorporation(args, call.client, corpID)) {
+    if (!m_db.AddCorporation(args, pClient, corpID)) {
         codelog(SERVICE__ERROR, "New corporation creation failed.");
         return nullptr;
     }
@@ -523,16 +523,19 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     reason += args.corpTicker;
     reason += ")";
     AccountService::TranserFunds(
-                                call.client->GetCharacterID(),
-                                m_db.GetStationOwner(call.client->GetStationID()),  // station owner files paperwork, this is fee for that
+                                pClient->GetCharacterID(),
+                                m_db.GetStationOwner(pClient->GetStationID()),  // station owner files paperwork, this is fee for that
                                 corp_cost,
                                 reason.c_str(),
                                 Journal::EntryType::CorporationRegistrationFee,
-                                call.client->GetStationID(),
+                                pClient->GetStationID(),
                                 Account::KeyType::Cash);
 
     // add corp event for creating new corp
-    m_db.AddItemEvent(corpID, call.client->GetCharacterID(), Corp::EventType::CreatedCorporation);
+    m_db.AddItemEvent(corpID, pClient->GetCharacterID(), Corp::EventType::CreatedCorporation);
+
+    // create corp channel
+    m_manager->lsc_service->CreateSystemChannel(corpID);
 
     CorpData data;
         data.name = args.corpName;
@@ -540,8 +543,8 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.taxRate = args.taxRate;
         data.allianceID = 0;
         data.warFactionID = 0;
-        data.baseID = call.client->GetLocationID();
-        data.corpHQ = call.client->GetLocationID();
+        data.baseID = pClient->GetLocationID();
+        data.corpHQ = pClient->GetLocationID();
         data.corporationID = corpID;
         data.corpAccountKey = Account::KeyType::Cash;
         data.corpRole = Corp::Role::Admin;
@@ -554,7 +557,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         data.grantableRolesAtHQ = Corp::Role::Admin;
         data.grantableRolesAtOther = Corp::Role::Admin;
     // update corp data and refresh session data.
-    call.client->GetChar()->JoinCorporation(data);
+    pClient->GetChar()->JoinCorporation(data);
 
     // Here we send a notification about creating a new corporation...
     OnCorporationChanged cc;
@@ -562,16 +565,16 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     if (!m_db.CreateCorporationCreatePacket(cc, m_corpID, corpID)) {
         codelog(SERVICE__ERROR, "Failed to create OnCorpChanged notification stream.");
         // This is a big problem, because this way we won't be able to see the difference...
-        call.client->SendErrorMsg("Unable to notify about corp creation.");
+        pClient->SendErrorMsg("Unable to notify about corp creation.");
         return nullptr;
     }
     PyTuple* a1 = cc.Encode();
     PyIncRef(a1);
     // send single to client
-    call.client->SendNotification("OnCorporationChanged", "clientID", &a1);
+    pClient->SendNotification("OnCorporationChanged", "clientID", &a1);
     // send multi to station guests
     PyIncRef(a1);
-    sEntityList.Multicast("OnCorporationChanged", "stationid", &a1, NOTIF_DEST__LOCATION, call.client->GetLocationID());
+    sEntityList.Multicast("OnCorporationChanged", "stationid", &a1, NOTIF_DEST__LOCATION, pClient->GetLocationID());
 
     return m_db.GetCorporations(corpID);
 }
