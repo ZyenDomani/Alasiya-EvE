@@ -211,6 +211,7 @@ void Scan::SystemScanStarted(uint16 duration)
         ossst.duration = duration;
         ossst.scanProbesDict = probeDict;
     PyTuple* ev = ossst.Encode();
+    ev->Dump(SCAN__DUMP, "p-    ");
     m_client->SendNotification("OnSystemScanStarted", "charid", &ev, false);
 }
 
@@ -257,6 +258,7 @@ void Scan::ShipScanResult() {
         osss.systemScanResult = resultList;
         osss.absentTargets = mtList;
     PyTuple* ev = osss.Encode();
+    ev->Dump(SCAN__DUMP, "    ");
     m_client->SendNotification("OnSystemScanStopped", "charid", &ev);
 }
 
