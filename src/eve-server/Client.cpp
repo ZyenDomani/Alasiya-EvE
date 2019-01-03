@@ -507,7 +507,7 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
             pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), false);
     } else
         pShipSE->DestinyMgr()->SetPosition(pt, false);
-    
+
     if (count and !m_login)
         pShipSE->ResetShipSystemMgr(m_system);
     if (m_beyonce)
@@ -639,8 +639,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
+    m_ship->Relocate(pt);
+    
     char ci[45];
-    if (stationID > 0) {
+    if (IsStation(stationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         stDataMgr.GetStationData(locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
@@ -706,7 +708,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             pShipSE->DestinyMgr()->Stop();
     }
 
-    m_ship->Relocate(pt);
     m_ship->SetCustomInfo(ci);
     m_ship->SaveShip();
 
