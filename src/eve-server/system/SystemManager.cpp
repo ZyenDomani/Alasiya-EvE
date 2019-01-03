@@ -261,6 +261,7 @@ void SystemManager::UnloadSystem() {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         }
+        sItemFactory.RemoveItem(itr->first);
 
         pSE = itr->second;
         itr = m_entities.erase(itr);
@@ -282,7 +283,7 @@ void SystemManager::UnloadSystem() {
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
     }
-    
+
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
 

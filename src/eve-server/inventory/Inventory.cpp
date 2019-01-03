@@ -63,12 +63,12 @@ void Inventory::Unload()
         return;
 
     //  save contents on the off-chance they have changed, but not on shutdown. (saved in ItemFactory::Close())
-    std::vector<SaveData> items;
-    items.clear();
-    std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin(), end = mContents.end();
-    while (itr != end) {
-        if (!sConsole.IsShutdown())
-            if (IsPlayerItem(itr->first)) {   // only save player items
+    if (!sConsole.IsShutdown()) {
+        std::vector<SaveData> items;
+        items.clear();
+        std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin(), end = mContents.end();
+        while (itr != end) {
+            if (IsPlayerItem(itr->first) and (itr->second->flag() != flagSkill)) {   // only save player items (except skills - saved in Character::SaveAll())
                 SaveData data;
                     data.itemID = itr->first;
                     data.contraband = itr->second->contraband();
@@ -82,12 +82,12 @@ void Inventory::Unload()
                     data.customInfo = itr->second->customInfo();
                 items.push_back(data);
             }
-        sItemFactory.RemoveItem(itr->first);
-        itr = mContents.erase(itr);
-    }
+            sItemFactory.RemoveItem(itr->first);
+            itr = mContents.erase(itr);
+        }
 
-    if (!sConsole.IsShutdown())
         m_db.SaveItems(items);
+    }
     mContents.clear();
     mContentsLoaded = false;
 }
