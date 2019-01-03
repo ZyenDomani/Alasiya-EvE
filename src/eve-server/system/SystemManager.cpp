@@ -243,7 +243,7 @@ void SystemManager::UnloadSystem() {
     // close anomaly mgr, which saves and removes sigs from system
     m_anomMgr->Close();
 
-    // testing this shit....still have some items not being removed correctly  26Dec18
+    // remove dynamics
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
@@ -267,10 +267,26 @@ void SystemManager::UnloadSystem() {
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
     }
+
+    // remove statics
+    itr = m_staticEntities.begin();
+    while (itr != m_staticEntities.end()) {
+        if ((itr->first == 0) or (itr->second == nullptr)) {
+            itr = m_staticEntities.erase(itr);
+            continue;
+        }
+        sItemFactory.RemoveItem(itr->first);
+
+        pSE = itr->second;
+        itr = m_staticEntities.erase(itr);
+        sBubbleMgr.Remove(pSE);
+        SafeDelete(pSE);
+    }
+    
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
 
-    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - left in maps: %u npcs, %u entities.", m_npcs.size(), m_entities.size());
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - left in maps: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
     m_npcs.clear();
     // at this point, system entity list should be clear...but just in case, hit it again
