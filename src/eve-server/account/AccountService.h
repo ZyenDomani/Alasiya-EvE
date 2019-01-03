@@ -34,7 +34,7 @@ class AccountService
 : public PyService {
 public:
     AccountService(PyServiceMgr *mgr);
-    virtual ~AccountService();
+    ~AccountService();
 
     // this moves currency and adds journal entries. will also handle corp taxes internally
     static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", uint8 entryTypeID = Journal::EntryType::Undefined,\

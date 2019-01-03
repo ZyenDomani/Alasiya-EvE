@@ -225,7 +225,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
     if (IsCharacter(fromID)) {
         pClientFrom = sEntityList.FindClientByCharID(fromID);
         if (pClientFrom == nullptr) {
-            // sender is offline. xfer funds thru db
+            // sender is offline. xfer funds thru db....is this possible?  sending funds while offline??
             newBalanceFrom = AccountDB::OfflineFundXfer(fromID, -amount, fromCurrency);
         } else {
             // this will throw if it fails
@@ -259,6 +259,7 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         AccountDB::AddJournalEntry(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, newBalanceTo, reason, referenceID);
     } else if (IsPlayerCorp(toID)) {
         HandleCorpTransaction(toID, entryTypeID, fromID, toID, toCurrency, toKey, amount, reason, referenceID);
+        return;
     } else {
         _log(ACCOUNT__TRACE, "TranserFunds() - toID: %u is neither player nor player corp.", toID);
         return;
@@ -270,9 +271,6 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
      *   these payments are only taxed if they are above amount set in config, or the default 250000 isk.
      */
 
-    // is receipient a char?
-    if (!IsCharacter(toID))
-        return;
     // are bounty payments grouped on timer?
     if ((entryTypeID == Journal::EntryType::BountyPrize) or (entryTypeID == Journal::EntryType::BountyPrizes))
         if (sConfig.server.BountyPayoutDelayed)
