@@ -224,8 +224,8 @@ void ShipItem::InitAttribs()
     if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero);
     if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero);
     // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
-    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrDamage,  GetAttribute(AttrShieldCapacity));
-    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrDamage,  GetAttribute(AttrCapacitorCapacity));
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity));
+    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity));
     if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
     if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero);
