@@ -193,8 +193,8 @@ void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {
 
 void BubbleManager::Remove(SystemEntity *ent) {
     // suns, planets and moons arent in bubbles
-    if (ent->IsStaticEntity())
-        return;
+    //if (ent->IsStaticEntity())
+    //    return;
     if (ent->SysBubble() != nullptr) {
         _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Remove(): Entity %s(%u) being removed from Bubble %u", ent->GetName(), ent->GetID(), ent->SysBubble()->GetID() );
         ent->SysBubble()->Remove(ent);
