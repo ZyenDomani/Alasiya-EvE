@@ -487,31 +487,33 @@ void Client::SetAutoPilot(bool set/*false*/)
 
 
 void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
+    if (!IsSolarSystem(m_locationID)) {
+        _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
+        return;
+    }
+    m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
+    m_setStateSent = false;
+
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
         CreateShipSE();
-        pShipSE->SetPilot(this);
-        m_system->AddEntity(pShipSE);
         UpdateNewShip();
+        m_system->AddEntity(pShipSE);
     }
 
-    if (IsSolarSystem(m_locationID)) {
-        m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
-        if (pt.isZero()) {
-            if (pShipSE->GetPosition().isZero())
-                pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), false);
-            else
-                pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), false);
-        } else
-            pShipSE->DestinyMgr()->SetPosition(pt, false);
-        if (count and !m_login)
-            pShipSE->ResetShipSystemMgr(m_system);
-        m_setStateSent = false;
-        if (m_beyonce)
-            return;
-        if ((!m_login) and (!IsJump()) and (!m_undock))
-            SetBallPark();
+    if (pt.isZero()) {
+        if (pShipSE->GetPosition().isZero())
+            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), false);
+        else
+            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), false);
     } else
-        _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
+        pShipSE->DestinyMgr()->SetPosition(pt, false);
+    
+    if (count and !m_login)
+        pShipSE->ResetShipSystemMgr(m_system);
+    if (m_beyonce)
+        return;
+    if ((!m_login) and (!IsJump()) and (!m_undock))
+        SetBallPark();
 }
 
 void Client::SetBallPark() {
@@ -585,6 +587,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
         if (IsStation(locationID))
             return;
+        m_ship->Relocate(pt);
         // This is a simple movement
         SetDestiny(pt);
         return;
@@ -646,7 +649,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         sRef->AddGuest(this);
         m_char->Move(locationID, flagAutoFit, true);
         m_ship->Move(locationID, flagHangar, true);
-        m_ship->Relocate(pt);
         m_ship->Dock();
 
         //m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
@@ -704,6 +706,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             pShipSE->DestinyMgr()->Stop();
     }
 
+    m_ship->Relocate(pt);
     m_ship->SetCustomInfo(ci);
     m_ship->SaveShip();
 
@@ -873,7 +876,7 @@ void Client::Board(Ship* newShipSE)
         char ci[45];
         snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
         m_ship->SetCustomInfo(ci);
-        
+
         pShipSE->Abandon();
         pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
         pShipSE->DestinyMgr()->SendBallInteractive(m_ship);

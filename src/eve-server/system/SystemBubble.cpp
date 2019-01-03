@@ -133,7 +133,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         }
         pDSE = itr->second->GetDynamicSE();
         if (pDSE == nullptr) {
-            ++itr;
+            itr = m_dynamicEntities.erase(itr);
             continue;
         }
         if ((pDSE->DestinyMgr() == nullptr) or pDSE->DestinyMgr()->IsWarping()) {
@@ -142,28 +142,22 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         }
         if (pDSE->SystemMgr()->GetID() != m_systemID) {
             // this entity is in a different system!  this shouldnt happen....
+            // remove this entity, insert into wanderers, and continue
+            wanderers.push_back(pDSE);
             _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u is in %u but this is %u.", \
                                 pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_systemID);
-            // make sure we're still a valid iterator, then remove this entity, insert into wanderers, and continue
-            if (itr != m_dynamicEntities.end()) {
-                wanderers.push_back(itr->second);
-                itr = m_dynamicEntities.erase(itr);
-            }
+            itr = m_dynamicEntities.erase(itr);
             pDSE = nullptr;
             continue;
         }
 		if (!InBubble(pDSE->GetPosition())) {
-            wanderers.push_back(itr->second);
-            if (pDSE->m_bubble != this) {
+            wanderers.push_back(pDSE);
                 //17:38:57 [DestinyWarning] SystemBubble::ProcessWander() - entity 140006173(sys:30002507) not in bubble 1 for systemID 30002510.
                 _log(DESTINY__WARNING, "SystemBubble::ProcessWander() - entity %u(sys:%u) not in bubble %u for systemID %u.", \
                         pDSE->GetID(), pDSE->SystemMgr()->GetID(), m_bubbleID, m_systemID);
-                if (itr != m_dynamicEntities.end()) {
-                    itr = m_dynamicEntities.erase(itr);
-                    pDSE = nullptr;
-                    continue;
-                }
-            }
+            itr = m_dynamicEntities.erase(itr);
+            pDSE = nullptr;
+            continue;
         }
         ++itr;
 	}
