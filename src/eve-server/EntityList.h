@@ -49,6 +49,7 @@ typedef enum {
 } NotificationDestination;
 
 //this object is a set of "or"s, matching any criteria is sufficient.
+/** @todo  can loc/corp be changed to single variable?  */
 class MulticastTarget {
 public:
     std::set<uint32> characters;
