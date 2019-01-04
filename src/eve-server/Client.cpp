@@ -1105,13 +1105,10 @@ void Client::ResetAfterPodded() {
 }
 
 void Client::SetShip(ShipItemRef shipRef) {
-    // this should throw if ship isnt assembled (singleton=0)
-    if (!shipRef->singleton())
-        shipRef->ChangeSingleton(true, true);
-
     shipRef->ChangeOwner(m_char->itemID());
+    pShipSE->SetPilot(nullptr);
     pShipSE = nullptr;
-    m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+    //m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     m_char->SetActiveShip(m_shipId);
@@ -1914,7 +1911,7 @@ void Client::BanClient()
 void Client::_GetVersion(VersionExchangeServer& version)
 {
     pSession = new ClientSession();
-    
+
     version.birthday = EVEBirthday;
     version.macho_version = MachoNetVersion;
     version.user_count = sEntityList.GetClientCount();

@@ -180,8 +180,9 @@ void ShipItem::SetPlayer(Client* pClient) {
      * online all modules
      */
 
-    m_pilot = pClient;
-    if (m_pilot == nullptr) {
+    if (pClient == nullptr) {
+        if (m_pilot != nullptr)
+            pInventory->RemoveItem(m_pilot->GetChar());
         // remove ship effects and char skill effects for char leaving ship here.
         ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
@@ -189,6 +190,7 @@ void ShipItem::SetPlayer(Client* pClient) {
         return;
     }
 
+    m_pilot = pClient;
     Init();
     ProcessEffects(true, IsSolarSystem(m_locationID));
     OnlineAll();
@@ -1929,6 +1931,11 @@ void Ship::ResetShipSystemMgr(SystemManager* pSystem)
 
 void Ship::SetPilot(Client* pClient) {
     m_self->SetPlayer(pClient);
+    if (pClient == nullptr) {
+        m_allyID = 0;
+        m_corpID = 0;
+        return;
+    }
     // set shipSE data
     m_allyID = pClient->GetAllianceID();
     m_corpID = pClient->GetCorporationID();
