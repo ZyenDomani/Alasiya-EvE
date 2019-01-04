@@ -459,7 +459,7 @@ PyResult CharMgrService::Handle_GetCloneTypeID( PyCallArgs& call )
 PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 {
 	uint32 stationID = 0;
-	if (!m_db.GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
+    if (!CharacterDB::GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
 		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
 		return PyStatic.NewNone();
 	}

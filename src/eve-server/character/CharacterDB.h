@@ -51,6 +51,11 @@ public:
     static bool SaveCorpData(uint32 characterID, const CorpData &data);
     void DeleteCharacter(uint32 characterID);
     static void AddEmployment(uint32 charID, uint32 corpID);
+    static void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
+    static bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
+    //if you want to get the typeID of the clone, please use GetActiveCloneType
+    static bool GetActiveClone(uint32 characterID, uint32 &itemID);
+    static PyRep *GetInfoWindowDataForChar(uint32 characterID);
 
     PyRep *GetCharacterList(uint32 accountID);
     PyRep *GetCharSelectInfo(uint32 characterID);
@@ -60,7 +65,6 @@ public:
 	void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
     PyRep *GetCharPublicInfo(uint32 characterID);
     PyRep *GetCharPublicInfo3(uint32 characterID);
-    PyRep *GetInfoWindowDataForChar(uint32 characterID);
     //PyObject *GetAgentPublicInfo(uint32 agentID);
     PyRep *GetOwnerNoteLabels(uint32 charID);
     PyRep *GetOwnerNote(uint32 charID, uint32 noteID);
@@ -70,10 +74,7 @@ public:
 
     bool ChangeCloneType(uint32 characterID, uint32 typeID);
 	bool GetCharClones(uint32 characterID, std::vector<uint32> &into);
-    bool GetActiveClone(uint32 characterID, uint32 &itemID);
     bool GetActiveCloneType(uint32 characterID, uint32 &typeID);
-    void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
-	bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
     std::string GetCharName(uint32 characterID);
 
     PyRep* GetContacts(uint32 charID, bool blocked);

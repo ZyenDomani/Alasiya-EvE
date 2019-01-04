@@ -483,7 +483,7 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     characterDataMap["warFactionID"] = row.GetInt(19);
 
     uint32 stationID = row.GetInt(17);
-    if (!GetCharHomeStation(characterID, stationID)) {
+    if (!CharacterDB::GetCharHomeStation(characterID, stationID)) {
         ItemData iData( itemCloneAlpha, characterID, stationID, flagClone, 1 );
         iData.customInfo="active";
         InventoryItemRef initInvItem = sItemFactory.SpawnItem( iData );
@@ -650,7 +650,6 @@ bool CharacterDB::GetCharClones(uint32 characterID, std::vector<uint32> &into) {
 }
 
 //returns the itemID of the active clone
-//if you want to get the typeID of the clone, please use GetActiveCloneType
 bool CharacterDB::GetActiveClone(uint32 characterID, uint32 &itemID) {
     DBQueryResult res;
 
@@ -704,7 +703,7 @@ bool CharacterDB::GetActiveCloneType(uint32 characterID, uint32 &typeID) {
 // Return the Home station of the char based on the active clone
 bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
 	uint32 activeCloneID = 0;
-	if (!GetActiveClone(characterID, activeCloneID)) {
+    if (!CharacterDB::GetActiveClone(characterID, activeCloneID)) {
         _log( CHARACTER__ERROR, "Could't get the active clone for char %u", characterID );
 		return false;
 	}
