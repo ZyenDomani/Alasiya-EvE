@@ -596,8 +596,8 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
 
     if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
         CreateShipSE();
-        UpdateNewShip();
         m_system->AddEntity(pShipSE);
+        UpdateNewShip();
     }
 
     if (pt.isZero()) {

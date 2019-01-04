@@ -112,7 +112,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     m_chars.insert(
         std::make_pair(
             pClient->GetCharacterID(),
-            LSCChannelChar( this, pClient->GetCorporationID(), pClient->GetCharacterID(), pClient->GetCharacterName(), pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0,\
+            LSCChannelChar( this, pClient->GetCorporationID(), pClient->GetCharacterID(), pClient->GetCharName(), pClient->GetAllianceID(), pClient->GetWarFactionID(), pClient->GetAccountRole(), 0,\
             (m_ownerID == pClient->GetCharacterID() ? LSC::Mode::chCreator : LSC::Mode::chConversationalist))
         )
     );

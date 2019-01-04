@@ -191,6 +191,7 @@ public:
     // character data
     void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used in char creation
     CharacterRef GetChar() const                        { return m_char; }
+    std::string GetCharName()                           { return m_char->itemName(); }
     uint32 GetCharID() const                            { return m_char->itemID(); }
     ShipItemRef GetShip() const                         { return m_ship; }
     Ship* GetShipSE()                                   { return pShipSE; }
