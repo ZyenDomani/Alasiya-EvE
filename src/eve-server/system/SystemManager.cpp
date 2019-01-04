@@ -1177,6 +1177,12 @@ SystemEntity* SystemManager::GetClosestMoonSE(const GPoint& myPos)
     return itr->second;
 }
 
+void SystemManager::GetClientList(std::vector< Client* >& cVec)
+{
+    for (auto cur : m_clients)
+        cVec.push_back(cur.second);
+}
+
 void SystemManager::GetCurrentEntities(std::vector< SystemEntity* >& vector)
 {
     for (auto cur : m_ticEntities)

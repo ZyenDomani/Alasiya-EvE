@@ -140,6 +140,8 @@ public:
     // this returns entities in system for display on ship scanner when enabled.
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
+    void GetClientList(std::vector<Client*>& cVec);
+
 protected:
     /** @todo  this needs more work */
     void PayBounties();
