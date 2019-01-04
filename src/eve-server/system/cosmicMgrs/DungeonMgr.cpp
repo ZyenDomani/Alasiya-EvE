@@ -731,8 +731,8 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
     pos *= size;
 
     double theta = 0;
-    // range is 1 to 20 (which puts 60-130 items in bubble)
-    size *= (m_system->GetSecValue() *10);  // config variable here?
+    // range is 1 to 20 (which puts 3-60 items in bubble)
+    size *= (m_system->GetSecValue() *3);  // config variable here?
     uint8 origSize = size;
     DunGroupData grp;
     for (auto cur : groupVec) {
