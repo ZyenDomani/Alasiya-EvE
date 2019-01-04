@@ -121,7 +121,7 @@
           <int name="proximity" />
         </dictInlineEntry>
         <dictInlineEntry key="updateTime">
-          <long name="updateTime" />
+          <long name="updateTime" safe="true" />
         </dictInlineEntry>
         <dictInlineEntry key="advancedPlanetology">
           <int name="advancedPlanetology" />

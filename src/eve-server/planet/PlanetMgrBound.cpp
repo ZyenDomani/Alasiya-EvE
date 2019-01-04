@@ -169,22 +169,23 @@ PyResult PlanetMgrService::Handle_GetMyLaunchesDetails(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetResourceInfo(PyCallArgs &call) {
-    if (sConfig.cosmic.PIEnabled)
-        return m_planet->GetPlanetResourceInfo();
+    if (!sConfig.cosmic.PIEnabled) {
+        call.client->SendErrorMsg("The PI system is currently disabled.");
+        return nullptr;
+    }
 
-    call.client->SendErrorMsg("The PI system is currently disabled.");
-    return nullptr;
+    return m_planet->GetPlanetResourceInfo();
 }
 
 PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
+    if (!sConfig.cosmic.PIEnabled) {
+        call.client->SendErrorMsg("The PI system is currently disabled.");
+        return nullptr;
+    }
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    if (sConfig.cosmic.PIEnabled)
-        return m_planet->GetPlanetInfo(m_colony);
-
-    call.client->SendErrorMsg("The PI system is currently disabled.");
-    return nullptr;
+    return m_planet->GetPlanetInfo(m_colony);
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
@@ -198,6 +199,10 @@ PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
 }
 
 PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
+    if (!sConfig.cosmic.PIEnabled) {
+        call.client->SendErrorMsg("The PI system is currently disabled.");
+        return nullptr;
+    }
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserUpdateNetwork() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
@@ -207,11 +212,7 @@ PyResult PlanetMgrBound::Handle_UserUpdateNetwork(PyCallArgs &call) {
         return nullptr;
     }
 
-    if (sConfig.cosmic.PIEnabled)
-        return m_planetMgr->UpdateNetwork(uuncl);
-
-    call.client->SendErrorMsg("The PI system is currently disabled.");
-    return nullptr;
+    return m_planetMgr->UpdateNetwork(uuncl);
 }
 
 PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
