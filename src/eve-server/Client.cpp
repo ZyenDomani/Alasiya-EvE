@@ -58,6 +58,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_TS(nullptr),
   m_scan(nullptr),
   pShipSE(nullptr),
+  pSession(nullptr),
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
@@ -113,6 +114,104 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     Reset();
 }
 
+/** @todo  need to separate Player from Client before these can be implemented....
+// not sure if these are used....may have to finish
+Client::Client(const Client& oth)
+:m_TS(oth.m_TS),
+m_scan(oth.m_scan),
+pShipSE(oth.pShipSE),
+pSession(oth.pSession),
+m_system(oth.SystemMgr()),
+m_services(oth.services()),
+m_movePoint(NULL_ORIGIN),
+m_clientState(ClientState::csIdle),
+m_stateTimer(0),
+m_jumpTimer(0),
+m_pingTimer(PING_INTERVAL_MS),
+m_scanTimer(0),
+m_cloakTimer(0),
+m_fleetTimer(0),
+m_invulTimer(0),
+m_clientTimer(0),
+m_logoutTimer(0),
+m_jetcanTimer(0),
+m_sessionTimer(0),
+m_destinyEventQueue(new PyList()),
+m_destinyUpdateQueue(new PyList()),
+m_nextNotifySequence(0)
+{
+    m_pod = ShipItemRef(nullptr);
+    m_ship = ShipItemRef(nullptr);
+
+    m_afk = false;
+    m_login = true;
+    m_invul = true;
+    m_wing = false;
+    m_fleet = false;
+    m_squad = false;
+    m_loaded = false;
+    m_undock = false;
+    m_showall = false;
+    m_beyonce = false;
+    m_canThrow = false;
+    m_packaged = false;
+    m_portrait = false;
+    m_autoPilot = false;
+    m_bubbleWait = false;     // allow client processing of subsquent destiny msgs
+    m_setStateSent = false;
+    m_sessionChangeActive = false;
+
+    m_toGate = 0;
+    m_locationID = 0;
+    m_moveSystemID = 0;
+    m_timeEndTrain = 0;
+    m_dockStationID = 0;
+
+    m_lpMap.clear();
+    m_channels.clear();
+    m_hangarLoaded.clear();
+    mDogmaMessages.clear();
+
+    sLog.Error("Client()", "Client copy c'tor called.");
+    EvE::traceStack();
+    assert(0);
+}
+
+Client::Client(Client&& oth) noexcept
+:m_TS(oth.m_TS),
+m_scan(oth.m_scan),
+pShipSE(oth.pShipSE),
+pSession(oth.pSession),
+m_system(oth.SystemMgr()),
+m_services(oth.services())
+{
+    sLog.Error("Client()", "Client move c'tor called.");
+    EvE::traceStack();
+    assert(0);
+}
+
+Client& Client::operator=(const Client& oth)
+{
+    m_TS = oth.m_TS;
+    m_scan = oth.m_scan;
+    pShipSE = oth.pShipSE;
+    pSession = oth.pSession;
+    m_system = oth.SystemMgr();
+    m_services = oth.services();
+
+    sLog.Error("Client()", "Client assignment op called.");
+    EvE::traceStack();
+    assert(0);
+}
+
+Client& Client::operator=(Client&& oth) noexcept
+{
+    sLog.Error("Client()", "Client move op called.");
+    EvE::traceStack();
+    assert(0);
+}
+*/
+
 Client::~Client() {
     if (!m_loaded)
         return;
@@ -166,6 +265,7 @@ Client::~Client() {
 
     SafeDelete(m_scan);
     SafeDelete(pShipSE);
+    SafeDelete(pSession);
     PyDecRef(m_destinyEventQueue);
     PyDecRef(m_destinyUpdateQueue);
 }
@@ -199,7 +299,7 @@ bool Client::ProcessNet()
     return true;
 }
 
-bool Client::SelectCharacter(uint32 char_id) {
+bool Client::SelectCharacter(int32 char_id/*0*/) {
     InitSession(char_id);
 
     sItemFactory.SetUsingClient(this);
@@ -640,7 +740,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
     m_ship->Relocate(pt);
-    
+
     char ci[45];
     if (IsStation(stationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
@@ -1017,7 +1117,7 @@ void Client::SetShip(ShipItemRef shipRef) {
     m_char->SetActiveShip(m_shipId);
     if (IsSolarSystem(m_locationID)) {
         m_char->Move(m_shipId, flagPilot, true);
-        UpdateSessionInt("shipid", m_shipId);   // update shipID in session
+        pSession->SetInt("shipid", m_shipId); // update shipID in session
     }
 
     m_ship->SetPlayer(this);
@@ -1258,11 +1358,6 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     sItemFactory.UnsetUsingClient();
 }
 
-PyRep *Client::GetInfoWindowDataForChar(Client *pClient) {
-    CharacterDB c_db;
-    return c_db.GetInfoWindowDataForChar(pClient->GetCharacterID());
-}
-
 bool Client::LaunchDrone(InventoryItemRef drone) {
     if (!sConfig.npc.EnableDrones) {
         SendNotifyMsg("Drones are disabled.");
@@ -1444,25 +1539,25 @@ void Client::OnCharNowInStation() {
 /**********************************************************************
  *  session shit and other non-player-related things
  * ****************************************************************/
-void Client::UpdateSessionInt(const char *sessionType, int value)
+void Client::UpdateSessionInt(const char *id, int value)
 {
-    mSession.SetInt(sessionType, value);
+    pSession->SetInt(id, value);
 }
 
 void Client::UpdateCorpSession(CorpData& data)
 {
     // session.Set* methods only updates on change
-    mSession.SetInt("corpid", data.corporationID);
-    mSession.SetInt("baseID", data.baseID);
-    mSession.SetInt("hqID", data.corpHQ);
-    mSession.SetInt("allianceid", data.allianceID);
-    mSession.SetInt("warfactionid", data.warFactionID);
-    mSession.SetInt("corpAccountKey", data.corpAccountKey);
-    mSession.SetLong("corprole", data.corpRole);
-    mSession.SetLong("rolesAtAll", data.rolesAtAll);
-    mSession.SetLong("rolesAtBase", data.rolesAtBase);
-    mSession.SetLong("rolesAtHQ", data.rolesAtHQ);
-    mSession.SetLong("rolesAtOther", data.rolesAtOther);
+    pSession->SetInt("corpid", data.corporationID);
+    pSession->SetInt("baseID", data.baseID);
+    pSession->SetInt("hqID", data.corpHQ);
+    pSession->SetInt("allianceid", data.allianceID);
+    pSession->SetInt("warfactionid", data.warFactionID);
+    pSession->SetInt("corpAccountKey", data.corpAccountKey);
+    pSession->SetLong("corprole", data.corpRole);
+    pSession->SetLong("rolesAtAll", data.rolesAtAll);
+    pSession->SetLong("rolesAtBase", data.rolesAtBase);
+    pSession->SetLong("rolesAtHQ", data.rolesAtHQ);
+    pSession->SetLong("rolesAtOther", data.rolesAtOther);
     SendSessionChange();
 }
 
@@ -1472,12 +1567,12 @@ void Client::UpdateFleetSession(CharFleetData& fleet)
     m_wing = fleet.wingID;
     m_squad = fleet.squadID;
 
-    mSession.SetInt("fleetjob", fleet.job);
-    mSession.SetInt("fleetrole", fleet.role);
-    mSession.SetInt("fleetbooster", fleet.booster);
-    mSession.SetInt("fleetid", m_fleet);
-    mSession.SetInt("wingid", m_wing);
-    mSession.SetInt("squadid", m_squad);
+    pSession->SetInt("fleetjob", fleet.job);
+    pSession->SetInt("fleetrole", fleet.role);
+    pSession->SetInt("fleetbooster", fleet.booster);
+    pSession->SetInt("fleetid", m_fleet);
+    pSession->SetInt("wingid", m_wing);
+    pSession->SetInt("squadid", m_squad);
     SendSessionChange();
 }
 
@@ -1488,40 +1583,40 @@ void Client::_UpdateSession()
     uint32 stationID = m_char->stationID();
     uint32 solarsystemID = m_char->solarSystemID();
     if (stationID) {
-        mSession.Clear("solarsystemid");    //must be 0 in station
-        mSession.Clear("shipid");    //must be 0 in station
+        pSession->Clear("solarsystemid");    //must be 0 in station
+        pSession->Clear("shipid");    //must be 0 in station
 
-        mSession.SetInt("stationid", stationID);
-        mSession.SetInt("stationid2", stationID);   // client uses this for continer location checks
-        //mSession.SetInt("worldspaceid", stationID);
-        mSession.SetInt("locationid", stationID);
+        pSession->SetInt("stationid", stationID);
+        pSession->SetInt("stationid2", stationID);   // client uses this for continer location checks
+        //pSession->SetInt("worldspaceid", stationID);
+        pSession->SetInt("locationid", stationID);
     } else {
-        mSession.Clear("stationid");
-        mSession.Clear("stationid2");
-        mSession.Clear("worldspaceid");
-        mSession.SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
-        mSession.SetInt("locationid", solarsystemID);
-        mSession.SetInt("shipid", m_shipId);
+        pSession->Clear("stationid");
+        pSession->Clear("stationid2");
+        pSession->Clear("worldspaceid");
+        pSession->SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        pSession->SetInt("locationid", solarsystemID);
+        pSession->SetInt("shipid", m_shipId);
     }
 
-    mSession.SetInt("charid", m_char->itemID());
-    mSession.SetString("charname", m_char->itemName().c_str());
-    mSession.SetInt("corpid", m_char->corporationID());
+    //pSession->SetInt("charid", m_char->itemID());
+    //pSession->SetString("charname", m_char->itemName().c_str());
+    pSession->SetInt("corpid", m_char->corporationID());
     // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
-    mSession.SetInt("solarsystemid2", solarsystemID);
-    mSession.SetInt("constellationid", m_char->constellationID());
-    mSession.SetInt("regionid", m_char->regionID());
+    pSession->SetInt("solarsystemid2", solarsystemID);
+    pSession->SetInt("constellationid", m_char->constellationID());
+    pSession->SetInt("regionid", m_char->regionID());
 }
 
-void Client::InitSession(uint32 characterID)
+void Client::InitSession(int32 characterID)
 {
-    if (characterID < 0) {
-        sLog.Error("Client::InitSession()", "characterID == 0");
+    if (!IsCharacter(characterID)) {
+        sLog.Error("Client::InitSession()", "characterID is not valid");
         return;
     }
 
     std::map<std::string, int64> characterDataMap;
-    ((CharUnboundMgrService *)(m_services.LookupService("charUnboundMgr")))->GetCharacterData(characterID, characterDataMap);
+    CharacterDB::GetCharacterData(characterID, characterDataMap);
     if (characterDataMap.size() < 1) {
         sLog.Error("Client::InitSession()", "characterDataMap.size() returned zero.");
         return;
@@ -1531,27 +1626,27 @@ void Client::InitSession(uint32 characterID)
     int32 solarSystemID     = (int32)(characterDataMap["solarSystemID"]);
     m_shipId                = (int32)(characterDataMap["shipID"]);
 
-    mSession.SetInt("genderID",         (int32)(characterDataMap["gender"]));
-    mSession.SetInt("bloodlineID",      (int32)(characterDataMap["bloodlineID"]));
-    mSession.SetInt("raceID",           (int32)(characterDataMap["raceID"]));
-    mSession.SetInt("charid",           characterID);
-    mSession.SetInt("corpid",           (int32)(characterDataMap["corporationID"]));
+    pSession->SetInt("genderID",         (int32)(characterDataMap["gender"]));
+    pSession->SetInt("bloodlineID",      (int32)(characterDataMap["bloodlineID"]));
+    pSession->SetInt("raceID",           (int32)(characterDataMap["raceID"]));
+    pSession->SetInt("charid",           characterID);
+    pSession->SetInt("corpid",           (int32)(characterDataMap["corporationID"]));
 
-    mSession.SetInt("cloneStationID",   (int32)(characterDataMap["cloneStationID"]));
-    mSession.SetInt("solarsystemid2",   solarSystemID);
-    mSession.SetInt("constellationid",  (int32)(characterDataMap["constellationID"]));
-    mSession.SetInt("regionid",         (int32)(characterDataMap["regionID"]));
+    pSession->SetInt("cloneStationID",   (int32)(characterDataMap["cloneStationID"]));
+    pSession->SetInt("solarsystemid2",   solarSystemID);
+    pSession->SetInt("constellationid",  (int32)(characterDataMap["constellationID"]));
+    pSession->SetInt("regionid",         (int32)(characterDataMap["regionID"]));
 
-    mSession.SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
-    mSession.SetInt("baseID",           characterDataMap["baseID"]);
-    mSession.SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
-    mSession.SetLong("corprole",        characterDataMap["corpRole"]);
-    mSession.SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
-    mSession.SetLong("rolesAtBase",     characterDataMap["rolesAtBase"]);
-    mSession.SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
-    mSession.SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
-    mSession.SetInt("allianceid",       characterDataMap["allianceID"]);
-    mSession.SetInt("warfactionid",     characterDataMap["warFactionID"]);
+    pSession->SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
+    pSession->SetInt("baseID",           characterDataMap["baseID"]);
+    pSession->SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
+    pSession->SetLong("corprole",        characterDataMap["corpRole"]);
+    pSession->SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
+    pSession->SetLong("rolesAtBase",     characterDataMap["rolesAtBase"]);
+    pSession->SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
+    pSession->SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
+    pSession->SetInt("allianceid",       characterDataMap["allianceID"]);
+    pSession->SetInt("warfactionid",     characterDataMap["warFactionID"]);
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:
@@ -1559,15 +1654,15 @@ void Client::InitSession(uint32 characterID)
      */
     if (stationID) {
         m_locationID = stationID;
-        mSession.SetInt("stationid", stationID);
-        mSession.SetInt("stationid2", stationID);
-        mSession.SetInt("locationid", stationID);
-        //mSession.SetInt("worldspaceid", stationID);
+        pSession->SetInt("stationid", stationID);
+        pSession->SetInt("stationid2", stationID);
+        pSession->SetInt("locationid", stationID);
+        //pSession->SetInt("worldspaceid", stationID);
     } else {
         m_locationID = solarSystemID;
-        mSession.SetInt("shipid", m_shipId);
-        mSession.SetInt("solarsystemid", solarSystemID);
-        mSession.SetInt("locationid", solarSystemID);
+        pSession->SetInt("shipid", m_shipId);
+        pSession->SetInt("solarsystemid", solarSystemID);
+        pSession->SetInt("locationid", solarSystemID);
     }
 
     sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
@@ -1575,7 +1670,7 @@ void Client::InitSession(uint32 characterID)
 
 void Client::SendSessionChange()
 {
-    if (!mSession.isDirty())
+    if (!pSession->isDirty())
         return;
     if ((GetCharacterID() > 0) and (m_locationID == 0)) {
         // this should never happen now.  -allan 3Aug16
@@ -1584,13 +1679,13 @@ void Client::SendSessionChange()
         if (IsDocked())
             m_locationID = GetStationID();
         /* a session.locationid change will trigger a ballpark update (add/delete bp) */
-        UpdateSessionInt("locationid", m_locationID);
+        pSession->SetInt("locationid", m_locationID);
     }
 
     SessionChangeNotification scn;
     scn.changes = new PyDict();
 
-    mSession.EncodeChanges(scn.changes);
+    pSession->EncodeChanges(scn.changes);
     if (scn.changes->empty())
         return;
 
@@ -1818,6 +1913,8 @@ void Client::BanClient()
 /************************************************************************/
 void Client::_GetVersion(VersionExchangeServer& version)
 {
+    pSession = new ClientSession();
+    
     version.birthday = EVEBirthday;
     version.macho_version = MachoNetVersion;
     version.user_count = sEntityList.GetClientCount();
@@ -1956,15 +2053,15 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     mNet->QueueRep(server_shake.Encode());
 
     // Setup session, but don't send the change yet.
-    mSession.SetString("address", EVEClientSession::GetAddress().c_str());
-    mSession.SetString("languageID", ccp.user_languageid.c_str());
+    pSession->SetString("address", EVEClientSession::GetAddress().c_str());
+    pSession->SetString("languageID", ccp.user_languageid.c_str());
 
     //user type 30 is normal user, type 23 is a trial account user.
-    mSession.SetInt("userType", userTypeMammon);
-    mSession.SetInt("userid", account_info.id);
-    mSession.SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
-    mSession.SetLong("role", account_info.role);
-    //mSession.SetLong("sessionID", mSession.CreateSessionID());
+    pSession->SetInt("userType", userTypeMammon);
+    pSession->SetInt("userid", account_info.id);
+    pSession->SetLong("clientID", 0/*10000000000L * account_info.clientID + 888444*/);   /* this should be sent in rsp packet for "clientid".  not sure how yet.   */
+    pSession->SetLong("role", account_info.role);
+    pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
 
     sLog.Green("  Client::Login()","Account \"%s\" logging in from IP %s", account_info.name.c_str() ,EVEClientSession::GetAddress().c_str());
 

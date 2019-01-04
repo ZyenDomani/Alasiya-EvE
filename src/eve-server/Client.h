@@ -108,6 +108,17 @@ public:
     Client(PyServiceMgr &services, EVETCPConnection** con);
     virtual ~Client();
 
+    /** @todo  derive and execute tests to determing if these are needed...
+    // copy c'tor
+    Client(const Client& oth);
+    // move c'tor
+    Client(Client&& oth) noexcept;
+    // assignment op
+    Client& operator= (const Client& oth);
+    // move op
+    Client& operator= (Client&& oth) noexcept;
+    */
+
     bool                    ProcessNet();
     void                    ProcessClient();
 
@@ -125,37 +136,37 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
-    std::string GetAddress() const                      { return mSession.GetCurrentString( "address" ); }
-    std::string GetLanguageID() const                   { return mSession.GetCurrentString( "languageID" ); }
+    std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
+    std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
 
-    uint32 GetAccountType() const                       { return mSession.GetCurrentInt( "userType" ); }
-    int64 GetAccountRole() const                        { return mSession.GetCurrentLong( "role" ); }
-    int64 GetClientID() const                           { return mSession.GetCurrentLong( "clientID" ); }
-    uint32 GetUserID() const                            { return mSession.GetCurrentInt( "userid" ); }
-    int64 GetSessionID()                                { return mSession.GetCurrentLong( "sessionID" ); }
-
-    uint32 GetCharacterID() const                       { return mSession.GetCurrentInt( "charid" ); }
-    std::string GetCharacterName() const                { return mSession.GetCurrentString( "charname" ); }
-    uint32 GetStationID() const                         { return mSession.GetCurrentInt( "stationid" ); }
-    uint32 GetStationID2() const                        { return mSession.GetCurrentInt( "stationid2" ); }
-    uint32 GetCloneStationID() const                    { return mSession.GetCurrentInt( "cloneStationID" ); }
+    int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
+    int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
+    int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
+    int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
+    int64 GetSessionID()                                { return pSession->GetCurrentLong( "sessionID" ); }
+    // this doesnt always work...still dont know why
+    int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
+    std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }
+    int32 GetStationID() const                          { return pSession->GetCurrentInt( "stationid" ); }
+    int32 GetStationID2() const                         { return pSession->GetCurrentInt( "stationid2" ); }
+    int32 GetCloneStationID() const                     { return pSession->GetCurrentInt( "cloneStationID" ); }
 
     double GetCorpTaxRate()                             { return m_char->corpTaxRate(); }
-    uint32 GetCorporationID() const                     { return mSession.GetCurrentInt( "corpid" ); }
-    uint32 GetCorpHQ() const                            { return mSession.GetCurrentInt( "hqID" ); }
-    int32 GetAllianceID() const                         { return mSession.GetCurrentInt( "allianceid" ); }
-    int32 GetWarFactionID() const                       { return mSession.GetCurrentInt( "warfactionid" ); }
-    int32 GetCorpAccountKey() const                     { return mSession.GetCurrentInt( "corpAccountKey" ); }
+    int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
+    int32 GetCorpHQ() const                             { return pSession->GetCurrentInt( "hqID" ); }
+    int32 GetAllianceID() const                         { return pSession->GetCurrentInt( "allianceid" ); }
+    int32 GetWarFactionID() const                       { return pSession->GetCurrentInt( "warfactionid" ); }
+    int32 GetCorpAccountKey() const                     { return pSession->GetCurrentInt( "corpAccountKey" ); }
     // corporation management-type roles (manager, officer, trader)  also has container roles
-    int64 GetCorpRole() const                           { return mSession.GetCurrentLong( "corprole" ); }
+    int64 GetCorpRole() const                           { return pSession->GetCurrentLong( "corprole" ); }
     // access roles everywhere.  is joined with other access roles
-    int64 GetRolesAtAll() const                         { return mSession.GetCurrentLong( "rolesAtAll" ); }
+    int64 GetRolesAtAll() const                         { return pSession->GetCurrentLong( "rolesAtAll" ); }
     // access roles at base defined for this char. overrides hq if same location
-    int64 GetRolesAtBase() const                        { return mSession.GetCurrentLong( "rolesAtBase" ); }
+    int64 GetRolesAtBase() const                        { return pSession->GetCurrentLong( "rolesAtBase" ); }
     // access roles at corp HQ.
-    int64 GetRolesAtHQ() const                          { return mSession.GetCurrentLong( "rolesAtHQ" ); }
+    int64 GetRolesAtHQ() const                          { return pSession->GetCurrentLong( "rolesAtHQ" ); }
     // access roles for non-station containers with corp hangars
-    int64 GetRolesAtOther() const                       { return mSession.GetCurrentLong( "rolesAtOther" ); }
+    int64 GetRolesAtOther() const                       { return pSession->GetCurrentLong( "rolesAtOther" ); }
 
     // fleet data
     bool InFleet()                                      { return IsFleet(m_fleet); }
@@ -165,7 +176,7 @@ public:
     int32 GetFleetID() const                            { return m_fleet; }
     int32 GetWingID() const                             { return m_wing; }
     int32 GetSquadID() const                            { return m_squad; }
-    int8 GetFleetRole()                                 { return mSession.GetCurrentInt("fleetrole"); }
+    int8 GetFleetRole()                                 { return pSession->GetCurrentInt("fleetrole"); }
 
     uint32 GetShipID() const                            { return m_shipId; }
     uint32 GetLocationID() const                        { return m_locationID; }
@@ -228,10 +239,8 @@ public:
     void AddStationHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);
 
-    bool SelectCharacter( uint32 char_id=0);
+    bool SelectCharacter(int32 char_id=0);
     bool IsHangarLoaded(uint32 stationID);
-
-    PyRep* GetInfoWindowDataForChar(Client *pClient);
 
     double GetPropulsionStrength() const;
 
@@ -344,13 +353,13 @@ protected:
     SystemGPoint m_SGP;     // interface to my variable 3-d point generating system  (which isnt finished yet... -allan)
     Ship* pShipSE;
     TradeSession* m_TS;
-    ClientSession mSession;
+    ClientSession* pSession;
     SystemManager* m_system;    //we do not own this
 
     //void _AwardBounty(SystemEntity *who);
     /** @todo finish this... */
     void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
-    void InitSession( uint32 characterID  );
+    void InitSession( int32 characterID  );
     void ExecuteJump();
     void DestroyShipSE();
 
@@ -451,7 +460,7 @@ private:
     PyList* m_destinyUpdateQueue;    //we own these. They are the `update` which go into DoDestinyAction
     void _SendQueuedUpdates();
 
-    uint32 m_nextNotifySequence = 0;
+    uint32 m_nextNotifySequence;
 
     std::map<uint32, uint32>    m_lpMap;    // corpID/points
 

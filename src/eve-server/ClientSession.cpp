@@ -25,6 +25,7 @@
 
 #include "ClientSession.h"
 #include "EntityList.h"
+#include "EVEServerConfig.h"
 
 /* Things todo or missing
     [missing]
@@ -196,6 +197,8 @@ PyRep* ClientSession::_GetCurrent(const char* name) const
     PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
         _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetCurrent - value not found with name '%s'", name);
+        if (sConfig.server.StackTrace)
+            EvE::traceStack();
         return nullptr;
     }
     return tuple->GetItem(1);
@@ -215,9 +218,7 @@ void ClientSession::_Set(const char* name, PyRep* value)
     if (value->hash() != current->hash()) {
         //v->SetItem(0, current); /* didn't the session need to store the old value to? */
         tuple->SetItem(1, value);
-
         mDirty = true;
     } else
         PyDecRef(value);
 }
-
