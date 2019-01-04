@@ -682,7 +682,7 @@ void Character::LoadPausedSkillQueue() {
 
 void Character::UpdateSkillQueue() {
     /* cleaned up code and reworked logic  -allan 28Apr16   -- revisited 23Mar17  --updated code, logic and timers 16Nov17  -again 9jan18*/
-    // finally fixed.  22Jan18  --it wasnt.  trying again.  24Jan18     still not right  3Dec18
+    // finally fixed.  22Jan18  --it wasnt 24Jan18     still not right 3Dec18    -again 4jan19
     if (m_pClient == nullptr)
         return;
     EvilNumber CurrentSP = EvilZero, trainingEndTime = EvilZero, trainingStartTime = EvilZero, level = EvilZero;
@@ -701,7 +701,7 @@ void Character::UpdateSkillQueue() {
                         itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
 
             currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
-            currentTraining->SetAttribute(AttrExpiryTime, 0);
+            currentTraining->SetAttribute(AttrExpiryTime, 0, false);
             currentTraining->SetFlag(flagSkill, true);
             currentTraining->SaveItem();
 
