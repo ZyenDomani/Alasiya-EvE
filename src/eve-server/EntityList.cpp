@@ -317,26 +317,34 @@ void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVE
         (*cur)->SendNotification(dest, noti);
 }
 
-//in theory this could be written in terms of the more generic
-//MulticastTarget function, but this is much more efficient.
-/** @todo  this shit is nuts.  update to use system/station maps for existing clients, instead of looping thru entire fuckin list */
-void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 target_id, bool seq )
+// updated to remove looping thru entire client list for each call....still needs work
+void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple** in_payload, NotificationDestination target, uint32 targID, bool seq )
 {
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
 
-    for (auto cur : m_clients) {
-        switch( target ) {
-            case NOTIF_DEST__LOCATION: {
-                if ( cur->GetLocationID() != target_id )
-                    continue;
-            } break;
-            case NOTIF_DEST__CORPORATION: {
-                if ( cur->GetCorporationID() != target_id )
-                    continue;
-            } break;
-        }
+    std::vector<Client*> cVec;
+    cVec.clear();
+    switch( target ) {
+        case NOTIF_DEST__LOCATION: {
+            if (IsStation(targID))
+                FindClientByStationID(targID, cVec);
+            else if (IsSolarSystem(targID))
+                FindOrBootSystem(targID)->GetClientList(cVec);
+            else {
+                sLog.Error("EntityList::Multicast 1", "location %u is neither station nor system", targID);
+                EvE::traceStack();
+            }
+        } break;
+        // not sure how to do this one yet.
+        case NOTIF_DEST__CORPORATION: {
+            for (auto cur : m_clients)
+                if (cur->GetCorporationID() == targID)
+                    cVec.push_back(cur);
+        } break;
+    };
 
+    for (auto cur : cVec) {
         PyIncRef(payload);
         cur->SendNotification( notifyType, idType, &payload, seq );
     }
@@ -344,29 +352,55 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
     PyDecRef( payload );
 }
 
+// this shit is nuts.  will have to revisit and come up with a better way to do this.
 void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
 {
     // consume payload
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
-
+/*
+    for (auto cur : mcset.characters) {
+        Client* pClient(nullptr);
+        if (IsCharacter(cur)) {
+            PyIncRef(payload);
+            // this will be slow as fuck
+            pClient = FindClientByCharID(charID);
+            if (pClient != nullptr)
+                pClient->SendNotification( notifyType, idType, &payload, seq );
+        }
+    }
+*/
     if (!mcset.characters.empty())
         for (auto cur : m_clients)
-            if ( mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end()) {
+            if ( mcset.characters.find(cur->GetCharID()) != mcset.characters.end()) {
                 PyIncRef(payload);
                 cur->SendNotification( notifyType, idType, &payload, seq );
             }
 
-    if (!mcset.locations.empty())
-        for (auto cur : m_clients)
-            if (mcset.locations.find(cur->GetLocationID()) != mcset.locations.end()) {
-                PyIncRef(payload);
-                cur->SendNotification( notifyType, idType, &payload, seq );
+    if (!mcset.locations.empty()) {
+        std::vector<Client*> cVec;
+        cVec.clear();
+        for (auto cur : mcset.locations) {
+            if (IsStation(cur))
+                FindClientByStationID(cur, cVec);
+            else if (IsSolarSystem(cur))
+                FindOrBootSystem(cur)->GetClientList(cVec);
+            else {
+                sLog.Error("EntityList::Multicast 2", "location %u is neither station nor system", cur);
+                EvE::traceStack();
             }
+        }
+        for (auto cur : cVec) {
+            PyIncRef(payload);
+            cur->SendNotification( notifyType, idType, &payload, seq );
+        }
+    }
 
+    // this will need list of interested parties from corp.  not sure how to do it yet.
     if (!mcset.corporations.empty())
         for (auto cur : m_clients)
             if (mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end()) {
+    //    for (auto cur : mcset.corporations) {
                 PyIncRef(payload);
                 cur->SendNotification( notifyType, idType, &payload, seq );
             }
@@ -374,27 +408,25 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     PyDecRef( payload );
 }
 
-void EntityList::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const {
-    std::vector<Client*> result;
-    GetClients(cset, result);
-
+void EntityList::Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** in_payload, bool seq) const
+{
     // consume payload
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
 
-    std::vector<Client*>::iterator cur = result.begin();
-    for (; cur != result.end(); ++cur) {
+    std::vector<Client*> cVec;
+    GetClients(cset, cVec);
+    for (auto cur : cVec) {
         PyIncRef(payload);
-        (*cur)->SendNotification(notifyType, idType, &payload, seq);
+        cur->SendNotification(notifyType, idType, &payload, seq);
     }
     PyDecRef( payload );
 }
 
 void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq) {
-    //this could be implemented more efficiently, but I dont feel like it right now.
-    character_set cset;
-    cset.insert(charID);
-    Multicast(cset, notifyType, idType, payload, seq);
+    Client* pClient = FindClientByCharID(charID);
+    if (pClient != nullptr)
+        pClient->SendNotification( notifyType, idType, payload, seq );
 }
 
 void EntityList::GetClients(const character_set &cset, std::vector<Client*> &result) const {
