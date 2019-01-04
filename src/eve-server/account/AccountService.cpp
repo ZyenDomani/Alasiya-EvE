@@ -176,7 +176,10 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
     }
 
     std::string reason = "DESC: ";
-    reason += args.reason;
+    if (args.reason.size() < 1)
+        reason += "No Reason Given";
+    else
+        reason += args.reason;
 
     TranserFunds(call.client->GetCharacterID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::PlayerDonation, call.client->GetCharacterID());
     return nullptr;
@@ -198,7 +201,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
         if (call.byname.find("toAccountKey")->second->IsInt())
             toAcctKey = call.byname.find("toAccountKey")->second->AsInt()->value();
 
-    std::string reason;
+    std::string reason= "DESC: No Reason Given";
     if (call.byname.find("reason") != call.byname.end()) {
         reason = "DESC: ";
         reason += PyRep::StringContent(call.byname.find("reason")->second);
