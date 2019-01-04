@@ -1062,7 +1062,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         MulticastTarget mct;
         mct.corporations.insert(toID);
         if (IsStation(m_locationID)) {
-            mct.locations.insert(m_locationID);
+            //mct.locations.insert(m_locationID);
             sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
         } else {
             sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
