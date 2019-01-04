@@ -1854,14 +1854,15 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     if (res.GetRow(row)) {
         // add to notification
         OnCorpShareChange corpUpdate;
-            corpUpdate.ownerID = ownerID;
             corpUpdate.corpID = corpID;
+            corpUpdate.ownerID = ownerID;
             corpUpdate.oldShares = row.GetInt(0);
             corpUpdate.newShares = row.GetInt(0) - args.numberOfShares;
         MulticastTarget mct;
-            mct.characters.insert((isCorp ? ownerID : corpID));
         if (isCorp)
             mct.corporations.insert(corpID);
+        else
+            mct.characters.insert(ownerID);
         PyTuple* tuple = corpUpdate.Encode();
         sEntityList.Multicast("OnShareChange", "*corpid&corprole", &tuple, mct);
     }
