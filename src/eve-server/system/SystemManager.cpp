@@ -244,7 +244,7 @@ void SystemManager::UnloadSystem() {
     m_anomMgr->Close();
 
     // remove dynamics
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin();
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), sItr = m_staticEntities.end();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
@@ -261,25 +261,15 @@ void SystemManager::UnloadSystem() {
             itr->second->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         }
-        sItemFactory.RemoveItem(itr->first);
-
-        pSE = itr->second;
-        itr = m_entities.erase(itr);
-        sBubbleMgr.Remove(pSE);
-        SafeDelete(pSE);
-    }
-
-    // remove statics
-    itr = m_staticEntities.begin();
-    while (itr != m_staticEntities.end()) {
-        if ((itr->first == 0) or (itr->second == nullptr)) {
-            itr = m_staticEntities.erase(itr);
-            continue;
+        if (itr->second->IsStaticEntity()) {
+            sItr = m_staticEntities.find(itr->first);
+            if (sItr != m_staticEntities.end())
+                m_staticEntities.erase(sItr);
         }
         sItemFactory.RemoveItem(itr->first);
 
         pSE = itr->second;
-        itr = m_staticEntities.erase(itr);
+        itr = m_entities.erase(itr);
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
     }
