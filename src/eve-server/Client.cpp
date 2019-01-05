@@ -1108,7 +1108,8 @@ void Client::ResetAfterPodded() {
 
 void Client::SetShip(ShipItemRef shipRef) {
     shipRef->ChangeOwner(m_char->itemID());
-    pShipSE->SetPilot(nullptr);
+    if (pShipSE != nullptr)
+        pShipSE->SetPilot(nullptr);
     pShipSE = nullptr;
     //m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
     m_ship = shipRef;
