@@ -38,9 +38,9 @@ ClientSession::ClientSession()
 : mSession(new PyDict()),
 mDirty(false)
 {
-    /* default value of attribute */
-    PyTuple* tuple = new_tuple(new PyNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE));
-    mSession->SetItemString("role", tuple);
+    /* default session values */
+    mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE)));
+    mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero()));
 }
 
 ClientSession::~ClientSession()

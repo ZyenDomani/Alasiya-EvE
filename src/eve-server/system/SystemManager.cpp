@@ -244,6 +244,7 @@ void SystemManager::UnloadSystem() {
     m_anomMgr->Close();
 
     // remove dynamics
+    //  not removing ship items and solar system object from ItemFactory.
     std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), sItr = m_staticEntities.end();
     SystemEntity* pSE(nullptr);
     while (itr != m_entities.end()) {
@@ -251,24 +252,25 @@ void SystemManager::UnloadSystem() {
             itr = m_entities.erase(itr);
             continue;
         }
-        if (itr->second->TargetMgr() != nullptr)
-            itr->second->TargetMgr()->ClearAllTargets(false);
-        if (itr->second->IsNPCSE()) {
+        pSE = itr->second;
+        if (pSE->TargetMgr() != nullptr)
+            pSE->TargetMgr()->ClearAllTargets(false);
+        if (pSE->IsShipSE())
+            pSE->GetShipSE()->GetShipItemRef()->LogOut();
+        if (pSE->IsNPCSE()) {
             sEntityList.RemoveNPC();    // this is for loaded npc count.
-            itr->second->GetSelf()->Delete();
+            pSE->GetSelf()->Delete();
         }
-        if (itr->second->IsStationSE()) {
-            itr->second->GetStationSE()->UnloadStation();
+        if (pSE->IsStationSE()) {
+            pSE->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         }
-        if (itr->second->IsStaticEntity()) {
+        if (pSE->IsStaticEntity()) {
             sItr = m_staticEntities.find(itr->first);
             if (sItr != m_staticEntities.end())
                 m_staticEntities.erase(sItr);
         }
         sItemFactory.RemoveItem(itr->first);
-
-        pSE = itr->second;
         itr = m_entities.erase(itr);
         sBubbleMgr.Remove(pSE);
         SafeDelete(pSE);
@@ -276,6 +278,7 @@ void SystemManager::UnloadSystem() {
 
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
+    sItemFactory.RemoveItem(m_data.systemID);
 
     _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - left in maps: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
 

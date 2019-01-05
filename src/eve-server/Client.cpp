@@ -81,6 +81,8 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_pod = ShipItemRef(nullptr);
     m_ship = ShipItemRef(nullptr);
 
+    pSession = new ClientSession();
+
     m_afk = false;
     m_login = true;
     m_invul = true;
@@ -1669,14 +1671,17 @@ void Client::SendSessionChange()
 {
     if (!pSession->isDirty())
         return;
-    if ((GetCharacterID() > 0) and (m_locationID == 0)) {
-        // this should never happen now.  -allan 3Aug16
-        codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", GetCharacterName().c_str(), GetCharacterID());
-        m_locationID = GetSystemID();
-        if (IsDocked())
-            m_locationID = GetStationID();
-        /* a session.locationid change will trigger a ballpark update (add/delete bp) */
-        pSession->SetInt("locationid", m_locationID);
+    if (m_locationID == 0) {
+        if (m_char.get() != nullptr) {
+            // this should never happen now.  -allan 3Aug16
+            codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
+            if (m_char->stationID() > 0)
+                m_locationID = m_char->stationID();
+            else
+                m_locationID = m_SystemData.systemID;
+            /* a `session.locationid` change will trigger a ballpark update (add/delete bp) */
+            pSession->SetInt("locationid", m_locationID);
+        }
     }
 
     SessionChangeNotification scn;
@@ -1910,8 +1915,6 @@ void Client::BanClient()
 /************************************************************************/
 void Client::_GetVersion(VersionExchangeServer& version)
 {
-    pSession = new ClientSession();
-
     version.birthday = EVEBirthday;
     version.macho_version = MachoNetVersion;
     version.user_count = sEntityList.GetClientCount();

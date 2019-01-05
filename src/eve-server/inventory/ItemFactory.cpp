@@ -130,6 +130,16 @@ void ItemFactory::SaveItems() {
     sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fms.", count, (GetTimeMSeconds() -startTime) );
 }
 
+void ItemFactory::RemoveItem(uint32 itemID) {
+    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
+    if (itr == m_items.end()) {
+        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
+    } else {
+        --m_itemCount;
+        m_items.erase( itr );
+    }
+}
+
 Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     // do we need to check trade containers here?
     if (!IsValidLocation(itemID))
@@ -212,16 +222,6 @@ Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true
         return nullptr;
 
     return iRef->GetMyInventory();
-}
-
-void ItemFactory::RemoveItem(uint32 itemID) {
-    std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
-    if (itr == m_items.end()) {
-        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
-    } else {
-        --m_itemCount;
-        m_items.erase( itr );
-    }
 }
 
 const ItemCategory* ItemFactory::GetCategory(EVEItemCategories category) {

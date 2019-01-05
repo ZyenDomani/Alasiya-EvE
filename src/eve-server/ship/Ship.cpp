@@ -156,6 +156,8 @@ void ShipItem::LogOut()
 
     SaveShip();
 
+    pInventory->Unload();
+
     // remove ship item from factory master list here, as *something* changes ship postion when saving items from factory.
     sItemFactory.RemoveItem(m_itemID);
 
@@ -167,7 +169,7 @@ void ShipItem::LogOut()
         pInv = sItemFactory.GetSolarSystem(m_locationID)->GetMyInventory();
 
     if (pInv != nullptr)
-        pInv->RemoveItem(pInv->GetByID(m_itemID));
+        pInv->RemoveItem(ShipItemRef(this));
 }
 
 void ShipItem::SetPlayer(Client* pClient) {

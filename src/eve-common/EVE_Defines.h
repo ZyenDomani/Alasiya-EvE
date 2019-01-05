@@ -15,7 +15,7 @@
 
 // bulkdata version
 #define bulkDataBranch          4
-#define bulkDataChangeID        311218
+#define bulkDataChangeID        40119  // changed this to be data of latest change.
 
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500
