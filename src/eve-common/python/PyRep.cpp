@@ -62,8 +62,12 @@ const char* const s_mTypeString[] =
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
-PyRep::PyRep( PyType t ) : RefObject( 1 ), mType( t ) {}
-PyRep::~PyRep() {}
+PyRep::PyRep( PyType t )
+: RefObject( 1 ),
+mType( t )
+{
+
+}
 
 const char* PyRep::TypeString() const
 {

@@ -722,6 +722,9 @@ int main( int argc, char* argv[] )
     /* Close the bulk data manager */
     sLog.Warning("   ServerShutdown", "Closing the BulkData Manager." );
     sBulkDB.Close();
+    /* Close the station data manager */
+    sLog.Warning("   ServerShutdown", "Closing the StationData Manager." );
+    stDataMgr.Close();
     /* Close the static data manager */
     sLog.Warning("   ServerShutdown", "Closing the StaticData Manager." );
     sDataMgr.Close();

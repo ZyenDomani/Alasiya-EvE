@@ -47,7 +47,8 @@ const char* const NewLog::COLOR_TABLE[ COLOR_COUNT ] =
 
 NewLog::NewLog()
 : mLogfile( NULL ),
-  mTime( 0 )
+  mTime( 0 ),
+  m_initialized(false)
 {
     // open default logfile
     std::string logPath = EVEMU_ROOT "/log/";
@@ -329,6 +330,7 @@ void NewLog::SetLogfileDefault(std::string logPath)
     //snprintf( filename, FILENAME_MAX + 1, EVEMU_ROOT "/log/log_%02u-%02u-%04u-%02u-%02u.log",
     //          t.tm_mday, t.tm_mon + 1, t.tm_year + 1900, t.tm_hour, t.tm_min );
 
+    // this isnt accurate as log system is not initalized yet.  all Print calls will fail
     if (!SetLogfile(filename))
         Warning( "Log", "Unable to open logfile '%s': %s", filename, strerror( errno ) );
 }

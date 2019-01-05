@@ -49,7 +49,7 @@ class PyVisitor;
 class DBRowDescriptor;
 
 /**
- * debug macro's to ease the increase and decrease of references of a object
+ * debug macros to ease the increase and decrease of references of a object
  * using this also increases the possibility of debugging it.
  */
 #define PyIncRef(op) (op)->IncRef()
@@ -205,7 +205,7 @@ public:
 
 protected:
     PyRep( PyType t );
-    virtual ~PyRep();
+    virtual ~PyRep()    { /* do we need to do anything here? */ }
 
     const PyType mType;
 };
