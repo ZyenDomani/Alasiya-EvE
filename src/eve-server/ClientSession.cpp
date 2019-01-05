@@ -41,6 +41,7 @@ mDirty(false)
     /* default session values */
     mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE)));
     mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero()));
+    mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0")));
 }
 
 ClientSession::~ClientSession()
