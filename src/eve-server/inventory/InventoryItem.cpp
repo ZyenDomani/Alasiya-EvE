@@ -195,6 +195,9 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::Material:    // includes minerals
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
+        case EVEDB::invCategories::PlanetaryInteraction:
+        case EVEDB::invCategories::PlanetaryResources:
+        case EVEDB::invCategories::PlanetaryCommodities:
         case EVEDB::invCategories::Deployable:  // may need their own class
         case EVEDB::invCategories::Module:    // may need their own class
         case EVEDB::invCategories::Drone:       // player drones.  use their own class (eventually)
