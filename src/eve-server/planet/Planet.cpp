@@ -95,60 +95,6 @@ void PlanetSE::Process()
     }
 }
 
-void PlanetSE::CreateCustomsOffice()
-{
-    /** @todo  will need to write this code and make it play nice with everything else.
-     * a CO will be a special container as a StructureSE, linked to the planet it orbits, and any colony on that planet.
-     * there is only one CO per planet, but ALL chars with a colony on that planet can access their items on the same CO
-     * the CO will load all items when it loads, but will need checks on "view items" or "open container" to ONLY send
-     * items owned by calling char, or NONE for chars that dont have a colony on that planet.
-     * i dont know where/how to do that yet...will need testing
-     */
-
-    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-    FactionData data;
-        data.ownerID = corpInterbus;
-        data.factionID = factionInterBus;
-        data.allianceID = 0;
-        data.corporationID = corpInterbus;
-    uint16 typeID = EVEDB::invTypes::typeInterbusCustomsOffice;
-
-    if (m_system->GetSystemSecurityRating() > 0.49) {
-        typeID = EVEDB::invTypes::typePlanetaryCustomsOffice;
-        // hisec...reset data for system sov holder...not sure how im gonna do this one.
-        data.ownerID = 1;
-        data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
-        data.allianceID = 0;
-        data.corporationID = 0;
-    }
-
-    GPoint pos = GetPosition();
-    uint32 radius = m_self->radius();
-    srandom(m_self->itemID());
-    int64 rand = random();
-    double j = (((rand / RAND_MAX) -1.0) / 3.0);
-    double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
-    s = EvE::max(0.5, EvE::min(s, 10.5));
-    double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;
-    uint32 d = radius * (s +1) +10000;
-    pos.x += d * sin(t);
-    pos.y += 0.5 * radius * sin(j);
-    pos.z -= d * cos(t);
-/*
-    GVector dir(pos, m_self->position());
-    dir.normalize();
-    pos -= (dir * 25000);   // put CO 25km closer to planet than warpIn point.
-*/
-    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
-    StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
-    iRef->Relocate(pos);
-    iRef->ChangeSingleton(true, false);
-    iRef->SetAttribute(AttrIsGlobal, 1, false);
-    iRef->SaveItem();
-    pCO = new StructureSE(iRef, m_services, m_system, data);
-    m_system->AddEntity(pCO);
-}
-
 PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
 {
     /*  from eve/client/script/environment/planet\clientPlanet.py
@@ -169,12 +115,13 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
     //uint16 size = (uint16)pow(bands, 2)*4;
     uint8 bufferData = /*62*/63/*64*/;  // this seems to give the best results for static data (need to change/update)
     size_t buffer = (uint16)pow(dict.newBand, 2)*4;
-    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() - proximity: %u, newBand: %u, oldBand: %u, data: %u, bufferSize: %u", dict.proximity, dict.newBand, dict.oldBand, bufferData, (uint32)buffer);
+    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() - proximity: %u, newBand: %u, oldBand: %u, data: %u, bufferSize: %u", \
+            dict.proximity, dict.newBand, dict.oldBand, bufferData, (uint32)buffer);
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyBuffer(buffer, bufferData));
         args->SetItemString("numBands", new PyInt(dict.newBand));
         args->SetItemString("proximity", new PyInt(dict.proximity));
-    PyIncRef(args);
+    //PyIncRef(args);
     PyObject* rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
@@ -259,6 +206,60 @@ void PlanetSE::AbandonColony(Colony* pColony)
     if (itr != m_colonies.end())
         m_colonies.erase(itr);
     pColony->AbandonColony();
+}
+
+void PlanetSE::CreateCustomsOffice()
+{
+    /** @todo  will need to write this code and make it play nice with everything else.
+     * a CO will be a special container as a StructureSE, linked to the planet it orbits, and any colony on that planet.
+     * there is only one CO per planet, but ALL chars with a colony on that planet can access their items on the same CO
+     * the CO will load all items when it loads, but will need checks on "view items" or "open container" to ONLY send
+     * items owned by calling char, or NONE for chars that dont have a colony on that planet.
+     * i dont know where/how to do that yet...will need testing
+     */
+
+    //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
+    FactionData data;
+    data.ownerID = corpInterbus;
+    data.factionID = factionInterBus;
+    data.allianceID = 0;
+    data.corporationID = corpInterbus;
+    uint16 typeID = EVEDB::invTypes::typeInterbusCustomsOffice;
+
+    if (m_system->GetSystemSecurityRating() > 0.49) {
+        typeID = EVEDB::invTypes::typePlanetaryCustomsOffice;
+        // hisec...reset data for system sov holder...not sure how im gonna do this one.
+        data.ownerID = 1;
+        data.factionID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        data.allianceID = 0;
+        data.corporationID = 0;
+    }
+
+    GPoint pos = GetPosition();
+    uint32 radius = m_self->radius();
+    srandom(m_self->itemID());
+    int64 rand = random();
+    double j = (((rand / RAND_MAX) -1.0) / 3.0);
+    double s = 20 * pow(0.025 * (10 * log10(radius/1000000) -39), 20) +0.5;
+    s = EvE::max(0.5, EvE::min(s, 10.5));
+    double t = asin((pos.x/fabs(pos.x)) * (pos.z / sqrt(pow(pos.x, 2) + pow(pos.z, 2)))) +j;
+    uint32 d = radius * (s +1) +10000;
+    pos.x += d * sin(t);
+    pos.y += 0.5 * radius * sin(j);
+    pos.z -= d * cos(t);
+    /*
+     *    GVector dir(pos, m_self->position());
+     *    dir.normalize();
+     *    pos -= (dir * 25000);   // put CO 25km closer to planet than warpIn point.
+     */
+    ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
+    StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
+    iRef->Relocate(pos);
+    iRef->ChangeSingleton(true, false);
+    iRef->SetAttribute(AttrIsGlobal, 1, false);
+    iRef->SaveItem();
+    pCO = new StructureSE(iRef, m_services, m_system, data);
+    m_system->AddEntity(pCO);
 }
 
 
