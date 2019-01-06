@@ -44,8 +44,12 @@ public:
     bool IsSlotOccupied(EVEItemFlags flag);
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
-    void CheckSlotFitLimited(EVEItemFlags flag, InventoryItemRef iRef);     // verify slot avalibe
-    void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);    // verify module isnt group limited
+     // verify slot avalibe
+    // will throw if no slots avalible
+    void CheckSlotFitLimited(EVEItemFlags flag);
+    // verify module isnt group limited
+    // will throw if group is fitLimited and already has one fit.
+    void CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRef);
 
     // returns vector of fitted GenericModule* in specified flag's bank
     void GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec);

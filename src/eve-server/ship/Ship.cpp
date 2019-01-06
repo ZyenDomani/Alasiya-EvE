@@ -901,7 +901,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
     if (m_ModuleManager->IsSlotOccupied(flag))
         throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
 
-    m_ModuleManager->CheckSlotFitLimited(flag, iRef);
+    m_ModuleManager->CheckSlotFitLimited(flag);
     m_ModuleManager->CheckGroupFitLimited(flag, iRef);
 
     if (IsHiSlot(flag)) {
