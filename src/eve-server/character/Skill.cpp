@@ -66,9 +66,10 @@ void Skill::VerifySP()
     if (GetAttribute(AttrSkillPoints) == 0)
         return;
     uint32 spThisLevel = GetSPForLevel(GetAttribute(AttrSkillLevel)).get_int();
-    uint32 spNextLevel = GetSPForLevel(GetAttribute(AttrSkillLevel) +1).get_int();
-    if ((GetAttribute(AttrSkillPoints).get_int() < spThisLevel) or (GetAttribute(AttrSkillPoints).get_int() > spNextLevel)) {
-        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u", itemName().c_str(), (uint32)GetAttribute(AttrSkillPoints).get_int(), spThisLevel);
+    uint32 spNextLevel = GetSPForLevel(GetAttribute(AttrSkillLevel) + EvilOne).get_int();
+    uint32 spCurrent = GetAttribute(AttrSkillPoints).get_int();
+    if ((spCurrent < spThisLevel) or (spCurrent > spNextLevel)) {
+        _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u (next: %u)", itemName().c_str(), spCurrent, spThisLevel, spNextLevel);
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
 }
