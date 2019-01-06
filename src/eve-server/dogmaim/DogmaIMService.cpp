@@ -619,7 +619,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         def ProcessLocationInfo(self, cData):
             for locationID, datas in cData.iteritems():
         --still dont know what 'datas' are
-        ** this has *something* to do with POS 
+        ** this has *something* to do with POS
      */
     rsp->SetItemString("locationInfo", PyStatic.NewNone());
 
@@ -779,7 +779,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     }
 
     if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
-        return PyStatic.NewNone();
+        return new PyInt(0);
     ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.arg1);
     if (sRef.get() == nullptr)
         return new PyInt(0);

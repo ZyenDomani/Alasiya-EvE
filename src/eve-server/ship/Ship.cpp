@@ -1555,12 +1555,33 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
         _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - Completed loop in %.3fus.", GetTimeUSeconds() - start);
 }
 
+/*
+ * {'messageKey': 'CantUngroupModuleActive', 'dataID': 17874986, 'suppressable': False, 'bodyID': 256339, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3540}
+ *    (256339, `You cannot ungroup active modules, please deactivate them first.`)
+ * {'messageKey': 'CantUngroupModuleLoading', 'dataID': 17874989, 'suppressable': False, 'bodyID': 256340, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3541}
+ *    (256340, `You can't ungroup weapons while they are being loaded with charges.`)
+ * {'messageKey': 'CantUnlinkModuleActive', 'dataID': 17878129, 'suppressable': False, 'bodyID': 257511, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2679}
+ *    (257511, `You cannot ungroup active modules, please deactivate them first.`)
+ */
 uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
 {
-    /** @todo this will need logic work... */
+    /** @todo this will need a bit more logic work... */
     GenericModule* pMod1 = m_ModuleManager->GetModule(moduleID);
     if (pMod1 == nullptr)
         return 0; // make error here?
+    if (pMod1->IsActive())
+        throw PyException( MakeUserError( "CantUngroupModuleActive" ));
+    if (pMod1->IsLoading())
+        throw PyException( MakeUserError( "CantUngroupModuleLoading" ));
+
+    if (pMod1->IsActive()) {
+        m_pilot->SendNotifyMsg("You cannot ungroup active modules, please deactivate them first.");
+        return 0;
+    }
+    if (pMod1->IsLoading()) {
+        m_pilot->SendNotifyMsg("You cannot ungroup weapons while they are being loaded with charges.");
+        return 0;
+    }
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod1);
     if (itr != m_linkedWeapons.end()) {
         uint32 slaveID = itr->second.front()->itemID();
@@ -1645,6 +1666,11 @@ void ShipItem::UnlinkAllWeapons()
     std::list< GenericModule* > weaponList;
     m_ModuleManager->GetWeapons(weaponList);
     for (auto cur : weaponList) {
+        if (cur->IsActive())
+            throw PyException( MakeUserError( "CantUngroupModuleActive" ));
+        if (cur->IsLoading())
+            throw PyException( MakeUserError( "CantUngroupModuleLoading" ));
+
         cur->SetLinked(false);
         cur->SetLinkMaster(false);
     }
