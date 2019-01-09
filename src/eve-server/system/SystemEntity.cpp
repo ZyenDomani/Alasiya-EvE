@@ -239,7 +239,7 @@ void SystemEntity::Abandon()
     m_corpID = 0;
     m_fleetID = 0;
     m_ownerID = 0;
-    m_self->ChangeOwner(1); // update this to use system owner?
+    m_self->ChangeOwner(1); // update this to use system owner?    yes, but system owner not coded yet.
 }
 
 void SystemEntity::Delete()

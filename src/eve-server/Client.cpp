@@ -996,6 +996,10 @@ void Client::Board(Ship* newShipSE)
 
 void Client::Eject()
 {
+    /** @todo  things to look for here....
+     * is ship being Abandoned?
+     * is ship in pos FF?  if so, then not abandoned, and adjust accordingly
+     */
     if (m_pod.get() == nullptr)
         CreateNewPod();
 
@@ -1007,15 +1011,16 @@ void Client::Eject()
             return;
     }
 
+    // how can we determine if ship is being abandoned?
     pShipSE->Abandon();
-    m_ship->SetFlag(flagShipOffline);
-
     char ci[45];
     snprintf(ci, sizeof(ci), "Abandoned: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
 
-    pShipSE->DestinyMgr()->UpdateOldShip(m_ship);
-    pShipSE->DestinyMgr()->SendBallInteractive(m_ship);
+    pShipSE->DestinyMgr()->Eject();
+
+    m_ship->SetFlag(flagShipOffline);
+    m_ship->Eject();
 
     uint32 oldShipID = m_shipId;
     GPoint capsulePosition(pShipSE->GetPosition());
@@ -1024,10 +1029,10 @@ void Client::Eject()
     m_pod->Move(m_locationID, flagCapsule, true);
 
     FactionData data;
+        data.ownerID = GetCharacterID();
+        data.factionID = GetWarFactionID();
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
-        data.factionID = GetWarFactionID();
-        data.ownerID = GetCharacterID();
     Ship* newShipSE = new Ship(m_pod, *(m_system->GetServiceMgr()), m_system, data);
 
     if (newShipSE == nullptr) {

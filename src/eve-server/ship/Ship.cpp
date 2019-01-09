@@ -110,6 +110,8 @@ bool ShipItem::_Load()
     // load contents
     if (!pInventory->LoadContents())
         return false;
+    // load linked weapons (if available)
+    LoadLinkedWeapons();
 
     return (m_IsLoaded = true);
 }
@@ -715,6 +717,14 @@ void ShipItem::ProcessModules() {
     m_ModuleManager->Process();
 }
 
+void ShipItem::Eject()
+{
+    if (m_ModuleManager != nullptr)
+        m_ModuleManager->AbortCycle();
+    // linked weapons will be persistant here.
+    //UnlinkAllWeapons();
+}
+
 void ShipItem::Dock() {
     m_isDocking = true;
     DeactivateAllModules();
@@ -1265,16 +1275,6 @@ void ShipItem::UpdateModules(EVEItemFlags flag)
     m_ModuleManager->UpdateModules(flag);
 }
 
-void ShipItem::UnloadModule(uint32 itemID)
-{
-    m_ModuleManager->UnfitModule(itemID);
-}
-
-void ShipItem::UnloadAllModules()
-{
-    m_ModuleManager->UnloadAllModules();
-}
-
 // not used
 void ShipItem::RepairShip(float fraction)
 {
@@ -1339,11 +1339,6 @@ void ShipItem::Online (uint32 moduleID)
 	m_ModuleManager->Online(moduleID);
 }
 
-void ShipItem::Offline (uint32 moduleID)
-{
-	m_ModuleManager->Offline(moduleID);
-}
-
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
 {
     if (IsValidTarget(targetID))
@@ -1354,19 +1349,98 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
     m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
 }
 
-void ShipItem::Deactivate(int32 itemID, std::string effectName)
+
+/*  overload heat-related shit......
+ *
+    AttrHeatHi = 1175,
+    AttrHeatMed = 1176,
+    AttrHeatLow = 1177,
+    AttrHeatCapacityHi = 1178,
+    AttrHeatDissipationRateHi = 1179,
+    AttrHeatAbsorbtionRateModifier = 1180,
+    AttrHeatAbsorbtionRateHi = 1182,
+    AttrHeatAbsorbtionRateMed = 1183,
+    AttrHeatAbsorbtionRateLow = 1184,
+
+1224    heatGenerationMultiplier    NULL    1
+
+1178    heatCapacityHi  NULL    100
+1199    heatCapacityMed     NULL    100
+1200    heatCapacityLow     NULL    100
+1179    heatDissipationRateHi   NULL    0.01
+1196    heatDissipationRateMed  NULL    0.01
+1198    heatDissipationRateLow  NULL    0.01
+1259    heatAttenuationHi   NULL    0.63
+1261    heatAttenuationMed  NULL    0.5
+1262    heatAttenuationLow  NULL    0.5
+*/
+
+void ShipItem::DissipateHeat()
 {
-    m_ModuleManager->Deactivate(itemID, effectName);
+    //H = H0(e^-tτ)
+    if (HasAttribute(AttrHeatHi)) {
+        float heat = GetAttribute(AttrHeatHi).get_float();
+
+        if (heat > 0.01)
+            SetAttribute(AttrHeatHi, heat);
+        else
+            DeleteAttribute(AttrHeatHi);
+    }
 }
 
-void ShipItem::Overload(EVEItemFlags flag)
+void ShipItem::DamageGroup(GenericModule* pMod)
 {
-    m_ModuleManager->Overload(flag);
+
 }
 
-void ShipItem::CancelOverloading(EVEItemFlags flag)
+/*
+ * AttrHeatDamage = 1211,
+ * AttrHeatDamageBonus = 1213,          // module attrib (float x/100 = %)
+ * AttrHeatGenerationMultiplier = 1224, // ship attrib
+ * AttrThermodynamicsHeatDamage = 1229, // skill attrib
+ * AttrHeatDamageMultiplier = 1485,     // system beacon effect
+*/
+
+/*  heat buildup
+ * H = H0(1 - e-tτ)
+Setting H0 to 100 would make my graph match his. t is time. τ is a constant based on ship and overloaded modules.
+τ = hgm (τ1 + τ2 + ... + τn)
+Setting the per module τ to 0.025 made my graphs match his.
+*/
+
+/*
+Slt  Att   Damage chance multiplier at distance from overheated module
+            1       2       3       4       5       6       7
+1   0.00
+2   0.25    0.25
+3   0.50    0.50    0.25
+4   0.63    0.63    0.40    0.25
+5   0.71    0.71    0.50    0.36    0.25
+6   0.76    0.76    0.58    0.44    0.33    0.25
+7   0.79    0.79    0.62    0.49    0.39    0.31    0.24
+8   0.82    0.82    0.67    0.55    0.45    0.37    0.30    0.25
+*/
+//Cycles to burnout = total module HP/ (hp heat damage per cycle - (hp heat damage per cycle*thermodynamics level*5/100))
+void ShipItem::HeatDamageCheck(GenericModule* pMod)
 {
-    m_ModuleManager->DeOverload(flag);
+    std::vector<uint32> modVec;
+    // if this module is grouped, all modules will take same damage.
+    if (pMod->IsLinked()) {
+
+    } else {
+        // module not linked.  continue with default heat damage calc's
+        // determine position and get adjacent modules
+        uint8 flag = pMod->flag();
+
+        // determine modules to damage and add to list
+        uint32 moduleID = 0;
+
+
+        modVec.push_back(moduleID);
+    }
+
+    for (auto cur : modVec)
+        DamageModule(cur);
 }
 
 void ShipItem::RemoveRig(InventoryItemRef iRef) {
@@ -1416,6 +1490,7 @@ void ShipItem::StripFitting()
         m_ModuleManager->Initialize();
     }
 
+    UnlinkAllWeapons();
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
     for (auto cur : moduleList)
@@ -1429,6 +1504,8 @@ void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
     GenericModule* pMod1 = m_ModuleManager->GetModule(masterID);
     GenericModule* pMod2 = m_ModuleManager->GetModule(slaveID);
     LinkWeapon(pMod1, pMod2);
+
+    SaveLinkedWeapons();
 }
 
 void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
@@ -1488,6 +1565,8 @@ void ShipItem::LinkAllWeapons()
         } else
             ++itr;
     }
+
+    SaveLinkedWeapons();
 }
 
 void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
@@ -1600,6 +1679,8 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
             }
         }
     }
+
+    SaveLinkedWeapons();
 }
 
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
@@ -1643,6 +1724,7 @@ void ShipItem::UnlinkGroup(uint32 memberID)
             itr2 = itr->second.erase(itr2);
             if (itr->second.empty()) {
                 m_linkedWeapons.erase(itr);
+                SaveLinkedWeapons();
                 return;
             }
         }
@@ -1675,6 +1757,7 @@ void ShipItem::UnlinkAllWeapons()
         cur->SetLinkMaster(false);
     }
     m_linkedWeapons.clear();
+    ShipDB::ClearLinkedWeapons(m_itemID);
 }
 
 uint8 ShipItem::GetLinkedCount(GenericModule* pMod)
@@ -1685,16 +1768,18 @@ uint8 ShipItem::GetLinkedCount(GenericModule* pMod)
     return itr->second.size() +1;
 }
 
-PyDict* ShipItem::GetLinkedWeapons()
+PyRep* ShipItem::GetLinkedWeapons()
 {
+    if (m_linkedWeapons.empty())
+        return PyStatic.NewNone();
+    //return new BuiltinSet();  <<<----  old return (pre-'linked groups')
+
     PyDict* result = new PyDict();
-    if (!m_linkedWeapons.empty()) {
-        for (auto cur : m_linkedWeapons) {
-            PyList* slaves = new PyList();
-            for (auto slave : cur.second)
-                slaves->AddItem(new PyInt(slave->itemID()));
-            result->SetItem(new PyInt(cur.first->itemID()), slaves);
-        }
+    for (auto cur : m_linkedWeapons) {
+        PyList* slaves = new PyList();
+        for (auto slave : cur.second)
+            slaves->AddItem(new PyInt(slave->itemID()));
+        result->SetItem(new PyInt(cur.first->itemID()), slaves);
     }
 
     if (is_log_enabled(SHIP__MODULE_MESSAGE))
@@ -1702,14 +1787,92 @@ PyDict* ShipItem::GetLinkedWeapons()
     return result;
 }
 
+void ShipItem::OfflineGroup(GenericModule* pMod)
+{
+    if (pMod->IsMaster()) {
+        std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
+        if (itr != m_linkedWeapons.end())
+            for (auto cur : itr->second)
+                cur->Offline();
+    } else {
+        // this module isnt master... loop thru all links to see if we can find it
+        for (auto cur : m_linkedWeapons) {
+            std::list<GenericModule*>::iterator itr = cur.second.begin();
+            while (itr != cur.second.end()) {
+                if ((*itr) == pMod) {
+                    OfflineGroup(cur.first);
+                    return;
+                }
+                ++itr;
+            }
+        }
+    }
+}
+
+void ShipItem::SaveLinkedWeapons()
+{
+    std::multimap< uint32, uint32 > data;
+    data.clear();
+    if (!m_linkedWeapons.empty())
+        for (auto cur : m_linkedWeapons)
+            for (auto slave : cur.second)
+                data.emplace(cur.first->itemID(), slave->itemID());
+
+    ShipDB::SaveLinkedWeapons(m_itemID, data);
+}
+
+void ShipItem::LoadLinkedWeapons()
+{
+    // NOTE:  there probably isnt a pilot at this point, so no sending of errors on load.
+    if (m_ModuleManager == nullptr) {
+        if (m_pilot != nullptr)
+            m_pilot->SendErrorMsg("There was a problem loading your saved weapon grouping.  Ref: ServerError xxxxx");
+    }
+    DBQueryResult* res = new DBQueryResult();
+    ShipDB::LoadLinkedWeapons(m_itemID, *res);
+
+    bool error = false;
+    GenericModule* pMaster(nullptr);
+    GenericModule* pSlave(nullptr);
+    DBResultRow row;
+    // this is gonna be slow as shit...i dont like this, but best way to do it.
+    while (res->GetRow(row)) {
+        //SELECT masterID, slaveID FROM shipWeaponGroups
+        pMaster = m_ModuleManager->GetModule(row.GetInt(0));
+        pSlave = m_ModuleManager->GetModule(row.GetInt(1));
+        if ((pMaster == nullptr) or (pSlave == nullptr)) {
+            error = true;
+            continue;
+        }
+        //LinkWeapon(pMaster, pSlave);  <<<--- this will throw.  DO NOT use here.
+        std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMaster);
+        if (itr == m_linkedWeapons.end()) {
+            std::list<GenericModule*> slaves;
+            slaves.push_back(pSlave);
+            m_linkedWeapons[pMaster] = slaves;
+        } else {
+            itr->second.push_back(pSlave);
+        }
+        pMaster->SetLinked(true);
+        pMaster->SetLinkMaster(true);
+        pSlave->SetLinked(true);
+    }
+
+    if (error)
+        if (m_pilot != nullptr)
+            m_pilot->SendErrorMsg("There was a problem loading your saved weapon grouping.  Ref: ServerError xxxxx");
+
+    SafeDelete(res);
+}
+
 // new effects system.  wip
 void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
     /*
     Effects processing order...
-        boosters   //char effect
+        Boosters   //char effect
         Implants   //char effect
-        skills     //char effect
+        Skills     //char effect
         Ship       //ship effect
         Subsystem  //module effect
         Rigs       //module effect
@@ -1857,10 +2020,6 @@ m_processTimer(m_processTimerTick)
     _log(SHIP__INFO, "Created ShipSE %p for item %u", this, self->itemID());
 }
 
-Ship::~Ship()
-{
-}
-
 double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
 {
     // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1 ) * EXP((t0-t1)/tau) ] ^ 2
@@ -1931,7 +2090,9 @@ void Ship::Process() {
             sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
     }
 
-    // now, process the modules.
+    // order of these two are important.
+    //   dissipate heat from last round before adding heat for this round
+    m_shipRef->DissipateHeat();
     m_shipRef->ProcessModules();
 }
 

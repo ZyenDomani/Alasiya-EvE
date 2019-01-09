@@ -119,10 +119,34 @@ void ModuleContainer::ShipWarping()
                 cur.second->AbortCycle();
 }
 
+void ModuleContainer::OfflineAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Offline();
+}
+
+void ModuleContainer::DeactivateAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Deactivate();
+}
+
 void ModuleContainer::AbortCycle() {
     for (auto cur : m_modules)
         if (cur.second != nullptr)
             cur.second->AbortCycle();
+}
+
+void ModuleContainer::UnloadAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->UnloadCharge();
+}
+
+void ModuleContainer::RepairAll() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->Repair();
 }
 
 void ModuleContainer::Process() {
@@ -143,30 +167,6 @@ void ModuleContainer::OnlineAll() {
             itr->second->Online();
         ++itr;
     }
-}
-
-void ModuleContainer::OfflineAll() {
-    for (auto cur : m_modules)
-        if (cur.second != nullptr)
-            cur.second->Offline();
-}
-
-void ModuleContainer::DeactivateAll() {
-    for (auto cur : m_modules)
-        if (cur.second != nullptr)
-            cur.second->Deactivate();
-}
-
-void ModuleContainer::UnloadAll() {
-    for (auto cur : m_modules)
-        if (cur.second != nullptr)
-            cur.second->UnloadCharge();
-}
-
-void ModuleContainer::RepairAll() {
-    for (auto cur : m_modules)
-        if (cur.second != nullptr)
-            cur.second->Repair();
 }
 
 bool ModuleContainer::isSlotOccupied(EVEItemFlags flag) {

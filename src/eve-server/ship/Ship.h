@@ -217,34 +217,34 @@ public:
 
     bool ValidateBoardShip(CharacterRef who);
     void SaveShip();
+    void RepairShip(float fraction);
 
     /* Inform Ship that a state change is taking place  */
     void Dock();
     void Heal();
     void Jump();
     void Warp();
+    void Eject();
     void Undock();
     void AddModuleToOnlineVec(uint32 moduleID);
-
-    void RepairShip(float fraction);
 
     /* begin new module manager interface */
     void ProcessModules();
     void Online(uint32 moduleID);
-    void Offline(uint32 moduleID);
+    void Offline(uint32 moduleID)                       { m_ModuleManager->Offline(moduleID); }
     void OnlineAll();
     void OfflineAll();
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
-    void Deactivate(int32 itemID, std::string effectName);
+    void Deactivate(int32 itemID, std::string effectName) { m_ModuleManager->Deactivate(itemID, effectName); }
     void DeactivateAllModules();
-    void Overload(EVEItemFlags flag);
-    void CancelOverloading(EVEItemFlags flag);
+    void Overload(uint32 itemID)                        { m_ModuleManager->Overload(itemID); }
+    void CancelOverloading(uint32 itemID)               { m_ModuleManager->DeOverload(itemID); }
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef iRef);
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
-    void UnloadModule(uint32 itemID);
-    void UnloadAllModules();
+    void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnfitModule(itemID); }
+    void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void StripFitting();
 
@@ -258,7 +258,14 @@ public:
     void SetUndocking(bool set=false)                   { m_isUndocking = set; }
     InventoryItemRef GetTargetRef()                     { return m_targetRef; }
     void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }
-    void DamageModule(uint32 modID)                    { m_ModuleManager->DamageModule(modID, 1); }
+    // this is for repairing modules with nanite paste
+    PyRep* ModuleRepair(uint32 modID)                   { return m_ModuleManager->ModuleRepair(modID); }
+    void StopModuleRepair(uint32 modID)                 { m_ModuleManager->StopModuleRepair(modID); }
+
+    // OL and Heat damage shit
+    void DissipateHeat();
+    void HeatDamageCheck(GenericModule* pMod);
+    void DamageModule(uint32 modID)                     { m_ModuleManager->DamageModule(modID, 1); }
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
 
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
@@ -333,16 +340,25 @@ public:
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
     void LinkWeapon(uint32 masterID, uint32 slaveID); // this should throw if applicable
-    void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);
     uint32 UnlinkWeapon(uint32 moduleID);
-    void UnlinkWeapon(uint32 masterID, uint32 slaveID);
     void UnlinkGroup(uint32 memberID);
     void UnlinkAllWeapons();
+    PyRep* GetLinkedWeapons();
+    void OfflineGroup(GenericModule* pMod);
+    void DamageGroup(GenericModule* pMod);
+    // to load with ammo
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
-    // this single iteration loop will link same type weapons, then remove the weapon from the vector.
-    //  non-linked weapons are kept.
+protected:
+    /* linking weapons methods */
+    void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);
+    void UnlinkWeapon(uint32 masterID, uint32 slaveID);
+    // to load saved linked weapons
+    void LoadLinkedWeapons();
+    // to save linked weapons
+    void SaveLinkedWeapons();
+    // this single iteration loop will link same type weapons, then remove the weapon from the list.
+    //  non-linked weapons are kept in list to be checked upon return to caller.
     void LinkWeaponLoop(std::list< GenericModule* >& moduleVec);
-    PyDict* GetLinkedWeapons();
 
 private:
     Client* m_pilot;
@@ -378,7 +394,7 @@ class Ship
 {
 public:
     Ship(InventoryItemRef self, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
-    virtual ~Ship();
+    virtual ~Ship()                                     { /* do nothing here */ }
 
     /* class type pointer querys. */
     virtual Ship* GetShipSE()                           { return this; }
@@ -413,11 +429,11 @@ public:
     uint8 GetMiningBoostAmount()                        { return m_boost.mining; }
 
     // misc
-    void DamageModule(uint32 itemID)                    { m_shipRef->DamageModule(itemID); }
-    void DamageRandModule(float chance);
     void PayInsurance();
-    void SaveShip()                                     { m_shipRef->SaveShip(); }
+    void DamageModule(uint32 modID)                     { m_shipRef->DamageModule(modID); }
+    void DamageRandModule(float chance);
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
+    void SaveShip()                                     { m_shipRef->SaveShip(); }
 
     //cancel all active modules
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }

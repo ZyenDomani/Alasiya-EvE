@@ -68,15 +68,18 @@ public:
     void Activate(int32 itemID, uint16 effectID, int32 targetID, int32 repeat);
     void Deactivate(uint32 itemID, std::string effectName);
     void DeactivateAllModules();
-    void Overload(EVEItemFlags flag);
-    void DeOverload(EVEItemFlags flag);
-    void DamageModule(uint32 itemID, uint8 amount);
-    void DamageModule(GenericModule* pMod, uint8 amount);
+    void Overload(uint32 itemID);
+    void DeOverload(uint32 itemID);
+    void DamageModule(uint32 itemID, float amount);
+    void DamageModule(GenericModule* pMod, float amount);
     void DamageRandModule();
-    void DamageRandModule(uint8 amount);
+    void DamageRandModule(float amount);
     void RepairModule(uint32 itemID, EvilNumber amount);
     void RepairModule(GenericModule* pMod, EvilNumber amount);
     void RepairModules();
+    // this is for repairing modules with nanite paste
+    PyRep* ModuleRepair(uint32 modID);
+    void StopModuleRepair(uint32 modID);
     // this will move charge item to module and split stack if needed
     // must NOT throw
     void LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag);

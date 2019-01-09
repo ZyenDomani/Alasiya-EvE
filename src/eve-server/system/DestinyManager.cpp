@@ -566,6 +566,14 @@ void DestinyManager::Halt() {
                 mySE->GetName(), mySE->GetID(), m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
 }
 
+void DestinyManager::Eject()
+{
+    // basic updates for ejecting from ship
+    Stop();
+    UpdateOldShip(mySE->GetShipSE()->GetShipItemRef());
+    SendBallInteractive(mySE->GetShipSE()->GetShipItemRef());
+}
+
 // Global collision methods
 //  check for collision.  called by Move()
 void DestinyManager::CheckBump()
@@ -2607,7 +2615,7 @@ void DestinyManager::UpdateOldShip(const ShipItemRef oldShipRef)
         slimPod->SetItemString("itemID",           new PyInt(oldShipRef->itemID()));
         slimPod->SetItemString("typeID",           new PyInt(oldShipRef->typeID()));
         slimPod->SetItemString("categoryID",       new PyInt(oldShipRef->categoryID()));
-        slimPod->SetItemString("ownerID",          new PyInt(1));
+        slimPod->SetItemString("ownerID",          new PyInt(1));   // update these to actual item values
         slimPod->SetItemString("charID",           new PyInt(0));
         slimPod->SetItemString("corpID",           new PyInt(0));
         slimPod->SetItemString("allianceID",       new PyInt(0));

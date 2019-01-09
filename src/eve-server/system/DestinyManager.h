@@ -80,6 +80,7 @@ public:
     /* Global Actions */
     void Stop();
     void Halt();     // puts entity at 0 velocity
+    void Eject();   // avoid numerous other redirect calls
 
     /* TractorBeam */
 	void TractorBeamStop();

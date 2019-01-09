@@ -236,8 +236,10 @@ void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRe
 void ModuleManager::UnfitModule(uint32 itemID)
 {
     GenericModule* pMod = pModuleCont->GetModule(itemID);
-    if (pMod == nullptr)
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnfitModule() -  Module %u not found", itemID);
         return;
+    }
 
     EVEItemFlags flag = flagHangar;
     bool inSpace = IsSolarSystem(m_Ship->locationID());
@@ -247,7 +249,6 @@ void ModuleManager::UnfitModule(uint32 itemID)
     pMod->Offline();
     if (pMod->IsLoaded()) {
         //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
-
         if (pMod->GetLoadedChargeRef().get() != nullptr)    // just in case...
             pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
         pMod->UnloadCharge();
@@ -270,7 +271,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
 bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
-        sLog.Warning("ModuleManager::FitModule","Slot %s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        sLog.Warning("ModuleManager::FitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
 
@@ -357,46 +358,48 @@ void ModuleManager::Online(EVEItemFlags flag)
 {
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(itemID) -  Module not found at flag %s", sDataMgr.GetFlagName(flag).c_str());
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag).c_str());
         return;
     }
     if (pMod->isOnline()) {
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", pMod->GetSelf()->itemName().c_str());
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s already Online", pMod->GetSelf()->itemName().c_str());
         return;
     }
 
-    _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s going Online", pMod->GetSelf()->itemName().c_str());
+    _log(SHIP__MODULE_TRACE, "ModuleManager::Online(flag) -  %s going Online", pMod->GetSelf()->itemName().c_str());
     pMod->Online();
 }
 
 void ModuleManager::Offline(uint32 itemID)
 {
     GenericModule* pMod = pModuleCont->GetModule(itemID);
-    if (pMod != nullptr) {
-        if (!pMod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", pMod->GetSelf()->itemName().c_str());
-            pMod->SetModuleState(Module::State::Offline);
-            return;
-        }
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
-        pMod->Offline();
-    } else
+    if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(itemID) -  Module %u not found", itemID);
+        return;
+    }
+    if (!pMod->isOnline()) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s not Online", pMod->GetSelf()->itemName().c_str());
+        pMod->SetModuleState(Module::State::Offline);
+        return;
+    }
+    _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
+    pMod->Offline();
 }
 
 void ModuleManager::Offline(EVEItemFlags flag)
 {
     GenericModule* pMod = pModuleCont->GetModule(flag);
-    if (pMod != nullptr) {
-        if (!pMod->isOnline()) {
-            _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", pMod->GetSelf()->itemName().c_str());
-            pMod->SetModuleState(Module::State::Offline);
-            return;
-        }
-        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
-        pMod->Offline();
-    } else
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module at location %u not found", flag);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag).c_str());
+        return;
+    }
+    if (!pMod->isOnline()) {
+        _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s not Online", pMod->GetSelf()->itemName().c_str());
+        pMod->SetModuleState(Module::State::Offline);
+        return;
+    }
+    _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(flag) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
+    pMod->Offline();
 }
 
 void ModuleManager::AbortCycle()
@@ -457,6 +460,7 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
     } else if (m_Ship->GetPilot()->IsJump()) {
         throw PyException( MakeUserError( "DeniedActivateInJump"));
     }
+    //ModuleActivationDeniedCriminalAssistance
 
     pMod->Activate(effectID, targetID, repeat);
 }
@@ -473,73 +477,69 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
         _log(SHIP__MODULE_ERROR, "ModuleManager::Deactivate() - Called on module %u that is not loaded.", itemID );
 }
 
-void ModuleManager::Overload(EVEItemFlags flag)
+void ModuleManager::Overload(uint32 itemID)
 {
-    GenericModule* pMod = pModuleCont->GetModule(flag);
+    GenericModule* pMod = pModuleCont->GetModule(itemID);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Overload() - Called on module that is not loaded at slot %i.", (int8)flag );
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Overload() - Called on module %u that is not loaded.", itemID);
         return;
     }
     pMod->Overload();
     _log(SHIP__MODULE_TRACE, "ModuleManager::Overload() - %s Overloading...", pMod->GetSelf()->itemName().c_str());
 }
 
-void ModuleManager::DeOverload(EVEItemFlags flag)
+void ModuleManager::DeOverload(uint32 itemID)
 {
-    GenericModule* pMod = pModuleCont->GetModule(flag);
+    GenericModule* pMod = pModuleCont->GetModule(itemID);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::DeOverload() - Called on module that is not loaded at slot %i.", (int8)flag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::DeOverload() - Called on module %u that is not loaded.", itemID);
         return;
     }
     pMod->DeOverload();
     _log(SHIP__MODULE_TRACE, "ModuleManager::DeOverload() - %s DeOverload...", pMod->GetSelf()->itemName().c_str());
 }
 
-void ModuleManager::DamageModule(uint32 itemID, uint8 amount)
+void ModuleManager::DamageModule(uint32 itemID, float amount)
 {
-    GenericModule* pMod = pModuleCont->GetModule(itemID);
-    if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Called on module %u that is not loaded.", itemID );
-        return;
-    }
-    pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
-    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %lli",  \
-                pMod->GetSelf()->itemName().c_str(), amount, pMod->GetAttribute(AttrDamage).get_int());
-    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
-        pMod->Offline();
+    DamageModule(pModuleCont->GetModule(itemID), amount);
 }
 
-void ModuleManager::DamageModule(GenericModule* pMod, uint8 amount)
+void ModuleManager::DamageRandModule()
+{
+    DamageModule(pModuleCont->GetRandModule(), 1.0f);
+}
+
+void ModuleManager::DamageRandModule(float amount)
+{
+    DamageModule(pModuleCont->GetRandModule(), amount);
+}
+
+void ModuleManager::DamageModule(GenericModule* pMod, float amount)
 {
     if (pMod == nullptr) {
         _log(SHIP__MODULE_ERROR, "ModuleManager::DamageModule() - Module not found.");
         return;
     }
-    pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));
-    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %u damage.  current damage %lli",  \
-                pMod->GetSelf()->itemName().c_str(), amount, pMod->GetAttribute(AttrDamage).get_int());
-    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP))
+
+    pMod->SetAttribute(AttrDamage, (pMod->GetAttribute(AttrDamage) + amount));  //verfify this works as intended
+    _log(SHIP__MODULE_DAMAGE, "ModuleManager::DamageModule() - %s taking %.2f damage.  current damage %.2f",  \
+                pMod->GetSelf()->itemName().c_str(), amount, pMod->GetAttribute(AttrDamage).get_float());
+    if (pMod->GetAttribute(AttrDamage) >= pMod->GetAttribute(AttrHP)) {
+        //  this is for offlining entire group...this isnt right.
+        /*
+        if (pMod->IsLinked()) {
+            // loop thru linked modules and offline all
+            m_Ship->GetPilot()->SendNotifyMsg("Your group of %s has gone offline due to damage.", pMod->GetSelf()->itemName().c_str());
+            m_Ship->OfflineGroup(pMod);
+        } else */
+        m_Ship->GetPilot()->SendNotifyMsg("Your %s in %s has gone offline due to damage.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(pMod->flag()).c_str());
         pMod->Offline();
-}
-
-void ModuleManager::DamageRandModule()
-{
-    DamageModule(pModuleCont->GetRandModule(), 1);
-}
-
-void ModuleManager::DamageRandModule(uint8 amount)
-{
-    DamageModule(pModuleCont->GetRandModule(), amount);
+    }
 }
 
 void ModuleManager::RepairModule(uint32 itemID, EvilNumber amount)
 {
-    GenericModule* pMod = pModuleCont->GetModule(itemID);
-    if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::RepairModule() - Called on module %u that is not loaded.", itemID );
-        return;
-    }
-    pMod->Repair(amount);
+    RepairModule(pModuleCont->GetModule(itemID), amount);
 }
 
 void ModuleManager::RepairModule(GenericModule* pMod, EvilNumber amount)
@@ -554,6 +554,75 @@ void ModuleManager::RepairModule(GenericModule* pMod, EvilNumber amount)
 void ModuleManager::RepairModules()
 {
     pModuleCont->RepairAll();
+}
+
+PyRep* ModuleManager::ModuleRepair(uint32 modID)
+{
+    /*  Restrictions/Capabilities
+     *
+     *    Cannot be used while overloading any modules.
+     *    Cannot be used on an active module.
+     *    Cannot be used to repair a 100% damaged module (0/40hp). These must first be repaired to at least 1hp at a station.
+     *    Can be used to repair an offline module with at least 1hp remaining.
+     *    Can be used on an inactive module while other modules are active.
+     *    Can be used to repair any inactive modules while cloaked (everything but the cloak itself, of course).
+     *    Can repair multiple modules at once.
+     *    Can be canceled mid-repair, and will retain whatever repairs could be completed in the time it was active. Canceling a repair on a module that takes 1-2 paste to repair fully is occasionally problematic, and will round down - e.g. you need to have repaired enough HP to take at least one unit of paste before canceling mid-repair will result in any repaired damage or paste consumed. No paste is ever consumed without appropriate repairs being done, however.
+     *    You can jump or dock while repairing, which will have the same effect as canceling the repair manually.
+     *    You can repair a passive module (such as a plate, extender, or EANM) without taking it offline, and you still receive the benefit from passive modules while repairing them. Capacitor batteries were fixed and can now be repaired while online!
+     *
+     * Efficiency
+     *
+     *    Nanite efficiency is based on the base cost of the module, rather than amount of HP repaired.
+     *    All modules have 40hp, but base cost varies wildly.
+     *    Base efficiency for a theoretical (but impossible) full repair (0/40hp remaining) is approximately 0.0000775 paste per isk of base item cost.
+     *    To couch this in more relatable terms, this means that an item with a base cost of 100k isk will cost 7 or 8 paste to repair; an item with a base cost of 1m isk will cost 77-78 paste to repair.
+     *    The Nanite Operation skill reduces consumption by 5% per level. At V, nanite efficiency will be 0.000058125/isk, or ~58 units of paste per 1m isk base cost.
+     *    NPC station repair costs are equal to the item base cost, modified marginally by standing. Base repair cost with nanites is 7.7x11700=90,090 per 100,000 isk, or 10% less. Even without the Nanite Operation skill, repairs with nanite paste are always slightly cheaper than repairs at NPC stations. With Nanite Operation trained up, repairing with nanite paste is significantly cheaper than at NPC stations.
+     *
+     * Speed
+     *
+     *    Nanite paste has a base repair speed of 10hp per minute, independent of module type or cost.
+     *    As all modules have 40hp, and paste cannot be used to repair 100% damaged items, the most time a repair can take at base skill levels is 3:54 on a 97% damaged module.
+     *    The Nanite Interfacing skill improves repair speed by 20% (or 2hp) per level. At V, repair rate is 20hp per minute with a max repair time of 1:57.
+     *
+     * Module Repair Costs
+     *
+     * Again, the quantity of nanite paste consumed to repair an item is dependent on its base cost.
+     * You can easily find the base cost of a module by looking it up in the Item Browser subsection of Evemon's skill plans.
+     *
+     *    As a general rule, base cost is usually around 1/4 of the Empire price of an item. This mostly applies to T1 items, but T2 items for which demand is not extremely high tend to follow this as well.
+     *    As you might suspect, battleship-class modules have much higher base costs than frigate-class modules. This applies mostly to Afterburners, Microwarpdrives, Armor Repairers, and Shield Boosters. Most larger modules also produce less heat damage however, so the difference in nanites consumed per amount of time overheated is not as pronounced.
+     *    T2 items have the highest base cost at around 2-6x that of T1.
+     *    Named items often have lower base costs than T1, and are never higher.
+     *    Faction, Deadspace, and Officer items have wildly varying base costs.
+     * Most are similar or identical to named, others T1, and a few are higher than T1 but still much lower than T2.
+     * Officer/Deadspace MWDs are an odd exception to this, as all of them have the same base cost regardless of size class (790k).
+     * In most cases, this makes faction items prime candidates for overloading as they produce similar or less heat damage while being radically more
+     * effective and cheaper to repair than their T1 or T2 counterparts.
+     */
+
+    GenericModule* pMod = pModuleCont->GetModule(modID);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::ModuleRepair() - module %s not found.", modID);
+        return PyStatic.NewFalse();
+    }
+
+
+
+    //return PyStatic.NewTrue();  // can repair
+    return PyStatic.NewFalse(); // cannot repair (for whatever reason)
+}
+
+void ModuleManager::StopModuleRepair(uint32 modID)
+{
+    GenericModule* pMod = pModuleCont->GetModule(modID);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::ModuleRepair() - module %s not found.", modID);
+        return;
+    }
+
+
 }
 
 void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)

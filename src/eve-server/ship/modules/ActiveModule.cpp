@@ -264,8 +264,8 @@ void ActiveModule::Overload()
 
 void ActiveModule::DeOverload()
 {
-    m_overLoaded = false;
     GenericModule::DeOverload();
+    m_overLoaded = false;
 }
 
 // yes, the xxCycle() shit below seems overkill, but each has a specific purpose
@@ -392,6 +392,10 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Remote_Sensor_Booster: {
         } break;
     }
+
+    // do heat damage if overloaded...this will be handled in shipItem class
+    if (m_overLoaded)
+        m_shipRef->HeatDamageCheck(this);
 
     EvilNumber cycleTime = 10000;   // default to 10s
     if (m_modRef->HasAttribute(AttrSpeed, cycleTime))

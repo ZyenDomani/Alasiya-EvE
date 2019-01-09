@@ -87,3 +87,37 @@ bool ShipDB::IsShipInsured(uint32 shipID)
 
     return false;
 }
+
+void ShipDB::ClearLinkedWeapons(uint32 shipID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM shipWeaponGroups WHERE shipID = %u", shipID );
+}
+
+void ShipDB::LoadLinkedWeapons(uint32 shipID, DBQueryResult& res)
+{
+    sDatabase.RunQuery(res, "SELECT masterID, slaveID FROM shipWeaponGroups WHERE shipID = %u", shipID );
+}
+
+void ShipDB::SaveLinkedWeapons(uint32 shipID, std::multimap< uint32, uint32 >& data)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM shipWeaponGroups WHERE shipID = %u", shipID );
+    std::ostringstream Inserts;
+    // start the insert data.
+    Inserts << "INSERT INTO shipWeaponGroups";
+    Inserts << " (shipID, masterID, slaveID)";
+    bool first = true;
+    for (auto cur : data) {
+        if (first) {
+            Inserts << " VALUES ";
+            first = false;
+        } else
+            Inserts << ", ";
+        Inserts << "(" << shipID << ", " << cur.first << ", " << cur.second << "')";
+    }
+
+    if (!first)
+        if (!sDatabase.RunQuery(err, Inserts.str().c_str()))
+            _log(DATABASE__ERROR, "SaveLinkedWeapons - unable to save data - %s", err.c_str());
+}

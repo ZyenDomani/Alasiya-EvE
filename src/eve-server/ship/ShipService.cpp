@@ -126,9 +126,6 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    sLog.White("ShipBound::Handle_Board()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
     Call_BoardShip args;
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
@@ -193,10 +190,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
     }
-    sLog.White("ShipBound::Handle_Eject()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-    //no arguments.
 
+    //no arguments.
     Client* pClient = call.client;
     /** @todo create and implement "Weapon Flag"....
      *      Weapon Flag --  the 60-sec timer started upon any offensive weapon activation
@@ -214,11 +209,12 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    //  do we need this?
+    //  do we need this?  no.  make call to stop ship and continue
+    /*
     if (pShipSE->DestinyMgr()->IsMoving()) {
         throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
         return PyStatic.NewNone();
-    }
+    } */
 
     pClient->Eject();
 
@@ -232,13 +228,13 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 
 // NOTE  LeaveShip and ActivateShip are working.  dont fuck with them
 /* only called when docked. */
-PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
-    /*if (call.client->IsSessionChange()) {
+PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
+{
+    if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }*/
-    sLog.White("ShipBound::Handle_LeaveShip()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    }
+
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -263,10 +259,12 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call) {
 
 /* only called when docked. */
 PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
-    /*if (call.client->IsSessionChange()) {
+    //self.instanceCache, self.instanceFlagQuantityCache, self.wbData = self.remoteShipMgr.ActivateShip(shipID, oldShipID)
+
+    if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
         return nullptr;
-    }*/
+    }
     Call_BoardShip args;
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
@@ -284,11 +282,11 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
 
     pClient->BoardShip(newShipRef);
 
-    // response should return ship modules and loaded charges
+    // response should return ship modules, loaded charges, and linked weapons
     PyTuple* rsp = new PyTuple(3);
         rsp->SetItem(0, newShipRef->GetShipState());    //dict of ship modules
         rsp->SetItem(1, newShipRef->GetChargeState());    //dict of ship charges
-        rsp->items[2] = new BuiltinSet();
+        rsp->SetItem(2, newShipRef->GetLinkedWeapons()); // dict of linked modules
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "    ");
     return rsp;

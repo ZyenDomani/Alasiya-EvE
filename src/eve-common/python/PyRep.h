@@ -1043,17 +1043,19 @@ class pyStatic
 : public Singleton< pyStatic >
 {
 public:
-    pyStatic()                  { m_none = new PyNone(); m_zero = new PyInt(0); m_true = new PyBool(true); m_false = new PyBool(false); }
-    ~pyStatic()                 { PyDecRef(m_none); PyDecRef(m_zero); PyDecRef(m_true); PyDecRef(m_false); }
+    pyStatic()                  { m_none = new PyNone(); m_zero = new PyInt(0); m_true = new PyBool(true); m_false = new PyBool(false); m_one = new PyInt(1); }
+    ~pyStatic()                 { PyDecRef(m_none); PyDecRef(m_zero); PyDecRef(m_true); PyDecRef(m_false); PyDecRef(m_one); }
 
     PyRep* NewNone()            { PyIncRef(m_none); return m_none; }
     PyRep* NewZero()            { PyIncRef(m_zero); return m_zero; }
+    PyRep* NewOne()             { PyIncRef(m_one); return m_one; }
     PyRep* NewTrue()            { PyIncRef(m_true); return m_true; }
     PyRep* NewFalse()           { PyIncRef(m_false); return m_false; }
 
 private:
     PyRep* m_none;
     PyRep* m_zero;
+    PyRep* m_one;
     PyRep* m_true;
     PyRep* m_false;
 

@@ -209,9 +209,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             m_self->GetAttribute(AttrArmorEmDamageResonance).get_float(),
             m_self->GetAttribute(AttrArmorExplosiveDamageResonance).get_float() );
 
-        if (HasPilot())
-            GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
-
         float armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
             if (HasPilot()) {
@@ -260,8 +257,11 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 killed = true;
                 m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
             }
-            /** @todo (allan) deal with damaging modules. no idea the mechanics on this yet.  */
         }
+        // module damage.
+        //  after shields are gone, make damage to random module.
+        if (HasPilot())
+            GetShipSE()->DamageRandModule(sConfig.server.ModuleDamageChance);    // config option for random module damage chance
     }
 
     if (killed) {
@@ -484,6 +484,8 @@ void Ship::Killed(Damage &fatal_blow) {
                         d = MakeRandomInt(0, x);
                         x -= d;
                     }
+                    // todo:  add damage to item, if applicable, from ship explosion
+
                     // move item to vector for insertion into wreck later on
                     survivedItems.push_back(cur.second);
                 }

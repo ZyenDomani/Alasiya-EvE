@@ -1,39 +1,38 @@
-***   tested under Mageia 4  GCC 4.8  GLIBC 2.18     ***
+***   tested under Mageia 5  GCC 4.9.2  GLIBC 2.2     ***
 
-*********  WILL NOT COMPILE UNDER WINDOWS  *************
 
 # Status
-- Character creation and selection is working
-- Items and Ships display in station and Assets tab
-- Undocking and Docking almost complete (need to finish onlining modules when undocking)
+- ~65% functional.  see http://evemu.alasiya.net/?p=op_status for more info
+- Assets working
+- Undocking and Docking working
 - Skill Training is working (including resume/pause AND Training History)
-- Character Certificates working (tutorials MUST be off)
+- Character Certificates working
 - Injecting Skills is working
-- BookMarks are mostly working (no support for delete)
+- BookMarks are mostly working (no support for delete yet)
 - All Celestial Information from OverView is working
-- Corporation rewrite and mostly functional
-- Planets and Services Info from StarMap(F10) is working
+- Corporation rewrite and mostly functional (cannot apply/join)
 - MapBrowser(F11) is working
-- Empire Regions show Sovereignty
-- Station Info from StarMap working
-- Agents and Converstation working (hard-coded...no mission data yet)
-- SolarSystem, Constellation, and Region information working
-- Most dynamic data working from StarMap(F10) [visited systems, Bookmarked systems, Personal Assets, jumps/hour, ALL killtypes]
-- Refining/Reprocessing works, using Standings and Skills
-- Market History Data working
+- Empire Regions show Sovereignty (contested Sovereignty not implemented yet)
+- Preliminary Courier Missions implemented (with standings)
+- All dynamic data (and most static data) working in StarMap(F10)
+- Refining/Reprocessing working. Uses Standings and Skills
+- Market working
 - Manufacturing working
-- ML/PL research working (time is wrong)
+- ML/PL research working
 - POS's Deployable and Anchorable
-- Control Towers management somewhat working
+- Control Tower management somewhat working
 - Text-Based Search working
 - Bounties are working (with payouts)
 - Insurance is working (with payouts)
-- Most Modules working (except cap-size)
+- Modules working (except specific cap-size)
 - Loot working (Most NPC's, rogue drones are in process of fixing)
+- Salvage working (some wrecks are generic at this time)
 - Faction Standings working
 - Damage Types and resistances implemented
-- Missiles are implemented
-- Asteroid Rat Spawns implemented
+- Missiles are implemented (NPCs also)
+- Asteroid Rat Spawns implemented (chain-ratting working)
 - Mining system rewrite
-- PI system started (import/export not working yet)
+- PI system mostly operational (import/export not working yet)
+- Fleets working (and mission reward sharing)
+
 

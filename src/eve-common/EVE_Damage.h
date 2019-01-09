@@ -328,6 +328,25 @@ namespace Dmg {
  *
  *        msgKey = msgKey.replace('BankedR', 'R')
  *        sm.GetService('logger').AddCombatMessage(msgKey, args)
+ *
+ *
+ *    def DamageMessageGrouped(self, turretSets, hitQuality):
+ *        if hitQuality <= 0:
+ *            for t in turretSets:
+ *                t.SetShotMissed(True)
+ *
+ *        elif hitQuality >= 3:
+ *            for t in turretSets:
+ *                t.SetShotMissed(False)
+ *
+ *        else:
+ *            turretCount = len(turretSets)
+ *            missPct = [0.5, 0.25][hitQuality - 1]
+ *            missed = math.floor(missPct * turretCount)
+ *            random.shuffle(turretSets)
+ *            for i, t in enumerate(turretSets):
+ *                t.SetShotMissed(i < missed)
+ * 
  */
 
 
