@@ -277,7 +277,7 @@ bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
 
     fitModule(item, flag);
 
-    Online(item->itemID());
+    //Online(item->itemID());
     return true;
 }
 
