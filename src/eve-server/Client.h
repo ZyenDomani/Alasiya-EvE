@@ -136,7 +136,7 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
-    // these dont always work...still dont know why
+    // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
     std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }

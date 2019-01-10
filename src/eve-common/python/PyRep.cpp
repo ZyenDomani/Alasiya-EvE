@@ -59,9 +59,11 @@ const char* const s_mTypeString[] =
     "Invalid Type"      //19
 };
 
-/** @todo  this entire class should be better thought-out for memMgmt and object lifetime
+/** @todo  this entire class should be better thought-out for class d'tors and object lifetime
  *         however, i dont fully understand it enough to implement better memMgmt at this time
  *              -allan 10Jan19
+ *
+ *      -- possibably rewrite to use shared_ptr/unique_ptr, then we can remove the RefObject inheritance here.
  */
 
 /************************************************************************/
@@ -533,7 +535,7 @@ PyTuple::PyTuple( const PyTuple& oth ) : PyRep( PyRep::PyTypeTuple ), items()
 
 PyTuple::~PyTuple()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyTuple::Clone() const
@@ -605,7 +607,7 @@ PyList::PyList( const PyList& oth ) : PyRep( PyRep::PyTypeList ), items()
 
 PyList::~PyList()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyList::Clone() const
@@ -656,7 +658,7 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items()
 
 PyDict::~PyDict()
 {
-    clear();
+    //clear();
 }
 
 PyRep* PyDict::Clone() const

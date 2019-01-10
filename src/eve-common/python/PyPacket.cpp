@@ -24,6 +24,8 @@
     Updates:    Allan
 */
 
+/** @todo  update this to unique_ptr/shared_ptr if possible  */
+
 #include "eve-common.h"
 
 #include "python/PyPacket.h"
