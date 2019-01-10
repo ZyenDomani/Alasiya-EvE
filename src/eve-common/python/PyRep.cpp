@@ -59,11 +59,16 @@ const char* const s_mTypeString[] =
     "Invalid Type"      //19
 };
 
+/** @todo  this entire class should be better thought-out for memMgmt and object lifetime
+ *         however, i dont fully understand it enough to implement better memMgmt at this time
+ *              -allan 10Jan19
+ */
+
 /************************************************************************/
 /* PyRep base Class                                                     */
 /************************************************************************/
 PyRep::PyRep( PyType t )
-: RefObject( 1 ),
+: RefObject(1),
 mType( t )
 {
 
@@ -176,16 +181,12 @@ int32 PyLong::hash() const
 
 #define LONG_BIT_PyLong_SHIFT    (8*sizeof(long) - PyLong_SHIFT)
 
-    long x;
-    int i;
-    int sign;
+    long x=0;
+    int i=8, sign=1;
 
     /* This is designed so that Python ints and longs with the
     same value hash to the same value, otherwise comparisons
     of mapping keys will turn out weird */
-    i = 8;
-    sign = 1;
-    x = 0;
     if (i < 0 ) {
         sign = -1;
         i = -(i);
@@ -242,10 +243,9 @@ int32 PyFloat::hash() const
     ( !finite( X ) && !isnan( X ) )
 
     double v = mValue;
-    double intpart, fractpart;
-    int expo;
-    long hipart;
-    long x;        /* the final hash value */
+    double intpart=0.0, fractpart=0.0;
+    int expo=0;
+    long hipart=0, x=0;        /* x is the final hash value */
     /* This is designed so that Python numbers of different types
     * that compare equal hash to the same value; otherwise comparisons
     * of mapping keys will turn out weird.
@@ -364,9 +364,8 @@ int32 PyBuffer::hash() const
     if (mHashCache != -1 )
         return mHashCache;
 
-    register int32 len;
-    register unsigned char *p;
-    register int32 x;
+    int32 len=0, x=0;
+    unsigned char* p(nullptr);
 
     /* XXX potential bugs here, a readonly buffer does not imply that the
      * underlying memory is immutable.  b_readonly is a necessary but not
@@ -427,6 +426,7 @@ int32 PyString::hash() const
     if (mHashCache != -1 )
         return mHashCache;
 
+    /*
     register int32 len;
     register unsigned char *p;
     register int32 x;
@@ -439,9 +439,14 @@ int32 PyString::hash() const
     x ^= mValue.length();
     if (x == -1)
         x = -2;
-
     mHashCache = x;
-    return x;
+    */
+    if (mValue.length() > 0)
+        mHashCache = std::hash<std::string>{} (mValue);
+    else
+        mHashCache = 0;
+
+    return mHashCache;
 }
 
 /************************************************************************/
@@ -472,7 +477,7 @@ int32 PyWString::hash() const
 {
     if (mHashCache != -1 )
         return mHashCache;
-
+/*
     register int32 len;
     register unsigned char *p;
     register int32 x;
@@ -487,7 +492,13 @@ int32 PyWString::hash() const
         x = -2;
 
     mHashCache = x;
-    return x;
+    */
+    if (mValue.length() > 0)
+        mHashCache = std::hash<std::string>{} (mValue);
+    else
+        mHashCache = 0;
+
+    return mHashCache;
 }
 
 /************************************************************************/
@@ -522,7 +533,7 @@ PyTuple::PyTuple( const PyTuple& oth ) : PyRep( PyRep::PyTypeTuple ), items()
 
 PyTuple::~PyTuple()
 {
-    //clear();
+    clear();
 }
 
 PyRep* PyTuple::Clone() const
@@ -563,9 +574,9 @@ PyTuple& PyTuple::operator=( const PyTuple& oth )
 
 int32 PyTuple::hash() const
 {
-    register long x, y;
-    register int32 len = (int32)items.size();
-    register long index = 0;
+    long x=0, y=0;
+    int32 len = (int32)items.size();
+    long index = 0;
     long mult = 1000003L;
     x = 0x345678L;
     while (--len >= 0) {
@@ -594,7 +605,7 @@ PyList::PyList( const PyList& oth ) : PyRep( PyRep::PyTypeList ), items()
 
 PyList::~PyList()
 {
-    //clear();
+    clear();
 }
 
 PyRep* PyList::Clone() const
@@ -645,7 +656,7 @@ PyDict::PyDict( const PyDict& oth ) : PyRep( PyRep::PyTypeDict ), items()
 
 PyDict::~PyDict()
 {
-    //clear();
+    clear();
 }
 
 PyRep* PyDict::Clone() const

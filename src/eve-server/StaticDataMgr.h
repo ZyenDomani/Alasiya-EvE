@@ -108,6 +108,10 @@ public:
     // this will return owner's name from any type of ID...system, region, station, player item, etc.
     std::string         GetOwnerName(int32 ownerID);
 
+
+    uint32              GetWreckFaction(uint32 typeID);
+
+
 protected:
     void                Populate();
 

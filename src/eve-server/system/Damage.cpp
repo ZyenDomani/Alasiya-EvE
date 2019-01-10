@@ -385,7 +385,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
             wreckEntity.corporationID = killer->GetCorporationID();
-            wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
+            wreckEntity.factionID = sDataMgr.GetWreckFaction(wreckTypeID);
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;
@@ -575,7 +575,7 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
             wreckEntity.corporationID = killer->GetCorporationID();
-            wreckEntity.factionID = sEntityList.GetWreckFaction(wreckTypeID);
+            wreckEntity.factionID = sDataMgr.GetWreckFaction(wreckTypeID);
             wreckEntity.groupID = EVEDB::invGroups::Wreck;
             wreckEntity.itemID = wreckItemRef->itemID();
             wreckEntity.itemName = wreck_name;

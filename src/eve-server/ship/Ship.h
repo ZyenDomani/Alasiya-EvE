@@ -265,7 +265,7 @@ public:
     // OL and Heat damage shit
     void DissipateHeat();
     void HeatDamageCheck(GenericModule* pMod);
-    void DamageModule(uint32 modID)                     { m_ModuleManager->DamageModule(modID, 1); }
+    void DamageModule(uint32 modID, float amt=1)        { m_ModuleManager->DamageModule(modID, amt); }
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
 
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);

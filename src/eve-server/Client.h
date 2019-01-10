@@ -136,20 +136,21 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
+    // these dont always work...still dont know why
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
-
-    int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
-    int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
-    int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
-    int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
-    int64 GetSessionID()                                { return pSession->GetCurrentLong( "sessionID" ); }
-    // this doesnt always work...still dont know why
-    int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
     std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }
+
+    int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
+    int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
+    int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
     int32 GetStationID() const                          { return pSession->GetCurrentInt( "stationid" ); }
     int32 GetStationID2() const                         { return pSession->GetCurrentInt( "stationid2" ); }
     int32 GetCloneStationID() const                     { return pSession->GetCurrentInt( "cloneStationID" ); }
+
+    int64 GetAccountRole() const                        { return pSession->GetCurrentLong( "role" ); }
+    int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
+    int64 GetSessionID()                                { return pSession->GetCurrentLong( "sessionID" ); }
 
     double GetCorpTaxRate()                             { return m_char->corpTaxRate(); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
@@ -169,6 +170,8 @@ public:
     int64 GetRolesAtOther() const                       { return pSession->GetCurrentLong( "rolesAtOther" ); }
 
     // fleet data
+    int8 GetFleetRole()                                 { return pSession->GetCurrentInt("fleetrole"); }
+
     bool InFleet()                                      { return IsFleet(m_fleet); }
     bool IsFleetBoss()                                  { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Role::FleetLeader) ? true : false) : false); }
     bool IsFleetBooster()                               { return (IsFleet(m_fleet) ? ((GetFleetRole() == Fleet::Booster::No) ? false : true) : false); }
@@ -176,19 +179,20 @@ public:
     int32 GetFleetID() const                            { return m_fleet; }
     int32 GetWingID() const                             { return m_wing; }
     int32 GetSquadID() const                            { return m_squad; }
-    int8 GetFleetRole()                                 { return pSession->GetCurrentInt("fleetrole"); }
 
     uint32 GetShipID() const                            { return m_shipId; }
     uint32 GetLocationID() const                        { return m_locationID; }
     uint32 GetSystemID() const                          { return m_SystemData.systemID; }
     uint32 GetConstellationID() const                   { return m_SystemData.constellationID; }
     uint32 GetRegionID() const                          { return m_SystemData.regionID; }
+    std::string GetSystemName() const                   { return m_SystemData.name; }
 
     //  public functions to update client session when char's roles are changed
     void UpdateCorpSession(CorpData& data);
     void UpdateFleetSession(CharFleetData& fleet);
 
     // character data
+    uint32 GetLoyaltyPoints(uint32 corpID);
     void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used in char creation
     CharacterRef GetChar() const                        { return m_char; }
     std::string GetCharName()                           { return m_char->itemName(); }
@@ -202,10 +206,6 @@ public:
     //check all these and update to AccountService::TransferFunds() where applicable
     bool AddBalance(double amount, uint8 type=Account::CreditType::ISK) { return m_char->AlterBalance(amount, type); }
     double GetBalance(uint8 type=Account::CreditType::ISK) { return m_char->balance(type); }
-
-    std::string GetSystemName() const                   { return m_SystemData.name; }
-
-    uint32 GetLoyaltyPoints(uint32 corpID);
 
     // ship functions
     void SetPodItem();
@@ -226,6 +226,9 @@ private:
 
 public:
     // misc char functions
+    bool SelectCharacter(int32 char_id=0);
+    bool IsHangarLoaded(uint32 stationID);
+
     void WarpIn();
     void WarpOut();
     void EnterSystem(uint32 systemID);     // only called by gm command, and only if (bubble == null)
@@ -240,9 +243,6 @@ public:
     void LoadStationHangar(uint32 stationID);
     void AddStationHangar(uint32 stationID);
     void RemoveStationHangar(uint32 stationID);
-
-    bool SelectCharacter(int32 char_id=0);
-    bool IsHangarLoaded(uint32 stationID);
 
     double GetPropulsionStrength() const;
 

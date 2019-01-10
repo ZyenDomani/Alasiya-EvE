@@ -44,7 +44,7 @@
  * InventoryItem
  */
 InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemData& _data)
-: RefObject( 0 ),
+: RefObject(0), // this may not be needed.  look into all *Ref objects to determine usefulness  (do they HAVE to be ref-counted?)
   pAttributeMap(new AttributeMap(*this)),
   pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
   m_itemID(_itemID),

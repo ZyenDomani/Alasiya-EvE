@@ -56,6 +56,7 @@ typedef   signed __int64  int64;
  * PRI[diouxX](8|16|32|64)
  * SCN[diouxX](8|16|32|64)
  */
+// do we really need these?
 #ifndef HAVE_INTTYPES_H
 #   define PRId8 "hhd"
 #   define PRIi8 "hhi"

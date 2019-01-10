@@ -215,7 +215,7 @@ Character::Character(
   m_corpData(_corpData),
   m_pClient(nullptr)
 {
-    // allow characters to be only singletons
+    // enforce characters to be singletons
     assert(m_singleton);
 
     m_loaded = false;
@@ -285,7 +285,7 @@ void Character::VerifySP()
     std::vector<InventoryItemRef> skillList;
     GetSkillsList(skillList);
     for (auto cur : skillList) {
-        SkillRef::StaticCast(cur)->VerifySP();
+        SkillRef::StaticCast(cur)->VerifySP();      // this doesnt work right...not sure why.  (resets SP to current level minimum)
         SkillRef::StaticCast(cur)->VerifyAttribs();
     }
 }

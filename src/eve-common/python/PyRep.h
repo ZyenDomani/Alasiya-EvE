@@ -667,16 +667,15 @@ protected:
             assert( _Arg1 );
             assert( _Arg2 );
 
-            // Suffers from hash collision but whatever ... still
-            // better than raw pointer comparison
+            // updated to use std::hash for strings.  better checks without collision (so far)
             return ( _Arg1->hash() == _Arg2->hash() );
         }
     };
 
 public:
     typedef std::unordered_map<PyRep*, PyRep*, _hash, _comp>   storage_type;
-    typedef storage_type::iterator                                  iterator;
-    typedef storage_type::const_iterator                            const_iterator;
+    typedef storage_type::iterator                             iterator;
+    typedef storage_type::const_iterator                       const_iterator;
 
     PyDict();
     PyDict( const PyDict& oth );
@@ -1030,7 +1029,7 @@ public:
 
 /**
  * @name PyStatic.h
- *   memory object tracking system for oft-used Python objects
+ *   static memory object caching/tracking system for oft-used Python objects
  *
  * @Author:         Allan
  * @date:          13 December 17
@@ -1058,12 +1057,10 @@ private:
     PyRep* m_one;
     PyRep* m_true;
     PyRep* m_false;
-
-
 };
 
 //Singleton
 #define PyStatic \
-( pyStatic::get() )
+    ( pyStatic::get() )
 
 #endif//EVE_PY_REP_H

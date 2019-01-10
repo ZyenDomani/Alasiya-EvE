@@ -192,7 +192,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = (typeID == 5 ? 0 : itemID);     // 0 when typeID is 5 (typeSolarSystem)
+        result.itemID      = (typeID == EVEDB::invTypes::typeSolarSystem ? 0 : itemID);     // itemID = 0 when typeID is SolarSystem
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;

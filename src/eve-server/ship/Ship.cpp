@@ -1351,6 +1351,7 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
 
 
 /*  overload heat-related shit......
+ * see also file:///home/allan/Desktop/backups/GoonSwarm_wiki/www.eveinfo.net/wiki/ind~2149.htm - "Thermodynamics"
  *
     AttrHeatHi = 1175,
     AttrHeatMed = 1176,

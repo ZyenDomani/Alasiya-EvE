@@ -41,6 +41,8 @@
  * RefPtr. If you want some of your classes to be
  * reference-counted, derive them from this class.
  *
+ * NOTE:  this class does NOT increment count on creation (whereas RefPtr does)
+ *
  * @author Bloody.Rabbit
  */
 class RefObject
@@ -57,7 +59,8 @@ public:
     RefObject( size_t initRefCount )
     : mRefCount( initRefCount )
     {
-         mDeleted = false;
+        mDeleted = false;
+        //++mRefCount;
     }
 
     /**
@@ -84,8 +87,8 @@ protected:
             EvE::traceStack();
             return;
         }
-        //assert( mDeleted == false );
-        //assert( mRefCount > 0 );  //inventoryItem objects are created with a ref count of 0, then incremented during RefPtr c'tor
+        assert( mDeleted == false );
+        //assert( mRefCount > 0 );  // RefPtr objects are created with a ref count of 0, then incremented during RefPtr c'tor
         ++mRefCount;
         _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
     }
@@ -122,7 +125,9 @@ protected:
  * @brief Reference-counting-based smart pointer.
  *
  * This smart pointer cares about acquiring/releasing reference
- * of the stored object.
+ * of the stored object..
+ *
+ * NOTE:  this class DOES increment count on creation (whereas RefObject does not)
  *
  * @author Bloody.Rabbit
  */

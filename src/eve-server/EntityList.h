@@ -124,8 +124,6 @@ public:
     bool GetTracking()                                  { return m_shipTracking; }
     void SetTracking(bool set=false)                    { m_shipTracking = set; }
 
-    uint32 GetWreckFaction(uint32 typeID);
-
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
 
@@ -139,7 +137,8 @@ private:
     Timer m_minutetimer;
     Timer m_updateTimer;    // for data updates and dump to db
 
-    std::vector<Client*> m_clients;
+    std::vector<Client*> m_clients;                 // connected clients (incomplete client class data)
+    std::map<uint32, Client*> m_players;            // logged-in players (complete client class data)
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, StationItemRef> m_stations;

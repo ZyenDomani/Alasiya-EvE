@@ -1504,6 +1504,14 @@ bool Client::IsMissionComplete(MissionOffer& data)
 }
 
 
+void Client::ChannelJoined(LSCChannel *chan) {
+    m_channels.insert(chan);
+}
+
+void Client::ChannelLeft(LSCChannel *chan) {
+    m_channels.erase(chan);
+}
+
 /************************************************************************/
 /* character notification messages wrapper                              */
 /************************************************************************/
@@ -2267,25 +2275,25 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
         //bound object
         uint32 nodeID = 0, bindID = 0;
         if (sscanf(req.remoteObjectStr.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
-            sLog.Error("Client","Failed to parse bind string '%s'.", req.remoteObjectStr.c_str());
+            sLog.Error("Client::CallReq","Failed to parse bind string '%s'.", req.remoteObjectStr.c_str());
             return false;
         }
 
         if (nodeID != m_services.GetNodeID()) {
-            sLog.Error("Client","Unknown nodeID - received %u but expected %u.", nodeID, m_services.GetNodeID());
+            sLog.Error("Client::CallReq","Unknown nodeID - received %u but expected %u.", nodeID, m_services.GetNodeID());
             return false;
         }
 
         dest = m_services.FindBoundObject(bindID);
         if (dest == nullptr) {
-            sLog.Error("Client", "Failed to find bound object %u.", bindID);
+            sLog.Error("Client::CallReq", "Failed to find bound object %u.", bindID);
             return false;
         }
     } else {
         //service
         dest = m_services.LookupService(packet->dest.service);
         if (dest == nullptr) {
-            sLog.Error("Client","Unable to find service to handle call to: %s", packet->dest.service.c_str());
+            sLog.Error("Client::CallReq","Unable to find service to handle call to: %s", packet->dest.service.c_str());
             packet->dest.Dump(CLIENT__CALL_DUMP, "    ");
             throw PyException(MakeUserError("ServiceNotFound"));
         }
@@ -2309,6 +2317,7 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
     if (is_log_enabled(CLIENT__OUT_ALL))
         if (result.ssResult != nullptr)
             result.ssResult->Dump(CLIENT__OUT_ALL, "    ");
+
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);  //ssResult is consumed here
 
     //PySafeDecRef(result.ssResult);
@@ -2320,7 +2329,7 @@ bool Client::Handle_Notify(PyPacket* packet)
     //turn this thing into a notify stream:
     ServerNotification notify;
     if (!notify.Decode(packet->payload)) {
-        sLog.Error("Client","Failed to convert rep into a notify stream");
+        sLog.Error("Client::Notify","Failed to convert rep into a notify stream");
         return false;
     }
 
@@ -2331,19 +2340,19 @@ bool Client::Handle_Notify(PyPacket* packet)
         PyList::const_iterator cur = notify.elements->begin();
         for (; cur != notify.elements->end(); ++cur) {
             if (!element.Decode(*cur)) {
-                sLog.Error("Client","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->itemName().c_str());
+                sLog.Error("Client::Notify","Notification '%s' from %s: Failed to decode element. Skipping.", notify.method.c_str(),  m_char->itemName().c_str());
                 continue;
             }
 
             uint32 nodeID = 0, bindID = 0;
             if (sscanf(element.boundID.c_str(), "N=%u:%u", &nodeID, &bindID) != 2) {
-                sLog.Error("Client","Notification '%s' from %s: Failed to parse bind string '%s'. Skipping.", \
+                sLog.Error("Client::Notify","Notification '%s' from %s: Failed to parse bind string '%s'. Skipping.", \
                            notify.method.c_str(), m_char->itemName().c_str(), element.boundID.c_str());
                 continue;
             }
 
             if (nodeID != m_services.GetNodeID()) {
-                sLog.Error("Client","Notification '%s' from %s: Unknown nodeID %u received (expected %u). Skipping.", \
+                sLog.Error("Client::Notify","Notification '%s' from %s: Unknown nodeID %u received (expected %u). Skipping.", \
                            notify.method.c_str(), m_char->itemName().c_str(), nodeID, m_services.GetNodeID());
                 continue;
             }
@@ -2351,7 +2360,7 @@ bool Client::Handle_Notify(PyPacket* packet)
             m_services.ClearBoundObject(bindID);
         }
     } else {
-        sLog.Error("Client","Unhandled notification from %s: unknown method '%s'", m_char->itemName().c_str(), notify.method.c_str());
+        sLog.Error("Client::Notify","Unhandled notification from %s: unknown method '%s'", m_char->itemName().c_str(), notify.method.c_str());
         return false;
     }
 
@@ -2359,18 +2368,17 @@ bool Client::Handle_Notify(PyPacket* packet)
     return true;
 }
 
+// NOTE: 'OnRemoteMessage' can be disabled in client
 //this displays a modal error dialog on the client side.
 void Client::SendErrorMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
     va_end(args);
 
-    //want to send some sort of notify with a "ServerMessage" message ID maybe?
-    //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
     n.msgType = "CustomError";
     n.args[ "error" ] = new PyString(str);
@@ -2383,12 +2391,10 @@ void Client::SendErrorMsg(const char* fmt, ...)
 
 void Client::SendErrorMsg(const char* fmt, va_list args)
 {
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
 
-    //want to send some sort of notify with a "ServerMessage" message ID maybe?
-    //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
     n.msgType = "CustomError";
     n.args[ "error" ] = new PyString(str);
@@ -2405,13 +2411,11 @@ void Client::SendInfoModalMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
     va_end(args);
 
-    //want to send some sort of notify with a "ServerMessage" message ID maybe?
-    //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
     n.msgType = "ServerMessage";
     n.args[ "msg" ] = new PyString(str);
@@ -2427,13 +2431,11 @@ void Client::SendNotifyMsg(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
     va_end(args);
 
-    //want to send some sort of notify with a "ServerMessage" message ID maybe?
-    //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
     n.msgType = "CustomNotify";
     n.args[ "notify" ] = new PyString(str);
@@ -2446,12 +2448,10 @@ void Client::SendNotifyMsg(const char* fmt, ...)
 
 void Client::SendNotifyMsg(const char* fmt, va_list args)
 {
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
 
-    //want to send some sort of notify with a "ServerMessage" message ID maybe?
-    //else maybe a "ChatTxt"??
     Notify_OnRemoteMessage n;
     n.msgType = "CustomNotify";
     n.args[ "notify" ] = new PyString(str);
@@ -2467,7 +2467,7 @@ void Client::SelfChatMessage(const char* fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    char* str = nullptr;
+    char* str(nullptr);
     vasprintf(&str, fmt, args);
     assert(str);
     va_end(args);
@@ -2501,13 +2501,5 @@ void Client::SelfChatMessage(const char* fmt, ...)
 }*/
 
     SafeFree(str);
-}
-
-void Client::ChannelJoined(LSCChannel *chan) {
-    m_channels.insert(chan);
-}
-
-void Client::ChannelLeft(LSCChannel *chan) {
-    m_channels.erase(chan);
 }
 

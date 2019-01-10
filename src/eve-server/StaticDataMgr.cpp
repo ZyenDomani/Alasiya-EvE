@@ -1386,4 +1386,258 @@ std::string StaticDataMgr::GetFlagName(EVEItemFlags flag)
     }
 }
 
+uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
+{
+    // these will need to be separated and updated after detailed salvage table is completed
+    switch(typeID) {
+        case 26469:  //   Amarr Battlecruiser Wreck
+        case 26470:  //   Amarr Battleship Wreck
+        case 26472:  //   Amarr Carrier Wreck
+        case 26473:  //   Amarr Cruiser Wreck
+        case 26474:  //   Amarr Destroyer Wreck
+        case 26475:  //   Amarr Dreadnought Wreck
+        case 26476:  //  Amarr Elite Battlecruiser Wreck
+        case 26477:  //   Amarr Elite Battleship Wreck
+        case 26478:  //   Amarr Elite Cruiser Wreck
+        case 26479:   //  Amarr Elite Destroyer Wreck
+        case 26480:   //  Amarr Elite Frigate Wreck
+        case 26481:   //  Amarr Elite Industrial Wreck
+        case 26482:   //  Amarr Elite Mining Barge Wreck
+        case 26483:   //  Amarr Freighter Wreck
+        case 26484:   //  Amarr Frigate Wreck
+        case 26485:  //  Amarr Industrial Wreck
+        case 26486:   //  Amarr Mining Barge Wreck
+        case 26487:   //  Amarr Supercarrier Wreck
+        case 26488:   //  Amarr Rookie ship Wreck
+        case 26489:   //  Amarr Shuttle Wreck
+        case 26490:   //  Amarr Titan Wreck
+        case 27050:   //  Amarr Large Wreck
+        case 27051:   // Amarr Medium Wreck
+        case 27052:   //  Amarr Small Wreck
+        case 29033:   // Amarr Elite Freighter Wreck
+        case 27927:  //  Mission Amarr Carrier Wreck
+        case 30822: { //   Amarr Advanced Cruiser Wreck
+            return factionAmarr;
+        } break;
+
+        case 26491:  //    Caldari Battlecruiser Wreck
+        case 26492:  //    Caldari Battleship Wreck
+        case 26494:  //    Caldari Carrier Wreck
+        case 26495:  //   Caldari Cruiser Wreck
+        case 26496:  //    Caldari Destroyer Wreck
+        case 26497:  //    Caldari Dreadnought Wreck
+        case 26498:  //    Caldari Elite Battlecruiser Wreck
+        case 26499:  //   Caldari Elite Battleship Wreck
+        case 26500:  //   Caldari Elite Cruiser Wreck
+        case 26501:  //   Caldari Elite Destroyer Wreck
+        case 26502:  //   Caldari Elite Frigate Wreck
+        case 26503:  //   Caldari Elite Industrial Wreck
+        case 26504:  //   Caldari Elite Mining Barge Wreck
+        case 26505:  //    Caldari Freighter Wreck
+        case 26506:  //    Caldari Frigate Wreck
+        case 26507:  //    Caldari Industrial Wreck
+        case 26508:  //    Caldari Mining Barge Wreck
+        case 26509:  //    Caldari Supercarrier Wreck
+        case 26510:  //   Caldari Rookie ship Wreck
+        case 26511:  //    Caldari Shuttle Wreck
+        case 26512:  //    Caldari Titan Wreck
+        case 27926:  //    Mission Caldari Carrier Wreck
+        case 30823:  //    Caldari Advanced Cruiser Wreck
+        case 29034:  //   Caldari Elite Freighter Wreck
+        case 27047:  //    Caldari Large Wreck
+        case 27048:  //    Caldari Medium Wreck
+        case 27049: {  //    Caldari Small Wreck
+            return factionCaldari;
+        } break;
+
+        case 29035:  //    Gallente Elite Freighter Wreck
+        case 30824:  //    Gallente Advanced Cruiser Wreck
+        case 27929:  //    Mission Gallente Carrier Wreck
+        case 27053:  //    Gallente Large Wreck
+        case 27054:  //    Gallente Medium Wreck
+        case 27055:  //    Gallente Small Wreck
+        case 26513:  //    Gallente Battlecruiser Wreck
+        case 26514:  //    Gallente Battleship Wreck
+        case 26516:  //    Gallente Carrier Wreck
+        case 26517:  //    Gallente Cruiser Wreck
+        case 26518:  //    Gallente Destroyer Wreck
+        case 26519:  //    Gallente Dreadnought Wreck
+        case 26520:  //    Gallente Elite Battlecruiser Wreck
+        case 26521:  //    Gallente Elite Battleship Wreck
+        case 26522:  //    Gallente Elite Cruiser Wreck
+        case 26523:  //    Gallente Elite Destroyer Wreck
+        case 26524:  //    Gallente Elite Frigate Wreck
+        case 26525:  //    Gallente Elite Industrial Wreck
+        case 26526:  //    Gallente Elite Mining Barge Wreck
+        case 26527:  //    Gallente Freighter Wreck
+        case 26528:  //    Gallente Frigate Wreck
+        case 26529:  //    Gallente Industrial Wreck
+        case 26530:  //   Gallente Mining Barge Wreck
+        case 26531:  //    Gallente Supercarrier Wreck
+        case 26532:  //    Gallente Rookie ship Wreck
+        case 26533:  //    Gallente Shuttle Wreck
+        case 26534: { //   Gallente Titan Wreck
+            return factionGallente;
+        } break;
+
+        case 26535:  //    Minmatar Battlecruiser Wreck
+        case 26536:  //    Minmatar Battleship Wreck
+        case 26538:  //    Minmatar Carrier Wreck
+        case 26539:  //    Minmatar Cruiser Wreck
+        case 26540:  //    Minmatar Destroyer Wreck
+        case 26541:  //    Minmatar Dreadnought Wreck
+        case 26542:  //    Minmatar Elite Battlecruiser Wreck
+        case 26543:  //    Minmatar Elite Battleship Wreck
+        case 26544:  //    Minmatar Elite Cruiser Wreck
+        case 26545:  //    Minmatar Elite Destroyer Wreck
+        case 26546:  //    Minmatar Elite Frigate Wreck
+        case 26547:  //    Minmatar Elite Industrial Wreck
+        case 26548:  //    Minmatar Elite Mining Barge Wreck
+        case 26549:  //    Minmatar Freighter Wreck
+        case 26550:  //    Minmatar Frigate Wreck
+        case 26551:  //    Minmatar Industrial Wreck
+        case 26552:  //    Minmatar Mining Barge Wreck
+        case 26553:  //    Minmatar Supercarrier Wreck
+        case 26554:  //    Minmatar Rookie ship Wreck
+        case 26555:  //    Minmatar Shuttle Wreck
+        case 26556:  //    Minmatar Titan Wreck
+        case 27928:  //    Mission Minmatar Carrier Wreck
+        case 30825:  //    Minmatar Advanced Cruiser Wreck
+        case 27041:  //    Minmatar Large Wreck
+        case 27042:  //    Minmatar Medium Wreck
+        case 27043: { //   Minmatar Small Wreck
+            return factionMinmatar;
+        } break;
+
+        case 26972:  //    Faction Drone Wreck   - faction police drones
+        case 26939:  //   CONCORD Large Wreck
+        case 26940:  //    CONCORD Medium Wreck
+        case 26941: { //    CONCORD Small Wreck
+            return factionCONCORD;
+        } break;
+
+        case 27044:  //    Khanid Large Wreck
+        case 27045:  //    Khanid Medium Wreck
+        case 27046: { //   Khanid Small Wreck
+            return factionKhanid;
+        } break;
+
+        case 27056:  //    Thukker Large Wreck
+        case 27057:  //    Thukker Medium Wreck
+        case 27058: { //    Thukker Small Wreck
+            return factionThukker;
+        } break;
+
+        case 27060:  //   Mordu Large Wreck
+        case 27061:  //   Mordu Medium Wreck
+        case 27062: { //    Mordu Small Wreck
+            return factionMordusLegion;
+        } break;
+
+        case 28603:  //   Rorqual Wreck
+        case 29639: { //    Orca Wreck
+            return factionORE;
+        } break;
+
+        case 30457:  //    Sleeper Small Advanced Wreck
+        case 30458:  //    Sleeper Medium Advanced Wreck
+        case 30459:  //    Sleeper Large Wreck
+        case 30484:  //    Sleeper Small Basic Wreck
+        case 30485:  //    Sleeper Small Intermediate Wreck
+        case 30492:  //   Sleeper Medium Basic Wreck
+        case 30493:  //    Sleeper Medium Intermediate Wreck
+        case 30494:  //   Sleeper Large Basic Wreck
+        case 30495:  //   Sleeper Large Intermediate Wreck
+        case 30496: { //    Sleeper Large Advanced Wreck
+            return factionSleepers;
+        } break;
+
+        case 26561:  //   Angel Small Wreck
+        case 26562:  //   Angel Medium Wreck
+        case 26563:  //   Angel Large Wreck
+        case 26564:  //   Angel Small Commander Wreck
+        case 26699:  //   Angel Medium Commander Wreck
+        case 26565:  //   Angel Large Commander Wreck
+        case 26566: { //   Angel Officer Wreck
+            return factionAngel;
+        } break;
+
+        case 26567:  //   Blood Small Wreck
+        case 26568:  //   Blood Medium Wreck
+        case 26569:  //   Blood Large Wreck
+        case 26570:  //   Blood Small Commander Wreck
+        case 26571:  //   Blood Medium Commander Wreck
+        case 26700:  //   Blood Large Commander Wreck
+        case 26572: { //   Blood Officer Wreck
+            return factionBloodRaider;
+        } break;
+
+        case 26573:  //   Guristas Small Wreck
+        case 26574:  //   Guristas Medium Wreck
+        case 26575:  //   Guristas Large Wreck
+        case 26576:  //   Guristas Small Commander Wreck
+        case 26577:  //   Guristas Medium Commander Wreck
+        case 26701:  //   Guristas Large Commander Wreck
+        case 26578: { //   Guristas Officer Wreck
+            return factionGuristas;
+        } break;
+
+        case 26579:  //   Sanshas Small Wreck
+        case 26580:  //   Sanshas Medium Wreck
+        case 26581:  //   Sanshas Large Wreck
+        case 26582:  //   Sanshas Small Commander Wreck
+        case 26583:  //   Sanshas Medium Commander Wreck
+        case 26702:  //   Sanshas Large Commander Wreck
+        case 26584:  //   Sanshas Officer Wreck
+        case 3260: { //   Sanshas Supercarrier Wreck
+            return factionSanshas;
+        } break;
+
+        case 26585:  //   Serpentis Small Wreck
+        case 26586:  //   Serpentis Medium Wreck
+        case 26587:  //   Serpentis Large Wreck
+        case 26588:  //   Serpentis Small Commander Wreck
+        case 26589:  //   Serpentis Medium Commander Wreck
+        case 26703:  //   Serpentis Large Commander Wreck
+        case 26590: { //   Serpentis Officer Wreck
+            return factionSerpentis;
+        } break;
+
+        case 26591:  //   Rogue Small Wreck
+        case 26592:  //   Rogue Medium Wreck
+        case 26593:  //   Rogue Large Wreck
+        case 26594:  //   Rogue Elite Small Wreck
+        case 26595:  //   Rogue Elite Medium Wreck
+        case 26596:  //   Rogue Officer Wreck
+        case 28221:  //   Rogue Large Commander Wreck
+        case 28222:  //   Rogue Medium Commander Wreck
+        case 28223: { //   Rogue Small Commander Wreck
+            return factionRogueDrones;
+        } break;
+
+        // generic wrecks
+        case 26468:  //   Capsule Wreck
+        case 26557:  //   Frigate Wreck
+        case 26558:  //   Cruiser Wreck
+        case 26559:  //   Battleship Wreck
+        case 26918:  //   Overseer Frigate Wreck
+        case 26919:  //   Overseer Cruiser Wreck
+        case 26920:  //   Overseer Battleship Wreck
+        case 27202:  //   Convoy Wreck
+        case 27286:  //   Pirate Drone Wreck
+        case 26560: { //   Pirate Wreck
+            return factionUnknown;
+        } break;
+
+    }
+
+    /*
+     *    28255 :  //   Mission Faction Freighter Wreck
+     *    29036 :  //   Minmatar Elite Freighter Wreck
+     *    29347:  //    Mission Faction Vessels Wreck
+     *    29365:  //    Mission Faction Industrials Wreck
+     *
+     */
+}
+
 

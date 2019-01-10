@@ -47,9 +47,9 @@ PyResult PyCallable::Call(const std::string &method, PyCallArgs &args) {
         }
         return res;
     } catch(PyException &e) {
-        if (is_log_enabled(SERVICE__CALL_TRACE)) {
-            _log(SERVICE__CALL_TRACE, "Call %s threw exception:", method.c_str());
-            e.ssException->Dump(SERVICE__CALL_TRACE, "      ");
+        if (is_log_enabled(SERVICE__CALL_ERROR)) {
+            _log(SERVICE__CALL_ERROR, "Call %s threw exception:", method.c_str());
+            e.ssException->Dump(SERVICE__CALL_ERROR, "      ");
         }
         throw;
     }
@@ -61,16 +61,14 @@ PyCallArgs::PyCallArgs(Client *c, PyTuple* tup, PyDict* dict)
   tuple(tup)
 {
     PyIncRef( tup );
-
-    PyDict::const_iterator cur = dict->begin();
-    for(; cur != dict->end(); cur++) {
+    for (PyDict::const_iterator cur = dict->begin(); cur != dict->end(); cur++) {
         if(!cur->first->IsString()) {
             _log(SERVICE__ERROR, "Non-string key in call named arguments. Skipping.");
             cur->first->Dump(SERVICE__ERROR, "    ");
             continue;
         }
-        byname[ cur->first->AsString()->content() ] = cur->second;
         PyIncRef( cur->second );
+        byname[ cur->first->AsString()->content() ] = cur->second;
     }
 }
 
