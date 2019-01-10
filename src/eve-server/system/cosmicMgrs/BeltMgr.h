@@ -35,7 +35,7 @@ class BeltMgr
 {
 public:
     BeltMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~BeltMgr();
+    ~BeltMgr();
 
     void Init(uint32 regionID);
     void Save();

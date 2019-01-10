@@ -28,7 +28,7 @@ class CivilianMgr
 {
 public:
     CivilianMgr();
-    virtual ~CivilianMgr()                              { /* do nothing here */ }
+    ~CivilianMgr()                              { /* do nothing here */ }
 
     void Initialize(PyServiceMgr* svc);
     void Process();

@@ -20,7 +20,7 @@ class PlanetDataMgr
 {
 public:
     PlanetDataMgr();
-    virtual ~PlanetDataMgr() { /* nothing do to yet */ }
+    ~PlanetDataMgr() { /* nothing do to yet */ }
 
     // Initializes the Table:
     int Initialize();
@@ -46,7 +46,7 @@ class PIDataMgr
 {
 public:
     PIDataMgr();
-    virtual ~PIDataMgr() { /* nothing do to yet */ }
+    ~PIDataMgr() { /* nothing do to yet */ }
 
     // Initializes the Table:
     int Initialize();

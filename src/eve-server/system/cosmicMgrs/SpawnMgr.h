@@ -26,7 +26,7 @@ class SpawnMgr
 {
 public:
     SpawnMgr(SystemManager* mgr, PyServiceMgr& svc);
-    virtual ~SpawnMgr()                                 { /* nothing do to yet */ }
+    ~SpawnMgr()                                 { /* nothing do to yet */ }
 
     bool Init();
 

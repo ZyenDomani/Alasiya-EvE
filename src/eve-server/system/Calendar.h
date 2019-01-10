@@ -31,7 +31,7 @@
 class Calendar {
   public:
     Calendar();
-     virtual ~Calendar();
+     ~Calendar();
 
   protected:
 

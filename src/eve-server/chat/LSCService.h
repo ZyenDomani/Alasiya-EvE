@@ -45,7 +45,7 @@ public:
     static const uint32 MAX_CHANNEL_ID;
 
     LSCService(PyServiceMgr *mgr, CommandDispatcher *cd);
-    virtual ~LSCService();
+    ~LSCService();
 
     PyResult ExecuteCommand(Client *from, const char *msg);
     void CharacterLogin(Client *pClient);

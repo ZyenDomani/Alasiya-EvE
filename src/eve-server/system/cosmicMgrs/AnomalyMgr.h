@@ -30,7 +30,7 @@ class AnomalyMgr
 {
   public:
       AnomalyMgr(SystemManager* mgr, PyServiceMgr& svc);
-      virtual ~AnomalyMgr();
+      ~AnomalyMgr();
 
       bool Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr);
       void Close();

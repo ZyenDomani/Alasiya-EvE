@@ -32,7 +32,7 @@ class ScanningDB
 {
   public:
       ScanningDB() {}
-      virtual ~ScanningDB() {}
+      ~ScanningDB() {}
 
       void GetScanResults(DBQueryResult &res);
 

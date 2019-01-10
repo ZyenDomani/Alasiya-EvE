@@ -106,7 +106,7 @@ class Client
 {
 public:
     Client(PyServiceMgr &services, EVETCPConnection** con);
-    virtual ~Client();
+    ~Client();
 
     /** @todo  derive and execute tests to determing if these are needed...
     // copy c'tor

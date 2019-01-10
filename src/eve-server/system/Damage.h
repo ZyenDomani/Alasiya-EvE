@@ -38,7 +38,7 @@ public:
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
     Damage( SystemEntity *source, bool fatal_blow=false);
 
-    virtual ~Damage()                                   { /* do nothing here */ }
+    ~Damage()                                   { /* do nothing here */ }
 
     float GetTotal() const                              { return (kinetic + thermal + em + explosive); }
 

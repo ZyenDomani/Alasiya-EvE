@@ -62,7 +62,7 @@ class EntityList
 {
 public:
     EntityList();
-    virtual ~EntityList();
+    ~EntityList();
 
     typedef std::set<uint32> character_set;
 

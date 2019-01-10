@@ -47,7 +47,7 @@ public:
       m_extra(extra),
       m_mode(mode) { }
 
-    virtual ~LSCChannelChar() { }
+    ~LSCChannelChar() { }
     PyRep *Encode() const;
 
 protected:
@@ -73,7 +73,7 @@ public:
       m_admin(admin),
       m_reason(reason) { }
 
-    virtual ~LSCChannelMod() { }
+    ~LSCChannelMod() { }
     PyRep * Encode();
 
 protected:
@@ -92,7 +92,7 @@ public:
         LSCService* svc, int32 channelID, LSC::Type type, uint32 ownerID, const char* displayName, const char* comparisonKey, std::string motd,
         bool memberless, const char* password, bool mailingList, uint32 cspa, bool temporary, bool languageRestriction, int32 groupMessageID, int32 channelMessageID
         );
-    virtual ~LSCChannel();
+    ~LSCChannel();
 
     PyRep *EncodeID();
     PyRep *EncodeStaticChannel(uint32 charID);

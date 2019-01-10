@@ -40,7 +40,7 @@ class PyList;
 class TargetManager {
 public:
     TargetManager(SystemEntity* self);
-    virtual ~TargetManager()                            { /* do nothing here */ }
+    ~TargetManager()                            { /* do nothing here */ }
 
     void                Process();
 

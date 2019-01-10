@@ -25,7 +25,7 @@ class FleetService
 {
 public:
     FleetService();
-    virtual ~FleetService()                              { /* do nothing here */ }
+    ~FleetService()                              { /* do nothing here */ }
 
     void Initialize(PyServiceMgr* svc);
 

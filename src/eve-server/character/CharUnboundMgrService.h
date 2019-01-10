@@ -42,7 +42,7 @@
 class CharUnboundMgrService : public PyService {
 public:
     CharUnboundMgrService(PyServiceMgr* mgr);
-    virtual ~CharUnboundMgrService();
+    ~CharUnboundMgrService();
 
     void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
 

@@ -76,7 +76,7 @@ class TradeSession
 
 public:
     TradeSession() {}
-    virtual ~TradeSession() {}
+    ~TradeSession() {}
 
     struct Session {
         uint32 containerID;

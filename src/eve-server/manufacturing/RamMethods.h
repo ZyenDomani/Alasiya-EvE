@@ -19,7 +19,7 @@ class Client;
 class RamMethods {
 public:
     RamMethods();
-    virtual ~RamMethods();
+    ~RamMethods();
 
     static void ActivityCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
     static void JobsCheck(Character* pChar, const Call_InstallJob& args);
