@@ -197,9 +197,10 @@ PyRep* ClientSession::_GetCurrent(const char* name) const
 {
     PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
-        _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetCurrent - value not found with name '%s'", name);
-        if (sConfig.server.StackTrace)
+        if (is_log_enabled(CLIENT__SESSION_NOTFOUND)) {
+            _log(CLIENT__SESSION_NOTFOUND, "ClientSession::_GetCurrent - value not found with name '%s'", name);
             EvE::traceStack();
+        }
         return nullptr;
     }
     return tuple->GetItem(1);

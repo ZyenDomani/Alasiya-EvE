@@ -57,7 +57,7 @@ void EVEClientSession::Reset() {
     VersionExchangeServer version;
     _GetVersion( version );
 
-    PyRep* r = version.Encode();
+    PyRep* r(version.Encode());
     mNet->QueueRep( r );
     PyDecRef( r );
 
@@ -67,7 +67,7 @@ void EVEClientSession::Reset() {
 void EVEClientSession::QueuePacket( const PyPacket* p ) {
     if (p == nullptr)
         return;
-    PyPacket* packet = p->Clone();
+    PyPacket* packet(p->Clone());
 
     if (packet == nullptr) {
         sLog.Error("QueuePacket", "Unable to clone a PyPacket");
@@ -81,7 +81,7 @@ void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
     if (packet == nullptr)
         return;
 
-    PyRep* res = packet->Encode();
+    PyRep* res(packet->Encode());
     // maybe change PyPacket to a object with a reference..
     //SafeDelete(packet);
     if (res == nullptr) {
@@ -94,7 +94,7 @@ void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
 }
 
 PyPacket* EVEClientSession::PopPacket() {
-    PyRep* rep = mNet->PopRep();
+    PyRep* rep(mNet->PopRep());
     if (rep == nullptr)
         return nullptr;
 
