@@ -76,6 +76,7 @@ void TurretModule::ApplyDamage()
             m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
+            // AttrUsageDamagePercent
             if (m_chargeRef->HasAttribute(AttrCrystalsGetDamaged))
                 if (MakeRandomFloat(0,1) < m_crystalDmgChance) {
                     m_crystalDmg += m_crystalDmgAmount;

@@ -565,6 +565,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
+    //AttrUnfitCapCost
+    
     if (m_chargeRef.get() != nullptr) {
         // remove charge effects here
         m_chargeRef->ClearModifiers();

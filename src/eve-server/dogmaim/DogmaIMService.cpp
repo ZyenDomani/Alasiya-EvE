@@ -827,7 +827,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
      * 23:52:45 [SvcCallDump]         [ 1] Integer field: 3035
      */
     // self.GetDogmaLM().Overload(itemID, effectID)
-    
+
     Client* pClient(call.client);
     Call_TwoIntegerArgs args;   //itemID, effectID
     if (!args.Decode(&call.tuple)) {
@@ -835,6 +835,8 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
         return PyStatic.NewNone();
     }
 
+    //TODO:  need to verify pilot can OL modules
+    // AttrRequiredThermoDynamicsSkill
     pClient->GetShip()->Overload(args.arg1);
     return nullptr;
 }

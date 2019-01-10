@@ -61,10 +61,12 @@ void MiningLaser::LoadCharge(InventoryItemRef charge)
     m_crystalRoidGrp = m_chargeRef->GetAttribute(AttrSpecialisationAsteroidGroup).get_float();
     m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
+    //AttrUsageDamagePercent
 }
 
 void MiningLaser::UnloadCharge()
 {
+    //AttrUnfitCapCost
     m_crystalDmg = 0;
     m_crystalRoidGrp = 0;
     m_crystalDmgAmount = 0;

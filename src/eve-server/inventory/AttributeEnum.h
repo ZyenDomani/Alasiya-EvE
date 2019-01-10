@@ -648,7 +648,7 @@ enum EveAttrEnum {
     AttrHarvesterType = 709,
     AttrHarvesterQuality = 710,
     AttrMoonAnchorDistance = 711,
-    AttrUsageDamagePercent = 712,
+    AttrUsageDamagePercent = 712,       //How much a charge used by this object is damaged each time the object operates.
     AttrConsumptionType = 713,
     AttrConsumptionQuantity = 714,
     AttrMaxOperationalDistance = 715,
@@ -714,7 +714,7 @@ enum EveAttrEnum {
     AttrSpecialisationAsteroidYieldMultiplier = 782,
     AttrCrystalVolatilityChance = 783,
     AttrCrystalVolatilityDamage = 784,
-    AttrUnfitCapCost = 785,
+    AttrUnfitCapCost = 785,     // The capacitor charge required to disengage this crystal from the unit it is installed in.
     AttrCrystalsGetDamaged = 786,
     AttrMinScanDeviation = 787,
     AttrMaxScanDeviation = 788,
@@ -1119,7 +1119,7 @@ enum EveAttrEnum {
     AttrBombDeploymentCpuNeedMultiplier = 1209,
     AttrOverloadDamageModifier = 1210,
     AttrHeatDamage = 1211,                          // module attrib
-    AttrRequiredThermoDynamicsSkill = 1212,
+    AttrRequiredThermoDynamicsSkill = 1212,         // module attrib
     AttrHeatDamageBonus = 1213,                     // module attrib
     AttrPosStructureControlDistanceMax = 1214,
     AttrAnchoringRequiresSovereigntyLevel = 1215,

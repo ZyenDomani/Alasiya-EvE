@@ -394,6 +394,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     }
                     GenericModule* pMod = m_ModuleManager->GetModule(flag);
                     if (pMod != nullptr) {
+                        // note:  this is also checked in client before calling Load()  we may never get here
                         if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
                             sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
                                 iRef->GetAttribute(AttrChargeSize).get_int(), iRef->itemName().c_str(),\
