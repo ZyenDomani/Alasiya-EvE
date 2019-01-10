@@ -699,10 +699,9 @@ void ManagerDB::UpdateStatisticHistory(StatisticData& data)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
-        "INSERT INTO srvStatisticHistory"
-        " (timeStamp, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned)"
-        " VALUES "
-        "(UNIX_TIMESTAMP(CURRENT_TIMESTAMP), %u, %u, %u, %u, %f, %f, %f, %f, %u, %u)",
+        "UPDATE srvStatisticHistory"
+        " SET pcShots=%u, pcMissiles=%u, ramJobs=%u, shipsSalvaged=%u, pcBounties=%f, npcBounties=%f, oreMined=%f, iskMarket=%f, probesLaunched=%u, sitesScanned=%u"
+        " WHERE idx = 1",
         data.pcShots, data.pcMissiles, data.ramJobs, data.shipsSalvaged, data.pcBounties, data.npcBounties,
         data.oreMined, data.iskMarket, data.probesLaunched, data.sitesScanned ))
     {

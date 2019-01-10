@@ -29,6 +29,8 @@ void StatisticMgr::Close()
 int StatisticMgr::Initialize()
 {
     ClearAll();
+    // reset current data for new session
+    ManagerDB::UpdateStatisticHistory(m_data);
     sLog.Blue( "     StatisticMgr", "Statistics Manager Initialized." );
     return 1;
 }
@@ -164,7 +166,7 @@ void StatisticMgr::CompileData()
             data.sitesScanned   += row.GetInt(8);
             data.probesLaunched += row.GetInt(9);
         }
-        
+
         if ((data.pcShots == 0)
         and (data.ramJobs == 0)
         and (data.pcMissiles == 0)
@@ -179,6 +181,8 @@ void StatisticMgr::CompileData()
         // data has been compiled for this running session.  save to history.
         ManagerDB::UpdateStatisticHistory(data);
     }
+
+    SafeDelete(res);
 }
 
 

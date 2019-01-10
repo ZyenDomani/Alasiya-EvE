@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net
 --
 -- Host: localhost
--- Generation Time: Dec 30, 2018 at 11:37 PM
+-- Generation Time: Jan 10, 2019 at 01:31 PM
 -- Server version: 10.0.36-MariaDB
 -- PHP Version: 5.6.36
 
@@ -26,8 +26,9 @@ SET time_zone = "+00:00";
 -- Table structure for table `srvStatisticHistory`
 --
 
-CREATE TABLE IF NOT EXISTS `srvStatisticHistory` (
-  `timeStamp` int(10) unsigned NOT NULL DEFAULT '0',
+DROP TABLE IF EXISTS `srvStatisticHistory`;
+CREATE TABLE `srvStatisticHistory` (
+  `idx` int(2) unsigned NOT NULL DEFAULT '0',
   `pcShots` int(10) unsigned NOT NULL DEFAULT '0',
   `pcMissiles` int(10) unsigned NOT NULL DEFAULT '0',
   `ramJobs` int(11) NOT NULL DEFAULT '0',
@@ -41,13 +42,6 @@ CREATE TABLE IF NOT EXISTS `srvStatisticHistory` (
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Historical Data for graphing player activity from previous months';
 
 --
--- Dumping data for table `srvStatisticHistory`
---
-
-INSERT INTO `srvStatisticHistory` (`timeStamp`, `pcShots`, `pcMissiles`, `ramJobs`, `shipsSalvaged`, `pcBounties`, `npcBounties`, `oreMined`, `iskMarket`, `probesLaunched`, `sitesScanned`) VALUES
-(1546060400, 567, 2354, 34, 786, 98762344, 3455676672, 2354667, 23543476224, 2356, 435);
-
---
 -- Indexes for dumped tables
 --
 
@@ -55,7 +49,7 @@ INSERT INTO `srvStatisticHistory` (`timeStamp`, `pcShots`, `pcMissiles`, `ramJob
 -- Indexes for table `srvStatisticHistory`
 --
 ALTER TABLE `srvStatisticHistory`
-  ADD UNIQUE KEY `timeStamp` (`timeStamp`);
+  ADD UNIQUE KEY `timeStamp` (`idx`);
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
