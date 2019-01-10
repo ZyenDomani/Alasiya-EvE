@@ -115,7 +115,7 @@ enum EveAttrEnum {
     AttrShipScanRange = 125,  //rangeAttributeID in dgmEffects
     AttrCargoScanRange = 126,  //rangeAttributeID in dgmEffects
     AttrAmmoLoaded = 127,
-    AttrChargeSize = 128,
+    AttrChargeSize = 128,       //1 = small, 2 = medium, 3 = large, 4 = xlarge  ** for ammo/crystals only (having this defined sets size tag on item pic)
     AttrMaxPassengers = 129,
     AttrThermalDamageResonanceMultiplier = 130,
     AttrKineticDamageResonanceMultiplier = 131,
