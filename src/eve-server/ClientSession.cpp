@@ -156,10 +156,10 @@ void ClientSession::EncodeChanges(PyDict* into)
 {
     PyDict::const_iterator cur = mSession->begin();
     for (; cur != mSession->end(); ++cur) {
-        PyString* str = cur->first->AsString();
-        PyTuple* value = cur->second->AsTuple();
-        PyRep* last = value->GetItem(0);
-        PyRep* current = value->GetItem(1);
+        PyString* str(cur->first->AsString());
+        PyTuple* value(cur->second->AsTuple());
+        PyRep* last(value->GetItem(0));
+        PyRep* current(value->GetItem(1));
 
         if (last->hash() != current->hash()) {
             // Duplicate tuple

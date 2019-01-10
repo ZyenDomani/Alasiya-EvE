@@ -58,7 +58,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
   m_TS(nullptr),
   m_scan(nullptr),
   pShipSE(nullptr),
-  pSession(nullptr),
+  pSession(new ClientSession()),
   m_system(nullptr),
   m_services(services),
   m_movePoint(NULL_ORIGIN),
@@ -80,8 +80,6 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
 {
     m_pod = ShipItemRef(nullptr);
     m_ship = ShipItemRef(nullptr);
-
-    pSession = new ClientSession();
 
     m_afk = false;
     m_login = true;
