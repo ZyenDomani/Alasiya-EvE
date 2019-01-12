@@ -122,7 +122,7 @@ PyRep *ConfigDB::GetMultiOwnersEx(const std::vector<int32> &entityIDs) {
 
     //RuntimeError: ('_Prime called with unsupported data type', <type 'NoneType'>)
     /** @todo  see what we can do about this....old error  */
-    if (res.ColumnCount())
+    //if (res.ColumnCount())
         return DBResultToTupleSet(res);
     /*
     PyTuple* tuple = new PyTuple(2);
@@ -215,7 +215,7 @@ PyRep *ConfigDB::GetMultiLocationsEx(const std::vector<int32> &entityIDs) {
         }
     }
 
-    if (res.ColumnCount())
+    //if (res.ColumnCount())
         return DBResultToTupleSet(res);
     /*
     PyTuple* tuple = new PyTuple(2);
@@ -234,7 +234,7 @@ PyRep* ConfigDB::GetMultiStationEx(const std::vector< int32 >& entityIDs)
         codelog(DATABASE__ERROR, "Error in GetMultiStationEx query: %s", res.error.c_str());
     }
 
-    if (res.ColumnCount())
+    //if (res.ColumnCount())
         return DBResultToTupleSet(res);
     return nullptr;
 }

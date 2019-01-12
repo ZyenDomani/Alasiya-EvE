@@ -21,27 +21,22 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Update:     Allan
 */
 
 #include "ClientSession.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
 
-/* Things todo or missing
-    [missing]
-        * atribute dep's
-        * GetDefaultValueOfAttribute
-        * SESSIONCHANGEDELAY = (30 * 10000000L)
-*/
 
 ClientSession::ClientSession()
 : mSession(new PyDict()),
 mDirty(false)
 {
     /* default session values */
-    mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE)));
-    mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero()));
-    mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0")));
+    mSession->SetItemString("role", new_tuple(PyStatic.NewNone(), new PyLong(Acct::Role::PLAYER | Acct::Role::NEWBIE), PyStatic.NewFalse()));
+    mSession->SetItemString("userid", new_tuple(PyStatic.NewNone(), PyStatic.NewZero(), PyStatic.NewFalse()));
+    mSession->SetItemString("address", new_tuple(PyStatic.NewNone(), new PyString("0.0.0.0"), PyStatic.NewFalse()));
 }
 
 ClientSession::~ClientSession()
@@ -49,39 +44,10 @@ ClientSession::~ClientSession()
     PyDecRef(mSession);
 }
 
-int64 ClientSession::CreateSessionID() {
-    /*  session id is unique to each session.
-     * is not saved, or shared between chars
-     */
-    m_sessionID = GetTimeMSeconds() * 25;
-    sEntityList.RegisterSID(m_sessionID);
-
-    return m_sessionID;
-}
-
 // note:  cannot destroy these Py* objects here.
-int32 ClientSession::GetLastInt(const char* name) const
+void ClientSession::Clear(const char* name)
 {
-    PyRep* value = _GetLast(name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsInt())
-        return 0;
-
-    return value->AsInt()->value();
-}
-
-int32 ClientSession::GetCurrentInt(const char* name) const
-{
-    PyRep* value = _GetCurrent(name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsInt())
-        return 0;
-
-    return value->AsInt()->value();
+    _Set(name, PyStatic.NewNone());
 }
 
 void ClientSession::SetInt(const char* name, int32 value)
@@ -89,57 +55,9 @@ void ClientSession::SetInt(const char* name, int32 value)
     _Set(name, new PyInt(value));
 }
 
-int64 ClientSession::GetLastLong(const char* name) const
-{
-    PyRep* value = _GetLast(name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsLong())
-        return 0;
-
-    return value->AsLong()->value();
-}
-
-int64 ClientSession::GetCurrentLong(const char* name) const
-{
-    PyRep* value = _GetCurrent(name);
-    if (value == nullptr)
-        return 0;
-
-    if (!value->IsLong())
-        return 0;
-
-    return value->AsLong()->value();
-}
-
 void ClientSession::SetLong(const char* name, int64 value)
 {
     _Set(name, new PyLong(value));
-}
-
-std::string ClientSession::GetLastString(const char* name) const
-{
-    PyRep* value = _GetLast(name);
-    if (value == nullptr)
-        return std::string();
-
-    if (!value->IsString())
-        return std::string();
-
-    return value->AsString()->content();
-}
-
-std::string ClientSession::GetCurrentString(const char* name) const
-{
-    PyRep* value = _GetCurrent(name);
-    if (value == nullptr)
-        return std::string();
-
-    if (!value->IsString())
-        return std::string();
-
-    return value->AsString()->content();
 }
 
 void ClientSession::SetString(const char* name, const char* value)
@@ -147,30 +65,47 @@ void ClientSession::SetString(const char* name, const char* value)
     _Set(name, new PyString(value));
 }
 
-void ClientSession::Clear(const char* name)
+int32 ClientSession::GetLastInt(const char* name) const
 {
-    _Set(name, new PyNone());
+    return PyRep::IntegerValue(_GetLast(name));
+}
+
+int32 ClientSession::GetCurrentInt(const char* name) const
+{
+    return PyRep::IntegerValue(_GetCurrent(name));
+}
+
+int64 ClientSession::GetLastLong(const char* name) const
+{
+    return PyRep::IntegerValue(_GetLast(name));
+}
+
+int64 ClientSession::GetCurrentLong(const char* name) const
+{
+    return PyRep::IntegerValue(_GetCurrent(name));
+}
+
+std::string ClientSession::GetLastString(const char* name) const
+{
+    return PyRep::StringContent(_GetLast(name));
+}
+
+std::string ClientSession::GetCurrentString(const char* name) const
+{
+    return PyRep::StringContent(_GetCurrent(name));
 }
 
 void ClientSession::EncodeChanges(PyDict* into)
 {
-    PyDict::const_iterator cur = mSession->begin();
-    for (; cur != mSession->end(); ++cur) {
-        PyString* str(cur->first->AsString());
-        PyTuple* value(cur->second->AsTuple());
-        PyRep* last(value->GetItem(0));
-        PyRep* current(value->GetItem(1));
+    if (!mDirty)
+        return;
 
-        if (last->hash() != current->hash()) {
-            // Duplicate tuple
-            PyTuple* t = new PyTuple(2);
-            t->SetItem(0, last); PyIncRef(last);
-            t->SetItem(1, current); PyIncRef(current);
-            into->SetItem(str, t); PyIncRef(str);
-            // Update our tuple
-            value->SetItem(0, current); PyIncRef(current);
+    PyDict::const_iterator cur = mSession->begin(), end = mSession->end();
+    for (; cur != end; ++cur)
+        if (cur->second->AsTuple()->GetItem(2)->AsBool()->value()) {    // if this value hasnt changed, dont send it.
+            _GetValueTuple(PyRep::StringContent(cur->first).c_str())->SetItem(2, PyStatic.NewFalse());
+            into->SetItem(cur->first->AsString(), new_tuple(cur->second->AsTuple()->GetItem(0), cur->second->AsTuple()->GetItem(1)));
         }
-    }
 
     mDirty = false;
 }
@@ -210,17 +145,26 @@ void ClientSession::_Set(const char* name, PyRep* value)
 {
     PyTuple* tuple = _GetValueTuple(name);
     if (tuple == nullptr) {
-        tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyNone());
-        tuple->SetItem(1, new PyNone());
+        tuple = new_tuple(PyStatic.NewNone(), PyStatic.NewNone(), PyStatic.NewFalse());
         mSession->SetItemString(name, tuple);
     }
 
-    PyRep* current = tuple->GetItem(1);
+    PyRep* current = tuple->GetItem(1); // assign op
     if (value->hash() != current->hash()) {
-        //v->SetItem(0, current); /* didn't the session need to store the old value to? */
+        tuple->SetItem(0, current); /* didn't the session need to store the old value too? */
         tuple->SetItem(1, value);
+        tuple->SetItem(2, PyStatic.NewTrue());
         mDirty = true;
     } else
         PyDecRef(value);
+}
+
+int64 ClientSession::CreateSessionID() {
+    /*  session id is unique to each session.
+     * is not saved, or shared between chars
+     */
+    m_sessionID = GetTimeMSeconds() * 25;
+    sEntityList.RegisterSID(m_sessionID);
+
+    return m_sessionID;
 }

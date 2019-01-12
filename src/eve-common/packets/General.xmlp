@@ -366,11 +366,11 @@
         <!-- 0 -->
         <int name="clueless" default="0" />
         <!-- 1 -->
-          <dict name="changes" />
+        <dict name="changes" />
       </tupleInline>
       <!-- 1 -->
       <!-- this is actually optional... -->
-        <listInt name="nodesOfInterest" />
+      <listInt name="nodesOfInterest" />
     </tupleInline>
   </elementDef>
 

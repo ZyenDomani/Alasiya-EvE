@@ -43,19 +43,17 @@ public:
     bool isDirty() const { return mDirty; }
 
     // PyInt
+    void SetInt( const char* name, int32 value );
     int32 GetLastInt( const char* name ) const;
     int32 GetCurrentInt( const char* name ) const;
-    void SetInt( const char* name, int32 value );
-
     // PyLong
+    void SetLong( const char* name, int64 value );
     int64 GetLastLong( const char* name ) const;
     int64 GetCurrentLong( const char* name ) const;
-    void SetLong( const char* name, int64 value );
-
     // PyString
+    void SetString( const char* name, const char* value );
     std::string GetLastString( const char* name ) const;
     std::string GetCurrentString( const char* name ) const;
-    void SetString( const char* name, const char* value );
 
     void Clear( const char* name );
     void EncodeChanges( PyDict* into );
@@ -64,10 +62,10 @@ public:
     int64 CreateSessionID();
 
 protected:
-    PyTuple* _GetValueTuple( const char* name ) const;
-
     PyRep* _GetLast( const char* name ) const;
     PyRep* _GetCurrent( const char* name ) const;
+    PyTuple* _GetValueTuple( const char* name ) const;
+
     void _Set( const char* name, PyRep* value );
 
     PyDict* const mSession;

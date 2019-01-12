@@ -811,7 +811,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_ship->SetCustomInfo(ci);
     m_ship->SaveShip();
 
-    _UpdateSession();
+    UpdateSession();
     SendSessionChange();
 }
 
@@ -1105,7 +1105,7 @@ void Client::ResetAfterPodded() {
     m_char->ResetClone();
     m_char->SaveCharacter();
     //update session with new values
-    _UpdateSession();
+    UpdateSession();
     SendSessionChange();
 }
 
@@ -1550,75 +1550,6 @@ void Client::OnCharNowInStation() {
 /**********************************************************************
  *  session shit and other non-player-related things
  * ****************************************************************/
-void Client::UpdateSessionInt(const char *id, int value)
-{
-    pSession->SetInt(id, value);
-}
-
-void Client::UpdateCorpSession(CorpData& data)
-{
-    // session.Set* methods only updates on change
-    pSession->SetInt("corpid", data.corporationID);
-    pSession->SetInt("baseID", data.baseID);
-    pSession->SetInt("hqID", data.corpHQ);
-    pSession->SetInt("allianceid", data.allianceID);
-    pSession->SetInt("warfactionid", data.warFactionID);
-    pSession->SetInt("corpAccountKey", data.corpAccountKey);
-    pSession->SetLong("corprole", data.corpRole);
-    pSession->SetLong("rolesAtAll", data.rolesAtAll);
-    pSession->SetLong("rolesAtBase", data.rolesAtBase);
-    pSession->SetLong("rolesAtHQ", data.rolesAtHQ);
-    pSession->SetLong("rolesAtOther", data.rolesAtOther);
-    SendSessionChange();
-}
-
-void Client::UpdateFleetSession(CharFleetData& fleet)
-{
-    m_fleet = fleet.fleetID;
-    m_wing = fleet.wingID;
-    m_squad = fleet.squadID;
-
-    pSession->SetInt("fleetjob", fleet.job);
-    pSession->SetInt("fleetrole", fleet.role);
-    pSession->SetInt("fleetbooster", fleet.booster);
-    pSession->SetInt("fleetid", m_fleet);
-    pSession->SetInt("wingid", m_wing);
-    pSession->SetInt("squadid", m_squad);
-    SendSessionChange();
-}
-
-void Client::_UpdateSession()
-{
-    if (m_char.get() == nullptr)
-        return;
-    uint32 stationID = m_char->stationID();
-    uint32 solarsystemID = m_char->solarSystemID();
-    if (stationID) {
-        pSession->Clear("solarsystemid");    //must be 0 in station
-        pSession->Clear("shipid");    //must be 0 in station
-
-        pSession->SetInt("stationid", stationID);
-        pSession->SetInt("stationid2", stationID);   // client uses this for continer location checks
-        //pSession->SetInt("worldspaceid", stationID);
-        pSession->SetInt("locationid", stationID);
-    } else {
-        pSession->Clear("stationid");
-        pSession->Clear("stationid2");
-        pSession->Clear("worldspaceid");
-        pSession->SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
-        pSession->SetInt("locationid", solarsystemID);
-        pSession->SetInt("shipid", m_shipId);
-    }
-
-    //pSession->SetInt("charid", m_char->itemID());
-    //pSession->SetString("charname", m_char->itemName().c_str());
-    pSession->SetInt("corpid", m_char->corporationID());
-    // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
-    pSession->SetInt("solarsystemid2", solarsystemID);
-    pSession->SetInt("constellationid", m_char->constellationID());
-    pSession->SetInt("regionid", m_char->regionID());
-}
-
 void Client::InitSession(int32 characterID)
 {
     if (!IsCharacter(characterID)) {
@@ -1663,14 +1594,19 @@ void Client::InitSession(int32 characterID)
      *   also used as current system in following menus:
      *  JumpPortalBridgeMenu, GetHybridBeaconJumpMenu, GetHybridBridgeMenu
      */
-    if (stationID) {
+    if (IsStation(stationID)) {
         m_locationID = stationID;
+        pSession->Clear("solarsystemid");    //must be 0 in station
+        pSession->Clear("shipid");    //must be 0 in station
         pSession->SetInt("stationid", stationID);
         pSession->SetInt("stationid2", stationID);
         pSession->SetInt("locationid", stationID);
-        //pSession->SetInt("worldspaceid", stationID);
+        pSession->SetInt("worldspaceid", stationID);
     } else {
         m_locationID = solarSystemID;
+        pSession->Clear("stationid");
+        pSession->Clear("stationid2");
+        pSession->Clear("worldspaceid");
         pSession->SetInt("shipid", m_shipId);
         pSession->SetInt("solarsystemid", solarSystemID);
         pSession->SetInt("locationid", solarSystemID);
@@ -1679,15 +1615,84 @@ void Client::InitSession(int32 characterID)
     sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
 }
 
+void Client::UpdateSession()
+{
+    if (m_char.get() == nullptr)
+        return;
+    uint32 stationID = m_char->stationID();
+    uint32 solarsystemID = m_char->solarSystemID();
+    if (IsStation(stationID)) {
+        pSession->Clear("solarsystemid");    //must be 0 in station
+        pSession->Clear("shipid");    //must be 0 in station
+        //pSession->Clear("worldspaceid");    //not used here (yet)
+
+        pSession->SetInt("stationid", stationID);
+        pSession->SetInt("stationid2", stationID);   // client uses this for continer location checks
+        pSession->SetInt("worldspaceid", stationID);
+        pSession->SetInt("locationid", stationID);
+    } else {
+        pSession->Clear("stationid");
+        pSession->Clear("stationid2");
+        pSession->Clear("worldspaceid");
+        pSession->SetInt("solarsystemid", solarsystemID); //  used to tell client they are in space
+        pSession->SetInt("locationid", solarsystemID);
+        pSession->SetInt("shipid", m_shipId);
+    }
+
+    // solarsystemid2 is used by client to determine current system.  NOTE:  *MUST* be set to current system.
+    pSession->SetInt("solarsystemid2", solarsystemID);
+    pSession->SetInt("constellationid", m_char->constellationID());
+    pSession->SetInt("regionid", m_char->regionID());
+}
+
+void Client::UpdateSessionInt(const char *id, int value)
+{
+    pSession->SetInt(id, value);
+}
+
+void Client::UpdateCorpSession(CorpData& data)
+{
+    // session.Set* methods only updates on change
+    pSession->SetInt("corpid", data.corporationID);
+    pSession->SetInt("baseID", data.baseID);
+    pSession->SetInt("hqID", data.corpHQ);
+    pSession->SetInt("allianceid", data.allianceID);
+    pSession->SetInt("warfactionid", data.warFactionID);
+    pSession->SetInt("corpAccountKey", data.corpAccountKey);
+    pSession->SetLong("corprole", data.corpRole);
+    pSession->SetLong("rolesAtAll", data.rolesAtAll);
+    pSession->SetLong("rolesAtBase", data.rolesAtBase);
+    pSession->SetLong("rolesAtHQ", data.rolesAtHQ);
+    pSession->SetLong("rolesAtOther", data.rolesAtOther);
+    SendSessionChange();
+}
+
+void Client::UpdateFleetSession(CharFleetData& fleet)
+{
+    m_fleet = fleet.fleetID;
+    m_wing = fleet.wingID;
+    m_squad = fleet.squadID;
+
+    pSession->SetInt("fleetjob", fleet.job);
+    pSession->SetInt("fleetrole", fleet.role);
+    pSession->SetInt("fleetbooster", fleet.booster);
+    pSession->SetInt("fleetid", m_fleet);
+    pSession->SetInt("wingid", m_wing);
+    pSession->SetInt("squadid", m_squad);
+    SendSessionChange();
+}
+
 void Client::SendSessionChange()
 {
     if (!pSession->isDirty())
         return;
+
+    // this should never happen now.  -allan 3Aug16
     if (m_locationID == 0) {
         if (m_char.get() != nullptr) {
-            // this should never happen now.  -allan 3Aug16
             codelog(CLIENT__ERROR, "Session::LocationID == 0 for %s(%u)", m_char->itemName().c_str(), m_char->itemID());
-            if (m_char->stationID() > 0)
+            EvE::traceStack();
+            if (IsStation(m_char->stationID()))
                 m_locationID = m_char->stationID();
             else
                 m_locationID = m_SystemData.systemID;

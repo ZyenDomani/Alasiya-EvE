@@ -50,7 +50,7 @@ bool XMLParser::ParseFile( const char* file )
     }
 
     TiXmlElement* root = m_pXML_Document->RootElement();
-    if (!root) {
+    if (root == nullptr) {
         sLog.Error( "XMLParser", "Unable to find root in '%s'.", file );
         return false;
     }
@@ -118,4 +118,3 @@ void XMLParser::ClearParsers() {
 
     mParsers.clear();
 }
-

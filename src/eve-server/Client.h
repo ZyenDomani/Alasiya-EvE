@@ -445,8 +445,8 @@ private:
     bool m_canThrow;
 
 protected:
+    void UpdateSession();
     void _SendPingRequest();
-    void _UpdateSession();
     void _SendException( const PyAddress& source, int64 callID, MACHONETMSG_TYPE in_response_to, MACHONETERR_TYPE exception_type, PyRep** payload );
     void _SendCallReturn( const PyAddress& source, int64 callID, int64 clientID, PyRep** return_value, const char* channel = 0 );
     void _SendPingResponse( const PyAddress& source, int64 callID );
