@@ -63,12 +63,12 @@ EvilNumber Skill::GetSPForLevel( EvilNumber level ) {
 
 void Skill::VerifySP()
 {
-    if (GetAttribute(AttrSkillPoints) == 0)
+    if (GetAttribute(AttrSkillPoints) == EvilZero)
         return;
     uint32 spThisLevel = GetSPForLevel(GetAttribute(AttrSkillLevel)).get_int();
     uint32 spNextLevel = GetSPForLevel(GetAttribute(AttrSkillLevel) + EvilOne).get_int();
     uint32 spCurrent = GetAttribute(AttrSkillPoints).get_int();
-    if ((spCurrent < spThisLevel) or (spCurrent > spNextLevel)) {
+    if (spCurrent < spThisLevel) { // or (spCurrent > spNextLevel)) {
         _log(CHARACTER__SKILL_TRACE, "Updating Skill %s from %u to %u (next: %u)", itemName().c_str(), spCurrent, spThisLevel, spNextLevel);
         SetAttribute(AttrSkillPoints, spThisLevel);
     }
