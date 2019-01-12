@@ -1024,6 +1024,11 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
         return nullptr;
     }
 
+    if (args.data->empty()) {
+        call.client->SendErrorMsg("You must choose a role to search for.");
+        return nullptr;
+    }
+
     /*
      *                query.append([property, operator, value])
      *                query.append([joinOperator, property, operator, value])
@@ -1102,7 +1107,10 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     //uint32 rowCount = (uint32)res.GetRowCount();
 
     // populate results
-    list->clear();
+    if (list == nullptr)
+        list = new PyList();
+    else
+        list->clear();
     DBResultRow row;
     while (res.GetRow(row))
         list->AddItem(new PyInt(row.GetInt(0)));
