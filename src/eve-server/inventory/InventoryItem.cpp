@@ -786,7 +786,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
-    SaveItem();
+    //SaveItem();
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
@@ -841,7 +841,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    SaveItem();
+    //SaveItem();
 
     //notify about the changes.
     if (notify) {
@@ -950,7 +950,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
                 pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
         }
     }
-    SaveItem();
+    //SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -969,7 +969,7 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
-    SaveItem();
+    //SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -988,7 +988,7 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     bool old_singleton = m_singleton;
     m_singleton = singleton;
 
-    SaveItem();
+    //SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -1314,7 +1314,8 @@ void InventoryItem::ClearModifiers()
 {
     _log(EFFECTS__TRACE, "Resetting modifier map for %s", m_itemName.c_str());
     m_modifiers.clear();
-    pAttributeMap->Save();
+    // saving makes no sense here.
+    //pAttributeMap->Save();
     pAttributeMap->Load(true);
 }
 
