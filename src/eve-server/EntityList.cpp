@@ -370,7 +370,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
 */
     if (!mcset.characters.empty())
         for (auto cur : m_clients)
-            if ( mcset.characters.find(cur->GetCharID()) != mcset.characters.end()) {
+            if ( mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end()) {
                 PyIncRef(payload);
                 cur->SendNotification( notifyType, idType, &payload, seq );
             }
