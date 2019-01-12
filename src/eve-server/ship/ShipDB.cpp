@@ -114,7 +114,7 @@ void ShipDB::SaveLinkedWeapons(uint32 shipID, std::multimap< uint32, uint32 >& d
             first = false;
         } else
             Inserts << ", ";
-        Inserts << "(" << shipID << ", " << cur.first << ", " << cur.second << "')";
+        Inserts << "(" << shipID << ", " << cur.first << ", " << cur.second << ")";
     }
 
     if (!first)

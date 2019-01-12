@@ -832,7 +832,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     Call_TwoIntegerArgs args;   //itemID, effectID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     //TODO:  need to verify pilot can OL modules
@@ -845,13 +845,13 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
     // self.dogmaLM.CancelOverloading(itemID)
 
     Client* pClient(call.client);
-    Call_TwoIntegerArgs args;   //itemID, effectID
+    Call_SingleIntegerArg args;   //itemID
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
-    pClient->GetShip()->CancelOverloading(args.arg1);
+    pClient->GetShip()->CancelOverloading(args.arg);
     return nullptr;
 }
 

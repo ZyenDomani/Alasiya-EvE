@@ -729,6 +729,24 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
     return false;
 }
 
+void ModuleManager::UnloadWeapons()
+{
+    pModuleCont->UnloadWeapons();
+    std::map<EVEItemFlags, InventoryItemRef>::iterator itr;
+    for (EVEItemFlags i = flagHiSlot0; 1 < flagFixedSlot; i+1) {
+        itr = m_charges.find(i);
+        if (itr != m_charges.end()) {
+            if IsStation(m_Ship->locationID())
+                itr->second->Move(m_Ship->locationID(), flagHangar, true);
+            else if (m_Ship->GetMyInventory()->ContainsTypeByFlag(itr->second->typeID(), flagCargoHold))
+                itr->second->MergeTypesInCargo(m_Ship, flagCargoHold);
+            else
+                itr->second->SetFlag(flagCargoHold, true);
+            m_charges.erase(itr);
+        }
+    }
+}
+
 void ModuleManager::UnloadAllModules()
 {
     // can this be called when docked?

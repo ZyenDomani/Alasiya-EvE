@@ -1546,10 +1546,13 @@ void ShipItem::LinkAllWeapons()
     std::list< GenericModule* > weaponList;
     m_ModuleManager->GetWeapons(weaponList);
 
-    if (sConfig.server.UnloadOnLinkAll)
-        m_ModuleManager->UnloadAllModules();
+    //if (sConfig.server.UnloadOnLinkAll)
+    //    m_ModuleManager->UnloadWeapons();
+    
     // remove current links
     for (auto cur : weaponList) {
+        if (sConfig.server.UnloadOnLinkAll)
+            m_ModuleManager->UnloadCharge(cur->flag(), true);
         cur->SetLinked(false);
         cur->SetLinkMaster(false);
     }

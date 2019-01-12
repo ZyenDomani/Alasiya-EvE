@@ -149,6 +149,16 @@ void ModuleContainer::RepairAll() {
             cur.second->Repair();
 }
 
+void ModuleContainer::UnloadWeapons()
+{
+    std::map<uint8, GenericModule*>::iterator itr;
+    for (uint8 i = flagHiSlot0; 1 < flagFixedSlot; ++i) {
+        itr = m_modules.find(i);
+        if (itr != m_modules.end())
+            itr->second->UnloadCharge();
+    }
+}
+
 void ModuleContainer::Process() {
     // proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();

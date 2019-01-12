@@ -55,6 +55,7 @@ public:
     void DeactivateAll();
     void UnloadAll();
     void RepairAll();
+    void UnloadWeapons();
 
     // only called by MM::fitModule
     bool isSlotOccupied(EVEItemFlags flag); // flag is not checked in this call
