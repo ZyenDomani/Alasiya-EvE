@@ -581,7 +581,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
     if ((new_location == m_locationID) and (new_flag == m_flag) and (new_owner == m_ownerID))
         return; //nothing to do...
 
-        InventoryItemRef iRef(nullptr);
+    InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID, old_owner = m_ownerID;
     EVEItemFlags old_flag = m_flag;
 
@@ -603,8 +603,8 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
     }
 
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+        _log(INV__TRACE, "InventoryItem::Donate()  Updated flag on %s(%u) from %s to %s.", \
+                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
     //SaveItem();
 
@@ -656,7 +656,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
     if (IsTempItem(m_itemID))
         return;

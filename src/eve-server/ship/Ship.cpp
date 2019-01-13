@@ -1086,6 +1086,7 @@ void ShipItem::LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod)
     if (itr == m_linkedWeapons.end())
         throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
 
+    /** @todo  this needs to be updated to NOT throw.  needs more thought */
     //load charge in master
     LoadCharge(cRef, pMod->flag());
     // loop thru slaves and load charge(s)
@@ -1107,6 +1108,7 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
     if (cRef.get() == nullptr)
         return;  // make error for charge not found?
 
+    /** @todo  this needs to be updated to NOT throw.  needs more thought */
     //load charge in master
     LoadCharge(cRef, pMod->flag());
     // loop thru slaves and load charge(s)

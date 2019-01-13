@@ -522,7 +522,14 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     m_chargeLoaded = true;
     SetChargeState(Module::State::Loading);
 
-    /*
+    Client* pClient = m_shipRef->GetPilot();
+    if (pClient == nullptr) {
+        m_chargeRef = InventoryItemRef(nullptr);
+        m_chargeLoaded = false;
+        SetChargeState(Module::State::Unloaded);
+        return;  // make error here?
+    }
+    /*  **** this sets "reload blink" status on weapon button
      * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
      *  {returns}
      *        [PyTuple 3 items]
@@ -531,13 +538,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
      *          [PyInt 203]                     << chargeTypeID
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
-    Client* pClient = m_shipRef->GetPilot();
-    if (pClient == nullptr) {
-        m_chargeRef = InventoryItemRef(nullptr);
-        m_chargeLoaded = false;
-        SetChargeState(Module::State::Unloaded);
-        return;  // make error here?
-    }
     if (pClient->IsInSpace() and !pClient->IsLogin()) {
         PyTuple* module = new PyTuple(1);
             module->SetItem(0, new PyInt(m_modRef->itemID()));
