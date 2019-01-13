@@ -49,7 +49,7 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         call.client->SendErrorMsg("Search Failed.  Try using a different search string.");
-        return NULL;
+        return nullptr;
     }
 
     std::string str = args.str;
@@ -66,23 +66,18 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         call.client->SendErrorMsg("Search Failed.  Try using a different search string.");
-        return NULL;
+        return nullptr;
     }
 
     std::string str = args.str;
 	Replace(str);
 
-    bool hideNPC = true;
-    if (call.byname.find("onlyAltName")->second->IsBool())
-        hideNPC =  call.byname.find("hideNPC")->second->AsBool()->value();
-    else if (call.byname.find("onlyAltName")->second->IsInt())
-        hideNPC =  call.byname.find("hideNPC")->second->AsInt()->value();
+    bool hideNPC = true, onlyAltName = false;
+    if (call.byname.find("hideNPC") != call.byname.end())
+        hideNPC = (PyRep::IntegerValue(call.byname.find("hideNPC")->second) != 0);
 
-    bool onlyAltName = false;
-    if (call.byname.find("onlyAltName")->second->IsBool())
-        onlyAltName = call.byname.find("onlyAltName")->second->AsBool()->value();
-    else if (call.byname.find("onlyAltName")->second->IsInt())
-        onlyAltName = call.byname.find("onlyAltName")->second->AsInt()->value();
+    if (call.byname.find("onlyAltName") != call.byname.end())
+        onlyAltName = (PyRep::IntegerValue(call.byname.find("onlyAltName")->second) != 0);
 
     return m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);
 }
