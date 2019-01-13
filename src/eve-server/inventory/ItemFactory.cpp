@@ -135,8 +135,12 @@ void ItemFactory::RemoveItem(uint32 itemID) {
     if (itr == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
     } else {
-        --m_itemCount;
         m_items.erase( itr );
+        // seen weird shit with itemcount being wrong.  not sure why.  havent really cared
+        if (m_itemCount < 1)
+            m_itemCount = m_items.size();
+        else
+            --m_itemCount;
     }
 }
 

@@ -395,6 +395,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     }
 
     // this will need list of interested parties from corp.  not sure how to do it yet.
+    // this one is crazy...loop thru all clients for each corp in set.  avoid if we can.
     if (!mcset.corporations.empty())
         for (auto cur : m_clients)
             if (mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end()) {

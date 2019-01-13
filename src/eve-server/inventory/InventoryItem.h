@@ -78,9 +78,9 @@ public:
 
 
     /* class type pointer querys. */
-    virtual ShipItem* GetShipItem()                     { return nullptr; }
+    virtual ShipItem*       GetShipItem()               { return nullptr; }
     /* class type tests. */
-    virtual bool IsShipItem()                           { return false; }
+    virtual bool            IsShipItem()                { return false; }
 
     /* generic access functions handled here */
     Inventory*              GetMyInventory()            { return pInventory; }
@@ -117,7 +117,7 @@ public:
     void                    Move(uint32 new_location, EVEItemFlags flag=flagAutoFit, bool notify=false);
     // same as Move() but xfer ownership also
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
-    void                    SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const;
+    void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
     // this is for stacking unloading charges in ships cargo
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
     bool                    ChangeSingleton(bool singleton, bool notify=false);

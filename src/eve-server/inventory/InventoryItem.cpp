@@ -518,6 +518,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
     return InventoryItemRef(nullptr);
 }
 
+// item manipulation methods
 void InventoryItem::AddItem(InventoryItemRef iRef)
 {
     pInventory->AddItem( iRef);
@@ -542,6 +543,356 @@ void InventoryItem::Delete() {
     //delete ourselves from factory cache
     sItemFactory.RemoveItem( m_itemID);
     //PyDecRef(this);
+}
+
+void InventoryItem::Rename(std::string name)
+{
+    m_itemName = name;
+    SaveItem();
+
+    PyList* list = new PyList();
+    list->AddItem(new PyInt(m_itemID));
+    list->AddItem(new PyString(name));
+    list->AddItem(new PyFloat(0));
+    list->AddItem(new PyFloat(0));
+    list->AddItem(new PyFloat(0));
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, new PyString("evelocations"));
+    tuple->SetItem(1, list);
+
+    // get owner
+    if (IsCharacter(m_ownerID)) {
+        // this will be the most-used case
+        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+        if (pClient == nullptr)
+            return;  //  make error here?
+            if (pClient->IsDocked())
+                pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
+                else // client in space.  sent update to all clients in bubble
+                    pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
+    } else if (IsPlayerCorp(m_ownerID))
+        // not sure about this one yet.
+        ;
+
+}
+
+void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify/*true*/)
+{
+    if ((new_location == m_locationID) and (new_flag == m_flag) and (new_owner == m_ownerID))
+        return; //nothing to do...
+
+        InventoryItemRef iRef(nullptr);
+    uint32 old_location = m_locationID, old_owner = m_ownerID;
+    EVEItemFlags old_flag = m_flag;
+
+    m_flag = new_flag;
+    m_ownerID = new_owner;
+    m_locationID = new_location;
+
+    if (old_location != new_location) {
+        if (IsValidLocation(old_location)) {
+            iRef = sItemFactory.GetItem( old_location);
+            if (iRef.get() != nullptr)
+                iRef->RemoveItem(InventoryItemRef(this));
+        }
+        if (IsValidLocation(new_location)) {
+            iRef = sItemFactory.GetItem( new_location);
+            if (iRef.get() != nullptr)
+                iRef->AddItem(InventoryItemRef(this));
+        }
+    }
+
+    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
+        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
+        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+
+    //SaveItem();
+
+    // changes are cleared after sending, so make 2 sets to send to old owner and new owner
+    if (notify) {
+        std::map<int32, PyRep *> changes, changes2;
+        if (new_flag != old_flag) {
+            changes[ixFlag] = new PyInt(old_flag);
+            changes2[ixFlag] = new PyInt(old_flag);
+        }
+        if (new_owner != old_owner) {
+            changes[ixOwnerID] = new PyInt(old_owner);
+            changes2[ixOwnerID] = new PyInt(old_owner);
+        }
+        if (new_location != old_location) {
+            changes[ixLocationID] = new PyInt(old_location);
+            changes2[ixLocationID] = new PyInt(old_location);
+        }
+        if (new_owner != old_owner)
+            SendItemChange(old_owner, changes);
+        SendItemChange(m_ownerID, changes2);
+    }
+}
+
+void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
+    if ((new_location == m_locationID) and (new_flag == m_flag))
+        return; //nothing to do...
+
+        InventoryItemRef iRef(nullptr);
+    uint32 old_location = m_locationID;
+    EVEItemFlags old_flag = m_flag;
+
+    m_flag = new_flag;      // move these?
+    m_locationID = new_location;
+
+    if (old_location != m_locationID) {
+        if (IsValidLocation(old_location)) {
+            iRef = sItemFactory.GetItem(old_location);
+            if (iRef.get() != nullptr)
+                iRef->RemoveItem(InventoryItemRef(this));
+        }
+        if (IsValidLocation(m_locationID)) {
+            iRef = sItemFactory.GetItem(m_locationID);
+            if (iRef.get() != nullptr)
+                iRef->AddItem(InventoryItemRef(this));
+            else
+                _log(INV__WARNING, "Item %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
+        }
+    }
+    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
+        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
+        itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+
+    if (IsTempItem(m_itemID))
+        return;
+
+    //SaveItem();
+
+    //notify about the changes.
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        if ( m_locationID != old_location )
+            changes[ixLocationID] = new PyInt(old_location);
+        if ( m_flag != old_flag )
+            changes[ixFlag] = new PyInt(old_flag);
+        SendItemChange( m_ownerID, changes);   //changes is consumed
+    }
+}
+
+InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
+    if (qty < 1) {
+        _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
+        return InventoryItemRef(nullptr);
+    }
+    if (!AlterQuantity(-qty, notify)) {
+        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i during split.", m_itemName.c_str(), m_itemID, qty);
+        return InventoryItemRef(nullptr);
+    }
+
+    ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty);
+    InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
+    if (iRef.get() == nullptr)
+        return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
+        iRef->Move(m_locationID, m_flag, true);
+    return iRef;
+}
+
+bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
+    if (to_merge.get() == nullptr)
+        return false;
+
+    if (m_singleton or to_merge->singleton())
+        throw PyException( MakeCustomError("You cannot stack assembled items."));
+
+    if (m_type.id() != to_merge->typeID()) {
+        _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
+        return false;
+    }
+
+    if (qty < 0) {
+        _log(ITEM__ERROR, "%s (%u): Asked to merge with %i units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
+        return false;
+    }
+
+    if (qty == 0)
+        qty = to_merge->quantity();
+
+    if (qty == to_merge->quantity()) {
+        to_merge->Delete();
+    } else if (!to_merge->AlterQuantity(-qty, notify)) {
+        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
+        return false;
+    }
+
+    if (!AlterQuantity(qty, notify)) {
+        _log(ITEM__ERROR, "%s (%u): Failed to add quantity %i.", m_itemName.c_str(), m_itemID, qty);
+        return false;
+    }
+
+    return true;
+}
+
+void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
+{
+    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
+    if (iRef.get() == nullptr)
+        return;
+    // here we 'merge' with stack already in cargo
+    iRef->Merge(InventoryItemRef(this));
+}
+
+bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
+    if (qty == 0)
+        return true;
+
+    int32 new_qty = m_quantity + qty;
+    if (new_qty < 0) {
+        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
+        // make player error msg here.....
+        return false;
+    }
+
+    return SetQuantity(new_qty, notify);
+}
+
+bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
+    //if an object is singleton, it shouldn't be able to add/remove qty
+    if (m_singleton) {
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
+        // make player error msg here.....
+        return false;
+    }
+    int32 old_qty = m_quantity;
+    m_quantity = qty;
+    if (m_quantity < 1)
+        Delete();
+    else if (m_quantity > EVEMU_MAX_SHORT_ID) {
+        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
+        m_quantity = EVEMU_MAX_SHORT_ID -1;
+        if (IsCharacter(m_ownerID)) {
+            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+            if (pClient != nullptr)
+                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
+        }
+    }
+    //SaveItem();
+
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        // this informs client of a stack change...still need to go over client code to verify exacty spec on which one is used for what purpose....modules/charges can use both
+        if (IsModuleSlot(m_flag))
+            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
+
+            changes[ixStackSize] = new PyInt(old_qty);
+        SendItemChange(m_ownerID, changes); //changes is consumed
+    }
+
+    return true;
+}
+
+bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
+    EVEItemFlags old_flag = m_flag;
+    m_flag = flag;
+
+    //SaveItem();
+
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        //send the notify to the owner.
+        changes[ixFlag] = new PyInt(old_flag);
+        SendItemChange(m_ownerID, changes); //changes is consumed
+    }
+
+    return true;
+}
+
+bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
+    if (singleton == m_singleton)
+        return true;    //nothing to do...
+
+        bool old_singleton = m_singleton;
+    m_singleton = singleton;
+
+    //SaveItem();
+
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        changes[ixSingleton] = new PyInt(old_singleton);
+        SendItemChange(m_ownerID, changes); //changes is consumed
+    }
+
+    // must update volume when singleton (packaged state) changes for (mostly) ship items.
+    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
+    return true;
+}
+
+void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
+    if (new_owner == m_ownerID)
+        return; //nothing to do...
+        uint32 old_owner = m_ownerID;
+    m_ownerID = new_owner;
+    //SaveItem();
+    //notify about the changes.
+    if (notify) {
+        std::map<int32, PyRep *> changes;
+        //send the notify to the new owner.
+        changes[ixOwnerID] = new PyInt(old_owner);
+        SendItemChange(new_owner, changes); //changes is consumed
+        //also send the notify to the old owner.
+        changes[ixOwnerID] = new PyInt(old_owner);
+        SendItemChange(old_owner, changes); //changes is consumed
+    }
+}
+
+//contents of changes are consumed and cleared
+void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) {
+    if (IsNPCCorp(toID) or (toID == 1) or IsFaction(toID))   //IsValidOwner()
+        return;
+    if (sConsole.IsShutdown())
+        return;
+    NotifyOnItemChange change;
+        change.itemRow = GetItemRow();
+        change.changes = changes;
+    PyTuple *tmp = change.Encode();
+
+    //TODO: figure out the appropriate list of interested people...
+    if (IsCharacter(toID)) {
+        Client* pClient = sEntityList.FindClientByCharID(toID);
+        if (pClient == nullptr)
+            return;
+        if (IsShipItem()) //(pClient->IsBoard())
+            pClient->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called for ships
+        else
+            pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for non-ships
+    } else if (IsPlayerCorp(toID)) {
+        // there is more to this.  not sure what else or how yet.
+        MulticastTarget mct;
+        mct.corporations.insert(toID);
+        if (IsStation(m_locationID)) {
+            mct.locations.insert(m_locationID);
+            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
+        } else {
+            sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
+        }
+    }
+    PySafeDecRef(tmp);
+    changes.clear();    //reset change map for next update.
+}
+
+void InventoryItem::SaveItem() {
+    sItemFactory.db()->SaveItem(
+        m_itemID,
+        ItemData(
+            m_itemName.c_str(),
+                 m_type.id(),
+                 m_ownerID,
+                 m_locationID,
+                 m_flag,
+                 m_contraband,
+                 m_singleton,
+                 m_quantity,
+                 m_position,
+                 customInfo().c_str()
+        )
+    );
+    // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
+    // make call here for items saved after *some* change
+    SaveAttributes();
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
@@ -722,356 +1073,6 @@ PyObject* InventoryItem::ItemGetInfo()
     if (!Populate(result.entry))
         return nullptr;
     return result.Encode();
-}
-
-// item manipulation methods
-void InventoryItem::Rename(std::string name)
-{
-    m_itemName = name;
-    SaveItem();
-
-    PyList* list = new PyList();
-        list->AddItem(new PyInt(m_itemID));
-        list->AddItem(new PyString(name));
-        list->AddItem(new PyFloat(0));
-        list->AddItem(new PyFloat(0));
-        list->AddItem(new PyFloat(0));
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyString("evelocations"));
-        tuple->SetItem(1, list);
-
-    // get owner
-    if (IsCharacter(m_ownerID)) {
-        // this will be the most-used case
-        Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
-        if (pClient == nullptr)
-            return;  //  make error here?
-        if (pClient->IsDocked())
-            pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
-        else // client in space.  sent update to all clients in bubble
-            pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
-    } else if (IsPlayerCorp(m_ownerID))
-        // not sure about this one yet.
-        ;
-
-}
-
-void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify/*true*/)
-{
-    if ((new_location == m_locationID) and (new_flag == m_flag) and (new_owner == m_ownerID))
-        return; //nothing to do...
-
-    InventoryItemRef iRef(nullptr);
-    uint32 old_location = m_locationID, old_owner = m_ownerID;
-    EVEItemFlags old_flag = m_flag;
-
-    m_flag = new_flag;
-    m_ownerID = new_owner;
-    m_locationID = new_location;
-
-    if (old_location != new_location) {
-        if (IsValidLocation(old_location)) {
-            iRef = sItemFactory.GetItem( old_location);
-            if (iRef.get() != nullptr)
-                iRef->RemoveItem(InventoryItemRef(this));
-        }
-        if (IsValidLocation(new_location)) {
-            iRef = sItemFactory.GetItem( new_location);
-            if (iRef.get() != nullptr)
-                iRef->AddItem(InventoryItemRef(this));
-        }
-    }
-
-    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
-
-    //SaveItem();
-
-    // changes are cleared after sending, so make 2 sets to send to old owner and new owner
-    if (notify) {
-        std::map<int32, PyRep *> changes, changes2;
-        if (new_flag != old_flag) {
-            changes[ixFlag] = new PyInt(old_flag);
-            changes2[ixFlag] = new PyInt(old_flag);
-        }
-        if (new_owner != old_owner) {
-            changes[ixOwnerID] = new PyInt(old_owner);
-            changes2[ixOwnerID] = new PyInt(old_owner);
-        }
-        if (new_location != old_location) {
-            changes[ixLocationID] = new PyInt(old_location);
-            changes2[ixLocationID] = new PyInt(old_location);
-        }
-        if (new_owner != old_owner)
-            SendItemChange(old_owner, changes);
-        SendItemChange(m_ownerID, changes2);
-    }
-}
-
-void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit*/, bool notify/*false*/) {
-    if ((new_location == m_locationID) and (new_flag == m_flag))
-        return; //nothing to do...
-
-    InventoryItemRef iRef(nullptr);
-    uint32 old_location = m_locationID;
-    EVEItemFlags old_flag = m_flag;
-
-    m_flag = new_flag;      // move these?
-    m_locationID = new_location;
-
-    if (old_location != m_locationID) {
-        if (IsValidLocation(old_location)) {
-            iRef = sItemFactory.GetItem(old_location);
-            if (iRef.get() != nullptr)
-                iRef->RemoveItem(InventoryItemRef(this));
-        }
-        if (IsValidLocation(m_locationID)) {
-            iRef = sItemFactory.GetItem(m_locationID);
-            if (iRef.get() != nullptr)
-                iRef->AddItem(InventoryItemRef(this));
-            else
-                _log(INV__WARNING, "Item %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
-        }
-    }
-    if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
-        _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
-
-    if (IsTempItem(m_itemID))
-        return;
-
-    //SaveItem();
-
-    //notify about the changes.
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        if ( m_locationID != old_location )
-            changes[ixLocationID] = new PyInt(old_location);
-        if ( m_flag != old_flag )
-            changes[ixFlag] = new PyInt(old_flag);
-        SendItemChange( m_ownerID, changes);   //changes is consumed
-    }
-}
-
-InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
-    if (qty < 1) {
-        _log(ITEM__ERROR, "%s (%u): Asked to split into a chunk of %i", m_itemName.c_str(), m_itemID, qty);
-        return InventoryItemRef(nullptr);
-    }
-    if (!AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i during split.", m_itemName.c_str(), m_itemID, qty);
-        return InventoryItemRef(nullptr);
-    }
-
-    ItemData idata(m_type.id(), m_ownerID, 0, flagAutoFit, qty);
-    InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
-    if (iRef.get() == nullptr)
-        return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
-    iRef->Move(m_locationID, m_flag, true);
-    return iRef;
-}
-
-bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
-    if (to_merge.get() == nullptr)
-        return false;
-
-    if (m_singleton or to_merge->singleton())
-        throw PyException( MakeCustomError("You cannot stack assembled items."));
-
-    if (m_type.id() != to_merge->typeID()) {
-        _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
-        return false;
-    }
-
-    if (qty < 0) {
-        _log(ITEM__ERROR, "%s (%u): Asked to merge with %i units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
-        return false;
-    }
-
-    if (qty == 0)
-        qty = to_merge->quantity();
-
-    if (qty == to_merge->quantity()) {
-        to_merge->Delete();
-    } else if (!to_merge->AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
-        return false;
-    }
-
-    if (!AlterQuantity(qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to add quantity %i.", m_itemName.c_str(), m_itemID, qty);
-        return false;
-    }
-
-    return true;
-}
-
-void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
-{
-    InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
-    if (iRef.get() == nullptr)
-        return;
-    // here we 'merge' with stack already in cargo
-    iRef->Merge(InventoryItemRef(this));
-}
-
-bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
-    if (qty == 0)
-        return true;
-
-    int32 new_qty = m_quantity + qty;
-    if (new_qty < 0) {
-        codelog(ITEM__ERROR, "%s (%u): Tried to remove %i from stack of %i for ownerID %u.", m_itemName.c_str(), m_itemID, qty, m_quantity, m_ownerID);
-        // make player error msg here.....
-        return false;
-    }
-
-    return SetQuantity(new_qty, notify);
-}
-
-bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
-    //if an object is singleton, it shouldn't be able to add/remove qty
-    if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
-        // make player error msg here.....
-        return false;
-    }
-    int32 old_qty = m_quantity;
-    m_quantity = qty;
-    if (m_quantity < 1)
-        Delete();
-    else if (m_quantity > EVEMU_MAX_SHORT_ID) {
-        codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
-        m_quantity = EVEMU_MAX_SHORT_ID -1;
-        if (IsCharacter(m_ownerID)) {
-            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
-            if (pClient != nullptr)
-                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
-        }
-    }
-    //SaveItem();
-
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        // this informs client of a stack change...still need to go over client code to verify exacty spec on which one is used for what purpose....modules/charges can use both
-        if (IsModuleSlot(m_flag))
-            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
-
-        changes[ixStackSize] = new PyInt(old_qty);
-        SendItemChange(m_ownerID, changes); //changes is consumed
-    }
-
-    return true;
-}
-
-bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
-    EVEItemFlags old_flag = m_flag;
-    m_flag = flag;
-
-    //SaveItem();
-
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        //send the notify to the owner.
-        changes[ixFlag] = new PyInt(old_flag);
-        SendItemChange(m_ownerID, changes); //changes is consumed
-    }
-
-    return true;
-}
-
-bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
-    if (singleton == m_singleton)
-        return true;    //nothing to do...
-
-    bool old_singleton = m_singleton;
-    m_singleton = singleton;
-
-    //SaveItem();
-
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        changes[ixSingleton] = new PyInt(old_singleton);
-        SendItemChange(m_ownerID, changes); //changes is consumed
-    }
-
-    // must update volume when singleton (packaged state) changes for (mostly) ship items.
-    SetAttribute(AttrVolume, GetPackagedVolume(), notify);
-    return true;
-}
-
-void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
-    if (new_owner == m_ownerID)
-        return; //nothing to do...
-    uint32 old_owner = m_ownerID;
-    m_ownerID = new_owner;
-    //SaveItem();
-    //notify about the changes.
-    if (notify) {
-        std::map<int32, PyRep *> changes;
-        //send the notify to the new owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
-        SendItemChange(new_owner, changes); //changes is consumed
-        //also send the notify to the old owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
-        SendItemChange(old_owner, changes); //changes is consumed
-    }
-}
-
-void InventoryItem::SaveItem() {
-    sItemFactory.db()->SaveItem(
-        m_itemID,
-        ItemData(
-            m_itemName.c_str(),
-            m_type.id(),
-            m_ownerID,
-            m_locationID,
-            m_flag,
-            m_contraband,
-            m_singleton,
-            m_quantity,
-            m_position,
-            customInfo().c_str()
-        )
-   );
-    // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
-    // make call here for items saved after *some* change
-    SaveAttributes();
-}
-
-//contents of changes are consumed and cleared
-void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &changes) const {
-    if (IsNPCCorp(toID) or (toID == 1) or IsFaction(toID))   //IsValidOwner()
-        return;
-    if (sConsole.IsShutdown())
-        return;
-    NotifyOnItemChange change;
-        change.itemRow = GetItemRow();
-        change.changes = changes;
-    PyTuple *tmp = change.Encode();
-
-    //TODO: figure out the appropriate list of interested people...
-    if (IsCharacter(toID)) {
-        Client* pClient = sEntityList.FindClientByCharID(toID);
-        if (pClient == nullptr)
-            return; //not found or not online...
-
-        if (pClient->IsBoard())
-            pClient->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called when changing ships in space
-        else
-            pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this *seems* to be sent ONLY from Add/MultiAdd calls and trade
-    } else if (IsPlayerCorp(toID)) {
-        MulticastTarget mct;
-        mct.corporations.insert(toID);
-        if (IsStation(m_locationID)) {
-            //mct.locations.insert(m_locationID);
-            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
-        } else {
-            sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
-        }
-    }
-    changes.clear();    //reset change map for next update.
 }
 
 void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {

@@ -110,8 +110,6 @@ bool ShipItem::_Load()
     // load contents
     if (!pInventory->LoadContents())
         return false;
-    // load linked weapons (if available)
-    LoadLinkedWeapons();
 
     return (m_IsLoaded = true);
 }
@@ -134,6 +132,9 @@ void ShipItem::Init()
     if (m_ModuleManager == nullptr)
         m_ModuleManager = new ModuleManager(this);
     m_ModuleManager->Initialize();
+
+    // load linked weapons (if available)
+    LoadLinkedWeapons();
 }
 
 void ShipItem::InitPod() {
@@ -787,10 +788,10 @@ void ShipItem::Heal()
     m_ModuleManager->RepairModules();
 }
 
-void ShipItem::AddModuleToOnlineVec(uint32 moduleID)
+void ShipItem::AddModuleToOnlineVec(uint32 modID)
 {
-    m_onlineModuleVec.push_back(moduleID);
-    _log(SHIP__MODULE_INFO, "Added ModuleID %u to Online List", moduleID);
+    m_onlineModuleVec.push_back(modID);
+    _log(SHIP__MODULE_INFO, "Added ModuleID %u to Online List", modID);
 }
 
 //  Updated fractional ship defense settings.  -allan 1Feb15
@@ -876,8 +877,8 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
     }
     if (m_ModuleManager->GetModule(flag) != nullptr)
 		return (m_ModuleManager->GetModule(flag))->GetSelf();
-	else
-        return InventoryItemRef(nullptr);
+
+    return InventoryItemRef(nullptr);
 }
 
 InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
@@ -888,8 +889,8 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
     }
     if (m_ModuleManager->GetModule(modID) != nullptr)
 		return (m_ModuleManager->GetModule(modID))->GetSelf();
-	else
-        return InventoryItemRef(nullptr);
+
+    return InventoryItemRef(nullptr);
 }
 
 void ShipItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
@@ -996,15 +997,15 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
     return (EVEItemFlags)slotFound;
 }
 
-void ShipItem::LoadCharge(InventoryItemRef iRef, EVEItemFlags flag)
+void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
 {
-    if (iRef.get() == nullptr)
+    if (cRef.get() == nullptr)
         throw PyException( MakeUserError( "CantFindChargeToAdd"));
 
     if (!IsModuleSlot(flag))
         throw PyException( MakeUserError( "Destination is not weapon."));
 
-    if (IsModuleSlot(iRef->flag()))
+    if (IsModuleSlot(cRef->flag()))
         throw PyException( MakeUserError( "CantMoveChargesBetweenModules"));
 
     GenericModule* pMod = m_ModuleManager->GetModule(flag);
@@ -1012,26 +1013,30 @@ void ShipItem::LoadCharge(InventoryItemRef iRef, EVEItemFlags flag)
         throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
 
     if (pMod->IsActive()) {
+        throw PyException( MakeCustomError("Your %s is currently active and cannot be loaded at this time.", pMod->GetSelf()->itemName().c_str()));
+        /*
         std::map<std::string, PyRep *> args;
         args["chargeType"] = new PyInt(iRef->typeID());
-        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));
+        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));  */
         /*LoadingChargeSlotAlreadyBody'}(u'You cannot load the {[item]chargeType.name} because the module is already involved in another loading operation.'
          * , None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
          */
     }
     if (pMod->GetModuleState() == Module::State::Loading) {
         std::map<std::string, PyRep *> args;
-        args["chargeType"] = new PyInt(iRef->typeID());
-        throw PyException( MakeUserError("LoadingChargeAlready", args));
+        args["chargeType"] = new PyInt(cRef->typeID());
+        throw PyException( MakeUserError("LoadingChargeSlotAlready", args));
+        //throw PyException( MakeUserError("LoadingChargeAlready", args));
         /*LoadingChargeAlreadyBody'}(u'Some or all of {[item]chargeType.name} is already being loaded into a module.
          * If you wish to load what remains, you will have to wait until this is finished.',
          * None, {u'{[item]chargeType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'chargeType'}})
          */
     }
 
-    if (ValidateAddItem(flag, iRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
-        m_ModuleManager->LoadCharge(iRef, flag);
+    if (ValidateAddItem(flag, cRef)) {   // update this to return >0 on error.  use enum for error type, and set msgs here
+        m_ModuleManager->LoadCharge(cRef, flag);
     } else {
+        throw PyException( MakeCustomError("Your %s failed to load and was returned to your cargo.", cRef->itemName().c_str()));
         /*  this doesnt work right....comment for now.
         std::map<std::string, PyRep *> args;
         args["charge"] = new PyInt(iRef->itemID());
@@ -1072,6 +1077,25 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
     }
 }
 
+void ShipItem::LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod)
+{
+    if (cRef.get() == nullptr)
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
+    if (itr == m_linkedWeapons.end())
+        throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
+
+    //load charge in master
+    LoadCharge(cRef, pMod->flag());
+    // loop thru slaves and load charge(s)
+    std::list<GenericModule*>::iterator itr2 = itr->second.begin();
+    while (itr2 != itr->second.end()) {
+        LoadCharge(cRef, (*itr2)->flag());
+        ++itr2;
+    }
+}
+
 void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs)
 {
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
@@ -1079,20 +1103,20 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
         return;
 
     int8 pos = 0, size = chargeIDs.size();
-    InventoryItemRef iRef = sItemFactory.GetItem(chargeIDs[pos]);
-    if (iRef.get() == nullptr)
+    InventoryItemRef cRef = sItemFactory.GetItem(chargeIDs[pos]);
+    if (cRef.get() == nullptr)
         return;  // make error for charge not found?
 
     //load charge in master
-    LoadCharge(iRef, pMod->flag());
+    LoadCharge(cRef, pMod->flag());
     // loop thru slaves and load charge(s)
     std::list<GenericModule*>::iterator itr2 = itr->second.begin();
     while ((itr2 != itr->second.end()) and (pos <= size)) {
-        iRef = sItemFactory.GetItem(chargeIDs[pos]);
-        if (iRef.get() == nullptr){
+        cRef = sItemFactory.GetItem(chargeIDs[pos]);
+        if (cRef.get() == nullptr){
             ++pos;
-        } else if (iRef->flag() == flagCargoHold) {
-            LoadCharge(iRef, (*itr2)->flag());
+        } else if (cRef->flag() == flagCargoHold) {
+            LoadCharge(cRef, (*itr2)->flag());
             ++itr2;
         } else {
             ++pos;
@@ -1326,7 +1350,7 @@ void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fr
     }
 }
 
-void ShipItem::Online (uint32 moduleID)
+void ShipItem::Online (uint32 modID)
 {
     if (IsSolarSystem(m_locationID)) {
         ; // check for avalible cap, and drain accordingly
@@ -1338,7 +1362,7 @@ void ShipItem::Online (uint32 moduleID)
         _log(SHIP__MESSAGE, "ShipItem::Online(): %s(%u) - New Cap Charge: %f", GetPilot()->GetName(), itemID(), newCharge );
         */
     }
-	m_ModuleManager->Online(moduleID);
+	m_ModuleManager->Online(modID);
 }
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
@@ -1548,7 +1572,7 @@ void ShipItem::LinkAllWeapons()
 
     //if (sConfig.server.UnloadOnLinkAll)
     //    m_ModuleManager->UnloadWeapons();
-    
+
     // remove current links
     for (auto cur : weaponList) {
         if (sConfig.server.UnloadOnLinkAll)

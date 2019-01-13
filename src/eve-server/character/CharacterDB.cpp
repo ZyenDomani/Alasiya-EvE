@@ -154,7 +154,7 @@ void CharacterDB::DeleteCharacter(uint32 characterID) {
     sDatabase.RunQuery(err, "DELETE FROM eveMail WHERE (senderID = %u OR channelID = %u)", characterID, characterID);
     sDatabase.RunQuery(err, "DELETE FROM bookmarks WHERE ownerID = %u",  characterID);
     sDatabase.RunQuery(err, "DELETE FROM bookmarkFolders WHERE ownerID = %u",  characterID);
-    sDatabase.RunQuery(err, "DELETE FROM bookmarkVouchers WHERE ownerID = %u",  characterID);
+    //sDatabase.RunQuery(err, "DELETE FROM bookmarkVouchers WHERE ownerID = %u",  characterID);
     sDatabase.RunQuery(err, "DELETE FROM mktOrders WHERE ownerID = %u", characterID);
     sDatabase.RunQuery(err, "DELETE FROM mktTransactions WHERE clientID = %u", characterID);
     sDatabase.RunQuery(err, "DELETE FROM repStandings WHERE (fromID = %u OR toID = %u)", characterID, characterID);

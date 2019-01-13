@@ -226,12 +226,12 @@ public:
     void Warp();
     void Eject();
     void Undock();
-    void AddModuleToOnlineVec(uint32 moduleID);
+    void AddModuleToOnlineVec(uint32 modID);
 
     /* begin new module manager interface */
     void ProcessModules();
-    void Online(uint32 moduleID);
-    void Offline(uint32 moduleID)                       { m_ModuleManager->Offline(moduleID); }
+    void Online(uint32 modID);
+    void Offline(uint32 modID)                       { m_ModuleManager->Offline(modID); }
     void OnlineAll();
     void OfflineAll();
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
@@ -269,6 +269,7 @@ public:
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
 
     void GetModuleRefVec(std::vector<InventoryItemRef>& iRefVec);
+    GenericModule* GetModule(EVEItemFlags flag)         { return m_ModuleManager->GetModule(flag); }
     InventoryItemRef GetModuleRef(EVEItemFlags flag);
     InventoryItemRef GetModuleRef(uint32 modID);
 
@@ -282,7 +283,7 @@ public:
     // will remove item from previous container
     uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);
     // this can throw. returns nothing
-    void LoadCharge(InventoryItemRef iRef, EVEItemFlags flag);
+    void LoadCharge(InventoryItemRef cRef, EVEItemFlags flag);
     // this can throw. returns nothing
     void LoadChargesToBank(EVEItemFlags flag, std::vector<int32>& chargeIDs);
     uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag);
@@ -347,6 +348,7 @@ public:
     void OfflineGroup(GenericModule* pMod);
     void DamageGroup(GenericModule* pMod);
     // to load with ammo
+    void LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod);
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
 protected:
     /* linking weapons methods */

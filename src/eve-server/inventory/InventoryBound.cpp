@@ -272,7 +272,6 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     // newItemID = inv.RemoveChargeToHangar(itemKey, quantity)
-    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     /*
      * 17:57:52 [SvcCallDump]   Call Arguments:
      * 17:57:52 [SvcCallDump]      Tuple: 1 elements
@@ -281,10 +280,15 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
      * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
      * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
      */
+    _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
 
+    PyTuple* tuple(call.tuple);
+    if (tuple->size() == 2)
+        tuple = tuple->GetItem(0)->AsTuple();
+
     Call_RemoveChargeToHangar args;
-    if (!args.Decode(&call.tuple)) {
+    if (!args.Decode(&tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyInt(0);
     }
@@ -312,11 +316,8 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     call.Dump(INV__DUMP);
 
     PyTuple* tuple(call.tuple);
-    if (tuple->size() == 2) {
-        PyTuple* inside = new PyTuple(1);
-            inside->SetItem(0, tuple->GetItem(0)->AsTuple());
-        tuple = inside;
-    }
+    if (tuple->size() == 2)
+        tuple = tuple->GetItem(0)->AsTuple();
 
     Call_RemoveChargeToCargo args;
     if (!args.Decode(&tuple)) {
@@ -337,12 +338,13 @@ PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
+    call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::MultiMerge() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "InventoryBound::MultiMerge() called by %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
     //Decode Args
     Inventory_CallMultiMerge args;
     if (!args.Decode(&call.tuple)) {

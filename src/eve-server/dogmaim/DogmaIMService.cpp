@@ -287,8 +287,8 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
-
     //  self.remoteDogmaLM.LoadAmmoToModules(shipID, moduleIDs, chargeTypeID, itemID, ammoLocationID, qty=qty)
+    //  NOTE:  this call seems to be a list of moduleIDs with ONLY a single module.
     /* 02:13:11 [SvcCall]       Tuple: 5 elements
      * 02:13:11 [SvcCall]         [ 0] Integer field: 140000602     <- ship
      * 02:13:11 [SvcCall]         [ 1] List: 1 elements
@@ -304,35 +304,31 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     if (args.moduleIDs.empty())
-        return PyStatic.NewNone();
-
-    // Get Reference to Ship, Module, and Charge
-    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
-    if (cRef.get() == nullptr) {
-        sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "cant find charge %u.", args.itemID );
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        return nullptr;
+    if (args.moduleIDs.size() > 1) {
+        sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "args.moduleIDs.size = %u.", args.moduleIDs.size() );
+        call.Dump(SHIP__MODULE_WARNING);
     }
 
+    // Get Reference to Ship and Charge
     ShipItemRef sRef = call.client->GetShip();
-    InventoryItemRef mRef(nullptr);
+    InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
+    if (cRef.get() == nullptr)
+        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.moduleIDs[0])->flag());
+    if (pMod == nullptr)
+        throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
 
-    for (auto cur : args.moduleIDs) {
-        mRef = sRef->GetModuleRef(cur);
-        if (mRef.get() == nullptr) {
-            sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "cant find module %u.", cur );
-            throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
-        }
-        if (cRef->quantity() > 0)
-            sRef->LoadCharge(cRef, mRef->flag());
-        else
-            return PyStatic.NewNone();
-    }
+    if (pMod->IsLinked())
+        sRef->LoadLinkedWeapons(cRef, pMod);
+    else
+        sRef->LoadCharge(cRef, pMod->flag());
 
-    return PyStatic.NewNone();
+    return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
@@ -345,7 +341,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 	Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
     /*
     args.chargeLocationID
@@ -356,14 +352,14 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     args.qty
     */
     if (args.itemIDs.empty())
-        return PyStatic.NewNone();
+        return nullptr;
 
 	// Get Reference to Ship, Module, and Charge
     ShipItemRef sRef = call.client->GetShip();
     if (sRef->itemID() != args.shipID)
         sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "passed shipID %u != current shipID %u.", args.shipID, sRef->itemID() );
 
-    GenericModule* pMod = sRef->GetModuleManager()->GetModule(args.masterID);
+    GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.masterID)->flag());
     if (pMod == nullptr)
         throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
 
@@ -373,7 +369,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
         //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
 
-	return PyStatic.NewNone();
+    return nullptr;
 }
 
     /*{'messageKey': 'CantTargetWhileCloaked', 'dataID': 17879126, 'suppressable': False, 'bodyID': 257890, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2436}

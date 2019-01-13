@@ -457,8 +457,8 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
 void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner/*0*/)
 {
     InventoryItemRef iRef(nullptr);
-    std::map<uint32, InventoryItemRef> types;
-    std::map<uint32, InventoryItemRef>::iterator tItr;
+    std::map<uint16, InventoryItemRef> types;
+    std::map<uint16, InventoryItemRef>::iterator tItr = types.end();
     std::map<uint32, InventoryItemRef>::iterator lItr = mContents.begin();
     while (lItr != mContents.end()) {
         iRef = lItr->second;
@@ -471,8 +471,8 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner/*0*/)
             tItr = types.find(iRef->typeID());
             if (tItr == types.end())
                 types.insert(std::make_pair(iRef->typeID(), iRef));
-            else
-                tItr->second->Merge(iRef);
+            else // found another stack of this type.  merge it.
+                tItr->second->Merge(iRef);  // this call will remove item from mContents.  does not invalidate the iterator.
         }
     }
 }
@@ -547,7 +547,6 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         // for PI
         case flagSpecializedCommandCenterHold:  return m_self->GetAttribute(AttrSpecialCommandCenterHoldCapacity).get_float();
         case flagSpecializedPlanetaryCommoditiesHold:  return m_self->GetAttribute(AttrSpecialPlanetaryCommoditiesHoldCapacity).get_float();
-
         // for pos battery/array
         case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();
     }
