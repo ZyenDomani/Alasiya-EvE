@@ -409,7 +409,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
 <tr><td> - Clone upgrade</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -424,7 +424,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
 <tr><td> - Items window</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -511,22 +511,22 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
 <tr><td> - Mission and Deadspace/Encounter creation<BR>(See 'Dungeon Manager' Data Block below for details)</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
 <tr><td> - Can Search Agents</td><td class="working">25%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font>.<BR>6Mar14</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>6Mar14</td></tr>
 <tr><td> - Can Search for character by agent</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>6Mar14</td></tr></table>
+<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> Large Scale Chat System (LSC)  </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -997,17 +997,17 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=red>Cyno Generator Not Implemented</font>.<BR>26Nov18</td></tr>
+<td><font color="green">COMPLETE</font><BR><font color=red>Cyno Generator Not Implemented</font><BR>26Nov18</td></tr>
 <tr><td> - Can Get Recent Sovernity Changes</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR><font color=red>Contested Sovernity Not Implemented</font>.<BR>6Mar14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR><font color=red>Contested Sovernity Not Implemented</font><BR>6Mar14</td></tr>
 <tr><td> - Can Get Incursions</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR><font color=red>Incursions Not Implemented</font>.<BR>6Mar14</td></tr></table>
+<td><font color=magenta>Skeleton Code Only</font><BR><font color=red>Incursions Not Implemented</font><BR>6Mar14</td></tr></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Bookmark_System"> Bookmark System </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -1190,27 +1190,42 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
+<tr><td> - Can use specalized bays on ships that have them</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="green">COMPLETE</font><BR>10Aug17</td></tr>
 <tr><td> - Can activate Self-Destruct</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>22Aug15</td></tr>
-<tr><td colspan=3>&nbsp;&nbsp;Capital Ship Management</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>22Aug15</td></tr>
+<tr><td> - Ships Generate Heat (when modules are activated)</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
+<tr><td> - Ships Dissipate Heat</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Capital Ship Management</h3></font></td></tr>
 <tr><td> - Can configure ship</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>7Sep14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>7Sep14</td></tr>
 <tr><td> - Can install clone</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>7Sep14</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>7Sep14</td></tr>
 <tr><td> - Can store/retrieve ships</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>15Aug18</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>15Aug18</td></tr>
 <tr><td> - Can store/retrieve items from Corporate Hangar</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -1422,6 +1437,26 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>10Aug16</td></tr>
+<tr><td> - Can Overload modules (and they work)</td><td class="working">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
+<tr><td> - Can De-activate Overloaded modules</td><td class="working">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
+<tr><td> - Overloaded modules damage bank from heat</td><td class="working">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
+<tr><td> - Can repair damaged modules (using nanite paste)</td><td class="working">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Ship_Combat_in_Space"> Ship Module Groups </span></h2>
@@ -1632,7 +1667,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font>.<BR>27July15</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>27July15</td></tr>
 <tr><td> - NPC Dynamic spawning</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -1642,7 +1677,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font>.<BR>27July15</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>27July15</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (Rewrite - still in progress)</span></h2>
