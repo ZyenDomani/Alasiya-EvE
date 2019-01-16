@@ -19,8 +19,8 @@
 <font color="red">Please Note:</font> <BR>
 Items listed as "<font color=red>NOT IMPLEMENTED</font>" have no code for that system and the server will not respond to requests for that system.<BR>
 Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outline coded, but limited or no processing and/or returns. The server will not respond or only partially respond to these requests.</font><BR><BR>
-<font color="orange">Last Update:  </font> <font color="green">11 December 2018</font><BR>
-<font color="orange">Page Status:  </font> <font color="yellow">Being Updated</font><BR><BR></table>
+<font color="orange">Last Update:  </font> <font color="yellow">14 January 2019</font><BR>
+<font color="orange">Page Status:  </font> <font color="pink">Being Updated</font><BR><BR></table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="System_Foundation_Fundamentals"> System Foundation Fundamentals </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
@@ -36,9 +36,9 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 </td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><tr><td style="width: 70&amp;;">Service/Action</td>
 <td style="width: 4%;">Status</td><td style="width: 26%;">Comments</td></tr>
-<tr><td> - Stable, Efficient Server Code</td><td class="working">80%
+<tr><td> - Stable, Efficient Server Code</td><td class="working">85%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 85%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td>In Progress - eliminating duplicated code and headers, tracking/fixing segfaults, updating code to C++/0x11 and to conform to style guidelines from Scott Meyers' Effective C++.<BR>27Feb16</td></tr>
 <tr><td> - Efficient, Accurate Packet Deciphering</td><td class="working">80%
@@ -56,26 +56,26 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="pink">Final Testing</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Module Class rewrite</td><td class="working">99%
+<tr><td> - COMPLETE Module Class rewrite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Item Class rewrite</td><td class="working">90%
+<td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
+<tr><td> - COMPLETE Item Class rewrite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>In Final test phase <BR>27April16</td></tr>
+<td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
 <tr><td> - COMPLETE SystemEntity class rewrite</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - COMPLETE Object Attribute Management overhaul</td><td class="working">99%
+<tr><td> - COMPLETE Object Attribute Management overhaul</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 99%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="lime">Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
+<td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
 <td> - COMPLETE investigation of remaining database fields</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -91,6 +91,7 @@ Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outl
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Mostly Complete</font> - <font color=olive>Testing</font><BR>27Jun17</td></tr>
+</table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="General_Interface_Features"> General Interface Features </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
