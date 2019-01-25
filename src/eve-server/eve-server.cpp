@@ -354,6 +354,10 @@ int main( int argc, char* argv[] )
         sLog.Green("    Player Drones","Enabled.");
     else
         sLog.Warning("    Player Drones","Disabled.");
+    if (sConfig.testing.ShipHeat)
+        sLog.Green("        Ship Heat","Enabled.");
+    else
+        sLog.Warning("        Ship Heat","Disabled.");
     if (sConfig.cosmic.PIEnabled)
         sLog.Green("        PI System","Enabled.");
     else
