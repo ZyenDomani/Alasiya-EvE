@@ -148,7 +148,6 @@
         <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
         <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
-        <EnableDrones>true</EnableDrones><!-- bool -->
         <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
         <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
     </npc>
@@ -201,6 +200,11 @@
         <CWSessionTime>60</CWSessionTime> <!-- seconds (60s default) -->
         <KillRightTime>900</KillRightTime> <!-- seconds (15m default) -->
     </crime>
+
+    <testing><!-- switches for various incomplete/testing code sections -->
+        <ShipHeat>false</ShipHeat><!-- bool -->
+        <EnableDrones>false</EnableDrones><!-- bool -->
+    </testing>
 
     <debug><!-- switches for various server methods -->
         <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
