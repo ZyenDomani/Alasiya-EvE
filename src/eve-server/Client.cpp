@@ -1362,7 +1362,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 }
 
 bool Client::LaunchDrone(InventoryItemRef drone) {
-    if (!sConfig.npc.EnableDrones) {
+    if (!sConfig.testing.EnableDrones) {
         SendNotifyMsg("Drones are disabled.");
         return false;
     }

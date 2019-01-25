@@ -51,10 +51,10 @@ bool AttributeMap::Load(bool reset/*false*/) {
         // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
     }
-    /* First, we copy default attributes values from our itemType */
+    /* First, we copy default attributes values from our itemType, loaded into memObj when type is loaded */
     mItem.type().CopyAttributes(mItem);
 
-    /* Then we load saved attribs from the db, if any, to update the defaults */
+    /* Then we load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
     DBQueryResult res;
     if (IsCharacter(mItem.itemID())) {
         if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
@@ -79,7 +79,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         SetAttribute(row.GetUInt(0), value, false);
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
-    _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
+    if (is_log_enabled(ITEM__DEBUG))
+        _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
     return true;
 }
 
@@ -206,7 +207,7 @@ EvilNumber AttributeMap::GetAttribute( const uint16 attrID ) const
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         return itr->second;
-    return EvilNumber(0);
+    return EvilZero;
 }
 
 bool AttributeMap::HasAttribute(const uint16 attrID) const
@@ -224,6 +225,7 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
         value = itr->second;
         return true;
     }
+    value = EvilZero;
     return false;
 }
 
@@ -294,7 +296,7 @@ void AttributeMap::SaveShipState()
     // start the insert into command.
     Inserts << "REPLACE INTO entity_attributes ";
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
-    bool shield = false, armor = false, hull = false;
+    bool shield = false, armor = false, hull = false, hi = false, mid = false, lo = false;
     AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
     if (cur != mAttributes.end()) {
         shield = true;
@@ -329,8 +331,44 @@ void AttributeMap::SaveShipState()
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
+    cur = mAttributes.find(AttrHeatHi);
+    if (cur != mAttributes.end()) {
+        hi = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrHeatMed);
+    if (cur != mAttributes.end()) {
+        mid = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrHeatLow);
+    if (cur != mAttributes.end()) {
+        lo = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
 
-    if (shield or armor or hull) {
+    if (shield or armor or hull or hi or mid or lo) {
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
             _log(DATABASE__ERROR, "SaveShipState - unable to save attributes for %u - %s", mItem.itemID(), err.c_str());

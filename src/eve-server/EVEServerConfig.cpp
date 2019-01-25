@@ -141,7 +141,6 @@ EVEServerConfig::EVEServerConfig()
     npc.StaticTimer = 600 /*s*/;
     npc.RespawnTimer = 480 /*s*/;
     npc.RatFaction = 0;
-    npc.EnableDrones = false;
     npc.TargetPodSec = 0;
     npc.TargetPod = false;
     npc.UseDamageMultiplier = true;
@@ -190,6 +189,10 @@ EVEServerConfig::EVEServerConfig()
     crime.CWSessionTime = 60 /*s*/;//N
     crime.KillRightTime = 900 /*s*/;//N
     crime.WeaponFlagTime = 60 /*s*/;//N
+
+    // testing
+    testing.EnableDrones = false;
+    testing.ShipHeat = false;
 
     // debug
     debug.BubbleTrack = false;
@@ -254,6 +257,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "database",    &EVEServerConfig::ProcessDatabase );
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
+    AddMemberParser( "testing",     &EVEServerConfig::ProcessTesting );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
 
     // parse the element
@@ -276,6 +280,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "database" );
     RemoveParser( "files" );
     RemoveParser( "net" );
+    RemoveParser( "testing" );
     RemoveParser( "threads" );
 
     // return status of parsing
@@ -742,6 +747,19 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     RemoveParser( "SpawnTest" );
     RemoveParser( "BubbleTrack" );
     RemoveParser( "ProfileTraceTime" );
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessTesting(const TiXmlElement* ele)
+{
+    AddValueParser( "ShipHeat",             testing.ShipHeat );
+    AddValueParser( "EnableDrones",         testing.EnableDrones);
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "ShipHeat" );
+    RemoveParser( "EnableDrones" );
 
     return result;
 }

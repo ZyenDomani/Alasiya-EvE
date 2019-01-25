@@ -915,3 +915,48 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
 
 }
 
+void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& modVec)
+{
+    std::vector< GenericModule* > modVecAll;
+    switch (rack) {
+        case EVEEffectID::hiPower: {
+            pModuleCont->GetModulesInBank(flagHiSlot0, modVecAll);
+        } break;
+        case EVEEffectID::medPower: {
+            pModuleCont->GetModulesInBank(flagMedSlot0, modVecAll);
+        } break;
+        case EVEEffectID::loPower: {
+            pModuleCont->GetModulesInBank(flagLowSlot0, modVecAll);
+        } break;
+    }
+
+    for (auto cur : modVecAll)
+        if (cur->IsActive())
+            if (!cur->IsOverloaded())
+                modVec.push_back(cur);
+}
+
+uint8 ModuleManager::GetActiveModulesCount(uint8 rack)
+{
+    uint8 count = 0;
+    std::vector< GenericModule* > modVec;
+    switch (rack) {
+        case EVEEffectID::hiPower: {
+            pModuleCont->GetModulesInBank(flagHiSlot0, modVec);
+        } break;
+        case EVEEffectID::medPower: {
+            pModuleCont->GetModulesInBank(flagMedSlot0, modVec);
+        } break;
+        case EVEEffectID::loPower: {
+            pModuleCont->GetModulesInBank(flagLowSlot0, modVec);
+        } break;
+    }
+
+    for (auto cur : modVec)
+        if (cur->IsActive())
+            if (!cur->IsOverloaded())
+                ++count;
+
+    return count;
+}
+

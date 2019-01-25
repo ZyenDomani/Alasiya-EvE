@@ -422,7 +422,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             }
         } break;
         case EVEDB::invCategories::Drone: {
-            if (!sConfig.npc.EnableDrones) {
+            if (!sConfig.testing.EnableDrones) {
                 // disable drones
                 return InventoryItemRef(nullptr);
             }
@@ -1137,6 +1137,12 @@ void InventoryItem::Relocate(const GPoint pos)
 {
     m_position = pos;
     _log(ITEM__RELOCATE, "%s(%u) Relocating to %.2f, %.2f, %.2f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
+}
+
+void InventoryItem::SetAttribute( uint16 attrID, float num, bool notify/*true*/)
+{
+    EvilNumber eNum(num);
+    pAttributeMap->SetAttribute(attrID, eNum, notify);
 }
 
 void InventoryItem::SetAttribute( uint16 attrID, double num, bool notify/*true*/)

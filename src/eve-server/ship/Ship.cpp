@@ -631,11 +631,8 @@ void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
     pAttributeMap->SaveShipState();      // save ship damage
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
+    if (m_ModuleManager != nullptr)
+        m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
@@ -1378,43 +1375,154 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
 }
 
 
-/*  overload heat-related shit......
+/*  heat-related shit......
  * see also file:///home/allan/Desktop/backups/GoonSwarm_wiki/www.eveinfo.net/wiki/ind~2149.htm - "Thermodynamics"
  *
+    AttrHeatGenerationMultiplier = 1224,
     AttrHeatHi = 1175,
     AttrHeatMed = 1176,
     AttrHeatLow = 1177,
-    AttrHeatCapacityHi = 1178,
+
     AttrHeatDissipationRateHi = 1179,
-    AttrHeatAbsorbtionRateModifier = 1180,
-    AttrHeatAbsorbtionRateHi = 1182,
-    AttrHeatAbsorbtionRateMed = 1183,
-    AttrHeatAbsorbtionRateLow = 1184,
+    AttrHeatDissipationRateMed = 1196,
+    AttrHeatDissipationRateLow = 1198,
 
-1224    heatGenerationMultiplier    NULL    1
+    AttrHeatCapacityHi = 1178,
+    AttrHeatCapacityMed = 1199,
+    AttrHeatCapacityLow = 1200,
 
-1178    heatCapacityHi  NULL    100
-1199    heatCapacityMed     NULL    100
-1200    heatCapacityLow     NULL    100
-1179    heatDissipationRateHi   NULL    0.01
-1196    heatDissipationRateMed  NULL    0.01
-1198    heatDissipationRateLow  NULL    0.01
-1259    heatAttenuationHi   NULL    0.63
-1261    heatAttenuationMed  NULL    0.5
-1262    heatAttenuationLow  NULL    0.5
+    AttrHeatAttenuationHi = 1259,
+    AttrHeatAttenuationMed = 1261,
+    AttrHeatAttenuationLow = 1262,
+
+    AttrHeatAbsorbtionRateModifier = 1180,      // active modules only
+
+    created ship attribs (rifter)
+    1179    heatDissipationRateHi       NULL    0.01
+    1196    heatDissipationRateMed      NULL    0.01
+    1198    heatDissipationRateLow      NULL    0.01
+    1178    heatCapacityHi              NULL    100
+    1199    heatCapacityMed             NULL    100
+    1200    heatCapacityLow             NULL    100
+    1224    heatGenerationMultiplier    NULL    1
+    1259    heatAttenuationHi           NULL    0.63
+    1261    heatAttenuationMed          NULL    0.5
+    1262    heatAttenuationLow          NULL    0.5
+    created module attribs (200mm ac)
+    1180    heatAbsorbtionRateModifier  NULL    0.01
+    1211    heatDamage                  NULL    1
+    (1mn ab I)
+    1180    heatAbsorbtionRateModifier  NULL    0.04
+    1211    heatDamage                  NULL    9.6
+    (sebo I)
+    1180    heatAbsorbtionRateModifier  NULL    0.01
+    1211    heatDamage                  NULL    3.4
+
+    // these are calculated from fx shit (not saved)    {cannot find where these are used..}
+    AttrHeatAbsorbtionRateHi = 1182,        eID 10326
+    AttrHeatAbsorbtionRateMed = 1183,       eID 10327
+    AttrHeatAbsorbtionRateLow = 1184,       eID 10328
+
 */
 
-void ShipItem::DissipateHeat()
+void ShipItem::ProcessHeat()
+{
+    double start = GetTimeUSeconds();
+    float heat = 0.0f;
+    // heat loop
+    for (uint16 i = AttrHeatHi; i < AttrHeatLow +1; ++i) {
+        heat = GetAttribute(i).get_float();
+        // the ordering here is important
+        heat -= DissipateHeat(i);
+        if (heat < 0)
+            heat = 0.0f;
+        heat += GenerateHeat(i);
+        if (heat > 0.01) {
+            if (heat > 100)
+                heat = 100.0f;
+            SetAttribute(i, heat);
+        } else
+            DeleteAttribute(i);
+        heat = 0.0f;
+    }
+    _log(SHIP__HEAT, "ShipItem::ProcessHeat() Executed in %.3f us.", GetTimeUSeconds() - start);
+}
+
+float ShipItem::GenerateHeat(uint16 attrID)
+{
+    /**  @note  still not sure how live builds heat, but here's how im gonna do it.
+     * during normal op, modules make heat that builds slowly
+     *  normal module operation will not build excessive heat on ship...it was designed for it.
+     *  this heat will be capped at ??
+     * overloaded modules will build excessive heat, and will begin to damage it's rack from overheating.
+     */
+
+    /*  heat buildup
+     * H = H0(1 - e^-tτ)
+     *    Setting H0 to 100 would make my graph match his. t is time. τ is a constant based on ship and overloaded modules.
+     * τ = hgm (τ1 + τ2 + ... + τn)
+     *    Setting the per module τ to 0.025 made my graphs match his.
+     */
+
+    float heat = 0.01f, t = 0.05f;  // for testing only
+    std::string rack = "";
+    std::vector< GenericModule* > modVec;
+    switch(attrID) {
+        case AttrHeatHi: {
+            rack = "Hi";
+            m_ModuleManager->GetActiveModules(EVEEffectID::hiPower, modVec);
+        } break;
+        case AttrHeatMed: {
+            rack = "Mid";
+            m_ModuleManager->GetActiveModules(EVEEffectID::medPower, modVec);
+        } break;
+        case AttrHeatLow: {
+            rack = "Low";
+            m_ModuleManager->GetActiveModules(EVEEffectID::loPower, modVec);
+        } break;
+        default: {
+            _log(SHIP__HEAT, "GenerateHeat() - %s invalid rack sent (%u)", itemName().c_str(), attrID);
+            return 0.0f;
+        } break;
+    }
+
+    heat += -(1 - exp(t));
+
+    if (!modVec.empty())
+        heat *= modVec.size();
+
+    if (HasAttribute(AttrHeatGenerationMultiplier))
+        heat *= GetAttribute(AttrHeatGenerationMultiplier).get_float();
+
+    _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.", itemName().c_str(), heat, rack.c_str());
+    return heat;
+}
+
+float ShipItem::DissipateHeat(uint16 attrID)
 {
     //H = H0(e^-tτ)
-    if (HasAttribute(AttrHeatHi)) {
-        float heat = GetAttribute(AttrHeatHi).get_float();
-
-        if (heat > 0.01)
-            SetAttribute(AttrHeatHi, heat);
-        else
-            DeleteAttribute(AttrHeatHi);
+    float heat = 0.01f, t = 0.02f;   // for testing only
+    std::string rack = "";
+    switch(attrID) {
+        case AttrHeatHi: {
+            rack = "Hi";
+        } break;
+        case AttrHeatMed: {
+            rack = "Mid";
+        } break;
+        case AttrHeatLow: {
+            rack = "Low";
+        } break;
+        default: {
+            _log(SHIP__HEAT, "DissipateHeat() - %s invalid rack sent (%u)", itemName().c_str(), attrID);
+            return 0.0f;
+        } break;
     }
+
+    heat += exp(-t);
+
+    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.", itemName().c_str(), heat, rack.c_str());
+    return heat;
 }
 
 void ShipItem::DamageGroup(GenericModule* pMod)
@@ -1430,17 +1538,10 @@ void ShipItem::DamageGroup(GenericModule* pMod)
  * AttrHeatDamageMultiplier = 1485,     // system beacon effect
 */
 
-/*  heat buildup
- * H = H0(1 - e-tτ)
-Setting H0 to 100 would make my graph match his. t is time. τ is a constant based on ship and overloaded modules.
-τ = hgm (τ1 + τ2 + ... + τn)
-Setting the per module τ to 0.025 made my graphs match his.
-*/
-
 /*
-Slt  Att   Damage chance multiplier at distance from overheated module
+Slt  Att   Damage chance multiplier at distance from overheated module (in %)
             1       2       3       4       5       6       7
-1   0.00
+1   0.00    0.10
 2   0.25    0.25
 3   0.50    0.50    0.25
 4   0.63    0.63    0.40    0.25
@@ -1452,6 +1553,24 @@ Slt  Att   Damage chance multiplier at distance from overheated module
 //Cycles to burnout = total module HP/ (hp heat damage per cycle - (hp heat damage per cycle*thermodynamics level*5/100))
 void ShipItem::HeatDamageCheck(GenericModule* pMod)
 {
+    if (pMod->IsLinked())       // linked slaves will contribute to heat calculation, but not individually.
+        if (!pMod->IsMaster())  // heat is calculated by master and multiplied by #linked modules
+            return;
+
+    // check ship's current bank heat to determine chance for pMod to take heat damage.
+    //  damage to other modules based on table above.
+    float curHeat = 0.0f, damChance = 0.0f;
+    if (pMod->isHighPower()) {
+        curHeat = GetAttribute(AttrHeatHi).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationHi).get_float();
+    } else if (pMod->isMediumPower()) {
+        curHeat = GetAttribute(AttrHeatMed).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationMed).get_float();
+    } else if (pMod->isLowPower()) {
+        curHeat = GetAttribute(AttrHeatLow).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationLow).get_float();
+    }
+
     std::vector<uint32> modVec;
     // if this module is grouped, all modules will take same damage.
     if (pMod->IsLinked()) {
@@ -1465,7 +1584,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
         uint32 moduleID = 0;
 
 
-        modVec.push_back(moduleID);
+        //modVec.push_back(moduleID);
     }
 
     for (auto cur : modVec)
@@ -1946,7 +2065,7 @@ void ShipItem::ProcessShipEffects(bool update/*false*/)
 
 void ShipItem::RemoveEffects()
 {
-    SaveShip();
+    //SaveShip();
     // clear also reloads default attribs
     ClearModifiers();
 }
@@ -2093,10 +2212,10 @@ void Ship::Process() {
         if (sConfig.debug.UseProfiling)
             profileStartTime = GetTimeUSeconds();
         // shield
-        double Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
-        double Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+        float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
+        float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
         if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
+            float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
             else if ((Capacity - newCharge) < 0.3)
@@ -2109,7 +2228,7 @@ void Ship::Process() {
         Charge = m_self->GetAttribute(AttrCapacitorCharge).get_float();
         Capacity = m_self->GetAttribute(AttrCapacitorCapacity).get_float();
         if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
+            float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
             else if ((Capacity - newCharge) < 0.3)
@@ -2124,7 +2243,7 @@ void Ship::Process() {
 
     // order of these two are important.
     //   dissipate heat from last round before adding heat for this round
-    m_shipRef->DissipateHeat();
+    m_shipRef->ProcessHeat();
     m_shipRef->ProcessModules();
 }
 

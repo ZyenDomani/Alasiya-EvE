@@ -1,6 +1,7 @@
 /*
  *
- *
+ *      this file is for cross referencing effect data.
+ *      there are also checks where i use these fxIDs
  *
  */
 
@@ -8,7 +9,6 @@
 #ifndef EVE_EFFECTS_H
 #define EVE_EFFECTS_H
 
-/** @todo  this file is kept for cross referencing effect data.  not actually used in server */
 
 /** updated list from current server data...
  *  allan - 21 March 2017
@@ -21,8 +21,6 @@ enum EVEEffectID {
     hiPower = 12,
     medPower = 13,
     Online = 16,
-    launcherFitted = 40,
-    turretFitted  = 42,
     mining = 17,     // effects.Mining    ** same gfx as effects.Laser
     shieldTransfer =   18,     // effects.ShieldTransfer
     structureRepair =   26,     // effects.StructureRepair
@@ -34,6 +32,8 @@ enum EVEEffectID {
     energyDestabilization =   36,     // effects.EnergyDestabilization
     empWave =   38,     // effects.EMPWave
     warpScramble =   39,     // effects.WarpScramble
+    launcherFitted = 40,
+    turretFitted  = 42,
     cargoScan =   47,     // effects.CargoScan
     ecmBurst =   53,     // effects.ECMBurst
     miningLaser =   67,     // effects.miningLaser  ** this gfx is a long burst from module, with short pauses

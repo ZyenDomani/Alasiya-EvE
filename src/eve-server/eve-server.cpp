@@ -350,7 +350,7 @@ int main( int argc, char* argv[] )
         sLog.Green("Keep Old Missions","Enabled.");
     else
         sLog.Warning("Keep Old Missions","Disabled.");
-    if (sConfig.npc.EnableDrones)
+    if (sConfig.testing.EnableDrones)
         sLog.Green("    Player Drones","Enabled.");
     else
         sLog.Warning("    Player Drones","Disabled.");

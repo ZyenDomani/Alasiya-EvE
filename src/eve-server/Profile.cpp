@@ -211,7 +211,7 @@ void Profile::PrintProfile()
         GetRunTimes(m_collision, h, l, a);
         std::printf("    Collisions   %u times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", m_collision.size(), h, l, a );
     }
-    if (sConfig.npc.EnableDrones) {
+    if (sConfig.testing.EnableDrones) {
         GetRunTimes(m_drone, h, l, a);
         std::printf("        Drones   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_drone.size()).c_str(), h, l, a );
     }
