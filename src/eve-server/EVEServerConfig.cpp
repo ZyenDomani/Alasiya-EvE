@@ -506,7 +506,6 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticTimer",              npc.StaticTimer );
     AddValueParser( "RespawnTimer",             npc.RespawnTimer );
     AddValueParser( "RatFaction",               npc.RatFaction );
-    AddValueParser( "EnableDrones",             npc.EnableDrones );
     AddValueParser( "TargetPod",                npc.TargetPod );
     AddValueParser( "TargetPodSec",             npc.TargetPodSec );
     AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
@@ -525,7 +524,6 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticTimer" );
     RemoveParser( "RespawnTimer" );
     RemoveParser( "RatFaction" );
-    RemoveParser( "EnableDrones" );
     RemoveParser( "TargetPod" );
     RemoveParser( "TargetPodSec" );
     RemoveParser( "UseDamageMultiplier" );
