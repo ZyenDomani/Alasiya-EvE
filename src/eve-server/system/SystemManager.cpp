@@ -745,6 +745,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
         } break;
     }
     codelog(SERVICE__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
+    EvE::traceStack();
     return nullptr;
 }
 
