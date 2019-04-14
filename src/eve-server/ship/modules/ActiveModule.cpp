@@ -29,10 +29,12 @@ m_bubble(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
 m_destinyMgr(nullptr),
+m_needsCharge(false),
 m_needsTarget(false)
 {
     m_repeat = 1000;    //arbitrary.
 
+    // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
     m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (iRef->groupID()) {

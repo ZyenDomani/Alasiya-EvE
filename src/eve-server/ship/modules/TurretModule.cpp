@@ -14,17 +14,23 @@
 #include "ship/modules/TurretModule.h"
 #include "system/Damage.h"
 
-TurretModule::TurretModule(InventoryItemRef item, ShipItemRef shipRef)
-: ActiveModule(item, shipRef)
+TurretModule::TurretModule(InventoryItemRef iRef, ShipItemRef sRef)
+: ActiveModule(iRef, sRef)
 {
     m_crystalDmg = 0;
     m_crystalDmgAmount = 0;
     m_crystalDmgChance = 0;
+
+    /* this may lead to some weird shit, but civilian turrets dont use charges.
+     *  these turrets have the damage attribs set in turret item, so set chargeRef to turret item for damage calcs
+     */
+    if (!m_needsCharge)
+        m_chargeRef = iRef;
 }
 
-void TurretModule::LoadCharge(InventoryItemRef charge)
+void TurretModule::LoadCharge(InventoryItemRef cRef)
 {
-    ActiveModule::LoadCharge(charge);
+    ActiveModule::LoadCharge(cRef);
     m_crystalDmg        = m_chargeRef->GetAttribute(AttrDamage).get_float();
     m_crystalDmgAmount  = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance  = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
@@ -89,7 +95,6 @@ void TurretModule::ApplyDamage()
                         m_chargeRef->SetAttribute(AttrDamage, m_crystalDmg);
                     }
                 }
-
         } break;
     }
 }
