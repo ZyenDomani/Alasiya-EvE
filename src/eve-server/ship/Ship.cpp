@@ -2242,10 +2242,11 @@ void Ship::Process() {
             sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
     }
 
-    // order of these two are important.
-    //   dissipate heat from last round before adding heat for this round
-    m_shipRef->ProcessHeat();
+    // proc modules first...if module is deactivated for whatever reason, it will not add to heat generation this round.
     m_shipRef->ProcessModules();
+
+    if (sConfig.testing.ShipHeat)
+        m_shipRef->ProcessHeat();
 }
 
 void Ship::DamageRandModule(float chance)
