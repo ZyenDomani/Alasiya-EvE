@@ -23,6 +23,10 @@
     Author:        Zhur
 */
 
+/** @todo  update this...  */
+//  need to find my function that will find/replace single chars and check for '/' and '\' in strings...
+//  SELECT typeID,typeName FROM invTypes WHERE  typeName rlike 'Amarr Control Tower\\'': Got error '\ at end of pattern at offset 20' from regexp
+
 #include "eve-server.h"
 
 #include "admin/CommandDB.h"
@@ -42,7 +46,7 @@ uint32_t CommandDB::GetSolarSystem(const char *name) {
         codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
         return 0;
     }
-    if (!result.GetRow(row)) { 
+    if (!result.GetRow(row)) {
         codelog(COMMAND__ERROR, "Solar System query returned nothing");
         return 0;
     }
@@ -67,7 +71,7 @@ uint32_t CommandDB::GetCharacter(const char *name) {
         return 0;
     }
 
-    if (!result.GetRow(row)) { 
+    if (!result.GetRow(row)) {
         codelog(COMMAND__ERROR, "Solar System query returned nothing");
         return 0;
     }

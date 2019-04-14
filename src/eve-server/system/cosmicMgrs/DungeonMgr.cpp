@@ -396,7 +396,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     using namespace Dungeon::Type;
     switch (sig.dungeonType) {
         case Gravimetric: {       // 2
-            factionID = 8;  // rats per system
+            factionID = 8;  // region rat
             if (type == 1) {
                 sig.sigStrength = 0.2; // 1/5
                 subType = MakeRandomInt(0,5);
@@ -420,7 +420,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
         } break;
         case Magnetometric: {     // 3
             // there are special drone mag sites in null
-            //factionID = 0;
+            factionID = 8;  // default to region rat
             subType = MakeRandomInt(1,8);
             if (type == 3) {
                 level = MakeRandomFloat();
@@ -549,8 +549,14 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
      *       B = type - security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
      *       C = subtype - sitetype 2: ore 0 to 5; ice 6 to 9, sitetype 7: 1 to 5, sitetype 1: 1 to 9, sitetype 3: (l1,l2) 1-8; (l3) 1-4, sitetype 5: 1 to 8
      *       D = level - sitetype 1: 1 to 9, sitetype 2: ore 1 to 3; ice 0, sitetype 3: 1-relic or 2-salvage (dominant), sitetype 4: 1-norm; 2-digital , sitetype 7: 1 to 5
-     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
+     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region rat , 9=other
      */
+
+    if (factionID == 7) {
+        // faction is defined to be region sovereign holder.
+        //   this hasnt been written yet, so default to drones for shits-n-giggles
+        factionID = 6;
+    }
     uint32 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
@@ -564,9 +570,9 @@ int8 DungeonMgr::GetFactionID(uint32 factionID)
     switch (factionID) {
         case factionAngel:          return 2;
         case factionSanshas:        return 5;
-        case factionBloodRaider:    return 3;
         case factionGuristas:       return 4;
         case factionSerpentis:      return 1;
+        case factionBloodRaider:    return 3;
         case factionRogueDrones:    return 6;
         // these arent gonna fit...
         case factionAmarr:          return 0;
