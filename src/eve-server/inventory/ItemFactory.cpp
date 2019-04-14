@@ -137,7 +137,7 @@ void ItemFactory::RemoveItem(uint32 itemID) {
     } else {
         m_items.erase( itr );
         // seen weird shit with itemcount being wrong.  not sure why.  havent really cared
-        if (m_itemCount < 1)
+        if ((m_itemCount < 1) or (m_itemCount > 0xFFFFFFFF))
             m_itemCount = m_items.size();
         else
             --m_itemCount;

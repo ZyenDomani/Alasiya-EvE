@@ -13,6 +13,7 @@
 #include "EVEServerConfig.h"
 #include "effects/EffectsProcessor.h"
 #include "inventory/InventoryItem.h"
+#include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 
 
