@@ -1,0 +1,122 @@
+
+
+*******************************************************
+****  TODO LIST
+
+
+**********   new Dec 2018
+check allianceID sending.  see if we can/need to send None() instead of -1
+ab not working (mwd is)  separate code ... look at original code for proper ab methods
+prop mods not activating (server says offline)
+
+
+19:46:12 [DecodeError] Decode Call_RemoveChargeToHangar failed: tuple0 is the wrong size: expected 1, but got 2
+19:46:12 [SvcError] Handle_RemoveChargeToHangar(/usr/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryBound.cpp:288): Space Reptile: Failed to decode arguments.
+19:46:12 [InvError] InventoryBound::MoveItems() - item 0 not found.  continuing.
+
+addskill needs skill injection (not updating client)
+
+
+HandleCorpTransaction() when giving isk to corp, journal window not updating
+
+
+QuickQuery() not responding properly for seach in "give corp shares" window
+
+
+need to figure out how to load/queue assets for chars (on login or w/e)
+
+
+pi broke....again.  not sure wtf is going on here.
+
+
+module/rack OL incomplete.  priority level: low
+
+db string replace function.  see CommandDB.cpp:27
+
+agent skill level table incomplete
+
+determine how to verify civilian modules (which dont need charges) to avoid charge ref errors
+
+dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)
+ -  this also fits in with signal.ownerID test...verify these are set correctly
+ -  need to look over all templateID generation and correct as needed.  mag sites for sure, others ?
+
+********* old - no date - still relevant?
+civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file. priority level: low
+npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
+dungeons - complete current wip code priority level: med-hi
+belt spawns - rework for better ship group selection priority level: med
+contracts - start this system. current status unknown. priority level: low-med
+missions/agents - agents working. courier missions working. currently ~50 missions, all levels. next up is security missions. will need dungeon work for these. priority level: hi
+pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip. priority level: low
+anomaly system - working. may need revisit after other systems mature. priority level: med
+wh system - started. k163 for deco only at this time (POC) priority level: low
+player drones - skeleton started. needs functionality priority level: med-hi
+RAM code - implement invention, copy, re, tech priority level: low-med
+others?
+
+lsc system better, but incomplete needs revisiting (and possible rewrite. code updates at least)
+
+player corps - finish wip code for RAM, market, adverts, alliances? priority level: med-hi
+still some corp shit not started/completed yet. need to finish it. may need to split file again. priority level: med-hi
+corporationSvc::GetRecruitmentAdsByCriteria()  not correctly processing bitwise checks (search must be near-exact to return results)
+CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete
+
+
+update npc ai. wander working. warp in/out working. tracking somewhat wonky. priority level: lo
+
+check all ewar effects. notably painter and disruptor. needs more testing. was working on last test
+check skill duration(66) for correct modifier sign seems ok now. needs more testing.
+check duration(73) on repair and prop modules (deals with skill-modified duration) seems ok now. needs more testing.
+
+
+*******  these are not applying any modifiers, but they should be modifying turrents  *************
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 3, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 0, state: Online, online: true
+26048   2663    1 rigslot
+26048   2708    0
+(2708, 'drawbackPowerNeedProjectiles', 0, 9742, 9743, 'Automatically generated effect', 0, 'None', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903010, ''),
+
+26048   2798    0
+(2798, 'projectileWeaponDamageMultiplyPassive', 0, 667, 670, 'Scales the damage done by all fitted projectile weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903235, ''),
+
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Burst Aerator I. effects: 3, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Burst Aerator I. effects: 0, state: Online, online: true
+26046   2663    1   rigslot
+26046   2708    0
+26046   2797    0
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Heat Sink II. effects: 1, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Heat Sink II. effects: 2, state: Online, online: true
+2364    11  0   midslot
+2364    16  0   online
+2364    91  0
+2364    95  0
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Gyrostabilizer II. effects: 1, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Gyrostabilizer II. effects: 2, state: Online, online: true
+519     11  0   midslot
+519     16  0   online
+519     89  0
+519     92  0
+
+
+20:43:08 [FxTrace] Resetting modifier map for Tracking Speed Disruption
+20:43:08 [FxTrace] Resetting modifier map for Paradise Cruise Missile
+20:43:08 [FxTrace] Resetting modifier map for Paradise Cruise Missile
+
+
+*****************  uk calls
+00:20:31 E Server: Unknown call to 'ReverseRedeem' by 'Terra Andedare'
+            if checkReverseRedeemable and not checkMultiSelection:
+                menuEntries += [[uiutil.MenuLabel('UI/Inventory/ItemActions/ReverseRedeem'), sm.GetService('redeem').ReverseRedeem, (invItem,)]]
+
+
+*********  shit in original webpage.  click on char for info
+[Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  fread() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 75, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592169 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  fwrite() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 76, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592194 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  feof() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 73, referer: http://127.0.0.1/web/?p=status
