@@ -172,6 +172,21 @@ void ModuleManager::UninstallRig(uint32 itemID)
 
     pModuleCont->RemoveModule(itemID);
     m_Ship->SetAttribute(AttrUpgradeSlotsLeft, m_Ship->GetAttribute(AttrUpgradeSlotsLeft) +1);
+
+    if (pMod->groupID() == EVEDB::invGroups::Rig_Electronics) {
+        switch (pMod->typeID()) {
+            case 25936:   //  Large Gravity Capacitor Upgrade I
+            case 31213:   //  Small Gravity Capacitor Upgrade I
+            case 31215:   //  Medium Gravity Capacitor Upgrade I
+            case 31217:   //  Capital Gravity Capacitor Upgrade I
+            case 26350:   //  Large Gravity Capacitor Upgrade II
+            case 31220:   //  Small Gravity Capacitor Upgrade II
+            case 31222:   //  Medium Gravity Capacitor Upgrade II
+            case 31224: { //  Capital Gravity Capacitor Upgrade II
+                m_rigScanBonus -= pMod->GetAttribute(AttrScanStrengthBonus).get_float();
+            } break;
+        }
+    }
 }
 
 bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
