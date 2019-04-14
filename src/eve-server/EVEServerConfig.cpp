@@ -160,6 +160,7 @@ EVEServerConfig::EVEServerConfig()
     cosmic.BumpEnabled = false;
 
     // standings
+    //  - mission
     standings.MissionBonus = 1.0;
     standings.MissionFailure = -0.5;
     standings.MissionDeclined = -0.2;
@@ -175,6 +176,8 @@ EVEServerConfig::EVEServerConfig()
     standings.ACorp2PCorpMissionMultiplier = 0.025;
     standings.AFaction2CharMissionMultiplier = 0.125;
     standings.AFaction2PCorpMissionMultiplier = 0.0125;
+    //  - PVP
+    //  - ratting/exploring
 
     // chat
     chat.EnableFleetChat = true;
