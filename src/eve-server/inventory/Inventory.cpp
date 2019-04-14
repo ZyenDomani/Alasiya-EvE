@@ -99,9 +99,7 @@ bool Inventory::GetItems(OwnerData od, std::vector< uint32 >& into ) {
 bool Inventory::LoadContents() {
     if (IsAgent(m_myID))
         return true;
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
     Client* pClient = sItemFactory.GetUsingClient();
     if (IsStation(m_myID)) {

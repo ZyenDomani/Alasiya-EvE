@@ -926,9 +926,7 @@ PyRep* Colony::GetColony()
 
 void Colony::Update(bool updateTimes/*false*/)
 {
-    double profileStartTime = 0.0;
-    //if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     m_procTime = GetFileTimeNow();
     /* loop thru process calls to update each pin to simulate production and logistics

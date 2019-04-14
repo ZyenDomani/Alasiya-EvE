@@ -94,9 +94,7 @@ void NPC::Process() {
     if (m_killed)
         return;
 
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();

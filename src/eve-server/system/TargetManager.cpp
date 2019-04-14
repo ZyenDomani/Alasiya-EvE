@@ -54,9 +54,7 @@ TargetManager::TargetManager(SystemEntity *self)
 }
 
 void TargetManager::Process() {
-     double profileStartTime = 0.0;
-     if (sConfig.debug.UseProfiling)
-         profileStartTime = GetTimeUSeconds();
+     double profileStartTime = GetTimeUSeconds();
 
     //process outgoing targeting (outgoing will call incomming as needed)
     std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin();

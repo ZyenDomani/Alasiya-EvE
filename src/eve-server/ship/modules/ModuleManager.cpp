@@ -100,9 +100,7 @@ bool ModuleManager::Initialize() {
 
 void ModuleManager::Process()
 {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     pModuleCont->Process();
 

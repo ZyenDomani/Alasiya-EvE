@@ -88,9 +88,7 @@ void SpawnMgr::Process() {
     if (!m_ratEnabled)
         return;
 
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
     // called by SystemManager::Process() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
 
@@ -349,9 +347,8 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
         return false;
     if (pBubble == nullptr)
         return false;
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
+    
     if (FindSpawnForBubble(pBubble->GetID())) {
         _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pBubble->GetID());
         pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.

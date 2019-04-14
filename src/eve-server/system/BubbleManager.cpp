@@ -68,9 +68,8 @@ void BubbleManager::clear() {
 }
 
 void BubbleManager::Process() {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
+    
     for (auto cur : m_bubbles) {
         // process each belt and gate bubble for spawns
         if (cur->IsBelt() or cur->IsGate())
