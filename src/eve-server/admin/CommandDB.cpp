@@ -24,19 +24,17 @@
 */
 
 /** @todo  update this...  */
-//  need to find my function that will find/replace single chars and check for '/' and '\' in strings...  Search.cpp:85
-//  SELECT typeID,typeName FROM invTypes WHERE  typeName rlike 'Amarr Control Tower\\'': Got error '\ at end of pattern at offset 20' from regexp
 
 #include "eve-server.h"
 
 #include "admin/CommandDB.h"
 
 uint32_t CommandDB::GetSolarSystem(const char *name) {
+    //sDatabase.ReplaceSlash(name);
     std::string escaped;
     sDatabase.DoEscapeString(escaped, name);
-    DBQueryResult result;
-    DBResultRow row;
 
+    DBQueryResult result;
     if (!sDatabase.RunQuery(result,
                             "SELECT solarSystemID "
                             "FROM mapSolarSystems "
@@ -46,31 +44,8 @@ uint32_t CommandDB::GetSolarSystem(const char *name) {
         codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
         return 0;
     }
-    if (!result.GetRow(row)) {
-        codelog(COMMAND__ERROR, "Solar System query returned nothing");
-        return 0;
-    }
 
-    return row.GetUInt(0);
-}
-
-uint32_t CommandDB::GetCharacter(const char *name) {
-    std::string escaped;
-    sDatabase.DoEscapeString(escaped, name);
-
-    DBQueryResult result;
     DBResultRow row;
-    // @TODO: Update when character refactor is complete
-    if (!sDatabase.RunQuery(result,
-                            "SELECT itemName "
-                            "FROM entity "
-                            "WHERE itemID LIKE '%%%s%%';",
-                            escaped.c_str()
-                            )) {
-        codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
-        return 0;
-    }
-
     if (!result.GetRow(row)) {
         codelog(COMMAND__ERROR, "Solar System query returned nothing");
         return 0;
@@ -81,16 +56,17 @@ uint32_t CommandDB::GetCharacter(const char *name) {
 
 bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &into) {
 
+    into.clear();
+
+    //sDatabase.ReplaceSlash(query);
+
     std::string escaped;
     sDatabase.DoEscapeString(escaped, query);
 
-    DBQueryResult result;
-    DBResultRow row;
-
-    into.clear();
 
     //we need to query out the primary message here... not sure how to properly
     //grab the "main message" though... the text/plain clause is pretty hackish.
+    DBQueryResult result;
     if (!sDatabase.RunQuery(result,
         " SELECT typeID,typeName"
         " FROM invTypes"
@@ -103,6 +79,7 @@ bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &int
         return (false);
     }
 
+    DBResultRow row;
     while(result.GetRow(row)) {
         into[row.GetUInt(0)] = row.GetText(1);
     }
@@ -149,40 +126,9 @@ bool CommandDB::ItemSearch(uint32 typeID, uint32 &actualTypeID,
     return true;
 }
 
-bool CommandDB::GetRoidDist(const char * sec, std::map<float, uint32> &roids) {
-    DBQueryResult res;
-    DBResultRow row;
-
-    if (!sDatabase.RunQuery(res,
-        " SELECT roidID, percent FROM roidDistribution WHERE systemSec = '%s' ", sec))
-    {
-        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-
-    float tot = 0.0;
-    while (res.GetRow(row)) {
-        tot += row.GetFloat(1);
-        roids[tot] = row.GetUInt(0);
-    }
-
-    return !roids.empty();
-}
-
-double CommandDB::GetSecurity(uint32 systemID) {
-    DBQueryResult res;
-    DBResultRow row;
-
-    sDatabase.RunQuery(res, "SELECT security FROM mapSolarSystems WHERE solarSystemID = %u ", systemID);
-
-    res.GetRow(row);
-    return row.GetDouble(0);
-}
-
 int CommandDB::GetAttributeID(const char *attributeName) {
 
     DBQueryResult res;
-    DBResultRow row;
     std::string escape;
     sDatabase.DoEscapeString(escape, attributeName);
 
@@ -197,6 +143,7 @@ int CommandDB::GetAttributeID(const char *attributeName) {
         return 0;
     }
 
+    DBResultRow row;
     if( !res.GetRow(row) ){
         codelog(DATABASE__ERROR, "Null result finding attributeID for attributeName = '%s' ", escape.c_str() );
         return 0;
@@ -207,49 +154,37 @@ int CommandDB::GetAttributeID(const char *attributeName) {
 }
 
 int CommandDB::GetAccountID(std::string name) {
-
     DBQueryResult res;
-
-    if(!sDatabase.RunQuery(res,
-        " SELECT "
-        " AccountID "
-        " FROM chrCharacters "
-        " WHERE characterID = ( SELECT itemID FROM entity WHERE itemName = '%s' )", name.c_str()))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT accountID FROM chrCharacters WHERE name = '%s'", name.c_str())) {
         sLog.Error("CommandDB", "Failed to retrieve accountID for %s", name.c_str());
         return 0;
     }
 
     DBResultRow row;
-
-    if( !res.GetRow(row) )
-    {
+    if (!res.GetRow(row)) {
         sLog.Error("CommandDB", "Query Returned no results");
         return 0;
     }
 
-    return row.GetInt( 0 );
-
+    return row.GetInt(0);
 }
 
 bool CommandDB::FullSkillList(std::vector<uint32> &skillList) {
-
-    DBQueryResult result;
-    DBResultRow row;
-
     skillList.clear();
 
+    DBQueryResult result;
     if (!sDatabase.RunQuery(result,
-        " SELECT * FROM `invTypes` WHERE "
+        " SELECT typeID FROM `invTypes` WHERE "
 		" ((`groupID` IN (SELECT groupID FROM invGroups WHERE categoryID = 16)) AND (published = 1)) "
         ))
     {
         codelog(SERVICE__ERROR, "Error in query: %s", result.error.c_str());
-        return (false);
+        return false;
     }
 
-    while(result.GetRow(row)) {
-		skillList.push_back( (row.GetUInt(0)) );
+    DBResultRow row;
+    while (result.GetRow(row)) {
+		skillList.push_back( (row.GetInt(0)) );
     }
 
 	// Because we searched skills with published = 1 and some GM skills are not published but still usable,

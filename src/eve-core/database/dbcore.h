@@ -156,6 +156,8 @@ public:
     int32   DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen);
     void    DoEscapeString(std::string &to, const std::string &from);
     static bool IsSafeString(const char *str);
+    // check for and remove slashes before sending string to db
+    //static void ReplaceSlash(const char *str);
     void    ping();
 
     eStatus GetStatus() const { return pStatus; }

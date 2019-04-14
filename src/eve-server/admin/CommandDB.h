@@ -34,14 +34,11 @@ class CommandDB
     bool ItemSearch(const char *query, std::map<uint32, std::string> &into);
     bool ItemSearch(uint32 typeID, uint32 &actualTypeID, std::string &actualTypeName,
                     uint32 &actualGroupID, uint32 &actualCategoryID, double &actualRadius);
-    bool GetRoidDist(const char * sec, std::map<float, uint32> &roids);
-    double GetSecurity(uint32 systemID) ;
     int GetAttributeID(const char *attributeName);
     int GetAccountID(std::string name);
     bool FullSkillList(std::vector<uint32> &skillList);
     uint32_t GetSolarSystem(const char *name);
-    uint32_t GetCharacter(const char *name);
-    
+
 };
 
 

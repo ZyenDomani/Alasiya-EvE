@@ -383,6 +383,17 @@ bool DBcore::IsSafeString(const char *str) {
     return true;
 }
 
+/* this doesnt work right....look into later...
+void DBcore::ReplaceSlash(const char *str) {
+    for(; *str != '\0'; str++) {
+        switch(*str) {
+            case '\'':
+            case '\\':
+                *str = '0';
+        }
+    }
+} */
+
 /************************************************************************/
 /* DBerror                                                              */
 /************************************************************************/
