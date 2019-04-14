@@ -383,6 +383,18 @@ bool DBcore::IsSafeString(const char *str) {
     return true;
 }
 
+bool DBcore::IsSafeString(std::string &s) {
+    for (uint i = 0; i < s.length(); ++i) {
+        switch (s[i]) {
+            case '\'':
+            case '\\':
+                return false;
+        }
+    }
+    return true;
+}
+
+
 /* this doesnt work right....look into later...
 void DBcore::ReplaceSlash(const char *str) {
     for(; *str != '\0'; str++) {

@@ -31,6 +31,9 @@
 
 uint32_t CommandDB::GetSolarSystem(const char *name) {
     //sDatabase.ReplaceSlash(name);
+    if (!sDatabase.IsSafeString(name))
+        return 0;
+
     std::string escaped;
     sDatabase.DoEscapeString(escaped, name);
 
@@ -59,6 +62,8 @@ bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &int
     into.clear();
 
     //sDatabase.ReplaceSlash(query);
+    if (!sDatabase.IsSafeString(query))
+        return 0;
 
     std::string escaped;
     sDatabase.DoEscapeString(escaped, query);
@@ -128,6 +133,9 @@ bool CommandDB::ItemSearch(uint32 typeID, uint32 &actualTypeID,
 
 int CommandDB::GetAttributeID(const char *attributeName) {
 
+    if (!sDatabase.IsSafeString(attributeName))
+        return 0;
+
     DBQueryResult res;
     std::string escape;
     sDatabase.DoEscapeString(escape, attributeName);
@@ -154,6 +162,10 @@ int CommandDB::GetAttributeID(const char *attributeName) {
 }
 
 int CommandDB::GetAccountID(std::string name) {
+
+    if (!sDatabase.IsSafeString(name))
+        return 0;
+
     DBQueryResult res;
     if (!sDatabase.RunQuery(res, "SELECT accountID FROM chrCharacters WHERE name = '%s'", name.c_str())) {
         sLog.Error("CommandDB", "Failed to retrieve accountID for %s", name.c_str());
