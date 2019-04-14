@@ -1453,6 +1453,7 @@ float ShipItem::GenerateHeat(uint16 attrID)
     /**  @note  still not sure how live builds heat, but here's how im gonna do it.
      * during normal op, modules make heat that builds slowly
      *  normal module operation will not build excessive heat on ship...it was designed for it.
+     * the difference here is pilots will now be able to SEE the heat buildup (dont recall if it showed on HUD w/o OL)
      *  this heat will be capped at ??
      * overloaded modules will build excessive heat, and will begin to damage it's rack from overheating.
      */
@@ -1490,6 +1491,8 @@ float ShipItem::GenerateHeat(uint16 attrID)
 
     if (!modVec.empty())
         heat *= modVec.size();
+
+    //  will it matter what KIND of modules are activated?  yeah, i think so.  apply diff here.
 
     if (HasAttribute(AttrHeatGenerationMultiplier))
         heat *= GetAttribute(AttrHeatGenerationMultiplier).get_float();
@@ -2204,13 +2207,11 @@ void Ship::Process() {
     // check to see if this is an empty ship, and exit if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
     /** @todo m_self is NOT being populated for non-piloted ships...check later */
-    if ((!m_self) or (!m_self->HasPilot()))
+    if ((m_self.get() == nullptr) or (!m_self->HasPilot()))
         return;
 
     if (m_processTimer.Check()) {
-        double profileStartTime = 0.0;
-        if (sConfig.debug.UseProfiling)
-            profileStartTime = GetTimeUSeconds();
+        double profileStartTime = GetTimeUSeconds();
         // shield
         float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
         float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
