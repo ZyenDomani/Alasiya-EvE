@@ -1204,7 +1204,7 @@ PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {
     sLog.White( "CorpRegistryBound::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    Call_AddContact args;
+    Call_CorporateContactData args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
@@ -1218,7 +1218,7 @@ PyResult CorpRegistryBound::Handle_EditCorporateContact(PyCallArgs &call) {
     sLog.White( "CorpRegistryBound::Handle_EditCorporateContact()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    Call_AddContact args;
+    Call_CorporateContactData args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
