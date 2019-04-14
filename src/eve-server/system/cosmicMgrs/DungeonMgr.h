@@ -46,7 +46,7 @@ public:
 
     void AddDungeon(ActiveDungeon& dungeon);
     void GetDungeons(std::vector<ActiveDungeon>& dunList);
-    
+
     bool GetTemplate(uint32 templateID, DunTemplate& dTemplate);
 
     uint32 GetDungeonID()                               { return ++m_dungeonID; }
@@ -115,7 +115,7 @@ private:
     SystemManager* m_system;
     PyServiceMgr& m_services;
 
-    int8 GetFactionID(uint32 factionID);
+    int8 GetFaction(uint32 factionID);
     int8 GetRandLevel();
 
     bool m_initalized;

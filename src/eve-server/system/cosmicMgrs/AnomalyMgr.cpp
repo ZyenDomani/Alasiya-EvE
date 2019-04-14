@@ -223,7 +223,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     if (sConfig.debug.AnomalyFaction)
         sig.ownerID = sConfig.debug.AnomalyFaction;
     else if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
-        sig.ownerID =  sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
+        sig.ownerID = sDataMgr.GetRegionRatFaction(m_system->GetRegionID());
 
     // there are some regions that dont have rat factions....what do we do in that case??
     //if (sig.ownerID == 0)
@@ -242,6 +242,8 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         sig.y = pos.y;
         sig.z = pos.z;
 
+    // some sites will use sys sov for ships.  use this for them....
+    // sig.ownerID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
     using namespace Dungeon::Type;
     switch(sig.dungeonType) {
         case Wormhole: {    // 6
@@ -268,10 +270,6 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanMagnetometricStrength;
-            if (sig.ownerID == 6)   // mag sites cannot be drone...or can they?  no mag site template for drones yet
-                sig.ownerID = sDataMgr.GetRegionFaction(m_system->GetRegionID());
-            if (sig.ownerID == 6) //  shit...we're in a drone region
-                sig.ownerID = MakeRandomInt(1,5);  // fuck it.  pirates were here.
         } break;
         case Radar: {       // 4,
             sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
