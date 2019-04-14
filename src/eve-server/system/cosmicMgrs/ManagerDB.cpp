@@ -336,6 +336,7 @@ GPoint ManagerDB::GetAnomalyPos(std::string& string)
     return pos;
 }
 
+// these next two arent used yet.  dont remember what they were for.  persistant shit for restart?
 void ManagerDB::GetSystemAnomalies(uint32 systemID, DBQueryResult& res)
 {// sysSignatures (sigTypeID,scanGroupID,sigGroupID,scanAttributeID,sigName,sigID,x,y,z)
     if(!sDatabase.RunQuery(res,

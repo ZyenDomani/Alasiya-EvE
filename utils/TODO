@@ -1,7 +1,7 @@
 
 
 *******************************************************
-****  TODO LIST
+****  Allan's EvEmu TODO LIST
 
 
 **********   new Dec 2018
@@ -18,6 +18,7 @@ addskill needs skill injection (not updating client)
 
 
 HandleCorpTransaction() when giving isk to corp, journal window not updating
+LOTS of corp methods incomplete.  see below under 'player corps'
 
 
 QuickQuery() not responding properly for seach in "give corp shares" window
@@ -29,7 +30,7 @@ need to figure out how to load/queue assets for chars (on login or w/e)
 pi broke....again.  not sure wtf is going on here.
 
 
-module/rack OL incomplete.  priority level: low
+module/rack OL incomplete.  priority level: low-med
 
 db string replace function.  see CommandDB.cpp:27
 
@@ -40,8 +41,13 @@ determine how to verify civilian modules (which dont need charges) to avoid char
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)
  -  this also fits in with signal.ownerID test...verify these are set correctly
  -  need to look over all templateID generation and correct as needed.  mag sites for sure, others ?
+ -  ALSO:  still havent figured out how to track/delete dungeon items on server shutdown/crash.
 
-********* old - no date - still relevant?
+
+statistic system is currently inaccurate.  priority level: low
+
+
+********* old - no date - still relevant
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file. priority level: low
 npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
 dungeons - complete current wip code priority level: med-hi

@@ -58,9 +58,10 @@ void StatisticMgr::GetInfo()
 // called every 15m by ConsoleCommands::UpdateStatus() from EntityList::Process()
 void StatisticMgr::Process()
 {
-    // check timers and manipulate data accordingly...
     SaveData();
 
+    // check timers and manipulate data accordingly...
+    // this system is currently inaccurate.  priority level: low
     if (++m_counter > 4) {  // every hour?  provided proc call is 15m
         m_counter = 0;
         // every [increment][time] save stat history data
