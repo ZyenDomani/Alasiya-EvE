@@ -626,7 +626,7 @@ PyRep* ModuleManager::ModuleRepair(uint32 modID)
 
 
     //return PyStatic.NewTrue();  // can repair
-    return PyStatic.NewFalse(); // cannot repair (for whatever reason)
+    return PyStatic.NewFalse(); // cannot repair (for whatever reason)  do they/we send msgs based on why here?
 }
 
 void ModuleManager::StopModuleRepair(uint32 modID)
@@ -832,9 +832,16 @@ void ModuleManager::CharacterLeavingShip()
         return;
 
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
-    //this is complicated and im gonna leave it alone for now until
-    //a few things become more clear
     //OfflineAll();
+
+    /*  this is complicated and im gonna leave it alone for now until
+     *  a few things become more clear
+     * this will include checking ship HP, cargo holds, and possibably other things
+     *  that havent been written yet.
+     * see if these can throw, else we'll have to do a bool return from calls and go from there.
+     */
+    //CheckNewHP();
+    //CheckNewCargo();
 }
 
 void ModuleManager::ShipWarping()
