@@ -24,7 +24,7 @@
 */
 
 /** @todo  update this...  */
-//  need to find my function that will find/replace single chars and check for '/' and '\' in strings...
+//  need to find my function that will find/replace single chars and check for '/' and '\' in strings...  Search.cpp:85
 //  SELECT typeID,typeName FROM invTypes WHERE  typeName rlike 'Amarr Control Tower\\'': Got error '\ at end of pattern at offset 20' from regexp
 
 #include "eve-server.h"
