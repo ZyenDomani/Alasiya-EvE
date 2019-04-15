@@ -1502,7 +1502,7 @@ float ShipItem::GenerateHeat(uint16 attrID)
         return 0;
 
     //log(t) *3;   //0.28 when t=1.1,  1.2 when t=1.5,  4.1 when t=3.9 (highest i found), 6.8 when t=5.55
-    float heat += log(t) *3 * GetAttribute(AttrHeatGenerationMultiplier).get_float();
+    float heat = log(t) *3 * GetAttribute(AttrHeatGenerationMultiplier).get_float();
 
     _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.  t = %.3f", itemName().c_str(), heat, rack.c_str(), t);
     return heat;
