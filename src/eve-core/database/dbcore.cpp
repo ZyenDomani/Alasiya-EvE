@@ -235,7 +235,7 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     uint col_count = mysql_field_count(mysql);
     if (col_count == 0) {
         into.error.SetError(0xFFFF, "DBcore::RunQuery: No Result");
-        codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because did not return a result", query);
+        codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because it did not return a result", query);
         EvE::traceStack();
         return false;
     }

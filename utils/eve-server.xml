@@ -210,7 +210,7 @@
         <BubbleTrack>false</BubbleTrack><!-- bool - create jetcans at center and edges of bubble (7 per bubble) -->
         <SpawnTest>false</SpawnTest><!-- bool - enables 5s respawn timer -->
         <IsTestServer>false</IsTestServer>  <!--  bool   -some functions disabled for live server -->
-        <UseProfiling>false</UseProfiling><!-- bool -->
+        <UseProfiling>false</UseProfiling><!-- bool  - use internal memobj code profiling system -->
         <ProfileTraceTime>0</ProfileTraceTime><!-- msec  profile time above this will print StackTrace  default: 150  disable with 0 -->
         <UseShipTracking>false</UseShipTracking><!-- bool -->
         <PositionHack>false</PositionHack><!-- bool -->

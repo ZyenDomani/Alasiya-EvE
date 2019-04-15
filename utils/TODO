@@ -32,15 +32,12 @@ pi broke....again.  not sure wtf is going on here.
 
 module/rack OL incomplete.  priority level: low-med
 
-db string replace function.  see CommandDB.cpp:27
 
 agent skill level table incomplete
 
-determine how to verify civilian modules (which dont need charges) to avoid charge ref errors
 
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)
  -  this also fits in with signal.ownerID test...verify these are set correctly
- -  need to look over all templateID generation and correct as needed.  mag sites for sure, others ?
  -  ALSO:  still havent figured out how to track/delete dungeon items on server shutdown/crash.
 
 
@@ -49,7 +46,6 @@ statistic system is currently inaccurate.  priority level: low
 
 ********* old - no date - still relevant
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file. priority level: low
-npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
 dungeons - complete current wip code priority level: med-hi
 belt spawns - rework for better ship group selection priority level: med
 contracts - start this system. current status unknown. priority level: low-med
@@ -68,12 +64,15 @@ still some corp shit not started/completed yet. need to finish it. may need to s
 corporationSvc::GetRecruitmentAdsByCriteria()  not correctly processing bitwise checks (search must be near-exact to return results)
 CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete
 
-
+npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky. priority level: lo
 
-check all ewar effects. notably painter and disruptor. needs more testing. was working on last test
-check skill duration(66) for correct modifier sign seems ok now. needs more testing.
-check duration(73) on repair and prop modules (deals with skill-modified duration) seems ok now. needs more testing.
+
+ needs more testing.
+check all ewar effects. notably painter and disruptor. was working on last test
+check skill duration(66) for correct modifier sign seems ok now.
+check duration(73) on repair and prop modules (deals with skill-modified duration) seems ok now.
+
 
 
 *******  these are not applying any modifiers, but they should be modifying turrents  *************
@@ -82,10 +81,8 @@ check duration(73) on repair and prop modules (deals with skill-modified duratio
 26048   2663    1 rigslot
 26048   2708    0
 (2708, 'drawbackPowerNeedProjectiles', 0, 9742, 9743, 'Automatically generated effect', 0, 'None', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903010, ''),
-
 26048   2798    0
 (2798, 'projectileWeaponDamageMultiplyPassive', 0, 667, 670, 'Scales the damage done by all fitted projectile weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903235, ''),
-
 
 
 20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Burst Aerator I. effects: 3, state: Passive, online: true
@@ -117,12 +114,13 @@ check duration(73) on repair and prop modules (deals with skill-modified duratio
 
 
 *****************  uk calls
-00:20:31 E Server: Unknown call to 'ReverseRedeem' by 'Terra Andedare'
-            if checkReverseRedeemable and not checkMultiSelection:
-                menuEntries += [[uiutil.MenuLabel('UI/Inventory/ItemActions/ReverseRedeem'), sm.GetService('redeem').ReverseRedeem, (invItem,)]]
-
+  ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
 *********  shit in original webpage.  click on char for info
-[Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  fread() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 75, referer: http://127.0.0.1/web/?p=status
-[Fri Dec 28 22:57:46.592169 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  fwrite() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 76, referer: http://127.0.0.1/web/?p=status
-[Fri Dec 28 22:57:46.592194 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:  feof() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 73, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+fread() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 75, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592169 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+fwrite() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 76, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592194 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+feof() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 73, referer: http://127.0.0.1/web/?p=status
+

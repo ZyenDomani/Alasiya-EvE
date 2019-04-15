@@ -806,4 +806,5 @@ bool Agent::CanUseAgent(Client* pClient)
  * Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
  *
  * RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
+ * ((Agent Skill + Your Skill)^2 * (1 + Effective Quality / 100)) * Area Bonus
  */

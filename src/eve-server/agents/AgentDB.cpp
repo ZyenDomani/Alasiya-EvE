@@ -81,8 +81,7 @@ void AgentDB::LoadAgentSkills(uint32 agentID, std::map< uint16, uint8 >& data)
 {
     // SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        "SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u", agentID))
+    if (!sDatabase.RunQuery(res, "SELECT typeID, level FROM agtSkillLevel WHERE agentID = %u", agentID))
         codelog(DATABASE__ERROR, "Error in LoadAgentSkills query: %s", res.error.c_str());
 
     DBResultRow row;
