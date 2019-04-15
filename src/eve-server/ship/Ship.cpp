@@ -1436,8 +1436,6 @@ void ShipItem::ProcessHeat()
         //heat -= log(-(heat +1));
         if (heat > 1.0f)
             heat -= DissipateHeat(i, heat);
-        if (heat < 0)
-            heat = 0.0f;
         heat += GenerateHeat(i);
         if (heat > 1.0f) {  // not concerned about anything < 1
             if (heat > 100)
@@ -1449,12 +1447,15 @@ void ShipItem::ProcessHeat()
     }
     _log(SHIP__HEAT, "ShipItem::ProcessHeat() Executed in %.3f us.", GetTimeUSeconds() - start);
 
-    /*  proc times with 3 banks of 8 modules each
-     * 01:12:09 [ShipHeat] ShipItem::ProcessHeat() Executed in 3256.250 us.
-     * 01:12:21 [ShipHeat] ShipItem::ProcessHeat() Executed in 1191.250 us.
-     * 01:16:08 [ShipHeat] ShipItem::ProcessHeat() Executed in 2590.500 us.
-     * 01:16:56 [ShipHeat] ShipItem::ProcessHeat() Executed in 2289.500 us.
-     * 01:17:20 [ShipHeat] ShipItem::ProcessHeat() Executed in 978.000 us.
+    /*  proc times with 3 banks of 8 modules each (from 0 - 3 modules actived)
+13:05:44 [ShipHeat] ShipItem::ProcessHeat() Executed in 867.000 us.
+13:05:50 [ShipHeat] ShipItem::ProcessHeat() Executed in 1205.000 us.
+13:05:56 [ShipHeat] ShipItem::ProcessHeat() Executed in 1051.500 us.
+13:06:02 [ShipHeat] ShipItem::ProcessHeat() Executed in 1665.750 us.
+13:06:08 [ShipHeat] ShipItem::ProcessHeat() Executed in 1108.500 us.
+13:06:14 [ShipHeat] ShipItem::ProcessHeat() Executed in 1090.250 us.
+13:06:20 [ShipHeat] ShipItem::ProcessHeat() Executed in 1011.250 us.
+13:06:26 [ShipHeat] ShipItem::ProcessHeat() Executed in 938.500 us.
      */
 }
 
@@ -1498,7 +1499,7 @@ float ShipItem::GenerateHeat(uint16 attrID)
         } break;
     }
 
-    if (t < 1.1)
+    if (t < 1.2)
         return 0;
 
     //log(t) *3;   //0.28 when t=1.1,  1.2 when t=1.5,  4.1 when t=3.9 (highest i found), 6.8 when t=5.55
@@ -1531,8 +1532,12 @@ float ShipItem::DissipateHeat(uint16 attrID, float heat)
 
     newHeat = log(t);    //0.18 when t=1.2, 3.1 when t=21.9, 3.9 when t=51.9, 4.6 when t=99.9
 
+    if (newHeat < 0)
+        newHeat = 0.0f;
+
     _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.  was %.1f, is %.1f, t = %.3f", \
-            itemName().c_str(), newHeat, rack.c_str(), heat, newHeat, t);
+            itemName().c_str(), newHeat, rack.c_str(), heat, (heat - newHeat), t);
+
     return newHeat;
 }
 
@@ -2249,7 +2254,7 @@ void Ship::Process() {
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
 
-        // proc heat on the 5s cap/shield tic
+        // proc heat on the 5s cap/shield tic, if enabled
         if (sConfig.testing.ShipHeat)
             m_shipRef->ProcessHeat();
     }
