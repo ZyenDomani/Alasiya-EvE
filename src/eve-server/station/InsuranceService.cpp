@@ -180,7 +180,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     } else if (fraction == 0.3)
         call.client->SendErrorMsg("Your insurance is at minimum coverage due to incorrect base prices.  Ref: ServerError 75521.");
 
-    if (m_db->IsShipInsured(args.shipID)) {
+    if (m_db->IsShipInsured(args.shipID)) {     //this hits db...can you insure unloaded ship? (if no, make this a ship memobj)
         if (call.byname.find("voidOld") != call.byname.end()) {
             if (call.byname.find("voidOld")->second->AsBool()->value())
                 m_db->DeleteInsuranceByShipID(args.shipID);
