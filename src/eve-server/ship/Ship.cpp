@@ -1433,11 +1433,12 @@ void ShipItem::ProcessHeat()
     for (uint16 i = AttrHeatHi; i < AttrHeatLow +1; ++i) {
         heat = GetAttribute(i).get_float();
         // the ordering here is important
-        heat -= DissipateHeat(i);
+        //heat -= log(-(heat +1));
+        heat -= DissipateHeat(i, heat);
         if (heat < 0)
             heat = 0.0f;
         heat += GenerateHeat(i);
-        if (heat > 0.01) {
+        if (heat > 1.0f) {
             if (heat > 100)
                 heat = 100.0f;
             SetAttribute(i, heat);
@@ -1454,32 +1455,32 @@ float ShipItem::GenerateHeat(uint16 attrID)
      * during normal op, modules make heat that builds slowly
      *  normal module operation will not build excessive heat on ship...it was designed for it.
      * the difference here is pilots will now be able to SEE the heat buildup (dont recall if it showed on HUD w/o OL)
-     *  this heat will be capped at ??
-     * overloaded modules will build excessive heat, and will begin to damage it's rack from overheating.
+     * overloaded modules will build excessive heat, using a diff heat generation method,
+     * and will begin to damage it's rack from overheating (heat > rack heat capy).
      */
 
     /*  heat buildup
-     * H = H0(1 - e^-tτ)
-     *    Setting H0 to 100 would make my graph match his. t is time. τ is a constant based on ship and overloaded modules.
-     * τ = hgm (τ1 + τ2 + ... + τn)
-     *    Setting the per module τ to 0.025 made my graphs match his.
+     * H = e^t
+     * t = sum of active module's heat damage / 10
+     *   this may look funny, but is rather accurate generation of residual heat from normal op.
      */
 
-    float heat = 0.01f, t = 0.05f;  // for testing only
+    float heat = 0.1f, t = GetAttribute(AttrHeatGenerationMultiplier).get_float();
     std::string rack = "";
-    std::vector< GenericModule* > modVec;
+    //std::vector< GenericModule* > modVec;
     switch(attrID) {
         case AttrHeatHi: {
             rack = "Hi";
-            m_ModuleManager->GetActiveModules(EVEEffectID::hiPower, modVec);
+            //m_ModuleManager->GetActiveModules(EVEEffectID::hiPower, modVec);
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::hiPower, t);
         } break;
         case AttrHeatMed: {
             rack = "Mid";
-            m_ModuleManager->GetActiveModules(EVEEffectID::medPower, modVec);
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::medPower, t);
         } break;
         case AttrHeatLow: {
             rack = "Low";
-            m_ModuleManager->GetActiveModules(EVEEffectID::loPower, modVec);
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::loPower, t);
         } break;
         default: {
             _log(SHIP__HEAT, "GenerateHeat() - %s invalid rack sent (%u)", itemName().c_str(), attrID);
@@ -1487,24 +1488,16 @@ float ShipItem::GenerateHeat(uint16 attrID)
         } break;
     }
 
-    heat += -(1 - exp(t));
-
-    if (!modVec.empty())
-        heat *= modVec.size();
-
-    //  will it matter what KIND of modules are activated?  yeah, i think so.  apply diff here.
-
-    if (HasAttribute(AttrHeatGenerationMultiplier))
-        heat *= GetAttribute(AttrHeatGenerationMultiplier).get_float();
+    heat += log(t) *10;   //2.23 when t=1.25,  4.04 when t=1.5,  13.6 when t=3.9
 
     _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.", itemName().c_str(), heat, rack.c_str());
     return heat;
 }
 
-float ShipItem::DissipateHeat(uint16 attrID)
+float ShipItem::DissipateHeat(uint16 attrID, float heat)
 {
-    //H = H0(e^-tτ)
-    float heat = 0.01f, t = 0.02f;   // for testing only
+    //H = ln^t
+    float t = 1.0f + heat, newHeat = 0.0f;
     std::string rack = "";
     switch(attrID) {
         case AttrHeatHi: {
@@ -1522,10 +1515,10 @@ float ShipItem::DissipateHeat(uint16 attrID)
         } break;
     }
 
-    heat += exp(-t);
+    newHeat = log(t);    //0.18 when t=1.2, 3.9 when t=51.9, 4.6 when t=99.9
 
-    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.", itemName().c_str(), heat, rack.c_str());
-    return heat;
+    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.", itemName().c_str(), newHeat, rack.c_str());
+    return newHeat;
 }
 
 void ShipItem::DamageGroup(GenericModule* pMod)
@@ -2240,13 +2233,13 @@ void Ship::Process() {
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
+
+        // proc heat on the 5s cap/shield tic
+        if (sConfig.testing.ShipHeat)
+            m_shipRef->ProcessHeat();
     }
 
-    // proc modules first...if module is deactivated for whatever reason, it will not add to heat generation this round.
     m_shipRef->ProcessModules();
-
-    if (sConfig.testing.ShipHeat)
-        m_shipRef->ProcessHeat();
 }
 
 void Ship::DamageRandModule(float chance)

@@ -267,7 +267,7 @@ public:
     // heat generated per tic by ship's active modules (passive *may not* generate heat yet.)
     float GenerateHeat(uint16 attrID);
     // heat dissipated per tic by ship's design and pilots skills
-    float DissipateHeat(uint16 attrID);
+    float DissipateHeat(uint16 attrID, float heat);
     // this method does just that....checks for heat-induced damage from overheated modules
     void HeatDamageCheck(GenericModule* pMod);
     void DamageModule(uint32 modID, float amt=1)        { m_ModuleManager->DamageModule(modID, amt); }
