@@ -64,6 +64,7 @@ CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete
 npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky. priority level: lo
 
+m_self is NOT being populated for non-piloted ships.   priority level: low
 
  needs more testing.
 check all ewar effects. notably painter and disruptor. was working on last test
