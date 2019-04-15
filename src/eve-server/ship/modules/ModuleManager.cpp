@@ -972,9 +972,13 @@ void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
     }
 
     for (auto cur : modVecAll)
-        if (cur->IsActive())
+        if (cur->IsActive()) {
             if (!cur->IsOverloaded())
                 heat += cur->GetAttribute(AttrHeatDamage).get_float() /10;
+        } else {
+            //AttrHeatAbsorbtionRateModifier    -- if this module is inactive, it will absorb this much heat.
+            heat -= cur->GetAttribute(AttrHeatAbsorbtionRateModifier).get_float() *10;
+        }
 }
 
 uint8 ModuleManager::GetActiveModulesCount(uint8 rack)

@@ -1438,7 +1438,7 @@ void ShipItem::ProcessHeat()
         if (heat < 0)
             heat = 0.0f;
         heat += GenerateHeat(i);
-        if (heat > 1.0f) {
+        if (heat > 1.0f) {  // not concerned about anything < 1
             if (heat > 100)
                 heat = 100.0f;
             SetAttribute(i, heat);
@@ -1447,6 +1447,14 @@ void ShipItem::ProcessHeat()
         heat = 0.0f;
     }
     _log(SHIP__HEAT, "ShipItem::ProcessHeat() Executed in %.3f us.", GetTimeUSeconds() - start);
+
+    /*  proc times with 3 banks of 8 modules each
+     * 01:12:09 [ShipHeat] ShipItem::ProcessHeat() Executed in 3256.250 us.
+     * 01:12:21 [ShipHeat] ShipItem::ProcessHeat() Executed in 1191.250 us.
+     * 01:16:08 [ShipHeat] ShipItem::ProcessHeat() Executed in 2590.500 us.
+     * 01:16:56 [ShipHeat] ShipItem::ProcessHeat() Executed in 2289.500 us.
+     * 01:17:20 [ShipHeat] ShipItem::ProcessHeat() Executed in 978.000 us.
+     */
 }
 
 float ShipItem::GenerateHeat(uint16 attrID)
@@ -1460,12 +1468,15 @@ float ShipItem::GenerateHeat(uint16 attrID)
      */
 
     /*  heat buildup
-     * H = e^t
-     * t = sum of active module's heat damage / 10
-     *   this may look funny, but is rather accurate generation of residual heat from normal op.
+     * H = 3(e^t)
+     * t = (sum of active module's heat damage / 10) +1
+     *   t must be > 1.0 to avoid negatives.  if no modules active, t=1.0 and log(1.0)=0
+     *   this may look funny, but is rather accurate generation of module heat from normal op.
      */
 
-    float heat = 0.1f, t = GetAttribute(AttrHeatGenerationMultiplier).get_float();
+    float heat = 0.01f;
+    //  heatGenerationMultiplier for all ships is 1.0
+    float t = GetAttribute(AttrHeatGenerationMultiplier).get_float();
     std::string rack = "";
     //std::vector< GenericModule* > modVec;
     switch(attrID) {
@@ -1488,9 +1499,9 @@ float ShipItem::GenerateHeat(uint16 attrID)
         } break;
     }
 
-    heat += log(t) *10;   //2.23 when t=1.25,  4.04 when t=1.5,  13.6 when t=3.9
+    heat += log(t) *3;   //0.28 when t=1.1,  1.2 when t=1.5,  4.1 when t=3.9 (highest i found), 6.8 when t=5.55
 
-    _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.", itemName().c_str(), heat, rack.c_str());
+    _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.  t = %.3f", itemName().c_str(), heat, rack.c_str(), t);
     return heat;
 }
 
@@ -1515,9 +1526,10 @@ float ShipItem::DissipateHeat(uint16 attrID, float heat)
         } break;
     }
 
-    newHeat = log(t);    //0.18 when t=1.2, 3.9 when t=51.9, 4.6 when t=99.9
+    newHeat = log(t);    //0.18 when t=1.2, 3.1 when t=21.9, 3.9 when t=51.9, 4.6 when t=99.9
 
-    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.", itemName().c_str(), newHeat, rack.c_str());
+    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.  was %.1f, is %.1f, t = %.3f", \
+            itemName().c_str(), newHeat, rack.c_str(), heat, newHeat, t);
     return newHeat;
 }
 

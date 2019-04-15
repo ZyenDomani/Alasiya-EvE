@@ -1088,7 +1088,7 @@ enum EveAttrEnum {
     AttrHeatLow = 1177,         // ship attrib
     AttrHeatCapacityHi = 1178,         // ship attrib
     AttrHeatDissipationRateHi = 1179,         // ship attrib
-    AttrHeatAbsorbtionRateModifier = 1180,   // module attrib (passive only)     defines how much extra heat this module will absorb
+    AttrHeatAbsorbtionRateModifier = 1180,   // module attrib      defines how much extra heat this module will absorb
     AttrOverloadDurationBonus = 1181,
     AttrHeatAbsorbtionRateHi = 1182,    // not used
     AttrHeatAbsorbtionRateMed = 1183,   // not used
