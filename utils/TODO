@@ -33,12 +33,8 @@ pi broke....again.  not sure wtf is going on here.
 module/rack OL incomplete.  priority level: low-med
 
 
-agent skill level table incomplete
-
-
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)
- -  this also fits in with signal.ownerID test...verify these are set correctly
- -  ALSO:  still havent figured out how to track/delete dungeon items on server shutdown/crash.
+ - still havent figured out how to track/delete dungeon items on server shutdown/crash.
 
 
 statistic system is currently inaccurate.  priority level: low
