@@ -45,7 +45,7 @@ MovementService::~MovementService() {
 
 PyResult MovementService::Handle_ResolveNodeID( PyCallArgs& call )
 {
-    sLog.White( "MovementService", "Handle_ResolveNodeID" );
+    sLog.Yellow( "MovementService", "Handle_ResolveNodeID" );
     call.Dump(CHARACTER__DEBUG);
 
     return new PyInt(888444);
@@ -60,6 +60,7 @@ UserService::UserService(PyServiceMgr *mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(UserService, GetRedeemTokens);
+    PyCallable_REG_CALL(UserService, ReverseRedeem);
     PyCallable_REG_CALL(UserService, GetCreateDate);
     PyCallable_REG_CALL(UserService, ReportISKSpammer);
     PyCallable_REG_CALL(UserService, ReportBot);
@@ -73,7 +74,7 @@ UserService::~UserService() {
 PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
 {
     /*
-    sLog.White( "UserService", "Handle_GetRedeemTokens" );
+    sLog.Yellow( "UserService", "Handle_GetRedeemTokens" );
     call.Dump(SERVICE__CALL_DUMP);
      * ==================== Sent from Client 84 bytes
      *
@@ -176,6 +177,22 @@ PyResult UserService::Handle_GetRedeemTokens( PyCallArgs& call )
     return new PyList();
 }
 
+PyResult UserService::Handle_ReverseRedeem( PyCallArgs& call )
+{
+    //sm.RemoteSvc('userSvc').ReverseRedeem(item.itemID)
+    sLog.Yellow( "UserService", "Handle_ReverseRedeem" );
+    call.Dump(CHARACTER__DEBUG);
+
+    return nullptr;
+    
+    /* {'messageKey': 'ReverseRedeemingCompleted', 'dataID': 17877681, 'suppressable': False, 'bodyID': 257344, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257343, 'messageID': 2917}
+     * {'messageKey': 'ReverseRedeemingFatalError', 'dataID': 17877443, 'suppressable': False, 'bodyID': 257253, 'messageType': 'error', 'urlAudio': '', 'urlIcon': '', 'titleID': 257252, 'messageID': 2918}
+     * {'messageKey': 'ReverseRedeemingIllegalType', 'dataID': 17877511, 'suppressable': False, 'bodyID': 257279, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257278, 'messageID': 2913}
+     * {'messageKey': 'ReverseRedeemingOnlyInStation', 'dataID': 17877516, 'suppressable': False, 'bodyID': 257281, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257280, 'messageID': 2911}
+     * {'messageKey': 'ReverseRedeemingYouDoNotOwnItem', 'dataID': 17877433, 'suppressable': False, 'bodyID': 257249, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257248, 'messageID': 2914}
+     */
+}
+
 PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 {
     return new PyLong(call.client->GetChar()->createDateTime());
@@ -183,18 +200,16 @@ PyResult UserService::Handle_GetCreateDate( PyCallArgs& call )
 
 PyResult UserService::Handle_ReportISKSpammer( PyCallArgs& call )
 {
-    sLog.White( "UserService", "Handle_ReportISKSpammer" );
+    // sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
+    sLog.Yellow( "UserService", "Handle_ReportISKSpammer" );
     call.Dump(CHARACTER__DEBUG);
-/**
-        sm.RemoteSvc('userSvc').ReportISKSpammer(charID, channelID, spamEntries)
-        */
 
     return nullptr;
 }
 
 PyResult UserService::Handle_ReportBot( PyCallArgs& call )
 {
-    sLog.White( "UserService", "Handle_ReportBot" );
+    sLog.Yellow( "UserService", "Handle_ReportBot" );
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;
@@ -202,8 +217,8 @@ PyResult UserService::Handle_ReportBot( PyCallArgs& call )
 
 PyResult UserService::Handle_ApplyPilotLicence( PyCallArgs& call )
 {
-            //sm.RemoteSvc('userSvc').ApplyPilotLicence(itemID, justQuery=True)
-    sLog.White( "UserService", "Handle_ApplyPilotLicence" );
+    //sm.RemoteSvc('userSvc').ApplyPilotLicence(itemID, justQuery=True)
+    sLog.Yellow( "UserService", "Handle_ApplyPilotLicence" );
     call.Dump(CHARACTER__DEBUG);
 
     return nullptr;

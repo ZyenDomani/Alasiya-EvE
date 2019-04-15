@@ -139,11 +139,5 @@ public:
  * {'messageKey': 'ReverseEngineeringFailureWithItem', 'dataID': 17878445, 'suppressable': False, 'bodyID': 257628, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257627, 'messageID': 2742}
  * {'messageKey': 'ReverseEngineeringSuccessWithBlueprint', 'dataID': 17878440, 'suppressable': False, 'bodyID': 257626, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257625, 'messageID': 2741}
  * {'messageKey': 'ReverseEngineeringTaskFailed', 'dataID': 17878161, 'suppressable': False, 'bodyID': 257522, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257521, 'messageID': 2740}
- * {'messageKey': 'ReverseRedeemingCompleted', 'dataID': 17877681, 'suppressable': False, 'bodyID': 257344, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257343, 'messageID': 2917}
- * {'messageKey': 'ReverseRedeemingFatalError', 'dataID': 17877443, 'suppressable': False, 'bodyID': 257253, 'messageType': 'error', 'urlAudio': '', 'urlIcon': '', 'titleID': 257252, 'messageID': 2918}
- * {'messageKey': 'ReverseRedeemingIllegalType', 'dataID': 17877511, 'suppressable': False, 'bodyID': 257279, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257278, 'messageID': 2913}
- * {'messageKey': 'ReverseRedeemingOnlyInStation', 'dataID': 17877516, 'suppressable': False, 'bodyID': 257281, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257280, 'messageID': 2911}
- * {'messageKey': 'ReverseRedeemingYouDoNotOwnItem', 'dataID': 17877433, 'suppressable': False, 'bodyID': 257249, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257248, 'messageID': 2914}
- *
  *
  */

@@ -113,8 +113,9 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
     return nullptr;
 }
 
+// i dont think this is called here....cant find call to AllianceRegistry for this...only CorpRegistry
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
-    //
+    //application = sm.GetService('alliance').GetApplications()[corporationID]
     sLog.White("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 

@@ -131,6 +131,7 @@ PyResult CorpRegistryService::Handle_ApplyToJoinAlliance(PyCallArgs &call) {
 }
 
 PyResult CorpRegistryService::Handle_GetAllianceApplications(PyCallArgs &call) {
+    //application = sm.GetService('corp').GetAllianceApplications()[allianceID]
     sLog.White( "CorpRegistryService::Handle_GetAllianceApplications()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
