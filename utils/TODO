@@ -9,6 +9,7 @@ check allianceID sending.  see if we can/need to send None() instead of -1
 ab not working (mwd is)  separate code ... look at original code for proper ab methods
 prop mods not activating (server says offline)
 
+skills dont train correctly when char is offline.  (persistant broken)
 
 19:46:12 [DecodeError] Decode Call_RemoveChargeToHangar failed: tuple0 is the wrong size: expected 1, but got 2
 19:46:12 [SvcError] Handle_RemoveChargeToHangar(/usr/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryBound.cpp:288): Space Reptile: Failed to decode arguments.
@@ -111,6 +112,14 @@ check duration(73) on repair and prop modules (deals with skill-modified duratio
 
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
+
+*****************   eratta
+rework bulkdata code.
+the current code is hacked to send bulk data in segments.  live uses *some other form* of data, which *MAY* be our cache files.
+will need to look into this and determine how they use those files and the checksums to determine what to send.
+as this is still beyond me, it may take a while.
+till then, we'll have to used the hacked system.
+after all, it works
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
