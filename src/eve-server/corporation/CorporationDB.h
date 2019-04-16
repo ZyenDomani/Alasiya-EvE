@@ -27,6 +27,7 @@
 #ifndef __CORPORATIONDB_H_INCL__
 #define __CORPORATIONDB_H_INCL__
 
+#include "CorpData.h"
 #include "ServiceDB.h"
 #include "packets/CorporationPkts.h"
 
@@ -48,7 +49,7 @@ public:
     PyRep *GetMember(uint32 charID);
     uint16 GetMemberCount(uint32 corpID);
     void GetMembers(uint32 corpID, DBQueryResult& res);
-    void GetMembersForQuery(uint32 corpID, DBQueryResult& res);
+    void GetMembersForQuery(uint32 corpID, std::list< Corp::QueryMembers >& data);
     void GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& res);
     PyRep* GetMemberTrackingInfo(uint32 corpID);
     PyRep* GetMemberTrackingInfoSimple(uint32 corpID);
@@ -105,6 +106,7 @@ public:
 
     PyObject* GetCorporationBills(uint32 corpID, bool payable);
 
+    int32 GetCorpIDforChar(int32 charID);
     uint32 GetStationOwner(uint32 stationID);
     uint32 GetStationCorporationCEO(uint32 stationID);
     uint32 GetCorporationCEO(uint32 corpID);

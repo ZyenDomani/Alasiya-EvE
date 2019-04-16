@@ -744,27 +744,49 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
     }
 }
 
-void CorporationDB::GetMembersForQuery(uint32 corpID, DBQueryResult& res)
+void CorporationDB::GetMembersForQuery(uint32 corpID, std::list<Corp::QueryMembers>& data)
 {
+    DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        " SELECT "
-        "  characterID, "
-        "  rolesAtAll, "
-        "  grantableRoles, "
-        "  rolesAtHQ, "
-        "  grantableRolesAtHQ, "
-        "  rolesAtBase, "
-        "  grantableRolesAtBase,"
-        "  rolesAtOther, "
-        "  grantableRolesAtOther, "
+        " SELECT"
+        "  characterID,"
+        "  startDateTime,"
         "  titleMask,"
         "  blockRoles,"
-        "  name"
+        "  rolesAtAll,"
+        "  rolesAtHQ,"
+        "  rolesAtBase,"
+        "  rolesAtOther,"
+        "  grantableRoles,"
+        "  grantableRolesAtHQ,"
+        "  grantableRolesAtBase,"
+        "  grantableRolesAtOther"
         " FROM chrCharacters"
         " WHERE corporationID = %u", corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return;
     }
+
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        Corp::QueryMembers mData;
+            mData.characterID           = row.GetInt(0);
+            mData.startDateTime         = row.GetInt64(1);
+            mData.titleMask             = row.GetInt64(2);
+            mData.blockRoles            = row.GetInt64(3);
+            mData.rolesAtAll            = row.GetInt64(4);
+            mData.rolesAtHQ             = row.GetInt64(5);
+            mData.rolesAtBase           = row.GetInt64(6);
+            mData.rolesAtOther          = row.GetInt64(7);
+            mData.grantableRoles        = row.GetInt64(8);
+            mData.grantableRolesAtHQ    = row.GetInt64(9);
+            mData.grantableRolesAtBase  = row.GetInt64(10);
+            mData.grantableRolesAtOther = row.GetInt64(11);
+        data.push_back(mData);
+    }
+
+    return;
 }
 
 void CorporationDB::GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& res)
@@ -1184,7 +1206,7 @@ PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*fa
         " FROM crpAdRegistry"
         "  WHERE allianceID %s 0"
         "   AND (memberCount >= %u AND memberCount < %u)"
-        " AND typeMask & %llu = %llu",
+        " AND typeMask | %llu = %llu",
         (inAlliance ? ">" : "="), minMembers, maxMembers, typeMask, typeMask))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -2026,7 +2048,7 @@ PyRep* CorporationDB::GetMktInfo(uint32 corpID)
 void CorporationDB::GetCorpData(CorpData& data)
 {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "  taxRate,"
         "  stationID,"
@@ -2042,7 +2064,7 @@ void CorporationDB::GetCorpData(CorpData& data)
     }
 
     DBResultRow row;
-    if(!res.GetRow(row)) {
+    if (!res.GetRow(row)) {
         _log(DATABASE__MESSAGE, "No data found for character's %u corporation.", data.corporationID);
         return;
     }
@@ -2095,3 +2117,21 @@ void CorporationDB::DeleteLabel(uint32 corpID, uint32 labelID)
 {
 
 }
+
+int32 CorporationDB::GetCorpIDforChar(int32 charID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT `corporationID` FROM `chrCharacters` WHERE `characterID` = %u", charID)) {
+        codelog(DATABASE__ERROR, "Failed to query data of corporation for chararcterID %u: %s.", charID, res.error.c_str());
+        return 0;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(DATABASE__MESSAGE, "No data found for character's %u corporation.", charID);
+        return 0;
+    }
+
+    return row.GetInt(0);
+}
+

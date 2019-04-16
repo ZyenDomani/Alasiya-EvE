@@ -11,6 +11,8 @@
 #define EVEMU_SRC_CORP_DATA_H_
 
 
+#include "../eve-server.h"
+
 
 namespace Corp {
 /*
@@ -21,5 +23,19 @@ namespace Corp {
     "rolesAtOther"  - access roles for non-station containers with corp hangars
     */
 
+    struct QueryMembers {
+        uint32 characterID;
+        int64 startDateTime;
+        int64 titleMask;
+        int64 blockRoles;
+        int64 rolesAtAll;
+        int64 rolesAtHQ;
+        int64 rolesAtBase;
+        int64 rolesAtOther;
+        int64 grantableRoles;
+        int64 grantableRolesAtHQ;
+        int64 grantableRolesAtBase;
+        int64 grantableRolesAtOther;
+    };
 }
 #endif  // EVEMU_SRC_CORP_DATA_H_

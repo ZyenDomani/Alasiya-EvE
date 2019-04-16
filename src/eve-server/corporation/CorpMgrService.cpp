@@ -68,9 +68,6 @@ CorpMgrService::~CorpMgrService() {
 
 
 PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
-    sLog.White("CorpMgrService", "Handle_GetPublicInfo() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -81,45 +78,45 @@ PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 }
 
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
-    sLog.White("CorpMgrService", "Handle_GetPublicInfo() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
 
-  Call_SingleIntegerArg arg;
-  if (!arg.Decode(&call.tuple)) {
-      codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-      return nullptr;
-  }
-
-  return m_db.GetCorporations(arg.arg);
+    return m_db.GetCorporations(arg.arg);
 }
 
-//  started...still needs work
-PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
-    // rows = sm.RemoteSvc('corpmgr').GetAssetInventory(eve.session.corpid, which)
+PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
 
-    sLog.White( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
+    return new PyInt(m_db.GetCorpIDforChar(arg.arg));
+}
+
+PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
+    // logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
+
+    sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    Call_GetAssetInventory args;
+    Call_AuditMember args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-    uint8 flag = flagNone;
-    if (args.flag.compare("offices") == 0)
-        flag = flagOffice;
-    else if (args.flag.compare("junk") == 0)
-        flag = flagImpounded;
-    else if (args.flag.compare("property") == 0)    // this is 'inSpace' tab...LSC, POS, etc
-        flag = flagProperty;
-    else if (args.flag.compare("deliveries") == 0)
-        flag = flagCorpMarket;
-    else
-        _log(CORP__ERROR, "CorpMgrService::Handle_GetAssetInventory: flag is %s", args.flag.c_str());
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, m_db.GetItemEvents(call.client->GetCorporationID(), args.charID, args.fromDate, args.toDate, args.rowsPerPage));
+    tuple->SetItem(1, m_db.GetRoleHistroy(call.client->GetCorporationID(), args.charID, args.fromDate, args.toDate, args.rowsPerPage));
 
-    //  returns a CRowSet
-    return m_db.GetAssetInventory(args.corpID, flag);
+    if (is_log_enabled(CORP__RSP_DUMP))
+        tuple->Dump(CORP__RSP_DUMP, "    ");
+
+    return tuple;
 }
 
 PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
@@ -150,6 +147,36 @@ PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
     return m_db.GetAssetInventoryForLocation(args.corpID, args.locationID, flag);
 }
 
+
+//  started...still needs work
+PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
+    // rows = sm.RemoteSvc('corpmgr').GetAssetInventory(eve.session.corpid, which)
+
+    sLog.White( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_GetAssetInventory args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    uint8 flag = flagNone;
+    if (args.flag.compare("offices") == 0)
+        flag = flagOffice;
+    else if (args.flag.compare("junk") == 0)
+        flag = flagImpounded;
+    else if (args.flag.compare("property") == 0)    // this is 'inSpace' tab...LSC, POS, etc
+        flag = flagProperty;
+    else if (args.flag.compare("deliveries") == 0)
+        flag = flagCorpMarket;
+    else
+        _log(CORP__ERROR, "CorpMgrService::Handle_GetAssetInventory: flag is %s", args.flag.c_str());
+
+    //  returns a CRowSet
+    return m_db.GetAssetInventory(args.corpID, flag);
+}
+
 PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
   /**           this is called from trademgr.py
         stations = sm.RemoteSvc('corpmgr').GetCorporationStations()
@@ -159,42 +186,9 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
             stationListing.append([localization.GetByLabel('UI/PVPTrade/StationInSolarsystem', station=station.itemID, solarsystem=station.locationID), station.itemID, station.typeID])
 */
 
-  sLog.White( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
-  call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
-/**        returns corpID for given charID  */
-
-  sLog.White( "CorpMgrService::Handle_GetCorporationIDForCharacter()", "size= %u", call.tuple->size() );
-  call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
-    /**
-     * logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
-     */
-
-    sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
+    sLog.White( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
     call.Dump(CORP__CALL_DUMP);
 
-    Call_AuditMember args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, m_db.GetItemEvents(call.client->GetCorporationID(), args.charID, args.fromDate, args.toDate, args.rowsPerPage));
-        tuple->SetItem(1, m_db.GetRoleHistroy(call.client->GetCorporationID(), args.charID, args.fromDate, args.toDate, args.rowsPerPage));
-
-    if (is_log_enabled(CORP__RSP_DUMP))
-        tuple->Dump(CORP__RSP_DUMP, "    ");
-
-    return tuple;
+    return nullptr;
 }
 

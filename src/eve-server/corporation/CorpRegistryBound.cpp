@@ -7,6 +7,7 @@
 #include <string>
 
 #include "EVE_Corp.h"
+#include "CorpData.h"
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "cache/ObjCacheService.h"
@@ -1015,9 +1016,6 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares(PyCallArgs 
 
 PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     //return self.GetCorpRegistry().GetMemberIDsByQuery(query, includeImplied, searchTitles)
-    sLog.White( "CorpRegistryBound::Handle_GetMemberIDsByQuery()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
     Call_GetMemberIDsByQuery_Main args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -1060,13 +1058,31 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     int64 searchRole = 0;
     std::string searchString = "";
 
-    // get query format and data
+    // get corp memberlist
+    std::list<Corp::QueryMembers> resList;
+    m_db.GetMembersForQuery(m_corpID, resList);
+
+    /* SELECT characterID, startDateTime, titleMask, blockRoles,
+     *       rolesAtAll, rolesAtHQ, rolesAtBase, rolesAtOther,
+     *       grantableRoles, grantableRolesAtHQ, grantableRolesAtBase, grantableRolesAtOther
+     */
+
+    // get query format, perform query, and store results
     PyRep* searchRaw(nullptr);
     PyList* list(nullptr);
     for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); ++itr) {
         list = (*itr)->AsList();
         if (list == nullptr)
             continue;
+
+        // aquire query format and options and perform query
+        /*  complicated search query here....this will get quite complicated....
+         *      my thoughts.
+         * this is performed thru corp window using a multitude of options, to get specific members based on quite variable criteria
+         *   for first loop, we will perform initial query (list3) on the full member list, resList, and those that do not fit are removed
+         *   each subsquent loop will query resList for additional parameters
+         * std::list is used as it does not invalidate iterators when members are erased
+         */
         if (list->size() == 3) {
             Call_GetMemberIDsByQuery_List3 args3;
             if (!args3.Decode(&list)) {
@@ -1080,6 +1096,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 searchRole = PyRep::IntegerValue(args3.valueRaw);
             queryType = GetQueryType(args3.queryType);
 
+            resList;
 
         } else if (list->size() == 4) {
             Call_GetMemberIDsByQuery_List4 args4;
@@ -1095,25 +1112,23 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 searchRole = PyRep::IntegerValue(args4.valueRaw);
             queryType = GetQueryType(args4.queryType);
 
+            resList;
 
         } else {
             _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %u.  Expected 3 or 4.", list->size());
+            continue;
         }
-    }
 
-    // get memberlist and perform query
-    DBQueryResult res;
-    m_db.GetMembersForQuery(m_corpID, res);
-    //uint32 rowCount = (uint32)res.GetRowCount();
+
+    }
 
     // populate results
     if (list == nullptr)
         list = new PyList();
     else
         list->clear();
-    DBResultRow row;
-    while (res.GetRow(row))
-        list->AddItem(new PyInt(row.GetInt(0)));
+    for (auto cur : resList)
+        list->AddItem(new PyInt(cur.characterID));
 
     // return results
     return list;
@@ -1345,8 +1360,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     call.Dump(CORP__CALL_DUMP);
 
     /** @todo  wtf is this shit???  fix it!  */
-    PyBoundObject *bObj;
-    bObj = new SparseCorpOfficeListBound(m_manager, m_db);
+    PyBoundObject* bObj = new SparseCorpOfficeListBound(m_manager, m_db);
     if (bObj == NULL) {
         _log(SERVICE__ERROR, "%s: Unable to create bound object for:", call.client->GetName()); //errors here
         return nullptr;
@@ -1382,11 +1396,10 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     // Data will be fetched from the SparseRowset
     CorpOfficeSparseRowset ret;
 
-    uint32 officeN = StationDB::GetOfficeCount(m_corpID);
-    ret.officeNumber = officeN;
+    ret.officeNumber = StationDB::GetOfficeCount(m_corpID);
 
     PyDict *dict = new PyDict();
-    dict->SetItemString("realRowCount", new PyInt(officeN));
+    dict->SetItemString("realRowCount", new PyInt(ret.officeNumber));
 
     ret.bindedObject = m_manager->BindObject(call.client, bObj, &dict);
 

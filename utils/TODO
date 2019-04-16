@@ -7,10 +7,11 @@
 **********   new Dec 2018
 check allianceID sending.  see if we can/need to send None() instead of -1
 ab not working (mwd is)  separate code ... look at original code for proper ab methods
-prop mods not activating (server says offline)
+prop mods not activating (server says offline)  seems to be working now.
 
 skills dont train correctly when char is offline.  (persistant broken)
 
+*****  not sure about this one...cant duplicate error (fixed already?)
 19:46:12 [DecodeError] Decode Call_RemoveChargeToHangar failed: tuple0 is the wrong size: expected 1, but got 2
 19:46:12 [SvcError] Handle_RemoveChargeToHangar(/usr/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryBound.cpp:288): Space Reptile: Failed to decode arguments.
 19:46:12 [InvError] InventoryBound::MoveItems() - item 0 not found.  continuing.
@@ -31,7 +32,7 @@ need to figure out how to load/queue assets for chars (on login or w/e)
 pi broke....again.  not sure wtf is going on here.
 
 
-module/rack OL incomplete.  priority level: low-med
+module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  priority level: low-med
 
 
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)
@@ -56,10 +57,10 @@ others?
 
 lsc system better, but incomplete needs revisiting (and possible rewrite. code updates at least)
 
-player corps - finish wip code for RAM, market, adverts, alliances? priority level: med-hi
+player corps - finish wip code for RAM, market, advertspriority level: med-hi
+alliances?  not yet.  need other shit finished first.
 still some corp shit not started/completed yet. need to finish it. may need to split file again. priority level: med-hi
-corporationSvc::GetRecruitmentAdsByCriteria()  not correctly processing bitwise checks (search must be near-exact to return results)
-CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete
+CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete  <-- this is the complicated member-search query using roles and titles.  will need lots of thought
 
 npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky. priority level: lo
