@@ -49,7 +49,7 @@ public:
     PyRep *GetMember(uint32 charID);
     uint16 GetMemberCount(uint32 corpID);
     void GetMembers(uint32 corpID, DBQueryResult& res);
-    void GetMembersForQuery(uint32 corpID, std::list< Corp::QueryMembers >& data);
+    void GetMembersForQuery(std::ostringstream& query, std::vector<uint32>& result);
     void GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& res);
     PyRep* GetMemberTrackingInfo(uint32 corpID);
     PyRep* GetMemberTrackingInfoSimple(uint32 corpID);

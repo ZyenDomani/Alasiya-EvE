@@ -78,6 +78,7 @@ PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 }
 
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
+    // called by non-member 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());

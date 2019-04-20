@@ -15,7 +15,7 @@
 namespace Corp {
 
     namespace CorpBillType {
-        enum  {
+        enum {
             MarketFine = 1,
             RentalBill = 2,
             BrokerBill = 3,
@@ -26,7 +26,7 @@ namespace Corp {
     }
 
     namespace CorpBillStatus {
-        enum  {
+        enum {
             Unpaid = 0,
             Paid = 1,
             Cancelled = 2
@@ -58,7 +58,7 @@ namespace Corp {
     }
 
     namespace AppStatus {
-        enum  { //          status              corp side   user side
+        enum { //          status              corp side   user side
             AppliedByCharacter          = 0, //    new       applied
             RenegotiatedByCharacter     = 1, //   update      reneg
             AcceptedByCharacter         = 2, //  accepted    accepted
@@ -69,8 +69,19 @@ namespace Corp {
         };
     }
 
+    // not sure about these yet...
+    // these are 'remoteActions' from 'self.GetCorpRegistry().ExecuteActions(targetIDs, remoteActions)'
+    namespace Actions {
+        enum {
+            CTV_ADD = 1,
+            CTV_REMOVE = 2,
+            CTV_SET = 3,
+            CTV_GIVE = 4,
+            CTV_COMMS = 5
+        };
+    }
     namespace RoleLoc {
-        enum  {
+        enum {
             HQ      = 1,
             Base    = 2,
             Other   = 3
@@ -78,7 +89,8 @@ namespace Corp {
     }
 
     namespace JoinOp {
-        enum SearchJoinOp {
+        enum {
+            None = 0,
             OR = 1,
             AND = 2
         };
@@ -96,7 +108,7 @@ namespace Corp {
     }
 
     namespace SearchOp {
-        enum  {
+        enum {
             EQUAL = 1,
             GREATER = 2,
             GREATER_OR_EQUAL = 3,
@@ -114,7 +126,7 @@ namespace Corp {
     }
 
     namespace ActivityType {
-        enum  {
+        enum {
             Agriculture     = 1,
             Construction    = 2,
             Mining          = 3,
@@ -139,7 +151,7 @@ namespace Corp {
     }
 
     namespace Division {
-        enum  {
+        enum {
             Accounting          = 1,
             Administration      = 2,
             Advisory            = 3,

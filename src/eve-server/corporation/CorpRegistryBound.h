@@ -112,6 +112,7 @@ protected:
     void JoinCorporation(Client* who, const CorpData& data);
     static void FillOCApplicationChange(OnCorporationApplicationChanged & OCAC, const ApplicationInfo & Old, const ApplicationInfo & New);
 
+    bool GetSearchValues(int8 op, PyRep* rep, std::ostringstream& query);
     uint8 GetQueryType(std::string queryType);
 
     CorporationDB& m_db;

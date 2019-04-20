@@ -235,6 +235,7 @@ PyResult CorpRegistryBound::Handle_GetInfoWindowDataForChar( PyCallArgs& call )
 }
 
 PyResult CorpRegistryBound::Handle_GetCorporation(PyCallArgs &call) {
+    // called by member of this corp
     return m_db.GetCorporation(m_corpID);
 }
 
@@ -442,7 +443,7 @@ PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
     DBResultRow row;
     while (res.GetRow(row)) {
         //SELECT characterID, corporationID, title, rolesAtAll, grantableRoles, startDateTime, rolesAtHQ, grantableRolesAtHQ, \
-        rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther, titleMask, corpAccountKey, blockRoles, name
+          rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther, titleMask, corpAccountKey, baseID, blockRoles, name
         PyDict* dict = new PyDict();
         dict->SetItemString( "characterID",             new PyInt(row.GetInt(0)));
         dict->SetItemString( "corporationID",           new PyInt(row.GetInt(1)));
@@ -452,7 +453,6 @@ PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
         dict->SetItemString( "roles",                   new PyLong(row.GetInt64(3)));
         dict->SetItemString( "grantableRoles",          new PyInt(row.GetInt(4)));
         dict->SetItemString( "startDateTime",           new PyLong(row.GetInt64(5)));
-        dict->SetItemString( "baseID",                  new PyInt(0)); /** @todo update this */
         dict->SetItemString( "rolesAtHQ",               new PyLong(row.GetInt64(6)));
         dict->SetItemString( "grantableRolesAtHQ",      new PyLong(row.GetInt64(7)));
         dict->SetItemString( "rolesAtBase",             new PyLong(row.GetInt64(8)));
@@ -462,8 +462,9 @@ PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
         dict->SetItemString( "titleMask",               new PyLong(row.GetInt64(12))); // titleID
         dict->SetItemString( "accountKey",              new PyInt(row.GetInt(13)));
         dict->SetItemString( "rowDate",                 new PyLong(GetFileTimeNow())); //may not be right
-        dict->SetItemString( "blockRoles",              new PyBool(row.GetInt(14)));
-        dict->SetItemString( "ownerName",               new PyString(row.GetText(15)));
+        dict->SetItemString( "baseID",                  new PyInt(row.GetInt(14))); /** @todo update this */
+        dict->SetItemString( "blockRoles",              new PyBool(row.GetInt(15)));
+        dict->SetItemString( "ownerName",               new PyString(row.GetText(16)));
         list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
@@ -955,6 +956,259 @@ PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
 }
 
 
+PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
+    /*this is performed thru corp window using a multitude of options, to get specific members based on quite variable criteria
+     * not as complicated as i had originally thought.
+     */
+
+    //return self.GetCorpRegistry().GetMemberIDsByQuery(query, includeImplied, searchTitles)
+    call.Dump(CORP__CALL_DUMP);
+    Call_GetMemberIDsByQuery_Main args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    if (args.data->empty()) {
+        call.client->SendErrorMsg("You must choose a role to search for.");
+        return nullptr;
+    }
+
+    /*
+     *                query.append([property, operator, value])
+     *                query.append([joinOperator, property, operator, value])
+     *
+     * 09:01:13 [CorpCallDump]   Call Arguments:
+     * 09:01:13 [CorpCallDump]       Tuple: 3 elements
+     * 09:01:13 [CorpCallDump]         [ 0] List: 3 elements
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 0] List: 3 elements
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 0] String: 'roles'
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 1] Integer field: 7
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 2] Integer field: 134217728
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1] List: 4 elements
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 0] Integer field: 2             <-- joinOp  (AND/OR)
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 1] String: 'roles'              <-- queryType   (Corp::QueryType {roles/charID/baseID/joinDate})
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 2] Integer field: 7             <-- searchOp (Corp::SearchOp)
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 3] Integer field: 2199023255552 >-- value   (depends on searchOp, int, int64)
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 2] List: 4 elements
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 0] Integer field: 2
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 1] String: 'rolesAtOther'
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 2] Integer field: 8
+     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 3] Integer field: 8192
+     * 09:01:13 [CorpCallDump]         [ 1] Integer field: 0
+     * 09:01:13 [CorpCallDump]         [ 2] Integer field: 0
+     */
+    /*
+     *    int8 joinOp = Corp::JoinOp::None;
+     *    uint8 queryType = Corp::QueryType::Roles;
+     *    uint8 searchOp = Corp::SearchOp::EQUAL;
+     *    int64 searchRole = 0;
+     *    std::string searchString = "";
+     */
+    // query holder
+    //std::unordered_multimap<int8, Corp::QueryData> qMap;    // joinOp/data (type, op, value)
+    std::ostringstream query;
+    query << "SELECT characterID FROM chrCharacters WHERE corporationID = ";
+    query << m_corpID << " AND ";
+
+    bool set = false;
+    // decode query format
+    PyList* list(nullptr);
+    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); ++itr) {
+        list = (*itr)->AsList();
+        if (list == nullptr)
+            continue;
+        /* perform query
+         *   for first loop, we will perform initial query (list3) on the full member list, resList, and those that do not fit are removed
+         *   each subsquent loop will query resList for additional parameters and remove those that dont fit.
+         *   the resulting list is returned to client as the 'filtered list' they wanted.
+         *
+         * std::list is used as it does not invalidate iterators when members are erased
+         */
+        //Corp::QueryData qData;
+        if (list->size() == 3) {
+            Call_GetMemberIDsByQuery_List3 args3;
+            if (!args3.Decode(&list)) {
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+                return nullptr;
+            }
+
+            if (args3.queryType.compare("roles") == 0)
+                query << "corpRole ";
+            else
+                query << args3.queryType;
+
+            if (GetSearchValues(args3.searchOp, args3.valueRaw, query))
+                set = true;
+        } else if (list->size() == 4) {
+            if (!set)
+                return nullptr;
+            Call_GetMemberIDsByQuery_List4 args4;
+            if (!args4.Decode(&list)) {
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+                return nullptr;
+            }
+
+            switch (args4.joinOp) {
+                case Corp::JoinOp::AND: {
+                    query << " AND ";
+                } break;
+                case Corp::JoinOp::OR: {
+                    query << " OR ";
+                } break;
+                case Corp::JoinOp::None:
+                default: {
+                    // error
+                    _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() sent invalid JoinOp %i", args4.joinOp);
+                    return nullptr;
+                } break;
+            }
+
+            if (GetSearchValues(args4.searchOp, args4.valueRaw, query))
+                set = true;
+            /*
+             *            queryType = GetQueryType(args4.queryType);
+             *            searchOp = args4.searchOp;
+             *            if (searchOp > 8)
+             *                searchString = PyRep::StringContent(args4.valueRaw);
+             *            else
+             *                searchRole = PyRep::IntegerValue(args4.valueRaw);
+             *
+             *            qData.queryType = GetQueryType(args4.queryType);
+             *            qData.searchOp = args4.searchOp;
+             *            if (qData.searchOp > 8)
+             *                qData.string = PyRep::StringContent(args4.valueRaw);
+             *            else
+             *                qData.value = PyRep::IntegerValue(args4.valueRaw);
+             */
+        } else {
+            _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %u.  Expected 3 or 4.", list->size());
+            return nullptr;
+        }
+
+    }
+
+    if (list == nullptr)
+        list = new PyList();
+    else
+        list->clear();
+
+    // get corp memberlist based on query
+    std::vector<uint32> result;
+    // make sure we have a valid query before sending to db method
+    if (set)
+        m_db.GetMembersForQuery(query, result);
+
+    // populate results
+    for (auto cur : result)
+        list->AddItem(new PyInt(cur));
+
+    // return results
+    return list;
+}
+
+//SELECT `characterID`\
+`corpRole`, `rolesAtAll`, `rolesAtHQ`, `rolesAtBase`, `rolesAtOther`, \
+`grantableRoles`, `grantableRolesAtHQ`, `grantableRolesAtBase`, `grantableRolesAtOther`,\
+`titleMask`, `blockRoles`, `baseID`, `startDateTime` FROM `chrCharacters` WHERE 1
+bool CorpRegistryBound::GetSearchValues(int8 op, PyRep* rep, std::ostringstream& query)
+{
+    using namespace Corp;
+    switch (op) {
+        case SearchOp::EQUAL: {
+            query << " = ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::GREATER: {
+            query << " > ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::GREATER_OR_EQUAL: {
+            query << " >= ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::LESS: {
+            query << " < ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::LESS_OR_EQUAL: {
+            query << " <= ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::NOT_EQUAL: {
+            query << " != ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::HAS_BIT: {
+            query << " & ";
+            query << PyRep::IntegerValue(rep);
+            query << " = ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::NOT_HAS_BIT: {
+            query << " ~ ";
+            query << PyRep::IntegerValue(rep);
+            query << " = ";
+            query << PyRep::IntegerValue(rep);
+        } break;
+        case SearchOp::STR_CONTAINS:
+        case SearchOp::STR_LIKE: {
+            query << "%";
+            query << PyRep::StringContent(rep);
+            query << "% ";
+        } break;
+        case SearchOp::STR_STARTS_WITH: {
+            query << PyRep::StringContent(rep);
+            query << "%";
+        } break;
+        case SearchOp::STR_ENDS_WITH: {
+            query << "%";
+            query << PyRep::StringContent(rep);
+        } break;
+        case SearchOp::STR_IS: {
+            query << " = ";
+            query << PyRep::StringContent(rep);
+        } break;
+        default: {
+            _log(CORP__ERROR, "CorpRegistryBound::GetSearchValues() sent invalid searchOp %i", op);
+            return false;
+        };
+    }
+    return true;
+}
+
+// no longer used with new query decoding
+uint8 CorpRegistryBound::GetQueryType(std::string queryType)
+{
+    if (queryType.compare("roles") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("rolesAtHQ") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("rolesAtBase") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("rolesAtOther") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("grantableRoles") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("grantableRolesAtHQ") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("grantableRolesAtBase") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("grantableRolesAtOther") == 0)
+        return Corp::QueryType::Roles;
+    else if (queryType.compare("baseID") == 0)
+        return Corp::QueryType::BaseID;
+    else if (queryType.compare("startDateTime") == 0)
+        return Corp::QueryType::StartDateTime;
+    else if (queryType.compare("characterID") == 0)     //this is actually string.  check searchOp for details
+        return Corp::QueryType::CharID;
+    else if (queryType.compare("titleMask") == 0)
+        return Corp::QueryType::TitleMask;
+    else
+        _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
+}
+
+
 /**     ***********************************************************************
  * @note   these below are not coded or partially coded
  */
@@ -1005,165 +1259,6 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
     return nullptr;
 }
 
-PyResult CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares(PyCallArgs &call) {
-    // return self.GetCorpRegistry().GetMemberIDsWithMoreThanAvgShares()
-    sLog.White( "CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-
-PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
-    //return self.GetCorpRegistry().GetMemberIDsByQuery(query, includeImplied, searchTitles)
-    Call_GetMemberIDsByQuery_Main args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    if (args.data->empty()) {
-        call.client->SendErrorMsg("You must choose a role to search for.");
-        return nullptr;
-    }
-
-    /*
-     *                query.append([property, operator, value])
-     *                query.append([joinOperator, property, operator, value])
-     *
-     * 09:01:13 [CorpCallDump]   Call Arguments:
-     * 09:01:13 [CorpCallDump]       Tuple: 3 elements
-     * 09:01:13 [CorpCallDump]         [ 0] List: 3 elements
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 0] List: 3 elements
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 0] String: 'roles'
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 1] Integer field: 7
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 0]   [ 2] Integer field: 134217728
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1] List: 4 elements
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 0] Integer field: 2             <-- joinOp  (AND/OR)
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 1] String: 'roles'              <-- queryType   (Corp::QueryType {roles/charID/baseID/joinDate})
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 2] Integer field: 7             <-- searchOp (Corp::SearchOp)
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 1]   [ 3] Integer field: 2199023255552 >-- value   (depends on searchOp, int, int64)
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 2] List: 4 elements
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 0] Integer field: 2
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 1] String: 'rolesAtOther'
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 2] Integer field: 8
-     * 09:01:13 [CorpCallDump]         [ 0]   [ 2]   [ 3] Integer field: 8192
-     * 09:01:13 [CorpCallDump]         [ 1] Integer field: 0
-     * 09:01:13 [CorpCallDump]         [ 2] Integer field: 0
-     */
-
-    uint8 queryType = Corp::QueryType::Roles;
-    uint8 joinOp = Corp::JoinOp::OR;
-    uint8 searchOp = Corp::SearchOp::EQUAL;
-    int64 searchRole = 0;
-    std::string searchString = "";
-
-    // get corp memberlist
-    std::list<Corp::QueryMembers> resList;
-    m_db.GetMembersForQuery(m_corpID, resList);
-
-    /* SELECT characterID, startDateTime, titleMask, blockRoles,
-     *       rolesAtAll, rolesAtHQ, rolesAtBase, rolesAtOther,
-     *       grantableRoles, grantableRolesAtHQ, grantableRolesAtBase, grantableRolesAtOther
-     */
-
-    // get query format, perform query, and store results
-    PyRep* searchRaw(nullptr);
-    PyList* list(nullptr);
-    for (PyList::const_iterator itr = args.data->begin(); itr != args.data->end(); ++itr) {
-        list = (*itr)->AsList();
-        if (list == nullptr)
-            continue;
-
-        // aquire query format and options and perform query
-        /*  complicated search query here....this will get quite complicated....
-         *      my thoughts.
-         * this is performed thru corp window using a multitude of options, to get specific members based on quite variable criteria
-         *   for first loop, we will perform initial query (list3) on the full member list, resList, and those that do not fit are removed
-         *   each subsquent loop will query resList for additional parameters
-         * std::list is used as it does not invalidate iterators when members are erased
-         */
-        if (list->size() == 3) {
-            Call_GetMemberIDsByQuery_List3 args3;
-            if (!args3.Decode(&list)) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-                return nullptr;
-            }
-            searchOp = args3.searchOp;
-            if (searchOp > 8)
-                searchString = PyRep::StringContent(args3.valueRaw);
-            else
-                searchRole = PyRep::IntegerValue(args3.valueRaw);
-            queryType = GetQueryType(args3.queryType);
-
-            resList;
-
-        } else if (list->size() == 4) {
-            Call_GetMemberIDsByQuery_List4 args4;
-            if (!args4.Decode(&list)) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-                return nullptr;
-            }
-            joinOp = args4.joinOp;
-            searchOp = args4.searchOp;
-            if (searchOp > 8)
-                searchString = PyRep::StringContent(args4.valueRaw);
-            else
-                searchRole = PyRep::IntegerValue(args4.valueRaw);
-            queryType = GetQueryType(args4.queryType);
-
-            resList;
-
-        } else {
-            _log(CORP__ERROR, "CorpRegistryBound::Handle_GetMemberIDsByQuery() - Invalid data size: %u.  Expected 3 or 4.", list->size());
-            continue;
-        }
-
-
-    }
-
-    // populate results
-    if (list == nullptr)
-        list = new PyList();
-    else
-        list->clear();
-    for (auto cur : resList)
-        list->AddItem(new PyInt(cur.characterID));
-
-    // return results
-    return list;
-}
-
-uint8 CorpRegistryBound::GetQueryType(std::string queryType)
-{
-    if (queryType.compare("roles") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtHQ") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtBase") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("rolesAtOther") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRoles") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtHQ") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtBase") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("grantableRolesAtOther") == 0)
-        return Corp::QueryType::Roles;
-    else if (queryType.compare("baseID") == 0)
-        return Corp::QueryType::BaseID;
-    else if (queryType.compare("startDateTime") == 0)
-        return Corp::QueryType::StartDateTime;
-    else if (queryType.compare("characterID") == 0)     //this is actually string.  check searchOp for details
-        return Corp::QueryType::CharID;
-    else if (queryType.compare("titleMask") == 0)
-        return Corp::QueryType::TitleMask;
-    else
-        _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
-}
-
 PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
     //return self.GetCorpRegistry().UpdateMember(charIDToUpdate, title, divisionID, squadronID, roles, grantableRoles, rolesAtHQ, grantableRolesAtHQ, rolesAtBase, grantableRolesAtBase, rolesAtOther, grantableRolesAtOther, baseID, titleMask, blockRoles)
     /** @todo there is more to this call......havent fully figured it out yet.  */
@@ -1204,140 +1299,6 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
     //      use bitmaks to set 'grantable' bool
 
     m_db.AddRoleHistory(m_corpID, args.charID, call.client->GetCharacterID(), oldRole, args.roles, grantable);
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_GetLocationalRoles(PyCallArgs &call) {
-    // this gets grantable roles for title (i think)
-    sLog.White( "CorpRegistryBound::Handle_GetLocationalRoles()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {
-    //self.GetCorpRegistry().AddCorporateContact(contactID, relationshipID)
-    sLog.White( "CorpRegistryBound::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_CorporateContactData args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_EditCorporateContact(PyCallArgs &call) {
-    //self.GetCorpRegistry().EditCorporateContact(contactID, relationshipID)
-    sLog.White( "CorpRegistryBound::Handle_EditCorporateContact()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_CorporateContactData args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_EditContactsRelationshipID(PyCallArgs &call) {
-    //self.GetCorpRegistry().EditContactsRelationshipID(contactIDs, relationshipID)
-    sLog.White( "CorpRegistryBound::Handle_EditContactsRelationshipID()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_EditCorporateContacts args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_RemoveCorporateContacts(PyCallArgs &call) {
-   // self.GetCorpRegistry().RemoveCorporateContacts(contactIDs)
-    sLog.White( "CorpRegistryBound::Handle_RemoveCorporateContacts()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_RemoveCorporateContacts args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return nullptr;
-}
-
-// this is a member role/title update by memberIDs called from corp->members->find in role->task mgmt
-PyResult CorpRegistryBound::Handle_ExecuteActions(PyCallArgs &call) {
-    //    sm.GetService('corp').ExecuteActions(self.targetIDs, actions)
-    sLog.White("CorpRegistryBound", "Handle_ExecuteActions() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_ExecuteActions args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-    args.Dump(CORP__TRACE);
-
-    /*
-     *   args.memberIDs = list of charIDs to update
-     *   args.verb      = one of add, remove, set, give
-     *   args.queryType = all role* types or title
-     *   args.value     = roleMask or titleID
-     */
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_CreateLabel(PyCallArgs &call) {
-    // return self.GetCorpRegistry().CreateLabel(name, color)
-    sLog.White("CorpRegistryBound", "Handle_CreateLabel() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_DeleteLabel(PyCallArgs &call) {
-    // self.GetCorpRegistry().DeleteLabel(labelID)
-    sLog.White("CorpRegistryBound", "Handle_DeleteLabel() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_EditLabel(PyCallArgs &call) {
-    // self.GetCorpRegistry().EditLabel(labelID, name, color)
-    sLog.White("CorpRegistryBound", "Handle_EditLabel() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_AssignLabels(PyCallArgs &call) {
-    // self.GetCorpRegistry().AssignLabels(contactIDs, labelMask)
-    sLog.White("CorpRegistryBound", "Handle_AssignLabels() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_RemoveLabels(PyCallArgs &call) {
-    // self.GetCorpRegistry().RemoveLabels(contactIDs, labelMask)
-    sLog.White("CorpRegistryBound", "Handle_RemoveLabels() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
-    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
-    sLog.White("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
     return nullptr;
 }
 
@@ -1851,6 +1812,155 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call)
     call.Dump(CORP__CALL_DUMP);
 
     return m_db.GetVoteItems(m_corpID);
+}
+
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares(PyCallArgs &call) {
+    // return self.GetCorpRegistry().GetMemberIDsWithMoreThanAvgShares()
+    sLog.White( "CorpRegistryBound::Handle_GetMemberIDsWithMoreThanAvgShares()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_GetLocationalRoles(PyCallArgs &call) {
+    // this gets grantable roles for title (i think)
+    sLog.White( "CorpRegistryBound::Handle_GetLocationalRoles()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {
+    //self.GetCorpRegistry().AddCorporateContact(contactID, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_AddCorporateContact()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_CorporateContactData args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditCorporateContact(PyCallArgs &call) {
+    //self.GetCorpRegistry().EditCorporateContact(contactID, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_EditCorporateContact()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_CorporateContactData args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditContactsRelationshipID(PyCallArgs &call) {
+    //self.GetCorpRegistry().EditContactsRelationshipID(contactIDs, relationshipID)
+    sLog.White( "CorpRegistryBound::Handle_EditContactsRelationshipID()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_EditCorporateContacts args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_RemoveCorporateContacts(PyCallArgs &call) {
+    // self.GetCorpRegistry().RemoveCorporateContacts(contactIDs)
+    sLog.White( "CorpRegistryBound::Handle_RemoveCorporateContacts()", "size= %u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_RemoveCorporateContacts args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return nullptr;
+}
+
+// this is a member role/title update by memberIDs called from corp->members->find in role->task mgmt
+PyResult CorpRegistryBound::Handle_ExecuteActions(PyCallArgs &call) {
+    //      verb, property, value = action
+    //      remoteActions.append(action)
+    //  return self.GetCorpRegistry().ExecuteActions(targetIDs, remoteActions)
+    sLog.White("CorpRegistryBound", "Handle_ExecuteActions() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_ExecuteActions args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+    args.Dump(CORP__TRACE);
+
+    /*
+     *   args.memberIDs = list of charIDs to update
+     *   args.verb      = one of add, remove, set, give
+     *   args.queryType = all role* types or title
+     *   args.value     = roleMask or titleID
+     */
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_CreateLabel(PyCallArgs &call) {
+    // return self.GetCorpRegistry().CreateLabel(name, color)
+    sLog.White("CorpRegistryBound", "Handle_CreateLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_DeleteLabel(PyCallArgs &call) {
+    // self.GetCorpRegistry().DeleteLabel(labelID)
+    sLog.White("CorpRegistryBound", "Handle_DeleteLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_EditLabel(PyCallArgs &call) {
+    // self.GetCorpRegistry().EditLabel(labelID, name, color)
+    sLog.White("CorpRegistryBound", "Handle_EditLabel() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_AssignLabels(PyCallArgs &call) {
+    // self.GetCorpRegistry().AssignLabels(contactIDs, labelMask)
+    sLog.White("CorpRegistryBound", "Handle_AssignLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_RemoveLabels(PyCallArgs &call) {
+    // self.GetCorpRegistry().RemoveLabels(contactIDs, labelMask)
+    sLog.White("CorpRegistryBound", "Handle_RemoveLabels() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_CreateAlliance(PyCallArgs &call) {
+    //self.GetCorpRegistry().CreateAlliance(allianceName, shortName, description, url)
+    sLog.White("CorpRegistryBound", "Handle_CreateAlliance() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
 }
 
 PyResult CorpRegistryBound::Handle_GetSanctionedActionsByCorporation(PyCallArgs &call) {

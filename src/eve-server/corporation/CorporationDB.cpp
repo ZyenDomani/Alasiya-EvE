@@ -155,6 +155,8 @@ PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
 }
 
 PyObject *CorporationDB::GetCorporation(uint32 corpID) {
+    // called by corp member. different from GetCorporations() below
+    //  not sure what the differece between them is/should be
     std::string table = "crpWalletDivisons";
     if (IsNPCCorp(corpID))
         table = "crpNPCWalletDivisons";
@@ -188,6 +190,8 @@ PyObject *CorporationDB::GetCorporation(uint32 corpID) {
 }
 
 PyRep *CorporationDB::GetCorporations(uint32 corpID) {
+    // called by non-member. different from GetCorporation() above
+    //  not sure what the differece between them is/should be
     std::string table = "crpWalletDivisons";
     if (IsNPCCorp(corpID))
         table = "crpNPCWalletDivisons";
@@ -744,49 +748,19 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
     }
 }
 
-void CorporationDB::GetMembersForQuery(uint32 corpID, std::list<Corp::QueryMembers>& data)
+void CorporationDB::GetMembersForQuery(std::ostringstream& query, std::vector< uint32 >& result)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        " SELECT"
-        "  characterID,"
-        "  startDateTime,"
-        "  titleMask,"
-        "  blockRoles,"
-        "  rolesAtAll,"
-        "  rolesAtHQ,"
-        "  rolesAtBase,"
-        "  rolesAtOther,"
-        "  grantableRoles,"
-        "  grantableRolesAtHQ,"
-        "  grantableRolesAtBase,"
-        "  grantableRolesAtOther"
-        " FROM chrCharacters"
-        " WHERE corporationID = %u", corpID))
-    {
+    if (!sDatabase.RunQuery(res, query.str().c_str())) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return;
     }
 
-    DBResultRow row;
-    while (res.GetRow(row)) {
-        Corp::QueryMembers mData;
-            mData.characterID           = row.GetInt(0);
-            mData.startDateTime         = row.GetInt64(1);
-            mData.titleMask             = row.GetInt64(2);
-            mData.blockRoles            = row.GetInt64(3);
-            mData.rolesAtAll            = row.GetInt64(4);
-            mData.rolesAtHQ             = row.GetInt64(5);
-            mData.rolesAtBase           = row.GetInt64(6);
-            mData.rolesAtOther          = row.GetInt64(7);
-            mData.grantableRoles        = row.GetInt64(8);
-            mData.grantableRolesAtHQ    = row.GetInt64(9);
-            mData.grantableRolesAtBase  = row.GetInt64(10);
-            mData.grantableRolesAtOther = row.GetInt64(11);
-        data.push_back(mData);
-    }
+    _log(DATABASE__RESULTS, "CorporationDB::GetMembersForQuery '%s' returned %u items", query.str().c_str(), res.GetRowCount());
 
-    return;
+    DBResultRow row;
+    while (res.GetRow(row))
+        result.push_back(row.GetInt(0));
 }
 
 void CorporationDB::GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& res)
@@ -810,7 +784,7 @@ void CorporationDB::GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& re
         "  grantableRolesAtOther, "
         "  titleMask,"
         "  corpAccountKey, "
-        //"  %f AS rowDate,"
+        "  baseID,"
         "  blockRoles,"
         "  name"
         " FROM chrCharacters"
@@ -1824,7 +1798,7 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
         }
         PyList* list2 = (*itr)->AsList();
         VoteCaseData args2;
-        //vote decesion option
+        //vote decision option
         args2.choice = PyRep::StringContent(list2->GetItem(0));
         //for kick, ceo this is charID.  for war, this is corpID.  for lock/unlock, this is itemID  for shares/general, this is boolean
         args2.itemID = PyRep::IntegerValue(list2->GetItem(1));

@@ -13,15 +13,27 @@
 
 #include "../eve-server.h"
 
-
-namespace Corp {
-/*
+    /*
     "corpRole"      - corporation management-type roles (manager, officer, trader)  NOT access-type roles
     "rolesAtAll"    - access roles everywhere.  is joined with other access roles
     "rolesAtBase"   - access roles at base defined for this char. overrides hq if hq and base are same location for char
     "rolesAtHQ"     - access roles at corp HQ.
     "rolesAtOther"  - access roles for non-station containers with corp hangars
     */
+
+
+namespace Corp {
+
+    struct QueryData {
+        // no longer used...
+        //uint8 joinOp;
+        uint8 queryType;
+        uint8 searchOp;
+        union {
+            int64 value;
+            std::string string;
+        };
+    };
 
     struct QueryMembers {
         uint32 characterID;
@@ -38,4 +50,5 @@ namespace Corp {
         int64 grantableRolesAtOther;
     };
 }
+
 #endif  // EVEMU_SRC_CORP_DATA_H_
