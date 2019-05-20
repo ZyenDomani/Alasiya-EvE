@@ -57,51 +57,6 @@ pProfile(false)
     mysql = mysql_init(nullptr);
 }
 
-void DBcore::Close() {
-    pStatus = Closed;
-    mysql_close(mysql);
-    mysql_server_end();
-    mysql_thread_end();   // this is for each thread used for db connections
-}
-
-void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
-                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
-{
-    if (mysql == nullptr)
-        mysql = mysql_init(nullptr);    // try again
-    if (mysql == nullptr) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
-        return;
-    }
-    if (pStatus == Connected)
-        return;
-
-    pHost = host;
-    pUser = user;
-    pPassword = password;
-    pDatabase = database;
-    pPort = port;
-    pSSL = SSL;
-    pCompress = compress;
-    pSocket = socket;
-    pReconnect = reconnect;
-    pProfile = profile;
-
-    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
-        return;
-    }
-
-    uint errnum = 0;
-    char errbuf[1024];
-    errbuf[0] = 0;
-
-    MutexLock lock(MDatabase);
-
-    Connect(&errnum, errbuf);
-    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
-}
-
 void DBcore::Connect(uint* errnum, char* errbuf)
 {
     sLog.Cyan("          DB User", " %s", pUser.c_str());
@@ -132,23 +87,23 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     if (pCompress)
         flags |= CLIENT_COMPRESS; //32
     // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
-    if (pSSL)
+    if (pSSL and !pSocket)
         flags |= CLIENT_SSL;
     sLog.Cyan("    Connect Flags", " %x", flags);
-/*
-    unsigned int conn_timeout = 2;
-    // not sure if this one will really be used here
-    if (mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout) == 0) {
-        if (conn_timeout > 60)
-            sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else if (conn_timeout > 40)
-            sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else if (conn_timeout > 30)
-            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else
-            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-    } else
-        sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
+    /*
+     *    unsigned int conn_timeout = 2;
+     *    // not sure if this one will really be used here
+     *    if (mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout) == 0) {
+     *        if (conn_timeout > 60)
+     *            sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else if (conn_timeout > 40)
+     *            sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else if (conn_timeout > 30)
+     *            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else
+     *            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+} else
+    sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
 */
     if (pReconnect) {
         my_bool reconnect = true;
@@ -193,8 +148,52 @@ bool DBcore::Reconnect()
     if (pStatus == Connected)
         _log(DATABASE__MESSAGE, "DBCore recovery successful.  Continuing.");
 
-
     return (pStatus == Connected);
+}
+
+void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
+                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
+{
+    if (mysql == nullptr)
+        mysql = mysql_init(nullptr);    // try again
+    if (mysql == nullptr) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
+        return;
+    }
+    if (pStatus == Connected)
+        return;
+
+    pHost = host;
+    pUser = user;
+    pPassword = password;
+    pDatabase = database;
+    pPort = port;
+    pSSL = SSL;
+    pCompress = compress;
+    pSocket = socket;
+    pReconnect = reconnect;
+    pProfile = profile;
+
+    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
+        return;
+    }
+
+    uint errnum = 0;
+    char errbuf[1024];
+    errbuf[0] = 0;
+
+    MutexLock lock(MDatabase);
+
+    Connect(&errnum, errbuf);
+    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
+}
+
+void DBcore::Close() {
+    pStatus = Closed;
+    mysql_close(mysql);
+    mysql_server_end();
+    mysql_thread_end();   // this is for each thread used for db connections
 }
 
 /*

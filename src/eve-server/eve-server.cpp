@@ -767,7 +767,7 @@ int main( int argc, char* argv[] )
 
 static void SetupSignals()
 {
-    /* setup sigaction to prevent zombies */
+    /* setup sigaction to prevent zombies and catch other non-fatal signals */
     struct sigaction sa;
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_NOCLDWAIT;
@@ -779,7 +779,13 @@ static void SetupSignals()
         perror("SigAction Failure");
         exit(EXIT_FAILURE);     /* NOT MT safe */
     }
+    if (sigaction(SIGPIPE, &sa, nullptr) == -1) {  /* MT safe */
+        // ignore broken pipe signal.  db code will auto-recover.
+        perror("SigPipe Failure");
+        return;
+    }
 
+    //::signal( SIGPIPE, SIG_IGN );
     //::signal( SIGCHLD, SIG_IGN );
     ::signal( SIGINT, CatchSignal );
     ::signal( SIGTERM, CatchSignal );
