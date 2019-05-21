@@ -70,23 +70,28 @@ public:
     void Close();
     void Process();
     void Shutdown();
-    void Add(Client* client);
-    void Remove(Client* client);
+    void Add(Client* pClient);
+    void Remove(Client* pClient);
+    // this must be called AFTER a character is selected, after Client and Character class construction is complete. (need complete data)
+    void AddPlayer(Client* pClient);
+    //  this must only be called for a logged-in character.
+    void RemovePlayer(Client* pClient);
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
     void SetService(PyServiceMgr* svc)                  { m_services = svc; }
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
     // updated to use station guest list instead of full clientlist loop
-    void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
+    void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;
 
     Agent* GetAgent(uint32 agentID);
 
     Client* FindClientByName(const char* name) const;
-    Client* FindClientByShip(uint32 ship_id) const;
-    Client* FindClientByCharID(uint32 char_id) const;
-    Client* FindClientByAccount(uint32 account_id) const;
+    Client* FindClientByCharID(uint32 charID) const;
 
     SystemManager* FindOrBootSystem(uint32 systemID);
+
+    bool IsOnline(uint32 charID);
+    PyRep* PyIsOnline(uint32 charID);
 
     uint32 GetNPCCount()                                { return m_npcs; }
     uint32 GetClientCount() const                       { return m_clients.size(); }
@@ -137,8 +142,12 @@ private:
     Timer m_minutetimer;
     Timer m_updateTimer;    // for data updates and dump to db
 
-    std::vector<Client*> m_clients;                 // connected clients (incomplete client class data)
-    std::map<uint32, Client*> m_players;            // logged-in players (complete client class data)
+    // connected clients (incomplete client class data)
+    //  use this to delete Client*
+    std::vector<Client*> m_clients;
+    // logged-in players (complete client class data)
+    // DO NOT delete this Client*  use m_clients instead.
+    std::map<uint32, Client*> m_players;
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, StationItemRef> m_stations;

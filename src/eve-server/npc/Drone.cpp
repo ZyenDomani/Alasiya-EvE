@@ -44,7 +44,7 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
-    m_pClient = sEntityList.FindClientByCharID(m_ownerID);
+    m_pClient = sEntityList.FindClientByCharID(data.ownerID);
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
     if (!m_orbitRange) {

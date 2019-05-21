@@ -34,6 +34,7 @@
 #include "manufacturing/Blueprint.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
+#include <npc/Drone.h>
 #include "ship/Ship.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
@@ -333,7 +334,7 @@ void Ship::Killed(Damage &fatal_blow) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByShip(killer->GetSelf()->ownerID());
+        pClient = killer->GetDroneSE()->GetOwner();
         if (pClient == nullptr) {
             /** @todo  make error here */
             sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");

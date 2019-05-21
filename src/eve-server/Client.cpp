@@ -249,6 +249,8 @@ Client::~Client() {
                 cur->LeaveChannel(this);
             // remove ship and char memory objects from running server
             m_system->RemoveClient(this, IsDocked(), true);
+            // remove char from entitylist
+            sEntityList.RemovePlayer(this);
             // char logout removed fleet data, if any
             m_char->LogOut();
             // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
@@ -389,6 +391,8 @@ bool Client::SelectCharacter(int32 char_id/*0*/) {
     sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
+
+    sEntityList.AddPlayer(this);
 
     SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *2 : ClientTimers::LoginTimer));
     return (m_loaded = true);
@@ -1522,7 +1526,7 @@ void Client::OnCharNoLongerInStation() {
     PyTuple* tmp = n.Encode();
     std::vector<Client*> clients;
     clients.clear();
-    sEntityList.FindClientByStationID(m_locationID, clients);
+    sEntityList.GetStationGuestList(m_locationID, clients);
     for (auto cur : clients) {
         PySafeIncRef(tmp);
         cur->SendNotification("OnCharNoLongerInStation", "stationid", &tmp); //consumed
@@ -1539,7 +1543,7 @@ void Client::OnCharNowInStation() {
     PyTuple* tmp = n.Encode();
     std::vector<Client*> clients;
     clients.clear();
-    sEntityList.FindClientByStationID(m_locationID, clients);
+    sEntityList.GetStationGuestList(m_locationID, clients);
     for (auto cur : clients) {
         PySafeIncRef(tmp);
         cur->SendNotification("OnCharNowInStation", "stationid", &tmp);

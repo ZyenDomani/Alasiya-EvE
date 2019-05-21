@@ -117,24 +117,46 @@ void EntityList::Close()
 
     m_systems.clear();
     m_clients.clear();
+    m_players.clear();
     m_stations.clear();
 }
 
-void EntityList::Add( Client* client ) {
+/* m_clients is used to search for online players and numerous other things.
+ *  the problem here is any searching is done thru iteration, which can get expensive.
+ *  however, clients are added before their char is selected, so there is no charID for map placement.
+ *    maybe use m_clients for basic Process() calls and use m_players for character/client searching
+ */
+void EntityList::Add( Client* pClient ) {
     ++m_connections;
-    if (client != nullptr)
-        m_clients.push_back(client);
+    if (pClient != nullptr)
+        m_clients.push_back(pClient);
 }
 
-void EntityList::Remove(Client* client) {
+void EntityList::Remove(Client* pClient) {
 	/* note:  will get expensive for many clients  */
     std::vector<Client*>::iterator itr = m_clients.begin();
     for (; itr != m_clients.end(); ++itr)
-        if ((*itr) == client) {
+        if ((*itr) == pClient) {
             m_clients.erase(itr);
             return;
         }
 }
+
+void EntityList::AddPlayer(Client* pClient)
+{
+    if (pClient != nullptr)
+        m_players.emplace(pClient->GetCharacterID(), pClient);
+}
+
+void EntityList::RemovePlayer(Client* pClient)
+{
+    if (pClient != nullptr) {
+        std::map<uint32, Client*>::iterator itr = m_players.find(pClient->GetCharacterID());
+        if (itr != m_players.end())
+            m_players.erase(itr);
+    }
+}
+
 
 void EntityList::Process() {
     Client* pClient(nullptr);
@@ -238,51 +260,56 @@ Agent* EntityList::GetAgent(uint32 agentID) {
 }
 
 // this method is corrected, as stations have their own guestlist now.
-void EntityList::FindClientByStationID(uint32 stationID, std::vector<Client*> &result) const {
+void EntityList::GetStationGuestList(uint32 stationID, std::vector<Client*> &result) const {
     std::map<uint32, StationItemRef>::const_iterator itr = m_stations.find(stationID);
     if (itr != m_stations.end())
         itr->second->GetGuestList(result);
 }
 
-/** @todo @note NOTE: TODO: HACK:...all of the Find* methods below can get very expensive for many players */
-Client* EntityList::FindClientByCharID(uint32 char_id) const {
-    for (auto cur : m_clients)
-        if (cur->GetCharacterID() == char_id)
-            return cur;
-
-    return nullptr;
+bool EntityList::IsOnline(uint32 charID)
+{
+    std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
+    if (itr == m_players.end())
+        return false;
+    return true;
 }
 
-Client* EntityList::FindClientByName(const char* name) const {
-    for (auto cur : m_clients) {
-        CharacterRef cRef = cur->GetChar();
-        if (cRef.get() != nullptr)
-            if (strcmp(cRef->itemName().c_str(), name) == 0)
-                return cur;
-    }
-    return nullptr;
+PyRep* EntityList::PyIsOnline(uint32 charID)
+{
+    std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
+    if (itr == m_players.end())
+        return PyStatic.NewFalse();
+
+    return PyStatic.NewTrue();
 }
 
-Client* EntityList::FindClientByShip(uint32 ship_id) const {
-    for (auto cur : m_clients)
-        if (cur->GetShipID() == ship_id)
-            return cur;
+Client* EntityList::FindClientByCharID(uint32 charID) const
+{
+    std::map<uint32, Client*>::const_iterator itr = m_players.find(charID);
+    if (itr == m_players.end())
+        return nullptr;
 
-    return nullptr;
+    return itr->second;
 }
 
-Client* EntityList::FindClientByAccount(uint32 account_id) const {
-    for (auto cur : m_clients)
-        if (cur->GetUserID() == account_id)
-            return cur;
-
-    return nullptr;
-}
-
+/** @todo @note NOTE: TODO: HACK: the Find* methods below can get very expensive for many players */
+// used in mkt shit....is there a better way for this one?
+//  yes!!  this should NOT be used.  fix mkt and delete this
 void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
     for (auto cur : m_clients)
         if (cur->GetRegionID() == regionID)
             result.push_back(cur);
+}
+
+//used by gmCommands
+Client* EntityList::FindClientByName(const char* name) const {
+    for (auto cur : m_players) {
+        CharacterRef cRef = cur.second->GetChar();
+        if (cRef.get() != nullptr)
+            if (strcmp(cRef->itemName().c_str(), name) == 0)
+                return cur.second;
+    }
+    return nullptr;
 }
 
 void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
@@ -326,7 +353,7 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
     switch( target ) {
         case NOTIF_DEST__LOCATION: {
             if (IsStation(targID))
-                FindClientByStationID(targID, cVec);
+                GetStationGuestList(targID, cVec);
             else if (IsSolarSystem(targID))
                 FindOrBootSystem(targID)->GetClientList(cVec);
             else {
@@ -380,7 +407,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
         cVec.clear();
         for (auto cur : mcset.locations) {
             if (IsStation(cur))
-                FindClientByStationID(cur, cVec);
+                GetStationGuestList(cur, cVec);
             else if (IsSolarSystem(cur))
                 FindOrBootSystem(cur)->GetClientList(cVec);
             else {

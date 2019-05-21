@@ -97,12 +97,12 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
     CRowSet *rowset = new CRowSet( &header );
     // loop thru contact list and fill following row accordingly
     //PyPackedRow* row = rowset->NewRow();
-    //row->SetField(new PyInt(*charID*), PyStatic.NewFalse()); // charID/online
+    //row->SetField(new PyInt(*charID*), sEntityList.PyIsOnline(PyRep::IntegerValue(charID)))); // charID/online
     return rowset;
 }
 
 PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
-    // this is used to query the online state of all contacts
+    // this is used to query the online state of a character by charID.
     /** @todo this currently throws an error.  dont know why yet.
      *
      * /client/script/ui/shared/comtool/onlinestatus.py(56) GetOnlineStatus
@@ -111,10 +111,7 @@ PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
      *        charID = <Row charID:90000000>
      * TypeError: unhashable instance
      */
-    Client* pClient = sEntityList.FindClientByCharID(call.tuple->GetItem(0)->AsInt()->value());
-    if (pClient == nullptr)
-        return PyStatic.NewFalse();
-    return PyStatic.NewTrue();
+     return sEntityList.PyIsOnline(PyRep::IntegerValue(call.tuple->GetItem(0)));
 }
 
 /*
