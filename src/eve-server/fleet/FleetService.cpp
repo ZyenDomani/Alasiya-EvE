@@ -1357,17 +1357,17 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
 {
     uint32 fleetID = pFrom->GetChar()->fleetID();
     if (!IsFleet(fleetID)) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid fleetID %u.", pFrom->GetCharName().c_str(), fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid fleetID %u.", pFrom->GetName(), fleetID);
         return;
     }
     if (group == Fleet::None) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with group = None for fleet %u.", pFrom->GetCharName().c_str(), fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with group = None for fleet %u.", pFrom->GetName(), fleetID);
         return;
     }
 
     int32 wingID = pFrom->GetChar()->wingID(), squadID = pFrom->GetChar()->squadID();
     if (((wingID > 0) and !IsWing(wingID)) or ((squadID > 0) and !IsSquad(squadID))) {
-        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i or squad %i for fleet %u.", pFrom->GetCharName().c_str(), wingID, squadID, fleetID);
+        _log(FLEET__WARNING, "%s called FleetBroadcast with invalid wing %i or squad %i for fleet %u.", pFrom->GetName(), wingID, squadID, fleetID);
         return;
     }
 
@@ -1451,7 +1451,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         case Fleet::BCastGroup::Up: {
             if (wingID == -1) {
                 // pFrom is FC.  nobody above to msg.  make error here
-                _log(FLEET__WARNING, "FC %s called FleetBroadcast with group == Up for fleet %u.", pFrom->GetCharName().c_str(), fleetID);
+                _log(FLEET__WARNING, "FC %s called FleetBroadcast with group == Up for fleet %u.", pFrom->GetName(), fleetID);
                 pFrom->SendErrorMsg("You cannot broadcast to Superiors as FC.");
             } else {
                 if (squadID == -1) {

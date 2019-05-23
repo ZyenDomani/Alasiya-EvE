@@ -127,6 +127,7 @@ public:
     PyServiceMgr&           services() const            { return m_services; }
     SystemManager*          SystemMgr() const           { return m_system; }
     bool                    IsClient() const            { return true; }
+    // used in msgs and other places where a const char* is needed instead of me forgetting to use .c_str()
     const char*             GetName() const             { return (m_char ? m_char->itemName().c_str() : "(null)"); }
 
     bool                    IsAFK()                     { return m_afk; }
@@ -139,7 +140,7 @@ public:
     // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
-    std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }
+    //std::string GetCharacterName() const                { return pSession->GetCurrentString( "charname" ); }
 
     int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
     int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
