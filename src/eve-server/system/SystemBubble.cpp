@@ -773,7 +773,7 @@ void SystemBubble::MarkBubble(const GPoint& position, std::string& name, std::st
     CargoContainerRef iRef = CargoContainerRef::StaticCast(sItemFactory.SpawnItem(idata));
     if (iRef.get() != nullptr) {
         // create new container
-        FactionData jetcanData { };
+        FactionData jetcanData = FactionData();
         ContainerSE* cSE = new ContainerSE(iRef, *(m_system->GetServiceMgr()), m_system, jetcanData);
         iRef->SetMySE(cSE);
         cSE->AnchorContainer();

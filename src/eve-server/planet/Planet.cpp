@@ -219,11 +219,11 @@ void PlanetSE::CreateCustomsOffice()
      */
 
     //ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, uint32 _quantity, const char *_customInfo = "", bool _contraband = false);
-    FactionData data;
-    data.ownerID = corpInterbus;
-    data.factionID = factionInterBus;
-    data.allianceID = 0;
-    data.corporationID = corpInterbus;
+    FactionData data = FactionData();
+        data.ownerID = corpInterbus;
+        data.factionID = factionInterBus;
+        data.allianceID = 0;
+        data.corporationID = corpInterbus;
     uint16 typeID = EVEDB::invTypes::typeInterbusCustomsOffice;
 
     if (m_system->GetSystemSecurityRating() > 0.49) {

@@ -473,7 +473,7 @@ void TowerSE::CreateForceField()
         return;  // we'll get over it
     ifRef->Relocate(GetPosition());
     ifRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = m_allyID;
         data.corporationID = m_corpID;
         data.factionID = m_warID;

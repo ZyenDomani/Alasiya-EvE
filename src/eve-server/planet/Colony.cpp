@@ -705,13 +705,13 @@ void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
             else
                 ; //  make error here?
 
-        FactionData contData;
-            contData.allianceID = m_client->GetAllianceID();
-            contData.corporationID = m_client->GetCorporationID();
-            contData.factionID = m_client->GetWarFactionID();
-            contData.ownerID = m_client->GetCharacterID();
+        FactionData data = FactionData();
+            data.allianceID = m_client->GetAllianceID();
+            data.corporationID = m_client->GetCorporationID();
+            data.factionID = m_client->GetWarFactionID();
+            data.ownerID = m_client->GetCharacterID();
         // create new container SE
-        ContainerSE* cSE = new ContainerSE(contRef, *m_svcMgr, pSysMgr, contData);
+        ContainerSE* cSE = new ContainerSE(contRef, *m_svcMgr, pSysMgr, data);
         contRef->SetMySE(cSE);      // item-to-entity internal interface
         //cSE->AnchorContainer();     // avoid GC checks on this container  -no.  has 5d timer set
         pSysMgr->AddEntity(cSE);

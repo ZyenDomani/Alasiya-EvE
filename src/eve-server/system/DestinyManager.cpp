@@ -886,8 +886,8 @@ void DestinyManager::MoveObject() {
         CargoContainerRef iRef = CargoContainerRef::StaticCast(InventoryItem::Spawn(idata));
         if (iRef.get() != nullptr) {
             // create new container
-            FactionData jetcanData {};
-            ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), jetcanData);
+            FactionData data = FactionData();
+            ContainerSE* cSE = new ContainerSE(iRef, mySE->GetServices(), mySE->SystemMgr(), data);
             iRef->SetMySE(cSE);
             mySE->SystemMgr()->AddEntity(cSE);
         }

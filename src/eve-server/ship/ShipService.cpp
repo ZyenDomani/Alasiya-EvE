@@ -708,7 +708,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
     /** @todo  deal with launching items for corp... they will use flagProperty */
 
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = pClient->GetAllianceID();
         data.corporationID = pClient->GetCorporationID();
         data.factionID = pClient->GetWarFactionID();

@@ -449,7 +449,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
 
 SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID/*0*/)
 {
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = entity.allianceID;
         data.corporationID = entity.corporationID;
         data.factionID = entity.factionID;
