@@ -201,7 +201,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         return new PyInt(0);
 
     // we need to fill these to successfully create character item
-    CharacterData cdata { };
+    CharacterData cdata = CharacterData();
         cdata.accountID = pClient->GetUserID();
         cdata.gender = arg.genderID;
         cdata.ancestryID = arg.ancestryID;
@@ -217,7 +217,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         // updated these to use TranserFunds and record journal entry
         cdata.balance = /*sConfig.character.startBalance*/0;
         cdata.aurBalance = /*sConfig.character.startAurBalance*/0; // Added aurBalance    -allan 01/07/14
-
 
     //Set the character's career and race based on the school they picked.
     if (m_db.GetCareerBySchool(cdata.schoolID, cdata.raceID, cdata.careerID)) {
@@ -237,7 +236,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     uint8 memory = char_type->memory();
     uint8 willpower = char_type->willpower();
 
-    CorpData corpData { };
+    CorpData corpData = CorpData();
         corpData.startDateTime = cdata.createDateTime;
         corpData.corpRole = Corp::Role::Member;
         corpData.corpAccountKey = Account::KeyType::Cash;
@@ -274,7 +273,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     if (IsStation(sConfig.character.startStation)) { // Skip if 0
         cdata.stationID = sConfig.character.startStation;
-        StationData sData { } ;
+        StationData sData = StationData();
         stDataMgr.GetStationData(cdata.stationID, sData);
         cdata.solarSystemID = sData.systemID;
         cdata.constellationID = sData.constellationID;
