@@ -104,7 +104,7 @@ ccPin(new PI_CCPin())
     m_colonyID = 0;
     m_procTime = 0; // process check.  init to zero and changed in pin program install/update
     tempPinIDs.clear();
-    _log(PLANET__DEBUG, "Colony::Colony() c'tor called for %s(%u)", pClient->GetCharacterName().c_str(), pClient->GetCharacterID());
+    _log(PLANET__DEBUG, "Colony::Colony() c'tor called for %s(%u)", pClient->GetCharName().c_str(), pClient->GetCharacterID());
 }
 
 Colony::~Colony()

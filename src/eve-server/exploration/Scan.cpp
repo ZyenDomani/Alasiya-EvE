@@ -133,7 +133,7 @@ void Scan::RequestScans(PyDict* dict) {
         probeID = (uint32)PyRep::IntegerValue(cItr->first);  // key
         std::map<uint32, ProbeSE*>::iterator pItr = m_probeMap.find(probeID);
         if (pItr == m_probeMap.end()) {
-            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, m_client->GetCharacterName().c_str(), m_client->GetCharacterID());
+            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, m_client->GetCharName().c_str(), m_client->GetCharacterID());
             continue;  // make error here?
         }
 

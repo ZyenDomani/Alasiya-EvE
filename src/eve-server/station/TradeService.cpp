@@ -590,9 +590,9 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     }
     // transfer funds and add journal entries for both sides
     std::string reason = "Player Trade between ";
-    reason += pClient->GetCharacterName();
+    reason += pClient->GetCharName();
     reason += " and ";
-    reason += pOther->GetCharacterName();
+    reason += pOther->GetCharName();
     reason += " in ";
     reason += pClient->GetSystemName();
     AccountService::TranserFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());

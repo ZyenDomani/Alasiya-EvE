@@ -521,10 +521,10 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
              *            //LSCChannelChar *invitee;
              *            if (!channel->IsJoined(char_ID))
              *            {
-             *                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharacterName(),0,0,0,0);
+             *                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharName(),0,0,0,0);
              *                mct.characters.insert(char_ID);
         }
-        //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharacterName(),0,0,0,0);
+        //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharName(),0,0,0,0);
         mct.characters.insert(invited_char_ID);
         entityList().Multicast("OnLSC", channel->GetTypeString(), &answer, mct);
         //entityList().Unicast(invited_char_ID,"OnLSC",channel->GetTypeString(),&answer,false);
