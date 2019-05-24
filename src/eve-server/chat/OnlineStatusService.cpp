@@ -103,24 +103,10 @@ PyResult OnlineStatusService::Handle_GetInitialState(PyCallArgs &call) {
 
 PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
     // this is used to query the online state of a character by charID.
-    /** @todo this currently throws an error.  dont know why yet.
-     *
-     * /client/script/ui/shared/comtool/onlinestatus.py(56) GetOnlineStatus
-     *        self = <svc.OnlineStatus instance at 0x4529EC88>
-     *        fetch = True
-     *        charID = <Row charID:90000000>
-     * TypeError: unhashable instance
-     */
      return sEntityList.PyIsOnline(PyRep::IntegerValue(call.tuple->GetItem(0)));
 }
 
 /*
- * /client/script/ui/shared/comtool/onlinestatus.py(58) GetOnlineStatus
- *        self = <svc.OnlineStatus instance at 0x0BDBAC38>
- *        fetch = True
- *        charID = 140000000
- * TypeError: an integer is required
- *
 ==================== Sent from Server 81 bytes
 
 [PyObjectData Name: macho.Notification]
@@ -151,4 +137,36 @@ PyResult OnlineStatusService::Handle_GetOnlineStatus(PyCallArgs &call) {
                 [PyInt 649670823]
     [PyNone]
     [PyNone]
+
+==================== Sent from Server 81 bytes
+
+[PyObjectData Name: macho.Notification]
+  [PyTuple 6 items]
+    [PyInt 12]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 1]
+        [PyInt 698462]
+        [PyNone]
+        [PyNone]
+    [PyObjectData Name: macho.MachoAddress]
+      [PyTuple 4 items]
+        [PyInt 4]
+        [PyString "OnContactLoggedOff"]
+        [PyList 0 items]
+        [PyString "clientID"]
+    [PyInt 5654387]
+    [PyTuple 1 items]
+      [PyTuple 2 items]
+        [PyInt 0]
+        [PySubStream 15 bytes]
+          [PyTuple 2 items]
+            [PyInt 0]
+            [PyTuple 2 items]
+              [PyInt 1]
+              [PyTuple 1 items]
+                [PyInt 1610990724]
+    [PyNone]
+
+
 */

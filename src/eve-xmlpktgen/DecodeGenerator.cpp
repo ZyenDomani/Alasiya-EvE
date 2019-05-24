@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-xmlpktgen.h"
@@ -58,20 +59,17 @@ bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
 
     fprintf(mOutputFile,
         "    return true;\n"
-        "}\n"
-        "\n"
+        "}\n\n"
         "bool %s::Decode(PyRep** packet) {\n"
         "    bool res = Decode(*packet);\n"
         "    PyDecRef(*packet);\n"
         "    packet == nullptr;\n"
         "    return res;\n"
-        "}\n"
-        "\n"
+        "}\n\n"
         "bool %s::Decode(%s** packet) {\n"
         "    //quick forwarder to avoid making the user cast it if they have a properly typed object\n"
         "    return Decode((PyRep**)packet);\n"
-        "}\n"
-        "\n",
+        "}\n\n",
         mName,
         mName, GetEncodeType(main)
    );
@@ -92,8 +90,7 @@ bool ClassDecodeGenerator::ProcessElement(const TiXmlElement* field)
         "    if (!%s.Decode(%s)) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: unable to decode element %s\");\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         name, v,
             mName, name
    );
@@ -119,13 +116,11 @@ bool ClassDecodeGenerator::ProcessElementPtr(const TiXmlElement* field)
     const char* v = top();
     fprintf(mOutputFile,
         "    SafeDelete(%s);\n"
-        "    %s = new %s;\n"
-        "\n"
+        "    %s = new %s;\n\n"
         "    if (!%s->Decode(%s)) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: unable to decode element %s\");\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         name,
         name, type,
 
@@ -170,8 +165,7 @@ bool ClassDecodeGenerator::ProcessRaw(const TiXmlElement* field)
                 "        PySafeDecRef(%s);\n"
                 "        %s = %s;\n"
                 "        PyIncRef(%s);\n"
-                "    }\n"
-                "\n",
+                "    }\n\n",
                 v,name,
                 name, v,
                 v,name,
@@ -191,8 +185,7 @@ bool ClassDecodeGenerator::ProcessRaw(const TiXmlElement* field)
         fprintf(mOutputFile,
                 "    PySafeDecRef(%s);\n"
                 "    %s = %s;\n"
-                "    PyIncRef(%s);\n"
-                "\n",
+                "    PyIncRef(%s);\n\n",
                 name,
                 name, v,
                 name
@@ -211,10 +204,12 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
         return false;
     }
 
-    const char* safe = field->Attribute("safe");
-    const char* none_marker = field->Attribute("none_marker");
+    //const char* safe = field->Attribute("safe");
+    //const char* none_marker = field->Attribute("none_marker");
 
     const char* v = top();
+    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    /*
     if (none_marker != nullptr)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
@@ -226,7 +221,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
 
     fprintf(mOutputFile,
             "    if (%s->IsInt())\n"
-            "        %s = %s->AsInt()->value();\n"
+            "        %s = PyRep::IntegerValue(%s);\n"
             "    else\n",
             v,
             name, v
@@ -260,7 +255,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
             "\n",
             mName, name, v
     );
-
+*/
     pop();
     return true;
 }
@@ -273,10 +268,12 @@ bool ClassDecodeGenerator::ProcessLong(const TiXmlElement* field)
         return false;
     }
 
-    const char* safe = field->Attribute("safe");
-    const char* none_marker = field->Attribute("none_marker");
+    //const char* safe = field->Attribute("safe");
+    //const char* none_marker = field->Attribute("none_marker");
 
     const char* v = top();
+    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    /*
     if (none_marker != nullptr)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
@@ -322,7 +319,7 @@ bool ClassDecodeGenerator::ProcessLong(const TiXmlElement* field)
             "\n",
             mName, name, v
     );
-
+*/
     pop();
     return true;
 }
@@ -343,7 +340,7 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
                 "        %s = %s;\n"
-                "    else\n",
+                "    else ",
                 v,
                 name, none_marker
        );
@@ -351,39 +348,22 @@ bool ClassDecodeGenerator::ProcessReal(const TiXmlElement* field)
     fprintf(mOutputFile,
             "    if (%s->IsFloat())\n"
             "        %s = %s->AsFloat()->value();\n"
-            "    else",
+            "    else ",
             v,
             name, v
     );
 
-    if (safe != nullptr)
+    if (safe != nullptr) {
+        fprintf(mOutputFile, "\n    %s = PyRep::IntegerValue(%s);\n", name, v);
+    } else {
         fprintf(mOutputFile,
-                "    if (%s->IsLong()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyLong\");\n"
-                "        %s = %s->AsLong()->value();\n"
-                "    } else if (%s->IsInt()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyInt\");\n"
-                "        %s = %s->AsInt()->value();\n"
-                "    } else if (%s->IsBool()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyBool\");\n"
-                "        %s = %s->AsBool()->value();\n"
-                "    } else\n",
-                v,name,
-                name, v,
-                v,name,
-                name, v,
-                v,name,
-                name, v
+                "{\n"
+                "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
+                "        return false;\n"
+                "    }\n\n",
+                mName, name, v
         );
-
-    fprintf(mOutputFile,
-            "    {\n"
-            "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Double: %%s\", %s->TypeString());\n"
-            "        return false;\n"
-            "    }\n"
-            "\n",
-            mName, name, v
-   );
+    }
 
     pop();
     return true;
@@ -397,10 +377,12 @@ bool ClassDecodeGenerator::ProcessBool(const TiXmlElement* field)
         return false;
     }
 
-    const char* safe = field->Attribute("safe");
-    const char* none_marker = field->Attribute("none_marker");
+    //const char* safe = field->Attribute("safe");
+    //const char* none_marker = field->Attribute("none_marker");
 
     const char* v = top();
+    fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
+    /*
     if (none_marker != nullptr)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
@@ -446,7 +428,7 @@ bool ClassDecodeGenerator::ProcessBool(const TiXmlElement* field)
             "\n",
             mName, name, v
     );
-
+*/
     pop();
     return true;
 }
@@ -458,8 +440,7 @@ bool ClassDecodeGenerator::ProcessNone(const TiXmlElement* field)
             "    if (!%s->IsNone()) {\n"
             "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a None: %%s\", %s->TypeString());\n"
             "        return false;\n"
-            "    }\n"
-            "\n",
+            "    }\n\n",
             v, mName, v, v
    );
 
@@ -486,8 +467,7 @@ bool ClassDecodeGenerator::ProcessBuffer(const TiXmlElement* field)
             "    } else {\n"
             "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a buffer: %%s\", %s->TypeString());\n"
             "        return false;\n"
-            "    }\n"
-            "\n",
+            "    }\n\n",
             name,
             v,
             name, v,
@@ -516,7 +496,7 @@ bool ClassDecodeGenerator::ProcessString(const TiXmlElement* field)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
                 "        %s = \"%s\";\n"
-                "    else\n",
+                "    else ",
                 v,
                 name, none_marker
        );
@@ -524,7 +504,7 @@ bool ClassDecodeGenerator::ProcessString(const TiXmlElement* field)
     fprintf(mOutputFile,
             "    if (%s->IsString())\n"
             "        %s = %s->AsString()->content();\n"
-            "    else\n",
+            "    else ",
             v,
             name, v
     );
@@ -568,14 +548,12 @@ bool ClassDecodeGenerator::ProcessStringInline(const TiXmlElement* field)
         "    if (!%s->IsString()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a string: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyString* %s(%s->AsString());\n"
         "    if (\"%s\" != %s->content()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
         iname, v,
@@ -603,7 +581,7 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
         fprintf(mOutputFile,
                 "    if (%s->IsNone())\n"
                 "        %s = \"%s\";\n"
-                "    else\n",
+                "    else ",
                 v,
                 name, none_marker
         );
@@ -611,7 +589,7 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
     fprintf(mOutputFile,
             "    if (%s->IsWString())\n"
             "        %s = %s->AsWString()->content();\n"
-            "    else\n",
+            "    else ",
             v,
             name, v
     );
@@ -621,7 +599,7 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
                 "    if (%s->IsString()) {\n"
                 "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyString\");\n"
                 "        %s = %s->AsString()->content();\n"
-                "    } else\n",
+                "    } else ",
                 v,name,
                 name, v
         );
@@ -630,8 +608,7 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
             "    {\n"
             "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a string: %%s\", %s->TypeString());\n"
             "        return false;\n"
-            "    }\n"
-            "\n",
+            "    }\n\n",
             mName, name, v
     );
 
@@ -655,14 +632,12 @@ bool ClassDecodeGenerator::ProcessWStringInline(const TiXmlElement* field)
         "    if (!%s->IsWString()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a wstring: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyWString* %s(%s->AsWString());\n"
         "    if (\"%s\" != %s->content()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
         iname, v,
@@ -698,7 +673,7 @@ bool ClassDecodeGenerator::ProcessToken(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else ",
             v,
                 name
        );
@@ -710,8 +685,7 @@ bool ClassDecodeGenerator::ProcessToken(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a token: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, v,
             name,
@@ -739,14 +713,12 @@ bool ClassDecodeGenerator::ProcessTokenInline(const TiXmlElement* field)
         "    if (!%s->IsToken()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a token: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyToken* %s(%s->AsToken());\n"
         "    if (%s->content() != \"%s\") {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: expected %s to be '%s', but it's '%%s'\", %s->content().c_str());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
         iname, v,
@@ -782,7 +754,7 @@ bool ClassDecodeGenerator::ProcessObject(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else ",
             v,
                 name
        );
@@ -796,8 +768,7 @@ bool ClassDecodeGenerator::ProcessObject(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, v,
             name,
@@ -820,10 +791,8 @@ bool ClassDecodeGenerator::ProcessObjectInline(const TiXmlElement* field)
         "    if (!%s->IsObject()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
-        "    PyObject* %s(%s->AsObject());\n"
-        "\n",
+        "    }\n\n"
+        "    PyObject* %s(%s->AsObject());\n\n",
         v,
             mName, iname, v,
         iname, v
@@ -872,7 +841,7 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else",
             v,
                 name
        );
@@ -885,8 +854,7 @@ bool ClassDecodeGenerator::ProcessObjectEx(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, type, v,
             name,
@@ -921,7 +889,7 @@ bool ClassDecodeGenerator::ProcessTuple(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else",
             v,
                 name
        );
@@ -933,8 +901,7 @@ bool ClassDecodeGenerator::ProcessTuple(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a tuple: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, v,
             name,
@@ -966,14 +933,12 @@ bool ClassDecodeGenerator::ProcessTupleInline(const TiXmlElement* field)
         "    if (!%s->IsTuple()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyTuple* %s(%s->AsTuple());\n"
         "    if (%s->size() != %u) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %d, but got %%lu\", %s->size());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
 
@@ -1021,7 +986,7 @@ bool ClassDecodeGenerator::ProcessList(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else",
             v,
             name
        );
@@ -1033,8 +998,7 @@ bool ClassDecodeGenerator::ProcessList(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, v,
             name,
@@ -1066,14 +1030,12 @@ bool ClassDecodeGenerator::ProcessListInline(const TiXmlElement* field)
         "    if (!%s->IsList()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyList* %s(%s->AsList());\n"
         "    if (%s->size() != %u) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong size: expected %d, but got %%lu\", %s->size());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
         iname, v,
@@ -1113,22 +1075,18 @@ bool ClassDecodeGenerator::ProcessListInt(const TiXmlElement* field)
         "    if (!%s->IsList()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyList* %s(%s->AsList());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if (!(*%s_cur)->IsInt()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Element %%u in list %s is not an integer: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const PyInt* t = (*%s_cur)->AsInt();\n"
         "        %s.push_back(t->value());\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1165,11 +1123,9 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
         "    if (!%s->IsList()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyList* %s(%s->AsList());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if ((*%s_cur)->IsLong()) {\n"
@@ -1182,8 +1138,7 @@ bool ClassDecodeGenerator::ProcessListLong(const TiXmlElement* field)
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Element %%u in list %s is not a long integer: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "            return false;\n"
         "        }\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1223,22 +1178,18 @@ bool ClassDecodeGenerator::ProcessListStr(const TiXmlElement* field)
         "    if (!%s->IsList()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a list: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyList* %s(%s->AsList());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyList::const_iterator %s_cur = %s->begin();\n"
         "    for (uint32 %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if (!(*%s_cur)->IsString()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Element %%u in list %s is not a string: %%s\", %s_index, (*%s_cur)->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const PyString* t = (*%s_cur)->AsString();\n"
         "        %s.push_back(t->content());\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1283,7 +1234,7 @@ bool ClassDecodeGenerator::ProcessDict(const TiXmlElement* field)
         fprintf(mOutputFile,
             "    if (%s->IsNone())\n"
             "        %s = nullptr;\n"
-            "    else\n",
+            "    else",
             v,
                 name
        );
@@ -1295,8 +1246,7 @@ bool ClassDecodeGenerator::ProcessDict(const TiXmlElement* field)
         "    } else {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
         name, v,
             name,
@@ -1328,10 +1278,8 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
         "    if (!%s->IsDict()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is the wrong type: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
-        "    PyDict* %s(%s->AsDict());\n"
-        "\n",
+        "    }\n\n"
+        "    PyDict* %s(%s->AsDict());\n\n",
         v,
             mName, iname, v,
         iname, v
@@ -1380,10 +1328,8 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
             "        if (!%s_cur->first->IsString()) {\n"
             "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: a key in %s is the wrong type: %%s\", %s_cur->first->TypeString());\n"
             "            return false;\n"
-            "        }\n"
-            "\n"
-            "        const PyString* key_string__ = %s_cur->first->AsString();\n"
-            "\n",
+            "        }\n\n"
+            "        const PyString* key_string__ = %s_cur->first->AsString();\n\n",
             iname, iname,
             iname, iname, iname,
                 iname,
@@ -1438,8 +1384,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
                 "        {\n"
                 "            /* do nothing, soft dict */\n"
                 "        }\n"
-                "    }\n"
-                "\n"
+                "    }\n\n"
            );
         else
             fprintf(mOutputFile,
@@ -1447,8 +1392,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
                 "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Unknown key string '%%s' in %s\", key_string__->content().c_str());\n"
                 "            return false;\n"
                 "        }\n"
-                "    }\n"
-                "\n",
+                "    }\n\n",
                 mName, iname
            );
 
@@ -1473,8 +1417,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
                     "    if (!%s_%u) {\n"
                     "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: Missing dict entry '%s' in %s\");\n"
                     "        return false;\n"
-                    "    }\n"
-                    "\n",
+                    "    }\n\n",
                     iname, count,
                         mName, key, iname
                );
@@ -1524,28 +1467,23 @@ bool ClassDecodeGenerator::ProcessDictRaw(const TiXmlElement* field)
         "    if (!%s->IsDict()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyDict* %s(%s->AsDict());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if (!%s_cur->first->Is%s()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not %s: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const Py%s* k = %s_cur->first->As%s();\n"
         "        if (!%s_cur->second->Is%s()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Value %%d in dict %s is not %s: %%s\", %s_index, %s_cur->second->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const Py%s *v = %s_cur->second->As%s();\n"
         "        %s[ k->value() ] = v->value();\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1585,22 +1523,18 @@ bool ClassDecodeGenerator::ProcessDictInt(const TiXmlElement* field)
         "    if (!%s->IsDict()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyDict* %s(%s->AsDict());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if (!%s_cur->first->IsInt()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not an integer: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const PyInt* k = %s_cur->first->AsInt();\n"
         "        %s[ k->value() ] = %s_cur->second->Clone();\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1635,22 +1569,18 @@ bool ClassDecodeGenerator::ProcessDictStr(const TiXmlElement* field)
         "    if (!%s->IsDict()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a dict: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PyDict* %s(%s->AsDict());\n"
-        "    %s.clear();\n"
-        "\n"
+        "    %s.clear();\n\n"
         "    PyDict::const_iterator %s_cur = %s->begin();\n"
         "    for (size_t %s_index = 0; %s_cur != %s->end(); %s_cur++, %s_index++) {\n"
         "        if (!%s_cur->first->IsString()) {\n"
         "            _log(XMLP__DECODE_ERROR, \"Decode %s failed: Key %%u in dict %s is not a string: %%s\", %s_index, %s_cur->first->TypeString());\n"
         "            return false;\n"
-        "        }\n"
-        "\n"
+        "        }\n\n"
         "        const PyString* k = %s_cur->first->AsString();\n"
         "        %s[ k->content() ] = %s_cur->second->Clone();\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, name, v,
 
@@ -1680,16 +1610,14 @@ bool ClassDecodeGenerator::ProcessSubStreamInline(const TiXmlElement* field)
         "    if (!%s->IsSubStream()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a substream: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
+        "    }\n\n"
         "    PySubStream* %s(%s->AsSubStream());\n"
         "    //make sure its decoded\n"
         "    %s->DecodeData();\n"
         "    if (!%s->decoded()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: Unable to decode %s\");\n"
         "        return false;\n"
-        "    }\n"
-        "\n",
+        "    }\n\n",
         v,
             mName, iname, v,
         iname, v,
@@ -1721,10 +1649,8 @@ bool ClassDecodeGenerator::ProcessSubStructInline(const TiXmlElement* field)
         "    if (!%s->IsSubStruct()) {\n"
         "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a substruct: %%s\", %s->TypeString());\n"
         "        return false;\n"
-        "    }\n"
-        "\n"
-        "    PySubStruct* %s(%s->AsSubStruct());\n"
-        "\n",
+        "    }\n\n"
+        "    PySubStruct* %s(%s->AsSubStruct());\n\n",
         v,
             mName, iname, v,
         iname, v

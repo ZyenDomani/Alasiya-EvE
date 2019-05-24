@@ -145,7 +145,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                     //  this will be modeled after UO speech data, in tiers and levels.
                     // if RequestMission is only option, this is ignored.  see note under 'dialog data'
                     response = "Why the fuck am I looking at you again, ";
-                    response += call.client->GetCharName().c_str();
+                    response += call.client->GetName();
                     response += "?";
                     agentSays->SetItem(0, new PyString(response));  //msgInfo  -- if tuple[0].string then return msgInfo
                     agentSays->SetItem(1, new PyNone());      // ContentID  -- PyNone used when msgInfo is string (mostly for initial greetings)

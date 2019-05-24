@@ -3,11 +3,17 @@
 *******************************************************
 ****  Allan's EvEmu TODO LIST
 
+********  improvements
+replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()
+
+
 **********  found shit...high priority
 password gets hashed, but fails to validate when login.  check plain/hashed and fix this shit!!
 segfault on char creation?  create passes, but cant login
 station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
 
+
+system mail not working.  this would be nice to have, as many systems could use it
 
 **********   new Dec 2018
 check allianceID sending.  see if we can/need to send None() instead of -1
@@ -22,10 +28,6 @@ skills dont train correctly when char is offline.  (persistant broken)
 19:46:12 [InvError] InventoryBound::MoveItems() - item 0 not found.  continuing.
 
 addskill needs skill injection (not updating client)
-
-
-HandleCorpTransaction() when giving isk to corp, journal window not updating
-LOTS of corp methods incomplete.  see below under 'player corps'
 
 
 QuickQuery() not responding properly for seach in "give corp shares" window
@@ -58,19 +60,26 @@ anomaly system - working. may need revisit after other systems mature. priority 
 wh system - started. k163 for deco only at this time (POC) priority level: low
 player drones - skeleton started. needs functionality priority level: med-hi
 RAM code - implement invention, copy, re, tech priority level: low-med
+contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 others?
 
 lsc system better, but incomplete needs revisiting (and possible rewrite. code updates at least)
 
-player corps - finish wip code for RAM, market, advertspriority level: med-hi
+player corps - finish wip code for RAM, market, adverts  -priority level: med-hi
 alliances?  not yet.  need other shit finished first.
-still some corp shit not started/completed yet. need to finish it. may need to split file again. priority level: med-hi
-CorpRegistryBound::Handle_GetMemberIDsByQuery incomplete  <-- this is the complicated member-search query using roles and titles.  will need lots of thought
+raceMask isnt implemented yet
+still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
+partial code for corpStations, voting, member roles,
+no code for medals, labels
+HandleCorpTransaction() when giving isk to corp, journal window not updating.  other journal data not showing in window
+set initial standings when corp is created.  need to write standings code for corps
+when renting office, station offices dont refresh
 
-npc ai - update for better ai. add advanced ai for advanced ship classes priority level: low
-update npc ai. wander working. warp in/out working. tracking somewhat wonky. priority level: lo
 
-m_self is NOT being populated for non-piloted ships.   priority level: low
+npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
+update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: lo
+
+m_self is NOT being populated for non-piloted ships.   -priority level: low
 
  needs more testing.
 check all ewar effects. notably painter and disruptor. was working on last test
@@ -78,6 +87,11 @@ check skill duration(66) for correct modifier sign seems ok now.
 check duration(73) on repair and prop modules (deals with skill-modified duration) seems ok now.
 
 
+will need to go thru code and zero-initalize structs ( A a = A(); )
+ - classes built using xml have a c'tor that zero-initalizes all items in class
+
+
+entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.
 
 *******  these are not applying any modifiers, but they should be modifying turrents  *************
 20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 3, state: Passive, online: true
@@ -127,6 +141,10 @@ will need to look into this and determine how they use those files and the check
 as this is still beyond me, it may take a while.
 till then, we'll have to used the hacked system.
 after all, it works
+
+xmlp shit....
+change decode "->AsInt()->value()" and all 'extra' to use PyRep::IntegerValue(), which tests for and decodes all pyint types and will render my 'safe' parameter invalid.
+  ...which is a good thing.  'safe' was a hack anyway.  ;)
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
