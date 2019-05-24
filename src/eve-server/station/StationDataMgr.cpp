@@ -272,7 +272,7 @@ void StationDataMgr::LoadStationPyData()
 {
     for (auto cur : m_stationData) {
         PyDict* dict = new PyDict();
-            dict->SetItemString("stationID", new PyInt(cur.second.stationID));
+            dict->SetItemString("stationID", new PyInt(cur.first));
             dict->SetItemString("ownerID", new PyInt(cur.second.corporationID));
             dict->SetItemString("stationTypeID", new PyInt(cur.second.typeID));
             dict->SetItemString("stationName", new PyString(cur.second.name));
@@ -312,7 +312,7 @@ void StationDataMgr::LoadStationPyData()
             dict->SetItemString("radius", new PyFloat(cur.second.radius));   //mapDenormalize.radius or invTypes.radius
             dict->SetItemString("orbitID", new PyInt(cur.second.orbitID));    //mapDenormalize.orbitID
 
-        m_stationPyData.emplace(cur.second.stationID, new PyObject("util.KeyVal", dict));
+        m_stationPyData.emplace(cur.first, new PyObject("util.KeyVal", dict));
     }
 }
 

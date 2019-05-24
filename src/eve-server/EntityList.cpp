@@ -26,6 +26,8 @@
 
 #include "eve-server.h"
 
+#include "EVE_Mail.h"
+
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "EntityList.h"
@@ -42,6 +44,7 @@
 #include "system/cosmicMgrs/CivilianMgr.h"
 #include "system/cosmicMgrs/WormholeMgr.h"
 #include "system/cosmicMgrs/ManagerDB.h"
+#include "corporation/CorporationDB.h"
 
 EntityList::EntityList()
 : m_services( nullptr ),
@@ -51,9 +54,11 @@ m_updateTimer(0),
 m_startTime(0)
 {
     m_agents.clear();
-    m_systems.clear();
     m_clients.clear();
+    m_players.clear();
+    m_systems.clear();
     m_stations.clear();
+    m_corpMembers.clear();
 
     m_npcs = 0;
     m_stamp = 1000;   /* start at 1k.  in seconds.  used for destiny and client counters */
@@ -146,6 +151,11 @@ void EntityList::AddPlayer(Client* pClient)
 {
     if (pClient != nullptr)
         m_players.emplace(pClient->GetCharacterID(), pClient);
+    if (IsPlayerCorp(pClient->GetCorporationID())) {
+        corpRole role;
+        role.emplace(pClient, pClient->GetCorpRole());
+        m_corpMembers.emplace(pClient->GetCorporationID(), role);
+    }
 }
 
 void EntityList::RemovePlayer(Client* pClient)
@@ -154,6 +164,16 @@ void EntityList::RemovePlayer(Client* pClient)
         std::map<uint32, Client*>::iterator itr = m_players.find(pClient->GetCharacterID());
         if (itr != m_players.end())
             m_players.erase(itr);
+    }
+
+    // remove player from corp map, if applicable
+    if (IsPlayerCorp(pClient->GetCorporationID())) {
+        std::map<uint32, corpRole>::iterator itr = m_corpMembers.find(pClient->GetCorporationID());
+        if (itr != m_corpMembers.end()) {
+            corpRole::iterator itr2 = itr->second.find(pClient);
+            if (itr2 != itr->second.end())
+                itr->second.erase(itr2);
+        }
     }
 }
 
@@ -181,9 +201,8 @@ void EntityList::Process() {
         sCivMgr.Process();
         sBubbleMgr.Process();
 
-        for (auto cur : m_clients)
-            if (cur->IsLoaded())
-                cur->ProcessClient();
+        for (auto cur : m_players)
+            cur.second->ProcessClient();
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
@@ -213,8 +232,7 @@ void EntityList::Process() {
             if (m_updateTimer.Check())  // 15m
                 sConsole.UpdateStatus();
 
-            //if (m_minutes % 10 == 0) // ~10m
-            //    sDatabase.ping();
+            // write something to tic corps vote cases.
         }
 
         if (sConfig.debug.UseProfiling)
@@ -259,6 +277,19 @@ Agent* EntityList::GetAgent(uint32 agentID) {
     return aPtr;
 }
 
+void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
+    m_stations[stationID] = itemRef;
+}
+
+void EntityList::RemoveStation(uint32 stationID) {
+    m_stations.erase(stationID);
+}
+
+void EntityList::GetClients(std::vector<Client*> &result) const {
+    for (auto cur : m_players)
+        result.push_back(cur.second);
+}
+
 // this method is corrected, as stations have their own guestlist now.
 void EntityList::GetStationGuestList(uint32 stationID, std::vector<Client*> &result) const {
     std::map<uint32, StationItemRef>::const_iterator itr = m_stations.find(stationID);
@@ -292,24 +323,134 @@ Client* EntityList::FindClientByCharID(uint32 charID) const
     return itr->second;
 }
 
-/** @todo @note NOTE: TODO: HACK: the Find* methods below can get very expensive for many players */
-// used in mkt shit....is there a better way for this one?
-//  yes!!  this should NOT be used.  fix mkt and delete this
-void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
-    for (auto cur : m_clients)
-        if (cur->GetRegionID() == regionID)
-            result.push_back(cur);
-}
-
-//used by gmCommands
-Client* EntityList::FindClientByName(const char* name) const {
-    for (auto cur : m_players) {
-        CharacterRef cRef = cur.second->GetChar();
-        if (cRef.get() != nullptr)
-            if (strcmp(cRef->itemName().c_str(), name) == 0)
-                return cur.second;
+// this is my answer to the crazy looping of Multicast shit...
+void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const
+{
+    // make sure this is player corp (which it really should be, but just in case....)
+    if (IsNPCCorp(corpID))
+        return;
+    std::map<uint32, Client*> cMap;
+    std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(corpID);
+    if (cItr == m_corpMembers.end()) {
+        PySafeDecRef(payload);
+        return; // no corp members online now.  nothing to do here.
     }
-    return nullptr;
+
+    // determine who in corp needs to be notified
+    using namespace Notify::Types;
+    using namespace Corp::Role;
+    // auto doesnt work here...dunno why yet.
+    corpRole::const_iterator itr = cItr->second.begin();
+    switch (type) {
+        case CorpNews:
+        case CorpNewCEO: {
+            // all members?
+            while (itr != cItr->second.end()) {
+                cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                ++itr;
+            }
+        } break;
+        case CorpAppNew:
+        case CorpAppReject:
+        case CorpAppAccept: {
+            // who else wants/needs this?
+            // PersonnelManager is only role that can view corp applications
+            while (itr != cItr->second.end()) {
+                //if (itr->second &Corp::Role::Director == Corp::Role::Director)
+                //    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                if (itr->second &Corp::Role::Director == Corp::Role::PersonnelManager)
+                    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                ++itr;
+            }
+        } break;
+        case CorpVote: {
+            // any member that can vote (has shares)
+            //  damn...dunno if i wanna do this one like this....hit db every loop here??  fukin nuts!
+            // this is another vote for putting "corp shares" in character.corpData
+            CorporationDB mdb;
+            while (itr != cItr->second.end()) {
+                // if (itr->first->GetChar()->HasShares())  // not written, no underlying code yet
+                if (mdb.HasShares(itr->first->GetCharacterID(), corpID))
+                    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
+                ++itr;
+            }
+        } break;
+
+        // unused yet.  (not coded or not understood  ...mostly the latter at this point in corp code)
+        case CharMedal:
+        case AllMaintenanceBill:
+        case AllWarDeclared:
+        case AllWarSurrender:
+        case AllWarRetracted:
+        case AllWarInvalidated:
+        case CharBill:
+        case CorpAllBill:
+        case BillOutOfMoney:
+        case BillPaidChar:
+        case BillPaidCorpAll:
+        case CorpTaxChange:
+        case CharLeftCorp:
+        case CorpDividend:
+        case CorpVoteCEORevoked:
+        case CorpWarDeclared:
+        case CorpWarFightingLegal:
+        case CorpWarSurrender:
+        case CorpWarRetracted:
+        case CorpWarInvalidated:
+        case ContainerPassword:
+        case SovAllClaimFail:
+        case SovCorpClaimFail:
+        case SovAllBillLate:
+        case SovCorpBillLate:
+        case SovAllClaimLost:
+        case SovCorpClaimLost:
+        case SovAllClaimAquired:
+        case SovCorpClaimAquired:
+        case AllAnchoring:
+        case AllStructVulnerable:
+        case AllStrucInvulnerable:
+        case SovDisruptor:
+        case CorpStructLost:
+        case CorpOfficeExpiration:
+        case FWCorpJoin:
+        case FWCorpLeave:
+        case FWCorpKick:
+        case FWCharKick:
+        case FWCorpWarning:
+        case FWCharWarning:
+        case FWCharRankLoss:
+        case FWCharRankGain:
+        case FWAllianceWarning:
+        case FWAllianceKick:
+        case TransactionReversal:
+        case Reimbursement:
+        case TowerAlert:
+        case TowerResourceAlert:
+        case StationAggression1:
+        case StationStateChange:
+        case StationConquer:
+        case StationAggression2:
+        case FacWarCorpJoinRequest:
+        case FacWarCorpLeaveRequest:
+        case FacWarCorpJoinWithdraw:
+        case FacWarCorpLeaveWithdraw:
+        case CorpLiquidation:
+        case SovereigntyTCUDamage:
+        case SovereigntySBUDamage:
+        case SovereigntyIHDamage:
+        case ContactAdd:
+        case ContactEdit:
+        case CorpKicked:
+        case OrbitalAttacked:
+        case OrbitalReinforced:
+        case OwnershipTransferred:
+            break;
+    }
+
+    for (auto cur : cMap) {
+        PyIncRef(payload);
+        cur.second->SendNotification( notifyType, idType, payload, false );   // are any of these sequenced?
+    }
 }
 
 void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple** payload) const {
@@ -328,18 +469,17 @@ void EntityList::Broadcast(const char* notifyType, const char* idType, PyTuple**
 }
 
 void EntityList::Broadcast(const PyAddress &dest, EVENotificationStream &noti) const {
-    for (auto cur : m_clients)
-        cur->SendNotification(dest, noti);
+    for (auto cur : m_players)
+        cur.second->SendNotification(dest, noti);
 }
 
 void EntityList::Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const {
-    //this could likely be done better
-    std::vector<Client*> result;
-    GetClients(cset, result);
-
-    std::vector<Client*>::iterator cur = result.begin();
-    for (; cur != result.end(); ++cur)
-        (*cur)->SendNotification(dest, noti);
+    std::map<uint32, Client*>::const_iterator itr = m_players.begin();
+    for (auto cur : cset) {
+        itr = m_players.find(cur);
+        if (itr != m_players.end())
+            itr->second->SendNotification(dest, noti);
+    }
 }
 
 // updated to remove looping thru entire client list for each call....still needs work
@@ -354,18 +494,25 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
         case NOTIF_DEST__LOCATION: {
             if (IsStation(targID))
                 GetStationGuestList(targID, cVec);
-            else if (IsSolarSystem(targID))
-                FindOrBootSystem(targID)->GetClientList(cVec);
-            else {
+            else if (IsSolarSystem(targID)) {
+                SystemManager* pSysMgr = FindOrBootSystem(targID);
+                if (pSysMgr == nullptr)
+                    break;
+                pSysMgr->GetClientList(cVec);
+            } else {
                 sLog.Error("EntityList::Multicast 1", "DEST__LOCATION - location %u is neither station nor system", targID);
                 EvE::traceStack();
             }
         } break;
-        // not sure how to do this one yet.
         case NOTIF_DEST__CORPORATION: {
-            for (auto cur : m_clients)
-                if (cur->GetCorporationID() == targID)
-                    cVec.push_back(cur);
+            std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(targID);
+            if (cItr == m_corpMembers.end())
+                break;
+            corpRole::const_iterator itr = cItr->second.begin();
+            while (itr != cItr->second.end()) {
+                cVec.push_back(itr->first);
+                ++itr;
+            }
         } break;
     };
 
@@ -377,40 +524,35 @@ void EntityList::Multicast( const char* notifyType, const char* idType, PyTuple*
     PyDecRef( payload );
 }
 
-/** @todo this shit is nuts.  will have to revisit and come up with a better way to do this. */
+// updated.  so much better this way.
 void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple** in_payload, const MulticastTarget &mcset, bool seq)
 {
     // consume payload
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
-/*
-    for (auto cur : mcset.characters) {
-        Client* pClient(nullptr);
-        if (IsCharacter(cur)) {
-            PyIncRef(payload);
-            // this will be slow as fuck
-            pClient = FindClientByCharID(charID);
-            if (pClient != nullptr)
-                pClient->SendNotification( notifyType, idType, &payload, seq );
-        }
-    }
-*/
+
     if (!mcset.characters.empty())
-        for (auto cur : m_clients)
-            if ( mcset.characters.find(cur->GetCharacterID()) != mcset.characters.end()) {
+        for (auto cur : mcset.characters) {
+            std::map<uint32, Client*>::iterator itr = m_players.find(cur);
+            if ( itr != m_players.end()) {
                 PyIncRef(payload);
-                cur->SendNotification( notifyType, idType, &payload, seq );
+                itr->second->SendNotification( notifyType, idType, &payload, seq );
             }
+        }
 
     if (!mcset.locations.empty()) {
+        SystemManager* pSysMgr(nullptr);
         std::vector<Client*> cVec;
         cVec.clear();
         for (auto cur : mcset.locations) {
             if (IsStation(cur))
                 GetStationGuestList(cur, cVec);
-            else if (IsSolarSystem(cur))
-                FindOrBootSystem(cur)->GetClientList(cVec);
-            else {
+            else if (IsSolarSystem(cur)) {
+                pSysMgr = FindOrBootSystem(cur);
+                if (pSysMgr == nullptr)
+                    continue;
+                pSysMgr->GetClientList(cVec);
+            } else {
                 sLog.Error("EntityList::Multicast 2", "location %u is neither station nor system", cur);
                 EvE::traceStack();
             }
@@ -421,15 +563,19 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
         }
     }
 
-    // this will need list of interested parties from corp.  not sure how to do it yet.
-    // this one is crazy...loop thru all clients for each corp in set.  avoid if we can.
+    // this will need list of interested parties from corp.  update this call to use CorpNotify() where possible.
     if (!mcset.corporations.empty())
-        for (auto cur : m_clients)
-            if (mcset.corporations.find(cur->GetCorporationID()) != mcset.corporations.end()) {
-    //    for (auto cur : mcset.corporations) {
+        for (auto cur : mcset.corporations) {
+            std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(cur);
+            if (cItr == m_corpMembers.end())
+                continue;
+            corpRole::const_iterator itr = cItr->second.begin();
+            while (itr != cItr->second.end()) {
                 PyIncRef(payload);
-                cur->SendNotification( notifyType, idType, &payload, seq );
+                itr->first->SendNotification( notifyType, idType, &payload, seq );
+                ++itr;
             }
+        }
 
     PyDecRef( payload );
 }
@@ -440,11 +586,13 @@ void EntityList::Multicast(const character_set &cset, const char* notifyType, co
     PyTuple* payload = *in_payload;
     in_payload = nullptr;
 
-    std::vector<Client*> cVec;
-    GetClients(cset, cVec);
-    for (auto cur : cVec) {
-        PyIncRef(payload);
-        cur->SendNotification(notifyType, idType, &payload, seq);
+    std::map<uint32, Client*>::const_iterator itr = m_players.begin();
+    for (auto cur : cset) {
+        itr = m_players.find(cur);
+        if (itr != m_players.end()) {
+            PyIncRef(payload);
+            itr->second->SendNotification(notifyType, idType, &payload, seq);
+        }
     }
     PyDecRef( payload );
 }
@@ -455,27 +603,25 @@ void EntityList::Unicast(uint32 charID, const char* notifyType, const char* idTy
         pClient->SendNotification( notifyType, idType, payload, seq );
 }
 
-void EntityList::GetClients(const character_set &cset, std::vector<Client*> &result) const {
-    //this could likely be done better
-    character_set::iterator res;
-    for (auto cur : m_clients) {
-        res = cset.find(cur->GetCharacterID());
-        if (res != cset.end())
-            result.push_back(cur);
-    }
-}
+/** @todo @note NOTE: TODO: HACK: the Find* methods below can get very expensive for many players */
 
-void EntityList::GetClients(std::vector<Client*> &result) const {
+// used in mkt shit....is there a better way for this one?
+//   this should NOT be used.  fix mkt and delete this
+void EntityList::FindByRegionID(uint32 regionID, std::vector<Client*> &result) const {
     for (auto cur : m_clients)
-        result.push_back(cur);
+        if (cur->GetRegionID() == regionID)
+            result.push_back(cur);
 }
 
-void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
-    m_stations[stationID] = itemRef;
-}
-
-void EntityList::RemoveStation(uint32 stationID) {
-    m_stations.erase(stationID);
+//used by gmCommands....i dont like this one either....but at least it's use will be seldom
+Client* EntityList::FindClientByName(const char* name) const {
+    for (auto cur : m_players) {
+        CharacterRef cRef = cur.second->GetChar();
+        if (cRef.get() != nullptr)
+            if (strcmp(cRef->itemName().c_str(), name) == 0)
+                return cur.second;
+    }
+    return nullptr;
 }
 
 StationItemRef EntityList::GetStationByID(uint32 stationID) {

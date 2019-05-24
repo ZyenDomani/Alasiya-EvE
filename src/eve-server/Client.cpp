@@ -321,8 +321,12 @@ bool Client::SelectCharacter(int32 char_id/*0*/) {
     }
 
     m_char->SetClient(this);
+
+    sEntityList.AddPlayer(this);
+
     m_char->VerifySP();
     m_char->UpdateSkillQueue();
+
     /*
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     CharFleetData fleet;
@@ -391,8 +395,6 @@ bool Client::SelectCharacter(int32 char_id/*0*/) {
     sItemFactory.UnsetUsingClient();
     m_char->SetLoginTime();
     UpdateSkillTraining();
-
-    sEntityList.AddPlayer(this);
 
     SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *2 : ClientTimers::LoginTimer));
     return (m_loaded = true);
@@ -893,7 +895,7 @@ void Client::UndockFromStation() {
 }
 
 void Client::CreateShipSE() {
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
@@ -1030,7 +1032,7 @@ void Client::Eject()
     m_pod->Relocate(capsulePosition);
     m_pod->Move(m_locationID, flagCapsule, true);
 
-    FactionData data;
+    FactionData data = FactionData();
         data.ownerID = GetCharacterID();
         data.factionID = GetWarFactionID();
         data.allianceID = GetAllianceID();
@@ -1065,7 +1067,7 @@ void Client::ResetAfterPopped(GPoint& position)
 
     m_pod->Relocate(position);
 
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = GetAllianceID();
         data.corporationID = GetCorporationID();
         data.factionID = GetWarFactionID();
@@ -1383,7 +1385,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     position.MakeRandomPointOnSphere(500.0);
 
     //now we create an entity to represent it.
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = m_char->allianceID();
         data.corporationID = m_char->corporationID();
         data.factionID = m_char->warFactionID();

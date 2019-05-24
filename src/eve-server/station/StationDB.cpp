@@ -62,7 +62,7 @@ PyRep* StationDB::GetOffices(uint32 stationID)
     )
         codelog(DATABASE__ERROR, "Error in GetOffices query: %s", res.error.c_str());
 
-    return DBResultToCRowset(res);
+    return DBResultToCIndexedRowset(res, "corporationID");
 }
 
 bool StationDB::GetOfficeData(uint32 officeID, OfficeData& odata)

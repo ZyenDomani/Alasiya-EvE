@@ -83,11 +83,15 @@ public:
     // updated to use station guest list instead of full clientlist loop
     void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;
 
+    // for main loop thread sleeping
+    bool HasClients()                                   { return (m_players.size() == 0 ? false : true); }
+
     Agent* GetAgent(uint32 agentID);
 
     Client* FindClientByName(const char* name) const;
     Client* FindClientByCharID(uint32 charID) const;
 
+    // this will return nullptr and throw console msg on failure.
     SystemManager* FindOrBootSystem(uint32 systemID);
 
     bool IsOnline(uint32 charID);
@@ -112,7 +116,7 @@ public:
     void Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const;
     void Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true) const;
     void Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true);
-    void GetClients(const character_set &cset, std::vector<Client* > &result) const;
+    // gets Client* for all ingame players
     void GetClients(std::vector<Client* > &result) const;
 
     uint32 GetConnections()                             { return m_connections; }
@@ -131,6 +135,11 @@ public:
 
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
+
+    // new shit for replacing current crazy notification sending
+    // this method will send notification to online members that have the role required for the notification sent.
+    void CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const;
+
 
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
@@ -154,6 +163,9 @@ private:
     std::vector<std::string> m_anomIDs;
     std::map<uint32, Agent*> m_agents;
 
+    // make list for corp members and their roles for easy access of notifications etc.
+    typedef std::map<Client*, int64> corpRole;
+    std::map<uint32, corpRole> m_corpMembers;     //corpID/{Client*/corpRole}
 
     bool m_shipTracking;
 
