@@ -79,6 +79,11 @@ void WormholeMgr::Create(CosmicSignature& sig)
     InventoryItemRef iRef = sItemFactory.SpawnItem(aData);
     if (iRef.get() == nullptr) // make error and exit
         return;
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
+    if (pSysMgr == nullptr) {
+        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
+        return;
+    }
     // do this or create/add generic se here?
     DBSystemDynamicEntity entity;
         entity.categoryID = iRef->categoryID();
@@ -93,7 +98,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
         entity.allianceID = -1;
         entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
     /** @todo this is more shit that should NOT be in db */
-    sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
+    pSysMgr->BuildDynamicEntity(entity);
     // set itemID to return to anomaly mgr
     sig.sigItemID = entity.itemID;
     // set sigStrenth based on wh type and location
@@ -120,10 +125,10 @@ void WormholeMgr::Create(CosmicSignature& sig)
     entity.allianceID = -1;
     entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
     // do the spawn using SystemManager's BuildEntity:
-    sEntityList.FindOrBootSystem(sig.systemID)->BuildDynamicEntity(entity);
+    pSysMgr->BuildDynamicEntity(entity);
     m_wormholes.push_back(entity.itemID);
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Creating WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
