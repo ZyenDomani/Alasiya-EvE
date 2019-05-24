@@ -280,6 +280,13 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.regionID = sData.regionID;
     }
 
+    // make sure system is loaded
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(cdata.solarSystemID);
+    if (pSysMgr == nullptr) {
+        pClient->SendErrorMsg("system boot failure");
+        return new PyInt(0);
+    }
+
     corpData.baseID = cdata.stationID;
 
     std::string name = "";
@@ -371,9 +378,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
                                     skillLevel,
                                     skillPoints.get_double());
     }
-
-    // make sure system is loaded
-    sEntityList.FindOrBootSystem(cdata.solarSystemID);
 
     //now set up some initial inventory:
     /** @todo update this to reflect char career */

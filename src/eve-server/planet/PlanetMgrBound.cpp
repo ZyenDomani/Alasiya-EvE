@@ -141,7 +141,7 @@ PlanetMgrService::~PlanetMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     /* sends planetID */
     _log(PLANET__INFO, "PlanetMgrService bind request for:");
     bind_args->Dump(PLANET__INFO, "    ");
@@ -153,12 +153,16 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
     StaticData sData;
     sDataMgr.GetStaticInfo(bind_args->AsInt()->value(), sData);
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sData.systemID);
-    SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
-    if (!pSE->IsPlanetSE()) {
-        c->SendErrorMsg("itemID is not planetID or planet not found or system not booted");
+    if (pSysMgr == nullptr) {
+        pClient->SendErrorMsg("system boot failure");
         return nullptr;
     }
-    return new PlanetMgrBound(m_manager, c, pSE->GetPlanetSE());
+    SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
+    if (!pSE->IsPlanetSE()) {
+        pClient->SendErrorMsg("itemID is not planetID or planet not found");
+        return nullptr;
+    }
+    return new PlanetMgrBound(m_manager, pClient, pSE->GetPlanetSE());
 }
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
   return m_db->GetPlanetsForChar(call.client->GetCharacterID());

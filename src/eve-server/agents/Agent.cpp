@@ -551,7 +551,10 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
     float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(skillNegotiation), standing);
     float newStanding = EvEMath::Agent::Efficiency(m_agentData.level, quality);    // 0.018 to 0.38
-    newStanding *= sEntityList.FindOrBootSystem(m_agentData.solarSystemID)->GetSecValue(); // 0.0018 to .76
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(m_agentData.solarSystemID);
+    if (pSysMgr != nullptr)
+        newStanding *= pSysMgr->GetSecValue(); // 0.0018 to .76
+
     //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
     newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
     newStanding /= 8;

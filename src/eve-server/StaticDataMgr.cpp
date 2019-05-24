@@ -768,7 +768,11 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
     if (itr != m_whRegions.end())
         return itr->second;
 
-    itr = m_whRegions.find(sEntityList.FindOrBootSystem(systemID)->GetRegionID());
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(systemID);
+    if (pSysMgr == nullptr)
+        return 0;
+
+    itr = m_whRegions.find(pSysMgr->GetRegionID());
     if (itr != m_whRegions.end())
         return itr->second;
 

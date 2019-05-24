@@ -32,9 +32,11 @@
 #include "EntityList.h"
 #include "log/logsys.h"
 
+/** @todo  look over and update this code as needed...  */
+
 static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest) {
-    SystemManager *system = sEntityList.FindOrBootSystem(dest);
-    if (!system) {
+    SystemManager *pSysMgr = sEntityList.FindOrBootSystem(dest);
+    if (!pSysMgr) {
         return false;
     }
 
@@ -43,8 +45,8 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
         return false;
     }
 
-    if (client->GetShipSE() != nullptr and 
-        client->GetShipSE()->DestinyMgr() and 
+    if (client->GetShipSE() != nullptr and
+        client->GetShipSE()->DestinyMgr() and
         !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
         client->GetShipSE()->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", dest);
     }
@@ -71,8 +73,8 @@ static bool translocate_to_solarsystem(TRData *data, uint32_t who, uint32_t dest
     client->SetStateSent(false);
     client->GetShipSE()->DestinyMgr()->SendSetState();
 
-    if (client->GetShipSE() != nullptr and 
-        client->GetShipSE()->DestinyMgr() and 
+    if (client->GetShipSE() != nullptr and
+        client->GetShipSE()->DestinyMgr() and
         !client->GetShipSE()->DestinyMgr()->IsCloaked()) {
         client->GetShipSE()->DestinyMgr()->SendJumpInEffect("effects.JumpIn");
     }
@@ -127,7 +129,7 @@ static bool translocate_to_characterID(TRData *data, uint32_t who, uint32_t dest
             GPoint position = dest_client->GetShip()->position();
             victim_client->MoveToLocation(dest_client->GetSystemID(), position);
 
-            if (ship != nullptr and ship->DestinyMgr() != nullptr and 
+            if (ship != nullptr and ship->DestinyMgr() != nullptr and
                     !ship->DestinyMgr()->IsCloaked()) {
                 ship->DestinyMgr()->SendJumpOutEffect("effects.JumpOut", dest);
             }
