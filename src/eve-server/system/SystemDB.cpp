@@ -112,7 +112,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     return true;
 }
 
-/* load system dynamics owned by the EvE systemID  */
+/* load system dynamics owned by the EvE _System (1)  */
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
     using namespace EVEDB::invCategories;
     DBQueryResult res;
@@ -130,9 +130,9 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND (g.categoryID NOT IN (%d, %d, %d, %d)"
-        "  AND e.ownerID = 1)"  // get dynamics owned by the system -include abandonded ships
-        "  OR g.categoryID = %u"    // - include orbitals (owned by npc corps)
+        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"
+        "  AND (e.ownerID = 1"  // get dynamics owned by the system -include abandonded ships
+        "  OR g.categoryID = %u)"    // - include orbitals (owned by npc corps)
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
