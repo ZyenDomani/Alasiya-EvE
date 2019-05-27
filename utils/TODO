@@ -59,7 +59,7 @@ missions/agents - agents working. courier missions working. currently ~50 missio
 pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
     - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
-wh system - started. k163 for deco only at this time (POC)   -priority level: low
+wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 player drones - skeleton started. needs functionality    -priority level: med-hi
 RAM code - implement invention, copy, re, tech    -priority level: low-med
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
@@ -78,7 +78,6 @@ HandleCorpTransaction() when giving isk to corp, journal window not updating.
 set initial standings when corp is created.  need to write standings code for corps
 when renting office, station offices dont refresh
 GetMemberTrackingInfo() incomplete
-corp stations/offices (on home page of corp window) incomplete (see errors in cruc/corp/*)
 corp jumpers - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)

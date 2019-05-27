@@ -477,7 +477,10 @@ PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
 
     PyList* list = rep->AsList();
     //list->Dump(POS__RSP_DUMP, "    ");
-    pTSE->SetDeployFlags(list->GetItem(0)->AsInt()->value(), list->GetItem(1)->AsInt()->value(), list->GetItem(2)->AsInt()->value(), list->GetItem(3)->AsInt()->value() );
+    pTSE->SetDeployFlags(list->GetItem(0)->AsInt()->value(),
+                         list->GetItem(1)->AsInt()->value(),
+                         list->GetItem(2)->AsInt()->value(),
+                         list->GetItem(3)->AsInt()->value() );
 
 
     // decode usageFlagsList object

@@ -143,7 +143,7 @@ void StationItem::LoadStationOffice(uint32 corpID)
         return;
     if (IsOfficeLoaded(officeID))
         return;
-    _log(PLAYER__INFO, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
+    _log(CORP__TRACE, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
     StationOfficeRef oRef = sItemFactory.GetOffice(officeID);
     if (oRef->GetMyInventory() == nullptr)
         return;   // not sure why this would be null, but i *may* have seen errors from it
