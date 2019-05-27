@@ -358,7 +358,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             while (itr != cItr->second.end()) {
                 //if (itr->second &Corp::Role::Director == Corp::Role::Director)
                 //    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
-                if (itr->second &Corp::Role::Director == Corp::Role::PersonnelManager)
+                if (itr->second &Corp::Role::PersonnelManager == Corp::Role::PersonnelManager)
                     cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 ++itr;
             }

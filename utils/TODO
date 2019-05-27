@@ -57,6 +57,7 @@ belt spawns - rework for better ship group selection   -priority level: med
 contracts - start this system. current status unknown.   -priority level: low-med
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels. next up is security missions. will need dungeon work for these.   -priority level: hi
 pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
+    - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
 wh system - started. k163 for deco only at this time (POC)   -priority level: low
 player drones - skeleton started. needs functionality    -priority level: med-hi
@@ -73,14 +74,14 @@ raceMask isnt implemented yet...will need more thought/coding
 still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
 partial code for corpStations, voting, member roles,
 no code for medals, labels
-HandleCorpTransaction() when giving isk to corp, journal window not updating.  other journal data not showing in window
+HandleCorpTransaction() when giving isk to corp, journal window not updating.
 set initial standings when corp is created.  need to write standings code for corps
 when renting office, station offices dont refresh
 GetMemberTrackingInfo() incomplete
-corpmgr::GetPublicInfo() incomplete
 corp stations/offices (on home page of corp window) incomplete (see errors in cruc/corp/*)
 corp jumpers - decide/implement
-
+GetMemberIDsByQuery needs more work.  see notes in code.
+corp items not updating in db when moved (could be all items as we're not saving every item change)
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: lo
@@ -98,6 +99,10 @@ will need to go thru code and zero-initalize structs ( A a = A(); )    -priority
 
 
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
+
+
+started coding alliance db
+all alliance calls are skeleton code, except GetEmploymentRecord
 
 
 *******  these are not applying any modifiers, but they should be modifying turrents  *************
@@ -153,6 +158,9 @@ after all, it works
 xmlp shit....
 change decode "->AsInt()->value()" and all 'extra' to use PyRep::IntegerValue(), which tests for and decodes all pyint types and will render my 'safe' parameter invalid.
   ...which is a good thing.  'safe' was a hack anyway.  ;)
+
+item flags are stored in db as entity.flag, but client wants 'flagID'.
+look into changing our code to conform.  most objects are built in code and use flagID already, but some items need "flag AS flagID" in sql query.
 
 
 *********  shit in original webpage.  click on char for info

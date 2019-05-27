@@ -145,6 +145,8 @@ void StationItem::LoadStationOffice(uint32 corpID)
         return;
     _log(PLAYER__INFO, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
     StationOfficeRef oRef = sItemFactory.GetOffice(officeID);
+    if (oRef->GetMyInventory() == nullptr)
+        return;   // not sure why this would be null, but i *may* have seen errors from it
     oRef->SetLoaded(oRef->GetMyInventory()->LoadContents());
     m_officeLoaded.emplace(officeID, true);
 }
@@ -166,6 +168,7 @@ void StationItem::RecoverOffice(uint32 officeID)
 
 void StationItem::RentOffice(OfficeData& odata)
 {
+    odata.typeID = typeID();    // change from officeTypeID to stationTypeID
     odata.folderID = m_stationID + staOfficeOffset;
     odata.stationID = m_stationID;
 

@@ -187,8 +187,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         " WHERE e.locationID = %u"
         "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d)"
         "  AND e.ownerID != 1"  // get dynamics not owned by the system
-        //"  AND e.itemID NOT IN (c.shipID,c.capsuleID)"  // this is a problem....returns NOTHING because of this line.
-        " ORDER BY e.itemID",
+        " ORDER BY e.itemID",   // should we order by category?  or group?
         systemID, Celestial/*2*/,   // Celestial is for containers (wrecks, jetcans, lsc)
         Deployable/*22*/,           // include deployed items owned by players or corps
         Drone/*18*/, Entity/*11*/,  // Entity also contains NPCs, sentrys, LCOs, and other destructible objects

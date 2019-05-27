@@ -45,7 +45,7 @@ uint32 StationDB::GetOfficeCount(uint32 corpID)
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
+        codelog(CORP__DB_WARNING, "Unable to find corporation's office data (%u)", corpID);
         return 0;
     }
     return row.GetUInt(0);
@@ -62,7 +62,7 @@ PyRep* StationDB::GetOffices(uint32 stationID)
     )
         codelog(DATABASE__ERROR, "Error in GetOffices query: %s", res.error.c_str());
 
-    return DBResultToCIndexedRowset(res, "corporationID");
+    return DBResultToCRowset(res);
 }
 
 bool StationDB::GetOfficeData(uint32 officeID, OfficeData& odata)

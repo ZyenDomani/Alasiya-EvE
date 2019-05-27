@@ -148,7 +148,7 @@ bool DBcore::Reconnect()
     if (pStatus == Connected)
         _log(DATABASE__MESSAGE, "DBCore recovery successful.  Continuing.");
 
-    return (pStatus == Connected);
+    return pStatus;
 }
 
 void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
@@ -323,18 +323,18 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             return false;
     }
 
+    if (is_log_enabled(DATABASE__QUERIES))
+        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+
     if (mysql_real_query(mysql, query, querylen)) {
         uint num = mysql_errno(mysql);
         if (num > 0)
             pStatus = Error;
 
         // there are many correctable errors to check for
-        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
-            if (Reconnect())
-                pStatus = Connected;
-            else
+        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR))
+            if (!Reconnect())
                 return false;
-        }
 
         if ((pStatus == Connected) and retry)
             return DoQuery_locked(err, query, querylen, retry);
@@ -343,9 +343,6 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
         return false;
     }
-
-    if (is_log_enabled(DATABASE__QUERIES))
-        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     err.ClearError();
 

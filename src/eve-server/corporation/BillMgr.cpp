@@ -106,7 +106,7 @@ PyResult BillMgr::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
  *              [PyInt 1]
  *              [PyTuple 5 items]
  *                [PyInt 342402174]
- *                [PyInt 10]
+ *                [PyInt 10]            << Notify::Types::CorpAllBill
  *                [PyInt 1000167]
  *                [PyIntegerVar 129492968400000000]
  *                [PyDict 8 kvp]

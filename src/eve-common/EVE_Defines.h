@@ -77,6 +77,7 @@
 #define minPCCorporation        98000000        // player corps start here
 #define minAlliance             99000000        // alliances start here
 #define minOffice               100000000
+#define maxOffice               109999999
 #define minTempItemID           110000000
 #define minPIStructure          130000000
 #define minCustomsOffice        135000000
