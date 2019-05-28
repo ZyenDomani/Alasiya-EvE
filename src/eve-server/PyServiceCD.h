@@ -58,9 +58,10 @@ public:
         res = m_serviceCalls.find(method_name);
         if(res == m_serviceCalls.end()) {
             sLog.Error("Server","Unknown call to '%s' by '%s'", method_name.c_str(), call.client->GetName());
-            if (is_log_enabled(SERVICE__WARNING))
-                for (auto cur : m_serviceCalls)
-                    _log(SERVICE__WARNING, "    %s", cur.first.c_str());
+            //  list registered calls for named service 
+            //if (is_log_enabled(SERVICE__WARNING))
+            //    for (auto cur : m_serviceCalls)
+            //        _log(SERVICE__WARNING, "    %s", cur.first.c_str());
             return nullptr;
         }
 

@@ -69,7 +69,7 @@ PyResult AuthService::Handle_AmUnderage(PyCallArgs &call)
     sLog.White("AuthService", "Handle_AmUnderage() size=%u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    // return true/false
+    // return boolean
     return new PyBool(false);
 }
 

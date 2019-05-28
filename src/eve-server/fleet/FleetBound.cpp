@@ -676,7 +676,7 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     if (sFltSvc.UpdateMember(args.charID, m_fleetID, pChar->wingID(), pChar->squadID(), pChar->fleetJob(), pChar->fleetRole(), args.booster))
         return PyStatic.NewTrue();
 
-    // returns true/false
+    // returns boolean
     return PyStatic.NewFalse();
 }
 
@@ -700,7 +700,7 @@ PyResult FleetBound::Handle_MoveMember(PyCallArgs &call) {
     if (sFltSvc.UpdateMember(args.charID, m_fleetID, args.wingID, args.squadID, pChar->fleetJob(), args.role, args.booster))
         return PyStatic.NewTrue();
 
-    // returns true/false
+    // returns boolean
     return PyStatic.NewFalse();
 }
 

@@ -41,6 +41,7 @@ protected:
 
     PyResult Handle_BeanCount(PyCallArgs &call);
     PyResult Handle_BeanDelivery(PyCallArgs &call);
+    PyResult Handle_GroupBeanDelivery(PyCallArgs &call);
     PyResult Handle_SendClientStackTraceAlert(PyCallArgs &call);
 
 protected:

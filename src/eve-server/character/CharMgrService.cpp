@@ -76,7 +76,7 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
     call.Dump(CHARACTER__DEBUG);
     std::ostringstream flagIDs;
     flagIDs << flagHangar;
-    // test m_containerFlag to determine correct flag here and append to flagIDs string?
+    /** @todo  test m_containerFlag to determine correct flag here and append to flagIDs string? */
 
     uint32 ownerID = m_ownerID;
     bool blueprintOnly = PyRep::IntegerValue(call.tuple->GetItem(0));

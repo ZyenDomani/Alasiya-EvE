@@ -87,7 +87,7 @@ PyResult BillMgr::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
             [PyInt 6]
             [PyBool False]
             */
-    return NULL;
+    return nullptr;
 }
 
 
@@ -130,6 +130,7 @@ PyResult BillMgr::Handle_GetAutomaticPaySettings(PyCallArgs &call) {
  *      [PyString "sn"]
  *      [PyIntegerVar 4]
  */
+
 /*
 // OnBillReceived, an essentially empty tuple, just to tell the client that there is something,
 // maybe for blinking purpose?
@@ -137,7 +138,7 @@ OnBillReceived N_obr;   // this is in Wallet.xmlp
 PyTuple * res5 = N_obr.Encode();
 //call.client->SendNotification("OnBillReceived", "*corpid&corprole", &res5, false);
 // Why do we create a bill, when the office is already paid? Maybe that's why it's empty...
-// End of the fifth notification
+
 
 // OnMessage notification, the LSC packet NotifyOnMessage can be used, along with the StoreNewEVEMail
 // Who to send notification? corpRoleJuniorAccountant and equiv? atm it's enough to send it to the renter
@@ -149,5 +150,4 @@ m_manager->lsc_service->SendMail(
                                  "Bill issued",
                                  "Bill issued for renting an office");
 
-// End of the sixth notification, so far so good...
 */

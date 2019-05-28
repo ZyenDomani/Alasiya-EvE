@@ -62,7 +62,7 @@ PyResult FleetProxy::Handle_ApplyToJoinFleet(PyCallArgs &call) {
         return new PyBool(false);
     }
 
-    // returns true/false
+    // returns boolean
     return new PyBool(sFltSvc.AddJoinRequest(arg.arg, call.client));
 }
 
