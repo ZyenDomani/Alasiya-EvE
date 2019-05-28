@@ -19,6 +19,10 @@
 //  where r=revision, dd=day, mm=month, yy=year
 #define bulkDataChangeID        2100119
 
+//  define number of rentable offices in stations (config option later?)
+//  this replaces the hard-coded count previously used in station.h
+#define maxRentableOffices      10
+
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500
 

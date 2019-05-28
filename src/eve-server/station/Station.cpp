@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -145,8 +146,10 @@ void StationItem::LoadStationOffice(uint32 corpID)
         return;
     _log(CORP__TRACE, "StationItem::LoadStationOffice() is loading corp office %u in stationID %u", officeID, m_stationID);
     StationOfficeRef oRef = sItemFactory.GetOffice(officeID);
-    if (oRef->GetMyInventory() == nullptr)
-        return;   // not sure why this would be null, but i *may* have seen errors from it
+    if (oRef->GetMyInventory() == nullptr) {   // not sure why this would be null, but i *may* have seen errors from it
+        _log(ITEM__ERROR, "StationItem::LoadStationOffice() - GetMyInventory() for corp office %u in stationID %u is NULL.", officeID, m_stationID);
+        return;
+    }
     oRef->SetLoaded(oRef->GetMyInventory()->LoadContents());
     m_officeLoaded.emplace(officeID, true);
 }

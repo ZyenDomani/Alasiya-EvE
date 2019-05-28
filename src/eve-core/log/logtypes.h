@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 8.9
+ Log Version: 9.1
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -134,8 +134,11 @@ LOG_TYPE( PLANET, DEBUG, DISABLED, "PlanetDebug" )
 LOG_TYPE( PLANET, INFO, DISABLED, "PlanetInfo" )
 LOG_TYPE( PLANET, TRACE, DISABLED, "PlanetTrace" )
 LOG_TYPE( PLANET, DUMP, DISABLED, "PlanetCallDump" )
-LOG_TYPE( PLANET, RES_DUMP, DISABLED, "RES_Dump" )
+LOG_TYPE( PLANET, RES_DUMP, DISABLED, "PlanetResDump" )
 LOG_TYPE( PLANET, GC_DUMP, DISABLED, "GC_Dump" )
+LOG_TYPE( PLANET, PKT_TRACE, DISABLED, "PlanetPktTrace" )
+LOG_TYPE( PLANET, DB_ERROR,   ENABLED, "PlanetDBError" )
+LOG_TYPE( PLANET, DB_WARNING, DISABLED, "PlanetDBWarning" )
 
 LOG_CATEGORY( SPAWN )
 LOG_TYPE( SPAWN, ERROR,   ENABLED, "SpawnError" )
@@ -200,6 +203,8 @@ LOG_TYPE( FLEET, DEBUG, DISABLED, "FleetDebug" )
 LOG_TYPE( FLEET, INFO, DISABLED, "FleetInfo" )
 LOG_TYPE( FLEET, TRACE, DISABLED, "FleetTrace" )
 LOG_TYPE( FLEET, DUMP, DISABLED, "FleetDump" )
+LOG_TYPE( FLEET, RSP_DUMP, DISABLED, "FleetRspDump" )
+LOG_TYPE( FLEET, PKT_TRACE, DISABLED, "FleetPktTrace" )
 LOG_TYPE( FLEET, BIND_DUMP, DISABLED, "FleetBind" )
 LOG_TYPE( FLEET, BCAST_DUMP, DISABLED, "FleetBCast" )
 LOG_TYPE( FLEET, UPDATE_DUMP, DISABLED, "FleetUpdate" )
@@ -267,6 +272,7 @@ LOG_TYPE( CORP, TRACE, DISABLED, "CorpTrace" )
 LOG_TYPE( CORP, CALL, DISABLED, "CorpCall" )
 LOG_TYPE( CORP, CALL_DUMP, DISABLED, "CorpCallDump" )
 LOG_TYPE( CORP, RSP_DUMP, DISABLED, "CorpRspDump" )
+LOG_TYPE( CORP, PKT_TRACE, DISABLED, "CorpPktTrace" )
 LOG_TYPE( CORP, DB_ERROR,   ENABLED, "CorpDBError" )
 LOG_TYPE( CORP, DB_WARNING, DISABLED, "CorpDBWarning" )
 LOG_TYPE( CORP, DB_MESSAGE, DISABLED, "CorpDBMsg" )
@@ -281,6 +287,9 @@ LOG_TYPE( ALLY, TRACE, DISABLED, "AllyTrace" )
 LOG_TYPE( ALLY, CALL, DISABLED, "AllyCall" )
 LOG_TYPE( ALLY, CALL_DUMP, DISABLED, "AllyCallDump" )
 LOG_TYPE( ALLY, RSP_DUMP, DISABLED, "AllyRspDump" )
+LOG_TYPE( ALLY, PKT_TRACE, DISABLED, "AllyPktTrace" )
+LOG_TYPE( ALLY, DB_ERROR,   ENABLED, "AllyDBError" )
+LOG_TYPE( ALLY, DB_WARNING, DISABLED, "AllyDBWarning" )
 
 LOG_CATEGORY( FACWAR )
 LOG_TYPE( FACWAR, ERROR,   ENABLED, "FacWarError" )

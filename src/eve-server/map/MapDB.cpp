@@ -206,6 +206,7 @@ void MapDB::AddJumpToDynamicData(uint32 solarSystemID) {
     sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour + 1 WHERE solarSystemID = %u", solarSystemID );
 }
 
+/** @todo  can we put this in solarSystem mem obj to avoid the db hit?  */
 void MapDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd/*false*/, bool isDocked/*false*/, bool isLogin/*false*/) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );

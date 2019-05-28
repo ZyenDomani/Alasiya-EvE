@@ -8,13 +8,14 @@ replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --w
     - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
     - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to 5k+ clients w/o noticable lag
 
+comb thru db calls on char login.  multiple SELECTs and UPDATEs that probably arent needed.
+
 **********  found shit...high priority
 password gets hashed, but fails to validate when login.  check plain/hashed and fix this shit!!
 segfault on char creation?  create passes, but cant login.  FIXED...TO TEST
 station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
 
-
-system mail not working.  this would be nice to have, as many systems could use it
+system mail not working.  this would be nice to have, as many systems could(will) use it
 
 **********   new Dec 2018
 check allianceID sending.  see if we can/need to send None() instead of -1
@@ -48,6 +49,7 @@ dungeon mgr - factionID of "region sov" needs to be written to determine region 
 
 
 statistic system is currently inaccurate.  -priority level: low
+    - how?  i didnt note wtf i found that makes it 'inaccurate'...
 
 
 ********* old - no date - still relevant
@@ -78,6 +80,7 @@ HandleCorpTransaction() when giving isk to corp, journal window not updating.
 set initial standings when corp is created.  need to write standings code for corps
 when renting office, station offices dont refresh
 GetMemberTrackingInfo() incomplete
+CorpStationMgrIMBound incomplete
 corp jumpers - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)

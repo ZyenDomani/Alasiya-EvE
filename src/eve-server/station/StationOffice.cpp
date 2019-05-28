@@ -32,6 +32,13 @@ m_data(_odata)
     _log(ITEM__TRACE, "Created StationOffice object for item %s (%u).", itemName().c_str(), itemID());
 }
 
+StationOffice::~StationOffice()
+{
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
+}
+
 StationOfficeRef StationOffice::Load( uint32 officeID)
 {
     return InventoryItem::Load<StationOffice>(officeID );

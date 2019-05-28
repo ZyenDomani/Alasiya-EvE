@@ -87,12 +87,12 @@ PyPackedRow* SystemDB::GetSolarSystem(uint32 ssid) {
 }
 
 bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
-    std::stringstream query;
-    query << "SELECT itemID,typeID,groupID,radius";
-    query << " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID";
-
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, query.str().c_str(), systemID )) {
+    if(!sDatabase.RunQuery(res,
+        "SELECT itemID,typeID,groupID,radius"
+        " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID",
+        systemID))
+    {
         codelog(DATABASE__ERROR, "Error in LoadSystemStaticEntities query: %s", res.error.c_str());
         return false;
     }
@@ -130,9 +130,9 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"
-        "  AND (e.ownerID = 1"  // get dynamics owned by the system -include abandonded ships
-        "  OR g.categoryID = %u)"    // - include orbitals (owned by npc corps)
+        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"    // not Characters, stations, or roids
+        "  AND (e.ownerID = 1"      // get dynamics owned by the system -include abandonded ships
+        "  OR g.categoryID = %u)"   // or orbitals owned by npc corps
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
