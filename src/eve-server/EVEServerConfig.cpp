@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.2
+    Version:    9.3
 */
 
 
@@ -86,6 +86,8 @@ EVEServerConfig::EVEServerConfig()
     rates.turretDamage = 1.0;
     rates.turretRoF = 1.0;
     rates.corpCost = 1599800;
+    rates.medalAwardCost = 5000000;
+    rates.medalCreateCost = 5000000;
     rates.WorldDecay = 120 /*m*/;
     rates.NPCDecay = 90 /*m*/;
     rates.RateDropItem = 1.0;//N
@@ -375,6 +377,8 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "turretDamage",         rates.turretDamage );
     AddValueParser( "turretRoF",            rates.turretRoF );
     AddValueParser( "corpCost",             rates.corpCost );
+    AddValueParser( "medalAwardCost",       rates.medalAwardCost );
+    AddValueParser( "medalCreateCost",      rates.medalCreateCost );
     AddValueParser( "WorldDecay",           rates.WorldDecay );
     AddValueParser( "NPCDecay",             rates.NPCDecay );
     AddValueParser( "RateDropItem",         rates.RateDropItem );
@@ -397,6 +401,8 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "turretDamage" );
     RemoveParser( "turretRoF" );
     RemoveParser( "corpCost" );
+    RemoveParser( "medalAwardCost" );
+    RemoveParser( "medalCreateCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );
     RemoveParser( "RateDropItem" );

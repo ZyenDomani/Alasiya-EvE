@@ -814,8 +814,10 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             pShipSE->DestinyMgr()->Stop();
     }
 
-    m_ship->SetCustomInfo(ci);
-    m_ship->SaveShip();
+    if (!m_login) {
+        m_ship->SetCustomInfo(ci);
+        m_ship->SaveShip(); // this saves everything on ship
+    }
 
     UpdateSession();
     SendSessionChange();

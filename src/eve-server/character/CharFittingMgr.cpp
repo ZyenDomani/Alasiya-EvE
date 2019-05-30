@@ -57,7 +57,7 @@ PyResult CharFittingMgr::Handle_GetFittings(PyCallArgs &call) {
     //self.fittings[ownerID] = self.GetFittingMgr(ownerID).GetFittings(ownerID)
     // client/script/environment/fittingsvc.py(112) PersistFitting
 
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_GetFittings()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_GetFittings()");
     call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;
@@ -67,7 +67,7 @@ PyResult CharFittingMgr::Handle_SaveFitting(PyCallArgs &call)
 {
     //    fitting.ownerID = ownerID
     //    fitting.fittingID = self.GetFittingMgr(ownerID).SaveFitting(ownerID, fitting)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveFitting()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveFitting()");
     call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;
@@ -81,7 +81,7 @@ PyResult CharFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
             self.fittings[ownerID][row.realFittingID] = fittingsToSave[row.tempFittingID]
             self.fittings[ownerID][row.realFittingID].fittingID = row.realFittingID
         */
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveManyFittings()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveManyFittings()");
     call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;
@@ -90,7 +90,7 @@ PyResult CharFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
 PyResult CharFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).DeleteFitting(ownerID, fittingID)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_DeleteFitting()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_DeleteFitting()");
     call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;
@@ -99,7 +99,7 @@ PyResult CharFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
 PyResult CharFittingMgr::Handle_UpdateNameAndDescription(PyCallArgs &call)
 {
     // self.GetFittingMgr(ownerID).UpdateNameAndDescription(fittingID, ownerID, name, description)
-    _log(PLAYER__CALL, "CharFittingMgr::Handle_UpdateNameAndDescription()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_UpdateNameAndDescription()");
     call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;

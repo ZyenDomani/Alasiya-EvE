@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.2
+    Version:    9.3
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -114,7 +114,9 @@ public:
         /// Modifier for security rating changes. Changes how fast it goes up/down based on actions
         double secRate;
         /// Startup Cost to create a corporation.
-        double corpCost;
+        uint32 corpCost;
+        uint32 medalAwardCost;
+        uint32 medalCreateCost;
     } rates;
 
     // from <market>

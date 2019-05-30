@@ -122,8 +122,30 @@ PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
 
 PyResult FactionWarMgrService::Handle_GetMyCharacterRankOverview( PyCallArgs& call ) {
     /**
-     * 15:21:59 L FactionWarMgrService::Handle_GetMyCharacterRankOverview(): size= 0
-     * 15:21:59 [PacketError] Encode util_Rowset: lines is NULL! hacking in an empty list.
+            [PySubStream 122 bytes]
+              [PyObjectEx Type2]
+                [PyTuple 2 items]
+                  [PyTuple 1 items]
+                    [PyToken dbutil.CRowset]
+                  [PyDict 1 kvp]
+                    [PyString "header"]
+                    [PyObjectEx Normal]
+                      [PyTuple 2 items]
+                        [PyToken blue.DBRowDescriptor]
+                        [PyTuple 1 items]
+                          [PyTuple 4 items]
+                            [PyTuple 2 items]
+                              [PyString "currentRank"]
+                              [PyInt 3]
+                            [PyTuple 2 items]
+                              [PyString "highestRank"]
+                              [PyInt 3]
+                            [PyTuple 2 items]
+                              [PyString "factionID"]
+                              [PyInt 3]
+                            [PyTuple 2 items]
+                              [PyString "lastModified"]
+                              [PyInt 64]
      */
 
 // will need data from DB...
