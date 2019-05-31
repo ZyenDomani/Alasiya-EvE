@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+/** @todo most of these need their own namespace */
 
 /* POD structure for certificate data */
 struct CharCerts {
@@ -100,34 +101,6 @@ struct CorpData {
     double taxRate;
     std::string name;
     std::string ticker;
-};
-
-/* POD structure for corp office data */
-struct OfficeData {
-    bool lockDown;
-    uint32 officeID;
-    uint32 folderID;
-    uint16 typeID;
-    uint32 stationID;
-    uint32 corporationID;
-    int64 rentalFee;
-    int64 expiryTime;
-    std::string ticker;
-};
-
-/* POD structure for corp app data */
-struct ApplicationInfo {
-    bool valid;
-    uint32 appID;
-    uint32 corpID;
-    uint32 charID;
-    uint32 status;
-    uint32 deleted;
-    uint32 lastCID;
-    int64 appTime;
-    int64 role;
-    int64 grantRole;
-    std::string appText;
 };
 
 /* POD structure for fleet data    -allan 31Jul14 */
@@ -403,6 +376,20 @@ struct StationData {
     std::string description;
 };
 
+/* POD structure for corp office data */
+// this is used by multiple systems.  keep here instead of in corpData.h
+struct OfficeData {
+    bool lockDown;
+    uint32 officeID;
+    uint32 folderID;
+    uint16 typeID;
+    uint32 stationID;
+    uint32 corporationID;
+    int64 rentalFee;
+    int64 expiryTime;
+    std::string ticker;
+};
+
 /* POD structure for saving items */
 struct SaveData {
     EVEItemFlags    flag;
@@ -473,6 +460,7 @@ struct DBGPointEntity {
 };
 
 /* POD structure entries for dungeon data */
+/** @todo these need their own namespace */
 struct DunTemplate {
     uint8 dunTypeID;
     uint8 dunSpawnClass;
@@ -531,6 +519,7 @@ struct ProbeData {
     GPoint dest;
 };
 
+/** @todo these need their own namespace */
 /* POD structure entries for PI data */
 struct PlanetResourceData {
     float dist_1;
@@ -601,6 +590,7 @@ struct PI_Plant {
 };
 
 /* optimize this after everything is working!!  */
+/** @todo these need c'tors */
 class PI_Pin {
 public:
     bool isCommandCenter : 1;

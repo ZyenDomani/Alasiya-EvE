@@ -72,7 +72,7 @@ namespace Account {
  * recDescription = 'DESC'                     <-- defines a custom description
  * recDescNpcBountyList = 'NBL'                <-- descrives a full list
  * recDescNpcBountyListTruncated = 'NBLT'      <-- describes a trunicated list
- * recStoreItems = 'STOREITEMS'                <-- not sure here
+ * recStoreItems = 'STOREITEMS'                <-- specific itemTypes purchased  --for typeID, qty in description.get(const.recStoreItems, []):
  */
 
 namespace Journal {
@@ -184,6 +184,7 @@ namespace Journal {
             AurumTokenConversion = 111,
             Max = 120,
             /* not sure on these
+refMaxEve = 10000
             ModifyISK = 10001,
             PrimaryMarketplacePurchase = 10002,
             BattleReward = 10003,

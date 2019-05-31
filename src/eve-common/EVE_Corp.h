@@ -40,13 +40,14 @@ namespace Corp {
             Shares = 2,
             KickMember = 3,
             General = 4,
-            ItemLockdown = 5,
+            ItemLock = 5,
             ItemUnlock = 6
         };
     }
 
     namespace EventType {
         enum {
+            // these are the only types defined in client.  others are 'logtype'
             CreatedCorporation = 12,
             DeletedCorporation = 13,
             LeftCorporation = 14,
@@ -64,7 +65,7 @@ namespace Corp {
             AcceptedByCharacter         = 2, //  accepted    accepted
             RejectedByCharacter         = 3,
             RejectedByCorporation       = 4, //    error      reject
-            RenegotiatedByCorporation   = 5,
+            RenegotiatedByCorporation   = 5, //    reneg      update
             AcceptedByCorporation       = 6  //    offer      offer
         };
     }
@@ -73,11 +74,11 @@ namespace Corp {
     // these are 'remoteActions' from 'self.GetCorpRegistry().ExecuteActions(targetIDs, remoteActions)'
     namespace Actions {
         enum {
-            CTV_ADD = 1,
-            CTV_REMOVE = 2,
-            CTV_SET = 3,
-            CTV_GIVE = 4,
-            CTV_COMMS = 5
+            Add = 1,
+            Remove = 2,
+            Set = 3,
+            Give = 4,
+            Comms = 5
         };
     }
     namespace RoleLoc {
