@@ -20,11 +20,11 @@
     <objectInline>
       <stringInline value="util.Rowset" />
         <dictInline>
-          <dictInlineEntry key="header">
-              <listStr name="header" />
-          </dictInlineEntry>
           <dictInlineEntry key="RowClass">
           <tokenInline value="util.Row" />
+          </dictInlineEntry>
+          <dictInlineEntry key="header">
+              <listStr name="header" />
           </dictInlineEntry>
           <dictInlineEntry key="lines">
               <list name="lines" />
@@ -128,17 +128,9 @@
   <!--
   empty calls:
   CallPing
-  CallGetPostAuthenticationMessage
   CallGetFactionInfo
   CallGetStuckSystems
   CallGetOwnerNoteLabels
-  CallGetStationItemBits
-  CallGetStationExtraInfo
-  CallGetCorporateStationInfo
-  CallGetCorporation
-  CallList (inventory)
-  CallGetAgents
-  CallGetGuests
   -->
 
   <elementDef name="CallGetMultiOwnersEx">

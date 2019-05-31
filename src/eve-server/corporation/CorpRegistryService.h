@@ -44,11 +44,7 @@ protected:
     CorporationDB m_db;
 
     /** @note: none of these fully work, and most are skeleton code only */
-    PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
     PyCallable_DECL_CALL(CreateAlliance);
-    PyCallable_DECL_CALL(ApplyToJoinAlliance);
-    PyCallable_DECL_CALL(GetAllianceApplications);
-    PyCallable_DECL_CALL(DeleteAllianceApplication);
     PyCallable_DECL_CALL(GetRecentKillsAndLosses);
     PyCallable_DECL_CALL(GetCorporateContacts);
     PyCallable_DECL_CALL(AddCorporateContact);

@@ -137,7 +137,8 @@ PyObject *CorporationDB::ListStationOwners(uint32 stationID) {
 PyRep *CorporationDB::GetCorpInfo(uint32 corpID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT corporationID, corporationName, description, creatorID, url, allianceID, deleted, stationID, ceoID"
+        "SELECT corporationID, corporationName, description, creatorID, tickerName,"
+        " url, allianceID, deleted, stationID, ceoID, shares, memberCount, taxRate"
         " FROM crpCorporation WHERE corporationID = %u", corpID))
     {
         codelog(CORP__DB_ERROR, "Error in retrieving corporation's data (%u)", corpID);
@@ -261,46 +262,179 @@ PyObject *CorporationDB::GetEmploymentRecord(uint32 charID) {
         return nullptr;
     }
 
-    return (DBResultToRowset(res));
+    return DBResultToRowset(res);
 }
 
-PyObject* CorporationDB::GetMedalsReceived( uint32 charID )
+uint16 CorporationDB::CreateMedal(uint32 ownerID, uint32 creatorID, std::string& title, std::string& description)
 {
-    sLog.Debug( "CorporationDB", "Called GetMedalsReceived stub." );
+    std::string cTitle, cDesc;
+    sDatabase.DoEscapeString(cTitle, title);
+    sDatabase.DoEscapeString(cDesc, description);
+    uint32 medalID = 0;
+    DBerror err;
+    sDatabase.RunQueryLID(err, medalID,
+        " INSERT INTO crpMedals ( ownerID, creatorID, title, description, date)"
+        " VALUES (%u, %u, '%s', '%s', %lli)", ownerID, creatorID, cTitle.c_str(), cDesc.c_str(), GetFileTimeNow());
 
-    util_Rowset rs;
-
-    rs.header.push_back( "medalID" );
-    rs.header.push_back( "title" );
-    rs.header.push_back( "description" );
-    rs.header.push_back( "ownerID" );
-    rs.header.push_back( "" );    //wtf??
-    rs.header.push_back( "issuerID" );
-    rs.header.push_back( "date" );
-    rs.header.push_back( "reason" );
-    rs.header.push_back( "status" );
-
-    return rs.Encode();
+    return medalID;
 }
 
-PyObject* CorporationDB::GetMedalDetails(uint32 medalID)
+void CorporationDB::SaveMedalData(int64 medalID, std::vector< Corp::MedalData >& dataList)
 {
-    sLog.Debug( "CorporationDB", "Called GetMedalDetails stub." );
+    // loop thru data and add to query
+    std::ostringstream query;
+    query << "INSERT INTO crpMedalData(medalID, part, graphic, color)";
+    query << "VALUES ";
 
-    util_Rowset rs;
+    bool first = true;
+    for (auto cur : dataList) {
+        if (first)
+            first = false;
+        else
+            query << ",";
+        query << "(" << itoa(medalID) << "," << itoa(cur.part) << ",'" << cur.graphic << "'," << itoa(cur.color) << ")";
+    }
 
-    rs.header.push_back( "medalID" );
-    rs.header.push_back( "title" );
-    rs.header.push_back( "description" );
-    rs.header.push_back( "ownerID" );
-    rs.header.push_back( "" );    //wtf??
-    rs.header.push_back( "issuerID" );
-    rs.header.push_back( "date" );
-    rs.header.push_back( "reason" );
-    rs.header.push_back( "status" );
+    if (!first ) {
+        DBerror err;
+        sDatabase.RunQuery(err, query.str().c_str());
+    }
 
-    return rs.Encode();
+    //SELECT id, part, graphic, color FROM crpMedalData
 }
+
+PyRep* CorporationDB::GetRecipientsOfMedal(int32 medalID)
+{
+    //  SELECT recepientID, medalID, corpID, date, status FROM chrMedals WHERE recepientID = %u
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT recepientID, issuerID, date, reason, status"
+        " FROM chrMedals"
+        " WHERE medalID = %u", medalID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetAllCorpMedals(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT medalID, creatorID, noRecepients, date, title, description FROM crpMedals WHERE ownerID = %u", corpID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetCorpMedalData(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT medalID, part, graphic, color FROM crpMedalData"
+        " WHERE medalID IN (SELECT medalID FROM crpMedals WHERE ownerID = %u)", corpID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetMedalsReceived(int32 charID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT chr.medalID, crp.creatorID, crp.noRecepients, crp.date, crp.title, crp.description, chr.status"
+        " FROM chrMedals AS chr"
+        " LEFT JOIN crpMedals AS crp USING (medalID)"
+        " WHERE chr.recepientID = %u", charID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetMedalsReceivedDetails(int32 charID)
+{
+    // SELECT recepientID, medalID, corpID, dateTime FROM chrMedals WHERE recepientID = %u
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT medalID, part, graphic, color FROM crpMedalData"
+        " WHERE medalID IN (SELECT medalID FROM chrMedals WHERE recepientID = %u)", charID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCRowset(res);
+}
+
+PyObjectEx* CorporationDB::GetMedalDetails(int32 medalID)
+{
+
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT medalID, ownerID, creatorID, noRecepients AS numberOfRecipients, date, title, description FROM crpMedals"
+        " WHERE medalID = %u)", medalID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    //  SELECT medalID, ownerID, creatorID, noRecepients, date, title, description FROM crpMedals WHERE medalID
+
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetMedalStatuses()
+{
+    // this is for viewing permissions on paperdoll
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT statusID, statusName FROM crpMedalStatus");
+    return DBResultToRowset(res);
+}
+
+void CorporationDB::GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 medalID, std::vector< uint32 >& charVec, std::string& reason)
+{
+    // INSERT INTO chrMedals(recepientID, medalID, corpID, issuerID, reason, date, status) VALUES ()
+
+    // loop thru data and add to query
+    std::ostringstream query;
+    query << "INSERT INTO chrMedals(recepientID, medalID, corpID, issuerID, date, reason)";
+    query << "VALUES ";
+
+    bool first = true;
+    for (auto cur : charVec) {
+        if (first)
+            first = false;
+        else
+            query << ",";
+        query << "(" << itoa(cur) << "," << itoa(medalID) << "," << itoa(corpID) << "," << itoa(issuerID) << ",";
+        query << itoa(GetFileTimeNow()) << ",'" << reason.c_str() << "')";
+    }
+
+    if (!first ) {
+        DBerror err;
+        sDatabase.RunQuery(err, query.str().c_str());
+        sDatabase.RunQuery(err, "UPDATE crpMedals SET noRecepients=noRecepients +1 WHERE medalID = %u", medalID );
+    }
+
+}
+
+void CorporationDB::SetMedalStatus(uint32 charID, uint16 medalID, uint8 status)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE chrMedals SET status = %u WHERE recepientID = %u AND medalID = %u", status, charID, medalID);
+}
+
 
 static std::string _IoN( PyRep* r )
 {
@@ -326,17 +460,19 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     mLimit += (pChar->GetSkillLevel(skillEmpireControl) * 400);             //2601
     mLimit += (pChar->GetSkillLevel(skillSovereignty) * 2000);              //12601
 
-    /** @todo  allowedMemberRaceIDs will need to be bitwise...it is a flag. */
+    /** @todo  allowedMemberRaceIDs will need to be bitwise...it is a flag.
+     * also called 'raceMask' and isnt implemented yet.
+     */
     DBerror err;
     if (!sDatabase.RunQueryLID(err, corpID,
         " INSERT INTO crpCorporation ( "
         "   corporationName, description, tickerName, url, taxRate, corporationType, hasPlayerPersonnelManager, "
-        "   creatorID, ceoID, stationID, raceID, shares, memberLimit, allowedMemberRaceIDs,"
+        "   creatorID, ceoID, stationID, raceID, shares, memberCount, memberLimit, allowedMemberRaceIDs,"
         "   graphicID, color1, color2, color3, shape1, shape2, shape3, "
         "   isRecruiting ) "
         " VALUES "
         "   ('%s', '%s', '%s', '%s', %f, 2, 1, "
-        "    %u, %u, %u, %u, 1000, %u, %u,"
+        "    %u, %u, %u, %u, 1000, 1, %u, %u,"
         "    0, %s, %s, %s, %s, %s, %s, "
         "    %u) ",
         cName.c_str(), cDesc.c_str(), cTick.c_str(), cURL.c_str(), corpInfo.taxRate,
@@ -364,7 +500,7 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
 
     // create corp-owned shares
     sDatabase.RunQuery(err, "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
-                            " VALUES (%i, %i, %i, %u)", corpID, corpID, 1000, corpID);
+                            " VALUES (%u, %u, 1000, %u)", corpID, corpID, corpID);
 
     return true;
 }
@@ -516,53 +652,6 @@ bool CorporationDB::CreateCorporationChangePacket(OnCorporationChanged & cc, uin
     return true;
 }
 
-bool CorporationDB::JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorpID, const CorpData &data) {
-    DBerror err;
-    // Decrease previous corp's member count
-    if (!sDatabase.RunQuery(err,
-        "UPDATE crpCorporation "
-        "   SET memberCount = memberCount-1"
-        "   WHERE corporationID = %u",
-            oldCorpID
-        ))
-    {
-        codelog(CORP__DB_ERROR, "Error in prev corp member decrease query: %s", err.c_str());
-        return false;
-    }
-
-    if (!sDatabase.RunQuery(err,
-        "UPDATE chrCharacters SET "
-        "   corporationID = %u, startDateTime = %f, corpAccountKey = %i,"
-        "   corpRole = %lli, rolesAtAll = %lli, rolesAtBase = %lli, rolesAtHQ = %lli, rolesAtOther = %lli, "
-        "   grantableRoles = %lli, grantableRolesAtBase = %lli, grantableRolesAtHQ = %lli, grantableRolesAtOther = %lli "
-        "   WHERE characterID = %u",
-            corpID, GetFileTimeNow(), data.corpAccountKey,
-            data.corpRole, data.rolesAtAll, data.rolesAtBase, data.rolesAtHQ, data.rolesAtOther,
-            data.grantableRoles, data.grantableRolesAtBase, data.grantableRolesAtHQ, data.grantableRolesAtOther,
-            charID
-        ))
-    {
-        codelog(CORP__DB_ERROR, "Error in char update query: %s", err.c_str());
-        //TODO: undo previous member count decrement.
-        return false;
-    }
-
-    // Increase new corp's member number...
-    if (!sDatabase.RunQuery(err,
-        "UPDATE crpCorporation "
-        "   SET memberCount = memberCount+1"
-        "   WHERE corporationID = %u",
-            corpID
-        ))
-    {
-        codelog(CORP__DB_ERROR, "Error in new corp member decrease query: %s", err.c_str());
-        //dont stop now, we are already moved... else we need to undo everything we just did.
-    }
-
-    /** @todo  check if this member has any shares, and update to new corpID */
-    return true;
-}
-
 bool CorporationDB::CreateCorporationCreatePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID) {
     DBQueryResult res;
     DBResultRow row;
@@ -631,6 +720,7 @@ bool CorporationDB::CreateCorporationCreatePacket(OnCorporationChanged & cc, uin
     cc.deletedNew = row.GetUInt(41);
     cc.isRecruitingNew = row.GetUInt(42);
 
+    /** @todo these need to be updated */
     cc.allianceIDOld = PyStatic.NewNone();
     cc.warFactionIDOld = PyStatic.NewNone();
     cc.allowedMemberRaceIDsOld = PyStatic.NewNone();
@@ -685,7 +775,7 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         " SELECT "
         "  characterID, "
         "  corporationID,"
-        "  0 AS divisionID,"
+        "  corpAccountKey AS divisionID,"
         "  0 AS squadronID,"
         "  title, "
         "  corpRole AS roles,"
@@ -700,7 +790,6 @@ PyRep* CorporationDB::GetMember(uint32 charID)
         "  rolesAtOther, "
         "  grantableRolesAtOther, "
         "  titleMask,"
-        "  corpAccountKey, "
         "  startDateTime AS rowDate,"
         "  blockRoles,"
         "  name"
@@ -723,7 +812,7 @@ void CorporationDB::GetMembers(uint32 corpID, DBQueryResult& res)
         " SELECT "
         "  characterID, "
         "  corporationID,"
-        //"  0 AS divisionID,"
+        "  corpAccountKey AS divisionID,"
         //"  0 AS squadronID,"
         "  title, "
         "  rolesAtAll, "
@@ -1040,7 +1129,7 @@ PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT itemID, officeFolderID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime"
+        "SELECT stationID, stationTypeID, itemID, officeFolderID"
         " FROM staOffices "
         " WHERE corporationID = %u "
         " LIMIT %u, %u ", corpID, from, count
@@ -1050,20 +1139,22 @@ PyRep *CorporationDB::Fetch(uint32 corpID, uint32 from, uint32 count) {
         return nullptr;
     }
 
-    // Have to send back a list that contains a tuple that contains an int and a list...
-    // params probably needs the following stuff: stationID, typeID, officeID, officeFolderID
-    Reply_FetchOffice reply;
-    reply.params = new PyList();
+    // manually build the return.  easier this way...
+    PyList* list = new PyList();
 
     DBResultRow row;
-    if (res.GetRow(row)) {
-        reply.params->AddItemInt( row.GetInt(0) );
-        reply.params->AddItemInt( row.GetInt(1) );
-        reply.officeID = row.GetInt(2);
-        reply.params->AddItemInt( reply.officeID );
-        reply.params->AddItemInt( row.GetInt(3) );
+    while (res.GetRow(row)) {
+        PyList* innerList = new PyList();
+            innerList->AddItem(new PyInt(row.GetInt(0)));
+            innerList->AddItem(new PyInt(row.GetInt(1)));   // this wants stationTypeID
+            innerList->AddItem(new PyInt(row.GetInt(2)));
+            innerList->AddItem(new PyInt(row.GetInt(3)));
+        PyTuple* tuple = new PyTuple(2);
+            tuple->SetItem(0, new PyInt(row.GetInt(0)));
+            tuple->SetItem(1, innerList);
+        list->AddItem(tuple);
     }
-    return reply.Encode();
+    return list;
 }
 
 //NOTE: it makes sense to push this up to ServiceDB, since others will likely need this too.
@@ -1116,7 +1207,7 @@ PyRep* CorporationDB::GetBulletins(uint32 corpID)
     return DBResultToCRowset(res);
 }
 
-void CorporationDB::AddRecruiters(int32 adID, int32 corpID, std::vector< int32 >& charVec)
+void CorporationDB::AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 >& charVec)
 {
     std::ostringstream str;
     str << "INSERT INTO crpRecruiters (adID, corpID, charID) VALUES ";
@@ -1129,25 +1220,31 @@ void CorporationDB::AddRecruiters(int32 adID, int32 corpID, std::vector< int32 >
             first = false;
         else
             str << ",";
-        str << "(" << itoa(adID) << "," << itoa(corpID) << "," << itoa(cur) << ")";
+        str << "(" << adID << "," << corpID << "," << cur << ")";
     }
 
     if (!first ) {
         DBerror err;
-        sDatabase.RunQuery(err, "DELETE FROM crpRecruiters WHERE adID = %u", adID);
+        sDatabase.RunQuery(err, "DELETE FROM crpRecruiters WHERE corpID = %u AND adID = %u", corpID, adID);
         sDatabase.RunQuery(err, str.str().c_str());
     }
 }
 
-PyRep* CorporationDB::GetRecruiters(uint16 adID)
+PyRep* CorporationDB::GetRecruiters(int32 corpID, uint16 adID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT charID FROM crpRecruiters WHERE adID = %u", adID)) {
+    if (!sDatabase.RunQuery(res, "SELECT charID FROM crpRecruiters WHERE corpID = %u AND adID = %u", corpID, adID)) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
 
-    return DBResultToRowset(res);
+    PyTuple* tuple = new PyTuple(res.GetRowCount());
+    int8 i = 0;
+    DBResultRow row;
+    while (res.GetRow(row))
+        tuple->SetItem(i++, new PyInt(row.GetInt(0)));
+
+    return tuple;
 }
 
 PyRep* CorporationDB::GetAdTypeData()
@@ -1172,6 +1269,10 @@ PyRep* CorporationDB::GetAdGroupData()
 
 PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*false*/, int16 minMembers/*0*/, uint16 maxMembers/*12602*/)
 {
+    // make sure this isnt 0
+    if (maxMembers < 1)
+        maxMembers = 12602;
+
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT"
@@ -1179,9 +1280,8 @@ PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*fa
         "  createDateTime, expiryDateTime, title, description, memberCount, channelID"
         " FROM crpAdRegistry"
         "  WHERE allianceID %s 0"
-        "   AND (memberCount >= %u AND memberCount < %u)"
-        " AND typeMask | %llu = %llu",
-        (inAlliance ? ">" : "="), minMembers, maxMembers, typeMask, typeMask))
+        "   AND (memberCount >= %u AND memberCount < %u)",
+        (inAlliance ? ">" : "="), minMembers, maxMembers))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -1189,7 +1289,30 @@ PyRep* CorporationDB::GetAdRegistryData(int64 typeMask/*0*/, bool inAlliance/*fa
     return DBResultToCRowset(res);
 }
 
-int32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description, uint32 channelID, std::string title)
+PyRep* CorporationDB::GetAdvert(uint16 adID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  adID, corporationID, allianceID, stationID, regionID, raceMask, typeMask,"
+        "  createDateTime, expiryDateTime, title, description, memberCount, channelID"
+        " FROM crpAdRegistry"
+        "  WHERE adID = %u", adID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    return DBResultToCRowset(res);
+
+}
+
+void CorporationDB::DeleteAdvert(uint16 adID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM crpAdRegistry WHERE adID=%u ", adID);
+}
+
+uint32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description, uint32 channelID, std::string title)
 {
     uint32 adID = 0;
     DBerror err;
@@ -1198,9 +1321,30 @@ int32 CorporationDB::CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask
     "  createDateTime, expiryDateTime, description, title, memberCount, channelID)"
     " VALUES (%u,%u,%u,%u,%u,%lli,%f,%f,'%s','%s',%u,%u)",
         corpID, pClient->GetAllianceID(), pClient->GetStationID(), pClient->GetRegionID(), 15, typeMask, // raceMask isnt implemented yet
-        GetFileTimeNow(), (GetFileTimeNow() + (EvE::Time::Day * days)), description.c_str(), title.c_str(), members, channelID);
+        GetFileTimeNow(), GetFileTimeNow() + (EvE::Time::Day * days), description.c_str(), title.c_str(), members, channelID);
 
-    return (int32)adID;
+    return adID;
+}
+
+void CorporationDB::UpdateAdvert(uint16 adID, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description, uint32 channelID, std::string title)
+{
+    int64 time = GetFileTimeNow() + (EvE::Time::Day * days);
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE crpAdRegistry"
+        " SET typeMask=%lli, expiryDateTime=%lli, description='%s', title='%s', memberCount=%u, channelID=%u"
+        " WHERE adID=%u ",
+        typeMask, time, description.c_str(), title.c_str(), members, channelID, adID);
+}
+
+int64 CorporationDB::GetAdvertTime(uint16 adID, uint32 corpID)
+{
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT expiryDateTime FROM crpAdRegistry WHERE adID=%u AND corporationID=%u", adID, corpID);
+    DBResultRow row;
+    if (res.GetRow(row))
+        return row.GetInt64(0);
+
+    return 0;
 }
 
 PyRep *CorporationDB::GetMyApplications(uint32 charID) {
@@ -1227,10 +1371,11 @@ PyRep *CorporationDB::GetApplications(uint32 corpID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT"
-        " applicationID, corporationID, characterID, applicationText, roles, grantableRoles, status,"
-        " applicationDateTime, deleted, lastCorpUpdaterID"
+        " applicationID, characterID, corporationID, applicationText, status,"
+        " applicationDateTime, lastCorpUpdaterID"
         " FROM crpApplications"
-        " WHERE corporationID = %u", corpID))
+        " WHERE corporationID = %u AND deleted = 0",
+        corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -1242,15 +1387,15 @@ PyRep *CorporationDB::GetApplications(uint32 corpID) {
     return obj;
 }
 
-bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, ApplicationInfo & aInfo) {
+bool CorporationDB::GetCurrentApplicationInfo(Corp::ApplicationInfo& aInfo) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         " SELECT"
         " applicationID, applicationText, roles, grantableRoles, status,"
         " applicationDateTime, lastCorpUpdaterID, deleted"
         " FROM crpApplications"
-        " WHERE characterID = %u AND corporationID = %u",
-        charID, corpID))
+        " WHERE characterID = %u AND corporationID = %u AND applicationText = '%s'",
+        aInfo.charID, aInfo.corpID, aInfo.appText.c_str()))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return (aInfo.valid = false);
@@ -1258,13 +1403,11 @@ bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, Appl
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(CORP__DB_WARNING, "There's no previous application.");
+        codelog(CORP__DB_WARNING, "There's no application matching the sent data.");
         return (aInfo.valid = false);
     }
 
     aInfo.appID = row.GetInt(0);
-    aInfo.charID = charID;
-    aInfo.corpID = corpID;
     aInfo.appText = row.GetText(1);
     aInfo.role = row.GetInt64(2);
     aInfo.grantRole = row.GetInt64(3);
@@ -1275,23 +1418,20 @@ bool CorporationDB::GetCurrentApplicationInfo(uint32 charID, uint32 corpID, Appl
     return (aInfo.valid = true);
 }
 
-bool CorporationDB::InsertApplication(ApplicationInfo& aInfo) {
+bool CorporationDB::InsertApplication(Corp::ApplicationInfo& aInfo) {
     if (!aInfo.valid) {
         _log(CORP__DB_WARNING, "InsertApplication(): aInfo contains invalid data");
         return false;
     }
 
-    std::string safeMessage;
-    sDatabase.DoEscapeString(safeMessage, aInfo.appText);
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, aInfo.appText);
     DBerror err;
     if (!sDatabase.RunQueryLID(err, aInfo.appID,
         " INSERT INTO crpApplications"
-        " (corporationID, characterID, applicationText, roles, grantableRoles, status,"
-        " applicationDateTime, deleted, lastCorpUpdaterID)"
-        " VALUES"
-        " (%u, %u, '%s', %llu, %llu, %u, %llu, %u, %u)",
-            aInfo.corpID, aInfo.charID, safeMessage.c_str(), aInfo.role,
-            aInfo.grantRole, aInfo.status, aInfo.appTime, aInfo.deleted, aInfo.lastCID))
+        " (corporationID, characterID, applicationText, applicationDateTime)"
+        " VALUES (%u, %u, '%s', %lli)",
+        aInfo.corpID, aInfo.charID, escaped.c_str(), aInfo.appTime))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
@@ -1300,19 +1440,19 @@ bool CorporationDB::InsertApplication(ApplicationInfo& aInfo) {
     return true;
 }
 
-bool CorporationDB::UpdateApplication(const ApplicationInfo& aInfo) {
+bool CorporationDB::UpdateApplication(const Corp::ApplicationInfo& aInfo) {
     if (!aInfo.valid) {
         _log(CORP__DB_WARNING, "UpdateApplication(): info contains invalid data");
         return false;
     }
 
     DBerror err;
-    std::string clear;
-    sDatabase.DoEscapeString(clear, aInfo.appText);
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, aInfo.appText);
     if (!sDatabase.RunQuery(err,
         " UPDATE crpApplications"
         " SET status = %u, lastCorpUpdaterID = %u, applicationText = '%s'"
-        " WHERE applicationID = %u", aInfo.status, aInfo.lastCID, clear.c_str(), aInfo.appID))
+        " WHERE applicationID = %u", aInfo.status, aInfo.lastCID, escaped.c_str(), aInfo.appID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
@@ -1320,11 +1460,12 @@ bool CorporationDB::UpdateApplication(const ApplicationInfo& aInfo) {
     return true;
 }
 
-bool CorporationDB::DeleteApplication(const ApplicationInfo& aInfo) {
+bool CorporationDB::DeleteApplication(const Corp::ApplicationInfo& aInfo) {
     DBerror err;
     if (!sDatabase.RunQuery(err,
-        " DELETE FROM crpApplications"
-        " WHERE applicationID = %u", aInfo.corpID, aInfo.appID))
+        " UPDATE crpApplications"
+        " SET status = 3, deleted = 1"
+        " WHERE applicationID = %u", aInfo.appID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
         return false;
@@ -1383,7 +1524,26 @@ uint16 CorporationDB::GetCorpMemberCount(uint32 corpID) {
     }
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(CORP__DB_WARNING, "CAnnot find memberCount for corpID %u", corpID);
+        codelog(CORP__DB_WARNING, "Cannot find memberCount for corpID %u", corpID);
+        return 0;
+    }
+    return row.GetInt(0);
+}
+
+uint16 CorporationDB::GetCorpMemberLimit(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        " SELECT memberLimit"
+        " FROM crpCorporation"
+        " WHERE corporationID = %u ", corpID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return 0;
+    }
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        codelog(CORP__DB_WARNING, "Cannot find memberLimit for corpID %u", corpID);
         return 0;
     }
     return row.GetInt(0);
@@ -1528,6 +1688,23 @@ bool CorporationDB::UpdateDivisionNames(uint32 corpID, const Call_UpdateDivision
     return true;
 }
 
+std::string CorporationDB::GetCorpName(uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT corporationName FROM crpCorporation WHERE corporationID = %u", corpID)) {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return "Unknown";
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        _log(CORP__DB_WARNING, "Corporation %u - Corp name not found.", corpID);
+        return "Unknown";
+    }
+
+    return row.GetText(0);
+}
+
 std::string CorporationDB::GetDivisionName(uint32 corpID, uint16 acctKey)
 {
     std::string acctKeyName = "";
@@ -1649,6 +1826,7 @@ bool CorporationDB::UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDic
 PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
 {
     //  lastOnline needs update based on char logoffDateTime using GetElapsedHours();
+    // no idea how to do that short of pulling/updating column every (x time) interval....and uh, no.
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.baseID, c.grantableRoles, c.blockRoles, c.logonDateTime,"
@@ -1701,7 +1879,7 @@ PyRep* CorporationDB::GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate
     }
 
     return DBResultToCRowset(res);
-
+/*
     PyList* list = new PyList();
     if (res.ColumnCount() > 0) {
         DBResultRow row;
@@ -1725,6 +1903,7 @@ PyRep* CorporationDB::GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate
     }
 
     return new PyObject("util.KeyVal", list);
+    */
 }
 
 void CorporationDB::AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID, int64 oldRoles, int64 newRoles, bool grantable)
@@ -1749,7 +1928,7 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
     }
 
     return DBResultToCRowset(res);
-
+/*
     PyList* list = new PyList();
     if (res.ColumnCount() > 0) {
         DBResultRow row;
@@ -1777,19 +1956,21 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
     }
 
     return new PyObject("util.KeyVal", list);
+    */
 }
 
 void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCase& args)
-{
+{   // working
     PyDict* dict = args.voteCaseOptions->arguments()->AsDict();
     dict->Dump(CORP__TRACE, "    ");
+
     PyRep* rep = dict->GetItemString("lines");
     if (!rep->IsList()) {
         codelog(CORP__ERROR, "'lines' item is not PyList: %s", rep->TypeString());
         return;
     }
 
-    std::vector<VoteCaseData> data;
+    std::vector<Corp::VoteCaseOptions> data;
     PyList* list = rep->AsList();
     for (PyList::const_iterator itr = list->begin(); itr != list->end(); ++itr) {
         if (!(*itr)->IsList()) {
@@ -1797,37 +1978,76 @@ void CorporationDB::AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCas
             continue;
         }
         PyList* list2 = (*itr)->AsList();
-        VoteCaseData args2;
+        Corp::VoteCaseOptions args2 = Corp::VoteCaseOptions();
         //vote decision option
-        args2.choice = PyRep::StringContent(list2->GetItem(0));
+        args2.optionText = PyRep::StringContent(list2->GetItem(0));
+        args2.optionID = PyRep::IntegerValue(list2->GetItem(1));
         //for kick, ceo this is charID.  for war, this is corpID.  for lock/unlock, this is itemID  for shares/general, this is boolean
-        args2.itemID = PyRep::IntegerValue(list2->GetItem(1));
-        //typeID of above itemID.  for shares/general, this is 0
-        args2.typeID = PyRep::IntegerValue(list2->GetItem(2));
-        //for lock/unlock, this is items locationID.  for others, this is 0
-        args2.locationID = PyRep::IntegerValue(list2->GetItem(3));
+        args2.parameter = PyRep::IntegerValue(list2->GetItem(1));
+        switch (args.voteType) {
+            case Corp::VoteType::Shares:
+            case Corp::VoteType::General: {
+                // nothing
+            } break;
+            case Corp::VoteType::CEO:
+            case Corp::VoteType::War:
+            case Corp::VoteType::KickMember: {
+                // nothing
+            } break;
+            case Corp::VoteType::ItemLock:
+            case Corp::VoteType::ItemUnlock: {
+                //for lock/unlock, this is items typeID.  for shares/general, this is 0
+                args2.parameter1 = PyRep::IntegerValue(list2->GetItem(2));
+                //for lock/unlock, this is items locationID.  for others, this is none
+                args2.parameter2 = PyRep::IntegerValue(list2->GetItem(3));
+            } break;
+        }
         data.push_back(args2);
     }
 
-    /*
+    uint32 voteCaseID = 0;
     DBerror err;
-    sDatabase.RunQuery(err,
-        " SELECT parameter, timeActedUpon, timeRescended, voteCaseID,"
-        " voteType, title, description, expires, actedUpon, inEffect, rescended"
-        " FROM crpVoteItems"
-        " WHERE corporationID = %u ", corpID);
-*/
+    sDatabase.RunQueryLID(err, voteCaseID,
+        " INSERT INTO crpVoteItems( "
+        " corporationID, voteType, voteCaseText, description, startDateTime, endDateTime)"
+        " VALUES (%u, %u, '%s', '%s', %lli, %lli)",
+        args.corporationID, args.voteType, args.voteCaseText.c_str(), args.description.c_str(), args.startDateTime, args.endDateTime);
+
+    std::stringstream str;
+    str << "INSERT INTO crpVoteOptions (voteCaseID, optionID, optionText, parameter, parameter1, parameter2) VALUES ";
+
+    bool set = false;
+    for (auto cur : data) {
+        if (!set)
+            set = true;
+        else
+            str << ",";
+        str << "(" << itoa((int64)voteCaseID) << "," << itoa(cur.optionID) << ",'" << cur.optionText << "'," << itoa(cur.parameter) << ",";
+        str << itoa(cur.parameter1) << "," << itoa(cur.parameter2) << ")";
+    }
+
+    if (set)
+        sDatabase.RunQuery(err, str.str().c_str());
 }
 
+PyRep* CorporationDB::GetVoteItems(uint32 corpID, uint8 status/*0*/, uint8 maxLen/*20*/)
+{   // working
+    if (maxLen == 0)
+        maxLen = 20;
+    std::string statusTxt = "";
+    if (status != 0) {
+        statusTxt = "AND status = ";
+        statusTxt += itoa(status);
+    }
 
-PyRep* CorporationDB::GetVoteItems(uint32 corpID)
-{
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        " SELECT parameter, timeActedUpon, timeRescended, voteCaseID,"
-        " voteType, title, description, expires, actedUpon, inEffect, rescended"
+        " SELECT voteCaseID, voteType, voteCaseText, description, inEffect, status, actedUpon, timeActedUpon,"
+        " rescended, timeRescended, startDateTime, endDateTime"
         " FROM crpVoteItems"
-        " WHERE corporationID = %u ", corpID))
+        " WHERE corporationID = %u "
+        " %s"
+        " LIMIT 0,%u", corpID, statusTxt.c_str(), maxLen))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -1835,8 +2055,67 @@ PyRep* CorporationDB::GetVoteItems(uint32 corpID)
     return DBResultToPackedRowDict(res, "voteCaseID");
 }
 
+// this shit changes based on type of vote....optionID for xxx, parameter for xxx
+PyRep* CorporationDB::GetVoteOptions(uint32 voteCaseID)
+{   // working
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT voteCaseID, optionID, optionText, parameter, parameter1, parameter2, votesFor"
+        " FROM crpVoteOptions WHERE voteCaseID = %u", voteCaseID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToIndexRowset(res, "optionID");
+}
+
+PyRep* CorporationDB::GetSanctionedItems(uint32 corpID, uint8 status/*0*/)
+{   // working
+    // status - 0:default, 1: open, 2: closed
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        " SELECT voteCaseID, voteType, inEffect, actedUpon, timeActedUpon, timeRescended, endDateTime AS expires"
+        " FROM crpVoteItems"
+        " WHERE corporationID = %u ", corpID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    //return DBResultToPackedRowDict(res, "voteCaseID");
+    //return DBResultToCIndexedRowset(res, "voteCaseID");
+    //return DBResultToIndexRowset(res, "voteCaseID");
+    return DBResultToCRowset(res);
+}
+
+PyRep* CorporationDB::GetVotes(uint32 voteCaseID)
+{   // working
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT charID, voteCaseID, optionID FROM crpVotes"
+        " WHERE voteCaseID = %u", voteCaseID))
+    {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+
+    return DBResultToCIndexedRowset(res, "charID");
+}
+
+void CorporationDB::CastVote(uint32 corpID, uint32 charID, uint32 voteCaseID, uint8 optionID)
+{   // working
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE crpVoteItems SET votesMade=votesMade +1 WHERE voteCaseID = %u", voteCaseID);
+    sDatabase.RunQuery(err, "UPDATE crpVoteOptions SET votesFor=votesFor +1 WHERE voteCaseID = %u AND optionID = %u", voteCaseID, optionID);
+    sDatabase.RunQuery(err,
+            "INSERT INTO crpVotes (charID,corpID,voteCaseID,optionID)"
+            " VALUES (%u,%u,%u,%u)", charID, corpID, voteCaseID, optionID);
+}
+
+
 void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& args)
-{
+{   // working
     //MoveShares(corporationID, toShareholderID, numberOfShares)
     //  this will also send share update notifications as its' easier to do here..
 
@@ -1939,29 +2218,141 @@ PyRep *CorporationDB::GetMyShares(uint32 ownerID)
     return DBResultToRowset(res);
 }
 
-PyRep* CorporationDB::GetAssetInventory(uint32 corpID, uint8 flag)
+PyRep* CorporationDB::GetSharesForCorp(uint32 corpID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        " SELECT locationID FROM entity"
-        " WHERE ownerID = %u AND flag = %u", corpID, flag))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT shareholderID FROM crpShares WHERE corporationID = %u AND shareholderID < 98000000", corpID)) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
+
+    DBResultRow row;
+    PyList* list = new PyList();
+    while (res.GetRow(row))
+        list->AddItem(new PyInt(row.GetInt(1)));
+
+    return list;
+}
+
+bool CorporationDB::HasShares(uint32 charID, uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT shares FROM crpShares WHERE shareholderID = %u AND corporationID = %u", charID, corpID))  {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return false;
+    }
+
+    if (res.GetRowCount())
+        return true;
+
+    return false;
+}
+
+PyRep* CorporationDB::PyHasShares(uint32 charID, uint32 corpID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res, "SELECT shares FROM crpShares WHERE shareholderID = %u AND corporationID = %u", charID, corpID))  {
+        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+        return PyStatic.NewFalse();
+    }
+
+    if (res.GetRowCount())
+        return PyStatic.NewTrue();
+
+    return PyStatic.NewFalse();
+}
+
+PyRep* CorporationDB::GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, const char* flags)
+{
+    /* this may need more code/thought to change implementation
+     * currently, "property" will show all corp items located in dynamic containers that are or have corp hangars
+     * this will include items located in station hangars that have corp hangars, or anything with flagHangar(4) located in an item of itemID => playerItem
+     *  at this time, im not sure if this is desired action
+     *
+     * this will need to return unique locationIDs for all corp items (dupes cause problems)
+     */
+    /** @todo  this can be done better  revisit after everything is working and sorted */
+    DBQueryResult res;
+    switch (locFlag) {
+        case flagOffice:        // in stations, using officeIDs (100m)
+        case flagImpounded:
+        case flagCorpMarket: {
+            if (!sDatabase.RunQuery(res,
+                " SELECT DISTINCT s.stationID AS locationID FROM entity AS e"
+                " LEFT JOIN staOffices AS s ON (s.itemID = e.locationID)"
+                " WHERE e.ownerID = %u AND e.flag IN %s"
+                " AND e.locationID > %u AND e.locationID < %u", corpID, flags, minOffice, maxOffice))
+            {
+                codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+                return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+            }
+
+        } break;
+        case flagProperty: {  // in space...this will show items in containers, ships, POS, CO, etc.
+            if (!sDatabase.RunQuery(res,
+                " SELECT DISTINCT locationID FROM entity WHERE ownerID = %u AND flag IN %s"
+                " AND locationID > %u AND locationID < %u", corpID, flags, minPlayerItem, maxPlayerItem))
+            {
+                codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+                return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+            }
+
+            // current thought is this option will need more work, to avoid showing corp hangars in ships in stations
+            // or do we want to show all possible locations that are NOT corp offices?
+        } break;
+        default: {
+            _log(CORP__DB_WARNING, "CorporationDB::GetAssetInventory(): unhandled locFlag sent:  %u", locFlag);
+            return (PyRep*)PyStatic.NewNone();    // cannot return nullptr cause we may deref it on the return.
+        } break;
+    }
+
     return DBResultToCRowset(res);
 }
 
-PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locationID, uint8 flag)
+PyRep* CorporationDB::GetAssetInventoryForLocation(uint32 corpID, uint32 locationID, const char* flags)
 {
+    // this will need to get full item data...locationID sent from GetAssetInventory()
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res,
-        " SELECT locationID FROM entity "
-        " WHERE ownerID = %u AND locationID = %u AND flag = %u", corpID, locationID, flag))
-    {
-        codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+    if (IsStation(locationID)) {    // transpose stationID to officeID for item location...should never hit
+        if (!sDatabase.RunQuery(res,
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
+            " LEFT JOIN invTypes AS t USING (typeID)"
+            " LEFT JOIN invGroups AS g USING (groupID)"
+            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = (SELECT itemID FROM staOffices WHERE stationID = %u AND corporationID = %u)",
+            corpID, flags, locationID, corpID)) // quantity, contraband, x, y, z, customInfo
+        {
+            codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+    } else if (IsOffice(locationID)) {  // transpose officeID to stationID for item location...most oft used (corp hangars in station)
+        if (!sDatabase.RunQuery(res,
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
+            " LEFT JOIN invTypes AS t USING (typeID)"
+            " LEFT JOIN invGroups AS g USING (groupID)"
+            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = (SELECT stationID FROM staOffices WHERE itemID = %u)",
+            corpID, flags, locationID))
+        {
+            codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+    } else if (IsPlayerItem(locationID)) {  // location is item with corp hangar (ship, pos, etc)
+        if (!sDatabase.RunQuery(res,
+            " SELECT e.itemID, e.itemName, e.typeID, e.ownerID, e.locationID, e.flag AS flagID, e.singleton,"
+            " e.quantity AS stacksize, t.groupID, g.categoryID FROM entity AS e"
+            " LEFT JOIN invTypes AS t USING (typeID)"
+            " LEFT JOIN invGroups AS g USING (groupID)"
+            " WHERE e.ownerID = %u AND e.flag IN %s AND e.locationID = %u", corpID, flags, locationID))
+        {
+            codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+    } else {
+        _log(CORP__DB_WARNING, "CorporationDB::GetAssetInventoryForLocation(): unhandled locationID sent:  %u", locationID);
         return nullptr;
     }
+
     return DBResultToCRowset(res);
 }
 
@@ -1990,7 +2381,7 @@ PyRep* CorporationDB::GetKillsAndLosses(uint32 corpID, uint32 number, uint32 off
         "  finalDamageDone,"
         "  moonID"
         " FROM chrKillTable"
-        " WHERE ((victimCorporationID = %u) OR (finalCorporationID = %u))", corpID, corpID))
+        " WHERE victimCorporationID = %u OR finalCorporationID = %u", corpID, corpID))
     {
         codelog(CORP__DB_ERROR, "Error on query: %s", res.error.c_str());
         return nullptr;
@@ -2049,6 +2440,7 @@ void CorporationDB::GetCorpData(CorpData& data)
     data.warFactionID = (row.IsNull(3) ? 0 : row.GetUInt(3));
     data.name = row.GetText(4);
     data.ticker = row.GetText(5);
+    /** @todo do we want to put shares here? */
 }
 
 void CorporationDB::UpdateCorpHQ(uint32 corpID, uint32 stationID)
@@ -2060,11 +2452,11 @@ void CorporationDB::UpdateCorpHQ(uint32 corpID, uint32 stationID)
 
 void CorporationDB::EditLabel(uint32 corpID, uint32 labelID, uint32 color, std::string name)
 {
-    std::string eName;
-    sDatabase.DoEscapeString(eName, name);
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, name);
 
     DBQueryResult res;
-    sDatabase.RunQuery(res, "UPDATE crpLabels SET color = %u, name = '%s' WHERE ownerID = %u AND labelID = %u", color, eName.c_str(), corpID, labelID);
+    sDatabase.RunQuery(res, "UPDATE crpLabels SET color = %u, name = '%s' WHERE ownerID = %u AND labelID = %u", color, escaped.c_str(), corpID, labelID);
 }
 
 PyRep* CorporationDB::GetLabels(uint32 corpID)
@@ -2080,11 +2472,11 @@ PyRep* CorporationDB::GetLabels(uint32 corpID)
 
 void CorporationDB::SetLabel(uint32 corpID, uint32 color, std::string name)
 {
-    std::string eName;
-    sDatabase.DoEscapeString(eName, name);
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, name);
 
     DBQueryResult res;
-    sDatabase.RunQuery(res, "INSERT INTO crpLabels (color, name, ownerID) VALUES (%u, '%s', %u)", color, eName.c_str(), corpID);
+    sDatabase.RunQuery(res, "INSERT INTO crpLabels (color, name, ownerID) VALUES (%u, '%s', %u)", color, escaped.c_str(), corpID);
 }
 
 void CorporationDB::DeleteLabel(uint32 corpID, uint32 labelID)
@@ -2095,17 +2487,16 @@ void CorporationDB::DeleteLabel(uint32 corpID, uint32 labelID)
 int32 CorporationDB::GetCorpIDforChar(int32 charID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT `corporationID` FROM `chrCharacters` WHERE `characterID` = %u", charID)) {
+    if (!sDatabase.RunQuery(res, "SELECT corporationID FROM chrCharacters WHERE characterID = %u", charID)) {
         codelog(DATABASE__ERROR, "Failed to query data of corporation for chararcterID %u: %s.", charID, res.error.c_str());
         return 0;
     }
 
     DBResultRow row;
-    if (!res.GetRow(row)) {
-        _log(DATABASE__MESSAGE, "No data found for character's %u corporation.", charID);
-        return 0;
-    }
+    if (res.GetRow(row))
+        return row.GetInt(0);
 
-    return row.GetInt(0);
+    _log(DATABASE__MESSAGE, "No data found for character's %u corporation.", charID);
+    return 0;
 }
 

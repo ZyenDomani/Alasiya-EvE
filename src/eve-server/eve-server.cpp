@@ -55,6 +55,8 @@
 // agent services
 #include "agents/Agent.h"
 #include "agents/AgentMgrService.h"
+// alliance services
+#include "alliance/AllianceRegistry.h"
 // calendar services
 #include "system/Calendar.h"
 #include "system/CalendarMgrService.h"
@@ -85,7 +87,6 @@
 #include "contract/ContractMgr.h"
 #include "contract/ContractProxy.h"
 // corporation services
-#include "corporation/AllianceRegistry.h"
 #include "corporation/BillMgr.h"
 #include "corporation/CorpBookmarkMgr.h"
 #include "corporation/CorpFittingMgr.h"

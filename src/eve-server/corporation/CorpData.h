@@ -24,22 +24,12 @@
 
 namespace Corp {
 
-    struct QueryData {
-        // no longer used...
-        //uint8 joinOp;
-        uint8 queryType;
-        uint8 searchOp;
-        union {
-            int64 value;
-            std::string string;
-        };
-    };
-
+    /* POD structure for corp members query data */
     struct QueryMembers {
+        bool blockRoles;
         uint32 characterID;
         int64 startDateTime;
         int64 titleMask;
-        int64 blockRoles;
         int64 rolesAtAll;
         int64 rolesAtHQ;
         int64 rolesAtBase;
@@ -49,6 +39,41 @@ namespace Corp {
         int64 grantableRolesAtBase;
         int64 grantableRolesAtOther;
     };
+
+    /* POD structure for corp vote data */
+    struct VoteCaseOptions {
+        int8 optionID;
+        int16 parameter1;      // typeID
+        int16 voteCaseID;
+        int32 parameter;       // itemID
+        int32 votesFor;
+        int32 votesMade;
+        int32 votesProxied;
+        int32 parameter2;      // locationID
+        std::string optionText;
+    };
+
+    /* POD structure for corp app data */
+    struct ApplicationInfo {
+        bool valid;
+        uint32 appID;
+        uint32 corpID;
+        uint32 charID;
+        uint32 status;
+        uint32 deleted;
+        uint32 lastCID;
+        int64 appTime;
+        int64 role;
+        int64 grantRole;
+        std::string appText;
+    };
+
+    struct MedalData {
+        int8 part;
+        int16 color;
+        std::string graphic;
+    };
+
 }
 
 #endif  // EVEMU_SRC_CORP_DATA_H_

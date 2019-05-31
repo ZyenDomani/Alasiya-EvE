@@ -50,7 +50,8 @@ public:
     static bool SaveCharacter(uint32 characterID, const CharacterData &data);
     static bool SaveCorpData(uint32 characterID, const CorpData &data);
     void DeleteCharacter(uint32 characterID);
-    static void AddEmployment(uint32 charID, uint32 corpID);
+    // this changes corp member counts, adds employment history, and updates char's corp and start date
+    static void AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID=0);
     static void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
     static bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
     //if you want to get the typeID of the clone, please use GetActiveCloneType

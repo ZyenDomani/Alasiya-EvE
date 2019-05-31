@@ -24,6 +24,7 @@
     Updates:    Allan
 */
 
+#include <string>
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
@@ -78,7 +79,7 @@ PyResult CorpMgrService::Handle_GetPublicInfo(PyCallArgs &call) {
 }
 
 PyResult CorpMgrService::Handle_GetCorporations(PyCallArgs &call) {
-    // called by non-member 
+    // called by non-member
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -101,7 +102,7 @@ PyResult CorpMgrService::Handle_GetCorporationIDForCharacter(PyCallArgs &call) {
 PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
     // logItemEventRows, crpRoleHistroyRows = sm.RemoteSvc('corpmgr').AuditMember(memberID, fromDate, toDate, rowsPerPage)
 
-    sLog.White( "CorpMgrService::Handle_AuditMember()", "size= %u", call.tuple->size() );
+    _log(CORP__CALL, "CorpMgrService::Handle_AuditMember()");
     call.Dump(CORP__CALL_DUMP);
 
     Call_AuditMember args;
@@ -120,40 +121,10 @@ PyResult CorpMgrService::Handle_AuditMember(PyCallArgs &call) {
     return tuple;
 }
 
-PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
-    //  items = sm.RemoteSvc('corpmgr').GetAssetInventoryForLocation(eve.session.corpid, stationID, which)
-    sLog.White( "CorpMgrService::Handle_GetAssetInventoryForLocation()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    Call_GetAssetInventoryForLocation args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    uint8 flag = flagNone;
-    if (args.flag.compare("offices") == 0)
-        flag = flagOffice;
-    else if (args.flag.compare("junk") == 0)
-        flag = flagImpounded;
-    else if (args.flag.compare("property") == 0)    // this is 'inSpace' tab...LSC, POS, etc
-        flag = flagProperty;
-    else if (args.flag.compare("deliveries") == 0)
-        flag = flagCorpMarket;
-    else
-        _log(CORP__ERROR, "CorpMgrService::Handle_GetAssetInventoryForLocation: flag is %s", args.flag.c_str());
-
-    //  returns a CRowSet
-    //  this can be called on system/station/office that isnt loaded, so must hit db for info.
-    return m_db.GetAssetInventoryForLocation(args.corpID, args.locationID, flag);
-}
-
-
-//  started...still needs work
 PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
     // rows = sm.RemoteSvc('corpmgr').GetAssetInventory(eve.session.corpid, which)
-
-    sLog.White( "CorpMgrService::Handle_GetAssetInventory()", "size= %u", call.tuple->size() );
+    // this is called from corp asset screen.  wants a return of locationIDs of stations where corp hangers have items
+    _log(CORP__CALL, "CorpMgrService::Handle_GetAssetInventory()");
     call.Dump(CORP__CALL_DUMP);
 
     Call_GetAssetInventory args;
@@ -162,24 +133,80 @@ PyResult CorpMgrService::Handle_GetAssetInventory(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint8 flag = flagNone;
-    if (args.flag.compare("offices") == 0)
-        flag = flagOffice;
-    else if (args.flag.compare("junk") == 0)
-        flag = flagImpounded;
-    else if (args.flag.compare("property") == 0)    // this is 'inSpace' tab...LSC, POS, etc
-        flag = flagProperty;
-    else if (args.flag.compare("deliveries") == 0)
-        flag = flagCorpMarket;
-    else
+    EVEItemFlags locFlag = flagNone;
+    std::ostringstream flags;
+    flags << "(";
+    if (args.flag.compare("offices") == 0) {
+        locFlag = flagOffice;
+        flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
+        flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+    } else if (args.flag.compare("junk") == 0) {
+        locFlag = flagImpounded;
+        flags << flagImpounded;
+    } else if (args.flag.compare("property") == 0) {    // this is 'inSpace' tab...LSC, POS, etc
+        locFlag = flagProperty;
+        flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
+        flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+    } else if (args.flag.compare("deliveries") == 0) {
+        locFlag = flagCorpMarket;
+        flags << flagCorpMarket;
+    } else {
         _log(CORP__ERROR, "CorpMgrService::Handle_GetAssetInventory: flag is %s", args.flag.c_str());
+        return nullptr;
+    }
+
+    flags << ")";
+
+    PyRep* rsp = m_db.GetAssetInventory(args.corpID, locFlag, flags.str().c_str());
+    if (is_log_enabled(CORP__RSP_DUMP))
+        rsp->Dump(CORP__RSP_DUMP, "    ");
 
     //  returns a CRowSet
-    return m_db.GetAssetInventory(args.corpID, flag);
+    return rsp;
 }
 
+PyResult CorpMgrService::Handle_GetAssetInventoryForLocation(PyCallArgs &call) {
+    //  items = sm.RemoteSvc('corpmgr').GetAssetInventoryForLocation(eve.session.corpid, stationID, which)
+    _log(CORP__CALL, "CorpMgrService::Handle_GetAssetInventoryForLocation()");
+    call.Dump(CORP__CALL_DUMP);
+
+    Call_GetAssetInventoryForLocation args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    EVEItemFlags locFlag = flagNone;
+    std::ostringstream flags;
+    flags << "(";
+    if (args.flag.compare("offices") == 0) {
+        locFlag = flagOffice;
+        flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
+        flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+    } else if (args.flag.compare("junk") == 0) {
+        locFlag = flagImpounded;
+        flags << flagImpounded;
+    } else if (args.flag.compare("property") == 0) {    // this is 'inSpace' tab...LSC, POS, etc
+        locFlag = flagProperty;
+        flags << flagHangar << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5;
+        flags  << "," << flagCorpHangar6 << "," << flagCorpHangar7;
+    } else if (args.flag.compare("deliveries") == 0) {
+        locFlag = flagCorpMarket;
+        flags << flagCorpMarket;
+    } else {
+        _log(CORP__ERROR, "CorpMgrService::Handle_GetAssetInventory: flag is %s", args.flag.c_str());
+        return nullptr;
+    }
+
+    flags << ")";
+    //  returns a CRowSet
+    //  this can be called on system/station/office that isnt loaded, so must hit db for info.
+    return m_db.GetAssetInventoryForLocation(args.corpID, args.locationID, flags.str().c_str());
+}
+
+// this is called for corp trade
 PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
-  /**           this is called from trademgr.py
+  /**           this is called from trademgr.py (and others)
         stations = sm.RemoteSvc('corpmgr').GetCorporationStations()
         for station in stations:
             if station.itemID in self.shell.GetStationIDs():
@@ -187,9 +214,13 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
             stationListing.append([localization.GetByLabel('UI/PVPTrade/StationInSolarsystem', station=station.itemID, solarsystem=station.locationID), station.itemID, station.typeID])
 */
 
-    sLog.White( "CorpMgrService::Handle_GetCorporationStations()", "size= %u", call.tuple->size() );
+    _log(CORP__CALL, "CorpMgrService::Handle_GetCorporationStations()");
     call.Dump(CORP__CALL_DUMP);
 
+    if (IsPlayerCorp(call.client->GetCorporationID()))
+        return m_db.Fetch(call.client->GetCorporationID(), 0, 50);  // arbitrary values
+
+    _log(CORP__WARNING, "CorpMgrService::Handle_GetCorporationStations() calling for NPC Corp");
     return nullptr;
 }
 

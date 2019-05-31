@@ -15,6 +15,8 @@ system - item or mgr - make object to hold active players docked/inspace
     - this will hold current counts
     - save to db every 15m, called by ConsoleCommand::UpdateStatus() (from EntityList::Process())
 
+map::GetStationExtraInfo()   <<<  put this shit in static data
+
 
 **********  found shit...high priority
 password gets hashed, but fails to validate when login.  check plain/hashed and fix this shit!!
@@ -80,8 +82,8 @@ player corps - finish wip code for RAM, market  -priority level: med-hi
 alliances?  not yet.  need other shit finished first.
 raceMask isnt implemented yet...will need more thought/coding
 still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
-partial code for corpStations, voting, member roles,
-no code for medals, labels
+partial code for corpStations, member roles,
+no code for labels
 HandleCorpTransaction() when giving isk to corp, journal window not updating.
 set initial standings when corp is created.  need to write standings code for corps
 when renting office, station offices dont refresh
