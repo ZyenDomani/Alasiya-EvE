@@ -3,6 +3,7 @@
  * @name MapData.cpp
  *   a group of methods and functions to get map info.
  *     this is mostly used for getting random points in system, system jumps, and misc mission destination info
+ *  - added static data for StationExtraInfo (from mapservice)
  * @Author:         Allan
  * @date:   13 November 2018
  */
@@ -17,6 +18,7 @@
 
 
 MapData::MapData()
+: m_stationExtraInfo(nullptr)
 {
     m_regionJumps.clear();
     m_constJumps.clear();
@@ -25,7 +27,7 @@ MapData::MapData()
 
 MapData::~MapData()
 {
-
+    PySafeDecRef(m_stationExtraInfo);
 }
 
 int MapData::Initialize()
@@ -52,10 +54,16 @@ void MapData::Populate()
 {
     double start = GetTimeMSeconds();
 
-    DBQueryResult* res = new DBQueryResult();
-    DBResultRow row;
+    m_stationExtraInfo = new PyTuple(3);
+    m_stationExtraInfo->items[0] = MapDB::GetStationExtraInfo();
+    m_stationExtraInfo->items[1] = MapDB::GetStationOpServices();
+    m_stationExtraInfo->items[2] = MapDB::GetStationServiceInfo();
+    sLog.Cyan("          MapData", "StationExtraInfo loaded in %.3fms.",(GetTimeMSeconds() - start));
 
+    start = GetTimeMSeconds();
+    DBQueryResult* res = new DBQueryResult();
     MapDB::GetSystemJumps(*res);
+    DBResultRow row;
     while (res->GetRow(row)) {
         //SELECT ctype, fromsol, tosol FROM mapConnections
         if (row.GetInt(0) == Map::Jumptype::Region)

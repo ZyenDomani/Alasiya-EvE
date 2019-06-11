@@ -10,18 +10,21 @@ replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --w
 
 comb thru db calls on char login.  multiple SELECTs and UPDATEs that probably arent needed.
 
-system - item or mgr - make object to hold active players docked/inspace
-    - hit this object to avoid db hits on every jump/dock/etc
+systemmgr - use kills object instead of db hit
+    - hit this object to avoid db hits for every kill
     - this will hold current counts
     - save to db every 15m, called by ConsoleCommand::UpdateStatus() (from EntityList::Process())
 
-map::GetStationExtraInfo()   <<<  put this shit in static data
 
 
 **********  found shit...high priority
 password gets hashed, but fails to validate when login.  check plain/hashed and fix this shit!!
 segfault on char creation?  create passes, but cant login.  FIXED...TO TEST
 station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
+    - buy, assemble, trash, create all with problems
+
+asteroid sizes in nullsec may be too large.  look into and fix as needed
+
 
 system mail not working.  this would be nice to have, as many systems could(will) use it
 
@@ -110,6 +113,7 @@ will need to go thru code and zero-initalize structs ( A a = A(); )    -priority
 
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
 
+mapservice code needs love
 
 started coding alliance db
 all alliance calls are skeleton code, except GetEmploymentRecord

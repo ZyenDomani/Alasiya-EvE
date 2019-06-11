@@ -108,7 +108,7 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
         return NULL;
     }
 
-    return DBResultToRowset(res);  //DBRowToKeyVal
+    return DBResultToRowset(res);
 }
 
 //  called from MapService by multiple functions based on passed values.

@@ -27,7 +27,8 @@
 
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
-#include "cache/ObjCacheService.h"
+//#include "cache/ObjCacheService.h"
+#include "map/MapData.h"
 #include "map/MapService.h"
 #include "system/SystemManager.h"
 
@@ -66,44 +67,59 @@ MapService::MapService(PyServiceMgr *mgr)
 
 }
 
-MapService::~MapService() {
+MapService::~MapService()
+{
     delete m_dispatch;
 }
 
-PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call) {
+PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call)
+{
     return call.client->SystemMgr()->GetCurrentEntities();
 }
 
-PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call) {
+PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
+{
     return m_db.GetSolSystemVisits(call.client->GetCharacterID());
 }
 
-PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call) {
+PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)
+{
     return StandingDB::GetMyStandings(call.client->GetCharacterID());
 }
 
-PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call) {
+PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
+{
     return CharacterDB::GetMyCorpMates(call.client->GetCorporationID());
 }
 
-PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call) {
-    return m_db.GetDynamicData(2, 24);
+PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call)
+{
+    return MapDB::GetDynamicData(2, 24);
+}
+
+PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call)
+{
+    return sMapData.GetStationExtraInfo();
 }
 
 // cached on client side.  if cache is empty, this call is made.
-PyResult MapService::Handle_GetStationCount(PyCallArgs &call) {
+PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
+{
     return sDataMgr.GetStationCount();
 }
 
-PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
-    int32 int1 = call.tuple->GetItem(0)->AsInt()->value();
-    int32 int2 = call.tuple->GetItem(1)->AsInt()->value();
-    sLog.White( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
 
-    return m_db.GetDynamicData(int1, int2);
+PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
+    int32 int1 = PyRep::IntegerValue(call.tuple->GetItem(0));
+    int32 int2 = PyRep::IntegerValue(call.tuple->GetItem(1));
+    if (is_log_enabled(SERVICE__CALLS))
+        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
+
+    return MapDB::GetDynamicData(int1, int2);
 }
 
-PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call) {   // working
+PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
+{   // working
     DBQueryResult res;
     PosMgrDB::GetLinkableJumpArrays(call.client->GetCorporationID(), res);
     PyList* list = new PyList();
@@ -118,58 +134,6 @@ PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call) {   // worki
 
     return list;
 }
-
-PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call) {
-
-    /** @todo  put this in static data */
-
-    //returns tuple(
-    //     stations: rowset stationID,solarSystemID,operationID,stationTypeID,ownerID
-    //     opservices: rowset: (operationID, serviceID) (from staOperationServices)
-    //     services: rowset: (serviceID,serviceName) (from staServices)
-    // )
-
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetStationExtraInfo");
-
-    //uint32 systemID = call.client->GetSystemID();
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-
-        PyTuple *resultt = new PyTuple(3);
-
-        resultt->items[0] = m_db.GetStationExtraInfo();
-        if(resultt->items[0] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query station info");
-            return PyStatic.NewNone();
-        }
-
-        resultt->items[1] = m_db.GetStationOpServices();
-        if(resultt->items[1] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query op services");
-            return PyStatic.NewNone();
-        }
-
-        resultt->items[2] = m_db.GetStationServiceInfo();
-        if(resultt->items[2] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query service info");
-            return PyStatic.NewNone();
-        }
-
-        result = resultt;
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
-}
-
 
 PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call) {
     PyRep *result = NULL;

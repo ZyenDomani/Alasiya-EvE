@@ -37,11 +37,12 @@ class MapDB
 {
 public:
     PyObject *GetPseudoSecurities();
-    PyObject *GetStationExtraInfo();
-    PyObject *GetStationOpServices();
-    PyObject *GetStationServiceInfo();
     PyObject *GetSolSystemVisits(uint32);
-    PyRep *GetDynamicData(uint8 type, uint8 time);
+
+    static PyObject *GetStationExtraInfo();
+    static PyObject *GetStationOpServices();
+    static PyObject *GetStationServiceInfo();
+    static PyRep *GetDynamicData(uint8 type, uint8 time);
 
     static void GetStationCount(DBQueryResult& res);
 
