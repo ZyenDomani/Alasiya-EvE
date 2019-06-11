@@ -36,13 +36,12 @@ class MapDB
 : public ServiceDB
 {
 public:
-    PyObject *GetPseudoSecurities();
-    PyObject *GetSolSystemVisits(uint32);
-
-    static PyObject *GetStationExtraInfo();
-    static PyObject *GetStationOpServices();
-    static PyObject *GetStationServiceInfo();
-    static PyRep *GetDynamicData(uint8 type, uint8 time);
+    static PyObject* GetPseudoSecurities();
+    static PyObject* GetStationExtraInfo();
+    static PyObject* GetStationOpServices();
+    static PyObject* GetStationServiceInfo();
+    static PyObject* GetSolSystemVisits(uint32);
+    static PyRep* GetDynamicData(uint8 type, uint8 time);
 
     static void GetStationCount(DBQueryResult& res);
 

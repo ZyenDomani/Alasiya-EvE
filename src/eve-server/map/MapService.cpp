@@ -102,12 +102,16 @@ PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call)
     return sMapData.GetStationExtraInfo();
 }
 
+PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call)
+{
+    return sMapData.GetPseudoSecurities();
+}
+
 // cached on client side.  if cache is empty, this call is made.
 PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
 {
     return sDataMgr.GetStationCount();
 }
-
 
 PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
     int32 int1 = PyRep::IntegerValue(call.tuple->GetItem(0));
@@ -135,27 +139,6 @@ PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
     return list;
 }
 
-PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call) {
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetSolarSystemPseudoSecurities");
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetPseudoSecurities();
-        if(result == NULL)
-            result = new PyNone();
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
-}
-
 
 
 /** not handled */
@@ -179,15 +162,12 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
 
 PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
 {
-    /**
-     *
-     *       bridgesByLocation = m.GetAllianceJumpBridges()
-     *       for toLocID, fromLocID in bridgesByLocation:
+    /**     bridgesByLocation = m.GetAllianceJumpBridges()
+     *      for toLocID, fromLocID in bridgesByLocation:
      */
     sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    // copy format from GetLinkableJumpArrays()
     DBQueryResult res;
     //PosMgrDB::GetAllianceJumpBridges(call.client->GetCorporationID(), res);
     PyList* list = new PyList();
@@ -223,10 +203,11 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
     PyList* list = new PyList();
     DBResultRow row;
     while (res.GetRow(row)) {
-        // SELECT systemID, itemID
-        PyTuple* tuple = new PyTuple(2);
+        // SELECT solarSystemID, structureID, structureTypeID
+        PyTuple* tuple = new PyTuple(3);
         tuple->SetItem(0, new PyInt(row.GetInt(0)));
         tuple->SetItem(1, new PyInt(row.GetInt(1)));
+        tuple->SetItem(1, new PyInt(row.GetInt(2)));
         list->AddItem(tuple);
     }
 
@@ -280,8 +261,6 @@ PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
 {/* no packet data
         dungeons = sm.RemoteSvc('map').GetDeadspaceAgentsMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
-  sLog.White( "MapService::Handle_GetDeadspaceAgentsMap()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
 */
     PyRep *result = NULL;
 
@@ -307,6 +286,52 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
     result = new PyDict();
 
     return result;
+}
+
+PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
+    /**  EVE_Incursion.h
+     *        participatingSystems = ms.GetSystemsInIncursions()
+     *        for solarSystemID, sceneType in participatingSystems:
+     *            -- (sceneType = staging, vanguard)
+     */
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceBeacons(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, sceneType
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));   //solarSystemID
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));   //sceneType
+        list->AddItem(tuple);
+    }
+
+    return list;
+}
+
+PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
+    /**
+     *        participatingSystems = ms.GetSystemsInIncursionsGM()
+     *        for solarSystemID, sceneType in participatingSystems:
+     *            -- (sceneType = staging, vanguard, assault, headquarters)
+     */
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceBeacons(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, sceneType
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));    //solarSystemID
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));    //sceneType
+        list->AddItem(tuple);
+    }
+
+    return list;
 }
 
 //05:52:07 L MapService::Handle_GetIncursionGlobalReport(): size= 0
@@ -371,32 +396,6 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.NewNone();
-}
-
-PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
-    /**  EVE_Incursion.h
-        participatingSystems = ms.GetSystemsInIncursions()
-        for solarSystemID, sceneType in participatingSystems:
-                sceneType = staging, vanguard
-    */
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, PyStatic.NewNone());
-        tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;
-}
-
-PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
-    /**
-        participatingSystems = ms.GetSystemsInIncursionsGM()
-        for solarSystemID, sceneType in participatingSystems:
-                sceneType = staging, vanguard, assault, headquarters
-  */
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, PyStatic.NewNone());
-        tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;
 }
 
 //   factional warfare shit

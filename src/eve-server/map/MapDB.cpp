@@ -32,7 +32,7 @@ PyObject *MapDB::GetPseudoSecurities() {
 
     if(!sDatabase.RunQuery(res, "SELECT solarSystemID, security FROM mapSolarSystems")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -50,7 +50,7 @@ PyObject *MapDB::GetStationExtraInfo() {
         "   corporationID AS ownerID"
         " FROM staStations" )) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -62,7 +62,7 @@ PyObject *MapDB::GetStationOpServices() {
     if(!sDatabase.RunQuery(res,
         "SELECT operationID, serviceID FROM staOperationServices")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -74,7 +74,7 @@ PyObject *MapDB::GetStationServiceInfo() {
     if(!sDatabase.RunQuery(res,
         "SELECT serviceID, serviceName FROM staServices ")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -105,7 +105,7 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
         " WHERE characterID = %u", charID ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);

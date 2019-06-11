@@ -18,7 +18,8 @@
 
 
 MapData::MapData()
-: m_stationExtraInfo(nullptr)
+: m_stationExtraInfo(nullptr),
+m_pseudoSecurities(nullptr)
 {
     m_regionJumps.clear();
     m_constJumps.clear();
@@ -28,6 +29,7 @@ MapData::MapData()
 MapData::~MapData()
 {
     PySafeDecRef(m_stationExtraInfo);
+    PySafeDecRef(m_pseudoSecurities);
 }
 
 int MapData::Initialize()
@@ -52,6 +54,8 @@ void MapData::GetInfo()
 
 void MapData::Populate()
 {
+    m_pseudoSecurities = MapDB::GetPseudoSecurities();
+
     double start = GetTimeMSeconds();
 
     m_stationExtraInfo = new PyTuple(3);
