@@ -58,7 +58,7 @@ PyResult Command_tr(Client* who, CommandDB* db, PyServiceMgr* services, const Se
     for (int i = 0; i < args.argCount(); i++) {
         codelog(COMMAND__ERROR, "  %s", args.arg(i).c_str());
     }
-    TRData d = {};
+    TRData d = TRData();
     d.who = who;
     d.db = db;
     d.services = services;
@@ -135,7 +135,7 @@ static PyResult generic_createitem(Client *who, CommandDB *db, PyServiceMgr *ser
         } else if (matches.size() == 1) {
             auto cur = matches.begin();
             _log(COMMAND__MESSAGE,
-                 "ItemSearch returned type: \"%s\" given \"%s\"\n", 
+                 "ItemSearch returned type: \"%s\" given \"%s\"\n",
                  cur->second.c_str(), args.arg(1).c_str());
             typeID = cur->first;
         }
@@ -143,7 +143,7 @@ static PyResult generic_createitem(Client *who, CommandDB *db, PyServiceMgr *ser
     if (typeID == -1) {
         throw PyException(MakeCustomError("Unable to find valid type to create"));
     }
-    
+
 
     int qty = 1;
     if (2 < args.argCount()) {
@@ -280,11 +280,11 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
         }
         target = atoi(args.arg(target_index).c_str());
     }
-    
+
     std::string range_str = cmd_parse_eq_arg(args, "range=");
     std::string only_str = cmd_parse_eq_arg(args, "only=");
 
-    codelog(COMMAND__ERROR, "unspawn got: %s %s %u", 
+    codelog(COMMAND__ERROR, "unspawn got: %s %s %u",
             range_str.c_str(), only_str.c_str(), target);
 
     uint32 range = DEFAULT_RANGE;
@@ -346,13 +346,13 @@ PyResult Command_unspawn(Client* who, CommandDB* db, PyServiceMgr* services, con
     for (int i = 0; i < entities.size(); i++) {
         SystemEntity *e = entities[i];
         if (is_group_match == true and match_id != e->GetGroupID()) {
-            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u", 
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u",
                     is_group_match, is_category_match, match_id, e->GetGroupID());
             continue;
         }
         if (is_category_match == true and match_id != e->GetCategoryID()) {
 
-            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u categoryID %u", 
+            codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u categoryID %u",
                     is_group_match, is_category_match, match_id, e->GetGroupID());
             continue;
         }
