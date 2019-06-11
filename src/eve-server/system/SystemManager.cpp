@@ -63,6 +63,7 @@ m_dungMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc)),
 m_loaded(false),
 m_entityChanged(false),
+m_docked(0),
 m_players(0),
 m_beltCount(0),
 m_gateCount(0),
@@ -749,7 +750,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
     return nullptr;
 }
 
-void SystemManager::AddClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
+void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
     //called from Client::MoveToLocation()
     if (pClient == nullptr)
         return;
@@ -761,14 +762,15 @@ void SystemManager::AddClient(Client* pClient, bool docked/*false*/, bool count/
     }
 
     m_activityTime = 0;
+
     if (count) {
         ++m_players;
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
-void SystemManager::RemoveClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
+void SystemManager::RemoveClient(Client* pClient, bool count/*false*/) {
     //called from Client::~Client() and Client::MoveToLocation()
     if (pClient == nullptr)
         return;
@@ -776,23 +778,39 @@ void SystemManager::RemoveClient(Client* pClient, bool docked/*false*/, bool cou
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
         _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     if (count) {
-        if (m_players < 1) {
+        --m_players;
+        if (m_players < 0) {
             m_players = 0;
-            _log(PLAYER__ERROR, "%s(%u): player count for %s(%u) is <1  -- new count: %u", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
-        } else {
-            --m_players;
+            _log(PLAYER__ERROR, "player count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
         }
+
         if (!m_players) {
             m_clients.clear();
             m_activityTime = sEntityList.GetStamp();
         }
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+    }
+}
+
+void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
+{
+    if (docked) {
+        ++m_docked;
+        _log(PLAYER__INFO, "%s(%u): Added to docked count for %s(%u) - new count: %u", \
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
+    } else {
+        --m_docked;
+        _log(PLAYER__INFO, "%s(%u): Removed from docked count for %s(%u) - new count: %u", \
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
+        if (m_docked < 0) {
+            m_docked = 0;
+            _log(PLAYER__ERROR, "docked count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
+        }
     }
 }
 
@@ -1265,6 +1283,11 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         }
         vector.push_back(sig);
     }
+}
+
+void SystemManager::UpdateDynamicData()
+{
+    MapDB::UpdateSystemData(m_data.systemID, m_docked, (m_players - m_docked));
 }
 
 

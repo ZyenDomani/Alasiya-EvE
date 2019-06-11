@@ -149,7 +149,7 @@ protected:
 private:
     Timer m_stampTimer;
     Timer m_minutetimer;
-    Timer m_updateTimer;    // for data updates and dump to db
+    Timer m_updateTimer;    // 15m  for data updates and mem data dumps to db
 
     // connected clients (incomplete client class data)
     //  use this to delete Client*

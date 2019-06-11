@@ -652,6 +652,10 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
     stDataMgr.Initialize();
     std::printf("\n");     // spacer
+    
+    // clear dynamic system data (player counts, etc) on server start
+    MapDB::SystemStartup();
+    sLog.Green("       ServerInit", "Cleared Dynamic System Datasets from Previous run.");
 
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");

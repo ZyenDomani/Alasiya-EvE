@@ -229,8 +229,15 @@ void EntityList::Process() {
             if (m_minutes % 60 == 0) // ~1h
                 sMktMgr.Process();
             //sMktBotMgr.Process();  // 15m to 30m
-            if (m_updateTimer.Check())  // 15m
+            if (m_updateTimer.Check()) { // 15m
                 sConsole.UpdateStatus();
+                // loop thru loaded systems and save their current player counts
+                itr = m_systems.begin();
+                while (itr != m_systems.end()) {
+                    itr->second->UpdateDynamicData();
+                    ++itr;
+                }
+            }
 
             // write something to tic corps vote cases.
         }

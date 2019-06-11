@@ -52,7 +52,7 @@ class PyServiceMgr;
 
 class DynamicEntityFactory {
 public:
-    // you MUST call (your SystemManager)->AddEntity() after this to actually put the entity in space
+    // you MUST call (your SystemManager)->AddEntity([this returned object]) after this to actually put the entity in space
     static SystemEntity* BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID=0);
 };
 
@@ -65,6 +65,7 @@ public:
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
     void UnloadSystem();
+    void UpdateDynamicData();   // called by EntityList every 15m
 
     bool IsLoaded()                                     { return m_loaded; }
 
@@ -116,8 +117,9 @@ public:
     void RemoveNPC(NPC* who);
     void AddEntity(SystemEntity* who);
     void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble
-    void AddClient(Client* who, bool docked=false, bool count=false);
-    void RemoveClient(Client* who, bool docked=false, bool count=false);
+    void AddClient(Client* pClient, bool count=false);
+    void RemoveClient(Client* pClient, bool count=false);
+    void SetDockCount(Client* pClient, bool docked=false);
 
     void AddItemToInventory(InventoryItemRef item);
     void RemoveItemFromInventory(InventoryItemRef item);
@@ -178,10 +180,13 @@ private:
     // for grid Unloading system  -allan  27June2015
     bool m_loaded;
     bool SystemActivity();
-    uint32 m_players;
+    uint32 m_players;           // current total count
     uint32 m_activityTime;
 
     float m_secValue;
+
+    // for player count system  -allan 10June2019
+    uint8 m_docked;
 
     // system entity lists:
     bool m_entityChanged;
