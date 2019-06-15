@@ -200,7 +200,8 @@ public:
 
     // this is used when PyRep can be either String or WString.
     static std::string StringContent(PyRep* pRep);
-    // this is used when PyRep can be either Int or Long (None returns 0)
+    // this is used when PyRep can be either Int or Long
+    // None returns 0, Float is converted to int64
     static int64 IntegerValue(PyRep* pRep);
 
 protected:

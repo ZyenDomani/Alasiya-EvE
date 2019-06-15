@@ -87,11 +87,13 @@ ShipItemRef ShipItem::Spawn( ItemData &data) {
     if ( shipID == 0 )
         return ShipItemRef(nullptr);
 
+    return ShipItem::Load( shipID );
+    /*
     ShipItemRef sShipRef = ShipItem::Load( shipID );
-
+    // this cause error when sending attr change (no owner found)
     sShipRef->InitAttribs();
-
     return sShipRef;
+    */
 }
 
 uint32 ShipItem::CreateItemID( ItemData &data) {
@@ -120,7 +122,7 @@ void ShipItem::Init()
         InitPod();
         return;
     }
-    if (!m_pilot->GetChar().get()) {
+    if (m_pilot->GetChar().get() == nullptr) {
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
@@ -580,7 +582,7 @@ PyDict* ShipItem::GetChargeState() {
 bool ShipItem::ValidateBoardShip(CharacterRef character) {
 
     bool result = false;
-    EvilNumber skillTypeID = 0;
+    EvilNumber skillTypeID = EvilZero;
 
     if (HasAttribute(AttrRequiredSkill1, skillTypeID)) {
         if (character->HasSkillTrainedToLevel( skillTypeID.get_int(), GetAttribute(AttrRequiredSkill1Level).get_int()))

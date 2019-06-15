@@ -1091,13 +1091,19 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
         return nullptr;
     }
 
+    if (IsCorp(args.toShareholderID)) {
+        call.client->SendInfoModalMsg("You cannot give shares to a corporation.");
+        return nullptr;
+    }
+
     uint32 corpID = 0;
     Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    if (pClient == nullptr) {
+    if (pClient == nullptr)
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    } else
+    else
         corpID = pClient->GetCorporationID();
 
+    /** @todo  test for moving shares between players.  can we do that? */
     m_db.MoveShares(m_corpID, corpID, args);
     return nullptr;
 }
@@ -1115,9 +1121,9 @@ PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
 
     uint32 corpID = 0;
     Client* pClient = sEntityList.FindClientByCharID(args.toShareholderID);
-    if (pClient == nullptr) {
+    if (pClient == nullptr)
         corpID = CharacterDB::GetCorpID(args.toShareholderID);
-    } else
+    else
         corpID = pClient->GetCorporationID();
 
     // gonna have to do this one different...

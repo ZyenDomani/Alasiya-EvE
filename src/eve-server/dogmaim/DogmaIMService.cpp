@@ -500,10 +500,12 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     rsp->SetItemString("shipModifiedCharAttribs", PyStatic.NewNone());
 
     /* Setting "charInfo" in the Dictionary  -fixed 24Mar16 */
+    sItemFactory.SetUsingClient(pClient);
     if (args.arg1) {
         PyDict* charResult = pClient->GetChar()->GetCharInfo();
         if (charResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build char info for char %u", pClient->GetCharacterID());
+            sItemFactory.UnsetUsingClient();
             return PyStatic.NewNone();
         }
         rsp->SetItemString("charInfo", charResult);
@@ -515,6 +517,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
+            sItemFactory.UnsetUsingClient();
             return PyStatic.NewNone();
         }
         rsp->SetItemString("shipInfo", shipResult);
@@ -533,6 +536,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     rsp->SetItemString("shipState", rspShipState);
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "     ");
+    sItemFactory.UnsetUsingClient();
 	return new PyObject("util.KeyVal", rsp );
 }
 

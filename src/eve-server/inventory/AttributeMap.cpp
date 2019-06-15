@@ -71,7 +71,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     while (res.GetRow(row)) {
         if (row.IsNull(1)) {
             if (row.IsNull(2))
-                value = 0;
+                value = EvilZero;
             else
                 value = row.GetDouble(2);
         } else
@@ -188,7 +188,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity
 {
     if (num.isNaN() or num.isInf())
         return;     // make error here for bad number?
-    if (num == 0)
+    if (num == EvilZero)
         return;     // could this be on purpose?
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end())

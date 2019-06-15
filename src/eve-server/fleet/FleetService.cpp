@@ -70,7 +70,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
     if (pChar == nullptr)
         return 0;
 
-    FleetData fData;
+    FleetData fData = FleetData();
         fData.isFreeMove = true;
         fData.isLootLogging = false;
         fData.isRegistered = false;
@@ -87,7 +87,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
         fData.dateCreated = GetFileTimeNow();
     m_fleetDataMap.emplace(m_fleetID, fData);
 
-    WingData wData;
+    WingData wData = WingData();
         wData.fleetID = m_fleetID;
         wData.name = "Wing 1";
         wData.booster = nullptr;
@@ -95,14 +95,13 @@ uint32 FleetService::CreateFleet(Client *pClient)
     m_wingDataMap.emplace(m_wingID, wData);
     m_fleetWings.emplace(m_fleetID, m_wingID);
 
-    BoostData bData;
+    BoostData bData = BoostData();
         bData.armored = pChar->GetSkillLevel(skillArmoredWarfare);
         bData.info = pChar->GetSkillLevel(skillInformationWarfare);
-        bData.leader = 0;
         bData.mining = pChar->GetSkillLevel(skillMiningForeman);
         bData.siege = pChar->GetSkillLevel(skillSiegeWarfare);
         bData.skirmish = pChar->GetSkillLevel(skillSkirmishWarfare);
-    SquadData sData;
+    SquadData sData = SquadData();
         sData.boost = bData;
         sData.name = "Squad 1";
         sData.booster = nullptr;
@@ -114,7 +113,7 @@ uint32 FleetService::CreateFleet(Client *pClient)
     m_wingSquads.emplace(m_wingID, m_squadID);
 
     // set char fleet data and send to client
-    CharFleetData fleet;
+    CharFleetData fleet = CharFleetData();
         fleet.fleetID = m_fleetID;        //this is also lsc channel #
         fleet.wingID = -1;
         fleet.squadID = -1;
@@ -152,7 +151,7 @@ PyRep* FleetService::CreateWing(uint32 fleetID)
     // do we need an error here?
     if (count > 4)
         return nullptr;
-    WingData wData;
+    WingData wData = WingData();
         wData.fleetID = fleetID;
         wData.name = "Wing ";
         wData.name += itoa(count + 1);
@@ -187,16 +186,16 @@ void FleetService::CreateSquad(uint32 fleetID, uint32 wingID)
     if (m_wingSquads.count(wingID) == 5)
         return;
     IncFleetSquads(fleetID, wingID);
-    FleetData data;
+    FleetData data = FleetData();
     GetFleetData(fleetID, data);
-    BoostData bData;
+    BoostData bData = BoostData();
         bData.armored = 0;
         bData.info = 0;
         bData.leader = 0;
         bData.mining = 0;
         bData.siege = 0;
         bData.skirmish = 0;
-    SquadData sData;
+    SquadData sData = SquadData();
         sData.boost = bData;
         sData.name = "Squad ";
         sData.name += itoa(data.squads);
@@ -260,7 +259,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
     m_fleetMembers.emplace(fleetID, pClient);
 
     // set char fleet data and send to client
-    CharFleetData fData;
+    CharFleetData fData = CharFleetData();
         fData.fleetID = fleetID;
         fData.wingID = wingID;
         fData.squadID = squadID;
@@ -523,7 +522,7 @@ bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, 
             GetBoosterName(oldBooster).c_str(), GetBoosterName(newBooster).c_str());
 
     // update char data
-    CharFleetData fData;
+    CharFleetData fData = CharFleetData();
         fData.fleetID = fleetID;
         fData.wingID = newWingID;
         fData.squadID = newSquadID;
@@ -570,13 +569,8 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
     bool fBoost = false;
     int8 armored = 0, info = 0, leader = 0, mining = 0, siege = 0, skirmish = 0;
 
-    BoostData fData, bData;
-        fData.armored   = bData.armored     = 0;
-        fData.info      = bData.info        = 0;
-        fData.leader    = bData.leader      = 0;
-        fData.mining    = bData.mining      = 0;
-        fData.siege     = bData.siege       = 0;
-        fData.skirmish  = bData.skirmish    = 0;
+    BoostData fData = BoostData();
+    BoostData bData = BoostData();
 
     std::map<uint32, FleetData>::iterator fItr = m_fleetDataMap.find(fleetID);
     if (fItr != m_fleetDataMap.end()) {
@@ -1202,14 +1196,7 @@ void FleetService::LeaveFleet(Client* pClient)
 
     RemoveMember(pClient);
 
-    CharFleetData fleet;
-        fleet.wingID = 0;
-        fleet.fleetID = 0;
-        fleet.squadID = 0;
-        fleet.job = 0;
-        fleet.joinTime = 0;
-        fleet.role = 0;
-        fleet.booster = 0;
+    CharFleetData fleet = CharFleetData();
     //call updates on fleet session data
     pChar->SetFleetData(fleet);
 }

@@ -194,7 +194,7 @@ public:
     virtual bool _Load();
 
 protected:
-    /* template helper, calls template loader then class loader */
+    /* template helper, calls template loader (below) then class loader */
     template<class _Ty>
     static RefPtr<_Ty> Load( uint32 itemID)
     {

@@ -332,9 +332,11 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             pStatus = Error;
 
         // there are many correctable errors to check for
-        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR))
+        if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
+            _log(DATABASE__ERROR, "DBCore error - server lost or gone.");
             if (!Reconnect())
                 return false;
+        }
 
         if ((pStatus == Connected) and retry)
             return DoQuery_locked(err, query, querylen, retry);

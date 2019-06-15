@@ -147,10 +147,13 @@ public:
     // NOTE:  result is cleared before populating with most recent data for multiple statements using same DBQueryResult object.
     bool    RunQuery(DBQueryResult &into, const char *query_fmt, ...);
     //query which returns no information except error status
+    // NOTE:  result is cleared before populating with most recent data for multiple statements using same DBQueryResult object.
     bool    RunQuery(DBerror &err, const char *query_fmt, ...);
     //query which returns affected rows:
+    // NOTE:  result is cleared before populating with most recent data for multiple statements using same DBQueryResult object.
     bool    RunQuery(DBerror &err, uint32 &affected_rows, const char *query_fmt, ...);
     //query which returns last insert ID:
+    // NOTE:  result is cleared before populating with most recent data for multiple statements using same DBQueryResult object.
     bool    RunQueryLID(DBerror& err, uint32& last_insert_id, const char* query_fmt, ...);
 
     int32   DoEscapeString(char* tobuf, const char* frombuf, int32 fromlen);

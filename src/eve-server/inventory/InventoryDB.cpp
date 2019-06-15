@@ -475,12 +475,11 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
     if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
         return false;  // make error here?
 
-    DBerror err;
-
     std::string nameEsc, customInfoEsc;
     sDatabase.DoEscapeString(nameEsc, data.name);
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
+    DBerror err;
     if(!sDatabase.RunQuery(err,
         "UPDATE entity"
         " SET"

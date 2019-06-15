@@ -460,7 +460,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 {
 	uint32 stationID = 0;
     if (!CharacterDB::GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
-		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
+		sLog.Error( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
 		return PyStatic.NewNone();
 	}
     return new PyInt(stationID);

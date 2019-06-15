@@ -220,15 +220,9 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         /*
          * not handled / not needed ?
         case EVEDB::invCategories::_System:
-        case EVEDB::invCategories::Accessories:
         case EVEDB::invCategories::Trading:
         case EVEDB::invCategories::Bonus:
-        case EVEDB::invCategories::Drone:
-        case EVEDB::invCategories::Implant:
-        case EVEDB::invCategories::Deployable:
-        case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::Reaction:
-        case EVEDB::invCategories::Orbitals:
         */
         case EVEDB::invCategories::Owner: {
             return CharacterType::_LoadType<CharacterType>(typeID, group, data );
@@ -244,6 +238,7 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Ship: {
             return ShipType::_LoadType<ShipType>(typeID, group, data );
         }
+        case EVEDB::invCategories::Accessories:  // clone, voucher, outpost improvement/upgrade, plex
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Celestial:
         case EVEDB::invCategories::Skill:
@@ -251,6 +246,11 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Material:
         case EVEDB::invCategories::Module:
         case EVEDB::invCategories::Entity:
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Deployable:
+        case EVEDB::invCategories::Structure:
+        case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Asteroid: {
             // these are called but not sure if they need to be coded specifically
         } break;

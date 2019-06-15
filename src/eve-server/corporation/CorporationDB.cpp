@@ -2165,6 +2165,8 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     charUpdate.newShares = args.numberOfShares; // plus existing shares this owner has of this corp
     //res.Reset();
     sDatabase.RunQuery(res,"SELECT shares, shareholderCorporationID FROM crpShares WHERE corporationID = %u AND shareholderID = %u ", corpID, args.toShareholderID);
+    // this isnt completely right.   also throws error
+    //  AttributeError: 'dict' object has no attribute 'header'
     if (res.GetRow(row)) {
         charUpdate.oldShares = (oldShares = row.GetInt(0));
         charUpdate.oldCorpID = row.GetInt(1);
@@ -2181,6 +2183,7 @@ void CorporationDB::MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& a
     charUpdate.newCorpID = corpID;
     charUpdate.newOwnerID = args.toShareholderID;
     charUpdate.newOwnerNewCorpID = (isCorp ? 0 : oldCorpID);
+    /** @todo pClient may be null here.... */
     pClient->SendNotification("OnShareChange", "charid", charUpdate.Encode());
 
     // add to new owner

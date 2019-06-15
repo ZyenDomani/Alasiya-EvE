@@ -435,10 +435,10 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             if (itemRef.get() == nullptr)
                 return InventoryItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A _type::Spawn() function that does not exist yet
-            itemRef->SetAttribute(AttrMass,           iType->mass());           // Mass
-            itemRef->SetAttribute(AttrRadius,         iType->radius());       // Radius
-            itemRef->SetAttribute(AttrVolume,         iType->volume());       // Volume
-            itemRef->SetAttribute(AttrCapacity,       iType->capacity());   // Capacity
+            itemRef->SetAttribute(AttrMass,           iType->mass(), false);           // Mass
+            itemRef->SetAttribute(AttrRadius,         iType->radius(), false);       // Radius
+            itemRef->SetAttribute(AttrVolume,         iType->volume(), false);       // Volume
+            itemRef->SetAttribute(AttrCapacity,       iType->capacity(), false);   // Capacity
             return itemRef;
         } break;
         case EVEDB::invCategories::Charge: {
@@ -481,8 +481,8 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             if (stationRef.get() == nullptr)
                 return StationItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
-            stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity));     // Shield Charge
-            stationRef->SetAttribute(AttrArmorDamage,   0.0);                                         // Armor Damage
+            stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
+            stationRef->SetAttribute(AttrArmorDamage,   0.0, false);                                         // Armor Damage
             stationRef->SetAttribute(AttrMass,          iType->mass(), false);           // Mass
             stationRef->SetAttribute(AttrRadius,        iType->radius(), false);       // Radius
             stationRef->SetAttribute(AttrVolume,        iType->volume(), false);       // Volume
@@ -521,12 +521,16 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
 // item manipulation methods
 void InventoryItem::AddItem(InventoryItemRef iRef)
 {
-    pInventory->AddItem( iRef);
+    // make error for invalid inventory?
+    // only happens on char creation, when system isnt loaded yet, so we really dont need it.
+    if (pInventory != nullptr)
+        pInventory->AddItem( iRef);
 }
 
 void InventoryItem::RemoveItem(InventoryItemRef iRef)
 {
-    pInventory->RemoveItem( iRef);
+    if (pInventory != nullptr)  // just in case
+        pInventory->RemoveItem( iRef);
 }
 
 void InventoryItem::Delete() {
@@ -537,7 +541,8 @@ void InventoryItem::Delete() {
         ChangeOwner(1);
     }
 
-    pAttributeMap->Delete();
+    if (pAttributeMap != nullptr)   // should never be null, but just in case
+        pAttributeMap->Delete();
     //take ourself out of the DB
     sItemFactory.db()->DeleteItem( m_itemID);
     //delete ourselves from factory cache
@@ -633,11 +638,11 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if ((new_location == m_locationID) and (new_flag == m_flag))
         return; //nothing to do...
 
-        InventoryItemRef iRef(nullptr);
+    InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
-    m_flag = new_flag;      // move these?
+    m_flag = new_flag;
     m_locationID = new_location;
 
     if (old_location != m_locationID) {
@@ -871,6 +876,9 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         }
     }
     PySafeDecRef(tmp);
+    /** @todo change isnt being PyDecRef'd as it should here */
+    for (auto cur : changes)
+        PySafeDecRef(cur.second);
     changes.clear();    //reset change map for next update.
 }
 
