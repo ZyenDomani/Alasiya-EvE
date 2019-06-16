@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, Aknor Jaden
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include <boost/algorithm/string.hpp>

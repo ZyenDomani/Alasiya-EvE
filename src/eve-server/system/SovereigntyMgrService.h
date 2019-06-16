@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Reve
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #ifndef __SOVEREIGNTYMGR_SERVICE_H_INCL__

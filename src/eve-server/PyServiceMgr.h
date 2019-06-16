@@ -55,7 +55,7 @@ public:
     void Close();
     void Process();
 
-    void RegisterService(const std::string name, PyService* svc);
+    void RegisterService(const std::string& name, PyService* svc);
     PyService* LookupService(const std::string& name);
 
     uint32 GetNodeID() const                            { return m_nodeID; }

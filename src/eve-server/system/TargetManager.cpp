@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 /** @todo (Allan)  add target lost and target fail reasons.
  * maybe make common function, and pass "add", "clear", "otheradd", reason, etc ??

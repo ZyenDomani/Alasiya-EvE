@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur
     Impelemtation: Positron96
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 /** @todo  go thru and update/optimize this class */

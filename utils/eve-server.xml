@@ -1,6 +1,6 @@
 
 <!-- Alasiya EvEmu Server Config
-     Version: 9.2 -->
+     Version: 9.4 -->
 
 <!--
     unless otherwise noted, ALL fractional values use fuzzy logic.
@@ -69,6 +69,8 @@
         <loginMsg>false</loginMsg><!-- bool -->
         <mailDelay>5</mailDelay>
         <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
+        <saveOnMove>false</saveOnMove><!-- bool - save items when Move()'d -->
+        <saveOnUpdate>false</saveOnUpdate><!-- bool - save items when values or attributes updated -->
     </world>
 
     <rates>
@@ -81,6 +83,8 @@
         <turretRoF>1.0</turretRoF><!-- PC turrets multiplier.  DO NOT USE 0.0 -->
         <npcBountyMultiply>1.0</npcBountyMultiply><!-- only used if != 1.0 -->
         <corpCost>20000000</corpCost>
+        <medalCreateCost>8000000</medalCreateCost>
+        <medalAwardCost>5000000</medalAwardCost>
         <WorldDecay>120</WorldDecay><!-- in minutes (2 hour default - 250 max)-->
         <NPCDecay>30</NPCDecay><!-- in minutes (30 min default) -->
         <WebUpdate>15</WebUpdate><!-- save current server status in db.  in minutes  15m default -->
@@ -90,8 +94,8 @@
         <RateDropMoney>1.0</RateDropMoney><!--  only used if != 1.0 -->
         <!-- for repair system -->
         <RepairCost>1.0</RepairCost><!--  only used if != 1.0 -->
-        <ShipRepairModifier>0.0000000075</ShipRepairModifier><!-- 7.5e-10 on live.  needs to be less here. -->
-        <ModuleRepairModifier>0.0000125</ModuleRepairModifier><!-- modules are (basePrice)*1.25e-6 -->
+        <ShipRepairModifier>0.000275</ShipRepairModifier><!-- (basePrice)*7.5e-10 on live.  needs to be less here. -->
+        <ModuleRepairModifier>0.0022</ModuleRepairModifier><!-- (basePrice)*1.25e-6 -->
         <!-- corp tax variables. -->
         <!-- min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment. -->
         <TaxAmount>20000</TaxAmount><!-- default is 20000 isk.  less than this isnt worth the processing for corps -->
@@ -148,8 +152,8 @@
         <StaticTimer>300</StaticTimer><!-- time between spawn checks, in seconds  15m default -->
         <RespawnTimer>300</RespawnTimer><!-- time between respawn checks, in seconds.  this affects chain-ratting  5m default -->
         <RatFaction>0</RatFaction><!-- force spawn to this faction if !=0 -->
-        <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
         <LootDropChance>0.75</LootDropChance><!-- % in whole #  chance for NPC to drop loot.  75% default -->
+        <UseDamageMultiplier>true</UseDamageMultiplier><!-- bool  - use the damage multiplier in npc data -->
     </npc>
 
     <standings><!-- these are in percent -->

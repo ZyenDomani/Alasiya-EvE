@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur (outline and 3 calls)
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"

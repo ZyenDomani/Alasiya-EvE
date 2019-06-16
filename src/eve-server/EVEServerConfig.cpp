@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.3
+    Version:    9.4
 */
 
 
@@ -72,6 +72,7 @@ EVEServerConfig::EVEServerConfig()
     world.gridUnloadTime = 300 /*s*/; // 5 mins
     world.loginInfo = false;//N
     world.loginMsg = false;//N
+    world.saveOnMove = false;
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
     world.apWarptoDistance = 15000;
@@ -347,6 +348,8 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     AddValueParser( "gridUnloadTime",   world.gridUnloadTime );
     AddValueParser( "loginInfo",        world.loginInfo );
     AddValueParser( "loginMsg",         world.loginMsg );
+    AddValueParser( "saveOnMove",       world.saveOnMove );
+    AddValueParser( "saveOnUpdate",     world.saveOnUpdate );
     AddValueParser( "mailDelay",        world.mailDelay );
     AddValueParser( "StationDockDelay", world.StationDockDelay );
     AddValueParser( "apWarptoDistance", world.apWarptoDistance );
@@ -359,6 +362,8 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "gridUnloadTime" );
     RemoveParser( "loginInfo" );
     RemoveParser( "loginMsg" );
+    RemoveParser( "saveOnMove" );
+    RemoveParser( "saveOnUpdate" );
     RemoveParser( "mailDelay" );
     RemoveParser( "StationDockDelay" );
     RemoveParser( "apWarptoDistance" );

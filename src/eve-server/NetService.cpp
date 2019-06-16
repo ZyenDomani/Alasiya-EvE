@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -54,7 +55,7 @@ PyResult NetService::Handle_GetClusterSessionStatistics(PyCallArgs &call)
 {
     // got this shit working once i understood what the client wanted....only took 4 years
     DBQueryResult res;
-    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE active = 1");
+    sDatabase.RunQuery(res, "SELECT solarSystemID, pilotsInSpace, pilotsDocked FROM mapDynamicData"); // WHERE active = 1");
     /** @todo  instead of hitting db, call solarsystem to get docked/inspace and NOT afk
      *   client already has IsAFK()
      */
@@ -99,7 +100,7 @@ PyResult NetService::Handle_GetInitVals(PyCallArgs &call) {
         dict->SetItemString("trademgr", new PyString("station"));
         dict->SetItemString("tutorialSvc", new PyString("station"));
         dict->SetItemString("slash", new PyString("station"));
-        dict->SetItemString("wormholeMgr", new PyString("station"));
+        dict->SetItemString("wormholeMgr", new PyString("location"));
         dict->SetItemString("LSC", new PyString("location"));
         dict->SetItemString("station", new PyString("location"));
         dict->SetItemString("config", new PyString("locationPreferred"));

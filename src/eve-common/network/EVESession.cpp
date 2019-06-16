@@ -57,18 +57,19 @@ void EVEClientSession::Reset() {
     VersionExchangeServer version;
     _GetVersion( version );
 
-    PyRep* r(version.Encode());
-    mNet->QueueRep( r );
-    PyDecRef( r );
+    PyRep* res(version.Encode());
+    mNet->QueueRep(res);
+    PyDecRef(res);
 
     mPacketHandler = &EVEClientSession::_HandleVersion;
 }
 
+// this isnt used.
 void EVEClientSession::QueuePacket( const PyPacket* p ) {
     if (p == nullptr)
         return;
-    PyPacket* packet(p->Clone());
 
+    PyPacket* packet(p->Clone());
     if (packet == nullptr) {
         sLog.Error("QueuePacket", "Unable to clone a PyPacket");
         return;
@@ -82,8 +83,6 @@ void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
         return;
 
     PyRep* res(packet->Encode());
-    // maybe change PyPacket to a object with a reference..
-    //SafeDelete(packet);
     if (res == nullptr) {
         sLog.Error("FastQueuePacket", "%s: Failed to encode a Fast queue packet.", GetAddress().c_str());
         return;
@@ -190,7 +189,6 @@ PyPacket* EVEClientSession::_HandleFuncResult( PyRep* rep ) {
     else if ( _VerifyFuncResult( hr ) )
         mPacketHandler = &EVEClientSession::_HandlePacket;
 
-    // recurse
     return PopPacket();
 }
 
@@ -200,9 +198,9 @@ PyPacket* EVEClientSession::_HandlePacket( PyRep* rep ) {
     if ( !p->Decode( &rep ) ) { //rep is consumed here
         sLog.Error("_HandlePacket", "%s: Failed to decode packet rep", GetAddress().c_str());
         SafeDelete( p );
-    } else
-        return p;
+        PyDecRef(rep);
+        return PopPacket();
+    }
 
-    // recurse
-    return PopPacket();
+    return p;
 }

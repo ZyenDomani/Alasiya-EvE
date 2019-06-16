@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.3
+    Version:    9.4
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -75,6 +75,8 @@ public:
         bool gridUnload;
         bool loginInfo;
         bool loginMsg;
+        bool saveOnMove;
+        bool saveOnUpdate;
         uint8 mailDelay;
         uint8 StationDockDelay;
         uint16 gridUnloadTime;

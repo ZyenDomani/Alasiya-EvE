@@ -39,22 +39,19 @@ void StreamPacketizer::InputData( const Buffer& data )
 
 void StreamPacketizer::Process()
 {
-    Buffer::const_iterator<uint8> cur, end;
-    cur = mBuffer.begin<uint8>();
-    end = mBuffer.end<uint8>();
-    while( true )
-    {
-        if( sizeof( uint32 ) > ( end - cur ) )
+    Buffer::const_iterator<uint8> cur = mBuffer.begin<uint8>(), end = mBuffer.end<uint8>();
+    while( true ) {
+        if (sizeof(uint32) > (end - cur))
             break;
 
         const Buffer::const_iterator<uint32> len = cur.As<uint32>();
         const Buffer::const_iterator<uint8> start = ( len + 1 ).As<uint8>();
 
-        if( *len > (uint32)( end - start ) )
+        if (*len > (uint32)(end - start))
             break;
 
-        mPackets.push( new Buffer( start, start + *len ) );
-        cur = ( start + *len );
+        mPackets.push( new Buffer(start, start + *len));
+        cur = (start + *len);
     }
 
     if( cur != mBuffer.begin<uint8>() )
@@ -63,25 +60,18 @@ void StreamPacketizer::Process()
 
 Buffer* StreamPacketizer::PopPacket()
 {
-    Buffer* ret = NULL;
-    if( !mPackets.empty() )
-    {
-        ret = mPackets.front();
+    Buffer* buf(nullptr);
+    if (!mPackets.empty()) {
+        buf = mPackets.front();
         mPackets.pop();
     }
 
-    return ret;
+    return buf;
 }
 
 void StreamPacketizer::ClearBuffers()
 {
-    Buffer* buf;
-    while( ( buf = PopPacket() ) )
+    Buffer* buf(nullptr);
+    while (buf = PopPacket())
         SafeDelete( buf );
 }
-
-
-
-
-
-

@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Reve, Comet0
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 //work in progress

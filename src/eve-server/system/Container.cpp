@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Aknor Jaden
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"

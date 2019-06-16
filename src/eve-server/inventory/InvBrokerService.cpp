@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 /** @todo update this code to use throws for client msgs also */

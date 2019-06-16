@@ -144,4 +144,19 @@ std::unique_ptr<T> make_uniquea(size_t n) {
     //typedef typename remove_extent<T>::type U;
     return std::unique_ptr<T>(new T[n]());
 }
+
+template<class T>
+class myPtr
+{
+public:
+    explicit myPtr(T* pointer) : ptr(pointer) { }
+    ~myPtr() { delete ptr; }
+    T* get() const { return ptr; }
+    T* operator->() const { return ptr; }
+    T* operator*() const { return *ptr; }
+
+private:
+    T* ptr;
+};
+
 #endif /* !__UTILS__SAFE_MEM_H__INCL__ */

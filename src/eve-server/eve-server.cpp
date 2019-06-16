@@ -21,7 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:     Zhur, mmcs
- *    Updates:    Allan
+ *    Updates:    Allan (rewrite)
  */
 
 #include "eve-server.h"
@@ -267,6 +267,25 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
+    sLog.Blue("     ServerConfig", "World Switches");
+    if (sConfig.world.saveOnMove)
+        sLog.Green("     Save on Move","Enabled.");
+    else
+        sLog.Warning("     Save on Move","Disabled.");
+    if (sConfig.world.saveOnUpdate)
+        sLog.Green("   Save on Update","Enabled.");
+    else
+        sLog.Warning("   Save on Update","Disabled.");
+    if (sConfig.world.StationDockDelay)
+        sLog.Green("    Docking Delay","Enabled.");
+    else
+        sLog.Warning("    Docking Delay","Disabled.");
+    if (sConfig.world.gridUnload)
+        sLog.Green("   Grid Unloading","Enabled.  Grids will unload after %u seconds of inactivity.", sConfig.world.gridUnloadTime);
+    else
+        sLog.Warning("   Grid Unloading","Disabled.");
+    std::printf("\n");     // spacer
+
     sLog.Blue("     ServerConfig", "Rate Modifiers");
     if (sConfig.rates.secRate != 1.0)
         sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
@@ -308,34 +327,6 @@ int main( int argc, char* argv[] )
         sLog.Yellow("     Missile Time","Modified at %.0f%%.", (sConfig.rates.missileTime *100) );
     else
         sLog.Green("     Missile Time","Normal.");
-    std::printf("\n");     // spacer
-
-    sLog.Blue("     ServerConfig", "Debug Switches");
-    if (sConfig.debug.IsTestServer)
-        sLog.Error("     ServerConfig", "Test Server Enabled");
-    else
-        sLog.Error("     ServerConfig", "Live Server Enabled");
-    if (sConfig.debug.UseProfiling) {
-        sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Initialize();
-    } else
-        sLog.Warning(" Server Profiling","Disabled.");
-    if (sConfig.debug.SpawnTest)
-        sLog.Warning("       Spawn Test","Enabled.");
-    else
-        sLog.Warning("       Spawn Test","Disabled.");
-    if (sConfig.debug.BubbleTrack)
-        sLog.Warning("  Bubble Tracking","Enabled.");
-    else
-        sLog.Warning("  Bubble Tracking","Disabled.");
-    if (sConfig.debug.UseShipTracking)
-        sLog.Warning("    Ship Tracking","Enabled.");
-    else
-        sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.debug.PositionHack)
-        sLog.Warning("    Position Hack","Enabled.");
-    else
-        sLog.Warning("    Position Hack","Disabled.");
     std::printf("\n");     // spacer
 
     sLog.Blue("     ServerConfig", "Feature Switches");
@@ -418,6 +409,34 @@ int main( int argc, char* argv[] )
         //sMktBotMgr.Initialize();
     } else
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
+    std::printf("\n");     // spacer
+
+    sLog.Blue("     ServerConfig", "Debug Switches");
+    if (sConfig.debug.IsTestServer)
+        sLog.Error("     ServerConfig", "Test Server Enabled");
+    else
+        sLog.Error("     ServerConfig", "Live Server Enabled");
+    if (sConfig.debug.UseProfiling) {
+        sLog.Green(" Server Profiling","Enabled.");
+        sProfile.Initialize();
+    } else
+        sLog.Warning(" Server Profiling","Disabled.");
+    if (sConfig.debug.SpawnTest)
+        sLog.Warning("       Spawn Test","Enabled.");
+    else
+        sLog.Warning("       Spawn Test","Disabled.");
+    if (sConfig.debug.BubbleTrack)
+        sLog.Warning("  Bubble Tracking","Enabled.");
+    else
+        sLog.Warning("  Bubble Tracking","Disabled.");
+    if (sConfig.debug.UseShipTracking)
+        sLog.Warning("    Ship Tracking","Enabled.");
+    else
+        sLog.Warning("    Ship Tracking","Disabled.");
+    if (sConfig.debug.PositionHack)
+        sLog.Warning("    Position Hack","Enabled.");
+    else
+        sLog.Warning("    Position Hack","Disabled.");
     std::printf("\n");     // spacer
 
     /* Start up the TCP server */
@@ -652,7 +671,7 @@ int main( int argc, char* argv[] )
     std::printf("\n");     // spacer
     stDataMgr.Initialize();
     std::printf("\n");     // spacer
-    
+
     // clear dynamic system data (player counts, etc) on server start
     MapDB::SystemStartup();
     sLog.Green("       ServerInit", "Cleared Dynamic System Datasets from Previous run.");

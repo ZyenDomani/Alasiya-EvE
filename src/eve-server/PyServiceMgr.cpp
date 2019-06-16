@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -52,13 +53,17 @@ void PyServiceMgr::Close() {
     m_svcList.clear();
 
     PyBoundObject* bo(nullptr);
-    for ( auto itr : m_boundObjects) {
-        bo = itr.second.destination;
-        _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
+    for (auto cur : m_boundObjects) {
+        bo = cur.second.destination;
+        if (is_log_enabled(SERVICE__MESSAGE))
+            _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
                     bo->GetBoundObjectClassStr().c_str(), bo->m_nodeID, bo->m_bindID);
         SafeDelete(bo);
     }
     m_boundObjects.clear();
+
+    SafeDelete(lsc_service);
+    SafeDelete(cache_service);
 }
 
 void PyServiceMgr::Initalize(double startTime)
@@ -70,7 +75,7 @@ void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }
 
-void PyServiceMgr::RegisterService(const std::string name, PyService* svc)
+void PyServiceMgr::RegisterService(const std::string &name, PyService* svc)
 {
     m_svcList[name] = svc;
 }

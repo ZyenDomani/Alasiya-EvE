@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include <string>

@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-xmlpktgen.h"
@@ -63,7 +63,7 @@ bool ClassDecodeGenerator::ProcessElementDef(const TiXmlElement* field)
         "bool %s::Decode(PyRep** packet) {\n"
         "    bool res = Decode(*packet);\n"
         "    PyDecRef(*packet);\n"
-        "    packet == nullptr;\n"
+        "    //*packet = nullptr;\n"
         "    return res;\n"
         "}\n\n"
         "bool %s::Decode(%s** packet) {\n"
@@ -586,6 +586,7 @@ bool ClassDecodeGenerator::ProcessWString(const TiXmlElement* field)
                 name, none_marker
         );
 
+    /** @todo update these to use  PyRep::StringContent()  */
     fprintf(mOutputFile,
             "    if (%s->IsWString())\n"
             "        %s = %s->AsWString()->content();\n"
@@ -916,7 +917,7 @@ bool ClassDecodeGenerator::ProcessTuple(const TiXmlElement* field)
 bool ClassDecodeGenerator::ProcessTupleInline(const TiXmlElement* field)
 {
     //first, we need to know how many elements this tuple has:
-    const TiXmlNode* i = nullptr;
+    const TiXmlNode* i(nullptr);
 
     uint32 count = 0;
     while (i = field->IterateChildren(i)) {
@@ -1013,7 +1014,7 @@ bool ClassDecodeGenerator::ProcessList(const TiXmlElement* field)
 bool ClassDecodeGenerator::ProcessListInline(const TiXmlElement* field)
 {
     //first, we need to know how many elements this tuple has:
-    const TiXmlNode* i = nullptr;
+    const TiXmlNode* i(nullptr);
 
     uint32 count = 0;
     while (i = field->IterateChildren(i)) {
@@ -1286,7 +1287,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
    );
 
     //now generate the "found" flags for each expected element.
-    const TiXmlNode* i = nullptr;
+    const TiXmlNode* i(nullptr);
 
     bool empty = true;
     uint32 count = 0;
@@ -1319,8 +1320,7 @@ bool ClassDecodeGenerator::ProcessDictInline(const TiXmlElement* field)
             "    // %s is empty from our perspective, not enforcing though.\n",
             iname
        );
-    else
-    {
+    else {
         //setup the loop...
         fprintf(mOutputFile,
             "    PyDict::const_iterator %s_cur = %s->begin();\n"
@@ -1667,3 +1667,4 @@ bool ClassDecodeGenerator::ProcessSubStructInline(const TiXmlElement* field)
     pop();
     return true;
 }
+

@@ -38,13 +38,14 @@ void StationDataMgr::Close()
 
 void StationDataMgr::Clear()
 {
+    for (auto cur : m_stationPyData)
+        PySafeDecRef(cur.second);
+    
     m_serviceMask.clear();
     m_stationData.clear();
     m_stationPyData.clear();
     m_stationOfficeData.clear();
 
-    for (auto cur : m_stationPyData)
-        PySafeDecRef(cur.second);
 }
 
 void StationDataMgr::Populate()

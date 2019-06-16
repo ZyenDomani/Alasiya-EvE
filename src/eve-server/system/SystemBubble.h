@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 #ifndef __SYSTEMBUBBLE_H_INCL__
 #define __SYSTEMBUBBLE_H_INCL__
