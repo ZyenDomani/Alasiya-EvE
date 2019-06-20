@@ -55,7 +55,7 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        OfficeData odata;
+        OfficeData odata = OfficeData();
         if (!StationDB::GetOfficeData(officeID, odata))
             return RefPtr<_Ty>();
 

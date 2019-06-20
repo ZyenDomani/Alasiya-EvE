@@ -36,7 +36,7 @@ public:
     std::string     GetTargLocName(int8 id);
     std::string     GetStateName(int8 id);
 
-    EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*Effects::Math*/int8 method);
+    EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*FX::Math*/int8 method);
 
 protected:
 

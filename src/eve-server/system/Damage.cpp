@@ -199,7 +199,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (available_shield > 0) {
             _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
-            m_self->SetAttribute(AttrShieldCharge, 0);
+            m_self->SetAttribute(AttrShieldCharge, EvilZero);
         }
 
         //Armor:
@@ -425,7 +425,7 @@ void Ship::Killed(Damage &fatal_blow) {
         }
 
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
-    CharKillData data;
+    CharKillData data = CharKillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = pPilot->GetCharacterID();
         data.victimCorporationID = m_corpID;

@@ -251,8 +251,8 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 
@@ -281,8 +281,8 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 
@@ -676,7 +676,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
 
     if (!pClient->IsInSpace()) {
         pClient->SendNotifyMsg("You can't do this while docked");
-        return PyStatic.NewOne();
+        return PyStatic.NewZero();
     }
 
     if (call.tuple->size() == 2) {
@@ -686,7 +686,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return PyStatic.NewOne();
+            return PyStatic.NewZero();
         }
         /*      this is deactivate call....
             22:06:59 W DogmaIMBound::Handle_Activate(): size=2
@@ -707,7 +707,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
         if (pSE == nullptr) {
             sLog.Error("DogmaIMBound::Handle_Activate()", "%u is not a valid EntityID in this system.", args.arg1);
-            return PyStatic.NewOne();
+            return PyStatic.NewZero();
         }
         // determine if this pSE is pos or cont.
         //call (de)activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
@@ -731,7 +731,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return PyStatic.NewOne();
+            return PyStatic.NewZero();
         }
 
         pClient->GetShip()->Activate(args.itemID, args.effectName, args.target, args.repeat);

@@ -180,7 +180,7 @@ protected:
         const BlueprintType& bpType = static_cast<const BlueprintType& >( type );
 
         FactoryDB mdb;
-        BlueprintData bpData;
+        BlueprintData bpData = BlueprintData();
         if (!mdb.GetBlueprint( blueprintID, bpData ) )
             return RefPtr<_Ty>();
 

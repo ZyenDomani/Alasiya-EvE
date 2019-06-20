@@ -19,7 +19,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -123,7 +123,7 @@ PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     Call_BoardShip args;
@@ -136,51 +136,52 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
-    //  do we need this?
-    if (pClient->GetShipSE()->DestinyMgr()->IsMoving()) {
-        throw PyException(MakeCustomError("You cannot change ships while moving."));
-        return nullptr;
-    }
-
     SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
-    Ship* shipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
+    // this will segfault if newShipID is invalid or not in system inventory
+    Ship* pShipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
 
-    if (shipSE == nullptr) {
+    if (pShipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 25107."));
-        return nullptr;
     }
 
-    if (shipSE->GetTypeID() == itemTypeCapsule) {
+    if (pShipSE->GetTypeID() == itemTypeCapsule) {
         codelog(ITEM__ERROR, "Empty Pod %u in space.  SystemID %u.", args.newShipID, pSystem->GetID());
         throw PyException(MakeCustomError("You already have a pod.  These cannot be boarded manally."));
-        return nullptr;
     }
 
-    if (!shipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar())) {
-        // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
-        throw PyException(MakeCustomError("You do not have the skills to fly a %s.", shipSE->GetName()));
-        return nullptr;
+    /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
+    if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
+        /* find proper error msg for this...im sure there is one  */
+        throw PyException(MakeCustomError("You cannot eject with an active Cyno Field."));
     }
 
-    Ship* oldShipSE = pClient->GetShipSE();
-    pClient->Board(shipSE);
-    // if boarding from pod, delete pod (RP - pilot's pod is inserted into ship)
-    if (oldShipSE->GetTypeID() == itemTypeCapsule) {
-        pSystem->RemoveEntity(oldShipSE);
-        SafeDelete(oldShipSE);
-    }
+    //  do we need this? yes....this needs more work in destiny to implement correctly
+    if (pShipSE->DestinyMgr()->IsMoving())
+        throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
+
+    // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
+    if (!pShipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar()))
+        throw PyException(MakeCustomError("You do not have the skills to fly a %s.", pShipSE->GetName()));
+
+    float distance = pClient->GetShipSE()->GetPosition().distance(pShipSE->GetPosition());
+    // fudge for radii ?
+    if (distance > sConfig.world.shipBoardDistance)
+        throw PyException(MakeCustomError("You are too far from %s to board it.  You must be within %u to board this ship.",\
+                pShipSE->GetName(), sConfig.world.shipBoardDistance));
+
+    pClient->Board(pShipSE);
 
     /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 
@@ -202,27 +203,25 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      */
 
     SystemEntity* pShipSE = pClient->GetShipSE();
+    if (pShipSE == nullptr)
+        throw PyException(MakeCustomError("Invalid Ship.  Ref: ServerError xxxxx"));
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
     if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
         throw PyException(MakeCustomError("You cannot eject with an active Cyno Field."));
-        return PyStatic.NewNone();
     }
 
-    //  do we need this?  no.  make call to stop ship and continue
-    /*
-    if (pShipSE->DestinyMgr()->IsMoving()) {
+    //  do we need this? yes....this needs more work in destiny to implement correctly
+    if (pShipSE->DestinyMgr()->IsMoving())
         throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
-        return PyStatic.NewNone();
-    } */
 
     pClient->Eject();
 
     /* return error msg from this call, if applicable (not sure how yet), else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 
@@ -277,7 +276,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     ShipItemRef newShipRef = sItemFactory.GetShip(args.newShipID);
     if (newShipRef.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
-        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
+        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173+1"));
     }
 
     pClient->BoardShip(newShipRef);
@@ -307,18 +306,19 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        /** @todo throw exception */
-        return nullptr;
+        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
     }
 
     Client* pClient = call.client;
     ShipItemRef pShip = pClient->GetShip();
     if (pShip.get() == nullptr) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get ship item.", pClient->GetName());
+        throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
         call.client->SendNotifyMsg("Internal Server Error - Ref: ServerError xxxxx   -undock failed.");
         return nullptr;
     }
 
+    // nowhere near implementing this one yet....
     bool ignoreContraband = args.arg2;
 
     //  get vector of online modules as (k,v) pair,
@@ -338,8 +338,8 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 
@@ -528,7 +528,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
 
             // Move item from cargo bay to space:
             iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            iRef->Relocate(location + iRef->radius() + radius);
+            iRef->SetPosition(location + iRef->radius() + radius);
             iRef->ChangeOwner(entity.ownerID);
 
             entity.itemName = iRef->itemName();
@@ -937,8 +937,8 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
     /* return error msg from this call, if applicable, else nodeid and timestamp */
     // returns nodeID and timestamp
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
 }
 

@@ -16,7 +16,7 @@
 StatisticMgr::StatisticMgr()
 : m_counter(3)  // do first update 15m after server starts
 {
-
+    m_data = StatisticData();
 }
 
 void StatisticMgr::Close()
@@ -28,7 +28,7 @@ void StatisticMgr::Close()
 
 int StatisticMgr::Initialize()
 {
-    ClearAll();
+    //ClearAll();
     // reset current data for new session
     ManagerDB::UpdateStatisticHistory(m_data);
     sLog.Blue( "     StatisticMgr", "Statistics Manager Initialized." );
@@ -37,17 +37,7 @@ int StatisticMgr::Initialize()
 
 void StatisticMgr::ClearAll()
 {
-    m_data.span             = 0;
-    m_data.pcShots          = 0;
-    m_data.ramJobs          = 0;
-    m_data.pcMissiles       = 0;
-    m_data.pcBounties       = 0;
-    m_data.npcBounties      = 0;
-    m_data.oreMined         = 0;
-    m_data.iskMarket        = 0;
-    m_data.shipsSalvaged    = 0;
-    m_data.probesLaunched   = 0;
-    m_data.sitesScanned     = 0;
+    m_data = StatisticData();
 }
 
 void StatisticMgr::GetInfo()
@@ -153,7 +143,7 @@ void StatisticMgr::CompileData()
     DBResultRow row;
     ManagerDB::GetStatisticData(*res, startTime);
     if (res->GetRowCount() > 0) {
-        StatisticData data {};
+        StatisticData data = StatisticData();
         while (res->GetRow(row)) {
             //SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, sitesScanned, probesLaunched FROM srvStatisticData
             data.pcShots        += row.GetInt(0);
@@ -168,17 +158,18 @@ void StatisticMgr::CompileData()
             data.probesLaunched += row.GetInt(9);
         }
 
-        if ((data.pcShots == 0)
-        and (data.ramJobs == 0)
-        and (data.pcMissiles == 0)
-        and (data.pcBounties == 0)
-        and (data.npcBounties == 0)
-        and (data.oreMined == 0)
-        and (data.iskMarket == 0)
-        and (data.shipsSalvaged == 0)
-        and (data.probesLaunched == 0)
-        and (data.sitesScanned == 0))
-            return;
+        if (data.pcShots == 0)
+            if (data.ramJobs == 0)
+                if (data.pcMissiles == 0)
+                    if (data.pcBounties == 0)
+                        if (data.npcBounties == 0)
+                            if (data.oreMined == 0)
+                                if (data.iskMarket == 0)
+                                    if (data.shipsSalvaged == 0)
+                                        if (data.probesLaunched == 0)
+                                            if (data.sitesScanned == 0)
+                                                return;
+
         // data has been compiled for this running session.  save to history.
         ManagerDB::UpdateStatisticHistory(data);
     }

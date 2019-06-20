@@ -40,7 +40,7 @@ void StationDataMgr::Clear()
 {
     for (auto cur : m_stationPyData)
         PySafeDecRef(cur.second);
-    
+
     m_serviceMask.clear();
     m_stationData.clear();
     m_stationPyData.clear();
@@ -68,7 +68,7 @@ void StationDataMgr::Populate()
     StationDB::GetStationOfficeData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime, officeFolderID
-        OfficeData data;
+        OfficeData data = OfficeData();
         data.officeID       = row.GetInt(0);
         data.corporationID  = row.GetInt(1);
         data.stationID      = row.GetInt(2);
@@ -87,7 +87,7 @@ void StationDataMgr::Populate()
         s.officeSlots, s.officeRentalCost, s.operationID, s.stationTypeID, s.corporationID, s.stationName, s.reprocessingStationsTake, s.reprocessingEfficiency,16 \
         s.reprocessingHangarFlag, st.conquerable, st.hangarGraphicID, m.orbitID, m.radius, m.security, o.description, o.descriptionID,24\
         t.graphicID, s.solarSystemID, s.constellationID, s.regionID, st.dockEntryX, st.dockEntryY, st.dockEntryZ 31
-        StationData sData;
+        StationData sData = StationData();
         sData.stationID                 = row.GetInt(0);
         if ((itr = m_serviceMask.find(sData.stationID)) != m_serviceMask.end())
             sData.serviceMask = itr->second;

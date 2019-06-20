@@ -394,7 +394,7 @@ uint32 MarketDB::_StoreOrder(
 ) {
     // get the solar system and region IDs.
     // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
-    SystemData data;
+    SystemData data = SystemData();
     if (!sDataMgr.GetSystemInfo(stationID, data)) {
         codelog(MARKET__ERROR, "Char %u: Failed to find parents for station %u", ownerID, stationID);
         return 0;

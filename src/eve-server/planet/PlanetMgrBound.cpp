@@ -150,7 +150,7 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *pClient, const PyRep
         return nullptr;
     }
 
-    StaticData sData;
+    StaticData sData = StaticData();
     sDataMgr.GetStaticInfo(bind_args->AsInt()->value(), sData);
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sData.systemID);
     if (pSysMgr == nullptr) {

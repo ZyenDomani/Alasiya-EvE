@@ -332,28 +332,28 @@ bool SystemManager::LoadSystemStatics() {
             } break;
             case EVEDB::invGroups::Stargate: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StargateSE *pSSE = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 ++m_gateCount;
                 pSE = pSSE;
             } break;
             case EVEDB::invGroups::Planet: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 PlanetSE *pPSE = new PlanetSE(itemRef, *(GetServiceMgr()), this);
                 m_planetMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pPSE));
                 pSE = pPSE;
             } break;
             case EVEDB::invGroups::Moon: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 MoonSE *pMSE = new MoonSE(itemRef, *(GetServiceMgr()), this);
                 m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = pSSE;
             } break;
@@ -1034,7 +1034,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     using namespace Destiny;
     Buffer* stateBuffer = new Buffer();
 
-    AddBall_header head;
+    AddBall_header head = AddBall_header();
         head.packet_type = 0;   // 0 = full state   1 = balls
         head.stamp = into.stamp;
     stateBuffer->Append( head );
@@ -1045,10 +1045,13 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     for (auto cur : m_staticEntities)
         visibleEntities.push_back(cur.second);
 
-    // this gets our ship.  (bubble entities are sent when adding us to a bubble)
+    // get our ship.
     std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
         visibleEntities.push_back(itr->second);
+
+    // query bubble to get dynamic entities
+    pBubble->GetEntities(visibleEntities);
 
     into.slims = new PyList();
     into.slims->clear();
@@ -1229,7 +1232,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
     /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     for (auto cur : m_ticEntities) {
-        CosmicSignature sig;
+        CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();

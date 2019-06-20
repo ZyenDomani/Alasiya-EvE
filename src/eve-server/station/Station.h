@@ -117,6 +117,9 @@ public:
 
     void GetRefineData(uint32& stationCorpID, float& staEfficiency, float& tax);
 
+    // does client have a ship in this station?
+    bool HasShip(Client* pClient);
+
     // will need methods/table for updated station data
 
 protected:
@@ -142,7 +145,7 @@ protected:
         const StationType &stType = static_cast<const StationType &>( type );
 
         // load celestial data
-        CelestialObjectData cData;
+        CelestialObjectData cData = CelestialObjectData();
         if (!sItemFactory.db()->GetCelestialObject(stationID, cData))
             return RefPtr<_Ty>();
 

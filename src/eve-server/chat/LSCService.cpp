@@ -180,7 +180,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
         call.Dump(LSC__CALL_DUMP);
     }
 
-    Call_SingleWStringSoftArg name;
+    Call_SingleStringArg name;
     if (!name.Decode(call.tuple))  {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;

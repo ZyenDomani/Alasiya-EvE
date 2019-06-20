@@ -109,7 +109,7 @@ void ItemFactory::SaveItems() {
         if (IsCharacter(cur.first))
             continue;
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
-            SaveData data;
+            SaveData data = SaveData();
                 data.itemID = cur.first;
                 data.contraband = cur.second->contraband();
                 data.flag = cur.second->flag();

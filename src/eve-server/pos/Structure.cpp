@@ -71,14 +71,14 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
         or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
-        sRef->SetAttribute(AttrIsGlobal,                        1);
+        sRef->SetAttribute(AttrIsGlobal,                        EvilOne);
     }
     // Create default dynamic attributes in the AttributeMap:
-    sRef->SetAttribute(AttrMass,                                sRef->type().mass());
-    sRef->SetAttribute(AttrRadius,                              sRef->type().radius());
-    sRef->SetAttribute(AttrVolume,                              sRef->type().volume());
-    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity());
-    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity));
+    sRef->SetAttribute(AttrMass,                                sRef->type().mass(), false);
+    sRef->SetAttribute(AttrRadius,                              sRef->type().radius(), false);
+    sRef->SetAttribute(AttrVolume,                              sRef->type().volume(), false);
+    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity(), false);
+    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity), false);
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
@@ -499,6 +499,8 @@ void StructureSE::PullAnchor()
 
     SendSlimUpdate();
 
+    m_bubble->SetTowerSE(nullptr);
+
     /*
     if (m_tower)
         SendEffectUpdate(anchorLiftForStructures, true);
@@ -709,7 +711,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
     //const uint16 miniballsCount = GetMiniBalls();
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_data.itemID;
         head.radius = GetRadius();
         head.x = x();
@@ -733,7 +735,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 
     /** @todo these may need more work....  */
     if (m_tcu or m_tower) {
-        MassSector mass;
+        MassSector mass = MassSector();
             mass.cloak = 0;
             mass.corporationID = m_corpID;
             mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
@@ -743,7 +745,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     }
 
     if (m_data.state < EVEPOS::StructureState::Anchored) {
-        DataSector data;
+        DataSector data = DataSector();
             data.inertia = 1;
             data.velocity_x = 0;
             data.velocity_y = 0;
@@ -915,6 +917,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
+    m_bubble->SetTowerSE(nullptr);
+
     uint32 killerID = 0;
     Client* pClient(nullptr);
     SystemEntity* killer = fatal_blow.srcSE;
@@ -967,7 +971,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
     /** @todo  check for tower/tcu/sbu/jammer and make killmail */
     /** @todo send pos mail/notification to corp members */
-    CharKillData data;
+    CharKillData data = CharKillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = 0; // charID = 0 means strucuture/item
         data.victimCorporationID = m_corpID;

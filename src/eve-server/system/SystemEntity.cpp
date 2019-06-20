@@ -62,7 +62,7 @@ m_killed(false)
     m_allyID = -1;
     m_corpID = 0;
     m_fleetID = 0;
-    m_ownerID = 0;
+    m_ownerID = 1;
 
     m_radius = m_self->GetAttribute(AttrRadius).get_double();
 
@@ -124,7 +124,7 @@ void SystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
 
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
         head.radius = m_radius;
@@ -238,7 +238,7 @@ void SystemEntity::Abandon()
     m_allyID = -1;
     m_corpID = 0;
     m_fleetID = 0;
-    m_ownerID = 0;
+    m_ownerID = 1;
     m_self->ChangeOwner(1); // update this to use system owner?    yes, but system owner not coded yet.
 }
 
@@ -273,7 +273,7 @@ PyDict* StaticSystemEntity::MakeSlimItem() {
 
 void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
         head.x = x();
@@ -406,7 +406,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
 void ItemSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
         head.radius = m_radius;
@@ -457,7 +457,7 @@ ObjectSystemEntity::~ObjectSystemEntity()
 void ObjectSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_RIGID;
         head.radius = m_radius;
@@ -547,7 +547,7 @@ FieldSE::FieldSE(InventoryItemRef self, PyServiceMgr &services, SystemManager *s
 void FieldSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? DSTBALL_FIELD : DSTBALL_STOP);
         head.radius = m_radius;
@@ -556,7 +556,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
@@ -625,7 +625,7 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
 void DynamicSystemEntity::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_STOP;
         head.radius = m_radius;
@@ -634,14 +634,14 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsFree;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DataSector data;
+    DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
         data.velocity_x = m_destiny->GetVelocity().x;
@@ -695,7 +695,7 @@ void DynamicSystemEntity::AwardBounty(Client* pClient)
     std::string reason = "Bounty for killing a pirate in ";
     reason += pClient->GetSystemName();
 
-    BountyData data { /* initalize all to 0 */ };
+    BountyData data = BountyData();
     data.fromID = m_self->itemID();
     data.toID = pClient->GetCharacterID();
     data.refTypeID = Journal::EntryType::BountyPrize;

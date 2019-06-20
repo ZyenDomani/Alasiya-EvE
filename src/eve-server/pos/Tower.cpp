@@ -121,6 +121,8 @@ m_pShieldSE(nullptr)
     m_soi = m_self->GetAttribute(AttrPosStructureControlDistanceMax).get_int() * m_tsize;
 
 
+    m_tdata = EVEPOS::TowerData();
+
     /** @note these are defined, but i dunno what they are
      * AttrControlTowerMinimumDistance
      *
@@ -152,6 +154,9 @@ void TowerSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
     if (m_data.state > EVEPOS::StructureState::Unanchored)
         m_moonSE->SetTower(this);
 
+    // set tower in bubble
+    pBubble->SetTowerSE(this);
+    
     /** @todo
      * will have to check if Online or Operating
      *   in these two cases, remove resources based on time running.
@@ -168,20 +173,8 @@ void TowerSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
 void TowerSE::InitData(SystemBubble* pBubble) {
     // init base data first
     StructureSE::InitData(pBubble);
-
-    m_tdata.anchor = 0;
-    m_tdata.unanchor = 0;
-    m_tdata.online = 0;
-    m_tdata.offline = 0;
     m_tdata.harmonic = m_harmonic;     // set during base SE creation
-    m_tdata.standing = 0.0f;
     m_tdata.standingOwnerID = 0;    /** @todo  get sov holder here. */
-    m_tdata.corpWar = false;
-    m_tdata.allowCorp = true;
-    m_tdata.statusDrop = false;
-    m_tdata.allowAlliance = true;
-    m_tdata.showInCalendar = false;
-    m_tdata.sendFuelNotifications = false;
 
     m_db.SaveTowerData(m_tdata, m_data);
 }
@@ -471,7 +464,7 @@ void TowerSE::CreateForceField()
     InventoryItemRef ifRef = sItemFactory.SpawnItem(idata);
     if (ifRef.get() == nullptr)
         return;  // we'll get over it
-    ifRef->Relocate(GetPosition());
+    ifRef->SetPosition(GetPosition());
     ifRef->SetAttribute(AttrRadius, m_self->GetAttribute(AttrShieldRadius));
     FactionData data = FactionData();
         data.allianceID = m_allyID;

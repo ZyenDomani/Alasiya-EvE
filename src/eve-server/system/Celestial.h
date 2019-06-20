@@ -87,7 +87,7 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        CelestialObjectData cData;
+        CelestialObjectData cData = CelestialObjectData();
         if (!sItemFactory.db()->GetCelestialObject(celestialID, cData))
             return RefPtr<_Ty>();
 

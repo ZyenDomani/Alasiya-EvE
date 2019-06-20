@@ -12,7 +12,8 @@ station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bu
 undocking.... when undocking, players do not rec data on existing players in bubble.
     - existing players will see players entering bubble
 
-
+modules - check for the AttrOnline when initalize ship/modules
+    - when offlining modules in station, the AttrOnline update is set twice, once to set, and once to offline
 
 ********  improvements
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
@@ -40,7 +41,6 @@ RefObjects - MEMORY MANAGEMENT!!
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
     -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented
-
 
 
 **********   new Dec 2018
@@ -109,6 +109,7 @@ CorpStationMgrIMBound incomplete
 corp jumpers - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
+dividens incomplete
 
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: lo
@@ -130,6 +131,12 @@ entire mail/notification system needs looking over, maybe rewrite to allow OnNot
 
 mapservice code needs love
 CharMgrService code needs love
+notificationMgr code needs love
+certificateMgr needs looking at
+
+store/board ship (cap ship hangar) not coded
+
+ship selfdestruct not coded
 
 asteroid sizes in nullsec may be too large.  look into and fix as needed
 
@@ -185,6 +192,9 @@ figure out how to colorize _log() msgs to console
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
+01:54:02 [SvcCall] Service slash::SlashCmd()
+01:54:02 [CmdError] Unable to find command 'entityspawn' for allan
+
 
 *****************   eratta
 rework bulkdata code.
@@ -195,8 +205,7 @@ till then, we'll have to used the hacked system.
 after all, it works
 
 xmlp shit....
-change decode "->AsInt()->value()" and all 'extra' to use PyRep::IntegerValue(), which tests for and decodes all pyint types and will render my 'safe' parameter invalid.
-  ...which is a good thing.  'safe' was a hack anyway.  ;)
+    - none at this time
 
 item flags are stored in db as 'entity.flag', but client wants 'flagID'.
 look into changing our code to conform.  most objects are built in code and use flagID already, but some items need "flag AS flagID" in sql query.
@@ -208,6 +217,18 @@ ideas for holoscreen in CQ:
     - incursion data
     - relevant system data for player's current system
     - others?  more?
+
+OnItemsChanged is for multiple changes in a single return.
+    - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
+
+_Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSet.EveOwners (or server if empty)
+    - as ownerID defaults to '0', client throws error when receives 'None' as response  (need more the 0 values to unpack)
+    - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
+
+Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders for some that are 'xxxxx' which need fixing
+
+stations - look into individual hangers loaded into mem objects (charid/items)
+    - not sure if this would be worth it, but would make 'by owner' searches much faster
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:

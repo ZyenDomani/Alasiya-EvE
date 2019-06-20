@@ -58,12 +58,12 @@ namespace Fleet {
 
 // all bonuses are 2%/lvl
 struct BoostData {
-    int8 leader;   // targeting speed
     int8 armored;  // armor hit points
+    int8 leader;   // targeting speed
     int8 info;     // targeting range
+    int8 mining;   // mining yield
     int8 siege;    // shield capacity
     int8 skirmish; // agility
-    int8 mining;   // mining yield
 };
 
 class Client;

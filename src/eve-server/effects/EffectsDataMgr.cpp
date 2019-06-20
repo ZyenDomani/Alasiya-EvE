@@ -49,7 +49,7 @@ void FxDataMgr::Populate()
     GetDgmTypeEffects(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, effectID, isDefault
-        TypeEffects mTfx;
+        TypeEffects mTfx = TypeEffects();
         mTfx.effectID = row.GetInt(1);
         mTfx.isDefault = row.GetBool(2);
         m_typeFxMap.insert(std::pair<uint16, TypeEffects>(row.GetInt(0), mTfx));
@@ -61,7 +61,7 @@ void FxDataMgr::Populate()
     GetOperands(*res);
     while (res->GetRow(row)) {
         //SELECT operandID, operandKey, format, arg1categoryID, arg2categoryID, resultCategoryID
-        Operand mOpr;
+        Operand mOpr = Operand();
             mOpr.arg1categoryID = row.GetInt(3);
             mOpr.arg2categoryID = row.GetInt(4);
             mOpr.format = row.GetText(2);
@@ -70,12 +70,9 @@ void FxDataMgr::Populate()
         m_opMap.insert(std::pair<uint16, Operand>(row.GetInt(0), mOpr));
     }
     // insert a zero-value data set
-    Operand mOpr;
-        mOpr.arg1categoryID = 0;
-        mOpr.arg2categoryID = 0;
+    Operand mOpr = Operand();
         mOpr.format = "None";
         mOpr.operandKey = "NULL";
-        mOpr.resultCategoryID = 0;
     m_opMap.insert(std::pair<uint16, Operand>(0, mOpr));
     sLog.Cyan("        FxDataMgr", "%u Operands loaded in %.3fms.", m_opMap.size(), (GetTimeMSeconds() - start));
 
@@ -84,7 +81,7 @@ void FxDataMgr::Populate()
     GetExpressions(*res);
     while (res->GetRow(row)) {
         //SELECT expressionID, operandID, arg1, arg2, expressionValue, description, expressionName, expressionTypeID, expressionGroupID, expressionAttributeID
-        Expression mExp;
+        Expression mExp = Expression();
             mExp.id = row.GetInt(0);
             mExp.arg1 = (row.IsNull(2) ? 0 : row.GetInt(2));
             mExp.arg2 = (row.IsNull(3) ? 0 : row.GetInt(3));
@@ -98,17 +95,9 @@ void FxDataMgr::Populate()
         m_expMap.insert(std::pair<uint16, Expression>(row.GetInt(0), mExp));
     }
     // insert a zero-value data set
-    Expression mExp;
-        mExp.id = 0;
-        mExp.arg1 = 0;
-        mExp.arg2 = 0;
-        mExp.expressionAttributeID = 0;
+    Expression mExp = Expression();
         mExp.description = "NULL";
-        mExp.expressionGroupID = 0;
         mExp.expressionName = "NULL";
-        mExp.operandID = 0;
-        mExp.expressionTypeID = 0;
-        mExp.expressionValue = "";
     m_expMap.insert(std::pair<uint16, Expression>(0, mExp));
     sLog.Cyan("        FxDataMgr", "%u Expressions loaded in %.3fms.", m_expMap.size(), (GetTimeMSeconds() - start));
 
@@ -119,7 +108,7 @@ void FxDataMgr::Populate()
         //SELECT effectID, effectName, effectState, preExpression, postExpression, isOffensive, isAssistance, disallowAutoRepeat, isWarpSafe \
         //      npcUsageChanceAttributeID, npcActivationChanceAttributeID, fittingUsageChanceAttributeID,\
         //      durationAttributeID, trackingSpeedAttributeID, dischargeAttributeID, rangeAttributeID, falloffAttributeID, rangeChance, electronicChance, propulsionChance, guid
-        Effect mEffect;
+        Effect mEffect = Effect();
             mEffect.effectID = row.GetInt(0);
             mEffect.effectName = row.GetText(1);
             mEffect.effectState = row.GetInt(2);
@@ -145,27 +134,8 @@ void FxDataMgr::Populate()
         m_effectName.insert(std::pair<std::string, uint16>(mEffect.effectName, row.GetInt(0)));
     }
     // insert a zero-value data set
-    Effect mEffect;
+    Effect mEffect = Effect();
         mEffect.effectName = "NULL";
-        mEffect.effectState = 0;
-        mEffect.preExpression = 0;
-        mEffect.postExpression = 0;
-        mEffect.isOffensive = false;
-        mEffect.isAssistance = false;
-        mEffect.disallowAutoRepeat = false;
-        mEffect.isWarpSafe = false;
-        mEffect.npcUsageChanceAttributeID = 0;
-        mEffect.npcActivationChanceAttributeID = 0;
-        mEffect.fittingUsageChanceAttributeID = 0;
-        mEffect.durationAttributeID = 0;
-        mEffect.trackingSpeedAttributeID = 0;
-        mEffect.dischargeAttributeID = 0;
-        mEffect.rangeAttributeID = 0;
-        mEffect.falloffAttributeID = 0;
-        mEffect.rangeChance = 0;
-        mEffect.electronicChance = 0;
-        mEffect.propulsionChance = 0;
-        mEffect.guid = "";
     m_effectMap.insert(std::pair<uint16, Effect>(0, mEffect));
     sLog.Cyan("        FxDataMgr", "%u Effects loaded in %.3fms.", m_effectMap.size(), (GetTimeMSeconds() - start));
 

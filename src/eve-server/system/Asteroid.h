@@ -59,7 +59,7 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        AsteroidData dbData;
+        AsteroidData dbData = AsteroidData();
         if ( !ManagerDB::GetAsteroidData( asteroidID, dbData ) )
             return RefPtr<_Ty>();
 

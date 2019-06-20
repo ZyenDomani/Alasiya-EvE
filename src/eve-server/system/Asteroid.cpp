@@ -87,7 +87,7 @@ void AsteroidSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
 
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = DSTBALL_RIGID;
         head.radius = GetRadius();

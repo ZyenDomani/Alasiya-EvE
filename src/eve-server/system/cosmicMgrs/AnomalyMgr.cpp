@@ -210,7 +210,7 @@ void AnomalyMgr::RemoveAnomaly(uint32 itemID)
 void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 {
     // compile data for new system anomaly.
-    CosmicSignature sig;
+    CosmicSignature sig = CosmicSignature();
         sig.systemID = m_system->GetID();
         sig.sigID = sEntityList.GetAnomalyID();
         // *Mgr will determine name, itemID and sigStrength.
@@ -439,7 +439,7 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
      * }
      */
         //  WIP....
-    CosmicSignature sig;
+    CosmicSignature sig = CosmicSignature();
     sig.dungeonType = Dungeon::Type::Anomaly;
     sig.ownerID = iRef->ownerID();
     sig.scanAttributeID = AttrScanAllStrength;  // Unknown

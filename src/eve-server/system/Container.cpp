@@ -66,12 +66,12 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     CargoContainerRef containerRef = CargoContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
-    containerRef->SetAttribute(AttrRadius,        containerRef->type().radius());			// Radius
-    containerRef->SetAttribute(AttrShieldCharge,  containerRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
-    containerRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-    containerRef->SetAttribute(AttrMass,          containerRef->type().mass());          // Mass
-    containerRef->SetAttribute(AttrVolume,        containerRef->GetPackagedVolume());        // Volume
-    containerRef->SetAttribute(AttrCapacity,      containerRef->type().capacity());      // Capacity
+    containerRef->SetAttribute(AttrRadius,        containerRef->type().radius(), false);			// Radius
+    containerRef->SetAttribute(AttrShieldCharge,  containerRef->GetAttribute(AttrShieldCapacity), false);  // Shield Charge
+    containerRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                               // Armor Damage
+    containerRef->SetAttribute(AttrMass,          containerRef->type().mass(), false);          // Mass
+    containerRef->SetAttribute(AttrVolume,        containerRef->GetPackagedVolume(), false);        // Volume
+    containerRef->SetAttribute(AttrCapacity,      containerRef->type().capacity(), false);      // Capacity
 
 	return containerRef;
 }
@@ -272,7 +272,7 @@ void ContainerSE::AnchorContainer()
 void ContainerSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.x = x();
@@ -281,14 +281,14 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         head.mode = DSTBALL_TROLL;
         head.flags = IsFree | IsInteractive;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DataSector data;
+    DataSector data = DataSector();
         data.inertia = 1;
         data.maxVelocity = 1;
         data.velocity_x = 0;
@@ -366,12 +366,12 @@ WreckContainerRef WreckContainer::Spawn( ItemData &data) {
     WreckContainerRef wreckRef = WreckContainer::Load(containerID );
 
     // Create default dynamic attributes in the AttributeMap:
-    wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity));  // Shield Charge
-    wreckRef->SetAttribute(AttrArmorDamage,   0.0);                                               // Armor Damage
-    wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass());          // Mass
-    wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius());        // Radius
-    wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume());        // Volume
-    wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity());      // Capacity
+    wreckRef->SetAttribute(AttrShieldCharge,  wreckRef->GetAttribute(AttrShieldCapacity), false);  // Shield Charge
+    wreckRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                               // Armor Damage
+    wreckRef->SetAttribute(AttrMass,          wreckRef->type().mass(), false);          // Mass
+    wreckRef->SetAttribute(AttrRadius,        wreckRef->type().radius(), false);        // Radius
+    wreckRef->SetAttribute(AttrVolume,        wreckRef->type().volume(), false);        // Volume
+    wreckRef->SetAttribute(AttrCapacity,      wreckRef->type().capacity(), false);      // Capacity
 
     return wreckRef;
 }
@@ -500,7 +500,7 @@ void WreckSE::Abandon()
 void WreckSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = GetID();
         head.radius = GetRadius();
         head.x = x();
@@ -509,14 +509,14 @@ void WreckSE::EncodeDestiny( Buffer& into )
         head.mode = DSTBALL_TROLL;
         head.flags = IsFree | IsInteractive;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DataSector data;
+    DataSector data = DataSector();
         data.inertia = 1;
         data.maxVelocity = 1;
         data.velocity_x = 0;

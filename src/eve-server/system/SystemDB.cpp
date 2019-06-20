@@ -100,8 +100,8 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     _log(DATABASE__RESULTS, "LoadSystemStaticEntities returned %u items", res.GetRowCount());
 
     DBResultRow row;
-    DBSystemEntity entry;
     while(res.GetRow(row)) {
+        DBSystemEntity entry = DBSystemEntity();
         entry.itemID = row.GetUInt(0);
         entry.typeID = row.GetInt(1);
         entry.groupID = row.GetInt(2);
@@ -145,8 +145,8 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     _log(DATABASE__RESULTS, "LoadSystemDynamicEntities returned %u items", res.GetRowCount());
 
     DBResultRow row;
-    DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
+        DBSystemDynamicEntity entry = DBSystemDynamicEntity();
         entry.itemID = row.GetUInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
@@ -198,8 +198,8 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
 
     _log(DATABASE__RESULTS, "LoadPlayerDynamicEntities returned %u items", res.GetRowCount());
     DBResultRow row, row2;
-    DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
+        DBSystemDynamicEntity entry = DBSystemDynamicEntity();
         entry.factionID = 0;
         entry.allianceID = 0;
         entry.corporationID = 0;
@@ -307,8 +307,8 @@ void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetID
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 7", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -328,8 +328,8 @@ void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity> &moonIDs, u
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 8", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -351,8 +351,8 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs,
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 9", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -375,8 +375,8 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs)
 
     uint8 total = 0;
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (

@@ -519,7 +519,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
             } break;
             case EvERam::Activity::Copying: {
                 ItemData idata(installedItem->typeID(), ownerID, 0, flagAutoFit);
-                BlueprintData data;
+                BlueprintData data = BlueprintData();
                     data.copy   = true;
                     data.runs   = licensedProductionRuns;
                     data.mLevel = bp->materialLevel();

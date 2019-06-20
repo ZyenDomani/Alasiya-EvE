@@ -79,6 +79,7 @@ public:
         bool saveOnUpdate;
         uint8 mailDelay;
         uint8 StationDockDelay;
+        uint16 shipBoardDistance;
         uint16 gridUnloadTime;
         uint16 apWarptoDistance;
     } world;

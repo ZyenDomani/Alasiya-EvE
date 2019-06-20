@@ -41,9 +41,9 @@ void DungeonDataMgr::Populate()
     DBResultRow row;
 
     ManagerDB::GetDunTemplates(*res);
-    DunTemplate dtemplates;
     while (res->GetRow(row)) {
         // SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates
+        DunTemplate dtemplates = DunTemplate();
         dtemplates.dunName = row.GetText(1);
         dtemplates.dunRoomID = row.GetInt(4);
         dtemplates.dunEntryID = row.GetInt(2);
@@ -53,9 +53,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunRoomData(*res);
-    DunRoomData drooms;
     while (res->GetRow(row)) {
         // SELECT dunRoomID, dunGroupID, xpos, ypos, zpos FROM dunRoomData
+        DunRoomData drooms = DunRoomData();
         drooms.dunGroupID = row.GetInt(1);
         drooms.x = row.GetInt(2);
         drooms.y = row.GetInt(3);
@@ -65,9 +65,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunGroupData(*res);
-    DunGroupData dgroups;
     while (res->GetRow(row)) {
         // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos FROM dunGroupData
+        DunGroupData dgroups = DunGroupData();
         dgroups.typeID = row.GetInt(1);
         dgroups.typeName = row.GetText(3);
         dgroups.typeGrpID = row.GetInt(4);
@@ -81,9 +81,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunEntryData(*res);
-    DunEntryData dentry;
     while (res->GetRow(row)) {
         //SELECT dunEntryID, xpos, ypos, zpos FROM dunEntryData
+        DunEntryData dentry = DunEntryData();
         dentry.x = row.GetInt(1);
         dentry.y = row.GetInt(2);
         dentry.z = row.GetInt(3);
@@ -93,9 +93,9 @@ void DungeonDataMgr::Populate()
     /* not ready yet
     //res->Reset();
     ManagerDB::GetDunSpawnInfo(*res);
-    DunRoomSpawnInfo spawn;
     while (res->GetRow(row)) {
         //SELECT dunRoomSpawnID, dunRoomSpawnType, xpos, ypos, zpos
+        DunRoomSpawnInfo spawn = DunRoomSpawnInfo();
         spawn.dunRoomSpawnID = row.GetInt(0);
         spawn.dunRoomSpawnType = row.GetInt(1);
         spawn.x = row.GetInt(2);
@@ -280,7 +280,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     /* do we need this?  persistant dungeons?
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
-        ActiveDungeon dungeon;
+        ActiveDungeon dungeon = ActiveDungeon();
             dungeon.dunExpiryTime = Win32TimeNow() + (EvE::Time::Day * 3);       // 3 days - i know this isnt right. just for testing.
             dungeon.dunTemplateID = templateID;
             dungeon.dunItemID = sig.sigItemID;

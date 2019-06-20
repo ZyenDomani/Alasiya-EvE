@@ -497,7 +497,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
     _log(DATABASE__RESULTS, "LoadSystemRoids returned %u items", res.GetRowCount());
     DBResultRow row;
     while(res.GetRow(row)) {
-        AsteroidData entry;
+        AsteroidData entry = AsteroidData();
         entry.itemID = row.GetInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
@@ -632,16 +632,16 @@ bool ManagerDB::GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& 
 
     _log(DATABASE__RESULTS, "GetSavedDungeons returned %u items", res.GetRowCount());
     DBResultRow row;
-    ActiveDungeon entry;
     while(res.GetRow(row)) {
-        entry.systemID = row.GetInt(0);
-        entry.state = row.GetInt(1);
-        entry.dunItemID = 0;
-        entry.dunTemplateID = row.GetInt(2);
-        entry.dunExpiryTime = row.GetInt64(3);
-        entry.x = row.GetInt(4);
-        entry.y = row.GetInt(5);
-        entry.z = row.GetInt(6);
+        ActiveDungeon entry = ActiveDungeon();
+            entry.systemID = row.GetInt(0);
+            entry.state = row.GetInt(1);
+            entry.dunItemID = 0;
+            entry.dunTemplateID = row.GetInt(2);
+            entry.dunExpiryTime = row.GetInt64(3);
+            entry.x = row.GetInt(4);
+            entry.y = row.GetInt(5);
+            entry.z = row.GetInt(6);
         into.push_back(entry);
     }
 

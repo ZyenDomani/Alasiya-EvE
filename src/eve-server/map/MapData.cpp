@@ -143,13 +143,11 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
                     sysList.push_back(it->second);
                 /** @todo not sure why this is empty, but have segfaults from empty vector. */
                 if (sysList.empty()) {
-                    StationData data;
+                    StationData data = StationData();
                     stDataMgr.GetStationData(pAgent->GetStationID(), data);
                     offer.destinationOwnerID    = data.corporationID;
                     offer.destinationSystemID   = data.systemID;
                     offer.destinationTypeID     = data.typeID;
-                    offer.dungeonLocationID     = 0;
-                    offer.dungeonSolarSystemID  = 0;
                     return;
                 }
 
@@ -221,21 +219,17 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
     }
 
     if (IsStation(offer.destinationID)) {
-        StationData data;
+        StationData data = StationData();
         stDataMgr.GetStationData(offer.destinationID, data);
         offer.destinationOwnerID    = data.corporationID;
         offer.destinationSystemID   = data.systemID;
         offer.destinationTypeID     = data.typeID;
-        offer.dungeonLocationID     = 0;
-        offer.dungeonSolarSystemID  = 0;
     } else if (ship) {
-        offer.destinationOwnerID    = 0;
         offer.destinationSystemID   = offer.destinationID;
         offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);
         offer.dungeonLocationID     = offer.destinationID;
         offer.dungeonSolarSystemID  = offer.destinationID;
     } else {
-        offer.destinationOwnerID    = 0;
         offer.destinationSystemID   = offer.destinationID;
         offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);
         offer.dungeonLocationID     = offer.destinationID;

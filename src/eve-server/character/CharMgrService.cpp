@@ -659,7 +659,7 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
 PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
 {
     //takes WString of bio
-    Call_SingleWStringSoftArg args;
+    Call_SingleStringArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;

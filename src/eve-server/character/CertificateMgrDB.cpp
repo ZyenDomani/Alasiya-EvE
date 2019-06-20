@@ -99,7 +99,7 @@ bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertVector &into )
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        CharCerts cert;
+        CharCerts cert = CharCerts();
         cert.certificateID     = row.GetUInt( 0 );
         cert.grantDate         = row.GetInt64( 1 );
         cert.visibilityFlags   = row.GetUInt( 2 );

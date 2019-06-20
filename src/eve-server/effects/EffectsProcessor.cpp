@@ -5,6 +5,7 @@
  *
  * @Author:    Allan
  * @date:      24 January 2017
+ * @update:     19 June 2019 (revised namespaces)
  *
  */
 
@@ -61,7 +62,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 case EVEDB::invGroups::Engineering:
                 case EVEDB::invGroups::Navigation: {
                     if ((data.srcRef->typeID() == EVEDB::invTypes::typeTargeting)
-                        or (data.srcRef->typeID() == EVEDB::invTypes::typeMultitasking))
+                    or (data.srcRef->typeID() == EVEDB::invTypes::typeMultitasking))
                         core = false;
                     else
                         core = true;    // define core skills that may/may not be processed correctly (!HasReqSkill(thisType))
@@ -75,11 +76,11 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
     }
     if (pItem == data.srcRef.get())
         self = true;
-    using namespace Effects;
+    using namespace FX;
     switch(expression.operandID) {
         // these return the given expressionValue
-        case operandDEFBOOL:   //23  this evaulates to 'true' (Bool(1))
-        case operandDEFINT: {  //27  this is used as  0,1,2,{raceID}
+        case Operands::DEFBOOL:   //23  this evaulates to 'true' (Bool(1))
+        case Operands::DEFINT: {  //27  this is used as  0,1,2,{raceID}
             //  seems to be called only to online/offline modules (and screws up my Online/Offline code...)
             /*
             int8 value = atoi(expression.expressionValue.c_str());
@@ -91,24 +92,24 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 return; // we are done at this point
             } */
         } break;
-        case operandDEFASSOCIATION: { //21
+        case Operands::DEFASSOCIATION: { //21
             data.math = GetAssociationEnum(expression.expressionValue);
-            if (data.math > MaxMathMethod) {
+            if (data.math > Math::MaxMathMethod) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range mathOp: %s(%i) for operand %u (%s).", \
                         GetMathMethodName(data.math).c_str(), data.math, expression.operandID, operand.operandKey.c_str());
             }
         } break;
-        case operandDEFENVIDX: {     //24
+        case Operands::DEFENVIDX: {     //24
             data.targLoc = GetEnvironmentEnum(expression.expressionValue);
-            if (data.targLoc > MaxTargLocation) {
+            if (data.targLoc > Target::MaxTargLocation) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range targLoc: %i for operand %u (%s).", \
                         data.targAttr, expression.operandID, operand.operandKey.c_str());
             }
         } break;
         // these provide the given expression*ID
-        case operandDEFATTRIBUTE: {  //22
+        case Operands::DEFATTRIBUTE: {  //22
             if (expression.expressionAttributeID) {
                 if (data.targAttr)  // always processed first
                     data.srcAttr = expression.expressionAttributeID;
@@ -117,8 +118,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             } else
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): opATTR called with no expressionAttributeID defined");
         } break;
-        case operandDEFGROUP: {      //26
-            data.fxSrc = dgmSrcGroup;
+        case Operands::DEFGROUP: {      //26
+            data.fxSrc = Source::Group;
             if (expression.expressionGroupID) {
                 data.grpID = expression.expressionGroupID;
             } else if (expression.expressionValue != "") {
@@ -129,9 +130,9 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): opGROUP called with no expressionGroupID or expressionValue defined");
             }
         } break;
-        case operandDEFTYPEID: {     //29
+        case Operands::DEFTYPEID: {     //29
             if (skill)
-                data.fxSrc = dgmSrcSkill;
+                data.fxSrc = Source::Skill;
             if (expression.expressionTypeID) {
                 data.typeID = expression.expressionTypeID;
             } else if (expression.expressionValue != "") {
@@ -142,185 +143,175 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             }
         } break;
         // do as stated
-        case operandCOMBINE: { //17, %(arg1)s); (%(arg2)s      --executes two statements
+        case Operands::COMBINE: { //17, %(arg1)s); (%(arg2)s      --executes two statements
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
-            fxData data1 {};
-            data1.action = Effects::Action::dgmActInvalid;
+            fxData data1 = fxData();
+            data1.action = Action::Invalid;
             data1.srcRef = data.srcRef;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data1, pMod);
         } break;
-        case operandGETTYPE: { //36, %(arg1)s.GetTypeID()  --used by SRLG in AORSM
+        case Operands::GETTYPE: { //36, %(arg1)s.GetTypeID()  --used by SRLG in AORSM
             if (!data.typeID)
                 data.typeID = data.srcRef->typeID();    // get items on ship that require SkillItem in srcRef
         } break;
-        case operandLG: {    //48, %(arg1)s.LocationGroup.%(arg2)s  -- specify a group by grpID for a location'  used by ALGM
-            data.fxSrc = dgmSrcGroup;
+        case Operands::LG: {    //48, %(arg1)s.LocationGroup.%(arg2)s  -- specify a group by grpID for a location'  used by ALGM
+            data.fxSrc = Source::Group;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);   //groupID
             //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): LocationGroup: setting fxSrc to Group.  set: %s, skill: %s, module: %s, charge: %s, grp: %u", \
                     (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"), data.grpID);
         } break;
-        case operandLS: {    //49, %(arg1)s.SkillRequiredLocationGroup[%(arg2)s]  --  specify a group by skillID for a location   used by ALRSM and AORSM
-            data.fxSrc = dgmSrcSkill;
+        case Operands::LS: {    //49, %(arg1)s.SkillRequiredLocationGroup[%(arg2)s]  --  specify a group by skillID for a location   used by ALRSM and AORSM
+            data.fxSrc = Source::Skill;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);   //source
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);   //skillID
             //_log(EFFECTS__TRACE, "FxProc::ParseExpression(): SRLG: setting fxSrc to Skill.  set: %s, skill: %s, module: %s, charge: %s", \
                     (self? "true" : "false"), (skill ? "true" : "false"), (module? "true" : "false"), (charge ? "true" : "false"));
         } break;
-        case operandATT:     //12, %(arg1)s->%(arg2)s               --(item:attribID)
-        case operandEFF:     //31, %(arg2)s.%(arg1)s                --define association type
-        case operandGA:      //34, %(arg1)s.%(arg2)s                --GetAttribute      (no known uses)
-        case operandGET:     //35, %(arg1)s.%(arg2)s()              --used a lot.  eg. Get(Ship:101) means 'get attribute 101 on ShipItem'
-        case operandIA: {    //40, %(arg1)s                         --used by AGIM
+        case Operands::ATT:     //12, %(arg1)s->%(arg2)s               --(item:attribID)
+        case Operands::EFF:     //31, %(arg2)s.%(arg1)s                --define association type
+        case Operands::GA:      //34, %(arg1)s.%(arg2)s                --GetAttribute      (no known uses)
+        case Operands::GET:     //35, %(arg1)s.%(arg2)s()              --used a lot.  eg. Get(Ship:101) means 'get attribute 101 on ShipItem'
+        case Operands::IA: {    //40, %(arg1)s                         --used by AGIM
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data);
             if (expression.arg2)
                 ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data);
         } break;
-        case operandGM: {    //37, %(arg1)s.GetModule(%(arg2)s)      --used by subsystems as (GetModule(Ship:201):55)
+        case Operands::GM: {    //37, %(arg1)s.GetModule(%(arg2)s)      --used by subsystems as (GetModule(Ship:201):55)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
         } break;
         // effect function calls.
         // here is where we'll actually add the modifier data to the item's map
-        case operandAIM: {   //6,  AddItemModifier(env,%(arg1)s, %(arg2)s)
+        case Operands::AIM: {   //6,  AddItemModifier(env,%(arg1)s, %(arg2)s)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if (charge) {
-                data.fxSrc = dgmSrcSelf;
-                if (data.targLoc != dgmTargLocOther)
-                    data.targLoc = dgmTargLocShip;
+                data.fxSrc = Source::Self;
+                if (data.targLoc != Target::Other)
+                    data.targLoc = Target::Ship;
             } else if (skill) {
                 if (!data.fxSrc)
-                    data.fxSrc = dgmSrcSkill;
-                if (data.targLoc == dgmTargLocShip)
+                    data.fxSrc = Source::Skill;
+                if (data.targLoc == Target::Ship)
                     if ((!data.typeID) and (core))
-                        data.targLoc = dgmTargLocOther;     // this skill is a core skill, and is not "required" so needs a special check to apply correctly
+                        data.targLoc = Target::Other;     // this skill is a core skill, and is not "required" so needs a special check to apply correctly
             }
             pItem->AddModifier(data);
         } break;
-        case operandALGM:    //7,  (%(arg1)s).AddLocationGroupModifier (%(arg2)s)
-        case operandALM:     //8,  (%(arg1)s).AddLocationModifier (%(arg2)s)
-        case operandALRSM:   //9,  (%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
-        case operandAORSM: { //11, (%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
+        case Operands::ALGM:    //7,  (%(arg1)s).AddLocationGroupModifier (%(arg2)s)
+        case Operands::ALM:     //8,  (%(arg1)s).AddLocationModifier (%(arg2)s)
+        case Operands::ALRSM:   //9,  (%(arg1)s).AddLocationRequiredSkillModifier(%(arg2)s)
+        case Operands::AORSM: { //11, (%(arg1)s).AddOwnerRequiredSkillModifier(%(arg2)s)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if ((skill) and (!data.fxSrc))
-                data.fxSrc = dgmSrcSkill;
+                data.fxSrc = Source::Skill;
             pItem->AddModifier(data);
         } break;
-        case operandAGRSM:   //5,  [%(arg1)s].AGRSM(%(arg2)s)    --AddGangRequiredSkillModifier
-        case operandAGIM: {  //3,  [%(arg1)s].AGIM(%(arg2)s)        --AddGangShipModifier
+        case Operands::AGRSM:   //5,  [%(arg1)s].AGRSM(%(arg2)s)    --AddGangRequiredSkillModifier
+        case Operands::AGIM: {  //3,  [%(arg1)s].AGIM(%(arg2)s)        --AddGangShipModifier
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
-            data.fxSrc = dgmSrcGang;
+            data.fxSrc = Source::Gang;
             pItem->AddModifier(data);
         } break;
-        case operandRSA: {   //64, %(arg1)s.%(arg2)s      -- used by AGRSM
+        case Operands::RSA: {   //64, %(arg1)s.%(arg2)s      -- used by AGRSM
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
         } break;
         // remove modifier calls only enabled for modules and charges.  will implement for implants and boosters when those systems are written.
-        case operandRGGM:    //54, [%(arg1)s].RemoveGangGroupModifier(%(arg2)s)
-        case operandRGIM:    //55, [%(arg1)s].RemoveGangShipModifier(%(arg2)s)
-        case operandRGORSM:  //56, [%(arg1)s].RemoveGangOwnerRequiredSkillModifier(%(arg2)s)
-        case operandRGRSM: { //57, [%(arg1)s].RemoveGangRequiredSkillModifier(%(arg2)s)
+        case Operands::RGGM:    //54, [%(arg1)s].RemoveGangGroupModifier(%(arg2)s)
+        case Operands::RGIM:    //55, [%(arg1)s].RemoveGangShipModifier(%(arg2)s)
+        case Operands::RGORSM:  //56, [%(arg1)s].RemoveGangOwnerRequiredSkillModifier(%(arg2)s)
+        case Operands::RGRSM: { //57, [%(arg1)s].RemoveGangRequiredSkillModifier(%(arg2)s)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
-            data.fxSrc = dgmSrcGang;
+            data.fxSrc = Source::Gang;
             pItem->RemoveModifier(data);
         } break;
-        case operandRIM: {   //58, (%(arg1)s).RemoveItemModifier (%(arg2)s)
+        case Operands::RIM: {   //58, (%(arg1)s).RemoveItemModifier (%(arg2)s)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if (charge) {
-                data.fxSrc = dgmSrcSelf;
-                if (data.targLoc != dgmTargLocOther)
-                    data.targLoc = dgmTargLocShip;
+                data.fxSrc = Source::Self;
+                if (data.targLoc != Target::Other)
+                    data.targLoc = Target::Ship;
             } else if (skill) {
                 if (!data.fxSrc)
-                    data.fxSrc = dgmSrcSkill;
-                if (data.targLoc == dgmTargLocShip)
+                    data.fxSrc = Source::Skill;
+                if (data.targLoc == Target::Ship)
                     if ((!data.typeID) and (core))
-                        data.targLoc = dgmTargLocOther;     // this skill is a core skill, and is not "required" so needs a special check to apply correctly
+                        data.targLoc = Target::Other;     // this skill is a core skill, and is not "required" so needs a special check to apply correctly
             }
             pItem->RemoveModifier(data);
         } break;
-        case operandRLGM:    //59, (%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
-        case operandRLM:     //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
-        case operandRLRSM:   //61, (%(arg1)s).RemoveLocationRequiredSkillModifier(%(arg2)s)
-        case operandRORSM: { //62, (%(arg1)s).RemoveOwnerRequiredSkillModifier(%(arg2)s)
+        case Operands::RLGM:    //59, (%(arg1)s).RemoveLocationGroupModifier (%(arg2)s)
+        case Operands::RLM:     //60, (%(arg1)s).RemoveLocationModifier (%(arg2)s)
+        case Operands::RLRSM:   //61, (%(arg1)s).RemoveLocationRequiredSkillModifier(%(arg2)s)
+        case Operands::RORSM: { //62, (%(arg1)s).RemoveOwnerRequiredSkillModifier(%(arg2)s)
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), data, pMod);
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data, pMod);
             if ((skill) and (!data.fxSrc))
-                data.fxSrc = dgmSrcSkill;
+                data.fxSrc = Source::Skill;
             pItem->RemoveModifier(data);
         } break;
         /*
         // these will need more work to properly code conditionals here.
         //  that is not a priority, as they are only used by effect 16 (Online), which is kinda covered (hacked) in GenericModule class.
-        case operandOR: {    //'%(arg1)s OR %(arg2)s'       -- used with 'if' in arg2 as 'y'.   ((if x then y) OR z)  (used as "else" or elif)
-            fxData arg1;
-                arg1.result = 0;
+        case Operands::OR: {    //'%(arg1)s OR %(arg2)s'       -- used with 'if' in arg2 as 'y'.   ((if x then y) OR z)  (used as "else" or elif)
+            fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
                 arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
             if (!arg1.result) {
-                fxData arg2;
-                    arg2.result = 0;
+                fxData arg2 = fxData();
                     arg2.srcRef = data.srcRef;
                     arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
                 ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
             }
         } break;
-        case operandAND: {   //'(%(arg1)s) AND (%(arg2)s)'  -- used with 'if' in arg1 as 'x'.   (if (x AND y) then ....)
-            fxData arg1;
-                arg1.result = 0;
+        case Operands::AND: {   //'(%(arg1)s) AND (%(arg2)s)'  -- used with 'if' in arg1 as 'x'.   (if (x AND y) then ....)
+            fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
                 arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
-            fxData arg2;
-                arg2.result = 0;
+            fxData arg2 = fxData();
                 arg2.srcRef = data.srcRef;
                 arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
         } break;
-        case operandIF: {    //'If(%(arg1)s), Then (%(arg2)s)'    -- std conditional.  (if x then y)
-            fxData arg1;
-                arg1.result = 0;
+        case Operands::IF: {    //'If(%(arg1)s), Then (%(arg2)s)'    -- std conditional.  (if x then y)
+            fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
                 arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
             if (arg1.result) {
-                fxData data1;
-                data1.result = 0;
+                fxData data1 = fxData();
                 data1.srcRef = data.srcRef;
                 data1.math = data1.targLoc = data1.fxSrc = data1.targAttr = data1.srcAttr = data1.grpID = data1.typeID = 0;
                 ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), data1, pMod);
             }
         } break;
         // trivial attribute operations
-        case operandADD: {      //1, (%(arg1)s)+(%(arg2)s)
+        case Operands::ADD: {      //1, (%(arg1)s)+(%(arg2)s)
             // this isnt complete.
-            fxData arg1;
-                arg1.result = 0;
+            fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
                 arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
-            fxData arg2;
-                arg2.result = 0;
+            fxData arg2 = fxData();
                 arg2.srcRef = data.srcRef;
                 arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
             data.result = (arg1.result + arg2.result);
         } break;
-        case operandGTE: {  //39    %(arg1)s>=%(arg2)s
-            fxData arg1;
-                arg1.result = 0;
+        case Operands::GTE: {  //39    %(arg1)s>=%(arg2)s
+            fxData arg1 = fxData();
                 arg1.srcRef = data.srcRef;
                 arg1.math = arg1.targLoc = arg1.fxSrc = arg1.targAttr = arg1.srcAttr = arg1.grpID = arg1.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg1), arg1, pMod);
-            fxData arg2;
-                arg2.result = 0;
+            fxData arg2 = fxData();
                 arg2.srcRef = data.srcRef;
                 arg2.math = arg2.targLoc = arg2.fxSrc = arg2.targAttr = arg2.srcAttr = arg2.grpID = arg2.typeID = 0;
             ParseExpression(pItem, sFxDataMgr.GetExpression(expression.arg2), arg2, pMod);
@@ -329,37 +320,37 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             //    data.result = true;
 
         } break;
-        case operandGT: {   //38    %(arg1)s> %(arg2)s
+        case Operands::GT: {   //38    %(arg1)s> %(arg2)s
 
         } break;
         */
 
-        case operandUE: {   //73    UserError(%(arg1)s)
+        case Operands::UE: {   //73    UserError(%(arg1)s)
             // not using this yet.
         } break;
-        case operandSKILLCHECK: {   //67    SkillCheck(%(arg1)s)
+        case Operands::SKILLCHECK: {   //67    SkillCheck(%(arg1)s)
             //data.result = true;
         } break;
         // module action method calls...not used.
-        case operandATTACK: // 13,
-        case operandCARGOSCAN: // 14,
-        case operandCHEATTELEDOCK: // 15,
-        case operandCHEATTELEGATE: // 16,
-        case operandDECLOAKWAVE: // 19,
-        case operandECMBURST: // 30,
-        case operandEMPWAVE: // 32,
-        case operandLAUNCH: // 44,
-        case operandLAUNCHDEFENDERMISSILE: // 45,
-        case operandLAUNCHDRONE: // 46,
-        case operandLAUNCHFOFMISSILE: // 47,
-        case operandMINE: // 50,
-        case operandPOWERBOOST: // 53,
-        case operandSHIPSCAN: // 66,
-        case operandSURVEYSCAN: // 69,
-        case operandTARGETHOSTILES: // 70,
-        case operandTARGETSILENTLY: // 71,
-        case operandTOOLTARGETSKILLS: // 72,
-        case operandSPEEDBOOST: {   //75    Alasiya-specific operand to apply modified speed attribs to destiny variables and update bubble
+        case Operands::ATTACK: // 13,
+        case Operands::CARGOSCAN: // 14,
+        case Operands::CHEATTELEDOCK: // 15,
+        case Operands::CHEATTELEGATE: // 16,
+        case Operands::DECLOAKWAVE: // 19,
+        case Operands::ECMBURST: // 30,
+        case Operands::EMPWAVE: // 32,
+        case Operands::LAUNCH: // 44,
+        case Operands::LAUNCHDEFENDERMISSILE: // 45,
+        case Operands::LAUNCHDRONE: // 46,
+        case Operands::LAUNCHFOFMISSILE: // 47,
+        case Operands::MINE: // 50,
+        case Operands::POWERBOOST: // 53,
+        case Operands::SHIPSCAN: // 66,
+        case Operands::SURVEYSCAN: // 69,
+        case Operands::TARGETHOSTILES: // 70,
+        case Operands::TARGETSILENTLY: // 71,
+        case Operands::TOOLTARGETSKILLS: // 72,
+        case Operands::SPEEDBOOST: {   //75    Alasiya-specific operand to apply modified speed attribs to destiny variables and update bubble
             data.action = expression.operandID;
            // pItem->AddModifier(data);
         } break;
@@ -390,7 +381,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
     bool isRig = false, subSys = false, charge = false;
-    using namespace Effects;
+    using namespace FX;
     //uint8 action = Action::dgmActInvalid;
     for (auto cur : pItem->m_modifiers) {  // k,v of assoc, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>
         /*
@@ -428,7 +419,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         std::vector<InventoryItemRef> itemRefVec;
         // affected target depends on source.  get source and target(s) here.
         switch (cur.second.fxSrc) {
-            case dgmSrcGroup: {     // not a source per se, but defines effect's target selection requirements
+            case Source::Group: {     // not a source per se, but defines effect's target selection requirements
                 // this is to apply modifiers to ship's modules of groupID defined in 'grpID'
                 std::vector<InventoryItemRef> moduleList;
                 pShip->GetModuleManager()->GetModuleListOfRefsAsc(moduleList);
@@ -436,18 +427,18 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     if (mod->groupID() == cur.second.grpID)
                         itemRefVec.push_back(mod);
             } break;
-            case dgmSrcSkill: {    // source of this effect is skill, implant, or booster
+            case Source::Skill: {    // source of this effect is skill, implant, or booster
                 if (cur.second.typeID == EVEDB::invTypes::typeInvalid) {    //invalid
-                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): dgmSrcSkill - typeID is invalid");
+                    _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): Source::Skill - typeID is invalid");
                     continue;  // make error here
                 }
                 switch (cur.second.targLoc) {
                     //  apply the modifier to ....
-                    case dgmTargLocSelf: {
+                    case Target::Self: {
                         // ....item itself
                         itemRefVec.push_back(cur.second.srcRef);
                     } break;
-                    case dgmTargLocShip:  {
+                    case Target::Ship:  {
                         if (cur.second.typeID) {
                             // .....ship's modules that require skillID defined in "typeID"
                             pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, itemRefVec);
@@ -457,7 +448,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                                 itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                         }
                     } break;
-                    case dgmTargLocChar: {
+                    case Target::Char: {
                         // ....char skills that require skill in 'srcRef' or defined in 'typeID'
                         uint16 skillID = cur.second.srcRef->typeID();
                         if (cur.second.typeID)
@@ -468,11 +459,11 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             if (curSkill->HasReqSkill(skillID))
                                 itemRefVec.push_back(curSkill);
                     } break;
-                    case dgmTargLocOther: {
+                    case Target::Other: {
                         // ....ship from 'core' pilot skills (electronics, mechanics, etc)
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
-                    case dgmTargLocCharge: {
+                    case Target::Charge: {
                         // ....charges
                         // will need more testing to verify this.
                         std::map<EVEItemFlags, InventoryItemRef> charges;
@@ -481,70 +472,70 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             if (mod.second->HasReqSkill(cur.second.typeID))
                                 itemRefVec.push_back(mod.second);
                     } break;
-                    case dgmTargLocTarget: {
+                    case Target::Target: {
                         // ...current target (focused, volatile...removed on 'invalid target')
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
-                    case dgmTargLocInvalid: {   // null
-                        _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): dgmSrcSkill target location invalid.");
+                    case Target::Invalid: {   // null
+                        _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): Source::Skill target location invalid.");
                         continue;
                     } break;
-                    case dgmTargLocArea:
-                    case dgmTargLocPowerCore:  //defined but not used
+                    case Target::Area:
+                    case Target::PowerCore:  //defined but not used
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSkill target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Skill target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;
-            case dgmSrcSelf: {  // source is module or charge
+            case Source::Self: {  // source is module or charge
                 //  apply the modifier to ....
                 switch (cur.second.targLoc) {
-                    case dgmTargLocShip:  {
+                    case Target::Ship:  {
                         // ....the ship the calling item is located in/on
                         itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
-                    case dgmTargLocSelf: {
+                    case Target::Self: {
                         // ....item itself
                         itemRefVec.push_back(cur.second.srcRef);
                     } break;
-                    case dgmTargLocCharge: {
+                    case Target::Charge: {
                         // ....charge on src item (from module)
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef->flag()));
                     } break;
-                    case dgmTargLocOther: {
+                    case Target::Other: {
                         // ....module containing the src item (from charge)
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
                     } break;
-                    case dgmTargLocTarget: {
+                    case Target::Target: {
                         // ...current target (focused, volatile...removed on 'invalid target')
                         itemRefVec.push_back(pShip->GetTargetRef());
                     } break;
-                    case dgmTargLocInvalid: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSelf target invalid.");
+                    case Target::Invalid: {
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Self target invalid.");
                     } break;
-                    case dgmTargLocArea:
-                    case dgmTargLocPowerCore:  //defined but not used
-                    case dgmTargLocChar:
+                    case Target::Area:
+                    case Target::PowerCore:  //defined but not used
+                    case Target::Char:
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): dgmSrcSelf target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Self target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
                     } break;
                 }
             } break;
-            case dgmSrcShip: {      // source is a subsystem
+            case Source::Ship: {      // source is a subsystem
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
                 _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling ship target.");
             } break;
-            case dgmSrcGang: {      // source is a gang leader skill
-                ;   //dgmTargLocSelf is ship of gang member to apply leader's skill bonuses to
+            case Source::Gang: {      // source is a gang leader skill
+                ;   //Target::Self is ship of gang member to apply leader's skill bonuses to
                 _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling gang target.");
             } break;
-            case dgmSrcInvalid: {
+            case Source::Invalid: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location invalid.");
                 continue;
             } break;
             // these are not used (not coded)
-            case dgmSrcTarget:
-            case dgmSrcOwner: {
+            case Source::Target:
+            case Source::Owner: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location %s not coded.", GetSourceName(cur.second.fxSrc).c_str());
                 continue;
             } break;
@@ -581,10 +572,10 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             }
 
             switch (opID) {
-                case dgmMathPreMul:
-                case dgmMathPostMul:
-                case dgmMathPreDiv:
-                case dgmMathPostDiv:{
+                case Math::PreMul:
+                case Math::PostMul:
+                case Math::PreDiv:
+                case Math::PostDiv:{
                     if (targValue == 0)
                         targValue = 1;
                 } break;
@@ -614,27 +605,27 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
 {
     if (val2 == 0)
         return val1;
-    using namespace Effects;
+    
     switch (method) {
-        case dgmMathSkillCheck:
-        case dgmMathPreAssignment:
-        case dgmMathPostAssignment:
+        case FX::Math::SkillCheck:
+        case FX::Math::PreAssignment:
+        case FX::Math::PostAssignment:
             return val2;
-        case dgmMathPreMul:
-        case dgmMathPostMul:
+        case FX::Math::PreMul:
+        case FX::Math::PostMul:
             return val1 * val2;
-        case dgmMathPreDiv:
-        case dgmMathPostDiv:
+        case FX::Math::PreDiv:
+        case FX::Math::PostDiv:
             return val1 / val2;
-        case dgmMathModAdd:
+        case FX::Math::ModAdd:
             return val1 + val2;
-        case dgmMathModSub:
+        case FX::Math::ModSub:
             return val1 - val2;
-        case dgmMathPostPercent:
+        case FX::Math::PostPercent:
             return val1 * (1 + (val2 / 100));
-        case dgmMathRevPostPercent:
+        case FX::Math::RevPostPercent:
             return val1 / (1 + (val2 / 100));
-        case dgmMathInvalid:
+        case FX::Math::Invalid:
             _log(EFFECTS__WARNING, "FxProc::CalculateNewAttributeValue() - Invalid Association used");
             return val1;
     }
@@ -644,123 +635,117 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
 
 int8 FxProc::GetAssociationEnum(const std::string& association)
 {   // opID 21
-    using namespace Effects;
     if (association == "PreAssignment")
-        return dgmMathPreAssignment;
+        return FX::Math::PreAssignment;
     else if (association == "PreDiv")
-        return dgmMathPreDiv;
+        return FX::Math::PreDiv;
     else if (association == "PreMul")
-        return dgmMathPreMul;
+        return FX::Math::PreMul;
     else if (association == "ModAdd")
-        return dgmMathModAdd;
+        return FX::Math::ModAdd;
     else if (association == "ModSub")
-        return dgmMathModSub;
+        return FX::Math::ModSub;
     else if (association == "PostPercent")
-        return dgmMathPostPercent;
+        return FX::Math::PostPercent;
     else if (association == "PostMul")
-        return dgmMathPostMul;
+        return FX::Math::PostMul;
     else if (association == "PostDiv")
-        return dgmMathPostDiv;
+        return FX::Math::PostDiv;
     else if (association == "PostAssignment")
-        return dgmMathPostAssignment;
+        return FX::Math::PostAssignment;
     else if (association == "SkillCheck")
-        return dgmMathSkillCheck;
+        return FX::Math::SkillCheck;
     else if (association == "AddRate")
-        return dgmMathAddRate;
+        return FX::Math::AddRate;
     else if (association == "SubRate")
-        return dgmMathSubRate;
+        return FX::Math::SubRate;
     else
-        return dgmMathInvalid;  //throw std::bad_typeid();
+        return FX::Math::Invalid;  //throw std::bad_typeid();
 }
 
 int8 FxProc::GetEnvironmentEnum(const std::string& env)
 {   // opID 24
-    using namespace Effects;
     if (env == "Self")
-        return dgmTargLocSelf;
+        return FX::Target::Self;
     else if (env == "Char")
-        return dgmTargLocChar;
+        return FX::Target::Char;
     else if (env == "Ship")
-        return dgmTargLocShip;
+        return FX::Target::Ship;
     else if (env == "Target")
-        return dgmTargLocTarget;
+        return FX::Target::Target;
     else if (env == "Area")
-        return dgmTargLocArea;
+        return FX::Target::Area;
     else if (env == "Other")
-        return dgmTargLocOther;
+        return FX::Target::Other;
     else if (env == "Charge")
-        return dgmTargLocCharge;
+        return FX::Target::Charge;
     else
-        return dgmTargLocInvalid;  //throw std::bad_typeid();
+        return FX::Target::Invalid;  //throw std::bad_typeid();
 }
 
 std::string FxProc::GetMathMethodName(int8 id)
 {
-    using namespace Effects;
     switch (id) {
-        case dgmMathPreAssignment:  return "PreAssignment";
-        case dgmMathPreDiv:         return "PreDiv";
-        case dgmMathPreMul:         return "PreMul";
-        case dgmMathModAdd:         return "ModAdd";
-        case dgmMathModSub:         return "ModSub";
-        case dgmMathPostPercent:    return "PostPercent";
-        case dgmMathRevPostPercent: return "RevPostPercent";
-        case dgmMathPostMul:        return "PostMul";
-        case dgmMathPostDiv:        return "PostDiv";
-        case dgmMathPostAssignment: return "PostAssignment";
-        case dgmMathSkillCheck:     return "SkillCheck";
-        case dgmMathAddRate:        return "AddRate";
-        case dgmMathSubRate:        return "SubRate";
-        case dgmMathInvalid:
+        case FX::Math::PreAssignment:  return "PreAssignment";
+        case FX::Math::PreDiv:         return "PreDiv";
+        case FX::Math::PreMul:         return "PreMul";
+        case FX::Math::ModAdd:         return "ModAdd";
+        case FX::Math::ModSub:         return "ModSub";
+        case FX::Math::PostPercent:    return "PostPercent";
+        case FX::Math::RevPostPercent: return "RevPostPercent";
+        case FX::Math::PostMul:        return "PostMul";
+        case FX::Math::PostDiv:        return "PostDiv";
+        case FX::Math::PostAssignment: return "PostAssignment";
+        case FX::Math::SkillCheck:     return "SkillCheck";
+        case FX::Math::AddRate:        return "AddRate";
+        case FX::Math::SubRate:        return "SubRate";
+        case FX::Math::Invalid:
         default:                    return "Invalid";
     }
 }
 
 std::string FxProc::GetSourceName(int8 id)
 {
-    using namespace Effects;
     switch (id) {
-        case dgmSrcSelf:            return "Self";
-        case dgmSrcSkill:           return "Skill";
-        case dgmSrcShip:            return "Ship";
-        case dgmSrcOwner:           return "Owner";
-        case dgmSrcGang:            return "Gang";
-        case dgmSrcGroup:           return "Group";
-        case dgmSrcTarget:          return "Target";
-        case dgmSrcInvalid:
+        case FX::Source::Self:            return "Self";
+        case FX::Source::Skill:           return "Skill";
+        case FX::Source::Ship:            return "Ship";
+        case FX::Source::Owner:           return "Owner";
+        case FX::Source::Gang:            return "Gang";
+        case FX::Source::Group:           return "Group";
+        case FX::Source::Target:          return "Target";
+        case FX::Source::Invalid:
         default:                    return "Invalid";
     }
 }
 
 std::string FxProc::GetTargLocName(int8 id)
 {
-    using namespace Effects;
     switch (id) {
-        case dgmTargLocSelf:        return "Self";
-        case dgmTargLocChar:        return "Char";
-        case dgmTargLocShip:        return "Ship";
-        case dgmTargLocTarget:      return "Target";
-        case dgmTargLocArea:        return "Area";
-        case dgmTargLocOther:       return "Other";
-        case dgmTargLocCharge:      return "Charge";
-        case dgmTargLocInvalid:
+        case FX::Target::Self:        return "Self";
+        case FX::Target::Char:        return "Char";
+        case FX::Target::Ship:        return "Ship";
+        case FX::Target::Target:      return "Target";
+        case FX::Target::Area:        return "Area";
+        case FX::Target::Other:       return "Other";
+        case FX::Target::Charge:      return "Charge";
+        case FX::Target::Invalid:
         default:                    return "Invalid";
     }
 }
 
 std::string FxProc::GetStateName(int8 id)
 {
-    using namespace Effects;
     switch (id) {
-        case dgmStatePassive:       return "Passive";
-        case dgmStateActive:        return "Active";
-        case dgmStateTarget:        return "Target";
-        case dgmStateArea:          return "Area";
-        case dgmStateOnline:        return "Online";
-        case dgmStateOverloaded:    return "Overload";
-        case dgmStateDungeon:       return "Dungeon";
-        case dgmStateSystem:        return "System";
-        case dgmStateInvalid:
+        case FX::State::Passive:       return "Passive";
+        case FX::State::Active:        return "Active";
+        case FX::State::Target:        return "Target";
+        case FX::State::Area:          return "Area";
+        case FX::State::Online:        return "Online";
+        case FX::State::Overloaded:    return "Overload";
+        case FX::State::Dungeon:       return "Dungeon";
+        case FX::State::System:        return "System";
+        case FX::State::Invalid:
         default:                    return "Invalid";
     }
 

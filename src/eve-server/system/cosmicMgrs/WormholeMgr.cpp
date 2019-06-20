@@ -133,7 +133,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
 {
-    CosmicSignature sig;
+    CosmicSignature sig = CosmicSignature();
 
 
     _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \

@@ -44,8 +44,9 @@ SystemBubble::SystemBubble(SystemManager* pSystem, const GPoint& center, double 
 : m_system(pSystem),
 m_center(center),
 m_radius(radius),
-m_radius_hysteresis(radius + BUBBLE_HYSTERESIS_METERS), //255km
-m_spawnTimer(0)
+m_towerSE(nullptr),
+m_spawnTimer(0),
+m_radius_hysteresis(radius + BUBBLE_HYSTERESIS_METERS) //255km
 {
     m_ice = false;
     m_belt = false;
@@ -192,8 +193,8 @@ void SystemBubble::Add(SystemEntity* pSE) {
         rangeToStar /= ONE_AU_IN_METERS;
         _log(DESTINY__BUBBLE_DEBUG, "SystemBubble::Add() - Distance to Star %.2f AU.  %u/%u Entities in bubble",\
                 rangeToStar, m_entities.size(), m_dynamicEntities.size());
-        if (sConfig.server.StackTrace)
-            EvE::traceStack();
+        //if (sConfig.server.StackTrace)
+        //    EvE::traceStack();
     }
 
 	if (IsTempItem(pSE->GetID())) {
@@ -262,9 +263,9 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     if (!m_players.empty())
         RemoveBall(pSE);
 
-    if (is_log_enabled(DESTINY__BUBBLE_DEBUG)) {
+    if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
         sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), GetID());
-    }
+
     pSE->m_bubble = nullptr;
 }
 
@@ -474,7 +475,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
 
     Buffer* destinyBuffer = new Buffer();
 
-    Destiny::AddBall_header head;
+    Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = sEntityList.GetStamp();
     destinyBuffer->Append(head);
@@ -521,7 +522,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
 
 	Buffer* destinyBuffer = new Buffer();
 
-	Destiny::AddBall_header head;
+    Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append(head);
@@ -572,7 +573,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 	Buffer* destinyBuffer = new Buffer();
 
 	//create AddBalls header
-	Destiny::AddBall_header head;
+    Destiny::AddBall_header head = Destiny::AddBall_header();
         head.packet_type = 1;   // 0 = full state   1 = balls
         head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append( head );

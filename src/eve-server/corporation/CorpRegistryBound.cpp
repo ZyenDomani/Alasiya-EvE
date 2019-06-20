@@ -718,12 +718,10 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     // create corp channel
     m_manager->lsc_service->CreateSystemChannel(corpID);
 
-    CorpData data;
+    CorpData data = CorpData();
         data.name = args.corpName;
         data.ticker = args.corpTicker;
         data.taxRate = args.taxRate;
-        data.allianceID = 0;
-        data.warFactionID = 0;
         data.baseID = pClient->GetLocationID();
         data.corpHQ = pClient->GetLocationID();
         data.corporationID = corpID;
@@ -997,7 +995,7 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
         case 28:   amount = 7500000;  break;
     }
 
-    AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Initial Time for Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee, call.client->GetCharacterID());
+    AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Initial Advert Time for Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee, call.client->GetCharacterID());
 
     int32 adID = m_db.CreateAdvert(call.client, m_corpID, args.typeMask, args.days, m_db.GetCorpMemberCount(m_corpID), args.description, args.channelID, args.title);
 
@@ -1053,7 +1051,7 @@ PyResult CorpRegistryBound::Handle_UpdateRecruitmentAd(PyCallArgs &call) {
             case 14:   amount = 3500000;  break;
         }
 
-        AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Added Time to Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee);
+        AccountService::TranserFunds(m_corpID, call.client->GetCorpHQ(), amount, "Added Advert Time to Corp Recruit Advert", Journal::EntryType::CorporationAdvertisementFee);
 
         // do some funky shit to determine days left for advert then add additional time if requested
         int64 time = m_db.GetAdvertTime(args.adID, m_corpID);
@@ -1409,6 +1407,8 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
+
+    /** @todo finish this... */
 
     // get list of ids to pay.  this includes corp shareholders if paying to shares
     std::vector<uint32> toIDs;

@@ -53,7 +53,7 @@ PyResult SlashService::Handle_SlashCmd( PyCallArgs& call )
         sLog.White("SlashService::Handle_SlashCmd()", "size=%u", call.tuple->size());
         call.Dump(COMMAND__DUMP);
     }
-    Call_SingleWStringSoftArg arg;
+    Call_SingleStringArg arg;
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
         return NULL;
