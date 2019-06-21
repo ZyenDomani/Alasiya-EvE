@@ -522,7 +522,6 @@ int main( int argc, char* argv[] )
     sConsole.Initialize(&command_dispatcher);
     std::printf("\n");     // spacer
 
-
     sLog.Blue("     ServerConfig", "Cosmic Manager Settings");
     if (sConfig.cosmic.CiviliansEnabled) {
         sLog.Green(" Civilian Manager", "Civilian Manager Enabled.");

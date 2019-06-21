@@ -751,7 +751,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
 }
 
 void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
-    //called from Client::MoveToLocation()
+    //called from Client::SelectCharacter() on login and Client::MoveToLocation() when changing systems
     if (pClient == nullptr)
         return;
     auto itr = m_clients.find(pClient->GetCharacterID());

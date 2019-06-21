@@ -172,7 +172,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     float distance = pClient->GetShipSE()->GetPosition().distance(pShipSE->GetPosition());
     // fudge for radii ?
     if (distance > sConfig.world.shipBoardDistance)
-        throw PyException(MakeCustomError("You are too far from %s to board it.  You must be within %u to board this ship.",\
+        throw PyException(MakeCustomError("You are too far from %s to board it.<br>You must be within %u meters to board this ship.",\
                 pShipSE->GetName(), sConfig.world.shipBoardDistance));
 
     pClient->Board(pShipSE);

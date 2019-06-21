@@ -251,6 +251,7 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Deployable:
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::Orbitals:
+        case EVEDB::invCategories::AncientRelics:
         case EVEDB::invCategories::Asteroid: {
             // these are called but not sure if they need to be coded specifically
         } break;

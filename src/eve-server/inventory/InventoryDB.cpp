@@ -517,7 +517,7 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
     Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
     bool first = true;
     for (auto cur : data) {
-        if (isnan(cur.position.x) or isnan(cur.position.y) or isnan(cur.position.z))
+        if (IsNaN(cur.position.x) or IsNaN(cur.position.y) or IsNaN(cur.position.z))
             continue;
         if (first) {
             Inserts << " VALUES ";

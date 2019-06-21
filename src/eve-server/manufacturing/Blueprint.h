@@ -78,7 +78,7 @@ protected:
         }
 
         // pull additional blueprint data
-        BlueprintTypeData bpData;
+        BlueprintTypeData bpData = BlueprintTypeData();
         sDataMgr.GetBpTypeData(typeID, bpData);
 
         // obtain parent blueprint type (might be NULL)

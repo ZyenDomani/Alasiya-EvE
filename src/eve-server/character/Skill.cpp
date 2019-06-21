@@ -82,8 +82,9 @@ void Skill::VerifyAttribs()
         SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32());
     if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int)
         SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32());
-    if (m_flag != flagSkillInTraining)
-        SetAttribute(AttrExpiryTime, 0);
+    // is this needed?
+    //if (m_flag != flagSkillInTraining)
+    //    SetAttribute(AttrExpiryTime, 0);
 }
 
 bool Skill::SkillPrereqsComplete(Character &ch) {

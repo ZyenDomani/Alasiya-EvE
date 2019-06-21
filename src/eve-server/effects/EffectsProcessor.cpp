@@ -82,7 +82,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         case Operands::DEFBOOL:   //23  this evaulates to 'true' (Bool(1))
         case Operands::DEFINT: {  //27  this is used as  0,1,2,{raceID}
             //  seems to be called only to online/offline modules (and screws up my Online/Offline code...)
-            /*
+            /** @todo  if this is used, change the Put* methods to use ModuleItem
             int8 value = atoi(expression.expressionValue.c_str());
             if (module) {
                 if (value == 0)
@@ -605,7 +605,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
 {
     if (val2 == 0)
         return val1;
-    
+
     switch (method) {
         case FX::Math::SkillCheck:
         case FX::Math::PreAssignment:

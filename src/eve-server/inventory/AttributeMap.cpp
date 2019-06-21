@@ -94,12 +94,13 @@ bool AttributeMap::Save() {
      *   all attribs for characters
      *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
-     *   damage for modules/charges, where applicable (ship damage saved separately)
+     *   damage and online for modules
+     *   damage for charges, where applicable (ship damage saved separately)
      */
     if (IsStaticItem(mItem.itemID()))
         return true;
 
-    bool skill = false, damage = false, owner = false;
+    bool skill = false, damage = false, owner = false, module = false;
     switch (mItem.categoryID()) {
         case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
         case EVEDB::invCategories::Blueprint: {
@@ -120,10 +121,11 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Deployable: {
             owner = true;
         } break;
-        case EVEDB::invCategories::Module:      // save damage for these
+        case EVEDB::invCategories::Module:      // save damage and online for these
+            module = true;                      // we're falling thru on purpose here
         case EVEDB::invCategories::Charge:      // remember, crystals and lenses are charges, too.
         case EVEDB::invCategories::Subsystem:
-        case EVEDB::invCategories::Drone: {
+        case EVEDB::invCategories::Drone: {     // this may need more.  check once system is working
             damage = true;
         } break;
     }
@@ -140,19 +142,19 @@ bool AttributeMap::Save() {
         if (damage)
             if (itr->first == AttrDamage)
                 save = true;
+        if (module)
+            if (itr->first == AttrOnline)
+                save = true;
         if (owner)
             save = true;
         if (save) {
-            AttrData data;
+            AttrData data = AttrData();
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
-            if ( itr->second.get_type() == evil_number_int) {
+            if (itr->second.isInt())
                 data.valueInt = itr->second.get_int();
-                data.valueFloat = 0;
-            } else {
-                data.valueInt = 0;
+            else
                 data.valueFloat = itr->second.get_double();
-            }
             items.push_back(data);
         }
     }
@@ -165,8 +167,11 @@ bool AttributeMap::Save() {
 
 void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
 {
-    if (num.isNaN() or num.isInf())
-        return;     // make error here for bad number?
+    if (num.isNaN() or num.isInf()) {
+        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf.");
+        EvE::traceStack();
+        return;
+    }
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
         mAttributes.emplace(attrID, num);

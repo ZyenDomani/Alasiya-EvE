@@ -40,7 +40,7 @@ RefObjects - MEMORY MANAGEMENT!!
     - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
     - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
     -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
-    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented
+    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best)
 
 
 **********   new Dec 2018
