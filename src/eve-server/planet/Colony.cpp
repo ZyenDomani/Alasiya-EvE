@@ -91,9 +91,10 @@ P4          1,200,000 ISK
 Colony::Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE)
 :m_svcMgr(mgr),
 m_client(pClient),
-m_pSE(pSE->GetPlanetSE()),
-ccPin(new PI_CCPin())
+m_pSE(pSE->GetPlanetSE())
 {
+    ccPin = new PI_CCPin();
+
     m_active = false;
     m_loaded = false;
     m_newHead = false;
@@ -148,7 +149,7 @@ void Colony::LoadPlants()
 {
     for (auto cur: ccPin->pins) {
         if (cur.second.isProcess) {
-            PI_Plant plant;
+            PI_Plant plant = PI_Plant();
                 plant.state = cur.second.state;
                 plant.cycleTime = cur.second.cycleTime;
                 plant.expiryTime = cur.second.expiryTime;
@@ -248,7 +249,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     /** @todo will have to write code for effects and checks for pg/cpu/m3/etc for all of these.  */
     using namespace EVEDB::invGroups;
     PI_Pin pin;
-    InventoryItemRef iRef = InventoryItemRef(nullptr);
+    InventoryItemRef iRef(nullptr);
     if (groupID != Command_Centers) {
         // type, owner, location, flag, qty
         ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagAutoFit, 1);
@@ -302,7 +303,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         case  Processors: {         // 1028
             //pin.isStorage = true;
             pin.isProcess = true;
-            PI_Plant plant;
+            PI_Plant plant = PI_Plant();
             ccPin->plants[iRef->itemID()] = plant;
         } break;
         case Extractor_Control_Units: { // 1063
@@ -381,7 +382,7 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
     iRef->Move(m_pSE->GetID(), flagPlanetSurface, true);
     iRef->SaveItem();
 
-    PI_Link link;
+    PI_Link link = PI_Link();
         link.state = PI::Pin::State::Idle;
         link.level = level;
         link.endpoint1 = src;
@@ -397,9 +398,9 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
     list1.clear();
     for (size_t i = 0; i < path->size(); ++i) {
         if (path->GetItem(i)->IsTuple())
-            list1.push_back(path->GetItem(i)->AsTuple()->GetItem(1)->AsInt()->value());
+            list1.push_back(PyRep::IntegerValue(path->GetItem(i)->AsTuple()->GetItem(1)));
         else if (path->GetItem(i)->IsInt())
-            list1.push_back(path->GetItem(i)->AsInt()->value());
+            list1.push_back(PyRep::IntegerValue(path->GetItem(i)));
         else
             _log(PLANET__ERROR, "Colony::CreateRoute() - List item type unrecognized: %s", path->GetItem(1)->TypeString());
     }
@@ -419,7 +420,7 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         list1 = list2;
     }
 
-    PI_Route route;
+    PI_Route route = PI_Route();
         route.state = PI::Pin::State::Idle;
         route.priority = PI::Route::PriorityNorm;
         route.commodityTypeID = typeID;
@@ -519,7 +520,7 @@ void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, doub
     if (itr != ccPin->pins.end()) {
         m_newHead = true;
         tempECUs.push_back(ecuID);
-        PI_Heads head;
+        PI_Heads head = PI_Heads();
             head.typeID = itr->second.schematicID;
             head.ecuPinID = ecuID;
             head.latitude = latitude;
@@ -579,17 +580,9 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
             itr->second.receivedInputsLastCycle = false;
             m_pLevel = (uint8)EvE::min(m_pLevel, itr->second.order);
         } else {
-            PI_Schematic data;
-            itr->second.data = data;
+            itr->second = PI_Plant();
+            itr->second.data = PI_Schematic();
             itr->second.state = PI::Pin::State::Idle;
-            itr->second.cycleTime = 0;
-            itr->second.expiryTime = 0;
-            itr->second.qtyPerCycle = 0;
-            itr->second.installTime = 0;
-            itr->second.lastRunTime = 0;
-            itr->second.schematicID = 0;
-            itr->second.hasReceivedInputs = false;
-            itr->second.receivedInputsLastCycle = false;
         }
         _log(PLANET__TRACE, "Colony::SetSchematic() - Set Schematic %u in plantID %u", schematicID, pinID);
     } else
@@ -605,8 +598,8 @@ void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius)
         } else if (!typeID) {
             // uninstall program
             itr->second.cycleTime = 0;
-            itr->second.programType = 0;
             itr->second.expiryTime = 0;
+            itr->second.programType = 0;
             itr->second.qtyPerCycle = 0;
             itr->second.installTime = 0;
             itr->second.lastRunTime = 0;
@@ -671,7 +664,7 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
 
     ccPin->currentSimTime = GetFileTimeNow();
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
-    PyDict* args(new PyDict());
+    PyDict* args = new PyDict();
     args->SetItem("simTime", new PyLong(ccPin->currentSimTime));
     src->second.lastRunTime = GetFileTimeNow() + (EvE::Time::Minute * 15);  // arbitrary 15 minute delivery time
     args->SetItem("sourceRunTime", new PyLong(src->second.lastRunTime));
@@ -788,10 +781,10 @@ void Colony::PrioritizeRoute()
 PyTuple* Colony::GetPins()
 {
     uint8 index = 0;
-    PyTuple* pins(new PyTuple(ccPin->pins.size()));
+    PyTuple* pins = new PyTuple(ccPin->pins.size());
 
     for (auto cur : ccPin->pins) {
-        PyDict* dict(new PyDict());
+        PyDict* dict = new PyDict();
         dict->SetItem("id", new PyInt(cur.first));
         dict->SetItem("typeID", new PyInt(cur.second.typeID));
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
@@ -811,7 +804,7 @@ PyTuple* Colony::GetPins()
             dict->SetItem("receivedInputsLastCycle", new PyBool(cur.second.receivedInputsLastCycle));
         }
 
-        PyDict* contents(new PyDict());
+        PyDict* contents = new PyDict();
         contents->clear();
         if (cur.second.isStorage) {
             for (auto cur2 : cur.second.contents)
@@ -831,7 +824,7 @@ PyTuple* Colony::GetPins()
             PyList* list = new PyList();
             list->clear();
             for (auto head : cur.second.heads) {
-                PyTuple* tuple(new PyTuple(3));
+                PyTuple* tuple = new PyTuple(3);
                     tuple->SetItem(0, new PyInt(head.first));
                     tuple->SetItem(1, new PyFloat(head.second.latitude));
                     tuple->SetItem(2, new PyFloat(head.second.longitude));
@@ -840,8 +833,7 @@ PyTuple* Colony::GetPins()
             dict->SetItem("heads", list);
         }
 
-        PyObject* obj(new PyObject("util.KeyVal", dict));
-        pins->SetItem(index++, obj);
+        pins->SetItem(index++, new PyObject("util.KeyVal", dict));
     }
     return pins;
 }
@@ -849,17 +841,16 @@ PyTuple* Colony::GetPins()
 PyTuple* Colony::GetLinks()
 {
     uint8 index = 0;
-    PyTuple* links(new PyTuple(ccPin->links.size()));
+    PyTuple* links = new PyTuple(ccPin->links.size());
 
     for (auto cur : ccPin->links) {
-        PyDict* dict(new PyDict());
+        PyDict* dict = new PyDict();
             dict->SetItem("linkID", new PyInt(cur.first));                 // this is link itemID
             dict->SetItem("endpoint1", new PyInt(cur.second.endpoint1));
             dict->SetItem("endpoint2", new PyInt(cur.second.endpoint2));
             dict->SetItem("level", new PyInt(cur.second.level));
             dict->SetItem("typeID", new PyInt(cur.second.typeID));          // typeID 2280
-        PyObject* obj(new PyObject("util.KeyVal", dict));
-        links->SetItem(index++, obj);
+        links->SetItem(index++, new PyObject("util.KeyVal", dict));
     }
     return links;
 }
@@ -867,21 +858,19 @@ PyTuple* Colony::GetLinks()
 PyTuple* Colony::GetRoutes()
 {
     uint8 index = 0;
-    PyTuple* routes(new PyTuple(ccPin->routes.size()));
+    PyTuple* routes = new PyTuple(ccPin->routes.size());
 
     for (auto cur : ccPin->routes) {
-        PyDict* dict(new PyDict());
+        PyDict* dict = new PyDict();
             dict->SetItem("routeID", new PyInt(cur.first));                 // this is routeID (low number - assigned by client)
             dict->SetItem("commodityTypeID", new PyInt(cur.second.commodityTypeID));
             dict->SetItem("commodityQuantity", new PyInt(cur.second.commodityQuantity));
 
-        PyList* list(new PyList());
+        PyList* list = new PyList();
         for (auto cur2 : cur.second.path)                               // path of pinIDs this route will follow
             list->AddItem(new PyInt(cur2));
         dict->SetItem("path", list);                                    // list of paths on this route
-
-        PyObject* obj(new PyObject("util.KeyVal", dict));
-        routes->SetItem(index++, obj);
+        routes->SetItem(index++, new PyObject("util.KeyVal", dict));
     }
     return routes;
 }
@@ -903,13 +892,13 @@ PyRep* Colony::GetColony()
     Update();   // update colony before sending data.
     Save();     // save here after update.  this also saves routes and links   do we need to save on EVERY GetColony() call?
 
-    PyDict* args(new PyDict());
+    PyDict* args = new PyDict();
         args->SetItem("pins", GetPins());
         args->SetItem("level", new PyInt(ccPin->level));
         args->SetItem("links", GetLinks());
         args->SetItem("routes", GetRoutes());
         args->SetItem("currentSimTime", new PyLong(ccPin->currentSimTime));
-    PyObject* res(new PyObject("util.KeyVal", args));
+    PyObject* res = new PyObject("util.KeyVal", args);
 
     _log(PLANET__DEBUG, "Colony::GetColony() Dump");
     if (is_log_enabled(PLANET__GC_DUMP))

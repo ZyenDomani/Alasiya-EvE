@@ -320,7 +320,7 @@ bool EvilNumber::isFloat()
 bool EvilNumber::get_bool()
 {
     if (mType == evil_number_float)
-        return (mValue.fVal != 0);
+        return (mValue.fVal != 0.0);
     if (mType == evil_number_int)
         return (mValue.iVal != 0);
     return false;

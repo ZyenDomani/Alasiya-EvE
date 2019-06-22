@@ -482,7 +482,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
     uint32 itemQuantity = 0;
     double radius = pClient->GetShipSE()->GetRadius();
 
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
     for (uint32 i = 0; i < PyToDropList->size(); ++i) {
         GPoint location(pClient->GetShipSE()->GetPosition());

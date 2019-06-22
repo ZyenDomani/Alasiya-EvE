@@ -76,6 +76,7 @@ EVEServerConfig::EVEServerConfig()
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
     world.apWarptoDistance = 15000;
+    world.shipBoardDistance = 300;
 
     // rates
     rates.npcBountyMultiply = 1.0;
@@ -342,17 +343,18 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 {
-    AddValueParser( "chatLogs",         world.chatLogs );
-    AddValueParser( "globalChat",       world.globalChat );
-    AddValueParser( "gridUnload",       world.gridUnload );
-    AddValueParser( "gridUnloadTime",   world.gridUnloadTime );
-    AddValueParser( "loginInfo",        world.loginInfo );
-    AddValueParser( "loginMsg",         world.loginMsg );
-    AddValueParser( "saveOnMove",       world.saveOnMove );
-    AddValueParser( "saveOnUpdate",     world.saveOnUpdate );
-    AddValueParser( "mailDelay",        world.mailDelay );
-    AddValueParser( "StationDockDelay", world.StationDockDelay );
-    AddValueParser( "apWarptoDistance", world.apWarptoDistance );
+    AddValueParser( "chatLogs",          world.chatLogs );
+    AddValueParser( "globalChat",        world.globalChat );
+    AddValueParser( "gridUnload",        world.gridUnload );
+    AddValueParser( "gridUnloadTime",    world.gridUnloadTime );
+    AddValueParser( "loginInfo",         world.loginInfo );
+    AddValueParser( "loginMsg",          world.loginMsg );
+    AddValueParser( "saveOnMove",        world.saveOnMove );
+    AddValueParser( "saveOnUpdate",      world.saveOnUpdate );
+    AddValueParser( "mailDelay",         world.mailDelay );
+    AddValueParser( "StationDockDelay",  world.StationDockDelay );
+    AddValueParser( "apWarptoDistance",  world.apWarptoDistance );
+    AddValueParser( "shipBoardDistance", world.shipBoardDistance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -367,6 +369,7 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "mailDelay" );
     RemoveParser( "StationDockDelay" );
     RemoveParser( "apWarptoDistance" );
+    RemoveParser( "shipBoardDistance" );
 
     return result;
 }

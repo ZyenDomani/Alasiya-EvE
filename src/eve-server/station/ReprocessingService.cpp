@@ -237,8 +237,8 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             return nullptr;
     }
 
+    InventoryItemRef iRef(nullptr);
     double tax = CalcTax(GetStanding(call.client));
-    InventoryItemRef iRef = InventoryItemRef(nullptr);
     for (auto cur : args.items)  {
         iRef = sItemFactory.GetItem(cur);
         if (iRef.get() == nullptr)

@@ -134,7 +134,7 @@ PyResult RepairSvcBound::Handle_RepairItems(PyCallArgs &call) {
      *  - this needs to be checked against total repair amount, and use fraction to reduce damage for all items in list
      */
 
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     double cost = 0, total = 0;
     uint32 damage = 0;
     std::vector<InventoryItemRef> itemRefVec;
@@ -333,7 +333,7 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
 
     PyList *pList(nullptr);
     PyTuple *tuple(nullptr);
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     uint32 itemID = 0; //,locationID = 0,  itemLoc = 0;
 
     if (args.list->size() > 0)

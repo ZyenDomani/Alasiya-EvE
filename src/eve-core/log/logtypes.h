@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.1
+ Log Version: 9.2
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 

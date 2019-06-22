@@ -44,6 +44,10 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist )
 }
 
 PyServiceMgr::~PyServiceMgr() {
+    // these crash (segfault) on exit, and i dont know why
+    //SafeDelete(lsc_service);
+    //SafeDelete(cache_service);
+
     Close();
 }
 
@@ -61,9 +65,6 @@ void PyServiceMgr::Close() {
         SafeDelete(bo);
     }
     m_boundObjects.clear();
-
-    SafeDelete(lsc_service);
-    SafeDelete(cache_service);
 }
 
 void PyServiceMgr::Initalize(double startTime)

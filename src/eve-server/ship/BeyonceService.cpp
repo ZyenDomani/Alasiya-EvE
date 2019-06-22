@@ -860,7 +860,9 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     return PyStatic.NewNone();
 }
 
-/****  these do absolutely nothing at this time  */
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
 
 PyResult BeyonceBound::Handle_CmdJumpThroughFleet(PyCallArgs &call) {
     // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)

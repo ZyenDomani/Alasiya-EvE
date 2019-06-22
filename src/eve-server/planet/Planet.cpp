@@ -155,7 +155,7 @@ PyRep* PlanetSE::GetPlanetInfo(Colony* pColony) {
         args->SetItem("routes", pColony->GetRoutes());
         args->SetItem("currentSimTime", new PyLong(pColony->GetSimTime()));
     }
-    PyIncRef(args);
+    //PyIncRef(args);
     PyObject *rtn = new PyObject("util.KeyVal", args);
     if (is_log_enabled(PLANET__RES_DUMP))
         rtn->Dump(PLANET__RES_DUMP, "   ");
@@ -171,7 +171,7 @@ PyRep* PlanetSE::GetExtractorsForPlanet(int32 planetID) {
     // {for ecu in planetID}  SELECT `headID`, `typeID`, `ownerID`, `latitude`, `longitude` FROM `piECUHeads`
     m_db.GetExtractorsForPlanet(planetID, res);
 
-    PyList* list(new PyList());
+    PyList* list = new PyList();
     DBResultRow row;
     while (res.GetRow(row)) {
         PyDict* dict(new PyDict());
@@ -254,7 +254,7 @@ void PlanetSE::CreateCustomsOffice()
      */
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
-    iRef->Relocate(pos);
+    iRef->SetPosition(pos);
     iRef->ChangeSingleton(true, false);
     iRef->SetAttribute(AttrIsGlobal, 1, false);
     iRef->SaveItem();

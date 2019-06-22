@@ -255,7 +255,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
         return nullptr;
     }
 
-    PyIncRef(args.heads);
+    //PyIncRef(args.heads);
     return m_planetMgr->GetProgramResultInfo(args.ecuID, args.typeID, args.heads, args.headRadius);
 }
 
@@ -306,45 +306,6 @@ PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
     m_planet->AbandonColony(m_colony);
 
     return nullptr;
-}
-
-PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
-    _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
-    //sm.RemoteSvc('planetMgr').DeleteLaunch
-    _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
-    /*  called by "get other character's networks" in planet menu
-     * 16:42:42 [PlanetDebug] PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=1
-     * 16:42:42 [PlanetCallDump]   Call Arguments:
-     * 16:42:42 [PlanetCallDump]       Tuple: 1 elements
-     * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
-     */
-    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    // returns empty dict if none
-    return new PyDict();
-}
-
-PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
-    /*
-     */
-    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    // returns empty dict if none
-    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
@@ -437,6 +398,50 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
 
     PyList* list = call.tuple->GetItem(0)->AsList();
     return m_colony->TransferCommodities(list->items.front()->AsInt()->value(), list->items.back()->AsInt()->value(), items);
+}
+
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
+    //sm.RemoteSvc('planetMgr').DeleteLaunch
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
+    /*  called by "get other character's networks" in planet menu
+     * 16:42:42 [PlanetDebug] PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=1
+     * 16:42:42 [PlanetCallDump]   Call Arguments:
+     * 16:42:42 [PlanetCallDump]       Tuple: 1 elements
+     * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    // returns empty dict if none
+    return new PyDict();
+}
+
+PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
+    /*
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    // returns empty dict if none
+    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {
