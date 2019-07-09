@@ -307,53 +307,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OCCSessionChangeNotification">
-    <dictInline>
-      <dictInlineEntry key="corprole">
-        <tupleInline>
-          <long name="corpRoleOld" />
-          <long name="corpRoleNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="corpid">
-        <tupleInline>
-          <int name="corpidOld" />
-          <int name="corpidNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtAll">
-        <tupleInline>
-          <long name="corpRoleAllOld" />
-          <long name="corpRoleAllNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtBase">
-        <tupleInline>
-          <long name="corpRoleBaseOld" />
-          <long name="corpRoleBaseNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="hqID">
-        <tupleInline>
-          <int name="corpHqIDOld" />
-          <int name="corpHqIDNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtHQ">
-        <tupleInline>
-          <long name="corpRoleHQOld" />
-          <long name="corpRoleHQNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtOther">
-        <tupleInline>
-          <long name="corpRoleOtherOld" />
-          <long name="corpRoleOtherNew" />
-        </tupleInline>
-      </dictInlineEntry>
-    </dictInline>
-  </elementDef>
-
   <elementDef name="CorpOfficeSparseRowset">
     <objectInline>
       <stringInline value="util.SparseRowset" />
@@ -722,26 +675,6 @@
           <raw name="grantableRolesAtBaseNew" />
         </tupleInline>
       </dictInlineEntry>
-<!--
-      <dictInlineEntry key="STI145">
-        <tupleInline name="uu8">
-          <raw name="STI145Old" />
-          <raw name="STI145New" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="STI146">
-        <tupleInline name="uut">
-          <raw name="STI146Old" />
-          <raw name="STI146New" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="STI147">
-        <tupleInline name="uuq">
-          <raw name="STI147Old" />
-          <raw name="STI147New" />
-        </tupleInline>
-      </dictInlineEntry>
--->
     </dictInline>
   </elementDef>
 

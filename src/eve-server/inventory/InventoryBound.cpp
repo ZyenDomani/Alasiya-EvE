@@ -853,5 +853,5 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
 
         call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
 
-        return new PyInt(1);
+        return PyStatic.NewOne();
 }

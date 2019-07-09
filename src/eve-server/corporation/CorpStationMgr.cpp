@@ -335,9 +335,82 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
 }
 
 /**     ***********************************************************************
- * @note   these below are not coded or partially coded
+ * @note   these below are partially coded
  */
 
+PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call) {
+    // this is for station options for xfering clone
+    //returns stationID,typeID,serviceMask
+
+    Client* pClient(call.client);
+    std::vector<uint32> stVec;
+    stVec.push_back(m_stationID);   // current station.  is this right?
+    // first char home station always an option
+    stVec.push_back(CharacterDB::GetStartingStationByCareer(pClient->GetChar()->careerID()));
+    // get corp stations and add to vector
+    m_db.GetCorpStations(pClient->GetCorporationID(), stVec);
+
+    // TODO:  not sure how to determine possible stations yet...
+    /*  ideas:
+     *      get all corp offices.
+     *      determine standings of requesting character to specific stations/locations
+     *
+     *      pc corp members - get corp standings vs. potential stations/corps/locations
+     *      npc corp members - get faction standings for potential locations
+     *
+     *  other possible stations?  test for min/max potential station count?
+     */
+
+    PyDict* dict = new PyDict();
+    PyList* list = new PyList();
+    StationData data = StationData();
+    for (auto cur : stVec) {
+        stDataMgr.GetStationData(cur, data);
+        dict->SetItemString("stationID", new PyInt(cur));
+        dict->SetItemString("typeID", new PyInt(data.typeID));
+        dict->SetItemString("serviceMask", new PyLong(data.serviceMask));
+        list->AddItem(dict);
+    }
+
+    return list;
+}
+
+PyResult CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack(PyCallArgs &call)
+{   //cost = corpStationMgr.GetQuoteForGettingCorpJunkBack()
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack()");
+    call.Dump(CORP__CALL_DUMP);
+
+    // office rental fee (with multiplier?  config option for multiplier?)
+    //stDataMgr.GetOfficeRentalFee(m_stationID);
+    return new PyInt(pStationItem->GetOfficeRentalFee());
+}
+
+PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallArgs &call)
+{   //if corpStationMgr.DoesPlayersCorpHaveJunkAtStation():
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation()");
+    call.Dump(CORP__CALL_DUMP);
+
+    // query station for (officeID:flagimpounded)
+
+    // returns boolean
+    return PyStatic.NewFalse();
+}
+
+PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
+    // sm.GetService('corp').GetCorpStationManager().SetHomeStation(newHomeStationID)
+    /** @todo this is once a year on live, unless a new char changes corps.
+     *  we will need to make other checks when this is called, as i dont think client checks anything.
+     */
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    call.client->GetChar()->SetBaseID(arg.arg);
+    CharacterDB::ChangeCloneLocation(call.client->GetCharID(), arg.arg);
+    return nullptr;
+}
 
 
 /**     ***********************************************************************
@@ -379,23 +452,6 @@ PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallAr
     return PyStatic.NewNone();
 }
 
-PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call) {
-    //returns a rowset: stationID, typeID
-    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_GetPotentialHomeStations()");
-    call.Dump(CORP__CALL_DUMP);
-
-    return m_db.ListCorpStations(call.client->GetCorporationID());
-}
-
-PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
-    // this is for setting clone station
-    // sm.GetService('corp').GetCorpStationManager().SetHomeStation(newHomeStationID)
-    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_SetHomeStation()");
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
 PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
 {   //  corpStationMgr.CancelRentOfOffice()
     _log(CORP__CALL, "CorpStationMgrIMBound::Handle_CancelRentOfOffice()");
@@ -409,25 +465,6 @@ PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
      *   if so, cannot remove officeID from office map, but will need a flag to show it as 'not rented'
      */
     return nullptr;
-}
-
-PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallArgs &call)
-{   //if corpStationMgr.DoesPlayersCorpHaveJunkAtStation():
-    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation()");
-    call.Dump(CORP__CALL_DUMP);
-
-    // query station for (officeID:flagimpounded)
-
-    // returns boolean
-    return PyStatic.NewFalse();
-}
-
-PyResult CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack(PyCallArgs &call)
-{   //cost = corpStationMgr.GetQuoteForGettingCorpJunkBack()
-    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack()");
-    call.Dump(CORP__CALL_DUMP);
-
-    return new PyInt(10000);    // office rental fee (with multiplier?  config option for multiplier?)
 }
 
 PyResult CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk(PyCallArgs &call)

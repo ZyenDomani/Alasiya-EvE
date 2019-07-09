@@ -244,7 +244,7 @@ PyDict* ProbeSE::MakeSlimItem()
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyInt(m_allyID));
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
-        slim->SetItemString("numLaunchers",     new PyInt(1));
+        slim->SetItemString("numLaunchers",     PyStatic.NewOne());
         slim->SetItemString("sourceModuleID",   new PyInt(m_moduleRef->itemID()));
         slim->SetItemString("securityStatus",   new PyFloat(m_secStatus));
     return slim;
@@ -385,7 +385,7 @@ void ProbeSE::SendSlimChange()
         slim->SetItemString("corpID",           new PyInt(m_corpID));
         slim->SetItemString("allianceID",       new PyInt(m_allyID));
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
-        slim->SetItemString("numLaunchers",     new PyInt(1));
+        slim->SetItemString("numLaunchers",     PyStatic.NewOne());
         slim->SetItemString("sourceModuleID",   new PyInt(m_moduleRef->itemID()));
         slim->SetItemString("securityStatus",   new PyFloat(m_secStatus));
         slim->SetItemString("warpingAway",      PyStatic.NewTrue());    // this is sent when probe warps

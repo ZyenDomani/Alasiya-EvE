@@ -127,7 +127,7 @@ protected:
         // SolarSystem stuff:
         const SolarSystemData &_ssData
     );
-    virtual ~SolarSystem();
+    virtual ~SolarSystem()                              { /* do nothing here */ }
 
     /*
      * Member functions:

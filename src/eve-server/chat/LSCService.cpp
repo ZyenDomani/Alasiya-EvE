@@ -170,7 +170,7 @@ PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
         call.Dump(LSC__CALL_DUMP);
     }
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
@@ -466,7 +466,7 @@ PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 
     //channel->UpdateConfig();
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_Invite(PyCallArgs &call)
@@ -555,7 +555,7 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
         return nullptr;
     }
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_Configure(PyCallArgs& call)

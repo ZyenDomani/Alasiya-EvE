@@ -130,7 +130,7 @@ void MissionDataMgr::Populate()
     MissionDB::LoadCourierData(*res);
     while (res->GetRow(row)) {
         //SELECT id, briefingID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime, sysRange, raceID FROM qstCourier
-        CourierData data;
+        CourierData data = CourierData();
         data.missionID     = row.GetInt(0);
         data.briefingID    = row.GetInt(1);
         data.name          = row.GetText(2);
@@ -160,7 +160,7 @@ void MissionDataMgr::Populate()
     MissionDB::LoadMiningData(*res);
     while (res->GetRow(row)) {
         //SELECT id, briefingID, name, level, typeID, important, storyline, itemTypeID, itemQty, rewardISK, rewardItemID, rewardItemQty, bonusISK, bonusTime, sysRange, raceID FROM qstMining
-        CourierData data;
+        CourierData data = CourierData();
         data.missionID     = row.GetInt(0);
         data.briefingID    = row.GetInt(1);
         data.name          = row.GetText(2);
@@ -221,7 +221,7 @@ void MissionDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT id, briefingID, name, level, typeID, important, storyline, raceID, constellationID, corporationID, dungeonID,
         // rewardISK, rewardItemID, rewardISKQty, rewardItemQty, bonusISK, bonusTime FROM agtMissions
-        MissionData data;
+        MissionData data = MissionData();
         data.missionID = row.GetInt(0);
         data.briefingID = row.GetInt(1);
         data.name = row.GetText(2);
@@ -245,46 +245,46 @@ void MissionDataMgr::Populate()
         //SELECT acceptFee, agentID, characterID, courierAmount, courierTypeID, courierItemVolume, dateAccepted, dateIssued, destinationID, destinationTypeID, destinationOwnerID, destinationSystemID,
         // expiryTime, important, storyline, missionID, briefingID, name, offerID, originID, originOwnerID, originSystemID, remoteCompletable, remoteOfferable,
         // rewardISK, rewardItemID, rewardItemQty, rewardLP, bonusISK, bonusTime, stateID, typeID, dungeonLocationID, dungeonSolarSystemID FROM agtOffers
-        MissionOffer data;
-        data.acceptFee = row.GetInt(0);
-        data.agentID = row.GetInt(1);
-        data.characterID = row.GetInt(2);
-        data.courierAmount = row.GetInt(3);
-        data.courierTypeID = row.GetInt(4);
-        data.courierItemVolume = row.GetFloat(5);
-        data.dateAccepted = row.GetInt64(6);
-        data.dateIssued = row.GetInt64(7);
-        data.destinationID = row.GetInt(8);
-        data.destinationTypeID = row.GetInt(9);
-        data.destinationOwnerID = row.GetInt(10);
-        data.destinationSystemID = row.GetInt(11);
-        data.expiryTime = row.GetInt64(12);
-        data.important = row.GetInt(13);
-        data.storyline = row.GetInt(14);
-        data.missionID = row.GetInt(15);
-        data.briefingID = row.GetInt(16);
-        data.name = row.GetText(17);
-        data.offerID = row.GetInt(18);
-        data.originID = row.GetInt(19);
-        data.originOwnerID = row.GetInt(20);
-        data.originSystemID = row.GetInt(21);
-        data.remoteCompletable = row.GetInt(22);
-        data.remoteOfferable = row.GetInt(23);
-        data.rewardISK = row.GetInt(24);
-        data.rewardItemID = row.GetInt(25);
-        data.rewardItemQty = row.GetInt(26);
-        data.rewardLP = row.GetInt(27);
-        data.bonusISK = row.GetInt(28);
-        data.bonusTime = row.GetInt(29);
-        data.stateID = row.GetInt(30);
-        data.typeID = row.GetInt(31);
-        data.dungeonLocationID = row.GetInt(32);
-        data.dungeonSolarSystemID = row.GetInt(33);
-        data.dateCompleted = 0;
+        MissionOffer offer = MissionOffer();
+        offer.acceptFee = row.GetInt(0);
+        offer.agentID = row.GetInt(1);
+        offer.characterID = row.GetInt(2);
+        offer.courierAmount = row.GetInt(3);
+        offer.courierTypeID = row.GetInt(4);
+        offer.courierItemVolume = row.GetFloat(5);
+        offer.dateAccepted = row.GetInt64(6);
+        offer.dateIssued = row.GetInt64(7);
+        offer.destinationID = row.GetInt(8);
+        offer.destinationTypeID = row.GetInt(9);
+        offer.destinationOwnerID = row.GetInt(10);
+        offer.destinationSystemID = row.GetInt(11);
+        offer.expiryTime = row.GetInt64(12);
+        offer.important = row.GetInt(13);
+        offer.storyline = row.GetInt(14);
+        offer.missionID = row.GetInt(15);
+        offer.briefingID = row.GetInt(16);
+        offer.name = row.GetText(17);
+        offer.offerID = row.GetInt(18);
+        offer.originID = row.GetInt(19);
+        offer.originOwnerID = row.GetInt(20);
+        offer.originSystemID = row.GetInt(21);
+        offer.remoteCompletable = row.GetInt(22);
+        offer.remoteOfferable = row.GetInt(23);
+        offer.rewardISK = row.GetInt(24);
+        offer.rewardItemID = row.GetInt(25);
+        offer.rewardItemQty = row.GetInt(26);
+        offer.rewardLP = row.GetInt(27);
+        offer.bonusISK = row.GetInt(28);
+        offer.bonusTime = row.GetInt(29);
+        offer.stateID = row.GetInt(30);
+        offer.typeID = row.GetInt(31);
+        offer.dungeonLocationID = row.GetInt(32);
+        offer.dungeonSolarSystemID = row.GetInt(33);
+        offer.dateCompleted = 0;
         // will need to determine how to store/retrieve bookmarks as a list of dicts here
-        data.bookmarks = new PyList();
-        m_offers.emplace(row.GetInt(2), data);
-        m_aoffers.emplace(row.GetInt(1), data);    // do we really want dupe data here?  yes.  need offer by char and by agent
+        offer.bookmarks = new PyList();
+        m_offers.emplace(row.GetInt(2), offer);
+        m_aoffers.emplace(row.GetInt(1), offer);    // do we really want dupe data here?  yes.  need offer by char and by agent
     }
     sLog.Cyan("   MissionDataMgr", "%u Open Mission Offers loaded in %.3fms.", m_offers.size(), (GetTimeMSeconds() - start));
 
@@ -296,43 +296,43 @@ void MissionDataMgr::Populate()
     while (res->GetRow(row)) {
         //SELECT agentID, characterID, courierAmount, courierTypeID, dateAccepted, dateCompleted, dateIssued, destinationID, expiryTime, important, storyline, missionID, name,
         // offerID, originID, rewardISK, rewardItemID, rewardItemQty, rewardLP, stateID, typeID FROM agtOffers
-        MissionOffer data;
-        data.agentID = row.GetInt(0);
-        data.characterID = row.GetInt(1);
-        data.courierAmount = row.GetInt(2);
-        data.courierTypeID = row.GetInt(3);
-        data.dateAccepted = row.GetInt64(4);
-        data.dateCompleted = row.GetInt64(5);
-        data.dateIssued = row.GetInt64(6);
-        data.destinationID = row.GetInt(7);
-        data.expiryTime = row.GetInt64(8);
-        data.important = row.GetInt(9);
-        data.storyline = row.GetInt(10);
-        data.missionID = row.GetInt(11);
-        data.name = row.GetText(12);
-        data.offerID = row.GetInt(13);
-        data.originID = row.GetInt(14);
-        data.rewardISK = row.GetInt(15);
-        data.rewardItemID = row.GetInt(16);
-        data.rewardItemQty = row.GetInt(17);
-        data.rewardLP = row.GetInt(18);
-        data.stateID = row.GetInt(19);
-        data.typeID = row.GetInt(20);
-        data.briefingID = 0;
-        data.acceptFee = 0;
-        data.bonusISK = 0;
-        data.bonusTime = 0;
-        data.remoteCompletable = 0;
-        data.remoteOfferable = 0;
-        data.originOwnerID = 0;
-        data.originSystemID = 0;
-        data.destinationTypeID = 0;
-        data.destinationOwnerID = 0;
-        data.destinationSystemID = 0;
-        data.dungeonLocationID = 0;
-        data.dungeonSolarSystemID = 0;
-        data.bookmarks = new PyList(); //invalid offers will not have bms
-        m_xoffers.emplace(row.GetInt(2), data);
+        MissionOffer offer = MissionOffer();
+        offer.agentID = row.GetInt(0);
+        offer.characterID = row.GetInt(1);
+        offer.courierAmount = row.GetInt(2);
+        offer.courierTypeID = row.GetInt(3);
+        offer.dateAccepted = row.GetInt64(4);
+        offer.dateCompleted = row.GetInt64(5);
+        offer.dateIssued = row.GetInt64(6);
+        offer.destinationID = row.GetInt(7);
+        offer.expiryTime = row.GetInt64(8);
+        offer.important = row.GetInt(9);
+        offer.storyline = row.GetInt(10);
+        offer.missionID = row.GetInt(11);
+        offer.name = row.GetText(12);
+        offer.offerID = row.GetInt(13);
+        offer.originID = row.GetInt(14);
+        offer.rewardISK = row.GetInt(15);
+        offer.rewardItemID = row.GetInt(16);
+        offer.rewardItemQty = row.GetInt(17);
+        offer.rewardLP = row.GetInt(18);
+        offer.stateID = row.GetInt(19);
+        offer.typeID = row.GetInt(20);
+        offer.briefingID = 0;
+        offer.acceptFee = 0;
+        offer.bonusISK = 0;
+        offer.bonusTime = 0;
+        offer.remoteCompletable = 0;
+        offer.remoteOfferable = 0;
+        offer.originOwnerID = 0;
+        offer.originSystemID = 0;
+        offer.destinationTypeID = 0;
+        offer.destinationOwnerID = 0;
+        offer.destinationSystemID = 0;
+        offer.dungeonLocationID = 0;
+        offer.dungeonSolarSystemID = 0;
+        offer.bookmarks = new PyList(); //invalid offers will not have bms
+        m_xoffers.emplace(row.GetInt(2), offer);
     }
     sLog.Cyan("   MissionDataMgr", "%u Closed Mission Offers loaded in %.3fms.", m_xoffers.size(), (GetTimeMSeconds() - start));
 
@@ -444,7 +444,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
     /** @todo  this will need to be adjusted for raceID eventually */
     switch (typeID) {
         case Mission::Type::Courier: {
-            CourierData cData;
+            CourierData cData = CourierData();
             std::vector<CourierData> cVec;
             if (important) {
                 auto itr = m_courierImp.equal_range(level);
@@ -480,7 +480,7 @@ void MissionDataMgr::CreateMissionOffer(uint8 typeID, uint8 level, uint8 raceID,
             data.range              = cData.range;
         } break;
         case Mission::Type::Mining: {
-            CourierData cData;
+            CourierData cData = CourierData();
             std::vector<CourierData> cVec;
             if (important) {
                 auto itr = m_miningImp.equal_range(level);

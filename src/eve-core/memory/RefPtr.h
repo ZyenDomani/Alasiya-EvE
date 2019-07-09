@@ -143,8 +143,8 @@ public:
     explicit RefPtr( X* p = nullptr)
     : mPtr( p )
     {
-        if (*this)
-            (*this)->IncRef();
+        //if (*this)
+        //    (*this)->IncRef();
     }
     /**
      * @brief Copy constructor.
@@ -154,8 +154,8 @@ public:
     RefPtr( const RefPtr& oth )
     : mPtr( oth.get() )
     {
-        if (*this)
-            (*this)->IncRef();
+        //if (*this)
+        //    (*this)->IncRef();
     }
     /**
      * @brief Casting copy constructor.
@@ -166,8 +166,8 @@ public:
     RefPtr( const RefPtr<Y>& oth )
     : mPtr( oth.get() )
     {
-        if (*this)
-            (*this)->IncRef();
+        //if (*this)
+        //    (*this)->IncRef();
     }
 
     /**

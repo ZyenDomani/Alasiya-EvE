@@ -37,22 +37,18 @@
  * CORP__DB_MESSAGE
  */
 
-PyObject *CorporationDB::ListCorpStations(uint32 corp_id) {
+void CorporationDB::GetCorpStations(uint32 corp_id, std::vector<uint32>& stVec) {
     DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        "SELECT "
-        "   stationID, stationTypeID AS typeID"
-        " FROM staStations"
-        " WHERE corporationID=%u",
-            corp_id
-    ))
-    {
+    if (!sDatabase.RunQuery(res, "SELECT stationID FROM staStations WHERE corporationID=%u", corp_id)) {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-        return nullptr;
+        return;
     }
 
-    return DBResultToRowset(res);
+    DBResultRow row;
+    while (res.GetRow(row))
+        stVec.push_back(row.GetInt(0));
+
+    return;
 }
 /*
 PyObject *CorporationDB::ListStationOffices(uint32 station_id) {

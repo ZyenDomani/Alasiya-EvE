@@ -117,7 +117,7 @@ PyResult FactionWarMgrService::Handle_GetFWSystems( PyCallArgs& call )
 }
 
 /**     ***********************************************************************
- * @note   these below are not coded or partially coded
+ * @note   these below are partially coded
  */
 
 PyResult FactionWarMgrService::Handle_GetMyCharacterRankOverview( PyCallArgs& call ) {

@@ -87,13 +87,13 @@ PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_
     }
 
     uint32 agentID = bind_args->AsInt()->value();
-    Agent* aPtr = sEntityList.GetAgent(agentID);
-    if (aPtr == nullptr) {
+    Agent* pAgent = sEntityList.GetAgent(agentID);
+    if (pAgent == nullptr) {
         codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
         return nullptr;
     }
 
-    return new AgentBound(m_manager, aPtr);
+    return new AgentBound(m_manager, pAgent);
 }
 
 PyResult AgentMgrService::Handle_GetAgents(PyCallArgs &call) {

@@ -120,7 +120,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
         switch (actionID) {
             case 0: {
                 //  if char has current mission with this agent, add this one.
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 if (m_agent->HasMission(pchar->itemID(), offer)) {
                     PyTuple* button1 = new PyTuple(2);
                         button1->SetItem(0, new PyInt(ViewMission)); // this are buttonIDs which are unique and sequential to each agent, regardless of chars
@@ -168,7 +168,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 }
             } break;
             case RequestMission: {  //2
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 m_agent->MakeOffer(pchar->itemID(), offer);
                 m_agent->SendMissionUpdate(call.client, "offered");
 
@@ -199,7 +199,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
                 dialog->AddItem(button3);
             } break;
             case ViewMission: { //1
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 m_agent->GetOffer(pchar->itemID(), offer);
                 agentSays->SetItem(0, new PyInt(offer.briefingID));
                 agentSays->SetItem(1, new PyInt(offer.characterID));
@@ -231,7 +231,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             } break;
             case Accept:            //3
             case AcceptRemotely: {  //5
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 m_agent->GetOffer(pchar->itemID(), offer);
                 offer.stateID = Mission::State::Accepted;
                 offer.dateAccepted = GetFileTimeNow();
@@ -252,7 +252,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             case Complete:              //6
             case CompleteRemotely: {    //7
                 //  need to verify all requirements have been met.
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 m_agent->GetOffer(pchar->itemID(), offer);
                 offer.stateID = Mission::State::Completed;
                 offer.dateCompleted = GetFileTimeNow();
@@ -282,7 +282,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             } break;
             case Defer: {   //10
                 // extend expiry time and close
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 if (m_agent->HasMission(pchar->itemID(), offer)) {
                     offer.stateID = Mission::State::Allocated; //Defered
                     offer.expiryTime += EvE::Time::Day;
@@ -303,7 +303,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
             } break;
             case Quit: {    //11
                 missionQuit = true;
-                MissionOffer offer;
+                MissionOffer offer = MissionOffer();
                 m_agent->GetOffer(pchar->itemID(), offer);
                 if (offer.courierTypeID) {
                     // remove item from player possession
@@ -391,7 +391,7 @@ PyResult AgentBound::Handle_GetMissionBriefingInfo(PyCallArgs &call) {
     // will return PyNone if no mission avalible
     _log(AGENT__MESSAGE,  "AgentBound::Handle_GetMissionBriefingInfo()");
 
-    MissionOffer offer;
+    MissionOffer offer = MissionOffer();
     if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
         return PyStatic.NewNone();
 
@@ -468,7 +468,7 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     if (contentID == 0)
         return PyStatic.NewNone();
     */
-    MissionOffer offer;
+    MissionOffer offer = MissionOffer();
     if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
         return PyStatic.NewNone();
 
@@ -506,7 +506,7 @@ PyResult AgentBound::Handle_GetMissionObjectiveInfo(PyCallArgs &call)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionObjectiveInfo() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
-    MissionOffer offer;
+    MissionOffer offer = MissionOffer();
     if (call.tuple->size() == 0)
         if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
             return PyStatic.NewNone();
@@ -536,7 +536,7 @@ PyResult AgentBound::Handle_GetMyJournalDetails(PyCallArgs &call) {
     PyTuple *tuple = new PyTuple(2);
     //missions:
     PyList* missions = new PyList();
-    MissionOffer offer;
+    MissionOffer offer = MissionOffer();
     if (m_agent->HasMission(call.client->GetCharacterID(), offer)) {
         if (offer.stateID < Mission::State::Completed) {
             PyTuple* mData = new PyTuple(9);
@@ -569,7 +569,7 @@ PyResult AgentBound::Handle_GetMissionJournalInfo(PyCallArgs &call) {
     _log(AGENT__DUMP,  "AgentBound::Handle_GetMissionJournalInfo() - size= %u", call.tuple->size() );
     call.Dump(AGENT__DUMP);
 
-    MissionOffer offer;
+    MissionOffer offer = MissionOffer();
     if (!m_agent->HasMission(call.client->GetCharacterID(), offer))
         return PyStatic.NewNone();
 

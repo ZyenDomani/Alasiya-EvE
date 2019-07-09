@@ -340,7 +340,7 @@ void FxDataMgr::GetDgmTypeEffects(DBQueryResult &res)
         "  effectID,"
         "  isDefault"
         " FROM dgmTypeEffects "
-        " WHERE effectID != 132"))  // this maps skill level onto skill data.  we are tracking skill level, so dont need to process this effect
+        " WHERE effectID != 132"))  // 132 maps skill level onto skill data.  we are tracking skill level, so dont need to process this effect
     {
         codelog(DATABASE__ERROR, "Error in GetDgmTypeEffects: %s", res.error.c_str());
     }

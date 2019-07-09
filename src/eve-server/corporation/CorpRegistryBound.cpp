@@ -1381,7 +1381,7 @@ uint8 CorpRegistryBound::GetQueryType(std::string queryType)
 
 
 /**     ***********************************************************************
- * @note   these below are not coded or partially coded
+ * @note   these below are partially coded
  */
 
 PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {

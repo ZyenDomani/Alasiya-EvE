@@ -45,6 +45,7 @@ public:
 
     double              GetDockPosY(uint32 stationID);
 
+    uint32              GetOfficeRentalFee(uint32 stationID);
     uint32              GetOfficeIDForCorp(uint32 stationID, uint32 corpID);
 
 protected:

@@ -1,135 +1,34 @@
 
 <elements>
 
-<!--
-  empty calls:
-  CallGetAttributeTypes
-  CallShipGetInfo
-  CallCharGetInfo
-  CallGetBookmarks
-  CallGetChannels
-  CallGetMyMessages
--->
-
   <include file="packets/General.h" />
-
-  <elementDef name="RspGetCharactersToSelect">
-    <tupleInline>
-      <!-- 0 -->
-      <substreamInline>
-        <element name="chars" type="util_Rowset" />
-      </substreamInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallGetCharacterToSelect">
-    <tupleInline>
-      <!-- 0 -->
-      <int name="charID" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="RspGetCharacterToSelect">
-    <tupleInline>
-      <!-- 0 -->
-      <substreamInline>
-        <element name="character" type="util_Rowset" />
-      </substreamInline>
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="RspGetCharCreationInfo">
-    <tupleInline>
-      <!-- 0 -->
-      <substreamInline>
-          <dictStr name="caches" />
-        </substreamInline>
-    </tupleInline>
-  </elementDef>
 
   <elementDef name="CallSelectCharacterID">
     <tupleInline>
       <!-- 0 -->
       <int name="charID" />
-        <!-- 1 -->
-        <bool name="loadTutorialDungeon" safe="true" />
-        <!-- 2 -->
-        <raw name="secondChoiceID" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallCreateCharacter">
-    <tupleInline>
-      <!-- 0 -->
-      <wstring name="name" safe="true"/>
       <!-- 1 -->
-      <int name="bloodlineID" />
+      <bool name="loadTutorialDungeon" safe="true" />
       <!-- 2 -->
-      <int name="genderID" />
-      <!-- 3 -->
-      <int name="ancestryID" />
-        <!-- 4: schoolID -->
-        <none />
-        <!-- 5: departmentID -->
-        <none />
-        <!-- 6: fieldID -->
-        <none />
-        <!-- 7: specialityID -->
-        <none />
-      <!-- 8 -->
-      <int name="IntelligenceAdd" />
-      <!-- 9 -->
-      <int name="CharismaAdd" />
-      <!-- 10 -->
-      <int name="PerceptionAdd" />
-      <!-- 11 -->
-      <int name="MemoryAdd" />
-      <!-- 12 -->
-      <int name="WillpowerAdd" />
-      <!-- 13 -->
-      <dictStr name="appearance" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="CallCreateCharacter2">
-    <tupleInline>
-      <!-- 0 -->
-      <wstring name="name" safe="true"/>
-      <!-- 1 -->
-      <int name="bloodlineID" />
-      <!-- 2 -->
-      <int name="genderID" />
-      <!-- 3 -->
-      <int name="ancestryID" />
-      <!-- 4: appearance -->
-      <dictStr name="appearance" />
+      <raw name="secondChoiceID" />
     </tupleInline>
   </elementDef>
 
     <elementDef name="CallCreateCharacterWithDoll">
     <tupleInline>
-      <raw name="name" />
+      <raw name="charactername" />
       <int name="bloodlineID" />
       <int name="genderID" />
       <int name="ancestryID" />
       <objectInline>
         <stringInline value="util.KeyVal"/>
-        <dict name="avatarInfo" />
+        <dict name="charInfo" />
       </objectInline>
       <objectInline>
         <stringInline value="util.KeyVal"/>
-        <dict name="poseInfo" />
+        <dict name="portraitInfo" />
       </objectInline>
       <int name="schoolID" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="RspCreateCharacter">
-    <tupleInline>
-      <!-- 0 -->
-      <substreamInline>
-        <int name="charID" />
-      </substreamInline>
     </tupleInline>
   </elementDef>
 

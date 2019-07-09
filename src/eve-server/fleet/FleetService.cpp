@@ -351,7 +351,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
         itr->second.members.emplace(pChar->itemID(), pClient);
         PyTuple* count = new PyTuple(2);
             count->SetItem(0, new PyInt(squadID));
-            count->SetItem(1, new PyInt(1));
+            count->SetItem(1, PyStatic.NewOne());
         pClient->SendNotification("OnSquadActive", "clientID", count, true);
 
         squad.emplace(squad.end(), squadID);

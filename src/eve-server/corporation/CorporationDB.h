@@ -75,7 +75,7 @@ public:
 
     PyObject *GetEmploymentRecord(uint32 charID);
 
-    PyObject *ListCorpStations(uint32 corpID);
+    void GetCorpStations(uint32 corpID, std::vector<uint32>& stVec);
 
     void AddItemEvent(uint32 corpID, uint32 charID, uint16 eTypeID);
     void AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID, int64 oldRoles, int64 newRoles, bool grantable);

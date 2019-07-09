@@ -94,7 +94,7 @@ PyResult CorpRegistryService::Handle_GetCorporateContacts(PyCallArgs &call)
 }
 
 /**     ***********************************************************************
- * @note   these below are not coded or partially coded
+ * @note   these below are partially coded
  */
 
 

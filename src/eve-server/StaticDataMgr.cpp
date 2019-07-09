@@ -1052,7 +1052,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
                 into->SetField((uint32)2, from->GetField(2));
             }
             Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
-        rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
+        rsp->SetItem(PyStatic.NewOne(), new PyObject("util.KeyVal", Manufacturing));
     }
     if (tech) {        //activityResearchingTechnology = 2
         // not used.  not defined in client.  no data for this activity

@@ -456,7 +456,7 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
 
     //https://wiki.eveonline.com/en/wiki/Targeting_speed
     //locktime = 40000/(scanres * asinh(sigrad)^2)
-    float time = ( 40000 /(scanRes * std::pow(std::asinh(sigRad), 2)));   // higher scan res means faster lock time.
+    float time = ( 40000 /(scanRes * std::pow(asinh(sigRad), 2)));   // higher scan res means faster lock time.
 
     /*  distance-based modifier to targeting speed?         sure, why the hell not?   -allan 27.6.15
      *  +0.1s for each 10k distance
@@ -466,14 +466,23 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
      */
     double distance = ship->position().distance(target->GetPosition());
     // check for snipers... >85k distance do NOT need additional 7.5+s to targettime
-    // should we check LDT skill for pilots to modify this?  yes....not sure how
+    // should we check LRT skill for pilots to modify this?  yes....not sure how to modify time using this yet...
+    /*
+    uint8 sLevel = 1;
+    if (ship->HasPilot()) {
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting);   // bonus to target range
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillSignatureAnalysis); // skill at operating target systems
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillElectronics);   // basic ship sensor and computer systems
+    }
+    */
     //if (mySE->IsNPCSE())      // not all snipers are npc
         if (distance > 85000)
             distance -= 75000;
 
     float disMod = distance /10000;
-    if (disMod < 1) disMod = 0;
-    time += (disMod *0.1);
+    if (disMod < 1)
+        disMod = 0;
+    time += (disMod * 0.1);
 
 	return time;
 }

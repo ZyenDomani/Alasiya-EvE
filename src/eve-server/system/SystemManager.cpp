@@ -1103,9 +1103,9 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(m_data.systemID));
         row->SetField( "typeID",        new PyInt(5));
-        row->SetField( "ownerID",       new PyInt(1));  // should this be owning factionID?
+        row->SetField( "ownerID",       PyStatic.NewOne());  // should this be owning factionID?
         row->SetField( "locationID",    new PyLong(m_data.constellationID));
-        row->SetField( "flagID",        new PyInt(0));
+        row->SetField( "flagID",        PyStatic.NewZero());
         row->SetField( "quantity",      new PyInt(-1));
         row->SetField( "groupID",       new PyInt(5));
         row->SetField( "categoryID",    new PyInt(2));

@@ -268,6 +268,14 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
     }
 }
 
+uint32 StationDataMgr::GetOfficeRentalFee(uint32 stationID)
+{
+    std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
+    if (itr != m_stationData.end())
+        return itr->second.officeRentalFee;
+    return 0;
+}
+
 
 void StationDataMgr::LoadStationPyData()
 {

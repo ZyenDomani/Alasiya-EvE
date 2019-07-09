@@ -64,7 +64,7 @@ m_anomTimer(10000)
 
 AnomalyMgr::~AnomalyMgr()
 {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     for (auto sig : m_sigByItemID) {
         iRef = sItemFactory.GetItem(sig.first);
         if (iRef.get() == nullptr)
