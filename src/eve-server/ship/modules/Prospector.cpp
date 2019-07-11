@@ -188,12 +188,12 @@ void Prospector::DropSalvage()
         if (jetCanRef.get() != nullptr) {
             for (auto cur : shipLoot)
                 cur.second->Move(jetCanRef->itemID(),flagAutoFit);
-            FactionData contData;
-                contData.allianceID = m_targetSE->GetAllianceID();
-                contData.corporationID = m_targetSE->GetCorporationID();
-                contData.factionID = m_targetSE->GetWarFactionID();
-                contData.ownerID = m_targetSE->GetSelf()->ownerID();
-            ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), contData);
+            FactionData data = FactionData();
+                data.allianceID = m_targetSE->GetAllianceID();
+                data.corporationID = m_targetSE->GetCorporationID();
+                data.factionID = m_targetSE->GetWarFactionID();
+                data.ownerID = m_targetSE->GetSelf()->ownerID();
+            ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), data);
             jetCanRef->SetMySE(cSE);
             m_targetSE->SystemMgr()->AddEntity(cSE);
             cSE->DestinyMgr()->SendJettisonPacket();

@@ -118,7 +118,7 @@ public:
 
 
     /**
-     * creates new InventoryItem, saves to db, caches it and returns reference.
+     * creates new InventoryItem, saves to db, caches it and returns a RefPtr.
      *
      * @param[in] data Item data (for entity table).
      * @param[in] charData Character data.

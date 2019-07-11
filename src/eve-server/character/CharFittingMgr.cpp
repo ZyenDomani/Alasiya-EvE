@@ -20,10 +20,12 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Reve
+    Author:        Reve (outline only)
+    Updates:    Allan
 */
 
 //work in progress
+// note:  these will be same calls as in corpFittingMgr
 
 
 #include "eve-server.h"
@@ -40,6 +42,10 @@ m_dispatch(new Dispatcher(this))
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(CharFittingMgr, GetFittings);
+    PyCallable_REG_CALL(CharFittingMgr, SaveFitting);
+    PyCallable_REG_CALL(CharFittingMgr, SaveManyFittings);
+    PyCallable_REG_CALL(CharFittingMgr, DeleteFitting);
+    PyCallable_REG_CALL(CharFittingMgr, UpdateNameAndDescription);
 }
 
 CharFittingMgr::~CharFittingMgr() {
@@ -48,12 +54,53 @@ CharFittingMgr::~CharFittingMgr() {
 
 //11:37:43 L CharFittingMgr::Handle_GetFittings(): size= 1 from 'allan'
 PyResult CharFittingMgr::Handle_GetFittings(PyCallArgs &call) {
-    /*
-        /client/script/environment/fittingsvc.py(112) PersistFitting
-        */
-    sLog.White( "CharFittingMgr::Handle_GetFittings()", "size= %u from '%s'", call.tuple->size(), call.client->GetName() );
-    call.Dump(SERVICE__CALL_DUMP);
+    //self.fittings[ownerID] = self.GetFittingMgr(ownerID).GetFittings(ownerID)
+    // client/script/environment/fittingsvc.py(112) PersistFitting
 
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_GetFittings()");
+    call.Dump(PLAYER__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CharFittingMgr::Handle_SaveFitting(PyCallArgs &call)
+{
+    //    fitting.ownerID = ownerID
+    //    fitting.fittingID = self.GetFittingMgr(ownerID).SaveFitting(ownerID, fitting)
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveFitting()");
+    call.Dump(PLAYER__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CharFittingMgr::Handle_SaveManyFittings(PyCallArgs &call)
+{
+    /*
+        newFittingIDs = self.GetFittingMgr(ownerID).SaveManyFittings(ownerID, fittingsToSave)
+        for row in newFittingIDs:
+            self.fittings[ownerID][row.realFittingID] = fittingsToSave[row.tempFittingID]
+            self.fittings[ownerID][row.realFittingID].fittingID = row.realFittingID
+        */
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_SaveManyFittings()");
+    call.Dump(PLAYER__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CharFittingMgr::Handle_DeleteFitting(PyCallArgs &call)
+{
+    // self.GetFittingMgr(ownerID).DeleteFitting(ownerID, fittingID)
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_DeleteFitting()");
+    call.Dump(PLAYER__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult CharFittingMgr::Handle_UpdateNameAndDescription(PyCallArgs &call)
+{
+    // self.GetFittingMgr(ownerID).UpdateNameAndDescription(fittingID, ownerID, name, description)
+    _log(PLAYER__CALL, "CharFittingMgr::Handle_UpdateNameAndDescription()");
+    call.Dump(PLAYER__CALL_DUMP);
 
     return nullptr;
 }

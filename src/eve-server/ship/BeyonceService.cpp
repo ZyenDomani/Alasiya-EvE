@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -71,6 +71,12 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdWarpToStuffAutopilot); //*
         PyCallable_REG_CALL(BeyonceBound, CmdAbandonLoot);
 
+        PyCallable_REG_CALL(BeyonceBound, CmdBeaconJumpFleet);
+        PyCallable_REG_CALL(BeyonceBound, CmdBeaconJumpAlliance);
+        PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughFleet);
+        PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughAlliance);
+        PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughCorporationStructure);
+
         // beyonce is constructed when player first enters system and not removed until sys change or logout.
         // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
         if (pClient->IsLogin())
@@ -103,14 +109,11 @@ public:
     PyCallable_DECL_CALL(CmdWarpToStuffAutopilot);
     PyCallable_DECL_CALL(CmdAbandonLoot);
 
-    /** @todo  calls to add later (need fleet/corp shit)
-     *
-        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughCorporationStructure, itemID, remoteStructureID, remoteSystemID)
-        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)
-        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughAlliance, otherShipID, beaconID, solarsystemID)
-        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpFleet, charid, beaconID, solarsystemID)
-        sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpAlliance, beaconID, solarSystemID)
-     */
+    PyCallable_DECL_CALL(CmdJumpThroughFleet);
+    PyCallable_DECL_CALL(CmdBeaconJumpFleet);
+    PyCallable_DECL_CALL(CmdBeaconJumpAlliance);
+    PyCallable_DECL_CALL(CmdJumpThroughAlliance);
+    PyCallable_DECL_CALL(CmdJumpThroughCorporationStructure);
 
 protected:
     Dispatcher *const m_dispatch;
@@ -774,7 +777,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 (258701, `{system} Traffic Control is currently experiencing heavy load and was unable to process your request. Please try again in a moment.`)
 (258704, `You cannot leave {system} yet because of instability in the space-time continuum. Please try again in a moment.`)
 */
-    
+
     _log(AUTOPILOT__MESSAGE, "%s called Jump. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     if (call.client->IsSessionChange()) {
         call.client->SendNotifyMsg("Session Change already active.");
@@ -854,5 +857,44 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     call.client->SetStateSent(false);
     pDestiny->SendSetState();
 
+    return PyStatic.NewNone();
+}
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult BeyonceBound::Handle_CmdJumpThroughFleet(PyCallArgs &call) {
+    // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughFleet, otherCharID, otherShipID, beaconID, solarsystemID)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughFleet");
+    call.Dump(SHIP__WARNING);
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdJumpThroughAlliance(PyCallArgs &call) {
+    //sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughAlliance, otherShipID, beaconID, solarsystemID)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughAlliance");
+    call.Dump(SHIP__WARNING);
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdJumpThroughCorporationStructure(PyCallArgs &call) {
+    //sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdJumpThroughCorporationStructure, itemID, remoteStructureID, remoteSystemID)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdJumpThroughCorporationStructure");
+    call.Dump(SHIP__WARNING);
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdBeaconJumpFleet(PyCallArgs &call) {
+    // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpFleet, charid, beaconID, solarsystemID)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdBeaconJumpFleet");
+    call.Dump(SHIP__WARNING);
+    return PyStatic.NewNone();
+}
+
+PyResult BeyonceBound::Handle_CmdBeaconJumpAlliance(PyCallArgs &call) {
+    // sm.StartService('sessionMgr').PerformSessionChange('jump', bp.CmdBeaconJumpAlliance, beaconID, solarSystemID)
+    _log(SHIP__WARNING, "BeyonceBound::Handle_CmdBeaconJumpAlliance");
+    call.Dump(SHIP__WARNING);
     return PyStatic.NewNone();
 }

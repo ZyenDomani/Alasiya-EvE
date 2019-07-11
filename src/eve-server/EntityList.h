@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #ifndef EVE_ENTITY_LIST_H
@@ -70,23 +70,32 @@ public:
     void Close();
     void Process();
     void Shutdown();
-    void Add(Client* client);
-    void Remove(Client* client);
+    void Add(Client* pClient);
+    void Remove(Client* pClient);
+    // this must be called AFTER a character is selected, after Client and Character class construction is complete. (need complete data)
+    void AddPlayer(Client* pClient);
+    //  this must only be called for a logged-in character.
+    void RemovePlayer(Client* pClient);
     void AddNPC()                                       { ++m_npcs; }
     void RemoveNPC()                                    { --m_npcs; }
     void SetService(PyServiceMgr* svc)                  { m_services = svc; }
     void FindByRegionID(uint32 regionID, std::vector<Client* > &result) const;
     // updated to use station guest list instead of full clientlist loop
-    void FindClientByStationID(uint32 stationID, std::vector<Client* > &result) const;
+    void GetStationGuestList(uint32 stationID, std::vector<Client* > &result) const;
+
+    // for main loop thread sleeping
+    bool HasClients()                                   { return (m_players.size() == 0 ? false : true); }
 
     Agent* GetAgent(uint32 agentID);
 
     Client* FindClientByName(const char* name) const;
-    Client* FindClientByShip(uint32 ship_id) const;
-    Client* FindClientByCharID(uint32 char_id) const;
-    Client* FindClientByAccount(uint32 account_id) const;
+    Client* FindClientByCharID(uint32 charID) const;
 
+    // this will return nullptr and throw console msg on failure.
     SystemManager* FindOrBootSystem(uint32 systemID);
+
+    bool IsOnline(uint32 charID);
+    PyRep* PyIsOnline(uint32 charID);
 
     uint32 GetNPCCount()                                { return m_npcs; }
     uint32 GetClientCount() const                       { return m_clients.size(); }
@@ -107,7 +116,7 @@ public:
     void Multicast(const character_set &cset, const PyAddress &dest, EVENotificationStream &noti) const;
     void Multicast(const character_set &cset, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true) const;
     void Unicast(uint32 charID, const char* notifyType, const char* idType, PyTuple** payload, bool seq=true);
-    void GetClients(const character_set &cset, std::vector<Client* > &result) const;
+    // gets Client* for all ingame players
     void GetClients(std::vector<Client* > &result) const;
 
     uint32 GetConnections()                             { return m_connections; }
@@ -127,6 +136,11 @@ public:
     void ResetStartTime()                               { m_startTime = GetFileTimeNow(); }
     int64 GetStartTime()                                { return m_startTime; }
 
+    // new shit for replacing current crazy notification sending
+    // this method will send notification to online members that have the role required for the notification sent.
+    void CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const;
+
+
 protected:
     PyServiceMgr* m_services;    //we do not own this, only used for booting systems.
 
@@ -135,16 +149,23 @@ protected:
 private:
     Timer m_stampTimer;
     Timer m_minutetimer;
-    Timer m_updateTimer;    // for data updates and dump to db
+    Timer m_updateTimer;    // 15m  for data updates and mem data dumps to db
 
-    std::vector<Client*> m_clients;                 // connected clients (incomplete client class data)
-    std::map<uint32, Client*> m_players;            // logged-in players (complete client class data)
+    // connected clients (incomplete client class data)
+    //  use this to delete Client*
+    std::vector<Client*> m_clients;
+    // logged-in players (complete client class data)
+    // DO NOT delete this Client*  use m_clients instead.
+    std::map<uint32, Client*> m_players;
     std::set<int64> m_sessions;
     std::map<uint32, SystemManager*> m_systems;
     std::map<uint32, StationItemRef> m_stations;
     std::vector<std::string> m_anomIDs;
     std::map<uint32, Agent*> m_agents;
 
+    // make list for corp members and their roles for easy access of notifications etc.
+    typedef std::map<Client*, int64> corpRole;
+    std::map<uint32, corpRole> m_corpMembers;     //corpID/{Client*/corpRole}
 
     bool m_shipTracking;
 

@@ -117,6 +117,11 @@ public:
     void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& modVec);
     void SaveModules();
 
+    void GetActiveModules(uint8 rack, std::vector< GenericModule* >& modVec);
+    void GetActiveModulesHeat(uint8 rack, float &heat);
+    // returns # of active non-ol'd modules for this rack
+    uint8 GetActiveModulesCount(uint8 rack);
+
     // scan method to check for scanning rigs.
     float GetRigScanBonus()                             { return m_rigScanBonus; }
 

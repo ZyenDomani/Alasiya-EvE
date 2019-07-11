@@ -19,6 +19,10 @@
 //  where r=revision, dd=day, mm=month, yy=year
 #define bulkDataChangeID        2100119
 
+//  define number of rentable offices in stations (config option later?)
+//  this replaces the hard-coded count previously used in station.h
+#define maxRentableOffices      10
+
 //  defines based on itemID, per client
 #define maxNonCapitalModuleSize 500
 
@@ -77,6 +81,7 @@
 #define minPCCorporation        98000000        // player corps start here
 #define minAlliance             99000000        // alliances start here
 #define minOffice               100000000
+#define maxOffice               109999999
 #define minTempItemID           110000000
 #define minPIStructure          130000000
 #define minCustomsOffice        135000000

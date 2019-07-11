@@ -187,7 +187,7 @@ void BeltMgr::Save() {
     std::vector<AsteroidData> roids;
     roids.clear();
     for (auto cur : m_asteroids) {
-        AsteroidData entry;
+        AsteroidData entry = AsteroidData();
         entry.itemID = cur.second->GetID();
         entry.itemName = cur.second->GetName();
         entry.typeID = cur.second->GetSelf()->typeID();
@@ -380,7 +380,7 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
         quantity = ((25000 * log(radius)) - 112404.8);
     }
 
-    AsteroidData adata;
+    AsteroidData adata = AsteroidData();
         adata.beltID = beltID;
         adata.systemID = m_systemID;
         adata.typeID = typeID;

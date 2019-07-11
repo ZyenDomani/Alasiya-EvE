@@ -32,7 +32,7 @@ PyObject *MapDB::GetPseudoSecurities() {
 
     if(!sDatabase.RunQuery(res, "SELECT solarSystemID, security FROM mapSolarSystems")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -50,7 +50,7 @@ PyObject *MapDB::GetStationExtraInfo() {
         "   corporationID AS ownerID"
         " FROM staStations" )) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -62,7 +62,7 @@ PyObject *MapDB::GetStationOpServices() {
     if(!sDatabase.RunQuery(res,
         "SELECT operationID, serviceID FROM staOperationServices")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -74,7 +74,7 @@ PyObject *MapDB::GetStationServiceInfo() {
     if(!sDatabase.RunQuery(res,
         "SELECT serviceID, serviceName FROM staServices ")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
     return DBResultToRowset(res);
@@ -105,10 +105,10 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
         " WHERE characterID = %u", charID ))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return NULL;
+        return nullptr;
     }
 
-    return DBResultToRowset(res);  //DBRowToKeyVal
+    return DBResultToRowset(res);
 }
 
 //  called from MapService by multiple functions based on passed values.
@@ -179,11 +179,16 @@ void MapDB::chkDynamicSystemID(uint32 solarSystemID) {
     DBQueryResult chk;
     sDatabase.RunQuery(chk, "SELECT solarSystemID FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
 
-    DBResultRow row;
-    if (!chk.GetRow(row)) {
+    if (chk.GetRowCount() < 1) {
         DBerror err;
         sDatabase.RunQuery(err, "INSERT INTO mapDynamicData (solarSystemID) VALUES (%u)", solarSystemID );
     }
+}
+
+void MapDB::SystemStartup()
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM mapDynamicData WHERE 1");
 }
 
 /** the following functions rely on solarSystemID being in the mapDynamicData table.
@@ -198,7 +203,23 @@ void MapDB::chkDynamicSystemID(uint32 solarSystemID) {
 void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = %u, pilotsDocked = 0, pilotsInSpace = 0, pilotsDateTime = 0  WHERE solarSystemID = %u", active?1:0, sysID );
+    if (active)
+        sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = 1, pilotsDocked = 0, pilotsInSpace = 0, pilotsDateTime = 0  WHERE solarSystemID = %u", sysID );
+    else
+        sDatabase.RunQuery(err, "DELETE FROM mapDynamicData WHERE solarSystemID = %u", sysID);
+}
+
+void MapDB::UpdateSystemData(uint32 sysID, uint8 docked/*0*/, uint8 space/*0*/)
+{
+    // these shouldnt be needed, but lets check anyway...
+    if (docked < 0)
+        docked = 0;
+    if (space < 0)
+        space = 0;
+
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u, pilotsDateTime = %f WHERE solarSystemID = %u",
+                       docked, space, GetFileTimeNow(), sysID );
 }
 
 void MapDB::AddJumpToDynamicData(uint32 solarSystemID) {
@@ -206,6 +227,7 @@ void MapDB::AddJumpToDynamicData(uint32 solarSystemID) {
     sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour + 1 WHERE solarSystemID = %u", solarSystemID );
 }
 
+// this is now a solarSystem mem obj to avoid this db hit
 void MapDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd/*false*/, bool isDocked/*false*/, bool isLogin/*false*/) {
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT pilotsDocked, pilotsInSpace FROM mapDynamicData WHERE solarSystemID = %u", solarSystemID );
@@ -230,6 +252,7 @@ void MapDB::AddPilotToDynamicData(uint32 solarSystemID, bool isAdd/*false*/, boo
                 docked, space, GetFileTimeNow(), solarSystemID );
 }
 
+/** @todo  these need to follow system client count to avoid db hit on every kill  */
 //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
 void MapDB::AddKillToDynamicData(uint32 solarSystemID) {  /**killsHour, kills24Hours */
     DBerror err;
@@ -252,5 +275,5 @@ void MapDB::AddPodKillToDynamicData(uint32 solarSystemID) {   /**podKillsHour, p
                 GetFileTimeNow(), solarSystemID );
 }
 
-/** @todo make code for all xx/hour data.  call from entitylist process tic */
+/** @todo make code for all xx/hour data.  call from entitylist process tic.  put code in system mgr */
 

@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-common.h"
@@ -94,7 +95,6 @@ void PyRep::Dump( LogType type, const char* pfx ) const
 {
     PyLogDumpVisitor dumper( type, type, pfx );
     visit( dumper );
-    //SafeDelete(dumper);
 }
 
 int32 PyRep::hash() const
@@ -128,8 +128,8 @@ int64 PyRep::IntegerValue(PyRep* pRep)
         return pRep->AsLong()->value();
     else if (pRep->IsFloat())
         return pRep->AsFloat()->value();
-    else if (pRep->IsNone())
-        return 0;
+    else if (pRep->IsBool())
+        return pRep->AsBool()->value();
 
     return 0;
 }

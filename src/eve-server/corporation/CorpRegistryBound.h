@@ -35,6 +35,8 @@ public:
     PyCallable_DECL_CALL(GetStations);
 
     PyCallable_DECL_CALL(CreateRecruitmentAd);
+    PyCallable_DECL_CALL(UpdateRecruitmentAd);
+    PyCallable_DECL_CALL(DeleteRecruitmentAd);
     PyCallable_DECL_CALL(GetRecruiters);
     PyCallable_DECL_CALL(GetRecruitmentAdsForCorporation);
     PyCallable_DECL_CALL(GetMyApplications);
@@ -42,7 +44,6 @@ public:
     PyCallable_DECL_CALL(GetApplications);
     PyCallable_DECL_CALL(UpdateApplicationOffer);
     PyCallable_DECL_CALL(DeleteApplication);
-    PyCallable_DECL_CALL(UpdateApplication);
 
     PyCallable_DECL_CALL(UpdateDivisionNames);
     PyCallable_DECL_CALL(UpdateCorporation);
@@ -59,7 +60,11 @@ public:
 
     PyCallable_DECL_CALL(CanViewVotes);
     PyCallable_DECL_CALL(InsertVoteCase);
+    PyCallable_DECL_CALL(GetVotes);
+    PyCallable_DECL_CALL(CanVote);
+    PyCallable_DECL_CALL(InsertVote);
     PyCallable_DECL_CALL(GetVoteCasesByCorporation);
+    PyCallable_DECL_CALL(GetVoteCaseOptions);
     PyCallable_DECL_CALL(GetSanctionedActionsByCorporation);
 
     PyCallable_DECL_CALL(GetRoleGroups);
@@ -92,6 +97,9 @@ public:
     PyCallable_DECL_CALL(EditCorporateContact);
 
     PyCallable_DECL_CALL(CreateAlliance);
+    PyCallable_DECL_CALL(ApplyToJoinAlliance);
+    PyCallable_DECL_CALL(DeleteAllianceApplication);
+    PyCallable_DECL_CALL(GetAllianceApplications);
     PyCallable_DECL_CALL(GetSuggestedAllianceShortNames);
 
     PyCallable_DECL_CALL(GetMemberTrackingInfo);
@@ -106,12 +114,13 @@ public:
 
     PyCallable_DECL_CALL(UpdateCorporationAbilities);
     PyCallable_DECL_CALL(UpdateStationManagementSettings);
+    PyCallable_DECL_CALL(GetNumberOfPotentialCEOs);
 
 
 protected:
-    void JoinCorporation(Client* who, const CorpData& data);
-    static void FillOCApplicationChange(OnCorporationApplicationChanged & OCAC, const ApplicationInfo & Old, const ApplicationInfo & New);
+    static void FillOCApplicationChange(OnCorporationApplicationChanged& OCAC, const Corp::ApplicationInfo& Old, const Corp::ApplicationInfo& New);
 
+    bool GetSearchValues(int8 op, PyRep* rep, std::ostringstream& query);
     uint8 GetQueryType(std::string queryType);
 
     CorporationDB& m_db;

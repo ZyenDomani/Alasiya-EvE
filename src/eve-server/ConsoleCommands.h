@@ -52,6 +52,7 @@ class ConsoleCommand
 
     void Initialize(CommandDispatcher* cd);
 
+    // this calls multiple methods that get/process/save data for running server
 	void UpdateStatus();
     void HaltServer(bool dbError=false)                 { m_haltServer = true; m_dbError = dbError; }
 

@@ -356,7 +356,7 @@ PyObject* Agent::GetInfoServiceDetails()
             sameSystem->SetItem(1, new PyInt(10));
             sameSystem->SetItem(2, new PyInt(20000));
         PyTuple* sameConst = new PyTuple(3);
-            sameConst->SetItem(0, new PyInt(1));
+            sameConst->SetItem(0, PyStatic.NewOne());
             sameConst->SetItem(1, new PyInt(30));
             sameConst->SetItem(2, new PyInt(200000));
         PyTuple* sameRegion = new PyTuple(3);
@@ -551,7 +551,10 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
     float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(skillNegotiation), standing);
     float newStanding = EvEMath::Agent::Efficiency(m_agentData.level, quality);    // 0.018 to 0.38
-    newStanding *= sEntityList.FindOrBootSystem(m_agentData.solarSystemID)->GetSecValue(); // 0.0018 to .76
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(m_agentData.solarSystemID);
+    if (pSysMgr != nullptr)
+        newStanding *= pSysMgr->GetSecValue(); // 0.0018 to .76
+
     //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
     newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
     newStanding /= 8;
@@ -606,7 +609,7 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
                 agent->SetItem(1, new PyInt(cur->GetCharacterID()));
                 agent->SetItem(2, new PyFloat(fleetStanding));
                 agent->SetItem(3, new PyInt(-1));
-                agent->SetItem(4, new PyInt(1));
+                agent->SetItem(4, PyStatic.NewOne());
             PyList* list = new PyList();
                 list->AddItem(agent);
             PyTuple* payload = new PyTuple(1);
@@ -631,19 +634,19 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
         agent->SetItem(1, new PyInt(charID));
         agent->SetItem(2, new PyFloat(newStanding));
         agent->SetItem(3, new PyInt(-1));
-        agent->SetItem(4, new PyInt(1));
+        agent->SetItem(4, PyStatic.NewOne());
     PyTuple* corp = new PyTuple(5);
         corp->SetItem(0, new PyInt(m_agentData.corporationID));
         corp->SetItem(1, new PyInt(charID));
         corp->SetItem(2, new PyFloat(newStanding /4));
         corp->SetItem(3, new PyInt(-1));
-        corp->SetItem(4, new PyInt(1));
+        corp->SetItem(4, PyStatic.NewOne());
     PyTuple* faction = new PyTuple(5);
         faction->SetItem(0, new PyInt(m_agentData.factionID));
         faction->SetItem(1, new PyInt(charID));
         faction->SetItem(2, new PyFloat(newStanding /8));
         faction->SetItem(3, new PyInt(-1));
-        faction->SetItem(4, new PyInt(1));
+        faction->SetItem(4, PyStatic.NewOne());
     PyList* list = new PyList();
         list->AddItem(agent);
         list->AddItem(corp);
@@ -806,4 +809,5 @@ bool Agent::CanUseAgent(Client* pClient)
  * Research_Points_Per_Day = Multiplier * ((1 + (Agent_Effective_Quality / 100)) * ((Core_Skill + Agent_Skill) ^ 2))
  *
  * RP/Day = ((Agent Level + Your Skill)^2 * (1 + (20 + 5 * Negotiation Skill + Agent Effective Standing) / 100)) * Multiplier
+ * ((Agent Skill + Your Skill)^2 * (1 + Effective Quality / 100)) * Area Bonus
  */

@@ -15,7 +15,7 @@
 namespace Corp {
 
     namespace CorpBillType {
-        enum  {
+        enum {
             MarketFine = 1,
             RentalBill = 2,
             BrokerBill = 3,
@@ -26,7 +26,7 @@ namespace Corp {
     }
 
     namespace CorpBillStatus {
-        enum  {
+        enum {
             Unpaid = 0,
             Paid = 1,
             Cancelled = 2
@@ -40,13 +40,14 @@ namespace Corp {
             Shares = 2,
             KickMember = 3,
             General = 4,
-            ItemLockdown = 5,
+            ItemLock = 5,
             ItemUnlock = 6
         };
     }
 
     namespace EventType {
         enum {
+            // these are the only types defined in client.  others are 'logtype'
             CreatedCorporation = 12,
             DeletedCorporation = 13,
             LeftCorporation = 14,
@@ -58,19 +59,30 @@ namespace Corp {
     }
 
     namespace AppStatus {
-        enum  { //          status              corp side   user side
+        enum { //          status              corp side   user side
             AppliedByCharacter          = 0, //    new       applied
             RenegotiatedByCharacter     = 1, //   update      reneg
             AcceptedByCharacter         = 2, //  accepted    accepted
             RejectedByCharacter         = 3,
             RejectedByCorporation       = 4, //    error      reject
-            RenegotiatedByCorporation   = 5,
+            RenegotiatedByCorporation   = 5, //    reneg      update
             AcceptedByCorporation       = 6  //    offer      offer
         };
     }
 
+    // not sure about these yet...
+    // these are 'remoteActions' from 'self.GetCorpRegistry().ExecuteActions(targetIDs, remoteActions)'
+    namespace Actions {
+        enum {
+            Add = 1,
+            Remove = 2,
+            Set = 3,
+            Give = 4,
+            Comms = 5
+        };
+    }
     namespace RoleLoc {
-        enum  {
+        enum {
             HQ      = 1,
             Base    = 2,
             Other   = 3
@@ -78,7 +90,8 @@ namespace Corp {
     }
 
     namespace JoinOp {
-        enum SearchJoinOp {
+        enum {
+            None = 0,
             OR = 1,
             AND = 2
         };
@@ -96,7 +109,7 @@ namespace Corp {
     }
 
     namespace SearchOp {
-        enum  {
+        enum {
             EQUAL = 1,
             GREATER = 2,
             GREATER_OR_EQUAL = 3,
@@ -114,7 +127,7 @@ namespace Corp {
     }
 
     namespace ActivityType {
-        enum  {
+        enum {
             Agriculture     = 1,
             Construction    = 2,
             Mining          = 3,
@@ -139,7 +152,7 @@ namespace Corp {
     }
 
     namespace Division {
-        enum  {
+        enum {
             Accounting          = 1,
             Administration      = 2,
             Advisory            = 3,

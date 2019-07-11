@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan (rewrite)
 */
 
 /*
@@ -159,7 +160,9 @@ PyResult CorpStationMgrIMBound::Handle_GetQuoteForRentingAnOffice(PyCallArgs &ca
     return new PyLong(pStationItem->GetOfficeRentalFee());
 }
 
+// cannot find this call in client code
 PyResult CorpStationMgrIMBound::Handle_GetCorporateStationInfo(PyCallArgs &call) {
+    // is this right?
     /* returns:
      *  list(
      *      eveowners:
@@ -176,70 +179,6 @@ PyResult CorpStationMgrIMBound::Handle_GetCorporateStationInfo(PyCallArgs &call)
         list->AddItem(m_db.ListStationCorps(m_stationID));
         list->AddItem(StationDB::GetOffices(m_stationID));/*m_db.ListStationOffices*/
     return list;
-}
-
-/**     ***********************************************************************
- * @note   these below are not coded or partially coded
- */
-
-
-PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallArgs &call) {
-    //   corpStationMgr.DoStandingCheckForStationService(stationServiceID)
-    /*
-     * 01:09:09 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
-     * 01:09:09 [SvcCallDump]   Call Arguments:
-     * 01:09:09 [SvcCallDump]       Tuple: 1 elements
-     * 01:09:09 [SvcCallDump]         [ 0] Integer field: 4096  (repair)
-     * 23:09:41 L Server: DoStandingCheckForStationService call made to
-     * 23:09:41 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
-     * 23:09:41 [SvcCall]   Call Arguments:
-     * 23:09:41 [SvcCall]       Tuple: 1 elements
-     * 23:09:41 [SvcCall]         [ 0] Integer field: 8192
-     * 23:09:41 L Server: DoStandingCheckForStationService call made to
-     * 23:09:41 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
-     * 23:09:41 [SvcCall]   Call Arguments:
-     * 23:09:41 [SvcCall]       Tuple: 1 elements
-     * 23:09:41 [SvcCall]         [ 0] Integer field: 16384
-     * 18:49:22 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
-     * 18:49:22 [SvcCall]   Call Arguments:
-     * 18:49:22 [SvcCall]       Tuple: 1 elements
-     * 18:49:22 [SvcCall]         [ 0] Integer field: 65536  (fitting)
-     * 01:11:32 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
-     * 01:11:32 [SvcCallDump]   Call Arguments:
-     * 01:11:32 [SvcCallDump]       Tuple: 1 elements
-     * 01:11:32 [SvcCallDump]         [ 0] Integer field: 1048576  (insurance)
-     *
-     *
-    sLog.White( "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-     */
-    // takes an int (seen 512 and 1024 and 2048)
-    //seems to return None, or throw an exception
-
-    PyRep *result = PyStatic.NewNone();
-
-    return result;
-}
-
-PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call) {
-    PyRep *result = NULL;
-    //returns a rowset: stationID, typeID
-
-    _log(CORP__ERROR, "Hacking GetPotentialHomeStations");
-    result = m_db.ListCorpStations(call.client->GetCorporationID());
-
-    return result;
-}
-
-PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
-    // this is for setting clone station
-    //this takes an integer: stationID
-    //price is prompted for on the client side.
-
-    sLog.Debug( "CorpStationMgrIMBound", "Called SetHomeStation stub." );
-
-    return PyStatic.NewNone();
 }
 
 PyResult CorpStationMgrIMBound::Handle_SetCloneTypeID(PyCallArgs &call) {
@@ -281,44 +220,42 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         return nullptr;
     }
 
+    Client* pClient = call.client;
+
     // this may not be needed, as rental fee is queried immediatly prior to this call
     if (arg.arg != pStationItem->GetOfficeRentalFee())
         _log(CORP__WARNING, "RentOffice() - Was quoted %i but station reports %i for station %s", \
                 arg.arg, pStationItem->GetOfficeRentalFee(), pStationItem->itemName().c_str());
 
     // check if the corp has enough money
-    int64 balance = AccountDB::GetCorpBalance(call.client->GetCorporationID(), Account::KeyType::Cash);
+    // remove the money and record the transaction
+    std::string reason = "Office Rental at ";
+    reason += pStationItem->itemName().c_str();
+    reason += " by ";
+    reason += pClient->GetCharName();
+    AccountService::TranserFunds(pClient->GetCorporationID(), pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
+/*
+    int64 balance = AccountDB::GetCorpBalance(pClient->GetCorporationID(), Account::KeyType::Cash);
     if (balance < arg.arg) {
         std::map<std::string, PyRep *> args;
         args["amount"] = new PyFloat(arg.arg);
         args["balance"] = new PyFloat(balance);
         throw PyException(MakeUserError("NotEnoughMoney", args));
     }
-
-    OfficeData odata;
-    odata.ticker = call.client->GetChar()->corpTicker();
-    odata.officeID = 0;
-    odata.corporationID = call.client->GetCorporationID();
-    odata.expiryTime = Win32TimeNow() + EvE::Time::Month;
-    odata.folderID = 0;
-    odata.lockDown = false;
-    odata.rentalFee = arg.arg;
-    odata.stationID = 0;
-    odata.typeID = 27;
-
+*/
+    OfficeData odata = OfficeData();
+        odata.ticker = pClient->GetChar()->corpTicker();
+        odata.corporationID = pClient->GetCorporationID();
+        odata.expiryTime = Win32TimeNow() + EvE::Time::Month;
+        odata.lockDown = false;
+        odata.rentalFee = arg.arg;
+        odata.typeID = 27;  // office typeID
     pStationItem->RentOffice(odata);
 
     if (!odata.officeID) {
-        codelog(CORP__ERROR, "%s: Error at renting a new office", call.client->GetName());
+        codelog(CORP__ERROR, "%s: Error at renting a new office", pClient->GetName());
         return nullptr;
     }
-
-    // remove the money and record the transaction
-    std::string reason = "Office Rental at ";
-    reason += pStationItem->itemName().c_str();
-    reason += " by ";
-    reason += call.client->GetCharacterName();
-    AccountService::TranserFunds(odata.corporationID, pStationItem->GetOwnerID(), arg.arg, reason.c_str(), Journal::EntryType::OfficeRentalFee);
 
     // send data to bill mgr for creating bill and notifications
 
@@ -326,7 +263,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
      *    Broadcast #2  bill
      *        [PyString "OnNotificationReceived"]
      *        [PyList 0 items]
-     *        [PyString "clientID"]
+     *        [PyString "clientID"]           << Notify::Types::
      */
 
     // This has to be sent to everyone in the station
@@ -341,7 +278,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
         change.newTypeID = odata.typeID;
     OnObjectPublicAttributesUpdated update;
         update.notificationParams = new PyDict();
-        update.realRowCount = 2; // what is this?
+        update.realRowCount = 1; // what is this?
         update.bindID = GetBindStr();
         update.changePKIndexValue = odata.stationID; // primary key
         update.changes = change.Encode();
@@ -359,25 +296,7 @@ PyResult CorpStationMgrIMBound::Handle_RentOffice(PyCallArgs &call) {
     return new PyInt(odata.officeID);
 }
 
-PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
-{   //
-    sLog.White( "CorpStationMgrIMBound::Handle_CancelRentOfOffice()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-
-    return nullptr;
-}
-
 PyResult CorpStationMgrIMBound::Handle_GetCorporateStationOffice(PyCallArgs &call) {
-  /*
-14:09:26 L CorpStationMgrIMBound::Handle_GetCorporateStationOffice(): size= 0
-14:09:26 [SvcCall]   Call Arguments:
-14:09:26 [SvcCall]       Tuple: Empty
-14:09:26 [SvcCall]   Call Named Arguments:
-14:09:26 [SvcCall]     Argument 'machoVersion':
-14:09:26 [SvcCall]         Integer field: 1
-  sLog.White( "CorpStationMgrIMBound::Handle_GetCorporateStationOffice()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
-*/
   /*
    *        if not session.stationid2:
    *            return
@@ -402,6 +321,7 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
     CorporationDB::UpdateCorpHQ(corpID, m_stationID);
 
     // update all online members with new hq change.  no OnCorporationChanged bcast
+    /** @todo update this */
     Client* pClient(nullptr);
     std::vector<uint32> ids;
     CorporationDB::GetMemberIDs(corpID, ids, true);
@@ -414,38 +334,158 @@ PyResult CorpStationMgrIMBound::Handle_MoveCorpHQHere(PyCallArgs &call)
     return nullptr;
 }
 
-// im sure these have something to do with inventory "impounded" flag
-PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallArgs &call)
-{   //if corpStationMgr.DoesPlayersCorpHaveJunkAtStation():
-    sLog.White( "CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation()", "size= %u", call.tuple->size() );
-    call.Dump(CORP__CALL_DUMP);
+/**     ***********************************************************************
+ * @note   these below are partially coded
+ */
 
-    // query station for (officeID:flagimpounded)
+PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call) {
+    // this is for station options for xfering clone
+    //returns stationID,typeID,serviceMask
 
-    // returns true/false
-    return PyStatic.NewFalse();
+    Client* pClient(call.client);
+    std::vector<uint32> stVec;
+    stVec.push_back(m_stationID);   // current station.  is this right?
+    // first char home station always an option
+    stVec.push_back(CharacterDB::GetStartingStationByCareer(pClient->GetChar()->careerID()));
+    // get corp stations and add to vector
+    m_db.GetCorpStations(pClient->GetCorporationID(), stVec);
+
+    // TODO:  not sure how to determine possible stations yet...
+    /*  ideas:
+     *      get all corp offices.
+     *      determine standings of requesting character to specific stations/locations
+     *
+     *      pc corp members - get corp standings vs. potential stations/corps/locations
+     *      npc corp members - get faction standings for potential locations
+     *
+     *  other possible stations?  test for min/max potential station count?
+     */
+
+    PyDict* dict = new PyDict();
+    PyList* list = new PyList();
+    StationData data = StationData();
+    for (auto cur : stVec) {
+        stDataMgr.GetStationData(cur, data);
+        dict->SetItemString("stationID", new PyInt(cur));
+        dict->SetItemString("typeID", new PyInt(data.typeID));
+        dict->SetItemString("serviceMask", new PyLong(data.serviceMask));
+        list->AddItem(dict);
+    }
+
+    return list;
 }
 
 PyResult CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack(PyCallArgs &call)
 {   //cost = corpStationMgr.GetQuoteForGettingCorpJunkBack()
-    sLog.White( "CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack()", "size= %u", call.tuple->size() );
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_GetQuoteForGettingCorpJunkBack()");
     call.Dump(CORP__CALL_DUMP);
 
-    return new PyInt(10000);    // office rental fee (with multiplier?  config option for multiplier?)
+    // office rental fee (with multiplier?  config option for multiplier?)
+    //stDataMgr.GetOfficeRentalFee(m_stationID);
+    return new PyInt(pStationItem->GetOfficeRentalFee());
+}
+
+PyResult CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation(PyCallArgs &call)
+{   //if corpStationMgr.DoesPlayersCorpHaveJunkAtStation():
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoesPlayersCorpHaveJunkAtStation()");
+    call.Dump(CORP__CALL_DUMP);
+
+    // query station for (officeID:flagimpounded)
+
+    // returns boolean
+    return PyStatic.NewFalse();
+}
+
+PyResult CorpStationMgrIMBound::Handle_SetHomeStation(PyCallArgs &call) {
+    // sm.GetService('corp').GetCorpStationManager().SetHomeStation(newHomeStationID)
+    /** @todo this is once a year on live, unless a new char changes corps.
+     *  we will need to make other checks when this is called, as i dont think client checks anything.
+     */
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    call.client->GetChar()->SetBaseID(arg.arg);
+    CharacterDB::ChangeCloneLocation(call.client->GetCharID(), arg.arg);
+    return nullptr;
+}
+
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(PyCallArgs &call) {
+    // not sure what this actually does...
+    //   corpStationMgr.DoStandingCheckForStationService(stationServiceID)
+    /*
+     * 01:09:09 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 01:09:09 [SvcCallDump]   Call Arguments:
+     * 01:09:09 [SvcCallDump]       Tuple: 1 elements
+     * 01:09:09 [SvcCallDump]         [ 0] Integer field: 4096  (repair)
+     * 23:09:41 L Server: DoStandingCheckForStationService call made to
+     * 23:09:41 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 23:09:41 [SvcCall]   Call Arguments:
+     * 23:09:41 [SvcCall]       Tuple: 1 elements
+     * 23:09:41 [SvcCall]         [ 0] Integer field: 8192
+     * 23:09:41 L Server: DoStandingCheckForStationService call made to
+     * 23:09:41 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 23:09:41 [SvcCall]   Call Arguments:
+     * 23:09:41 [SvcCall]       Tuple: 1 elements
+     * 23:09:41 [SvcCall]         [ 0] Integer field: 16384
+     * 18:49:22 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 18:49:22 [SvcCall]   Call Arguments:
+     * 18:49:22 [SvcCall]       Tuple: 1 elements
+     * 18:49:22 [SvcCall]         [ 0] Integer field: 65536  (fitting)
+     * 01:11:32 L CorpStationMgrIMBound::Handle_DoStandingCheckForStationService(): size= 1
+     * 01:11:32 [SvcCallDump]   Call Arguments:
+     * 01:11:32 [SvcCallDump]       Tuple: 1 elements
+     * 01:11:32 [SvcCallDump]         [ 0] Integer field: 1048576  (insurance)
+     */
+
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_DoStandingCheckForStationService()");
+    call.Dump(CORP__CALL_DUMP);
+
+    // returns None
+    return PyStatic.NewNone();
+}
+
+PyResult CorpStationMgrIMBound::Handle_CancelRentOfOffice(PyCallArgs &call)
+{   //  corpStationMgr.CancelRentOfOffice()
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_CancelRentOfOffice()");
+    call.Dump(CORP__CALL_DUMP);
+
+    /* this will need to search for items in office hangar.
+     *   if none, then no worries
+     *   if items, move them to 'impounded' (flagImpounded - corp junk)
+     *
+     *  not sure if the items change locations from corp officeID to stationID
+     *   if so, cannot remove officeID from office map, but will need a flag to show it as 'not rented'
+     */
+    return nullptr;
 }
 
 PyResult CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk(PyCallArgs &call)
 {   //    corpStationMgr.PayForReturnOfCorpJunk(cost)
-    sLog.White( "CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk()", "size= %u", call.tuple->size() );
+    _log(CORP__CALL, "CorpStationMgrIMBound::Handle_PayForReturnOfCorpJunk()");
     call.Dump(CORP__CALL_DUMP);
 
-    // dont know what to do yet, but im sure it involves xfering funds
     return nullptr;
 }
 
 PyResult CorpStationMgr::Handle_GetImprovementStaticData(PyCallArgs &call)
 {
-    sLog.White( "CorpStationMgr::Handle_GetImprovementStaticData()", "size= %u", call.tuple->size() );
+    //  more outpost shit.  we're nowhere near ready for this yet.
+    //  more info in  client/script/ui/station/stationmanagement/base_stationmanagement.py
+    /*
+     *        outpostData = self.GetOutpostData()
+     *        isd = sm.RemoteSvc('corpStationMgr').GetImprovementStaticData()
+     *        outpostRaceID = cfg.invtypes.Get(outpostData.typeID).raceID
+     *        outpostAsmLines = set([ each.assemblyLineTypeID for each in sm.ProxySvc('ramProxy').AssemblyLinesGet(eve.session.stationid) ])
+     */
+    _log(CORP__CALL, "CorpStationMgr::Handle_GetImprovementStaticData()");
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;
@@ -618,7 +658,7 @@ PyResult CorpStationMgr::Handle_GetStationServiceStates(PyCallArgs &call)
      *                [PyInt 1]
      *    [PyNone]
      */
-    sLog.Warning( "CorpStationMgr::Handle_GetStationServiceStates()", "size= %u", call.tuple->size() );
+    _log(CORP__CALL, "CorpStationMgr::Handle_GetStationServiceStates()");
     call.Dump(CORP__CALL_DUMP);
 
     return nullptr;

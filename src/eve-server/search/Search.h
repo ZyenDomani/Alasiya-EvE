@@ -47,6 +47,7 @@ class Search
   private:
     SearchDB* m_db;
 
+    // this is specific to Search class.  replaces EvE wildcard (*) with MYSQL wildcard (%)
 	void Replace(std::string &s);
 
 };

@@ -36,7 +36,8 @@ public:
     AccountService(PyServiceMgr *mgr);
     ~AccountService();
 
-    // this moves currency and adds journal entries. will also handle corp taxes internally
+    // this moves currency and adds journal entries. will also handle corp taxes internally.
+    //  will throw if fails
     static void TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason = "", uint8 entryTypeID = Journal::EntryType::Undefined,\
                              uint32 referenceID = 0, uint16 fromKey = Account::KeyType::Cash, uint16 toKey = Account::KeyType::Cash);
 

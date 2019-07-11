@@ -23,10 +23,11 @@
     Author:        Allan
 */
 
-#ifndef EVEMU_CORP_ALLIANCEREGISTRY_H_
-#define EVEMU_CORP_ALLIANCEREGISTRY_H_
+#ifndef EVE_ALLIANCE_ALLIANCEREGISTRY_H_
+#define EVE_ALLIANCE_ALLIANCEREGISTRY_H_
 
 #include "PyService.h"
+#include "alliance/AllianceBound.h"
 
 class AllianceRegistry
  : public PyService
@@ -48,6 +49,9 @@ protected:
     //overloaded in order to support bound objects:
     virtual PyBoundObject* _CreateBoundObject(Client* pClient, const PyRep *bind_args);
 
+private:
+    AllianceDB m_db;
+    
 };
 
-#endif  // EVEMU_CORP_ALLIANCEREGISTRY_H_
+#endif  // EVE_ALLIANCE_ALLIANCEREGISTRY_H_

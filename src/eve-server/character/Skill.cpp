@@ -21,7 +21,7 @@ Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 ------------------------------------------------------------------------------------
 Author: Bloody.Rabbit
-Updates:    Allan
+Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -82,8 +82,9 @@ void Skill::VerifyAttribs()
         SetAttribute(AttrSkillLevel, GetAttribute(AttrSkillLevel).get_uint32());
     if (GetAttribute(AttrSkillPoints).get_type() != evil_number_int)
         SetAttribute(AttrSkillPoints, GetAttribute(AttrSkillPoints).get_uint32());
-    if (m_flag != flagSkillInTraining)
-        SetAttribute(AttrExpiryTime, 0);
+    // is this needed?
+    //if (m_flag != flagSkillInTraining)
+    //    SetAttribute(AttrExpiryTime, 0);
 }
 
 bool Skill::SkillPrereqsComplete(Character &ch) {

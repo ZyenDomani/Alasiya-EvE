@@ -45,7 +45,7 @@
 #include "database/EVEDBUtils.h"
 // destiny
 #include "destiny/DestinyBinDump.h"
-#include "destiny/DestinyStructs.h"
+//#include "destiny/DestinyStructs.h"
 // network
 #include "network/EVETCPConnection.h"
 #include "network/EVETCPServer.h"

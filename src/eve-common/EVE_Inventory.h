@@ -40,7 +40,51 @@ enum EVEContainerTypes {
     containerCorpMarket        = 10012
 };
 
-/*
+/** @todo finish implementing these... */
+namespace Inv {
+
+    namespace Container {
+        enum {
+            Wallet            = 10001,
+            Global            = 10002,
+            SolarSystem       = 10003,
+            Hangar            = 10004,
+            ScrapHeap         = 10005,
+            Factory           = 10006,
+            Bank              = 10007,
+            Recycler          = 10008,
+            Offices           = 10009,
+            StationCharacters = 10010,
+            Character         = 10011,
+            CorpMarket        = 10012
+        };
+    }
+
+    namespace Update {
+        //these are used with the OnItemChange packet to update client's item data (and trigger other actions)
+        // updated for change in crucible.  -allan 16May16
+        enum {
+            ItemID        = 0,    //also ixLauncherCapacity?
+            TypeID        = 1,    //also ixLauncherUsed = 1,
+            OwnerID       = 2,    //also ixLauncherChargeItem?
+            LocationID    = 3,
+            Flag          = 4,
+            Quantity      = 5,
+            GroupID       = 6,
+            CategoryID    = 7,
+            CustomInfo    = 8,
+            StackSize     = 9,
+            Singleton     = 10,
+            Subitems      = 11        // not in client data
+        };
+    }
+
+}
+
+/*  AuditLogSecureContainer shit here....
+    namespace ALSC {
+
+    }
 ALSCActionAdd = 6
 ALSCActionAssemble = 1
 ALSCActionConfigure = 10

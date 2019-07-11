@@ -2,6 +2,10 @@
  *   this file is a common location for all static-type defined data
  */
 
+#ifndef EVE_CONSTANTS_H
+#define EVE_CONSTANTS_H
+
+#include <array>
 
 /*
  *  misc static consts
@@ -36,6 +40,81 @@ static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow chec
 
 // gravitational constant
 static const double Gc = 6.6725985e-11;     //per client (changed from original 6.673e-11)
+
+// verify that NO ONE tries to use "ccp" in their name
+// also check for mysql commands
+static const std::array<std::string, 28> badWords {
+    "ccp",
+    "admin",
+    "fucker",
+    "cunt",
+    "concat",
+    "collate",
+    "select",
+    "drop",
+    "trunicate",
+    "count",
+    "char",
+    "load",
+    "ascii",
+    "union",
+    "having",
+    "group",
+    "insert",
+    "cast",
+    "version",
+    "exec ",
+    "benchmark",
+    "create",
+    "md5",
+    "sha1",
+    "encode",
+    "compress",
+    "row_",
+    "bulk"
+};
+// check for common mysql injection hacks
+//  special chars are illegal just because
+static const std::array<std::string, 18> badChars {
+    ";",
+    "--",
+    "#",
+    "/*",
+    "/0",
+    "0x",
+    "|",
+    "' ",
+    "+",
+    "@",
+    "!",
+    "$",
+    "%",
+    "^",
+    "&",
+    "*",
+    "(",
+    ")"
+};
+
+static const std::array<std::string, 16> badCharsSearch {
+    ";",
+    "--",
+    "#",
+    "/*",
+    "/0",
+    "0x",
+    "|",
+    "' ",
+    "+",
+    "@",
+    "!",
+    "$",
+    "^",
+    "&",
+    "(",
+    ")"
+};
+#endif  // EVE_CONSTANTS_H
 
 /*  misc data
  * radius constants

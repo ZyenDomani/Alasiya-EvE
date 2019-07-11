@@ -100,9 +100,7 @@ bool ModuleManager::Initialize() {
 
 void ModuleManager::Process()
 {
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
 
     pModuleCont->Process();
 
@@ -172,6 +170,21 @@ void ModuleManager::UninstallRig(uint32 itemID)
 
     pModuleCont->RemoveModule(itemID);
     m_Ship->SetAttribute(AttrUpgradeSlotsLeft, m_Ship->GetAttribute(AttrUpgradeSlotsLeft) +1);
+
+    if (pMod->groupID() == EVEDB::invGroups::Rig_Electronics) {
+        switch (pMod->typeID()) {
+            case 25936:   //  Large Gravity Capacitor Upgrade I
+            case 31213:   //  Small Gravity Capacitor Upgrade I
+            case 31215:   //  Medium Gravity Capacitor Upgrade I
+            case 31217:   //  Capital Gravity Capacitor Upgrade I
+            case 26350:   //  Large Gravity Capacitor Upgrade II
+            case 31220:   //  Small Gravity Capacitor Upgrade II
+            case 31222:   //  Medium Gravity Capacitor Upgrade II
+            case 31224: { //  Capital Gravity Capacitor Upgrade II
+                m_rigScanBonus -= pMod->GetAttribute(AttrScanStrengthBonus).get_float();
+            } break;
+        }
+    }
 }
 
 bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
@@ -611,7 +624,7 @@ PyRep* ModuleManager::ModuleRepair(uint32 modID)
 
 
     //return PyStatic.NewTrue();  // can repair
-    return PyStatic.NewFalse(); // cannot repair (for whatever reason)
+    return PyStatic.NewFalse(); // cannot repair (for whatever reason)  do they/we send msgs based on why here?
 }
 
 void ModuleManager::StopModuleRepair(uint32 modID)
@@ -817,9 +830,16 @@ void ModuleManager::CharacterLeavingShip()
         return;
 
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
-    //this is complicated and im gonna leave it alone for now until
-    //a few things become more clear
     //OfflineAll();
+
+    /*  this is complicated and im gonna leave it alone for now until
+     *  a few things become more clear
+     * this will include checking ship HP, cargo holds, and possibably other things
+     *  that havent been written yet.
+     * see if these can throw, else we'll have to do a bool return from calls and go from there.
+     */
+    //CheckNewHP();
+    //CheckNewCargo();
 }
 
 void ModuleManager::ShipWarping()
@@ -913,5 +933,75 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
     for (; itr != tmpList.rend(); ++itr)
         pModList.push_back(itr->second);
 
+}
+
+void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& modVec)
+{
+    std::vector< GenericModule* > modVecAll;
+    switch (rack) {
+        case EVEEffectID::hiPower: {
+            pModuleCont->GetModulesInBank(flagHiSlot0, modVecAll);
+        } break;
+        case EVEEffectID::medPower: {
+            pModuleCont->GetModulesInBank(flagMedSlot0, modVecAll);
+        } break;
+        case EVEEffectID::loPower: {
+            pModuleCont->GetModulesInBank(flagLowSlot0, modVecAll);
+        } break;
+    }
+
+    for (auto cur : modVecAll)
+        if (cur->IsActive())
+            if (!cur->IsOverloaded())
+                modVec.push_back(cur);
+}
+
+void ModuleManager::GetActiveModulesHeat(uint8 rack, float& heat)
+{
+    std::vector< GenericModule* > modVecAll;
+    switch (rack) {
+        case EVEEffectID::hiPower: {
+            pModuleCont->GetModulesInBank(flagHiSlot0, modVecAll);
+        } break;
+        case EVEEffectID::medPower: {
+            pModuleCont->GetModulesInBank(flagMedSlot0, modVecAll);
+        } break;
+        case EVEEffectID::loPower: {
+            pModuleCont->GetModulesInBank(flagLowSlot0, modVecAll);
+        } break;
+    }
+
+    for (auto cur : modVecAll)
+        if (cur->IsActive()) {
+            if (!cur->IsOverloaded())
+                heat += cur->GetAttribute(AttrHeatDamage).get_float() /10;
+        } else {
+            //AttrHeatAbsorbtionRateModifier    -- if this module is inactive, it will absorb this much heat.
+            heat -= cur->GetAttribute(AttrHeatAbsorbtionRateModifier).get_float() *10;
+        }
+}
+
+uint8 ModuleManager::GetActiveModulesCount(uint8 rack)
+{
+    uint8 count = 0;
+    std::vector< GenericModule* > modVec;
+    switch (rack) {
+        case EVEEffectID::hiPower: {
+            pModuleCont->GetModulesInBank(flagHiSlot0, modVec);
+        } break;
+        case EVEEffectID::medPower: {
+            pModuleCont->GetModulesInBank(flagMedSlot0, modVec);
+        } break;
+        case EVEEffectID::loPower: {
+            pModuleCont->GetModulesInBank(flagLowSlot0, modVec);
+        } break;
+    }
+
+    for (auto cur : modVec)
+        if (cur->IsActive())
+            if (!cur->IsOverloaded())
+                ++count;
+
+    return count;
 }
 

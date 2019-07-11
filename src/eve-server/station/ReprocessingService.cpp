@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 /**  @todo  update this entire file...  */
@@ -218,7 +218,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         int64 roles = call.client->GetCorpRole();
         if (roles & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
             _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
-                        call.client->GetCharacterName().c_str(), call.client->GetCharacterID());
+                        call.client->GetName(), call.client->GetCharacterID());
             call.client->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
             //throw error here...dunno the format yet.
             return nullptr;
@@ -231,14 +231,14 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         or  (args.flag == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
         or  (args.flag == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
         or  (args.flag == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
-            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", call.client->GetCharacterName().c_str(), call.client->GetCharacterID());
+            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", call.client->GetName(), call.client->GetCharacterID());
             call.client->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
             //throw error here...dunno the format yet.
             return nullptr;
     }
 
+    InventoryItemRef iRef(nullptr);
     double tax = CalcTax(GetStanding(call.client));
-    InventoryItemRef iRef = InventoryItemRef(nullptr);
     for (auto cur : args.items)  {
         iRef = sItemFactory.GetItem(cur);
         if (iRef.get() == nullptr)
@@ -331,7 +331,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         //roles = pClient->GetRolesAtOther() | pClient->GetRolesAtAll();
         if (pClient->GetCorpRole() & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
             _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
-                    pClient->GetCharacterName().c_str(), pClient->GetCharacterID());
+                    pClient->GetName(), pClient->GetCharacterID());
             pClient->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
             //throw error here...dunno the format yet.
             return nullptr;
@@ -345,7 +345,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         or  (iRef->flag() == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
         or  (iRef->flag() == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
             _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", \
-                    pClient->GetCharacterName().c_str(), pClient->GetCharacterID());
+                    pClient->GetName(), pClient->GetCharacterID());
             pClient->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
             //throw error here...dunno the format yet.
             return nullptr;

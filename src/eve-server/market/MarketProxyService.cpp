@@ -183,8 +183,14 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
     //TODO: verify the validity of args.stationID (range vs. skill)
     //TODO: handle located?  'located' is officeFolderID, officeID.  not sure how its' sent yet.
     //NOTE: I am not sure that useCorp is as simple as it is currently implemented...
+    //     ....it is not.  needs code/thought to properly implement.
 
-    /** @todo  update for corporate use */
+    /** @todo  update for corporate use
+     * check corp has office in target station
+     * check player can use given corp acct (get current division from char data)
+     * check corp wallet division has funds (get current division from char data)
+     *   ...more?
+     */
 
     if (args.bid) {  //buy order
         //try to satisfy immediately...

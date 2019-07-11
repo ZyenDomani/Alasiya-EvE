@@ -22,7 +22,7 @@ class StationOffice
     friend class InventoryItem;    // to let it construct us
 public:
     StationOffice(uint32 _officeID, const ItemType& _itemType, const ItemData& _data, const OfficeData& _odata);
-    virtual ~StationOffice()                           { /* Do nothing here */ }
+    virtual ~StationOffice();
 
     static StationOfficeRef Load( uint32 officeID);
     static StationOfficeRef Spawn( ItemData& idata, OfficeData& odata);
@@ -55,7 +55,7 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        OfficeData odata;
+        OfficeData odata = OfficeData();
         if (!StationDB::GetOfficeData(officeID, odata))
             return RefPtr<_Ty>();
 

@@ -40,6 +40,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(GetRedeemTokens);
+    PyCallable_DECL_CALL(ReverseRedeem);
     PyCallable_DECL_CALL(GetCreateDate);
     PyCallable_DECL_CALL(ReportISKSpammer);
     PyCallable_DECL_CALL(ReportBot);

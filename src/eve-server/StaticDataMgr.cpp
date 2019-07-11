@@ -141,7 +141,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetSystemData(*res);
     while (res->GetRow(row)) {
         //SELECT solarSystemID, solarSystemName, constellationID, regionID, securityClass, security FROM mapSolarSystems
-        SystemData sysData;
+        SystemData sysData = SystemData();
         sysData.systemID          = row.GetInt(0);
         sysData.name              = row.GetText(1);
         sysData.constellationID   = row.GetInt(2);
@@ -166,7 +166,7 @@ void StaticDataMgr::Populate()
     ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, typeID, x, y, z FROM mapDenormalize
-        StaticData staticData;
+        StaticData staticData = StaticData();
         staticData.itemID          = row.GetInt(0);
         staticData.regionID        = row.GetInt(1);
         staticData.constellationID = row.GetInt(2);
@@ -219,9 +219,9 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     ManagerDB::GetTypeAttributes(*res);
-    DmgTypeAttribute typeAttr;
     while (res->GetRow(row)) {
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
+        DmgTypeAttribute typeAttr = DmgTypeAttribute();
         typeAttr.attributeID = row.GetInt(1);
         if (row.IsNull(2))
             typeAttr.value = row.GetDouble(3);
@@ -269,24 +269,24 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     ManagerDB::GetBlueprintType(*res);
-    BlueprintTypeData bpTypeData;
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
         //  researchTechTime, productivityModifier, materialModifier, wasteFactor, maxProductionLimit, chanceOfRE, catID FROM invBlueprintTypes
-        bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
-        bpTypeData.productTypeID            = row.GetInt(2);
-        bpTypeData.productionTime           = row.GetInt(3);
-        bpTypeData.techLevel                = row.GetInt(4);
-        bpTypeData.researchProductivityTime = row.GetInt(5);
-        bpTypeData.researchMaterialTime     = row.GetInt(6);
-        bpTypeData.researchCopyTime         = row.GetInt(7);
-        bpTypeData.researchTechTime         = row.GetInt(8);
-        bpTypeData.productivityModifier     = row.GetInt(9);
-        bpTypeData.materialModifier         = row.GetInt(10);
-        bpTypeData.wasteFactor              = row.GetInt(11);
-        bpTypeData.maxProductionLimit       = row.GetInt(12);
-        bpTypeData.chanceOfReverseEngineering = row.GetFloat(13);
-        bpTypeData.catID                    = row.GetInt(14);
+        BlueprintTypeData bpTypeData = BlueprintTypeData();
+            bpTypeData.parentBlueprintTypeID    = row.GetInt(1);
+            bpTypeData.productTypeID            = row.GetInt(2);
+            bpTypeData.productionTime           = row.GetInt(3);
+            bpTypeData.techLevel                = row.GetInt(4);
+            bpTypeData.researchProductivityTime = row.GetInt(5);
+            bpTypeData.researchMaterialTime     = row.GetInt(6);
+            bpTypeData.researchCopyTime         = row.GetInt(7);
+            bpTypeData.researchTechTime         = row.GetInt(8);
+            bpTypeData.productivityModifier     = row.GetInt(9);
+            bpTypeData.materialModifier         = row.GetInt(10);
+            bpTypeData.wasteFactor              = row.GetInt(11);
+            bpTypeData.maxProductionLimit       = row.GetInt(12);
+            bpTypeData.chanceOfReverseEngineering = row.GetFloat(13);
+            bpTypeData.catID                    = row.GetInt(14);
         m_bpTypeData.emplace(row.GetInt(0), bpTypeData);
     }
     for (auto cur : m_bpTypeData)
@@ -306,11 +306,11 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     ManagerDB::GetOreBySSC(*res);
-    OreTypeChance oreChance;
     while (res->GetRow(row)) {
         //SELECT systemSec, roidID, percent FROM roidDistribution
-        oreChance.typeID  = row.GetInt(1);
-        oreChance.chance  = row.GetFloat(2);
+        OreTypeChance oreChance = OreTypeChance();
+            oreChance.typeID  = row.GetInt(1);
+            oreChance.chance  = row.GetFloat(2);
         m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
     sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - start));
@@ -367,9 +367,9 @@ void StaticDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetSpawnClasses(*res);
-    RatSpawnClass spawnClass;
     while (res->GetRow(row)) {
         //SELECT type, sub, f, af, d, c, ac, bc, bs, h, o, cf, cd, cc, cbc, cbs FROM npcSpawnClass
+        RatSpawnClass spawnClass = RatSpawnClass();
         spawnClass.type = row.GetInt(0);
         spawnClass.sub = row.GetInt(1);
         spawnClass.f = row.GetInt(2);
@@ -403,9 +403,9 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     SystemDB::GetLootGroups(*res);
-    LootGroup lootGroup;
     while (res->GetRow(row)) {
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
+        LootGroup lootGroup = LootGroup();
         lootGroup.lootGroupID = row.GetInt(1);
         lootGroup.dropChance = row.GetDouble(2);
         m_LootGroupMap.emplace(row.GetInt(0), lootGroup);
@@ -414,9 +414,9 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     SystemDB::GetLootGroupTypes(*res);
-    LootGroupType GroupType;
     while (res->GetRow(row)) {
         //SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup
+        LootGroupType GroupType = LootGroupType();
         GroupType.lootGroupID = row.GetInt(0);
         GroupType.typeID =  row.GetInt(1);
         GroupType.metaLevel = row.GetInt(2);
@@ -565,7 +565,7 @@ bool StaticDataMgr::GetNPCClasses(uint8 sClass, std::vector< RatSpawnClass >& cl
 {
     auto classRange = m_npcClasses.equal_range(sClass);
     for (auto it = classRange.first; it != classRange.second; ++it) {
-        RatSpawnClass spawnClass;
+        RatSpawnClass spawnClass = RatSpawnClass();
         spawnClass.type = it->second.type;
         spawnClass.sub = it->second.sub;
         spawnClass.f = it->second.f;
@@ -768,7 +768,11 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
     if (itr != m_whRegions.end())
         return itr->second;
 
-    itr = m_whRegions.find(sEntityList.FindOrBootSystem(systemID)->GetRegionID());
+    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(systemID);
+    if (pSysMgr == nullptr)
+        return 0;
+
+    itr = m_whRegions.find(pSysMgr->GetRegionID());
     if (itr != m_whRegions.end())
         return itr->second;
 
@@ -1048,7 +1052,7 @@ PyDict* StaticDataMgr::SetBPMatlType(int8 catID, uint16 typeID, uint16 prodID)
                 into->SetField((uint32)2, from->GetField(2));
             }
             Manufacturing->SetItemString("extras", rowset);     // have to build a crowset for this
-        rsp->SetItem(new PyInt(1), new PyObject("util.KeyVal", Manufacturing));
+        rsp->SetItem(PyStatic.NewOne(), new PyObject("util.KeyVal", Manufacturing));
     }
     if (tech) {        //activityResearchingTechnology = 2
         // not used.  not defined in client.  no data for this activity

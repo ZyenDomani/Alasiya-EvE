@@ -37,8 +37,8 @@ HoloscreenMgrService::HoloscreenMgrService(PyServiceMgr* mgr)
     _SetCallDispatcher(m_dispatch);
 
     PyCallable_REG_CALL(HoloscreenMgrService, GetTwoHourCache);
-    PyCallable_REG_CALL(HoloscreenMgrService, GetRecentEpicArcCompletions);
     PyCallable_REG_CALL(HoloscreenMgrService, GetRuntimeCache);
+    PyCallable_REG_CALL(HoloscreenMgrService, GetRecentEpicArcCompletions);
 }
 
 HoloscreenMgrService::~HoloscreenMgrService()
@@ -48,47 +48,49 @@ HoloscreenMgrService::~HoloscreenMgrService()
 
 //those objects should be cached
 
-PyResult HoloscreenMgrService::Handle_GetTwoHourCache(PyCallArgs& call)
-{
-    sLog.Debug("HoloscreenMgrService", "Called GetTwoHourCache stub.");
-
-    PyDict* agents = new PyDict;
-
-    agents->SetItemString("Agent_DUMMY", new PyDict);
-
-
-    PyDict* args = new PyDict;
-
-    args->SetItemString("careerAgents", agents);
-    args->SetItemString("incursionReport", new PyList);
-    args->SetItemString("epicArcAgents", new PyDict);
-    args->SetItemString("sovChangesReport", new PyList);
-
-    return new PyObject("util.KeyVal", args);
-}
-
 PyResult HoloscreenMgrService::Handle_GetRecentEpicArcCompletions(PyCallArgs& call)
 {       //  this is cached object!!!
     sLog.Debug("HoloscreenMgrService", "Called GetRecentEpicArcCompletions stub.");
 
+    /*
+     *        characterID
+     *        completionDate
+     */
+
     return NULL;
+}
+
+PyResult HoloscreenMgrService::Handle_GetTwoHourCache(PyCallArgs& call)
+{
+    PyDict* agents = new PyDict();
+        agents->SetItemString("Agent_DUMMY", new PyDict());
+    PyDict* args = new PyDict();
+        args->SetItemString("careerAgents", agents);
+        args->SetItemString("incursionReport", new PyList());
+        args->SetItemString("epicArcAgents", new PyDict());
+        args->SetItemString("sovChangesReport", new PyList());
+    return new PyObject("util.KeyVal", args);
 }
 
 PyResult HoloscreenMgrService::Handle_GetRuntimeCache(PyCallArgs& call)
 {
-    sLog.Debug("HoloscreenMgrService", "Called GetRuntimeCache stub.");
-
-    PyDict* agents = new PyDict;
-
-    agents->SetItemString("Agent_DUMMY", new PyDict);
-
-
-    PyDict* args = new PyDict;
-
+    PyDict* agents = new PyDict();
+    agents->SetItemString("Agent_DUMMY", new PyDict());
+    PyDict* args = new PyDict();
     args->SetItemString("careerAgents", agents);
-    args->SetItemString("incursionReport", new PyList);
-    args->SetItemString("epicArcAgents", new PyDict);
-    args->SetItemString("sovChangesReport", new PyList);
-
+    args->SetItemString("incursionReport", new PyList());
+    args->SetItemString("epicArcAgents", new PyDict());
+    args->SetItemString("sovChangesReport", new PyList());
     return new PyObject("util.KeyVal", args);
 }
+
+/*  sovChangesReport
+      solarSystemID
+      oldOwnerID
+      newOwnerID
+    */
+
+/*  incursionReport
+      influence
+      stagingSolarSystemID
+    */

@@ -80,7 +80,7 @@ CelestialObjectRef CelestialObject::Spawn( ItemData &data) {
 
     if ((celestialRef->type().groupID() == EVEDB::invGroups::Beacon)
     or  (celestialRef->type().groupID() == EVEDB::invGroups::Effect_Beacon))
-        celestialRef->SetAttribute(AttrIsGlobal, 1);
+        celestialRef->SetAttribute(AttrIsGlobal, EvilOne);
 
     return celestialRef;
 }
@@ -129,7 +129,7 @@ AnomalySE::AnomalySE(CelestialObjectRef self, PyServiceMgr& services, SystemMana
 void AnomalySE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_STOP;
         head.radius = m_radius;
@@ -138,7 +138,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         head.z = z();
         head.flags = 0;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
@@ -180,7 +180,7 @@ WormholeSE::WormholeSE(CelestialObjectRef self, PyServiceMgr& services, SystemMa
 void WormholeSE::EncodeDestiny(Buffer& into)
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
         head.mode = DSTBALL_STOP;
         head.radius = m_radius;
@@ -189,7 +189,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
         head.z = z();
         head.flags = 0;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
         mass.cloak = 0;
         mass.harmonic = m_harmonic;

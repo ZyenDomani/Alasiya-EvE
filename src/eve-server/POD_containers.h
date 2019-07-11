@@ -9,6 +9,7 @@
 
 #include "eve-server.h"
 
+/** @todo most of these need their own namespace */
 
 /* POD structure for certificate data */
 struct CharCerts {
@@ -100,34 +101,6 @@ struct CorpData {
     double taxRate;
     std::string name;
     std::string ticker;
-};
-
-/* POD structure for corp office data */
-struct OfficeData {
-    bool lockDown;
-    uint32 officeID;
-    uint32 folderID;
-    uint16 typeID;
-    uint32 stationID;
-    uint32 corporationID;
-    int64 rentalFee;
-    int64 expiryTime;
-    std::string ticker;
-};
-
-/* POD structure for corp app data */
-struct ApplicationInfo {
-    bool valid;
-    uint32 appID;
-    uint32 corpID;
-    uint32 charID;
-    uint32 status;
-    uint32 deleted;
-    uint32 lastCID;
-    int64 appTime;
-    int64 role;
-    int64 grantRole;
-    std::string appText;
 };
 
 /* POD structure for fleet data    -allan 31Jul14 */
@@ -403,6 +376,20 @@ struct StationData {
     std::string description;
 };
 
+/* POD structure for corp office data */
+// this is used by multiple systems.  keep here instead of in corpData.h
+struct OfficeData {
+    bool lockDown;
+    uint32 officeID;
+    uint32 folderID;
+    uint16 typeID;
+    uint32 stationID;
+    uint32 corporationID;
+    int64 rentalFee;
+    int64 expiryTime;
+    std::string ticker;
+};
+
 /* POD structure for saving items */
 struct SaveData {
     EVEItemFlags    flag;
@@ -473,6 +460,7 @@ struct DBGPointEntity {
 };
 
 /* POD structure entries for dungeon data */
+/** @todo these need their own namespace */
 struct DunTemplate {
     uint8 dunTypeID;
     uint8 dunSpawnClass;
@@ -529,137 +517,6 @@ struct ProbeData {
     int64 expiry;
     float scanRange;
     GPoint dest;
-};
-
-/* POD structure entries for PI data */
-struct PlanetResourceData {
-    float dist_1;
-    float dist_2;
-    float dist_3;
-    float dist_4;
-    float dist_5;
-    int32 type_1;
-    int32 type_2;
-    int32 type_3;
-    int32 type_4;
-    int32 type_5;
-    std::string buffer_1;
-    std::string buffer_2;
-    std::string buffer_3;
-    std::string buffer_4;
-    std::string buffer_5;
-};
-
-struct PI_Link {
-    int8 state;
-    uint16 level;
-    uint16 typeID;
-    uint32 endpoint1;
-    uint32 endpoint2;
-};
-
-struct PI_Route {
-    int8 state;
-    int8 priority;
-    uint32 srcPinID;
-    uint32 destPinID;
-    uint16 commodityTypeID;
-    uint16 commodityQuantity;
-    std::list<uint32> path;
-};
-
-struct PI_Heads {
-    uint16 typeID;
-    uint32 ecuPinID;
-    double latitude;
-    double longitude;
-};
-
-struct PI_Schematic {
-    uint8 outputQty;
-    uint16 outputType;
-    uint32 cycleTime;
-
-    // typeID, qty
-    std::map<uint16, uint16> inputs;
-};
-
-struct PI_Plant {
-    // specifically for processing plants. this is not saved in db
-    PI_Schematic data;
-    int8 state;
-    uint8 order;
-    uint16 schematicID;
-    uint16 qtyPerCycle;
-    int64 cycleTime;
-    int64 expiryTime;
-    int64 installTime;
-    int64 lastRunTime;
-
-    bool hasReceivedInputs;
-    bool receivedInputsLastCycle;
-};
-
-/* optimize this after everything is working!!  */
-class PI_Pin {
-public:
-    bool isCommandCenter : 1;
-    bool isStorage : 1;
-    bool isConsumer : 1;
-    bool isLaunchable : 1;
-    bool isProcess : 1;
-    bool isBase : 1;
-    bool isECU : 1;
-
-    // common for all pins
-    int8 state;
-    uint16 level;
-    uint16 typeID;
-    uint32 ownerID;
-    int64 lastRunTime;
-
-    double latitude;
-    double longitude;
-
-    // Command/Spaceport
-    int64 lastLaunchTime;
-
-    //ExtractorControlUnit
-    std::map<uint16, PI_Heads> heads;
-    float headRadius;
-
-    // Process and ECU
-    bool hasReceivedInputs : 1;
-    bool receivedInputsLastCycle : 1;
-    uint16 schematicID;   // used in ecu as extractor head typeID
-    uint16 programType;      // used in extractors as extracted resource typeID
-    uint16 qtyPerCycle;
-    int64 cycleTime;
-    int64 expiryTime;
-    int64 installTime;
-
-    // Storage    typeID, qty
-    std::map<uint16, uint32> contents;
-
-    // specifically for updating contents. this is not saved in db
-    bool update : 1;
-    float capacity;  // this is not implemented yet
-};
-
-class PI_CCPin {
-public:
-    uint8 level;
-    uint32 ccPinID;
-    int64 currentSimTime;
-
-    // pinID, pinData
-    std::map<uint32, PI_Pin> pins;
-    // linkID, linkData
-    std::map<uint32, PI_Link> links;
-    // routeID, routeData
-    std::map<uint16, PI_Route> routes;
-    // plantPinID, plantData   - this dynamic data is not saved
-    std::map<uint32, PI_Plant> plants;
 };
 
 #endif  // _EVEMU_POD_CONTAINERS_H_

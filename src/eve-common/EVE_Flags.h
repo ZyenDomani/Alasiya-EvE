@@ -83,16 +83,16 @@ enum EVEItemFlags {
     flagCrew                      = 60,
     flagSkillInTraining           = 61,
 
-    // these are flags for items in stations' corp offices
+    // these are flags for items in stations' corp offices (from client code)
     flagCorpMarket                = 62,    //Corporation Market Deliveries / Returns  this item will be in location(officeID)
-    flagLocked                    = 63,    //Locked item, can not be moved unless unlocked (and dont know how yet [uncoded])
+    flagLocked                    = 63,    //Locked item, can not be moved unless unlocked (corp items only.  locked/unlocked by vote)
     flagUnlocked                  = 64,
     flagOffice                    = 71,    // offices
     flagImpounded                 = 72,    // impounded or junk
     flagProperty                  = 74,    // property
     flagDelivery                  = 75,    // deliveries   cannot find where this is used.  items set to this flag do not show when loaded
 
-    /*  they were OfficeSlot*, but i dont know where that data came from, as i cannot find any references to them
+    /*  they were OfficeSlot* in client const, but i cannot find any references to them in code
     flagUnknown1                   = 70,
     flagUnknown4                = 73,
     flagUnknown7                = 76,

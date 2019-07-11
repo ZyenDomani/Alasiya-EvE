@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Reve, Comet0
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 //work in progress
@@ -141,7 +141,7 @@ PlanetMgrService::~PlanetMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     /* sends planetID */
     _log(PLANET__INFO, "PlanetMgrService bind request for:");
     bind_args->Dump(PLANET__INFO, "    ");
@@ -150,15 +150,19 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *c, const PyRep *bind
         return nullptr;
     }
 
-    StaticData sData;
+    StaticData sData = StaticData();
     sDataMgr.GetStaticInfo(bind_args->AsInt()->value(), sData);
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sData.systemID);
-    SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
-    if (!pSE->IsPlanetSE()) {
-        c->SendErrorMsg("itemID is not planetID or planet not found or system not booted");
+    if (pSysMgr == nullptr) {
+        pClient->SendErrorMsg("system boot failure");
         return nullptr;
     }
-    return new PlanetMgrBound(m_manager, c, pSE->GetPlanetSE());
+    SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
+    if (!pSE->IsPlanetSE()) {
+        pClient->SendErrorMsg("itemID is not planetID or planet not found");
+        return nullptr;
+    }
+    return new PlanetMgrBound(m_manager, pClient, pSE->GetPlanetSE());
 }
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
   return m_db->GetPlanetsForChar(call.client->GetCharacterID());
@@ -251,7 +255,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
         return nullptr;
     }
 
-    PyIncRef(args.heads);
+    //PyIncRef(args.heads);
     return m_planetMgr->GetProgramResultInfo(args.ecuID, args.typeID, args.heads, args.headRadius);
 }
 
@@ -302,45 +306,6 @@ PyResult PlanetMgrBound::Handle_UserAbandonPlanet(PyCallArgs &call) {
     m_planet->AbandonColony(m_colony);
 
     return nullptr;
-}
-
-PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
-    _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
-    //sm.RemoteSvc('planetMgr').DeleteLaunch
-    _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    return nullptr;
-}
-
-PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
-    /*  called by "get other character's networks" in planet menu
-     * 16:42:42 [PlanetDebug] PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=1
-     * 16:42:42 [PlanetCallDump]   Call Arguments:
-     * 16:42:42 [PlanetCallDump]       Tuple: 1 elements
-     * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
-     */
-    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    // returns empty dict if none
-    return new PyDict();
-}
-
-PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
-    /*
-     */
-    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
-
-    // returns empty dict if none
-    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_UserLaunchCommodities(PyCallArgs &call) {
@@ -433,6 +398,50 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
 
     PyList* list = call.tuple->GetItem(0)->AsList();
     return m_colony->TransferCommodities(list->items.front()->AsInt()->value(), list->items.back()->AsInt()->value(), items);
+}
+
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult PlanetMgrService::Handle_GetPlanet(PyCallArgs &call) {
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_GetPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrService::Handle_DeleteLaunch(PyCallArgs &call) {
+    //sm.RemoteSvc('planetMgr').DeleteLaunch
+    _log(PLANET__DEBUG, "PlanetMgrService::Handle_DeleteLaunch() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    return nullptr;
+}
+
+PyResult PlanetMgrBound::Handle_GetCommandPinsForPlanet(PyCallArgs &call) {
+    /*  called by "get other character's networks" in planet menu
+     * 16:42:42 [PlanetDebug] PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=1
+     * 16:42:42 [PlanetCallDump]   Call Arguments:
+     * 16:42:42 [PlanetCallDump]       Tuple: 1 elements
+     * 16:42:42 [PlanetCallDump]         [ 0] Integer field: 40159411
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetCommandPinsForPlanet() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    // returns empty dict if none
+    return new PyDict();
+}
+
+PyResult PlanetMgrBound::Handle_GetFullNetworkForOwner(PyCallArgs &call) {
+    /*
+     */
+    _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetFullNetworkForOwner() size=%u", call.tuple->size() );
+    call.Dump(PLANET__DUMP);
+
+    // returns empty dict if none
+    return new PyDict();
 }
 
 PyResult PlanetMgrBound::Handle_GMAddCommodity(PyCallArgs &call) {

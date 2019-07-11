@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, Captnoord
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -307,7 +307,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
      * 20:18:58 [InvDump]       [ 0]   [ 0]    Integer: 140002044
      * 20:18:58 [InvDump]       [ 0]   [ 1]    Integer: 31
      * 20:18:58 [InvDump]       [ 0]   [ 2]    Integer: 178
-     * 20:18:58 [InvDump]       [ 1]       None
+     * 20:18:58 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
      * 20:18:58 [InvDump]  Named Arguments:
      * 20:18:58 [InvDump]   preferMerge
      * 20:18:58 [InvDump]        Boolean: true
@@ -853,5 +853,5 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
 
         call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
 
-        return new PyInt(1);
+        return PyStatic.NewOne();
 }

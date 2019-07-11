@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "system/Damage.h"
@@ -34,6 +34,7 @@
 #include "manufacturing/Blueprint.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
+#include <npc/Drone.h>
 #include "ship/Ship.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
@@ -198,7 +199,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (available_shield > 0) {
             _log(DAMAGE__INFO, "%s(%u): Shield depleted with %.2f damage. %.2f damage remains.",
                  GetName(), GetID(), available_shield, d.GetTotal());
-            m_self->SetAttribute(AttrShieldCharge, 0);
+            m_self->SetAttribute(AttrShieldCharge, EvilZero);
         }
 
         //Armor:
@@ -333,7 +334,7 @@ void Ship::Killed(Damage &fatal_blow) {
         pClient = killer->GetPilot();
         killerID = pClient->GetCharacterID();
     } else if (killer->IsDroneSE()) {
-        pClient = sEntityList.FindClientByShip(killer->GetSelf()->ownerID());
+        pClient = killer->GetDroneSE()->GetOwner();
         if (pClient == nullptr) {
             /** @todo  make error here */
             sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");
@@ -424,7 +425,7 @@ void Ship::Killed(Damage &fatal_blow) {
         }
 
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
-    CharKillData data;
+    CharKillData data = CharKillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = pPilot->GetCharacterID();
         data.victimCorporationID = m_corpID;

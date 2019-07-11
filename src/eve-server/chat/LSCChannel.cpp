@@ -26,6 +26,7 @@
 #include "eve-server.h"
 
 #include "Client.h"
+#include "ConsoleCommands.h"
 #include "chat/LSCChannel.h"
 #include "chat/LSCService.h"
 
@@ -135,7 +136,11 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     return true;
 }
 
-void LSCChannel::LeaveChannel(Client *pClient) {
+void LSCChannel::LeaveChannel(Client *pClient)
+{
+    if (sConsole.IsShutdown())
+        return;
+
     uint32 charID = pClient->GetCharacterID();
 
     if (m_chars.find(charID) == m_chars.end())

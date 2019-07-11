@@ -27,7 +27,8 @@
 
 #include "PyServiceCD.h"
 #include "StaticDataMgr.h"
-#include "cache/ObjCacheService.h"
+//#include "cache/ObjCacheService.h"
+#include "map/MapData.h"
 #include "map/MapService.h"
 #include "system/SystemManager.h"
 
@@ -66,44 +67,63 @@ MapService::MapService(PyServiceMgr *mgr)
 
 }
 
-MapService::~MapService() {
+MapService::~MapService()
+{
     delete m_dispatch;
 }
 
-PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call) {
+PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call)
+{
     return call.client->SystemMgr()->GetCurrentEntities();
 }
 
-PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call) {
+PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
+{
     return m_db.GetSolSystemVisits(call.client->GetCharacterID());
 }
 
-PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call) {
+PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)
+{
     return StandingDB::GetMyStandings(call.client->GetCharacterID());
 }
 
-PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call) {
+PyResult MapService::Handle_GetMyExtraMapInfo(PyCallArgs &call)
+{
     return CharacterDB::GetMyCorpMates(call.client->GetCorporationID());
 }
 
-PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call) {
-    return m_db.GetDynamicData(2, 24);
+PyResult MapService::Handle_GetBeaconCount(PyCallArgs &call)
+{
+    return MapDB::GetDynamicData(2, 24);
+}
+
+PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call)
+{
+    return sMapData.GetStationExtraInfo();
+}
+
+PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call)
+{
+    return sMapData.GetPseudoSecurities();
 }
 
 // cached on client side.  if cache is empty, this call is made.
-PyResult MapService::Handle_GetStationCount(PyCallArgs &call) {
+PyResult MapService::Handle_GetStationCount(PyCallArgs &call)
+{
     return sDataMgr.GetStationCount();
 }
 
 PyResult MapService::Handle_GetHistory(PyCallArgs &call) {
-    int32 int1 = call.tuple->GetItem(0)->AsInt()->value();
-    int32 int2 = call.tuple->GetItem(1)->AsInt()->value();
-    sLog.White( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
+    int32 int1 = PyRep::IntegerValue(call.tuple->GetItem(0));
+    int32 int2 = PyRep::IntegerValue(call.tuple->GetItem(1));
+    if (is_log_enabled(SERVICE__CALLS))
+        sLog.Cyan( "MapService::Handle_GetHistory()", "type: %i, timeframe: %i", int1, int2 );
 
-    return m_db.GetDynamicData(int1, int2);
+    return MapDB::GetDynamicData(int1, int2);
 }
 
-PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call) {   // working
+PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call)
+{   // working
     DBQueryResult res;
     PosMgrDB::GetLinkableJumpArrays(call.client->GetCorporationID(), res);
     PyList* list = new PyList();
@@ -117,79 +137,6 @@ PyResult MapService::Handle_GetLinkableJumpArrays(PyCallArgs &call) {   // worki
     }
 
     return list;
-}
-
-PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call) {
-
-    /** @todo  put this in static data */
-
-    //returns tuple(
-    //     stations: rowset stationID,solarSystemID,operationID,stationTypeID,ownerID
-    //     opservices: rowset: (operationID, serviceID) (from staOperationServices)
-    //     services: rowset: (serviceID,serviceName) (from staServices)
-    // )
-
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetStationExtraInfo");
-
-    //uint32 systemID = call.client->GetSystemID();
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-
-        PyTuple *resultt = new PyTuple(3);
-
-        resultt->items[0] = m_db.GetStationExtraInfo();
-        if(resultt->items[0] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query station info");
-            return PyStatic.NewNone();
-        }
-
-        resultt->items[1] = m_db.GetStationOpServices();
-        if(resultt->items[1] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query op services");
-            return PyStatic.NewNone();
-        }
-
-        resultt->items[2] = m_db.GetStationServiceInfo();
-        if(resultt->items[2] == NULL) {
-            codelog(SERVICE__ERROR, "Failed to query service info");
-            return PyStatic.NewNone();
-        }
-
-        result = resultt;
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
-}
-
-
-PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call) {
-    PyRep *result = NULL;
-
-    ObjectCachedMethodID method_id(GetName(), "GetSolarSystemPseudoSecurities");
-
-    //check to see if this method is in the cache already.
-    if(!m_manager->cache_service->IsCacheLoaded(method_id)) {
-        //this method is not in cache yet, load up the contents and cache it.
-        result = m_db.GetPseudoSecurities();
-        if(result == NULL)
-            result = new PyNone();
-        m_manager->cache_service->GiveCache(method_id, &result);
-    }
-
-    //now we know its in the cache one way or the other, so build a
-    //cached object cached method call result.
-    result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
-
-    return result;
 }
 
 
@@ -215,15 +162,12 @@ PyResult MapService::Handle_GetStuckSystems(PyCallArgs &call)
 
 PyResult MapService::Handle_GetAllianceJumpBridges(PyCallArgs &call)
 {
-    /**
-     *
-     *       bridgesByLocation = m.GetAllianceJumpBridges()
-     *       for toLocID, fromLocID in bridgesByLocation:
+    /**     bridgesByLocation = m.GetAllianceJumpBridges()
+     *      for toLocID, fromLocID in bridgesByLocation:
      */
     sLog.White( "MapService::Handle_GetAllianceJumpBridges()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
 
-    // copy format from GetLinkableJumpArrays()
     DBQueryResult res;
     //PosMgrDB::GetAllianceJumpBridges(call.client->GetCorporationID(), res);
     PyList* list = new PyList();
@@ -259,10 +203,11 @@ PyResult MapService::Handle_GetAllianceBeacons(PyCallArgs &call)
     PyList* list = new PyList();
     DBResultRow row;
     while (res.GetRow(row)) {
-        // SELECT systemID, itemID
-        PyTuple* tuple = new PyTuple(2);
+        // SELECT solarSystemID, structureID, structureTypeID
+        PyTuple* tuple = new PyTuple(3);
         tuple->SetItem(0, new PyInt(row.GetInt(0)));
         tuple->SetItem(1, new PyInt(row.GetInt(1)));
+        tuple->SetItem(1, new PyInt(row.GetInt(2)));
         list->AddItem(tuple);
     }
 
@@ -316,8 +261,6 @@ PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
 {/* no packet data
         dungeons = sm.RemoteSvc('map').GetDeadspaceAgentsMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
-  sLog.White( "MapService::Handle_GetDeadspaceAgentsMap()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
 */
     PyRep *result = NULL;
 
@@ -343,6 +286,52 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
     result = new PyDict();
 
     return result;
+}
+
+PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
+    /**  EVE_Incursion.h
+     *        participatingSystems = ms.GetSystemsInIncursions()
+     *        for solarSystemID, sceneType in participatingSystems:
+     *            -- (sceneType = staging, vanguard)
+     */
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceBeacons(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, sceneType
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));   //solarSystemID
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));   //sceneType
+        list->AddItem(tuple);
+    }
+
+    return list;
+}
+
+PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
+    /**
+     *        participatingSystems = ms.GetSystemsInIncursionsGM()
+     *        for solarSystemID, sceneType in participatingSystems:
+     *            -- (sceneType = staging, vanguard, assault, headquarters)
+     */
+
+    // copy format from GetLinkableJumpArrays()
+    DBQueryResult res;
+    //PosMgrDB::GetAllianceBeacons(call.client->GetCorporationID(), res);
+    PyList* list = new PyList();
+    DBResultRow row;
+    while (res.GetRow(row)) {
+        // SELECT systemID, sceneType
+        PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyInt(row.GetInt(0)));    //solarSystemID
+        tuple->SetItem(1, new PyInt(row.GetInt(1)));    //sceneType
+        list->AddItem(tuple);
+    }
+
+    return list;
 }
 
 //05:52:07 L MapService::Handle_GetIncursionGlobalReport(): size= 0
@@ -407,32 +396,6 @@ PyResult MapService::Handle_GetIncursionGlobalReport(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
 
     return PyStatic.NewNone();
-}
-
-PyResult MapService::Handle_GetSystemsInIncursions(PyCallArgs &call) {
-    /**  EVE_Incursion.h
-        participatingSystems = ms.GetSystemsInIncursions()
-        for solarSystemID, sceneType in participatingSystems:
-                sceneType = staging, vanguard
-    */
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, PyStatic.NewNone());
-        tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;
-}
-
-PyResult MapService::Handle_GetSystemsInIncursionsGM(PyCallArgs &call) {
-    /**
-        participatingSystems = ms.GetSystemsInIncursionsGM()
-        for solarSystemID, sceneType in participatingSystems:
-                sceneType = staging, vanguard, assault, headquarters
-  */
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, PyStatic.NewNone());
-        tuple->SetItem(1, PyStatic.NewNone());
-    return tuple;
 }
 
 //   factional warfare shit

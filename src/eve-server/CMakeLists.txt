@@ -118,6 +118,15 @@ SET( agent_SOURCE
      "${TARGET_SOURCE_DIR}/agents/AgentDB.cpp"
      "${TARGET_SOURCE_DIR}/agents/AgentMgrService.cpp")
 
+SET( alliance_INCLUDE
+     "${TARGET_INCLUDE_DIR}/alliance/AllianceBound.h"
+     "${TARGET_INCLUDE_DIR}/alliance/AllianceRegistry.h"
+     "${TARGET_INCLUDE_DIR}/alliance/AllianceDB.h")
+SET( alliance_SOURCE
+     "${TARGET_SOURCE_DIR}/alliance/AllianceBound.cpp"
+     "${TARGET_SOURCE_DIR}/alliance/AllianceRegistry.cpp"
+     "${TARGET_SOURCE_DIR}/alliance/AllianceDB.cpp")
+
 SET( cache_INCLUDE
      "${TARGET_INCLUDE_DIR}/cache/BulkDB.h"
      "${TARGET_INCLUDE_DIR}/cache/BulkMgrService.h"
@@ -192,8 +201,6 @@ SET( contract_SOURCE
      "${TARGET_SOURCE_DIR}/contract/ContractProxy.cpp")
 
 SET( corporation_INCLUDE
-     "${TARGET_INCLUDE_DIR}/corporation/AllianceBound.h"
-     "${TARGET_INCLUDE_DIR}/corporation/AllianceRegistry.h"
      "${TARGET_INCLUDE_DIR}/corporation/BillMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpBookmarkMgr.h"
      "${TARGET_INCLUDE_DIR}/corporation/CorpMgrService.h"
@@ -206,8 +213,6 @@ SET( corporation_INCLUDE
      "${TARGET_INCLUDE_DIR}/corporation/LPService.h"
      "${TARGET_INCLUDE_DIR}/corporation/LPStore.h" )
 SET( corporation_SOURCE
-     "${TARGET_SOURCE_DIR}/corporation/AllianceBound.cpp"
-     "${TARGET_SOURCE_DIR}/corporation/AllianceRegistry.cpp"
      "${TARGET_SOURCE_DIR}/corporation/BillMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpBookmarkMgr.cpp"
      "${TARGET_SOURCE_DIR}/corporation/CorpMgrService.cpp"
@@ -609,6 +614,7 @@ SOURCE_GROUP( "src"                FILES ${INCLUDE} )
 SOURCE_GROUP( "src\\account"       FILES ${account_INCLUDE} )
 SOURCE_GROUP( "src\\admin"         FILES ${admin_INCLUDE} )
 SOURCE_GROUP( "src\\agent"         FILES ${agent_INCLUDE} )
+SOURCE_GROUP( "src\\alliance"      FILES ${alliance_INCLUDE} )
 SOURCE_GROUP( "src\\cache"         FILES ${cache_INCLUDE} )
 SOURCE_GROUP( "src\\character"     FILES ${character_INCLUDE} )
 SOURCE_GROUP( "src\\chat"          FILES ${chat_INCLUDE} )
@@ -644,6 +650,7 @@ SOURCE_GROUP( "src"                FILES ${SOURCE} )
 SOURCE_GROUP( "src\\account"       FILES ${account_SOURCE} )
 SOURCE_GROUP( "src\\admin"         FILES ${admin_SOURCE} )
 SOURCE_GROUP( "src\\agent"         FILES ${agent_SOURCE} )
+SOURCE_GROUP( "src\\alliance"      FILES ${alliance_SOURCE} )
 SOURCE_GROUP( "src\\cache"         FILES ${cache_SOURCE} )
 SOURCE_GROUP( "src\\character"     FILES ${character_SOURCE} )
 SOURCE_GROUP( "src\\chat"          FILES ${chat_SOURCE} )
@@ -680,6 +687,7 @@ ADD_EXECUTABLE( "${TARGET_NAME}"
                 ${account_INCLUDE}        ${account_SOURCE}
                 ${admin_INCLUDE}          ${admin_SOURCE}
                 ${agent_INCLUDE}          ${agent_SOURCE}
+                ${alliance_INCLUDE}       ${alliance_SOURCE}
                 ${cache_INCLUDE}          ${cache_SOURCE}
                 ${character_INCLUDE}      ${character_SOURCE}
                 ${chat_INCLUDE}           ${chat_SOURCE}

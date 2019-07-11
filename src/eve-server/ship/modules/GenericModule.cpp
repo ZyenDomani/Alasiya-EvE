@@ -20,7 +20,6 @@ SHIP__MODULE_DEBUG=1
 SHIP__MODULE_TRACE=1
 */
 #include "Client.h"
-#include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 
 GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )

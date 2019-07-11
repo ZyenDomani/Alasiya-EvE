@@ -9,14 +9,15 @@
 
 
 
-#ifndef __EVEMU_CORP_ALLYREGISTRY_BOUND_H_
-#define __EVEMU_CORP_ALLYREGISTRY_BOUND_H_
+#ifndef EVE_ALLIANCE_ALLYREGISTRY_BOUND_H_
+#define EVE_ALLIANCE_ALLYREGISTRY_BOUND_H_
 
 
 #include "../eve-server.h"
 
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "alliance/AllianceDB.h"
 
 class AllianceBound
 : public PyBoundObject
@@ -64,4 +65,4 @@ protected:
 
 };
 
-#endif  // __EVEMU_CORP_ALLYREGISTRY_BOUND_H_
+#endif  // EVE_ALLIANCE_ALLYREGISTRY_BOUND_H_

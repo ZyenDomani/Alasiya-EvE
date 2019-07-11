@@ -57,51 +57,6 @@ pProfile(false)
     mysql = mysql_init(nullptr);
 }
 
-void DBcore::Close() {
-    pStatus = Closed;
-    mysql_close(mysql);
-    mysql_server_end();
-    mysql_thread_end();   // this is for each thread used for db connections
-}
-
-void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
-                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
-{
-    if (mysql == nullptr)
-        mysql = mysql_init(nullptr);    // try again
-    if (mysql == nullptr) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
-        return;
-    }
-    if (pStatus == Connected)
-        return;
-
-    pHost = host;
-    pUser = user;
-    pPassword = password;
-    pDatabase = database;
-    pPort = port;
-    pSSL = SSL;
-    pCompress = compress;
-    pSocket = socket;
-    pReconnect = reconnect;
-    pProfile = profile;
-
-    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
-        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
-        return;
-    }
-
-    uint errnum = 0;
-    char errbuf[1024];
-    errbuf[0] = 0;
-
-    MutexLock lock(MDatabase);
-
-    Connect(&errnum, errbuf);
-    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
-}
-
 void DBcore::Connect(uint* errnum, char* errbuf)
 {
     sLog.Cyan("          DB User", " %s", pUser.c_str());
@@ -132,23 +87,23 @@ void DBcore::Connect(uint* errnum, char* errbuf)
     if (pCompress)
         flags |= CLIENT_COMPRESS; //32
     // sql-ssl  needs more info/settings to properly use....however, not needed when using socket under linux
-    if (pSSL)
+    if (pSSL and !pSocket)
         flags |= CLIENT_SSL;
     sLog.Cyan("    Connect Flags", " %x", flags);
-/*
-    unsigned int conn_timeout = 2;
-    // not sure if this one will really be used here
-    if (mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout) == 0) {
-        if (conn_timeout > 60)
-            sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else if (conn_timeout > 40)
-            sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else if (conn_timeout > 30)
-            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-        else
-            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
-    } else
-        sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
+    /*
+     *    unsigned int conn_timeout = 2;
+     *    // not sure if this one will really be used here
+     *    if (mysql_options(mysql, MYSQL_OPT_CONNECT_TIMEOUT, (void*)&conn_timeout) == 0) {
+     *        if (conn_timeout > 60)
+     *            sLog.Error(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else if (conn_timeout > 40)
+     *            sLog.Yellow(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else if (conn_timeout > 30)
+     *            sLog.Cyan(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+     *        else
+     *            sLog.Green(" DataBase Manager", "Connection Timeout set to %us", conn_timeout);
+} else
+    sLog.Error(" DataBase Manager", "Connection Timeout Option Failed");
 */
     if (pReconnect) {
         my_bool reconnect = true;
@@ -193,8 +148,52 @@ bool DBcore::Reconnect()
     if (pStatus == Connected)
         _log(DATABASE__MESSAGE, "DBCore recovery successful.  Continuing.");
 
+    return pStatus;
+}
 
-    return (pStatus == Connected);
+void DBcore::Initialize(std::string host, std::string user, std::string password, std::string database, bool compress/*false*/,
+                        bool SSL/*false*/, int16 port/*3306*/, bool socket/*false*/, bool reconnect/*false*/, bool profile/*false*/)
+{
+    if (mysql == nullptr)
+        mysql = mysql_init(nullptr);    // try again
+    if (mysql == nullptr) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  mysql_init returned null");
+        return;
+    }
+    if (pStatus == Connected)
+        return;
+
+    pHost = host;
+    pUser = user;
+    pPassword = password;
+    pDatabase = database;
+    pPort = port;
+    pSSL = SSL;
+    pCompress = compress;
+    pSocket = socket;
+    pReconnect = reconnect;
+    pProfile = profile;
+
+    if (pHost.empty() or pUser.empty() or pPassword.empty() or pDatabase.empty()) {
+        sLog.Error( "       ServerInit", "Unable to connect to the database:  required connect field(s) are empty.");
+        return;
+    }
+
+    uint errnum = 0;
+    char errbuf[1024];
+    errbuf[0] = 0;
+
+    MutexLock lock(MDatabase);
+
+    Connect(&errnum, errbuf);
+    sLog.Blue(" DataBase Manager", "DataBase Manager Initialized");
+}
+
+void DBcore::Close() {
+    pStatus = Closed;
+    mysql_close(mysql);
+    mysql_server_end();
+    mysql_thread_end();   // this is for each thread used for db connections
 }
 
 /*
@@ -235,7 +234,7 @@ bool DBcore::RunQuery(DBQueryResult &into, const char *query_fmt, ...) {
     uint col_count = mysql_field_count(mysql);
     if (col_count == 0) {
         into.error.SetError(0xFFFF, "DBcore::RunQuery: No Result");
-        codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because did not return a result", query);
+        codelog(DATABASE__ERROR, "DBCore::RunQuery: %s failed because it did not return a result", query);
         EvE::traceStack();
         return false;
     }
@@ -324,6 +323,9 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             return false;
     }
 
+    if (is_log_enabled(DATABASE__QUERIES))
+        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+
     if (mysql_real_query(mysql, query, querylen)) {
         uint num = mysql_errno(mysql);
         if (num > 0)
@@ -331,9 +333,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
 
         // there are many correctable errors to check for
         if ((num == CR_SERVER_LOST) or (num == CR_SERVER_GONE_ERROR)) {
-            if (Reconnect())
-                pStatus = Connected;
-            else
+            _log(DATABASE__ERROR, "DBCore error - server lost or gone.");
+            if (!Reconnect())
                 return false;
         }
 
@@ -344,9 +345,6 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
         codelog(DATABASE__ERROR, "DBCore Query - #%u in '%s': %s", err.GetErrNo(), query, err.c_str());
         return false;
     }
-
-    if (is_log_enabled(DATABASE__QUERIES))
-        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     err.ClearError();
 
@@ -382,6 +380,29 @@ bool DBcore::IsSafeString(const char *str) {
     }
     return true;
 }
+
+bool DBcore::IsSafeString(std::string &s) {
+    for (uint i = 0; i < s.length(); ++i) {
+        switch (s[i]) {
+            case '\'':
+            case '\\':
+                return false;
+        }
+    }
+    return true;
+}
+
+
+/* this doesnt work right....look into later...
+void DBcore::ReplaceSlash(const char *str) {
+    for(; *str != '\0'; str++) {
+        switch(*str) {
+            case '\'':
+            case '\\':
+                *str = '0';
+        }
+    }
+} */
 
 /************************************************************************/
 /* DBerror                                                              */
@@ -647,7 +668,7 @@ int64 DBResultRow::GetInt64( uint32 index ) const
     //return value;
 
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
-    return strtoll( mRow[index], nullptr, 0 );
+    return strtoq( mRow[index], nullptr, 0 );
 }
 
 float DBResultRow::GetFloat( uint32 index ) const

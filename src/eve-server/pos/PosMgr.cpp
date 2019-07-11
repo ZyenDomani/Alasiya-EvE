@@ -477,7 +477,10 @@ PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
 
     PyList* list = rep->AsList();
     //list->Dump(POS__RSP_DUMP, "    ");
-    pTSE->SetDeployFlags(list->GetItem(0)->AsInt()->value(), list->GetItem(1)->AsInt()->value(), list->GetItem(2)->AsInt()->value(), list->GetItem(3)->AsInt()->value() );
+    pTSE->SetDeployFlags(list->GetItem(0)->AsInt()->value(),
+                         list->GetItem(1)->AsInt()->value(),
+                         list->GetItem(2)->AsInt()->value(),
+                         list->GetItem(3)->AsInt()->value() );
 
 
     // decode usageFlagsList object
@@ -594,8 +597,6 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
         if (args.password->IsString() or args.password->IsWString())
             pTSE->SetPassword(PyRep::StringContent(args.password));
         pTSE->UpdatePassword();
-        // set harmonic for ship to 'offline' (0)   -according to packet data
-        call.client->GetShipSE()->SetHarmonic(EVEPOS::Harmonic::Offline);
     } else if (call.tuple->size() == 4) {
         SetTowerPassword4 args;
         if (!args.Decode(&call.tuple)) {
@@ -612,11 +613,12 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
         pTSE->SetCorpAccess(args.allowCorp);
         pTSE->SetAllyAccess(args.allowAlliance);
         pTSE->UpdateAccess();
-        // set harmonic for ship to 'offline' (0)   -according to packet data
-        call.client->GetShipSE()->SetHarmonic(EVEPOS::Harmonic::Offline);
     } else {
         // make error here?
     }
+
+    // set harmonic for ship to 'offline' (0)   -according to packet data
+    call.client->GetShipSE()->SetHarmonic(EVEPOS::Harmonic::Offline);
 
     return PyStatic.NewNone();
 }

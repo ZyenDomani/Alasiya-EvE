@@ -399,9 +399,9 @@ void Character::SetDescription(const char *newDescription) {
 }
 
 void Character::JoinCorporation(const CorpData &data) {
+    // Add new employment history record    -allan  25Mar14   update 20Jan15   update again 23May19
+    CharacterDB::AddEmployment(m_itemID, data.corporationID, m_corpData.corporationID);
     m_corpData = data;
-    // Add new employment history record    -allan  25Mar14   update 20Jan15
-    CharacterDB::AddEmployment(m_itemID, m_corpData.corporationID);
     m_pClient->UpdateCorpSession(m_corpData);
     /** @todo remove this in favor of updating data when changed */
     m_db.SaveCorpData(m_itemID, m_corpData);

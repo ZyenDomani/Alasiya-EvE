@@ -87,11 +87,13 @@ ShipItemRef ShipItem::Spawn( ItemData &data) {
     if ( shipID == 0 )
         return ShipItemRef(nullptr);
 
+    return ShipItem::Load( shipID );
+    /*
     ShipItemRef sShipRef = ShipItem::Load( shipID );
-
+    // this cause error when sending attr change (no owner found)
     sShipRef->InitAttribs();
-
     return sShipRef;
+    */
 }
 
 uint32 ShipItem::CreateItemID( ItemData &data) {
@@ -120,7 +122,7 @@ void ShipItem::Init()
         InitPod();
         return;
     }
-    if (!m_pilot->GetChar().get()) {
+    if (m_pilot->GetChar().get() == nullptr) {
         _log(SHIP__WARNING, "ShipItem %s(%u) does not have a pilot.", itemName().c_str(), itemID());
         return;
     }
@@ -580,7 +582,7 @@ PyDict* ShipItem::GetChargeState() {
 bool ShipItem::ValidateBoardShip(CharacterRef character) {
 
     bool result = false;
-    EvilNumber skillTypeID = 0;
+    EvilNumber skillTypeID = EvilZero;
 
     if (HasAttribute(AttrRequiredSkill1, skillTypeID)) {
         if (character->HasSkillTrainedToLevel( skillTypeID.get_int(), GetAttribute(AttrRequiredSkill1Level).get_int()))
@@ -631,11 +633,8 @@ void ShipItem::SaveShip()
 {
     SaveItem();                         // Save ship info
     pAttributeMap->SaveShipState();      // save ship damage
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-    m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
+    if (m_ModuleManager != nullptr)
+        m_ModuleManager->SaveModules();     // Save item info for modules fitted to this ship
 }
 
 bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
@@ -1378,43 +1377,170 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
 }
 
 
-/*  overload heat-related shit......
+/*  heat-related shit......
  * see also file:///home/allan/Desktop/backups/GoonSwarm_wiki/www.eveinfo.net/wiki/ind~2149.htm - "Thermodynamics"
  *
+    AttrHeatGenerationMultiplier = 1224,
     AttrHeatHi = 1175,
     AttrHeatMed = 1176,
     AttrHeatLow = 1177,
-    AttrHeatCapacityHi = 1178,
+
     AttrHeatDissipationRateHi = 1179,
-    AttrHeatAbsorbtionRateModifier = 1180,
-    AttrHeatAbsorbtionRateHi = 1182,
-    AttrHeatAbsorbtionRateMed = 1183,
-    AttrHeatAbsorbtionRateLow = 1184,
+    AttrHeatDissipationRateMed = 1196,
+    AttrHeatDissipationRateLow = 1198,
 
-1224    heatGenerationMultiplier    NULL    1
+    AttrHeatCapacityHi = 1178,
+    AttrHeatCapacityMed = 1199,
+    AttrHeatCapacityLow = 1200,
 
-1178    heatCapacityHi  NULL    100
-1199    heatCapacityMed     NULL    100
-1200    heatCapacityLow     NULL    100
-1179    heatDissipationRateHi   NULL    0.01
-1196    heatDissipationRateMed  NULL    0.01
-1198    heatDissipationRateLow  NULL    0.01
-1259    heatAttenuationHi   NULL    0.63
-1261    heatAttenuationMed  NULL    0.5
-1262    heatAttenuationLow  NULL    0.5
+    AttrHeatAttenuationHi = 1259,
+    AttrHeatAttenuationMed = 1261,
+    AttrHeatAttenuationLow = 1262,
+
+    AttrHeatAbsorbtionRateModifier = 1180,      // active modules only
+
+    created ship attribs (rifter)
+    1179    heatDissipationRateHi       NULL    0.01
+    1196    heatDissipationRateMed      NULL    0.01
+    1198    heatDissipationRateLow      NULL    0.01
+    1178    heatCapacityHi              NULL    100
+    1199    heatCapacityMed             NULL    100
+    1200    heatCapacityLow             NULL    100
+    1224    heatGenerationMultiplier    NULL    1
+    1259    heatAttenuationHi           NULL    0.63
+    1261    heatAttenuationMed          NULL    0.5
+    1262    heatAttenuationLow          NULL    0.5
+    created module attribs (200mm ac)
+    1180    heatAbsorbtionRateModifier  NULL    0.01
+    1211    heatDamage                  NULL    1
+    (1mn ab I)
+    1180    heatAbsorbtionRateModifier  NULL    0.04
+    1211    heatDamage                  NULL    9.6
+    (sebo I)
+    1180    heatAbsorbtionRateModifier  NULL    0.01
+    1211    heatDamage                  NULL    3.4
+
+    // these are calculated from fx shit (not saved)    {cannot find where these are used..}
+    AttrHeatAbsorbtionRateHi = 1182,        eID 10326
+    AttrHeatAbsorbtionRateMed = 1183,       eID 10327
+    AttrHeatAbsorbtionRateLow = 1184,       eID 10328
+
 */
 
-void ShipItem::DissipateHeat()
+void ShipItem::ProcessHeat()
 {
-    //H = H0(e^-tτ)
-    if (HasAttribute(AttrHeatHi)) {
-        float heat = GetAttribute(AttrHeatHi).get_float();
-
-        if (heat > 0.01)
-            SetAttribute(AttrHeatHi, heat);
-        else
-            DeleteAttribute(AttrHeatHi);
+    double start = GetTimeUSeconds();
+    float heat = 0.0f;
+    // heat loop
+    for (uint16 i = AttrHeatHi; i < AttrHeatLow +1; ++i) {
+        heat = GetAttribute(i).get_float();
+        // the ordering here is important
+        //heat -= log(-(heat +1));
+        if (heat > 1.0f)
+            heat -= DissipateHeat(i, heat);
+        heat += GenerateHeat(i);
+        if (heat > 1.0f) {  // not concerned about anything < 1
+            if (heat > 100)
+                heat = 100.0f;
+            SetAttribute(i, heat);
+        } else
+            DeleteAttribute(i);
+        heat = 0.0f;
     }
+    _log(SHIP__HEAT, "ShipItem::ProcessHeat() Executed in %.3f us.", GetTimeUSeconds() - start);
+
+    /*  proc times with 3 banks of 8 modules each (from 0 - 3 modules actived)
+13:05:44 [ShipHeat] ShipItem::ProcessHeat() Executed in 867.000 us.
+13:05:50 [ShipHeat] ShipItem::ProcessHeat() Executed in 1205.000 us.
+13:05:56 [ShipHeat] ShipItem::ProcessHeat() Executed in 1051.500 us.
+13:06:02 [ShipHeat] ShipItem::ProcessHeat() Executed in 1665.750 us.
+13:06:08 [ShipHeat] ShipItem::ProcessHeat() Executed in 1108.500 us.
+13:06:14 [ShipHeat] ShipItem::ProcessHeat() Executed in 1090.250 us.
+13:06:20 [ShipHeat] ShipItem::ProcessHeat() Executed in 1011.250 us.
+13:06:26 [ShipHeat] ShipItem::ProcessHeat() Executed in 938.500 us.
+     */
+}
+
+float ShipItem::GenerateHeat(uint16 attrID)
+{
+    /**  @note  still not sure how live builds heat, but here's how im gonna do it.
+     * during normal op, modules make heat that builds slowly
+     *  normal module operation will not build excessive heat on ship...it was designed for it.
+     * the difference here is pilots will now be able to SEE the heat buildup (dont recall if it showed on HUD w/o OL)
+     * overloaded modules will build excessive heat, using a diff heat generation method,
+     * and will begin to damage it's rack from overheating (heat > rack heat capy).
+     */
+
+    /*  heat buildup
+     * H = 3(e^t)
+     * t = (sum of active module's heat damage / 10) +1
+     *   t must be > 1.0 to avoid negatives.  if no modules active, t=1.0 and log(1.0)=0
+     *   this may look funny, but is rather accurate generation of module heat from normal op.
+     */
+
+    float t = 1.0f;
+    std::string rack = "";
+    //std::vector< GenericModule* > modVec;
+    switch(attrID) {
+        case AttrHeatHi: {
+            rack = "Hi";
+            //m_ModuleManager->GetActiveModules(EVEEffectID::hiPower, modVec);
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::hiPower, t);
+        } break;
+        case AttrHeatMed: {
+            rack = "Mid";
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::medPower, t);
+        } break;
+        case AttrHeatLow: {
+            rack = "Low";
+            m_ModuleManager->GetActiveModulesHeat(EVEEffectID::loPower, t);
+        } break;
+        default: {
+            _log(SHIP__HEAT, "GenerateHeat() - %s invalid rack sent (%u)", itemName().c_str(), attrID);
+            return 0;
+        } break;
+    }
+
+    if (t < 1.2)
+        return 0;
+
+    //log(t) *3;   //0.28 when t=1.1,  1.2 when t=1.5,  4.1 when t=3.9 (highest i found), 6.8 when t=5.55
+    float heat = log(t) *3 * GetAttribute(AttrHeatGenerationMultiplier).get_float();
+
+    _log(SHIP__HEAT, "%s generated %.2f heat points from the %s rack this tic.  t = %.3f", itemName().c_str(), heat, rack.c_str(), t);
+    return heat;
+}
+
+float ShipItem::DissipateHeat(uint16 attrID, float heat)
+{
+    //H = ln^t
+    float t = 1.0f + heat, newHeat = 0.0f;
+    std::string rack = "";
+    switch(attrID) {
+        case AttrHeatHi: {
+            rack = "Hi";
+        } break;
+        case AttrHeatMed: {
+            rack = "Mid";
+        } break;
+        case AttrHeatLow: {
+            rack = "Low";
+        } break;
+        default: {
+            _log(SHIP__HEAT, "DissipateHeat() - %s invalid rack sent (%u)", itemName().c_str(), attrID);
+            return 0.0f;
+        } break;
+    }
+
+    newHeat = log(t);    //0.18 when t=1.2, 3.1 when t=21.9, 3.9 when t=51.9, 4.6 when t=99.9
+
+    if (newHeat < 0)
+        newHeat = 0.0f;
+
+    _log(SHIP__HEAT, "%s dissipated %.2f heat points from the %s rack this tic.  was %.1f, is %.1f, t = %.3f", \
+            itemName().c_str(), newHeat, rack.c_str(), heat, (heat - newHeat), t);
+
+    return newHeat;
 }
 
 void ShipItem::DamageGroup(GenericModule* pMod)
@@ -1430,17 +1556,10 @@ void ShipItem::DamageGroup(GenericModule* pMod)
  * AttrHeatDamageMultiplier = 1485,     // system beacon effect
 */
 
-/*  heat buildup
- * H = H0(1 - e-tτ)
-Setting H0 to 100 would make my graph match his. t is time. τ is a constant based on ship and overloaded modules.
-τ = hgm (τ1 + τ2 + ... + τn)
-Setting the per module τ to 0.025 made my graphs match his.
-*/
-
 /*
-Slt  Att   Damage chance multiplier at distance from overheated module
+Slt  Att   Damage chance multiplier at distance from overheated module (in %)
             1       2       3       4       5       6       7
-1   0.00
+1   0.00    0.10
 2   0.25    0.25
 3   0.50    0.50    0.25
 4   0.63    0.63    0.40    0.25
@@ -1452,6 +1571,24 @@ Slt  Att   Damage chance multiplier at distance from overheated module
 //Cycles to burnout = total module HP/ (hp heat damage per cycle - (hp heat damage per cycle*thermodynamics level*5/100))
 void ShipItem::HeatDamageCheck(GenericModule* pMod)
 {
+    if (pMod->IsLinked())       // linked slaves will contribute to heat calculation, but not individually.
+        if (!pMod->IsMaster())  // heat is calculated by master and multiplied by #linked modules
+            return;
+
+    // check ship's current bank heat to determine chance for pMod to take heat damage.
+    //  damage to other modules based on table above.
+    float curHeat = 0.0f, damChance = 0.0f;
+    if (pMod->isHighPower()) {
+        curHeat = GetAttribute(AttrHeatHi).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationHi).get_float();
+    } else if (pMod->isMediumPower()) {
+        curHeat = GetAttribute(AttrHeatMed).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationMed).get_float();
+    } else if (pMod->isLowPower()) {
+        curHeat = GetAttribute(AttrHeatLow).get_float();
+        damChance = GetAttribute(AttrHeatAttenuationLow).get_float();
+    }
+
     std::vector<uint32> modVec;
     // if this module is grouped, all modules will take same damage.
     if (pMod->IsLinked()) {
@@ -1465,7 +1602,7 @@ void ShipItem::HeatDamageCheck(GenericModule* pMod)
         uint32 moduleID = 0;
 
 
-        modVec.push_back(moduleID);
+        //modVec.push_back(moduleID);
     }
 
     for (auto cur : modVec)
@@ -1946,7 +2083,7 @@ void ShipItem::ProcessShipEffects(bool update/*false*/)
 
 void ShipItem::RemoveEffects()
 {
-    SaveShip();
+    //SaveShip();
     // clear also reloads default attribs
     ClearModifiers();
 }
@@ -2085,18 +2222,16 @@ void Ship::Process() {
     // check to see if this is an empty ship, and exit if so.
     //  we're not worried about recharge and modules for empty ships (segfaults)
     /** @todo m_self is NOT being populated for non-piloted ships...check later */
-    if ((!m_self) or (!m_self->HasPilot()))
+    if ((m_self.get() == nullptr) or (!m_self->HasPilot()))
         return;
 
     if (m_processTimer.Check()) {
-        double profileStartTime = 0.0;
-        if (sConfig.debug.UseProfiling)
-            profileStartTime = GetTimeUSeconds();
+        double profileStartTime = GetTimeUSeconds();
         // shield
-        double Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
-        double Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
+        float Charge = m_self->GetAttribute(AttrShieldCharge).get_float();
+        float Capacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
         if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
+            float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrShieldRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
             else if ((Capacity - newCharge) < 0.3)
@@ -2109,7 +2244,7 @@ void Ship::Process() {
         Charge = m_self->GetAttribute(AttrCapacitorCharge).get_float();
         Capacity = m_self->GetAttribute(AttrCapacitorCapacity).get_float();
         if (Charge < Capacity) {
-            double newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
+            float newCharge = Charge + ((m_processTimerTick /1000) * CalculateRechargeRate(Capacity, Charge, m_self->GetAttribute(AttrRechargeRate).get_float()));
             if (newCharge > Capacity)
                 newCharge = Capacity;
             else if ((Capacity - newCharge) < 0.3)
@@ -2120,11 +2255,12 @@ void Ship::Process() {
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
             sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
+
+        // proc heat on the 5s cap/shield tic, if enabled
+        if (sConfig.testing.ShipHeat)
+            m_shipRef->ProcessHeat();
     }
 
-    // order of these two are important.
-    //   dissipate heat from last round before adding heat for this round
-    m_shipRef->DissipateHeat();
     m_shipRef->ProcessModules();
 }
 

@@ -27,8 +27,7 @@
 #include "eve-server.h"
 
 #include "PyServiceCD.h"
-#include "corporation/AllianceRegistry.h"
-#include "corporation/AllianceBound.h"
+#include "alliance/AllianceRegistry.h"
 
 /*
  * ALLY__ERROR
@@ -84,7 +83,7 @@ PyResult AllianceRegistry::Handle_GetAlliance(PyCallArgs &call) {
      * 01:22:07 [SvcError]       [ 0]    Integer: 0
      * 01:22:07 [SvcError]       [ 1]    Integer: 1
      */
-    sLog.White("AllianceRegistry", "Handle_GetAlliance() size=%u", call.tuple->size() );
+    _log(ALLY__CALL, "AllianceRegistry::Handle_GetAlliance() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -92,7 +91,7 @@ PyResult AllianceRegistry::Handle_GetAlliance(PyCallArgs &call) {
 
 PyResult AllianceRegistry::Handle_GetAllianceMembers(PyCallArgs &call) {
     // members = sm.RemoteSvc('allianceRegistry').GetAllianceMembers(itemID)  <-- returns dict of corpIDs
-    sLog.White("AllianceRegistry", "Handle_GetAllianceMembers() size=%u", call.tuple->size() );
+    _log(ALLY__CALL, "AllianceRegistry::Handle_GetAllianceMembers() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -107,15 +106,16 @@ PyResult AllianceRegistry::Handle_GetRankedAlliances(PyCallArgs &call) {
      *               self.rankedAlliances.standings[a.allianceID] = s
      */
 
-    sLog.White("AllianceRegistry", "Handle_GetRankedAlliances() size=%u", call.tuple->size() );
+    _log(ALLY__CALL, "AllianceRegistry::Handle_GetRankedAlliances() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
 }
 
+// i dont think this is called here....cant find call to AllianceRegistry for this...only CorpRegistry
 PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
-    //
-    sLog.White("AllianceRegistry", "Handle_GetAllianceApplications() size=%u", call.tuple->size() );
+    //application = sm.GetService('alliance').GetApplications()[corporationID]
+    _log(ALLY__CALL, "AllianceRegistry::Handle_GetAllianceApplications() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 
     return nullptr;
@@ -123,8 +123,15 @@ PyResult AllianceRegistry::Handle_GetAllianceApplications(PyCallArgs &call) {
 
 PyResult AllianceRegistry::Handle_GetEmploymentRecord(PyCallArgs &call) {
     //  allianceHistory = sm.RemoteSvc('allianceRegistry').GetEmploymentRecord(itemID)
-    sLog.White("AllianceRegistry", "Handle_GetEmploymentRecord() size=%u", call.tuple->size() );
+    _log(ALLY__CALL, "AllianceRegistry::Handle_GetEmploymentRecord() size=%u", call.tuple->size() );
     call.Dump(ALLY__CALL_DUMP);
 
-    return nullptr;
+    Call_SingleIntegerArg arg;
+    if (!arg.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    return m_db.GetEmploymentRecord(arg.arg);
+
 }

@@ -10,6 +10,7 @@
 #include "math/gpoint.h"
 
 namespace EvE {
+    
     namespace Trig {
 
         const double E = 2.71828182845904523536;

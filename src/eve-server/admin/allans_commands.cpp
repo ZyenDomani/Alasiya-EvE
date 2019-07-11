@@ -34,9 +34,8 @@ PyResult Command_spawndungeon(Client* pClient, CommandDB* db, PyServiceMgr* serv
      *   then create a bookmark in their PnP/BM window
      */
 
-    if (args.argCount() != 2) {
+    if (args.argCount() != 2)
         throw PyException(MakeCustomError("Correct Usage: .spawndungeon <dungeonTemplateID>"));
-    }
 
     if (!args.isNumber(1))
         throw PyException(MakeCustomError("Argument 1 must be a template ID."));

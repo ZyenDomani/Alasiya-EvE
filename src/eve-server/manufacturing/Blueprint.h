@@ -78,7 +78,7 @@ protected:
         }
 
         // pull additional blueprint data
-        BlueprintTypeData bpData;
+        BlueprintTypeData bpData = BlueprintTypeData();
         sDataMgr.GetBpTypeData(typeID, bpData);
 
         // obtain parent blueprint type (might be NULL)
@@ -180,7 +180,7 @@ protected:
         const BlueprintType& bpType = static_cast<const BlueprintType& >( type );
 
         FactoryDB mdb;
-        BlueprintData bpData;
+        BlueprintData bpData = BlueprintData();
         if (!mdb.GetBlueprint( blueprintID, bpData ) )
             return RefPtr<_Ty>();
 

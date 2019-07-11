@@ -38,13 +38,14 @@ void StationDataMgr::Close()
 
 void StationDataMgr::Clear()
 {
+    for (auto cur : m_stationPyData)
+        PySafeDecRef(cur.second);
+
     m_serviceMask.clear();
     m_stationData.clear();
     m_stationPyData.clear();
     m_stationOfficeData.clear();
 
-    for (auto cur : m_stationPyData)
-        PySafeDecRef(cur.second);
 }
 
 void StationDataMgr::Populate()
@@ -67,7 +68,7 @@ void StationDataMgr::Populate()
     StationDB::GetStationOfficeData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, corporationID, stationID, typeID, lockDown, rentalFee, expiryDateTime, officeFolderID
-        OfficeData data;
+        OfficeData data = OfficeData();
         data.officeID       = row.GetInt(0);
         data.corporationID  = row.GetInt(1);
         data.stationID      = row.GetInt(2);
@@ -86,7 +87,7 @@ void StationDataMgr::Populate()
         s.officeSlots, s.officeRentalCost, s.operationID, s.stationTypeID, s.corporationID, s.stationName, s.reprocessingStationsTake, s.reprocessingEfficiency,16 \
         s.reprocessingHangarFlag, st.conquerable, st.hangarGraphicID, m.orbitID, m.radius, m.security, o.description, o.descriptionID,24\
         t.graphicID, s.solarSystemID, s.constellationID, s.regionID, st.dockEntryX, st.dockEntryY, st.dockEntryZ 31
-        StationData sData;
+        StationData sData = StationData();
         sData.stationID                 = row.GetInt(0);
         if ((itr = m_serviceMask.find(sData.stationID)) != m_serviceMask.end())
             sData.serviceMask = itr->second;
@@ -267,12 +268,20 @@ void StationDataMgr::GetStationOfficeIDs(uint32 locationID, std::vector<OfficeDa
     }
 }
 
+uint32 StationDataMgr::GetOfficeRentalFee(uint32 stationID)
+{
+    std::map<uint32, StationData>::iterator itr = m_stationData.find(stationID);
+    if (itr != m_stationData.end())
+        return itr->second.officeRentalFee;
+    return 0;
+}
+
 
 void StationDataMgr::LoadStationPyData()
 {
     for (auto cur : m_stationData) {
         PyDict* dict = new PyDict();
-            dict->SetItemString("stationID", new PyInt(cur.second.stationID));
+            dict->SetItemString("stationID", new PyInt(cur.first));
             dict->SetItemString("ownerID", new PyInt(cur.second.corporationID));
             dict->SetItemString("stationTypeID", new PyInt(cur.second.typeID));
             dict->SetItemString("stationName", new PyString(cur.second.name));
@@ -312,7 +321,7 @@ void StationDataMgr::LoadStationPyData()
             dict->SetItemString("radius", new PyFloat(cur.second.radius));   //mapDenormalize.radius or invTypes.radius
             dict->SetItemString("orbitID", new PyInt(cur.second.orbitID));    //mapDenormalize.orbitID
 
-        m_stationPyData.emplace(cur.second.stationID, new PyObject("util.KeyVal", dict));
+        m_stationPyData.emplace(cur.first, new PyObject("util.KeyVal", dict));
     }
 }
 

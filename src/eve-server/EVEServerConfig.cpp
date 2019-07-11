@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.2
+    Version:    9.4
 */
 
 
@@ -72,9 +72,11 @@ EVEServerConfig::EVEServerConfig()
     world.gridUnloadTime = 300 /*s*/; // 5 mins
     world.loginInfo = false;//N
     world.loginMsg = false;//N
+    world.saveOnMove = false;
     world.mailDelay = 5;//N
     world.StationDockDelay = 4 /*s*/;
     world.apWarptoDistance = 15000;
+    world.shipBoardDistance = 300;
 
     // rates
     rates.npcBountyMultiply = 1.0;
@@ -86,6 +88,8 @@ EVEServerConfig::EVEServerConfig()
     rates.turretDamage = 1.0;
     rates.turretRoF = 1.0;
     rates.corpCost = 1599800;
+    rates.medalAwardCost = 5000000;
+    rates.medalCreateCost = 5000000;
     rates.WorldDecay = 120 /*m*/;
     rates.NPCDecay = 90 /*m*/;
     rates.RateDropItem = 1.0;//N
@@ -141,7 +145,6 @@ EVEServerConfig::EVEServerConfig()
     npc.StaticTimer = 600 /*s*/;
     npc.RespawnTimer = 480 /*s*/;
     npc.RatFaction = 0;
-    npc.EnableDrones = false;
     npc.TargetPodSec = 0;
     npc.TargetPod = false;
     npc.UseDamageMultiplier = true;
@@ -161,6 +164,7 @@ EVEServerConfig::EVEServerConfig()
     cosmic.BumpEnabled = false;
 
     // standings
+    //  - mission
     standings.MissionBonus = 1.0;
     standings.MissionFailure = -0.5;
     standings.MissionDeclined = -0.2;
@@ -176,6 +180,8 @@ EVEServerConfig::EVEServerConfig()
     standings.ACorp2PCorpMissionMultiplier = 0.025;
     standings.AFaction2CharMissionMultiplier = 0.125;
     standings.AFaction2PCorpMissionMultiplier = 0.0125;
+    //  - PVP
+    //  - ratting/exploring
 
     // chat
     chat.EnableFleetChat = true;
@@ -190,6 +196,10 @@ EVEServerConfig::EVEServerConfig()
     crime.CWSessionTime = 60 /*s*/;//N
     crime.KillRightTime = 900 /*s*/;//N
     crime.WeaponFlagTime = 60 /*s*/;//N
+
+    // testing
+    testing.EnableDrones = false;
+    testing.ShipHeat = false;
 
     // debug
     debug.BubbleTrack = false;
@@ -254,6 +264,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     AddMemberParser( "database",    &EVEServerConfig::ProcessDatabase );
     AddMemberParser( "files",       &EVEServerConfig::ProcessFiles );
     AddMemberParser( "net",         &EVEServerConfig::ProcessNet );
+    AddMemberParser( "testing",     &EVEServerConfig::ProcessTesting );
     AddMemberParser( "threads",     &EVEServerConfig::ProcessThreads );
 
     // parse the element
@@ -276,6 +287,7 @@ bool EVEServerConfig::ProcessEveServer( const TiXmlElement* ele )
     RemoveParser( "database" );
     RemoveParser( "files" );
     RemoveParser( "net" );
+    RemoveParser( "testing" );
     RemoveParser( "threads" );
 
     // return status of parsing
@@ -331,15 +343,18 @@ bool EVEServerConfig::ProcessServer( const TiXmlElement* ele )
 
 bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
 {
-    AddValueParser( "chatLogs",         world.chatLogs );
-    AddValueParser( "globalChat",       world.globalChat );
-    AddValueParser( "gridUnload",       world.gridUnload );
-    AddValueParser( "gridUnloadTime",   world.gridUnloadTime );
-    AddValueParser( "loginInfo",        world.loginInfo );
-    AddValueParser( "loginMsg",         world.loginMsg );
-    AddValueParser( "mailDelay",        world.mailDelay );
-    AddValueParser( "StationDockDelay", world.StationDockDelay );
-    AddValueParser( "apWarptoDistance", world.apWarptoDistance );
+    AddValueParser( "chatLogs",          world.chatLogs );
+    AddValueParser( "globalChat",        world.globalChat );
+    AddValueParser( "gridUnload",        world.gridUnload );
+    AddValueParser( "gridUnloadTime",    world.gridUnloadTime );
+    AddValueParser( "loginInfo",         world.loginInfo );
+    AddValueParser( "loginMsg",          world.loginMsg );
+    AddValueParser( "saveOnMove",        world.saveOnMove );
+    AddValueParser( "saveOnUpdate",      world.saveOnUpdate );
+    AddValueParser( "mailDelay",         world.mailDelay );
+    AddValueParser( "StationDockDelay",  world.StationDockDelay );
+    AddValueParser( "apWarptoDistance",  world.apWarptoDistance );
+    AddValueParser( "shipBoardDistance", world.shipBoardDistance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -349,9 +364,12 @@ bool EVEServerConfig::ProcessWorld( const TiXmlElement* ele )
     RemoveParser( "gridUnloadTime" );
     RemoveParser( "loginInfo" );
     RemoveParser( "loginMsg" );
+    RemoveParser( "saveOnMove" );
+    RemoveParser( "saveOnUpdate" );
     RemoveParser( "mailDelay" );
     RemoveParser( "StationDockDelay" );
     RemoveParser( "apWarptoDistance" );
+    RemoveParser( "shipBoardDistance" );
 
     return result;
 }
@@ -367,6 +385,8 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "turretDamage",         rates.turretDamage );
     AddValueParser( "turretRoF",            rates.turretRoF );
     AddValueParser( "corpCost",             rates.corpCost );
+    AddValueParser( "medalAwardCost",       rates.medalAwardCost );
+    AddValueParser( "medalCreateCost",      rates.medalCreateCost );
     AddValueParser( "WorldDecay",           rates.WorldDecay );
     AddValueParser( "NPCDecay",             rates.NPCDecay );
     AddValueParser( "RateDropItem",         rates.RateDropItem );
@@ -389,6 +409,8 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "turretDamage" );
     RemoveParser( "turretRoF" );
     RemoveParser( "corpCost" );
+    RemoveParser( "medalAwardCost" );
+    RemoveParser( "medalCreateCost" );
     RemoveParser( "WorldDecay" );
     RemoveParser( "NPCDecay" );
     RemoveParser( "RateDropItem" );
@@ -501,7 +523,6 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     AddValueParser( "StaticTimer",              npc.StaticTimer );
     AddValueParser( "RespawnTimer",             npc.RespawnTimer );
     AddValueParser( "RatFaction",               npc.RatFaction );
-    AddValueParser( "EnableDrones",             npc.EnableDrones );
     AddValueParser( "TargetPod",                npc.TargetPod );
     AddValueParser( "TargetPodSec",             npc.TargetPodSec );
     AddValueParser( "UseDamageMultiplier",      npc.UseDamageMultiplier );
@@ -520,7 +541,6 @@ bool EVEServerConfig::ProcessNPC( const TiXmlElement* ele )
     RemoveParser( "StaticTimer" );
     RemoveParser( "RespawnTimer" );
     RemoveParser( "RatFaction" );
-    RemoveParser( "EnableDrones" );
     RemoveParser( "TargetPod" );
     RemoveParser( "TargetPodSec" );
     RemoveParser( "UseDamageMultiplier" );
@@ -742,6 +762,19 @@ bool EVEServerConfig::ProcessDebug(const TiXmlElement* ele)
     RemoveParser( "SpawnTest" );
     RemoveParser( "BubbleTrack" );
     RemoveParser( "ProfileTraceTime" );
+
+    return result;
+}
+
+bool EVEServerConfig::ProcessTesting(const TiXmlElement* ele)
+{
+    AddValueParser( "ShipHeat",             testing.ShipHeat );
+    AddValueParser( "EnableDrones",         testing.EnableDrones);
+
+    const bool result = ParseElementChildren( ele );
+
+    RemoveParser( "ShipHeat" );
+    RemoveParser( "EnableDrones" );
 
     return result;
 }

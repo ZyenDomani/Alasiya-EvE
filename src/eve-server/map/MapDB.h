@@ -36,20 +36,24 @@ class MapDB
 : public ServiceDB
 {
 public:
-    PyObject *GetPseudoSecurities();
-    PyObject *GetStationExtraInfo();
-    PyObject *GetStationOpServices();
-    PyObject *GetStationServiceInfo();
-    PyObject *GetSolSystemVisits(uint32);
-    PyRep *GetDynamicData(uint8 type, uint8 time);
+    static PyObject* GetPseudoSecurities();
+    static PyObject* GetStationExtraInfo();
+    static PyObject* GetStationOpServices();
+    static PyObject* GetStationServiceInfo();
+    static PyObject* GetSolSystemVisits(uint32);
+    static PyRep* GetDynamicData(uint8 type, uint8 time);
 
     static void GetStationCount(DBQueryResult& res);
 
     /* for MapData class */
     static void GetSystemJumps(DBQueryResult& res);
 
+    /* clear system static data on server start */
+    static void SystemStartup();
+
     // for dynamic db functions    -allan
     static void SetSystemActive(uint32 sysID, bool active=false);
+    static void UpdateSystemData(uint32 sysID, uint8 docked=0, uint8 space=0);
     static void chkDynamicSystemID(uint32 solarSystemID);
     static void AddJumpToDynamicData(uint32 solarSystemID);/**jumpsHour, jumps24Hours */
     static void AddPilotToDynamicData(uint32 solarSystemID, bool isAdd=false, bool isDocked=false, bool isLogin=false); /**pilotsDocked, pilotsInSpace */

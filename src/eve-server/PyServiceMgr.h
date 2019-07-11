@@ -55,33 +55,32 @@ public:
     void Close();
     void Process();
 
-    void RegisterService(const std::string name, PyService* svc);
+    void RegisterService(const std::string& name, PyService* svc);
     PyService* LookupService(const std::string& name);
 
     uint32 GetNodeID() const                            { return m_nodeID; }
 
     //object binding, not fully understood yet.
-    PySubStruct *BindObject(Client *who, PyBoundObject *obj, PyDict **dict = nullptr);
+    PySubStruct *BindObject(Client* pClient, PyBoundObject* pObj, PyDict* dict = nullptr);
     PyBoundObject *FindBoundObject(uint32 bindID);
     void ClearBoundObject(uint32 bindID);
-    void ClearBoundObjects(Client *who);
+    void ClearBoundObjects(Client* pClient);
 
     //Area to access services by name. This isn't ideal, but it avoids casting.
     //these may be NULL during service init, but should never be after that.
     //we do not own these pointers (we do in their PyService * form though)
-    LSCService *lsc_service;
-    ObjCacheService *cache_service;
+    LSCService* lsc_service;
+    ObjCacheService* cache_service;
 
 protected:
     std::map<std::string, PyService*> m_svcList;    //we own these pointers.
 
     uint32 m_nextBindID;
-    uint32 GetBindID()                                 { return ++m_nextBindID; }
 
     struct BoundObject
     {
-        Client *client;    //we do not own this.
-        PyBoundObject *destination;    //we own this. PyServiceMgr deletes it
+        Client* client;    //we do not own this.
+        PyBoundObject* destination;    //we own this. PyServiceMgr deletes it
     };
 
     typedef std::map<uint32, BoundObject>   ObjectsBoundMap;

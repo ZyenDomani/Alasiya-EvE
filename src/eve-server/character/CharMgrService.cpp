@@ -76,7 +76,7 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
     call.Dump(CHARACTER__DEBUG);
     std::ostringstream flagIDs;
     flagIDs << flagHangar;
-    // test m_containerFlag to determine correct flag here and append to flagIDs string?
+    /** @todo  test m_containerFlag to determine correct flag here and append to flagIDs string? */
 
     uint32 ownerID = m_ownerID;
     bool blueprintOnly = PyRep::IntegerValue(call.tuple->GetItem(0));
@@ -460,7 +460,7 @@ PyResult CharMgrService::Handle_GetHomeStation( PyCallArgs& call )
 {
 	uint32 stationID = 0;
     if (!CharacterDB::GetCharHomeStation(call.client->GetCharacterID(), stationID) ) {
-		sLog.Debug( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
+		sLog.Error( "CharMgrService", "Could't get the home station for Char %u", call.client->GetCharacterID() );
 		return PyStatic.NewNone();
 	}
     return new PyInt(stationID);
@@ -659,7 +659,7 @@ PyResult CharMgrService::Handle_GetCharacterDescription(PyCallArgs &call)
 PyResult CharMgrService::Handle_SetCharacterDescription(PyCallArgs &call)
 {
     //takes WString of bio
-    Call_SingleWStringSoftArg args;
+    Call_SingleStringArg args;
     if(!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;

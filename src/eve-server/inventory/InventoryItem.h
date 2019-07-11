@@ -194,7 +194,7 @@ public:
     virtual bool _Load();
 
 protected:
-    /* template helper, calls template loader then class loader */
+    /* template helper, calls template loader (below) then class loader */
     template<class _Ty>
     static RefPtr<_Ty> Load( uint32 itemID)
     {
@@ -290,6 +290,7 @@ public:
     void SetAttribute(uint16 attrID, int num, bool notify=true);
     void SetAttribute(uint16 attrID, uint32 num, bool notify=true);
     void SetAttribute(uint16 attrID, int64 num, bool notify=true);
+    void SetAttribute(uint16 attrID, float num, bool notify=true);
     void SetAttribute(uint16 attrID, double num, bool notify=true);
     void SetAttribute(uint16 attrID, EvilNumber num, bool notify=true);
     void MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify=false);

@@ -71,14 +71,14 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
         or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
-        sRef->SetAttribute(AttrIsGlobal,                        1);
+        sRef->SetAttribute(AttrIsGlobal,                        EvilOne);
     }
     // Create default dynamic attributes in the AttributeMap:
-    sRef->SetAttribute(AttrMass,                                sRef->type().mass());
-    sRef->SetAttribute(AttrRadius,                              sRef->type().radius());
-    sRef->SetAttribute(AttrVolume,                              sRef->type().volume());
-    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity());
-    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity));
+    sRef->SetAttribute(AttrMass,                                sRef->type().mass(), false);
+    sRef->SetAttribute(AttrRadius,                              sRef->type().radius(), false);
+    sRef->SetAttribute(AttrVolume,                              sRef->type().volume(), false);
+    sRef->SetAttribute(AttrCapacity,                            sRef->type().capacity(), false);
+    sRef->SetAttribute(AttrShieldCharge,                        sRef->GetAttribute(AttrShieldCapacity), false);
 
     // Check for existence of some attributes that may or may not have already been loaded and set them
     // to default values:
@@ -116,6 +116,7 @@ void StructureItem::Delete()
 
 PyObject *StructureItem::StructureGetInfo()
 {
+    /** @todo  why calling itemID() here??  cant we just access member instead?  */
     if (!pInventory->LoadContents()) {
         codelog( ITEM__ERROR, "%s (%u): Failed to load contents for Structure", itemName().c_str(), itemID() );
         return NULL;
@@ -166,47 +167,36 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
 
+    // zero-init data
+    m_data = EVEPOS::StructureData();
+
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
-void StructureSE::InitData(SystemBubble* pBubble) {
-    // not sure if we need to reinit to 0...probably not
-    m_data.use = 0;
-    m_data.view = 0;
-    m_data.take = 0;
-    m_data.moonID = 0;
-    m_data.towerID = 0;
-    m_data.status = 0.0f;
-    m_data.timestamp = 0;
-    m_data.state = EVEPOS::StructureState::Unanchored;
-
+void StructureSE::InitData(SystemBubble* pBubble)
+{
     if (m_module) {
-        bool found = false;
         // this item is a module.  get towerID and save
         std::vector<SystemEntity*> seVec;
         pBubble->GetEntities(seVec);
+        // this is nuts too...iterate thru all items in bubble to find tower??
+        /** @todo  fix this dumb shit...  */
         for (auto cur : seVec) {
             if (cur->IsTowerSE()) {
-                found = true;
                 m_data.towerID = cur->GetID();
-            }
-            if (found)
                 break;
+            }
         }
     }
 
     if (m_bridge) {
         /** @todo figure out how/where to store this data.  */
-        EVEPOS::JumpBridgeData data;
+        EVEPOS::JumpBridgeData data = EVEPOS::JumpBridgeData();
         data.itemID = m_data.itemID;
         data.towerID = m_data.towerID;
         data.corpID = m_corpID;
         data.allyID = m_allyID;
         data.systemID = m_system->GetID();
-        data.toItemID = 0;
-        data.toTypeID = 0;
-        data.toSystemID = 0;
-        data.password = "";
         data.allowCorp = false;
         data.allowAlliance = false;
         m_db.SaveBridgeData(data);
@@ -218,15 +208,15 @@ void StructureSE::InitData(SystemBubble* pBubble) {
 
 void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
 {
-    // init all data to 0 here.
-    m_data.use = 0;
-    m_data.view = 0;
-    m_data.take = 0;
-    m_data.moonID = 0;
-    m_data.towerID = 0;
-    m_data.status = 0.0f;
-    m_data.timestamp = 0;
+    // init all data here.
     m_data.itemID = iRef->itemID();
+    if (m_data.itemID == 0) {
+        // how the hell is itemID 0 here??
+        sLog.Error("StructureSE::Init", "ItemID is 0.");
+        EvE::traceStack();
+        m_system->RemoveEntity(this);   //this may segfault here....
+        return;
+    }
     m_data.state = EVEPOS::StructureState::Unanchored;
     iRef->SetFlag(flagStructureInactive);
 
@@ -272,26 +262,27 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
     }
 
     if (!m_db.GetBaseData(m_data)) {
-        _log(POS__TRACE, "StructureSE %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), m_data.itemID);
         // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
         if (pBubble != nullptr)
             InitData(pBubble);
         else   // make error here.  this should never hit.
-            _log(POS__TRACE, "StructureSE %s(%u) called with null bubble.", iRef->itemName().c_str(), m_data.itemID);
+            _log(POS__WARNING, "StructureSE::Init %s(%u) called with null bubble.", iRef->itemName().c_str(), m_data.itemID);
         m_db.SaveBaseData(m_data);
     }
 
     if (m_data.moonID == 0) {
         // make error here.  this should never hit.
-        _log(POS__TRACE, "StructureSE %s(%u) has no moonID.", iRef->itemName().c_str(), m_data.itemID);
-        iRef->Delete(); // really delete this?
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", iRef->itemName().c_str(), m_data.itemID);
+        //iRef->Delete(); // really delete this?
         return;
     }
 
     if (m_moonSE == nullptr) {
         SystemEntity* pSE = m_system->GetSE(m_data.moonID);
         if (pSE == nullptr) {
-            iRef->Delete(); // really delete this?
+            //iRef->Delete(); // really delete this?
+            _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", iRef->itemName().c_str(), m_data.itemID);
             return;
         }
         m_moonSE = pSE->GetMoonSE();
@@ -309,7 +300,8 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
     } else if (m_module) {
         SystemEntity* pSE = m_system->GetSE(m_data.towerID);
         if (pSE == nullptr) {
-            iRef->Delete(); // really delete this?
+            //iRef->Delete(); // really delete this?
+            _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", iRef->itemName().c_str(), m_data.itemID);
             return;
         }
         m_towerSE = pSE->GetTowerSE();
@@ -506,6 +498,8 @@ void StructureSE::PullAnchor()
     m_data.timestamp = GetFileTimeNow();
 
     SendSlimUpdate();
+
+    m_bubble->SetTowerSE(nullptr);
 
     /*
     if (m_tower)
@@ -717,7 +711,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
     //const uint16 miniballsCount = GetMiniBalls();
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = m_data.itemID;
         head.radius = GetRadius();
         head.x = x();
@@ -741,7 +735,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
 
     /** @todo these may need more work....  */
     if (m_tcu or m_tower) {
-        MassSector mass;
+        MassSector mass = MassSector();
             mass.cloak = 0;
             mass.corporationID = m_corpID;
             mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
@@ -751,7 +745,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     }
 
     if (m_data.state < EVEPOS::StructureState::Anchored) {
-        DataSector data;
+        DataSector data = DataSector();
             data.inertia = 1;
             data.velocity_x = 0;
             data.velocity_y = 0;
@@ -886,7 +880,7 @@ std::string StructureSE::GetProcStateName(int8 state)
         case ProcState::Reinforcing:        return "Reinforcing";
         case ProcState::SheildReinforcing:  return "SheildReinforcing";
         case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
-        default:                                    return "Bad State";
+        default:                            return "Bad State";
     }
 }
 
@@ -922,6 +916,8 @@ void StructureSE::GetEffectState(PyList& into) {
 void StructureSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
+
+    m_bubble->SetTowerSE(nullptr);
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
@@ -974,7 +970,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     /* populate kill data for killMail and save to db  -allan 01May16  --updated 13July17 */
     /** @todo  check for tower/tcu/sbu/jammer and make killmail */
-    CharKillData data;
+    /** @todo send pos mail/notification to corp members */
+    CharKillData data = CharKillData();
         data.solarSystemID = m_system->GetID();
         data.victimCharacterID = 0; // charID = 0 means strucuture/item
         data.victimCorporationID = m_corpID;

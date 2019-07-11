@@ -165,7 +165,7 @@ corpID: 98038978
           <int name="notificationID" />
         </tupleInline>
         <tupleInline>
-          <stringInline value="typeID" /><!-- this data is found in EVE_Mail.h under NotificationTypes -->
+          <stringInline value="typeID" /><!-- this data is found in EVE_Mail.h as Notify::Types -->
           <int name="typeID" />
         </tupleInline>
         <tupleInline>
@@ -196,26 +196,18 @@ corpID: 98038978
     </objectInline>
   </elementDef>
 
-  <!-- may not use this one...may have to build packet in code -->
-  <elementDef name="Notification_Entry">
-    <objectInline>
-      <stringInline value="blue.DBRow" />
-      <tupleInline>
-        <element type="Notification_Header" name="header" />
-        <tupleInline>
-          <int name="notificationID" />
-          <int name="typeID" />
-          <int name="senderID" />
-          <int name="receiverID" />
-          <bool name="processed" />
-          <long name="created" />
-          <string name="data" />
-          <bool name="deleted" />
-        </tupleInline>
-      </tupleInline>
-    </objectInline>
+  <!-- Used to send OnNotificationRecieved msgs -->
+  <elementDef name="OnNotify">
+    <tupleInline>
+      <int name="notifyID" />
+      <int name="typeID" />
+      <int name="senderID" />
+      <long name="created" />
+      <raw name="data" />
+    </tupleInline>
   </elementDef>
 
+  <!-- not sure what this is for -->
   <elementDef name="NotificationMsg">
     <tupleInline>
       <element type="Notification_Header" name="header" />

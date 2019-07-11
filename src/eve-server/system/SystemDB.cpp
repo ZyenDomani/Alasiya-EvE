@@ -87,12 +87,12 @@ PyPackedRow* SystemDB::GetSolarSystem(uint32 ssid) {
 }
 
 bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEntity>& into) {
-    std::stringstream query;
-    query << "SELECT itemID,typeID,groupID,radius";
-    query << " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID";
-
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res, query.str().c_str(), systemID )) {
+    if(!sDatabase.RunQuery(res,
+        "SELECT itemID,typeID,groupID,radius"
+        " FROM mapDenormalize WHERE solarSystemID=%u ORDER BY itemID",
+        systemID))
+    {
         codelog(DATABASE__ERROR, "Error in LoadSystemStaticEntities query: %s", res.error.c_str());
         return false;
     }
@@ -100,8 +100,8 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     _log(DATABASE__RESULTS, "LoadSystemStaticEntities returned %u items", res.GetRowCount());
 
     DBResultRow row;
-    DBSystemEntity entry;
     while(res.GetRow(row)) {
+        DBSystemEntity entry = DBSystemEntity();
         entry.itemID = row.GetUInt(0);
         entry.typeID = row.GetInt(1);
         entry.groupID = row.GetInt(2);
@@ -112,7 +112,7 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     return true;
 }
 
-/* load system dynamics owned by the EvE systemID  */
+/* load system dynamics owned by the EvE _System (1)  */
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
     using namespace EVEDB::invCategories;
     DBQueryResult res;
@@ -130,9 +130,9 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         "  LEFT JOIN invTypes AS t ON t.typeID = e.typeID"
         "  LEFT JOIN invGroups AS g ON g.groupID = t.groupID"
         " WHERE e.locationID = %u"
-        "  AND (g.categoryID NOT IN (%d, %d, %d, %d)"
-        "  AND e.ownerID = 1)"  // get dynamics owned by the system -include abandonded ships
-        "  OR g.categoryID = %u"    // - include orbitals (owned by npc corps)
+        "  AND g.categoryID NOT IN (%d, %d, %d, %d)"    // not Characters, stations, or roids
+        "  AND (e.ownerID = 1"      // get dynamics owned by the system -include abandonded ships
+        "  OR g.categoryID = %u)"   // or orbitals owned by npc corps
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
@@ -145,8 +145,8 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     _log(DATABASE__RESULTS, "LoadSystemDynamicEntities returned %u items", res.GetRowCount());
 
     DBResultRow row;
-    DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
+        DBSystemDynamicEntity entry = DBSystemDynamicEntity();
         entry.itemID = row.GetUInt(0);
         entry.itemName = row.GetText(1);
         entry.typeID = row.GetInt(2);
@@ -187,8 +187,7 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         " WHERE e.locationID = %u"
         "  AND g.categoryID IN (%d, %d, %d, %d, %d, %d, %d)"
         "  AND e.ownerID != 1"  // get dynamics not owned by the system
-        //"  AND e.itemID NOT IN (c.shipID,c.capsuleID)"  // this is a problem....returns NOTHING because of this line.
-        " ORDER BY e.itemID",
+        " ORDER BY e.itemID",   // should we order by category?  or group?
         systemID, Celestial/*2*/,   // Celestial is for containers (wrecks, jetcans, lsc)
         Deployable/*22*/,           // include deployed items owned by players or corps
         Drone/*18*/, Entity/*11*/,  // Entity also contains NPCs, sentrys, LCOs, and other destructible objects
@@ -199,8 +198,8 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
 
     _log(DATABASE__RESULTS, "LoadPlayerDynamicEntities returned %u items", res.GetRowCount());
     DBResultRow row, row2;
-    DBSystemDynamicEntity entry;
     while(res.GetRow(row)) {
+        DBSystemDynamicEntity entry = DBSystemDynamicEntity();
         entry.factionID = 0;
         entry.allianceID = 0;
         entry.corporationID = 0;
@@ -308,8 +307,8 @@ void SystemDB::GetPlanets(uint32 systemID, std::vector<DBGPointEntity> &planetID
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 7", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -329,8 +328,8 @@ void SystemDB::GetMoons(uint32 systemID, std::vector<DBGPointEntity> &moonIDs, u
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 8", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -352,8 +351,8 @@ void SystemDB::GetBelts(uint32 systemID, std::vector< DBGPointEntity > &beltIDs,
     sDatabase.RunQuery(res, "SELECT itemID, x, y, z, radius FROM mapDenormalize WHERE solarSystemID = %u AND groupID = 9", systemID);
 
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (
@@ -376,8 +375,8 @@ void SystemDB::GetGates(uint32 systemID, std::vector< DBGPointEntity > &gateIDs)
 
     uint8 total = 0;
     DBResultRow row;
-    DBGPointEntity entry;
     while(res.GetRow(row)) {
+        DBGPointEntity entry = DBGPointEntity();
         entry.idx = total;
         entry.itemID = row.GetUInt(0);
         entry.position = GPoint (

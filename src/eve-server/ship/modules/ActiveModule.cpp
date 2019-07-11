@@ -29,10 +29,12 @@ m_bubble(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
 m_destinyMgr(nullptr),
+m_needsCharge(false),
 m_needsTarget(false)
 {
     m_repeat = 1000;    //arbitrary.
 
+    // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
     m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (iRef->groupID()) {
@@ -444,7 +446,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
-            // this is the complete belt scanner code here.
+            // this is the complete belt scanner rsp code here.
             PyTuple* result = new PyTuple(2);
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
@@ -474,7 +476,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         case EVEDB::invGroups::Cargo_Scanner:
         case EVEDB::invGroups::System_Scanner: {
             if (m_targetSE != nullptr)
-                ;  // not sure if we need this here.....
+                ;  // not sure if we need this here.....do these work like belt scanner?
         } break;
     }
 
@@ -565,9 +567,12 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
-    //AttrUnfitCapCost
-    
     if (m_chargeRef.get() != nullptr) {
+        if (m_chargeRef->HasAttribute(AttrUnfitCapCost)) {
+            float cap = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
+            cap -= m_chargeRef->GetAttribute(AttrUnfitCapCost).get_float();
+            m_shipRef->SetAttribute(AttrCapacitorCharge, cap);
+        }
         // remove charge effects here
         m_chargeRef->ClearModifiers();
         for (auto it : m_chargeRef->type().m_stateFxMap) {

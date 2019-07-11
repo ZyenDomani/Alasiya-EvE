@@ -263,7 +263,12 @@ public:
     void StopModuleRepair(uint32 modID)                 { m_ModuleManager->StopModuleRepair(modID); }
 
     // OL and Heat damage shit
-    void DissipateHeat();
+    void ProcessHeat();
+    // heat generated per tic by ship's active modules (passive *may not* generate heat yet.)
+    float GenerateHeat(uint16 attrID);
+    // heat dissipated per tic by ship's design and pilots skills
+    float DissipateHeat(uint16 attrID, float heat);
+    // this method does just that....checks for heat-induced damage from overheated modules
     void HeatDamageCheck(GenericModule* pMod);
     void DamageModule(uint32 modID, float amt=1)        { m_ModuleManager->DamageModule(modID, amt); }
     void DamageRandModule()                             { m_ModuleManager->DamageRandModule(); }
@@ -455,21 +460,21 @@ protected:
 
 private:
     ShipDB m_db;
-    BoostData m_boost;       // for fleet boosts
 
     Timer m_processTimer;
 
-    bool m_boosted;         // for fleet boosts
-
     uint32 m_podShipID;
 
+    /*  boost data */
+    BoostData m_boost;
+    bool m_boosted;
     uint16 m_oldArmor;
     uint16 m_oldShield;
     uint16 m_oldScanRes;
     uint32 m_oldTargetRange;
-
     double m_oldInertia;
 
+    /*  for POS field */
     std::string m_towerPass;
 
 };

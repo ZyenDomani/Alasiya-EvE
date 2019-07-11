@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 #ifndef __SYSTEMBUBBLE_H_INCL__
 #define __SYSTEMBUBBLE_H_INCL__
@@ -33,11 +33,12 @@
 
 
 class Client;
-class  SetState;
+class SetState;
 class PyTuple;
 class SystemEntity;
 class SystemManager;
 class Timer;
+class TowerSE;
 
 class SystemBubble {
 public:
@@ -115,6 +116,11 @@ public:
     void GetPlayers(std::vector<Client*> &into) const;
     SystemEntity* GetRandomEntity();
 
+    /* for towers/ship abandoning */
+    bool HasTower()                                     { return (m_towerSE != nullptr); }
+    TowerSE* GetTowerSE()                               { return m_towerSE; }
+    void SetTowerSE(TowerSE* pTower)                    { m_towerSE = pTower; }
+
 protected:
     const GPoint m_center;
     const double m_radius;
@@ -127,6 +133,7 @@ protected:
     void MarkBubble(const GPoint& position, std::string& name, std::string& desc);
 
 private:
+    TowerSE* m_towerSE;
     SystemManager* m_system;
 
     bool m_hasMarkers;

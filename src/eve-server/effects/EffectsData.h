@@ -5,6 +5,7 @@
  *
  * @Author:    Allan
  * @date:      24 January 2017
+ * @update:     19 June 2019 (revised namespaces)
  *
  */
 
@@ -80,93 +81,102 @@ struct fxData {
 typedef std::map<uint16, Effect> effectMapType;
 
 // these tables are used to decode fields in Effects table
-namespace Effects {
-    enum Source {   // formally known as domain
-        dgmSrcInvalid          = -1,
-        //  these define the location for group-, skill-, gang-, and owner-required effects
-        dgmSrcSelf             = 0,
-        dgmSrcSkill            = 1,
-        dgmSrcShip             = 2,
-        dgmSrcOwner            = 3,
-        dgmSrcGang             = 4,
-        dgmSrcGroup            = 5,
-        dgmSrcTarget           = 6,
-        MaxSrcLocation         = 6
-    };
+namespace FX {
 
-    enum TargetLocation {   //formally known as environment
-        dgmTargLocInvalid      = -1,
-        // these define the item containing the attribute to be modified
-        //  these are found (as text) in the expressionValue field of dgmExpressions table and may need to merge with Association, or test with it
-        dgmTargLocSelf         = 0,
-        dgmTargLocChar         = 1,
-        dgmTargLocShip         = 2,
-        dgmTargLocTarget       = 3,
-        dgmTargLocOther        = 4,
-        dgmTargLocArea         = 5,
-        dgmTargLocPowerCore    = 6,  //defined but not used
-        dgmTargLocCharge       = 7,
-        MaxTargLocation        = 7
-    };
+    namespace Source {    // formally known as domain
+        enum {
+            Invalid          = -1,
+            //  these define the location for group-, skill-, gang-, and owner-required effects
+            Self             = 0,
+            Skill            = 1,
+            Ship             = 2,
+            Owner            = 3,
+            Gang             = 4,
+            Group            = 5,
+            Target           = 6
+        };
+    }
 
-    enum State  {       // formally known as category
-        dgmStateInvalid        = -1,
-        // these are the effectCategory in dgmEffects table to denote when this effect is applied or removed
-        dgmStatePassive        = 0, //Applied when item is present and online - implants, skills, modules, charges
-        dgmStateActive         = 1, //Applied when active module is activated
-        dgmStateTarget         = 2, //Applied onto selected target when module is activated
-        dgmStateArea           = 3, //defined but not used
-        dgmStateOnline         = 4, //Applied when module is onlined
-        dgmStateOverloaded     = 5, //Applied when module is overloaded and activated
-        dgmStateDungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item  -passive
-        dgmStateSystem         = 7, //System-wide effects, like WH and incursion  -passive
-        MaxState               = 7
-    };
+    namespace Target {    //formally known as environment
+        enum {
+            Invalid         = -1,
+            // these define the item containing the attribute to be modified
+            //  these are found (as text) in the expressionValue field of dgmExpressions table and may need to merge with Association, or test with it
+            Self            = 0,
+            Char            = 1,
+            Ship            = 2,
+            Target          = 3,
+            Other           = 4,
+            Area            = 5,
+            PowerCore       = 6,  //defined but not used
+            Charge          = 7,
+            MaxTargLocation = 7
+        };
+    }
 
-    enum Math {     // formally known as association
-        dgmMathInvalid        = -1,
-        // these define how the data is manipulated according to the format field in dgmOperands table
-        dgmMathPreAssignment  = 0,
-        dgmMathPreMul         = 1,
-        dgmMathPreDiv         = 2,
-        dgmMathModAdd         = 3,
-        dgmMathModSub         = 4,
-        dgmMathPostMul        = 5,
-        dgmMathPostDiv        = 6,
-        dgmMathPostPercent    = 7,
-        dgmMathPostAssignment = 8,
-        dgmMathSkillCheck     = 9,
-        /* no data or expressions with these next two */
-        dgmMathAddRate        = 10,
-        dgmMathSubRate        = 11,
-        dgmMathRevPostPercent = 12,
-        MaxMathMethod         = 12
-    };
+    namespace State {   // formally known as category
+        enum {
+            Invalid        = -1,
+            // these are the effectCategory in dgmEffects table to denote when this effect is applied or removed
+            Passive        = 0, //Applied when item is present and online - implants, skills, modules, charges
+            Active         = 1, //Applied when active module is activated
+            Target         = 2, //Applied onto selected target when module is activated
+            Area           = 3, //defined but not used
+            Online         = 4, //Applied when module is onlined
+            Overloaded     = 5, //Applied when module is overloaded and activated
+            Dungeon        = 6, //Dungeon effects, several effects exist in this category, but not assigned to any item  -passive
+            System         = 7  //System-wide effects, like WH and incursion  -passive
+        };
+    }
 
-    enum Action {
-        dgmActInvalid               = 0,
-        dgmATTACK                   = 13,
-        dgmCARGOSCAN                = 14,
-        dgmCHEATTELEDOCK            = 15,
-        dgmCHEATTELEGATE            = 16,
-        dgmDECLOAKWAVE              = 19,
-        dgmECMBURST                 = 30,
-        dgmEMPWAVE                  = 32,
-        dgmLAUNCH                   = 44,
-        dgmLAUNCHDEFENDERMISSILE    = 45,
-        dgmLAUNCHDRONE              = 46,
-        dgmLAUNCHFOFMISSILE         = 47,
-        dgmMINE                     = 50,
-        dgmPOWERBOOST               = 53,   //effectID 48  - Consumes power booster charges to increase the available power in the capacitor.
-        dgmSHIPSCAN                 = 66,
-        dgmSURVEYSCAN               = 69,
-        dgmTARGETHOSTILES           = 70,
-        dgmTARGETSILENTLY           = 71,
-        dgmTOOLTARGETSKILLS         = 72,
-        dgmVERIFYTARGETGROUP        = 74,
-        /* unique/special to Alasiya */
-        dgmSPEEDBOOST               = 75    //effectID 14  - prop mod to call destiny speed updates
-    };
+    namespace Math {    // formally known as association
+        enum {
+            Invalid        = -1,
+            // these define how the data is manipulated according to the format field in dgmOperands table
+            PreAssignment  = 0,
+            PreMul         = 1,
+            PreDiv         = 2,
+            ModAdd         = 3,
+            ModSub         = 4,
+            PostMul        = 5,
+            PostDiv        = 6,
+            PostPercent    = 7,
+            PostAssignment = 8,
+            SkillCheck     = 9,
+            /* no data or expressions with these next two */
+            AddRate        = 10,
+            SubRate        = 11,
+            RevPostPercent = 12,
+            MaxMathMethod  = 12
+        };
+    }
+
+    namespace Action {  // this are coded and are applied on the fly as needed.
+        enum {
+            Invalid               = 0,
+            ATTACK                   = 13,
+            CARGOSCAN                = 14,
+            CHEATTELEDOCK            = 15,
+            CHEATTELEGATE            = 16,
+            DECLOAKWAVE              = 19,
+            ECMBURST                 = 30,
+            EMPWAVE                  = 32,
+            LAUNCH                   = 44,
+            LAUNCHDEFENDERMISSILE    = 45,
+            LAUNCHDRONE              = 46,
+            LAUNCHFOFMISSILE         = 47,
+            MINE                     = 50,
+            POWERBOOST               = 53,   //effectID 48  - Consumes power booster charges to increase the available power in the capacitor.
+            SHIPSCAN                 = 66,
+            SURVEYSCAN               = 69,
+            TARGETHOSTILES           = 70,
+            TARGETSILENTLY           = 71,
+            TOOLTARGETSKILLS         = 72,
+            VERIFYTARGETGROUP        = 74,
+            /* unique/special to Alasiya */
+            SPEEDBOOST               = 75    //effectID 14  - prop mod to call destiny speed updates
+        };
+    }
 
     /*  old shit
              case CALC_NONE:                            return val1;
@@ -181,136 +191,139 @@ namespace Effects {
              case CALC_ADD_RESIST:                      return val1 - (1 - val2);
              case CALC_SUBTRACT_RESIST:                 return val1 + (1 - val2);
      */
-    /*
-dgmEffActivation = 1
-dgmEffArea = 3
-dgmEffOnline = 4
-dgmEffPassive = 0
-dgmEffTarget = 2
-dgmEffOverload = 5
-dgmEffDungeon = 6
-dgmEffSystem = 7
-dgmPassiveEffectCategories = (dgmEffPassive, dgmEffDungeon, dgmEffSystem)
 
-    dgmAttributesByIdx = {
-        1: attributeIsOnline,
-        2: attributeDamage,
-        3: attributeCharge,
-        4: attributeSkillPoints,
-        5: attributeArmorDamage,
-        6: attributeShieldCharge,
-        7: attributeIsIncapacitated}
-
-    UserErrors
-        UE_OWNERID = 2
-        UE_LOCID = 3
-        UE_TYPEID = 4
-        UE_TYPEID2 = 5
-        UE_TYPEIDL = 29
-        UE_BPTYPEID = 6
-        UE_GROUPID = 7
-        UE_GROUPID2 = 8
-        UE_CATID = 9
-        UE_CATID2 = 10
-        UE_DGMATTR = 11
-        UE_DGMFX = 12
-        UE_DGMTYPEFX = 13
-        UE_AMT = 18
-        UE_AMT2 = 19
-        UE_AMT3 = 20
-        UE_DIST = 21
-        UE_TYPEIDANDQUANTITY = 24
-        UE_OWNERIDNICK = 25
-        UE_ISK = 28
-        UE_AUR = 30
-    */
-    /*  flags for ???
-    dgmExprSkip = 0
-    dgmExprOwner = 1
-    dgmExprShip = 2
-    dgmExprOwnerAndShip = 3
-    */
-
-    enum Operands {
-        // @note  '//*' denotes implemented
-        operandADD = 1,             //*
-        operandAGGM = 2,            //*
-        operandAGIM = 3,            //*
-        operandAGORSM = 4,          //*
-        operandAGRSM = 5,           //*
-        operandAIM = 6,             //*
-        operandALGM = 7,            //*
-        operandALM = 8,             //*
-        operandALRSM = 9,           //*
-        operandAND = 10,            //*
-        operandAORSM = 11,          //*
-        operandATT = 12,            //*
-        operandATTACK = 13,
-        operandCARGOSCAN = 14,
-        operandCHEATTELEDOCK = 15,
-        operandCHEATTELEGATE = 16,
-        operandCOMBINE = 17,        //*
-        operandDEC = 18,            //*
-        operandDECLOAKWAVE = 19,
-        operandDECN = 20,           //*
-        operandDEFASSOCIATION = 21, //*
-        operandDEFATTRIBUTE = 22,   //*
-        operandDEFBOOL = 23,        //*
-        operandDEFENVIDX = 24,      //*
-        operandDEFFLOAT = 25,       //*
-        operandDEFGROUP = 26,       //*
-        operandDEFINT = 27,         //*
-        operandDEFSTRING = 28,      //*
-        operandDEFTYPEID = 29,      //*
-        operandECMBURST = 30,
-        operandEFF = 31,            //*
-        operandEMPWAVE = 32,
-        operandEQ = 33,             //*
-        operandGA = 34,             //*
-        operandGET = 35,            //*
-        operandGETTYPE = 36,        //*
-        operandGM = 37,             //*
-        operandGT = 38,             //*
-        operandGTE = 39,            //*
-        operandIA = 40,             //*
-        operandIF = 41,             //*
-        operandINC = 42,            //*
-        operandINCN = 43,           //*
-        operandLAUNCH = 44,
-        operandLAUNCHDEFENDERMISSILE = 45,
-        operandLAUNCHDRONE = 46,
-        operandLAUNCHFOFMISSILE = 47,
-        operandLG = 48,             //*
-        operandLS = 49,             //*
-        operandMINE = 50,
-        operandMUL = 51,            //*
-        operandOR = 52,             //*
-        operandPOWERBOOST = 53,
-        operandRGGM = 54,           //*
-        operandRGIM = 55,           //*
-        operandRGORSM = 56,         //*
-        operandRGRSM = 57,          //*
-        operandRIM = 58,            //*
-        operandRLGM = 59,           //*
-        operandRLM = 60,            //*
-        operandRLRSM = 61,          //*
-        operandRORSM = 62,          //*
-        operandRS = 63,             //*
-        operandRSA = 64,            //*
-        operandSET = 65,            //*
-        operandSHIPSCAN = 66,
-        operandSKILLCHECK = 67,     //*
-        operandSUB = 68,            //*
-        operandSURVEYSCAN = 69,
-        operandTARGETHOSTILES = 70,
-        operandTARGETSILENTLY = 71,
-        operandTOOLTARGETSKILLS = 72,
-        operandUE = 73,             //*
-        operandVERIFYTARGETGROUP = 74,
-        operandSPEEDBOOST = 75
-    };
+    namespace Operands {
+        enum {
+            // @note  '//*' denotes implemented
+            ADD = 1,             //*
+            AGGM = 2,            //*
+            AGIM = 3,            //*
+            AGORSM = 4,          //*
+            AGRSM = 5,           //*
+            AIM = 6,             //*
+            ALGM = 7,            //*
+            ALM = 8,             //*
+            ALRSM = 9,           //*
+            AND = 10,            //*
+            AORSM = 11,          //*
+            ATT = 12,            //*
+            ATTACK = 13,
+            CARGOSCAN = 14,
+            CHEATTELEDOCK = 15,
+            CHEATTELEGATE = 16,
+            COMBINE = 17,        //*
+            DEC = 18,            //*
+            DECLOAKWAVE = 19,
+            DECN = 20,           //*
+            DEFASSOCIATION = 21, //*
+            DEFATTRIBUTE = 22,   //*
+            DEFBOOL = 23,        //*
+            DEFENVIDX = 24,      //*
+            DEFFLOAT = 25,       //*
+            DEFGROUP = 26,       //*
+            DEFINT = 27,         //*
+            DEFSTRING = 28,      //*
+            DEFTYPEID = 29,      //*
+            ECMBURST = 30,
+            EFF = 31,            //*
+            EMPWAVE = 32,
+            EQ = 33,             //*
+            GA = 34,             //*
+            GET = 35,            //*
+            GETTYPE = 36,        //*
+            GM = 37,             //*
+            GT = 38,             //*
+            GTE = 39,            //*
+            IA = 40,             //*
+            IF = 41,             //*
+            INC = 42,            //*
+            INCN = 43,           //*
+            LAUNCH = 44,
+            LAUNCHDEFENDERMISSILE = 45,
+            LAUNCHDRONE = 46,
+            LAUNCHFOFMISSILE = 47,
+            LG = 48,             //*
+            LS = 49,             //*
+            MINE = 50,
+            MUL = 51,            //*
+            OR = 52,             //*
+            POWERBOOST = 53,
+            RGGM = 54,           //*
+            RGIM = 55,           //*
+            RGORSM = 56,         //*
+            RGRSM = 57,          //*
+            RIM = 58,            //*
+            RLGM = 59,           //*
+            RLM = 60,            //*
+            RLRSM = 61,          //*
+            RORSM = 62,          //*
+            RS = 63,             //*
+            RSA = 64,            //*
+            SET = 65,            //*
+            SHIPSCAN = 66,
+            SKILLCHECK = 67,     //*
+            SUB = 68,            //*
+            SURVEYSCAN = 69,
+            TARGETHOSTILES = 70,
+            TARGETSILENTLY = 71,
+            TOOLTARGETSKILLS = 72,
+            UE = 73,             //*
+            VERIFYTARGETGROUP = 74,
+            SPEEDBOOST = 75      //*
+        };
+    }
 }
 
+
+/*  not sure what these are...
+ * dgmEffActivation = 1
+ * dgmEffArea = 3
+ * dgmEffOnline = 4
+ * dgmEffPassive = 0
+ * dgmEffTarget = 2
+ * dgmEffOverload = 5
+ * dgmEffDungeon = 6
+ * dgmEffSystem = 7
+ * dgmPassiveEffectCategories = (dgmEffPassive, dgmEffDungeon, dgmEffSystem)
+ *
+ *    dgmAttributesByIdx = {
+ *        1: attributeIsOnline,
+ *        2: attributeDamage,
+ *        3: attributeCharge,
+ *        4: attributeSkillPoints,
+ *        5: attributeArmorDamage,
+ *        6: attributeShieldCharge,
+ *        7: attributeIsIncapacitated}
+ *
+ *    UserErrors
+ *        UE_OWNERID = 2
+ *        UE_LOCID = 3
+ *        UE_TYPEID = 4
+ *        UE_TYPEID2 = 5
+ *        UE_TYPEIDL = 29
+ *        UE_BPTYPEID = 6
+ *        UE_GROUPID = 7
+ *        UE_GROUPID2 = 8
+ *        UE_CATID = 9
+ *        UE_CATID2 = 10
+ *        UE_DGMATTR = 11
+ *        UE_DGMFX = 12
+ *        UE_DGMTYPEFX = 13
+ *        UE_AMT = 18
+ *        UE_AMT2 = 19
+ *        UE_AMT3 = 20
+ *        UE_DIST = 21
+ *        UE_TYPEIDANDQUANTITY = 24
+ *        UE_OWNERIDNICK = 25
+ *        UE_ISK = 28
+ *        UE_AUR = 30
+ */
+/*  flags for ???
+ *    dgmExprSkip = 0
+ *    dgmExprOwner = 1
+ *    dgmExprShip = 2
+ *    dgmExprOwnerAndShip = 3
+ */
 
 /* these are the operandID field in the dgmExpressions table
  *

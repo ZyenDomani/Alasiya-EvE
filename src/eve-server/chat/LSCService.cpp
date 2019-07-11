@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur, Aknor Jaden
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include <boost/algorithm/string.hpp>
@@ -170,7 +170,7 @@ PyResult LSCService::Handle_GetRookieHelpChannel(PyCallArgs &call) {
         call.Dump(LSC__CALL_DUMP);
     }
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
@@ -180,7 +180,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
         call.Dump(LSC__CALL_DUMP);
     }
 
-    Call_SingleWStringSoftArg name;
+    Call_SingleStringArg name;
     if (!name.Decode(call.tuple))  {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
@@ -466,7 +466,7 @@ PyResult LSCService::Handle_AccessControl(PyCallArgs& call)
 
     //channel->UpdateConfig();
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_Invite(PyCallArgs &call)
@@ -521,10 +521,10 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
              *            //LSCChannelChar *invitee;
              *            if (!channel->IsJoined(char_ID))
              *            {
-             *                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharacterName(),0,0,0,0);
+             *                //invitor = new LSCChannelChar(channel,0,char_ID,call.client->GetCharName(),0,0,0,0);
              *                mct.characters.insert(char_ID);
         }
-        //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharacterName(),0,0,0,0);
+        //invitee = new LSCChannelChar(channel,0,invited_char_ID,entityList().FindCharacter(invited_char_ID)->GetCharName(),0,0,0,0);
         mct.characters.insert(invited_char_ID);
         entityList().Multicast("OnLSC", channel->GetTypeString(), &answer, mct);
         //entityList().Unicast(invited_char_ID,"OnLSC",channel->GetTypeString(),&answer,false);
@@ -555,7 +555,7 @@ PyResult LSCService::Handle_Invite(PyCallArgs &call)
         return nullptr;
     }
 
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 
 PyResult LSCService::Handle_Configure(PyCallArgs& call)

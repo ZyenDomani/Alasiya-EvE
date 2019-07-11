@@ -88,9 +88,7 @@ void SpawnMgr::Process() {
     if (!m_ratEnabled)
         return;
 
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
     // called by SystemManager::Process() for each system.  this will need to be fast.
     //  check timers and call approprate functions as needed.
 
@@ -349,9 +347,8 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
         return false;
     if (pBubble == nullptr)
         return false;
-    double profileStartTime = 0.0;
-    if (sConfig.debug.UseProfiling)
-        profileStartTime = GetTimeUSeconds();
+    double profileStartTime = GetTimeUSeconds();
+
     if (FindSpawnForBubble(pBubble->GetID())) {
         _log(SPAWN__TRACE, "SpawnMgr::FindSpawnForBubble() returned true for bubble %u.", pBubble->GetID());
         pBubble->SetSpawned(true);  // bubble flag to avoid multiple spawns in same bubble.
@@ -661,7 +658,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
     NPC* pNPC(nullptr);
-    SpawnEntry se { };
+    SpawnEntry se = SpawnEntry();
     GPoint startPos(pBubble->GetCenter());
     const GPoint warpToPoint(startPos);
     std::string name = "BeltRat";
@@ -674,7 +671,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     }
 
     uint32 corpID = sDataMgr.GetCorpID(factionID);
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = factionID;    // this is to set wreck salvage correctly (tests for faction)
         data.corporationID = corpID;
         data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
@@ -772,7 +769,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
 
     _log(SPAWN__POP, "SpawnMgr::ReSpawn - Spawning NPC %s(%u)", iRef->itemName().c_str(), iRef->itemID());
 
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = spawnEntry.factionID;   // this is to set wreck salvage correctly (tests for faction)
         data.corporationID = spawnEntry.corpID;
         data.factionID = spawnEntry.factionID;

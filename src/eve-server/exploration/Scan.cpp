@@ -133,7 +133,7 @@ void Scan::RequestScans(PyDict* dict) {
         probeID = (uint32)PyRep::IntegerValue(cItr->first);  // key
         std::map<uint32, ProbeSE*>::iterator pItr = m_probeMap.find(probeID);
         if (pItr == m_probeMap.end()) {
-            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, m_client->GetCharacterName().c_str(), m_client->GetCharacterID());
+            _log(SCAN__ERROR, "Probe %u wasnt found in the probeMap for %s(%u)", probeID, m_client->GetName(), m_client->GetCharacterID());
             continue;  // make error here?
         }
 
@@ -147,7 +147,7 @@ void Scan::RequestScans(PyDict* dict) {
         PyObjectEx* obj = args.destination->AsObjectEx();
         PyTuple* dest = obj->header()->AsTuple()->GetItem(1)->AsTuple();
 
-        ProbeData data;
+        ProbeData data = ProbeData();
         data.state = args.state;    // do we need this?
         data.expiry = args.expiry;
         data.rangeStep = args.rangeStep;
@@ -298,11 +298,8 @@ void Scan::ProbeScanResult()
 
     m_system->GetAnomMgr()->GetSignatureList(sig);
     for (auto sigs : sig) {
-        SignalData data;
-            data.certainty = 0;
-            data.deviation = 0;
+        SignalData data = SignalData();
             data.sig = sigs;
-            data.distance = 0;
             data.probes = nullptr;
             data.probePos = nullptr;
         if (GetProbeDataForSig(data)) {

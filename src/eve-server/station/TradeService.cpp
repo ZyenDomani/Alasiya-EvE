@@ -305,7 +305,7 @@ PyResult TradeBound::Handle_ToggleAccept(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_GetItemID(PyCallArgs &call) {
-    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_GetItemID() size=%u", call.tuple->size() );
+    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_GetItemID()");
     call.Dump(CLIENT__CALL_DUMP);
     // still not sure what this does...only returns PyNone in packet logs.
     // returns none
@@ -514,13 +514,9 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
 }
 
 PyResult TradeBound::Handle_IsCEOTrade(PyCallArgs &call) {
-    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_IsCEOTrade() size=%u", call.tuple->size() );
+    _log(CLIENT__CALL_DUMP, "TradeBound::Handle_IsCEOTrade()");
     call.Dump(CLIENT__CALL_DUMP);
-/*
-    if (call.tuple->size() > 0)
-        _log(CLIENT__CALL_DUMP, "TradeBound::Handle_IsCEOTrade() returned %s. need more code here.", \
-            (call.tuple->GetItem(0)->AsBool()->value() ? "true" : "false"));
-*/
+
     //TODO will have to work on this later.  need corps working correctly first.
     return new PyBool(false);
 }
@@ -590,9 +586,9 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     }
     // transfer funds and add journal entries for both sides
     std::string reason = "Player Trade between ";
-    reason += pClient->GetCharacterName();
+    reason += pClient->GetCharName();
     reason += " and ";
-    reason += pOther->GetCharacterName();
+    reason += pOther->GetCharName();
     reason += " in ";
     reason += pClient->GetSystemName();
     AccountService::TranserFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());

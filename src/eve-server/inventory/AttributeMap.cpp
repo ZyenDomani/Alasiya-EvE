@@ -51,10 +51,10 @@ bool AttributeMap::Load(bool reset/*false*/) {
         // this will allow total clearing of attribs to eliminate the necessity of 'removing' effects
         mAttributes.clear();
     }
-    /* First, we copy default attributes values from our itemType */
+    /* First, we copy default attributes values from our itemType, loaded into memObj when type is loaded */
     mItem.type().CopyAttributes(mItem);
 
-    /* Then we load saved attribs from the db, if any, to update the defaults */
+    /* Then we load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
     DBQueryResult res;
     if (IsCharacter(mItem.itemID())) {
         if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
@@ -71,7 +71,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     while (res.GetRow(row)) {
         if (row.IsNull(1)) {
             if (row.IsNull(2))
-                value = 0;
+                value = EvilZero;
             else
                 value = row.GetDouble(2);
         } else
@@ -79,7 +79,8 @@ bool AttributeMap::Load(bool reset/*false*/) {
         SetAttribute(row.GetUInt(0), value, false);
     }
     /* item now has it's own attribute map, and is deleted when item object is destroyed or reset */
-    _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
+    if (is_log_enabled(ITEM__DEBUG))
+        _log(ITEM__DEBUG, "AttributeMap::Load()  Loaded %u attribs for %s.", mAttributes.size(), mItem.itemName().c_str());
     return true;
 }
 
@@ -93,12 +94,13 @@ bool AttributeMap::Save() {
      *   all attribs for characters
      *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
-     *   damage for modules/charges, where applicable (ship damage saved separately)
+     *   damage and online for modules
+     *   damage for charges, where applicable (ship damage saved separately)
      */
     if (IsStaticItem(mItem.itemID()))
         return true;
 
-    bool skill = false, damage = false, owner = false;
+    bool skill = false, damage = false, owner = false, module = false;
     switch (mItem.categoryID()) {
         case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
         case EVEDB::invCategories::Blueprint: {
@@ -119,10 +121,11 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Deployable: {
             owner = true;
         } break;
-        case EVEDB::invCategories::Module:      // save damage for these
+        case EVEDB::invCategories::Module:      // save damage and online for these
+            module = true;                      // we're falling thru on purpose here
         case EVEDB::invCategories::Charge:      // remember, crystals and lenses are charges, too.
         case EVEDB::invCategories::Subsystem:
-        case EVEDB::invCategories::Drone: {
+        case EVEDB::invCategories::Drone: {     // this may need more.  check once system is working
             damage = true;
         } break;
     }
@@ -139,19 +142,19 @@ bool AttributeMap::Save() {
         if (damage)
             if (itr->first == AttrDamage)
                 save = true;
+        if (module)
+            if (itr->first == AttrOnline)
+                save = true;
         if (owner)
             save = true;
         if (save) {
-            AttrData data;
+            AttrData data = AttrData();
             data.itemID = mItem.itemID();
             data.attrID = itr->first;
-            if ( itr->second.get_type() == evil_number_int) {
+            if (itr->second.isInt())
                 data.valueInt = itr->second.get_int();
-                data.valueFloat = 0;
-            } else {
-                data.valueInt = 0;
+            else
                 data.valueFloat = itr->second.get_double();
-            }
             items.push_back(data);
         }
     }
@@ -164,8 +167,11 @@ bool AttributeMap::Save() {
 
 void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
 {
-    if (num.isNaN() or num.isInf())
-        return;     // make error here for bad number?
+    if (num.isNaN() or num.isInf()) {
+        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf.");
+        EvE::traceStack();
+        return;
+    }
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
         mAttributes.emplace(attrID, num);
@@ -187,7 +193,7 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity
 {
     if (num.isNaN() or num.isInf())
         return;     // make error here for bad number?
-    if (num == 0)
+    if (num == EvilZero)
         return;     // could this be on purpose?
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end())
@@ -206,7 +212,7 @@ EvilNumber AttributeMap::GetAttribute( const uint16 attrID ) const
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
         return itr->second;
-    return EvilNumber(0);
+    return EvilZero;
 }
 
 bool AttributeMap::HasAttribute(const uint16 attrID) const
@@ -224,6 +230,7 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
         value = itr->second;
         return true;
     }
+    value = EvilZero;
     return false;
 }
 
@@ -294,7 +301,7 @@ void AttributeMap::SaveShipState()
     // start the insert into command.
     Inserts << "REPLACE INTO entity_attributes ";
     Inserts << " (itemID, attributeID, valueInt, valueFloat) VALUES";
-    bool shield = false, armor = false, hull = false;
+    bool shield = false, armor = false, hull = false, hi = false, mid = false, lo = false;
     AttrMap::iterator cur = mAttributes.find(AttrShieldCharge);
     if (cur != mAttributes.end()) {
         shield = true;
@@ -329,8 +336,44 @@ void AttributeMap::SaveShipState()
             Inserts << " NULL, " << cur->second.get_double() << ")";
         }
     }
+    cur = mAttributes.find(AttrHeatHi);
+    if (cur != mAttributes.end()) {
+        hi = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrHeatMed);
+    if (cur != mAttributes.end()) {
+        mid = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
+    cur = mAttributes.find(AttrHeatLow);
+    if (cur != mAttributes.end()) {
+        lo = true;
+        if (shield or armor)
+            Inserts << ",";
+        Inserts << "(" << mItem.itemID() << ", " << cur->first << ", ";
+        if ( cur->second.get_type() == evil_number_int ) {
+            Inserts << cur->second.get_int() << ", NULL)";
+        } else {
+            Inserts << " NULL, " << cur->second.get_double() << ")";
+        }
+    }
 
-    if (shield or armor or hull) {
+    if (shield or armor or hull or hi or mid or lo) {
         DBerror err;
         if (!sDatabase.RunQuery(err, Inserts.str().c_str())) {
             _log(DATABASE__ERROR, "SaveShipState - unable to save attributes for %u - %s", mItem.itemID(), err.c_str());

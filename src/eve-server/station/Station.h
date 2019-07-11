@@ -97,8 +97,8 @@ public:
 
     // station methods here for offices, reprocessing, and docking.
     PyRep* GetOffices()                                 { PyIncRef(m_officePyData); return m_officePyData; }  // cached officeData for client call
-    int8 GetAvalibleOfficeCount()                       { return 24 - m_officeMap.size(); }
-    int64 GetOfficeRentalFee()                          { return m_data.officeRentalFee; }
+    int8 GetAvalibleOfficeCount()                       { return maxRentableOffices - m_officeMap.size(); }
+    uint32 GetOfficeRentalFee()                         { return m_data.officeRentalFee; }
     void RentOffice(OfficeData& odata);
     uint32 GetOfficeID(uint32 corpID);
     uint32 GetOwnerID()                                 { return m_data.corporationID; }
@@ -116,6 +116,9 @@ public:
     void RemoveGuest(Client* pClient);
 
     void GetRefineData(uint32& stationCorpID, float& staEfficiency, float& tax);
+
+    // does client have a ship in this station?
+    bool HasShip(Client* pClient);
 
     // will need methods/table for updated station data
 
@@ -142,7 +145,7 @@ protected:
         const StationType &stType = static_cast<const StationType &>( type );
 
         // load celestial data
-        CelestialObjectData cData;
+        CelestialObjectData cData = CelestialObjectData();
         if (!sItemFactory.db()->GetCelestialObject(stationID, cData))
             return RefPtr<_Ty>();
 

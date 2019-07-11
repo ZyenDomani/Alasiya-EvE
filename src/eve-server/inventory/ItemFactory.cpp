@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -109,7 +109,7 @@ void ItemFactory::SaveItems() {
         if (IsCharacter(cur.first))
             continue;
         if (IsPlayerItem(cur.first)) { // this is a hack for now.  will eventually move to static/dynamic item maps
-            SaveData data;
+            SaveData data = SaveData();
                 data.itemID = cur.first;
                 data.contraband = cur.second->contraband();
                 data.flag = cur.second->flag();
@@ -137,7 +137,7 @@ void ItemFactory::RemoveItem(uint32 itemID) {
     } else {
         m_items.erase( itr );
         // seen weird shit with itemcount being wrong.  not sure why.  havent really cared
-        if (m_itemCount < 1)
+        if ((m_itemCount < 1) or (m_itemCount > 0xFFFFFFFF))
             m_itemCount = m_items.size();
         else
             --m_itemCount;

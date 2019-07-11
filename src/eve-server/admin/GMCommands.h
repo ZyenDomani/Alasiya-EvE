@@ -1,7 +1,7 @@
 //no macroguard on purpose
 
 
-COMMAND( spawnn, Acct::Role::SPAWN,
+COMMAND( spawnn, Acct::Role::ADMIN,
          "(typeID) - Spawn an NPC with the specified type." )
 COMMAND( spawn, Acct::Role::SPAWN,
          "(typeID) - Spawn an NPC with the specified type." )

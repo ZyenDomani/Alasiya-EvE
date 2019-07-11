@@ -169,7 +169,7 @@ void Missile::Process() {
 void Missile::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = DSTBALL_MISSILE;
         head.radius = GetRadius();
@@ -178,14 +178,14 @@ void Missile::EncodeDestiny( Buffer& into )
         head.z = z();
         head.flags = IsFree;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DataSector data;
+    DataSector data = DataSector();
         data.maxVelocity = m_speed;
         data.velocity_x = m_destiny->GetVelocity().x;
         data.velocity_y = m_destiny->GetVelocity().y;

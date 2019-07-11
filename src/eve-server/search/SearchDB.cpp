@@ -142,7 +142,6 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
         }
         if (res.ColumnCount())
             dict->SetItem(new PyInt(searchID->at(i)),DBResultToIntIntDict(res));
-        //res.Reset();
     }
 
     return dict;
@@ -153,7 +152,7 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
     uint8 size = searchID->size();
 
     if (((size == 1) && (searchID->at(0) == 2)) || (hideNPC)) {
-
+        /** @todo i dont remember what this was for, but need to finish it anyway */
     }
 
     PyList *result = new PyList();
@@ -235,7 +234,6 @@ PyRep *SearchDB::QuickQuery(std::string string, std::vector<int> *searchID, uint
         while (res.GetRow(row)) {
             result->AddItem( new PyInt(row.GetUInt(0) ));
         }
-        //res.Reset();
     }
 
     return result;

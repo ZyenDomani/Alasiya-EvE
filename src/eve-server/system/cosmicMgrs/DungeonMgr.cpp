@@ -41,9 +41,9 @@ void DungeonDataMgr::Populate()
     DBResultRow row;
 
     ManagerDB::GetDunTemplates(*res);
-    DunTemplate dtemplates;
     while (res->GetRow(row)) {
         // SELECT dunTemplateID, dunTemplateName, dunEntryID, dunSpawnID, dunRoomID FROM dunTemplates
+        DunTemplate dtemplates = DunTemplate();
         dtemplates.dunName = row.GetText(1);
         dtemplates.dunRoomID = row.GetInt(4);
         dtemplates.dunEntryID = row.GetInt(2);
@@ -53,9 +53,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunRoomData(*res);
-    DunRoomData drooms;
     while (res->GetRow(row)) {
         // SELECT dunRoomID, dunGroupID, xpos, ypos, zpos FROM dunRoomData
+        DunRoomData drooms = DunRoomData();
         drooms.dunGroupID = row.GetInt(1);
         drooms.x = row.GetInt(2);
         drooms.y = row.GetInt(3);
@@ -65,9 +65,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunGroupData(*res);
-    DunGroupData dgroups;
     while (res->GetRow(row)) {
         // SELECT d.dunGroupID, d.itemTypeID, d.itemGroupID, t.typeName, t.groupID, g.categoryID, t.radius, d.xpos, d.ypos, d.zpos FROM dunGroupData
+        DunGroupData dgroups = DunGroupData();
         dgroups.typeID = row.GetInt(1);
         dgroups.typeName = row.GetText(3);
         dgroups.typeGrpID = row.GetInt(4);
@@ -81,9 +81,9 @@ void DungeonDataMgr::Populate()
 
     //res->Reset();
     ManagerDB::GetDunEntryData(*res);
-    DunEntryData dentry;
     while (res->GetRow(row)) {
         //SELECT dunEntryID, xpos, ypos, zpos FROM dunEntryData
+        DunEntryData dentry = DunEntryData();
         dentry.x = row.GetInt(1);
         dentry.y = row.GetInt(2);
         dentry.z = row.GetInt(3);
@@ -93,9 +93,9 @@ void DungeonDataMgr::Populate()
     /* not ready yet
     //res->Reset();
     ManagerDB::GetDunSpawnInfo(*res);
-    DunRoomSpawnInfo spawn;
     while (res->GetRow(row)) {
         //SELECT dunRoomSpawnID, dunRoomSpawnType, xpos, ypos, zpos
+        DunRoomSpawnInfo spawn = DunRoomSpawnInfo();
         spawn.dunRoomSpawnID = row.GetInt(0);
         spawn.dunRoomSpawnType = row.GetInt(1);
         spawn.x = row.GetInt(2);
@@ -219,7 +219,7 @@ void DungeonMgr::Process() {
     if (!m_initalized)
         return;
 
-    // this is used to remove empty/completed/timed-out dungons.
+    // this is used to remove empty/completed/timed-out dungons....eventually
 }
 
 void DungeonMgr::Load()
@@ -280,7 +280,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     /* do we need this?  persistant dungeons?
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
         // setup data to save active dungeon
-        ActiveDungeon dungeon;
+        ActiveDungeon dungeon = ActiveDungeon();
             dungeon.dunExpiryTime = Win32TimeNow() + (EvE::Time::Day * 3);       // 3 days - i know this isnt right. just for testing.
             dungeon.dunTemplateID = templateID;
             dungeon.dunItemID = sig.sigItemID;
@@ -293,11 +293,13 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     } */
 
     /* roomID format.  ABCD
-     *      A = roomtype - 1:combat, 2:rescue, 3:capture, 4:salvage, 5:relic, 6:hacking, 7:mining, 8:, 9:recon
+     *      A = roomtype - 1:combat, 2:rescue, 3:capture, 4:salvage, 5:relic, 6:hacking, 7:roids, 8:clouds, 9:recon
      *      B = level -  0:none, 1:f, 2:d, 3:c, 4:af/ad, 5:bc, 6:ac, 7:bs, 8:abs, 9:hard
      *      C = amount/size - 0:code defined 1:small(1-5), 2:medium(2-10), 3:large(5-25), 4:enormous(10-50), 5:colossal(20-100), 6-9:ice
+     *      D = faction - 0=drone, 1:Serpentis, 2:Angel, 3:Blood, 4:Guristas, 5:Sansha, 6:Amarr, 7:Caldari, 8:Gallente, 9:Minmatar
      *      D = sublevel - 0:gas, 1-5:ore, 6-9:ice
      */
+
     int16 x=0, y=0, z=0;
     DunGroupData grp;
     auto roomRange = sDunDataMgr.rooms.equal_range(dTemplate.dunRoomID);
@@ -379,33 +381,49 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
  * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
  * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
  */
+
+/* templateID format.  ABCDE
+ *       A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
+ *       B = sec - mission: 1-9 (incomplete); others - sysSec: 1=hi, 2=lo, 3=null, 4=mid;
+ *       C = type - grav: ore 0-5, ice 6-9; anomaly: 1-5; mission: 1-9; mag: *see below*; ded: 1-8; ladar/radar: 1-8
+ *       D = level - mission: 1-9; grav: ore 1-3, ice 0; mag: *see below*; radar: 1-norm; 2-digital(nullsec); ladar: 1; anomaly: 1-5
+ *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov, 8=region rat, 9=other
+ *
+ * NOTE:  mag sites have multiple types and levels based on other variables.
+ *      levels are defined as relic(1), salvage(2), and drone(3), with salvage being dominant.
+ *      for hisec and losec, types are 1-8 for relic and salvage.  there are no drone mag sites here
+ *      for nullsec, relic site types are 1-8, salvage site types are 1-4, and drone site types are 1-7
+ *
+ * NOTE:  faction can only be 8 for grav and anomaly sites, unless drones (6). all others MUST use 1-6
+ */
+
 bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
 {
     float secRating = m_system->GetSystemSecurityRating();
-    int8 type = 1; // > 0.6
+    int8 sec = 1; // > 0.6
     if (secRating < 0.1)
-        type = 3;
+        sec = 3;
     else if (secRating < 0.6)
-        type = 2;
+        sec = 2;
 
     float level = 1;
-    int8 subType = 1;
+    int8 type = 1;
     // need to determine region sov, region rat or other here also
-    int8 factionID = GetFactionID(sig.ownerID);
+    int8 faction = GetFaction(sig.ownerID);
 
     using namespace Dungeon::Type;
     switch (sig.dungeonType) {
         case Gravimetric: {       // 2
-            factionID = 8;  // rats per system
-            if (type == 1) {
+            faction = 8;  // region rat
+            if (sec == 1) {
                 sig.sigStrength = 0.2; // 1/5
-                subType = MakeRandomInt(0,5);
-            } else if (type == 2) {
+                type = MakeRandomInt(0,5);
+            } else if (sec == 2) {
                 sig.sigStrength = 0.0667; // 1/15
-                subType = MakeRandomInt(0,3);
-            } else if (type == 3) {
+                type = MakeRandomInt(0,3);
+            } else if (sec == 3) {
                 sig.sigStrength = 0.04; // 1/25
-                subType = MakeRandomInt(0,2);
+                type = MakeRandomInt(0,2);
             }
 
             // all roid types can spawn in grav sites.
@@ -419,139 +437,142 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             }
         } break;
         case Magnetometric: {     // 3
-            // there are special drone mag sites in null
-            //factionID = 0;
-            subType = MakeRandomInt(1,8);
-            if (type == 3) {
-                level = MakeRandomFloat();
-                if (level < 0.1) {
+            level = MakeRandomFloat();
+            if (sec == 3) { // nullsec
+                if (level < 0.1) { // 10% to be drone site
                     level = 3;
-                    subType = MakeRandomInt(1,4);
+                    type = MakeRandomInt(1,7);
                     sig.sigStrength = 0.0125; // 1/80
-                } else if (level < 0.3) {
-                    level = 2;
-                    subType = MakeRandomInt(1,6);
-                    sig.sigStrength = 0.025; // 1/40
-                } else {
+                } else if (level < 0.3) {   // 20% to be relic site
                     level = 1;
+                    type = MakeRandomInt(1,8);
+                    sig.sigStrength = 0.025; // 1/40
+                } else {    // else salvage site
+                    level = 1;
+                    type = MakeRandomInt(1,4);
                     sig.sigStrength = 0.05; // 1/20
                 }
-            } else {
-                if (IsEven(MakeRandomInt(0,10))) {
-                    level = 2;
+            } else {    // hi and lo sec
+                type = MakeRandomInt(1,8);
+                if (level < 0.3) {   // 20% to be relic site
+                    level = 1;
                     sig.sigStrength = 0.05; // 1/20
                 } else {
-                    level = 1;
+                    level = 2;
                     sig.sigStrength = 0.1; // 1/10
                 }
             }
+            if (level == 3)
+                faction = 6;  // drone
+            else if (faction = 6) {
+                // cannot be drone here.  set to region pirate
+                faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
+            }
         } break;
         case Radar: {             // 4
-            if (factionID == 6) {
-                level = 1;
-                subType = 1;
-                factionID = 0;
-                // drone sites will be harder.
-                sig.sigStrength = 0.0222; // 1/45
-            } else {
-                subType = MakeRandomInt(1,8);
-                if (type == 1) {
-                    sig.sigStrength = 0.1; // 1/10
-                } else if (type == 2) {
+            // type 1, level 1 are covert research (ghost sites)
+            // level 2 are digital sites and region-specific (only in nullsec)
+            // both are incomplete and will be harder than reg sites.
+            type = MakeRandomInt(1,8);
+            if (sec == 1) {
+                sig.sigStrength = 0.1; // 1/10
+                if (type == 1) { // Covert Research
+                    level = 1;
                     sig.sigStrength = 0.05; // 1/20
-                } else if (type == 3) {
+                }
+            } else if (sec == 2) {
+                sig.sigStrength = 0.05; // 1/20
+                if (type == 1) { // Covert Research
+                    level = 1;
                     sig.sigStrength = 0.025; // 1/40
-                    if (IsEven(MakeRandomInt(0,10))) {
-                        level = 2;
-                        factionID = 0;
-                    }
+                }
+            } else if (sec == 3) {
+                sig.sigStrength = 0.025; // 1/40
+                if (faction == 0) {   // this should not hit
+                    level = 2;
+                    sig.sigStrength = 0.0222; // 1/45
+                } else if (type == 1) { // Covert Research
+                    level = 1;
+                    sig.sigStrength = 0.0167; // 1/60
                 }
             }
         } break;
         case Ladar: {             // 5
-            factionID = 0;
-            subType = MakeRandomInt(1,8);
-            if (type == 1)
+            faction = 0;
+            type = MakeRandomInt(1,8);
+            if (sec == 1)
                 sig.sigStrength = 0.1; // 1/10
-            else if (type == 2)
+            else if (sec == 2)
                 sig.sigStrength = 0.05; // 1/20
-            else if (type == 3)
+            else if (sec == 3)
                 sig.sigStrength = 0.025; // 1/40
         } break;
-        /*
-         * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
-         * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
-         */
         case Anomaly: {           // 7
-            // fix factionID after anomaly templates are finished
-            if (factionID < 6)
-                factionID = 8;
-            subType = MakeRandomInt(1,5);
-            if (type == 1) {
-                if (subType == 1) {
-                    level = GetRandLevel();
-                    sig.sigStrength = 0.0667; // 1/15
-                } else {
-                    sig.sigStrength = 0.2; // 1/5
-                }
-            } else if (type == 2) {
-                if (subType == 2) {
-                    level = GetRandLevel();
-                    sig.sigStrength = 0.05; // 1/20
-                } else if (subType == 4) {
-                    level = GetRandLevel();
-                    sig.sigStrength = 0.025; // 1/40
-                } else {
-                    sig.sigStrength = 0.1; // 1/10
-                }
-            } else if (type == 3) {
-                if (subType == 1) {
-                    level = GetRandLevel();
-                    sig.sigStrength = 0.025; // 1/40
-                } else if (subType == 3) {
-                    level = GetRandLevel();
-                    sig.sigStrength = 0.0167; // 1/60
-                } else {
-                    sig.sigStrength = 0.05; // 1/20
+            type = MakeRandomInt(1,5);
+            // if anomaly is non-drone, set template variables for types.
+            if (faction != 6) {
+                faction = 8;
+                if (sec == 1) {
+                    if (type == 1) {
+                        level = GetRandLevel();
+                        sig.sigStrength = 0.0667; // 1/15
+                    } else {
+                        sig.sigStrength = 0.2; // 1/5
+                    }
+                } else if (sec == 2) {
+                    if (type == 2) {
+                        level = GetRandLevel();
+                        sig.sigStrength = 0.05; // 1/20
+                    } else if (type == 4) {
+                        level = GetRandLevel();
+                        sig.sigStrength = 0.025; // 1/40
+                    } else {
+                        sig.sigStrength = 0.1; // 1/10
+                    }
+                } else if (sec == 3) {
+                    if (type == 1) {
+                        level = GetRandLevel();
+                        sig.sigStrength = 0.025; // 1/40
+                    } else if (type == 3) {
+                        level = GetRandLevel();
+                        sig.sigStrength = 0.0167; // 1/60
+                    } else {
+                        sig.sigStrength = 0.05; // 1/20
+                    }
                 }
             }
         } break;
+        // yes, these will 'fall thru' to 'Unrated' here.  this is on purpose
+        case Escalation:  // 9
+        case Rated: {  // 10
+            //sig.dungeonType = 9;
+        };
         case Mission: {   // 1
             // not sure how im gonna do this one yet...make it unrated for now
             sig.dungeonType = 8;
         };
         case Unrated: {           // 8
-            if (factionID == 6)
-                subType = MakeRandomInt(1,3);
+            if (faction == 6)
+                type = MakeRandomInt(1,3);
             else {
-                factionID = 0;
-                subType = MakeRandomInt(1,5);
+                faction = 0;
+                type = MakeRandomInt(1,5);
             }
         } break;
-        case Escalation:  // 9
-        case Rated: {  // 10
-            sig.dungeonType = 9;
-            if (factionID == 6)
-                subType = MakeRandomInt(1,3);
-            else {
-                factionID = 0;
-                subType = MakeRandomInt(1,5);
-            }
-        };
-        case 0: {
+        case 0:
+        default: {
             sig.dungeonType = 7;
             MakeDungeon(sig);
         } break;
     }
 
-    /* templateID format.  ABCDE
-     *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded,  7:anomaly, 8:unrated, 9:escalation
-     *       B = type - security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
-     *       C = subtype - sitetype 2: ore 0 to 5; ice 6 to 9, sitetype 7: 1 to 5, sitetype 1: 1 to 9, sitetype 3: (l1,l2) 1-8; (l3) 1-4, sitetype 5: 1 to 8
-     *       D = level - sitetype 1: 1 to 9, sitetype 2: ore 1 to 3; ice 0, sitetype 3: 1-relic or 2-salvage (dominant), sitetype 4: 1-norm; 2-digital , sitetype 7: 1 to 5
-     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
-     */
-    uint32 templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
+    if (faction == 7) {
+        // faction is defined to be region sovereign holder.
+        //   this hasnt been written yet, so default to region rats
+        faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
+    }
+
+    uint32 templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + faction;
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr::MakeDungeon() - Calling Create for type %s(%u) using templateID %u", \
             sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, templateID);
@@ -559,23 +580,24 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     return Create(templateID, sig);
 }
 
-int8 DungeonMgr::GetFactionID(uint32 factionID)
+int8 DungeonMgr::GetFaction(uint32 factionID)
 {
     switch (factionID) {
         case factionAngel:          return 2;
         case factionSanshas:        return 5;
-        case factionBloodRaider:    return 3;
         case factionGuristas:       return 4;
         case factionSerpentis:      return 1;
+        case factionBloodRaider:    return 3;
         case factionRogueDrones:    return 6;
-        // these arent gonna fit...
-        case factionAmarr:          return 0;
-        case factionAmmatar:        return 0;
-        case factionCaldari:        return 0;
-        case factionGallente:       return 0;
-        case factionMinmatar:       return 0;
         case 0:                     return 7;
-        default:                    return 8;
+        // these are incomplete.  set to default (region rat)
+        case factionAmarr:
+        case factionAmmatar:
+        case factionCaldari:
+        case factionGallente:
+        case factionMinmatar:
+        default:
+            return GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
     }
 }
 
@@ -586,9 +608,9 @@ int8 DungeonMgr::GetRandLevel()
 
     if (level < 0.15)
         return 4;
-    else if (level < 0.20)
+    else if (level < 0.25)
         return 3;
-    else if (level < 0.40)
+    else if (level < 0.50)
         return 2;
     else
         return 1;
@@ -614,18 +636,25 @@ struct CosmicSignature {
 void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
 {
     /* templateID format.  ABCDE
-     *       A = sitetype - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
-     *       B = type - security: 1=hi, 2=lo, 3=null, 4=mid, mission misc: 1 to 9
-     *       C = subtype  - 2: ore 0 to 5; ice 6 to 9, 7: 1 to 5, 1: 1 to 9, 3: 1 to 8, 5: 1 to 8
-     *       D = level - 2: ore 1 to 3; ice 0, 4: type 3, 2 levels, 7: 1 to 5, 1: 1 to 9
-     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov , 8=region pirate , 9=other
+     *       A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
+     *       B = sec - mission: 1-9 (incomplete); others - sysSec: 1=hi, 2=lo, 3=null, 4=mid;
+     *       C = type - grav: ore 0-5, ice 6-9; anomaly: 1-5; mission: 1-9; mag: *see below*; ded: 1-8; ladar/radar: 1-8
+     *       D = level - mission: 1-9; grav: ore 1-3, ice 0; mag: *see below*; radar: 1-norm; 2-digital(nullsec); ladar: 1; anomaly: 1-5
+     *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov, 8=region rat, 9=other
+     *
+     * NOTE:  mag sites have multiple types and levels based on other variables.
+     *      levels are defined as relic(1), salvage(2), and drone(3), with salvage being dominant.
+     *      for hisec and losec, types are 1-8 for relic and salvage.  there are no drone mag sites here
+     *      for nullsec, relic site types are 1-8, salvage site types are 1-4, and drone site types are 1-7
+     *
+     * NOTE:  faction can only be 8 for grav and anomaly sites, unless drones (6). all others MUST use 1-6
      */
 
-    // templateID = (sig.dungeonType *10000) + (type *1000) + (subType *100) + (level *10) + factionID;
+    // templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + factionID;
     uint8 factionID = templateID % 10;
     uint8 size = templateID / 10 % 10;
-    uint8 subType = templateID / 100 % 10;
-    uint8 type = templateID / 1000 % 10;
+    uint8 type = templateID / 100 % 10;
+    //uint8 sec = templateID / 1000 % 10;
 
     uint16 groupID = 0, radius = 0;
 
@@ -746,8 +775,8 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             size = count /size;
         if (size < 1)
             size = 1;
-        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), subtype %u, size %u, count %u, range %u, faction %u",\
-                    cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, subType, size, count, origSize, factionID);
+        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %s, size %u, count %u, range %u, faction %u",\
+                    cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, type, size, count, origSize, factionID);
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
         auto it = groupRange.first;

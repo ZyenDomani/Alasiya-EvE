@@ -83,7 +83,7 @@ bool NPCMarket::ProcessStation(const TiXmlElement* ele)
     DBerror err;
 
     // get the solar system and region IDs.
-    StationData data;
+    StationData data = StationData();
     if (!stDataMgr.GetStationData(StationID, data)) {
         newOrders.clear();
         codelog(MARKET__ERROR, "NPCMarket: Failed to find parents for station %u", StationID);

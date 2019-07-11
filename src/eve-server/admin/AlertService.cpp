@@ -40,6 +40,7 @@ AlertService::AlertService(PyServiceMgr *mgr)
 
     m_dispatch->RegisterCall("BeanCount", &AlertService::Handle_BeanCount);
     m_dispatch->RegisterCall("BeanDelivery", &AlertService::Handle_BeanDelivery);
+    m_dispatch->RegisterCall("GroupBeanDelivery", &AlertService::Handle_GroupBeanDelivery);
     m_dispatch->RegisterCall("SendClientStackTraceAlert", &AlertService::Handle_SendClientStackTraceAlert);
 
     if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
@@ -79,6 +80,7 @@ PyResult AlertService::Handle_BeanCount(PyCallArgs &call) {
   * @Note: this process is only useful when we supply the client with a valid mErrorID.
   *      meaning that we should code a mErrorID tracker for it. To handle these.
   */
+// note:  this is a rather complicated system....
 PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
 {
     _log(CLIENT__WARNING, "AlertService::Handle_BeanDelivery(): size=%u", call.tuple->size() );
@@ -89,10 +91,16 @@ PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
     return new PyNone();
 }
 
+PyResult AlertService::Handle_GroupBeanDelivery( PyCallArgs& call )
+{
+    _log(CLIENT__WARNING, "AlertService::Handle_GroupBeanDelivery(): size=%u", call.tuple->size() );
+    //call.Dump(CLIENT__CALL_DUMP);
+
+    return new PyNone();
+}
+
 /**
  * @brief The client sends us a python stack trace, from which we could make up what we did wrong.
- *
- *
  *
  * @param[in] call is the python packet that contains the info for this function
  *
@@ -104,9 +112,7 @@ PyResult AlertService::Handle_BeanDelivery( PyCallArgs& call )
 PyResult AlertService::Handle_SendClientStackTraceAlert(PyCallArgs &call) {
     _log(CLIENT__WARNING, "AlertService::Handle_SendClientStackTraceAlert(): size=%u", call.tuple->size() );
     //call.Dump(CLIENT__CALL_DUMP);
-  /**
-		  SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
-  */
+    //  self.stacktraceLogMode[stackID[0]] = sm.ProxySvc('alert').SendClientStackTraceAlert(stackID, stackTrace, mode, nextErrorKeyHash)
 
   if (sConfig.server.UseStackTrace or is_log_enabled(CLIENT__STACK_TRACE))
     traceLogger->logTrace(*call.tuple);

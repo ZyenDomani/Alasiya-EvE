@@ -309,7 +309,7 @@ public:
      * @param InventoryItem
      */
     bool            InjectSkillIntoBrain(SkillRef skill);
-    
+
     /* AddSkillToSkillQueue()
      *
      * This will add a skill into the skill queue.
@@ -522,11 +522,11 @@ protected:
                 EvE::traceStack();
             return RefPtr<_Ty>();
         }
-        CharacterData charData { };
+        CharacterData charData = CharacterData();
         if( !sItemFactory.db()->GetCharacterData( characterID, charData ) )
             return RefPtr<_Ty>();
 
-        CorpData corpData { };
+        CorpData corpData = CorpData();
         if( !sItemFactory.db()->GetCorpData( characterID, corpData ) )
             return RefPtr<_Ty>();
 

@@ -41,7 +41,7 @@ double DestinyOrbit::eccentric_anomaly_from_true(double e, double f)
 {
     /*Convert true anomaly to eccentric anomaly. */
     double E = atan2(sqrt(1 - pow(e, 2)) * sin(f), e + cos(f));
-    E = mod(E, 2 * EvE::Trig::Pi);
+    E = fmod(E, 2 * EvE::Trig::Pi);
     return E;
 }
 
@@ -208,7 +208,7 @@ void from_state_vector(r, v, body, ref_epoch=J2000) {
 
     // Fix mean anomaly at epoch for new orbit and position.
     oldM0 = self.M0;
-    self.M0 = ou.mod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
+    self.M0 = fmod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
     assert self.M0 == oldM0;
 
     // Now check that the computed properties for position and velocity are
@@ -248,7 +248,7 @@ void epoch(value) {
      */
     t = (value - self.ref_epoch).sec;
     self._M = self.M0 + self.n * t;
-    self._M = ou.mod(self._M, 2 * EvE::Trig::Pi);
+    self._M = fmod(self._M, 2 * EvE::Trig::Pi);
     self._t = t;
 }
 // @ property
@@ -262,7 +262,7 @@ void t(value) {
      *        other anomalies are calculated).
      */
     self._M = self.M0 + self.n * value;
-    self._M = ou.mod(self._M, 2 * EvE::Trig::Pi);
+    self._M = fmod(self._M, 2 * EvE::Trig::Pi);
     self._t = value;
 }
 // @ property
@@ -274,7 +274,7 @@ void M(self) {
 void M(value) {
     warnings.warn('Setting anomaly does not set time, use KeplerianElements'
     '.propagate_anomaly_to() instead.', OrbitalWarning);
-    self._M = ou.mod(value, 2 * EvE::Trig::Pi);
+    self._M = fmod(value, 2 * EvE::Trig::Pi);
 }
 // @ property
 void E(self) {
@@ -310,7 +310,7 @@ void a(value) {
      *        self.M0 is fixed.
      */
     self._a = value;
-    self.M0 = ou.mod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
+    self.M0 = fmod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
 }
 // @ property
 void r(self) {
@@ -344,7 +344,7 @@ void v(value) {
     self.f = elements.f;
 
     // Fix mean anomaly at epoch for new orbit and position.
-    self.M0 = ou.mod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
+    self.M0 = fmod(self.M - self.n * self.t, 2 * EvE::Trig::Pi);
 
     // Now check that the computed properties for position and velocity are
     // reasonably close to the inputs.
@@ -528,4 +528,4 @@ void __str__(self) {
              T=timedelta(seconds=self.T),
              t=timedelta(seconds=self.t));
 }
-}
+}   //endif

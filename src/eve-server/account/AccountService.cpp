@@ -86,22 +86,17 @@ PyResult AccountService::Handle_GetWalletDivisionsInfo(PyCallArgs &call)
 }
 
 PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
-    //corrected, updated, optimized     -allan 26jan15      ReVisited/Rewrote  -allan 7Dec17
-    sLog.White( "AccountService::Handle_GetCashBalance()", "size=%u", call.tuple->size());
+    //corrected, updated, optimized     -allan 26jan15      ReVisited/Rewrote  -allan 7Dec17    Update  -allan 20May19
+    sLog.Log( "AccountService::Handle_GetCashBalance()", "size=%u", call.tuple->size());
     call.Dump(ACCOUNT__CALL_DUMP);
     bool isCorp = false;
-    if (call.tuple->size() > 0) {
-        if (call.tuple->GetItem(0)->IsBool())
-            isCorp = call.tuple->GetItem(0)->AsBool()->value();
-        else if (call.tuple->GetItem(0)->IsInt())
-            isCorp = call.tuple->GetItem(0)->AsInt()->value();
-    }
+    if (call.tuple->size() > 0)
+        isCorp = PyRep::IntegerValue(call.tuple->GetItem(0));
 
     double balance = 0;
     int16 accountKey = call.client->GetCorpAccountKey();
     if (call.byname.find("accountKey") != call.byname.end())
-        if (call.byname.find("accountKey")->second->IsInt())
-            accountKey = call.byname.find("accountKey")->second->AsInt()->value();
+        accountKey = PyRep::IntegerValue(call.byname.find("accountKey")->second);
 
     if (isCorp)
         balance = AccountDB::GetCorpBalance( call.client->GetCorporationID(), accountKey);
@@ -119,7 +114,7 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
 
 PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
 {    // this asks for data for a single acctKey
-    sLog.White( "AccountService::Handle_GetJournal()", "size=%u", call.tuple->size());
+    sLog.Log( "AccountService::Handle_GetJournal()", "size=%u", call.tuple->size());
     call.Dump(ACCOUNT__CALL_DUMP);
     Call_GetJournal args;
     if (!args.Decode(&call.tuple)) {
@@ -132,15 +127,15 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
         ownerID = call.client->GetCorporationID();
 
     PyRep* res = m_db.GetJournal(ownerID, args.entryTypeID, args.accountKey, args.fromDate, args.rev);
-   // if (is_log_enabled(ACCOUNT__RSP_DUMP))
-     //   res->Dump(ACCOUNT__RSP_DUMP, "    ");
+    if (is_log_enabled(ACCOUNT__RSP_DUMP))
+        res->Dump(ACCOUNT__RSP_DUMP, "    ");
     return res;
 }
 
 PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
     // this asks for data for multiple acctKeys
     // self.journalData[key] = self.GetAccountSvc().GetJournalForAccounts(accountKeys, fromDate, entryTypeID, corpAccount, transactionID, rev)
-    sLog.White( "AccountService::Handle_GetJournalForAccounts()", "size=%u", call.tuple->size());
+    sLog.Log( "AccountService::Handle_GetJournalForAccounts()", "size=%u", call.tuple->size());
     call.Dump(ACCOUNT__CALL_DUMP);
 
     Call_GetJournals args;
@@ -166,7 +161,7 @@ PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
 
 PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
 {
-    sLog.White( "AccountService::Handle_GiveCash()", "size=%u", call.tuple->size());
+    sLog.Log( "AccountService::Handle_GiveCash()", "size=%u", call.tuple->size());
     call.Dump(ACCOUNT__CALL_DUMP);
 
     Call_GiveCash args;
@@ -187,7 +182,7 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
 
 PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
 {
-    sLog.White( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
+    sLog.Log( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
     call.Dump(ACCOUNT__CALL_DUMP);
 
     Call_GiveCorpCash args;
@@ -321,10 +316,11 @@ void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uin
     // verify funds available for withdraw first
     if (amount < 0) {
         if (-amount > balance) {
+            /** @todo  update this... however, current implementation will allow for corp transactions w/o loaded corp  */
             std::map<std::string, PyRep *> args;
+            args["owner"] = new PyString(CorporationDB::GetCorpName(ownerID));
             args["amount"] = new PyFloat(-amount);
             args["balance"] = new PyFloat(balance);
-            /** @todo  update this... however, current implementation will allow for corp transactions w/o loaded corp  */
             args["division"] = new PyString(CorporationDB::GetDivisionName(ownerID, accountKey));
             throw PyException(MakeUserError("NotEnoughMoneyCorp", args));
         }

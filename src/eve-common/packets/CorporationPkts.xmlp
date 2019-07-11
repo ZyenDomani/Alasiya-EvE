@@ -307,58 +307,11 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="OCCSessionChangeNotification">
-    <dictInline>
-      <dictInlineEntry key="corprole">
-        <tupleInline>
-          <long name="corpRoleOld" />
-          <long name="corpRoleNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="corpid">
-        <tupleInline>
-          <int name="corpidOld" />
-          <int name="corpidNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtAll">
-        <tupleInline>
-          <long name="corpRoleAllOld" />
-          <long name="corpRoleAllNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtBase">
-        <tupleInline>
-          <long name="corpRoleBaseOld" />
-          <long name="corpRoleBaseNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="hqID">
-        <tupleInline>
-          <int name="corpHqIDOld" />
-          <int name="corpHqIDNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtHQ">
-        <tupleInline>
-          <long name="corpRoleHQOld" />
-          <long name="corpRoleHQNew" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="rolesAtOther">
-        <tupleInline>
-          <long name="corpRoleOtherOld" />
-          <long name="corpRoleOtherNew" />
-        </tupleInline>
-      </dictInlineEntry>
-    </dictInline>
-  </elementDef>
-
   <elementDef name="CorpOfficeSparseRowset">
     <objectInline>
       <stringInline value="util.SparseRowset" />
       <tupleInline>
-        <!-- This is probably a header. No indication of it though -->
+        <!-- This is a header. No indication of it though -->
         <listInline>
           <!-- This has to be String Table Item 155, which is out of range, so I have to create it a bit differently -->
           <stringInline value="stationID" />
@@ -368,9 +321,9 @@
         </listInline>
         <!-- Substruct containing a substream containing the binding stuff -->
         <!-- String, Dict, int field -->
-        <raw name="bindedObject" />
-        <!-- Maybe number of offices? -->
-        <int name="officeNumber" default="0" />
+        <raw name="boundObject" />
+        <!-- Number of offices rented by corp -->
+        <int name="officeCount" default="0" />
       </tupleInline>
     </objectInline>
   </elementDef>
@@ -486,7 +439,7 @@
       <string name="bindID" />
       <dictInline>
         <dictInlineEntry key="realRowCount">
-          <int name="realRowCount" default="2" />
+          <int name="realRowCount" default="2" />   <!-- still not sure what this is for -->
         </dictInlineEntry>
       </dictInline>
       <tupleInline>
@@ -549,15 +502,6 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Reply_FetchOffice">
-    <listInline>
-      <tupleInline>
-        <int name="officeID" />
-        <list name="params" />
-      </tupleInline>
-    </listInline>
-  </elementDef>
-
   <elementDef name="Call_InsertApplication">
     <tupleInline>
       <int name="corpID" />
@@ -603,6 +547,19 @@
             <raw name="applicationTextNew" />
           </tupleInline>
         </dictInlineEntry>
+        <dictInlineEntry key="status">
+          <tupleInline>
+            <raw name="statusOld" />
+            <raw name="statusNew" />
+          </tupleInline>
+        </dictInlineEntry>
+        <dictInlineEntry key="lastCorpUpdaterID">
+          <tupleInline>
+            <raw name="lastCorpUpdaterIDOld" />
+            <raw name="lastCorpUpdaterIDNew" />
+          </tupleInline>
+        </dictInlineEntry>
+        <!--
         <dictInlineEntry key="roles">
           <tupleInline>
             <raw name="rolesOld" />
@@ -613,12 +570,6 @@
           <tupleInline>
             <raw name="grantableRolesOld" />
             <raw name="grantableRolesNew" />
-          </tupleInline>
-        </dictInlineEntry>
-        <dictInlineEntry key="status">
-          <tupleInline>
-            <raw name="statusOld" />
-            <raw name="statusNew" />
           </tupleInline>
         </dictInlineEntry>
         <dictInlineEntry key="applicationDateTime">
@@ -633,12 +584,7 @@
             <raw name="deletedNew" />
           </tupleInline>
         </dictInlineEntry>
-        <dictInlineEntry key="lastCorpUpdaterID">
-          <tupleInline>
-            <raw name="lastCorpUpdaterIDOld" />
-            <raw name="lastCorpUpdaterIDNew" />
-          </tupleInline>
-        </dictInlineEntry>
+        -->
       </dictInline>
     </tupleInline>
   </elementDef>
@@ -729,26 +675,6 @@
           <raw name="grantableRolesAtBaseNew" />
         </tupleInline>
       </dictInlineEntry>
-<!--
-      <dictInlineEntry key="STI145">
-        <tupleInline name="uu8">
-          <raw name="STI145Old" />
-          <raw name="STI145New" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="STI146">
-        <tupleInline name="uut">
-          <raw name="STI146Old" />
-          <raw name="STI146New" />
-        </tupleInline>
-      </dictInlineEntry>
-      <dictInlineEntry key="STI147">
-        <tupleInline name="uuq">
-          <raw name="STI147Old" />
-          <raw name="STI147New" />
-        </tupleInline>
-      </dictInlineEntry>
--->
     </dictInline>
   </elementDef>
 
@@ -768,6 +694,14 @@
             <long name="newDate" />
           </tupleInline>
         </dictInlineEntry>
+        <!--  not used in this version
+        <dictInlineEntry key="rowDate">
+          <tupleInline>
+            <long name="oldRowDate" />
+            <long name="newRowDate" />
+          </tupleInline>
+        </dictInlineEntry>
+        -->
       </dictInline>
     </tupleInline>
   </elementDef>
@@ -853,6 +787,18 @@
       <int name="channelID" none_marker="0" />
       <list name="recruiters" />
       <string name="title" none_marker="0" safe="true" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_UpdateRecruitmentAd">
+    <tupleInline>
+      <int name="adID" safe="true"/>
+      <long name="typeMask" none_marker="0" safe="true" />
+      <string name="description" none_marker="0" safe="true" />
+      <int name="channelID" none_marker="0" />
+      <list name="recruiters" />
+      <string name="title" none_marker="0" safe="true" />
+      <int name="addedDays" none_marker="0" />
     </tupleInline>
   </elementDef>
 
@@ -1029,12 +975,11 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="VoteCaseData">
+  <elementDef name="Call_GetVoteCases">
     <tupleInline>
-      <string name="choice" none_marker="0" safe="true" /><!-- vote decesion option -->
-      <int name="itemID" none_marker="0" /><!-- for kick, ceo this is charID.  for war, this is corpID.  for lock/unlock, this is itemID  for shares/general, this is boolean-->
-      <int name="typeID" none_marker="0" /><!-- typeID of above itemID.  for shares/general, this is 0 -->
-      <int name="locationID" none_marker="0" /><!-- for lock/unlock, this is items locationID.  for others, this is 0 -->
+      <int name="corpid" none_marker="0" safe="true" />
+      <int name="status" none_marker="0" safe="true" />
+      <int name="maxLen" none_marker="0" safe="true" />
     </tupleInline>
   </elementDef>
 
@@ -1093,6 +1038,30 @@
           </tupleInline>
         </dictInlineEntry>
       </dictInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_CreateMedal">
+    <tupleInline>
+      <string name="title" safe="true" />
+      <string name="description" safe="true" />
+      <list name="data" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_AwardMedal">
+    <tupleInline>
+      <int name="medalID" safe="true" none_marker="0" />
+      <list name="recipientIDs" />
+      <string name="reason" safe="true" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="Call_InsertVote">
+    <tupleInline>
+      <int name="corpID" safe="true" />
+      <int name="voteCaseID" safe="true" />
+      <int name="voteValue" safe="true" />
     </tupleInline>
   </elementDef>
 

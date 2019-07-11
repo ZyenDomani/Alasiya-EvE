@@ -21,7 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:     Zhur, mmcs
- *    Updates:    Allan
+ *    Updates:    Allan (rewrite)
  */
 
 #include "eve-server.h"
@@ -55,6 +55,8 @@
 // agent services
 #include "agents/Agent.h"
 #include "agents/AgentMgrService.h"
+// alliance services
+#include "alliance/AllianceRegistry.h"
 // calendar services
 #include "system/Calendar.h"
 #include "system/CalendarMgrService.h"
@@ -85,7 +87,6 @@
 #include "contract/ContractMgr.h"
 #include "contract/ContractProxy.h"
 // corporation services
-#include "corporation/AllianceRegistry.h"
 #include "corporation/BillMgr.h"
 #include "corporation/CorpBookmarkMgr.h"
 #include "corporation/CorpFittingMgr.h"
@@ -266,6 +267,25 @@ int main( int argc, char* argv[] )
      * current settings displayed on console at start-up
      *   -allan 7June2015
      */
+    sLog.Blue("     ServerConfig", "World Switches");
+    if (sConfig.world.saveOnMove)
+        sLog.Green("     Save on Move","Enabled.");
+    else
+        sLog.Warning("     Save on Move","Disabled.");
+    if (sConfig.world.saveOnUpdate)
+        sLog.Green("   Save on Update","Enabled.");
+    else
+        sLog.Warning("   Save on Update","Disabled.");
+    if (sConfig.world.StationDockDelay)
+        sLog.Green("    Docking Delay","Enabled.");
+    else
+        sLog.Warning("    Docking Delay","Disabled.");
+    if (sConfig.world.gridUnload)
+        sLog.Green("   Grid Unloading","Enabled.  Grids will unload after %u seconds of inactivity.", sConfig.world.gridUnloadTime);
+    else
+        sLog.Warning("   Grid Unloading","Disabled.");
+    std::printf("\n");     // spacer
+
     sLog.Blue("     ServerConfig", "Rate Modifiers");
     if (sConfig.rates.secRate != 1.0)
         sLog.Yellow("        SecStatus","Modified at %.0f%%.", (sConfig.rates.secRate *100) );
@@ -309,34 +329,6 @@ int main( int argc, char* argv[] )
         sLog.Green("     Missile Time","Normal.");
     std::printf("\n");     // spacer
 
-    sLog.Blue("     ServerConfig", "Debug Switches");
-    if (sConfig.debug.IsTestServer)
-        sLog.Error("     ServerConfig", "Test Server Enabled");
-    else
-        sLog.Error("     ServerConfig", "Live Server Enabled");
-    if (sConfig.debug.UseProfiling) {
-        sLog.Green(" Server Profiling","Enabled.");
-        sProfile.Initialize();
-    } else
-        sLog.Warning(" Server Profiling","Disabled.");
-    if (sConfig.debug.SpawnTest)
-        sLog.Warning("       Spawn Test","Enabled.");
-    else
-        sLog.Warning("       Spawn Test","Disabled.");
-    if (sConfig.debug.BubbleTrack)
-        sLog.Warning("  Bubble Tracking","Enabled.");
-    else
-        sLog.Warning("  Bubble Tracking","Disabled.");
-    if (sConfig.debug.UseShipTracking)
-        sLog.Warning("    Ship Tracking","Enabled.");
-    else
-        sLog.Warning("    Ship Tracking","Disabled.");
-    if (sConfig.debug.PositionHack)
-        sLog.Warning("    Position Hack","Enabled.");
-    else
-        sLog.Warning("    Position Hack","Disabled.");
-    std::printf("\n");     // spacer
-
     sLog.Blue("     ServerConfig", "Feature Switches");
     if (sConfig.server.ModuleAutoOff)
         sLog.Green("  Module Auto-Off","Enabled.");
@@ -350,10 +342,14 @@ int main( int argc, char* argv[] )
         sLog.Green("Keep Old Missions","Enabled.");
     else
         sLog.Warning("Keep Old Missions","Disabled.");
-    if (sConfig.npc.EnableDrones)
+    if (sConfig.testing.EnableDrones)
         sLog.Green("    Player Drones","Enabled.");
     else
         sLog.Warning("    Player Drones","Disabled.");
+    if (sConfig.testing.ShipHeat)
+        sLog.Green("        Ship Heat","Enabled.");
+    else
+        sLog.Warning("        Ship Heat","Disabled.");
     if (sConfig.cosmic.PIEnabled)
         sLog.Green("        PI System","Enabled.");
     else
@@ -413,6 +409,34 @@ int main( int argc, char* argv[] )
         //sMktBotMgr.Initialize();
     } else
         sLog.Warning("   Market Bot Mgr", "Market Bot Disabled.");
+    std::printf("\n");     // spacer
+
+    sLog.Blue("     ServerConfig", "Debug Switches");
+    if (sConfig.debug.IsTestServer)
+        sLog.Error("     ServerConfig", "Test Server Enabled");
+    else
+        sLog.Error("     ServerConfig", "Live Server Enabled");
+    if (sConfig.debug.UseProfiling) {
+        sLog.Green(" Server Profiling","Enabled.");
+        sProfile.Initialize();
+    } else
+        sLog.Warning(" Server Profiling","Disabled.");
+    if (sConfig.debug.SpawnTest)
+        sLog.Warning("       Spawn Test","Enabled.");
+    else
+        sLog.Warning("       Spawn Test","Disabled.");
+    if (sConfig.debug.BubbleTrack)
+        sLog.Warning("  Bubble Tracking","Enabled.");
+    else
+        sLog.Warning("  Bubble Tracking","Disabled.");
+    if (sConfig.debug.UseShipTracking)
+        sLog.Warning("    Ship Tracking","Enabled.");
+    else
+        sLog.Warning("    Ship Tracking","Disabled.");
+    if (sConfig.debug.PositionHack)
+        sLog.Warning("    Position Hack","Enabled.");
+    else
+        sLog.Warning("    Position Hack","Disabled.");
     std::printf("\n");     // spacer
 
     /* Start up the TCP server */
@@ -497,7 +521,6 @@ int main( int argc, char* argv[] )
     sLog.Green("       ServerInit", "Starting Console Manager");
     sConsole.Initialize(&command_dispatcher);
     std::printf("\n");     // spacer
-
 
     sLog.Blue("     ServerConfig", "Cosmic Manager Settings");
     if (sConfig.cosmic.CiviliansEnabled) {
@@ -648,6 +671,10 @@ int main( int argc, char* argv[] )
     stDataMgr.Initialize();
     std::printf("\n");     // spacer
 
+    // clear dynamic system data (player counts, etc) on server start
+    MapDB::SystemStartup();
+    sLog.Green("       ServerInit", "Cleared Dynamic System Datasets from Previous run.");
+
     //sLog.Warning("server init", "Adding NPC Market Orders.");
     //NPCMarket::CreateNPCMarketFromFile("/etc/npcMarket.xml");
 
@@ -687,7 +714,7 @@ int main( int argc, char* argv[] )
         m_run = sConsole.Process();
 
         /* do the stuff for thread sleeping */
-        if (sEntityList.GetClientCount()) {     // how much of a proc hit is this?  change/remove it?
+        if (sEntityList.HasClients()) {     // how much of a proc hit is this?  change/remove it?
             start = GetTickCount() - start;
             if (m_sleepTime > start)
                 std::this_thread::sleep_for(std::chrono::milliseconds(start));
@@ -763,7 +790,7 @@ int main( int argc, char* argv[] )
 
 static void SetupSignals()
 {
-    /* setup sigaction to prevent zombies */
+    /* setup sigaction to prevent zombies and catch other non-fatal signals */
     struct sigaction sa;
     sa.sa_handler = SIG_IGN;
     sa.sa_flags = SA_NOCLDWAIT;
@@ -775,7 +802,13 @@ static void SetupSignals()
         perror("SigAction Failure");
         exit(EXIT_FAILURE);     /* NOT MT safe */
     }
+    if (sigaction(SIGPIPE, &sa, nullptr) == -1) {  /* MT safe */
+        // ignore broken pipe signal.  db code will auto-recover.
+        perror("SigPipe Failure");
+        return;
+    }
 
+    //::signal( SIGPIPE, SIG_IGN );
     //::signal( SIGCHLD, SIG_IGN );
     ::signal( SIGINT, CatchSignal );
     ::signal( SIGTERM, CatchSignal );

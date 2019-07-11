@@ -19,9 +19,9 @@ uint32 StationDB::CreateOffice(ItemData& idata, OfficeData& odata)
     uint32 uid = 0;
     DBerror err;
     if (!sDatabase.RunQueryLID(err, uid,
-        "INSERT INTO staOffices (corporationID, stationID, officeFolderID, flag, solarSystemID, typeID, lockDown, rentalFee, expiryDateTime)"
+        "INSERT INTO staOffices (corporationID, stationID, officeFolderID, flag, solarSystemID, typeID, stationTypeID, lockDown, rentalFee, expiryDateTime)"
         " VALUES"
-        " (%u,%u,%u,%u,%u,%u,%u,%u,%lli)",
+        " (%u,%u,%u,%u,%u, 27, %u,%u,%u,%lli)",
         odata.corporationID, odata.stationID, odata.folderID, idata.flag, stDataMgr.GetStationSystemID(odata.stationID), odata.typeID, odata.lockDown, odata.rentalFee, odata.expiryTime)
     )
         codelog(DATABASE__ERROR, "Error in CreateOffice query: %s", err.c_str());
@@ -45,7 +45,7 @@ uint32 StationDB::GetOfficeCount(uint32 corpID)
 
     DBResultRow row;
     if (!res.GetRow(row)) {
-        codelog(CORP__DB_WARNING, "Unable to find corporation's data (%u)", corpID);
+        codelog(CORP__DB_WARNING, "Unable to find corporation's office data (%u)", corpID);
         return 0;
     }
     return row.GetUInt(0);

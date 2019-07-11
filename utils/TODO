@@ -1,0 +1,268 @@
+
+
+*******************************************************
+****  Allan's EvEmu TODO LIST
+****    9 July 2019
+
+
+**********  found shit...high priority
+station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
+    - buy, assemble, trash, create all with problems
+
+
+********  improvements
+replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
+    - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
+    - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~5k+ clients w/o noticable lag
+
+systemmgr - use kills object instead of db hit
+    - hit this object to avoid db hits for every kill
+    - this will hold current counts
+    - save to db every 15m, called by ConsoleCommand::UpdateStatus() (from EntityList::Process())
+
+dbcore - query retry enables runaway server when query causes server disconnection (error)
+    - should this be limited?
+    - note: it only happens for misformed queries (while testing) from what i've seen.
+
+char creation - add code to test/set initial inventory for new chars based on profession
+    - they *may* have aquired parts-n-pieces during their schooling
+    -  what would they have?
+char creation - figure certs and set skills accordingly
+    - currently, most new chars dont qualify for any certs.
+    - they should at least have a starter profession cert
+
+RefObjects - MEMORY MANAGEMENT!!
+    - current RefObject/RefPtr objects are leaking memory.  getting better, but still horrible.
+    - look into removing the Ref* objects and replacing with std::unique_ptr or std::shared_ptr
+    -  this may be more work than it's worth, but current Ref* objects arent being tracked properly
+    -  the other option is to find/fix the current tracking for Ref* objects, which is only partly implemented (at best)
+
+
+check allianceID sending.  see if we can/need to send None() instead of -1
+
+ab not working (mwd is)  separate code ... look at original code for proper ab methods
+prop mods not activating (server says offline)  seems to be working now.
+
+skills dont train correctly when char is offline.  (persistant broken...again)
+
+*****  not sure about this one...cant duplicate error (fixed already?)
+19:46:12 [DecodeError] Decode Call_RemoveChargeToHangar failed: tuple0 is the wrong size: expected 1, but got 2
+19:46:12 [SvcError] Handle_RemoveChargeToHangar(/usr/local/src/eve/Alasiya-EvE/src/eve-server/inventory/InventoryBound.cpp:288): Space Reptile: Failed to decode arguments.
+19:46:12 [InvError] InventoryBound::MoveItems() - item 0 not found.  continuing.
+
+addskill needs skill injection (not updating client)
+
+
+need to figure out how to load/queue assets for chars (on login or w/e)
+    - this is needed for complete asset menu entries
+
+pi broke....again.  not sure wtf is going on here.  -priority level: low-med
+    - check/rewrite planet xml code as needed (minor improvement)
+    - check if xml is needed or if structs are ok for all uses (improve code bloat)
+    - code checks for route levels and mat'l volume xfer'd (limit volume xfer)
+
+
+module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
+
+
+dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
+ - still havent figured out how to track/delete dungeon items on server shutdown/crash.    -priority level: low
+
+
+statistic system is currently inaccurate.  -priority level: low
+    - how?  i didnt note wtf i found that makes it 'inaccurate'...
+
+
+ship modules - needs a bit more thought for misc things
+    - check for multiple types. limit fitting if applicable  - deny activation if applicable (prop mods)
+    - others?
+
+
+********* old - no date - still relevant
+civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
+dungeons - complete current wip code   -priority level: med-hi
+belt spawns - rework for better ship group selection   -priority level: med
+contracts - start this system. current status unknown.   -priority level: low-med
+missions/agents - agents working. courier missions working. currently ~50 missions, all levels. next up is security missions. will need dungeon work for these.   -priority level: hi
+pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
+    - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
+anomaly system - working. may need revisit after other systems mature.   -priority level: med
+wh system - started.   k162 for deco only at this time (POC)   -priority level: low
+player drones - skeleton started. needs functionality    -priority level: med-hi
+RAM code - implement invention, copy, re, tech    -priority level: low-med
+contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
+others?
+
+lsc system better, but incomplete needs revisiting (and possible rewrite. code updates at least)
+    - may need xmlp code instead of muddled python decoding
+    -  (whole system needs update or possible rewrite)
+
+
+player corps - finish wip code for RAM, market  -priority level: med-hi
+alliances?  not yet.  need other shit finished first.
+raceMask isnt implemented yet...will need more thought/coding
+still some corp shit not started/completed yet...need to finish it. may need to split file again.  -priority level: med-hi
+partial code for corpStations, member roles,
+no code for labels
+HandleCorpTransaction() when giving isk to corp, journal window not updating.
+set initial standings when corp is created.  need to write standings code for corps
+when renting office, station offices dont refresh
+GetMemberTrackingInfo() incomplete
+CorpStationMgrIMBound incomplete
+corp jumpers - decide/implement
+GetMemberIDsByQuery needs more work.  see notes in code.
+corp items not updating in db when moved (could be all items as we're not saving every item change)
+dividens incomplete
+
+
+npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
+update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: lo
+
+m_self is NOT being populated for non-piloted ships.   -priority level: low
+
+ needs more testing.
+check all ewar effects. notably painter and disruptor - was working on last test
+check skill duration(66) for correct modifier sign - seems ok now.
+check duration(73) on repair and prop modules (deals with skill-modified duration) - seems ok now.
+
+
+will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
+ - classes built using xml have a c'tor that zero-initalizes all items in class
+ - this is almost complete.  there may be a few more i havent found yet.
+
+
+system mail not working.  this would be nice to have, as many systems could(will) use it
+entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
+
+mapservice code needs love
+CharMgrService code needs love
+notificationMgr code needs love
+reproc code needs love
+certificateMgr needs looking at
+
+
+store/board ship (cap ship hangar) not coded
+
+ship selfdestruct not coded
+
+asteroid sizes in nullsec may be too large.  look into and fix as needed
+
+
+started coding alliance db
+all alliance calls are skeleton code, except GetEmploymentRecord
+
+
+0 AS landmarkNameID
+
+authentication and session still need work, but i dont fully understand them
+
+*******  these are not applying any modifiers, but they should be modifying turrents  *************
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 3, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 0, state: Online, online: true
+26048   2663    1 rigslot
+26048   2708    0
+(2708, 'drawbackPowerNeedProjectiles', 0, 9742, 9743, 'Automatically generated effect', 0, 'None', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903010, ''),
+26048   2798    0
+(2798, 'projectileWeaponDamageMultiplyPassive', 0, 667, 670, 'Scales the damage done by all fitted projectile weapons.', 0, '', 0, 0, 0, 0, 0, 0, 0, 0, 0, '', 0, 0, 0, 0, 0, 0, 'None', 0, 0, 0, 0, 903235, ''),
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Burst Aerator I. effects: 3, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Burst Aerator I. effects: 0, state: Online, online: true
+26046   2663    1   rigslot
+26046   2708    0
+26046   2797    0
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Heat Sink II. effects: 1, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Heat Sink II. effects: 2, state: Online, online: true
+2364    11  0   midslot
+2364    16  0   online
+2364    91  0
+2364    95  0
+
+
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Gyrostabilizer II. effects: 1, state: Passive, online: true
+20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Gyrostabilizer II. effects: 2, state: Online, online: true
+519     11  0   midslot
+519     16  0   online
+519     89  0
+519     92  0
+
+
+20:43:08 [FxTrace] Resetting modifier map for Tracking Speed Disruption
+20:43:08 [FxTrace] Resetting modifier map for Paradise Cruise Missile
+20:43:08 [FxTrace] Resetting modifier map for Paradise Cruise Missile
+
+
+*****************  uk calls
+  ** none at this time **  (almost all calls coded, albeit some only skeleton)
+
+01:54:02 [SvcCall] Service slash::SlashCmd()
+01:54:02 [CmdError] Unable to find command 'entityspawn' for allan
+
+
+*****************   eratta
+rework bulkdata code.
+the current code is hacked to send bulk data in segments.  live uses *some other form* of data, which *MAY* be our cache files.
+will need to look into this and determine how they use those files and the checksums to determine what to send.
+as this is still beyond me, it may take a while.
+till then, we'll have to used the hacked system.
+after all, it works
+
+xmlp shit....
+    - none at this time
+
+item flags are stored in db as 'entity.flag', but client wants 'flagID'.
+look into changing our code to conform.  most objects are built in-code and use flagID already, but some items need "flag AS flagID" in sql query.
+
+figure out how to colorize _log() msgs to console
+
+
+holoscreenMgr is mostly empty (skeleton code)
+ideas for holoscreen in CQ:
+    - corp recruit ads
+    - incursion data
+    - relevant system data for player's current system
+    - others?  more?
+
+OnItemsChanged is for multiple changes in a single return.
+    - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
+
+_Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSet.EveOwners (or server if empty)
+    - as ownerID defaults to '0', client throws error when receives 'None' as response  (need more the 0 values to unpack)
+    - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
+
+Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders for some that are 'xxxxx' which need fixing
+
+stations - look into individual hangers loaded into mem objects (charid/items)
+    - not sure if this would be worth it, but would make 'by owner' searches much faster
+
+destiny shit - misc things found in destiny.dll text
+    - markers for ball's yaw, pitch, roll (may be unused)
+    - criuse velocity as a fraction of max velocity
+    - id of bubble ball belongs to, current and former
+
+update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
+
+finish InsideForceField()  - dont remember where i needed this.  ship.eject?
+    - either way, this is needed in targetMgr.  finish and implement.
+
+move target state enums to seperate data file and fix namespace
+check 'targetModule' data and update as needed.  may have invalid modules after target destroyed or cleared
+
+
+jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
+
+move *data calls from inventoryDB into static data mgr
+
+GetChar()->HasShares())  // not written, no underlying code yet
+
+
+*********  shit in original webpage.  click on char for info
+[Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+fread() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 75, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592169 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+fwrite() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 76, referer: http://127.0.0.1/web/?p=status
+[Fri Dec 28 22:57:46.592194 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
+feof() expects parameter 1 to be resource, boolean given in /srv/web/web/func.inc.php on line 73, referer: http://127.0.0.1/web/?p=status
+

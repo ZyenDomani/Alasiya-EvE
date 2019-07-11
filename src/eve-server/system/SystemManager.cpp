@@ -19,7 +19,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -63,6 +63,7 @@ m_dungMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc)),
 m_loaded(false),
 m_entityChanged(false),
+m_docked(0),
 m_players(0),
 m_beltCount(0),
 m_gateCount(0),
@@ -331,28 +332,28 @@ bool SystemManager::LoadSystemStatics() {
             } break;
             case EVEDB::invGroups::Stargate: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StargateSE *pSSE = new StargateSE(itemRef, *(GetServiceMgr()), this);
                 ++m_gateCount;
                 pSE = pSSE;
             } break;
             case EVEDB::invGroups::Planet: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 PlanetSE *pPSE = new PlanetSE(itemRef, *(GetServiceMgr()), this);
                 m_planetMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pPSE));
                 pSE = pPSE;
             } break;
             case EVEDB::invGroups::Moon: {
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 MoonSE *pMSE = new MoonSE(itemRef, *(GetServiceMgr()), this);
                 m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
             default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
-                itemRef->SetAttribute(AttrRadius, cur.radius);
+                itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = pSSE;
             } break;
@@ -449,7 +450,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
 
 SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID/*0*/)
 {
-    FactionData data;
+    FactionData data = FactionData();
         data.allianceID = entity.allianceID;
         data.corporationID = entity.corporationID;
         data.factionID = entity.factionID;
@@ -745,11 +746,12 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
         } break;
     }
     codelog(SERVICE__ERROR, "Unhandled dynamic entity category %d for item %u of type %u", entity.categoryID, entity.itemID, entity.typeID);
+    EvE::traceStack();
     return nullptr;
 }
 
-void SystemManager::AddClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
-    //called from Client::MoveToLocation()
+void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
+    //called from Client::SelectCharacter() on login and Client::MoveToLocation() when changing systems
     if (pClient == nullptr)
         return;
     auto itr = m_clients.find(pClient->GetCharacterID());
@@ -760,14 +762,15 @@ void SystemManager::AddClient(Client* pClient, bool docked/*false*/, bool count/
     }
 
     m_activityTime = 0;
+
     if (count) {
         ++m_players;
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
 }
 
-void SystemManager::RemoveClient(Client* pClient, bool docked/*false*/, bool count/*false*/) {
+void SystemManager::RemoveClient(Client* pClient, bool count/*false*/) {
     //called from Client::~Client() and Client::MoveToLocation()
     if (pClient == nullptr)
         return;
@@ -775,23 +778,39 @@ void SystemManager::RemoveClient(Client* pClient, bool docked/*false*/, bool cou
     if (itr != m_clients.end()) {
         m_clients.erase(itr);
         _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
     }
 
     if (count) {
-        if (m_players < 1) {
+        --m_players;
+        if (m_players < 0) {
             m_players = 0;
-            _log(PLAYER__ERROR, "%s(%u): player count for %s(%u) is <1  -- new count: %u", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
-        } else {
-            --m_players;
+            _log(PLAYER__ERROR, "player count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
         }
+
         if (!m_players) {
             m_clients.clear();
             m_activityTime = sEntityList.GetStamp();
         }
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
+    }
+}
+
+void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
+{
+    if (docked) {
+        ++m_docked;
+        _log(PLAYER__INFO, "%s(%u): Added to docked count for %s(%u) - new count: %u", \
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
+    } else {
+        --m_docked;
+        _log(PLAYER__INFO, "%s(%u): Removed from docked count for %s(%u) - new count: %u", \
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
+        if (m_docked < 0) {
+            m_docked = 0;
+            _log(PLAYER__ERROR, "docked count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
+        }
     }
 }
 
@@ -1015,7 +1034,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     using namespace Destiny;
     Buffer* stateBuffer = new Buffer();
 
-    AddBall_header head;
+    AddBall_header head = AddBall_header();
         head.packet_type = 0;   // 0 = full state   1 = balls
         head.stamp = into.stamp;
     stateBuffer->Append( head );
@@ -1026,10 +1045,13 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     for (auto cur : m_staticEntities)
         visibleEntities.push_back(cur.second);
 
-    // this gets our ship.  (bubble entities are sent when adding us to a bubble)
+    // get our ship.
     std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
         visibleEntities.push_back(itr->second);
+
+    // query bubble to get dynamic entities
+    pBubble->GetEntities(visibleEntities);
 
     into.slims = new PyList();
     into.slims->clear();
@@ -1081,9 +1103,9 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(m_data.systemID));
         row->SetField( "typeID",        new PyInt(5));
-        row->SetField( "ownerID",       new PyInt(1));  // should this be owning factionID?
+        row->SetField( "ownerID",       PyStatic.NewOne());  // should this be owning factionID?
         row->SetField( "locationID",    new PyLong(m_data.constellationID));
-        row->SetField( "flagID",        new PyInt(0));
+        row->SetField( "flagID",        PyStatic.NewZero());
         row->SetField( "quantity",      new PyInt(-1));
         row->SetField( "groupID",       new PyInt(5));
         row->SetField( "categoryID",    new PyInt(2));
@@ -1210,7 +1232,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
     /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     for (auto cur : m_ticEntities) {
-        CosmicSignature sig;
+        CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
         sig.ownerID = cur.second->GetOwnerID();
         sig.sigID = sEntityList.GetAnomalyID();
@@ -1264,6 +1286,11 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         }
         vector.push_back(sig);
     }
+}
+
+void SystemManager::UpdateDynamicData()
+{
+    MapDB::UpdateSystemData(m_data.systemID, m_docked, (m_players - m_docked));
 }
 
 

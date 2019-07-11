@@ -30,6 +30,9 @@
 #include "ServiceDB.h"
 #include "packets/CorporationPkts.h"
 
+#include "corporation/CorpData.h"
+
+
 class Client;
 class PyRep;
 class PyObject;
@@ -48,7 +51,7 @@ public:
     PyRep *GetMember(uint32 charID);
     uint16 GetMemberCount(uint32 corpID);
     void GetMembers(uint32 corpID, DBQueryResult& res);
-    void GetMembersForQuery(uint32 corpID, DBQueryResult& res);
+    void GetMembersForQuery(std::ostringstream& query, std::vector<uint32>& result);
     void GetMembersPaged(uint32 corpID, uint8 page, DBQueryResult& res);
     PyRep* GetMemberTrackingInfo(uint32 corpID);
     PyRep* GetMemberTrackingInfoSimple(uint32 corpID);
@@ -66,20 +69,25 @@ public:
     void MoveShares(uint32 ownerID, uint32 corpID, Call_MoveShares& args);
     PyRep *GetShares(uint32 corpID);
     PyRep *GetMyShares(uint32 ownerID);
+    bool HasShares(uint32 charID, uint32 corpID);
+    PyRep* PyHasShares(uint32 charID, uint32 corpID);
+    PyRep* GetSharesForCorp(uint32 corpID);
 
     PyObject *GetEmploymentRecord(uint32 charID);
-    PyObject *GetMedalsReceived(uint32 charID);
-    PyObject *GetMedalDetails(uint32 medalID);
 
-    PyObject *ListCorpStations(uint32 corpID);
+    void GetCorpStations(uint32 corpID, std::vector<uint32>& stVec);
 
     void AddItemEvent(uint32 corpID, uint32 charID, uint16 eTypeID);
     void AddRoleHistory(uint32 corpID, uint32 charID, uint32 issuerID, int64 oldRoles, int64 newRoles, bool grantable);
     PyRep *GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage);
     PyRep *GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDate, int64 toDate, uint8 rowsPerPage);
 
+    void CastVote(uint32 corpID, uint32 charID, uint32 voteCaseID, uint8 optionID);
     void AddVoteCase(uint32 corpID, uint32 charID, Call_InsertVoteCase& args);
-    PyRep *GetVoteItems(uint32 corpID);
+    PyRep* GetVotes(uint32 voteCaseID);
+    PyRep* GetVoteItems(uint32 corpID, uint8 status=0, uint8 maxLen=20);
+    PyRep* GetVoteOptions(uint32 voteCaseID);
+    PyRep* GetSanctionedItems(uint32 corpID, uint8 status=0);
 
     //PyObject *ListStationOffices(uint32 station_id);
     PyObject *ListStationCorps(uint32 station_id);
@@ -97,7 +105,6 @@ public:
     void DeleteLabel(uint32 corpID, uint32 labelID);
 
     bool AddCorporation(Call_AddCorporation & corpInfo, Client* pClient, uint32 & corpID);
-    bool JoinCorporation(uint32 charID, uint32 corpID, uint32 oldCorpID, const CorpData &roles);
     bool CreateCorporationChangePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID);
     bool CreateCorporationCreatePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID);
 
@@ -105,36 +112,57 @@ public:
 
     PyObject* GetCorporationBills(uint32 corpID, bool payable);
 
+    int32 GetCorpIDforChar(int32 charID);
     uint32 GetStationOwner(uint32 stationID);
     uint32 GetStationCorporationCEO(uint32 stationID);
     uint32 GetCorporationCEO(uint32 corpID);
     uint16 GetCorpMemberCount(uint32 corpID);
+    uint16 GetCorpMemberLimit(uint32 corpID);
 
     double GetCloneTypeCostByID(uint32 cloneTypeID);
+
+    PyRep* GetMedalsReceived(int32 charID);
+    PyRep* GetAllCorpMedals(uint32 corpID);
+    PyRep* GetCorpMedalData(uint32 corpID);
+    PyRep* GetMedalsReceivedDetails(int32 charID);
+    PyRep* GetRecipientsOfMedal(int32 medalID);
+    PyRep* GetMedalStatuses();
+    PyObjectEx* GetMedalDetails(int32 medalID);
+    void GiveMedalToCharacters(uint32 issuerID, uint32 corpID, int32 medalID, std::vector< uint32 >& charVec, std::string& reason);
+    uint16 CreateMedal(uint32 ownerID, uint32 creatorID, std::string& title, std::string& description);
+    void SaveMedalData(int64 medalID, std::vector< Corp::MedalData >& dataList);
+    void SetMedalStatus(uint32 charID, uint16 medalID, uint8 status);
 
     PyRep* GetAdTypeData();
     PyRep* GetAdGroupData();
     PyRep* GetAdRegistryData(int64 typeMask=0, bool inAlliance=false, int16 minMembers=0, uint16 maxMembers=12602);
+    PyRep* GetAdvert(uint16 adID);
+    void DeleteAdvert(uint16 adID);
 
-    int32 CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
+    uint32 CreateAdvert(Client* pClient, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
                       uint32 channelID, std::string title);
 
-    void AddRecruiters(int32 adID, int32 corpID, std::vector< int32 >& charVec);
-    PyRep* GetRecruiters(uint16 adID);
+    void UpdateAdvert(uint16 adID, uint32 corpID, int64 typeMask, int8 days, uint16 members, std::string description,
+                        uint32 channelID, std::string title);
 
-    bool InsertApplication(ApplicationInfo& aInfo);
-    bool UpdateApplication(const ApplicationInfo& aInfo);
-    bool DeleteApplication(const ApplicationInfo& aInfo);
-    bool GetCurrentApplicationInfo(uint32 charID, uint32 corpID, ApplicationInfo& aInfo);
+    int64 GetAdvertTime(uint16 adID, uint32 corpID);
+    void AddRecruiters(uint16 adID, int32 corpID, std::vector< int32 >& charVec);
+    PyRep* GetRecruiters(int32 corpID, uint16 adID);
+
+    bool InsertApplication(Corp::ApplicationInfo& aInfo);
+    bool UpdateApplication(const Corp::ApplicationInfo& aInfo);
+    bool DeleteApplication(const Corp::ApplicationInfo& aInfo);
+    bool GetCurrentApplicationInfo(Corp::ApplicationInfo& aInfo);
     bool CreateMemberAttributeUpdate(uint32 newCorpID, uint32 charID, MemberAttributeUpdate& attrib);
 
+    static std::string GetCorpName(uint32 corpID);
     static std::string GetDivisionName(uint32 corpID, uint16 acctKey);
     bool UpdateDivisionNames(uint32 corpID, const Call_UpdateDivisionNames & divs, PyDict * notif);
     bool UpdateCorporation(uint32 corpID, const Call_UpdateCorporation & upd, PyDict * notif);
     bool UpdateLogo(uint32 corpID, const Call_UpdateLogo & upd, PyDict * notif);
 
-    PyRep* GetAssetInventory(uint32 corpID, uint8 flag);
-    PyRep* GetAssetInventoryForLocation(uint32 corpID, uint32 locationID, uint8 flag);
+    PyRep* GetAssetInventory(uint32 corpID, EVEItemFlags locFlag, const char* flags);
+    PyRep* GetAssetInventoryForLocation(uint32 corpID, uint32 locationID, const char* flags);
     PyRep* GetKillsAndLosses(uint32 corpID, uint32 number, uint32 offset);
 
     PyRep* GetMktInfo(uint32 corpID);

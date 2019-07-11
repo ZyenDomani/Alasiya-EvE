@@ -296,8 +296,8 @@ PyRep* CharacterDB::ValidateCharName(const char *name)
     return new PyInt(1);
 }
 
-void CharacterDB::AddEmployment(uint32 charID, uint32 corpID) {
-    // Add new employment history record and update character's corp start date   -allan  25Mar14
+void CharacterDB::AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID/*0*/) {
+    // Add new employment history record and update character's corp and start date   -allan  25Mar14
     DBerror err;
     if (!sDatabase.RunQuery(err,
         "INSERT INTO chrEmployment"
@@ -307,8 +307,17 @@ void CharacterDB::AddEmployment(uint32 charID, uint32 corpID) {
         codelog(DATABASE__ERROR, "Error in employment insert query: %s", err.c_str());
     }
 
-    if (!sDatabase.RunQuery(err, "UPDATE chrCharacters SET startDateTime = %f WHERE characterID = %u", GetFileTimeNow(), charID))
-        codelog(DATABASE__ERROR, "Error in employment insert query: %s", err.c_str());
+    if (!sDatabase.RunQuery(err, "UPDATE chrCharacters SET startDateTime = %f, corporationID = %u WHERE characterID = %u", GetFileTimeNow(), corpID, charID))
+        codelog(DATABASE__ERROR, "Error in character insert query: %s", err.c_str());
+
+    // Decrease previous corp's member count
+    if (oldCorpID)
+        if (!sDatabase.RunQuery(err, "UPDATE crpCorporation SET memberCount = memberCount-1 WHERE corporationID = %u", oldCorpID))
+            codelog(CORP__DB_ERROR, "Error in prev corp member decrease query: %s", err.c_str());
+
+    // Increase new corp's member number...
+    if (!sDatabase.RunQuery(err, "UPDATE crpCorporation SET memberCount = memberCount+1 WHERE corporationID = %u", corpID))
+        codelog(CORP__DB_ERROR, "Error in new corp member increase query: %s", err.c_str());
 }
 
 PyRep *CharacterDB::GetCharSelectInfo(uint32 characterID) {

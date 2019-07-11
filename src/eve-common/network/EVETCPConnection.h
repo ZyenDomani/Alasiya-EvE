@@ -56,6 +56,7 @@ public:
      *
      * @param[in] rep PyRep to be queued.
      */
+    // consumes PyRep
     void QueueRep( const PyRep* rep, bool compress=true );
 
     /**

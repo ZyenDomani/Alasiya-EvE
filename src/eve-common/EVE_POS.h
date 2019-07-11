@@ -14,12 +14,12 @@ namespace EVEPOS {
         int8 use;
         int8 view;
         int8 take;
+        int8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
         int32 itemID;
         int32 towerID;
         int32 moonID;
         int64 timestamp;
         float status;
-        uint8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
     };
 
     struct TowerData {

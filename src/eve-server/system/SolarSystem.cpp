@@ -108,21 +108,20 @@ SolarSystem::SolarSystem(
   m_radius(_ssData.radius),
   m_securityClass(_ssData.securityClass)
 {
-    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created SolarSystem Item %p for %s (%u).", this, itemName().c_str(), itemID());
-}
-
-SolarSystem::~SolarSystem()
-{
-    SafeDelete(pInventory);
 }
 
 SolarSystemRef SolarSystem::Load( uint32 solarSystemID)
 {
-    return InventoryItem::Load<SolarSystem>(solarSystemID );
+    return InventoryItem::Load<SolarSystem>(solarSystemID);
 }
 
 bool SolarSystem::_Load() {
+    // not sure if this is needed here.
+    //  system mgr *should* load contents
+    //if (!pInventory->LoadContents())
+    //    return false;
+
     return CelestialObject::_Load();
 }
 

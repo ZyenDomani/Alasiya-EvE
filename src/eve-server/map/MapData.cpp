@@ -3,6 +3,7 @@
  * @name MapData.cpp
  *   a group of methods and functions to get map info.
  *     this is mostly used for getting random points in system, system jumps, and misc mission destination info
+ *  - added static data for StationExtraInfo (from mapservice)
  * @Author:         Allan
  * @date:   13 November 2018
  */
@@ -17,6 +18,8 @@
 
 
 MapData::MapData()
+: m_stationExtraInfo(nullptr),
+m_pseudoSecurities(nullptr)
 {
     m_regionJumps.clear();
     m_constJumps.clear();
@@ -25,7 +28,8 @@ MapData::MapData()
 
 MapData::~MapData()
 {
-
+    PySafeDecRef(m_stationExtraInfo);
+    PySafeDecRef(m_pseudoSecurities);
 }
 
 int MapData::Initialize()
@@ -50,12 +54,20 @@ void MapData::GetInfo()
 
 void MapData::Populate()
 {
+    m_pseudoSecurities = MapDB::GetPseudoSecurities();
+
     double start = GetTimeMSeconds();
 
-    DBQueryResult* res = new DBQueryResult();
-    DBResultRow row;
+    m_stationExtraInfo = new PyTuple(3);
+    m_stationExtraInfo->items[0] = MapDB::GetStationExtraInfo();
+    m_stationExtraInfo->items[1] = MapDB::GetStationOpServices();
+    m_stationExtraInfo->items[2] = MapDB::GetStationServiceInfo();
+    sLog.Cyan("          MapData", "StationExtraInfo loaded in %.3fms.",(GetTimeMSeconds() - start));
 
+    start = GetTimeMSeconds();
+    DBQueryResult* res = new DBQueryResult();
     MapDB::GetSystemJumps(*res);
+    DBResultRow row;
     while (res->GetRow(row)) {
         //SELECT ctype, fromsol, tosol FROM mapConnections
         if (row.GetInt(0) == Map::Jumptype::Region)
@@ -131,13 +143,11 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
                     sysList.push_back(it->second);
                 /** @todo not sure why this is empty, but have segfaults from empty vector. */
                 if (sysList.empty()) {
-                    StationData data;
+                    StationData data = StationData();
                     stDataMgr.GetStationData(pAgent->GetStationID(), data);
                     offer.destinationOwnerID    = data.corporationID;
                     offer.destinationSystemID   = data.systemID;
                     offer.destinationTypeID     = data.typeID;
-                    offer.dungeonLocationID     = 0;
-                    offer.dungeonSolarSystemID  = 0;
                     return;
                 }
 
@@ -209,21 +219,17 @@ void MapData::GetMissionDestination(Agent* pAgent, uint8 misionType, MissionOffe
     }
 
     if (IsStation(offer.destinationID)) {
-        StationData data;
+        StationData data = StationData();
         stDataMgr.GetStationData(offer.destinationID, data);
         offer.destinationOwnerID    = data.corporationID;
         offer.destinationSystemID   = data.systemID;
         offer.destinationTypeID     = data.typeID;
-        offer.dungeonLocationID     = 0;
-        offer.dungeonSolarSystemID  = 0;
     } else if (ship) {
-        offer.destinationOwnerID    = 0;
         offer.destinationSystemID   = offer.destinationID;
         offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);
         offer.dungeonLocationID     = offer.destinationID;
         offer.dungeonSolarSystemID  = offer.destinationID;
     } else {
-        offer.destinationOwnerID    = 0;
         offer.destinationSystemID   = offer.destinationID;
         offer.destinationTypeID     = sDataMgr.GetStaticType(offer.destinationID);
         offer.dungeonLocationID     = offer.destinationID;

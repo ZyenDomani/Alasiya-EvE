@@ -18,6 +18,10 @@ protected:
     Dispatcher *const m_dispatch;
 
     PyCallable_DECL_CALL(GetFittings);
+    PyCallable_DECL_CALL(SaveFitting);
+    PyCallable_DECL_CALL(SaveManyFittings);
+    PyCallable_DECL_CALL(DeleteFitting);
+    PyCallable_DECL_CALL(UpdateNameAndDescription);
 
 };
 

@@ -212,26 +212,6 @@ protected:
 private:
     OrbitData m_data;
 
-    // Math functions
-    double mod(double x, double y) {
-        /*Return the modulus after division of x by y.
-         */
-
-        if (isnan(x) or isnan(y) )
-            return 0;
-
-        if (isinf(x) )
-            return 0;
-
-        if (isinf(y) )
-            return x;
-
-        if (y == 0)
-            return x;
-
-        return x % y;
-    }
-
 };
 
 

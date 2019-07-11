@@ -127,7 +127,7 @@ protected:
         // SolarSystem stuff:
         const SolarSystemData &_ssData
     );
-    virtual ~SolarSystem();
+    virtual ~SolarSystem()                              { /* do nothing here */ }
 
     /*
      * Member functions:
@@ -146,12 +146,12 @@ protected:
         }
 
         // load celestial data
-        CelestialObjectData cData;
+        CelestialObjectData cData = CelestialObjectData();
         if (!sItemFactory.db()->GetCelestialObject(solarSystemID, cData))
             return RefPtr<_Ty>();
 
         // load solar system data
-        SolarSystemData ssData;
+        SolarSystemData ssData = SolarSystemData();
         if( !sItemFactory.db()->GetSolarSystem( solarSystemID, ssData ) )
             return RefPtr<_Ty>();
 

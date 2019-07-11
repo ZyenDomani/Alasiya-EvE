@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.2
+    Version:    9.4
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -44,7 +44,7 @@ public:
     EVEServerConfig();
     ~EVEServerConfig()                                  { /* do nothing here */}
 
-    // From <server/>
+    // From <server>
     struct {
         bool UseBeanCount;
         bool UseMarketBot;
@@ -53,38 +53,46 @@ public:
         bool BulkDataOD;
         bool NoobShipCheck;
         bool StackTrace;
-        uint8 ServerSleepTime;
-        uint8 MaxThreadReport;
-        uint16 idleSleepTime;
-        float processTic;
-        uint16 maxPlayers;
         bool ModuleAutoOff;
-        float ModuleDamageChance;
         bool UnloadOnLinkAll;
         bool AllowNonPublished;
         bool FleetShareDelayed;
         bool BountyPayoutDelayed;
-        uint8 BountyPayoutTimer;
         bool LoadOldMissions;
+        uint8 ServerSleepTime;
+        uint8 MaxThreadReport;
+        uint8 BountyPayoutTimer;
+        uint16 idleSleepTime;
+        uint16 maxPlayers;
+        float processTic;
+        float ModuleDamageChance;
     } server;
 
-    // From <world/>
+    // From <world>
     struct {
         bool chatLogs;
         bool globalChat;
         bool gridUnload;
-        uint16 gridUnloadTime;
         bool loginInfo;
         bool loginMsg;
+        bool saveOnMove;
+        bool saveOnUpdate;
         uint8 mailDelay;
         uint8 StationDockDelay;
+        uint16 shipBoardDistance;
+        uint16 gridUnloadTime;
         uint16 apWarptoDistance;
     } world;
 
-    // From <rates/>
+    // From <rates>
     struct {
-        /// Modifier for security rating changes. Changes how fast it goes up/down based on actions
-        double secRate;
+        // Decay timer for item deletion (garbage collection)
+        uint8 WorldDecay;
+        uint8 WebUpdate;
+        // min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment.
+        uint32 TaxAmount;
+        // min amount to be taxed.  received amounts less than this will not be taxed.
+        uint32 TaxedAmount;
         /// Modifier for npc bounties automatically awarded for shooting down npc enemies.
         float npcBountyMultiply;
         /// Modifier for damage from NPCs
@@ -99,28 +107,22 @@ public:
         float turretDamage;
         /// Modifier for turret rate of fire
         float turretRoF;
-        /// Startup Cost to create a corporation.
-        double corpCost;
-        // Decay timer for item deletion (garbage collection)
-        uint8 WorldDecay;
         // Decay timer for wreck deletion (garbage collection)
         float NPCDecay;
-
         float RateDropItem;
         float RateDropMoney;
         float RepairCost;
         float ShipRepairModifier;
         float ModuleRepairModifier;
-
-        uint8 WebUpdate;
-
-        // min amount of tax accepted by corp.  an amount less than this will not be processed, resulting in no tax for the concerned payment.
-        uint32 TaxAmount;
-        // min amount to be taxed.  received amounts less than this will not be taxed.
-        uint32 TaxedAmount;
+        /// Modifier for security rating changes. Changes how fast it goes up/down based on actions
+        double secRate;
+        /// Startup Cost to create a corporation.
+        uint32 corpCost;
+        uint32 medalAwardCost;
+        uint32 medalCreateCost;
     } rates;
 
-    // from <market/>
+    // from <market>
     struct {
         bool UseOrderRange;
         bool DeleteOldTransactions;
@@ -131,7 +133,7 @@ public:
         uint8 HistoryUpdateTime;
     } market;
 
-    // From <bpTimes/>
+    // From <bpTimes>
     struct {
         float ProdTime;
         float ProdMod;
@@ -143,7 +145,7 @@ public:
         float ResRE;
     } bpTimes;
 
-    // From <account/>
+    // From <account>
     struct {
         /// Role to assign to auto created account; set to 0 to disable auto account creation.
         int64 autoAccountRole;
@@ -151,65 +153,64 @@ public:
         std::string loginMessage;
     } account;
 
-    // From <character/>
+    // From <character>
     struct {
-        /// Money balance of new created characters.
-        double startBalance;
-        /// Aura balance of new created characters.   -allan 01/10/14
-        double startAurBalance;
-        /// Starting station ID for new characters
-        uint32 startStation;
-        /// Starting security rating for new characters.
-        double startSecRating;
+        bool allow3edChar;
+        uint8 statMultiplier;
         /// Starting corp ID for new characters
         uint32 startCorporation;
         /// Delay for terminating a character in seconds
         uint32 terminationDelay;
-        uint8 statMultiplier;
-        bool allow3edChar;
+        /// Starting station ID for new characters
+        uint32 startStation;
+        /// Money balance of new created characters.
+        double startBalance;
+        /// Aura balance of new created characters.   -allan 01/10/14
+        double startAurBalance;
+        /// Starting security rating for new characters.
+        double startSecRating;
     } character;
 
-    // From <NPC/>
+    // From <NPC>
     struct {
         bool IdleWander;
-        uint16 WarpOut;
-        float WarpFollowChance;
+        bool UseDamageMultiplier;
         bool RoamingSpawns;
         bool StaticSpawns;
+        bool TargetPod;
+        uint16 WarpOut;
         uint16 RoamingTimer;
         uint16 StaticTimer;
         uint16 RespawnTimer;
-        float ThreatRadius;
         uint32 RatFaction;
-        bool TargetPod;
+        float ThreatRadius;
+        float WarpFollowChance;
         float TargetPodSec;
-        bool EnableDrones;
-        bool UseDamageMultiplier;
         float DefenderMissileChance;
         float LootDropChance;
     } npc;
 
-    // From <database/>
+    // From <database>
     struct {
-        /// Hostname of database server.
-        std::string host;
-        /// A port at which the database server listens.
-        uint16 port;
-        /// Name of database account to use.
-        std::string username;
-        /// Password for the database account.
-        std::string password;
-        /// A database to be used by server.
-        std::string db;
         bool compress;
         bool ssl;
         bool useSocket;
         bool autoReconnect;
         uint dbTimeout;
         uint8 pingTime;
+        /// A port at which the database server listens.
+        uint16 port;
+        /// Hostname of database server.
+        std::string host;
+        /// Name of database account to use.
+        std::string username;
+        /// Password for the database account.
+        std::string password;
+        /// A database to be used by server.
+        std::string db;
     } database;
 
-    // From <files/>
+    // From <files>
     struct {
         /// A directory in which the log files are stored
         std::string logDir;
@@ -221,7 +222,7 @@ public:
         std::string imageDir;
     } files;
 
-    // From <net/>
+    // From <net>
     struct {
         /// Port at which the server should listen.
         uint16 port;
@@ -231,7 +232,7 @@ public:
         std::string imageServer;
     } net;
 
-    // From <thread/>
+    // From <thread>
     struct {
         uint8 NetworkThreads;
         uint8 DatabaseThreads;
@@ -240,21 +241,21 @@ public:
         uint8 ConsoleThreads;
     } threads;
 
-    // From <cosmic/>
+    // From <cosmic>
     struct {
         bool PIEnabled;
         bool AnomalyEnabled;
         bool DungeonEnabled;
         bool BeltEnabled;
-        uint8 BeltRespawn;
-        uint8 BeltGrowth;
-        float roidRadiusMultiplier;
         bool WormHoleEnabled;
         bool CiviliansEnabled;
         bool BumpEnabled;
+        uint8 BeltRespawn;
+        uint8 BeltGrowth;
+        float roidRadiusMultiplier;
     } cosmic;
 
-    // From <standings/>
+    // From <standings>
     struct {
         float MissionBonus;
         float MissionFailure;
@@ -273,7 +274,7 @@ public:
         float AFaction2PCorpMissionMultiplier;
     } standings;
 
-    // From <chat/>
+    // From <chat>
     struct {
         bool EnableFleetChat;
         bool EnableWingChat;
@@ -282,7 +283,7 @@ public:
         bool EnforceRookieInHelp;
     } chat;
 
-    // From <crime/>
+    // From <crime>
     struct {
         uint8 CWSessionTime;
         uint8 WeaponFlagTime;
@@ -291,7 +292,13 @@ public:
         uint16 CrimFlagTime;
     } crime;
 
-    // From <debug/>
+    // From <testing>
+    struct {
+        bool ShipHeat;
+        bool EnableDrones;
+    } testing;
+
+    // From <debug>
     struct {
         bool BubbleTrack;
         bool SpawnTest;
@@ -322,6 +329,7 @@ protected:
     bool ProcessChat( const TiXmlElement* ele );
     bool ProcessCrime( const TiXmlElement* ele );
     bool ProcessBPTimes( const TiXmlElement* ele );
+    bool ProcessTesting( const TiXmlElement* ele );
     bool ProcessDebug( const TiXmlElement* ele );
 };
 

@@ -475,12 +475,11 @@ bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {
     if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
         return false;  // make error here?
 
-    DBerror err;
-
     std::string nameEsc, customInfoEsc;
     sDatabase.DoEscapeString(nameEsc, data.name);
     sDatabase.DoEscapeString(customInfoEsc, data.customInfo);
 
+    DBerror err;
     if(!sDatabase.RunQuery(err,
         "UPDATE entity"
         " SET"
@@ -518,7 +517,7 @@ void InventoryDB::SaveItems(std::vector<SaveData>& data)
     Inserts << " (itemID, typeID, ownerID, locationID, flag, contraband, singleton, quantity, x, y, z, customInfo)";
     bool first = true;
     for (auto cur : data) {
-        if (isnan(cur.position.x) or isnan(cur.position.y) or isnan(cur.position.z))
+        if (IsNaN(cur.position.x) or IsNaN(cur.position.y) or IsNaN(cur.position.z))
             continue;
         if (first) {
             Inserts << " VALUES ";

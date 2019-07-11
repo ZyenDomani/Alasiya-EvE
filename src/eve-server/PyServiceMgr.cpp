@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -43,6 +44,10 @@ PyServiceMgr::PyServiceMgr( uint32 nodeID, EntityList& elist )
 }
 
 PyServiceMgr::~PyServiceMgr() {
+    // these crash (segfault) on exit, and i dont know why
+    //SafeDelete(lsc_service);
+    //SafeDelete(cache_service);
+
     Close();
 }
 
@@ -52,9 +57,10 @@ void PyServiceMgr::Close() {
     m_svcList.clear();
 
     PyBoundObject* bo(nullptr);
-    for ( auto itr : m_boundObjects) {
-        bo = itr.second.destination;
-        _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
+    for (auto cur : m_boundObjects) {
+        bo = cur.second.destination;
+        if (is_log_enabled(SERVICE__MESSAGE))
+            _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
                     bo->GetBoundObjectClassStr().c_str(), bo->m_nodeID, bo->m_bindID);
         SafeDelete(bo);
     }
@@ -70,7 +76,7 @@ void PyServiceMgr::Process() {
     //well... we used to have something to do, but not right now...
 }
 
-void PyServiceMgr::RegisterService(const std::string name, PyService* svc)
+void PyServiceMgr::RegisterService(const std::string &name, PyService* svc)
 {
     m_svcList[name] = svc;
 }
@@ -84,59 +90,53 @@ PyService* PyServiceMgr::LookupService(const std::string &name) {
     return nullptr;
 }
 
-PySubStruct* PyServiceMgr::BindObject(Client* who, PyBoundObject* pObj, PyDict** dict) {
-    if (who == nullptr) {
+PySubStruct* PyServiceMgr::BindObject(Client* pClient, PyBoundObject* pObj, PyDict* dict) {
+    if (pClient == nullptr) {
         _log(SERVICE__ERROR,  "PyServiceMgr::BindObject() - Tried to bind a NULL client.");
-        return new PySubStruct(new PyNone());
+        return new PySubStruct(PyStatic.NewNone());
     }
 
     if (pObj == nullptr) {
         _log(SERVICE__ERROR,  "PyServiceMgr::BindObject() - Tried to bind a NULL object.");
-        return new PySubStruct(new PyNone());
+        return new PySubStruct(PyStatic.NewNone());
     }
 
-    pObj->_SetNodeBindID(m_nodeID, GetBindID());    //tell the object what its bind ID is.
+    pObj->_SetNodeBindID(m_nodeID, ++m_nextBindID);    //tell the object what its bind ID is.
 
-    BoundObject obj;
-    obj.client = who;
-    obj.destination = pObj;
-
+    BoundObject obj = BoundObject();
+        obj.client = pClient;
+        obj.destination = pObj;
     m_boundObjects[pObj->bindID()] = obj;
 
-    std::string bind_str = pObj->GetBindStr();
+    std::string bindStr = pObj->GetBindStr();
     _log(SERVICE__MESSAGE, "Service Mgr Binding %s to node %u:%u for %s", \
-                pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, who->GetName());
+                pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, pClient->GetName());
 
-    //not sure what this really is...
-    int64 expiration = Win32TimeNow() + EvE::Time::Hour;
-
-    PyTuple *objt(nullptr);
-    if ((dict == nullptr) or ((*dict) == nullptr)) {
-        objt = new PyTuple(2);
-        objt->items[0] = new PyString(bind_str);
-        objt->items[1] = new PyLong(expiration);    //expiration?
+    PyTuple* tuple(nullptr);
+    if (dict == nullptr) {
+        tuple = new PyTuple(2);
+        tuple->items[0] = new PyString(bindStr);
+        tuple->items[1] = new PyLong(GetFileTimeNow());
     } else {
-        objt = new PyTuple(3);
-        objt->items[0] = new PyString(bind_str);
-        objt->items[1] = *dict;
-        //*dict = nullptr;    //consumed
-        objt->items[2] = new PyLong(expiration);    //expiration?
+        tuple = new PyTuple(3);
+        tuple->items[0] = new PyString(bindStr);
+        tuple->items[1] = dict;
+        tuple->items[2] = new PyLong(GetFileTimeNow());
     }
 
-    return new PySubStruct(new PySubStream(objt));
+    return new PySubStruct(new PySubStream(tuple));
 }
 
-void PyServiceMgr::ClearBoundObjects(Client* who) {
+void PyServiceMgr::ClearBoundObjects(Client* pClient) {
     /** @todo (Allan) make this better...could be quite expensive with many players */
     ObjectsBoundMapItr itr = m_boundObjects.begin();
     while (itr != m_boundObjects.end()) {
-        if (itr->second.client == who) {
+        if (itr->second.client == pClient) {
             PyBoundObject *bo(itr->second.destination);
             _log(SERVICE__MESSAGE, "Service Mgr Releasing bound object %s at %s for %s", \
-                            bo->GetBoundObjectClassStr().c_str(), bo->GetBindStr().c_str(), who->GetName());
+                            bo->GetBoundObjectClassStr().c_str(), bo->GetBindStr().c_str(), pClient->GetName());
             bo->Release();
             itr = m_boundObjects.erase(itr);
-            //cur = m_boundObjects.begin();
         } else
             ++itr;
     }

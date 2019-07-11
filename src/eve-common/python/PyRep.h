@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:    Allan
 */
 
 #ifndef EVE_PY_REP_H
@@ -200,7 +201,8 @@ public:
 
     // this is used when PyRep can be either String or WString.
     static std::string StringContent(PyRep* pRep);
-    // this is used when PyRep can be either Int or Long (None returns 0)
+    // this is used when PyRep can be either Int or Long
+    // None returns 0, Float is converted to int64
     static int64 IntegerValue(PyRep* pRep);
 
 protected:
@@ -1001,18 +1003,18 @@ inline PyToken::PyToken( Iter first, Iter last ) : PyRep( PyRep::PyTypeToken ), 
 /************************************************************************/
 /* tuple helper functions                                               */
 /************************************************************************/
-PyTuple * new_tuple(int64 arg1);
-PyTuple * new_tuple(int64 arg1, int64 arg2);
+PyTuple* new_tuple(int64 arg1);
+PyTuple* new_tuple(int64 arg1, int64 arg2);
 /* strings */
-PyTuple * new_tuple(const char* arg1);
-PyTuple * new_tuple(const char* arg1, const char* arg2);
-PyTuple * new_tuple(const char* arg1, const char* arg2, const char* arg3);
-PyTuple * new_tuple(const char* arg1, const char* arg2, PyTuple* arg3);
+PyTuple* new_tuple(const char* arg1);
+PyTuple* new_tuple(const char* arg1, const char* arg2);
+PyTuple* new_tuple(const char* arg1, const char* arg2, const char* arg3);
+PyTuple* new_tuple(const char* arg1, const char* arg2, PyTuple* arg3);
 /* mixed */
-PyTuple * new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3);
-PyTuple * new_tuple(PyRep* arg1);
-PyTuple * new_tuple(PyRep* arg1, PyRep* arg2);
-PyTuple * new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3);
+PyTuple* new_tuple(const char* arg1, PyRep* arg2, PyRep* arg3);
+PyTuple* new_tuple(PyRep* arg1);
+PyTuple* new_tuple(PyRep* arg1, PyRep* arg2);
+PyTuple* new_tuple(PyRep* arg1, PyRep* arg2, PyRep* arg3);
 
 
 class BuiltinSet : public PyObjectEx_Type1
