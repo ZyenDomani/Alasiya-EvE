@@ -27,7 +27,7 @@
 #define AttributeEnum_h__
 
 enum EveAttrEnum {
-    AttrIsOnline = 2,
+    AttrOnline = 2,
     AttrDamage = 3,
     AttrMass = 4,
     AttrCapacitorNeed = 6,  //dischargeAttributeID in dgmEffects
