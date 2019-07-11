@@ -71,6 +71,7 @@
         <apWarptoDistance>5000</apWarptoDistance><!-- in meters - sets autopilot warp stop distance from object (15km default)-->
         <saveOnMove>false</saveOnMove><!-- bool - save items when Move()'d -->
         <saveOnUpdate>false</saveOnUpdate><!-- bool - save items when values or attributes updated -->
+        <shipBoardDistance>500</shipBoardDistance><!-- int  - max distance to board ship in space (3c default) -->
     </world>
 
     <rates>
