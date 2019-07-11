@@ -102,6 +102,10 @@ uint32 ShipItem::CreateItemID( ItemData &data) {
 
 bool ShipItem::_Load()
 {
+    Client* pClient = sItemFactory.GetUsingClient();
+    // test for character creation (which throws errors here and isnt really needed)
+    if ((pClient != nullptr) and pClient->IsCharCreation())
+        return true;
     // load attributes
     if (!InventoryItem::_Load())
         return false;
@@ -180,13 +184,6 @@ void ShipItem::LogOut()
 void ShipItem::SetPlayer(Client* pClient) {
     if (m_pilot == pClient)
         return;
-    /* to reset for new pilot:
-     * offline all modules
-     * reset ship attribs
-     * add new pilot skills
-     * online all modules
-     */
-
     if (pClient == nullptr) {
         if (m_pilot != nullptr)
             pInventory->RemoveItem(m_pilot->GetChar());
@@ -194,13 +191,25 @@ void ShipItem::SetPlayer(Client* pClient) {
         ProcessEffects(false);
         // should we check for cargo and damage after char leaves ship?  maybe later
         m_onlineModuleVec.clear();
+        m_pilot = nullptr;
         return;
     }
 
     m_pilot = pClient;
+    if (pClient->IsCharCreation())
+        return;
+
+    /* to reset for new pilot:
+     * offline all modules
+     * reset ship attribs
+     * add new pilot skills
+     * online all modules
+     */
+
     Init();
     ProcessEffects(true, IsSolarSystem(m_locationID));
-    OnlineAll();
+    // this isnt right....should be whatever previous pilot left, minus adjustments for cap/cpu/pg skills
+    //OnlineAll();
 
     // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (IsSolarSystem(m_locationID)) {
@@ -223,29 +232,29 @@ void ShipItem::SetPlayer(Client* pClient) {
 void ShipItem::InitAttribs()
 {
     // Create default dynamic attributes in the AttributeMap
-    SetAttribute(AttrVolume,                            GetPackagedVolume());
-    SetAttribute(AttrCpuLoad,                           EvilZero);
-    SetAttribute(AttrPowerLoad,                         EvilZero);
+    SetAttribute(AttrVolume,                            GetPackagedVolume(), false);
+    SetAttribute(AttrCpuLoad,                           EvilZero, false);
+    SetAttribute(AttrPowerLoad,                         EvilZero, false);
     // rig shit
-    SetAttribute(AttrUpgradeLoad,                       EvilZero);
+    SetAttribute(AttrUpgradeLoad,                       EvilZero, false);
 
     // Check for existence of attributes.  if not loaded then set them to default values:
-    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero);
-    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero);
+    if (!HasAttribute(AttrDamage))                      SetAttribute(AttrDamage, EvilZero, false);
+    if (!HasAttribute(AttrArmorDamage))                 SetAttribute(AttrArmorDamage, EvilZero, false);
     // shield and cap are part of persistance, and loaded on attrib map initalization.  check for and set to full if no saved value found
-    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity));
-    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity));
-    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS));
+    if (!HasAttribute(AttrShieldCharge))                SetAttribute(AttrShieldCharge,  GetAttribute(AttrShieldCapacity), false);
+    if (!HasAttribute(AttrCapacitorCharge))             SetAttribute(AttrCapacitorCharge,  GetAttribute(AttrCapacitorCapacity), false);
+    if (!HasAttribute(AttrMaximumRangeCap))             SetAttribute(AttrMaximumRangeCap, ((double)BUBBLE_RADIUS_METERS), false);
     // Warp Scramble Status of the ship (most ships have zero warp scramble status, but some (t2 indy) already have it defined):
-    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero);
-    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, EvilOne);
-    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, EvilOne);
-    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, EvilOne);
+    if (!HasAttribute(AttrWarpScrambleStatus))          SetAttribute(AttrWarpScrambleStatus, EvilZero, false);
+    if (!HasAttribute(AttrWarpSpeedMultiplier))         SetAttribute(AttrWarpSpeedMultiplier, EvilOne, false);
+    if (!HasAttribute(AttrArmorMaxDamageResonance))     SetAttribute(AttrArmorMaxDamageResonance, EvilOne, false);
+    if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, EvilOne, false);
     // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
-    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance));
-    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance));
-    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance));
-    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance));
+    if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance), false);
+    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
+    if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance), false);
+    if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance), false);
 }
 
 void ShipItem::Delete() {
@@ -721,8 +730,11 @@ void ShipItem::ProcessModules() {
 
 void ShipItem::Eject()
 {
-    if (m_ModuleManager != nullptr)
+    if (m_ModuleManager != nullptr) {
         m_ModuleManager->AbortCycle();
+        m_ModuleManager->CharacterLeavingShip();
+    }
+    SaveShip();
     // linked weapons will be persistant here.
     //UnlinkAllWeapons();
 }
@@ -734,7 +746,6 @@ void ShipItem::Dock() {
 }
 
 void ShipItem::Undock() {
-    m_isDocking = false;
     m_isUndocking = true;
 
     if (m_ModuleManager == nullptr) {
@@ -749,6 +760,8 @@ void ShipItem::Undock() {
     //ProcessEffects(true, IsSolarSystem(m_locationID));
     UpdateModules(); //FailedToOnlineModulesOnUndock
 
+    //HorribleFittingProblems
+    
     if (sConfig.debug.IsTestServer) {
         // Heal Ship completely on test server
         Heal();
@@ -776,7 +789,56 @@ void ShipItem::Jump() {
     }
     m_ModuleManager->ShipJumping();
 }
-
+/* {'messageKey': 'JumpAlreadyHaveStationClone', 'dataID': 17882749, 'suppressable': False, 'bodyID': 259250, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1009}
+ * {'messageKey': 'JumpAttemptTooSoon', 'dataID': 17883129, 'suppressable': False, 'bodyID': 259393, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1010}
+ * {'messageKey': 'JumpBeaconInWormholeSpace', 'dataID': 17877290, 'suppressable': False, 'bodyID': 257194, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2829}
+ * {'messageKey': 'JumpCantAcceptOwnInstall', 'dataID': 17883135, 'suppressable': False, 'bodyID': 259395, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1011}
+ * {'messageKey': 'JumpCantDestroyCloneInOthersShip', 'dataID': 17882752, 'suppressable': False, 'bodyID': 259251, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1012}
+ * {'messageKey': 'JumpCantDestroyCloneNoRight', 'dataID': 17882755, 'suppressable': False, 'bodyID': 259252, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1013}
+ * {'messageKey': 'JumpCantUseCFG', 'dataID': 17882760, 'suppressable': False, 'bodyID': 259254, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259253, 'messageID': 1015}
+ * {'messageKey': 'JumpCharStoringMaxClones', 'dataID': 17883140, 'suppressable': False, 'bodyID': 259397, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259396, 'messageID': 1016}
+ * {'messageKey': 'JumpCharStoringMaxClonesNone', 'dataID': 17879907, 'suppressable': False, 'bodyID': 258189, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258188, 'messageID': 2182}
+ * {'messageKey': 'JumpCheckIntoShip', 'dataID': 17879917, 'suppressable': False, 'bodyID': 258193, 'messageType': 'question', 'urlAudio': '', 'urlIcon': '', 'titleID': 258192, 'messageID': 2187}
+ * {'messageKey': 'JumpCheckWillLoseExistingClone', 'dataID': 17882765, 'suppressable': False, 'bodyID': 259256, 'messageType': 'warning', 'urlAudio': '', 'urlIcon': '', 'titleID': 259255, 'messageID': 1017}
+ * {'messageKey': 'JumpCheckWillLoseExistingCloneAndImplants', 'dataID': 17882770, 'suppressable': False, 'bodyID': 259258, 'messageType': 'warning', 'urlAudio': '', 'urlIcon': '', 'titleID': 259257, 'messageID': 1018}
+ * {'messageKey': 'JumpCloneInstallationOffered', 'dataID': 17883248, 'suppressable': False, 'bodyID': 259436, 'messageType': 'question', 'urlAudio': '', 'urlIcon': '', 'titleID': 259435, 'messageID': 1020}
+ * {'messageKey': 'JumpCloneNotFound', 'dataID': 17882773, 'suppressable': False, 'bodyID': 259259, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1021}
+ * {'messageKey': 'JumpCriminalConfirm', 'dataID': 17877821, 'suppressable': False, 'bodyID': 257396, 'messageType': 'warning', 'urlAudio': '', 'urlIcon': '', 'titleID': 257395, 'messageID': 2544}
+ * {'messageKey': 'JumpDestinationBlocked', 'dataID': 17875972, 'suppressable': False, 'bodyID': 256704, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 256703, 'messageID': 3497}
+ * {'messageKey': 'JumpDestinationInvalid', 'dataID': 17882778, 'suppressable': False, 'bodyID': 259261, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259260, 'messageID': 1022}
+ * {'messageKey': 'JumpDestinationIsWormholeSpace', 'dataID': 17877287, 'suppressable': False, 'bodyID': 257193, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2828}
+ * {'messageKey': 'JumpDestinationNotWilling', 'dataID': 17883025, 'suppressable': False, 'bodyID': 259352, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1023}
+ * {'messageKey': 'JumpDriveActive', 'dataID': 2039122, 'suppressable': False, 'bodyID': None, 'messageType': 'audio', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1024}
+ * {'messageKey': 'JumpHarmonicsDoNotMatch', 'dataID': 17878894, 'suppressable': False, 'bodyID': 257799, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2383}
+ * {'messageKey': 'JumpInstalleeNotPresent', 'dataID': 17882781, 'suppressable': False, 'bodyID': 259262, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1025}
+ * {'messageKey': 'JumpInstalleeTooDistant', 'dataID': 17883170, 'suppressable': False, 'bodyID': 259408, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1026}
+ * {'messageKey': 'JumpInstallerNotPresent', 'dataID': 17882784, 'suppressable': False, 'bodyID': 259263, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1027}
+ * {'messageKey': 'JumpMustBeInPod', 'dataID': 17878190, 'suppressable': False, 'bodyID': 257533, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257532, 'messageID': 2744}
+ * {'messageKey': 'JumpNoBridge', 'dataID': 17882789, 'suppressable': False, 'bodyID': 259265, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259264, 'messageID': 1028}
+ * {'messageKey': 'JumpNoCloneAtDestination', 'dataID': 17882792, 'suppressable': False, 'bodyID': 259266, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1029}
+ * {'messageKey': 'JumpNoDrive', 'dataID': 17882797, 'suppressable': False, 'bodyID': 259268, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259267, 'messageID': 1030}
+ * {'messageKey': 'JumpNoPortal', 'dataID': 17882802, 'suppressable': False, 'bodyID': 259270, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259269, 'messageID': 1031}
+ * {'messageKey': 'JumpNoShipCloneForAbsentChar', 'dataID': 17883173, 'suppressable': False, 'bodyID': 259409, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1032}
+ * {'messageKey': 'JumpNoShipCloneForBusyChar', 'dataID': 17883176, 'suppressable': False, 'bodyID': 259410, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1033}
+ * {'messageKey': 'JumpNoShipCloneWhenDoingShipOne', 'dataID': 17883179, 'suppressable': False, 'bodyID': 259411, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1034}
+ * {'messageKey': 'JumpNoStationCloneWhenDoingShipOne', 'dataID': 17882805, 'suppressable': False, 'bodyID': 259271, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1035}
+ * {'messageKey': 'JumpNotEnoughCap', 'dataID': 17883189, 'suppressable': False, 'bodyID': 259415, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259414, 'messageID': 1036}
+ * {'messageKey': 'JumpNotEnoughCharge', 'dataID': 17883194, 'suppressable': False, 'bodyID': 259417, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259416, 'messageID': 1037}
+ * {'messageKey': 'JumpNotEnoughCharge2', 'dataID': 17883199, 'suppressable': False, 'bodyID': 259419, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259418, 'messageID': 1038}
+ * {'messageKey': 'JumpNotEnoughCharge3', 'dataID': 17879346, 'suppressable': False, 'bodyID': 257973, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 257972, 'messageID': 2342}
+ * {'messageKey': 'JumpOtherAlreadyHasShipClone', 'dataID': 17883205, 'suppressable': False, 'bodyID': 259421, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1039}
+ * {'messageKey': 'JumpShipCloneInstallAcceptTooLate', 'dataID': 17882808, 'suppressable': False, 'bodyID': 259272, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1040}
+ * {'messageKey': 'JumpShipCloneInstallAcceptWTF', 'dataID': 17882811, 'suppressable': False, 'bodyID': 259273, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1041}
+ * {'messageKey': 'JumpShipCloneInstallCancelTooLate', 'dataID': 17882814, 'suppressable': False, 'bodyID': 259274, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1042}
+ * {'messageKey': 'JumpShipCloneInstallCancelWTF', 'dataID': 17882817, 'suppressable': False, 'bodyID': 259275, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1043}
+ * {'messageKey': 'JumpShipLacksActiveCloneVatBay', 'dataID': 17877847, 'suppressable': False, 'bodyID': 257406, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2557}
+ * {'messageKey': 'JumpShipLacksCloneSupport', 'dataID': 17882820, 'suppressable': False, 'bodyID': 259276, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1044}
+ * {'messageKey': 'JumpShipNotOwnedByCharacter', 'dataID': 17882823, 'suppressable': False, 'bodyID': 259277, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1045}
+ * {'messageKey': 'JumpShipStoringMaxClones', 'dataID': 17883211, 'suppressable': False, 'bodyID': 259423, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1046}
+ * {'messageKey': 'JumpSkillInTraining', 'dataID': 17880967, 'suppressable': False, 'bodyID': 258596, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1817}
+ * {'messageKey': 'JumpSuperweaponActive', 'dataID': 17879575, 'suppressable': False, 'bodyID': 258058, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258057, 'messageID': 2306}
+ * {'messageKey': 'JumpTooFar', 'dataID': 17883219, 'suppressable': False, 'bodyID': 259426, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 259425, 'messageID': 1047}
+ */
 void ShipItem::Heal()
 {
     // Repair Ship, Modules and Recharge Capacitor:
@@ -794,7 +856,7 @@ void ShipItem::AddModuleToOnlineVec(uint32 modID)
 }
 
 //  Updated fractional ship defense settings.  -allan 1Feb15
-void ShipItem::SetShipCapacitorLevel(double fraction)
+void ShipItem::SetShipCapacitorLevel(float fraction)
 {
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
@@ -809,7 +871,7 @@ void ShipItem::SetShipCapacitorLevel(double fraction)
     SetAttribute(AttrCapacitorCharge, newCapacitorCharge);
 }
 
-void ShipItem::SetShipShield(double fraction)
+void ShipItem::SetShipShield(float fraction)
 {
     if ( fraction > 1.0 ) fraction = 1.0;
     if ( fraction < 0.0 ) fraction = 0.0;
@@ -824,7 +886,7 @@ void ShipItem::SetShipShield(double fraction)
     SetAttribute(AttrShieldCharge, newShieldCharge);
 }
 
-void ShipItem::SetShipArmor(double fraction)
+void ShipItem::SetShipArmor(float fraction)
 {
     fraction = 1 - fraction;
 
@@ -841,7 +903,7 @@ void ShipItem::SetShipArmor(double fraction)
     SetAttribute(AttrArmorDamage, newArmorDamage);
 }
 
-void ShipItem::SetShipHull(double fraction)
+void ShipItem::SetShipHull(float fraction)
 {
     fraction = 1 - fraction;
 
@@ -904,14 +966,14 @@ void ShipItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
         std::map<std::string, PyRep *> args;
         args["available"] = new PyFloat(capacity);
         args["volume"] = new PyFloat(volume);
-        throw PyException( MakeUserError( "NotEnoughCargoSpace", args));
+        throw PyException( MakeUserError("NotEnoughCargoSpace", args));
     }
 }
 
 void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (m_ModuleManager->IsSlotOccupied(flag))
-        throw PyException( MakeUserError( "SlotAlreadyOccupied" ));
+        throw PyException( MakeUserError("SlotAlreadyOccupied"));
 
     m_ModuleManager->CheckSlotFitLimited(flag);
     m_ModuleManager->CheckGroupFitLimited(flag, iRef);
@@ -999,17 +1061,17 @@ EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
 void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
 {
     if (cRef.get() == nullptr)
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        throw PyException( MakeUserError("CantFindChargeToAdd"));
 
     if (!IsModuleSlot(flag))
-        throw PyException( MakeUserError( "Destination is not weapon."));
+        throw PyException( MakeUserError("Destination is not weapon."));
 
     if (IsModuleSlot(cRef->flag()))
-        throw PyException( MakeUserError( "CantMoveChargesBetweenModules"));
+        throw PyException( MakeUserError("CantMoveChargesBetweenModules"));
 
     GenericModule* pMod = m_ModuleManager->GetModule(flag);
     if (pMod == nullptr)
-        throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
+        throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
 
     if (pMod->IsActive()) {
         throw PyException( MakeCustomError("Your %s is currently active and cannot be loaded at this time.", pMod->GetSelf()->itemName().c_str()));
@@ -1039,7 +1101,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         /*  this doesnt work right....comment for now.
         std::map<std::string, PyRep *> args;
         args["charge"] = new PyInt(iRef->itemID());
-        throw PyException( MakeUserError( "ChargeLoadingFailedWithRefund"));
+        throw PyException( MakeUserError("ChargeLoadingFailedWithRefund"));
         /* ChargeLoadingFailedWithRefundBody'}(u'Your {[item]charge.name} failed to load and was returned to your cargo.',
          * None, {u'{[item]charge.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charge'}})
          */
@@ -1079,11 +1141,11 @@ void ShipItem::LoadChargesToBank(EVEItemFlags flag, std::vector< int32 >& charge
 void ShipItem::LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod)
 {
     if (cRef.get() == nullptr)
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        throw PyException( MakeUserError("CantFindChargeToAdd"));
 
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
     if (itr == m_linkedWeapons.end())
-        throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
+        throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
 
     /** @todo  this needs to be updated to NOT throw.  needs more thought */
     //load charge in master
@@ -1161,17 +1223,19 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             else
                 return 0;
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
-            iRef->ChangeSingleton(true, false);
+            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
+            mRef->ChangeSingleton(true, false);
             // rigs are classed in the module category.  check here and call approprate method as needed.
             if (IsRigSlot(flag)) {
-                if (!m_ModuleManager->InstallRig(iRef, flag))
+                if (!m_ModuleManager->InstallRig(mRef, flag))
                     return 0;
-            } else if (!m_ModuleManager->FitModule(iRef, flag))
+            } else if (!m_ModuleManager->FitModule(mRef, flag))
                 return 0;
         } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
-            iRef->PutOffline();
-            iRef->ChangeSingleton(true, false);
-            if (!m_ModuleManager->InstallSubSystem(iRef, flag))
+            ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
+            //mRef->SetOnline(true);  // is this needed here?
+            mRef->ChangeSingleton(true, false);
+            if (!m_ModuleManager->InstallSubSystem(mRef, flag))
                 return 0;
         }
         m_ModuleManager->UpdateModules(flag);
@@ -1232,10 +1296,10 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
         }
         GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
         if (pMod == nullptr)
-            throw PyException( MakeUserError( "Module was not found in that position."));
+            throw PyException( MakeUserError("Module was not found in that position."));
 
         if (pMod->IsActive())
-            throw PyException( MakeUserError( "CannotAccessChargeWhileInUse"));
+            throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
 
         InventoryItemRef chargeRef = pMod->GetLoadedChargeRef();
         if (chargeRef.get() == nullptr)
@@ -1253,7 +1317,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {
-        _log(SHIP__MODULE_TRACE, "Ship::MoveModuleSlot - modItemRef1 is null." );
+        _log(SHIP__MODULE_TRACE, "Ship::MoveModuleSlot - modItemRef1 is null.");
         m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
         return;
     }
@@ -1351,10 +1415,10 @@ void ShipItem::RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fr
     }
 }
 
-void ShipItem::Online (uint32 modID)
+void ShipItem::Online(uint32 modID)
 {
     if (IsSolarSystem(m_locationID)) {
-        ; // check for avalible cap, and drain accordingly
+        ; // check for avalible cap, and drain accordingly (this can throw)
         /*
         float Charge = GetAttribute(AttrCapacitorCharge).get_float();
         float Capacity = GetAttribute(AttrCapacitorCapacity).get_float();
@@ -1363,7 +1427,32 @@ void ShipItem::Online (uint32 modID)
         _log(SHIP__MESSAGE, "ShipItem::Online(): %s(%u) - New Cap Charge: %f", GetPilot()->GetName(), itemID(), newCharge );
         */
     }
+    /* {'messageKey': 'EffectAlreadyActive2', 'dataID': 17876243, 'suppressable': False, 'bodyID': 256802, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3252}
+     * {'messageKey': 'EffectCantHaveNegativeDuration', 'dataID': 17883801, 'suppressable': False, 'bodyID': 259632, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 847}
+     * {'messageKey': 'EffectCrowdedOut', 'dataID': 17883719, 'suppressable': False, 'bodyID': 259602, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 848}
+     * {'messageKey': 'EffectDeactivationCloaking', 'dataID': 17883455, 'suppressable': False, 'bodyID': 259510, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 849}
+     * {'messageKey': 'EffectDeactivationWarping', 'dataID': 17883458, 'suppressable': False, 'bodyID': 259511, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 850}
+     * {'messageKey': 'EffectNotActivatible', 'dataID': 17880378, 'suppressable': False, 'bodyID': 258369, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2228}
+     * {'messageKey': 'EffectNotDeactivatible', 'dataID': 17883847, 'suppressable': False, 'bodyID': 259649, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 851}
+     * {'messageKey': 'EffectStillActivating', 'dataID': 17883850, 'suppressable': False, 'bodyID': 259650, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 852}
+     * {'messageKey': 'EffectStillActive', 'dataID': 17883853, 'suppressable': False, 'bodyID': 259651, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 853}
+     */
+    /*{'FullPath': u'UI/Messages', 'messageID': 256802, 'label': u'EffectAlreadyActive2Body'}(u'{modulename} is already active', None, {u'{modulename}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'modulename'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 258369, 'label': u'EffectNotActivatibleBody'}(u'You do not have the ability to engage the {moduleName} in that action.', None, {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259510, 'label': u'EffectDeactivationCloakingBody'}(u'As certain activated effects interfere with the warping process, these are automatically being deactivated before the warp proceeds.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 259511, 'label': u'EffectDeactivationWarpingBody'}(u'As certain activated effects interfere with the warping process, these are automatically being deactivated before the warp proceeds.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 259602, 'label': u'EffectCrowdedOutBody'}(u'The {[item]module.name} cannot be activated as it requires access to resources and/or skills which {[numeric]count} modules of the same purpose are already using up.', None, {u'{[numeric]count}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'count'}, u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259632, 'label': u'EffectCantHaveNegativeDurationBody'}(u'{modulename} has somehow come to have a negative duration of {duration} and cannot operate. If you know how, obtain a breakdown of its modifiers and report it, otherwise submit a detailed bug report.', None, {u'{modulename}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'modulename'}, u'{duration}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'duration'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259649, 'label': u'EffectNotDeactivatibleBody'}(u'The {moduleName} cannot be interrupted in that action.', None, {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259650, 'label': u'EffectStillActivatingBody'}(u'The {moduleName} cannot be manually deactivated while it is still being activated.', None, {u'{moduleName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moduleName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259651, 'label': u'EffectStillActiveBody'}(u'The {[item]moduleTypeID.name} cannot be manually deactivated in the middle of an operation, it will deactivate without repeating in {[timeinterval]timeLeft.writtenForm, from=second, to=second} (its activation duration is {[timeinterval]duration.writtenForm, from=second, to=second}).', None, {u'{[timeinterval]timeLeft.writtenForm, from=second, to=second}': {'conditionalValues': [], 'variableType': 8, 'propertyName': 'writtenForm', 'args': 0, 'kwargs': {'to': 'second', 'from': 'second'}, 'variableName': 'timeLeft'}, u'{[timeinterval]duration.writtenForm, from=second, to=second}': {'conditionalValues': [], 'variableType': 8, 'propertyName': 'writtenForm', 'args': 0, 'kwargs': {'to': 'second', 'from': 'second'}, 'variableName': 'duration'}, u'{[item]moduleTypeID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleTypeID'}})
+     */
 	m_ModuleManager->Online(modID);
+}
+
+void ShipItem::Offline(uint32 modID)
+{
+    m_ModuleManager->Offline(modID);
 }
 
 void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat)
@@ -1647,7 +1736,6 @@ void ShipItem::DeactivateAllModules()
     }
     m_ModuleManager->DeactivateAllModules();
 }
-/* End new Module Manager Interface */
 
 void ShipItem::StripFitting()
 {
@@ -1681,15 +1769,15 @@ void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
     if (pMaster == pSlave)
         return; // make error here?
     if ((pMaster->IsLoaded()) or (pSlave->IsLoaded()))
-        throw PyException( MakeUserError( "CantLinkAmmoInWeapon" ));
+        throw PyException( MakeUserError("CantLinkAmmoInWeapon"));
     if ((pMaster->IsActive()) or (pSlave->IsActive()))
-        throw PyException( MakeUserError( "CantLinkModuleActive" ));
+        throw PyException( MakeUserError("CantLinkModuleActive"));
     if ((pMaster->IsDamaged()) or (pSlave->IsDamaged()))
-        throw PyException( MakeUserError( "CantLinkModuleDamaged" ));
+        throw PyException( MakeUserError("CantLinkModuleDamaged"));
     if ((pMaster->IsLoading()) or (pSlave->IsLoading()))
-        throw PyException( MakeUserError( "CantLinkModuleLoading" ));
+        throw PyException( MakeUserError("CantLinkModuleLoading"));
     if ((!pMaster->isOnline()) or (!pSlave->isOnline()))
-        throw PyException( MakeUserError( "CantLinkModuleNotOnline" ));
+        throw PyException( MakeUserError("CantLinkModuleNotOnline"));
 
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMaster);
     if (itr == m_linkedWeapons.end()) {
@@ -1818,9 +1906,9 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     if (pMod1 == nullptr)
         return 0; // make error here?
     if (pMod1->IsActive())
-        throw PyException( MakeUserError( "CantUngroupModuleActive" ));
+        throw PyException( MakeUserError("CantUngroupModuleActive"));
     if (pMod1->IsLoading())
-        throw PyException( MakeUserError( "CantUngroupModuleLoading" ));
+        throw PyException( MakeUserError("CantUngroupModuleLoading"));
 
     if (pMod1->IsActive()) {
         m_pilot->SendNotifyMsg("You cannot ungroup active modules, please deactivate them first.");
@@ -1918,9 +2006,9 @@ void ShipItem::UnlinkAllWeapons()
     m_ModuleManager->GetWeapons(weaponList);
     for (auto cur : weaponList) {
         if (cur->IsActive())
-            throw PyException( MakeUserError( "CantUngroupModuleActive" ));
+            throw PyException( MakeUserError("CantUngroupModuleActive"));
         if (cur->IsLoading())
-            throw PyException( MakeUserError( "CantUngroupModuleLoading" ));
+            throw PyException( MakeUserError("CantUngroupModuleLoading"));
 
         cur->SetLinked(false);
         cur->SetLinkMaster(false);
@@ -1951,8 +2039,10 @@ PyRep* ShipItem::GetLinkedWeapons()
         result->SetItem(new PyInt(cur.first->itemID()), slaves);
     }
 
-    if (is_log_enabled(SHIP__MODULE_MESSAGE))
+    if (is_log_enabled(SHIP__MODULE_MESSAGE)) {
+        sLog.Warning("Ship", "GetLinkedWeapons returns: ");
         result->Dump(SHIP__MODULE_MESSAGE, "    ");
+    }
     return result;
 }
 
@@ -2033,6 +2123,7 @@ void ShipItem::LoadLinkedWeapons()
 
     SafeDelete(res);
 }
+/* End new Module Manager Interface */
 
 // new effects system.  wip
 void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
@@ -2069,11 +2160,10 @@ void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
     _log(EFFECTS__TRACE, "ShipItem::ProcessEffects():  Processing Ship Effects.");
-    fxData data;
-    data.action = Effects::Action::dgmActInvalid;
     for (auto it : m_type.m_stateFxMap) {
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
-        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
     }
     _log(EFFECTS__TRACE, "Applying Ship Effects");
@@ -2136,6 +2226,7 @@ std::string ShipItem::GetShipDNA()
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
 
+    /** @todo update this for multiples of modules */
     for (auto cur : moduleList) {
         if (IsRigSlot(cur->flag()))
             modRig << cur->typeID() << ";" << cur->quantity() << ":";
@@ -2301,21 +2392,21 @@ void Ship::SetPilot(Client* pClient) {
 void Ship::EncodeDestiny( Buffer& into ) {
     using namespace Destiny;
 
-    uint8 mode = DSTBALL_STOP;
+    uint8 mode = Ball::Mode::STOP;
     if (m_destiny->IsWarping())
-        mode = DSTBALL_WARP;
+        mode = Ball::Mode::WARP;
     else if (m_destiny->IsFollowing())
-        mode = DSTBALL_FOLLOW;
+        mode = Ball::Mode::FOLLOW;
     else if (m_destiny->IsOrbiting())
-        mode = DSTBALL_ORBIT;
+        mode = Ball::Mode::ORBIT;
     else if (m_destiny->IsMoving())
-        mode = DSTBALL_GOTO;
+        mode = Ball::Mode::GOTO;
 /*
     NameStruct name;
         name.name = GetName();
         name.name_len = sizeof(name.name);
   */
-    BallHeader head;
+    BallHeader head = BallHeader();
         head.entityID = GetID();
         head.mode = mode;
         head.radius = GetRadius();
@@ -2323,18 +2414,18 @@ void Ship::EncodeDestiny( Buffer& into ) {
         head.y = y();
         head.z = z();
         if (m_self->HasPilot())
-            head.flags = IsInteractive | IsFree;
+            head.flags = Ball::Flag::IsInteractive | Ball::Flag::IsFree;
         else
-            head.flags = IsFree;
+            head.flags = Ball::Flag::IsFree;
     into.Append( head );
-    MassSector mass;
+    MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DataSector data;
+    DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
         data.velocity_x = m_destiny->GetVelocity().x;
@@ -2343,9 +2434,9 @@ void Ship::EncodeDestiny( Buffer& into ) {
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     switch (mode) {
-        case DSTBALL_WARP: {
+        case Ball::Mode::WARP: {
             GPoint target = m_destiny->GetTargetPoint();
-            DSTBALL_WARP_Struct warp;
+            WARP_Struct warp;
                 warp.formationID = 0xFF;
                 warp.x = target.x;
                 warp.y = target.y;
@@ -2357,23 +2448,23 @@ void Ship::EncodeDestiny( Buffer& into ) {
                 warp.followID = 0;  //this isnt right
             into.Append( warp );
         }  break;
-        case DSTBALL_FOLLOW: {
-            DSTBALL_FOLLOW_Struct follow;
+        case Ball::Mode::FOLLOW: {
+            FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
                 follow.formationID = 0xFF;
             into.Append( follow );
         }  break;
-        case DSTBALL_ORBIT: {
-            DSTBALL_ORBIT_Struct orbit;
+        case Ball::Mode::ORBIT: {
+            ORBIT_Struct orbit;
                 orbit.followID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
                 orbit.formationID = 0xFF;
             into.Append( orbit );
         }  break;
-        case DSTBALL_GOTO: {
+        case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
-            DSTBALL_GOTO_Struct go;
+            GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;
                 go.y = target.y;
@@ -2381,7 +2472,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
             into.Append( go );
         }  break;
         default: {
-            DSTBALL_STOP_Struct main;
+            STOP_Struct main;
                 main.formationID = 0xFF;
             into.Append( main );
         } break;
@@ -2465,13 +2556,7 @@ void Ship::ClearBoostData()
     m_oldInertia     = 0;
     m_oldTargetRange = 0;
 
-    m_boost.armored  = 0; // armor hit points
-    m_boost.info     = 0; // targeting range
-    m_boost.leader   = 0; // targeting speed
-    m_boost.mining   = 0; // mining yield
-    m_boost.siege    = 0; // shield capacity
-    m_boost.skirmish = 0; // agility
-
+    m_boost = BoostData();
     m_boosted = false;
 }
 

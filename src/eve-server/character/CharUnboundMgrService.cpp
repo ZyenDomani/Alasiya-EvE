@@ -71,6 +71,33 @@ PyResult CharUnboundMgrService::Handle_GetCharactersToSelect(PyCallArgs &call)
     return m_db.GetCharacterList(call.client->GetUserID());
 }
 
+PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
+{
+    return m_db.ValidateCharNameRep(PyRep::StringContent(call.tuple->GetItem(0)));
+}
+
+PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call)
+{
+    return m_db.GetCharSelectInfo(PyRep::IntegerValue(call.tuple->GetItem(0)));
+}
+
+PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call)
+{
+    return new PyLong(m_db.PrepareCharacterForDelete(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0))));
+}
+
+PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call)
+{
+    m_db.DeleteCharacter(PyRep::IntegerValue(call.tuple->GetItem(0)));
+    return nullptr;
+}
+
+PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call)
+{
+    m_db.CancelCharacterDeletePrepare(call.client->GetUserID(), PyRep::IntegerValue(call.tuple->GetItem(0)));
+    return nullptr;
+}
+
 PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call) {
     /*  this is called when selecting the 3ed slot when there are 2 chars on account already.
      * returning true will disable creating a 3ed character.
@@ -82,7 +109,10 @@ PyResult CharUnboundMgrService::Handle_IsUserReceivingCharacter(PyCallArgs &call
 }
 
 PyResult CharUnboundMgrService::Handle_GetCharacterInfo(PyCallArgs &call) {
+    // not sure why this is used....
     _log(CLIENT__ERROR, "Called GetCharacterInfo");
+    //   characterID, characterName
+
     return nullptr;
 }
 
@@ -113,92 +143,30 @@ PyResult CharUnboundMgrService::Handle_SelectCharacterID(PyCallArgs &call)
     return nullptr;
 }
 
-PyResult CharUnboundMgrService::Handle_GetCharacterToSelect(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
-    if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return m_db.GetCharSelectInfo(args.arg);
-}
-
-PyResult CharUnboundMgrService::Handle_DeleteCharacter(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    m_db.DeleteCharacter(args.arg);
-    return nullptr;
-}
-
-PyResult CharUnboundMgrService::Handle_PrepareCharacterForDelete(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    return new PyLong(m_db.PrepareCharacterForDelete(call.client->GetUserID(), args.arg));
-}
-
-PyResult CharUnboundMgrService::Handle_CancelCharacterDeletePrepare(PyCallArgs &call) {
-    Call_SingleIntegerArg args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-
-    m_db.CancelCharacterDeletePrepare(call.client->GetUserID(), args.arg);
-
-    // the client doesn't care what we return here
-    return nullptr;
-}
-
-PyResult CharUnboundMgrService::Handle_ValidateNameEx(PyCallArgs &call)
-{
-    if (call.tuple->GetItem(0)->IsString()) {
-        Call_SingleStringArg arg;
-        if (!arg.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyInt(-1);
-        }
-        return m_db.ValidateCharName(arg.arg.c_str());
-    } else if (call.tuple->GetItem(0)->IsWString()) {
-        Call_SingleWStringArg arg;
-        if (!arg.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return new PyInt(-1);
-        }
-        return m_db.ValidateCharName(arg.arg.c_str());
-    } else
-        _log(CLIENT__ERROR, "ValidateName() called with unhandled type %s", call.tuple->GetItem(0)->TypeString());
-
-    return new PyInt(-1);
-}
-
 PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call) {
     // charID = sm.RemoteSvc('charUnboundMgr').CreateCharacterWithDoll(charactername, bloodlineID, genderID, ancestryID, charInfo, portraitInfo, schoolID)
     CallCreateCharacterWithDoll arg;
     if (!arg.Decode(call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
+    // check name and throw on failure before we get too far in this
+    m_db.ValidateCharName(PyRep::StringContent(arg.charactername));
+
     Client* pClient = call.client;
+    pClient->CreateChar(true);
+
     if (!pClient->RecPic())
         pClient->SendInfoModalMsg("The Portrait for this character was not received.  Your character will still be created, but the server will not have their picture.");
 
-    _log(CLIENT__MESSAGE, "CreateCharacterWithDoll called with schoolID: %i bloodlineID: %i gender: %s ancestryID: %i", \
+    _log(CLIENT__MESSAGE, "Calling CreateCharacterWithDoll with schoolID: %i bloodlineID: %i gender: %s ancestryID: %i", \
                         arg.schoolID, arg.bloodlineID, arg.genderID == 1 ? "male" : "female", arg.ancestryID);
 
     // obtain character type
-    sItemFactory.SetUsingClient( pClient );
     const CharacterType *char_type = sItemFactory.GetCharacterTypeByBloodline(arg.bloodlineID);
     if (char_type == nullptr)
-        return new PyInt(0);
+        return PyStatic.NewZero();
 
     // we need to fill these to successfully create character item
     CharacterData cdata = CharacterData();
@@ -209,14 +177,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.schoolID = arg.schoolID;
         cdata.description = "Character Created on ";
         cdata.description += currentDateTime();
-        cdata.bounty = 0;
         cdata.securityRating = sConfig.character.startSecRating;
-        cdata.logonMinutes = 0;
         cdata.title = "No Title";
         cdata.createDateTime = (int64)GetFileTimeNow();
-        // updated these to use TranserFunds and record journal entry
-        cdata.balance = /*sConfig.character.startBalance*/0;
-        cdata.aurBalance = /*sConfig.character.startAurBalance*/0; // Added aurBalance    -allan 01/07/14
 
     //Set the character's career and race based on the school they picked.
     if (m_db.GetCareerBySchool(cdata.schoolID, cdata.raceID, cdata.careerID)) {
@@ -248,11 +211,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         corpData.grantableRolesAtBase = Corp::Role::Member;
         corpData.grantableRolesAtHQ = Corp::Role::Member;
         corpData.grantableRolesAtOther = Corp::Role::Member;
-        // these arent needed yet, but set to 0 to avoid trash data
-        corpData.taxRate = 0;
-        corpData.corpHQ = 0;
-        corpData.allianceID = 0;
-        corpData.warFactionID = 0;
 
     bool defCorp = true;
     if (sConfig.character.startCorporation) { // Skip if 0
@@ -280,46 +238,39 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         cdata.regionID = sData.regionID;
     }
 
-    // make sure system is loaded
-    SystemManager* pSysMgr = sEntityList.FindOrBootSystem(cdata.solarSystemID);
-    if (pSysMgr == nullptr) {
-        pClient->SendErrorMsg("system boot failure");
-        return new PyInt(0);
-    }
-
     corpData.baseID = cdata.stationID;
 
-    std::string name = "";
-    if (arg.name->IsWString())
-        name = arg.name->AsWString()->content();
-    else if (arg.name->IsString())
-        name = arg.name->AsString()->content();
-
     cdata.typeID = char_type->id();
-    cdata.name = name;
+    cdata.name = PyRep::StringContent(arg.charactername);
     cdata.locationID = cdata.stationID;
     cdata.logonMinutes = 2;
+
+    sItemFactory.SetUsingClient( pClient );
 
     CharacterRef charRef = sItemFactory.SpawnCharacter(cdata, corpData);
     if (charRef.get() == nullptr) {
         //a return to the client of 0 seems to be the only means of marking failure
         _log(CLIENT__ERROR, "Failed to create character '%s'", cdata.name.c_str());
-        return new PyInt(0);
+        sItemFactory.UnsetUsingClient();
+        return PyStatic.NewZero();
     }
-    CharacterDB::AddEmployment(charRef->itemID(), corpData.corporationID);
-    charRef->SetFlag(flagAutoFit);
-    pClient->SetChar(charRef);        // set new charRef in client
+    charRef->SetClient(pClient);      // set client in char
 
     // add call to JoinCorp here, and remove corp shit from charDB
 
-    //this builds appearance data from strdict
+    //this builds and saves appearance data from charInfo dict
     CharacterAppearance capp;
-        capp.Build(charRef->itemID(), arg.avatarInfo);
+        capp.Build(charRef->itemID(), arg.charInfo);
+
+    //this builds and saves portrait data from portraitInfo dict
+    CharacterPortrait cpor;
+        cpor.Build(charRef->itemID(), arg.portraitInfo);
 
     // query attribute bonuses from ancestry
     if (!m_db.GetAttributesFromAncestry(cdata.ancestryID, intelligence, charisma, perception, memory, willpower)) {
         _log(CLIENT__ERROR, "Failed to load char create details. Bloodline %u, ancestry %u.", char_type->bloodlineID(), cdata.ancestryID);
-        return new PyInt(0);
+        sItemFactory.UnsetUsingClient();
+        return PyStatic.NewZero();
     }
     // triple attributes and save
     uint8 multiplier = sConfig.character.statMultiplier;
@@ -329,9 +280,6 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     charRef->SetAttribute(AttrMemory, memory * multiplier, false);
     charRef->SetAttribute(AttrWillpower, willpower * multiplier, false);
 
-    // register name
-    m_db.add_name_validation_set(charRef->itemName().c_str(), charRef->itemID());
-
     //load skills
     std::map<uint32, uint8> startingSkills;
     startingSkills.clear();
@@ -339,18 +287,18 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     if (!m_db.GetBaseSkills(startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Base skills. Bloodline %u, Ancestry %u.",
              char_type->bloodlineID(), cdata.ancestryID);
-        return new PyInt(0);
+        // dont really care if this fails.  not enough to deny creation ...maybe make error?
     }
 	//  Race Skills
     if (!m_db.GetSkillsByRace(char_type->race(), startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Race skills. Bloodline %u, Ancestry %u.",
              char_type->bloodlineID(), cdata.ancestryID);
-        return new PyInt(0);
+        // dont really care if this fails.  not enough to deny creation ...maybe make error?
     }
 	//  Career Skills
     if (!m_db.GetSkillsByCareer(cdata.careerID, startingSkills)) {
         _log(CLIENT__ERROR, "Failed to load char Career skills for %u.", cdata.careerSpecialityID);
-        return new PyInt(0);
+        // dont really care if this fails.  not enough to deny creation ...maybe make error?
     }
 
     //spawn all the skills
@@ -362,6 +310,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         if (skill.get() == nullptr) {
             _log(CLIENT__ERROR, "Failed to add skill %u to char %s(%u) during create.",
                  cur.first, charRef->itemName().c_str(), charRef->itemID());
+            // missed a skill...whatever.
             continue;
         }
 
@@ -382,50 +331,54 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     //now set up some initial inventory:
     /** @todo update this to reflect char career */
 
-    // add 1 unit of "Clone Grade Alpha"
-    ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.stationID, flagClone, 1 );
-    InventoryItemRef cloneRef = sItemFactory.SpawnItem( iData );
-    if (cloneRef.get() != nullptr) {
-        char ci[45];
-        snprintf(ci, sizeof(ci), "Active: %s(%u)", charRef->itemName().c_str(), charRef->itemID());
-        cloneRef->SetCustomInfo(ci);
-    }
+    // add client to EntityList for subsquent calls that need Client* (AttributeMap changes)
+    pClient->SetChar(charRef);        // AddPlayer() needs charRef
+    sEntityList.AddPlayer(pClient);
+
+    // need system loaded for proper ship creation/loading and subsquent character login
+    sEntityList.FindOrBootSystem(cdata.solarSystemID);
+
+    // create alpha-level clone
+    ItemData iData( itemCloneAlpha, charRef->itemID(), cdata.locationID, flagClone, 1 );
+        iData.customInfo="Active: ";
+        iData.customInfo += charRef->itemName();
+        iData.customInfo += "(";
+        iData.customInfo += itoa(charRef->itemID());
+        iData.customInfo += ")";
+    sItemFactory.SpawnItem( iData )->SaveItem();
 
     // give the player their pod
-    std::string pod_name = charRef->itemName() + "'s Capsule";
-    ItemData podData( itemTypeCapsule, charRef->itemID(), cdata.solarSystemID, flagCapsule, pod_name.c_str() );
-    ShipItemRef podRef = sItemFactory.SpawnShip( podData );
-    if (podRef.get() != nullptr) {
-        // make sure this is singleton
-        podRef->ChangeSingleton(true);
-        podRef->SaveItem();
-        charRef->SetActivePod( podRef->itemID() );  // we are now keeping pod until it's destroyed.
-    }
+    pClient->CreateNewPod();
+    pClient->GetPod()->Move(cdata.locationID, flagHangar);
 
     ShipItemRef sRef = pClient->SpawnNewRookieShip();
-    // not sure why charRef isnt working right in client at this point, so hack this here.
-    sRef->ChangeOwner(charRef->itemID());
-    // set shipID in char object and save (error fix)
-    sRef->ChangeSingleton(true);
-    charRef->SetActiveShip(sRef->itemID());
+    // set shipID in client and char objects and save (shipID error fix)
+    pClient->SetShip(sRef);
     charRef->SaveFullCharacter();
-
-    // we need to report the charID to the ImageServer so it can correctly assign a previously received image
-    sImageServer.ReportNewCharacter(pClient->GetUserID(), charRef->itemID());
 
     // Release the item factory now that the character is finished being accessed:
     sItemFactory.UnsetUsingClient();
 
+    // we need to report the charID to the ImageServer so it can correctly assign a previously received image
+    sImageServer.ReportNewCharacter(pClient->GetUserID(), charRef->itemID());
+
     //  add charID to staticOwners
-    m_db.addOwnerCache(charRef->itemID(), charRef->itemName(), char_type->id() );
+    m_db.addOwnerCache(charRef->itemID(), charRef->itemName(), char_type->id());
 
     std::string reason = "DESC: Inheritance Payment to ";
     reason += charRef->itemName().c_str();
     AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startBalance, reason, Journal::EntryType::Inheritance);
-
     AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
                             Journal::EntryType::Inheritance, 0, Account::KeyType::AUR, Account::KeyType::AUR);
 
-    _log( CLIENT__MESSAGE, "Created New Character  - Sending ID %u as reply", charRef->itemID() );
+    _log( CLIENT__MESSAGE, "Created New Character  - Sending charID %u as reply", charRef->itemID() );
+
+    charRef->LogOut();
+    sRef->LogOut();
+
+    sEntityList.RemovePlayer(pClient);
+
+    pClient->CreateChar(false);
+
     return new PyInt(charRef->itemID());
 }

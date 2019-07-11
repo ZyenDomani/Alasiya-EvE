@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -130,7 +130,10 @@ void EntityList::Close()
  *  the problem here is any searching is done thru iteration, which can get expensive.
  *  however, clients are added before their char is selected, so there is no charID for map placement.
  *    maybe use m_clients for basic Process() calls and use m_players for character/client searching
+ *
+ * update:  done and working very well.
  */
+
 void EntityList::Add( Client* pClient ) {
     ++m_connections;
     if (pClient != nullptr)
@@ -150,31 +153,33 @@ void EntityList::Remove(Client* pClient) {
 void EntityList::AddPlayer(Client* pClient)
 {
     if (pClient != nullptr)
-        m_players.emplace(pClient->GetCharacterID(), pClient);
-    if (IsPlayerCorp(pClient->GetCorporationID())) {
-        corpRole role;
-        role.emplace(pClient, pClient->GetCorpRole());
-        m_corpMembers.emplace(pClient->GetCorporationID(), role);
-    }
+        if (pClient->IsValidSession()) {
+            m_players.emplace(pClient->GetCharacterID(), pClient);
+            if (IsPlayerCorp(pClient->GetCorporationID())) {
+                corpRole role;
+                role.emplace(pClient, pClient->GetCorpRole());
+                m_corpMembers.emplace(pClient->GetCorporationID(), role);
+            }
+        } else
+            m_players.emplace(pClient->GetCharID(), pClient);
 }
 
 void EntityList::RemovePlayer(Client* pClient)
 {
-    if (pClient != nullptr) {
-        std::map<uint32, Client*>::iterator itr = m_players.find(pClient->GetCharacterID());
-        if (itr != m_players.end())
-            m_players.erase(itr);
-    }
-
-    // remove player from corp map, if applicable
-    if (IsPlayerCorp(pClient->GetCorporationID())) {
-        std::map<uint32, corpRole>::iterator itr = m_corpMembers.find(pClient->GetCorporationID());
-        if (itr != m_corpMembers.end()) {
-            corpRole::iterator itr2 = itr->second.find(pClient);
-            if (itr2 != itr->second.end())
-                itr->second.erase(itr2);
-        }
-    }
+    if (pClient != nullptr)
+        if (pClient->IsValidSession()) {
+            m_players.erase(pClient->GetCharacterID());
+            // remove player from corp map, if applicable
+            if (IsPlayerCorp(pClient->GetCorporationID())) {
+                std::map<uint32, corpRole>::iterator itr = m_corpMembers.find(pClient->GetCorporationID());
+                if (itr != m_corpMembers.end()) {
+                    corpRole::iterator itr2 = itr->second.find(pClient);
+                    if (itr2 != itr->second.end())
+                        itr->second.erase(itr2);
+                }
+            }
+        } else
+            m_players.erase(pClient->GetCharID());
 }
 
 
@@ -202,9 +207,14 @@ void EntityList::Process() {
         sBubbleMgr.Process();
 
         for (auto cur : m_players)
-            cur.second->ProcessClient();
+            if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
+                cur.second->ProcessClient();
 
         std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
+    /** @todo test for adding OpenMP here to enable MP per system. */
+    // this wont work....possibility of removing systems, therefore invalidating the iterator.
+    // bad things can happen if this is running parallel on MP
+    //#pragma omp parallel  // starts a new team
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
@@ -228,8 +238,8 @@ void EntityList::Process() {
             sWHMgr.Process();   // ~2m
             if (m_minutes % 60 == 0) // ~1h
                 sMktMgr.Process();
-            //sMktBotMgr.Process();  // 15m to 30m
             if (m_updateTimer.Check()) { // 15m
+                //sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
                 // loop thru loaded systems and save their current player counts
                 itr = m_systems.begin();
@@ -257,7 +267,6 @@ SystemManager* EntityList::FindOrBootSystem(uint32 systemID) {
     if (itr != m_systems.end())
         return itr->second;
 
-    /** @todo test for adding OpenMP here to enable MP per system. */
     SystemManager* pSM = new SystemManager(systemID, *m_services);
     if ((pSM == nullptr) or (!pSM->BootSystem())) {
         _log(SERVER__INIT_ERR, "BootSystem() - Booting system %u failed", systemID);
@@ -275,13 +284,13 @@ Agent* EntityList::GetAgent(uint32 agentID) {
     if (res != m_agents.end())
         return res->second;
 
-    Agent* aPtr = new Agent(agentID);
-    if (!aPtr->Load()) {
-        delete aPtr;
+    Agent* pAgent = new Agent(agentID);
+    if (!pAgent->Load()) {
+        delete pAgent;
         return nullptr;
     }
-    m_agents[agentID] = aPtr;
-    return aPtr;
+    m_agents[agentID] = pAgent;
+    return pAgent;
 }
 
 void EntityList::AddStation(uint32 stationID, StationItemRef itemRef) {
@@ -330,6 +339,30 @@ Client* EntityList::FindClientByCharID(uint32 charID) const
     return itr->second;
 }
 
+StationItemRef EntityList::GetStationByID(uint32 stationID) {
+    std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
+    if (res != m_stations.end())
+        return res->second;
+    return StationItemRef(nullptr);
+}
+
+std::string EntityList::GetAnomalyID()
+{
+    // these should be totally unique.  design a way to enforce this
+    std::string str1 = "", str2 = "";
+    for (uint8 i = 0; i < 3; ++i) {
+        str1 += alphaList[MakeRandomInt(0,25)];    //rand() % sizeof(alphaList) - 1
+        str2 += itoa(MakeRandomInt(0,9));
+    }
+
+    std::string res = str1;
+    res += "-";
+    res += str2;
+    // not sure if we need to keep track of these IDs...
+    //m_anomIDs.push_back(res);
+    return res;
+}
+
 // this is my answer to the crazy looping of Multicast shit...
 void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, const char* idType, PyTuple* payload) const
 {
@@ -345,7 +378,7 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
 
     // determine who in corp needs to be notified
     using namespace Notify::Types;
-    using namespace Corp::Role;
+    //using namespace Corp::Role;
     // auto doesnt work here...dunno why yet.
     corpRole::const_iterator itr = cItr->second.begin();
     switch (type) {
@@ -571,7 +604,9 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
     }
 
     // this will need list of interested parties from corp.  update this call to use CorpNotify() where possible.
-    if (!mcset.corporations.empty())
+    if (!mcset.corporations.empty()) {
+        sLog.Error("EntityList::Multicast 2", "Corporation MulticastTarget called.");
+        EvE::traceStack();
         for (auto cur : mcset.corporations) {
             std::map<uint32, corpRole>::const_iterator cItr = m_corpMembers.find(cur);
             if (cItr == m_corpMembers.end())
@@ -583,6 +618,7 @@ void EntityList::Multicast(const char* notifyType, const char* idType, PyTuple**
                 ++itr;
             }
         }
+    }
 
     PyDecRef( payload );
 }
@@ -631,13 +667,8 @@ Client* EntityList::FindClientByName(const char* name) const {
     return nullptr;
 }
 
-StationItemRef EntityList::GetStationByID(uint32 stationID) {
-    std::map<uint32, StationItemRef>::iterator res = m_stations.find(stationID);
-    if (res != m_stations.end())
-        return res->second;
-    return StationItemRef(nullptr);
-}
 
+// these are not used anymore....sessionID is generated by client.  dont know how to retrieve it
 void EntityList::RegisterSID(int64 &sessionID) {
     /*  this whole method is just made up...eventually it will return a unique long long */
     /* max for int64 = 9223372036854775807 */
@@ -659,21 +690,3 @@ void EntityList::RegisterSID(int64 &sessionID) {
 void EntityList::RemoveSID ( int64 sessionID ) {
     m_sessions.erase(sessionID);
 }
-
-std::string EntityList::GetAnomalyID()
-{
-    // these should be totally unique.  design a way to enforce this
-    std::string str1 = "", str2 = "";
-    for (uint8 i = 0; i < 3; ++i) {
-        str1 += alphaList[MakeRandomInt(0,25)];    //rand() % sizeof(alphaList) - 1
-        str2 += itoa(MakeRandomInt(0,9));
-    }
-
-    std::string res = str1;
-    res += "-";
-    res += str2;
-    // not sure if we need to keep track of these IDs...
-    //m_anomIDs.push_back(res);
-    return res;
-}
-

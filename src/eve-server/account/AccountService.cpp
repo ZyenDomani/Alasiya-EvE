@@ -24,6 +24,7 @@
     Updates:        Allan
 */
 
+#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "EntityList.h"
@@ -173,8 +174,13 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
     std::string reason = "DESC: ";
     if (args.reason.size() < 1)
         reason += "No Reason Given";
-    else
+    else {
+        // this hits db directly, so test for possible sql injection code
+        for (const auto cur : badChars)
+            if (boost::icontains(args.reason, cur))
+                throw PyException( MakeCustomError("Description contains invalid characters"));
         reason += args.reason;
+    }
 
     TranserFunds(call.client->GetCharacterID(), args.toID, args.amount, reason.c_str(), Journal::EntryType::PlayerDonation, call.client->GetCharacterID());
     return nullptr;
@@ -198,6 +204,11 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
 
     std::string reason= "DESC: No Reason Given";
     if (call.byname.find("reason") != call.byname.end()) {
+        // this hits db directly, so test for possible sql injection code
+        for (const auto cur : badChars)
+            if (boost::icontains(PyRep::StringContent(call.byname.find("reason")->second), cur))
+                throw PyException( MakeCustomError("Search String contains invalid characters"));
+
         reason = "DESC: ";
         reason += PyRep::StringContent(call.byname.find("reason")->second);
     }
@@ -262,6 +273,9 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
         _log(ACCOUNT__TRACE, "TranserFunds() - toID: %u is neither player nor player corp.", toID);
         return;
     }
+
+    if ((pClientTo != nullptr) and pClientTo->IsCharCreation())
+        return;
 
     /* corp taxes...
      *   bounty prizes and mission rewards are taxed by the players corp based on corp tax rate.

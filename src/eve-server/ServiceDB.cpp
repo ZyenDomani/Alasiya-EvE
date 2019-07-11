@@ -23,6 +23,8 @@
     Author:     Zhur
     Updates:     Allan
 */
+
+#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "EntityList.h"
@@ -39,11 +41,37 @@ uint32 ServiceDB::SetClientSeed()
     return row.GetInt(0);
 }
 
-bool ServiceDB::GetAccountInformation( const char* username, const char* password, AccountData &account_info )
-{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18
-    std::string eLogin, ePass;
-    sDatabase.DoEscapeString(eLogin, username);
-    sDatabase.DoEscapeString(ePass, password);
+bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& failMsg)
+{
+
+    if (ccp.user_name.empty()) {
+        failMsg = "Account Name is empty.";
+        return false;
+    }
+    if (ccp.user_name.length() < 3) {
+        failMsg = "Account Name is too short.";
+        return false;
+    }
+    //if (name.length() < 4)
+    //    throw PyException( MakeUserError("CharNameInvalidMinLength"));
+    if (ccp.user_name.length() > 20) {    //client caps at 24
+        failMsg = "Account Name is too long.";
+        return false;
+    }
+
+    for (const auto cur : badChars)
+        if (boost::icontains(ccp.user_name, cur)) {
+            failMsg = "Account Name contains invalid characters.";
+            return false;
+        }
+
+    return true;
+}
+
+bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& aData, std::string& failMsg )
+{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18    -again 15Jun19
+    std::string eLogin;
+    sDatabase.DoEscapeString(eLogin, ccp.user_name);
 
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res,
@@ -51,6 +79,9 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
         " FROM account WHERE accountName = '%s'", eLogin.c_str() ) )
     {
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
+        failMsg = "Error in DB Query";
+        //failMsg += ": ";
+        //failMsg += res.error.c_str();     // do we wanna sent the error msg to client?
         return false;
     }
 
@@ -58,26 +89,33 @@ bool ServiceDB::GetAccountInformation( const char* username, const char* passwor
     if (!res.GetRow( row )) {
         // account not found, create new one if autoAccountRole is not zero (0)
         if (sConfig.account.autoAccountRole > 0) {
-            uint32 accountID = ServiceDB::CreateNewAccount( eLogin.c_str(), ePass.c_str(), sConfig.account.autoAccountRole);
+            std::string ePass, ePassHash;
+            sDatabase.DoEscapeString(ePass, ccp.user_password);
+            sDatabase.DoEscapeString(ePassHash, ccp.user_password_hash);
+            uint32 accountID = CreateNewAccount( eLogin.c_str(), ePass.c_str(), ePassHash.c_str(), sConfig.account.autoAccountRole);
             if ( accountID > 0 ) {
-                // add new account successful, get account info again
-                return GetAccountInformation(eLogin.c_str(), ePass.c_str(), account_info);
-            } else
+                // add new account successful, get account info
+                return GetAccountInformation(ccp, aData, failMsg);
+            } else {
+                failMsg = "Failed to create a new account.";
                 return false;
-        } else
+            }
+        } else {
+            failMsg = "That account doesn't exist and AutoAccount is disabled.";
             return false;
+        }
     }
 
-    account_info.name       = eLogin;
-    account_info.id         = row.GetInt(0);
-    account_info.clientID   = row.GetInt(1);
-    account_info.password   = (row.IsNull(2) ? "" : row.GetText(2));
-    account_info.hash       = (row.IsNull(3) ? "" : row.GetText(3));
-    account_info.role       = row.GetInt64(4);
-    account_info.online     = row.GetInt(5) ? true : false;
-    account_info.banned     = row.GetInt(6) ? true : false;
-    account_info.visits     = row.GetInt(7);
-    account_info.last_login = (row.IsNull(8) ? "" : row.GetText(8));
+    aData.name       = eLogin;
+    aData.id         = row.GetInt(0);
+    aData.clientID   = row.GetInt(1);
+    aData.password   = (row.IsNull(2) ? "" : row.GetText(2));
+    aData.hash       = (row.IsNull(3) ? "" : row.GetText(3));
+    aData.role       = row.GetInt64(4);
+    aData.online     = row.GetInt(5) ? true : false;
+    aData.banned     = row.GetInt(6) ? true : false;
+    aData.visits     = row.GetInt(7);
+    aData.last_login = (row.IsNull(8) ? "" : row.GetText(8));
 
     return true;
 }
@@ -89,7 +127,7 @@ bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
     sDatabase.DoEscapeString(eHash, hash);
 
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET hash='%s' where accountName='%s'", eHash.c_str(), eLogin.c_str())) {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET hash='%s' WHERE accountName='%s'", eHash.c_str(), eLogin.c_str())) {
         sLog.Error( "AccountDB", "Unable to update account information for: %s.", username );
         return false;
     }
@@ -100,7 +138,7 @@ bool ServiceDB::UpdateAccountHash( const char* username, std::string & hash )
 bool ServiceDB::IncrementLoginCount( uint32 accountID )
 {
     DBerror err;
-    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1 where accountID=%u", accountID)) {
+    if (!sDatabase.RunQuery(err, "UPDATE account SET lastLogin=now(), logonCount=logonCount+1 WHERE accountID=%u", accountID)) {
         sLog.Error( "AccountDB", "Unable to update account information for accountID %u.", accountID);
         return false;
     }
@@ -108,28 +146,31 @@ bool ServiceDB::IncrementLoginCount( uint32 accountID )
     return true;
 }
 
-uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, int64 role )
+uint32 ServiceDB::CreateNewAccount( const char* login, const char* pass, const char* passHash, int64 role )
 {
     uint32 accountID = 0;
     uint32 clientID = sEntityList.GetClientSeed();
 
-    std::string eLogin, ePass;
-    sDatabase.DoEscapeString(eLogin, login);
-    sDatabase.DoEscapeString(ePass, pass);
-
     DBerror err;
     if ( !sDatabase.RunQueryLID( err, accountID,
-            "INSERT INTO account ( accountName, hash, role, clientID )"
-            " VALUES ( '%s', '%s', %lli, %i )",
-                    eLogin.c_str(), ePass.c_str(), role, clientID ) )
+            "INSERT INTO account ( accountName, password, hash, role, clientID )"
+            " VALUES ( '%s', '%s', '%s', %lli, %u )",
+                    login, pass, passHash, role, clientID ) )
     {
-        sLog.Error( "ServiceDB", "Failed to create a new account '%s':'%s': %s.", eLogin.c_str(), ePass.c_str(), err.c_str() );
+        sLog.Error( "ServiceDB", "Failed to create a new account '%s':'%s': %s.", login, pass, err.c_str() );
         return 0;
     }
 
     sDatabase.RunQuery(err, "UPDATE srvStatus SET ClientSeed = ClientSeed + 1 WHERE AI = 1");
     return accountID;
 }
+
+void ServiceDB::UpdatePassword(uint32 accountID, const char* pass)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE account SET password = '%s' WHERE accountID=%u", pass, accountID);
+}
+
 
 void ServiceDB::SetCharacterOnlineStatus(uint32 char_id, bool online) {
     _log(CLIENT__TRACE, "ServiceDB:  Setting character %u %s.", char_id, online ? "Online" : "Offline");

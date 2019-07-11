@@ -24,16 +24,12 @@
     Updates:        Allan
 */
 
+#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
 #include "character/Character.h"
 #include "character/CharacterDB.h"
-
-CharacterDB::CharacterDB()
-{
-    load_name_validation_set();
-}
 
 uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corpData) {
     DBerror err;
@@ -42,20 +38,20 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
     sDatabase.DoEscapeString(titleEsc, data.title);
     sDatabase.DoEscapeString(descriptionEsc, data.description);
 
-    uint32 uid = 0;
-    if (!sDatabase.RunQueryLID(err, uid,
+    uint32 charID = 0;
+    if (!sDatabase.RunQueryLID(err, charID,
         "INSERT INTO chrCharacters"
         "  (accountID, name, typeID, locationID, description, balance, aurBalance,"
-        "   logonDateTime, corporationID, baseID, corpAccountKey, startDateTime, createDateTime, "
+        "   logonDateTime, baseID, corpAccountKey, createDateTime, "
         "   ancestryID, bloodlineID, raceID, careerID, schoolID, careerSpecialityID, gender,"
         "   stationID, solarSystemID, constellationID, regionID, freeRespecs)"
         " VALUES"
         "  (%u,'%s', %u, %u, '%s', %f, %f,"
-        "   %f, %u, %u, %u, %f, %f,"
+        "   %f, %u, %u, %f,"
         "   %u, %u, %u, %u, %u, %u, %u,"
         "   %u, %u, %u, %u, 2)",
         data.accountID, nameEsc.c_str(), data.typeID, data.locationID, descriptionEsc.c_str(), data.balance, data.aurBalance,
-        GetFileTimeNow(), corpData.corporationID, corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(), GetFileTimeNow(),
+        GetFileTimeNow(), corpData.baseID, corpData.corpAccountKey, GetFileTimeNow(),
         data.ancestryID, data.bloodlineID, data.raceID, data.careerID, data.schoolID, data.careerSpecialityID, data.gender,
         data.stationID, data.solarSystemID, data.constellationID, data.regionID))
     {
@@ -63,16 +59,9 @@ uint32 CharacterDB::NewCharacter(const CharacterData& data, const CorpData& corp
         return 0;
     }
 
-    // And one more member to the corporation
-    if (!sDatabase.RunQuery(err,
-        "UPDATE crpCorporation"
-        "  SET memberCount = memberCount + 1"
-        " WHERE corporationID = %u", corpData.corporationID))
-    {
-        _log(DATABASE__MESSAGE, "Failed to raise member count of corporation %u: %s.", uid, err.c_str());
-    }
+    AddEmployment(charID, corpData.corporationID);
 
-    return uid;
+    return charID;
 }
 
 bool CharacterDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
@@ -249,7 +238,7 @@ PyRep *CharacterDB::GetCharacterList(uint32 accountID) {
     return DBResultToCRowset(res);
 }
 
-PyRep* CharacterDB::ValidateCharName(const char *name)
+PyRep* CharacterDB::ValidateCharNameRep(std::string name)
 {
     /** @todo
             validStates = {-1: localization.GetByLabel('UI/CharacterCreation/InvalidName/TooShort'),
@@ -262,38 +251,115 @@ PyRep* CharacterDB::ValidateCharName(const char *name)
              */
     // *name  is sent from client WITHOUT leading space, if there is one, and will not allow more than one space.
 
-    if (name == nullptr or (*name == '\0'))
+    if (name.empty())
         return new PyInt(-1);
-
-    // verify that NO ONE tries to use "CCP *name*"
-    if ((name[0] == 'C') or (name[0] == 'c'))
-        if ((name[1] == 'C') or (name[1] == 'c'))
-            if ((name[2] == 'P') or (name[2] == 'p'))
-                return new PyInt(-5);
-
-    // check for length?   30 max?   funky hack...not used....client caps at 24  (but this works)
-    int8 length = 0;
-    while (name[length] != '\0')
-        length++;
-    //_log(CLIENT__ERROR, "length is %i", length);
-
-    if (length == 0)
+    if (name.length() < 3)
         return new PyInt(-1);
-    else if (length > 30)
+    if (name.length() > 37)    //client caps at 24
         return new PyInt(-2);
 
-    /* hash the name */
-    uint32 hash = djb2_hash(name);
+    if (!sDatabase.IsSafeString(name.c_str()))
+        return new PyInt(-5);
 
-    /* check if its in our std::set */
-    CharValidationSetItr itr = mNameValidation.find(hash);
+    for (const auto cur : badWords)
+        if (boost::icontains(name, cur))
+            return new PyInt(-5);
 
-    /* if itr is not equal to the end of the set it means that the same hash has been found */
-    if (itr != mNameValidation.end())
+    for (const auto cur : badChars)
+        if (boost::icontains(name, cur))
+            return new PyInt(-5);
+
+    // check for consecutive spaces
+    if (boost::icontains(name, "  "))
+        return new PyInt(-7);
+
+    // check for multiple spaces
+    int found = name.find(" ");
+    if (found != name.npos) {
+        found = name.find(" ", found +1, 1);
+        if (found != name.npos)
+            return new PyInt(-6);
+    }
+
+    std::string eName;
+    sDatabase.DoEscapeString(eName, name.c_str());
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
+    if (res.ColumnCount() > 0)  // name exists
         return new PyInt(-101);
 
     /* if we got here the name is "new" */
-    return new PyInt(1);
+    return PyStatic.NewOne();
+}
+
+/** @todo this should throw on error */
+void CharacterDB::ValidateCharName(std::string name)
+{
+    /*{'messageKey': 'CharNameInvalid', 'dataID': 17885077, 'suppressable': False, 'bodyID': 260107, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 471}
+     * {'messageKey': 'CharNameInvalidBannedWord', 'dataID': 17884963, 'suppressable': False, 'bodyID': 260067, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 472}
+     * {'messageKey': 'CharNameInvalidFirstChar', 'dataID': 17884966, 'suppressable': False, 'bodyID': 260068, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 473}
+     * {'messageKey': 'CharNameInvalidLastChar', 'dataID': 17884969, 'suppressable': False, 'bodyID': 260069, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 474}
+     * {'messageKey': 'CharNameInvalidMaxLength', 'dataID': 17885083, 'suppressable': False, 'bodyID': 260109, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 475}
+     * {'messageKey': 'CharNameInvalidMaxSpaces', 'dataID': 17884972, 'suppressable': False, 'bodyID': 260070, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 476}
+     * {'messageKey': 'CharNameInvalidMinLength', 'dataID': 17884975, 'suppressable': False, 'bodyID': 260071, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 477}
+     * {'messageKey': 'CharNameInvalidSomeChar', 'dataID': 17884978, 'suppressable': False, 'bodyID': 260072, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 478}
+     * {'messageKey': 'CharNameInvalidTaken', 'dataID': 17884981, 'suppressable': False, 'bodyID': 260073, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 479}
+     * {'messageKey': 'CharNameTooShort', 'dataID': 17884986, 'suppressable': False, 'bodyID': 260075, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 260074, 'messageID': 482}
+     */
+    /*{'FullPath': u'UI/Messages', 'messageID': 260067, 'label': u'CharNameInvalidBannedWordBody'}(u'Character name contains a banned word.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260068, 'label': u'CharNameInvalidFirstCharBody'}(u'First character in character name is illegal.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260069, 'label': u'CharNameInvalidLastCharBody'}(u'Last character in character name is illegal.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260070, 'label': u'CharNameInvalidMaxSpacesBody'}(u'Character name can only include 1 space.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260071, 'label': u'CharNameInvalidMinLengthBody'}(u'Minimum length for a character name is 4 characters.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260072, 'label': u'CharNameInvalidSomeCharBody'}(u'Character name contains an illegal character.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260073, 'label': u'CharNameInvalidTakenBody'}(u'Character name is already taken.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260074, 'label': u'CharNameTooShortTitle'}(u'Name Too Short', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260075, 'label': u'CharNameTooShortBody'}(u'The name must be at least 3 characters long.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260107, 'label': u'CharNameInvalidBody'}(u'The name you have selected for your character is not valid', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 260109, 'label': u'CharNameInvalidMaxLengthBody'}(u'Maximum length for a character name is 37 characters. The first and second name must be less than 24 character combined, and the third name must be less than 12 characters.', None, None)
+     */
+
+    // *name  is sent from client WITHOUT leading space, if there is one, and will not allow more than one space.
+
+    if (name.empty())
+        throw PyException( MakeUserError("CharNameInvalid"));
+    if (name.length() < 3)
+        throw PyException( MakeUserError("CharNameTooShort"));
+    //if (name.length() < 4)
+    //    throw PyException( MakeUserError("CharNameInvalidMinLength"));
+    if (name.length() > 37)    //client caps at 24
+        throw PyException( MakeUserError("CharNameInvalidMaxLength"));
+
+    //if (!sDatabase.IsSafeString(name.c_str()))
+    //    throw PyException( MakeUserError("CharNameInvalidSomeChar"));
+
+    //if (name.at(0) == "+")
+    //    throw PyException( MakeUserError("CharNameInvalidFirstChar"));
+
+    // check for banned words in char name
+    for (const auto cur : badWords)
+        if (boost::icontains(name, cur))
+            throw PyException( MakeUserError("CharNameInvalidBannedWord"));
+    for (const auto cur : badChars)
+        if (boost::icontains(name, cur))
+            throw PyException( MakeUserError("CharNameInvalidSomeChar"));
+
+    // check for multiple spaces
+    int found = name.find(" ");
+    if (found != name.npos) {
+        found = name.find(" ", found +1, 1);
+        if (found != name.npos)
+            throw PyException( MakeUserError("CharNameInvalidMaxSpaces"));
+    }
+
+    std::string eName;
+    sDatabase.DoEscapeString(eName, name.c_str());
+    DBQueryResult res;
+    sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
+    if (res.ColumnCount() > 0)  // name exists
+        throw PyException( MakeUserError("CharNameInvalidTaken"));
+
+    /* if we got here, the name is good */
 }
 
 void CharacterDB::AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID/*0*/) {
@@ -311,7 +377,7 @@ void CharacterDB::AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID/*
         codelog(DATABASE__ERROR, "Error in character insert query: %s", err.c_str());
 
     // Decrease previous corp's member count
-    if (oldCorpID)
+    if (IsCorp(oldCorpID))
         if (!sDatabase.RunQuery(err, "UPDATE crpCorporation SET memberCount = memberCount-1 WHERE corporationID = %u", oldCorpID))
             codelog(CORP__DB_ERROR, "Error in prev corp member decrease query: %s", err.c_str());
 
@@ -456,7 +522,8 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
         "  ch.locationID, "
         "  ch.baseID,"
         "  co.allianceID,"
-        "  co.warFactionID"
+        "  co.warFactionID,"
+        "  ch.name"         //20
         " FROM chrCharacters AS ch"
         "    LEFT JOIN crpCorporation AS co USING (corporationID) "
         " WHERE characterID = %u", characterID))
@@ -494,8 +561,12 @@ void CharacterDB::GetCharacterData(uint32 characterID, std::map<std::string, int
     uint32 stationID = row.GetInt(17);
     if (!CharacterDB::GetCharHomeStation(characterID, stationID)) {
         ItemData iData( itemCloneAlpha, characterID, stationID, flagClone, 1 );
-        iData.customInfo="active";
-        InventoryItemRef initInvItem = sItemFactory.SpawnItem( iData );
+        iData.customInfo="Active: ";
+        iData.customInfo += row.GetText(20);
+        iData.customInfo += "(";
+        iData.customInfo += itoa(characterID);
+        iData.customInfo += ") {ud}";
+        sItemFactory.SpawnItem( iData )->SaveItem();
     }
     characterDataMap["cloneStationID"] = stationID;
 }
@@ -659,16 +730,14 @@ bool CharacterDB::GetCharClones(uint32 characterID, std::vector<uint32> &into) {
 }
 
 //returns the itemID of the active clone
-bool CharacterDB::GetActiveClone(uint32 characterID, uint32 &itemID) {
+bool CharacterDB::GetActiveCloneID(uint32 characterID, uint32 &itemID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  itemID"
+        "SELECT itemID"
         " FROM entity"
         " WHERE ownerID = %u"
-        "  AND flag='400'"
-        "  AND customInfo='active'",
+        "  AND flag=400",
         characterID))
     {
         _log(DATABASE__ERROR, "Failed to query active clone of char %u: %s.", characterID, res.error.c_str());
@@ -690,12 +759,10 @@ bool CharacterDB::GetActiveCloneType(uint32 characterID, uint32 &typeID) {
     DBQueryResult res;
 
     if (!sDatabase.RunQuery(res,
-        "SELECT"
-        "  typeID"
+        "SELECT typeID"
         " FROM entity"
         " WHERE ownerID = %u"
-        "  AND flag='400'"
-        "  AND customInfo='active'",
+        "  AND flag=400",
         characterID))
     {
         _log(DATABASE__ERROR, "Failed to query active clone of char %u: %s.", characterID, res.error.c_str());
@@ -703,26 +770,24 @@ bool CharacterDB::GetActiveCloneType(uint32 characterID, uint32 &typeID) {
     }
 
     DBResultRow row;
-    res.GetRow(row);
-    typeID=row.GetUInt(0);
+    if (res.GetRow(row)) {
+        typeID=row.GetUInt(0);
+        return true;
+    }
 
-    return true;
+    typeID = 0;
+    return false;
 }
 
 // Return the Home station of the char based on the active clone
 bool CharacterDB::GetCharHomeStation(uint32 characterID, uint32 &stationID) {
-	uint32 activeCloneID = 0;
-    if (!CharacterDB::GetActiveClone(characterID, activeCloneID)) {
-        _log( CHARACTER__ERROR, "Could't get the active clone for char %u", characterID );
-		return false;
-	}
-
 	DBQueryResult res;
 	if ( !sDatabase.RunQuery(res,
-		"SELECT locationID "
-		"FROM entity "
-		"WHERE itemID = %u",
-		activeCloneID ))
+        "SELECT locationID "
+        " FROM entity"
+        " WHERE ownerID = %u"
+        "  AND flag=400",
+        characterID ))
 	{
         _log(CHARACTER__ERROR, "Could't get clone location for char %u", characterID );
 		return false;
@@ -772,6 +837,17 @@ bool CharacterDB::ChangeCloneType(uint32 characterID, uint32 typeID)
         return false;
     }
     sLog.Debug( "CharacterDB", "Clone upgrade successful" );
+    return true;
+}
+
+bool CharacterDB::ChangeCloneLocation(uint32 characterID, uint32 locationID)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res.error, "UPDATE entity SET locationID=%u WHERE ownerID=%u AND flag=400", locationID, characterID)) {
+        _log(DATABASE__ERROR, "Failed to change location of clone %u: %s.", characterID, res.error.c_str());
+        return false;
+    }
+
     return true;
 }
 
@@ -844,17 +920,17 @@ bool CharacterDB::GetCorporationBySchool(uint32 schoolID, uint32 &corporationID)
 bool CharacterDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& corporationID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-     "SELECT "      // fixed DB Query   -allan 01/02/14
-     "  co.corporationID, "
+     "SELECT "      // fixed DB Query   -allan 01/02/14  -UD 9Jul19
+     "  cs.corporationID, "
      "  cs.schoolID, "
      "  co.stationID, "
      "  st.solarSystemID, "
      "  st.constellationID, "
      "  st.regionID "
-     " FROM staStations AS st"
-     "    LEFT JOIN crpCorporation AS co USING (stationID)"
-     "    LEFT JOIN chrSchools AS cs ON cs.corporationID = co.corporationID"
-     "    LEFT JOIN careers AS c USING (schoolID)"
+     " FROM careers AS c"
+     "    LEFT JOIN chrSchools AS cs USING (schoolID)"
+     "    LEFT JOIN crpCorporation AS co ON cs.corporationID = co.corporationID"
+     "    LEFT JOIN staStations AS st USING (stationID)"
      " WHERE c.careerID = %u", cdata.careerID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -877,21 +953,28 @@ bool CharacterDB::GetLocationCorporationByCareer(CharacterData& cdata, uint32& c
     return true;
 }
 
-bool CharacterDB::GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID)
+uint32 CharacterDB::GetStartingStationByCareer(uint32 careerID)
 {
     DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT stationID FROM crpCorporation WHERE corporationID = %u", corporationID)) {
+    if (!sDatabase.RunQuery(res,
+                "SELECT "
+                "  co.stationID"
+                " FROM careers AS c"
+                "    LEFT JOIN chrSchools AS cs USING (schoolID)"
+                "    LEFT JOIN crpCorporation AS co ON cs.corporationID = co.corporationID"
+                " WHERE c.careerID = %u", careerID))
+    {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
-        return false;
-    }
-    DBResultRow row;
-    if (!res.GetRow(row)) {
-        codelog(DATABASE__ERROR, "Failed to find corporation %u", corporationID);
-        return false;
+        return 0;
     }
 
-    stationID = row.GetUInt(0);
-    return true;
+    DBResultRow row;
+    if (!res.GetRow(row)) {
+        codelog(DATABASE__ERROR, "Failed to find station for career %u", careerID);
+        return 0;
+    }
+
+    return row.GetUInt(0);
 }
 
 bool CharacterDB::DoesCorporationExist(uint32 corpID) {
@@ -964,6 +1047,31 @@ void CharacterDB::SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep
 	{
 		codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
 	}
+}
+
+void CharacterDB::SetPortraitInfo(uint32 charID, PortraitInfo& data)
+{
+    DBerror err;
+    if (!sDatabase.RunQuery(err,
+        "INSERT INTO chrPortraitData "
+        " (charID, backgroundID, lightID, lightColorID, cameraX, cameraY, cameraZ, cameraPoiX, cameraPoiY, cameraPoiZ,"
+        " headLookTargetX, headLookTargetY, headLookTargetZ, lightIntensity, headTilt, orientChar, browLeftCurl, browLeftTighten,"
+        " browLeftUpDown, browRightCurl, browRightTighten, browRightUpDown, eyeClose, eyesLookVertical, eyesLookHorizontal,"
+        " squintLeft, squintRight, jawSideways, jawUp, puckerLips, frownLeft, frownRight, smileLeft, smileRight, "
+        " cameraFieldOfView, portraitPoseNumber) VALUES"
+        " (%u,%u,%u,%u,%f,%f,%f,%f,%f,%f,"
+        " %f,%f,%f,%f,%f,%f,%f,%f,"
+        " %f,%f,%f,%f,%f,%f,%f,"
+        " %f,%f,%f,%f,%f,%f,%f,%f,%f,"
+        " %f,%f)",
+        charID, data.backgroundID, data.lightID, data.lightColorID, data.cameraX, data.cameraY, data.cameraZ, data.cameraPoiX, data.cameraPoiY, data.cameraPoiZ,
+        data.headLookTargetX, data.headLookTargetY, data.headLookTargetZ, data.lightIntensity, data.headTilt, data.orientChar, data.browLeftCurl, data.browLeftTighten,
+        data.browLeftUpDown, data.browRightCurl, data.browRightTighten, data.browRightUpDown, data.eyeClose, data.eyesLookVertical, data.eyesLookHorizontal,
+        data.squintLeft, data.squintRight, data.jawSideways, data.jawUp, data.puckerLips, data.frownLeft, data.frownRight, data.smileLeft, data.smileRight,
+        data.cameraFieldOfView, data.portraitPoseNumber))
+    {
+        codelog(DATABASE__ERROR, "Error in query: %s", err.c_str());
+    }
 }
 
 bool CharacterDB::GetBaseSkills(std::map<uint32, uint8> &into) {
@@ -1045,7 +1153,7 @@ bool CharacterDB::SetNote(uint32 ownerID, uint32 itemID, const char *str) {
     if (str[0] == '\0') {
         // str is empty
         if (!sDatabase.RunQuery(err,
-            "DELETE FROM `chrNotes` "
+            "DELETE FROM chrNotes "
             " WHERE itemID = %u AND ownerID = %u LIMIT 1",
              itemID, ownerID)
             )
@@ -1059,7 +1167,7 @@ bool CharacterDB::SetNote(uint32 ownerID, uint32 itemID, const char *str) {
         sDatabase.DoEscapeString(escaped, str);
 
         if (!sDatabase.RunQuery(err,
-            "REPLACE INTO `chrNotes` ( ownerID, itemID, note)"
+            "REPLACE INTO chrNotes ( ownerID, itemID, note)"
             " VALUES (%u, %u, '%s')",
             ownerID, itemID, escaped.c_str())
             )
@@ -1194,88 +1302,6 @@ void CharacterDB::DeleteLabel(uint32 charID, uint32 labelID)
 }
 
 
-uint32 CharacterDB::djb2_hash( const char* str )
-{
-    uint32 hash = 5381;
-    int c;
-
-    while ((c = *str++))
-        hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
-
-    return hash;
-}
-
-void CharacterDB::load_name_validation_set()
-{
-    DBQueryResult res;
-    if (!sDatabase.RunQuery(res, "SELECT characterID, name FROM chrCharacters")) {
-        codelog(DATABASE__ERROR, "Error in query for %s", res.error.c_str());
-        return;
-    }
-
-    DBResultRow row;
-    while (res.GetRow(row)) {
-        uint32 characterID = row.GetUInt(0);
-        const char* name = row.GetText(1);
-
-        //printf("initializing name validation: %s\n", name);
-        uint32 hash = djb2_hash(name);
-
-        mNameValidation.insert(hash);
-        mIdNameContainer.insert(std::make_pair(characterID, name));
-    }
-}
-
-bool CharacterDB::add_name_validation_set( const char* name, uint32 characterID )
-{
-    if (name == NULL || *name == '\0')
-        return false;
-
-    uint32 hash = djb2_hash(name);
-    /* check if the name is already present ( this should not be possible but we all know how hackers are ) */
-    if (mNameValidation.find(hash) != mNameValidation.end())
-    {
-        printf("CharacterDB::add_name_validation_set: unable to add: %s as its a dupe", name);
-        return false;
-    }
-
-    mNameValidation.insert(hash);
-    mIdNameContainer.insert(std::make_pair(characterID, name));
-    return true;
-}
-
-bool CharacterDB::del_name_validation_set( uint32 characterID )
-{
-    CharIdNameMapItr helper_itr = mIdNameContainer.find(characterID);
-    /* if we are unable to find the entry... return.
-     * @note we do risk keeping the name in the name validation.
-     * which I am willing to take.
-     */
-    if (helper_itr == mIdNameContainer.end())
-        return false;
-
-    const char* name = helper_itr->second.c_str();
-    if (name == NULL || *name == '\0')
-        return false;
-
-    uint32 hash = djb2_hash(name);
-
-    CharValidationSetItr name_itr = mNameValidation.find(hash);
-    if (name_itr != mNameValidation.end())
-    {
-        // we found the name hash... deleting
-        mNameValidation.erase(name_itr);
-        mIdNameContainer.erase(helper_itr);
-        return true;
-    }
-    else
-    {
-        /* normally this should never happen... */
-        printf("CharacterDB::del_name_validation_set: unable to remove: %s as its not in the set", name);
-        return false;
-    }
-}
-
 bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
     DBQueryResult res;
     if (!sDatabase.RunQuery( res, "SELECT typeID, level FROM chrSkillQueue WHERE characterID = %u ORDER BY orderIndex ASC", characterID)) {
@@ -1285,7 +1311,7 @@ bool CharacterDB::LoadSkillQueue(uint32 characterID, SkillQueue &into) {
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        QueuedSkill qs;
+        QueuedSkill qs = QueuedSkill();
             qs.typeID = row.GetUInt( 0 );
             qs.level = row.GetUInt( 1 );
         into.push_back( qs );
@@ -1303,7 +1329,7 @@ bool CharacterDB::LoadPausedSkillQueue(uint32 characterID, SkillQueue &into) {
 
     DBResultRow row;
     while (res.GetRow(row)) {
-        QueuedSkill qs;
+        QueuedSkill qs = QueuedSkill();
             qs.typeID = row.GetUInt( 0 );
             qs.level = row.GetUInt( 1 );
         into.push_back( qs );

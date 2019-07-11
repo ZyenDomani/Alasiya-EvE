@@ -186,7 +186,9 @@ protected:
  * Container for character appearance stuff.
  */
 class CharacterAppearance {
+    // use default c'tor et. al.
 public:
+    /*  these arent used...
    uint32 colorID;
    uint32 colorNameA;
    uint32 colorNameBC;
@@ -201,11 +203,24 @@ public:
    double weightUpDown;
    double weightLeftRight;
    double weightForwardBack;
-
+*/
    void Build(uint32 ownerID, PyDict* data);
 
 private:
 	CharacterDB m_db;
+};
+
+/**
+ * Container for character portrait stuff.
+ */
+class CharacterPortrait {
+    // use default c'tor et. al.
+public:
+
+    void Build(uint32 charID, PyDict* data);
+
+private:
+    CharacterDB m_db;
 };
 
 /**

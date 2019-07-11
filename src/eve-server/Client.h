@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 
@@ -62,7 +62,7 @@ enum ClientTimers {
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast
     DockInvul        = 3000,
     FleetTimer       = 1500,
-    JumpInvul        = 5000,
+    JumpInvul        = 15000,   // increased from 5s
     WarpOutInvul     = 5000,
     WarpInInvul      = 18000,   // increased from 10s
     UndockInvul      = 20000,
@@ -128,7 +128,7 @@ public:
     SystemManager*          SystemMgr() const           { return m_system; }
     bool                    IsClient() const            { return true; }
     // used in msgs and other places where a const char* is needed instead of me forgetting to use .c_str()
-    const char*             GetName() const             { return (m_char ? m_char->itemName().c_str() : "(null)"); }
+    const char*             GetName() const             { return (m_char.get() != nullptr ? m_char->itemName().c_str() : "(null)"); }
 
     bool                    IsAFK()                     { return m_afk; }
     void                    SetAFK(bool set=true)       { m_afk = set; }
@@ -137,6 +137,7 @@ public:
     /********************************************************************/
     /* Session values                                                   */
     /********************************************************************/
+    bool IsValidSession()                               { return m_validSession; }
     // these dont always work...still dont know why.  fixed.  was bad _comp method in PyDict
     std::string GetAddress() const                      { return pSession->GetCurrentString( "address" ); }
     std::string GetLanguageID() const                   { return pSession->GetCurrentString( "languageID" ); }
@@ -144,6 +145,7 @@ public:
 
     int32 GetUserID() const                             { return pSession->GetCurrentInt( "userid" ); }
     int32 GetAccountType() const                        { return pSession->GetCurrentInt( "userType" ); }
+    // these below need Session initalized before use (which we dont do for char creation due to errors)
     int32 GetCharacterID() const                        { return pSession->GetCurrentInt( "charid" ); }
     int32 GetStationID() const                          { return pSession->GetCurrentInt( "stationid" ); }
     int32 GetStationID2() const                         { return pSession->GetCurrentInt( "stationid2" ); }
@@ -153,7 +155,7 @@ public:
     int64 GetClientID() const                           { return pSession->GetCurrentLong( "clientID" ); }
     int64 GetSessionID()                                { return pSession->GetCurrentLong( "sessionID" ); }
 
-    double GetCorpTaxRate()                             { return m_char->corpTaxRate(); }
+    double GetCorpTaxRate()                             { return (m_char.get() != nullptr ? m_char->corpTaxRate() : 0.0); }
     int32 GetCorporationID() const                      { return pSession->GetCurrentInt( "corpid" ); }
     int32 GetCorpHQ() const                             { return pSession->GetCurrentInt( "hqID" ); }
     int32 GetAllianceID() const                         { return pSession->GetCurrentInt( "allianceid" ); }
@@ -192,11 +194,12 @@ public:
     void UpdateCorpSession(CorpData& data);
     void UpdateFleetSession(CharFleetData& fleet);
 
-    // character data
+    // character data used before session data is initalized
     uint32 GetLoyaltyPoints(uint32 corpID);
-    void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used in char creation
+    void SetChar(CharacterRef charRef)                  { m_char = charRef; }   // only used during char creation
     CharacterRef GetChar() const                        { return m_char; }
     std::string GetCharName()                           { return m_char->itemName(); }
+    uint32 GetCharID()                                  { return (m_char.get() != nullptr ? m_char->itemID() : 0); }   // only used during char creation
     ShipItemRef GetShip() const                         { return m_ship; }
     Ship* GetShipSE()                                   { return pShipSE; }
     ShipItemRef GetPod() const                          { return m_pod; }
@@ -221,7 +224,8 @@ public:
     void Board(Ship* newShipSE); // only called when in space
     void BoardShip(ShipItemRef newShipRef); // only called when docked
 private:
-    void UpdateNewShip();     //  calls destiny update methods
+    // ship MUST be added to system BEFORE update (need sysMgr, sysBubble, DestinyMgr)
+    void UpdateNewShip();    //  calls destiny update methods
     void CheckShipRef(ShipItemRef newShipRef);  // called by Board methods
 
 public:
@@ -232,6 +236,7 @@ public:
     void WarpIn();
     void WarpOut();
     void EnterSystem(uint32 systemID);     // only called by gm command, and only if (bubble == null)
+    // this will accept null coords and adjust position to random moon
     void MoveToLocation(uint32 location, const GPoint &pt);
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
@@ -257,6 +262,7 @@ public:
     bool IsInSpace()                                    { return IsSolarSystem(m_locationID); }
     bool IsDocked()                                     { return IsStation(m_locationID); }
     bool IsDock()                                       { return (m_clientState == ClientState::csDock); }
+    bool IsIdle()                                       { return (m_clientState == ClientState::csIdle); }
     bool IsJump()                                       { return (m_clientState == ClientState::csJump); }
     bool IsBoard()                                      { return (m_clientState == ClientState::csBoard); }
     bool IsInvul()                                      { return m_invul; }
@@ -280,6 +286,9 @@ public:
 
     bool IsAutoPilot()                                  { return m_autoPilot; }
     void SetAutoPilot(bool set=false);
+
+    void JumpInEffect();
+    void JumpOutEffect(uint32 locationID);
 
     //jetcan timer
     bool IsJetcanAvalible();
@@ -343,6 +352,9 @@ public:
     void DisconnectClient();
     void BanClient();
 
+    // this will add clone alpha if no clone is found
+    void InitSession( int32 characterID  );
+
 protected:
     Scan* m_scan;
     ServiceDB m_sDB;
@@ -361,7 +373,6 @@ protected:
     //void _AwardBounty(SystemEntity *who);
     /** @todo finish this... */
     void _DropLoot(uint32 groupID, uint32 owner, uint32 locationID);
-    void InitSession( int32 characterID  );
     void ExecuteJump();
     void DestroyShipSE();
 
@@ -438,11 +449,16 @@ public:
     void SendNotification(const char *notifyType, const char *idType, PyTuple *payload, bool seq=true);
     void SendNotification(const char *notifyType, const char *idType, PyTuple **payload, bool seq=true);
 
-    // this is to check/enable Python Throw keyword, to avoid throws/segfault when not applicable
+    // this is to check Throw status, to avoid throws/segfault when not applicable
     bool CanThrow()                                     { return m_canThrow; }
+
+    bool IsCharCreation()                               { return m_charCreation; }
+    void CreateChar(bool set)                           { m_charCreation = set; }
 
 private:
     bool m_canThrow;
+    bool m_validSession;
+    bool m_charCreation;
 
 protected:
     void UpdateSession();

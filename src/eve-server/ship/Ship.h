@@ -200,8 +200,6 @@ public:
 
     const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
 
-    bool IsInvul()                                      { return false; }      /** @todo finish this, and find what it's used for */
-
     bool IsPopped()                                     { return m_isPopped; }
     void SetPopped(bool set=false)                      { m_isPopped = set; }
     std::string GetShipDNA();
@@ -230,8 +228,10 @@ public:
 
     /* begin new module manager interface */
     void ProcessModules();
+    //this can throw
     void Online(uint32 modID);
-    void Offline(uint32 modID)                       { m_ModuleManager->Offline(modID); }
+    //this can throw
+    void Offline(uint32 modID);
     void OnlineAll();
     void OfflineAll();
     void Activate(int32 itemID, std::string effectName, int32 targetID, int32 repeat);
@@ -255,6 +255,7 @@ public:
     void AbortCycle()                                   { m_ModuleManager->AbortCycle(); }
     bool IsDocking()                                    { return m_isDocking; }
     bool IsUndocking()                                  { return m_isUndocking; }
+    void SetDocked()                                    { m_isDocking = false; }
     void SetUndocking(bool set=false)                   { m_isUndocking = set; }
     InventoryItemRef GetTargetRef()                     { return m_targetRef; }
     void ClearTargetRef()                               { m_targetRef = InventoryItemRef(); }
@@ -295,16 +296,16 @@ public:
     /* end new module manager interface */
 
     // Tactical Interface:
-    void SetShipShield(double fraction);
-    void SetShipArmor(double fraction);
-    void SetShipHull(double fraction);
-    void SetShipCapacitorLevel(double fraction);
-    double GetShipHullHP()                              { return GetAttribute(AttrHP).get_float(); }
-    double GetShipArmorHP()                             { return GetAttribute(AttrArmorHP).get_float(); }
-    double GetShipPGLevel()                             { return GetAttribute(AttrPowerOutput).get_float(); }
-    double GetShipCPULevel()                            { return GetAttribute(AttrCpuOutput).get_float(); }
-    double GetShipShieldHP()                            { return GetAttribute(AttrShieldCharge).get_float(); }
-    double GetShipCapacitorLevel()                      { return GetAttribute(AttrCapacitorCharge).get_float(); }
+    void SetShipShield(float fraction);
+    void SetShipArmor(float fraction);
+    void SetShipHull(float fraction);
+    void SetShipCapacitorLevel(float fraction);
+    float GetShipHullHP()                               { return GetAttribute(AttrHP).get_float(); }
+    float GetShipArmorHP()                              { return GetAttribute(AttrArmorHP).get_float(); }
+    float GetShipPGLevel()                              { return GetAttribute(AttrPowerOutput).get_float(); }
+    float GetShipCPULevel()                             { return GetAttribute(AttrCpuOutput).get_float(); }
+    float GetShipShieldHP()                             { return GetAttribute(AttrShieldCharge).get_float(); }
+    float GetShipCapacitorLevel()                       { return GetAttribute(AttrCapacitorCharge).get_float(); }
     EvilNumber GetShipHullPercent()                     { return 1 -(GetAttribute(AttrDamage) / GetAttribute(AttrHP)); }
     EvilNumber GetShipCPUPercent()                      { return 1 -(GetAttribute(AttrCpuLoad) / GetAttribute(AttrCpuOutput)); }
     EvilNumber GetShipPGPercent()                       { return 1 -(GetAttribute(AttrPowerLoad) / GetAttribute(AttrPowerOutput)); }
@@ -419,6 +420,8 @@ public:
 
     /* virtual functions to be overridden in derived classes */
     virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
+    virtual bool IsInvul()                              { return false; }      /** @todo finish this. client IsInvul coded. */
+    virtual bool IsFrozen()                             { return false; }
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);

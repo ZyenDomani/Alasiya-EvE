@@ -120,8 +120,7 @@ CharacterType *CharacterType::Load( uint32 characterTypeID)
 
 void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 {
-	PyList* colors = new PyList();
-        colors = data->GetItemString("colors")->AsList();
+	PyList* colors = data->GetItemString("colors")->AsList();
 	PyList::const_iterator color_cur = colors->begin();
 	for (; color_cur != colors->end(); color_cur++) {
 		if ((*color_cur)->IsObjectEx()) {
@@ -137,24 +136,22 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 			//[5] gloss
 
 			m_db.SetAvatarColors(ownerID,
-								color_tuple->GetItem(1)->AsInt()->value(),
-								color_tuple->GetItem(2)->AsInt()->value(),
-								color_tuple->GetItem(3)->AsInt()->value(),
+							PyRep::IntegerValue(color_tuple->GetItem(1)),
+                            PyRep::IntegerValue(color_tuple->GetItem(2)),
+                            PyRep::IntegerValue(color_tuple->GetItem(3)),
 								color_tuple->GetItem(4)->AsFloat()->value(),
 								color_tuple->GetItem(5)->AsFloat()->value());
 
 		}
 	}
 
-    PyObjectEx* appearance;
-        appearance = data->GetItemString("appearance")->AsObjectEx();
+    PyObjectEx* appearance = data->GetItemString("appearance")->AsObjectEx();
 	PyObjectEx_Type2* app_obj = (PyObjectEx_Type2*)appearance;
 	PyTuple* app_tuple = app_obj->GetArgs()->AsTuple();
 
 	m_db.SetAvatar(ownerID, app_tuple->GetItem(1));
 
-    PyList* modifiers = new PyList();
-        modifiers = data->GetItemString("modifiers")->AsList();
+    PyList* modifiers = data->GetItemString("modifiers")->AsList();
 	PyList::const_iterator modif_cur = modifiers->begin();
 	for (; modif_cur != modifiers->end(); modif_cur++) {
 		if ((*modif_cur)->IsObjectEx()) {
@@ -173,8 +170,7 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 		}
 	}
 
-    PyList* sculpts = new PyList();
-        sculpts = data->GetItemString("sculpts")->AsList();
+    PyList* sculpts = data->GetItemString("sculpts")->AsList();
 	PyList::const_iterator sculpt_cur = sculpts->begin();
 	for (; sculpt_cur != sculpts->end(); sculpt_cur++) {
 		if ((*sculpt_cur)->IsObjectEx()) {
@@ -187,7 +183,6 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 			//[2] weightUpDown
 			//[3] weightLeftRight
 			//[4] weightForwardBack
-
 			m_db.SetAvatarSculpts(ownerID,
 									sculpt_tuple->GetItem(1),
 									sculpt_tuple->GetItem(2),
@@ -196,6 +191,65 @@ void CharacterAppearance::Build(uint32 ownerID, PyDict* data)
 
 		}
 	}
+}
+
+
+/*
+ * CharacterPortrait
+ */
+
+void CharacterPortrait::Build(uint32 charID, PyDict* data)
+{
+    PortraitInfo info = PortraitInfo();
+
+    info.backgroundID = PyRep::IntegerValue(data->GetItemString("backgroundID"));
+    info.lightColorID = PyRep::IntegerValue(data->GetItemString("lightColorID"));
+    info.lightID = PyRep::IntegerValue(data->GetItemString("lightID"));
+
+    info.cameraFieldOfView = data->GetItemString("cameraFieldOfView")->AsFloat()->value();
+    info.lightIntensity = data->GetItemString("lightIntensity")->AsFloat()->value();
+
+    PyTuple* cameraPoi = data->GetItemString("cameraPoi")->AsTuple();
+    info.cameraPoiX = cameraPoi->GetItem(0)->AsFloat()->value();
+    info.cameraPoiY = cameraPoi->GetItem(1)->AsFloat()->value();
+    info.cameraPoiZ = cameraPoi->GetItem(2)->AsFloat()->value();
+
+    PyTuple* cameraPosition = data->GetItemString("cameraPosition")->AsTuple();
+    info.cameraX = cameraPosition->GetItem(0)->AsFloat()->value();
+    info.cameraY = cameraPosition->GetItem(1)->AsFloat()->value();
+    info.cameraZ = cameraPosition->GetItem(2)->AsFloat()->value();
+
+    PyDict* poseData = data->GetItemString("poseData")->AsDict();
+    PyTuple* HeadLookTarget = poseData->GetItemString("HeadLookTarget")->AsTuple();
+    info.headLookTargetX = HeadLookTarget->GetItem(0)->AsFloat()->value();
+    info.headLookTargetY = HeadLookTarget->GetItem(1)->AsFloat()->value();
+    info.headLookTargetZ = HeadLookTarget->GetItem(2)->AsFloat()->value();
+
+    info.browLeftCurl = poseData->GetItemString("BrowLeftCurl")->AsFloat()->value();
+    info.browLeftUpDown = poseData->GetItemString("BrowLeftUpDown")->AsFloat()->value();
+    info.browLeftTighten = poseData->GetItemString("BrowLeftTighten")->AsFloat()->value();
+    info.browRightCurl = poseData->GetItemString("BrowRightCurl")->AsFloat()->value();
+    info.browRightUpDown = poseData->GetItemString("BrowRightUpDown")->AsFloat()->value();
+    info.browRightTighten = poseData->GetItemString("BrowRightTighten")->AsFloat()->value();
+
+    info.squintLeft = poseData->GetItemString("SquintLeft")->AsFloat()->value();
+    info.smileLeft = poseData->GetItemString("SmileLeft")->AsFloat()->value();
+    info.frownLeft = poseData->GetItemString("FrownLeft")->AsFloat()->value();
+    info.squintRight = poseData->GetItemString("SquintRight")->AsFloat()->value();
+    info.smileRight = poseData->GetItemString("SmileRight")->AsFloat()->value();
+    info.frownRight = poseData->GetItemString("FrownRight")->AsFloat()->value();
+
+    info.jawUp = poseData->GetItemString("JawUp")->AsFloat()->value();
+    info.jawSideways = poseData->GetItemString("JawSideways")->AsFloat()->value();
+    info.headTilt = poseData->GetItemString("HeadTilt")->AsFloat()->value();
+    info.eyeClose = poseData->GetItemString("EyeClose")->AsFloat()->value();
+    info.eyesLookHorizontal = poseData->GetItemString("EyesLookHorizontal")->AsFloat()->value();
+    info.eyesLookVertical = poseData->GetItemString("EyesLookVertical")->AsFloat()->value();
+    info.orientChar = poseData->GetItemString("OrientChar")->AsFloat()->value();
+    info.portraitPoseNumber = poseData->GetItemString("PortraitPoseNumber")->AsFloat()->value();
+    info.puckerLips = poseData->GetItemString("PuckerLips")->AsFloat()->value();
+
+    m_db.SetPortraitInfo(charID, info);
 }
 
 
@@ -221,13 +275,7 @@ Character::Character(
     m_loaded = false;
 
     if (!IsAgent(m_itemID)) {
-        m_fleetData.fleetID = 0;
-        m_fleetData.wingID = 0;
-        m_fleetData.squadID = 0;
-        m_fleetData.job = 0;
-        m_fleetData.role = 0;
-        m_fleetData.booster = 0;
-        m_fleetData.joinTime = 0;
+        m_fleetData = CharFleetData();
         m_freePoints = 0;
         m_loginTime = sEntityList.GetStamp();
         pInventory = new Inventory(InventoryItemRef(this));
@@ -297,12 +345,12 @@ CharacterRef Character::Spawn( CharacterData& charData, CorpData& corpData) {
         return CharacterRef(nullptr);
 
     uint32 characterID = CharacterDB::NewCharacter(charData, corpData);
-    if (characterID == 0) {
-        _log(CHARACTER__ERROR, "Failed to get ItemID for new character.");
+    if (!IsCharacter(characterID)) {
+        _log(CHARACTER__ERROR, "Failed to get itemID for new character.");
         return CharacterRef(nullptr);
     }
 
-    return Character::Load(characterID );
+    return Character::Load(characterID);
 }
 
 void Character::LogOut()
@@ -316,16 +364,6 @@ void Character::LogOut()
     pInventory->Unload();
 
     sItemFactory.RemoveItem(m_itemID);
-    // remove char from station inventory, if docked
-    /*
-    Inventory* inv(nullptr);
-    if (IsStation(m_locationID)) {
-        InventoryItemRef station = sEntityList.GetStationByID(m_locationID);
-        inv = station->GetMyInventory();
-    }
-    if (inv != nullptr)
-        inv->RemoveItem(inv->GetByID(m_itemID));
-    */
 }
 
 void Character::Delete() {
@@ -436,19 +474,10 @@ uint32 Character::PickAlternateShip(uint32 locationID)
 
 void Character::SetFleetData(CharFleetData& fleet)
 {
-    if (fleet.fleetID == 0) {
-        m_fleetData.fleetID = 0;
-        m_fleetData.wingID = 0;
-        m_fleetData.squadID = 0;
-        m_fleetData.job = 0;
-        m_fleetData.role = 0;
-        m_fleetData.booster = 0;
-        m_fleetData.joinTime = 0;
-    } else {
-        m_fleetData = fleet;
-        //if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
-          //  m_fleetJoinTime = fleet.joinTime;
-    }
+    m_fleetData = fleet;
+    //if ((fleet.joinTime) and (m_fleetJoinTime != fleet.joinTime))
+        //  m_fleetJoinTime = fleet.joinTime;
+
     m_pClient->UpdateFleetSession(m_fleetData);
 }
 
@@ -544,17 +573,16 @@ void Character::ProcessEffects()
     GetSkillsList(allSkills);
 
     _log(EFFECTS__TRACE, "Character::ParseExpression():  Beginning Character Effects Processing.");
-    Effect curEffect;
-    fxData data;
-    data.action = Effects::Action::dgmActInvalid;
+    Effect curEffect = Effect();
     std::vector<TypeEffects> typeFx;
     for (auto curSkill : allSkills) {
         typeFx.clear();
         sFxDataMgr.GetTypeEffect(curSkill->typeID(), typeFx);
         for (auto curFx : typeFx) {
             curEffect = sFxDataMgr.GetEffect(curFx.effectID);
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
             data.srcRef = curSkill;
-            data.math = data.targLoc = data.fxSrc = data.targAttr = data.srcAttr = data.grpID = data.typeID = 0;
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);
         }
     }
@@ -615,13 +643,13 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
             return false;
         }
         // use single_skill ...
-        single_skill->SetAttribute(AttrSkillPoints, (int8)0);
-        single_skill->SetAttribute(AttrSkillLevel, (int8)0);
+        single_skill->SetAttribute(AttrSkillPoints, EvilZero);
+        single_skill->SetAttribute(AttrSkillLevel, EvilZero);
         single_skill->ChangeSingleton(true);
         single_skill->Move(m_itemID, flagSkill, true);
     } else {  // use original skill
-        skill->SetAttribute(AttrSkillPoints, (int8)0);
-        skill->SetAttribute(AttrSkillLevel, (int8)0);
+        skill->SetAttribute(AttrSkillPoints, EvilZero);
+        skill->SetAttribute(AttrSkillLevel, EvilZero);
         skill->ChangeSingleton(true);
         skill->Move(m_itemID, flagSkill, true);
     }
@@ -634,7 +662,7 @@ bool Character::InjectSkillIntoBrain(SkillRef skill) {
 }
 
 void Character::AddToSkillQueue(uint32 typeID, uint8 level) {
-    QueuedSkill qs;
+    QueuedSkill qs = QueuedSkill();
 		qs.typeID = typeID;
 		qs.level = level;
     m_skillQueue.push_back( qs );
@@ -664,7 +692,7 @@ void Character::ClearSkillQueue() {
                 itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
 
         currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
-        currentTraining->SetAttribute(AttrExpiryTime, 0);
+        currentTraining->SetAttribute(AttrExpiryTime, EvilZero);
         currentTraining->SetFlag(flagSkill, true);
         currentTraining->SaveItem();
     }
@@ -701,7 +729,7 @@ void Character::UpdateSkillQueue() {
                         itemName().c_str(), m_itemID, currentTraining->typeID(), (uint8)level.get_int(), currentTraining->GetAttribute(AttrExpiryTime).get_float(), GetFileTimeNow());
 
             currentTraining->SetAttribute(AttrSkillPoints, CurrentSP.get_int());
-            currentTraining->SetAttribute(AttrExpiryTime, 0, false);
+            currentTraining->SetAttribute(AttrExpiryTime, EvilZero, false);
             currentTraining->SetFlag(flagSkill, true);
             currentTraining->SaveItem();
 
@@ -809,7 +837,7 @@ void Character::UpdateSkillQueue() {
             if (level == 5)
                 currentTraining->DeleteAttribute(AttrExpiryTime);
             else
-                currentTraining->SetAttribute(AttrExpiryTime, 0);
+                currentTraining->SetAttribute(AttrExpiryTime, EvilZero);
             currentTraining->SetAttribute(AttrSkillLevel, level.get_uint32());
             currentTraining->SetAttribute(AttrSkillPoints, CurrentSP);
             currentTraining->SetFlag(flagSkill, true);
@@ -1027,7 +1055,7 @@ PyRep* Character::GetSkillHistory()
 
 void Character::PayBounty(CharacterRef cRef)
 {
-    std::string reason = "Bounty paid for the killing of ";
+    std::string reason = "Bounty for the killing of ";
     reason += cRef->itemName();
     AccountService::TranserFunds(ownerCONCORD, m_itemID, cRef->bounty(), reason, Journal::EntryType::Bounty, cRef->itemID());
     // add data to StatisticMgr
@@ -1076,7 +1104,7 @@ void Character::GetCertificates( CertVector &crt ) {
 
 void Character::GrantCertificate( uint32 certificateID )
 {
-    CharCerts cert;
+    CharCerts cert = CharCerts();
         cert.certificateID = certificateID;
         cert.grantDate = GetFileTimeNow();
         cert.visibilityFlags = 0;

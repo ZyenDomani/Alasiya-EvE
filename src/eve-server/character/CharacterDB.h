@@ -29,6 +29,45 @@
 
 #include "ServiceDB.h"
 
+// struct for portraitInfo
+struct PortraitInfo {
+    uint32 backgroundID;
+    uint32 lightID;
+    uint32 lightColorID;
+    float cameraX;
+    float cameraY;
+    float cameraZ;
+    float cameraFieldOfView;
+    float cameraPoiX;
+    float cameraPoiY;
+    float cameraPoiZ;
+    float headLookTargetX;
+    float headLookTargetY;
+    float headLookTargetZ;
+    float lightIntensity;
+    float portraitPoseNumber;
+    float headTilt;
+    float orientChar;
+    float browLeftCurl;
+    float browLeftTighten;
+    float browLeftUpDown;
+    float browRightCurl;
+    float browRightTighten;
+    float browRightUpDown;
+    float eyeClose;
+    float eyesLookVertical;
+    float eyesLookHorizontal;
+    float squintLeft;
+    float squintRight;
+    float jawSideways;
+    float jawUp;
+    float puckerLips;
+    float frownLeft;
+    float frownRight;
+    float smileLeft;
+    float smileRight;
+};
+
 class PyObject;
 class PyString;
 class PyObjectEx;
@@ -44,8 +83,6 @@ class CorpData;
 class CharacterDB : public ServiceDB
 {
 public:
-    CharacterDB();
-
     static uint32 NewCharacter(const CharacterData& data, const CorpData& corpData);
     static bool SaveCharacter(uint32 characterID, const CharacterData &data);
     static bool SaveCorpData(uint32 characterID, const CorpData &data);
@@ -55,8 +92,9 @@ public:
     static void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
     static bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
     //if you want to get the typeID of the clone, please use GetActiveCloneType
-    static bool GetActiveClone(uint32 characterID, uint32 &itemID);
+    static bool GetActiveCloneID(uint32 characterID, uint32 &itemID);
     static PyRep *GetInfoWindowDataForChar(uint32 characterID);
+    static uint32 GetStartingStationByCareer(uint32 careerID);
 
     PyRep *GetCharacterList(uint32 accountID);
     PyRep *GetCharSelectInfo(uint32 characterID);
@@ -64,6 +102,7 @@ public:
 	void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
 	void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
 	void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
+    void SetPortraitInfo(uint32 charID, PortraitInfo &data);
     PyRep *GetCharPublicInfo(uint32 characterID);
     PyRep *GetCharPublicInfo3(uint32 characterID);
     //PyObject *GetAgentPublicInfo(uint32 agentID);
@@ -74,6 +113,7 @@ public:
     void SetCurrentPod(uint32 charID, uint32 podID);
 
     bool ChangeCloneType(uint32 characterID, uint32 typeID);
+    static bool ChangeCloneLocation(uint32 characterID, uint32 locationID);
 	bool GetCharClones(uint32 characterID, std::vector<uint32> &into);
     bool GetActiveCloneType(uint32 characterID, uint32 &typeID);
     std::string GetCharName(uint32 characterID);
@@ -82,32 +122,7 @@ public:
     void AddContact(uint32 charID);
     void UpdateContact(uint32 charID);
 
-    PyRep* ValidateCharName(const char* name);
-    /**
-     * add_name_validation_set
-     *
-     * This method will add a character name and ID to the name validation set
-     * for use in checking character names at creation and login.
-     *
-     * @param[in] name
-     * @param[in] characterID
-     * @return true if adding is successful and false if it was not.
-     * @author Captnoord, Firefoxpdm
-     */
-    bool add_name_validation_set(const char* name, uint32 characterID);
-    /**
-     * del_name_validation_set
-     *
-     * This method will remove a entry from the name validation set based
-     * on the passed characterID
-     *
-     * @param[in] characterID
-     * @return true if the deletion was successful and false if a error occurred.
-     * @author Captnoord, Firefoxpdm
-     */
-    bool del_name_validation_set(uint32 characterID);
     bool GetCharItems(uint32 characterID, std::vector<uint32> &into);
-    bool GetCareerStationByCorporation(uint32 corporationID, uint32 &stationID);
     bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
     bool GetLocationCorporationByCareer(CharacterData &cdata, uint32 &corporationID);
@@ -203,33 +218,9 @@ public:
 
 	void        VisitSystem(uint32 solarSystemID, uint32 charID);
 
-private:
-    /**
-     * djb2 algorithm taken from http://www.cse.yorku.ca/~oz/hash.html slightly modified
-     *
-     * @param[in] str string that needs to be hashed.
-     * @return djb2 hash of the string.
-     */
-    uint32 djb2_hash(const char* str);
-
-    /**
-     * load_name_validation_set
-     * This method will load up all character names into a set for validating
-     * character names.
-     *
-     * @author Captnoord, Firefoxpdm
-     */
-    void load_name_validation_set();
-
-    /* set only for validation */
-    typedef std::set<uint32>            CharValidationSet;
-    typedef CharValidationSet::iterator    CharValidationSetItr;
-    CharValidationSet mNameValidation;
-
-    /* helper object for deleting ( wasting mem here ) */
-    typedef std::map<uint32, std::string>    CharIdNameMap;
-    typedef CharIdNameMap::iterator            CharIdNameMapItr;
-    CharIdNameMap mIdNameContainer;
+    //  name validation shit
+    void        ValidateCharName(std::string name);     // called on CreateCharacterWithDoll() and will throw on error
+    PyRep*      ValidateCharNameRep(std::string name);  // called by "Check Name" button in char creation.  returns integer
 };
 
 #endif

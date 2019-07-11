@@ -42,9 +42,10 @@ class ServiceDB
 {
 public:
 
-    static bool GetAccountInformation( const char* username, const char* password, AccountData &account_info );
+    static bool GetAccountInformation(CryptoChallengePacket& ccp, AccountData& aData, std::string& failMsg);
     static bool UpdateAccountHash( const char* username, std::string &hash );
     static bool IncrementLoginCount(uint32 accountID );
+    static void UpdatePassword(uint32 accountID, const char* pass);
 
     static void SaveKillOrLoss(CharKillData& data);
 
@@ -74,6 +75,9 @@ public:
 
     static PyRep* PrimeOwners(std::vector<int32>& itemIDs);
 
+    // tests for invalid characters
+    static bool ValidateAccountName(CryptoChallengePacket& ccp, std::string& failMsg);
+
 protected:
     void ProcessStringChange(const char* key, const std::string& oldValue, std::string newValue, PyDict* notif, std::vector< std::string >& dbQ);
     void ProcessRealChange(const char * key, double oldValue, double newValue, PyDict * notif, std::vector<std::string> & dbQ);
@@ -92,7 +96,7 @@ protected:
      * @param role is the users role in the game.
      * @author firefoxpdm, xanarox
      */
-    static uint32 CreateNewAccount( const char* login, const char* pass, int64 role );
+    static uint32 CreateNewAccount( const char* login, const char* pass, const char* passHash, int64 role );
 
 };
 
