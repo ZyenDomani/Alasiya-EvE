@@ -65,7 +65,6 @@ m_stationType(type)
     m_officeMap.clear();
     m_guestList.clear();
 
-    pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created Station for item %s (%u).", itemName().c_str(), itemID());
 }
 
@@ -233,6 +232,17 @@ void StationItem::GetRefineData(uint32& stationCorpID, float& staEfficiency, flo
     tax = m_data.reprocessingStationsTake;
 }
 
+bool StationItem::HasShip(Client* pClient)
+{
+    std::vector< InventoryItemRef > items;
+    pInventory->GetInvForOwner(pClient->GetCharacterID(), items);
+
+    for (auto cur : items)
+        if (cur->categoryID() == EVEDB::invCategories::Ship)
+            return true;
+    return false;
+}
+
 
 /*
  * Station Entity
@@ -241,33 +251,34 @@ StationSE::StationSE(StationItemRef station, PyServiceMgr &services, SystemManag
 : StaticSystemEntity(station, services, system)
 {
     // Create default dynamic attributes in the AttributeMap:
-    station->SetAttribute(AttrIsOnline,         1);
-    station->SetAttribute(AttrCapacity,         STATION_HANGAR_MAX_CAPACITY);
-    station->SetAttribute(AttrDamage,           0.0);
-    station->SetAttribute(AttrShieldCapacity,   20000000.0);
-    station->SetAttribute(AttrShieldCharge,     station->GetAttribute(AttrShieldCapacity));
-    station->SetAttribute(AttrArmorHP,          station->GetAttribute(AttrArmorHP));
-    station->SetAttribute(AttrArmorUniformity,  station->GetAttribute(AttrArmorUniformity));
-    station->SetAttribute(AttrArmorDamage,      0.0);
-    station->SetAttribute(AttrMass,             station->type().mass());
-    station->SetAttribute(AttrRadius,           station->type().radius());
-    station->SetAttribute(AttrVolume,           station->type().volume());
+    station->SetAttribute(AttrOnline,             EvilOne, false);
+    station->SetAttribute(AttrCapacity,           STATION_HANGAR_MAX_CAPACITY, false);
+    station->SetAttribute(AttrInertia,            EvilOne, false);
+    station->SetAttribute(AttrDamage,             EvilZero, false);
+    station->SetAttribute(AttrShieldCapacity,     20000000.0, false);
+    station->SetAttribute(AttrShieldCharge,       station->GetAttribute(AttrShieldCapacity), false);
+    station->SetAttribute(AttrArmorHP,            station->GetAttribute(AttrArmorHP), false);
+    station->SetAttribute(AttrArmorUniformity,    station->GetAttribute(AttrArmorUniformity), false);
+    station->SetAttribute(AttrArmorDamage,        EvilZero, false);
+    station->SetAttribute(AttrMass,               station->type().mass(), false);
+    station->SetAttribute(AttrRadius,             station->type().radius(), false);
+    station->SetAttribute(AttrVolume,             station->type().volume(), false);
 }
 
 void StationSE::EncodeDestiny( Buffer& into )
 {
     using namespace Destiny;
 
-    BallHeader head;
+    BallHeader head = BallHeader();
     head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = /*HasMiniBalls |*/ IsGlobal|IsMassive;
+        head.flags = /*Ball::Flag::HasMiniBalls |*/ Ball::Flag::IsGlobal | Ball::Flag::IsMassive;
     into.Append( head );
-    DSTBALL_RIGID_Struct main;
+    RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -296,7 +307,7 @@ PyDict *StationSE::MakeSlimItem() {
         slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("incapacitated",    new PyInt(0));
-        slim->SetItemString("online",           new PyInt(1));
+        slim->SetItemString("online",           PyStatic.NewOne());
     return slim;
 }
 
