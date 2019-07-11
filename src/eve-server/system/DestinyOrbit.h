@@ -1,7 +1,7 @@
 
 /**
  * @name DestinyOrbit.h
- *  Orbit classe for kepler orbit equations
+ *  class for kepler orbit equations
  *
  * @author: allan
  * @date 20 December 2018
@@ -84,7 +84,7 @@ public:
 
     /*
     // @ classmethod
-    void with_period(double period, int body, double e=0, double i=0, double N=0, double w=0, double M0=0, int ref_epoch=2000) {
+    double with_period(double period, int body, double e=0, double i=0, double N=0, double w=0, double M0=0, int ref_epoch=2000) {
         //  Initialise orbit with a given period.
 
         ke = OrbitData(e, i, N, w, M0, body, ref_epoch);
@@ -96,17 +96,17 @@ public:
 protected:
     //  helper functions
 
-    void radius_from_altitude(double altitude, int targRadius) {
+    double radius_from_altitude(double altitude, int targRadius) {
         /*Return radius for a given altitude. */
         return altitude + targRadius;
     }
 
-    void altitude_from_radius(double radius, int targRadius) {
+    double altitude_from_radius(double radius, int targRadius) {
         /*Return altitude for a given radius. */
         return radius - targRadius;
     }
 
-    void impulse_from_finite(double acceleration, int duration) {
+    double impulse_from_finite(double acceleration, int duration) {
         /*Return impulsive velocity delta for constant thrust finite burn. */
         return acceleration * duration;
     }
@@ -145,10 +145,10 @@ protected:
         return (a * (1 - pow(e, 2))) / (1 + e * cos(f));
     }
 
-    void elements_for_apsides(double apocenter_radius, double pericenter_radius, double& a, double& e) {
+    void elements_for_apsides(double ra, double rp, double& a, double& e) {
         /*Calculate planar orbital elements for given apside radii. */
-        double ra = apocenter_radius;
-        double rp = pericenter_radius;
+        // ra = apocenter_radius;
+        // rp = pericenter_radius;
 
         a = (ra + rp) / 2;
         e = (ra - rp) / (ra + rp);
@@ -178,7 +178,7 @@ protected:
         return GPoint(0, 0, 1).crossProduct(angular_momentum);
     }
 
-    double eccentricity_vector(GPoint r/*position*/, GVector v/*velocity*/, double mu) {
+    GVector eccentricity_vector(GPoint r/*position*/, GVector v/*velocity*/, double mu) {
         /*Return eccentricity vector.
          *    :param position: Position (r) [m]
          *    :type position: :py:class:`~orbital.utilities.Position`
@@ -189,8 +189,7 @@ protected:
          *    :rtype: :py:class:`~orbital.utilities.XyzVector`
          */
 
-        double ev = 1 / mu * ((pow(v.length(), 2) - mu / r.length()) * r - r.dotProduct(v) * v);
-        return ev;
+        return 1 / mu * ((pow(v.length(), 2) - mu / r.length()) * r - r.dotProduct(v) * v);
     }
 
     double specific_orbital_energy(GPoint r/*position*/, GVector v/*velocity*/, double mu) {

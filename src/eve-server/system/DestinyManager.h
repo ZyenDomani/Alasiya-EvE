@@ -37,6 +37,7 @@ class Missile;
 class PyRep;
 class PyList;
 class PyTuple;
+class Ship;
 class SystemBubble;
 class SystemEntity;
 class SystemManager;
@@ -45,6 +46,26 @@ class SystemManager;
 static const float TURN_ALIGNMENT = 4.0f;
 static const float WARP_ALIGNMENT = 6.0f;
 static const uint16 BUMP_DISTANCE = 50;     //in meters.  < this = hit.
+
+/*
+namespace Destiny {
+    namespace Warp {
+        struct State {
+            uint32 start_time;          //from sEntityList::GetStamp()
+            double total_distance;      //in m
+            double warpSpeed;           //in m/s
+            double accelDist;           //in m
+            double cruiseDist;          //in m
+            double decelDist;           //in m
+            float warpTime;             //in s
+            bool accel;
+            bool cruise;
+            bool decel;
+            GVector warp_vector;        //target direction based on ship's initial position
+        };
+    }
+}
+*/
 
 //this object manages an entity's position and movement in a system.
 
@@ -65,7 +86,9 @@ public:
     const GVector &GetVelocity() const                  { return m_velocity; }
     float GetSpeedFraction()                            { return m_currentSpeedFraction; }
     float GetSpeed()                                    { return (m_maxShipSpeed * m_currentSpeedFraction); }
-    Destiny::BallMode GetState()                        { return State; }
+
+    // this is only used by my bubble debug command
+    uint8 GetState()                                    { return m_ballMode; }
 
     void EntityRemoved(SystemEntity* who);
 
@@ -102,11 +125,11 @@ public:
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);
-    bool IsGoto()                                       { return (State == Destiny::DSTBALL_GOTO); }
-    bool IsStopped()                                    { return (State == Destiny::DSTBALL_STOP); }
-    bool IsOrbiting()                                   { return (State == Destiny::DSTBALL_ORBIT); }
-    bool IsFollowing()                                  { return (State == Destiny::DSTBALL_FOLLOW); }
-    //bool IsJumping()                                  { return (State == Destiny::DSTBALL_STOP); }
+    bool IsGoto()                                       { return (m_ballMode == Destiny::Ball::Mode::GOTO); }
+    bool IsStopped()                                    { return (m_ballMode == Destiny::Ball::Mode::STOP); }
+    bool IsOrbiting()                                   { return (m_ballMode == Destiny::Ball::Mode::ORBIT); }
+    bool IsFollowing()                                  { return (m_ballMode == Destiny::Ball::Mode::FOLLOW); }
+    //bool IsJumping()                                  { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsWarping()                                    { return (m_warpState ? true : false); }
 	bool IsCloaked()                                    { return m_cloaked; }
 	bool IsTurning()                                    { return m_turning; }
@@ -117,9 +140,9 @@ public:
     void UnCloak();
 
     PyResult AttemptDockOperation();
-    void Dock();
     void Undock(GPoint dir);
     void SetUndockSpeed();
+    void DockingAccepted();
     void SendSetState() const;
     void SendJumpOut(uint32 gateID) const;
     void SendGateActivity(uint32 gateID) const;
@@ -128,7 +151,7 @@ public:
     void SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal=false) const;
     void SendBallInteractive(const ShipItemRef shipRef, bool set = false) const;
     void UpdateNewShip(const ShipItemRef newShipRef);
-    void UpdateOldShip(const ShipItemRef oldShipRef);
+    void UpdateOldShip(Ship* pShipSE);
     void SendJettisonPacket() const;
     void SendAnchorDrop() const;
     void SendAnchorLift() const;
@@ -215,6 +238,8 @@ protected:
     bool m_tractored;
     bool m_tractorPause;
 
+    uint8 m_ballMode;                   //current state of ball
+
     int32 m_stopDistance;               //from destination, in m
 
     uint8 m_turnTic;                    //time into turn
@@ -236,7 +261,6 @@ protected:
     GPoint m_targetPoint;
     GVector m_shipHeading;              //direction ship is facing
     GVector m_targetHeading;            //direction to target from current heading  -- should this be the *actual* heading of our current target??
-    Destiny::BallMode State;
     std::pair<uint32, SystemEntity*> m_targetEntity;   //we do not own the SystemEntity*
 
     // movement methods
@@ -247,7 +271,7 @@ protected:
     void UpdateVelocity(bool isMoving=false);
 
 private:
-    bool m_changeDelay;             // this is to try to sync destiny with client, as client has a delay when changing destiny states.
+    bool m_changeDelay;                 // this is to try to sync destiny with client, as client has a delay when changing destiny states.
 
     // Internal Collision Methods   -allan Nov 2015
     bool m_bump;
@@ -262,8 +286,8 @@ private:
 
     // Internal Orbit shit
     GPoint ComputePosition(double curRad);             // test code....not used yet
-    double m_inclination;
-    double m_longAscNode;
+    double m_inclination;               //inclination of orbit
+    double m_longAscNode;               //longitutdal of ascending node
 
     // Internal Warp Methods
     Timer m_warpTimer;

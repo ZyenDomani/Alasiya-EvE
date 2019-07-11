@@ -1,7 +1,7 @@
 
 /**
  * @name DestinyOrbit.cpp
- *  Orbit classe for kepler orbit equations
+ *  class for kepler orbit equations
  *
  * @author: allan
  * @date 20 December 2018
@@ -159,7 +159,7 @@ OrbitData DestinyOrbit::elements_from_state_vector(GPoint r, GVector v, int mass
 
 
 
-#if (0) {
+#if (0)
 // @ classmethod
 void with_apside_altitudes(alt1, alt2, i=0, N=0, w=0, M0=0, body=0, ref_epoch=2000) {
     /*Initialise orbit with given apside altitudes. */
@@ -528,4 +528,5 @@ void __str__(self) {
              T=timedelta(seconds=self.T),
              t=timedelta(seconds=self.t));
 }
-}   //endif
+
+#endif
