@@ -126,14 +126,14 @@ void SystemEntity::EncodeDestiny( Buffer& into )
 
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsGlobal;
+        head.flags = Ball::Flag::IsGlobal;
     into.Append( head );
-    DSTBALL_RIGID_Struct main;
+    RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
     _log(SE__DESTINY, "SE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);
@@ -239,7 +239,7 @@ void SystemEntity::Abandon()
     m_corpID = 0;
     m_fleetID = 0;
     m_ownerID = 1;
-    m_self->ChangeOwner(1); // update this to use system owner?    yes, but system owner not coded yet.
+    m_self->ChangeOwner(1); // update this to use system owner?    not sure.  logs show this as "1" for all non-player items
 }
 
 void SystemEntity::Delete()
@@ -267,7 +267,7 @@ PyDict* StaticSystemEntity::MakeSlimItem() {
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("nameID",       PyStatic.NewNone());
-        slim->SetItemString("ownerID",      new PyInt(1));
+        slim->SetItemString("ownerID",      PyStatic.NewOne());
     return slim;
 }
 
@@ -275,14 +275,14 @@ void StaticSystemEntity::EncodeDestiny( Buffer& into ) {
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         head.x = x();
         head.y = y();
         head.z = z();
         head.radius = m_radius;
-        head.flags = IsGlobal;
+        head.flags = Ball::Flag::IsGlobal;
     into.Append( head );
-    DSTBALL_RIGID_Struct main;
+    RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
     _log(SE__DESTINY, "SSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X, radius:%.1f", GetName(), head.entityID, head.mode, head.flags, head.radius);
@@ -336,7 +336,9 @@ PyDict* StargateSE::MakeSlimItem() {
     PyDict *slim = new PyDict();
         //slim->SetItemString("dunRotation", rotation);
         slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(1));       /** @todo (allan) make function to lookup controlling faction id for this */
+        /** @todo (allan) make function to lookup controlling faction id for this */
+        //  NOTE:  maybe not...logs show this is "1" for all items.
+        slim->SetItemString("ownerID",      PyStatic.NewOne());
         slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
         slim->SetItemString("name",         new PyString(m_self->itemName()));
         slim->SetItemString("nameID",       PyStatic.NewNone());
@@ -361,7 +363,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
         slim->SetItemString("ownerID",      new PyInt(m_ownerID));
         if (m_self->groupID() == EVEDB::invGroups::Warp_Gate) {
             // this is incomplete........
-            slim->SetItemString("dunSkillLevel", new PyInt(0));   //?
+            slim->SetItemString("dunSkillLevel", PyStatic.NewNone());   //?
             slim->SetItemString("dunSkillTypeID", PyStatic.NewNone());   //?
             slim->SetItemString("dunObjectID", new PyInt(160449));  //?   902139
             slim->SetItemString("dunToGateID", new PyInt(160484));  //?   902140
@@ -380,11 +382,11 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             PyList* dirList = new PyList();
                 dirList->AddItem(new PyInt(5));     //234
                 dirList->AddItem(new PyInt(-1));
-                dirList->AddItem(new PyInt(0));
+                dirList->AddItem(PyStatic.NewNone());
             slim->SetItemString("dunDirection", dirList);
-            slim->SetItemString("dunKeyLock", new PyInt(0));   //?
+            slim->SetItemString("dunKeyLock", PyStatic.NewNone());   //?
             slim->SetItemString("dunWipeNPC", new PyBool(0));   //?
-            slim->SetItemString("dunKeyQuantity", new PyInt(1));   //?
+            slim->SetItemString("dunKeyQuantity", PyStatic.NewOne());   //?
             slim->SetItemString("dunKeyTypeID", new PyInt(m_keyType));   //Training Complex Passkey   group Acceleration_Gate_Keys
             slim->SetItemString("dunOpenUntil", new PyInt(Win32TimeNow()+EvE::Time::Hour));   //?
             slim->SetItemString("dunRoomName", new PyString("Lobby"));   //?
@@ -408,14 +410,14 @@ void ItemSystemEntity::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
         head.flags = 0;
     into.Append( head );
-    DSTBALL_RIGID_Struct main;
+    RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -459,14 +461,14 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive;
+        head.flags = Ball::Flag::IsMassive;
     into.Append( head );
-    DSTBALL_RIGID_Struct main;
+    RIGID_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -549,12 +551,12 @@ void FieldSE::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? DSTBALL_FIELD : DSTBALL_STOP);
+        head.mode = (m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Mode::FIELD : Ball::Mode::STOP);
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
+        head.flags = 0 /*(m_harmonic > EVEPOS::Harmonic::Offline ? Ball::Flag::IsMassive : 0)*/; // leave this as 0 to disable client-side bump checks for now
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = 10000000000;    // as seen in packets
@@ -563,12 +565,12 @@ void FieldSE::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    if (head.mode == DSTBALL_FIELD) {
-        DSTBALL_FIELD_Struct main;
+    if (head.mode == Ball::Mode::FIELD) {
+        FIELD_Struct main;
             main.formationID = 0xFF;
         into.Append( main );
-    } else if (head.mode == DSTBALL_STOP) {
-        DSTBALL_STOP_Struct main;
+    } else if (head.mode == Ball::Mode::STOP) {
+        STOP_Struct main;
             main.formationID = 0xFF;
         into.Append( main );
     }
@@ -591,6 +593,9 @@ DynamicSystemEntity::DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &se
 
     assert(m_targMgr != nullptr);
     assert(m_destiny != nullptr);
+
+    m_invul = false;
+    m_frozen = false;
 }
 
 DynamicSystemEntity::~DynamicSystemEntity()
@@ -627,12 +632,12 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_STOP;
+        head.mode = Ball::Mode::STOP;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsFree;
+        head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
@@ -649,7 +654,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         data.velocity_z = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
-    DSTBALL_STOP_Struct main;
+    STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 

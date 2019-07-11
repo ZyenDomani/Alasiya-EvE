@@ -55,7 +55,7 @@ class NPCAIMgr {
 protected:
 public:
     NPCAIMgr(NPC *who);
-    ~NPCAIMgr()                 { /* do nothing here */ }
+    ~NPCAIMgr()                                         { /* do nothing here */ }
 
     void Process();
 
@@ -63,8 +63,8 @@ public:
     void Targeted(SystemEntity *by_who);
     void TargetLost(SystemEntity *by_who);
 
-    void ClearTargets();
-	void ClearAllTargets();
+    void ClearTargets()                                 { m_npc->TargetMgr()->ClearTargets(); }
+	void ClearAllTargets()                              { m_npc->TargetMgr()->ClearAllTargets(); }
 
     void DisableRepTimers(bool shield, bool armor);
 

@@ -143,128 +143,134 @@ void TargetManager::ClearFromTargets() {
         if (cur->TargetMgr() != nullptr)
             cur->TargetMgr()->TargetLost(mySE);
 }
-/*{'messageKey': 'DeniedTargetAfterCloak', 'dataID': 17883412, 'suppressable': False, 'bodyID': 259495, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 781}
- * {'messageKey': 'DeniedTargetEvadesSensors', 'dataID': 17883870, 'suppressable': False, 'bodyID': 259657, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 782}
- * {'messageKey': 'DeniedTargetForceField', 'dataID': 17883882, 'suppressable': False, 'bodyID': 259661, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 783}
- * {'messageKey': 'DeniedTargetInvulnerable', 'dataID': 17883415, 'suppressable': False, 'bodyID': 259496, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 784}
- * {'messageKey': 'DeniedTargetOtherFrozen', 'dataID': 17883876, 'suppressable': False, 'bodyID': 259659, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 785}
- * {'messageKey': 'DeniedTargetOtherWarping', 'dataID': 17883809, 'suppressable': False, 'bodyID': 259635, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 786}
- * {'messageKey': 'DeniedTargetReinforcedStructure', 'dataID': 17883888, 'suppressable': False, 'bodyID': 259663, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 787}
- * {'messageKey': 'DeniedTargetSelf', 'dataID': 17883418, 'suppressable': False, 'bodyID': 259497, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 788}
- * {'messageKey': 'DeniedTargetSelfFrozen', 'dataID': 17883873, 'suppressable': False, 'bodyID': 259658, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 789}
- * {'messageKey': 'DeniedTargetSelfWarping', 'dataID': 17883879, 'suppressable': False, 'bodyID': 259660, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 790}
- * {'messageKey': 'DeniedTargetUntargetable', 'dataID': 17880323, 'suppressable': False, 'bodyID': 258348, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2170}
- * {'messageKey': 'DeniedTargetingAttemptFailed', 'dataID': 17883942, 'suppressable': False, 'bodyID': 259683, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 791}
- * {'messageKey': 'DeniedTargetingCloaked', 'dataID': 17883664, 'suppressable': False, 'bodyID': 259583, 'messageType': 'notify', 'urlAudio': 'wise:/msg_DeniedTargetingCloaked_play', 'urlIcon': '', 'titleID': None, 'messageID': 792}
- * {'messageKey': 'DeniedTargetingInsideField', 'dataID': 17883885, 'suppressable': False, 'bodyID': 259662, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 793}
- * {'messageKey': 'DeniedTargetingTargetCloaked', 'dataID': 17883421, 'suppressable': False, 'bodyID': 259498, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 794}
- */
 
-/*{'FullPath': u'UI/Messages', 'messageID': 259683, 'label': u'DeniedTargetingAttemptFailedBody'}(u'Your attempt to target {[item]target.name} failed.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
- */
-bool TargetManager::StartTargeting(SystemEntity *who, ShipItemRef sRef)
+bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 {       // NOTE this is for players and CAN throw (client calls this inside try/catch block)
-
     if (!mySE->HasPilot()) {
-        codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s", mySE->GetName(), mySE->GetID(), who->GetName());
+        codelog(TARGET__ERROR, "StartTargeting() called by pilot-less ship %s(%u) to target %s(%u)", \
+                                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return false;
     }
 
-    if (who == mySE)
+    if (tSE == mySE)
         throw PyException( MakeUserError("DeniedTargetSelf"));
-    if (who->IsInvul())
-        throw PyException( MakeUserError("DeniedTargetInvulnerable"));
-    if ((who->TargetMgr() == nullptr) or (who->GetSelf()->HasAttribute(AttrUntargetable))) { //only for 21094, 28650 (cyno fields)
+    /** @todo SE->IsFrozen() incomplete */
+    if (mySE->IsFrozen()) {
         std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(who->GetName());
+        args["targetName"] = new PyString(tSE->GetName());
+        throw PyException( MakeUserError("DeniedTargetSelfFrozen", args));
+    }
+    /** @todo SE->IsInvul() incomplete */
+    if (mySE->IsInvul())
+        throw PyException( MakeUserError("DeniedInvulnerable"));
+    /** @todo SE->IsInvul() incomplete */
+    if (tSE->IsInvul())
+        throw PyException( MakeUserError("DeniedTargetInvulnerable"));
+    if (tSE->IsFrozen()) {
+        std::map<std::string, PyRep *> args;
+        args["targetName"] = new PyString(tSE->GetName());
+        throw PyException( MakeUserError("DeniedTargetOtherFrozen", args));
+    }
+    if (tSE->GetSelf()->HasAttribute(AttrUntargetable)) {
+        std::map<std::string, PyRep *> args;
+        args["targetName"] = new PyString(tSE->GetName());
         throw PyException( MakeUserError("DeniedTargetEvadesSensors", args));
     }
-    if (who->DestinyMgr() != nullptr) {
-        if (who->DestinyMgr()->IsCloaked())
+    if (tSE->DestinyMgr() != nullptr) {
+        if (tSE->DestinyMgr()->IsCloaked())
             throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
-        if (who->DestinyMgr()->IsWarping()) {
+        if (tSE->DestinyMgr()->IsWarping()) {
             std::map<std::string, PyRep *> args;
-            args["targetName"] = new PyString(who->GetName());
+            args["targetName"] = new PyString(tSE->GetName());
             throw PyException( MakeUserError("DeniedTargetOtherWarping", args));
         }
     }
-    if (who->IsPOSSE())
-        if (who->GetPOSSE()->IsReinforced()) {
-            std::map<std::string, PyRep *> args;
-            args["target"] = new PyInt(who->GetID());
-            throw PyException( MakeUserError("DeniedTargetReinforcedStructure", args));
-        }
-    /** @todo figure out how to determine being inside forcefield...
-    if (who->InsideForceField()){
-        std::map<std::string, PyRep *> args;
-        args["target"] = new PyInt(who->GetID());
-        args["range"] = new PyInt(who->GetTowerSE()->GetSOI());
-        args["item"] = new PyInt(who->GetTowerSE()->GetID());
-        throw PyException( MakeUserError("DeniedTargetForceField", args));
-    }
-    if (mySE->InsideForceField()) {
-        std::map<std::string, PyRep *> args;
-        args["target"] = new PyInt(who->GetID());
-        throw PyException( MakeUserError("DeniedTargetingInsideField", args));
-    } */
-
     if (mySE->DestinyMgr() != nullptr) {
-        if (mySE->DestinyMgr()->IsWarping())
-            throw PyException( MakeUserError("DeniedTargetSelfWarping"));
+        if (mySE->DestinyMgr()->IsWarping()) {
+            std::map<std::string, PyRep *> args;
+            args["targetName"] = new PyString(tSE->GetName());
+            throw PyException( MakeUserError("DeniedTargetSelfWarping", args));
+        }
         if (mySE->DestinyMgr()->IsCloaked())
             throw PyException( MakeUserError("DeniedTargetingCloaked"));
     }
 
-    TargetTry(who);
+    if (tSE->IsPOSSE())
+        if (tSE->GetPOSSE()->IsReinforced()) {
+            std::map<std::string, PyRep *> args;
+            args["target"] = new PyInt(tSE->GetID());
+            throw PyException( MakeUserError("DeniedTargetReinforcedStructure", args));
+        }
+
+    if (tSE->SysBubble()->HasTower())
+        if (tSE->SysBubble()->GetTowerSE()->HasForceField())
+            if (tSE->GetPosition().distance(tSE->GetTowerSE()->GetPosition()) < tSE->GetTowerSE()->GetSOI()) {
+                std::map<std::string, PyRep *> args;
+                args["target"] = new PyInt(tSE->GetID());
+                args["range"] = new PyInt(tSE->GetTowerSE()->GetSOI());
+                args["item"] = new PyInt(tSE->GetTowerSE()->GetID());
+                throw PyException( MakeUserError("DeniedTargetForceField", args));
+            }
+
+    if (mySE->SysBubble()->HasTower())
+        if (mySE->SysBubble()->GetTowerSE()->HasForceField())
+            if (mySE->GetPosition().distance(mySE->GetTowerSE()->GetPosition()) < mySE->GetTowerSE()->GetSOI()) {
+                std::map<std::string, PyRep *> args;
+                args["target"] = new PyInt(tSE->GetID());
+                throw PyException( MakeUserError("DeniedTargetingInsideField", args));
+            }
+
+
+    TargetTry(tSE);
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(who);
+    std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(tSE);
     if (res != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return TargetFail(who);
+             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+        return TargetFail(tSE);
     }
     // Check login for client just logging into game.
-    if (who->IsLogin()) {
+    if (tSE->IsLogin()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return TargetFail(who);
+             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+        return TargetFail(tSE);
     }
 
 	uint8 maxLockedTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_int();
     if (maxLockedTargets < 1)
         maxLockedTargets = 1;
     if (GetTotalTargets() >= maxLockedTargets) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
+        mySE->GetPilot()->SendNotifyMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return TargetFail(who);
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+        return TargetFail(tSE);
     }
     // Check against max target range
     double maxTargetRange = sRef->GetAttribute(AttrMaxTargetRange).get_double();
-    GVector rangeToTarget( mySE->GetPosition(), who->GetPosition() );
+    GVector rangeToTarget( mySE->GetPosition(), tSE->GetPosition() );
     // adjust for target radius, in case of ice or other large objects..
     double targetDistance = rangeToTarget.length();
-    if (who->IsAsteroidSE())
-        targetDistance -= who->GetRadius();
+    if (tSE->IsAsteroidSE())
+        targetDistance -= tSE->GetRadius();
     if (targetDistance > maxTargetRange) {
-        mySE->GetPilot()->SendInfoModalMsg("Your ship and skills combination can only target to %.0f meters.  %s is %.0f meters away.", \
-                        maxTargetRange, who->GetName(), targetDistance);
+        mySE->GetPilot()->SendNotifyMsg("Your ship and skills combination can only target to %.0f meters.  %s is %.0f meters away.", \
+                maxTargetRange, tSE->GetName(), targetDistance);
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are too far away.  Ignoring request.", \
-                    mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID());
-        return TargetFail(who);
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+        return TargetFail(tSE);
     }
 
     // Calculate Time to Lock target:
-    float lockTime = TimeToLock( sRef, who );
+    float lockTime = TimeToLock( sRef, tSE );
 
-    TargetEntry *te = new TargetEntry(who);
+    TargetEntry *te = new TargetEntry(tSE);
         te->state = TargetEntry::Locking;
         te->timer.Start(lockTime *1000);      //timer has ms resolution
-	m_targets[who] = te;
-    who->TargetMgr()->TargetedAdd(mySE);
+	m_targets[tSE] = te;
+    tSE->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "Pilot %s(%u) started targeting %s(%u) (%.2fs lock time)", \
-                mySE->GetName(), mySE->GetID(), who->GetName(), who->GetID(), lockTime);
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), lockTime);
 
     if (is_log_enabled(TARGET__DUMP))
         Dump();

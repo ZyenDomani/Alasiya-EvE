@@ -91,26 +91,26 @@ public:
     inline void RemoveModule(StructureSE* pSE)          { m_structs.erase(pSE->GetID()); }
 
     // structure update methods
-    void                        UpdateAccess()          { m_db.UpdateAccess(m_data.itemID, m_tdata); }
-    void                        UpdateSentry()          { m_db.UpdateSentry(m_data.itemID, m_tdata); }
-    void                        UpdateNotify()          { m_db.UpdateNotify(m_data.itemID, m_tdata); }
-    void                        UpdatePermission()      { m_db.UpdatePermission(m_data.itemID, m_tdata); }
+    void UpdateAccess()                                 { m_db.UpdateAccess(m_data.itemID, m_tdata); }
+    void UpdateSentry()                                 { m_db.UpdateSentry(m_data.itemID, m_tdata); }
+    void UpdateNotify()                                 { m_db.UpdateNotify(m_data.itemID, m_tdata); }
+    void UpdatePermission()                             { m_db.UpdatePermission(m_data.itemID, m_tdata); }
 
     // fx methods
-    void ApplyResist(uint16 type, float amount)  { /* do nothing here */ }
-    void RemoveResist(uint16 type, float amount)  { /* do nothing here */ }
+    void ApplyResist(uint16 type, float amount)         { /* do nothing here */ }
+    void RemoveResist(uint16 type, float amount)        { /* do nothing here */ }
 
     // resource methods
-    void OnlineModule(StructureSE* pSE)  { /* do nothing here */ }
-    void OfflineModule(StructureSE* pSE)  { /* do nothing here */ }
+    void OnlineModule(StructureSE* pSE)                 { /* do nothing here */ }
+    void OfflineModule(StructureSE* pSE)                { /* do nothing here */ }
 
     // not coded yet
-    bool HasPG(float amount)  { return true; }
+    bool HasPG(float amount)                            { return true; }
     // not coded yet
-    bool HasCPU(float amount)  { return true; }
+    bool HasCPU(float amount)                           { return true; }
 
-    float GetPGLoad()   { return m_pg; }
-    float GetCPULoad()  { return m_cpu; }
+    float GetPGLoad()                                   { return m_pg; }
+    float GetCPULoad()                                  { return m_cpu; }
 
 protected:
     EVEPOS::TowerData m_tdata;
@@ -123,7 +123,7 @@ private:
 
     bool m_hasShield;
 
-    int8 m_tsize;
+    int8 m_tsize;   // tower size: small, med, large
 
     float m_pg;
     float m_cpu;

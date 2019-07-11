@@ -176,6 +176,7 @@ public:
     virtual bool                IsDynamicEntity()       { return false; }
     virtual bool                IsLogin()               { return false; }
     virtual bool                IsInvul()               { return false; }
+    virtual bool                IsFrozen()              { return false; }
     virtual bool                IsNPCSE()               { return false; }
     virtual bool                IsDroneSE()             { return false; }
     virtual bool                IsMissileSE()           { return false; }
@@ -201,7 +202,7 @@ public:
     uint32                      GetLocationID()         { return m_self->locationID(); }
     const char*                 GetName() const         { return m_self->itemName().c_str(); }
     const GPoint&               GetPosition() const     { return m_self->position(); }
-    void                  SetPosition(const GPoint &pos){ m_self->Relocate(pos); }
+    void                  SetPosition(const GPoint &pos){ m_self->SetPosition(pos); }
     inline double               x()                     { return m_self->position().x; }
     inline double               y()                     { return m_self->position().y; }
     inline double               z()                     { return m_self->position().z; }
@@ -455,9 +456,19 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual bool                Load();
+    virtual bool                IsInvul()               { return m_invul; }
+    virtual bool                IsFrozen()              { return m_frozen; }
+
 
     /* specific functions handled here. */
     void                        AwardBounty(Client* pClient);
+    void SetInvul(bool invul=false)                     { m_invul = invul; }
+    void SetFrozen(bool frozen=false)                   { m_frozen = frozen; }
+
+private:
+    bool m_invul;
+    bool m_frozen;
+
 };
 
 

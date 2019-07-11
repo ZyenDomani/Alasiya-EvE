@@ -260,13 +260,13 @@ void NPCAIMgr::Process() {
         case NPCAI::State::Following:
         case NPCAI::State::Engaged: {
             if (m_npc->TargetMgr()->HasNoTargets()) {
-                _log(NPC__AI_TRACE, "%s(%u): Stopped %s, HasNoTargets = true.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+                _log(NPC__AI_TRACE, "%s(%u): Stopped %s - HasNoTargets = true.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 SetIdle();
                 return;
             }
             SystemEntity* pSE = m_npc->TargetMgr()->GetFirstTarget(false);
             if (pSE == nullptr) {
-                _log(NPC__AI_TRACE, "%s(%u): Stopped %s, GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+                _log(NPC__AI_TRACE, "%s(%u): Stopped %s - GetFirstTarget() returned NULL.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
                 SetIdle();
                 return;
             }
@@ -282,7 +282,7 @@ void NPCAIMgr::Process() {
         case NPCAI::State::WarpFollow:
         case NPCAI::State::Fleeing:
         case NPCAI::State::Signaling:{
-            _log(NPC__AI_TRACE, "%s(%u): Called %s, needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
+            _log(NPC__AI_TRACE, "%s(%u): Called %s - needs to be completed.", m_npc->GetName(), m_npc->GetID(), GetStateName(m_state).c_str());
             m_state = NPCAI::State::Idle;
             // not sure how im gonna do these
         } break;
@@ -388,7 +388,7 @@ void NPCAIMgr::SetChasing(SystemEntity* pSE) {
     /** @todo implement chase timer using entityChaseMaxDuration to limit chase time. */
     if ((m_state == NPCAI::State::Chasing) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
-    _log(NPC__AI_TRACE, "%s(%u): Chasing: Begin chasing.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Begin chasing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
     m_destiny->SetMaxVelocity(m_maxSpeed);
@@ -402,7 +402,7 @@ void NPCAIMgr::SetFollowing(SystemEntity* pSE) {
         return;
     if ((m_state == NPCAI::State::Following) and (m_destiny->IsGoto() or m_destiny->IsFollowing()))
         return;
-    _log(NPC__AI_TRACE, "%s(%u): Following: Begin following.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Begin following.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // too close to chase, but to far to engage
     m_destiny->SetMaxVelocity(m_orbitSpeed *2);
@@ -416,7 +416,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pSE) {
         return;
     if ((m_state == NPCAI::State::Engaged) and m_destiny->IsOrbiting())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): Engaged: Begin engaging.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Begin engaging.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively fighting
     m_destiny->SetMaxVelocity(m_orbitSpeed);
@@ -430,7 +430,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pSE) {
         return;
     if ((m_state == NPCAI::State::Fleeing) and m_destiny->IsMoving())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): Fleeing: Begin fleeing.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Begin fleeing.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively fleeing
     //  use superspeed to disengage, then warp.  << both these will need to be written.
@@ -445,7 +445,7 @@ void NPCAIMgr::SetSignaling(SystemEntity* pSE) {
         return;
     if ((m_state == NPCAI::State::Signaling) and m_destiny->IsOrbiting())
         return;
-    _log(NPC__AI_TRACE, "%s(%u): Signaling: Begin signaling.  Target is %s(%u).", \
+    _log(NPC__AI_TRACE, "%s(%u): Begin signaling.  Target is %s(%u).", \
          m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
     // actively signaling
     //  start speedtanking while signaling.  (im sure this is cheating, but fuckem.)
@@ -488,14 +488,6 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
         SetChasing(pSE);
 
     Attack(pSE);
-}
-
-void NPCAIMgr::ClearTargets() {
-    m_npc->TargetMgr()->ClearTargets();
-}
-
-void NPCAIMgr::ClearAllTargets() {
-    m_npc->TargetMgr()->ClearAllTargets();
 }
 
 void NPCAIMgr::Target(SystemEntity* pSE) {

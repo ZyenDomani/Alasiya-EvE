@@ -140,7 +140,7 @@ PyCallable_Make_InnerDispatcher(DogmaIMService)
 
 
 DogmaIMService::DogmaIMService(PyServiceMgr* mgr)
-: PyService(mgr, "dogmaIM"),  // IM = Instance Manager
+: PyService(mgr, "dogmaIM"),  // IM = Instance Manager, also LM = Location Manager
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
@@ -373,44 +373,6 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     return nullptr;
 }
 
-    /* {'messageKey': 'DeniedDroneTargetForceField', 'dataID': 17877756, 'suppressable': False, 'bodyID': 257373, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2880}
-     * {'messageKey': 'DeniedInvulnerable', 'dataID': 17883409, 'suppressable': False, 'bodyID': 259494, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 779}
-     * {'messageKey': 'DeniedStationInvulnerableSovereign', 'dataID': 17883713, 'suppressable': False, 'bodyID': 259600, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 780}
-     * {'messageKey': 'DeniedTargetAfterCloak', 'dataID': 17883412, 'suppressable': False, 'bodyID': 259495, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 781}
-     * {'messageKey': 'DeniedTargetEvadesSensors', 'dataID': 17883870, 'suppressable': False, 'bodyID': 259657, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 782}
-     * {'messageKey': 'DeniedTargetForceField', 'dataID': 17883882, 'suppressable': False, 'bodyID': 259661, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 783}
-     * {'messageKey': 'DeniedTargetInvulnerable', 'dataID': 17883415, 'suppressable': False, 'bodyID': 259496, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 784}
-     * {'messageKey': 'DeniedTargetOtherFrozen', 'dataID': 17883876, 'suppressable': False, 'bodyID': 259659, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 785}
-     * {'messageKey': 'DeniedTargetOtherWarping', 'dataID': 17883809, 'suppressable': False, 'bodyID': 259635, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 786}
-     * {'messageKey': 'DeniedTargetReinforcedStructure', 'dataID': 17883888, 'suppressable': False, 'bodyID': 259663, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 787}
-     * {'messageKey': 'DeniedTargetSelf', 'dataID': 17883418, 'suppressable': False, 'bodyID': 259497, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 788}
-     * {'messageKey': 'DeniedTargetSelfFrozen', 'dataID': 17883873, 'suppressable': False, 'bodyID': 259658, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 789}
-     * {'messageKey': 'DeniedTargetSelfWarping', 'dataID': 17883879, 'suppressable': False, 'bodyID': 259660, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 790}
-     * {'messageKey': 'DeniedTargetUntargetable', 'dataID': 17880323, 'suppressable': False, 'bodyID': 258348, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2170}
-     * {'messageKey': 'DeniedTargetingAttemptFailed', 'dataID': 17883942, 'suppressable': False, 'bodyID': 259683, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 791}
-     * {'messageKey': 'DeniedTargetingCloaked', 'dataID': 17883664, 'suppressable': False, 'bodyID': 259583, 'messageType': 'notify', 'urlAudio': 'wise:/msg_DeniedTargetingCloaked_play', 'urlIcon': '', 'titleID': None, 'messageID': 792}
-     * {'messageKey': 'DeniedTargetingInsideField', 'dataID': 17883885, 'suppressable': False, 'bodyID': 259662, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 793}
-     * {'messageKey': 'DeniedTargetingTargetCloaked', 'dataID': 17883421, 'suppressable': False, 'bodyID': 259498, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 794}
-     * {'FullPath': u'UI/Messages', 'messageID': 259494, 'label': u'DeniedInvulnerableBody'}(u'Your ship is realigning its magnetic field, please wait a moment.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 259495, 'label': u'DeniedTargetAfterCloakBody'}(u'You cannot perform that action at this time as your systems are still recalibrating after the use of a cloaking device.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 259496, 'label': u'DeniedTargetInvulnerableBody'}(u'Target is invulnerable.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 259497, 'label': u'DeniedTargetSelfBody'}(u'You cannot target your own ship.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 259498, 'label': u'DeniedTargetingTargetCloakedBody'}(u'You failed to target nothing.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 257373, 'label': u'DeniedDroneTargetForceFieldBody'}(u'Your drones cannot engage {[item]target.name} since it is within the range of a forcefield you are barred from entering.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259600, 'label': u'DeniedStationInvulnerableSovereignBody'}(u'{[item]module.name} deactivates as the target {targetname} is invulnerable because its owning alliance holds sovereignty in this solar system.', None, {u'{targetname}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetname'}, u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 258348, 'label': u'DeniedTargetUntargetableBody'}(u'You are unable to target {targetName} as it has been made untargetable by a GM.', None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259583, 'label': u'DeniedTargetingCloakedBody'}(u'You cannot target anything while you are cloaked.', None, None)
-     * {'FullPath': u'UI/Messages', 'messageID': 259635, 'label': u'DeniedTargetOtherWarpingBody'}(u"Interference from {targetName}'s warp prevents your sensors from locking the target.", None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259657, 'label': u'DeniedTargetEvadesSensorsBody'}(u'You are unable to target the {targetName} as your sensors are unable to lock onto it.', None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259658, 'label': u'DeniedTargetSelfFrozenBody'}(u'You are unable to target {targetName} because you have been frozen by a GM.', None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259659, 'label': u'DeniedTargetOtherFrozenBody'}(u'You are unable to target {targetName} because they are currently frozen by a GM.', None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259660, 'label': u'DeniedTargetSelfWarpingBody'}(u'Interference from the warp you are doing is preventing your sensors from getting a target lock on {targetName}.', None, {u'{targetName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetName'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259661, 'label': u'DeniedTargetForceFieldBody'}(u'You failed to target {[item]target.name}, they are within range {[numeric]range.distance} of a {[item]item.name} and with you being outside of it, it is preventing you from holding a lock on them.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[numeric]range.distance}': {'conditionalValues': [], 'variableType': 9, 'propertyName': 'distance', 'args': 256, 'kwargs': {}, 'variableName': 'range'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259662, 'label': u'DeniedTargetingInsideFieldBody'}(u'You cannot target the {[item]target.name} while you are inside a force field.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259663, 'label': u'DeniedTargetReinforcedStructureBody'}(u'You failed to target {[item]target.name} as it is locked down in reinforced mode.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
-     * {'FullPath': u'UI/Messages', 'messageID': 259683, 'label': u'DeniedTargetingAttemptFailedBody'}(u'Your attempt to target {[item]target.name} failed.', None, {u'{[item]target.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
-     *
-     */
 PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
@@ -428,22 +390,19 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         rsp.flag = false;
         rsp.targetList.push_back(args.arg);
 
-    if (!pClient->IsInSpace()) {
+    if (pClient->IsDocked()) {
         pClient->SendNotifyMsg("You can't do this while docked");
         return rsp.Encode();
     }
-    Ship* pShip = pClient->GetShipSE();
 
-    DestinyManager* pDestiny = pShip->DestinyMgr();
-    if (pDestiny == nullptr) {
+    Ship* pShip = pClient->GetShipSE();
+    DestinyManager* pMyDestiny = pShip->DestinyMgr();
+    if (pMyDestiny == nullptr) {
         _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
         return rsp.Encode();
     }
-    if (pDestiny->IsWarping())
-        throw PyException( MakeUserError( "DeniedTargetSelfWarping"));
-
-    if (pDestiny->IsCloaked())
-        throw PyException( MakeUserError( "CantTargetWhileCloaked")); //DeniedTargetingCloaked
+    if (pMyDestiny->IsCloaked())
+        throw PyException( MakeUserError( "CantTargetWhileCloaked"));
 
     if (pShip->TargetMgr() == nullptr)
         return rsp.Encode();
@@ -451,7 +410,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(PLAYER__WARNING, "Unable to find system manager from '%s'", pClient->GetName());
-        return rsp.Encode();
+        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed"));
+        //return rsp.Encode();
     }
 
     SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
@@ -462,7 +422,14 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if ((pShip->SysBubble() == nullptr)
     or (pTSE->SysBubble() == nullptr)) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), pTSE->GetName());
-        return rsp.Encode();
+        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed"));
+        //return rsp.Encode();
+    }
+
+    if (pMyDestiny->IsWarping()) {
+        std::map<std::string, PyRep *> args;
+        args["targetName"] = new PyString(pTSE->GetName());
+        throw PyException( MakeUserError( "DeniedTargetSelfWarping", args));
     }
 
     if (pTSE->HasPilot())
@@ -746,6 +713,10 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
      * {'FullPath': u'UI/Messages', 'messageID': 259493, 'label': u'DeniedActivateTargetOffModDisallowedBody'}(u'You cannot activate that module on the target as interference prevents modules of that type from being used on them.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 259597, 'label': u'DeniedActivateInWarpBody'}(u'Interference from your warp prevents your systems from functioning at this time.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 258228, 'label': u'DeniedActivateControllingBody'}(u'You are unable to activate any modules while you are controlling some other objects.', None, None)
+     *
+     * {'FullPath': u'UI/Messages', 'messageID': 260384, 'label': u'AnchorLocationUnsuitableBody'}(u'You cannot safely anchor {[item]typeID.nameWithArticle} within {[numeric]distance.distance} of large objects in space.', None, {u'{[numeric]distance.distance}': {'conditionalValues': [], 'variableType': 9, 'propertyName': 'distance', 'args': 256, 'kwargs': {}, 'variableName': 'distance'}, u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 260389, 'label': u'AnchorProximityUnsuitableBody'}(u'You cannot anchor an item of group {anchorGroupName} within {[numeric]distance.distance} of items of group {ballGroupName} in space.', None, {u'{ballGroupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ballGroupName'}, u'{anchorGroupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'anchorGroupName'}, u'{[numeric]distance.distance}': {'conditionalValues': [], 'variableType': 9, 'propertyName': 'distance', 'args': 256, 'kwargs': {}, 'variableName': 'distance'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 260403, 'label': u'AnchoringObjectBody'}(u'Anchoring the selected object, it will take around {[numeric]delay, decimalPlaces=1} {[numeric]delay -> "second", "seconds"} to do so.', None, {u'{[numeric]delay -> "second", "seconds"}': {'conditionalValues': [u'second', u'seconds'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'delay'}, u'{[numeric]delay, decimalPlaces=1}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 1}, 'variableName': 'delay'}})
      *
      */
 
