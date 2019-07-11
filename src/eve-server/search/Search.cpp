@@ -24,6 +24,7 @@
 */
 
 
+#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "search/Search.h"
@@ -55,6 +56,11 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
     std::string str = args.str;
     Replace(str);
 
+    // this hits db directly, so test for possible sql injection code
+    for (const auto cur : badCharsSearch)
+        if (boost::icontains(args.str, cur))
+            throw PyException( MakeCustomError("Search String contains invalid characters"));
+
     return m_db->Query( str, &args.ids, call.client->GetCharacterID() );
 }
 
@@ -79,14 +85,18 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
     if (call.byname.find("onlyAltName") != call.byname.end())
         onlyAltName = (PyRep::IntegerValue(call.byname.find("onlyAltName")->second) != 0);
 
+    // this hits db directly, so test for possible sql injection code
+    for (const auto cur : badCharsSearch)
+        if (boost::icontains(args.str, cur))
+            throw PyException( MakeCustomError("Search String contains invalid characters"));
+
     return m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);
 }
 
-void Search::Replace(std::string &s) {
-    for (uint i = 0; i < s.length(); ++i) {
-        switch (s[i]) {
+void Search::Replace(std::string &str) {
+    for (uint i = 0; i < str.length(); ++i)
+        switch (str[i]) {
 			case '*':
-				s[i] = '%';
+                str[i] = '%';
 		}
-    }
 }
