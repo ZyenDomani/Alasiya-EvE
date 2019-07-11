@@ -97,15 +97,15 @@ PyResult FleetManager::Handle_GetActiveStatus(PyCallArgs &call) {
     std::vector< uint32 > wingIDs, squadIDs;
     sFltSvc.GetWingIDs(fleetID, wingIDs);
     for (auto wingID : wingIDs) {
-        WingData wdata;
-        sFltSvc.GetWingData(wingID, wdata);
+        WingData wData = WingData();
+        sFltSvc.GetWingData(wingID, wData);
         wings->SetItem(new PyInt(wingID), new PyInt((sFltSvc.IsWingActive(wingID) ? 1 : 0)));
 
         sFltSvc.GetSquadIDs(wingID, squadIDs);
         for (auto squadID : squadIDs) {
-            SquadData sdata;
-            sFltSvc.GetSquadData(squadID, sdata);
-            squads->SetItem(new PyInt(squadID), new PyInt(sdata.members.size() > 0 ? 1 : 0));
+            SquadData sData = SquadData();
+            sFltSvc.GetSquadData(squadID, sData);
+            squads->SetItem(new PyInt(squadID), new PyInt(sData.members.size() > 0 ? 1 : 0));
         }
     }
 
@@ -137,7 +137,7 @@ PyResult FleetManager::Handle_BroadcastToBubble(PyCallArgs &call) {
         return nullptr;
     }
 
-    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCastScope::Bubble, args.group, args.msg);
+    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCast::Scope::Bubble, args.group, args.msg);
 
     return nullptr;
 }
@@ -153,7 +153,7 @@ PyResult FleetManager::Handle_BroadcastToSystem(PyCallArgs &call) {
         return nullptr;
     }
 
-    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCastScope::System, args.group, args.msg);
+    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCast::Scope::System, args.group, args.msg);
 
     return nullptr;
 }

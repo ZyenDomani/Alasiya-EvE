@@ -545,33 +545,34 @@ void Client::ProcessClient() {
     if (m_fleetTimer.Enabled())
         if (m_fleetTimer.Check(false)) {
             m_fleetTimer.Disable();
-            BoostData data = BoostData();
+            BoostData bData = BoostData();
             if (IsSquad(m_squad)) {
                 SquadData sData = SquadData();
                 sFltSvc.GetSquadData(m_squad, sData);
                 if ((sData.leader != nullptr) and (sData.booster != nullptr))
                     if ((sData.leader->IsInSpace()) and (sData.booster->IsInSpace()))
-                        data = sData.boost;
+                        bData = sData.boost;
             } else if (IsWing(m_wing)) {
                 WingData wData = WingData();
                 sFltSvc.GetWingData(m_wing, wData);
                 if ((wData.leader != nullptr) and (wData.booster != nullptr))
                     if ((wData.leader->IsInSpace()) and (wData.booster->IsInSpace()))
-                        data = wData.boost;
+                        bData = wData.boost;
             } else if (IsFleet(m_fleet)) {
                 FleetData fData = FleetData();
                 sFltSvc.GetFleetData(m_fleet, fData);
                 if ((fData.leader != nullptr) and (fData.booster != nullptr))
                     if ((fData.leader->IsInSpace()) and (fData.booster->IsInSpace())) {
-                        data.leader    = m_char->GetSkillLevel(skillLeadership);
-                        data.armored   = fData.booster->GetChar()->GetSkillLevel(skillArmoredWarfare);
-                        data.info      = fData.booster->GetChar()->GetSkillLevel(skillInformationWarfare);
-                        data.mining    = fData.booster->GetChar()->GetSkillLevel(skillMiningForeman);
-                        data.siege     = fData.booster->GetChar()->GetSkillLevel(skillSiegeWarfare);
-                        data.skirmish  = fData.booster->GetChar()->GetSkillLevel(skillSkirmishWarfare);
+                        CharacterRef bRef = fData.booster->GetChar();
+                        bData.leader    = fData.leader->GetChar()->GetSkillLevel(skillLeadership);
+                        bData.armored   = bRef->GetSkillLevel(skillArmoredWarfare);
+                        bData.info      = bRef->GetSkillLevel(skillInformationWarfare);
+                        bData.mining    = bRef->GetSkillLevel(skillMiningForeman);
+                        bData.siege     = bRef->GetSkillLevel(skillSiegeWarfare);
+                        bData.skirmish  = bRef->GetSkillLevel(skillSkirmishWarfare);
                     }
             }
-            pShipSE->ApplyBoost(data);
+            pShipSE->ApplyBoost(bData);
         }
 
     if (sConfig.debug.UseProfiling)

@@ -82,17 +82,17 @@ PyResult FleetProxy::Handle_AddFleetFinderAdvert(PyCallArgs &call) {
 
     int32 fleetID = call.client->GetChar()->fleetID();
 
-    FleetData data;
-    sFltSvc.GetFleetData(fleetID, data);
+    FleetData fData = FleetData();
+    sFltSvc.GetFleetData(fleetID, fData);
 
-    FleetAdvert adata;
+    FleetAdvert adata = FleetAdvert();
         adata.fleetID = fleetID;
         adata.hideInfo = args.hideInfo;
         adata.inviteScope = args.inviteScope;
         adata.leader = call.client;
         adata.fleetName = PyRep::StringContent(args.fleetName);
         adata.advertTime = GetFileTimeNow();
-        adata.dateCreated = data.dateCreated;
+        adata.dateCreated = fData.dateCreated;
         adata.description = PyRep::StringContent(args.description);
         adata.solarSystemID = call.client->GetSystemID();
         adata.joinNeedsApproval = args.joinNeedsApproval;

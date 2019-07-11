@@ -158,26 +158,26 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
 }
 
 PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
-    FleetData fdata;
-    sFltSvc.GetFleetData(m_fleetID, fdata);
+    FleetData fData = FleetData();
+    sFltSvc.GetFleetData(m_fleetID, fData);
 
     GetInitStateRSP rsp;
         rsp.fleetID = m_fleetID;
-        rsp.isFreeMove = fdata.isFreeMove;
-        rsp.isLootLogging = fdata.isLootLogging;
-        rsp.isRegistered = fdata.isRegistered;
-        rsp.isVoiceEnabled = fdata.isVoiceEnabled;
-        rsp.motd = fdata.motd;
-        rsp.name = fdata.name;
+        rsp.isFreeMove = fData.isFreeMove;
+        rsp.isLootLogging = fData.isLootLogging;
+        rsp.isRegistered = fData.isRegistered;
+        rsp.isVoiceEnabled = fData.isVoiceEnabled;
+        rsp.motd = fData.motd;
+        rsp.name = fData.name;
 
     PyDict* muteDict = new PyDict();
-    for (auto cur : fdata.isExcludedFromMuting)
+    for (auto cur : fData.isExcludedFromMuting)
         muteDict->SetItem(new PyInt(cur.first), new PyInt(cur.second));
     PySafeDecRef(rsp.isExcludedFromMuting);
     rsp.isExcludedFromMuting = muteDict;
 
     PyDict* lMuteDict = new PyDict();
-    for (auto cur : fdata.isMutedByLeader)
+    for (auto cur : fData.isMutedByLeader)
         lMuteDict->SetItem(new PyInt(cur.first), new PyInt(cur.second));
     PySafeDecRef(rsp.isMutedByLeader);
     rsp.isMutedByLeader = lMuteDict;
@@ -187,10 +187,10 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
     sFltSvc.GetWingIDs(m_fleetID, wingIDs);
     PyDict* dict1 = new PyDict();
     for (auto wingID : wingIDs) {
-        WingData wdata;
-        sFltSvc.GetWingData(wingID, wdata);
+        WingData wData = WingData();
+        sFltSvc.GetWingData(wingID, wData);
         WingRSP wing;
-        wing.name = wdata.name;
+        wing.name = wData.name;
         wing.wingID = wingID;
 
         squadIDs.clear();
@@ -198,10 +198,10 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
 
         PyDict* dict = new PyDict();
         for (auto squadID : squadIDs) {
-            SquadData sdata;
-            sFltSvc.GetSquadData(squadID, sdata);
+            SquadData sData = SquadData();
+            sFltSvc.GetSquadData(squadID, sData);
             SquadRSP squad;
-            squad.name = sdata.name;
+            squad.name = sData.name;
             squad.squadID = squadID;
             dict->SetItem(new PyInt(squadID), squad.Encode());
         }
@@ -259,7 +259,7 @@ PyResult FleetBound::Handle_Invite(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-    InviteData data;
+    InviteData data = InviteData();
         data.inviteBy = call.client;
         data.invited = pClient;
         data.wingID = args.wingID;  // default sends 0
@@ -320,7 +320,7 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
     if (pChar == nullptr)
         return new PyLong(GetFileTimeNow());
 
-    InviteData data;
+    InviteData data = InviteData();
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)){
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
         return new PyLong(GetFileTimeNow());
@@ -329,21 +329,21 @@ PyResult FleetBound::Handle_AcceptInvite(PyCallArgs &call) {
     int8 booster = Fleet::Booster::No;
     switch (data.role) {
         case Fleet::Role::FleetLeader: {
-            FleetData fdata;
-            sFltSvc.GetFleetData(m_fleetID, fdata);
-            if (fdata.booster == nullptr)
+            FleetData fData = FleetData();
+            sFltSvc.GetFleetData(m_fleetID, fData);
+            if (fData.booster == nullptr)
                 booster = Fleet::Booster::Fleet;
         } break;
         case Fleet::Role::WingLeader: {
-            WingData wdata;
-            sFltSvc.GetWingData(data.wingID, wdata);
-            if (wdata.booster == nullptr)
+            WingData wData = WingData();
+            sFltSvc.GetWingData(data.wingID, wData);
+            if (wData.booster == nullptr)
                 booster = Fleet::Booster::Wing;
         } break;
         case Fleet::Role::SquadLeader: {
-            SquadData sdata;
-            sFltSvc.GetSquadData(data.squadID, sdata);
-            if (sdata.booster == nullptr)
+            SquadData sData = SquadData();
+            sFltSvc.GetSquadData(data.squadID, sData);
+            if (sData.booster == nullptr)
                 booster = Fleet::Booster::Squad;
         } break;
     }
@@ -370,7 +370,7 @@ PyResult FleetBound::Handle_RejectInvite(PyCallArgs &call) {
     if (call.tuple->AsTuple()->GetItem(0)->IsBool())
         rejected = call.tuple->AsTuple()->GetItem(0)->AsBool()->value();
 
-    InviteData data;
+    InviteData data = InviteData();
     if (!sFltSvc.GetInviteData(pChar->itemID(), data)) {
         call.client->SendNotifyMsg("You do not have an outstanding Fleet Invite on issue.");
         return new PyLong(GetFileTimeNow());
@@ -547,7 +547,7 @@ PyResult FleetBound::Handle_SendBroadcast(PyCallArgs &call) {
         return nullptr;
     }
 
-    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCastScope::Universe, args.group, args.msg);
+    sFltSvc.FleetBroadcast(call.client, args.itemID, Fleet::BCast::Scope::Universe, args.group, args.msg);
 
     return nullptr;
 }
@@ -648,25 +648,25 @@ PyResult FleetBound::Handle_SetBooster(PyCallArgs &call) {
     // there can be only one booster per each fleet/wing/squad
     switch (args.booster) {
         case Fleet::Booster::Fleet: {
-            FleetData fdata;
-            sFltSvc.GetFleetData(m_fleetID, fdata);
-            if ((fdata.booster != nullptr) and ((pOldChar = fdata.booster->GetChar().get()) != nullptr)) {
+            FleetData fData = FleetData();
+            sFltSvc.GetFleetData(m_fleetID, fData);
+            if ((fData.booster != nullptr) and ((pOldChar = fData.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
                     return PyStatic.NewFalse();
             }
         } break;
         case Fleet::Booster::Wing: {
-            WingData wdata;
-            sFltSvc.GetWingData(pChar->wingID(), wdata);
-            if ((wdata.booster != nullptr) and ((pOldChar = wdata.booster->GetChar().get()) != nullptr)) {
+            WingData wData = WingData();
+            sFltSvc.GetWingData(pChar->wingID(), wData);
+            if ((wData.booster != nullptr) and ((pOldChar = wData.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
                     return PyStatic.NewFalse();
             }
         } break;
         case Fleet::Booster::Squad: {
-            SquadData sdata;
-            sFltSvc.GetSquadData(pChar->squadID(), sdata);
-            if ((sdata.booster != nullptr) and ((pOldChar = sdata.booster->GetChar().get()) != nullptr)) {
+            SquadData sData = SquadData();
+            sFltSvc.GetSquadData(pChar->squadID(), sData);
+            if ((sData.booster != nullptr) and ((pOldChar = sData.booster->GetChar().get()) != nullptr)) {
                 if (!sFltSvc.UpdateMember(pOldChar->itemID(), m_fleetID, pOldChar->wingID(), pOldChar->squadID(), pOldChar->fleetJob(), pOldChar->fleetRole(), Fleet::Booster::No))
                     return PyStatic.NewFalse();
             }

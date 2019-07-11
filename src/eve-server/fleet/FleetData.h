@@ -13,47 +13,56 @@
 #define EVEMU_SRC_FLEET_DATA_H_
 
 namespace Fleet {
-    enum Job {
-        None        = 0,
-        Scout       = 1,
-        Creator     = 2
-    };
-
-    enum Role {
-        FleetLeader = 1,
-        WingLeader  = 2,
-        SquadLeader = 3,
-        Member      = 4
-    };
-
-    enum Booster {
-        No      = 0,
-        Fleet   = 1,
-        Wing    = 2,
-        Squad   = 3
-    };
-
-    enum Invite {
-        Closed = 0,
-        Corp = 1,
-        Alliance = 2,
-        Militia = 4,
-        Public = 8,
-        Any = 15
-    };
-
-    enum BCastScope {
-        Universe = 0,
-        System = 1,
-        Bubble = 2
-    };
-
-    enum BCastGroup {
-        //None = 0, already defined...
-        Down = 1,   // subordinates (or squad if member)
-        Up = 2,     // superiors
-        All = 3
-    };
+    namespace Job {
+        enum {
+            None        = 0,
+            Scout       = 1,
+            Creator     = 2
+        };
+    }
+    namespace Role {
+        enum {
+            FleetLeader = 1,
+            WingLeader  = 2,
+            SquadLeader = 3,
+            Member      = 4
+        };
+    }
+    namespace Booster {
+        enum {
+            No      = 0,
+            Fleet   = 1,
+            Wing    = 2,
+            Squad   = 3
+        };
+    }
+    namespace Invite {
+        enum {
+            Closed = 0,
+            Corp = 1,
+            Alliance = 2,
+            Militia = 4,
+            Public = 8,
+            Any = 15
+        };
+    }
+    namespace BCast {
+        namespace Scope {
+            enum {
+                Universe = 0,
+                System = 1,
+                Bubble = 2
+            };
+        }
+        namespace Group {
+            enum {
+                None = 0,   // is this needed?
+                Down = 1,   // subordinates (or squad if member)
+                Up = 2,     // superiors
+                All = 3
+            };
+        }
+    }
 }
 
 // all bonuses are 2%/lvl

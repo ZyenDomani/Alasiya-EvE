@@ -628,7 +628,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                     continue;
                 bool sboost = false;
                 SetSquadBoostData(squadID, bData, sboost);
-                SquadData sData;
+                SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
                 for (auto cur : sData.members)  // SC is a member
                     if ((sboost) and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
@@ -658,7 +658,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                     continue;
                 bool sboost = false;
                 SetSquadBoostData(squadID, bData, sboost);
-                SquadData sData;
+                SquadData sData = SquadData();
                 GetSquadData(squadID, sData);
                 for (auto cur : sData.members)
                     if ((sboost) and (cur.second->GetSystemID() == sData.booster->GetSystemID()))
@@ -679,7 +679,7 @@ void FleetService::UpdateBoost(uint32 fleetID, bool fleet, std::list<int32>& win
                 bData.siege     = fData.siege;
                 bData.skirmish  = fData.skirmish;
             }
-            SquadData sData;
+            SquadData sData = SquadData();
             GetSquadData(squadID, sData);
             SetWingBoostData(sData.wingID, bData);
             bool sboost = false;
@@ -1259,18 +1259,18 @@ PyRep* FleetService::GetWings(uint32 fleetID)
     PyDict* dict = new PyDict();
     for (auto wingID : wingIDs) {
         squadIDs.clear();
-        WingData wdata;
-        GetWingData(wingID, wdata);
+        WingData wData = WingData();
+        GetWingData(wingID, wData);
         WingRSP wing;
-            wing.name = wdata.name;
+            wing.name = wData.name;
             wing.wingID = wingID;
         GetSquadIDs(wingID, squadIDs);
         PyDict* dict2 = new PyDict();
         for (auto squadID : squadIDs) {
-            SquadData sdata;
-            GetSquadData(squadID, sdata);
+            SquadData sData = SquadData();
+            GetSquadData(squadID, sData);
             SquadRSP squad;
-                squad.name = sdata.name;
+                squad.name = sData.name;
                 squad.squadID = squadID;
             dict2->SetItem(new PyInt(squadID), squad.Encode());
         }
@@ -1347,7 +1347,7 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
         _log(FLEET__WARNING, "%s called FleetBroadcast with invalid fleetID %u.", pFrom->GetName(), fleetID);
         return;
     }
-    if (group == Fleet::None) {
+    if (group == Fleet::BCast::Group::None) {
         _log(FLEET__WARNING, "%s called FleetBroadcast with group = None for fleet %u.", pFrom->GetName(), fleetID);
         return;
     }
@@ -1361,39 +1361,39 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
     uint16 scopeID = 0;
     std::vector<Client*> members;
     switch (scope) {
-        case Fleet::BCastScope::System: {
+        case Fleet::BCast::Scope::System: {
             scopeID = pFrom->GetSystemID();
         } break;
-        case Fleet::BCastScope::Bubble: {
+        case Fleet::BCast::Scope::Bubble: {
             scopeID = pFrom->GetShipSE()->SysBubble()->GetID();
         } break;
     }
     switch (group) {
-        case Fleet::BCastGroup::All: {
+        case Fleet::BCast::Group::All: {
             auto range = m_fleetMembers.equal_range(fleetID);
             for (auto fItr = range.first; fItr != range.second; ++fItr) {
-                if (scope == Fleet::BCastScope::Universe) {
+                if (scope == Fleet::BCast::Scope::Universe) {
                     members.push_back(fItr->second);
-                } else if (scope == Fleet::BCastScope::System) {
+                } else if (scope == Fleet::BCast::Scope::System) {
                     if (fItr->second->GetSystemID() == scopeID)
                         members.push_back(fItr->second);
-                } else if (scope == Fleet::BCastScope::Bubble) {
+                } else if (scope == Fleet::BCast::Scope::Bubble) {
                     if (fItr->second->GetShipSE()->SysBubble()->GetID() == scopeID)
                         members.push_back(fItr->second);
                 }
             }
         } break;
         // these 2 need to check fleet hierarchy for proper member list
-        case Fleet::BCastGroup::Down: {
+        case Fleet::BCast::Group::Down: {
             if (wingID == -1) {
                 auto range = m_fleetMembers.equal_range(fleetID);
                 for (auto fItr = range.first; fItr != range.second; ++fItr) {
-                    if (scope == Fleet::BCastScope::Universe) {
+                    if (scope == Fleet::BCast::Scope::Universe) {
                         members.push_back(fItr->second);
-                    } else if (scope == Fleet::BCastScope::System) {
+                    } else if (scope == Fleet::BCast::Scope::System) {
                         if (fItr->second->GetSystemID() == scopeID)
                             members.push_back(fItr->second);
-                    } else if (scope == Fleet::BCastScope::Bubble) {
+                    } else if (scope == Fleet::BCast::Scope::Bubble) {
                         if (fItr->second->GetShipSE()->SysBubble()->GetID() == scopeID)
                             members.push_back(fItr->second);
                     }
@@ -1408,12 +1408,12 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
                         if (itr == m_squadDataMap.end())
                             continue;
                         for (auto member : itr->second.members)
-                            if (scope == Fleet::BCastScope::Universe) {
+                            if (scope == Fleet::BCast::Scope::Universe) {
                                 members.push_back(member.second);
-                            } else if (scope == Fleet::BCastScope::System) {
+                            } else if (scope == Fleet::BCast::Scope::System) {
                                 if (member.second->GetSystemID() == scopeID)
                                     members.push_back(member.second);
-                            } else if (scope == Fleet::BCastScope::Bubble) {
+                            } else if (scope == Fleet::BCast::Scope::Bubble) {
                                 if (member.second->GetShipSE()->SysBubble()->GetID() == scopeID)
                                     members.push_back(member.second);
                             }
@@ -1423,19 +1423,19 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
                     if (itr == m_squadDataMap.end())
                         break;
                     for (auto member : itr->second.members)
-                        if (scope == Fleet::BCastScope::Universe) {
+                        if (scope == Fleet::BCast::Scope::Universe) {
                             members.push_back(member.second);
-                        } else if (scope == Fleet::BCastScope::System) {
+                        } else if (scope == Fleet::BCast::Scope::System) {
                             if (member.second->GetSystemID() == scopeID)
                                 members.push_back(member.second);
-                        } else if (scope == Fleet::BCastScope::Bubble) {
+                        } else if (scope == Fleet::BCast::Scope::Bubble) {
                             if (member.second->GetShipSE()->SysBubble()->GetID() == scopeID)
                                 members.push_back(member.second);
                         }
                 }
             }
         } break;
-        case Fleet::BCastGroup::Up: {
+        case Fleet::BCast::Group::Up: {
             if (wingID == -1) {
                 // pFrom is FC.  nobody above to msg.  make error here
                 _log(FLEET__WARNING, "FC %s called FleetBroadcast with group == Up for fleet %u.", pFrom->GetName(), fleetID);
@@ -1476,11 +1476,11 @@ void FleetService::FleetBroadcast(Client* pFrom, uint32 itemID, int8 scope, int8
     if (is_log_enabled(FLEET__BCAST_DUMP)) {
         std::ostringstream grp;
         switch (group) {
-            case Fleet::BCastGroup::All: {
+            case Fleet::BCast::Group::All: {
                 grp << "All " << itoa(count);
             } break;
-            case Fleet::BCastGroup::Down:
-            case Fleet::BCastGroup::Up: {
+            case Fleet::BCast::Group::Down:
+            case Fleet::BCast::Group::Up: {
                 grp << itoa(count);
                 grp << " " << GetBCastGroupName(group).c_str();
             } break;
@@ -1566,8 +1566,8 @@ void FleetService::SendActiveStatus(uint32 fleetID, int32 wingID, int32 squadID)
     SendFleetUpdate(fleetID, "OnFleetActive", count);
 
     if (wingID > 0) {
-        WingData wdata;
-        GetWingData(wingID, wdata);
+        WingData wData = WingData();
+        GetWingData(wingID, wData);
         PyTuple* count = new PyTuple(2);
             count->SetItem(0, new PyInt(wingID));
             count->SetItem(1, new PyInt(IsWingActive(wingID) ? 1 : 0));
@@ -1575,11 +1575,11 @@ void FleetService::SendActiveStatus(uint32 fleetID, int32 wingID, int32 squadID)
     }
 
     if (squadID > 0) {
-        SquadData sdata;
-        GetSquadData(squadID, sdata);
+        SquadData sData = SquadData();
+        GetSquadData(squadID, sData);
         PyTuple* count = new PyTuple(2);
             count->SetItem(0, new PyInt(squadID));
-            count->SetItem(1, new PyInt(sdata.members.size() > 0 ? 1 : 0));
+            count->SetItem(1, new PyInt(sData.members.size() > 0 ? 1 : 0));
         SendFleetUpdate(fleetID, "OnSquadActive", count);
     }
 }
@@ -1703,15 +1703,15 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
     str.clear();
 
     bool fboost = false;
-    FleetData fdata;
-    GetFleetData(fleetID, fdata);
-    str << "<color=teal>" << fdata.name << "  Created By: " << fdata.creator->GetChar()->itemName().c_str();
+    FleetData fData = FleetData();
+    GetFleetData(fleetID, fData);
+    str << "<color=teal>" << fData.name << "  Created By: " << fData.creator->GetChar()->itemName().c_str();
     str << "  Members: " << itoa(m_fleetMembers.count(fleetID)) << "</color><br>"; //54
     length += 54;
-    length += fdata.name.size();
-    length += fdata.creator->GetChar()->itemName().size();
+    length += fData.name.size();
+    length += fData.creator->GetChar()->itemName().size();
 
-    if ((fdata.leader != nullptr) and (fdata.leader->IsInSpace()) and (pChar = fdata.leader->GetChar().get()) != nullptr) {
+    if ((fData.leader != nullptr) and (fData.leader->IsInSpace()) and (pChar = fData.leader->GetChar().get()) != nullptr) {
         if (m_fleetWings.count(fleetID) > pChar->GetSkillLevel(skillFleetCommand)) {
             str << "<color=red>";
             fboost = false;
@@ -1731,8 +1731,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         length += 37;
     }
 
-    if ((fdata.booster != nullptr) and (fdata.booster->IsInSpace()) and (pChar = fdata.booster->GetChar().get()) != nullptr) {
-        if (fdata.leader->GetSystemID() == fdata.booster->GetSystemID()) {
+    if ((fData.booster != nullptr) and (fData.booster->IsInSpace()) and (pChar = fData.booster->GetChar().get()) != nullptr) {
+        if (fData.leader->GetSystemID() == fData.booster->GetSystemID()) {
             if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
                 or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
                 or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
@@ -1774,9 +1774,9 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
         if (!IsWing(wingID))
             continue;
         bool wboost = false;
-        WingData wdata;
-        GetWingData(wingID, wdata);
-        if ((wdata.leader != nullptr) and (wdata.leader->IsInSpace()) and (pChar = wdata.leader->GetChar().get()) != nullptr) {
+        WingData wData = WingData();
+        GetWingData(wingID, wData);
+        if ((wData.leader != nullptr) and (wData.leader->IsInSpace()) and (pChar = wData.leader->GetChar().get()) != nullptr) {
             if (m_wingSquads.count(wingID) > pChar->GetSkillLevel(skillWingCommand)) {
                 str << "<color=red>";
             } else {
@@ -1788,19 +1788,19 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 wboost = true;
             }
             length += 13;
-            str << "  " << wdata.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
-            length += wdata.name.size();
+            str << "  " << wData.name.c_str() << " Cmdr: " << pChar->itemName().c_str(); //10
+            length += wData.name.size();
             length += pChar->itemName().size();
             str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
             str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//15
             length += 30;
         } else {
-            str << "  <color=red>" << wdata.name.c_str() << " No Cmdr</color><br>";//33
-            length += wdata.name.size();
+            str << "  <color=red>" << wData.name.c_str() << " No Cmdr</color><br>";//33
+            length += wData.name.size();
             length += 35;
         }
-        if ((wdata.booster != nullptr) and (wdata.booster->IsInSpace()) and (pChar = wdata.booster->GetChar().get()) != nullptr) {
-            if (wdata.leader->GetSystemID() == wdata.booster->GetSystemID()) {
+        if ((wData.booster != nullptr) and (wData.booster->IsInSpace()) and (pChar = wData.booster->GetChar().get()) != nullptr) {
+            if (wData.leader->GetSystemID() == wData.booster->GetSystemID()) {
                 if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
                     or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
                     or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
@@ -1830,8 +1830,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//32
             length += 38;
         } else {
-            str << "  <color=red>" << wdata.name.c_str() << " No Booster</color><br>";//43
-            length += wdata.name.size();
+            str << "  <color=red>" << wData.name.c_str() << " No Booster</color><br>";//43
+            length += wData.name.size();
             length += 45;
             wboost = false;
         }
@@ -1842,10 +1842,10 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
             if (!IsSquad(squadID))
                 continue;
             bool sboost = false;
-            SquadData sdata;
-            GetSquadData(squadID, sdata);
-            if ((sdata.leader != nullptr) and (sdata.leader->IsInSpace()) and (pChar = sdata.leader->GetChar().get()) != nullptr) {
-                if (sdata.members.size() > (pChar->GetSkillLevel(skillLeadership) * 2)) {
+            SquadData sData = SquadData();
+            GetSquadData(squadID, sData);
+            if ((sData.leader != nullptr) and (sData.leader->IsInSpace()) and (pChar = sData.leader->GetChar().get()) != nullptr) {
+                if (sData.members.size() > (pChar->GetSkillLevel(skillLeadership) * 2)) {
                     str << "<color=red>";
                 } else {
                     if (wboost) {
@@ -1856,19 +1856,19 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                     sboost = true;
                 }
                 length += 13;
-                str << "    " << sdata.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
-                length += sdata.name.size();
+                str << "    " << sData.name.c_str() <<  " Cmdr: " << pChar->itemName().c_str(); //11
+                length += sData.name.size();
                 length += pChar->itemName().size();
                 str << "    " << itoa(pChar->GetSkillLevel(skillFleetCommand)) << "/" << itoa(pChar->GetSkillLevel(skillWingCommand)) << "/";
                 str << itoa(pChar->GetSkillLevel(skillLeadership)) << "</color><br>";//21
                 length += 22;
             } else {
-                str << "    <color=red>" << sdata.name.c_str() << " No Cmdr</color><br>";
-                length += sdata.name.size();
+                str << "    <color=red>" << sData.name.c_str() << " No Cmdr</color><br>";
+                length += sData.name.size();
                 length += 37;
             }
-            if ((sdata.booster != nullptr) and (sdata.booster->IsInSpace()) and (pChar = sdata.booster->GetChar().get()) != nullptr) {
-                if (sdata.leader->GetSystemID() == sdata.booster->GetSystemID()) {
+            if ((sData.booster != nullptr) and (sData.booster->IsInSpace()) and (pChar = sData.booster->GetChar().get()) != nullptr) {
+                if (sData.leader->GetSystemID() == sData.booster->GetSystemID()) {
                     if (pChar->HasSkillTrainedToLevel(skillArmoredWarfare, 1) or pChar->HasSkillTrainedToLevel(skillInformationWarfare, 1)
                         or pChar->HasSkillTrainedToLevel(skillSiegeWarfare, 1) or pChar->HasSkillTrainedToLevel(skillSkirmishWarfare, 1)
                         or pChar->HasSkillTrainedToLevel(skillMiningForeman, 1)) {
@@ -1898,8 +1898,8 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 str << itoa(pChar->GetSkillLevel(skillMiningForeman)) << "</color><br>";//25
                 length += 40;
             } else {
-                str << "    <color=red>" << sdata.name.c_str() << " No Booster</color><br>";//45
-                length += sdata.name.size();
+                str << "    <color=red>" << sData.name.c_str() << " No Booster</color><br>";//45
+                length += sData.name.size();
                 length += 43;
                 sboost = false;
             }
@@ -1907,35 +1907,35 @@ std::string FleetService::GetBoosterData(uint32 fleetID, uint16& length)
                 str << "    <color=green>";
             else
                 str << "    <color=red>";
-            str << "Members: " << itoa(sdata.members.size()) << "  Effective: ";
+            str << "Members: " << itoa(sData.members.size()) << "  Effective: ";
             length += 40;
             std::string bdata;
             if (sboost) {   // this is the only way i could get these working right...dunno why
-                bdata = itoa(sdata.boost.leader);
+                bdata = itoa(sData.boost.leader);
                 bdata += "/";
-                bdata += itoa(sdata.boost.armored);
+                bdata += itoa(sData.boost.armored);
                 bdata += "/";
-                bdata += itoa(sdata.boost.info);
+                bdata += itoa(sData.boost.info);
                 bdata += "/";
-                bdata += itoa(sdata.boost.siege);
+                bdata += itoa(sData.boost.siege);
                 bdata += "/";
-                bdata += itoa(sdata.boost.skirmish);
+                bdata += itoa(sData.boost.skirmish);
                 bdata += "/";
-                bdata += itoa(sdata.boost.mining);
+                bdata += itoa(sData.boost.mining);
                 length += 11;
             } else {
                 bdata = "0/0/0/0/0/0  (";
-                bdata += itoa(sdata.boost.leader);
+                bdata += itoa(sData.boost.leader);
                 bdata += "/";
-                bdata += itoa(sdata.boost.armored);
+                bdata += itoa(sData.boost.armored);
                 bdata += "/";
-                bdata += itoa(sdata.boost.info);
+                bdata += itoa(sData.boost.info);
                 bdata += "/";
-                bdata += itoa(sdata.boost.siege);
+                bdata += itoa(sData.boost.siege);
                 bdata += "/";
-                bdata += itoa(sdata.boost.skirmish);
+                bdata += itoa(sData.boost.skirmish);
                 bdata += "/";
-                bdata += itoa(sdata.boost.mining);
+                bdata += itoa(sData.boost.mining);
                 bdata += ")";
                 length += 26;
             }
