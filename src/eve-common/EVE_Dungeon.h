@@ -178,3 +178,11 @@ DUNGEON_ORIGIN_TUTORIAL = 7
 */
 
 #endif  // EVE_DUNGEON_H
+
+
+/*{'FullPath': u'UI/Agents/Dialogue', 'messageID': 233757, 'label': u'DungeonShipRestrictionsListShipIsRestricted'}(u'This site is restricted to certain ship types; <font color=red>your {[item]shipTypeID.name} will not be able to access it.</font> You must use one of the following types of ship:<br><br>{shipList}', None, {u'{[item]shipTypeID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'shipTypeID'}, u'{shipList}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'shipList'}})
+ * {'FullPath': u'UI/Agents/Dialogue', 'messageID': 233758, 'label': u'DungeonShipRestrictionsListShipIsNotRestricted'}(u'This site is restricted to certain ship types; you may use your {[item]shipTypeID.name} to access it, or one of the following types of ship:<br><br>{shipList}', None, {u'{[item]shipTypeID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'shipTypeID'}, u'{shipList}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'shipList'}})
+ * {'FullPath': u'UI/Agents/Dialogue', 'messageID': 233759, 'label': u'DungeonShipRestrictionShipIsNotRestricted'}(u'This site is restricted to the following ship type: {groupName}<br/><br />You may use your {[item]typeID.name} to access it.', None, {u'{[item]typeID.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}, u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
+ * {'FullPath': u'UI/Agents/Dialogue', 'messageID': 233760, 'label': u'DungeonShipRestrictionsShowList'}(u'This site is restricted to certain ship types. It can only be accessed by flying one of the following:<br/><br/>{shipList}', None, {u'{shipList}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'shipList'}})
+ * {'FullPath': u'UI/Agents/Dialogue', 'messageID': 233761, 'label': u'DungeonShipRestrictionsHeader'}(u'Ships permitted', None, None)
+ */

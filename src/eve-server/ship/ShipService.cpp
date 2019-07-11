@@ -155,6 +155,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
         throw PyException(MakeCustomError("You already have a pod.  These cannot be boarded manally."));
     }
 
+    //CantBoardTargeted
+
     /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
     if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
         /* find proper error msg for this...im sure there is one  */
@@ -278,6 +280,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
         sLog.Error("ShipBound::Handle_ActivateShip()", "%s: Failed to get new ship %u.", pClient->GetName(), args.newShipID);
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173+1"));
     }
+    //ShipMustBeInPersonalHangar
 
     pClient->BoardShip(newShipRef);
 
