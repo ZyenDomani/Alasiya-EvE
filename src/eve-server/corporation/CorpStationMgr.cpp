@@ -369,7 +369,7 @@ PyResult CorpStationMgrIMBound::Handle_GetPotentialHomeStations(PyCallArgs &call
         dict->SetItemString("stationID", new PyInt(cur));
         dict->SetItemString("typeID", new PyInt(data.typeID));
         dict->SetItemString("serviceMask", new PyLong(data.serviceMask));
-        list->AddItem(dict);
+        list->AddItem(new PyObject("util.KeyVal", dict));
     }
 
     return list;
