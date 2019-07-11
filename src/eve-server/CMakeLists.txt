@@ -85,12 +85,10 @@ SET( admin_INCLUDE
      "${TARGET_INCLUDE_DIR}/admin/CommandDispatcher.h"
      "${TARGET_INCLUDE_DIR}/admin/DevToolsProviderService.h"
      "${TARGET_INCLUDE_DIR}/admin/GMCommands.h"
-     #"${TARGET_INCLUDE_DIR}/admin/MiningCommands.h"
      "${TARGET_INCLUDE_DIR}/admin/PetitionerService.h"
      "${TARGET_INCLUDE_DIR}/admin/SlashService.h"
      "${TARGET_INCLUDE_DIR}/admin/SystemCommands.h"
-     "${TARGET_INCLUDE_DIR}/admin/CommandHelper.h"
-     "${TARGET_INCLUDE_DIR}/admin/TranslocateHelper.h" )
+     "${TARGET_INCLUDE_DIR}/admin/CommandHelper.h" )
 SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/AlertService.cpp"
      "${TARGET_SOURCE_DIR}/admin/allans_commands.cpp"
@@ -100,12 +98,10 @@ SET( admin_SOURCE
      "${TARGET_SOURCE_DIR}/admin/CommandDispatcher.cpp"
      "${TARGET_SOURCE_DIR}/admin/DevToolsProviderService.cpp"
      "${TARGET_SOURCE_DIR}/admin/GMCommands.cpp"
-     #"${TARGET_SOURCE_DIR}/admin/MiningCommands.cpp"
      "${TARGET_SOURCE_DIR}/admin/PetitionerService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SlashService.cpp"
      "${TARGET_SOURCE_DIR}/admin/SystemCommands.cpp"
-     "${TARGET_INCLUDE_DIR}/admin/CommandHelper.cpp"
-     "${TARGET_SOURCE_DIR}/admin/TranslocateHelper.cpp" )
+     "${TARGET_SOURCE_DIR}/admin/CommandHelper.cpp" )
 
 SET( agent_INCLUDE
      "${TARGET_INCLUDE_DIR}/agents/Agent.h"
@@ -477,6 +473,7 @@ SET( ship_modules_INCLUDE
      "${TARGET_INCLUDE_DIR}/ship/modules/GenericModule.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/MiningLaser.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleContainer.h"
+     "${TARGET_INCLUDE_DIR}/ship/modules/ModuleItem.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleDefs.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleFactory.h"
      "${TARGET_INCLUDE_DIR}/ship/modules/ModuleManager.h"
@@ -491,6 +488,7 @@ SET( ship_modules_SOURCE
      "${TARGET_SOURCE_DIR}/ship/modules/GenericModule.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/MiningLaser.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleContainer.cpp"
+     "${TARGET_SOURCE_DIR}/ship/modules/ModuleItem.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/ModuleManager.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/Prospector.cpp"
      "${TARGET_SOURCE_DIR}/ship/modules/PassiveModule.cpp"
@@ -550,6 +548,7 @@ SET( system_INCLUDE
      "${TARGET_INCLUDE_DIR}/system/Container.h"
      "${TARGET_INCLUDE_DIR}/system/Damage.h"
      "${TARGET_INCLUDE_DIR}/system/DestinyManager.h"
+     "${TARGET_INCLUDE_DIR}/system/DestinyOrbit.h"
      "${TARGET_INCLUDE_DIR}/system/IndexManager.h"
      "${TARGET_INCLUDE_DIR}/system/KeeperService.h"
      "${TARGET_INCLUDE_DIR}/system/ScenarioService.h"
@@ -576,6 +575,7 @@ SET( system_SOURCE
      "${TARGET_SOURCE_DIR}/system/Container.cpp"
      "${TARGET_SOURCE_DIR}/system/Damage.cpp"
      "${TARGET_SOURCE_DIR}/system/DestinyManager.cpp"
+     "${TARGET_SOURCE_DIR}/system/DestinyOrbit.cpp"
      "${TARGET_SOURCE_DIR}/system/IndexManager.cpp"
      "${TARGET_SOURCE_DIR}/system/KeeperService.cpp"
      "${TARGET_SOURCE_DIR}/system/ScenarioService.cpp"
