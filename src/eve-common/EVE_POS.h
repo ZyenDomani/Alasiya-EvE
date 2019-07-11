@@ -153,3 +153,9 @@ namespace EVEPOS {
 }
 
 #endif  //EVE_POS_ENUMS_H
+
+
+/*{'FullPath': u'UI/Inflight/MoonMining', 'messageID': 238189, 'label': u'TowerLocated'}(u'Location: <b>{moonLocation}</b>', None, {u'{moonLocation}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'moonLocation'}})
+ * {'FullPath': u'UI/Inflight/MoonMining', 'messageID': 238190, 'label': u'TowerPowerUsage'}(u'{[numeric]currentValue}/{[numeric]totalPower} MW', None, {u'{[numeric]currentValue}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'currentValue'}, u'{[numeric]totalPower}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'totalPower'}})
+ * {'FullPath': u'UI/Inflight/MoonMining', 'messageID': 238191, 'label': u'TowerCPUUsage'}(u'{[numeric]currentValue}/{[numeric]totalCPU} tf', None, {u'{[numeric]currentValue}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'currentValue'}, u'{[numeric]totalCPU}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'totalCPU'}})
+ */

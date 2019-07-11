@@ -310,7 +310,8 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         }
         // make message with "owner" tag to enable msgs to drone owner
 
-        if (d.srcSE->HasPilot())   //update this to use targetmanager's queue tb destiny event method.
+        /** @todo update this to use targetmanager's queue tb destiny event method. */
+        if (d.srcSE->HasPilot())
             SendDamageStateChanged(d.srcSE);
     }
 

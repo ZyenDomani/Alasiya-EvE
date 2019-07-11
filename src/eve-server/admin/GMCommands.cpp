@@ -536,7 +536,7 @@ PyResult Command_fit(Client* who, CommandDB* db, PyServiceMgr* services, const S
         //return new PyBool(true);
     }
     //return new PyBool(false);
-    return new PyInt(1);
+    return PyStatic.NewOne();
 }
 PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     uint8 level = 5;            // Ensure that ALL skills are trained to level 5
@@ -594,7 +594,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {
                     skill->SetFlag(flagSkill, false);
-                    skill->SetAttribute(AttrExpiryTime, 0, false);
+                    skill->SetAttribute(AttrExpiryTime, EvilZero, false);
                 }
             } else {    // Character DOES NOT have this skill
                 ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
@@ -684,7 +684,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill, true);
-                skill->SetAttribute(AttrExpiryTime, 0);
+                skill->SetAttribute(AttrExpiryTime, EvilZero);
             }
         } else {    // Character DOES NOT have this skill
             ItemData idata(skillID, ownerID, ownerID, flagSkill, 1);
