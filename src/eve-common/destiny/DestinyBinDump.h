@@ -26,12 +26,14 @@
 #ifndef __DESTINYBINDUMP_H_INCL__
 #define __DESTINYBINDUMP_H_INCL__
 
+#include "destiny/DestinyStructs.h"
+
 namespace Destiny {
 
     extern void DumpUpdate(LogType into, const uint8 *data, uint32 len);
     extern uint32 DumpBall(LogType into, const uint8 *data, uint32 len);
 
-    extern const char *const DSTBALL_modeNames[];
+    extern const char *const modeNames[];
 
     extern std::string GetFlagNames(uint8 flags);
 }

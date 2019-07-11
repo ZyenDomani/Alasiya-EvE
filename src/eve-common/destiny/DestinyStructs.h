@@ -29,32 +29,52 @@
 
 namespace Destiny {
 
-enum BallMode {
-    DSTBALL_GOTO        = 0,    // Also used for AlignTo
-    DSTBALL_FOLLOW      = 1,
-    DSTBALL_STOP        = 2,
-    DSTBALL_WARP        = 3,
-    DSTBALL_ORBIT       = 4,
-    DSTBALL_MISSILE     = 5,
-    DSTBALL_MUSHROOM    = 6,    //Expanding gravity wall
-    DSTBALL_BOID        = 7,    //Swarm like behavior
-    DSTBALL_TROLL       = 8,    //used for jetcans and wrecks (only?). Free ball that will become fixed after a while.
-    DSTBALL_MINIBALL    = 9,
-    DSTBALL_FIELD       = 10,    //Force field ball
-    DSTBALL_RIGID       = 11,   //A ball that will never move, stations, etc..
-    DSTBALL_FORMATION   = 12
-};
+    static const uint8 MAX_DSTBALL = 12;
 
-static const uint8 MAX_DSTBALL = DSTBALL_FORMATION;
+    namespace Ball {
+        namespace Mode {
+            enum {
+                GOTO        = 0,    // Also used for AlignTo
+                FOLLOW      = 1,
+                STOP        = 2,
+                WARP        = 3,
+                ORBIT       = 4,
+                MISSILE     = 5,
+                MUSHROOM    = 6,    //Expanding gravity wall
+                BOID        = 7,    //Swarm-like behavior, based on birds (flocks) but could also be herds, and schools
+                TROLL       = 8,    //used for jetcans and wrecks (only?). Free ball that will become fixed after a while.
+                MINIBALL    = 9,
+                FIELD       = 10,   //Force field ball
+                RIGID       = 11,   //A ball that will never move, stations, etc..
+                FORMATION   = 12
+            };
+        }
 
-enum BallFlag {
-    IsFree          = 0x01,   // ball is free to move, has DataSector
-    IsGlobal        = 0x02,   // ball is be visible system-wide (shows in overview like static items)
-    IsMassive       = 0x04,   // ball is solid (collidable)
-    IsInteractive   = 0x08,   // ball is interactive - piloted ships, containers in space
-    IsMoribund      = 0x10,   // ball is dying?  this is a guess.
-    HasMiniBalls    = 0x40,   // if set, the client expects mini balls...not sure *what* miniballs are....collision data maybe?
-};
+        namespace Flag {
+            enum  {
+                IsFree          = 0x01,   // ball is free to move, has DataSector
+                IsGlobal        = 0x02,   // ball is be visible system-wide (shows in overview like static items)
+                IsMassive       = 0x04,   // ball is solid (collidable)
+                IsInteractive   = 0x08,   // ball is interactive - piloted ships, containers in space
+                IsMoribund      = 0x10,   // ball is dying.
+                HasMiniBalls    = 0x40,   // if set, the client expects mini balls...not sure *what* miniballs are....collision data maybe?
+            };
+        }
+        /*
+         * not sure what these are for yet.  calls in destiny.dll ?
+DST_CREATE = 1
+DST_DESTROY = 2
+DST_PROXIMITY = 3
+DST_PRETICK = 4
+DST_POSTTICK = 5
+DST_COLLISION = 6
+DST_RANGE = 7
+DST_MODECHANGE = 8
+DST_PARTITION = 9
+DST_WARPACTIVATION = 10
+DST_WARPEXIT = 11
+*/
+    }
 
 /** @note  this file MUST use packed data.
  * client will not recognize it with byte-ordered padding
@@ -113,24 +133,24 @@ struct MiniBallList {
     MiniBall balls[0];
 };
 
-struct DSTBALL_GOTO_Struct {
+struct GOTO_Struct {
     uint8  formationID;
     double x;        //object+0xD0 (as a set of 3)
     double y;
     double z;
 };
 
-struct DSTBALL_FOLLOW_Struct {
+struct FOLLOW_Struct {
     uint8  formationID;
     int64 followID;
     float followRange;
 };
 
-struct DSTBALL_STOP_Struct {
+struct STOP_Struct {
     uint8  formationID;
 };
 
-struct DSTBALL_WARP_Struct {
+struct WARP_Struct {
     uint8  formationID;
     double x;             //object+0xD0 (as a set of 3)
     double y;
@@ -141,13 +161,13 @@ struct DSTBALL_WARP_Struct {
     int64 ownerID;
 };
 
-struct DSTBALL_ORBIT_Struct {
+struct ORBIT_Struct {
     uint8  formationID;
     uint32 followID;    //orbitID
     double followRange;
 };
 
-struct DSTBALL_MISSILE_Struct {
+struct MISSILE_Struct {
     uint8  formationID;
     int64 followID;    //targetID
     float followRange;
@@ -158,7 +178,7 @@ struct DSTBALL_MISSILE_Struct {
     double z;
 };
 
-struct DSTBALL_MUSHROOM_Struct {
+struct MUSHROOM_Struct {
     uint8  formationID;
     float followRange;
     double unknown125;
@@ -166,22 +186,22 @@ struct DSTBALL_MUSHROOM_Struct {
     int64 ownerID;
 };
 
-struct DSTBALL_TROLL_Struct {
+struct TROLL_Struct {
     uint8  formationID;
     uint32 effectStamp;   //statestamp of when effect started
 };
 
-struct DSTBALL_FIELD_Struct {
+struct FIELD_Struct {
     uint8  formationID;
 };
 
-struct DSTBALL_RIGID_Struct {
+struct RIGID_Struct {
     uint8  formationID;
 /* there is an optional 2 byte thing here, if it is non-zero. not sure what it
    is yet. */
 };
 
-struct DSTBALL_FORMATION_Struct {
+struct FORMATION_Struct {
     uint8  formationID;
     int64 followID;
     float followRange;
@@ -189,17 +209,17 @@ struct DSTBALL_FORMATION_Struct {
 };
 
 union SpecificSectors {
-    struct DSTBALL_GOTO_Struct GOTO;
-    struct DSTBALL_FOLLOW_Struct FOLLOW;
-    struct DSTBALL_STOP_Struct STOP;
-    struct DSTBALL_WARP_Struct WARP;
-    struct DSTBALL_ORBIT_Struct ORBIT;
-    struct DSTBALL_MISSILE_Struct MISSILE;
-    struct DSTBALL_MUSHROOM_Struct MUSHROOM;
-    struct DSTBALL_TROLL_Struct TROLL;
-    struct DSTBALL_FIELD_Struct FIELD;
-    struct DSTBALL_RIGID_Struct RIGID;
-    struct DSTBALL_FORMATION_Struct FORMATION;
+    struct GOTO_Struct GOTO;
+    struct FOLLOW_Struct FOLLOW;
+    struct STOP_Struct STOP;
+    struct WARP_Struct WARP;
+    struct ORBIT_Struct ORBIT;
+    struct MISSILE_Struct MISSILE;
+    struct MUSHROOM_Struct MUSHROOM;
+    struct TROLL_Struct TROLL;
+    struct FIELD_Struct FIELD;
+    struct RIGID_Struct RIGID;
+    struct FORMATION_Struct FORMATION;
 };
 
 struct TotalStruct {

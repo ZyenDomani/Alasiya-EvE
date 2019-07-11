@@ -87,12 +87,12 @@ void Sentry::EncodeDestiny( Buffer& into )
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
-        head.mode = DSTBALL_STOP;
+        head.mode = Ball::Mode::STOP;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive;
+        head.flags = Ball::Flag::IsMassive;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
@@ -101,7 +101,7 @@ void Sentry::EncodeDestiny( Buffer& into )
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
     into.Append( mass );
-    DSTBALL_STOP_Struct main;
+    STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 

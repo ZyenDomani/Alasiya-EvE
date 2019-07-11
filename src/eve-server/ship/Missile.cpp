@@ -171,12 +171,12 @@ void Missile::EncodeDestiny( Buffer& into )
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = GetID();
-        head.mode = DSTBALL_MISSILE;
+        head.mode = Ball::Mode::MISSILE;
         head.radius = GetRadius();
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsFree;
+        head.flags = Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
@@ -193,7 +193,7 @@ void Missile::EncodeDestiny( Buffer& into )
         data.inertia = m_destiny->GetInertia();
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
-    DSTBALL_MISSILE_Struct miss;
+    MISSILE_Struct miss;
         miss.ownerID = m_ownerID;
         miss.formationID = 0xFF;
         miss.effectStamp = m_destiny->GetStateStamp();
@@ -221,7 +221,7 @@ PyDict* Missile::MakeSlimItem() {
         slim->SetItemString("warFactionID",     new PyInt(m_warID));
         slim->SetItemString("securityStatus",   new PyFloat(0/*pChar->GetSecurityRating()*/)); /** @todo (allan) fix this */
         slim->SetItemString("ownerID",          new PyInt(m_ownerID)); // this is corp ID??
-        slim->SetItemString("numLaunchers",     new PyInt(1));  /** @todo (allan) fix this */
+        slim->SetItemString("numLaunchers",     PyStatic.NewOne());  /** @todo (allan) fix this */
         slim->SetItemString("nameID",           new PyInt(0));  /** @todo (allan) fix this */
     return(slim);
 }

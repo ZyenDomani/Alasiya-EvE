@@ -121,15 +121,15 @@ void Concord::EncodeDestiny( Buffer& into ) const
 {
     using namespace Destiny;
 
-    uint8 mode = DSTBALL_STOP;
+    uint8 mode = Ball::Mode::STOP;
     if (m_destiny->IsWarping())
-        mode = DSTBALL_WARP;
+        mode = Ball::Mode::WARP;
     else if (m_destiny->IsFollowing())
-        mode = DSTBALL_FOLLOW;
+        mode = Ball::Mode::FOLLOW;
     else if (m_destiny->IsOrbiting())
-        mode = DSTBALL_ORBIT;
+        mode = Ball::Mode::ORBIT;
     else if (m_destiny->IsMoving())
-        mode = DSTBALL_GOTO;
+        mode = Ball::Mode::GOTO;
 
     BallHeader head = BallHeader();
         head.entityID = GetID();
@@ -138,7 +138,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
         head.x = x();
         head.y = y();
         head.z = z();
-        head.flags = IsMassive | IsFree;
+        head.flags = Ball::Flag::IsMassive | Ball::Flag::IsFree;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
@@ -156,9 +156,9 @@ void Concord::EncodeDestiny( Buffer& into ) const
         data.speedfraction = m_destiny->GetSpeedFraction();
     into.Append( data );
     switch (mode) {
-        case DSTBALL_WARP: {
+        case Ball::Mode::WARP: {
             GPoint target = m_destiny->GetTargetPoint();
-            DSTBALL_WARP_Struct warp;
+            WARP_Struct warp;
                 warp.formationID = 0xFF;
                 warp.x = target.x;
                 warp.y = target.y;
@@ -170,23 +170,23 @@ void Concord::EncodeDestiny( Buffer& into ) const
                 warp.followID = 0;  //this isnt right
             into.Append( warp );
         }  break;
-        case DSTBALL_FOLLOW: {
-            DSTBALL_FOLLOW_Struct follow;
+        case Ball::Mode::FOLLOW: {
+            FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
                 follow.formationID = 0xFF;
             into.Append( follow );
         }  break;
-        case DSTBALL_ORBIT: {
-            DSTBALL_ORBIT_Struct orbit;
+        case Ball::Mode::ORBIT: {
+            ORBIT_Struct orbit;
                 orbit.followID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
                 orbit.formationID = 0xFF;
             into.Append( orbit );
         }  break;
-        case DSTBALL_GOTO: {
+        case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
-            DSTBALL_GOTO_Struct go;
+            GOTO_Struct go;
                 go.formationID = 0xFF;
                 go.x = target.x;
                 go.y = target.y;
@@ -194,7 +194,7 @@ void Concord::EncodeDestiny( Buffer& into ) const
             into.Append( go );
         }  break;
         default: {
-            DSTBALL_STOP_Struct main;
+            STOP_Struct main;
                 main.formationID = 0xFF;
             into.Append( main );
         } break;

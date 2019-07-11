@@ -718,18 +718,18 @@ void StructureSE::EncodeDestiny( Buffer& into )
         head.y = y();
         head.z = z();
     if (m_tcu) {
-        head.mode = DSTBALL_STOP;
-        head.flags = IsGlobal;
+        head.mode = Ball::Mode::STOP;
+        head.flags = Ball::Flag::IsGlobal;
     } else if (m_co) {
-        head.mode = DSTBALL_RIGID;
-        head.flags = IsGlobal /*| HasMiniBalls*/;
+        head.mode = Ball::Mode::RIGID;
+        head.flags = Ball::Flag::IsGlobal /*| HasMiniBalls*/;
     } else if (m_tower) {
-        head.mode = DSTBALL_STOP;
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0)/*HasMiniBalls*/;
+        head.mode = Ball::Mode::STOP;
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0)/*Ball::Flag::HasMiniBalls*/;
     } else {
-        head.mode = DSTBALL_RIGID;
+        head.mode = Ball::Mode::RIGID;
         //TODO check for miniballs and add here if found.
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? IsFree : 0/*IsMassive*/) /*HasMiniBalls*/;
+        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0/*Ball::Flag::IsMassive*/) /*Ball::Flag::HasMiniBalls*/;
     }
     into.Append( head );
 
@@ -780,12 +780,12 @@ void StructureSE::EncodeDestiny( Buffer& into )
         [Radius: 796.5781]
         [Offset: (0, 2598, 1)]
     */
-    if (head.mode == DSTBALL_RIGID) {
-        DSTBALL_RIGID_Struct main;
+    if (head.mode == Ball::Mode::RIGID) {
+        RIGID_Struct main;
             main.formationID = 0xFF;
         into.Append( main );
-    } else if (head.mode == DSTBALL_STOP) {
-        DSTBALL_STOP_Struct main;
+    } else if (head.mode == Ball::Mode::STOP) {
+        STOP_Struct main;
             main.formationID = 0xFF;
         into.Append( main );
     }
@@ -818,7 +818,7 @@ PyDict *StructureSE::MakeSlimItem() {
             slim->SetItemString("structureState",       new PyInt(m_data.state));
             slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         } else if (m_co) {
-            slim->SetItemString("level",                new PyInt(1)); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
+            slim->SetItemString("level",                PyStatic.NewOne()); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
             slim->SetItemString("orbitalTimestamp",     new PyLong(m_data.timestamp));
             slim->SetItemString("planetID",             new PyInt(m_planetID));  // planetID for this orbital
             slim->SetItemString("orbitalState",         new PyInt(m_data.state));   // this needs to be ORBITAL state...not structure state

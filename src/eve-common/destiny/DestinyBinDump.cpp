@@ -26,11 +26,10 @@
 #include "eve-common.h"
 
 #include "destiny/DestinyBinDump.h"
-#include "destiny/DestinyStructs.h"
 
 namespace Destiny {
 
-    const char *const DSTBALL_modeNames[] = {
+    const char *const modeNames[] = {
         "GOTO",
         "FOLLOW",
         "STOP",
@@ -90,10 +89,10 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
         len  -= name->name_len*sizeof(uint16);
     }
     */
-    _log(into, "entity: %i, mode: %s(%u) flags: %s", ballhead->entityID, DSTBALL_modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
+    _log(into, "entity: %i, mode: %s(%u) flags: %s", ballhead->entityID, modeNames[ballhead->mode], ballhead->mode, Destiny::GetFlagNames(ballhead->flags).c_str());
     _log(into, "   pos: %.2f, %.2f, %.2f, radius: %.1f", ballhead->x, ballhead->y, ballhead->z, ballhead->radius);
 
-    if (ballhead->mode != DSTBALL_RIGID) {
+    if (ballhead->mode != Ball::Mode::RIGID) {
         const MassSector *masschunk = (const MassSector *) data;
         data += sizeof(MassSector);
         len -= sizeof(MassSector);
@@ -103,7 +102,7 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
     }
 
     //this seems a little strange, but this is how it works...
-    if (ballhead->flags & IsFree) {
+    if (ballhead->flags & Ball::Flag::IsFree) {
         const DataSector *shipchunk = (const DataSector *) data;
         data += sizeof(DataSector);
         len -= sizeof(DataSector);
@@ -115,79 +114,79 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
             shipchunk->speedfraction);
     }
 
-    _log(into, "   %s:", DSTBALL_modeNames[ballhead->mode]);
+    _log(into, "   %s:", modeNames[ballhead->mode]);
     switch(ballhead->mode) {
-        case DSTBALL_BOID:
-        case DSTBALL_MINIBALL: {
+        case Ball::Mode::BOID:
+        case Ball::Mode::MINIBALL: {
             _log(into, "       This is not coded (or correct) yet.");
             return 0;
         } break;
-        case DSTBALL_GOTO: {
-            const DSTBALL_GOTO_Struct *b = (const DSTBALL_GOTO_Struct *) data;
-            data += sizeof(DSTBALL_GOTO_Struct);
-            len -= sizeof(DSTBALL_GOTO_Struct);
+        case Ball::Mode::GOTO: {
+            const GOTO_Struct *b = (const GOTO_Struct *) data;
+            data += sizeof(GOTO_Struct);
+            len -= sizeof(GOTO_Struct);
             _log(into, "       formID: %u, direction: %.2f, %.2f, %.2f", b->formationID, b->x, b->y, b->z);
         } break;
-        case DSTBALL_FOLLOW: {
-            const DSTBALL_FOLLOW_Struct *b = (const DSTBALL_FOLLOW_Struct *) data;
-            data += sizeof(DSTBALL_FOLLOW_Struct);
-            len -= sizeof(DSTBALL_FOLLOW_Struct);
+        case Ball::Mode::FOLLOW: {
+            const FOLLOW_Struct *b = (const FOLLOW_Struct *) data;
+            data += sizeof(FOLLOW_Struct);
+            len -= sizeof(FOLLOW_Struct);
             _log(into, "       formID: %u, followID: %lli, distance: %.1f", b->formationID, b->followID, b->followRange);
         } break;
-        case DSTBALL_STOP: {
-            const DSTBALL_STOP_Struct *b = (const DSTBALL_STOP_Struct *) data;
-            data += sizeof(DSTBALL_STOP_Struct);
-            len -= sizeof(DSTBALL_STOP_Struct);
+        case Ball::Mode::STOP: {
+            const STOP_Struct *b = (const STOP_Struct *) data;
+            data += sizeof(STOP_Struct);
+            len -= sizeof(STOP_Struct);
             _log(into, "       formID: %u ", b->formationID);
         } break;
-        case DSTBALL_WARP: {
-            const DSTBALL_WARP_Struct *b = (const DSTBALL_WARP_Struct *) data;
-            data += sizeof(DSTBALL_WARP_Struct);
-            len -= sizeof(DSTBALL_WARP_Struct);
+        case Ball::Mode::WARP: {
+            const WARP_Struct *b = (const WARP_Struct *) data;
+            data += sizeof(WARP_Struct);
+            len -= sizeof(WARP_Struct);
             _log(into, "       formID: %u, TargPt: %.2f, %.2f, %.2f start: %u", b->formationID, b->x, b->y, b->z, b->effectStamp);
             _log(into, "       followRange: %.2f, followID: %lli, ownerID: %lli", b->followRange, b->followID, b->ownerID);
         } break;
-        case DSTBALL_ORBIT: {
-            const DSTBALL_ORBIT_Struct *b = (const DSTBALL_ORBIT_Struct *) data;
-            data += sizeof(DSTBALL_ORBIT_Struct);
-            len -= sizeof(DSTBALL_ORBIT_Struct);
+        case Ball::Mode::ORBIT: {
+            const ORBIT_Struct *b = (const ORBIT_Struct *) data;
+            data += sizeof(ORBIT_Struct);
+            len -= sizeof(ORBIT_Struct);
             _log(into, "       formID: %u, orbitID: %u, distance: %.1f", b->formationID, b->followID, b->followRange);
         } break;
-        case DSTBALL_MISSILE: {
-            const DSTBALL_MISSILE_Struct *b = (const DSTBALL_MISSILE_Struct *) data;
-            data += sizeof(DSTBALL_MISSILE_Struct);
-            len -= sizeof(DSTBALL_MISSILE_Struct);
+        case Ball::Mode::MISSILE: {
+            const MISSILE_Struct *b = (const MISSILE_Struct *) data;
+            data += sizeof(MISSILE_Struct);
+            len -= sizeof(MISSILE_Struct);
             _log(into, "       formID: %u, targetID: %lli, followRange: %.1f, ownerID: %lli, start: %u", b->formationID, b->followID, b->followRange, b->ownerID, b->effectStamp);
             _log(into, "       pos: %.2f, %.2f, %.2f", b->x, b->y, b->z);
         } break;
-        case DSTBALL_MUSHROOM: {
-            const DSTBALL_MUSHROOM_Struct *b = (const DSTBALL_MUSHROOM_Struct *) data;
-            data += sizeof(DSTBALL_MUSHROOM_Struct);
-            len -= sizeof(DSTBALL_MUSHROOM_Struct);
+        case Ball::Mode::MUSHROOM: {
+            const MUSHROOM_Struct *b = (const MUSHROOM_Struct *) data;
+            data += sizeof(MUSHROOM_Struct);
+            len -= sizeof(MUSHROOM_Struct);
             _log(into, "       formID: %u, distance: %.2f, u125: %.3f, start: %u, ownerID: %lli", b->formationID, b->followRange, b->unknown125, b->effectStamp, b->ownerID);
         } break;
-        case DSTBALL_TROLL: {
-            const DSTBALL_TROLL_Struct *b = (const DSTBALL_TROLL_Struct *) data;
-            data += sizeof(DSTBALL_TROLL_Struct);
-            len -= sizeof(DSTBALL_TROLL_Struct);
+        case Ball::Mode::TROLL: {
+            const TROLL_Struct *b = (const TROLL_Struct *) data;
+            data += sizeof(TROLL_Struct);
+            len -= sizeof(TROLL_Struct);
             _log(into, "       formID: %u, start: %u", b->formationID, b->effectStamp);
         } break;
-        case DSTBALL_FIELD: {
-            const DSTBALL_FIELD_Struct *b = (const DSTBALL_FIELD_Struct *) data;
-            data += sizeof(DSTBALL_FIELD_Struct);
-            len -= sizeof(DSTBALL_FIELD_Struct);
+        case Ball::Mode::FIELD: {
+            const FIELD_Struct *b = (const FIELD_Struct *) data;
+            data += sizeof(FIELD_Struct);
+            len -= sizeof(FIELD_Struct);
             _log(into, "       formID: %u ", b->formationID);
         } break;
-        case DSTBALL_RIGID: {
-            const DSTBALL_RIGID_Struct *b = (const DSTBALL_RIGID_Struct *) data;
-            data += sizeof(DSTBALL_RIGID_Struct);
-            len -= sizeof(DSTBALL_RIGID_Struct);
+        case Ball::Mode::RIGID: {
+            const RIGID_Struct *b = (const RIGID_Struct *) data;
+            data += sizeof(RIGID_Struct);
+            len -= sizeof(RIGID_Struct);
             _log(into, "       formID: %u ", b->formationID);
         } break;
-        case DSTBALL_FORMATION: {   // not used
-            const DSTBALL_FORMATION_Struct *b = (const DSTBALL_FORMATION_Struct *) data;
-            data += sizeof(DSTBALL_FORMATION_Struct);
-            len -= sizeof(DSTBALL_FORMATION_Struct);
+        case Ball::Mode::FORMATION: {   // not used
+            const FORMATION_Struct *b = (const FORMATION_Struct *) data;
+            data += sizeof(FORMATION_Struct);
+            len -= sizeof(FORMATION_Struct);
             _log(into, "       formID: %u, followID: %lli, followRange: %.2f, start: %u", b->formationID, b->followID, b->followRange, b->effectStamp);
         } break;
         default:
@@ -223,32 +222,32 @@ uint32 DumpBall(LogType into, const uint8 *data, uint32 len) {
 std::string GetFlagNames(uint8 flags)
 {
     std::string res = "";
-    if (flags & IsFree) {
+    if (flags & Ball::Flag::IsFree) {
         res += "IsFree";
-        if (flags > IsFree)
+        if (flags > Ball::Flag::IsFree)
             res += ", ";
     }
-    if (flags & IsGlobal) {
+    if (flags & Ball::Flag::IsGlobal) {
         res += "IsGlobal";
-        if (flags > IsGlobal)
+        if (flags > Ball::Flag::IsGlobal)
             res += ", ";
     }
-    if (flags & IsMassive) {
+    if (flags & Ball::Flag::IsMassive) {
         res += "IsMassive";
-        if (flags > IsMassive)
+        if (flags > Ball::Flag::IsMassive)
             res += ", ";
     }
-    if (flags & IsInteractive) {
+    if (flags & Ball::Flag::IsInteractive) {
         res += "IsInteractive";
-        if (flags > IsInteractive)
+        if (flags > Ball::Flag::IsInteractive)
             res += ", ";
     }
-    if (flags & IsMoribund) {
+    if (flags & Ball::Flag::IsMoribund) {
         res += "IsMoribund";
-        if (flags > IsMoribund)
+        if (flags > Ball::Flag::IsMoribund)
             res += ", ";
     }
-    if (flags & HasMiniBalls)
+    if (flags & Ball::Flag::HasMiniBalls)
         res += "HasMiniBalls";
 
     res += "(";
