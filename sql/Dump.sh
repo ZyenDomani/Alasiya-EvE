@@ -35,11 +35,11 @@ TABLES=$(echo $SQL_STRING | mysql -u$MYSQL_USER -p$MYSQL_PASS $DB_NAME -Bs)
 #echo $TABLES
 
 for i in ${TABLES} ; do
-		if [[ ${blacklist} == *${i}* ]]; then
-			echo "Dumping $i without data"
-			mysqldump --add-drop-table -d -u $MYSQL_USER -p$MYSQL_PASS $DB_NAME $i > "tables/${i}.sql"
-		else
-			echo "Dumping $i"
-			mysqldump --add-drop-table -u $MYSQL_USER -p$MYSQL_PASS $DB_NAME $i > "tables/${i}.sql"
+	if [[ ${blacklist} == *${i}* ]]; then
+		echo "Dumping $i without data"
+		mysqldump --add-drop-table -d -u $MYSQL_USER -p$MYSQL_PASS $DB_NAME $i > "tables/${i}.sql"
+	else
+		echo "Dumping $i"
+		mysqldump --add-drop-table -u $MYSQL_USER -p$MYSQL_PASS $DB_NAME $i > "tables/${i}.sql"
 	fi
 done
