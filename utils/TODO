@@ -9,6 +9,7 @@
 station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
     - buy, assemble, trash, create all with problems
 
+check roaming spawns.  bs rats in 0.9??
 
 ********  improvements
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
@@ -244,8 +245,7 @@ destiny shit - misc things found in destiny.dll text
 
 update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
 
-finish InsideForceField()  - dont remember where i needed this.  ship.eject?
-    - either way, this is needed in targetMgr.  finish and implement.
+need timer/var for after cloak for targeting (cannot target x sec after uncloak)
 
 move target state enums to seperate data file and fix namespace
 check 'targetModule' data and update as needed.  may have invalid modules after target destroyed or cleared
@@ -256,6 +256,10 @@ jump clones - when i start this, need to check into diff between active clone an
 move *data calls from inventoryDB into static data mgr
 
 GetChar()->HasShares())  // not written, no underlying code yet
+
+roids not inserted into itemfactory map 
+
+***  began putting specific throw msgs in approprate common/EVE_*.h files, if available, else src/*/*.h files ***
 
 
 *********  shit in original webpage.  click on char for info
