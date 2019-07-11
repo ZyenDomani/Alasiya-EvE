@@ -66,6 +66,11 @@ PyResult AgentBound::Handle_GetInfoServiceDetails( PyCallArgs& call ) {
     return m_agent->GetInfoServiceDetails();
 }
 
+
+/**     ***********************************************************************
+ * @note   these below are partially coded
+ */
+
 PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     // this is first call when initiating agent convo
     _log(AGENT__DUMP,  "AgentBound::Handle_DoAction() - size= %u", call.tuple->size() );
@@ -875,7 +880,10 @@ PyTuple* AgentBound::GetMissionObjectives(Client* pClient, MissionOffer& offer)
 }
 
 
-// new...not handled
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
 PyResult AgentBound::Handle_GetDungeonShipRestrictions(PyCallArgs &call) {
     //restrictions = self.GetAgentMoniker(agentID).GetDungeonShipRestrictions(dungeonID)
     _log(AGENT__DUMP,  "AgentBound::Handle_GetDungeonShipRestrictions() - size= %u", call.tuple->size() );
