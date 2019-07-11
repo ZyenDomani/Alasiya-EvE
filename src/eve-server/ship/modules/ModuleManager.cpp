@@ -347,6 +347,7 @@ void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
         args["item"]  = new PyString(iRef->itemName());
         args["slot"]  = new PyString(sDataMgr.GetFlagName(flag));
         throw PyException( MakeUserError("ModuleFit", args));
+        */
     /*{'messageKey': 'ModuleFit', 'dataID': 17883325, 'suppressable': False, 'bodyID': 259463, 'messageType': 'notify', 'urlAudio': 'wise:/msg_ModuleFit_play', 'urlIcon': '', 'titleID': None, 'messageID': 1227}
      * u'ModuleFitBody'}(u'{item} fitted onto slot {slot}', None, {
      * u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'},
@@ -405,7 +406,7 @@ void ModuleManager::Offline(uint32 itemID)
         pMod->SetModuleState(Module::State::Offline);
         return;
     }
-    
+
     _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
     pMod->Offline();
 }

@@ -640,7 +640,7 @@ void DestinyManager::Bump(SystemEntity* pSE)
     /* bump math, by Scheulagh Santorine, Ph.D.
      *  velocity of bumped object immediately after bump
      * v2(t=0+) = 2v1*m1/m1+m2
-     *
+     */
 
     /*  run-time options for bumping jetcans, biomass, and other space objects
      *   bump drones??  prolly not, for simplicity

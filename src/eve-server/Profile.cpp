@@ -30,29 +30,29 @@ void Profile::AddTime(uint8 key, double value) {
         EvE::traceStack();
     }
     /*
-    _destinyProfile     = 1,    //*
-    _mapProfile         = 2,    //
-    _clientProfile      = 3,    //*
-    _npcProfile         = 4,    //*
-    _bubblesProfile     = 5,    //*
-    _itemsProfile       = 6,    //
-    _modulesProfile     = 7,    //*
-    _functionsProfile   = 8,    //
-    _dbProfile          = 9,    //*
-    _shipProfile        = 10,   //*
-    _targetsProfile     = 11,   //
-    _serverProfile      = 12,   //
-    _missileProfile     = 13,   //
-    _systemProfile      = 14,   //
-    _entitySProfile     = 15,   //*
-    _lootProfile        = 16,   //*
-    _salvageProfile     = 17,   //
-    _spawnProfile       = 18,   //*
-    _collisionProfile   = 19,   //*
-    _droneProfile       = 20,   //*
-    _itemloadProfile    = 21,   //*
-    _concordProfile     = 22,   //*
-    _colonyProfile      = 23    //*
+    _destinyProfile     = 1,    *
+    _mapProfile         = 2,
+    _clientProfile      = 3,    *
+    _npcProfile         = 4,    *
+    _bubblesProfile     = 5,    *
+    _itemsProfile       = 6,
+    _modulesProfile     = 7,    *
+    _functionsProfile   = 8,
+    _dbProfile          = 9,    *
+    _shipProfile        = 10,   *
+    _targetsProfile     = 11,
+    _serverProfile      = 12,
+    _missileProfile     = 13,
+    _systemProfile      = 14,
+    _entitySProfile     = 15,   *
+    _lootProfile        = 16,   *
+    _salvageProfile     = 17,
+    _spawnProfile       = 18,   *
+    _collisionProfile   = 19,   *
+    _droneProfile       = 20,   *
+    _itemloadProfile    = 21,   *
+    _concordProfile     = 22,   *
+    _colonyProfile      = 23    *
     */
     switch(key) {
         case 1:

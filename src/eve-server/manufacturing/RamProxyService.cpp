@@ -605,7 +605,7 @@ PyResult RamProxyService::Handle_CompleteJob(PyCallArgs &call) {
                  * {'FullPath': u'UI/Messages', 'messageID': 256423, 'label': u'ProductionInventionFailureTitle'}(u'Production Job Will Fail', None, None)
                  * {'FullPath': u'UI/Messages', 'messageID': 256424, 'label': u'ProductionInventionFailureBody'}(u'"{[item]type.name}" can not be invented, there is no chance of it succeeding.', None, {u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}})
                  *
-                 * /
+                 */
                 /*
             if hasattr(result, 'message'):
                 eve.Message(result.message.msg, result.message.args)

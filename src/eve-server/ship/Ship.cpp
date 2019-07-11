@@ -761,7 +761,7 @@ void ShipItem::Undock() {
     UpdateModules(); //FailedToOnlineModulesOnUndock
 
     //HorribleFittingProblems
-    
+
     if (sConfig.debug.IsTestServer) {
         // Heal Ship completely on test server
         Heal();
@@ -1102,6 +1102,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         std::map<std::string, PyRep *> args;
         args["charge"] = new PyInt(iRef->itemID());
         throw PyException( MakeUserError("ChargeLoadingFailedWithRefund"));
+        */
         /* ChargeLoadingFailedWithRefundBody'}(u'Your {[item]charge.name} failed to load and was returned to your cargo.',
          * None, {u'{[item]charge.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charge'}})
          */
@@ -2265,7 +2266,7 @@ Ship::Ship(InventoryItemRef self, PyServiceMgr &services, SystemManager* pSystem
 : DynamicSystemEntity(self, services, pSystem),
 m_shipRef(ShipItemRef::StaticCast(self)),
 m_processTimerTick(SHIP_PROCESS_TICK_MS),   //5s
-m_processTimer(m_processTimerTick)
+m_processTimer(SHIP_PROCESS_TICK_MS)
 {
     m_warID = data.factionID;
     m_allyID = data.allianceID;

@@ -264,7 +264,7 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
     //call.Dump(PLANET__DUMP);
     /*
         inRange, sh = planet.GetResourceData(resourceTypeID)        << check packets for this call --- none.  :(
-
+*/
             /*  this is called by planet view page, by "resource filter" for given typeID
              *     this is dump before dict decoding
              * 12:23:45 [PlanetCallDump]    Dictionary: 8 entries
@@ -284,8 +284,8 @@ PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
              * 12:23:45 [PlanetCallDump]      [ 6] Value: Integer field: 0
              * 12:23:45 [PlanetCallDump]      [ 7] Key: String: 'resourceTypeID'
              * 12:23:45 [PlanetCallDump]      [ 7] Value: Integer field: 2268
-             *
-*/
+             */
+
 
     Call_ResourceDataDict dict;
     PyDict* input = call.tuple->AsTuple()->GetItem(0)->AsObject()->arguments()->AsDict();
