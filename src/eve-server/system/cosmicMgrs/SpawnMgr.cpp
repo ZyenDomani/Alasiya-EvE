@@ -517,7 +517,7 @@ bool SpawnMgr::PrepSpawn(SystemBubble* pBubble, uint8 sClass/*Spawn::Class::None
     uint8 shipClass = 0;
     if (sClass > Spawn::Class::BeltSpawn)
         shipClass = 14;
-    SpawnGroup toSpawn;
+    SpawnGroup toSpawn = SpawnGroup();
     // these types are for ALL spawn types.
     if (f > 0) {
         toSpawn.typeID = GetRandTypeID(1 +shipClass);
@@ -647,6 +647,9 @@ struct SpawnEntry {     // notes for me while creating/writing/testing
 */
 void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, uint8 level, bool anomaly/*false*/)
 {
+    _log(SPAWN__MESSAGE, "SpawnMgr::MakeSpawn() - Creating spawn class %s for %s in bubbleID %u (anomaly = %s).", \
+            GetSpawnClassName(sClass).c_str(), sDataMgr.GetFactionName(factionID).c_str(), pBubble->GetID(), anomaly?"true":"false");
+
     /*  the point here is to have all belt rats spawn outside their belt's bubble.
      * to make it 'realistic', they will need the appearance of warping in from some random point,
      *  to somewhere around bubble center.  this will make their origin appear elsewhere,
@@ -658,7 +661,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
     NPC* pNPC(nullptr);
-    SpawnEntry se = SpawnEntry();
     GPoint startPos(pBubble->GetCenter());
     const GPoint warpToPoint(startPos);
     std::string name = "BeltRat";
@@ -713,6 +715,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             if (sClass <= Spawn::Class::Officer)    // ratspawn will warp in, others will not.
                 pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
 
+            SpawnEntry se = SpawnEntry();
             se.enabled = false;
             se.groupID = iRef->type().groupID();
             se.itemID = iRef->itemID();
@@ -796,8 +799,7 @@ void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)
 }
 
 bool SpawnMgr::FindSpawnForBubble(uint16 bubbleID) {
-    SpawnEntryDef::iterator itr = m_spawns.find(bubbleID);
-    if (itr != m_spawns.end())
+    if (m_spawns.find(bubbleID) != m_spawns.end())
         return true;
 
     return false;
