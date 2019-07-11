@@ -153,6 +153,11 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
+    // this is shit....but failsafe for blackscreen bug
+    if (!call.client->IsSetStateSent())
+        if (call.client->IsIdle())
+            call.client->SetBallPark();
+
     //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;
