@@ -287,7 +287,7 @@ bool EvilNumber::isNaN()
     if ( mType == evil_number_int )
         return false;
 
-    return isnan(mValue.fVal);
+    return std::isnan(mValue.fVal);
 }
 
 bool EvilNumber::isInf()
@@ -298,7 +298,7 @@ bool EvilNumber::isInf()
     if ( mType == evil_number_int )
         return false;
 
-    return isinf(mValue.fVal);
+    return std::isinf(mValue.fVal);
 }
 
 bool EvilNumber::isInt()

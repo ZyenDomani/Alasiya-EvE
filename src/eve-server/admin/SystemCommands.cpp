@@ -89,10 +89,10 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             //  {.tr help}  will display the following list of options in notification window
             std::ostringstream str; // for 'help' printing
             str << ".tr [required first arg] [optional second arg] [optional third arg] [optional fourth arg]<br>"; //100
-            str << "1st arg = help|me|fleet|player name|shipID|locationID<br>"; //55
-            str << "2nd arg = help|me|fleet|home|last|locationID|x coord|moon|planet<br>";  //70
-            str << "3ed arg = locationID|y coords|moon|planet <br>"; //50
-            str << "4th arg = z coords|moon|planet <br>"; //50
+            str << "1st arg = help|me|fleet|player name|shipID|itemID|locationID<br>"; //55
+            str << "2nd arg = help|me|fleet|home|last|shipID|itemID|locationID|x coord|moon|planet<br>";  //70
+            str << "3ed arg = me|fleet|home|last|shipID|itemID|locationID|y coords|moon|planet <br>"; //50
+            str << "4th arg = fleet|home|last|shipID|itemID|locationID|z coords|moon|planet <br>"; //50
             str << "typical use is .tr locationID<br>";  //35
             str << "<br>As there are too many options to explain in this msg, a full usage list can be found on our forums.<br>";  //100
             int size = 460;
@@ -102,13 +102,13 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             return nullptr;
         } else
             throw PyException(MakeCustomError("Translocate: Missing Arguments"));
-    } else if (args.argCount() == 3) {  // 2 args - me, player, ship, fleet, {invalid} : help, home, last, location, moon, planet, {invalid}
+    } else if (args.argCount() == 3) {  // 2 args - me, player, ship, item, fleet, {invalid} : help, home, last, location, moon, planet, {invalid}
         // test for 'help' command
         if ((strcmp(args.arg(1).c_str(), Help) == 0)
         or (strcmp(args.arg(2).c_str(), Help) == 0))
             throw PyException(MakeCustomError("Translocate: Invalid Arguments - 'help' not avalible for this command."));
 
-            // decode first arg  -- me, shipID, charID, playerName, {invalid}
+            // decode first arg  -- me, shipID, charID, playerName, itemID {invalid}
         if (args.isNumber(1)) {     // charID, shipID, {invalid}
             int objectID = atoi(args.arg(1).c_str());
             if (IsCharacter(objectID)) {
@@ -119,6 +119,8 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
                 if (iRef.get() == nullptr)
                     throw PyException(MakeCustomError("Translocate: Invalid Arguments - target object was not found."));
                 pOtherClient = sEntityList.FindClientByCharID(iRef->ownerID());
+            } else if (IsNPC(objectID)) {
+                throw PyException(MakeCustomError("Translocate: Invalid Object - You really wanna relocate an NPC?"));
             } else
                 throw PyException(MakeCustomError("Translocate: Invalid Object - %i is neither a character nor a ship", objectID));
         } else if (strcmp(args.arg(1).c_str(), "me") == 0) {
@@ -155,7 +157,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             // last station <me|player> was docked in
             if (fleet)
                 throw PyException(MakeCustomError("Translocate: Fleet Move - You cannot tr a fleet to last docked station...yet."));
-            // if called with <player name> then uses that char's last station
+            // if called with <player name>, <charID>, or <shipID>, then uses that char's (or owner's) last docked station
             if (pOtherClient != nullptr)
                 locationID = pOtherClient->GetDockStationID();
             else
@@ -216,7 +218,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             fleet = true;
         } else {
             // this is either player name or invalid arg
-            throw PyException(MakeCustomError("Translocate: Invalid Arguments"));
+            throw PyException(MakeCustomError("Translocate: Invalid Arguments - searching by player name is incomplete at this time."));
         }
 
         // decode second arg    -- me, fleet, home, last, location, moon, planet, {invalid}

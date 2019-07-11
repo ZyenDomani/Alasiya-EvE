@@ -235,6 +235,9 @@ maxDustCharacter = 2130000000
 #define IsNPCStation(itemID) \
 ((itemID >= minStation) && (itemID < minOutpost))
 
+#define IsNPC(itemID) \
+((itemID >= minNPC) && (itemID < minFleet))
+
 #define IsOutpost(itemID) \
 ((itemID >= minOutpost) && (itemID < minTradeCont))
 

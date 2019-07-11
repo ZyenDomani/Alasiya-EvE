@@ -748,6 +748,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
 
+    /** @todo  verify 'pt' is within system boundries */
     m_ship->SetPosition(pt);
 
     char ci[45];
