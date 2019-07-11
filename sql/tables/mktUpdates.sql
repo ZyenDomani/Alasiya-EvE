@@ -36,9 +36,6 @@ CREATE TABLE `mktUpdates` (
 -- Dumping data for table `mktUpdates`
 --
 
-INSERT INTO `mktUpdates` (`server`, `timeStamp`) VALUES
-(1, 131889844991575488);
-
 --
 -- Indexes for dumped tables
 --
