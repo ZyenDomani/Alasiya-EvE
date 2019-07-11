@@ -15,7 +15,7 @@ class RigModule
 : public PassiveModule
 {
 public:
-    RigModule(InventoryItemRef item, ShipItemRef ship);
+    RigModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~RigModule()                                { /* do nothing here */ }
 
     bool IsRigModule() const                            { return true; }

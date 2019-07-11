@@ -15,8 +15,8 @@ class SubSystemModule
 : public PassiveModule
 {
 public:
-    SubSystemModule(InventoryItemRef item, ShipItemRef ship);
-    virtual ~SubSystemModule() { }
+    SubSystemModule(ModuleItemRef mRef, ShipItemRef sRef);
+    virtual ~SubSystemModule()                          { /* do nothing here */ }
 
     bool IsSubSystemModule() const                      { return true; }
 

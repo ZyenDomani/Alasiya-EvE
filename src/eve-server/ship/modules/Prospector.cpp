@@ -15,8 +15,8 @@
 
 /* this class is for all salvage and data mining types */
 
-Prospector::Prospector( InventoryItemRef item, ShipItemRef ship )
-: ActiveModule(item, ship)
+Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
+: ActiveModule(mRef, sRef)
 {
     m_success = false;
     m_firstRun = true;

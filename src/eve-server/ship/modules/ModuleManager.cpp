@@ -34,6 +34,7 @@
 #include "effects/EffectsDataMgr.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleContainer.h"
+#include "ship/modules/ModuleItem.h"
 #include "ship/modules/ModuleManager.h"
 #include "ship/modules/ModuleFactory.h"
 #include "ship/modules/ActiveModule.h"
@@ -66,19 +67,22 @@ bool ModuleManager::Initialize() {
 
     // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
-    m_Ship->GetMyInventory()->GetInventoryVec(itemVec);   // this method also sorts in order - cargo, modules, charge, subsystems.
+    m_Ship->GetMyInventory()->GetInventoryVec(itemVec);
 
     GenericModule* pMod(nullptr);
-    // first we have to fit modules
     for (auto cur : itemVec) {
         // this is a hack.  dont know why any ship item would have flagAutoFit set, but have seen random errors where charges are set to flagAutoFit
-        if (cur->flag() == flagAutoFit)
+        if (cur->flag() == flagAutoFit) {
+            _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - %s(%u) has flagAutoFit set in ship %s",\
+                    cur->itemName().c_str(), cur->itemID(), m_Ship->itemName().c_str() );
             cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
+        }
         if (IsModuleSlot(cur->flag()))
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    fitModule(cur, cur->flag());
+                    ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
+                    fitModule(mRef, cur->flag());
                 } break;
                 case EVEDB::invCategories::Charge: {
                     pMod = GetModule(cur->flag());
@@ -127,13 +131,13 @@ void ModuleManager::GetModulesInBank(EVEItemFlags flag, std::vector<GenericModul
     pModuleCont->GetModulesInBank(flag, modVec);
 }
 
-bool ModuleManager::InstallRig(InventoryItemRef iRef, EVEItemFlags flag) {
-    if (((iRef->groupID() >= EVEDB::invGroups::Rig_Armor) and (iRef->groupID() <= EVEDB::invGroups::Rig_Astronautic))
-    or (iRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
-        fitModule(iRef,flag);
+bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
+    if (((mRef->groupID() >= EVEDB::invGroups::Rig_Armor) and (mRef->groupID() <= EVEDB::invGroups::Rig_Astronautic))
+    or (mRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
+        fitModule(mRef,flag);
         // hack to get total scan bonus from rigs, if applicable
-        if (iRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
-            switch (iRef->typeID()) {
+        if (mRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
+            switch (mRef->typeID()) {
                 case 25936:   //  Large Gravity Capacitor Upgrade I
                 case 31213:   //  Small Gravity Capacitor Upgrade I
                 case 31215:   //  Medium Gravity Capacitor Upgrade I
@@ -142,13 +146,13 @@ bool ModuleManager::InstallRig(InventoryItemRef iRef, EVEItemFlags flag) {
                 case 31220:   //  Small Gravity Capacitor Upgrade II
                 case 31222:   //  Medium Gravity Capacitor Upgrade II
                 case 31224: { //  Capital Gravity Capacitor Upgrade II
-                    m_rigScanBonus += iRef->GetAttribute(AttrScanStrengthBonus).get_float();
+                    m_rigScanBonus += mRef->GetAttribute(AttrScanStrengthBonus).get_float();
                 } break;
             }
         }
         return true;
     } else
-        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", m_Ship->GetPilot()->GetName(), iRef->itemName().c_str(), iRef->itemID());
+        codelog(SHIP__MODULE_TRACE, "ModuleManager","%s tried to fit item %s(%u), which is not a rig", m_Ship->GetPilot()->GetName(), mRef->itemName().c_str(), mRef->itemID());
 
     return false;
 
@@ -187,14 +191,14 @@ void ModuleManager::UninstallRig(uint32 itemID)
     }
 }
 
-bool ModuleManager::InstallSubSystem(InventoryItemRef item, EVEItemFlags flag)
+bool ModuleManager::InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag)
 {
-    if (item->categoryID() != EVEDB::invCategories::Subsystem) {
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), item->itemID());
+    if (mRef->categoryID() != EVEDB::invCategories::Subsystem) {
+        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), mRef->itemID());
         return false;
     }
 
-    fitModule(item,flag);
+    fitModule(mRef,flag);
 }
 
 void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag)
@@ -281,20 +285,20 @@ void ModuleManager::UnfitModule(uint32 itemID)
     SafeDelete(pMod);
 }
 
-bool ModuleManager::FitModule(InventoryItemRef item, EVEItemFlags flag)
+bool ModuleManager::FitModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
         sLog.Warning("ModuleManager::FitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
         return false;
     }
 
-    fitModule(item, flag);
+    fitModule(mRef, flag);
 
-    //Online(item->itemID());
+    //Online(mRef->itemID());
     return true;
 }
 
-void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
+void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
         sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
@@ -307,22 +311,22 @@ void ModuleManager::fitModule(InventoryItemRef iRef, EVEItemFlags flag)
     }
 
     // create new module object
-    GenericModule* pMod = ModuleFactory(iRef, ShipItemRef(m_Ship));
+    GenericModule* pMod = ModuleFactory(mRef, ShipItemRef(m_Ship));
     if (pMod == nullptr)
-        return;
+        return; // error here?
 
     if (!pModuleCont->AddModule(flag, pMod))
-        return;
+        return; // error here?
 
     // update avalible slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted()) {
             // apply config modifier, if applicable
-            iRef->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
+            mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
         } else if (pMod->isLauncherFitted()) {
             // apply config modifier, if applicable
-            iRef->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
+            mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
             m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
         }
         --m_HighSlots;
@@ -360,6 +364,12 @@ void ModuleManager::Online(uint32 itemID)
     }
     if (pMod->isOnline()) {
         _log(SHIP__MODULE_TRACE, "ModuleManager::Online(itemID) -  %s already Online", pMod->GetSelf()->itemName().c_str());
+        if (m_Ship->HasPilot())
+            if (m_Ship->GetPilot()->CanThrow()) {
+                std::map<std::string, PyRep *> args;
+                args["modulename"] = new PyString(pMod->GetSelf()->itemName());
+                throw PyException( MakeUserError("EffectAlreadyActive2", args));
+            }
         return;
     }
 
@@ -395,6 +405,7 @@ void ModuleManager::Offline(uint32 itemID)
         pMod->SetModuleState(Module::State::Offline);
         return;
     }
+    
     _log(SHIP__MODULE_TRACE, "ModuleManager::Offline(itemID) -  %s going Offline", pMod->GetSelf()->itemName().c_str());
     pMod->Offline();
 }
@@ -781,22 +792,23 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
     GenericModule* pMod(nullptr);
-    m_Ship->SetAttribute(AttrCpuLoad,     0);
-    m_Ship->SetAttribute(AttrPowerLoad,   0);
-    //m_Ship->SetAttribute(AttrUpgradeLoad, 0);  -> rigs do NOT get removed/disabled when changing pilots
-    if (modVec.empty()) {
-        OnlineAll();
-    } else {
+    m_Ship->SetAttribute(AttrCpuLoad,     EvilZero);
+    m_Ship->SetAttribute(AttrPowerLoad,   EvilZero);
+    //m_Ship->SetAttribute(AttrUpgradeLoad, EvilZero);  -> rigs do NOT get removed/disabled when changing locations or pilots
+    OfflineAll();   // set all modules to offline.  this verifies the following Online() call will only online previously-set modules.  (elusive error)
+    if (!modVec.empty()) {
+        //OnlineAll();
+    //} else {
         _log(SHIP__MODULE_TRACE, "ModuleManager::UpdateModules(modVec)");
         // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
         GetShipRigs(modVec);
         GetShipSubSystems(modVec);
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
-        OfflineAll();   // set all modules to offline.  this verifies the following Online() call will only online previously-set modules.  (elusive error)
+        /** @todo check this.  may have to rework */
         for (auto cur : modList) {
             if (m_Ship->IsUndocking())
-                cur->SetAttribute(AttrIsOnline, false, false);
+                cur->SetAttribute(AttrOnline, EvilZero, false);
             cur->Online();
             //if (cur->IsLoaded())
             //    cur->ReprocessCharge();
@@ -812,6 +824,10 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
 
     // reset ship and module effect data, and reapply?
     // call ProcessEffects(false), ApplyEffects(), then UpdateModules() ?
+    std::vector< GenericModule* > modVec;
+    // this returns only populated modules
+    pModuleCont->GetModulesInBank(flag, modVec);
+
 }
 
 void ModuleManager::CharacterBoardingShip()
@@ -820,7 +836,7 @@ void ModuleManager::CharacterBoardingShip()
     if (!m_initalized)
         Initialize();
 
-    OnlineAll();
+    //OnlineAll();
 }
 
 void ModuleManager::CharacterLeavingShip()
@@ -832,11 +848,12 @@ void ModuleManager::CharacterLeavingShip()
     sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //OfflineAll();
 
-    /*  this is complicated and im gonna leave it alone for now until
-     *  a few things become more clear
+    /*  this is complicated and im gonna leave it alone for now
      * this will include checking ship HP, cargo holds, and possibably other things
      *  that havent been written yet.
      * see if these can throw, else we'll have to do a bool return from calls and go from there.
+     *
+     * will also have to check current levels of hp and cargo AFTER pilot has been removed (lost skills)
      */
     //CheckNewHP();
     //CheckNewCargo();

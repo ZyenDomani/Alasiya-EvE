@@ -17,7 +17,7 @@
 class TurretModule : public ActiveModule
 {
 public:
-    TurretModule(InventoryItemRef item, ShipItemRef shipRef);
+    TurretModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~TurretModule()                            { /* do nothing here */ }
 
     //  class type helpers.  public for anyone to access.

@@ -15,23 +15,24 @@
 #include "inventory/InventoryItem.h"
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
+#include "ship/modules/ModuleItem.h"
 
 
 /* generic module base class */
 class GenericModule
 {
 public:
-    GenericModule( InventoryItemRef item, ShipItemRef ship );
+    GenericModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
     void Online();    // this function must NOT throw
     void Offline();   // this function must NOT throw
 
-    InventoryItemRef GetSelf()                          { return m_modRef; }
+    ModuleItemRef GetSelf()                             { return m_modRef; }
     ShipItemRef GetShipRef()                            { return m_shipRef; }
 
-    void ProcessEffects(Effects::State state, bool active = false);
+    void ProcessEffects(int8 state, bool active = false);
 
     void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }
     void Repair(EvilNumber amount);
@@ -59,7 +60,7 @@ public:
     bool IsLinked()                                     { return m_linked; }
     bool IsMaster()                                     { return m_linkMaster; }
     bool IsDamaged()                                    { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
-    bool IsActive()                                     { return m_ModuleState == Module::State::Activated; }
+    bool IsActive()                                     { return (m_ModuleState == Module::State::Activated ? true : m_ModuleState == Module::State::Deactivating ? true : false); }
     bool IsLoading()                                    { return m_ModuleState == Module::State::Loading; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
@@ -81,9 +82,9 @@ public:
     void SetLinked(bool set=false)                      { m_linked = set; }
     void SetLinkMaster(bool set=false)                  { m_linkMaster = set; }
 
-    InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
     int8 GetModuleState()                               { return m_ModuleState; }
     int8 GetChargeState()                               { return m_ChargeState; }
+    InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
 
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
@@ -118,7 +119,7 @@ public:
     }
 
 protected:
-    InventoryItemRef m_modRef;
+    ModuleItemRef    m_modRef;
     ShipItemRef      m_shipRef;
     InventoryItemRef m_chargeRef;
 

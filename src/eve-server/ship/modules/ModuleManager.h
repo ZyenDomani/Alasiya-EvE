@@ -54,10 +54,10 @@ public:
     // returns vector of fitted GenericModule* in specified flag's bank
     void GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec);
 
-    bool InstallRig(InventoryItemRef item, EVEItemFlags flag);
+    bool InstallRig(ModuleItemRef mRef, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);
-    bool InstallSubSystem(InventoryItemRef item, EVEItemFlags flag);
-    bool FitModule(InventoryItemRef item, EVEItemFlags flag);
+    bool InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag);
+    bool FitModule(ModuleItemRef mRef, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);// this will remove charge items from modules
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
@@ -127,7 +127,7 @@ public:
 
 private:
     bool m_initalized;
-    void fitModule(InventoryItemRef iRef, EVEItemFlags flag);
+    void fitModule(ModuleItemRef mRef, EVEItemFlags flag);
 
     ShipItem* m_Ship;
 

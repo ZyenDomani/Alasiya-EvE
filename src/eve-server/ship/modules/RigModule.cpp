@@ -9,8 +9,8 @@
 #include "ship/modules/RigModule.h"
 
 
-RigModule::RigModule(InventoryItemRef item, ShipItemRef ship)
-: PassiveModule(item, ship)
+RigModule::RigModule(ModuleItemRef mRef, ShipItemRef sRef)
+: PassiveModule(mRef, sRef)
 {
 
 }

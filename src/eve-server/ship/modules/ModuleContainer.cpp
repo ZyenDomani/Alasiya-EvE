@@ -52,9 +52,10 @@ void ModuleContainer::ClearModMap() {
 bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
-    if (itr == m_modules.end())
+    if (itr == m_modules.end()) {
+        // error here for invalid flag or invalid container?
         return false;
-    else
+    } else
         itr->second = pMod;
     _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", pMod->GetSelf()->itemName().c_str());
 
@@ -117,6 +118,13 @@ void ModuleContainer::ShipWarping()
         if (cur.second != nullptr)
             if (!cur.second->isWarpSafe())
                 cur.second->AbortCycle();
+            /*
+             * {'messageKey': 'EffectDeactivationCloaking', 'dataID': 17883455, 'suppressable': False, 'bodyID': 259510, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 849}
+             * {'messageKey': 'EffectDeactivationWarping', 'dataID': 17883458, 'suppressable': False, 'bodyID': 259511, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 850}
+             *
+             * {'FullPath': u'UI/Messages', 'messageID': 259510, 'label': u'EffectDeactivationCloakingBody'}(u'As certain activated effects interfere with the warping process, these are automatically being deactivated before the warp proceeds.', None, None)
+             * {'FullPath': u'UI/Messages', 'messageID': 259511, 'label': u'EffectDeactivationWarpingBody'}(u'As certain activated effects interfere with the warping process, these are automatically being deactivated before the warp proceeds.', None, None)
+             */
 }
 
 void ModuleContainer::OfflineAll() {

@@ -9,14 +9,16 @@
 #include "ship/modules/SubSystemModule.h"
 
 
-SubSystemModule::SubSystemModule(InventoryItemRef item, ShipItemRef ship)
-: PassiveModule(item, ship)
+SubSystemModule::SubSystemModule(ModuleItemRef mRef, ShipItemRef sRef)
+: PassiveModule(mRef, sRef)
 {
 
 }
 
-//not much to do here... hopefully there won't be
 int8 SubSystemModule::GetModulePowerLevel()
 {
     return Module::Bank::Subsystem;
 }
+
+//not much to do here... this will be for t3 ships, which arent implented yet
+

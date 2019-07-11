@@ -20,8 +20,8 @@
 #include "system/cosmicMgrs/BeltMgr.h"
 
 
-MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
-: ActiveModule(item, ship)
+MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
+: ActiveModule(mRef, sRef)
 {
     m_IsInitialCycle = true;
     m_rMiner = m_dcMiner = m_iMiner = m_gMiner = false;
@@ -50,7 +50,7 @@ MiningLaser::MiningLaser( InventoryItemRef item, ShipItemRef ship )
     else if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
         m_holdFlag = flagSpecializedGasHold;
 
-    _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", item->itemName().c_str(), GetAttribute(AttrDuration).get_int());
+    _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", mRef->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
 
 void MiningLaser::LoadCharge(InventoryItemRef charge)
@@ -92,12 +92,10 @@ bool MiningLaser::CanActivate()
     }
     // verify module vs target for activation.  disallow if not compatible.
     if ((m_rMiner and (m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
-        or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
-        or (m_iMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice))
-        or (m_gMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud)))
-    {
+    or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
+    or (m_iMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice))
+    or (m_gMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))) {
         m_IsInitialCycle = true;
-
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
         return ActiveModule::CanActivate();
     } else {
@@ -127,7 +125,7 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
     if (m_ModuleState != Module::State::Deactivating)
         return;
 
-    ApplyEffect(Effects::dgmStateActive, false);
+    ApplyEffect(FX::State::Active, false);
     ShowEffect(false, abort);
 
     ProcessCycle(abort);

@@ -12,13 +12,14 @@
 #include "StatisticMgr.h"
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
+#include "ship/modules/ModuleItem.h"
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include <exploration/Probes.h>
 #include <exploration/Scan.h>
 
-ActiveModule::ActiveModule(InventoryItemRef iRef, ShipItemRef sRef)
-: GenericModule(iRef, sRef),
+ActiveModule::ActiveModule(ModuleItemRef mRef, ShipItemRef sRef)
+: GenericModule(mRef, sRef),
 m_timer(0, true),
 m_reloadTimer(0),
 m_Stop(true),
@@ -35,9 +36,9 @@ m_needsTarget(false)
     m_repeat = 1000;    //arbitrary.
 
     // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
-    m_needsCharge = iRef->HasAttribute(AttrChargeGroup1);
+    m_needsCharge = mRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
-        switch (iRef->groupID()) {
+        switch (mRef->groupID()) {
             // these neither require nor consume charges
             case EVEDB::invGroups::Remote_Sensor_Damper:
             case EVEDB::invGroups::Tracking_Link:
@@ -54,7 +55,7 @@ m_needsTarget(false)
             } break;
         }
     } else {
-        switch (iRef->groupID()) {
+        switch (mRef->groupID()) {
             case EVEDB::invGroups::Survey_Scanner:
             case EVEDB::invGroups::Ship_Scanner:
             case EVEDB::invGroups::Cargo_Scanner:
@@ -71,7 +72,7 @@ m_needsTarget(false)
     // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
     if (m_needsCharge)  {
         if (m_reloadTime < 1) {
-            switch (iRef->groupID()) {
+            switch (mRef->groupID()) {
                 case EVEDB::invGroups::Projectile_Weapon: {
                     m_reloadTime = 4000;
                 } break;
@@ -98,14 +99,18 @@ m_needsTarget(false)
         }
     }
 
-    Clear();
+    //Clear();
 
     if (m_reloadTime > 0)
-        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", iRef->itemName().c_str(), iRef->itemID(), m_reloadTime);
+        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", mRef->itemName().c_str(), mRef->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Clear()
 {
+    if (m_targetSE != nullptr)
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->RemoveTargetModule(this);
+
     m_Stop = true;
     m_repeat = 1000;
     m_targetID = 0;
@@ -136,7 +141,7 @@ void ActiveModule::Process()
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
         }
     }
-    if (m_ModuleState == Module::State::Online)
+    if (m_ModuleState < Module::State::Activated)
         return;
 
     if (m_timer.Check())
@@ -147,7 +152,7 @@ void ActiveModule::Process()
         if ((m_chargeRef.get() == nullptr) or (m_ChargeState == Module::State::Unloaded)
         or (m_chargeRef->quantity() < 1) or (!m_chargeLoaded)) {
             UnloadCharge();
-            SetModuleState(Module::State::Deactivating);
+            m_ModuleState = Module::State::Deactivating;
             DeactivateCycle(true);
         }
     }
@@ -159,7 +164,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         Online();
         return;
     }
-    if ((m_needsCharge) and ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr))) {
+    if (m_needsCharge and (!m_chargeLoaded or (m_chargeRef.get() == nullptr))) {
         Clear();
         throw PyException( MakeUserError( "CantFindChargeToAdd"));
     }
@@ -171,6 +176,14 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             Clear();
             throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
         }
+
+        /** @todo criminal shit isnt written yet....fix this once it is.
+        if (sFxDataMgr.isAssistance(effectID))
+            if (m_targetSE->IsShipSE())
+                if (m_targetSE->GetShipSE()->HasPilot())
+                    if (m_targetSE->GetShipSE()->GetPilot()->IsCriminal())
+                        throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
+        */
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->AddTargetModule(this);
     }
@@ -210,9 +223,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
 
-    ApplyEffect(Effects::dgmStateActive, true);
+    ApplyEffect(FX::State::Active, true);
     if (IsValidTarget(targetID))
-        ApplyEffect(Effects::dgmStateTarget, true);
+        ApplyEffect(FX::State::Target, true);
 
     ShowEffect(true, false);
 
@@ -224,10 +237,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             m_destinyMgr->SpeedBoost();
         } break;
         case EVEDB::invGroups::Tractor_Beam: {
-            m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
+            if (m_targetSE != nullptr)
+                m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
         } break;
         case EVEDB::invGroups::Stasis_Web: {
-            m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
+            if (m_targetSE != nullptr)
+                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
     }
 
@@ -246,14 +261,16 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
         AbortCycle();
         return;
-    } else if (effect.compare("TargetDestroyed") == 0) {
-        // this is sent back in OnGodmaShipEffect packet
-        m_targetSE = nullptr;
     }
+
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
 
+    if (effect.compare("TargetDestroyed") == 0) {
+        // this is sent back in OnGodmaShipEffect packet
+        m_targetSE = nullptr;
+    }
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
 }
@@ -335,22 +352,26 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Energy_Vampire:
         case EVEDB::invGroups::Energy_Destabilizer:
         case EVEDB::invGroups::Energy_Transfer_Array: {
-            UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_targetSE->GetSelf());
+            if (m_targetSE != nullptr)
+                UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_targetSE->GetSelf());
         } break;
         case EVEDB::invGroups::Shield_Transporter: {
-            UpdateCharge(AttrShieldCharge, AttrShieldCapacity, AttrShieldBonus, m_targetSE->GetSelf());
+            if (m_targetSE != nullptr)
+                UpdateCharge(AttrShieldCharge, AttrShieldCapacity, AttrShieldBonus, m_targetSE->GetSelf());
         } break;
         case EVEDB::invGroups::Shield_Booster: {
             UpdateCharge(AttrShieldCharge, AttrShieldCapacity, AttrShieldBonus, m_shipRef);
         } break;
         case EVEDB::invGroups::Remote_Hull_Repairer: {
-            UpdateDamage(AttrDamage, AttrStructureDamageAmount, m_targetSE->GetSelf());
+            if (m_targetSE != nullptr)
+                UpdateDamage(AttrDamage, AttrStructureDamageAmount, m_targetSE->GetSelf());
         } break;
         case EVEDB::invGroups::Hull_Repair_Unit: {
             UpdateDamage(AttrDamage, AttrStructureDamageAmount, m_shipRef);
         } break;
         case EVEDB::invGroups::Armor_Repair_Projector: {
-            UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_targetSE->GetSelf());
+            if (m_targetSE != nullptr)
+                UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_targetSE->GetSelf());
         } break;
         case EVEDB::invGroups::Armor_Repair_Unit: {
             UpdateDamage(AttrArmorDamage, AttrArmorDamageAmount, m_shipRef);
@@ -426,9 +447,9 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         return;
     }
 
-    ApplyEffect(Effects::dgmStateActive, false);
+    ApplyEffect(FX::State::Active, false);
     if (IsValidTarget(m_targetID))
-        ApplyEffect(Effects::dgmStateTarget, false);
+        ApplyEffect(FX::State::Target, false);
 
     ShowEffect(false, abort);
 
@@ -552,11 +573,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     }
     // process new charge's effects here
     m_chargeRef->ClearModifiers();
-    fxData data {};
-    data.action = Effects::Action::dgmActInvalid;
-    data.srcRef = m_chargeRef;
     for (auto it : m_chargeRef->type().m_stateFxMap) {
-        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
+        data.srcRef = m_chargeRef;
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
     if (pClient->IsLogin() or pClient->IsDocked()) {
@@ -576,10 +596,9 @@ void ActiveModule::UnloadCharge()
         // remove charge effects here
         m_chargeRef->ClearModifiers();
         for (auto it : m_chargeRef->type().m_stateFxMap) {
-            fxData data;
-            data.action = Effects::Action::dgmActInvalid;
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
             data.srcRef = m_chargeRef;
-            data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
             sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
         }
         /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
@@ -595,7 +614,7 @@ void ActiveModule::UnloadCharge()
     SetChargeState(Module::State::Unloaded);
 }
 
-void ActiveModule::ApplyEffect(Effects::State state, bool active/*false*/)
+void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
 {
     // process and apply module's active effects
     m_modRef->m_modifiers.clear();
@@ -632,11 +651,10 @@ void ActiveModule::ReprocessCharge()
         return;
     /*  may not need to reset this...
     m_chargeRef->ClearModifiers();
-    fxData data;
-    data.action = Effects::Action::dgmActInvalid;
     for (auto it : m_chargeRef->type().m_stateFxMap) {
+        fxData data = fxData();
+        data.action = FX::Action::dgmActInvalid;
         data.srcRef = m_chargeRef;
-        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     } */
     sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
@@ -665,15 +683,15 @@ bool ActiveModule::CanActivate()
             }
 
         // if target is non-combatant deny attack
-        if (sFxDataMgr.isOffensive(m_effectID)
-            and ((m_targetSE->IsItemEntity())
-                or (m_targetSE->IsStaticEntity())
-                or (m_targetSE->IsAsteroidSE())
-                or (m_targetSE->IsLogin())))
-        {
-            m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s", m_targetSE->GetName());
-            return false;
-        }
+        if (sFxDataMgr.isOffensive(m_effectID))
+            if ((m_targetSE->IsItemEntity())
+            or (m_targetSE->IsStaticEntity())
+            or (m_targetSE->IsAsteroidSE())
+            or (m_targetSE->IsLogin()))
+            {
+                m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s.  Ref: ServerError 16228.", m_targetSE->GetName());
+                return false;
+            }
     }
     //AttrDeadspaceUnsafe
     return true;
@@ -802,6 +820,9 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
 void ActiveModule::LaunchMissile()
 {
+    // cannot throw here...
+    //throw PyException( MakeUserError("TargetingMissileToSelf"));
+
     if (m_linked)
         if (!m_linkMaster) {    // only firing ONE missile for linked lanuchers, but they ALL use a charge
             // Reduce ammo charge by 1 unit:
@@ -870,7 +891,7 @@ void ActiveModule::LaunchProbe()
         throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
-    probeRef->Relocate(pos);
+    probeRef->SetPosition(pos);
     SystemManager* pSystem = pClient->SystemMgr();
     ProbeSE* pProbe = new ProbeSE(probeRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_shipRef);
     if (pProbe == nullptr)

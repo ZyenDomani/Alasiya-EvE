@@ -16,7 +16,7 @@
 class MiningLaser: public ActiveModule
 {
 public:
-    MiningLaser( InventoryItemRef item, ShipItemRef ship );
+    MiningLaser(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~MiningLaser()                              { /* do nothing here */ }
 
     /* GenericModule overrides */

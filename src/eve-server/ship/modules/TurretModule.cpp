@@ -14,8 +14,8 @@
 #include "ship/modules/TurretModule.h"
 #include "system/Damage.h"
 
-TurretModule::TurretModule(InventoryItemRef iRef, ShipItemRef sRef)
-: ActiveModule(iRef, sRef)
+TurretModule::TurretModule(ModuleItemRef mRef, ShipItemRef sRef)
+: ActiveModule(mRef, sRef)
 {
     m_crystalDmg = 0;
     m_crystalDmgAmount = 0;
@@ -25,7 +25,7 @@ TurretModule::TurretModule(InventoryItemRef iRef, ShipItemRef sRef)
      *  these turrets have the damage attribs set in turret item, so set chargeRef to turret item for damage calcs
      */
     if (!m_needsCharge)
-        m_chargeRef = iRef;
+        m_chargeRef = mRef;
 }
 
 void TurretModule::LoadCharge(InventoryItemRef cRef)

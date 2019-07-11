@@ -18,7 +18,7 @@
 class ActiveModule : public GenericModule
 {
 public:
-    ActiveModule(InventoryItemRef item, ShipItemRef ship);
+    ActiveModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~ActiveModule()                             { /* Do nothing here */ }
 
     /* class type helpers.  public for anyone to access. */
@@ -57,7 +57,7 @@ public:
     void LaunchSnowBall();
 
     /* new effects processing code and updates */
-    void ApplyEffect(Effects::State state, bool active=false);
+    void ApplyEffect(int8 state, bool active=false);
 	/* common method for all modules that have a visual effect when active */
     void ShowEffect(bool active=false, bool abort=false);
 

@@ -22,10 +22,10 @@ SHIP__MODULE_TRACE=1
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
 
-GenericModule::GenericModule( InventoryItemRef item, ShipItemRef ship )
+GenericModule::GenericModule(ModuleItemRef mRef, ShipItemRef sRef)
 : m_repeat(0),
-m_modRef(item),
-m_shipRef(ship),
+m_modRef(mRef),
+m_shipRef(sRef),
 m_chargeRef(InventoryItemRef(nullptr)),
 m_ModuleState(Module::State::Unfitted),
 m_ChargeState(Module::State::Unloaded),
@@ -42,28 +42,29 @@ m_subSystem(false),
 m_turret(false),
 m_launcher(false)
 {
-    if (item->type().HasEffect(EVEEffectID::loPower)) {
+    if (mRef->type().HasEffect(EVEEffectID::loPower)) {
         m_loPower = true;
-    } else if (item->type().HasEffect(EVEEffectID::medPower)) {
+    } else if (mRef->type().HasEffect(EVEEffectID::medPower)) {
         m_medPower = true;
-    } else if (item->type().HasEffect(EVEEffectID::hiPower)) {
+    } else if (mRef->type().HasEffect(EVEEffectID::hiPower)) {
         m_hiPower = true;
-        if (item->type().HasEffect(EVEEffectID::turretFitted))
+        if (mRef->type().HasEffect(EVEEffectID::turretFitted))
             m_turret = true;
-        else if (item->type().HasEffect(EVEEffectID::launcherFitted))
+        else if (mRef->type().HasEffect(EVEEffectID::launcherFitted))
             m_launcher = true;
-    } else if (item->type().HasEffect(EVEEffectID::rigSlot)) {
+    } else if (mRef->type().HasEffect(EVEEffectID::rigSlot)) {
         m_rigSlot = true;
-    } else if (item->type().HasEffect(EVEEffectID::subSystem)) {
+    } else if (mRef->type().HasEffect(EVEEffectID::subSystem)) {
         m_subSystem = true;
     }
 
-    _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, item->itemName().c_str(), item->itemID());
+    _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, mRef->itemName().c_str(), mRef->itemID());
 }
 
 GenericModule::~GenericModule()
 {
-    Offline();
+    // i dont think we need this here...
+    //Offline();
 }
 
 // this function must NOT throw
@@ -141,26 +142,25 @@ void GenericModule::Online()
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     // clear map before adding new shit...avoids duplicating
-    //ClearModifiers(); // ClearModifiers DELETES AttrIsOnline and all ship-modified attribs from the map!!  (elusive error)
-    m_modRef->PutOnline(isRig());
+    //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)
+    m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
     _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
-    ProcessEffects(Effects::dgmStatePassive, true);
-    ProcessEffects(Effects::dgmStateOnline, true);
+    ProcessEffects(FX::State::Passive, true);
+    ProcessEffects(FX::State::Online, true);
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
+            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->itemName().c_str());
         } else {
             _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
             m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
-                fxData data {};
-                data.action = Effects::Action::dgmActInvalid;
+                fxData data = fxData();
+                data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
-                data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
                 sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
             }
             //if (m_shipRef->GetPilot()->IsLogin())
@@ -173,18 +173,18 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
-    if (m_ModuleState == Module::State::Offline) {
-        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
-        return;
-    }
     if (m_ModuleState == Module::State::Unfitted) {
         _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
+        return;
+    }
+    if (m_ModuleState == Module::State::Offline) {
+        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == Module::State::Deactivating) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
         m_ModuleState = Module::State::Offline;
-        m_modRef->PutOffline();
+        m_modRef->SetOnline(false, isRig());
         return;
     }
 
@@ -203,7 +203,7 @@ void GenericModule::Offline()
     m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(ChargeStates::CHG_LOADED) but m_chargeRef = NULL.", \
+            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->itemName().c_str());
         } else {
             m_chargeRef->ClearModifiers();
@@ -211,10 +211,9 @@ void GenericModule::Offline()
              *    also, DONT reset modifiermap before remoing, to use existing, modified data
              */
             for (auto it : m_chargeRef->type().m_stateFxMap) {
-                fxData data {};
-                data.action = Effects::Action::dgmActInvalid;
+                fxData data = fxData();
+                data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
-                data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
                 sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
             }
             //if (m_shipRef->GetPilot()->IsInSpace())
@@ -222,25 +221,22 @@ void GenericModule::Offline()
         }
     }
 
-    ProcessEffects(Effects::dgmStatePassive, false);
-    ProcessEffects(Effects::dgmStateOnline, false);
+    ProcessEffects(FX::State::Passive, false);
+    ProcessEffects(FX::State::Online, false);
     /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
      *    also, DONT reset modifiermap before remoing, to use existing, modified data
      */
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
     m_ModuleState = Module::State::Offline;
-    m_modRef->PutOffline();
-    // fix for not being able to Online modules in fit window when docked
-    if (m_shipRef->IsDocking())
-        m_modRef->SetAttribute(AttrIsOnline, true, true);
+    m_modRef->SetOnline(false, isRig());
 }
 
 void GenericModule::Overload()
 {
     // need to clear item's effectMap here to avoid duplicating.
     m_modRef->m_modifiers.clear();
-    ProcessEffects(Effects::dgmStateOverloaded, true);
+    ProcessEffects(FX::State::Overloaded, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
@@ -248,24 +244,23 @@ void GenericModule::DeOverload()
 {
     // need to clear item's effectMap here to avoid duplicating.
     m_modRef->m_modifiers.clear();
-    ProcessEffects(Effects::dgmStateOverloaded, false);
+    ProcessEffects(FX::State::Overloaded, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
-void GenericModule::ProcessEffects(Effects::State state, bool active/*false*/)
+void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
 {
     // get module/charge pre/post effects in state x
     std::map<uint16, Effect> effectMap;
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
             m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (active ? "true" : "false"));
-    fxData data {};
-    data.action = Effects::Action::dgmActInvalid;
-    data.srcRef = m_modRef;
     for (auto it : effectMap) {
         if (it.first == 16)    // skip the online effect.  this is done internally elsewhere
             continue;
-        data.math = data.targLoc = data.targAttr = data.srcAttr = data.grpID = data.typeID = data.fxSrc = 0;
+        fxData data = fxData();
+        data.action = FX::Action::Invalid;
+        data.srcRef = m_modRef;
         /* module and charge effects will be added/removed from it's item
          * active/overload/gang/other effects will be applied and removed when called.
          */
@@ -281,8 +276,8 @@ void GenericModule::Repair(EvilNumber amount)
 {
     if (GetAttribute(AttrDamage) > 0) {
         EvilNumber newAmount = GetAttribute(AttrDamage) - amount;
-        if (newAmount < 0)
-            newAmount = 0;
+        if (newAmount < EvilZero)
+            newAmount = EvilZero;
         SetAttribute(AttrDamage, newAmount);
     }
     _log(SHIP__MODULE_DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
@@ -291,15 +286,16 @@ void GenericModule::Repair(EvilNumber amount)
 
 std::string GenericModule::GetModuleStateName(int8 state)
 {
+    using namespace Module;
     switch(state) {
-        case Module::State::Unloaded:       return "Unloaded";      break;
-        case Module::State::Loaded:         return "Loaded";        break;
-        case Module::State::Loading:        return "Loading";       break;
-        case Module::State::Reloading:      return "Reloading";     break;
-        case Module::State::Unfitted:       return "Unfitted";      break;
-        case Module::State::Offline:        return "Offline";       break;
-        case Module::State::Online:         return "Online";        break;
-        case Module::State::Activated:      return "Activated";     break;
-        case Module::State::Deactivating:   return "Deactivating";  break;
+        case State::Unloaded:       return "Unloaded";
+        case State::Loaded:         return "Loaded";
+        case State::Loading:        return "Loading";
+        case State::Reloading:      return "Reloading";
+        case State::Unfitted:       return "Unfitted";
+        case State::Offline:        return "Offline";
+        case State::Online:         return "Online";
+        case State::Activated:      return "Activated";
+        case State::Deactivating:   return "Deactivating";
     }
 }

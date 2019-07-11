@@ -15,7 +15,7 @@
 class Prospector: public ActiveModule
 {
 public:
-    Prospector( InventoryItemRef item, ShipItemRef ship );
+    Prospector(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~Prospector()                                 { /* do nothing here */ }
 
     /* ActiveModule overrides */
