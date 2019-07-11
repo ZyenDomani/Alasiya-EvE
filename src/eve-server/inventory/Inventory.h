@@ -48,16 +48,16 @@ public:
     void RemoveItem(InventoryItemRef item);
     void DeleteContents();
     void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
+    // this method also sorts in order - cargo, modules, charge, subsystems.
     void GetInventoryVec(std::vector<InventoryItemRef> &itemVec);
-    void StackAll(EVEItemFlags flag, uint32 forOwner = 0);
+    void StackAll(EVEItemFlags flag, uint32 ownerID = 0);
 
     bool IsEmpty()                                      { return mContents.empty(); }
-    bool HasShip();
     bool LoadContents();
     // this will throw if it fails.
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
-    bool ContainsItem(uint32 itemID) const                  { return mContents.find( itemID ) != mContents.end(); }
+    bool ContainsItem(uint32 itemID) const              { return mContents.find( itemID ) != mContents.end(); }
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
     bool ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit) const;
 
@@ -80,16 +80,19 @@ public:
     InventoryItemRef GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag=flagAutoFit);
 
     /* Primary packet builders */
-    CRowSet* List( EVEItemFlags flag, uint32 forOwner = 0 ) const;
-    void List( CRowSet* into, EVEItemFlags flag, uint32 forOwner = 0 ) const;
+    CRowSet* List( EVEItemFlags flag, uint32 ownerID = 0 ) const;
 
+    /* for station shit */
+    void GetInvForOwner(uint32 ownerID, std::vector<InventoryItemRef> &items);
 
 protected:
     bool GetItems(OwnerData od, std::vector< uint32 >& into);
+    void List( CRowSet* into, EVEItemFlags flag, uint32 ownerID = 0 ) const;
 
     InventoryDB m_db;
     InventoryItemRef m_self;
 
+private:
     bool mContentsLoaded;
 
     uint32 m_myID;

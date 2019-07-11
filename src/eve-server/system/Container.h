@@ -41,7 +41,7 @@ class CargoContainer
     friend class InventoryItem;    // to let it construct us
 public:
     CargoContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data);
-    virtual ~CargoContainer()                           { /* Do nothing here */ }
+    virtual ~CargoContainer();
 
     /**
      * Loads CargoContainer from DB.
@@ -181,7 +181,7 @@ class WreckContainer
     friend class InventoryItem;    // to let it construct us
 public:
     WreckContainer(uint32 _containerID, const ItemType &_containerType, const ItemData &_data);
-    virtual ~WreckContainer()                           { /* Do nothing here */ }
+    virtual ~WreckContainer();
 
     static WreckContainerRef Load( uint32 containerID);
     static WreckContainerRef Spawn( ItemData &data);

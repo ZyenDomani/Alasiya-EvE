@@ -8,39 +8,6 @@
 #ifndef EVE_INVENTORY_H
 #define EVE_INVENTORY_H
 
-//these came from the 'constants' object:
-// updated for change in crucible.  -allan 16May16
-enum EVEItemChangeType {
-    ixItemID        = 0,    //also ixLauncherCapacity?
-    ixTypeID        = 1,    //also ixLauncherUsed = 1,
-    ixOwnerID       = 2,    //also ixLauncherChargeItem?
-    ixLocationID    = 3,
-    ixFlag          = 4,
-    ixQuantity      = 5,
-    ixGroupID       = 6,
-    ixCategoryID    = 7,
-    ixCustomInfo    = 8,
-    ixStackSize     = 9,
-    ixSingleton     = 10,
-    ixSubitems      = 11        // not in client data
-};
-
-enum EVEContainerTypes {
-    containerWallet            = 10001,
-    containerGlobal            = 10002,
-    containerSolarSystem       = 10003,
-    containerHangar            = 10004,
-    containerScrapHeap         = 10005,
-    containerFactory           = 10006,
-    containerBank              = 10007,
-    containerRecycler          = 10008,
-    containerOffices           = 10009,
-    containerStationCharacters = 10010,
-    containerCharacter         = 10011,
-    containerCorpMarket        = 10012
-};
-
-/** @todo finish implementing these... */
 namespace Inv {
 
     namespace Container {
@@ -64,14 +31,14 @@ namespace Inv {
         //these are used with the OnItemChange packet to update client's item data (and trigger other actions)
         // updated for change in crucible.  -allan 16May16
         enum {
-            ItemID        = 0,    //also ixLauncherCapacity?
-            TypeID        = 1,    //also ixLauncherUsed = 1,
-            OwnerID       = 2,    //also ixLauncherChargeItem?
-            LocationID    = 3,
+            Item          = 0,    //also ixLauncherCapacity?
+            Type          = 1,    //also ixLauncherUsed = 1,
+            Owner         = 2,    //also ixLauncherChargeItem?
+            Location      = 3,
             Flag          = 4,
             Quantity      = 5,
-            GroupID       = 6,
-            CategoryID    = 7,
+            Group         = 6,
+            Category      = 7,
             CustomInfo    = 8,
             StackSize     = 9,
             Singleton     = 10,
@@ -82,24 +49,32 @@ namespace Inv {
 }
 
 /*  AuditLogSecureContainer shit here....
-    namespace ALSC {
-
-    }
-ALSCActionAdd = 6
-ALSCActionAssemble = 1
-ALSCActionConfigure = 10
-ALSCActionEnterPassword = 9
-ALSCActionLock = 7
-ALSCActionMove = 4
-ALSCActionRepackage = 2
-ALSCActionSetName = 3
-ALSCActionSetPassword = 5
-ALSCActionUnlock = 8
-ALSCPasswordNeededToLock = 2
-ALSCPasswordNeededToOpen = 1
-ALSCPasswordNeededToUnlock = 4
-ALSCPasswordNeededToViewAuditLog = 8
 */
+namespace ALSC {
 
+    namespace Action {
+        enum {
+            Assemble        = 1,
+            Repackage       = 2,
+            SetName         = 3,
+            Move            = 4,
+            SetPassword     = 5,
+            Add             = 6,
+            Lock            = 7,
+            Unlock          = 8,
+            EnterPassword   = 9,
+            Configure       = 10
+        };
+    }
+
+    namespace NeedPass {
+        enum {
+            ToOpen          = 1,
+            ToLock          = 2,
+            ToUnlock        = 4,
+            ToViewAuditLog  = 8
+        };
+    }
+}
 
 #endif  // EVE_INVENTORY_H

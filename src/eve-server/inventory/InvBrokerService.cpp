@@ -193,7 +193,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
 
     bool passive = (args.arg2 != 0);  //no idea what this is for.
     sItemFactory.SetUsingClient( call.client );
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     // if item requested is office folder, we have to do shit a lil different, as it sends officeFolderID, instead of itemID
     if ((m_groupID == EVEDB::invGroups::Station) and (IsOfficeFolder(args.arg1))) {
         uint32 officeID = stDataMgr.GetOfficeIDForCorp(m_locationID, call.client->GetCorporationID());
@@ -283,49 +283,49 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
 
     EVEItemFlags flag = flagAutoFit;
     switch(args.container) {
-        case containerWallet: { /*10001*/
+        case Inv::Container::Wallet: { /*10001*/
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
             flag = flagWallet;
         } break;
-        case containerCharacter: { /*10011*/
+        case Inv::Container::Character: { /*10011*/
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
             flag = flagSkill;
         } break;
-        case containerHangar: { /*10004*/
+        case Inv::Container::Hangar: { /*10004*/
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
             flag = flagHangar;
         } break;
-        case containerCorpMarket: { /*10012*/   //this is for corp deliveries
+        case Inv::Container::CorpMarket: { /*10012*/   //this is for corp deliveries
             if (ownerID == 0)
                 ownerID = call.client->GetCorporationID();
             flag = flagCorpMarket;
         } break;
-        case containerOffices: { /*10009*/
+        case Inv::Container::Offices: { /*10009*/
             if (ownerID == 0)
                 ownerID = call.client->GetCorporationID();
             flag = flagOffice;
         } break;
-        case containerFactory: { /*10006*/
+        case Inv::Container::Factory: { /*10006*/
             // not sure on this one
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
             flag = flagFactory;
         } break;
-        case containerSolarSystem: { /*10003*/ // is this for flagProperty items?  (corp items in space)
+        case Inv::Container::SolarSystem: { /*10003*/ // is this for flagProperty items?  (corp items in space)
             // not sure on this one
             if (ownerID == 0)
                 ownerID = call.client->GetCorporationID();
             flag = flagProperty;
         } break;
 
-        //case containerGlobal:/*10002*/    // used in asset listings.  means "everywhere"  not sure how to code it yet...
-        //case containerScrapHeap:/*10005*/
-        //case containerBank:/*10007*/
-        //case containerRecycler:/*10008*/
-        //case containerStationCharacters:/*10010*/
+        //case Inv::Container::Global:/*10002*/    // used in asset listings.  means "everywhere"  not sure how to code it yet...
+        //case Inv::Container::ScrapHeap:/*10005*/
+        //case Inv::Container::Bank:/*10007*/
+        //case Inv::Container::Recycler:/*10008*/
+        //case Inv::Container::StationCharacters:/*10010*/
             //flag = flagNone;
             //break;
         // there is no 10005, 10006, or 10007 defind in client

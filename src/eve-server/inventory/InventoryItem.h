@@ -21,7 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:     Zhur
- *    Updates:    Allan
+ *    Updates:    Allan (rewrite)
  */
 #ifndef EVE_INVENTORY_ITEM_H
 #define EVE_INVENTORY_ITEM_H
@@ -107,10 +107,11 @@ public:
     const ItemCategory &    category() const            { return m_type.category(); }
     EVEItemCategories       categoryID() const          { return m_type.categoryID(); }
     bool                    isGlobal() const            { return (HasAttribute(AttrIsGlobal) ? true : false); }
+    bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }
 
     /* public-access generic functions handled in base class. */
     void                    Rename(std::string name);
-    void                    Relocate(const GPoint pos);
+    void                    SetPosition(const GPoint pos);     // change coords of item
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);
     // Move() will remove item from old location, add to new location and (optionally) notify client of changes
@@ -125,15 +126,6 @@ public:
     bool                    SetQuantity(int32 qty_new, bool notify=false);
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=false);
 
-private:
-    /* this should ONLY be called from within InventoryItem */
-    void                    SetOnline(bool online, bool isRig);
-
-public:
-    void                    PutOnline(bool isRig=false) { SetOnline(true, isRig); }
-    void                    PutOffline(bool isRig=false){ SetOnline(false, isRig); }
-    bool                    IsOnline()                  { return (GetAttribute(AttrIsOnline).get_int() ? true : false); }
-
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
 
@@ -145,7 +137,6 @@ public:
 
     virtual void            AddItem(InventoryItemRef item);
     virtual void            RemoveItem(InventoryItemRef item);
-
 
     /* specific functions handled here */
     /* returns uID for new item.  saves item data to db */
@@ -284,7 +275,7 @@ public:
     // gotta make this public for now...
     std::multimap<int8, fxData> m_modifiers;     // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
 
-    /*  new attribute system */
+/*  new attribute system */
     AttributeMap* GetAttributeMap()                     { return pAttributeMap; }
 
     void SetAttribute(uint16 attrID, int num, bool notify=true);

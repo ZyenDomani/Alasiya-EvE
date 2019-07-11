@@ -47,6 +47,13 @@ m_isAnchored(false)
     _log(ITEM__TRACE, "Created CargoContainer object for item %s (%u).", m_itemName.c_str(), m_itemID);
 }
 
+CargoContainer::~CargoContainer()
+{
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
+}
+
 CargoContainerRef CargoContainer::Load( uint32 containerID)
 {
     return InventoryItem::Load<CargoContainer>(containerID );
@@ -74,6 +81,12 @@ CargoContainerRef CargoContainer::Spawn( ItemData &data) {
     containerRef->SetAttribute(AttrCapacity,      containerRef->type().capacity(), false);      // Capacity
 
 	return containerRef;
+}
+
+CargoContainerRef CargoContainer::SpawnTemp(ItemData& data)
+{
+    // not sure if this is used....
+    return Spawn(data);
 }
 
 uint32 CargoContainer::CreateItemID( ItemData &data)
@@ -278,8 +291,8 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.mode = DSTBALL_TROLL;
-        head.flags = IsFree | IsInteractive;
+        head.mode = Ball::Mode::TROLL;
+        head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
@@ -296,7 +309,7 @@ void ContainerSE::EncodeDestiny( Buffer& into )
         data.velocity_z = 0;
         data.speedfraction = 1;
     into.Append( data );
-    DSTBALL_TROLL_Struct troll;
+    TROLL_Struct troll;
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );
@@ -345,6 +358,13 @@ m_delete(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
     _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
+}
+
+WreckContainer::~WreckContainer()
+{
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
 }
 
 WreckContainerRef WreckContainer::Load( uint32 containerID)
@@ -506,8 +526,8 @@ void WreckSE::EncodeDestiny( Buffer& into )
         head.x = x();
         head.y = y();
         head.z = z();
-        head.mode = DSTBALL_TROLL;
-        head.flags = IsFree | IsInteractive;
+        head.mode = Ball::Mode::TROLL;
+        head.flags = Ball::Flag::IsFree | Ball::Flag::IsInteractive;
     into.Append( head );
     MassSector mass = MassSector();
         mass.mass = m_self->type().mass();
@@ -524,7 +544,7 @@ void WreckSE::EncodeDestiny( Buffer& into )
         data.velocity_z = 0;
         data.speedfraction = 1;
     into.Append( data );
-    DSTBALL_TROLL_Struct troll;
+    TROLL_Struct troll;
         troll.formationID = 0xFF;
         troll.effectStamp = sEntityList.GetStamp();
     into.Append( troll );

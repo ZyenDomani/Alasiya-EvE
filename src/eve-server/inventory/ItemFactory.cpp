@@ -36,6 +36,7 @@
 #include "pos/Structure.h"
 #include "ship/Missile.h"
 #include "ship/Ship.h"
+#include "ship/modules/ModuleItem.h"
 #include "station/Station.h"
 #include "station/StationOffice.h"
 #include "system/Asteroid.h"
@@ -148,7 +149,7 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
     // do we need to check trade containers here?
     if (!IsValidLocation(itemID))
         return nullptr;
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr != m_items.end()) {
         iRef = itr->second;
@@ -164,7 +165,7 @@ Inventory *ItemFactory::GetInventoryFromId(uint32 itemID, bool load /*true*/) {
 }
 
 InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /*true*/) {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr != m_items.end()) {
         iRef = itr->second;
@@ -178,7 +179,7 @@ InventoryItemRef ItemFactory::GetInventoryItemFromID( uint32 itemID, bool load /
 
 InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
 {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr != m_items.end()) {
         iRef = itr->second;
@@ -204,7 +205,7 @@ InventoryItemRef ItemFactory::GetItemContainer(uint32 itemID, bool load/*true*/)
 
 Inventory* ItemFactory::GetItemContainerInventory(uint32 itemID, bool load/*true*/)
 {
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr != m_items.end()) {
         iRef = itr->second;
@@ -392,6 +393,12 @@ WreckContainerRef ItemFactory::GetWreckContainer(uint32 containerID)
     return _GetItem<WreckContainer>( containerID );
 }
 
+ModuleItemRef ItemFactory::GetModuleItem(uint32 moduleID)
+{
+    return _GetItem<ModuleItem>( moduleID );
+}
+
+
 InventoryItemRef ItemFactory::SpawnItem(ItemData &data) {
     InventoryItemRef iRef = InventoryItem::Spawn(data);
     if (iRef.get() == nullptr)
@@ -500,6 +507,17 @@ CargoContainerRef ItemFactory::SpawnCargoContainer(ItemData &data)
 WreckContainerRef ItemFactory::SpawnWreckContainer(ItemData &data)
 {
     WreckContainerRef iRef = WreckContainer::Spawn( data );
+    if (iRef.get() == nullptr)
+        return iRef;
+
+    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
+    ++m_itemCount;
+    return iRef;
+}
+
+ModuleItemRef ItemFactory::SpawnModule(ItemData& data)
+{
+    ModuleItemRef iRef = ModuleItem::Spawn( data );
     if (iRef.get() == nullptr)
         return iRef;
 

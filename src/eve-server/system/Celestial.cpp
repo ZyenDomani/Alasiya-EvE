@@ -52,7 +52,7 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_orbitIndex( 0 )
   {
       pInventory = new Inventory(InventoryItemRef(this));
-      _log(ITEM__TRACE, "Created Default CelestialObject for item %s (%u).", itemName().c_str(), itemID());
+      _log(ITEM__TRACE, "Created Default CelestialObject %p for item %s (%u).", this, itemName().c_str(), itemID());
 }
 
 CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data, const CelestialObjectData &_cData)
@@ -63,7 +63,14 @@ CelestialObject::CelestialObject(uint32 _celestialID, const ItemType &_type, con
   m_orbitIndex(_cData.orbitIndex)
   {
       pInventory = new Inventory(InventoryItemRef(this));
-      _log(ITEM__TRACE, "Created CelestialObject for item %s (%u) with radius of %.1f.", itemName().c_str(), itemID(), m_radius);
+      _log(ITEM__TRACE, "Created CelestialObject %p for %s (%u) with radius of %.1f.", this, itemName().c_str(), itemID(), m_radius);
+}
+
+CelestialObject::~CelestialObject()
+{
+    if (pInventory != nullptr)
+        pInventory->Unload();
+    SafeDelete(pInventory);
 }
 
 CelestialObjectRef CelestialObject::Load( uint32 celestialID)
@@ -131,7 +138,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_STOP;
+        head.mode = Ball::Mode::STOP;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
@@ -145,7 +152,7 @@ void AnomalySE::EncodeDestiny(Buffer& into)
         mass.corporationID = -1;
         mass.allianceID = -1;
     into.Append( mass );
-    DSTBALL_STOP_Struct main;
+    STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
 
@@ -182,7 +189,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
     using namespace Destiny;
     BallHeader head = BallHeader();
         head.entityID = m_self->itemID();
-        head.mode = DSTBALL_STOP;
+        head.mode = Ball::Mode::STOP;
         head.radius = m_radius;
         head.x = x();
         head.y = y();
@@ -196,7 +203,7 @@ void WormholeSE::EncodeDestiny(Buffer& into)
         mass.corporationID = -1;
         mass.allianceID = -1;
     into.Append( mass );
-    DSTBALL_STOP_Struct main;
+    STOP_Struct main;
         main.formationID = 0xFF;
     into.Append( main );
     _log(SE__DESTINY, "WormholeSE::EncodeDestiny(): %s - id:%u, mode:%u, flags:0x%X", GetName(), head.entityID, head.mode, head.flags);

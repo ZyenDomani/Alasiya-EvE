@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
+    Updates:        Allan
 */
 
 #include "eve-server.h"
@@ -34,6 +35,7 @@
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
 #include "ship/Ship.h"
+#include <ship/modules/ModuleItem.h>
 #include "station/Station.h"
 #include "station/StationOffice.h"
 #include "system/Asteroid.h"
@@ -198,15 +200,20 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
         case EVEDB::invCategories::PlanetaryInteraction:
         case EVEDB::invCategories::PlanetaryResources:
         case EVEDB::invCategories::PlanetaryCommodities:
-        case EVEDB::invCategories::Deployable:  // may need their own class
-        case EVEDB::invCategories::Module:    // may need their own class
-        case EVEDB::invCategories::Drone:       // player drones.  use their own class (eventually)
         case EVEDB::invCategories::Commodity:
-        case EVEDB::invCategories::Implant:     // may need their own class
-        case EVEDB::invCategories::Accessories: // this is for bookmark vouchers
-        case EVEDB::invCategories::Reaction: {    // may need their own class
-            // Generic item, create one:
+        case EVEDB::invCategories::Accessories: { // this is for bookmark vouchers
+            // Generic item, create one
             return InventoryItemRef( new InventoryItem(itemID, type, data ));
+        } break;
+        case EVEDB::invCategories::Deployable: // these may need their own class.  not sure yet
+        case EVEDB::invCategories::Drone:
+        case EVEDB::invCategories::Implant:
+        case EVEDB::invCategories::Reaction: {
+            // create Generic item for now
+            return InventoryItemRef( new InventoryItem(itemID, type, data ));
+        } break;
+        case EVEDB::invCategories::Module: {
+            return ModuleItem::_LoadItem<ModuleItem>(itemID, type, data);
         } break;
         case EVEDB::invCategories::Owner: {
             return Character::_LoadItem<Character>(itemID, type, data);
@@ -388,11 +395,8 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
             return StructureItem::Spawn(data);
         } break;
         case EVEDB::invCategories::Blueprint: {
-            BlueprintData bpData;
+            BlueprintData bpData = BlueprintData();
                 bpData.runs = -1;
-                bpData.copy = false;
-                bpData.mLevel = 0;
-                bpData.pLevel = 0;
             return Blueprint::Spawn(data, bpData);
         } break;
         case EVEDB::invCategories::Skill: {
@@ -482,7 +486,7 @@ InventoryItemRef InventoryItem::Spawn( ItemData &data)
                 return StationItemRef(nullptr);
             // THESE SHOULD BE MOVED INTO A Station::Spawn() function that does not exist yet
             stationRef->SetAttribute(AttrShieldCharge,  stationRef->GetAttribute(AttrShieldCapacity), false);     // Shield Charge
-            stationRef->SetAttribute(AttrArmorDamage,   0.0, false);                                         // Armor Damage
+            stationRef->SetAttribute(AttrArmorDamage,   EvilZero, false);                                         // Armor Damage
             stationRef->SetAttribute(AttrMass,          iType->mass(), false);           // Mass
             stationRef->SetAttribute(AttrRadius,        iType->radius(), false);       // Radius
             stationRef->SetAttribute(AttrVolume,        iType->volume(), false);       // Volume
@@ -611,22 +615,23 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         _log(INV__TRACE, "InventoryItem::Donate()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
 
-    //SaveItem();
+    if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
+        SaveItem();
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
         std::map<int32, PyRep *> changes, changes2;
         if (new_flag != old_flag) {
-            changes[ixFlag] = new PyInt(old_flag);
-            changes2[ixFlag] = new PyInt(old_flag);
+            changes[Inv::Update::Flag] = new PyInt(old_flag);
+            changes2[Inv::Update::Flag] = new PyInt(old_flag);
         }
         if (new_owner != old_owner) {
-            changes[ixOwnerID] = new PyInt(old_owner);
-            changes2[ixOwnerID] = new PyInt(old_owner);
+            changes[Inv::Update::Owner] = new PyInt(old_owner);
+            changes2[Inv::Update::Owner] = new PyInt(old_owner);
         }
         if (new_location != old_location) {
-            changes[ixLocationID] = new PyInt(old_location);
-            changes2[ixLocationID] = new PyInt(old_location);
+            changes[Inv::Update::Location] = new PyInt(old_location);
+            changes2[Inv::Update::Location] = new PyInt(old_location);
         }
         if (new_owner != old_owner)
             SendItemChange(old_owner, changes);
@@ -666,15 +671,16 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    //SaveItem();
+    if (sConfig.world.saveOnMove)
+        SaveItem();
 
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
         if ( m_locationID != old_location )
-            changes[ixLocationID] = new PyInt(old_location);
+            changes[Inv::Update::Location] = new PyInt(old_location);
         if ( m_flag != old_flag )
-            changes[ixFlag] = new PyInt(old_flag);
+            changes[Inv::Update::Flag] = new PyInt(old_flag);
         SendItemChange( m_ownerID, changes);   //changes is consumed
     }
 }
@@ -775,15 +781,17 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
                 pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
         }
     }
-    //SaveItem();
+
+    if (sConfig.world.saveOnUpdate)
+        SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
         // this informs client of a stack change...still need to go over client code to verify exacty spec on which one is used for what purpose....modules/charges can use both
         if (IsModuleSlot(m_flag))
-            changes[ixQuantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
-
-            changes[ixStackSize] = new PyInt(old_qty);
+            changes[Inv::Update::Quantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
+        else
+            changes[Inv::Update::StackSize] = new PyInt(old_qty);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
@@ -794,12 +802,13 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
-    //SaveItem();
+    if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
+        SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the owner.
-        changes[ixFlag] = new PyInt(old_flag);
+        changes[Inv::Update::Flag] = new PyInt(old_flag);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
@@ -813,11 +822,12 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
         bool old_singleton = m_singleton;
     m_singleton = singleton;
 
-    //SaveItem();
+    if (sConfig.world.saveOnUpdate)
+        SaveItem();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
-        changes[ixSingleton] = new PyInt(old_singleton);
+        changes[Inv::Update::Singleton] = new PyInt(old_singleton);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
 
@@ -831,15 +841,18 @@ void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
         return; //nothing to do...
         uint32 old_owner = m_ownerID;
     m_ownerID = new_owner;
-    //SaveItem();
+
+    if (sConfig.world.saveOnUpdate)
+        SaveItem();
+
     //notify about the changes.
     if (notify) {
         std::map<int32, PyRep *> changes;
         //send the notify to the new owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
+        changes[Inv::Update::Owner] = new PyInt(old_owner);
         SendItemChange(new_owner, changes); //changes is consumed
         //also send the notify to the old owner.
-        changes[ixOwnerID] = new PyInt(old_owner);
+        changes[Inv::Update::Owner] = new PyInt(old_owner);
         SendItemChange(old_owner, changes); //changes is consumed
     }
 }
@@ -860,10 +873,12 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         Client* pClient = sEntityList.FindClientByCharID(toID);
         if (pClient == nullptr)
             return;
-        if (IsShipItem()) //(pClient->IsBoard())
-            pClient->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called for ships
-        else
-            pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for non-ships
+        if (pClient->IsCharCreation())
+            return;
+        //if (IsShipItem()) //(pClient->IsBoard())
+        //    pClient->SendNotification("OnItemsChanged", "charid", &tmp, false); //unsequenced.  <<--  this is called for multiple items
+        //else
+            pClient->SendNotification("OnItemChange", "clientID", &tmp, false); //unsequenced.  <<-- this is for single items
     } else if (IsPlayerCorp(toID)) {
         // there is more to this.  not sure what else or how yet.
         MulticastTarget mct;
@@ -920,13 +935,13 @@ PyPackedRow* InventoryItem::GetItemStatusRow() const {
 
 void InventoryItem::GetItemStatusRow( PyPackedRow* into ) const {
     into->SetField( "instanceID",    new PyLong( m_itemID ));
-    into->SetField( "online",        new PyBool( (HasAttribute(AttrIsOnline) ? GetAttribute(AttrIsOnline).get_int() : false) ));
+    into->SetField( "online",        new PyBool( (HasAttribute(AttrOnline) ? GetAttribute(AttrOnline).get_bool() : false) ));
     into->SetField( "damage",        new PyFloat( (HasAttribute(AttrDamage) ? GetAttribute(AttrDamage).get_float() : 0) ));
     into->SetField( "charge",        new PyFloat( (HasAttribute(AttrCapacitorCharge) ? GetAttribute(AttrCapacitorCharge).get_float() : 0) ));
     into->SetField( "skillPoints",   new PyInt( (HasAttribute(AttrSkillPoints) ? GetAttribute(AttrSkillPoints).get_uint32() : 0) ));
     into->SetField( "armorDamage",   new PyFloat( (HasAttribute(AttrArmorDamageAmount) ? GetAttribute(AttrArmorDamageAmount).get_float() : 0.0) ));
     into->SetField( "shieldCharge",  new PyFloat( (HasAttribute(AttrShieldCharge) ? GetAttribute(AttrShieldCharge).get_float() : 0.0) ));
-    into->SetField( "incapacitated", new PyBool( (HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_int() : false) ));
+    into->SetField( "incapacitated", new PyBool( (HasAttribute(AttrIsIncapacitated) ? GetAttribute(AttrIsIncapacitated).get_bool() : false) ));
 }
 
 /*  this is charge info for the module in question  */
@@ -1083,65 +1098,17 @@ PyObject* InventoryItem::ItemGetInfo()
     return result.Encode();
 }
 
-void InventoryItem::SetOnline(bool online, bool isRig/*false*/) {
-    /** @note  this is only used by modules
-     */
-    _log(SHIP__MODULE_DEBUG, "InventoryItem::SetOnline() - set module %s(%u) to %s", \
-                    m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
-
-    m_modifiers.clear();
-    if (!isRig)   // rigs DO NOT get isOnline attrib set.
-        SetAttribute(AttrIsOnline, int(online));
-
-    Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
-    if (pClient == nullptr) {
-        _log(SHIP__MODULE_WARNING, "InventoryItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
-                            m_ownerID, m_itemName.c_str(), m_itemID);
-        return;
-    }
-
-    GodmaEnvironment ge;
-        ge.selfID = m_itemID;
-        ge.charID = m_ownerID;
-        ge.shipID = pClient->GetShipID();
-        ge.targetID = 0;
-        ge.other = PyStatic.NewNone();
-        ge.area = new PyList();
-        ge.effectID = 16;
-    Notify_OnGodmaShipEffect shipEff;
-        shipEff.itemID = ge.selfID;
-        shipEff.effectID = ge.effectID;
-        shipEff.timeNow = Win32TimeNow();
-        shipEff.start = online;
-        shipEff.active = online;
-        shipEff.environment = ge.Encode();
-        shipEff.startTime = shipEff.timeNow;
-    if (HasAttribute(AttrDuration)) {
-        shipEff.duration = (online ? GetAttribute(AttrDuration).get_float() : 0.0);
-    } else if (HasAttribute(AttrSpeed)) {
-        shipEff.duration = (online ? GetAttribute(AttrSpeed).get_float() : 0.0);
-    } else {
-        shipEff.duration = 0.0;
-    }
-        shipEff.repeat = (online ? 1 : 0);
-        shipEff.error = PyStatic.NewNone();
-    PyList* events = new PyList();
-        events->AddItem(shipEff.Encode());
-    Notify_OnMultiEvent multi;
-        multi.events = events;
-    PyTuple* tmp = multi.Encode();
-    pClient->SendNotification("OnMultiEvent", "clientID", &tmp);
-}
-
 void InventoryItem::SetCustomInfo(const char *ci) {
     if (ci != nullptr)
         m_customInfo = ci;
     else
         m_customInfo = "";
-    //SaveItem();
+
+    if (sConfig.world.saveOnUpdate)
+        SaveItem();
 }
 
-void InventoryItem::Relocate(const GPoint pos)
+void InventoryItem::SetPosition(const GPoint pos)
 {
     m_position = pos;
     _log(ITEM__RELOCATE, "%s(%u) Relocating to %.2f, %.2f, %.2f.", m_itemName.c_str(), m_itemID, m_position.x, m_position.y, m_position.z);
@@ -1310,17 +1277,16 @@ void InventoryItem::RemoveModifier(fxData data)
         if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
             m_modifiers.erase(it);
 
-    using namespace Effects;
     switch (data.math) {
-        case dgmMathPreMul:         data.math = dgmMathPreDiv;          break;
-        case dgmMathPreDiv:         data.math = dgmMathPreMul;          break;
-        case dgmMathModAdd:         data.math = dgmMathModSub;          break;
-        case dgmMathModSub:         data.math = dgmMathModAdd;          break;
-        case dgmMathPostMul:        data.math = dgmMathPostDiv;         break;
-        case dgmMathPostDiv:        data.math = dgmMathPostMul;         break;
-        case dgmMathPostPercent:    data.math = dgmMathRevPostPercent;  break;
-        case dgmMathPreAssignment:  data.math = dgmMathPostAssignment;  break;
-        case dgmMathPostAssignment: data.math = dgmMathPreAssignment;   break;
+        case FX::Math::PreMul:         data.math = FX::Math::PreDiv;          break;
+        case FX::Math::PreDiv:         data.math = FX::Math::PreMul;          break;
+        case FX::Math::ModAdd:         data.math = FX::Math::ModSub;          break;
+        case FX::Math::ModSub:         data.math = FX::Math::ModAdd;          break;
+        case FX::Math::PostMul:        data.math = FX::Math::PostDiv;         break;
+        case FX::Math::PostDiv:        data.math = FX::Math::PostMul;         break;
+        case FX::Math::PostPercent:    data.math = FX::Math::RevPostPercent;  break;
+        case FX::Math::PreAssignment:  data.math = FX::Math::PostAssignment;  break;
+        case FX::Math::PostAssignment: data.math = FX::Math::PreAssignment;   break;
     }
     m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
 }

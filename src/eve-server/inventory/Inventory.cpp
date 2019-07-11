@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Bloody.Rabbit
-    Updates:    Allan
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -69,7 +69,7 @@ void Inventory::Unload()
         std::map<uint32, InventoryItemRef>::iterator itr = mContents.begin(), end = mContents.end();
         while (itr != end) {
             if (IsPlayerItem(itr->first) and (itr->second->flag() != flagSkill)) {   // only save player items (except skills - saved in Character::SaveAll())
-                SaveData data;
+                SaveData data = SaveData();
                     data.itemID = itr->first;
                     data.contraband = itr->second->contraband();
                     data.flag = itr->second->flag();
@@ -102,6 +102,9 @@ bool Inventory::LoadContents() {
     double profileStartTime = GetTimeUSeconds();
     /* rewrote logic, optimized, and fixed "empty inventory" for new chars in existing systems  -allan 22.2.16 */
     Client* pClient = sItemFactory.GetUsingClient();
+    // test for character creation (which throws errors here and isnt really needed)
+    if ((pClient != nullptr) and pClient->IsCharCreation())
+        return true;
     if (IsStation(m_myID)) {
         if (pClient != nullptr) {
             if (pClient->IsHangarLoaded(m_myID))
@@ -117,13 +120,14 @@ bool Inventory::LoadContents() {
         return true;
     }
 
-    OwnerData od;
+    OwnerData od = OwnerData();
         od.ownerID = 1;
         od.locID = m_myID;
 
     std::vector<uint32> items;
     if (pClient != nullptr) {
-        od.corpID = pClient->GetCorporationID();
+        if (pClient->IsValidSession())
+            od.corpID = pClient->GetCorporationID();
         if (IsStation(m_myID)) {
             if (!StationItemRef::StaticCast(m_self)->IsLoaded())
                 StationDB::LoadOffices(od, items);
@@ -137,14 +141,18 @@ bool Inventory::LoadContents() {
             if (IsPlayerCorp(od.corpID)) {
                 /* this will load corp hangars' inventory for this station */
                 od.ownerID = od.corpID;
-                _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %u", m_myID, this , od.ownerID, pClient->GetStationID());
+                _log(INV__TRACE, "Inventory::LoadContents() - Loading office inventory %u(%p) for corp %u in station %s",\
+                            m_myID, this , od.ownerID, (pClient->IsValidSession() ? itoa(pClient->GetStationID()) : "(invalid)"));
                 GetItems(od, items);
             } else {
                 // make error for loading office and NOT a PC corp
                 _log(INV__WARNING, "Inventory::LoadContents() - inventory of officeID %u using corpID %u. Continuing...", m_myID, od.corpID);
             }
         }
-        od.ownerID = pClient->GetCharacterID();
+        if (pClient->IsValidSession())
+            od.ownerID = pClient->GetCharacterID();
+        else
+            od.ownerID = pClient->GetCharID();
     }
 
     _log(INV__TRACE, "Inventory::LoadContents() - Loading inventory %u(%p) with owner %u", m_myID, this , od.ownerID);
@@ -203,7 +211,7 @@ void Inventory::DeleteContents()
 {
     if (!mContentsLoaded)
         return;
-    InventoryItemRef iRef;
+    InventoryItemRef iRef(nullptr);
     std::map<uint32, InventoryItemRef>::iterator cur = mContents.begin();
     while (cur != mContents.end()) {
         iRef = cur->second;
@@ -215,7 +223,7 @@ void Inventory::DeleteContents()
     mContentsLoaded = false;
 }
 
-CRowSet* Inventory::List(EVEItemFlags flag, uint32 forOwner/*0*/) const
+CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
 {
     PyList *keywords = new PyList();
         keywords->AddItem(new_tuple(new PyString("stacksize"), new PyToken("util.StackSize")));
@@ -231,13 +239,13 @@ CRowSet* Inventory::List(EVEItemFlags flag, uint32 forOwner/*0*/) const
         header->AddColumn("categoryID", DBTYPE_I2);
         header->AddColumn("customInfo", DBTYPE_STR);
     CRowSet* rowset = new CRowSet(&header);
-    List(rowset, flag, forOwner);
+    List(rowset, flag, ownerID);
     if (is_log_enabled(INV__DUMP))
         rowset->Dump(INV__DUMP, "    ");
     return rowset;
 }
 
-void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 forOwner) const {
+void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
     //there has to be a better way to build this...
     PyPackedRow* row(nullptr);
     // office hangars list ALL items.  client separates by division flag
@@ -249,13 +257,25 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 forOwner) const {
         }
     } else {
         for (auto cur : mContents) {
-            if (((forOwner == 0)        or (cur.second->ownerID() == forOwner))
+            if (((ownerID == 0)        or (cur.second->ownerID() == ownerID))
             and ((flag == flagAnywhere) or (cur.second->flag() == flag))) {
                 row = into->NewRow();
                 cur.second->GetItemRow(row);
             }
         }
     }
+}
+
+// for stations only
+void Inventory::GetInvForOwner(uint32 ownerID, std::vector< InventoryItemRef >& items)
+{
+    if (!IsOffice(m_myID) or !IsStation(m_myID)) {
+        _log(INV__ERROR, "GetInvForOwner called for non-station item %s", m_self->itemName().c_str());
+        EvE::traceStack();
+    }
+    for (auto cur : mContents)
+        if (cur.second->ownerID() == ownerID)
+            items.push_back(cur.second);
 }
 
 InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
@@ -276,8 +296,8 @@ InventoryItemRef Inventory::GetByID(uint32 id) const {
 
 InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) const {
     for (auto cur : mContents)
-        if (cur.second->typeID() == typeID
-            && cur.second->flag() == flag)
+        if ((cur.second->typeID() == typeID)
+        and (cur.second->flag() == flag))
             return cur.second;
 
         return InventoryItemRef(nullptr);
@@ -286,14 +306,6 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
 void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory) {
     for (auto cur : mContents)
         inventory.insert(std::pair<uint32, InventoryItemRef>(cur.first, cur.second));
-}
-
-bool Inventory::HasShip()
-{
-    for (auto cur : mContents)
-        if (cur.second->categoryID() == EVEDB::invCategories::Ship)
-            return true;
-    return false;
 }
 
 void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
@@ -452,7 +464,7 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
 }
 
 
-void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner/*0*/)
+void Inventory::StackAll(EVEItemFlags locFlag, uint32 ownerID/*0*/)
 {
     InventoryItemRef iRef(nullptr);
     std::map<uint16, InventoryItemRef> types;
@@ -465,7 +477,7 @@ void Inventory::StackAll(EVEItemFlags locFlag, uint32 forOwner/*0*/)
             continue;
         if (iRef->singleton())
             continue;
-        if ((forOwner == 0) or (forOwner == iRef->ownerID())) {
+        if ((ownerID == 0) or (ownerID == iRef->ownerID())) {
             tItr = types.find(iRef->typeID());
             if (tItr == types.end())
                 types.insert(std::make_pair(iRef->typeID(), iRef));

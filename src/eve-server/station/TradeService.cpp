@@ -226,7 +226,7 @@ void TradeBound::CancelTrade(Client* pClient, Client* pOther, TradeSession* pTSe
 {
     // trade cancelled.  send items back to owner. (monies not taken at this point)
     PyDict* dict = new PyDict;
-    dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
+    dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {
@@ -372,7 +372,7 @@ PyResult TradeBound::Handle_Add(PyCallArgs &call) {
         itemRef->Move(tradeContainerID, (EVEItemFlags)flag, true);
 
     PyDict* dict = new PyDict;
-        dict->SetItem(new PyInt(ixLocationID), new PyInt(args.arg2));
+        dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.arg2));
 
     DBRowDescriptor* header = m_TSvc->CreateHeader();
     PyPackedRow* row = new PyPackedRow( header );
@@ -418,7 +418,7 @@ PyResult TradeBound::Handle_MultiAdd(PyCallArgs &call) {
             flag = call.byname.find("flag")->second->AsInt()->value();
 
     PyDict* dict = new PyDict;
-        dict->SetItem(new PyInt(ixLocationID), new PyInt(args.contID));
+        dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(args.contID));
 
     TradeSession* pTSes = call.client->GetTradeSession();
     Client* pClient = sEntityList.FindClientByCharID(pTSes->m_tradeSession.myID);
@@ -503,7 +503,7 @@ PyResult TradeBound::Handle_GetItem(PyCallArgs &call) {
     PyPackedRow* row = new PyPackedRow( header );
         row->SetField( "itemID",        new PyLong(pTSes->m_tradeSession.containerID));
         row->SetField( "typeID",        new PyInt(53));     // type Trade Window
-        row->SetField( "ownerID",       new PyInt(1));      // EvE_System
+        row->SetField( "ownerID",       PyStatic.NewOne());      // EvE_System
         row->SetField( "locationID",    new PyLong(pTSes->m_tradeSession.stationID));
         row->SetField( "flagID",        PyStatic.NewNone());
         row->SetField( "quantity",      new PyInt(-1));     // singleton
@@ -590,12 +590,12 @@ void TradeBound::ExchangeItems(Client* pClient, Client* pOther, TradeSession* pT
     reason += " and ";
     reason += pOther->GetCharName();
     reason += " in ";
-    reason += pClient->GetSystemName();
+    reason += pClient->GetSystemName();     // use system name or station name here?
     AccountService::TranserFunds(pClient->GetCharacterID(), pOther->GetCharacterID(), pTSes->m_tradeSession.myMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
     AccountService::TranserFunds(pOther->GetCharacterID(), pClient->GetCharacterID(), pTSes->m_tradeSession.herMoney, reason, Journal::EntryType::PlayerTrading, pClient->GetStationID());
 
     PyDict* dict = new PyDict;
-        dict->SetItem(new PyInt(ixLocationID), new PyInt(pTSes->m_tradeSession.containerID));
+        dict->SetItem(new PyInt(Inv::Update::Location), new PyInt(pTSes->m_tradeSession.containerID));
 
     uint32 stationID = pTSes->m_tradeSession.stationID;
     for (auto cur : pTSes->m_tradelist) {

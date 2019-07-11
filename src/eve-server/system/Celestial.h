@@ -60,7 +60,7 @@ class CelestialObject
 public:
     CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data);
     CelestialObject(uint32 _celestialID, const ItemType &_type, const ItemData &_data, const CelestialObjectData &_cData);
-    virtual ~CelestialObject()                          { /* Do nothing here */ }
+    virtual ~CelestialObject();
 
     static CelestialObjectRef Load( uint32 celestialID);
     static CelestialObjectRef Spawn( ItemData &data);
