@@ -20,6 +20,43 @@
  *   "RD  - received with details
  */
 
+namespace Dmg {
+
+    namespace Msg {
+
+        static const char* Self[7] = {
+            "AttackMiss1R",   //miss
+            "AttackHit1R",    //barely scratches
+            "AttackHit2R",    //lightly hits
+            "AttackHit3R",    //hits
+            "AttackHit4R",    //aims well at you
+            "AttackHit5R",    //places an excellent hit
+            "AttackHit6R"     //strikes you perfectly, wrecking
+        };
+
+        static const char* Named[7] = {
+            "AttackMiss1RD",   //miss
+            "AttackHit1RD",    //barely scratches
+            "AttackHit2RD",    //lightly hits
+            "AttackHit3RD",    //hits
+            "AttackHit4RD",    //aims well at you
+            "AttackHit5RD",    //places an excellent hit
+            "AttackHit6RD"     //strikes you perfectly, wrecking
+        };
+
+        static const char* Other[7] = {
+            "AttackMiss1",   //miss
+            //AttackMiss1Banked  //'banked' means 'group weapons'  also in ship.modules.GetTurretSets in MakeSlimItem()
+            "AttackHit1",    //barely scratches
+            "AttackHit2",    //lightly hits
+            "AttackHit3",    //hits
+            "AttackHit4",    //aims well
+            "AttackHit5",    //places an excellent hit
+            "AttackHit6"     //strikes perfectly, wrecking
+        };
+    }
+}
+
 /* {'messageKey': 'AttackHit1', 'dataID': 17885829, 'suppressable': False, 'bodyID': 260383, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 114}
  * {'messageKey': 'AttackHit1Banked', 'dataID': 17878336, 'suppressable': False, 'bodyID': 257589, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2641}
  * {'messageKey': 'AttackHit1Banked_Simple', 'dataID': 17878333, 'suppressable': False, 'bodyID': 257588, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2652}
@@ -173,94 +210,6 @@
  */
 
 /*
-(251144, `<br>
-Victim: {[character] victim.name}<br>
-Corp: {corporation}<br>
-Alliance: {alliance}<br>
-Faction: {faction}<br>
-Destroyed: {[item] target.name}<br>
-System: {[location] system.name}<br>
-Security: {[numeric] security, decimalPlaces=1}<br>
-Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
-<br>
-Involved parties:<br>
-<br>`)
-(251145, `<br>
-Corp: {corporation}<br>
-Alliance: {alliance}<br>
-Faction: {faction}<br>
-Destroyed: {[item] target.name}<br>
-System: {[location] system.name}<br>
-Security: {[numeric] security, decimalPlaces=1}<br>
-Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
-<br>
-Involved parties:<br>
-<br>`)
-(251147, `Name: {attacker} (laid the final blow)<br>
-Security: {[numeric] security, decimalPlaces=2}<br>
-Corp: {corporation}<br>
-Alliance: {alliance}<br>
-Faction: {faction}<br>
-Ship: {ship}<br>
-Weapon: {weapon}<br>
-Damage Done: {[numeric] damage, decimalPlaces=0}<br>
-<br>`)
-(251148, `Name: {attacker}<br>
-Security: {[numeric] security, decimalPlaces=2}<br>
-Corp: {corporation}<br>
-Alliance: {alliance}<br>
-Faction: {faction}<br>
-Ship: {ship}<br>
-Weapon: {weapon}<br>
-Damage Done: {[numeric] damage, decimalPlaces=0}<br>
-<br>`)
-(251149, `Name: {attacker} / {owner} (laid the final blow)<br>
-Damage Done: {[numeric] damage, decimalPlaces=0}<br>
-<br>
-`)
-(251150, `Name: {attacker} / {owner}<br>
-Damage Done: {[numeric] damage, decimalPlaces=0}<br>
-<br>`)
-*/
-
-namespace Dmg {
-
-    namespace Msg {
-
-        static const char* Self[7] = {
-            "AttackMiss1R",   //miss
-            //AttackMiss1Banked  ?not sure here....'banked' means 'group weapons'  also in ship.modules.GetTurretSets in MakeSlimItem()
-            "AttackHit1R",    //barely scratches
-            "AttackHit2R",    //lightly hits
-            "AttackHit3R",    //hits
-            "AttackHit4R",    //aims well at you
-            "AttackHit5R",    //places an excellent hit
-            "AttackHit6R"     //strikes you perfectly, wrecking
-        };
-
-        static const char* Named[7] = {
-            "AttackMiss1RD",   //miss
-            "AttackHit1RD",    //barely scratches
-            "AttackHit2RD",    //lightly hits
-            "AttackHit3RD",    //hits
-            "AttackHit4RD",    //aims well at you
-            "AttackHit5RD",    //places an excellent hit
-            "AttackHit6RD"     //strikes you perfectly, wrecking
-        };
-
-        static const char* Other[7] = {
-            "AttackMiss1",   //miss
-            "AttackHit1",    //barely scratches
-            "AttackHit2",    //lightly hits
-            "AttackHit3",    //hits
-            "AttackHit4",    //aims well
-            "AttackHit5",    //places an excellent hit
-            "AttackHit6"     //strikes perfectly, wrecking
-        };
-    }
-}
-
-/*
  *    def OnDamageMessage(self, msgKey, args):
  *        try:
  *            michelle = sm.GetService('michelle')
@@ -329,25 +278,58 @@ namespace Dmg {
  *        msgKey = msgKey.replace('BankedR', 'R')
  *        sm.GetService('logger').AddCombatMessage(msgKey, args)
  *
- *
- *    def DamageMessageGrouped(self, turretSets, hitQuality):
- *        if hitQuality <= 0:
- *            for t in turretSets:
- *                t.SetShotMissed(True)
- *
- *        elif hitQuality >= 3:
- *            for t in turretSets:
- *                t.SetShotMissed(False)
- *
- *        else:
- *            turretCount = len(turretSets)
- *            missPct = [0.5, 0.25][hitQuality - 1]
- *            missed = math.floor(missPct * turretCount)
- *            random.shuffle(turretSets)
- *            for i, t in enumerate(turretSets):
- *                t.SetShotMissed(i < missed)
- * 
  */
+
+/*  killmail shit.  not sure how to implement it yet.
+(251144, `<br>
+Victim: {[character] victim.name}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Destroyed: {[item] target.name}<br>
+System: {[location] system.name}<br>
+Security: {[numeric] security, decimalPlaces=1}<br>
+Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+Involved parties:<br>
+<br>`)
+(251145, `<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Destroyed: {[item] target.name}<br>
+System: {[location] system.name}<br>
+Security: {[numeric] security, decimalPlaces=1}<br>
+Damage Taken: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+Involved parties:<br>
+<br>`)
+(251147, `Name: {attacker} (laid the final blow)<br>
+Security: {[numeric] security, decimalPlaces=2}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Ship: {ship}<br>
+Weapon: {weapon}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+(251148, `Name: {attacker}<br>
+Security: {[numeric] security, decimalPlaces=2}<br>
+Corp: {corporation}<br>
+Alliance: {alliance}<br>
+Faction: {faction}<br>
+Ship: {ship}<br>
+Weapon: {weapon}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+(251149, `Name: {attacker} / {owner} (laid the final blow)<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>
+`)
+(251150, `Name: {attacker} / {owner}<br>
+Damage Done: {[numeric] damage, decimalPlaces=0}<br>
+<br>`)
+*/
 
 
 #endif  // EVE_DAMAGE_H

@@ -52,7 +52,8 @@ void Profile::AddTime(uint8 key, double value) {
     _droneProfile       = 20,   *
     _itemloadProfile    = 21,   *
     _concordProfile     = 22,   *
-    _colonyProfile      = 23    *
+    _colonyProfile      = 23,   *
+    _damageProfile      = 24
     */
     switch(key) {
         case 1:
@@ -124,6 +125,9 @@ void Profile::AddTime(uint8 key, double value) {
         case 23:
             m_colony.push_back(value);
             break;
+        case 24:
+            m_damage.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -155,6 +159,7 @@ void Profile::ClearAll()
     m_itemload.clear();
     m_concord.clear();
     m_colony.clear();
+    m_damage.clear();
 }
 
 void Profile::PrintProfile()
@@ -189,8 +194,9 @@ void Profile::PrintProfile()
     std::printf("       Bubbles   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_bubbles.size()).c_str(),  h, l, a );
     if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns) {
         GetRunTimes(m_spawn, h, l, a);
-        std::printf("         Spawn   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_spawn.size()).c_str(), h, l, a );
-    }
+        std::printf("        Spawns   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_spawn.size()).c_str(), h, l, a );
+    } else
+        std::printf("          Spawns Disabled.\n");
     GetRunTimes(m_destiny, h, l, a);
     std::printf("       Destiny   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus.\n", GetSize(m_destiny.size()).c_str(),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
@@ -203,6 +209,8 @@ void Profile::PrintProfile()
     std::printf("          Ship   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_ship.size()).c_str(),  h, l, a );
     GetRunTimes(m_missile, h, l, a);
     std::printf("       Missile   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_missile.size()).c_str(), h, l, a );
+    GetRunTimes(m_damage, h, l, a);
+    std::printf("        Damage   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_damage.size()).c_str(), h, l, a );
     GetRunTimes(m_loot, h, l, a);
     std::printf("          Loot   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_loot.size()).c_str(), h, l, a );
     GetRunTimes(m_salvage, h, l, a);
@@ -210,15 +218,21 @@ void Profile::PrintProfile()
     if (sConfig.cosmic.BumpEnabled) {
         GetRunTimes(m_collision, h, l, a);
         std::printf("    Collisions   %u times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", m_collision.size(), h, l, a );
-    }
+    } else
+        std::printf("      Collisions Disabled.\n");
+
     if (sConfig.testing.EnableDrones) {
         GetRunTimes(m_drone, h, l, a);
         std::printf("        Drones   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_drone.size()).c_str(), h, l, a );
-    }
+    } else
+        std::printf("          Drones Disabled.\n");
+
     if (sConfig.cosmic.PIEnabled) {
         GetRunTimes(m_colony, h, l, a);
         std::printf("        Colony   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_colony.size()).c_str(), h, l, a );
-    }
+    } else
+        std::printf("          Colony Disabled.\n");
+
     std::printf(" Profile Times Compiled in %.4fus,\n", (GetTimeUSeconds() -startTime) );
 }
 
@@ -283,7 +297,8 @@ std::string Profile::GetKeyName(uint8 key)
         case _droneProfile:         return "Drone";     //  20,
         case _itemloadProfile:      return "ItemLoad";  //  21,
         case _concordProfile:       return "Concord";   //  22,
-        case _colonyProfile:        return "Colony";    //  23
+        case _colonyProfile:        return "Colony";    //  23,
+        case _damageProfile:        return "Damage";    //  24
     }
 }
 

@@ -105,6 +105,8 @@ Damage::Damage(SystemEntity* _source, bool fatal_blow/*false*/)
 }
 
 bool SystemEntity::ApplyDamage(Damage &d) {
+    double profileStartTime = GetTimeUSeconds();
+
     if (d.srcSE->IsNPCSE()) {
         _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from NPC %s(%u) with K:%.3f, T:%.3f, EM:%.3f, E:%.3f",\
                     GetName(), GetID(), d.GetTotal(), d.srcSE->GetName(), d.srcSE->GetID(), \
@@ -266,8 +268,13 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (killed) {
-        if (m_killed)
+        if (m_killed) {
+            if (sConfig.debug.UseProfiling)
+                sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
+
             return true;
+        }
+
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
 
@@ -311,9 +318,13 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         // make message with "owner" tag to enable msgs to drone owner
 
         /** @todo update this to use targetmanager's queue tb destiny event method. */
+        // need to update ALL ships targeting this SE with new damage state
         if (d.srcSE->HasPilot())
             SendDamageStateChanged(d.srcSE);
     }
+    
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(_damageProfile, GetTimeUSeconds() - profileStartTime);
 
     return killed;
 }

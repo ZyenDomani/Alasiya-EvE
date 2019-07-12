@@ -38,17 +38,22 @@ public:
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
     Damage( SystemEntity *source, bool fatal_blow=false);
 
-    ~Damage()                                   { /* do nothing here */ }
+    ~Damage()                                           { /* do nothing here */ }
 
+    float GetThermal()                                  { return thermal; }
+    float GetEM()                                       { return em; }
+    float GetKinetic()                                  { return kinetic; }
+    float GetExplosive()                                { return explosive; }
+    float GetModifier()                                 { return modifier; }
     float GetTotal() const                              { return (kinetic + thermal + em + explosive); }
 
     Damage MultiplyDup( float kinetic_multiplier,
                         float thermal_multiplier,
                         float em_multiplier,
                         float explosive_multiplier ) const
-                        {       // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
-                                // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
-                                // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
+                        {   // NOTE:  remember, these come in BACKWARD from 'normal' fuzzy logic..  0=full and 1=none
+                            // added checks here for > 95% resists, and < 1% to avoid crazy damage shit.
+                            // also added checks for missing resists (some npcs have no hull resist in db which = 100% resist)
                             if (kinetic_multiplier > 1.0) kinetic_multiplier = 1.0;
                             if (kinetic_multiplier < 0.01) kinetic_multiplier = 0.01;
                             if (thermal_multiplier > 1.0) thermal_multiplier = 1.0;
@@ -83,12 +88,6 @@ public:
         em        += em         * factor;
         explosive += explosive  * factor;
     }
-
-    float GetThermal()                                 { return thermal; }
-    float GetEM()                                      { return em; }
-    float GetKinetic()                                 { return kinetic; }
-    float GetExplosive()                               { return explosive; }
-    float GetModifier()                                { return modifier; }
 
     SystemEntity*           srcSE;     //we do not own this.
     uint16                  effectID;
