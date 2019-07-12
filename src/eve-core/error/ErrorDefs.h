@@ -7,7 +7,7 @@
   * @date:   ?? May 2015
   */
 
- // Latest change - 13Nov18
+ // Latest change - 12 July 2019
 
  /** @todo  the def references need updating  */
 
@@ -19,12 +19,14 @@
 /*  Error Code layout  (wip)
  *    code # ABCDE
  *      A = category (0-server, 1-player, 2-command, 3-destiny, 4-cosmic mgr, 5-market, 6-inventory, 7-service, 8-, 9-other)
- *      B = system (0-character, 1-location, 2-system, 3-item, 4-, 5-ship, 6-module, 7-agent, 8-, 9-effects)
- *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-, 6-pilot, 7-skill, 8-bind, 9-timer)
- *      D = type (0-create, 1-destroy, 2-check, 3-change, 4-move, 5-, 6-, 7-, 8-, 9-)
+ *      B = system (0-character, 1-location, 2-system, 3-item, 4-planet, 5-ship, 6-module, 7-agent, 8-, 9-effects)
+ *      C = subsystem (0-other, 1-self, 2-target, 3-charge, 4-calculate, 5-init, 6-pilot, 7-skill, 8-bind, 9-timer)
+ *      D = type (0-create, 1-destroy, 2-check, 3-change, 4-move, 5-update, 6-save, 7-load, 8-decode, 9-encode)
  *      E = error (0-undef, 1-not init, 2-oob, 3-not found, 4-offline, 5-, 6-, 7-unknown, 8-invalid, 9-not implemented)
  *
  *
+ * Ref: ServerError 04421. << PlanetMgr::CreatePin - cost is 0
+ * Ref: ServerError 04588. << PlanetMgr - various decode invalid
  * Ref: ServerError 02808. << CorpRegistryService::_CreateBoundObject - object is not tuple
  * Ref: ServerError 06428. << MiningLaser::ProcessCycle() - cycleVol < oreVolume
  * Ref: ServerError 07208. << Agent::MakeOffer() - Error when creating mission destination.
