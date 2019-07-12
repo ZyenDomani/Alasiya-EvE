@@ -67,7 +67,7 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
-    m_destiny->SetShipCapabilities(m_self);
+    m_destiny->UpdateShipVariables();
 
     SetResists();
 

@@ -2569,7 +2569,7 @@ void Ship::RemoveBoost()
     m_shipRef->SetAttribute(AttrInetia, m_oldInertia);
     m_shipRef->SetAttribute(AttrShieldCapacity, m_oldShield);
 
-    m_destiny->SetShipCapabilities(m_shipRef);
+    m_destiny->UpdateShipVariables();
 
     ClearBoostData();
 }
@@ -2603,7 +2603,7 @@ void Ship::ApplyBoost(BoostData& bData)
     m_shipRef->SetAttribute(AttrShieldCapacity, shieldHP);
     m_shipRef->SetAttribute(AttrMaxTargetRange, targRange);
 
-    m_destiny->SetShipCapabilities(m_shipRef);
+    m_destiny->UpdateShipVariables();
 
     m_boosted = true;
 }

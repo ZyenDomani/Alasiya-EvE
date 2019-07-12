@@ -2453,7 +2453,7 @@ void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)
 }
 
 //  called from Client::CreateShipSE(), Client::ResetAfterPodded(), NPC::NPC(), Concord::Concord(), Drone::Drone(), DestinyManager::UpdateNewShip()
-void DestinyManager::SetShipCapabilities(InventoryItemRef ship, bool undock)
+void DestinyManager::UpdateShipVariables()
 {
     /*
 Frigates (incl. CovOps, Inty, AF) have an agility of 3.1
@@ -2468,21 +2468,22 @@ Battleships 0.155
      * this is also called when fleet boosts are updated.
      */
     /** @todo check for movemement when fleet boosts are applied and this is called */
-    m_mass = ship->GetAttribute(AttrMass).get_float();
+    InventoryItemRef sRef = mySE->GetSelf();
+    m_mass = sRef->GetAttribute(AttrMass).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
 
     // this will catch speeds/needs for all ships (player and npc), and is easier to do here.
-    if (ship->HasAttribute(AttrWarpSpeedMultiplier))
-        m_shipWarpSpeed = ship->GetAttribute(AttrWarpSpeedMultiplier).get_float();
-    if (ship->HasAttribute(AttrInetia))
-        m_shipInertia = ship->GetAttribute(AttrInetia).get_float();
-    if (ship->HasAttribute(AttrMaxVelocity))
-        m_maxShipSpeed = ship->GetAttribute(AttrMaxVelocity).get_float();
-    if (ship->HasAttribute(AttrWarpCapacitorNeed))
-        m_warpCapacitorNeed = ship->GetAttribute(AttrWarpCapacitorNeed).get_float();
+    if (sRef->HasAttribute(AttrWarpSpeedMultiplier))
+        m_shipWarpSpeed = sRef->GetAttribute(AttrWarpSpeedMultiplier).get_float();
+    if (sRef->HasAttribute(AttrInetia))
+        m_shipInertia = sRef->GetAttribute(AttrInetia).get_float();
+    if (sRef->HasAttribute(AttrMaxVelocity))
+        m_maxShipSpeed = sRef->GetAttribute(AttrMaxVelocity).get_float();
+    if (sRef->HasAttribute(AttrWarpCapacitorNeed))
+        m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float();
 
     if (mySE->IsNPCSE())
-        m_maxShipSpeed = ship->GetAttribute(AttrEntityCruiseSpeed).get_float();
+        m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
 
     /*  per https://forums.eveonline.com/default.aspx?g=posts&m=3912843   post#103
      *
@@ -2509,6 +2510,8 @@ Battleships 0.155
     m_alignTime = (-std::log(0.25) * m_shipAgility);
     m_timeToEnterWarp = m_alignTime;
 
+    m_hasSentShipUpdates = true;
+
     if (!mySE->HasPilot())
         return;
     if (mySE->GetPilot()->IsInSpace() and (mySE->SysBubble() != nullptr)) {
@@ -2525,11 +2528,13 @@ Battleships 0.155
             sbmass.entityID = mySE->GetID();
             sbmass.mass = m_mass;
         updates.push_back(sbmass.Encode());
+        SetBallSpeed sbspeed;
+            sbspeed.entityID = mySE->GetID();
+            sbspeed.speed = m_maxShipSpeed;
+        updates.push_back(sbspeed.Encode());
         SendDestinyUpdate(updates); //consumed
-        m_hasSentShipUpdates = true;
-    } else {
+    } else
         m_hasSentShipUpdates = false;
-    }
 }
 
 void DestinyManager::MakeMissile(Missile* pMissile) {
@@ -2576,10 +2581,8 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
     if (m_hasSentShipUpdates)
         return;
 
-    SetShipCapabilities(newShipRef);
-    SendBallInteractive(newShipRef, true);
-
     Client* pClient = mySE->GetPilot();
+    // exactly why do we need this here??
     PyDict* slim = new PyDict();
         slim->SetItemString("name",             new PyString(newShipRef->itemName()));
         slim->SetItemString("itemID",           new PyInt(newShipRef->itemID()));
@@ -2593,14 +2596,12 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         slim->SetItemString("securityStatus",   new PyFloat(pClient->GetSecurityRating()));
     if (newShipRef->typeID() == itemTypeCapsule) {
         slim->SetItemString("launcherID",       new PyInt(mySE->GetShipSE()->GetLauncherID()));
+        slim->SetItemString("modules",          new PyList());
     } else {
         slim->SetItemString("categoryID",       new PyInt(newShipRef->categoryID()));
         slim->SetItemString("groupID",          new PyInt(newShipRef->groupID()));
-    }
-    if (newShipRef->typeID() == EVEDB::invTypes::typeCapsule)
-        slim->SetItemString("modules",          new PyList());
-    else
         slim->SetItemString("modules",          newShipRef->ShipGetModuleList());
+    }
 
     std::vector<PyTuple*> updates;
     PyTuple* shipData = new PyTuple(2);
@@ -2610,21 +2611,10 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         shipItem->SetItem(0, new PyString("OnSlimItemChange"));
         shipItem->SetItem(1, shipData);
     updates.push_back(shipItem);
-    /*
-    SetBallAgility sbagility;
-        sbagility.entityID = newShipRef->itemID();
-        sbagility.agility = m_shipAgility;
-    updates.push_back(sbagility.Encode());
-    SetBallMass sbmass;
-        sbmass.entityID = newShipRef->itemID();
-        sbmass.mass = m_mass;
-    updates.push_back(sbmass.Encode());
-    */
-    SetBallSpeed ms;
-        ms.entityID = newShipRef->itemID();
-        ms.speed = m_maxSpeed;
-    updates.push_back(ms.Encode());
     SendDestinyUpdate(updates);
+
+    UpdateShipVariables();
+    SendBallInteractive(newShipRef, true);
 }
 
 void DestinyManager::UpdateOldShip(Ship* pShipSE)

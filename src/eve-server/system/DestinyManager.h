@@ -98,7 +98,7 @@ public:
     void SpeedBoost(bool deactivate=false);             // reset speed variables and bubblecast ship's AB/MWD modified speed (module activate/deactivate)
     void SetPosition(const GPoint& pt, bool update = false);
     void SetMaxVelocity(float maxVelocity);
-    void SetShipCapabilities(const InventoryItemRef ship, bool undock = false);
+    void UpdateShipVariables();
 
     /* Global Actions */
     void Stop();

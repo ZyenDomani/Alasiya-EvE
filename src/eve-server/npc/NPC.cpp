@@ -81,7 +81,7 @@ NPC::~NPC() {
 
 bool NPC::Load()
 {
-    m_destiny->SetShipCapabilities(m_self);
+    m_destiny->UpdateShipVariables();
 
     SetResists();
 
