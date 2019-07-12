@@ -196,7 +196,7 @@ void Profile::PrintProfile()
         GetRunTimes(m_spawn, h, l, a);
         std::printf("        Spawns   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_spawn.size()).c_str(), h, l, a );
     } else
-        std::printf("          Spawns Disabled.\n");
+        std::printf("        Spawns   Disabled.\n");
     GetRunTimes(m_destiny, h, l, a);
     std::printf("       Destiny   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus.\n", GetSize(m_destiny.size()).c_str(),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
@@ -219,19 +219,19 @@ void Profile::PrintProfile()
         GetRunTimes(m_collision, h, l, a);
         std::printf("    Collisions   %u times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", m_collision.size(), h, l, a );
     } else
-        std::printf("      Collisions Disabled.\n");
+        std::printf("    Collisions   Disabled.\n");
 
     if (sConfig.testing.EnableDrones) {
         GetRunTimes(m_drone, h, l, a);
         std::printf("        Drones   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_drone.size()).c_str(), h, l, a );
     } else
-        std::printf("          Drones Disabled.\n");
+        std::printf("        Drones   Disabled.\n");
 
     if (sConfig.cosmic.PIEnabled) {
         GetRunTimes(m_colony, h, l, a);
         std::printf("        Colony   %s times.   \tHi: %.4fus,   \tLo: %.4fus,   \tAvg: %.4fus,\n", GetSize(m_colony.size()).c_str(), h, l, a );
     } else
-        std::printf("          Colony Disabled.\n");
+        std::printf("        Colony   Disabled.\n");
 
     std::printf(" Profile Times Compiled in %.4fus,\n", (GetTimeUSeconds() -startTime) );
 }

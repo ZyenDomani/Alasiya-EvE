@@ -3073,7 +3073,9 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
     } else if (mySE->SysBubble() != nullptr) {
         if (is_log_enabled(DESTINY__UPDATES))
             _log( DESTINY__UPDATES, "[%u] BubbleCasting destiny update (u:%u, e:%u) to bubbleID %u from %s(%u)", \
-                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->SysBubble()->GetID(), mySE->GetName(), mySE->GetID() );
+                    sEntityList.GetStamp(), updates.size(), events.size(), mySE->SysBubble()->GetID(),   \
+                    (mySE->HasPilot()?mySE->GetPilot()->GetName():mySE->GetName()),\
+                    (mySE->HasPilot()?mySE->GetPilot()->GetCharID():mySE->GetID()) );
         mySE->SysBubble()->BubblecastDestiny( updates, events, "destiny" );
     } else {
         _log( DESTINY__ERROR, "[%u] Cannot BubbleCast destiny update (u:%u, e:%u); entity (%u) is not in any bubble.", \
