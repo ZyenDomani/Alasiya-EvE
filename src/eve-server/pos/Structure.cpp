@@ -70,7 +70,7 @@ StructureItemRef StructureItem::Spawn(ItemData &data)
     StructureItemRef sRef = StructureItem::Load(structureID );
     // check for customs offices and set global flag
     if ((data.typeID == EVEDB::invTypes::typeInterbusCustomsOffice)
-        or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
+    or (data.typeID == EVEDB::invTypes::typePlanetaryCustomsOffice)) {
         sRef->SetAttribute(AttrIsGlobal,                        EvilOne);
     }
     // Create default dynamic attributes in the AttributeMap:

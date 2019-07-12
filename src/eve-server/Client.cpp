@@ -996,6 +996,7 @@ void Client::Board(Ship* newShipSE)
         SafeDelete(oldShipSE);
     } else {    // you can xfer direct from one ship from another.
         //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
+        /** @todo  incomplete...just cause bubble has FF, dont mean ship is INSIDE said FF */
         bool abandoned = true;
         if (pShipSE->SysBubble()->HasTower())
             if (pShipSE->SysBubble()->GetTowerSE()->HasForceField())
@@ -1404,24 +1405,24 @@ void Client::LoadStationHangar(uint32 stationID) {
 void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 {
     sItemFactory.SetUsingClient(this);
-    InventoryItemRef item = sItemFactory.GetItem(itemID);
-    if (item.get() == nullptr) {
+    InventoryItemRef iRef = sItemFactory.GetItem(itemID);
+    if (iRef.get() == nullptr) {
         _log(INV__ERROR, "Client::MoveItem() - %s Unable to load item %u", m_char->itemName().c_str(), itemID);
         return;
     }
 
-    item->Move(location, flag, true);
+    iRef->Move(location, flag, true);
 
     if (IsPlayerItem(location)) {
-        if (IsModuleSlot(item->flag())) {
-            m_ship->UpdateModules(item->flag());
-        } else if (IsCargoHoldFlag(item->flag())) {
+        if (IsModuleSlot(iRef->flag())) {
+            m_ship->UpdateModules(iRef->flag());
+        } else if (IsCargoHoldFlag(iRef->flag())) {
             // do nothing here.  this is to avoid throwing error msg below
         } else {
-            _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %u", m_char->itemName().c_str(), itemID);
+            _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s(%u)", m_char->itemName().c_str(), iRef->itemName().c_str(), itemID);
         }
     } else {
-        _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %u", m_char->itemName().c_str(), itemID);
+        _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s(%u)", m_char->itemName().c_str(), iRef->itemName().c_str(), itemID);
     }
     sItemFactory.UnsetUsingClient();
 }

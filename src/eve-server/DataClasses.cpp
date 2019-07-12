@@ -40,32 +40,29 @@ void ReactorData::Init()
 /*
 PI_CCPin::PI_CCPin()
 {
-
+    Init();
 }
 
 PI_CCPin::~PI_CCPin()
 {
+    Clear();
+}
 
+void PI_CCPin::Clear()
+{
+    pins.clear();
+    links.clear();
+    plants.clear();
+    routes.clear();
 }
 
 void PI_CCPin::Init()
 {
-
+    Clear();
+    m_level = 0;
+    m_ccPinID = 0;
+    m_currentSimTime = 0;
 }
 
-PI_Pin::PI_Pin()
-{
-
-}
-
-PI_Pin::~PI_Pin()
-{
-
-}
-
-void PI_Pin::Init()
-{
-
-}
 */
 
