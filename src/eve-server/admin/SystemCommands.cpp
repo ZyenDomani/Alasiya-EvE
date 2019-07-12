@@ -75,7 +75,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
 
     Client* pOtherClient(nullptr);
     const char* Help = "help";  // many uses.  avoid creating temp objects for every test
-    bool me = false, ship = false, player = false, fleet = false;
+    bool me = false, item = false, player = false, fleet = false;
     GPoint pt(NULL_ORIGIN);
     int locationID = 0, myLocationID = pClient->GetLocationID();
 
@@ -83,26 +83,24 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         if (args.isNumber(1)) {
             // tr <me> to locationID
             locationID = atoi(args.arg(1).c_str());
-            if (!IsValidLocation(locationID))
-                throw PyException(MakeCustomError("Translocate: Invalid Location %i", locationID));
         } else if (strcmp(args.arg(1).c_str(), Help) == 0) {
             //  {.tr help}  will display the following list of options in notification window
             std::ostringstream str; // for 'help' printing
-            str << ".tr [required first arg] [optional second arg] [optional third arg] [optional fourth arg]<br>"; //100
-            str << "1st arg = help|me|fleet|player name|shipID|itemID|locationID<br>"; //55
-            str << "2nd arg = help|me|fleet|home|last|shipID|itemID|locationID|x coord|moon|planet<br>";  //70
-            str << "3ed arg = me|fleet|home|last|shipID|itemID|locationID|y coords|moon|planet <br>"; //50
-            str << "4th arg = fleet|home|last|shipID|itemID|locationID|z coords|moon|planet <br>"; //50
+            str << ".tr [required first arg] [optional second arg] [optional third arg] [optional fourth arg]<br>"; //120
+            str << "1st arg = help|me|fleet|player name|shipID|itemID|locationID<br>"; //45
+            str << "2nd arg = help|me|fleet|home|last|shipID|itemID|locationID|x coord|moon|planet<br>";  //85
+            str << "3ed arg = me|fleet|home|last|shipID|itemID|locationID|y coords|moon|planet <br>"; //80
+            str << "4th arg = fleet|home|last|shipID|itemID|locationID|z coords|moon|planet <br>"; //77
             str << "typical use is .tr locationID<br>";  //35
-            str << "<br>As there are too many options to explain in this msg, a full usage list can be found on our forums.<br>";  //100
-            int size = 460;
+            str << "<br>As there are too many options to explain in this msg, a full usage list can be found on our forums.<br>";  //105
+            int size = 500;
             char reply[size];
             snprintf(reply, size, str.str().c_str());
             pClient->SendInfoModalMsg(reply);
             return nullptr;
         } else
             throw PyException(MakeCustomError("Translocate: Missing Arguments"));
-    } else if (args.argCount() == 3) {  // 2 args - me, player, ship, item, fleet, {invalid} : help, home, last, location, moon, planet, {invalid}
+    } else if (args.argCount() == 3) {  // 2 args - me, player, ship, item, fleet, {invalid} : help, home, last, ship, location, moon, planet, {invalid}
         // test for 'help' command
         if ((strcmp(args.arg(1).c_str(), Help) == 0)
         or (strcmp(args.arg(2).c_str(), Help) == 0))
@@ -127,6 +125,9 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             // tr <me> to ?
             //  pClient doesnt change.  do nothing here
             me = true;
+        } else if (strcmp(args.arg(1).c_str(), "ship") == 0) {
+            // tr <ship|ship owner> to ?
+            item = true;
         } else if (strcmp(args.arg(1).c_str(), "fleet") == 0) {
             // tr <my fleet> to ?
             fleet = true;
@@ -153,6 +154,11 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             if (fleet)
                 throw PyException(MakeCustomError("Translocate: Fleet Move - You cannot tr a fleet 'home'...yet."));
             locationID = pClient->GetCloneStationID();
+        } else if (strcmp(args.arg(2).c_str(), "ship") == 0) {
+            // tr <me|ship|player|fleet> to <ship|ship owner>
+            if (item)
+                throw PyException(MakeCustomError("Translocate: Ship Move - You cannot tr one ship to another ship...yet."));
+            item = true;
         } else if (strcmp(args.arg(2).c_str(), "last") == 0) {
             // last station <me|player> was docked in
             if (fleet)
@@ -172,7 +178,6 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             SystemGPoint sGP;
             pt = sGP.GetRandPointOnPlanet(pOtherClient == nullptr ? pClient->GetSystemID() : pOtherClient->GetSystemID());
             //throw PyException(MakeCustomError("Translocate: This option is Incomplete"));
-
         } else {
             // what are we missing?   get location by name?
             /* {'messageKey': 'LocationNameInvalid', 'dataID': 17882829, 'suppressable': False, 'bodyID': 259279, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1112}
@@ -233,6 +238,11 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             // tr <player|fleet> to me
             me = true;
             locationID = myLocationID;
+        } else if (strcmp(args.arg(2).c_str(), "ship") == 0) {
+            // tr <me|ship|player|fleet> to <ship|ship owner>
+            if (item)
+                throw PyException(MakeCustomError("Translocate: Ship Move - You cannot tr one ship to another ship...yet."));
+            item = true;
         } else if (strcmp(args.arg(2).c_str(), "home") == 0) {
             // tr <player|fleet> to <my|players> home
             if (fleet)
@@ -267,9 +277,6 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         if (args.isNumber(3)) {
             // sending destination as itemID?
             locationID = atoi(args.arg(2).c_str());
-            if (!IsValidLocation(locationID))
-                throw PyException(MakeCustomError("Translocate: Invalid Location %i", locationID));
-
         } else if (strcmp(args.arg(3).c_str(), "last") == 0) {
             if (fleet)
                 throw PyException(MakeCustomError("Translocate: Fleet Move - You cannot tr a fleet to last docked station...yet."));
@@ -339,6 +346,32 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
     if (fleet) {
         // this will take a lil bit of doing....
         throw PyException(MakeCustomError("Translocate: Fleet Move - This command is currently incomplete."));
+    }
+
+
+    if (!IsValidLocation(locationID))
+        throw PyException(MakeCustomError("Translocate: Invalid Location %i", locationID));
+
+    if (IsPlayerItem(locationID)) {
+        // locationID is sent as player item.  this can be any celestial object, ship, pos, jetcan, wreck, etc.
+        // this will take a lil bit of doing to get booleans right.
+        InventoryItemRef iRef = sItemFactory.GetItem(locationID);
+        if (item) { // tr to ship/item location
+            pt = iRef->position();
+            locationID = iRef->locationID();
+        } else { // tr to ship/item owner location
+            Client* pClient = sEntityList.FindClientByCharID(iRef->ownerID());
+            if (pClient == nullptr) {
+                pt = iRef->position();
+                locationID = iRef->locationID();
+            } else if (pClient->IsDocked()) {
+                pt = NULL_ORIGIN;
+                locationID = pClient->GetLocationID();
+            } else {
+                pt = pClient->GetShipSE()->GetPosition();
+                locationID = pClient->GetSystemID();
+            }
+        }
     }
 
     if (pOtherClient != nullptr) {

@@ -257,10 +257,13 @@ move *data calls from inventoryDB into static data mgr
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-roids not inserted into itemfactory map 
+roids not inserted into itemfactory map
 
 ***  began putting specific throw msgs in approprate common/EVE_*.h files, if available, else src/*/*.h files ***
 
+
+update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
+    - this includes all decode errors
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:
