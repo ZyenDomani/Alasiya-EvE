@@ -292,6 +292,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
          * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
          * @todo this needs to be rewritten.  see notes in EVE_Damage.h
          * @todo  also need to check for linked weapons and send msgs accordingly
+         * target, source, owner, damage, weapon, splash
          */
         // only send damage msgs for ships NOT killed.
         if (HasPilot()) {
@@ -308,7 +309,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             //Notifications to others:
             Notify_OnDamageMessage ondamo;
             ondamo.messageID = Dmg::Msg::Other[damageID];
-            ondamo.weapon = (d.chargeRef ? d.chargeRef->typeID() : d.weaponRef->typeID());
+            ondamo.weapon = (d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID());
             ondamo.damage = total_damage;
             ondamo.target = GetID();
             ondamo.splash = "";
@@ -322,7 +323,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         if (d.srcSE->HasPilot())
             SendDamageStateChanged(d.srcSE);
     }
-    
+
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_damageProfile, GetTimeUSeconds() - profileStartTime);
 

@@ -46,7 +46,6 @@ namespace Dmg {
 
         static const char* Other[7] = {
             "AttackMiss1",   //miss
-            //AttackMiss1Banked  //'banked' means 'group weapons'  also in ship.modules.GetTurretSets in MakeSlimItem()
             "AttackHit1",    //barely scratches
             "AttackHit2",    //lightly hits
             "AttackHit3",    //hits
@@ -54,6 +53,22 @@ namespace Dmg {
             "AttackHit5",    //places an excellent hit
             "AttackHit6"     //strikes perfectly, wrecking
         };
+
+        // banked... 1=miss, 2=barely misses, 3=glances off
+        //'banked' means 'group weapons' and is for shooter only.
+        // also in ship.modules.GetTurretSets in MakeSlimItem()
+        static const char* Banked[9] = {
+            "AttackMiss1Banked",   //miss
+            "AttackMiss2Banked",   //barely miss
+            "AttackMiss3Banked",   //glances off
+            "AttackHit1Banked",    //barely scratches
+            "AttackHit2Banked",    //lightly hits
+            "AttackHit3Banked",    //hits
+            "AttackHit4Banked",    //aims well
+            "AttackHit5Banked",    //places an excellent hit
+            "AttackHit6Banked"     //strikes perfectly, wrecking
+        };
+
     }
 }
 
