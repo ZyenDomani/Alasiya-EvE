@@ -556,8 +556,6 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
                     pSSE = sSE;
                 } break;
             }
-            //if (pSSE == nullptr)
-            //    return nullptr; // make error and return here
             //if (!system.IsLoaded()) // only init here on system boot  -crash when structureID < towerID (load is ordered by itemID)
             //    pSSE->Init(structure, nullptr);
             return pSSE;
