@@ -100,10 +100,7 @@ void CargoContainer::Delete()
         PlanetDB::DeleteLaunch(m_itemID);
 
     pInventory->LoadContents();
-    // delete contents first
     pInventory->DeleteContents();
-    mySE->Delete();
-    SafeDelete(mySE);
     InventoryItem::Delete();
 }
 
@@ -249,8 +246,16 @@ void ContainerSE::Process() {
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
+        Delete();
         m_contRef->Delete();
+        SafeDelete(this);
     }
+}
+
+void ContainerSE::Delete()
+{
+    if (m_system != nullptr)
+        m_system->RemoveEntity(this);
 }
 
 void ContainerSE::Activate(int32 effectID)
@@ -405,11 +410,7 @@ void WreckContainer::Delete()
 {
     m_delete = true;
     pInventory->LoadContents();
-    // delete contents first
     pInventory->DeleteContents();
-    mySE->Delete();
-    SafeDelete(mySE);
-    // to accurately bcast contents change, move mySE->Delete() here, but that would eat up bwidth when we're deleting container (moot point)
     InventoryItem::Delete();
 }
 
@@ -501,7 +502,9 @@ void WreckSE::Process() {
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
+        Delete();
         m_contRef->Delete();
+        SafeDelete(this);
     }
 }
 
