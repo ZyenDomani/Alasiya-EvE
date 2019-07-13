@@ -103,7 +103,6 @@ TRUNCATE TABLE `piLaunches`;
 TRUNCATE TABLE `piLinks`;
 TRUNCATE TABLE `piPinContents`;
 TRUNCATE TABLE `piPins`;
-TRUNCATE TABLE `piPinMap`;
 TRUNCATE TABLE `piPlanets`;
 TRUNCATE TABLE `piRoutes`;
 TRUNCATE TABLE `posCustomOfficeData`;
