@@ -587,7 +587,7 @@ void Client::SetAutoPilot(bool set/*false*/)
 }
 
 
-void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
+void Client::SetDestiny(const GPoint& pt, bool count/*false*/, bool update/*false*/) {
     if (!IsSolarSystem(m_locationID)) {
         _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
         return;
@@ -603,11 +603,11 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/) {
 
     if (pt.isZero()) {
         if (pShipSE->GetPosition().isZero())
-            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), false);
+            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), update);
         else
-            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), false);
+            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
     } else
-        pShipSE->DestinyMgr()->SetPosition(pt, false);
+        pShipSE->DestinyMgr()->SetPosition(pt, update);
 
     if (count and !m_login)
         pShipSE->ResetShipSystemMgr(m_system);
@@ -690,9 +690,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
         if (IsStation(locationID))
             return;
-        m_ship->SetPosition(pt);
         // This is a simple movement
-        SetDestiny(pt);
+        SetDestiny(pt, false, true);
         return;
     }
 

@@ -242,7 +242,7 @@ public:
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetInvulTimer(uint32 time=ClientTimers::DefaultTimer);
     void SetClientTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
-    void SetDestiny(const GPoint& pt, bool count = false);
+    void SetDestiny(const GPoint& pt, bool count=false, bool update=false);
     void UpdateSkillTraining();
     ShipItemRef SpawnNewRookieShip();
     void LoadStationHangar(uint32 stationID);

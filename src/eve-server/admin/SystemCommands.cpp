@@ -360,16 +360,17 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             pt = iRef->position();
             locationID = iRef->locationID();
         } else { // tr to ship/item owner location
-            Client* pClient = sEntityList.FindClientByCharID(iRef->ownerID());
-            if (pClient == nullptr) {
+            Client* pClient2 = sEntityList.FindClientByCharID(iRef->ownerID());
+            if (pClient2 == nullptr) {
                 pt = iRef->position();
                 locationID = iRef->locationID();
-            } else if (pClient->IsDocked()) {
+            } else if (pClient2->IsDocked()) {
                 pt = NULL_ORIGIN;
-                locationID = pClient->GetLocationID();
+                locationID = pClient2->GetLocationID();
             } else {
-                pt = pClient->GetShipSE()->GetPosition();
-                locationID = pClient->GetSystemID();
+                pt = pClient2->GetShipSE()->GetPosition();
+                pt.MakeRandomPointOnSphere(100 + pClient->GetShipSE()->GetRadius() + pClient2->GetShipSE()->GetRadius());
+                locationID = pClient2->GetSystemID();
             }
         }
     }
