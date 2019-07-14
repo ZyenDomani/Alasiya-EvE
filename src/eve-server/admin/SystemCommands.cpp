@@ -128,6 +128,9 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         } else if (strcmp(args.arg(1).c_str(), "ship") == 0) {
             // tr <ship|ship owner> to ?
             item = true;
+        } else if (strcmp(args.arg(1).c_str(), "item") == 0) {
+            // tr me to item
+            item = true;
         } else if (strcmp(args.arg(1).c_str(), "fleet") == 0) {
             // tr <my fleet> to ?
             fleet = true;
