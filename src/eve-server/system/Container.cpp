@@ -248,7 +248,7 @@ void ContainerSE::Process() {
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
         Delete();
         m_contRef->Delete();
-        SafeDelete(this);
+        delete this;
     }
 }
 
@@ -504,7 +504,7 @@ void WreckSE::Process() {
         sLog.Magenta( "WreckSE::Process()", "Garbage Collection is removing Wreck %u.", m_contRef->itemID() );
         Delete();
         m_contRef->Delete();
-        SafeDelete(this);
+        delete this;
     }
 }
 
