@@ -57,6 +57,7 @@
 SystemManager::SystemManager(uint32 systemID, PyServiceMgr &svc)
 :m_services(svc),
 m_bountyTimer(0),
+m_minutetimer(0, true),
 m_anomMgr(new AnomalyMgr(this, svc)),
 m_beltMgr(new BeltMgr(this, svc)),
 m_dungMgr(new DungeonMgr(this, svc)),
@@ -73,6 +74,8 @@ m_activeGateSpawns(0),
 m_activeRoidSpawns(0),
 m_secValue(1.1f)
 {
+    m_minutes = 0;
+
     m_npcs.clear();
     m_clients.clear();
     m_moonMap.clear();
@@ -148,6 +151,9 @@ bool SystemManager::BootSystem() {
     MapDB::chkDynamicSystemID(m_data.systemID);
     MapDB::SetSystemActive(m_data.systemID, true);
 
+    //start minute timer
+    m_minutetimer.Start(60000);
+
     return (m_loaded = true);
 }
 
@@ -209,6 +215,14 @@ bool SystemManager::ProcessTic() {
         m_beltMgr->Process();
     m_dungMgr->Process();
     m_spawnMgr->Process();
+
+    // process planets for PI
+    /*   may not need this..disabled for now
+    if (m_minutetimer.Check()) {
+        ++m_minutes;
+        for (auto cur : m_planetMap)
+            cur.second->Process();
+    } */
 
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_systemProfile, GetTimeUSeconds() - profileStartTime);
@@ -749,14 +763,14 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
 }
 
 void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
-    //called from Client::SelectCharacter() on login and Client::MoveToLocation() when changing systems
+    //called from Client::MoveToLocation() on login and when changing systems
     if (pClient == nullptr)
         return;
     auto itr = m_clients.find(pClient->GetCharacterID());
     if (itr == m_clients.end()) {
         m_clients[pClient->GetCharacterID()] = pClient;
-        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system.", \
-                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
+        _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system. count %s", \
+                    pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size(), count?"true":"false");
     }
 
     m_activityTime = 0;
@@ -769,7 +783,7 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
 }
 
 void SystemManager::RemoveClient(Client* pClient, bool count/*false*/) {
-    //called from Client::~Client() and Client::MoveToLocation()
+    //called from Client::~Client() and Client::MoveToLocation() when changing systems
     if (pClient == nullptr)
         return;
     auto itr = m_clients.find(pClient->GetCharacterID());
@@ -849,6 +863,14 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
         _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
         m_entities[itemID] = pSE;
         m_entityChanged = true;
+
+        if ((pSE->GetCategoryID() == EVEDB::invCategories::SovereigntyStructure)  // SOV structures   these should go into m_staticEntities
+         or (pSE->GetCategoryID() ==  EVEDB::invCategories::Orbitals)            // planet orbitals   these should go into m_staticEntities)
+         or (pSE->isGlobal())) {
+            m_ticEntities[itemID] = pSE;    // not sure if all these need tics or not
+            m_staticEntities[itemID] = pSE;
+            SendStaticBall(pSE);
+        }
         // *most* dynamic items need proc tics.  add to proc list
         if (!IsStaticItem(itemID))
             m_ticEntities[itemID] = pSE;
@@ -876,9 +898,8 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     } else
         _log(ITEM__WARNING, "%s(%u): Called RemoveEntity(), but they weren\'t found in system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
 
-    auto sItr = m_ticEntities.find(itemID);
-    if (sItr != m_ticEntities.end())
-        m_ticEntities.erase(sItr);
+    m_ticEntities.erase(itemID);
+    m_staticEntities.erase(itemID);
 }
 
 void SystemManager::AddBounty(uint32 charID, BountyData& data)
@@ -1119,6 +1140,34 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         _log( DESTINY__SETSTATE_DECODE, "    Decoded:" );
         Destiny::DumpUpdate( DESTINY__SETSTATE_DECODE, &( into.destiny_state->content() )[0], (uint32)into.destiny_state->content().size() );
     }
+}
+
+void SystemManager::SendStaticBall(SystemEntity* pSE)
+{
+    if (m_clients.empty())
+        return;
+
+    Buffer* destinyBuffer = new Buffer();
+    //create AddBalls header
+    Destiny::AddBall_header head = Destiny::AddBall_header();
+        head.packet_type = 1;   // 0 = full state   1 = balls
+        head.stamp = sEntityList.GetStamp();
+    destinyBuffer->Append( head );
+
+    AddBalls addballs;
+    //encode destiny binary
+    pSE->EncodeDestiny( *destinyBuffer );
+    addballs.state = new PyBuffer( &destinyBuffer );
+    //encode damage state
+    addballs.damageDict[ pSE->GetID() ] = pSE->MakeDamageState();
+    //encode SlimItem
+    addballs.slims = new PyList();
+    addballs.slims->AddItem( new PyObject( "foo.SlimItem", pSE->MakeSlimItem() ) );
+
+    //send the update
+    PyTuple* t = addballs.Encode();
+    for (auto cur : m_clients)
+        cur.second->QueueDestinyUpdate(&t, true);
 }
 
 void SystemManager::AddItemToInventory(InventoryItemRef iRef)

@@ -734,7 +734,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     into.Append( head );
 
     /** @todo these may need more work....  */
-    if (m_tcu or m_tower) {
+    if (m_tcu or m_tower or m_co) {
         MassSector mass = MassSector();
             mass.cloak = 0;
             mass.corporationID = m_corpID;

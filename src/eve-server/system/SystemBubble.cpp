@@ -200,9 +200,9 @@ void SystemBubble::Add(SystemEntity* pSE) {
 	if (IsTempItem(pSE->GetID())) {
         if (!m_players.empty())
             AddBallExclusive(pSE);
-    } else if (pSE->IsStaticEntity()) {
+    } else if (pSE->IsStaticEntity() or pSE->isGlobal()) {
         //insert the global entitys into their own list
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static.", pSE->GetName(), pSE->GetID() );
+        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global.", pSE->GetName(), pSE->GetID() );
         m_entities[pSE->GetID()] = pSE;
         return;
     } else if (pSE->HasPilot()) {
@@ -578,16 +578,15 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
         head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append( head );
 
-	 AddBalls addballs;
-        addballs.slims = new PyList();
-
+	AddBalls addballs;
 	//encode destiny binary
 	about_who->EncodeDestiny( *destinyBuffer );
-        addballs.state = new PyBuffer( &destinyBuffer );
+    addballs.state = new PyBuffer( &destinyBuffer );
 	//encode damage state
-        addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
+    addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
 	//encode SlimItem
-        addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
+    addballs.slims = new PyList();
+    addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
 
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", about_who->GetID(), m_bubbleID);
     if (is_log_enabled(DESTINY__BALL_DUMP))

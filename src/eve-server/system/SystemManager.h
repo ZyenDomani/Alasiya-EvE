@@ -125,6 +125,7 @@ public:
     void RemoveItemFromInventory(InventoryItemRef item);
     void DoSpawnForBubble(SystemBubble* pBubble);
 
+    void SendStaticBall(SystemEntity* pSE);
     void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
     uint32 GetRandBeltID();
@@ -201,6 +202,10 @@ private:
     typedef std::map<uint16, uint8> RatDataMap;  // typeID/amt
     std::map<uint32, BountyData> m_bountyMap;  // charID/data
     std::map<uint32, RatDataMap> m_ratMap;  // charID/rat data
+
+    // for PI timing
+    Timer m_minutetimer;
+    uint32 m_minutes;
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
     // unfortunely, this is very specific for which iterators it can check.  see notes in code.
