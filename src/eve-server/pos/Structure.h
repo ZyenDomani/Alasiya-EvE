@@ -89,7 +89,6 @@ public:
 
     /* class type pointer querys. */
     virtual StructureSE*        GetPOSSE()              { return this; }
-    virtual StructureSE*        GetCOSE()               { return (m_co ? this : nullptr); }
     virtual StructureSE*        GetTCUSE()              { return (m_tcu ? this : nullptr); }
     virtual StructureSE*        GetSBUSE()              { return (m_sbu ? this : nullptr); }
     virtual StructureSE*        GetJammerSE()           { return (m_jammer ? this : nullptr); }
@@ -103,7 +102,6 @@ public:
 
     /* class type tests. */
     virtual bool                IsPOSSE()               { return true; }
-    virtual bool                IsCOSE()                { return m_co; }
     virtual bool                IsTCUSE()               { return m_tcu; }
     virtual bool                IsSBUSE()               { return m_sbu; }
     virtual bool                IsJammerSE()            { return m_jammer; }
@@ -116,8 +114,6 @@ public:
     virtual bool                IsWeaponSE()            { return false; }
     virtual bool                IsReactorSE()           { return false; }
 
-    virtual bool                isGlobal()              { return m_co; }    // just in case item->isGlobal() fails here for customs offices...which it may
-
     /* SystemEntity interface */
     virtual void                Process();
     virtual void                EncodeDestiny( Buffer& into );
@@ -125,8 +121,8 @@ public:
 
     /* virtual functions default to base class and overridden as needed */
     virtual void                Killed(Damage &fatal_blow);
-    virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
-    virtual void                InitData(SystemBubble* pBubble);
+    virtual void                Init();
+    virtual void                InitData();
 
     /* virtual functions to be overridden in derived classes */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
@@ -188,20 +184,17 @@ protected:
     int8                        m_procState;            /* internal state data for processing mode changes */
 
     // this is time shown in structure status (time left until current state completes)
-    uint32 m_delayTime;
+    uint32                      m_delayTime;
 
     // for orbital infrastructure (customs office and moon miner)
-    GVector m_rotation;      /* direction to planet (for correct orientation) */
-    uint32 m_planetID;
+    GVector                     m_rotation;      /* direction to planet (for correct orientation) */
+    uint32                      m_planetID;
 
 private:
-    std::string GetProcStateName(int8 state);
-
     uint32 m_duration;              // module duration in ms
 
     Timer m_procTimer;              // module state timer
 
-    bool m_co :1;
     bool m_tcu :1;
     bool m_sbu :1;
     bool m_tower :1;

@@ -28,13 +28,14 @@
 #include "PyServiceCD.h"
 
 #include "EVEServerConfig.h"
+#include "planet/CustomsOffice.h"
+#include "planet/Moon.h"
 #include "pos/Structure.h"
-#include "system/DestinyManager.h"
 #include "ship/ShipService.h"
 #include "system/Container.h"
+#include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
-#include <planet/Moon.h>
 
 class ShipBound
 : public PyBoundObject
@@ -551,7 +552,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             }
             dropped = true;
             if (pSE->IsPOSSE())
-                pSE->GetPOSSE()->Init(iRef, call.client->GetShipSE()->SysBubble());
+                pSE->GetPOSSE()->Init();
             pSystem->AddEntity(pSE);
             pSE->DestinyMgr()->SendJettisonPacket();
             list->AddItem(new PyInt(entity.itemID));
@@ -748,7 +749,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             cSE->SetPosition(location);
             ccRef->SaveItem();
             pSysMgr->AddEntity(cSE);
-            cSE->DestinyMgr()->SendJettisonPacket();
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
 
             // container found.  remove this item from list, then break out of here and use to contain all other non-pos items
             args.ints.erase(cur);
@@ -764,7 +765,6 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
         categoryID = iRef->categoryID();
 
         if ((categoryID == EVEDB::invCategories::Structure)
-        or  (categoryID == EVEDB::invCategories::Orbitals)
         or  (categoryID == EVEDB::invCategories::SovereigntyStructure)
         or  (categoryID == EVEDB::invCategories::StructureUpgrade)) {
             sRef = sItemFactory.GetStructure(cur);
@@ -777,7 +777,20 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             sSE->SetPosition(location);
             sRef->SaveItem();
             pSysMgr->AddEntity(sSE);
-            sSE->DestinyMgr()->SendJettisonPacket();
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+            continue;
+        } else if (categoryID == EVEDB::invCategories::Orbitals) {
+            sRef = sItemFactory.GetStructure(cur);
+            if (sRef.get() == nullptr)
+                throw PyException(MakeCustomError("Unable to spawn Structure item of type %u.", sRef->typeID()));
+
+            sRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+            CustomsSE* sSE = new CustomsSE(sRef, *m_manager, pSysMgr, data);
+            location.MakeRandomPointOnSphere(1500.0 + sRef->type().radius());
+            sSE->SetPosition(location);
+            sRef->SaveItem();
+            pSysMgr->AddEntity(sSE);
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             continue;
         } else if (categoryID == EVEDB::invCategories::Deployable) {
             cRef = sItemFactory.GetItem(cur);
@@ -792,7 +805,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             dSE->SetPosition(location);
             cRef->SaveItem();
             pSysMgr->AddEntity(dSE);
-            dSE->DestinyMgr()->SendJettisonPacket();
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             continue;
         } //else if ()
         /** @todo  Handle other cargo */
@@ -825,7 +838,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
             jcRef->SetMySE(cSE);
             pSysMgr->AddEntity(cSE);
-            cSE->DestinyMgr()->SendJettisonPacket();
+            pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();
         }
         /** @todo  check current can for capacity limits. */

@@ -62,6 +62,7 @@ class ObjectSystemEntity;
 class WormholeSE;
 class AnomalySE;
 class StructureSE;
+class CustomsSE;
 class DeployableSE;
 class AsteroidSE;
 class Ship;
@@ -112,7 +113,6 @@ public:
     virtual StructureSE*        GetJammerSE()           { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
-    virtual StructureSE*        GetCOSE()               { return nullptr; }
     virtual StructureSE*        GetTCUSE()              { return nullptr; }
     virtual StructureSE*        GetSBUSE()              { return nullptr; }
     virtual TowerSE*            GetTowerSE()            { return nullptr; }
@@ -124,6 +124,7 @@ public:
     virtual ModuleSE*           GetModuleSE()           { return nullptr; }
     virtual ReactorSE*          GetReactorSE()          { return nullptr; }
     virtual ProbeSE*            GetProbeSE()            { return nullptr; }
+    virtual CustomsSE*          GetCOSE()               { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
     virtual NPC*                GetNPCSE()              { return nullptr; }

@@ -30,10 +30,10 @@
 #include "PyService.h"
 #include "planet/PlanetDB.h"
 
-class planetORB : public PyService {
+class PlanetORB : public PyService {
 public:
-    planetORB(PyServiceMgr *mgr);
-    virtual ~planetORB();
+    PlanetORB(PyServiceMgr *mgr);
+    virtual ~PlanetORB();
 
 protected:
     class Dispatcher;

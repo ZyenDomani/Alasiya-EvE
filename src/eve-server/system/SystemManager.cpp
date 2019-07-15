@@ -31,6 +31,7 @@
 #include "npc/NPC.h"
 #include "planet/Planet.h"
 #include "planet/Moon.h"
+#include "planet/CustomsOffice.h"
 #include "pos/Array.h"
 #include "pos/Battery.h"
 #include "pos/Module.h"
@@ -134,7 +135,7 @@ bool SystemManager::BootSystem() {
     // system is loaded.  check for items that need initialization
     for (auto cur : m_ticEntities)
         if (cur.second->IsPOSSE())
-            cur.second->GetPOSSE()->Init(cur.second->GetSelf(), cur.second->SysBubble());
+            cur.second->GetPOSSE()->Init();
 
     if (sConfig.server.BountyPayoutDelayed)
         m_bountyTimer.Start(sConfig.server.BountyPayoutTimer * 60 * 1000);
@@ -152,7 +153,7 @@ bool SystemManager::BootSystem() {
     MapDB::SetSystemActive(m_data.systemID, true);
 
     //start minute timer
-    m_minutetimer.Start(60000);
+    //m_minutetimer.Start(60000);
 
     return (m_loaded = true);
 }
@@ -248,7 +249,7 @@ void SystemManager::UnloadSystem() {
 
     sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
 
-    // inform MarketBot of system unloading, to remove system stations from proc loop.
+    // inform MarketBot of system unloading to remove system stations from proc loop.
     //sMktBotMgr.RemoveSystem();
 
     // system is being unloaded.  pay bounties now
@@ -270,6 +271,8 @@ void SystemManager::UnloadSystem() {
         pSE = itr->second;
         if (pSE->TargetMgr() != nullptr)
             pSE->TargetMgr()->ClearAllTargets(false);
+        if (pSE->IsStaticEntity())
+            m_staticEntities.erase(itr->first);
         if (pSE->IsShipSE())
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         if (pSE->IsNPCSE()) {
@@ -280,11 +283,7 @@ void SystemManager::UnloadSystem() {
             pSE->GetStationSE()->UnloadStation();
             sEntityList.RemoveStation(itr->first);
         }
-        if (pSE->IsStaticEntity()) {
-            sItr = m_staticEntities.find(itr->first);
-            if (sItr != m_staticEntities.end())
-                m_staticEntities.erase(sItr);
-        }
+
         sItemFactory.RemoveItem(itr->first);
         itr = m_entities.erase(itr);
         sBubbleMgr.Remove(pSE);
@@ -498,9 +497,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
-        case EVEDB::invCategories::StructureUpgrade:
-        case EVEDB::invCategories::SovereigntyStructure:// SOV structures   these should go into m_staticEntities
-        case EVEDB::invCategories::Orbitals:            // planet orbitals   these should go into m_staticEntities
+        //  these should go into m_staticEntities
+        case EVEDB::invCategories::StructureUpgrade: // SOV upgrade structures   these may need their own class one day.
+        case EVEDB::invCategories::SovereigntyStructure:// SOV structures   these may need their own class one day.
         case EVEDB::invCategories::Structure: {         // POS items
             StructureItemRef structure = sItemFactory.GetStructure( entity.itemID );
             if (structure.get() == nullptr)
@@ -555,24 +554,39 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysRef, const DBS
                 } break;
                 default: {
                     StructureSE* sSE = new StructureSE(structure, *(sysRef.GetServiceMgr()), &sysRef, data);
-                    //structure->GetMyInventory()->LoadContents();  this is called during structureItem creation
-                    if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
-                        sSE->SetPlanet(entity.planetID);
-                        SystemEntity* pPE = sysRef.GetSE(entity.planetID);
-                        if ((pPE != nullptr) and pPE->IsPlanetSE()) {
-                            GVector dir(structure->position(), pPE->GetPosition());
-                            dir.normalize();
-                            sSE->SetRotation(dir);
-                            pPE->GetPlanetSE()->SetCustomsOffice(sSE);
-                        }
-                    }
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = sSE;
                 } break;
             }
-            //if (!system.IsLoaded()) // only init here on system boot  -crash when structureID < towerID (load is ordered by itemID)
-            //    pSSE->Init(structure, nullptr);
             return pSSE;
+        } break;
+        case EVEDB::invCategories::Orbitals: {           // planet orbitals   these should go into m_staticEntities
+            StructureItemRef structure = sItemFactory.GetStructure( entity.itemID );
+            if (structure.get() == nullptr)
+                return nullptr;
+                /** @todo make error msg here */
+            CustomsSE* pCoSE(nullptr);
+            switch(entity.groupID) {
+                case EVEDB::invGroups::Test_Orbitals:
+                case EVEDB::invGroups::Orbital_Construction_Platform:
+                case EVEDB::invGroups::Orbital_Infrastructure: {
+                    pCoSE = new CustomsSE(structure, *(sysRef.GetServiceMgr()), &sysRef, data);
+                    //structure->GetMyInventory()->LoadContents();  this is called during structureItem creation
+                    if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
+                        pCoSE->SetPlanet(entity.planetID);
+                        SystemEntity* pPE = sysRef.GetSE(entity.planetID);
+                        if ((pPE != nullptr) and pPE->IsPlanetSE()) {
+                            GVector dir(structure->position(), pPE->GetPosition());
+                            dir.normalize();
+                            pCoSE->SetRotation(dir);
+                            pPE->GetPlanetSE()->SetCustomsOffice(pCoSE);
+                        }
+                    }
+                    pCoSE->Init();
+                    _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making CustomsSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
+                } break;
+            }
+            return pCoSE;
         } break;
         case EVEDB::invCategories::Celestial: {
             // TODO: (just use CelestialEntity class for these until their own classes are written)
@@ -864,12 +878,12 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
         m_entities[itemID] = pSE;
         m_entityChanged = true;
 
-        if ((pSE->GetCategoryID() == EVEDB::invCategories::SovereigntyStructure)  // SOV structures   these should go into m_staticEntities
-         or (pSE->GetCategoryID() ==  EVEDB::invCategories::Orbitals)            // planet orbitals   these should go into m_staticEntities)
+        if ((pSE->GetCategoryID() == EVEDB::invCategories::SovereigntyStructure)
+         or (pSE->IsCOSE())
          or (pSE->isGlobal())) {
-            m_ticEntities[itemID] = pSE;    // not sure if all these need tics or not
             m_staticEntities[itemID] = pSE;
-            SendStaticBall(pSE);
+            if (m_loaded)   // only update when system is already loaded
+                SendStaticBall(pSE);
         }
         // *most* dynamic items need proc tics.  add to proc list
         if (!IsStaticItem(itemID))
@@ -1058,16 +1072,16 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
         head.stamp = into.stamp;
     stateBuffer->Append( head );
 
-    std::vector<SystemEntity*> visibleEntities;
+    std::map<uint32, SystemEntity*> visibleEntities;
 
     // get all static entities for this system
     for (auto cur : m_staticEntities)
-        visibleEntities.push_back(cur.second);
+        visibleEntities.emplace(cur.first, cur.second);
 
-    // get our ship.
+    // get our ship....no, our ship is (or should be) in bubble entities
     std::map<uint32, SystemEntity*>::const_iterator itr = m_ticEntities.find(into.ego);
     if (itr != m_ticEntities.end())
-        visibleEntities.push_back(itr->second);
+        visibleEntities.emplace(itr->first, itr->second);
 
     // query bubble to get dynamic entities
     pBubble->GetEntities(visibleEntities);
@@ -1081,26 +1095,26 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
 
     //go through all visible entities and gather the info we need...
     for (auto cur : visibleEntities) {
-        if (!cur->IsMissileSE() or !cur->IsFieldSE())
-            into.damageState[ cur->GetID() ] = cur->MakeDamageState();
+        if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
+            into.damageState[ cur.first ] = cur.second->MakeDamageState();
 
-        into.slims->AddItem( new PyObject( "foo.SlimItem", cur->MakeSlimItem() ) );
+        into.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem()));
 
         //append the destiny binary data...
-        cur->EncodeDestiny( *stateBuffer );
+        cur.second->EncodeDestiny( *stateBuffer );
 
         // get tower effect state (if applicable)
-        if (cur->IsTowerSE())
-            cur->GetTowerSE()->GetEffectState(*(into.effectStates));
+        if (cur.second->IsTowerSE())
+            cur.second->GetTowerSE()->GetEffectState(*(into.effectStates));
 
         /**  @todo (allan)  this needs more work.  should be done same as damageState.  28.2.16
         //ss.aggressors is for players undocking/jumping with aggression (uses GetCriminalTimeStamps)  ** see notes in Client::GetAggressors()
-        if (cur->HasPilot() and cur->HasAggression())
-            ss.aggressors[ cur->GetID() ] = cur->GetAggressors());
+        if (cur.second->HasPilot() and cur.second->HasAggression())
+            ss.aggressors[ cur.first ] = cur.second->GetAggressors());
         */
 
         /** @todo (allan)  to be written   -jumpbridges is a PyList */
-        //  if (cur->IsJumpBridgeSE)
+        //  if (cur.second->IsJumpBridgeSE)
         //ss.allianceBridges -- jumpbridges et al.
         //  [for shipID, toSolarsystemID, toBeaconID in bag.allianceBridges:]
     }
@@ -1215,6 +1229,14 @@ CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 {
     return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
+}
+
+SystemEntity* SystemManager::GetPlanet(uint32 planetID)
+{
+    std::map<uint32, SystemEntity*>::iterator itr = m_planetMap.find(planetID);
+    if (itr != m_planetMap.end())
+        return itr->second;
+    return nullptr;
 }
 
 uint32 SystemManager::GetClosestPlanetID(const GPoint& myPos)

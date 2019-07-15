@@ -35,6 +35,7 @@
 #include "character/Character.h"
 #include "fleet/FleetService.h"
 #include "inventory/AttributeEnum.h"
+#include "planet/CustomsOffice.h"
 #include "planet/Planet.h"
 #include "pos/Structure.h"
 #include "standing/StandingMgr.h"

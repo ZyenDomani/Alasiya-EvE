@@ -139,8 +139,8 @@ PyResult Command_status(Client* pClient, CommandDB* db, PyServiceMgr* services, 
 }
 
 PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /* this command is used to debug bubble entities
-     * wip.   -allan 25Apr15
+    /* this command is used to debug system entities
+     * wip.   -allan 25Apr15    -UD 15July19
      */
 
     if (!pClient->IsInSpace())
@@ -150,30 +150,33 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
         if (pClient->IsInSpace())
             pClient->EnterSystem(pClient->GetSystemID());
         else
-            throw PyException(MakeCustomError("You must be in space to list bubble inventory."));
+            throw PyException(MakeCustomError("You must be in space to list system inventory."));
 
-    SystemBubble *b = pClient->GetShipSE()->SysBubble();
-    uint32 bubble = b->GetID();
-    uint32 dynamics = b->CountDynamics();
-    uint32 npcs = b->CountNPCs();
-    uint32 players = b->CountPlayers();
+    SystemManager* pSys = pClient->GetShipSE()->SystemMgr();
+    uint16 beltCount = pSys->BeltCount();
+    uint32 roidSpawns = pSys->GetRoidSpawnCount();
+    uint32 ratSpawns = pSys->GetRatSpawnCount();
+    uint32 npcs = pSys->GetSysNPCCount();
+    uint32 players = pSys->PlayerCount();
 
-    std::vector<SystemEntity*> into;
-    b->GetEntities(into);
+    std::map<uint32, SystemEntity*> into = pSys->GetEntities();
 
     std::ostringstream str;
     str.clear();
-    str << "Bubble: %u<br>"; //22
-    str << "Dynamics: %u<br>"; //19
+    str << "System: %s(%u)<br>"; //42
+    str << "Belts: %u<br>"; //20
+    str << "Asteroids: %u<br>"; //25
     str << "NPCs: %u<br>"; //18
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
     for (auto cur : into) {
-        if (cur->DestinyMgr()) {
+        if (cur.second == nullptr)
+            continue;
+        if (cur.second->DestinyMgr() != nullptr) {
             std::string modeStr = "Rigid";
-            if (cur->IsDynamicEntity()) {
-                switch (cur->DestinyMgr()->GetState()) {
+            if (!cur.second->IsStaticEntity()) {
+                switch (cur.second->DestinyMgr()->GetState()) {
                     case 0: modeStr = "Goto"; break;
                     case 1: modeStr = "Follow"; break;
                     case 2: modeStr = "Stop"; break;
@@ -189,18 +192,23 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
                     case 12: modeStr = "Formation"; break;
                 }
             }
-            str << cur->GetID() << ": " << modeStr.c_str() << " (csf: " << cur->DestinyMgr()->GetSpeedFraction() << ") speed: ";
-            str << cur->DestinyMgr()->GetSpeed() << " [" << cur->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+            str << cur.first;
+            if (cur.second->isGlobal())
+                str << ": (global) ";
+            else
+                str << ": ";
+            str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
+            str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         } else {
-            str << cur->GetID() << ": None (csf: 0) speed: 0 [" << cur->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+            str << cur.first << ": None (csf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
         }
     }
 
     int count = into.size();
-    int size = count * 80;
-    size += 90;
+    int size = count * 90;
+    size += 130;    // header
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
+    snprintf(reply, size, str.str().c_str(), pSys->GetName().c_str(), pSys->GetID(), beltCount, roidSpawns, ratSpawns, npcs, players);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);
@@ -217,13 +225,13 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
         else
             throw PyException(MakeCustomError("You must be in space to list space inventory."));
 
-        SystemBubble *b = pClient->GetShipSE()->SysBubble();
+    SystemBubble *b = pClient->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
     uint32 dynamics = b->CountDynamics();
     uint32 npcs = b->CountNPCs();
     uint32 players = b->CountPlayers();
 
-    std::vector<SystemEntity*> into;
+    std::map<uint32, SystemEntity*> into;
     b->GetEntities(into);
 
     std::ostringstream str;
@@ -234,11 +242,42 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 
-    for (auto cur : into)
-        str << cur->GetID() << ", " << cur->GetName() << "<br>"; // 13 + 27 for name (40)
+    for (auto cur : into) {
+        if (cur.second == nullptr)
+            continue;
+        if (cur.second->DestinyMgr() != nullptr) {
+            std::string modeStr = "Rigid";
+            if (!cur.second->IsStaticEntity()) {
+                switch (cur.second->DestinyMgr()->GetState()) {
+                    case 0: modeStr = "Goto"; break;
+                    case 1: modeStr = "Follow"; break;
+                    case 2: modeStr = "Stop"; break;
+                    case 3: modeStr = "Warp"; break;
+                    case 4: modeStr = "Orbit"; break;
+                    case 5: modeStr = "Missile"; break;
+                    case 6: modeStr = "Mushroom"; break;
+                    case 7: modeStr = "Boid"; break;
+                    case 8: modeStr = "Troll"; break;
+                    case 9: modeStr = "Miniball"; break;
+                    case 10: modeStr = "Field"; break;
+                    case 11: modeStr = "Rigid"; break;
+                    case 12: modeStr = "Formation"; break;
+                }
+            }
+            str << cur.first;
+            if (cur.second->isGlobal())
+                str << ": (global) ";
+            else
+                str << ": ";
+            str << modeStr.c_str() << " (csf: " << cur.second->DestinyMgr()->GetSpeedFraction() << ") speed: ";
+            str << cur.second->DestinyMgr()->GetSpeed() << " [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+        } else {
+            str << cur.first << ": None (csf: 0) speed: 0 [" << cur.second->GetName() << "]<br>"; // 13 + 27 + 40 for name (80)
+        }
+    }
 
-        int count = into.size();
-    int size = count * 40;
+    int count = into.size();
+    int size = count * 80;
     size += 90;
     char reply[size];
     snprintf(reply, size, str.str().c_str(), bubble, dynamics, npcs, players);
@@ -440,7 +479,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     for (auto cur : invMap)
-        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+        str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()).c_str() << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
 
     int count = invMap.size();
     int size = count * 90;
@@ -527,7 +566,7 @@ PyResult Command_attrlist(Client* pClient, CommandDB* db, PyServiceMgr* services
     uint32 itemID = atol(args.arg(1).c_str());
 
     InventoryItemRef iRef = sItemFactory.GetItem(itemID);
-    if (!iRef) {
+    if (iRef.get() == nullptr) {
         // make error msg here
         return new PyNone();
     }
@@ -812,10 +851,16 @@ PyResult Command_players(Client* pClient, CommandDB* db, PyServiceMgr* services,
     str.clear();
     str << "Active Player List:   " << cVec.size() << " Online Players.<br>";
 
-    for (auto cur : cVec)
-        str << cur->GetName() << " (" << cur->GetSystemName().c_str() << ")<br>";
+    for (auto cur : cVec) {
+        str << cur->GetName();
+        if (cur->IsDocked())
+            str << " is docked in ";
+        else
+            str << " is flying around ";
+        str << cur->GetSystemName().c_str() << "<br>";
+    }
 
-    int size = cVec.size() * 80;
+    int size = cVec.size() * 100;
     size += 80;
     char reply[size];
     snprintf(reply, size, str.str().c_str());

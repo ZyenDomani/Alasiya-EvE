@@ -18,9 +18,6 @@
  * POS__TRACE
  */
 
-
-#include "eve-server.h"
-
 #include "Client.h"
 #include "EntityList.h"
 #include "EVEServerConfig.h"
@@ -141,7 +138,6 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
   m_towerSE(nullptr),
   m_procTimer(10000) // arbitrary default
 {
-    m_co = false;
     m_tcu = false;
     m_sbu = false;
     m_miner = false;
@@ -173,21 +169,12 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
 
-void StructureSE::InitData(SystemBubble* pBubble)
+void StructureSE::InitData()
 {
-    if (m_module) {
-        // this item is a module.  get towerID and save
-        std::vector<SystemEntity*> seVec;
-        pBubble->GetEntities(seVec);
-        // this is nuts too...iterate thru all items in bubble to find tower??
-        /** @todo  fix this dumb shit...  */
-        for (auto cur : seVec) {
-            if (cur->IsTowerSE()) {
-                m_data.towerID = cur->GetID();
-                break;
-            }
-        }
-    }
+    // this item is a module.  get towerID from bubble and save
+    if (m_module)
+        if (m_bubble->HasTower())
+            m_data.towerID = m_bubble->GetTowerSE()->GetID();
 
     if (m_bridge) {
         /** @todo figure out how/where to store this data.  */
@@ -206,10 +193,10 @@ void StructureSE::InitData(SystemBubble* pBubble)
     m_data.moonID = m_moonSE->GetID();
 }
 
-void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void StructureSE::Init()
 {
     // init all data here.
-    m_data.itemID = iRef->itemID();
+    m_data.itemID = m_self->itemID();
     if (m_data.itemID == 0) {
         // how the hell is itemID 0 here??
         sLog.Error("StructureSE::Init", "ItemID is 0.");
@@ -218,12 +205,11 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         return;
     }
     m_data.state = EVEPOS::StructureState::Unanchored;
-    iRef->SetFlag(flagStructureInactive);
+    m_self->SetFlag(flagStructureInactive);
 
-    switch(iRef->groupID()) {
+    switch(m_self->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
-            m_co = true;
-            m_planetID = atoi(m_self->customInfo().c_str());
+            // should not hit here, but dont want to use 'default'
         } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
             m_sbu = true;
@@ -262,18 +248,14 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
     }
 
     if (!m_db.GetBaseData(m_data)) {
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), m_data.itemID);
-        // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
-        if (pBubble != nullptr)
-            InitData(pBubble);
-        else   // make error here.  this should never hit.
-            _log(POS__WARNING, "StructureSE::Init %s(%u) called with null bubble.", iRef->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no saved data.  Initalizing default set.", m_self->itemName().c_str(), m_data.itemID);
+        InitData();
         m_db.SaveBaseData(m_data);
     }
 
     if (m_data.moonID == 0) {
         // make error here.  this should never hit.
-        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", iRef->itemName().c_str(), m_data.itemID);
+        _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", m_self->itemName().c_str(), m_data.itemID);
         //iRef->Delete(); // really delete this?
         return;
     }
@@ -282,13 +264,14 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         SystemEntity* pSE = m_system->GetSE(m_data.moonID);
         if (pSE == nullptr) {
             //iRef->Delete(); // really delete this?
-            _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", iRef->itemName().c_str(), m_data.itemID);
+            _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", m_self->itemName().c_str(), m_data.itemID);
             return;
         }
         m_moonSE = pSE->GetMoonSE();
     }
 
-    if (m_co or m_miner) {
+    if (m_miner) {
+        // need to verify m_moonSE isnt null at this point.
         GVector dir(m_self->position(), m_moonSE->GetPosition());
         dir.normalize();
         m_rotation = dir;
@@ -301,7 +284,7 @@ void StructureSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         SystemEntity* pSE = m_system->GetSE(m_data.towerID);
         if (pSE == nullptr) {
             //iRef->Delete(); // really delete this?
-            _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", iRef->itemName().c_str(), m_data.itemID);
+            _log(POS__ERROR, "StructureSE::Init %s(%u) is invalid.  why are we here?", m_self->itemName().c_str(), m_data.itemID);
             return;
         }
         m_towerSE = pSE->GetTowerSE();
@@ -329,7 +312,7 @@ void StructureSE::Process() {
     	m_procTimer.Disable();
         m_delayTime = 0;
 
-        _log(POS__DEBUG, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, GetProcStateName(m_procState).c_str());
+        _log(POS__DEBUG, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, sDataMgr.GetProcStateName(m_procState).c_str());
 
         using namespace EVEPOS;
         switch (m_procState) {
@@ -376,10 +359,22 @@ void StructureSE::Process() {
                 //m_data.state = StructureState::Reinforced;
                 m_db.UpdateBaseData(m_data);
                 // set timer for time to come out of reinforced
+                /*Reinforcement is an established system in EVE where a structure becomes invulnerable for a period of time.
+                 * The purpose is for the defending corporation to have a chance to react when their structure is attacked.
+                 * The Customs Office enters reinforced mode when it reaches 25% shield and exits reinforcement somewhere
+                 * within the time of day, specified by the owner at least 24 hours after it entered reinforcement.
+                 * So if you set the reinforcement time to “23.00 – 01.00” that means that the Customs Office will, if attacked,
+                 * exit reinforcement at some time between 23.00 and 01.00 the day after the attack was initiated.
+                 * Your corporation will receive notification if your Customs Office enters reinforcement mode and that leaves you
+                 * at least 24 hours to plan the defense.
+                 * In order to reset the reinforcement cycle, the Customs Office Shield must be repaired back above25%;
+                 * note that it exits reinforcement with 0% shield.
+                 *
+                 */
             } break;
             default:
             case ProcState::Invalid: {
-                _log(POS__WARNING, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, GetProcStateName(m_procState).c_str());
+                _log(POS__WARNING, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, sDataMgr.GetProcStateName(m_procState).c_str());
             } break;
         }
 
@@ -643,7 +638,6 @@ void StructureSE::Operating()
         // do module shit here....tower operating methods handled in tower class
     }
 
-
     SetTimer(m_duration);
 }
 
@@ -720,9 +714,6 @@ void StructureSE::EncodeDestiny( Buffer& into )
     if (m_tcu) {
         head.mode = Ball::Mode::STOP;
         head.flags = Ball::Flag::IsGlobal;
-    } else if (m_co) {
-        head.mode = Ball::Mode::RIGID;
-        head.flags = Ball::Flag::IsGlobal /*| HasMiniBalls*/;
     } else if (m_tower) {
         head.mode = Ball::Mode::STOP;
         head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0)/*Ball::Flag::HasMiniBalls*/;
@@ -734,7 +725,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
     into.Append( head );
 
     /** @todo these may need more work....  */
-    if (m_tcu or m_tower or m_co) {
+    if (m_tcu or m_tower) {
         MassSector mass = MassSector();
             mass.cloak = 0;
             mass.corporationID = m_corpID;
@@ -803,8 +794,8 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("nameID",                   PyStatic.NewNone());
         slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",                  new PyInt(m_ownerID));  //1000148 for interbus customs office (to be done on creation)
-        slim->SetItemString("corpID",                   new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
+        slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
+        slim->SetItemString("corpID",                   new PyInt(m_corpID));
         slim->SetItemString("allianceID",               new PyInt(m_allyID));
         slim->SetItemString("warFactionID",             new PyInt(m_warID));
         if (m_module or m_tower) {    // for control towers and structures
@@ -817,19 +808,6 @@ PyDict *StructureSE::MakeSlimItem() {
             slim->SetItemString("startTimestamp",       new PyLong(m_data.timestamp));
             slim->SetItemString("structureState",       new PyInt(m_data.state));
             slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
-        } else if (m_co) {
-            slim->SetItemString("level",                PyStatic.NewOne()); //{1-CUSTOMSOFFICE_SPACEPORT, 2-CUSTOMSOFFICE_SPACEELEVATOR}   this is for display model
-            slim->SetItemString("orbitalTimestamp",     new PyLong(m_data.timestamp));
-            slim->SetItemString("planetID",             new PyInt(m_planetID));  // planetID for this orbital
-            slim->SetItemString("orbitalState",         new PyInt(m_data.state));   // this needs to be ORBITAL state...not structure state
-            PyTuple* tuple = new PyTuple(3);
-                tuple->SetItem(0,                       new PyFloat(m_rotation.x));
-                tuple->SetItem(1,                       new PyFloat(m_rotation.y));
-                tuple->SetItem(2,                       new PyFloat(m_rotation.z));
-            slim->SetItemString("dunRotation", tuple);  // direction to planet
-            //  dunno what these are...
-            slim->SetItemString("orbitalHackerProgress", PyStatic.NewNone());
-            slim->SetItemString("orbitalHackerID",      PyStatic.NewNone());
         } else if (m_tcu) {
             slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         } else if (m_miner) {
@@ -866,24 +844,6 @@ eventSBUOffline = 257
 eventSBUOnline = 256
 */
 
-std::string StructureSE::GetProcStateName(int8 state)
-{
-    using namespace EVEPOS;
-    switch(state) {
-        case ProcState::Invalid:            return "Invalid";
-        case ProcState::Unanchoring:        return "Unanchoring";
-        case ProcState::Anchoring:          return "Anchoring";
-        case ProcState::Offlining:          return "Offlining";
-        case ProcState::Onlining:           return "Onlining";
-        case ProcState::Online:             return "Online";
-        case ProcState::Operating:          return "Operating";
-        case ProcState::Reinforcing:        return "Reinforcing";
-        case ProcState::SheildReinforcing:  return "SheildReinforcing";
-        case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
-        default:                            return "Bad State";
-    }
-}
-
 void StructureSE::GetEffectState(PyList& into) {
 	// this is for sending structure state info in destiny state data
     if ((m_data.state != EVEPOS::StructureState::Online)
@@ -891,18 +851,16 @@ void StructureSE::GetEffectState(PyList& into) {
         return;
 
     std::vector<int32, std::allocator<int32> > area;
-     OnSpecialFX13 effect;
+    OnSpecialFX13 effect;
         if (m_module)
             effect.entityID = m_data.towerID;            /* control tower id */
         else
             effect.entityID = m_data.itemID;     /* control tower id */
-        if (!m_co) {
-            effect.moduleID = m_data.itemID;         /* structure/module id as part of above tower system */
-            effect.moduleTypeID = m_self->typeID();
-            effect.targetID = 0;
-            effect.chargeTypeID = 0;
-            effect.duration_ms = -1;
-        }
+        effect.moduleID = m_data.itemID;         /* structure/module id as part of above tower system */
+        effect.moduleTypeID = m_self->typeID();
+        effect.targetID = 0;
+        effect.chargeTypeID = 0;
+        effect.duration_ms = -1;
         effect.area = area;
         effect.guid = "effects.StructureOnline"; // this is sent in destiny::SetState.  check for actual effect of this pos
         effect.isOffensive = false;                     /** @todo (Allan) this should be boolean */

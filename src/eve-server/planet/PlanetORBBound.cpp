@@ -25,9 +25,12 @@
 
 #include "eve-server.h"
 
+#include "EntityList.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
 #include "planet/PlanetORBBound.h"
+#include "CustomsOffice.h"
+#include <system/SystemManager.h>
 
 class PlanetORBBound
 : public PyBoundObject
@@ -35,7 +38,7 @@ class PlanetORBBound
 public:
     PyCallable_Make_Dispatcher(PlanetORBBound)
 
-    PlanetORBBound(PyServiceMgr *mgr)
+    PlanetORBBound(PyServiceMgr *mgr, uint32 systemID)
     : PyBoundObject(mgr),
     m_dispatch(new Dispatcher(this))
     {
@@ -47,6 +50,8 @@ public:
         PyCallable_REG_CALL(PlanetORBBound, UpdateSettings);
         PyCallable_REG_CALL(PlanetORBBound, GetSettingsInfo);
         PyCallable_REG_CALL(PlanetORBBound, GMChangeSpaceObjectOwner);
+
+        m_systemID = systemID;
     }
     virtual ~PlanetORBBound() { delete m_dispatch; }
     virtual void Release() {
@@ -62,34 +67,37 @@ public:
 protected:
     Dispatcher* const m_dispatch;
     PlanetDB* m_db;
+
+private:
+    uint32 m_systemID;
 };
 
-PyCallable_Make_InnerDispatcher(planetORB)
+PyCallable_Make_InnerDispatcher(PlanetORB)
 
 
-planetORB::planetORB(PyServiceMgr *mgr)
+PlanetORB::PlanetORB(PyServiceMgr *mgr)
 : PyService(mgr, "planetOrbitalRegistryBroker"),
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
 
-    //PyCallable_REG_CALL(planetORB, );
-    //PyCallable_REG_CALL(planetORB, );
+    //PyCallable_REG_CALL(PlanetORB, );
+    //PyCallable_REG_CALL(PlanetORB, );
 }
 
-planetORB::~planetORB() {
+PlanetORB::~PlanetORB() {
     delete m_dispatch;
 }
 
-PyBoundObject* planetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) {
-    _log(PLANET__INFO, "planetORB bind request for:");  // sends systemID in request
+PyBoundObject* PlanetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+    _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID in request
     bind_args->Dump(PLANET__INFO, "    ");
     if(!bind_args->IsInt()) {
         codelog(SERVICE__ERROR, "%s Service: invalid bind argument type %s", GetName(), bind_args->TypeString());
         return NULL;
     }
-    
-    return new PlanetORBBound(m_manager);
+
+    return new PlanetORBBound(m_manager, bind_args->AsInt()->value());
 }
 
 PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
@@ -104,17 +112,21 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
      *
      * NOTE:  "return PyNone()" = access denied to customs office.
      */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetTaxRate - size%u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
+    Call_SingleIntegerArg args;
+    if (!args.Decode(call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
 
-    return new PyFloat(0.05);
+    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
+    return new PyFloat(pCOSE->GetTaxRate());
 }
 
 PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
 {
     /*  remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
      */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_UpdateSettings - size%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_UpdateSettings - size %u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return new PyNone();
@@ -126,7 +138,7 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
      *   self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
      *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
      */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetSettingsInfo - size%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetSettingsInfo - size %u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return new PyNone();
@@ -156,7 +168,7 @@ PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )
         registry = moniker.GetPlanetOrbitalRegistry(session.solarsystemid)
         registry.GMChangeSpaceObjectOwner(itemID, session.corpid)
     */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GMChangeSpaceObjectOwner - size%u", call.tuple->size() );
+    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GMChangeSpaceObjectOwner - size %u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
     return new PyNone();

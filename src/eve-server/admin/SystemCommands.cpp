@@ -530,15 +530,14 @@ PyResult Command_killallnpcs(Client* pClient, CommandDB* db, PyServiceMgr* servi
     if (pClient->GetShipSE()->SysBubble() == nullptr)
         throw PyException(MakeCustomError("SysBubble invalid."));
 
-    std::vector<SystemEntity *> entityVec;
+    std::map< uint32, SystemEntity* > entityVec;
     pClient->GetShipSE()->SysBubble()->GetEntities(entityVec);
-    std::vector<SystemEntity *>::const_iterator cur = entityVec.begin();
-    for (; cur != entityVec.end(); ++cur) {
-        if (*cur == nullptr)
+    for (auto cur : entityVec) {
+        if (cur.second == nullptr)
             continue;
-        if ((*cur)->IsNPCSE()) {
+        if (cur.second->IsNPCSE()) {
             Damage fatal_blow(pClient->GetShipSE(),true);
-            (*cur)->GetNPCSE()->Killed(fatal_blow);
+            cur.second->GetNPCSE()->Killed(fatal_blow);
         }
     }
 
@@ -616,42 +615,31 @@ PyResult Command_unspawn(Client* pClient, CommandDB* db, PyServiceMgr* services,
         throw PyException(MakeCustomError("only='%s' not a supported group or category", only_str.c_str()));
     }
 
-    SystemBubble *bubble = pClient->GetShipSE()->SysBubble();
-    if (bubble == nullptr) {
+    SystemBubble *pBubble = pClient->GetShipSE()->SysBubble();
+    if (pBubble == nullptr) {
         throw PyException(MakeCustomError("/unspawn failed.  You don't appear to be in a bubble.  Try /update"));
     }
 
     GPoint player_pos = pClient->GetShipSE()->GetPosition();
-    Inventory *sys_inv = pClient->SystemMgr()->GetSystemInv();
 
-    std::vector<SystemEntity *> entities;
-    bubble->GetEntities(entities);
-    for (int i = 0; i < entities.size(); i++) {
-        SystemEntity *e = entities[i];
-        if (is_group_match == true and match_id != e->GetGroupID()) {
+    std::map< uint32, SystemEntity* > entMap;
+    pBubble->GetEntities(entMap);
+    for (auto cur : entMap) {
+        if (is_group_match and match_id != cur.second->GetGroupID()) {
             codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u groupID %u",
-                    is_group_match, is_category_match, match_id, e->GetGroupID());
+                    is_group_match, is_category_match, match_id, cur.second->GetGroupID());
             continue;
         }
-        if (is_category_match == true and match_id != e->GetCategoryID()) {
-
+        if (is_category_match and match_id != cur.second->GetCategoryID()) {
             codelog(COMMAND__ERROR, "m: g%d c%d skipping match_id %u categoryID %u",
-                    is_group_match, is_category_match, match_id, e->GetGroupID());
+                    is_group_match, is_category_match, match_id, cur.second->GetGroupID());
             continue;
         }
 
-        uint32_t itemID = e->GetID();
-        codelog(COMMAND__ERROR, "Grid item: %u passed initial checks", itemID);
-        GPoint pos = e->GetPosition();
-        float d = player_pos.distance(pos);
-        if (d > (float)range) {
+        if (player_pos.distance(cur.second->GetPosition()) > range)
             continue;
-        }
 
-
-        pClient->SystemMgr()->RemoveEntity(e);
-        InventoryItemRef item = sItemFactory.GetItem(itemID);
-        item->Delete();
+        cur.second->Delete();
     }
 
 #undef DEFAULT_RANGE

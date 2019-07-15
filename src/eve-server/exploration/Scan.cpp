@@ -97,7 +97,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
     if (m_client->IsShowall())
         m_client->SystemMgr()->GetCurrentEntities(vector);
     else
-        m_client->GetShipSE()->SysBubble()->GetEntities(vector);
+        m_client->GetShipSE()->SysBubble()->GetEntityVec(vector);
     PyList* list = new PyList();
     for (auto cur : vector) {
         DirectionScanResult res;

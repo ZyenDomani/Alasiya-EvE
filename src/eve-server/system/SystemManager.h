@@ -125,6 +125,7 @@ public:
     void RemoveItemFromInventory(InventoryItemRef item);
     void DoSpawnForBubble(SystemBubble* pBubble);
 
+    /* this is to send new global ball added to system AFTER SetState has been sent */
     void SendStaticBall(SystemEntity* pSE);
     void MakeSetState(const SystemBubble* pBubble, SetState& into) const;
 
@@ -144,6 +145,11 @@ public:
     void GetAllEntities(std::vector<CosmicSignature>& vector);
 
     void GetClientList(std::vector<Client*>& cVec);
+
+    std::map< uint32, SystemEntity* > GetEntities()     { return m_entities; }
+
+    SystemEntity* GetPlanet(uint32 planetID);
+
 
 protected:
     /** @todo  this needs more work */
