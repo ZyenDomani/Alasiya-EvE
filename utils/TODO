@@ -6,10 +6,8 @@
 
 
 **********  found shit...high priority
-station hangar not updating.  relog/undock-dock to refresh?  more fucking inv bullshit??
-    - buy, assemble, trash, create all with problems
-
 check roaming spawns.  bs rats in 0.9??
+
 
 ********  improvements
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
@@ -141,6 +139,8 @@ notificationMgr code needs love
 reproc code needs love
 certificateMgr needs looking at
 
+PlanetORBBound needs work now that customs offices are working
+
 
 store/board ship (cap ship hangar) not coded
 
@@ -264,6 +264,12 @@ roids not inserted into itemfactory map
 
 update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
     - this includes all decode errors
+
+
+create data needed for killboard, and integrate killboard into site
+
+Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed
+
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:

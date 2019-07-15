@@ -99,6 +99,13 @@
         </tupleInline>
     </elementDef>
 
+    <elementDef name="Call_PrioritizeRoute">
+        <tupleInline>
+            <int name="routeID" />
+            <int name="priority" />
+        </tupleInline>
+    </elementDef>
+
     <elementDef name="Call_ProgramResults">
         <tupleInline>
             <int name="ecuID" />

@@ -47,6 +47,7 @@ public:
 
         m_strBoundObjectName = "CharMgrBound";
 
+        PyCallable_REG_CALL(CharMgrBound, List);
         PyCallable_REG_CALL(CharMgrBound, ListStations);
         PyCallable_REG_CALL(CharMgrBound, ListStationItems);
         PyCallable_REG_CALL(CharMgrBound, ListStationBlueprintItems);
@@ -59,6 +60,7 @@ public:
         delete this;
     }
 
+    PyCallable_DECL_CALL(List);
     PyCallable_DECL_CALL(ListStations);
     PyCallable_DECL_CALL(ListStationItems);
     PyCallable_DECL_CALL(ListStationBlueprintItems);
@@ -70,6 +72,19 @@ protected:
     uint16 m_containerFlag;     // this is EVEContainerType defined in EVE_Inventory.h
 };
 
+
+PyResult CharMgrBound::Handle_List( PyCallArgs& call )
+{
+    // this is called by assets.search
+    //  /client/script/ui/shared/assetswindow.py(212) Search
+    // /client/script/environment/invcache.py(635) List
+
+    _log(CHARACTER__DEBUG, "CharMgrBound::Handle_List() size=%u", call.tuple->size() );
+    call.Dump(CHARACTER__DEBUG);
+
+
+    return nullptr;
+}
 
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
 {

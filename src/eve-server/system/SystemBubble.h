@@ -111,9 +111,12 @@ public:
     void MarkCenter();
     void RemoveMarkers();
 
+    /* for SetState */
+    void GetEntities(std::map< uint32, SystemEntity* >& into) const;
     /* for targeting purposes */
-    void GetEntities(std::vector<SystemEntity*> &into) const;
     void GetPlayers(std::vector<Client*> &into) const;
+    /* for scanning */
+    void GetEntityVec(std::vector<SystemEntity*> &into) const;
     SystemEntity* GetRandomEntity();
 
     /* for towers/ship abandoning */

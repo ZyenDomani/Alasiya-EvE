@@ -1264,6 +1264,24 @@ std::string StaticDataMgr::GetRigSizeName(uint8 size)
     }
 }
 
+std::string StaticDataMgr::GetProcStateName(int8 state)
+{
+    using namespace EVEPOS;
+    switch(state) {
+        case ProcState::Invalid:            return "Invalid";
+        case ProcState::Unanchoring:        return "Unanchoring";
+        case ProcState::Anchoring:          return "Anchoring";
+        case ProcState::Offlining:          return "Offlining";
+        case ProcState::Onlining:           return "Onlining";
+        case ProcState::Online:             return "Online";
+        case ProcState::Operating:          return "Operating";
+        case ProcState::Reinforcing:        return "Reinforcing";
+        case ProcState::SheildReinforcing:  return "SheildReinforcing";
+        case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
+        default:                            return "Bad State";
+    }
+}
+
 std::string StaticDataMgr::GetFlagName(uint16 flag)
 {
     return GetFlagName((EVEItemFlags)flag);

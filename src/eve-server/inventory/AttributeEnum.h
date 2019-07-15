@@ -1549,16 +1549,17 @@ enum EveAttrEnum {
     AttrentityGroupPropJamActivationChance = 1680,   // npcActivationChanceAttributeID in dgmEffects
     AttrentityGroupArmorResistanceDuration = 1681,
     AttrentityGroupArmorResistanceActivationChance = 1682,   // npcActivationChanceAttributeID in dgmEffects
-    /* these are for PI */
+    /* these are for PI and may be calculated on-the-fly */
     AttrECUDecayFactor = 1683,
     AttrECUMaxVolume = 1684,
     AttrECUOverlapFactor = 1685,
-    AttrSystemEffectDamageReduction = 1686,
     AttrECUNoiseFactor = 1687,
-    AttrShipBonusPirateFaction2 = 1688,
     AttrECUAreaOfInfluence = 1689,
     AttrECUExtractorHeadCPU = 1690,
     AttrECUExtractorHeadPower = 1691,
+    /* end PI */
+    AttrSystemEffectDamageReduction = 1686,
+    AttrShipBonusPirateFaction2 = 1688,
     AttrmetaGroupID = 1692,
     AttrdistributionIDAngel01 = 1695,
     AttrdistributionIDAngel02 = 1696,

@@ -109,6 +109,8 @@ public:
     std::string         GetOwnerName(int32 ownerID);
 
 
+    std::string         GetProcStateName(int8 state);
+
     uint32              GetWreckFaction(uint32 typeID);
 
 

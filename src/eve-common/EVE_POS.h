@@ -9,7 +9,19 @@
 #ifndef EVE_POS_ENUMS_H
 #define EVE_POS_ENUMS_H
 
+class GVector;
+
 namespace EVEPOS {
+    struct CustomsData {
+        int8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
+        int32 itemID;
+        int32 planetID;
+        int64 timestamp;
+        float status;
+        float taxRate;
+        GVector rotation;      /* direction to planet (for correct orientation) */
+    };
+
     struct StructureData {
         int8 use;
         int8 view;
@@ -21,7 +33,6 @@ namespace EVEPOS {
         int64 timestamp;
         float status;
     };
-
     struct TowerData {
         int8 anchor;
         int8 unanchor;
@@ -113,7 +124,7 @@ namespace EVEPOS {
     }
 
     namespace OrbitalState {
-    // not totally sure what these are for....customs offices for one...
+    // not totally sure what these are for....customs offices for one...no, these are entityState (drones)
         enum  {
             Offlining             = -7,
             Anchoring             = -6,

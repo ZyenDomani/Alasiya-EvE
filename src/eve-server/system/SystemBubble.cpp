@@ -168,16 +168,25 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
         ResetBubbleRatSpawn();
 }
 
-void SystemBubble::Add(SystemEntity* pSE) {
-	//if they are already in this bubble, do not continue.
-	if (m_entities.find(pSE->GetID()) != m_entities.end()) {
+void SystemBubble::Add(SystemEntity* pSE)
+{
+    //if they are already in this bubble, do not continue.
+    if (m_entities.find(pSE->GetID()) != m_entities.end()) {
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Static Entity %u to bubble %u, but it is already in here.",\
-		     pSE->GetID(), m_bubbleID);
-		return;
-	}
+             pSE->GetID(), m_bubbleID);
+        return;
+    }
 
     pSE->m_bubble = this;
+    // global entitys also in SystemMgr's static list.  this is used for SystemBubble->IsEmpty() deletion check
+    if (pSE->IsStaticEntity() or pSE->isGlobal()) {
+        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global.", pSE->GetName(), pSE->GetID() );
+        // all static and global entities (stations, gates, asteroid fields, cyno fields, etc) are put into bubble's staticEntity map
+        m_entities[pSE->GetID()] = pSE;
+        return;
+    }
 
+    //if they are already in this bubble, do not continue.
 	if (m_dynamicEntities.find(pSE->GetID()) != m_dynamicEntities.end()) {
         _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Tried to add Dynamic Entity %u to bubble %u, but it is already in here.",\
                 pSE->GetID(), m_bubbleID);
@@ -200,11 +209,6 @@ void SystemBubble::Add(SystemEntity* pSE) {
 	if (IsTempItem(pSE->GetID())) {
         if (!m_players.empty())
             AddBallExclusive(pSE);
-    } else if (pSE->IsStaticEntity() or pSE->isGlobal()) {
-        //insert the global entitys into their own list
-        _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Add() - Entity %s(%u) is static or global.", pSE->GetName(), pSE->GetID() );
-        m_entities[pSE->GetID()] = pSE;
-        return;
     } else if (pSE->HasPilot()) {
         // Set spawn timer for this bubble, if needed
         if (m_belt) {
@@ -332,14 +336,22 @@ SystemEntity* const SystemBubble::GetEntity(uint32 entityID) const {
     return nullptr;
 }
 
-void SystemBubble::GetEntities(std::vector<SystemEntity*> &into) const {
+void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
     /* updated to send ONLY dynamic entities to the following:         -allan 14Feb15
-     *    SystemManager::MakeSetState()   --for player entering new system  <-- no. 24Dec17
+     *    SystemManager::MakeSetState()   --for player entering new system  <-- no. 24Dec17  <- yes ??2018
      *    Command_killallnpcs()           --GM command
      *    StructureSE::InitData()         --Get TowerSE for pos items
      */
     if (m_dynamicEntities.empty())
         return;
+
+    for (auto cur : m_dynamicEntities)
+        into.emplace(cur.first, cur.second);
+}
+
+void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const
+{
+    if (m_players.empty()) return;
 
     for (auto cur : m_dynamicEntities)
         into.push_back(cur.second);

@@ -177,16 +177,15 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
         }
 
-        /** @todo criminal shit isnt written yet....fix this once it is.
-        if (sFxDataMgr.isAssistance(effectID))
-            if (m_targetSE->IsShipSE())
-                if (m_targetSE->GetShipSE()->HasPilot())
-                    if (m_targetSE->GetShipSE()->GetPilot()->IsCriminal())
-                        throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
-        */
-        if (m_targetSE->TargetMgr() != nullptr)
-            m_targetSE->TargetMgr()->AddTargetModule(this);
     }
+
+    /** @todo criminal shit isnt written yet....fix this once it is.
+    if (sFxDataMgr.isAssistance(effectID))
+        if (m_targetSE->IsShipSE())
+            if (m_targetSE->GetShipSE()->HasPilot())
+                if (m_targetSE->GetShipSE()->GetPilot()->IsCriminal())
+                    throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
+     */
 
     /*
      * AttrdisallowAgainstEwImmuneTarget
@@ -194,11 +193,18 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
      * AttrDisallowOffensiveModifierBonus
      */
 
-    if (m_targetSE != nullptr)
+    if (m_targetSE != nullptr) {
         if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
             Clear();
             throw PyException( MakeUserError( "DeniedActivateTargetAssistDisallowed"));
         }
+        if (m_targetSE->IsCOSE()) {
+            Clear();
+            throw PyException( MakeCustomError( "Attacking Customs Offices isn't implemented at this time."));
+        }
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->AddTargetModule(this);
+    }
 
     m_Stop = false;
     m_repeat = repeat;

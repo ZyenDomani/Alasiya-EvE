@@ -325,8 +325,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         return false;
     }
 
-    m_system->AddClient(this, true);
-
     m_char = sItemFactory.GetCharacter(charID);
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
@@ -338,6 +336,8 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     m_char->VerifySP();
     m_char->UpdateSkillQueue();
     m_char->SetLoginTime();
+
+    m_system->AddClient(this, true);
 
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     //  fleet data is zeroed when char item is created
@@ -603,11 +603,13 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/, bool update/*fals
 
     if (pt.isZero()) {
         if (pShipSE->GetPosition().isZero())
-            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnMoon(m_system->GetID()), update);
+            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnPlanet(m_system->GetID()), update);
         else
             pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
     } else
         pShipSE->DestinyMgr()->SetPosition(pt, update);
+
+    sBubbleMgr.Add(pShipSE);
 
     if (count and !m_login)
         pShipSE->ResetShipSystemMgr(m_system);
@@ -686,10 +688,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
 
     _log(AUTOPILOT__TRACE, "MoveToLocation() - m_autoPilot = %s", (m_autoPilot ? "true" : "false"));
 
-    if (!m_login and (m_locationID == locationID)) {
+    if (!m_login and (m_locationID == locationID) and !IsStation(locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
-        if (IsStation(locationID))
-            return;
         // This is a simple movement
         SetDestiny(pt, false, true);
         return;

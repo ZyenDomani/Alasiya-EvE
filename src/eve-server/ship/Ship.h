@@ -112,7 +112,7 @@ protected:
         ShipTypeData stData;
         if( !sItemFactory.db()->GetShipType(shipTypeID, stData) )
             return NULL;
-
+//  i dunno wtf this is or what it's used for....
         // try to load weapon type
         const ItemType *weaponType = NULL;
         if( stData.mWeaponTypeID != 0 ) {
