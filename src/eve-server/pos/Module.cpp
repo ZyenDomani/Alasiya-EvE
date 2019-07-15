@@ -17,9 +17,9 @@ ModuleSE::ModuleSE(StructureItemRef structure, PyServiceMgr& services, SystemMan
 
 }
 
-void ModuleSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void ModuleSE::Init()
 {
-    StructureSE::Init(iRef, pBubble);
+    StructureSE::Init();
 }
 
 void ModuleSE::Process()
@@ -42,18 +42,18 @@ ReactorSE::~ReactorSE()
     SafeDelete(pData);
 }
 
-void ReactorSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void ReactorSE::Init()
 {
-    StructureSE::Init(iRef, pBubble);
+    StructureSE::Init();
 
     if (!m_db.GetReactorData(pData, m_data)) {
-        _log(SE__TRACE, "ReactorSE %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), iRef->itemID());
+        _log(SE__TRACE, "ReactorSE %s(%u) has no saved data.  Initalizing default set.", m_self->itemName().c_str(), m_self->itemID());
         // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
-        InitData(pBubble);
+        InitData();
     }
 }
 
-void ReactorSE::InitData(SystemBubble* pBubble) {
+void ReactorSE::InitData() {
     pData->Init();
     m_db.SaveReactorData(pData, m_data);
 }

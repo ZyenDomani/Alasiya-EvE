@@ -34,9 +34,9 @@ WeaponSE::WeaponSE(StructureItemRef structure, PyServiceMgr& services, SystemMan
 
 }
 
-void WeaponSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void WeaponSE::Init()
 {
-    StructureSE::Init(iRef,pBubble);
+    StructureSE::Init();
 }
 
 void WeaponSE::Process()

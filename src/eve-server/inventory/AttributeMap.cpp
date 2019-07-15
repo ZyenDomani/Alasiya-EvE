@@ -145,9 +145,7 @@ bool AttributeMap::Save() {
         if (module)
             if (itr->first == AttrOnline)
                 save = true;
-        if (owner)
-            save = true;
-        if (save) {
+        if (save or owner) {
             AttrData data = AttrData();
             data.itemID = mItem.itemID();
             data.attrID = itr->first;

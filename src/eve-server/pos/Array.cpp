@@ -28,9 +28,9 @@ ArraySE::ArraySE(StructureItemRef structure, PyServiceMgr& services, SystemManag
 
 }
 
-void ArraySE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void ArraySE::Init()
 {
-    StructureSE::Init(iRef, pBubble);
+    StructureSE::Init();
 }
 
 void ArraySE::Process()

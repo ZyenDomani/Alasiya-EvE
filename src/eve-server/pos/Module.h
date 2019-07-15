@@ -33,7 +33,7 @@ public:
     virtual void                Process();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
+    virtual void                Init();
 
 
 };
@@ -56,8 +56,8 @@ public:
     virtual void                Process();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
-    virtual void                InitData(SystemBubble* pBubble);
+    virtual void                Init();
+    virtual void                InitData();
 
 
 private:

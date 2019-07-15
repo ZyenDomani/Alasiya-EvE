@@ -34,8 +34,8 @@ public:
     virtual PyDict*             MakeSlimItem();
 
     /* virtual functions default to base class and overridden as needed */
-    virtual void                Init(InventoryItemRef iRef, SystemBubble* pBubble);
-    virtual void                InitData(SystemBubble* pBubble);
+    virtual void                Init();
+    virtual void                InitData();
 
     /* virtual functions to be overridden in derived classes */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }

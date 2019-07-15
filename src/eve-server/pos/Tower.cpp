@@ -133,14 +133,14 @@ m_pShieldSE(nullptr)
      */
 }
 
-void TowerSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void TowerSE::Init()
 {
-    StructureSE::Init(iRef, pBubble);
+    StructureSE::Init();
 
     if (!m_db.GetTowerData(m_tdata, m_data)) {
-        _log(SE__TRACE, "TowerSE %s(%u) has no saved data.  Initalizing default set.", iRef->itemName().c_str(), iRef->itemID());
+        _log(SE__TRACE, "TowerSE %s(%u) has no saved data.  Initalizing default set.", m_self->itemName().c_str(), m_self->itemID());
         // invalid data....init to 0 as this will only hit for currently-launching items (or errors)
-        InitData(pBubble);
+        InitData();
     }
 
     // if password is already set and tower online, then we can online (create) the forcefield
@@ -155,8 +155,8 @@ void TowerSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
         m_moonSE->SetTower(this);
 
     // set tower in bubble
-    pBubble->SetTowerSE(this);
-    
+    m_bubble->SetTowerSE(this);
+
     /** @todo
      * will have to check if Online or Operating
      *   in these two cases, remove resources based on time running.
@@ -170,9 +170,9 @@ void TowerSE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
 
 }
 
-void TowerSE::InitData(SystemBubble* pBubble) {
+void TowerSE::InitData() {
     // init base data first
-    StructureSE::InitData(pBubble);
+    StructureSE::InitData();
     m_tdata.harmonic = m_harmonic;     // set during base SE creation
     m_tdata.standingOwnerID = 0;    /** @todo  get sov holder here. */
 

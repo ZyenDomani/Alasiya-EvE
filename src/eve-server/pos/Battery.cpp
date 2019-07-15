@@ -28,9 +28,9 @@ BatterySE::BatterySE(StructureItemRef structure, PyServiceMgr& services, SystemM
 
 }
 
-void BatterySE::Init(InventoryItemRef iRef, SystemBubble* pBubble)
+void BatterySE::Init()
 {
-    StructureSE::Init(iRef, pBubble);
+    StructureSE::Init();
 }
 
 void BatterySE::Process()
