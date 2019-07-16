@@ -76,9 +76,9 @@ public:
 
     /* used for bubble management */
     bool IsEmpty() const                                { return (m_entities.empty() ? m_dynamicEntities.empty() : false); }
-    bool HasStatics() const                             { return (m_entities.empty() ? false : true); }
-    bool HasDynamics() const                            { return (m_dynamicEntities.empty() ? false : true); }
-    bool HasPlayers() const                             { return (m_players.empty() ? false : true); }
+    bool HasPlayers() const                             { return m_players.empty(); }
+    bool HasStatics() const                             { return m_entities.empty(); }
+    bool HasDynamics() const                            { return m_dynamicEntities.empty(); }
     double x() const                                    { return m_center.x; }
     double y() const                                    { return m_center.y; }
     double z() const                                    { return m_center.z; }

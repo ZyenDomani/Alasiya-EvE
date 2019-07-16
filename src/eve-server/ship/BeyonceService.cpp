@@ -517,6 +517,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         uint32 anomID = pSystem->GetAnomMgr()->GetAnomalyID(stringArg);
         pSE = pSystem->GetSE(anomID);
     } else if (type == "launch") {
+        //warpToPoint = PlanetDB::GetLaunchPos(toID);
         pSE = pSystem->GetSE(toID);
         // launchpickup - launch, launchid
     }
@@ -641,7 +642,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     }
     if (warpToPoint.isZero()) {
         // pSE is null....make error and return
-        codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location for '%s'", call.client->GetName(), type.c_str());
+        codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", call.client->GetName(), toID, type.c_str());
         call.client->SendErrorMsg("WarpTo: Item location not found.");
         return PyStatic.NewNone();
     }

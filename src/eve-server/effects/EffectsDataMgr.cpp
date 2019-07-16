@@ -73,7 +73,7 @@ void FxDataMgr::Populate()
     Operand mOpr = Operand();
         mOpr.format = "None";
         mOpr.operandKey = "NULL";
-    m_opMap.insert(std::pair<uint16, Operand>(0, mOpr));
+    m_opMap[0] = mOpr;
     sLog.Cyan("        FxDataMgr", "%u Operands loaded in %.3fms.", m_opMap.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
@@ -98,7 +98,7 @@ void FxDataMgr::Populate()
     Expression mExp = Expression();
         mExp.description = "NULL";
         mExp.expressionName = "NULL";
-    m_expMap.insert(std::pair<uint16, Expression>(0, mExp));
+    m_expMap[0] = mExp;
     sLog.Cyan("        FxDataMgr", "%u Expressions loaded in %.3fms.", m_expMap.size(), (GetTimeMSeconds() - start));
 
     //res->Reset();
@@ -136,8 +136,8 @@ void FxDataMgr::Populate()
     // insert a zero-value data set
     Effect mEffect = Effect();
         mEffect.effectName = "NULL";
-    m_effectMap.insert(std::pair<uint16, Effect>(0, mEffect));
-    sLog.Cyan("        FxDataMgr", "%u Effects loaded in %.3fms.", m_effectMap.size(), (GetTimeMSeconds() - start));
+    m_effectMap[0] = mEffect;
+    sLog.Cyan("        FxDataMgr", "%u Effect Types loaded in %.3fms.", m_effectMap.size(), (GetTimeMSeconds() - start));
 
     //cleanup
     SafeDelete(res);

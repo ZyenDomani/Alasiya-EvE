@@ -539,7 +539,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
         head.stamp = sEntityList.GetStamp();
 	destinyBuffer->Append(head);
 
-     AddBalls2 addballs2;
+    AddBalls2 addballs2;
         addballs2.stateStamp = sEntityList.GetStamp();
         addballs2.extraBallData = new PyList();
 

@@ -145,6 +145,10 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
     if (data.name.empty())
         data.name = iType->name();
 
+    if (data.locationID == 0) {
+        _log(ITEM__ERROR, "LocationID = 0 for item");
+        EvE::traceStack();
+    }
     // insert new entry into DB
     return sItemFactory.db()->NewItem(data);
 }

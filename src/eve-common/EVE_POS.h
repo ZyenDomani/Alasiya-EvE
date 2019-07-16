@@ -13,13 +13,17 @@ class GVector;
 
 namespace EVEPOS {
     struct CustomsData {
+        bool allowAlliance;
+        bool allowStandings;
         int8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
+        int16 selectedHour;
         int32 itemID;
         int32 planetID;
         int64 timestamp;
         float status;
         float taxRate;
-        GVector rotation;      /* direction to planet (for correct orientation) */
+        float standingLevel;
+        GVector rotation;      /* yaw,pitch,roll - direction to planet (for correct orientation) */
     };
 
     struct StructureData {

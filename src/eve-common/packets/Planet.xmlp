@@ -151,4 +151,15 @@
       </dictInline>
   </elementDef>
 
+    <elementDef name="Call_UpdateSettings">
+        <tupleInline>
+            <int name="orbitalID" />
+            <real name="reinforceValue" safe="true" />
+            <real name="taxRate" safe="true" />
+            <real name="standings" safe="true" />
+            <bool name="allowAlliance" safe="true" />
+            <bool name="allowStandings" safe="true" />
+        </tupleInline>
+    </elementDef>
+
 </elements>

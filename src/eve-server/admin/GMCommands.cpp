@@ -210,11 +210,8 @@ PyResult Command_spawnn(Client* who, CommandDB* db, PyServiceMgr* services, cons
     if (!item)
         throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
-    DBSystemDynamicEntity entity;
-        entity.allianceID = 0;
+    DBSystemDynamicEntity entity = DBSystemDynamicEntity();
         entity.categoryID = (EVEItemCategories)actualCategoryID;
-        entity.corporationID = 0;
-        entity.factionID = 0;
         entity.groupID = actualGroupID;
         entity.itemID = item->itemID();
         entity.itemName = actualTypeName;
@@ -342,10 +339,7 @@ PyResult Command_spawn(Client* who, CommandDB* db, PyServiceMgr* services, const
         if (!item)
             throw PyException(MakeCustomError("Unable to spawn item of type %u.", typeID));
 
-        DBSystemDynamicEntity entity;
-        entity.allianceID = 0;
-        entity.corporationID = 0;
-        entity.factionID = 0;
+        DBSystemDynamicEntity entity = DBSystemDynamicEntity();
         entity.ownerID = 1;
         entity.categoryID = (EVEItemCategories)actualCategoryID;
         entity.groupID = actualGroupID;

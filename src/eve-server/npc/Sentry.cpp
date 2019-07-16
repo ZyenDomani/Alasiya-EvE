@@ -191,7 +191,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
-    DBSystemDynamicEntity wreckEntity;
+    DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
         wreckEntity.corporationID = killer->GetCorporationID();

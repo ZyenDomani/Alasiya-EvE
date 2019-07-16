@@ -85,7 +85,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
         return;
     }
     // do this or create/add generic se here?
-    DBSystemDynamicEntity entity;
+    DBSystemDynamicEntity entity = DBSystemDynamicEntity();
         entity.categoryID = iRef->categoryID();
         entity.groupID = iRef->groupID();
         entity.itemID = iRef->itemID();

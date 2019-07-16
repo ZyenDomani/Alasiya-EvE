@@ -79,6 +79,22 @@ public:
         : Ga::GaVec3( (to.x-from.x), (to.y-from.y), (to.z-from.z) ) {}
 };
 
+class GVector4 : public GVector {
+public:
+    GVector4();
+    GVector4(const GPoint &them);
+    GVector4(double x, double y, double z, double w = 1.0f);
+
+    inline void operator()(double nx, double ny, double nz, double nw) { pt[0] = nx; pt[1] = ny; pt[2] = nz; W = nw; }
+    double dot4(const GVector4 &them) const;
+    double dot4(const GPoint &them) const;
+
+    inline const double w() const { return W; }
+
+    double W;
+    double pt[3];
+};
+
 #if 0
 //TODO: inline most of this crap.
 
@@ -123,21 +139,6 @@ public:
     double normalize_getlen();    //normalize and return the calculated length while your at it
     double length() const;
     double length2() const;    //length squared
-};
-
-class GVector4 : public GVector {
-public:
-    GVector4();
-    GVector4(const GPoint &them);
-    GVector4(double x, double y, double z, double w = 1.0f);
-
-    inline void operator()(double nx, double ny, double nz, double nw) { pt[0] = nx; pt[1] = ny; pt[2] = nz; W = nw; }
-    double dot4(const GVector4 &them) const;
-    double dot4(const GPoint &them) const;
-
-    inline const double w() const { return(W); }
-
-    double W;
 };
 
 class G2Point {

@@ -39,6 +39,7 @@ namespace Ga
 	{
 	public:
 
+        GaVec3(const Parameter &oth);
 		GaExpInl GaVec3():x(0.0f),y(0.0f),z(0.0f){}
 		GaExpInl GaVec3(GaFloat v):x(v),y(v),z(v){}
 		GaExpInl GaVec3(const GaFloat *v):x(v[0]),y(v[1]),z(v[2]){}
@@ -177,18 +178,45 @@ namespace Ga
         GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
 
 		//optimized checks for a very common case
-		bool isZero() const {
+        GaExpInl bool isZero() const {
 			return(x == 0.0f && y == 0.0f && z == 0.0f);
 		}
-		bool isNotZero() const {
+		GaExpInl bool isNotZero() const {
 			return(x != 0.0f || y != 0.0f || z != 0.0f);
 		}
 
-		GaQuat rotationTo(const GaVec3 &oth) const;
+        GaQuat rotationTo(const GaVec3 &oth) const;
 
-		GaVec3 &operator=(const Parameter &oth);
-		GaVec3(const Parameter &oth);
-        
+        GaVec3 &operator=(const Parameter &oth);
+
+		/*
+		inline GaVec3 vector_rotation_by_quaternion(GaVec3 v, GaQuat q)
+        {
+            // Extract the vector part of the quaternion
+            GaVec3 u = { q.x, q.y, q.z };
+
+            // Extract the scalar part of the quaternion
+            double s = q.w;
+
+            // Do the math
+            return u* (2.0 * (u* v)) + v* (s*s - (u* u)) + (u^ v)* (2.0 * s);
+        }
+
+
+        inline GaVec3 angleRot(GaVec3 v1, GaVec3 v2, double angle)
+        {
+            GaVec3 axis_ = normalized(v1^v2);
+            angle = angle / 2.0;
+
+            quat q_temp = { 0.0, 0.0, 0.0, 1.0 };
+            q_temp.x = axis_.x * sin(angle);
+            q_temp.y = axis_.y * sin(angle);
+            q_temp.z = axis_.z * sin(angle);
+            q_temp.w = cos(angle);
+
+            return vector_rotation_by_quaternion(v1, q_temp);
+        }
+        */
 		GaFloat x,y,z;
 	};
 
@@ -229,9 +257,9 @@ namespace Ga
 			return GaQuat
 			(
 				w * oth.w   - v.x * oth.v.x - v.y * oth.v.y - v.z * oth.v.z,
-    w * oth.v.x + v.x * oth.w   + v.y * oth.v.z - v.z * oth.v.y,
-    w * oth.v.y + v.y * oth.w   + v.z * oth.v.x - v.x * oth.v.z,
-    w * oth.v.z + v.z * oth.w   + v.x * oth.v.y - v.y * oth.v.x
+                w * oth.v.x + v.x * oth.w   + v.y * oth.v.z - v.z * oth.v.y,
+                w * oth.v.y + v.y * oth.w   + v.z * oth.v.x - v.x * oth.v.z,
+                w * oth.v.z + v.z * oth.w   + v.x * oth.v.y - v.y * oth.v.x
 			);
 		}
 

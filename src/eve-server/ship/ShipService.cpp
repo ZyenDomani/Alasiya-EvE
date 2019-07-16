@@ -468,20 +468,12 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         return nullptr;
     }
 
-    DBSystemDynamicEntity entity;
-        entity.itemID = 0;
-        entity.itemName = "";
-        entity.typeID = 0;
-        entity.groupID = 0;
+    DBSystemDynamicEntity entity = DBSystemDynamicEntity();
         entity.categoryID = EVEDB::invCategories::_System;
         entity.ownerID = ownerID;
         entity.factionID = pClient->GetWarFactionID();
         entity.allianceID = pClient->GetAllianceID();
         entity.corporationID = pClient->GetCorporationID();
-        entity.planetID = 0;
-        entity.x = 0.0;
-        entity.y = 0.0;
-        entity.z = 0.0;
 
     uint32 itemQuantity = 0;
     double radius = pClient->GetShipSE()->GetRadius();
@@ -539,11 +531,11 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             entity.typeID = iRef->typeID();
             entity.groupID = iRef->groupID();
             entity.categoryID = iRef->categoryID();
-            if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-                entity.planetID = pSystem->GetClosestPlanetID(location);
             entity.x = iRef->position().x;
             entity.y = iRef->position().y;
             entity.z = iRef->position().z;
+            if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
+                entity.planetID = pSystem->GetClosestPlanetID(location);
             SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
             if (pSE == nullptr) {
                 //couldnt create entity.  move item back to orig location and continue

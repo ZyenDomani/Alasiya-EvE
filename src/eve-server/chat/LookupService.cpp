@@ -75,6 +75,7 @@ PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
     return ServiceDB::LookupChars(args.searchString.c_str(), args.searchOption ? true : false);
 }
 
+// this may actually be a call to search for player corps by name.
 PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {

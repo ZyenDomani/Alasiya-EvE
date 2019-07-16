@@ -395,7 +395,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
 
-        DBSystemDynamicEntity wreckEntity;
+        DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
             wreckEntity.corporationID = killer->GetCorporationID();
@@ -526,7 +526,7 @@ void Ship::Killed(Damage &fatal_blow) {
         InventoryItemRef corpseItemRef = sItemFactory.SpawnItem( corpseItemData );
         if (corpseItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Corpse Item Failed for %s of type %u", corpse_name.c_str(), corpseTypeID);
-            DBSystemDynamicEntity corpseEntity;
+            DBSystemDynamicEntity corpseEntity = DBSystemDynamicEntity();
             corpseEntity.allianceID = m_allyID;
             corpseEntity.categoryID = EVEDB::invCategories::Celestial;
             corpseEntity.corporationID = m_corpID;
@@ -585,7 +585,7 @@ void Ship::Killed(Damage &fatal_blow) {
         for (auto cur: survivedItems)
             cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
-        DBSystemDynamicEntity wreckEntity;
+        DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
             wreckEntity.categoryID = EVEDB::invCategories::Celestial;
             wreckEntity.corporationID = killer->GetCorporationID();

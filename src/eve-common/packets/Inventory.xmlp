@@ -149,6 +149,15 @@
         <bool name="isMove" />
     </tupleInline>
   </elementDef>
+  
+  <elementDef name="Call_PlanetCustomsXfer">
+    <tupleInline>
+        <int name="spaceportPinID" />
+        <dict name="importData" />
+        <dict name="exportData" />
+        <float name="taxRate" />
+    </tupleInline>
+  </elementDef>
 
   <elementDef name="EntityEffectState">
     <listInline>

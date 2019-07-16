@@ -215,7 +215,7 @@ PyResult ConfigService::Handle_GetMapConnections(PyCallArgs &call) {
 
     /** @todo check into id sending.... 9 is EvE Universe and 9000001 is EvE WormHole Universe */
     if(args.id == 9 || args.sol) {
-        sLog.Warning( "ConfigService::Handle_GetMapConnections()", "args.id = 9 | args.sol");
+        //sLog.Warning( "ConfigService::Handle_GetMapConnections()", "args.id = 9 | args.sol");
         return m_db.GetMapConnections(call.client->GetSystemID(), args.sol, args.reg, args.con, args.cel, args._c);
     } else
         return m_db.GetMapConnections(args.id, args.sol, args.reg, args.con, args.cel, args._c);

@@ -383,7 +383,7 @@ PyDict* ItemSystemEntity::MakeSlimItem() {
             PyList* dirList = new PyList();
                 dirList->AddItem(new PyInt(5));     //234
                 dirList->AddItem(new PyInt(-1));
-                dirList->AddItem(PyStatic.NewNone());
+                dirList->AddItem(PyStatic.NewZero());
             slim->SetItemString("dunDirection", dirList);
             slim->SetItemString("dunKeyLock", PyStatic.NewNone());   //?
             slim->SetItemString("dunWipeNPC", new PyBool(0));   //?

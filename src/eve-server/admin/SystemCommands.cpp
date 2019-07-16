@@ -438,7 +438,7 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
 
     //create into their cargo hold unless they are docked in a station,
     //then stick it in their hangar instead.
-    uint32 locationID;
+    uint32 locationID = 0;
     EVEItemFlags flag;
     if (pClient->IsInSpace()) {
         locationID = pClient->GetShipID();
@@ -465,6 +465,8 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
         pClient->GetShip()->AddItem(flag, iRef);
     else
         iRef->Move(locationID, flag, true);
+
+    iRef->SaveItem();
 
     return new PyInt(iRef.get()->itemID());
 }
