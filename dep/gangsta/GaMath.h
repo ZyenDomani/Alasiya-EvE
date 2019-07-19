@@ -29,8 +29,8 @@ namespace Ga
 	{
 	public:
 		static const GaExport GaFloat GaPi;
-		static const GaExport GaFloat GaDegreeToRadian;
-		static const GaExport GaFloat GaRadianToDegree;
+        static const GaExport GaFloat GaDegreesInRadian;
+		static const GaExport GaFloat GaRadianInDegree;
 		static const GaExport GaFloat GaEpsilon;
 		static const GaExport GaFloat GaMinFloat;
 		static const GaExport GaFloat GaMaxFloat;

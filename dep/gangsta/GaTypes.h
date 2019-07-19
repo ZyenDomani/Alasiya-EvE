@@ -35,6 +35,8 @@ namespace Ga
 		std::string m_msg;
 	};
 
+    class GaQuat;
+
 	class GaExport GaVec3
 	{
 	public:
@@ -174,6 +176,11 @@ namespace Ga
 
 		// angle in degrees
 		GaFloat angle(float ax, float ay, float bx, float by);
+        // angle between 2 vectors in degrees
+        GaExpInl GaFloat angle(const Ga::GaVec3 oth) const
+        {
+            return acos(this->dotProduct(oth)/(this->length()*oth.length()));
+        }
 
         GaVec3 slerp(Ga::GaVec3 v0, Ga::GaVec3 v1, double t);
 
@@ -185,38 +192,13 @@ namespace Ga
 			return(x != 0.0f || y != 0.0f || z != 0.0f);
 		}
 
-        GaQuat rotationTo(const GaVec3 &oth) const;
+        GaQuat rotationTo(const Ga::GaVec3& pos) const;
 
         GaVec3 &operator=(const Parameter &oth);
 
-		/*
-		inline GaVec3 vector_rotation_by_quaternion(GaVec3 v, GaQuat q)
-        {
-            // Extract the vector part of the quaternion
-            GaVec3 u = { q.x, q.y, q.z };
+		//GaVec3 rotByQuat(GaVec3 v, GaQuat q);
+        //GaVec3 angleRot(GaVec3 from, GaVec3 to, double angle);
 
-            // Extract the scalar part of the quaternion
-            double s = q.w;
-
-            // Do the math
-            return u* (2.0 * (u* v)) + v* (s*s - (u* u)) + (u^ v)* (2.0 * s);
-        }
-
-
-        inline GaVec3 angleRot(GaVec3 v1, GaVec3 v2, double angle)
-        {
-            GaVec3 axis_ = normalized(v1^v2);
-            angle = angle / 2.0;
-
-            quat q_temp = { 0.0, 0.0, 0.0, 1.0 };
-            q_temp.x = axis_.x * sin(angle);
-            q_temp.y = axis_.y * sin(angle);
-            q_temp.z = axis_.z * sin(angle);
-            q_temp.w = cos(angle);
-
-            return vector_rotation_by_quaternion(v1, q_temp);
-        }
-        */
 		GaFloat x,y,z;
 	};
 
@@ -421,8 +403,8 @@ namespace Ga
 
 			GaVec3 r(
 				( m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] ) * w,
-				 ( m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] ) * w,
-				 ( m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] ) * w );
+                ( m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] ) * w,
+                ( m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] ) * w );
 
 			return r;
 		}
@@ -440,9 +422,9 @@ namespace Ga
 			return GaMat4x4
 			(
 				s*m[0][0], s*m[0][1], s*m[0][2], s*m[0][3],
-    s*m[1][0], s*m[1][1], s*m[1][2], s*m[1][3],
-    s*m[2][0], s*m[2][1], s*m[2][2], s*m[2][3],
-    s*m[3][0], s*m[3][1], s*m[3][2], s*m[3][3]
+                s*m[1][0], s*m[1][1], s*m[1][2], s*m[1][3],
+                s*m[2][0], s*m[2][1], s*m[2][2], s*m[2][3],
+                s*m[3][0], s*m[3][1], s*m[3][2], s*m[3][3]
 			);
 		}
 
@@ -456,8 +438,8 @@ namespace Ga
 	class GaExport GaDegree
 	{
 	public:
-		GaExpInl GaDegree(){d = 0;}
-		GaExpInl GaDegree(GaFloat a){d = a;}
+		GaExpInl GaDegree()                     { d = 0; }
+		GaExpInl GaDegree(GaFloat a)            { d = a; }
 		GaDegree(const GaRadian &a);
 
 		GaFloat d;
@@ -466,9 +448,9 @@ namespace Ga
 	class GaExport GaRadian
 	{
 	public:
-		GaExpInl GaRadian(){r = 0;}
-		GaExpInl GaRadian(GaFloat a){r = a;}
-		GaExpInl GaRadian(const GaDegree &a){r = a.d * Math::GaRadianToDegree;}
+		GaExpInl GaRadian()                     { r = 0; }
+		GaExpInl GaRadian(GaFloat a)            { r = a; }
+		GaExpInl GaRadian(const GaDegree &a)    { r = a.d * Math::GaDegreesInRadian; }
 
 		GaFloat r;
 	};
