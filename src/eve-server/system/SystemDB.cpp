@@ -102,25 +102,25 @@ bool SystemDB::LoadSystemStaticEntities(uint32 systemID, std::vector<DBSystemEnt
     DBResultRow row;
     while(res.GetRow(row)) {
         DBSystemEntity entry = DBSystemEntity();
-        entry.itemID = row.GetUInt(0);
-        entry.typeID = row.GetInt(1);
-        entry.groupID = row.GetInt(2);
-        entry.radius = row.GetDouble(3);
+        entry.itemID    = row.GetUInt(0);
+        entry.typeID    = row.GetInt(1);
+        entry.groupID   = row.GetInt(2);
+        entry.radius    = row.GetDouble(3);
         into.push_back(entry);
     }
 
     return true;
 }
 
-/* load system dynamics owned by the EvE _System (1)  */
+/* load system dynamics owned by the EvE _System (1) and globals owned by Players or PlayerCorps  */
 bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDynamicEntity>& into) {
     using namespace EVEDB::invCategories;
-    DBQueryResult res;
-
+    DBQueryResult res, res2;
     if(!sDatabase.RunQuery(res,
         "SELECT"
         "   e.itemID,"
         "   e.itemName,"
+        "   e.ownerID,"
         "   e.typeID,"
         "   t.groupID,"
         "   g.categoryID,"
@@ -132,34 +132,52 @@ bool SystemDB::LoadSystemDynamicEntities(uint32 systemID, std::vector<DBSystemDy
         " WHERE e.locationID = %u"
         "  AND g.categoryID NOT IN (%d, %d, %d, %d)"    // not Characters, stations, or roids
         "  AND (e.ownerID = 1"      // get dynamics owned by the system -include abandonded ships
-        "  OR g.categoryID = %u)"   // or orbitals owned by npc corps
+        "  OR g.categoryID IN (%u, %u))"   // or orbitals and SOV structs owned by pc corps
         "  ORDER BY e.itemID",
         systemID,
         //exclude categories not applicable for in-space system entities or owned by player/corp :
         _System/*0*/, /*Character*/1, /*Station*/3, Asteroid/*25*/, //asteroids are owned/controlled by BeltMgr.
-        Orbitals/*46*/ )) {
+        Orbitals/*46*/,SovereigntyStructure/*40*/ )) {
             codelog(DATABASE__ERROR, "Error in LoadSystemDynamicEntities query: %s", res.error.c_str());
             return false;
         }
 
     _log(DATABASE__RESULTS, "LoadSystemDynamicEntities returned %u items", res.GetRowCount());
 
-    DBResultRow row;
+    DBResultRow row, row2;
     while(res.GetRow(row)) {
         DBSystemDynamicEntity entry = DBSystemDynamicEntity();
-        entry.itemID = row.GetUInt(0);
-        entry.itemName = row.GetText(1);
-        entry.typeID = row.GetInt(2);
-        entry.ownerID = 1;
-        entry.groupID = row.GetInt(3);
-        entry.categoryID = (EVEItemCategories)row.GetInt(4);
-        entry.corporationID = 0;
-        entry.allianceID = 0;
-        entry.factionID = 0;
-        entry.x = row.GetDouble(5);
-        entry.y = row.GetDouble(6);
-        entry.z = row.GetDouble(7);
-        entry.planetID = atoi(row.GetText(8));
+        entry.itemID        = row.GetUInt(0);
+        entry.itemName      = row.GetText(1);
+        entry.ownerID       = row.GetInt(2);
+        entry.typeID        = row.GetInt(3);
+        entry.groupID       = row.GetInt(4);
+        entry.categoryID    = (EVEItemCategories)row.GetInt(5);
+        entry.x             = row.GetDouble(6);
+        entry.y             = row.GetDouble(7);
+        entry.z             = row.GetDouble(8);
+        entry.planetID      = atoi(row.GetText(9));
+
+        if (IsCorp(entry.ownerID)) {
+            entry.corporationID = entry.ownerID;
+            if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM crpCorporation WHERE corporationID = %u", entry.corporationID))
+                if (res2.GetRow(row2)) {
+                    entry.allianceID    = row2.GetUInt(0);
+                    entry.factionID     = row2.GetUInt(1);
+                }
+        } else if (IsCharacter(entry.ownerID)) {
+            if (sDatabase.RunQuery(res2,
+                "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacters AS c"
+                " LEFT JOIN crpCorporation AS co USING (corporationID)"
+                " WHERE c.characterID = %u", entry.ownerID))
+            {
+                if (res2.GetRow(row2)) {
+                    entry.corporationID = row2.GetUInt(0);
+                    entry.allianceID    = row2.GetUInt(1);
+                    entry.factionID     = row2.GetUInt(2);
+                }
+            }
+        }
         into.push_back(entry);
     }
 
@@ -171,7 +189,6 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
 {
     using namespace EVEDB::invCategories;
     DBQueryResult res, res2;
-
     if (!sDatabase.RunQuery(res,
         "SELECT"
         "   e.itemID,"
@@ -200,26 +217,24 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
     DBResultRow row, row2;
     while(res.GetRow(row)) {
         DBSystemDynamicEntity entry = DBSystemDynamicEntity();
-        entry.factionID = 0;
-        entry.allianceID = 0;
-        entry.corporationID = 0;
-        entry.itemID = row.GetUInt(0);
-        entry.itemName = row.GetText(1);
-        entry.typeID = row.GetInt(2);
-        entry.ownerID = row.GetInt(3);
-        entry.groupID = row.GetInt(4);
-        entry.categoryID = (EVEItemCategories)row.GetInt(5);
-        entry.x = row.GetDouble(6);
-        entry.y = row.GetDouble(7);
-        entry.z = row.GetDouble(8);
+        entry.itemID        = row.GetUInt(0);
+        entry.itemName      = row.GetText(1);
+        entry.typeID        = row.GetInt(2);
+        entry.ownerID       = row.GetInt(3);
+        entry.groupID       = row.GetInt(4);
+        entry.categoryID    = (EVEItemCategories)row.GetInt(5);
+        entry.x             = row.GetDouble(6);
+        entry.y             = row.GetDouble(7);
+        entry.z             = row.GetDouble(8);
+
         if (IsCorp(entry.ownerID)) {
             entry.corporationID = entry.ownerID;
             if (sDatabase.RunQuery(res2, "SELECT allianceID, warFactionID FROM crpCorporation WHERE corporationID = %u", entry.corporationID))
-                if (res2.GetRow(row2))
-                    entry.allianceID = row2.GetUInt(0);
-                    entry.factionID = row2.GetUInt(1);
-        } else {
-            //  should we test for ownerID is NOT corp/player here?  dunno...what other entities own things?
+                if (res2.GetRow(row2)) {
+                    entry.allianceID    = row2.GetUInt(0);
+                    entry.factionID     = row2.GetUInt(1);
+                }
+        } else if (IsCharacter(entry.ownerID)) {
             if (sDatabase.RunQuery(res2,
                         "SELECT c.corporationID, co.allianceID, co.warFactionID FROM chrCharacters AS c"
                         " LEFT JOIN crpCorporation AS co USING (corporationID)"
@@ -227,12 +242,11 @@ bool SystemDB::LoadPlayerDynamicEntities(uint32 systemID, std::vector<DBSystemDy
             {
                 if (res2.GetRow(row2)) {
                     entry.corporationID = row2.GetUInt(0);
-                    entry.allianceID = row2.GetUInt(1);
-                    entry.factionID = row2.GetUInt(2);
+                    entry.allianceID    = row2.GetUInt(1);
+                    entry.factionID     = row2.GetUInt(2);
                 }
             }
         }
-        //res2.Reset();
         into.push_back(entry);
     }
     return true;
