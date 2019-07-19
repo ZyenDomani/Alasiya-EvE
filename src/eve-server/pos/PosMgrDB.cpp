@@ -124,7 +124,7 @@ bool PosMgrDB::GetTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sDa
     if (!sDatabase.RunQuery(res,
             "SELECT "
             " harmonic, standing, standingOwnerID, statusDrop, corpWar, allyStandings, showInCalendar, "
-            " sendFuelNotifications, allowCorp, allowAlliance, password, anchor, unanchor, online, offline"
+            " sendFuelNotifications, allowCorp, allowAlliance, password, anchor, unanchor, online, offline, status"
             " FROM posTowerData"
             " WHERE itemID = %u", sData.itemID))
     {
@@ -150,6 +150,7 @@ bool PosMgrDB::GetTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sDa
     tData.unanchor = row.GetInt(12);
     tData.online = row.GetInt(13);
     tData.offline = row.GetInt(14);
+    tData.status = row.GetFloat(15);
     return true;
 }
 
@@ -158,11 +159,11 @@ void PosMgrDB::SaveTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sD
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO posTowerData "
-        "(itemID, harmonic, standing, standingOwnerID, statusDrop, corpWar, allyStandings, showInCalendar, "
+        "(itemID, harmonic, standing, standingOwnerID, status, statusDrop, corpWar, allyStandings, showInCalendar, "
         " sendFuelNotifications, allowCorp, allowAlliance, anchor, unanchor, online, offline)"
         " VALUES ( %i, %i, %f, %i, %u, %u, %i, %i, %i, %i, %i, %i, %i, %i, %i)",
-        sData.itemID, tData.harmonic, tData.standing, tData.standingOwnerID, (tData.statusDrop ? 1 : 0), (tData.corpWar ? 1 : 0), (tData.allyStandings ? 1 : 0),
-        (tData.showInCalendar ? 1 : 0), (tData.sendFuelNotifications ? 1 : 0), (tData.allowCorp ? 1 : 0), (tData.allowAlliance ? 1 : 0),
+        sData.itemID, tData.harmonic, tData.standing, tData.standingOwnerID, tData.status, tData.statusDrop, tData.corpWar, tData.allyStandings,
+        tData.showInCalendar, tData.sendFuelNotifications, tData.allowCorp, tData.allowAlliance,
         tData.anchor, tData.unanchor, tData.online, tData.offline);
 }
 
@@ -243,6 +244,84 @@ void PosMgrDB::UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sDat
 
 }
 
+bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData)
+{
+    DBQueryResult res;
+    if (!sDatabase.RunQuery(res,
+        "SELECT ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
+        " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
+        " rotX, rotY, rotZ, rotW, orbitalHackerProgress, orbitalHackerID, state, status, level"
+        " FROM posCustomsOfficeData WHERE itemID = %u", cData.itemID))
+    {
+        codelog(DATABASE__ERROR, "Error in GetCustomsData query: %s", res.error.c_str());
+        return false;
+    }
+
+    DBResultRow row;
+    if (!res.GetRow(row))
+        return false;
+
+    cData.ownerID = row.GetInt(0);
+    cData.allowAlliance = row.GetBool(1);
+    cData.allowStandings = row.GetBool(2);
+    cData.selectedHour = row.GetInt(3);
+    cData.standingValue = row.GetInt(4);
+
+    using namespace EVEPOS;
+    std::map<uint8, float> taxRateValues;
+        taxRateValues[TaxValues::Corp]              = row.GetFloat(5);
+        taxRateValues[TaxValues::Alliance]          = row.GetFloat(6);
+        taxRateValues[TaxValues::StandingHorrible]  = row.GetFloat(7);
+        taxRateValues[TaxValues::StandingBad]       = row.GetFloat(8);
+        taxRateValues[TaxValues::StandingNeutral]   = row.GetFloat(9);
+        taxRateValues[TaxValues::StandingGood]      = row.GetFloat(10);
+        taxRateValues[TaxValues::StandingHigh]      = row.GetFloat(11);
+    cData.taxRateValues = taxRateValues;
+    cData.timestamp = row.GetInt64(12);
+    oData.rotation = Ga::GaQuat(row.GetFloat(13), row.GetFloat(14), row.GetFloat(15), row.GetFloat(16));
+    oData.orbitalHackerProgress = row.GetInt(17);
+    oData.orbitalHackerID = row.GetInt(18);
+    cData.state = row.GetInt(19);
+    cData.status = row.GetInt(20);
+    oData.level = row.GetInt(21);
+    //oData.standingOwnerID = row.GetInt(19);   // not sure what this is for
+
+    return true;
+}
+
+void PosMgrDB::SaveCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData)
+{
+    using namespace EVEPOS;
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "INSERT INTO posCustomsOfficeData (itemID, ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
+        " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
+        " rotX, rotY, rotZ, rotW, orbitalHackerProgress, orbitalHackerID, state, status, level)"
+        " VALUES (%u, %u, %u, %u, %u, %u, %f, %f, %f, %f, %f, %f, %f, %lli, %f, %f, %f, %f, %u, %u, %u, %u, %u)",
+        cData.itemID, cData.ownerID, cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
+        cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
+        cData.taxRateValues[TaxValues::StandingBad], cData.taxRateValues[TaxValues::StandingNeutral], cData.taxRateValues[TaxValues::StandingGood],
+        cData.taxRateValues[TaxValues::StandingHigh], cData.timestamp, oData.rotation.v.x, oData.rotation.v.y, oData.rotation.v.z,
+        oData.rotation.w, oData.orbitalHackerProgress, oData.orbitalHackerID, cData.state, cData.status, oData.level);
+}
+
+void PosMgrDB::UpdateCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData)
+{
+    using namespace EVEPOS;
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE posCustomsOfficeData"
+        " SET allowAlly=%u, allowStandings=%u, selectedHour=%u, standingValue=%u,"
+        " corpTax=%f, allyTax=%f, horribleTax=%f, badTax=%f, neutTax=%f, goodTax=%f, highTax=%f, timestamp=%lli,"
+        " orbitalHackerProgress=%u, orbitalHackerID=%u, state=%u, status=%u"
+        " WHERE itemID=%i",
+        cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
+        cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
+        cData.taxRateValues[TaxValues::StandingBad], cData.taxRateValues[TaxValues::StandingNeutral], cData.taxRateValues[TaxValues::StandingGood],
+        cData.taxRateValues[TaxValues::StandingHigh], cData.timestamp, oData.orbitalHackerProgress, oData.orbitalHackerID,
+        cData.state, cData.status, cData.itemID);
+}
+
 
 /*
  * CREATE TABLE posJumpBridgeData (
@@ -259,16 +338,6 @@ void PosMgrDB::UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sDat
  *  allowAlliance tinyint(1) NOT NULL DEFAULT '0',
  *  PRIMARY KEY (itemID)
  * ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS Jump Bridge Data';
- *
- *
- * CREATE TABLE posCustomOfficeData (
- *  itemID int(10) NOT NULL DEFAULT '0',
- *  planetID int(10) NOT NULL DEFAULT '0',
- *  orbitalHackerProgress int(10) NOT NULL DEFAULT '0',
- *  orbitalHackerID int(10) NOT NULL DEFAULT '0',
- *  level tinyint(2) NOT NULL DEFAULT '0',
- *  PRIMARY KEY (itemID)
- * ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='POS Customs Office Data';
  *
  */
 

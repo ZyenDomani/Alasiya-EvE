@@ -147,11 +147,11 @@ void TowerSE::Init()
     m_harmonic = m_tdata.harmonic;
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
     and (m_tdata.password.compare("") != 0)
-    and (m_data.state > EVEPOS::StructureState::Anchored))
+    and (m_data.state > EVEPOS::StructureStatus::Anchored))
         CreateForceField();
 
     // if tower anchored, tell moon this is its tower
-    if (m_data.state > EVEPOS::StructureState::Unanchored)
+    if (m_data.state > EVEPOS::StructureStatus::Unanchored)
         m_moonSE->SetTower(this);
 
     // set tower in bubble
@@ -203,7 +203,7 @@ void TowerSE::SetOnline()
     m_data.timestamp = GetFileTimeNow();
     m_self->SetFlag(flagStructureActive);
     m_procState = EVEPOS::ProcState::Online;
-    m_data.state = EVEPOS::StructureState::Online;
+    m_data.state = EVEPOS::StructureStatus::Online;
     m_harmonic = m_tdata.harmonic = EVEPOS::Harmonic::Online;
     SetTimer(m_self->GetAttribute(AttrPosControlTowerPeriod).get_int());
 
@@ -302,7 +302,7 @@ void TowerSE::UpdatePassword()
     } else {
         m_harmonic = m_tdata.harmonic = EVEPOS::Harmonic::Online;
 
-        if (m_data.state > EVEPOS::StructureState::Anchored)
+        if (m_data.state > EVEPOS::StructureStatus::Anchored)
             CreateForceField();
     }
 
@@ -494,7 +494,7 @@ PyDict* TowerSE::MakeSlimItem()
     slim->SetItemString("warFactionID",             new PyInt(m_warID));
     slim->SetItemString("posTimestamp",             new PyLong(m_data.timestamp));
     slim->SetItemString("posState",                 new PyInt(m_data.state));
-    slim->SetItemString("incapacitated",            new PyInt((m_data.state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
+    slim->SetItemString("incapacitated",            new PyInt((m_data.state == EVEPOS::StructureStatus::Incapacitated) ? 1 : 0));
     slim->SetItemString("posDelayTime",             new PyInt(m_delayTime));
 
     if (is_log_enabled(POS__SLIMITEM)) {

@@ -63,6 +63,7 @@ public:
 
     /* general tower data methods */
     void SetStanding(float set)                         { m_tdata.standing = set; }
+    void SetStatus(float set)                           { m_tdata.status = set; }
     void SetStatusDrop(bool set)                        { m_tdata.statusDrop = set; }   // shoot if their status is dropping
     void SetCorpWar(bool set)                           { m_tdata.corpWar = set; }      // shoot if we are at war with them
     void SetCorpAccess(bool set)                        { m_tdata.allowCorp = set; }

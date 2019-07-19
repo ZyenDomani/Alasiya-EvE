@@ -45,6 +45,9 @@ public:
     void SaveReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
     void UpdateReactorData(ReactorData* pData, EVEPOS::StructureData& sData);
 
+    bool GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData);
+    void SaveCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData);
+    void UpdateCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData);
 
     void UpdateAccess(int32 itemID, EVEPOS::TowerData& data);
     void UpdateNotify(int32 itemID, EVEPOS::TowerData& data);
@@ -55,7 +58,6 @@ public:
     void UpdateUsageFlags(int32 itemID, EVEPOS::StructureData& data);
     void UpdateDeployFlags(int32 itemID, EVEPOS::TowerData& data);
     void UpdateHarmonicAndPassword(int32 itemID, EVEPOS::TowerData& data);
-
 
 };
 
