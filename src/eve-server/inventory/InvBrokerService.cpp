@@ -217,7 +217,6 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     EVEItemFlags flag = flagHangar;
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Ship:
-        case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Control_Tower: {
@@ -227,6 +226,19 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
                     flag = flagHangar;
                 } break;
             } break;
+        } break;
+        case EVEDB::invCategories::Orbitals: {
+            switch(iRef->groupID()) {
+                case EVEDB::invGroups::Orbital_Construction_Platform: {
+                    // not sure what to do in this case...
+                    flag = flagAutoFit;
+                } break;
+                case EVEDB::invGroups::Orbital_Infrastructure: {
+                    // this includes orbital command centers, which this may not be right for.
+                    flag = flagHangar;
+                    ownerID = call.client->GetCharacterID();
+                } break;
+            }
         } break;
         case EVEDB::invCategories::Station: {
             flag = flagHangar;
@@ -416,14 +428,14 @@ PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
         shipCargo = inv.List()
 
         inv = sm.GetService('invCache').GetInventoryFromId(self.containerID)
-        for item in inv.List(const.flagSpecializedMaterialBay)  <-- customs office hold
+        for item in inv.List(const.flagSpecializedMaterialBay)  <-- for customs gantry upgrade
 
         shipInv = sm.GetService('invCache').GetInventoryFromId(session.shipid)
         invList = shipInv.List(const.flagSpecializedCommandCenterHold)
         invList.extend(shipInv.List(const.flagCargo))
             */
 
-    sLog.White( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
+    sLog.Error( "InvBrokerBound::Handle_List()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;
@@ -446,7 +458,7 @@ PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
      * 14:37:46 [InvMsg]         [ 2] Real field: 0.000000
      */
 
-    sLog.White( "InvBrokerBound::Handle_AssembleCargoContainer()", "size= %u", call.tuple->size() );
+    sLog.Warning( "InvBrokerBound::Handle_AssembleCargoContainer()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;
@@ -454,7 +466,7 @@ PyResult InvBrokerBound::Handle_AssembleCargoContainer(PyCallArgs &call) {
 
 PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
     // ConfirmBreakCourierPackage   - this is for courier contarcts
-    sLog.White( "InvBrokerBound::Handle_BreakPlasticWrap()", "size= %u", call.tuple->size() );
+    sLog.Warning( "InvBrokerBound::Handle_BreakPlasticWrap()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;
@@ -462,7 +474,7 @@ PyResult InvBrokerBound::Handle_BreakPlasticWrap(PyCallArgs &call) {
 
 PyResult InvBrokerBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //self.invCache.GetInventory(const.containerHangar).TakeOutTrash([ invItem.itemID for invItem in invItems ])
-    sLog.White( "InvBrokerBound::Handle_TakeOutTrash()", "size= %u", call.tuple->size() );
+    sLog.Warning( "InvBrokerBound::Handle_TakeOutTrash()", "size= %u", call.tuple->size() );
     call.Dump(INV__DUMP);
 
     return nullptr;

@@ -147,7 +147,7 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
 
     if (data.locationID == 0) {
         _log(ITEM__ERROR, "LocationID = 0 for item");
-        EvE::traceStack();
+        //EvE::traceStack();
     }
     // insert new entry into DB
     return sItemFactory.db()->NewItem(data);
@@ -546,15 +546,15 @@ void InventoryItem::Delete() {
         //first, get out of client's sight.
         //this also removes us from our inventory.
         Move(0, flagAutoFit, true);
-        ChangeOwner(1);
+        //ChangeOwner(1);
     }
 
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
     //take ourself out of the DB
-    sItemFactory.db()->DeleteItem( m_itemID);
+    sItemFactory.db()->DeleteItem(m_itemID);
     //delete ourselves from factory cache
-    sItemFactory.RemoveItem( m_itemID);
+    sItemFactory.RemoveItem(m_itemID);
     //PyDecRef(this);
 }
 

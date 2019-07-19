@@ -155,7 +155,7 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     // this is shit....but failsafe for blackscreen bug
     if (!call.client->IsSetStateSent())
-        if (call.client->IsIdle())
+        //if (call.client->IsIdle())
             call.client->SetBallPark();
 
     //vicious crap.
@@ -164,32 +164,18 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
             //Diamond formation
             f.name = "Diamond";
             f.pos1.x = 100;
-            f.pos1.y = 0;
-            f.pos1.z = 0;
-            f.pos2.x = 0;
             f.pos2.y = 100;
-            f.pos2.z = 0;
             f.pos3.x = -100;
-            f.pos3.y = 0;
-            f.pos3.z = 0;
-            f.pos4.x = 0;
             f.pos4.y = -100;
-            f.pos4.z = 0;
         res->SetItem( 0, f.Encode() );
             //Arrow formation
             f.name = "Arrow";
             f.pos1.x = 100;
-            f.pos1.y = 0;
             f.pos1.z = -50;
             f.pos2.x = 50;
-            f.pos2.y = 0;
-            f.pos2.z = 0;
             f.pos3.x = -100;
-            f.pos3.y = 0;
             f.pos3.z = -50;
             f.pos4.x = -50;
-            f.pos4.y = 0;
-            f.pos4.z = 0;
         res->SetItem( 1, f.Encode() );
     return res;
 }
