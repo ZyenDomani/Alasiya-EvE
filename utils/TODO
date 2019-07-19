@@ -7,6 +7,7 @@
 
 **********  found shit...high priority
 check roaming spawns.  bs rats in 0.9??
+warping not draining cap
 
 
 ********  improvements
@@ -76,6 +77,7 @@ ship modules - needs a bit more thought for misc things
     - check for multiple types. limit fitting if applicable  - deny activation if applicable (prop mods)
     - others?
 
+ServiceDB::Lookup* methods need db safeguarding coded (direct db hits from client input)
 
 ********* old - no date - still relevant
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
@@ -83,8 +85,13 @@ dungeons - complete current wip code   -priority level: med-hi
 belt spawns - rework for better ship group selection   -priority level: med
 contracts - start this system. current status unknown.   -priority level: low-med
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels. next up is security missions. will need dungeon work for these.   -priority level: hi
+
 pos - started. drop, anchor, unanchor, online, offline working but no in-class checks. all tower mgnt tabs work and save. rest is wip.   -priority level: low
     - pos items in hangars still return true from IsPOSSE(), and throw weird errors because of this....needs more thought to properly implement (system is still young)
+    - towers (and maybe others) must use orbitalState in slimItem.  this is EVEPOS::EntityState sent to client.  also uses OnSlimItemUpdated.  search client for this
+    - structures need 'state' and 'status' variables looked over and possibibly reset/fixed.  status is EVEPOS::StructureStatus and sent in slimItem.  state is EVEPOS::EntityState
+    - reinforceValue data is in pos/Structure.h
+
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 player drones - skeleton started. needs functionality    -priority level: med-hi
@@ -140,7 +147,7 @@ reproc code needs love
 certificateMgr needs looking at
 
 PlanetORBBound needs work now that customs offices are working
-
+PI Launch status need *some way* to tick for launch reentry
 
 store/board ship (cap ship hangar) not coded
 
@@ -156,6 +163,27 @@ all alliance calls are skeleton code, except GetEmploymentRecord
 0 AS landmarkNameID
 
 authentication and session still need work, but i dont fully understand them
+
+
+incursions.  this hasnt even been looked at yet.
+map::GetIncursionGlobalReport()
+
+expeditions.  not sure how to do this one.
+dungeonExplorationMgr::GetMyEscalatingPathDetails()
+
+contracts.  this system is barely skeleton code at this time.
+contractProxy::GetMyExpiredContractList()
+/client/script/ui/shared/neocom/journal.py(1429) DoShowContracts
+        status = 0
+        numRequiresAttention = 0
+        expiredCorpContracts = None
+        self = form.Journal object at 0x2da50f90, name=journal, destroyed=False>
+        expiredContracts = None
+        l = <Anonymous KeyVal: {'mySelf': None, 'expires': 0, 'myCorp': None, 'timeout': 132076899241107993L}>
+        forCorp = False
+        numCorpRequiresAttention = 0
+AttributeError: 'NoneType' object has no attribute 'contracts'
+
 
 *******  these are not applying any modifiers, but they should be modifying turrents  *************
 20:43:08 [FxTrace] GenericModule::ProcessEffects() called for Large Projectile Collision Accelerator I. effects: 3, state: Passive, online: true
@@ -269,6 +297,8 @@ update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
 create data needed for killboard, and integrate killboard into site
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed
+
+player error msgs - pool of msgs adjusted for character secstatus, a la sphereScript's speech files
 
 
 *********  shit in original webpage.  click on char for info
