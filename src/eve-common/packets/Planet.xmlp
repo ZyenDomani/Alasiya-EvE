@@ -154,12 +154,38 @@
     <elementDef name="Call_UpdateSettings">
         <tupleInline>
             <int name="orbitalID" />
-            <real name="reinforceValue" safe="true" />
-            <real name="taxRate" safe="true" />
-            <real name="standings" safe="true" />
+            <int name="reinforceValue" safe="true" />
+            <raw name="taxRateValues" />
+            <int name="standingValue" safe="true" />
             <bool name="allowAlliance" safe="true" />
             <bool name="allowStandings" safe="true" />
         </tupleInline>
     </elementDef>
+
+  <elementDef name="Call_TaxRateValuesDict">
+      <dictInline>
+        <dictInlineEntry key="corporation">
+          <real name="corporation" safe="true" default="0.05" />
+        </dictInlineEntry>
+        <dictInlineEntry key="alliance">
+          <real name="alliance" safe="true" default="0.07" />
+        </dictInlineEntry>
+        <dictInlineEntry key="standingHorrible">
+          <real name="standingHorrible" safe="true" default="0.2" />
+        </dictInlineEntry>
+        <dictInlineEntry key="standingBad">
+          <real name="standingBad" safe="true" default="0.1" />
+        </dictInlineEntry>
+        <dictInlineEntry key="standingNeutral">
+          <real name="standingNeutral" safe="true" default="0.08" />
+        </dictInlineEntry>
+        <dictInlineEntry key="standingGood">
+          <real name="standingGood" safe="true" default="0.05" />
+        </dictInlineEntry>
+        <dictInlineEntry key="standingHigh">
+          <real name="standingHigh" safe="true" default="0.02" />
+        </dictInlineEntry>
+      </dictInline>
+  </elementDef>
 
 </elements>

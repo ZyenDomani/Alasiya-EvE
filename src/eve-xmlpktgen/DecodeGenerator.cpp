@@ -203,6 +203,7 @@ bool ClassDecodeGenerator::ProcessInt(const TiXmlElement* field)
         std::cout << std::endl <<  "ClassDecodeGenerator::ProcessInt field at line " << field->Row() << " is missing the name attribute, skipping.";
         return false;
     }
+    /** @note:  commented code is depreciated in favor of PyRep::IntegerValue(), which tests and decodes as integers */
 
     //const char* safe = field->Attribute("safe");
     //const char* none_marker = field->Attribute("none_marker");
@@ -268,58 +269,9 @@ bool ClassDecodeGenerator::ProcessLong(const TiXmlElement* field)
         return false;
     }
 
-    //const char* safe = field->Attribute("safe");
-    //const char* none_marker = field->Attribute("none_marker");
-
     const char* v = top();
     fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
-    /*
-    if (none_marker != nullptr)
-        fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
-                "        %s = %s;\n"
-                "    else\n",
-                v,
-                name, none_marker
-        );
 
-    fprintf(mOutputFile,
-            "    if (%s->IsLong())\n"
-            "        %s = %s->AsLong()->value();\n"
-            "    else\n",
-            v,
-            name, v
-    );
-
-    if (safe != nullptr)
-        fprintf(mOutputFile,
-                "    if (%s->IsFloat()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyFloat\");\n"
-                "        %s = %s->AsFloat()->value();\n"
-                "    } else if (%s->IsInt()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyInt\");\n"
-                "        %s = %s->AsInt()->value();\n"
-                "    } else if (%s->IsBool()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyBool\");\n"
-                "        %s = %s->AsBool()->value();\n"
-                "    } else\n",
-                v,name,
-                name, v,
-                v,name,
-                name, v,
-                v,name,
-                name, v
-        );
-
-    fprintf(mOutputFile,
-            "    {\n"
-            "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a long Integer: %%s\", %s->TypeString());\n"
-            "        return false;\n"
-            "    }\n"
-            "\n",
-            mName, name, v
-    );
-*/
     pop();
     return true;
 }
@@ -377,58 +329,9 @@ bool ClassDecodeGenerator::ProcessBool(const TiXmlElement* field)
         return false;
     }
 
-    //const char* safe = field->Attribute("safe");
-    //const char* none_marker = field->Attribute("none_marker");
-
     const char* v = top();
     fprintf(mOutputFile, "    %s = PyRep::IntegerValue(%s);\n", name, v);
-    /*
-    if (none_marker != nullptr)
-        fprintf(mOutputFile,
-                "    if (%s->IsNone())\n"
-                "        %s = %s;\n"
-                "    else\n",
-                v,
-                name, none_marker
-       );
 
-    fprintf(mOutputFile,
-            "    if (%s->IsBool())\n"
-            "        %s = %s->AsBool()->value();\n"
-            "    else\n",
-            v,
-            name, v
-    );
-
-    if (safe != nullptr)
-        fprintf(mOutputFile,
-                "    if (%s->IsLong()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyLong\");\n"
-                "        %s = %s->AsLong()->value();\n"
-                "    } else if (%s->IsInt()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyInt\");\n"
-                "        %s = %s->AsInt()->value();\n"
-                "    } else if (%s->IsFloat()) {\n"
-                "        _log(XMLP__DECODE_WARNING, \" Safe is enabled. %s was decoded as PyFloat\");\n"
-                "        %s = %s->AsFloat()->value();\n"
-                "    } else\n",
-                v,name,
-                name, v,
-                v,name,
-                name, v,
-                v,name,
-                name, v
-        );
-
-    fprintf(mOutputFile,
-            "    {\n"
-            "        _log(XMLP__DECODE_ERROR, \"Decode %s failed: %s is not a Boolean: %%s\", %s->TypeString());\n"
-            "        return false;\n"
-            "    }\n"
-            "\n",
-            mName, name, v
-    );
-*/
     pop();
     return true;
 }
@@ -1667,4 +1570,3 @@ bool ClassDecodeGenerator::ProcessSubStructInline(const TiXmlElement* field)
     pop();
     return true;
 }
-
