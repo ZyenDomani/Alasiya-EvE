@@ -57,6 +57,9 @@ public:
     PyCallable_DECL_CALL(CreateBookmarkVouchers);
     PyCallable_DECL_CALL(RunRefiningProcess);
     PyCallable_DECL_CALL(Voucher);
+    PyCallable_DECL_CALL(ImportExportWithPlanet);
+    PyCallable_DECL_CALL(ListDroneBay);
+
 
 protected:
     class Dispatcher;
@@ -65,7 +68,7 @@ protected:
 
     InventoryItemRef m_self;
 
-    EVEItemFlags mFlag;
+    EVEItemFlags m_flag;
 
     uint32 m_itemID;
     uint32 m_ownerID;

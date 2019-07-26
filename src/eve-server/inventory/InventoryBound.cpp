@@ -30,6 +30,9 @@
 #include "EVEServerConfig.h"
 #include "StaticDataMgr.h"
 #include "inventory/InventoryBound.h"
+#include "planet/CustomsOffice.h"
+#include "planet/Planet.h"
+#include "planet/Colony.h"
 #include "pos/Structure.h"
 #include "system/BookmarkDB.h"
 #include "system/Container.h"
@@ -41,7 +44,7 @@ InventoryBound::InventoryBound( PyServiceMgr* mgr, InventoryItemRef item, EVEIte
 : PyBoundObject(mgr),
 m_dispatch(new Dispatcher(this)),
 pInventory(item->GetMyInventory()),
-mFlag(flag),
+m_flag(flag),
 m_self(item),
 m_itemID(item->itemID()),
 m_ownerID(ownerID),
@@ -55,6 +58,7 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, Add);
     PyCallable_REG_CALL(InventoryBound, MultiAdd);
     PyCallable_REG_CALL(InventoryBound, GetItem);
+    PyCallable_REG_CALL(InventoryBound, ListDroneBay);
     PyCallable_REG_CALL(InventoryBound, ListStations);
     PyCallable_REG_CALL(InventoryBound, ReplaceCharges);
     PyCallable_REG_CALL(InventoryBound, RemoveChargeToCargo);
@@ -67,6 +71,7 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, CreateBookmarkVouchers);
     PyCallable_REG_CALL(InventoryBound, RunRefiningProcess);
     PyCallable_REG_CALL(InventoryBound, Voucher);
+    PyCallable_REG_CALL(InventoryBound, ImportExportWithPlanet);
 
     _log(INV__BIND, "Created InventoryBound object %p for %s(%u) and ownerID %u with flag %s  (passive: %s)", \
             this, m_self->itemName().c_str(), m_itemID, ownerID, sDataMgr.GetFlagName(flag).c_str(), (m_passive ? "true" : "false"));
@@ -100,6 +105,12 @@ PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::ListDroneBay() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
+    return nullptr;
+}
+
 PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
 {
     call.client->GetShip()->StripFitting();
@@ -118,6 +129,57 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
+    /*
+            customsOfficeInventory = sm.GetService('invCache').GetInventoryFromId(self.customsOfficeID)
+            customsOfficeInventory.ImportExportWithPlanet(self.spaceportPinID, importData, exportData, self.taxRate)
+            */
+
+    /*
+     * 23:21:49 [PlanetPktTrace]  Call_PlanetCustomsXfer
+     * 23:21:49 [PlanetPktTrace]  spaceportPinID=140000640
+     * 23:21:49 [PlanetPktTrace]  importData:
+     * 23:21:49 [PlanetPktTrace]       Dictionary: 3 entries
+     * 23:21:49 [PlanetPktTrace]        [ 0]   Key:    Integer: 140000606
+     * 23:21:49 [PlanetPktTrace]        [ 0] Value:    Integer: 1001
+     * 23:21:49 [PlanetPktTrace]        [ 1]   Key:    Integer: 140000610
+     * 23:21:49 [PlanetPktTrace]        [ 1] Value:    Integer: 1000
+     * 23:21:49 [PlanetPktTrace]        [ 2]   Key:    Integer: 140000608
+     * 23:21:49 [PlanetPktTrace]        [ 2] Value:    Integer: 1000
+     * 23:21:49 [PlanetPktTrace]  exportData:
+     * 23:21:49 [PlanetPktTrace]       Dictionary: Empty
+     * 23:21:49 [PlanetPktTrace]  taxRate=0.0500000007451
+     */
+
+    //  this is (should be) customs office
+    if (m_self->groupID() != EVEDB::invGroups::Orbital_Infrastructure) {
+        _log(ITEM__ERROR, "%s: Called CustomsOffice xFer using non-co item %s(%u).", call.client->GetName(), m_self->itemName().c_str(), m_self->itemID());
+        return nullptr;
+    }
+
+    Call_PlanetCustomsXfer args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+    args.Dump(COLONY__PKT_TRACE);
+
+    PyDict* dictIn = args.importData->AsDict();
+    std::map<uint32, uint16> importItems, exportItems;
+    for (PyDict::const_iterator itr = dictIn->begin(); itr != dictIn->end(); ++itr)
+        importItems[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+    PyDict* dictOut = args.exportData->AsDict();
+    for (PyDict::const_iterator itr = dictOut->begin(); itr != dictOut->end(); ++itr)
+        exportItems[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+
+    // ok, so from here, we need to get officeRef->officeSE->planet->colony to make xfer....crazy shit
+    StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
+    Colony* pColony = sRef->GetMySE()->GetCOSE()->GetPlanetSE()->GetColony(call.client);
+    pColony->PlanetXfer(args.spaceportPinID, importItems, exportItems, args.taxRate);
+
+    return nullptr;
+}
+
 
 PyResult InventoryBound::Handle_List(PyCallArgs &call) {
     if (pInventory == nullptr)
@@ -125,7 +187,7 @@ PyResult InventoryBound::Handle_List(PyCallArgs &call) {
 
     uint32 ownerID = m_ownerID;
     // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
-    EVEItemFlags flag = mFlag, oldFlag = mFlag;
+    EVEItemFlags flag = m_flag, oldFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         flag = (EVEItemFlags)PyRep::IntegerValue(call.byname.find("flag")->second);
 
@@ -387,7 +449,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
-    EVEItemFlags stackFlag = mFlag;
+    EVEItemFlags stackFlag = m_flag;
 
     if (call.tuple->items.size() != 0) {
         Call_SingleIntegerArg arg;
@@ -429,7 +491,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint16 toFlag = mFlag;
+    uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
@@ -496,7 +558,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint16 toFlag = mFlag;
+    uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
 
@@ -531,7 +593,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     }
 
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
-                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(mFlag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
+                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
 
     return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
 }
@@ -540,7 +602,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 {   // complete method rewrite -allan 21Dec17
     InventoryItemRef contRef(nullptr);
     ShipItem* pShip = pClient->GetShip().get();
-    bool donating = false, ship = false;
+    bool donating = false, ship = false, customs = false;
     int32 origQty = quantity;
 
     // we will need to check *this for specific item-moving rules
@@ -606,13 +668,16 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             }
         } break;
         case EVEDB::invCategories::Orbitals: {
-            //may not have to do anything here.....test it
-            /*
-            if ((m_self->typeID() == EVEDB::invTypes::typePlanetaryCustomsOffice)
-            or (m_self->typeID() == EVEDB::invTypes::typeInterbusCustomsOffice)
-            or (m_self->typeID() == EVEDB::invTypes::typePlanetaryOfficeGantry))
-                donating = true;
-            */
+            switch (m_self->groupID()) {
+                case EVEDB::invGroups::Orbital_Construction_Platform: {
+                        ; // not sure what to do here yet
+                } break;
+                case EVEDB::invGroups::Orbital_Infrastructure: {
+                    // orbital command centers and customs offices
+                    // we dont change owners of xfered items
+                    customs = true;
+                } break;
+            }
         } break;
         case EVEDB::invCategories::Celestial: {
             // containers, wrecks, construction platform, station improve/upgrade platform,
@@ -730,7 +795,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                     }
                 } else {
                     // this needs work to verify mFlag is correct for application, and that it is intially set correctly
-                    toFlag = mFlag;
+                    toFlag = m_flag;
                 }
             }
 
@@ -746,6 +811,10 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 iRef->ChangeOwner(m_ownerID);
             // reset in case of MultiAdd
             toFlag = origFlag;
+        } else if (customs) {
+            StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
+            sRef->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
+            sRef->AddItem(iRef);// this will throw if it fails
         } else {
             iRef->Donate(m_ownerID, m_itemID, toFlag);
         }

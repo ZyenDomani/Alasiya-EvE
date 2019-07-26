@@ -22,7 +22,23 @@
     ------------------------------------------------------------------------------------
     Author:        Cometo (basic system idea)
     Updates:    Allan   (mostly complete and working - 27Dec16)
+    Major Update:   Allan  process code rewrite/optimized 19Jul19
 */
+
+/*
+ * COLONY__ERROR
+ * COLONY__WARNING
+ * COLONY__MESSAGE
+ * COLONY__DEBUG
+ * COLONY__INFO
+ * COLONY__INFO
+ * COLONY__DUMP
+ * COLONY__RES_DUMP
+ * COLONY__GC_DUMP
+ * COLONY__PKT_TRACE
+ * COLONY__DB_ERROR
+ * COLONY__DB_WARNING
+ */
 
 #include "eve-server.h"
 
@@ -31,7 +47,9 @@
 #include "inventory/ItemType.h"
 #include "planet/Colony.h"
 #include "planet/Planet.h"
+#include "planet/PlanetMgr.h"
 #include "planet/PlanetDataMgr.h"
+#include "CustomsOffice.h"
  // fund xfer and journal logging methods
 #include "account/AccountService.h"
 // for launching shit...
@@ -91,21 +109,23 @@ P4          1,200,000 ISK
 Colony::Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE)
 :m_svcMgr(mgr),
 m_client(pClient),
-m_pSE(pSE->GetPlanetSE())
+m_pSE(pSE->GetPlanetSE()),
+m_colonyTimer(0)
 {
     ccPin = new PI_CCPin();
 
     m_active = false;
     m_loaded = false;
     m_newHead = false;
+    m_toUpdate = false;
 
     m_pg = 0;
     m_cpu = 0;
     m_pLevel = 5;
     m_colonyID = 0;
-    m_procTime = 0; // process check.  init to zero and changed in pin program install/update
+    m_procTime = 0; // process check.  init to zero and stores last proc time, which is lastRunTime in command center
     tempPinIDs.clear();
-    _log(PLANET__DEBUG, "Colony::Colony() c'tor called for %s(%u)", pClient->GetName(), pClient->GetCharacterID());
+    _log(COLONY__DEBUG, "Colony::Colony() c'tor called for %s(%u) by %s(%u)", pSE->GetName(), pSE->GetID(), pClient->GetName(), pClient->GetCharacterID());
 }
 
 Colony::~Colony()
@@ -113,6 +133,12 @@ Colony::~Colony()
     SafeDelete(ccPin);
 }
 
+/***********
+ * NOTE:  seems that client tracks all PI production,
+ *  so doing so here is just a waste of processing power.
+ *  all processing is commented out until proven needed.
+ */
+// update....this will be needed for initial update as client only processes AFTER colony data is sent
 void Colony::Init()
 {
     if (m_loaded)
@@ -128,8 +154,16 @@ void Colony::Init()
         Update();
 }
 
+void Colony::Shutdown()
+{
+    Update();
+    UpdatePlantPins();
+    m_db.SaveContents(ccPin);
+}
+
 void Colony::Load()
 {
+    // redundant check
     if (m_loaded) {
         Update();
         return;
@@ -141,82 +175,76 @@ void Colony::Load()
 
     LoadPlants();
 
-    if (ccPin->pins.size() > 0)
+    for (auto cur : ccPin->routes) {
+        m_srcRoutes.emplace(cur.second.srcPinID, cur.second);
+        m_destRoutes.emplace(cur.second.destPinID, cur.second);
+    }
+
+    if (m_procTime < 1)
+        m_procTime = GetFileTimeNow();
+
+    if (!ccPin->pins.empty())
         m_loaded = true;
-}
-
-void Colony::LoadPlants()
-{
-    for (auto cur: ccPin->pins) {
-        if (cur.second.isProcess) {
-            PI_Plant plant = PI_Plant();
-                plant.state = cur.second.state;
-                plant.cycleTime = cur.second.cycleTime;
-                plant.expiryTime = cur.second.expiryTime;
-                plant.installTime = cur.second.installTime;
-                plant.lastRunTime = cur.second.lastRunTime;
-                plant.schematicID = cur.second.schematicID;
-                plant.hasReceivedInputs = cur.second.hasReceivedInputs;
-                plant.receivedInputsLastCycle = cur.second.receivedInputsLastCycle;
-                if (plant.schematicID)
-                    sPIDataMgr.GetSchematicData(plant.schematicID, plant.data);
-                plant.order = GetProductLevel(plant.data.outputType);   // i am ordering plant processing by output Plevel
-                m_pLevel = (uint8)EvE::min(m_pLevel, plant.order);
-            ccPin->plants[cur.first] = plant;
-        }
-    }
-}
-
-void Colony::UpdatePlants()
-{
-    for (auto cur : ccPin->plants) {
-        std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(cur.first);
-        if (itr != ccPin->pins.end()) {
-            itr->second.state = cur.second.state;
-            itr->second.cycleTime = cur.second.cycleTime;
-            itr->second.expiryTime = cur.second.expiryTime;
-            itr->second.installTime = cur.second.installTime;
-            itr->second.lastRunTime = cur.second.lastRunTime;
-            itr->second.schematicID = cur.second.schematicID;
-            itr->second.qtyPerCycle = cur.second.qtyPerCycle;
-            itr->second.hasReceivedInputs = cur.second.hasReceivedInputs;
-            itr->second.receivedInputsLastCycle = cur.second.receivedInputsLastCycle;
-        }
-    }
 }
 
 void Colony::Save()
 {
     /** @todo maybe separate these saves */
-    UpdatePlants(); // this MUST be called before Save() and GetColony() to update plant pin with current data
+    UpdatePlantPins(); // this MUST be called before Save() and GetColony() to update plant pin with current data
     m_db.SavePins(ccPin);
     m_db.SaveLinks(ccPin);
-    //m_db.SaveRoutes(ccPin);
+    m_db.SaveRoutes(ccPin);
     m_db.SaveContents(ccPin);
-}
-
-void Colony::Shutdown()
-{
-    Update();
-    UpdatePlants();
-    m_db.SavePins(ccPin);
-    m_db.SaveContents(ccPin);
+    m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_pSE->GetTypeID(), ccPin->pins.size());
 }
 
 // called by PlanetSE::Process()
 void Colony::Process()
 {
-    Update();
-    //  this is part of clever code to avoid db hits on every update.
-    //  this method will check for updated contents and save to db as needed.
-    //  it tics every 30m
-    for (auto cur : ccPin->pins) {
-        if ((cur.second.update) and (cur.second.isStorage)) {
-            m_db.RemoveContents(cur.first);
-            m_db.SavePinContents(m_colonyID, cur.first, cur.second.contents);
+    /** @todo  code timers/checks for individual ecus based on their cycletime */
+
+    if (m_colonyTimer.Check()) { //  this will process colony data every 30 mins. (typical cycle time)
+        if (ccPin->pins.empty()) {
+            m_colonyTimer.Disable();
+            return;
         }
-        cur.second.update = false;
+
+        double profileStartTime = GetTimeUSeconds();
+        Update();
+
+        // profile timer for the colony updates
+        if (sConfig.debug.UseProfiling)
+            sProfile.AddTime(_colonyProfile, GetTimeUSeconds() - profileStartTime);
     }
+
+    if (m_toUpdate) {
+        //  this is part of clever code to avoid db hits on every update.
+        //  this method will check for updated contents and save to db as needed.
+        std::map<uint32, PI_Pin>::iterator itr;
+        for (auto cur : ccPin->pins)
+            if (cur.second.update) {
+                m_db.RemoveContents(cur.first);
+                m_db.SavePinContents(m_colonyID, cur.first, cur.second.contents);
+                cur.second.update = false;
+                if (cur.second.isProcess) {
+                    itr = ccPin->pins.find(cur.first);
+                    if (itr != ccPin->pins.end()) {
+                        itr->second.state                   = cur.second.state;
+                        itr->second.cycleTime               = cur.second.cycleTime;
+                        itr->second.installTime             = cur.second.installTime;
+                        itr->second.lastRunTime             = cur.second.lastRunTime;
+                        itr->second.schematicID             = cur.second.schematicID;
+                        itr->second.qtyPerCycle             = cur.second.qtyPerCycle;
+                        itr->second.hasReceivedInputs       = cur.second.hasReceivedInputs;
+                        itr->second.receivedInputsLastCycle = cur.second.receivedInputsLastCycle;
+                    }
+                }
+            }
+
+        m_db.UpdatePins(0, ccPin);
+        m_toUpdate = false;
+    }
+
 }
 
 uint32 Colony::GetOwner()
@@ -224,15 +252,112 @@ uint32 Colony::GetOwner()
     return m_client->GetCharacterID();
 }
 
+void Colony::LoadPlants()
+{
+    bool update = false;
+    for (auto cur: ccPin->pins) {
+        // set proc time on load
+        if (cur.second.isCommandCenter) {
+            m_procTime = cur.second.lastRunTime;
+            if (m_procTime < EvE::Time::Hour)
+                m_procTime = GetFileTimeNow();
+        }
+
+        // load plants in mem objects
+        if (cur.second.isProcess) {
+            PI_Plant plant                  = PI_Plant();
+            plant.data                      = PI_Schematic();
+            plant.state                     = cur.second.state;
+            plant.cycleTime                 = cur.second.cycleTime;
+            plant.installTime               = cur.second.installTime;
+            plant.lastRunTime               = cur.second.lastRunTime;
+            plant.schematicID               = cur.second.schematicID;
+            plant.hasReceivedInputs         = cur.second.hasReceivedInputs;
+            plant.receivedInputsLastCycle   = cur.second.receivedInputsLastCycle;
+
+            if (plant.schematicID) {
+                sPIDataMgr.GetSchematicData(plant.schematicID, plant.data);
+                plant.cycleTime     = plant.data.cycleTime * EvE::Time::Second; // data.cycleTime is in seconds
+                plant.pLevel        = sPIDataMgr.GetProductLevel(plant.data.outputType);   // i am ordering plant processing by output's Plevel
+                plant.qtyPerCycle   = plant.data.outputQty;     // this is not saved
+
+                if (cur.second.lastRunTime == 0) {
+                    update = true;
+                    cur.second.lastRunTime = GetFileTimeNow() - plant.cycleTime;
+                }
+            }
+
+            m_pLevel = (uint8)EvE::min(m_pLevel, plant.pLevel);
+            ccPin->plants[cur.first] = plant;
+            m_plantMap.emplace(plant.pLevel, cur.first);
+        }
+
+    }
+
+    // set process timer to 30m
+    if (!m_colonyTimer.Enabled())
+        m_colonyTimer.Start(30*60*1000);
+
+    if (update)
+        UpdatePlantPins();
+}
+
+void Colony::UpdatePlantPins(uint32 pinID/*0*/)
+{
+    std::map<uint32, PI_Pin>::iterator itr;
+    std::map<uint32, PI_Plant>::iterator itr2;
+    if (pinID) {
+        itr = ccPin->pins.find(pinID);
+        if (itr != ccPin->pins.end()) {
+            itr2 = ccPin->plants.find(pinID);
+            if (itr2 != ccPin->plants.end()) {
+                itr->second.state                   = itr2->second.state;
+                itr->second.cycleTime               = itr2->second.cycleTime;
+                itr->second.installTime             = itr2->second.installTime;
+                itr->second.lastRunTime             = itr2->second.lastRunTime;
+                itr->second.schematicID             = itr2->second.schematicID;
+                itr->second.qtyPerCycle             = itr2->second.qtyPerCycle;
+                itr->second.hasReceivedInputs       = itr2->second.hasReceivedInputs;
+                itr->second.receivedInputsLastCycle = itr2->second.receivedInputsLastCycle;
+            }
+        }
+    } else {
+        for (auto cur : ccPin->plants) {
+            itr = ccPin->pins.find(cur.first);
+            if (itr != ccPin->pins.end()) {
+                itr->second.state                   = cur.second.state;
+                itr->second.cycleTime               = cur.second.cycleTime;
+                itr->second.installTime             = cur.second.installTime;
+                itr->second.lastRunTime             = cur.second.lastRunTime;
+                itr->second.schematicID             = cur.second.schematicID;
+                itr->second.qtyPerCycle             = cur.second.qtyPerCycle;
+                itr->second.hasReceivedInputs       = cur.second.hasReceivedInputs;
+                itr->second.receivedInputsLastCycle = cur.second.receivedInputsLastCycle;
+            }
+        }
+    }
+    m_db.UpdatePins(pinID, ccPin);
+}
+
 void Colony::AbandonColony()
 {
-    /** @todo  go thru entire pinMap and delete each itemRef.  */
+    /** @todo  go thru entire pinMap and delete each itemRef to remove pin/link contents from db.  there are no items created until launch  */
+    for (auto cur : ccPin->pins) {
+        m_db.RemovePin(cur.first);
+        m_db.RemoveContents(cur.first);
+        sItemFactory.RemoveItem(cur.first);
+    }
+    for (auto cur : ccPin->links) {
+        m_db.RemovePin(cur.first);
+        sItemFactory.RemoveItem(cur.first);
+    }
     InventoryItemRef iRef = sItemFactory.GetItem(m_colonyID);
     iRef->Delete();
     m_db.DeleteColony(m_colonyID, m_pSE->GetID(), m_client->GetCharacterID());
     SafeDelete(ccPin);
     ccPin = new PI_CCPin();
     m_colonyID = 0;
+    m_colonyTimer.Disable();
 }
 
 void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, double longitude) {
@@ -240,7 +365,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
     ccPin->ccPinID = itemID;
     m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
     ccPin->level = PI::Pin::Level0;
-    ccPin->currentSimTime = GetFileTimeNow();
+    m_procTime = GetFileTimeNow();
     CreatePin(EVEDB::invGroups::Command_Centers, itemID, typeID, latitude, longitude);
     m_db.SavePins(ccPin);
 }
@@ -248,9 +373,19 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
 void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude) {
     /** @todo will have to write code for effects and checks for pg/cpu/m3/etc for all of these.  */
     using namespace EVEDB::invGroups;
-    PI_Pin pin;
+    PI_Pin pin = PI_Pin();
     InventoryItemRef iRef(nullptr);
-    if (groupID != Command_Centers) {
+    if (groupID == Command_Centers) {
+        iRef = sItemFactory.GetItem(m_colonyID);
+        if (iRef->quantity() > 1) {
+            // check for stack of CC items, and split as needed
+            ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
+            InventoryItemRef iRef2 = sItemFactory.SpawnItem(data);
+            iRef2->Move(m_client->GetShipID(), flagCargoHold);
+            iRef->SetQuantity(1);
+        }
+        m_client->GetShip()->RemoveItem(iRef);
+    } else {
         // type, owner, location, flag, qty
         ItemData data(typeID, m_client->GetCharacterID(), m_pSE->GetID(), flagAutoFit, 1);
         iRef = sItemFactory.SpawnItem(data);
@@ -268,51 +403,48 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
             m_cpu *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(skillElectronics, true))));              // 5% decrease in need
             m_cpu *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillCommandCenterUpgrades, true))));    // 1% decrease in need
         } */
-    } else {
-        iRef = sItemFactory.GetItem(m_colonyID);
-        if (iRef->quantity() > 1) {
-            // check for stack of CC items, and split as needed
-            ItemData data(typeID, m_client->GetCharacterID(), 0, flagAutoFit, iRef->quantity() -1);
-            InventoryItemRef iRef2 = sItemFactory.SpawnItem(data);
-            iRef2->Move(m_client->GetShipID(), flagCargoHold);
-            iRef->SetQuantity(1);
-        }
-        m_client->GetShip()->RemoveItem(iRef);
     }
 
     pin.typeID = typeID;
     pin.ownerID = m_client->GetCharacterID();
     pin.latitude = latitude;
     pin.longitude = longitude;
-    pin.level = PI::Pin::Level0;
-    pin.state = PI::Pin::State::Active;
-    pin.lastRunTime = 0;
-    pin.lastLaunchTime = 0;
-    pin.heads.clear();
-    pin.contents.clear();
-
-    // for contents updating
-    pin.update = false;
+    pin.state = PI::Pin::State::Idle;
 
     switch(groupID) {
         case Command_Centers: {     // 1027
             pin.isStorage = true;
             pin.isLaunchable = true;
             pin.isCommandCenter = true;
+            pin.lastRunTime = GetFileTimeNow();
+            pin.installTime = GetFileTimeNow(); // pin creation time here.
         } break;
-        case  Processors: {         // 1028
-            //pin.isStorage = true;
+        case Processors: {         // 1028
+            pin.isStorage = true;
             pin.isProcess = true;
+            pin.lastRunTime = 0;
             PI_Plant plant = PI_Plant();
             ccPin->plants[iRef->itemID()] = plant;
         } break;
         case Extractor_Control_Units: { // 1063
             pin.isECU = true;
-            pin.qtyPerCycle = (int16)iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
+            pin.lastRunTime = 0;
+            pin.qtyPerCycle = (uint16)iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
         } break;
         case Spaceports:{   // 1030
             pin.isStorage = true;
             pin.isLaunchable = true;
+            pin.installTime = GetFileTimeNow(); // pin creation time here.
+        } break;
+        case Storage_Facilities: {  // 1029
+            pin.isStorage = true;
+            pin.installTime = GetFileTimeNow(); // pin creation time here.
+        } break;
+        case Mercenary_Bases:
+        case Capsuleer_Bases: {
+            pin.isBase = true;
+            pin.installTime = GetFileTimeNow(); // pin creation time here.
+            /* nothing to do yet */
         } break;
         case Planetary_Links:  // 1036
         case Extractors: {  // 1026
@@ -324,17 +456,6 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
              1635    cpuLoadLevelModifier    NULL    1.4
              1636    powerLoadLevelModifier  NULL    1.2
              */
-        } break;
-        case Storage_Facilities: {  // 1029
-            pin.isStorage = true;
-            /* nothing to do yet */
-            // contents for testing
-            pin.contents[2390] = 100;  //Electrolytes
-        } break;
-        case Mercenary_Bases:
-        case Capsuleer_Bases: {
-            pin.isBase = true;
-            /* nothing to do yet */
         } break;
     }
 
@@ -349,21 +470,7 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
     if (groupID != Command_Centers)
         tempPinIDs.insert(std::pair<uint8, uint32>(pinID, iRef->itemID()));     // save map of tempID to itemID - this handles the stacked-calls from client to use real itemIDs
 
-    _log(PLANET__TRACE, "Colony::CreatePin() - Created pin for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
-
-    /** @todo  do the construction cost thing...
-     / /take the money, send wallet blink *event record the transaction in their journal.
-     std::string reason = "DESC:  ";
-     reason += itoa(call.client->GetStationID());
-     AccountService::TranserFunds(
-         call.client->GetCharacterID(),
-         args.stationID, // fix this to get ownerID
-         money,
-         reason.c_str(),
-         Journal::EntryType::MarketTransaction,
-         call.client->GetStationID(),
-         Account::KeyType::Cash);
-         */
+    _log(COLONY__INFO, "Colony::CreatePin() - Created pin for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
 }
 
 void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
@@ -389,7 +496,9 @@ void Colony::CreateLink(uint32 src, uint32 dest, uint16 level) {
         link.endpoint2 = dest;
         link.typeID = 2280; // Only link type in the game.
     ccPin->links[iRef->itemID()] = link;
-    _log(PLANET__TRACE, "Colony::CreateLink() - Created link - id:%u,  src:%u, dest:%u, level:%u", iRef->itemID(), src, dest, level);
+
+    m_db.SaveLinks(ccPin);
+    _log(COLONY__INFO, "Colony::CreateLink() - Created link - id:%u,  src:%u, dest:%u, level:%u", iRef->itemID(), src, dest, level);
 }
 
 void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path) {
@@ -402,15 +511,16 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
         else if (path->GetItem(i)->IsInt())
             list1.push_back(PyRep::IntegerValue(path->GetItem(i)));
         else
-            _log(PLANET__ERROR, "Colony::CreateRoute() - List item type unrecognized: %s", path->GetItem(1)->TypeString());
+            _log(COLONY__ERROR, "Colony::CreateRoute() - List item type unrecognized: %s", path->GetItem(1)->TypeString());
     }
 
     if (tempPinIDs.size() > 0) {
         std::list<uint32> list2;
         list2.clear();
+        std::map<uint8, uint32>::iterator itr;
         for (auto cur : list1) {
             if (IsTempPinID(cur)) {
-                std::map<uint8, uint32>::iterator itr = tempPinIDs.find(cur);
+                itr = tempPinIDs.find(cur);
                 if (itr != tempPinIDs.end())
                     list2.push_back(itr->second);
             } else
@@ -431,39 +541,43 @@ void Colony::CreateRoute(uint16 routeID, uint32 typeID, uint32 qty, PyList* path
 
     routeID = m_db.SaveRoute(m_colonyID, route);
     ccPin->routes[routeID] = route;
-    _log(PLANET__TRACE, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size());
+    _log(COLONY__INFO, "Colony::CreateRoute() - Created route id %u for %u of typeID %u, making %u hops.", routeID, qty, typeID, (uint32)path->size() -1);
 
     // route has been created and added to list.  check for materials being moved, and if source has the mat, remove qty and send to dest.
-    std::map<uint32, PI_Pin>::iterator source = ccPin->pins.find(route.srcPinID);
-    if (source != ccPin->pins.end()) {
-        // remove contents from storage pin
-        uint32 amount = route.commodityQuantity;
-        std::map<uint16, uint32>::iterator itr = source->second.contents.find(route.commodityTypeID);
-        if (itr != source->second.contents.end()) {
-            if (itr->second > amount)
-                itr->second -= amount;
-            else
-                source->second.contents.erase(itr);
-            source->second.update = true;
-        } else {
-            // this material wasnt found in source container....cant move what we aint got..
-            return;
-        }
+    std::map<uint32, PI_Pin>::iterator srcPin = ccPin->pins.find(route.srcPinID);
+    if (srcPin == ccPin->pins.end())
+        return;  // source not found.  make error here.
+    std::map<uint32, PI_Pin>::iterator destPin = ccPin->pins.find(route.destPinID);
+    if (destPin == ccPin->pins.end())
+        return;  // destination not found.  make error here.
+    std::map<uint16, uint32>::iterator itr = srcPin->second.contents.find(route.commodityTypeID);
+    if (itr == srcPin->second.contents.end())
+        return;  // this material wasnt found in source container....cant move what we aint got..
 
-        // add contents to dest pin if we have any
-        std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.destPinID);
-        if (dest != ccPin->pins.end()) {
-            itr = dest->second.contents.find(route.commodityTypeID);
-            if (itr != dest->second.contents.end())
-                itr->second += amount;
-            else
-                dest->second.contents[route.commodityTypeID] = amount;
-            dest->second.update = true;
-            // we have received a material from this route. enable check for all required materials for this Schematic
-            dest->second.hasReceivedInputs = true;
-        }
-        // make error for dest pin not found?
+    uint32 amount = route.commodityQuantity;
+    // remove contents from storage pin
+    if (itr->second > amount)
+        itr->second -= amount;
+    else {
+        amount = itr->second;
+        srcPin->second.contents.erase(itr);
     }
+    srcPin->second.update = true;
+
+    // add contents to dest pin if we have any
+    itr = destPin->second.contents.find(route.commodityTypeID);
+    if (itr != destPin->second.contents.end())
+        itr->second += amount;
+    else
+        destPin->second.contents[route.commodityTypeID] = amount;
+    destPin->second.update = true;
+    // we have received a material from this route. enable check for all required materials for this Schematic
+    if (destPin->second.isProcess) {
+        std::map<uint32, PI_Plant>::iterator plantPin = ccPin->plants.find(destPin->first);
+        if (plantPin != ccPin->plants.end())
+            plantPin->second.hasReceivedInputs = true;
+    }
+    m_toUpdate = true;
 }
 
 void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
@@ -472,46 +586,107 @@ void Colony::UpgradeCommandCenter(uint32 pinID, int8 level) {
     if (itr != ccPin->pins.end()) {
         itr->second.level = level;
         m_db.SaveCCLevel(pinID, level);
-        _log(PLANET__TRACE, "Colony::UpgradeCommandCenter() - Upgraded Command Center %u to level:%u", pinID, level);
+        _log(COLONY__INFO, "Colony::UpgradeCommandCenter() - Upgraded Command Center %u to level:%u", pinID, level);
     } else
-        _log(PLANET__ERROR, "Colony::UpgradeCommandCenter() - pinID %u not found in ccPin.pins map", pinID);
+        _log(COLONY__ERROR, "Colony::UpgradeCommandCenter() - pinID %u not found in ccPin.pins map", pinID);
 }
 
 void Colony::UpgradeLink(uint32 src, uint32 dest, uint8 level)
 {
-    /** @todo  figure out how to do this one....
-    std::map<uint32, PI_Link>::iterator itr = ccPin->links.find(src);
-    */
+    std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
+    for (; itr != ccPin->links.end(); ++itr)
+        if (itr->second.endpoint1 == src)
+            if (itr->second.endpoint2 == dest) {
+                itr->second.level = level;
+                m_db.SaveLinks(ccPin);
+                return;
+            }
 }
 
 void Colony::RemovePin(uint32 pinID)
 {
+    uint8 linkCount = 0, routeCount = 0, pathCount = 0;
+    // check for and remove links to this pinID
+    std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
+    while (itr != ccPin->links.end()) {
+        if (itr->second.endpoint1 == pinID) {
+            m_db.RemoveLink(itr->first);
+            itr = ccPin->links.erase(itr);
+            ++linkCount;
+            continue;
+        }
+        if (itr->second.endpoint2 == pinID) {
+            m_db.RemoveLink(itr->first);
+            itr = ccPin->links.erase(itr);
+            ++linkCount;
+            continue;
+        }
+        ++itr;
+    }
+
+    // check for routes to, from, or thru this pin
+    std::map<uint16, PI_Route>::iterator rItr = ccPin->routes.begin();
+    while (rItr != ccPin->routes.end()) {
+        /*
+            uint32 srcPinID;
+            uint32 destPinID;
+            std::list<uint32> path;
+         */
+        if (rItr->second.srcPinID == pinID) {
+            m_db.RemoveRoute(rItr->first);
+            rItr = ccPin->routes.erase(rItr);
+            ++routeCount;
+            continue;
+        }
+        if (rItr->second.destPinID == pinID) {
+            m_db.RemoveRoute(rItr->first);
+            rItr = ccPin->routes.erase(rItr);
+            ++routeCount;
+            continue;
+        }
+        // at this point, the pin being removed isnt src or dest, so check for intermediate routing.
+        std::list<uint32>::iterator pItr = rItr->second.path.begin();
+        while (pItr != rItr->second.path.end()) {
+            //  we may have to reroute from this pin removal...
+            if (*pItr == pinID) {
+                //reroute = true;
+                pItr = rItr->second.path.erase(pItr);
+                ++pathCount;
+                continue;
+            }
+            ++pItr;
+        }
+        ++rItr;
+    }
+
     ccPin->pins.erase(pinID);
     ccPin->plants.erase(pinID);  // may or may not be here.
     m_db.RemovePin(pinID);
-    _log(PLANET__TRACE, "Colony::RemovePin() - Removed pin %u", pinID);
+    m_db.SaveLinks(ccPin);
+    m_db.SaveRoutes(ccPin);
+    m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_pSE->GetTypeID(), ccPin->pins.size());
+    _log(COLONY__INFO, "Colony::RemovePin() - Removed pin %u with %u routes and %u links.  Upset %u routes by removing this pin", \
+                            pinID, routeCount, linkCount, pathCount);
 }
 
 void Colony::RemoveLink(uint32 src, uint32 dest)
 {
     std::map<uint32, PI_Link>::iterator itr = ccPin->links.begin();
-    for (; itr != ccPin->links.end(); ++itr) {
-        if (itr->second.endpoint1 == src) {
+    for (; itr != ccPin->links.end(); ++itr)
+        if (itr->second.endpoint1 == src)
             if (itr->second.endpoint2 == dest) {
-                _log(PLANET__TRACE, "Colony::RemoveLink() - Removing linkID %u - src: %u, dest: %u", itr->first, src, dest);
+                _log(COLONY__INFO, "Colony::RemoveLink() - Removing linkID %u - src: %u, dest: %u", itr->first, src, dest);
                 m_db.RemoveLink(itr->first);
                 ccPin->links.erase(itr);
                 return;
             }
-        }
-    }
 }
 
 void Colony::RemoveRoute(uint16 routeID)
 {
     ccPin->routes.erase(routeID);
     m_db.RemoveRoute(routeID);
-    _log(PLANET__TRACE, "Colony::RemoveRoute() - Removed route: %u", routeID);
+    _log(COLONY__INFO, "Colony::RemoveRoute() - Removed route: %u", routeID);
 }
 
 void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude)
@@ -527,7 +702,7 @@ void Colony::AddExtractorHead(uint32 ecuID, uint16 headID, double latitude, doub
             head.longitude = longitude;
         itr->second.heads[headID] = head;
     } else
-        _log(PLANET__ERROR, "Colony::AddExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
+        _log(COLONY__ERROR, "Colony::AddExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
 }
 
 void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude)
@@ -542,9 +717,9 @@ void Colony::MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, dou
             head->second.latitude = latitude;
             head->second.longitude = longitude;
         } else
-            _log(PLANET__ERROR, "Colony::MoveExtractorHead() - headID %u not found in pin.heads map", headID);
+            _log(COLONY__ERROR, "Colony::MoveExtractorHead() - headID %u not found in pin.heads map", headID);
     } else
-        _log(PLANET__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
+        _log(COLONY__ERROR, "Colony::MoveExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
 }
 
 void Colony::KillExtractorHead(uint32 ecuID, uint16 headID)
@@ -553,10 +728,10 @@ void Colony::KillExtractorHead(uint32 ecuID, uint16 headID)
     if (itr != ccPin->pins.end())
         itr->second.heads.erase(headID);
     else
-        _log(PLANET__ERROR, "Colony::KillExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
+        _log(COLONY__ERROR, "Colony::KillExtractorHead() - ecuID %u not found in ccPin.pins map", ecuID);
 }
 
-void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
+void Colony::SetSchematic(uint32 pinID, uint8 schematicID/*0*/)
 {
     if (IsTempPinID(pinID) and (tempPinIDs.size() > 0)) {
         std::map<uint8, uint32>::iterator itr = tempPinIDs.find(pinID);
@@ -565,204 +740,399 @@ void Colony::SetSchematic(uint32 pinID, uint16 schematicID)
     }
 
     std::map<uint32, PI_Plant>::iterator itr = ccPin->plants.find(pinID);
-    if (itr != ccPin->plants.end()) {
-        if (schematicID) {
-            sPIDataMgr.GetSchematicData(schematicID, itr->second.data);
-            itr->second.state = PI::Pin::State::Idle;
-            itr->second.order = GetProductLevel(itr->second.data.outputType);
-            itr->second.cycleTime = itr->second.data.cycleTime * 10000000L;
-            itr->second.installTime = GetFileTimeNow();
-            itr->second.expiryTime = itr->second.data.cycleTime + itr->second.installTime;
-            itr->second.qtyPerCycle = itr->second.data.outputQty;
-            itr->second.schematicID = schematicID;
-            itr->second.lastRunTime = GetFileTimeNow();
-            itr->second.hasReceivedInputs = false;
-            itr->second.receivedInputsLastCycle = false;
-            m_pLevel = (uint8)EvE::min(m_pLevel, itr->second.order);
-        } else {
-            itr->second = PI_Plant();
-            itr->second.data = PI_Schematic();
-            itr->second.state = PI::Pin::State::Idle;
-        }
-        _log(PLANET__TRACE, "Colony::SetSchematic() - Set Schematic %u in plantID %u", schematicID, pinID);
-    } else
-        _log(PLANET__ERROR, "Colony::SetSchematic() - plantID %u not found in ccPin.plants map", pinID);
+    if (itr == ccPin->plants.end())
+        _log(COLONY__ERROR, "Colony::SetSchematic() - plantID %u not found in ccPin.plants map", pinID);
+
+    if (schematicID) {
+        // install new schematic.  set lastRunTime to 0
+        sPIDataMgr.GetSchematicData(schematicID, itr->second.data);
+        itr->second.state                   = PI::Pin::State::Idle;
+        itr->second.pLevel                  = sPIDataMgr.GetProductLevel(itr->second.data.outputType);
+        itr->second.cycleTime               = itr->second.data.cycleTime * EvE::Time::Second;
+        itr->second.installTime             = GetFileTimeNow();
+        itr->second.qtyPerCycle             = itr->second.data.outputQty;
+        itr->second.schematicID             = schematicID;
+        itr->second.lastRunTime             = 0;
+        itr->second.hasReceivedInputs       = false;
+        itr->second.receivedInputsLastCycle = false;
+
+        m_pLevel = (uint8)EvE::min(m_pLevel, itr->second.pLevel);
+
+        // set process timer to 30m
+        if (!m_colonyTimer.Enabled())
+            m_colonyTimer.Start(30*60*1000);
+        _log(COLONY__INFO, "Colony::SetSchematic() - Set Schematic %u in plantID %u", schematicID, pinID);
+    } else {
+        itr->second = PI_Plant();
+        itr->second.data = PI_Schematic();
+        itr->second.state = PI::Pin::State::Idle;
+        _log(COLONY__INFO, "Colony::SetSchematic() - Cleared Schematic from plantID %u", pinID);
+    }
+    // save schematic update
+    UpdatePlantPins(pinID); // this MUST be called before Save() and GetColony() to update plant pin with current data
 }
 
-void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius)
+void Colony::InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, PlanetMgr* pPMgr)
 {
+    /*
+     * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]  Tuple: 3 elements
+     * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 0]    Integer: 140000565  ecuID
+     * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 1]    Integer: 2272       typeID
+     * 09:54:54 [PlanetCallDump]       [ 0]   [10]   [ 1]   [ 2]       Real: 0.011281   headRadius
+     */
     std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(ecuID);
-    if (itr != ccPin->pins.end()) {
-        if (typeID and (itr->second.programType != typeID)) {
-            _log(PLANET__ERROR, "Colony::InstallProgram() - typeID %u does not match previously saved program", typeID);
-        } else if (!typeID) {
-            // uninstall program
-            itr->second.cycleTime = 0;
-            itr->second.expiryTime = 0;
-            itr->second.programType = 0;
-            itr->second.qtyPerCycle = 0;
-            itr->second.installTime = 0;
-            itr->second.lastRunTime = 0;
-            itr->second.schematicID = 0;
-            for (auto cur : itr->second.heads)
-                cur.second.typeID = 0;
-        } else {
-            itr->second.headRadius = headRadius;
-            itr->second.installTime = GetFileTimeNow();
-            itr->second.lastRunTime = GetFileTimeNow();
-        }
-    } else
-        _log(PLANET__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccPin.pins map", ecuID);
+    if (itr == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::InstallProgram() - ecuPinID %u not found in ccPin.pins map", ecuID);
+        return;
+    }
+    if (typeID < 1) {
+        // uninstall program
+        itr->second = PI_Pin();
+        // reset extraction quantity in ecu attrib.  this doesnt check for invalid item
+        sItemFactory.GetItem(ecuID)->ResetAttribute(AttrPinExtractionQuantity);
+        return;
+    }
+    if (itr->second.programType != typeID) {
+        // is this installing a new program?
+        _log(COLONY__ERROR, "Colony::InstallProgram() - typeID %u does not match previously saved program.  *edit*  not sure wtf that means now.", typeID);
+        return;
+    }
+
+    itr->second.state = PI::Pin::State::Active;
+    itr->second.headRadius = headRadius;
+    itr->second.installTime = GetFileTimeNow();
+    itr->second.lastRunTime = GetFileTimeNow();
+
+    PyList* list = new PyList();
+    for (auto cur : itr->second.heads)
+        list->AddItem(new PyInt(cur.second.ecuPinID));
+    // set up extractor program data
+    sPIDataMgr.GetProgramResultInfo(this, ecuID, typeID, list, headRadius);
 }
 
-void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime)
+void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime, uint32 qtyPerCycle)
 {
     std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(ecuID);
-    if (itr != ccPin->pins.end()) {
-        itr->second.cycleTime = (cycleTime * 60 * 60 * 10000000L);
-        itr->second.programType = typeID;
-        itr->second.expiryTime = ((cycleTime * numCycles) * 60 * 60 * 10000000L) + GetFileTimeNow();
-        itr->second.headRadius = headRadius;
-        if (itr->second.qtyPerCycle < 1) {
-            InventoryItemRef iRef = sItemFactory.GetItem(ecuID);
-            itr->second.qtyPerCycle = iRef->GetAttribute(AttrPinExtractionQuantity).get_int();
-        }
-        itr->second.schematicID = GetHeadType(sItemFactory.GetItem(ecuID)->typeID(), typeID);
-    } else
-        _log(PLANET__ERROR, "Colony::SetProgramResults() - ecuPinID %u not found in ccPin.pins map", ecuID);
+    if (itr == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::SetProgramResults() - ecuPinID %u not found in ccPin.pins map", ecuID);
+        return;
+    }
+
+    itr->second.cycleTime = cycleTime * EvE::Time::Hour ;
+    itr->second.programType = typeID;
+    itr->second.expiryTime = (cycleTime * numCycles) * EvE::Time::Hour + GetFileTimeNow();
+    itr->second.headRadius = headRadius;
+    itr->second.qtyPerCycle = qtyPerCycle;
+    itr->second.schematicID = sPIDataMgr.GetHeadType(sItemFactory.GetItem(ecuID)->typeID(), typeID);
+
+    m_db.UpdateECUPin(ecuID, ccPin);
+
+    // save extraction quantity in ecu attrib    this doesnt check for invalid item
+    sItemFactory.GetItem(ecuID)->SetAttribute(AttrPinExtractionQuantity, qtyPerCycle, false);
+
+    // set process timer to 30m
+    if (!m_colonyTimer.Enabled())
+        m_colonyTimer.Start(30*60*1000);
 }
 
 PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint16, uint32 > items)
 {
     std::map<uint32, PI_Pin>::iterator src = ccPin->pins.find(srcID);
     if (src == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::TransferCommodities() - srcPin %u not found in ccPin.pins map", srcID);
+        if (m_client->CanThrow())
+            throw PyException(MakeCustomError("Source not found."));
         return nullptr; // make error and exit.
     }
     std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(destID);
     if (dest == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::TransferCommodities() - destPin %u not found in ccPin.pins map", destID);
+        if (m_client->CanThrow())
+            throw PyException(MakeCustomError("Destination not found."));
         return nullptr; // make error and exit.
     }
 
     // capacities are checked in client.  procede with xfer
     for (auto cur : items) {
         std::map<uint16, uint32>::iterator srcItr = src->second.contents.find(cur.first), destItr = dest->second.contents.find(cur.first);
-        if (srcItr->second > cur.second)
-            srcItr->second -= cur.second;
-        else
-            src->second.contents.erase(srcItr);
+        if (srcItr != src->second.contents.end()) {
+            if (srcItr->second > cur.second)
+                srcItr->second -= cur.second;
+            else
+                src->second.contents.erase(srcItr);
+        }   //  if src contents not found, assume client is right and procede with xfer
         if (destItr != dest->second.contents.end())
             destItr->second += cur.second;
         else
             dest->second.contents[cur.first] = cur.second;
     }
 
-    // call update to process received mats and xfer per route if needed
-    bool update = false;
-    ProcessPlants(update);
-    if (update)
-        m_db.UpdatePinTimes(ccPin);
+    // update colony
+    Update(true);   // must update and save CC's lastLaunchTime here
+    //do we do a full save here, or just update contents and times?
+    //Save();
+    m_db.UpdatePins(0, ccPin);
+    m_db.SaveContents(ccPin);
 
-    ccPin->currentSimTime = GetFileTimeNow();
     // simTime = time to stop (currentSimTime), sourceRunTime = lastRunTime
     PyDict* args = new PyDict();
-    args->SetItem("simTime", new PyLong(ccPin->currentSimTime));
-    src->second.lastRunTime = GetFileTimeNow() + (EvE::Time::Minute * 15);  // arbitrary 15 minute delivery time
-    args->SetItem("sourceRunTime", new PyLong(src->second.lastRunTime));
+    /** @todo this needs to be updated to use process times (for next cycle end) */
+    args->SetItemString("simTime", new PyLong(GetFileTimeNow() + (EvE::Time::Minute * 15)));  // arbitrary 15 minute run time
+    src->second.lastRunTime = 0; //m_procTime;
+    args->SetItemString("sourceRunTime", new PyLong(m_procTime));
 
+    /*
+     * def GetExpeditedTransferTime(linkBandwidth, commodities):
+     *    commodityVolume = GetCommodityTotalVolume(commodities)
+     *    return long(math.ceil(max(5 * MIN, float(commodityVolume) / linkBandwidth * HOUR)))
+     */
     return args;
 }
 
-void Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
+PyRep* Colony::LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items)
 {
     // this will export items from CC to jetcan in space.
     // launchpad (Spaceport) xfers items to/from customs office
     std::map<uint32, PI_Pin>::iterator pin = ccPin->pins.find(pinID);
-    if (pin != ccPin->pins.end()) {
-        // first - create jetcan, add to system, and put in orbit around planet
-        // NOTE:  PI launcheds have 5d timers
-        /** @todo check capacities before adding items */
-        SystemManager* pSysMgr(m_pSE->SystemMgr());
-        GPoint location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
-        location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 1000000);   //1000km orbit for launch can
-        ItemData canData(EVEDB::invTypes::typePlanetaryLaunchContainer,
-                        m_client->GetCharacterID(),  // owner is Character
-                        pSysMgr->GetID(),
-                        flagAutoFit,
-                        "PI Commodities Container",
-                        location);
+    if (pin == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::LaunchCommodities() - pinID %u not found in ccPin.pins map", pinID);
+        return nullptr;
+    }
 
-        CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
-        if (!contRef)
-            if (m_client->CanThrow())
-                throw PyException(MakeCustomError("Unable to spawn item of type %u.", 2263));
-            else
-                ; //  make error here?
+    // first - create jetcan, add to system, and put in orbit around planet
+    // NOTE:  PI launches have 5d timers
+    /** @todo check capacities before adding items */
+    SystemManager* pSysMgr(m_pSE->SystemMgr());
+    GPoint location(pSysMgr->GetSE(m_pSE->GetID())->GetPosition());
+    location.MakeRandomPointOnSphere(m_pSE->GetRadius() + 2000000);   //2000km orbit for launch can
+    ItemData canData(EVEDB::invTypes::typePlanetaryLaunchContainer,
+                    m_client->GetCharacterID(),  // owner is Character
+                    pSysMgr->GetID(),
+                    flagAutoFit,
+                    "PI Commodities Container",
+                    location);
 
-        FactionData data = FactionData();
-            data.allianceID = m_client->GetAllianceID();
-            data.corporationID = m_client->GetCorporationID();
-            data.factionID = m_client->GetWarFactionID();
-            data.ownerID = m_client->GetCharacterID();
-        // create new container SE
-        ContainerSE* cSE = new ContainerSE(contRef, *m_svcMgr, pSysMgr, data);
-        contRef->SetMySE(cSE);      // item-to-entity internal interface
-        //cSE->AnchorContainer();     // avoid GC checks on this container  -no.  has 5d timer set
-        pSysMgr->AddEntity(cSE);
+    CargoContainerRef contRef = sItemFactory.SpawnCargoContainer(canData);
+    if (contRef.get() == nullptr) {
+        contRef->Delete();
+        if (m_client->CanThrow())
+            throw PyException(MakeCustomError("Unable to spawn item of type %u.", EVEDB::invTypes::typePlanetaryLaunchContainer));
+    }
 
-        /* second - reduce qtys in source container (CC pin.contents in this case)
-         * create actual item (previously only virtual)
-         * add to container
-         * calculate taxes on items
-         * charge char taxes upon launch
-         */
-        double cost = 0;
-        for (auto cur : items) {
-            std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
-            /** @todo  check for qtys here */
-            if (cont != pin->second.contents.end()) {
+    FactionData data = FactionData();
+        data.allianceID = m_client->GetAllianceID();
+        data.corporationID = m_client->GetCorporationID();
+        data.factionID = m_client->GetWarFactionID();
+        data.ownerID = m_client->GetCharacterID();
+    // create new container SE
+    ContainerSE* cSE = new ContainerSE(contRef, *m_svcMgr, pSysMgr, data);
+    contRef->SetMySE(cSE);      // item-to-entity internal interface
+    //cSE->AnchorContainer();     // avoid GC checks on this container  -no.  has 5d timer set
+    pSysMgr->AddEntity(cSE);
+
+    /* second - reduce qtys in source container (CC pin.contents in this case)
+     * create actual item (previously only virtual)
+     * add to container
+     * calculate taxes on items
+     * charge char taxes upon launch
+     */
+    uint8 count = 0;
+    double cost = 0;
+    for (auto cur : items) {
+        std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
+        if (cont != pin->second.contents.end()) {
+            if (cont->second > cur.second)
                 cont->second -= cur.second;
-                if (cont->second <= 0)
-                    pin->second.contents.erase(cont);   // remove item from pin.contents if launching entire qty.
-            } else // make error if item not found in pin.contents?
-                continue;
+            else
+                pin->second.contents.erase(cont);
+        } else
+            _log(COLONY__WARNING, "Colony::LaunchCommodities() - item %u not found in command center", cur.first);
 
-            switch (GetProductLevel(cur.first)) {
-                case 0:     cost += (    0.15 * cur.second);    break;
-                case 1:     cost += (    1.14 * cur.second);    break;
-                case 2:     cost += (    9.00 * cur.second);    break;
-                case 3:     cost += (  900.00 * cur.second);    break;
-                case 4:     cost += (75000.00 * cur.second);    break;
-            }
-            ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
-            InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
-            iRef->Move(cSE->GetID(), flagAutoFit, true);
+        //  if item not found in src contents, assume client is right and procede with xfer
+        switch (sPIDataMgr.GetProductLevel(cur.first)) {
+            case 0:     cost += (    0.15 * cur.second);    break;
+            case 1:     cost += (    1.14 * cur.second);    break;
+            case 2:     cost += (   13.50 * cur.second);    break;
+            case 3:     cost += (  900.00 * cur.second);    break;
+            case 4:     cost += (75000.00 * cur.second);    break;
         }
+        ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
+        InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
+        iRef->Move(cSE->GetID());
+        iRef->SaveItem();
+        ++count;
+    }
 
+    if (count)
+        if (is_log_enabled(COLONY__TRACE))
+            _log(COLONY__TRACE, "Colony::LaunchCommodities() - Launched %u items from command center %u to %s (%u)", \
+                        count, m_colonyID, contRef->itemName().c_str(), contRef->itemID() );
+
+    contRef->SaveItem();
+    pin->second.lastLaunchTime = GetFileTimeNow();
+
+    // third - create db entry for launch
+    m_db.SaveLaunch(contRef->itemID(), m_client->GetCharacterID(), pSysMgr->GetID(), m_pSE->GetID(), location);
+
+    // update colony
+    Update(true);   // must update and save CC's lastLaunchTime here
+    //do we do a full save here, or just update contents and times?
+    //Save();
+    m_db.UpdatePins(0, ccPin);
+    m_db.SaveContents(ccPin);
+
+    // fourth - take taxes and record entry in journal
+    if (cost) {
         //take the money, send wallet blink event record the transaction in their journal.
-        std::string reason = "DESC:  Exporting items from ";
+        std::string reason = "DESC:  Launching PI items from ";
         reason += m_pSE->GetName();
         AccountService::TranserFunds(
                     m_client->GetCharacterID(),
-                    ownerUnknown,  // not sure who to send this to
+                    ownerCONCORD,  // pSysMgr->GetSovHolder(),
                     cost,
                     reason.c_str(),
                     Journal::EntryType::PlanetaryExportTax,
                     m_pSE->GetID(),
                     Account::KeyType::Cash);
+    }
 
-        contRef->SaveItem();
-        pin->second.lastLaunchTime = GetFileTimeNow();
-
-        // third - create db entry for launch
-        m_db.SaveLaunch(contRef->itemID(), m_client->GetCharacterID(), pSysMgr->GetID(), m_pSE->GetID(), location);
-
-        // update colony
-        Update(true);   // must update and save CC's lastLaunchTime here
-    } else
-        _log(PLANET__ERROR, "Colony::LaunchCommodities() - pinID %u not found in ccPin.pins map", pinID);
+    return new PyLong(pin->second.lastLaunchTime);
 }
 
-/** @todo  add import/export taxes
+void Colony::PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate)
+{
+    // import is from CO to planet.  export is from planet to CO
+    // this method will make the transfer of items from real to virtual and back as necessary
+
+    std::map<uint32, PI_Pin>::iterator pin = ccPin->pins.find(spaceportID);
+    if (pin == ccPin->pins.end()) {
+        _log(COLONY__ERROR, "Colony::PlanetXfer() - pinID %u not found in ccPin.pins map", spaceportID);
+        if (m_client->CanThrow()) {
+            throw PyException(MakeCustomError("Your SpacePort on %s was not found.  Ref: ServerError xxxxx.", m_pSE->GetName()));
+        } else
+            return;
+    }
+
+    if (pin->second.lastLaunchTime > GetFileTimeNow() + 30 * EvE::Time::Second)  // launch cycle time is 60s
+        if (m_client->CanThrow()) {
+            throw PyException(MakeCustomError("Your Launch crew on %s is still recovering from the last launch.", m_pSE->GetName()));
+        } else
+            return;
+
+    uint8 toColony = 0, fromColony = 0;
+    double cost = 0;
+    InventoryItemRef iRef(nullptr);
+    std::map<uint16, uint32>::iterator itr;
+    // import
+    for (auto cur : importItems) {
+        // xfer real item to virtual
+        iRef = sItemFactory.GetItem(cur.first);
+        if (iRef.get() == nullptr) {
+            _log(COLONY__ERROR, "Colony::PlanetXfer():import - itemRef for id %u not found in ItemFactory", cur.first);
+            continue;   // should never happen
+        }
+
+        itr = pin->second.contents.find(iRef->typeID());
+        /** @todo  check for available capy and adjust qty accordingly.
+         *       if spaceport cant hold entire xfer qty, xfer to full, and return rest back to CO.
+         */
+        if (itr != pin->second.contents.end())
+            itr->second += cur.second;
+        else
+            pin->second.contents[iRef->typeID()] = cur.second;
+
+        switch (sPIDataMgr.GetProductLevel(iRef->typeID())) {
+            case 0:     cost += (    0.05 * cur.second);    break;
+            case 1:     cost += (    0.38 * cur.second);    break;
+            case 2:     cost += (    4.50 * cur.second);    break;
+            case 3:     cost += (  300.00 * cur.second);    break;
+            case 4:     cost += (25000.00 * cur.second);    break;
+        }
+        iRef->ToVirtual(spaceportID);
+        ++toColony;
+    }
+
+    if (toColony)
+        if (is_log_enabled(COLONY__TRACE))
+            _log(COLONY__TRACE, "Colony::PlanetXfer() - Imported %u items from customs office %u to spaceport %u", \
+                            toColony, m_pSE->GetCustomsOffice()->GetID(), spaceportID);
+
+    if (cost) {
+        //take the money, send wallet blink event record the transaction in their journal.
+        std::string reason = "DESC:  Importing items to ";
+        reason += m_pSE->GetName();
+        AccountService::TranserFunds(
+                            m_client->GetCharacterID(),
+                            m_pSE->GetCustomsOffice()->GetOwnerID(),
+                            cost,
+                            reason.c_str(),
+                            Journal::EntryType::PlanetaryImportTax,
+                            m_pSE->GetID(),
+                            Account::KeyType::Cash);
+    }
+
+    // reset cost for possible export taxes
+    cost = 0;
+    // export
+    for (auto cur : exportItems) {
+        std::map<uint16, uint32>::iterator cont = pin->second.contents.find(cur.first);
+        if (cont != pin->second.contents.end()) {
+            if (cont->second > cur.second)
+                cont->second -= cur.second;
+            else {
+                // set qty to amount contained in pin.
+                cur.second = cont->second;
+                pin->second.contents.erase(cont);   // remove item from pin.contents if exporting entire qty.
+            }
+        } else
+            _log(COLONY__WARNING, "Colony::PlanetXfer():export - item %u not found in spaceport", cur.first);
+
+        //  if item not found in src contents, assume client is right and procede with xfer
+        switch (sPIDataMgr.GetProductLevel(cur.first)) {
+            case 0:     cost += (    0.10 * cur.second);    break;
+            case 1:     cost += (    0.76 * cur.second);    break;
+            case 2:     cost += (    9.00 * cur.second);    break;
+            case 3:     cost += (  600.00 * cur.second);    break;
+            case 4:     cost += (50000.00 * cur.second);    break;
+        }
+        // xfer virtual item to real
+        ItemData iData(cur.first, m_client->GetCharacterID(), 0, flagAutoFit, cur.second);
+        InventoryItemRef iRef = sItemFactory.SpawnItem(iData);
+        iRef->Move(m_pSE->GetCustomsOffice()->GetID(), flagHangar, true);
+        ++fromColony;
+    }
+
+    if (fromColony)
+        if (is_log_enabled(COLONY__TRACE))
+            _log(COLONY__TRACE, "Colony::PlanetXfer() - Exported %u items from spaceport %u to customs office %u", \
+                        fromColony, spaceportID, m_pSE->GetCustomsOffice()->GetID());
+
+    if (cost) {
+        //take the money, send wallet blink event record the transaction in their journal.
+        std::string reason = "DESC:  Exporting items from ";
+        reason += m_pSE->GetName();
+        AccountService::TranserFunds(
+                            m_client->GetCharacterID(),
+                            m_pSE->GetCustomsOffice()->GetOwnerID(),
+                            cost,
+                            reason.c_str(),
+                            Journal::EntryType::PlanetaryExportTax,
+                            m_pSE->GetID(),
+                            Account::KeyType::Cash);
+    }
+
+    pin->second.lastLaunchTime = GetFileTimeNow();  // launch cycle time is 60s
+    pin->second.lastRunTime = GetFileTimeNow();
+
+    // update colony
+    Update(true);   // must update and save SP's lastLaunchTime here
+    //do we do a full save here, or just update contents and times?
+    //Save();
+    m_db.UpdatePins(0, ccPin);
+    m_db.SaveContents(ccPin);
+}
+
+/*  import/export taxes
  *  GetProductLevel(typeID) will return PLevel of item.
  *  use that to calculate cost for import/export operations
 Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import Cost
@@ -772,9 +1142,15 @@ Product     Command Center Export Cost  Launchpad Export Cost   Launchpad Import
     P3        150/m3 or 900/unit          100/m3 or 600/unit      50/m3 or 300/unit
     P4        750/m3 or 75k/unit          500/m3 or 50k/unit     250/m3 or 25k/unit
 */
-void Colony::PrioritizeRoute()
+
+void Colony::PrioritizeRoute(uint16 routeID, uint8 priority)
 {
-    // not sure about this one yet
+    // set priority level for route...still not sure how to use it
+    std::map<uint16, PI_Route>::iterator itr = ccPin->routes.find(routeID);
+    if (itr != ccPin->routes.end()) {
+        itr->second.priority = priority;
+        m_db.SaveRoutes(ccPin);
+    }
 }
 
 
@@ -790,36 +1166,48 @@ PyTuple* Colony::GetPins()
         dict->SetItem("ownerID", new PyInt(cur.second.ownerID));
         dict->SetItem("latitude", new PyFloat(cur.second.latitude));
         dict->SetItem("longitude", new PyFloat(cur.second.longitude));
-        dict->SetItem("lastRunTime", new PyLong(cur.second.lastRunTime));
+        dict->SetItem("lastRunTime", (cur.second.lastRunTime > 0 ? new PyLong(cur.second.lastRunTime) : PyStatic.NewNone()));
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
         if (cur.second.isLaunchable)
-            dict->SetItem("lastLaunchTime", new PyLong(cur.second.lastLaunchTime));
+            dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : PyStatic.NewNone()));
 
-        if ((cur.second.isProcess) and (cur.second.schematicID)) {
-            dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
-            dict->SetItem("schematicID", new PyInt(cur.second.schematicID));
-            dict->SetItem("hasReceivedInputs", new PyBool(cur.second.hasReceivedInputs));
-            dict->SetItem("receivedInputsLastCycle", new PyBool(cur.second.receivedInputsLastCycle));
-        }
+        if (cur.second.isProcess)
+            if (cur.second.schematicID) {
+                dict->SetItem("schematicID", new PyInt(cur.second.schematicID));
+                std::map<uint32, PI_Plant>::iterator plantPin = ccPin->plants.find(cur.first);
+                if (plantPin != ccPin->plants.end()) {
+                    dict->SetItem("cycleTime", new PyLong(plantPin->second.cycleTime));
+                    dict->SetItem("hasReceivedInputs", new PyBool(plantPin->second.hasReceivedInputs));
+                    dict->SetItem("receivedInputsLastCycle", new PyBool(plantPin->second.receivedInputsLastCycle));
+                } else {
+                    dict->SetItem("cycleTime", PyStatic.NewZero());
+                    dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
+                    dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
+                }
+            } else {
+                dict->SetItem("cycleTime", PyStatic.NewZero());
+                dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
+                dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
+            }
 
         PyDict* contents = new PyDict();
         contents->clear();
-        if (cur.second.isStorage) {
+        if (cur.second.isStorage)
             for (auto cur2 : cur.second.contents)
                 contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
-        }
+
         dict->SetItem("contents", contents);
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
-                dict->SetItem("cycleTime", new PyLong(cur.second.cycleTime));
+                dict->SetItem("cycleTime", new PyFloat(cur.second.cycleTime / EvE::Time::Hour));
                 dict->SetItem("expiryTime", new PyLong(cur.second.expiryTime));
                 dict->SetItem("headRadius", new PyFloat(cur.second.headRadius));
                 dict->SetItem("installTime", new PyLong(cur.second.installTime));
                 dict->SetItem("programType", new PyInt(cur.second.programType));
-                dict->SetItem("qtyPerCycle", new PyFloat(cur.second.qtyPerCycle));
+                dict->SetItem("qtyPerCycle", new PyInt(cur.second.qtyPerCycle));
             }
             PyList* list = new PyList();
             list->clear();
@@ -842,7 +1230,6 @@ PyTuple* Colony::GetLinks()
 {
     uint8 index = 0;
     PyTuple* links = new PyTuple(ccPin->links.size());
-
     for (auto cur : ccPin->links) {
         PyDict* dict = new PyDict();
             dict->SetItem("linkID", new PyInt(cur.first));                 // this is link itemID
@@ -883,32 +1270,29 @@ PyRep* Colony::GetColony()
             if (itr != ccPin->pins.end())
                 m_db.SaveHeads(m_colonyID, m_client->GetCharacterID(), cur, itr->second.heads);
             else
-                _log(PLANET__ERROR, "Colony::GetColony()::SaveHeads() - headID %u not found in ccPin.pins map", cur);
+                _log(COLONY__ERROR, "Colony::GetColony()::SaveHeads() - headID %u not found in ccPin.pins map", cur);
         }
         tempECUs.clear();
         m_newHead = false;
     }
 
     Update();   // update colony before sending data.
-    Save();     // save here after update.  this also saves routes and links   do we need to save on EVERY GetColony() call?
 
     PyDict* args = new PyDict();
         args->SetItem("pins", GetPins());
         args->SetItem("level", new PyInt(ccPin->level));
         args->SetItem("links", GetLinks());
         args->SetItem("routes", GetRoutes());
-        args->SetItem("currentSimTime", new PyLong(ccPin->currentSimTime));
+        args->SetItem("currentSimTime", new PyLong(m_procTime));
     PyObject* res = new PyObject("util.KeyVal", args);
 
-    _log(PLANET__DEBUG, "Colony::GetColony() Dump");
-    if (is_log_enabled(PLANET__GC_DUMP))
-        res->Dump(PLANET__GC_DUMP, "    ");
+    if (is_log_enabled(COLONY__GC_DUMP)) {
+        _log(COLONY__GC_DUMP, "Colony::GetColony() Dump");
+        res->Dump(COLONY__GC_DUMP, "    ");
+    }
 
     // reset tempPinID-to-newPinID map after command loop is completed and all new pins have been created.
     tempPinIDs.clear();
-
-    std::map<uint32, PI_Pin>::iterator pin = ccPin->pins.find(m_colonyID);
-    m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), pin->second.typeID, ccPin->pins.size());
 
     return res;
 }
@@ -917,41 +1301,54 @@ void Colony::Update(bool updateTimes/*false*/)
 {
     double profileStartTime = GetTimeUSeconds();
 
-    m_procTime = GetFileTimeNow();
     /* loop thru process calls to update each pin to simulate production and logistics
      *  this will have to be fast, as there may/will be large time deltas between updates
      *  can loop each item to process for each time step (like i do for skill training)
      */
-    // first process ecus for raw matls.
-    ProcessECUs(updateTimes);
-    // second process plants for production.
-    ProcessPlants(updateTimes);
 
-    m_procTime = 0;
+    if (is_log_enabled(COLONY__DEBUG))
+        _log(COLONY__DEBUG, "Colony::Update() - Starting Update for colony %u on %s.", m_colonyID, m_pSE->GetName());
+
+    // first, process ecus for raw matls.
+    ProcessECUs(updateTimes);
+    // second, process plants for production.
+    ProcessPlants(updateTimes);
+    // third, update plants for mat'ls received
 
     // update colony time to current time (based on this update, prior to sending out current colony status)
-    ccPin->currentSimTime = GetFileTimeNow();
+    m_procTime = GetFileTimeNow();
 
-    // update current pin times
-    if (updateTimes)
-        m_db.UpdatePinTimes(ccPin);
+    // update CommandCenter pin times
+    if (updateTimes) {
+        std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(m_colonyID);
+        if (itr != ccPin->pins.end())
+            itr->second.lastRunTime = m_procTime;
 
-    _log(PLANET__TRACE, "Colony::Update() - Update completed in %.3fus", GetTimeUSeconds() - profileStartTime);
+        m_toUpdate = true;
+    }
 
-    // profile timer for the colony updates
-    if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_colonyProfile, GetTimeUSeconds() - profileStartTime);
+    _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %u links, %u pins, %u plants, and %u routes (s:%u, d:%u) ", \
+                    GetTimeUSeconds() - profileStartTime, ccPin->links.size(), ccPin->pins.size(), ccPin->plants.size(), ccPin->routes.size(), \
+                    m_srcRoutes.size(), m_destRoutes.size());
 }
 
 void Colony::ProcessECUs(bool& updateTimes)
 {
-    for (auto ecu : ccPin->pins) {
+    double delta = 0;
+    uint16 cycles = 0, quantity = 0, amount = 0, count = 0;
+    std::map<uint32, PI_Pin>::iterator destPin;
+    std::map<uint32, PI_Plant>::iterator plant;
+    std::map<uint16, uint32>::iterator itemItr;
+    for (auto ecu : ccPin->pins)
         if (ecu.second.isECU) {
-            if ((ecu.second.expiryTime == 0 ) or (ecu.second.cycleTime == 0) or (ecu.second.expiryTime > m_procTime))
+            if ((ecu.second.expiryTime < EvE::Time::Second ) or (ecu.second.cycleTime == 0) or (ecu.second.expiryTime > m_procTime))
                 continue;
+            if (ecu.second.lastRunTime < EvE::Time::Hour)
+                ecu.second.lastRunTime = ecu.second.expiryTime - ecu.second.cycleTime;
+
             /** @todo  as i dont have data on planet resources, and am not tracking depletion, extraction qtys used here are
              * sent from the client during 'survey program' installation, and do not simulate the diminishing returns as shown in
-             * the survey program. (testing diminishing returns @ 99%)
+             * the survey program. (testing diminishing returns @ 95%)
              * because of this, the values used here (and all subsquent processes) will be more than shown in client.
              */
             /** @note this is a simple process, as it only provides raw mats, simulating extraction from planet and
@@ -961,41 +1358,75 @@ void Colony::ProcessECUs(bool& updateTimes)
              * but it could get messy later....
              */
             // dont loop...get #cycles to 'run' and set amounts accordingly
-            double delta = m_procTime - ecu.second.lastRunTime;
-            uint16 cycles = floor(delta / ecu.second.cycleTime);
+            delta = (m_procTime - ecu.second.expiryTime) / EvE::Time::Hour;
+            cycles = delta / (ecu.second.cycleTime / EvE::Time::Hour);
+
+            /** @todo  verify cycles isnt over program cycle count */
+
             // first - see if this ecu has a route and move contents per route.  this will simulate aquisition of raw matls from heads to storage
+            _log(COLONY__DEBUG, "Colony::ProcessECUs() - ECU pin %u - begin processing with %u cycles (%0.2f / %0.2f)", \
+                            ecu.first, cycles, delta, (ecu.second.cycleTime / EvE::Time::Hour));
             for (auto route : ccPin->routes) {
                 // verify this route begins at this pin.
                 if (route.second.srcPinID != ecu.first)
                     continue;
                 // second - update current contents per route movement as noted above (there are no stored contents to update in the ECU)
                 // get route destination pin and update qty
-                std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.second.destPinID);
-                if (dest != ccPin->pins.end()) {
-                    // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32>(typeID, qty))
-                    std::map<uint16, uint32>::iterator itr = dest->second.contents.find(route.second.commodityTypeID);
-                    /** @todo  check for available capy and adjust qty accordingly.
-                    *       if dest cant hold entire xfer qty, xfer to full, and drop rest. (material loss)
-                    */
-                    if (itr != dest->second.contents.end())
-                        itr->second += (route.second.commodityQuantity * cycles);
-                    else
-                        dest->second.contents[route.second.commodityTypeID] = (route.second.commodityQuantity * cycles);
-                    route.second.commodityQuantity *= 0.99; // diminishing returns on extraction - not accurate, but POC
-                    dest->second.update = true;
-                } else {
-                    _log(PLANET__ERROR, "Colony::ProcessECUs()::Routes() - Dest pinID %u not found in ccPin.pins map", route.second.destPinID);
+                destPin = ccPin->pins.find(route.second.destPinID);
+                if (destPin == ccPin->pins.end()) {
+                    _log(COLONY__ERROR, "Colony::ProcessECUs() - Dest pinID %u not found in ccPin.pins map", route.second.destPinID);
                     continue;
+                }
+                //  loop thru cycles to apply diminishing returns
+                count = cycles;
+                quantity = route.second.commodityQuantity;
+                while (count) {
+                    quantity *= 0.95;
+                    amount += quantity;
+                    --count;
+                }
+                // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32>(typeID, qty))
+                itemItr = destPin->second.contents.find(route.second.commodityTypeID);
+                /** @todo  set/implement storage capy for pin - PI_Pin.capacity, PI_Pin.quantity */
+                //  if dest cant hold entire xfer qty, drop remainder in current pin contents (as opposed to loss)
+                //      will need a way to set/test for this 'extra' material and xfer on next run
+                if (itemItr != destPin->second.contents.end())
+                    itemItr->second += amount;
+                else
+                    destPin->second.contents[route.second.commodityTypeID] = amount;
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessECUs() - Dest pinID %u updated with %u %s (%u).", \
+                            route.second.destPinID, amount, sPIDataMgr.GetProductName(route.second.commodityTypeID), route.second.commodityTypeID);
+
+                // 'update' is part of clever code to avoid db hits.
+                //  this will delete existing contents and insert current contents upon completion of processing
+                destPin->second.update = true;
+                // if destination pin is plant, put materials in its' storage
+                // client verifies mat'l is required before routing
+                if (destPin->second.isProcess) {
+                    // find dest's plant data
+                    plant = ccPin->plants.find(destPin->first);
+                    if (plant == ccPin->plants.end()) {
+                        _log(COLONY__ERROR, "Colony::ProcessECUs() - Plant pinID %u not found in ccPin.plants map", destPin->first);
+                        continue;
+                    }
+                    //and set hasReceivedInputs to true for subsquent processing
+                    plant->second.hasReceivedInputs = true;
+                    if (is_log_enabled(COLONY__DEBUG))
+                        _log(COLONY__DEBUG, "Colony::ProcessECUs() - Dest pinID %u isPlant.", route.second.destPinID);
                 }
             }
             // third - reset cycle times.
             // set expiryTime to previous runtime plus cycleTime to simulate end of cycle
-            ecu.second.expiryTime = ecu.second.lastRunTime + (ecu.second.cycleTime * cycles);
+            ecu.second.expiryTime = ecu.second.lastRunTime + ecu.second.cycleTime * cycles;
             // set lastRunTime to last-processed cycle's expire time.
             ecu.second.lastRunTime = ecu.second.expiryTime;
             updateTimes = true;
+
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessECUs() - Processing complete.  timeNow %lli, expiryTime %lli, lastRunTime %lli", \
+                        GetFileTimeNow(), ecu.second.expiryTime, ecu.second.lastRunTime);
         }
-    }
 }
 
 void Colony::ProcessPlants(bool& updateTimes)
@@ -1003,7 +1434,7 @@ void Colony::ProcessPlants(bool& updateTimes)
     if (ccPin->plants.empty() or (m_pLevel < 1))
         return; // nothing to do...
 
-    /** @note  generally-accepted design has plant input and output to/from silo(spaceport or storage) for input buffers and follows this guideline...
+    /** @note  generally-accepted PI design has plant input and output to/from silo(spaceport or storage) for input buffers and follows this guideline...
      * silo->plant->silo->plant->silo
      * however, there may be rare cases where colony is restricted or other design constraints limit routing and
      * plants must be linked together, where the output of one provides the direct input of the next, as follows...
@@ -1015,401 +1446,338 @@ void Colony::ProcessPlants(bool& updateTimes)
      * plants will have to be processed in order from p1 to p4 products, to provide input for downstream plants
      * this WILL have to loop for each cycle to correctly set inputs and outputs for each plant, and provide
      * positive material control (and be more realistic) per run.
-     *
      */
+
     /** @note  plants are stored separate from other pins, to avoid the cycles and checks for plants in this call.
      * this will also avoid the unnecessary plant-specific data to be stored in std pins for all items
      */
-    // m_pLevel is set to lowest 'P' level of produced items, and used to correctly order plant processing
+    // m_pLevel is set to lowest 'P' level of produced items, and used to properly order plant processing streams
     uint8 curCycle = m_pLevel;
-
+    int32 cycles = 0, cycles2 = 0, amount = 0, divisor = 0, delta = 0;
+    std::map<uint32, PI_Pin>::iterator srcPin;
+    std::map<uint32, PI_Pin>::iterator destPin;
+    std::map<uint16, uint32>::iterator itemItr;
+    std::map<uint32, PI_Plant>::iterator destPlant;
+    _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Plant Processing.  m_procTime: %lli", m_procTime);
     while (curCycle < 5) {
-        for (auto plant : ccPin->plants) {
-            // plants must be processed in order to correctly send products to downstream receipents.
-            // this allows for both silo->plant->silo->plant and silo->plant->plant->plant->silo routing (or any combination of plant and silo routing)
-            if (plant.second.order != curCycle)
-                continue;
-            if ((plant.second.cycleTime == 0) or (plant.second.expiryTime > m_procTime))
-                continue;
+        if (is_log_enabled(COLONY__DEBUG))
+            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Begin Process loop for pLevel %u.", curCycle);
 
-            // first - current cycle is complete.  move finished product per route
-            // second - check for available matls and begin production if able
-            // both checks can be done in same loop.  they dont cross or overlap due to process order (according to curCycle)
-            for (auto route : ccPin->routes) {
-                // verify this route begins at this pin.  should be only ONE route here for this output
-                // also check that plant was active last round, to produce product to send out
-                if ((route.second.srcPinID == plant.first) and (plant.second.state == PI::Pin::State::Active)) {
-                    plant.second.state = PI::Pin::State::Idle;  // set to idle.  this may not be needed.
-                    // get destination pin and update qty there for this round
-                    std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(route.second.destPinID);
-                    if (dest != ccPin->pins.end()) {
-                        // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32> typeID, qty)
-                        if (dest->second.isStorage) {
-                            //  if dest cant hold entire xfer qty, drop remainder in current pin contents (as opposed to loss)
-                            ; /** @todo  create/set/implement storage capy for pin  */
-                        }
-                        std::map<uint16, uint32>::iterator itr = dest->second.contents.find(route.second.commodityTypeID);
-                        if (itr != dest->second.contents.end())
-                            itr->second += route.second.commodityQuantity;
-                        else
-                            dest->second.contents[route.second.commodityTypeID] = route.second.commodityQuantity;
-                        dest->second.update = true;
-                    }
-                }
-                if (route.second.destPinID == plant.first) {
-                    // this route supplies this plant with input matls.
-                    // verify supplier is NOT a plant or ECU here, as this was done in previous checks.
-                    std::map<uint32, PI_Pin>::iterator source = ccPin->pins.find(route.second.srcPinID);
-                    if (source != ccPin->pins.end()) {
-                        if (!source->second.isStorage)
-                            continue;
-                        // source is storage.  continue with processing
-                        // remove contents from storage pin
-                        uint32 amount = route.second.commodityQuantity;
-                        std::map<uint16, uint32>::iterator itr = source->second.contents.find(route.second.commodityTypeID);
-                        if (itr != source->second.contents.end()) {
-                            if (itr->second > amount)
-                                itr->second -= amount;
-                            else
-                                source->second.contents.erase(itr);
-                            source->second.update = true;
-                        } else {
-                            // this material wasnt found in source container....cant move what we aint got..
-                            continue;
-                        }
+        // plants must be processed in order to correctly make products and send to downstream receipents.
+        // this allows for both silo->plant->silo->plant and silo->plant->plant->plant->silo routing (or any combination of plant and silo routing)
+        auto cycleItr = m_plantMap.equal_range(curCycle);
+        for (auto it = cycleItr.first; it != cycleItr.second; ++it) {
+            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Processing for Plant %u", it->second);
 
-                        // add contents to plant pin
-                        std::map<uint32, PI_Pin>::iterator dest = ccPin->pins.find(plant.first);
-                        if (dest != ccPin->pins.end()) {
-                            itr = dest->second.contents.find(route.second.commodityTypeID);
-                            if (itr != dest->second.contents.end())
-                                itr->second += amount;
-                            else
-                                dest->second.contents[route.second.commodityTypeID] = amount;
-                            dest->second.update = true;
-                            // we have received a material from this route. enable check for all required materials for this Schematic
-                            plant.second.hasReceivedInputs = true;
-                        }
-                        // make error for plant pin not found?
-                    }
-                }
-                //  current plant not found in routes.... not making an error here, but probably should for invalid route
+            // first, find plant pin in plant map
+            std::map<uint32, PI_Plant>::iterator plant = ccPin->plants.find(it->second);
+            if (plant == ccPin->plants.end()) {
+                _log(COLONY__ERROR, "Colony::ProcessPlants() - Plant %u not found in ccPin.pins map", it->second);
+                it = m_plantMap.erase(it);
+                continue;
             }
-            // all plants have now sent and/or received product as defined by routing info for this cycle
+            // plant pin found.  begin basic data integrity  checks
 
-            // third - process material requirements - see notes
-            while (plant.second.hasReceivedInputs) {
-                /*  if plant has received mats from routing (above), then check here for
-                 * required qtys per Schematic which is found in plant.second.data.inputs map (std::map<uint16, uint16> {typeID, qty})
-                 *  if all required qtys have been received, need to do following list...
-                 * - remove mats from pin.contents
-                 * - set receivedInputsLastCycle=true
-                 *
-                 *  if required mats are not present, set timers to 0 and receivedInputsLastCycle=false, which will deny processing and subsquent routing for this plant.
-                 */
-                std::map<uint32, PI_Pin>::iterator itr = ccPin->pins.find(plant.first);
-                for (auto mats : plant.second.data.inputs) {
-                    // loop thru Schematic inputs to verify all required mats are present
-                    std::map<uint16, uint32>::iterator contents = itr->second.contents.find(mats.first);
-                    if (contents != itr->second.contents.end()) {
-                        if (contents->second >= mats.second) {
-                            contents->second -= mats.second;
-                            if (contents->second < 1)
-                                itr->second.contents.erase(contents);   // qty is 0.  remove item from map.
-                        } else {
-                            // this required material was not sufficient quantity for a full run.
-                            // set hasReceivedInputs=false to break out of this loop.  no reason to continue at this point.
-                            plant.second.hasReceivedInputs = false;
-                            plant.second.receivedInputsLastCycle = false;
-                            continue;
-                        }
+            // check if plant has schematic installed
+            if (plant->second.schematicID == 0) {
+                _log(COLONY__WARNING, "Colony::ProcessPlants() - No schematic installed.");
+                plant->second.hasReceivedInputs = false;
+                plant->second.receivedInputsLastCycle = false;
+                continue;
+            }
+            /** if schematicID is valid, input and cycletime *should* be valid also.
+             * comment these until proven needed  (gotta get proc times faster)
+            // check if plant has valid input map
+            if (plant->second.data.inputs.empty()) {
+                _log(COLONY__WARNING, "Colony::ProcessPlants() - Empty input map");
+                plant->second.hasReceivedInputs = false;
+                plant->second.receivedInputsLastCycle = false;
+                continue;
+            }
+            if (plant->second.cycleTime == 0) {
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - cycleTime = 0.");
+                continue;
+            } */
+
+            if (plant->second.lastRunTime < EvE::Time::Hour)
+                plant->second.lastRunTime = m_procTime + EvE::Time::Second;
+
+            if (plant->second.lastRunTime >= m_procTime) {
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - lastRunTime (%lli) >= m_procTime (%lli).", \
+                                plant->second.lastRunTime, m_procTime);
+                continue;
+            }
+
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessPlants() - last run time %lli.", plant->second.lastRunTime);
+
+            // second, check processing times for active plants
+            delta = (m_procTime - plant->second.lastRunTime)  / EvE::Time::Second;
+            divisor = (plant->second.cycleTime / EvE::Time::Second);
+            if (divisor > 0) {
+                if (delta < divisor) {
+                    if (plant->second.state < PI::Pin::State::Active) {
+                        delta = divisor;
+                        plant->second.lastRunTime -= plant->second.cycleTime;
                     } else {
-                        // this required material was not found in plant 'storage' (contents)
-                        // set hasReceivedInputs=false to break out of this loop.  no reason to continue at this point.
-                        plant.second.hasReceivedInputs = false;
-                        plant.second.receivedInputsLastCycle = false;
+                        if (is_log_enabled(COLONY__DEBUG))
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - cycle incomplete (%i < %i).", delta, divisor);
                         continue;
                     }
                 }
-                // at this point, all required mats were found.
-                // set hasReceivedInputs=false to break out of this loop  and receivedInputsLastCycle=true to process cycle times on following check
-                plant.second.hasReceivedInputs = false;
-                plant.second.receivedInputsLastCycle = true;
+            } else {
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - divisor < 0 (%i).", divisor);
+                continue;
+            }
+            cycles = delta / divisor;
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessPlants() - current cycle count is %i (%i / %i).", \
+                            cycles, delta, divisor);
+
+            if (cycles < 1) {
+                _log(COLONY__WARNING, "Colony::ProcessPlants() - Cycle count < 1");
+                continue;
+            }
+            // basic data checks done.
+
+            // third, check supply routes for available matls and xfer to this plant
+            _log(COLONY__INFO, "Colony::ProcessPlants() - Begin Input Route loop for Plant %u.", plant->first);
+            auto destRouteItr = m_destRoutes.equal_range(plant->first);
+            for (auto it = destRouteItr.first; it != destRouteItr.second; ++it) {
+                // we are ONLY checking routes TO this plant.
+                //if (it->second.destPinID != plant->first)
+                //    continue;
+
+                // verify plant needs this input....this may be overkill...
+                if (plant->second.data.inputs.find(it->second.commodityTypeID) == plant->second.data.inputs.end()) {
+                    _log(COLONY__ERROR, "Colony::ProcessPlants() - Routed Commodity %s (%u) not found in input map",\
+                            sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
+                    plant->second.lastRunTime = m_procTime;
+                    plant->second.hasReceivedInputs = false;
+                    plant->second.receivedInputsLastCycle = false;
+                    updateTimes = true;
+                    // remove route here
+                    continue;
+                }
+                // this route supplies this plant with input matls.
+                srcPin = ccPin->pins.find(it->second.srcPinID);
+                if (srcPin == ccPin->pins.end()) {
+                    _log(COLONY__ERROR, "Colony::ProcessPlants() - Source %u not found in ccPin.pins map", it->second.srcPinID);
+                    plant->second.lastRunTime = m_procTime;
+                    plant->second.hasReceivedInputs = false;
+                    plant->second.receivedInputsLastCycle = false;
+                    updateTimes = true;
+                    continue;
+                }
+                // verify supplier is NOT a plant or ECU here, as this was done in previous cycle checks.
+                if (!srcPin->second.isStorage)
+                    continue;
+                // source is storage.  continue with processing
+                itemItr = srcPin->second.contents.find(it->second.commodityTypeID);
+                if (itemItr == srcPin->second.contents.end()) {
+                    if (is_log_enabled(COLONY__DEBUG))
+                        _log(COLONY__DEBUG, "Colony::ProcessPlants() - Routed Commodity %s (%u) not found in Source Inventory.", \
+                                sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
+                    continue;// this material wasnt found in source container....cant move what we aint got..
+                }
+
+                // remove contents from storage pin
+                amount = it->second.commodityQuantity * cycles;
+                if (itemItr->second > amount)
+                    itemItr->second -= amount;
+                else {
+                    amount = itemItr->second;
+                    srcPin->second.contents.erase(itemItr);
+                }
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Removed %i %s (%u) from src %u.", \
+                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, it->second.srcPinID);
+
+                // update contents of storage pin
+                srcPin->second.update = true;
+
+                // add contents to this plant's pin
+                destPin = ccPin->pins.find(plant->first);
+                if (destPin == ccPin->pins.end())
+                    continue;
+                itemItr = destPin->second.contents.find(it->second.commodityTypeID);
+                if (itemItr != destPin->second.contents.end())
+                    itemItr->second += amount;
+                else
+                    destPin->second.contents[it->second.commodityTypeID] = amount;
+                destPin->second.update = true;
+
+                // we have received a material from this route. enable check for all required materials in this Schematic for this plant
+                plant->second.hasReceivedInputs = true;
+
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %i %s (%u) to Plant Inventory.", \
+                            amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID);
+            }
+            // current plant has received product as defined by routing info
+
+            // fourth, process input material requirements
+            cycles2 = 0;
+            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Input Check loop for Plant %u.", plant->second.hasReceivedInputs ? "Begin" : "Skipping", plant->first);
+            if (is_log_enabled(COLONY__DEBUG))
+                _log(COLONY__DEBUG, "Colony::ProcessPlants() - Plant %u processing inputs.", plant->first);
+
+            destPin = ccPin->pins.find(plant->first);
+            if (destPin == ccPin->pins.end()) {
+                _log(COLONY__ERROR, "Colony::ProcessPlants() - Dest %u not found in ccPin.pins map", plant->first);
+                continue;
             }
 
-            //  fourth - process cycle - see notes
-            if (plant.second.receivedInputsLastCycle) {
-                /* plant has received all required mats for a production run.
+            plant->second.receivedInputsLastCycle = false;
+
+            if (plant->second.hasReceivedInputs) {
+                /*  if plant has received mats from routing (above), then check here for required qtys per Schematic.
+                 *     input data is found in plant->second.data.inputs map (std::map<uint16, uint16> {typeID, qty})
+                 *
+                 *  if required mats are not present, set receivedInputsLastCycle=false, which will deny processing
+                 *      and subsquent routing for this plant.
+                 *
+                 *  if all required qtys have been received, procede with the following:
+                 *   - remove mats from pin.contents
+                 *   - set receivedInputsLastCycle=true
+                 */
+                if (plant->second.data.inputs.empty()) {
+                    _log(COLONY__WARNING, "Colony::ProcessPlants() - Empty input map");
+                    plant->second.hasReceivedInputs = false;
+                    plant->second.lastRunTime = m_procTime;
+                    updateTimes = true;
+                    continue;
+                }
+                uint16 tempCycles = cycles;
+                for (auto mats : plant->second.data.inputs) {
+                    // loop thru Schematic inputs to verify all required mats are present
+                    itemItr = destPin->second.contents.find(mats.first);
+                    if (itemItr == destPin->second.contents.end()) {
+                        if (is_log_enabled(COLONY__DEBUG))
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - %s (%u) not found in Plant Inventory.", \
+                                sPIDataMgr.GetProductName(mats.first), mats.first);
+                        // this required material was not found in plant inventory.  skip further processing
+                        plant->second.state = PI::Pin::State::Idle;
+                        plant->second.lastRunTime = m_procTime;
+                        updateTimes = true;
+                        continue;
+                    }
+                    if (itemItr->second >= mats.second * cycles) {
+                        itemItr->second -= mats.second * cycles;
+                        plant->second.receivedInputsLastCycle = true;
+                    } else {
+                        // this required material was not sufficient quantity for (num cycles) runs.
+                        // determine how many cycles we can run with current material quantity
+                        if (is_log_enabled(COLONY__DEBUG))
+                            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Not enough %s (%u) for %i cycles.  Need %u, Have %u", \
+                                    sPIDataMgr.GetProductName(mats.first), mats.first, cycles, mats.second * cycles, itemItr->second);
+                        cycles2 = itemItr->second / mats.second;
+                        if (cycles2 > 0) {
+                            itemItr->second -= mats.second * cycles2;
+                            plant->second.receivedInputsLastCycle = true;
+                            if (is_log_enabled(COLONY__DEBUG))
+                                _log(COLONY__DEBUG, "Colony::ProcessPlants() - Have enough material for %i cycles.", cycles2);
+                        } else {
+                            plant->second.lastRunTime = m_procTime;
+                            plant->second.state = PI::Pin::State::Idle;
+                            updateTimes = true;
+                            continue;
+                        }
+                    }
+                    // set temp variable with mininmum cycle count
+                    if (tempCycles > cycles2)
+                        tempCycles = cycles2;
+                    cycles2 = 0;
+                }
+                // we have enough mat'l for at least on process.  set cycles based on material in inventory.
+                if (cycles > tempCycles)
+                    cycles = tempCycles;    // temp variable not longer needed at this point.
+            } else {
+                plant->second.lastRunTime = m_procTime;
+                updateTimes = true;
+            }
+
+            // at this point, we have looped thru all required mats and set plant variables accordingly.
+
+            // fifth, process manufacturing cycle
+            _log(COLONY__INFO, "Colony::ProcessPlants() - %s manufacturing loop for Plant %u.", plant->second.receivedInputsLastCycle ? "Begin" : "Skipping", plant->first);
+            if (plant->second.receivedInputsLastCycle and (cycles > 0)) {
+                /* plant has received all required mats for production.
                  * set timers for runtimes and state to active
                  * this will allow routing (and subsquent process checks) on next loop, as defined in beginning of this loop
                  */
-                plant.second.state = PI::Pin::State::Active;
-                plant.second.receivedInputsLastCycle = false;
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Updating timers for %i cycles using current inventory.", cycles);
 
-                // update lastRunTime to expire time of this cycle
-                plant.second.lastRunTime = plant.second.expiryTime;
-                // set expiryTime to previous runtime plus cycleTime to simulate end of next cycle
-                plant.second.expiryTime += plant.second.cycleTime;
+                plant->second.state = PI::Pin::State::Active;
                 updateTimes = true;
+
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessPlants() - Received Inputs.  timeNow %lli, lastRunTime %lli", \
+                                GetFileTimeNow(), plant->second.lastRunTime);
+            } else
+                cycles = 0;
+
+            // sixth, manufacturing complete.  move finished product per route
+            _log(COLONY__INFO, "Colony::ProcessPlants() - %s Output Routing loop for Plant %u.", cycles > 0 ? "Begin" : "Skipping", plant->first);
+            if (cycles) {
+                // at this point, *SOMETHING* has changed in this plant, so sent it to update
+                destPin->second.update = true;
+                auto srcRouteItr = m_srcRoutes.equal_range(plant->first);
+                for (auto it = srcRouteItr.first; it != srcRouteItr.second; ++it) {
+                    // verify this route begins at this plant.  should be only ONE route here for this output
+                    //if (route.second.srcPinID != plant->first)
+                    //    continue;
+                    // get destination pin and update qty there for this round
+                    destPin= ccPin->pins.find(it->second.destPinID);
+                    if (destPin == ccPin->pins.end()) {
+                        _log(COLONY__ERROR, "Colony::ProcessPlants() - Dest %u not found in ccPin.pins map", it->second.destPinID);
+                        continue;
+                    }
+                    // contents are stored in each pin.  PI_Pin.contents(std::map<uint16, uint32> typeID, qty)
+                    // we have plant cycles for this loop, so multiply output by cycles to get a total to simulate the "active" plant
+                    amount = it->second.commodityQuantity * cycles;
+                    itemItr = destPin->second.contents.find(it->second.commodityTypeID);
+                    if (itemItr != destPin->second.contents.end())
+                        itemItr->second += amount;
+                    else
+                        destPin->second.contents[it->second.commodityTypeID] = amount;
+                    if (is_log_enabled(COLONY__DEBUG))
+                        _log(COLONY__DEBUG, "Colony::ProcessPlants() - Added %u %s (%u) to Dest %u.", \
+                                amount, sPIDataMgr.GetProductName(it->second.commodityTypeID), it->second.commodityTypeID, it->second.destPinID);
+
+                    if (destPin->second.isStorage) {
+                        /** @todo  set/implement storage capy for pin - PI_Pin.capacity, PI_Pin.quantity */
+                        //  if dest cant hold entire xfer qty, drop remainder in current pin contents (as opposed to loss)
+                    } else if (destPin->second.isProcess) {
+                        // find dest's plant data
+                        //  the destination plant will have a P level of curCycle+1, and will process on next iteration
+                        destPlant = ccPin->plants.find(destPin->first);
+                        if (destPlant == ccPin->plants.end()) {
+                            _log(COLONY__ERROR, "Colony::ProcessPlants() - Dest %u not found in ccPin.plants map", destPin->first);
+                            continue;
+                        }
+                        //and set hasReceivedInputs to true for subsquent processing
+                        destPlant->second.hasReceivedInputs = true;
+                    }
+
+                    destPin->second.update = true;
+                    plant->second.hasReceivedInputs = false;
+                }
+                // update last run time based on current process cycles
+                plant->second.lastRunTime += plant->second.cycleTime * cycles;
             } else {
-                plant.second.state = PI::Pin::State::Idle;
-                // lastRunTime remains, as it doesnt change when plant is idle
-                plant.second.expiryTime = 0;  // no run to process means no expiryTime either.
-                updateTimes = true;
+                plant->second.state = PI::Pin::State::Idle;
+                plant->second.lastRunTime = m_procTime;
+                plant->second.hasReceivedInputs = false;
+                plant->second.receivedInputsLastCycle = false;
             }
         }
+        if (is_log_enabled(COLONY__DEBUG))
+            _log(COLONY__DEBUG, "Colony::ProcessPlants() - Process loop complete for pLevel %u.", curCycle);
         ++curCycle;
     }
 }
-
-uint32 Colony::GetHeadType(uint16 ecuTypeID, uint16 programType)
-{
-    switch (ecuTypeID) {
-        case 2848: {  //Barren ECU
-            switch (programType) {
-                case 2268: return 2409; //Barren Aqueous Liquid Extractor
-                case 2267: return 2430; //Barren Base Metals Extractor
-                case 2270: return 2435; //Barren Noble Metals Extractor
-                case 2073: return 2449; //Barren Microorganisms Extractor
-                case 2288: return 2459; //Barren Carbon Compounds Extractor
-            }
-        } break;
-        case 3060: {  //Gas ECU
-            switch (programType) {
-                case 2268: return 2416; //Gas Aqueous Liquid Extractor
-                case 2309: return 2424; //Gas Ionic Solutions Extractor
-                case 2310: return 2426; //Gas Noble Gas Extractor
-                case 2311: return 2427; //Gas Reactive Gas Extractor
-                case 2267: return 2433; //Gas Base Metals Extractor
-            }
-        } break;
-        case 3061: {  //Ice ECU
-            switch (programType) {
-                case 2268: return 2415; //Ice Aqueous Liquid Extractor
-                case 2310: return 2423; //Ice Noble Gas Extractor
-                case 2073: return 2432; //Ice Microorganisms Extractor
-                case 2286: return 2438; //Ice Planktic Colonies Extractor
-                case 2272: return 2441; //Ice Heavy Metals Extractor
-            }
-        } break;
-        case 3062: {  //Lava ECU
-            switch (programType) {
-                case 2308: return 2418; //Lava Suspended Plasma Extractor
-                case 2267: return 2428; //Lava Base Metals Extractor
-                case 2272: return 2439; //Lava Heavy Metals Extractor
-                case 2306: return 2442; //Lava Non-CS Crystals Extractor
-                case 2307: return 2448; //Lava Felsic Magma Extractor
-            }
-        } break;
-        case 3063: {  //Oceanic ECU
-            switch (programType) {
-                case 2268: return 2414; //Oceanic Aqueous Liquid Extractor
-                case 2287: return 2458; //Oceanic Complex Organisms Extractor
-                case 2286: return 2452; //Oceanic Planktic Colonies Extractor
-                case 2288: return 2461; //Oceanic Carbon Compounds Extractor
-                case 2073: return 2451; //Oceanic Microorganisms Extractor
-            }
-        } break;
-        case 3064: {  //Plasma ECU
-            switch (programType) {
-                case 2308: return 2417; //Plasma Suspended Plasma Extractor
-                case 2267: return 2429; //Plasma Base Metals Extractor
-                case 2270: return 2434; //Plasma Noble Metals Extractor
-                case 2272: return 2440; //Plasma Heavy Metals Extractor
-                case 2306: return 2443; //Plasma Non-CS Crystals Extractor
-            }
-        } break;
-        case 3067: {  //Storm ECU
-            switch (programType) {
-                case 2268: return 2413; //Storm Aqueous Liquid Extractor
-                case 2308: return 2419; //Storm Suspended Plasma Extractor
-                case 2309: return 2422; //Storm Ionic Solutions Extractor
-                case 2310: return 2425; //Storm Noble Gas Extractor
-                case 2267: return 2431; //Storm Base Metals Extractor
-            }
-        } break;
-        case 3068: {  //Temperate ECU
-            switch (programType) {
-                case 2268: return 2412; //Temperate Aqueous Liquid Extractor
-                case 2073: return 2450; //Temperate Microorganisms Extractor
-                case 2287: return 2453; //Temperate Complex Organisms Extractor
-                case 2288: return 2460; //Temperate Carbon Compounds Extractor
-                case 2305: return 2462; //Temperate Autotrophs Extractor
-            }
-        } break;
-    }
-    _log(PLANET__ERROR, "Colony::GetHeadType() - Extractor typeID not found using ECU typeID: %u and Resource typeID: %u", ecuTypeID, programType);
-    return 2412; //Temperate Aqueous Liquid Extractor  <<< as good a default as any...
-}
-
-uint8 Colony::GetProductLevel(uint16 typeID)
-{
-    switch (typeID) {
-    // P0 - Raw Materials
-        case  2267: //Base Metals
-        case  2270: //Noble Metals
-        case  2272: //Heavy Metals
-        case  2306: //Non-CS Crystals
-        case  2307: //Felsic Magma
-        case  2268: //Aqueous Liquids
-        case  2308: //Suspended Plasma
-        case  2309: //Ionic Solutions
-        case  2310: //Noble Gas
-        case  2311: //Reactive Gas
-        case  2073: //Microorganisms
-        case  2286: //Planktic Colonies
-        case  2287: //Complex Organisms
-        case  2288: //Carbon Compounds
-        case  2305: //Autotrophs
-            return 0;
-
-    // P1 - Basic Commodities
-        case  2389: //Plasmoids
-        case  2390: //Electrolytes
-        case  2392: //Oxidizing Compound
-        case  2393: //Bacteria
-        case  2395: //Proteins
-        case  2396: //Biofuels
-        case  2397: //Industrial Fibers
-        case  2398: //Reactive Metals
-        case  2399: //Precious Metals
-        case  2400: //Toxic Metals
-        case  2401: //Chiral Structures
-        case  3779: //Biomass
-        case  9828: //Silicon
-        case  3683: //Oxygen
-        case  3645: //Water
-            return 1;
-
-    // P2 - Refined Commodities
-        case    44: //Enriched Uranium
-        case  2312: //Supertensile Plastics
-        case  2317: //Oxides
-        case  2319: //Test Cultures
-        case  2321: //Polyaramids
-        case  2327: //Microfiber Shielding
-        case  2328: //Water-Cooled CPU
-        case  2329: //Biocells
-        case  2463: //Nanites
-        case  3689: //Mechanical Parts
-        case  3691: //Synthetic Oil
-        case  3693: //Fertilizer
-        case  3695: //Polytextiles
-        case  3697: //Silicate Glass
-        case  3725: //Livestock
-        case  3775: //Viral Agent
-        case  3828: //Construction Blocks
-        case  9830: //Rocket Fuel
-        case  9832: //Coolant
-        case  9836: //Consumer Electronics
-        case  9838: //Superconductors
-        case  9840: //Transmitter
-        case  9842: //Miniature Electronics
-        case 15317: //Genetically Enhanced Livestock
-            return 2;
-
-    // P3 - Specialized Commodities
-        case  2344: //Condensates
-        case  2345: //Camera Drones
-        case  2346: //Synthetic Synapses
-        case  2348: //Gel-Matrix Biopaste
-        case  2349: //Supercomputers
-        case  2351: //Smartfab Units
-        case  2352: //Nuclear Reactors
-        case  2354: //Neocoms
-        case  2358: //Biotech Research Reports
-        case  2360: //Industrial Explosives
-        case  2361: //Hermetic Membranes
-        case  2366: //Hazmat Detection Systems
-        case  2367: //Cryoprotectant Solution
-        case  9834: //Guidance Systems
-        case  9846: //Planetary Vehicles
-        case  9848: //Robotics
-        case 12836: //Transcranial Microcontrollers
-        case 17136: //Ukomi Superconductors
-        case 17392: //Data Chips
-        case 17898: //High-Tech Transmitters
-        case 28974: //Vaccines
-            return 3;
-
-    // P4 - Advanced Commodities
-        case  2867: //Broadcast Node
-        case  2868: //Integrity Response Drones
-        case  2869: //Nano-Factory
-        case  2870: //Organic Mortar Applicators
-        case  2871: //Recursive Computing Module
-        case  2872: //Self-Harmonizing Power Core
-        case  2875: //Sterile Conduits
-        case  2876: //Wetware Mainframe
-            return 4;
-    }
-    _log(PLANET__ERROR, "Colony::GetProductLevel() - Commodity product level not found for typeID: %u", typeID);
-    return 0;
-}
-
-
-/*
- *
-    PlanetaryImportTax = 96,     // * Planet ID
-    PlanetaryExportTax = 97,     // * Planet ID
-    PlanetaryConstruction = 98,
-    AttrImportTax = 1638,
-    AttrExportTax = 1639,
-    AttrImportTaxMultiplier = 1640,
-    AttrExportTaxMultiplier = 1641,
-    AttrnpcCustomsOfficeTaxRate = 1780,
-    AttrdefaultCustomsOfficeTaxRate = 1781,
-
-Command Center Properties
-Level    Capy    CPU        PG           Upgrade Cost
-0       500 m3  1,675 tf    6,000 MW       0  ISK
-1       500 m3  7,057 tf    9,000 MW     580k ISK
-2       500 m3  12,136 tf   12,000 MW    930k ISK
-3       500 m3  17,215 tf   15,000 MW    1.2m ISK
-4       500 m3  21,315 tf   17,000 MW    1.5m ISK
-5       500 m3  25,415 tf   19,000 MW    2.1m ISK
-
-Structure Properties
-Name                        CPU         Power       Cost
-Extractor Control Unit      400 tf      2600 MW      45m ISK
-Extractor Head              110 tf      550 MW        0  ISK
-Basic Industry Facility     200 tf      800 MW       75m ISK
-Advanced Industry Facility  500 tf      700 MW      250m ISK
-High-Tech Industry Facility 1100 tf     400 MW      525m ISK
-Storage Facility            500 tf      700 MW      250m ISK
-Space Port                  3600 tf     700 MW      900m ISK
-
-
- *
- * Link Requirements by Distance
- Distance   CPU         Power
-2.5 km      16 tf       11 MW
-10 km       18 tf       12 MW
-20 km       20 tf       14 MW
-50 km       26 tf       18 MW
-100 km      36 tf       26 MW
-200 km      56 tf       41 MW
-500 km      116 tf      86 MW
-1000 km     215 tf      160 MW
-2000 km     416 tf      311 MW
-5000 km     1016 tf     761 MW
-40000 km    8016 tf     6001 MW
-
-
-Link Upgrade Costs
-
-Data on relative costs of upgrading the link capacity (uses a link that is 500km as a base):
-Level   Capacity    CPU         Power
-0       250 m3      116 tf      86 MW
-1       500 m3      280 tf      183 MW
-2       1000 m3     481 tf      291 MW
-3       2000 m3     713 tf      407 MW
-4       4000 m3     968 tf      528 MW
-5       8000 m3     1245 tf     655 MW
-6       16 km3      1542 tf     786 MW
-7       32 km3      1855 tf     921 MW
-8       64 km3      2185 tf     1059 MW
-9       128 km3     2530 tf     1200 MW
-10      256 km3     2889 tf     1344 MW
-
-*/

@@ -9,10 +9,14 @@
 
 #ifndef EVE_PLANET_H
 #define EVE_PLANET_H
+#include <map>
+
+#include "eve-common.h"
 
 namespace PI {
     namespace Command {
         enum  {
+            Invalid                 = 0,
             CreatePin               = 1,
             RemovePin               = 2,
             CreateLink              = 3,
@@ -33,10 +37,10 @@ namespace PI {
     namespace Pin {
         namespace State {
             enum {
-                Edit   = -2,
-                Disabled   = -1,
-                Idle       =  0,
-                Active     =  1
+                Edit        = -2,
+                Disabled    = -1,
+                Idle        =  0,
+                Active      =  1
             };
         }
 
@@ -67,27 +71,42 @@ namespace PI {
     //piLaunchOrbitDecayTime = DAY * 5
     namespace Cargo {
         enum {
-            InOrbit = 0,
-            Deployed = 1,
-            Claimed = 2,
-            Deleted = 3
+            InOrbit     = 0,
+            Deployed    = 1,
+            Claimed     = 2,
+            Deleted     = 3
         };
     }
+
+}
+
+namespace Launch {
+    struct Data {
+        uint8 status;
+        uint32 launchID;
+        uint32 itemID;
+        uint32 solarSystemID;
+        uint32 planetID;
+        int64 launchTime;
+        double x;
+        double y;
+        double z;
+    };
 }
 
 /** @todo these need their own namespace */
 /* POD structure entries for PI data */
 struct PlanetResourceData {
+    uint16 type_1;
+    uint16 type_2;
+    uint16 type_3;
+    uint16 type_4;
+    uint16 type_5;
     float dist_1;
     float dist_2;
     float dist_3;
     float dist_4;
     float dist_5;
-    int32 type_1;
-    int32 type_2;
-    int32 type_3;
-    int32 type_4;
-    int32 type_5;
     std::string buffer_1;
     std::string buffer_2;
     std::string buffer_3;
@@ -106,10 +125,10 @@ struct PI_Link {
 struct PI_Route {
     int8 state;
     int8 priority;
-    uint32 srcPinID;
-    uint32 destPinID;
     uint16 commodityTypeID;
     uint16 commodityQuantity;
+    uint32 srcPinID;
+    uint32 destPinID;
     std::list<uint32> path;
 };
 
@@ -121,82 +140,96 @@ struct PI_Heads {
 };
 
 struct PI_Schematic {
-    uint8 outputQty;
+    uint16 outputQty;
     uint16 outputType;
-    uint32 cycleTime;
+    uint16 cycleTime;                   // in seconds
 
     // typeID, qty
     std::map<uint16, uint16> inputs;
 };
 
 struct PI_Plant {
-    // specifically for processing plants. this is not saved in db
+    // specifically for processing plants. this is not saved in db as a group, but is in pinData
+    bool hasReceivedInputs :1;          // plant has received material from upstream process.  this enables check to verify type/qty for processing
+    bool receivedInputsLastCycle :1;    // plant has received all required mat'l to make a production run.
+
+    int8 state;
+    uint8 pLevel;                       // production level of this plant
+    uint8 schematicID;
+    uint16 qtyPerCycle;
+    int64 cycleTime;                    // in filetime
+    //int64 expiryTime;                   // in filetime
+    int64 installTime;                  // in filetime
+    int64 lastRunTime;                  // in filetime
+
     PI_Schematic data;
-    int8 state;
-    uint8 order;
-    uint16 schematicID;
-    uint16 qtyPerCycle;
-    int64 cycleTime;
-    int64 expiryTime;
-    int64 installTime;
-    int64 lastRunTime;
-
-    bool hasReceivedInputs;
-    bool receivedInputsLastCycle;
 };
 
-/* optimize this after everything is working!!  */
-/** @todo these need c'tors */
-class PI_Pin {
-public:
-    bool isCommandCenter : 1;
-    bool isStorage : 1;
-    bool isConsumer : 1;
-    bool isLaunchable : 1;
-    bool isProcess : 1;
-    bool isBase : 1;
-    bool isECU : 1;
+struct PI_Pin {
+    bool update :1;                     // specifically for updating contents in db. this is a runtime value.
 
-    // common for all pins
-    int8 state;
-    uint16 level;
-    uint16 typeID;
-    uint32 ownerID;
-    int64 lastRunTime;
+    bool isECU :1;                      // common for all pins
+    bool isBase :1;                     // common for all pins
+    bool isStorage :1;                  // common for all pins
+    bool isProcess :1;                  // common for all pins
+    bool isConsumer :1;                 // common for all pins
+    bool isLaunchable :1;               // common for all pins
+    bool isCommandCenter :1;            // common for all pins
 
-    double latitude;
-    double longitude;
+    // these two are checked in client for the pin.CanActivate() method.  it will return true if either are true.  that is the only reference i can find.
+    bool hasReceivedInputs :1;          // Process Only
+    bool receivedInputsLastCycle :1;    // Process Only
 
-    // Command/Spaceport
-    int64 lastLaunchTime;
+    int8 state;                         // common for all pins
+    uint16 level;                       // common for all pins
+    uint16 typeID;                      // common for all pins
+    uint16 schematicID;                 // used in ecu as extractor head typeID
+    uint16 programType;                 // used in extractors as extracted resource typeID
+    uint32 qtyPerCycle;                 // Process and ECU
+    uint32 ownerID;                     // common for all pins
+    int64 lastRunTime;                  // common for all pins - copy of launchTime for Spaceports
+    int64 cycleTime;                    // Process and ECU      // saved as filetime
+    int64 expiryTime;                   // ECU Only             // saved as filetime
+    int64 installTime;                  // Process and ECU processing time, Pin Creation Time for others      // saved as filetime
+    int64 lastLaunchTime;               // Command Center and Spaceports  // saved as filetime
 
-    //ExtractorControlUnit
-    std::map<uint16, PI_Heads> heads;
-    float headRadius;
+    float latitude;                     // planetary location common for all pins
+    float longitude;                    // planetary location common for all pins
 
-    // Process and ECU
-    bool hasReceivedInputs : 1;
-    bool receivedInputsLastCycle : 1;
-    uint16 schematicID;   // used in ecu as extractor head typeID
-    uint16 programType;      // used in extractors as extracted resource typeID
-    uint16 qtyPerCycle;
-    int64 cycleTime;
-    int64 expiryTime;
-    int64 installTime;
+    float capacity;                     // pin volume cap in m3.  - this is not implemented yet
+    float quantity;                     // volume of current contents in m3.  - this is not implemented yet
+    float headRadius;                   // ECU Only
 
-    // Storage    typeID, qty
-    std::map<uint16, uint32> contents;
-
-    // specifically for updating contents. this is not saved in db
-    bool update : 1;
-    float capacity;  // this is not implemented yet
+    std::map<uint16, PI_Heads> heads;   // ECU Only
+    std::map<uint16, uint32> contents;  // Storage    <typeID, qty>
 };
+
 
 class PI_CCPin {
 public:
+
+    PI_CCPin()                                          { Init(); }
+    ~PI_CCPin()                                         { /* do nothing here */ }
+
+    void Clear()
+    {
+        pins.clear();
+        links.clear();
+        plants.clear();
+        routes.clear();
+    }
+    void Init()
+    {
+        Clear();
+        level = 0;
+        ccPinID = 0;
+    }
+
+    uint8 GetLevel()                                    { return level; }
+    uint32 GetPinID()                                   { return ccPinID; }
+
     uint8 level;
     uint32 ccPinID;
-    int64 currentSimTime;
 
     // pinID, pinData
     std::map<uint32, PI_Pin> pins;
@@ -281,6 +314,14 @@ enum PlanetEvents {
      COMMAND_INSTALLPROGRAM: ['typeID', 'headRadius']}
 */
 /*
+            info.proximity = const.planetResourceProximityPlanet
+            for i, scanRange in enumerate(const.planetResourceScanningRanges):
+                if scanRange >= dist:
+                    info.proximity = i
+        minBand, maxBand = const.planetResourceProximityLimits[info.proximity]
+        info.newBand = min(maxBand, minBand + info.planetology + info.advancedPlanetology * 2)
+        requiredSkill = 5 - info.proximity
+
  * planetResourceScanDistance = 1000000000
  * planetResourceProximityDistant = 0
  * planetResourceProximityRegion = 1

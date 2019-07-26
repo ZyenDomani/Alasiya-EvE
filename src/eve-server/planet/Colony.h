@@ -33,6 +33,8 @@
 
 class PlanetSE;
 class SystemEntity;
+class PlanetMgr;
+
 class Colony {
 public:
     Colony(PyServiceMgr* mgr, Client* pClient, SystemEntity* pSE);
@@ -44,7 +46,7 @@ public:
     void Save();
     void Update(bool updateTimes=false);
     void Shutdown();
-    void UpdatePlants();  // for saving current data to pins
+    void UpdatePlantPins(uint32 pinID=0);  // for saving current data from runtime plantPin to saved colonyPin
     void AbandonColony();
 
     void Process();
@@ -67,16 +69,14 @@ public:
     void MoveExtractorHead(uint32 ecuID, uint16 headID, double latitude, double longitude);
     void KillExtractorHead(uint32 ecuID, uint16 headID);
 
-    void InstallProgram(uint32 ecuID, uint16 typeID, float headRadius);
-    void SetSchematic(uint32 pinID, uint16 schematicID);
-    void SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime);
+    void InstallProgram(uint32 ecuID, uint16 typeID, float headRadius, PlanetMgr* pPMgr);
+    void SetSchematic(uint32 pinID, uint8 schematicID=0);
+    void SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, float headRadius, float cycleTime, uint32 qtyPerCycle);
 
-    void LaunchCommodities(uint32 pinID, std::map<uint16, uint32>& items);
+    PyRep* LaunchCommodities(uint32 pinID, std::map< uint16, uint32 >& items);
+    void PlanetXfer(uint32 spaceportID, std::map< uint32, uint16 > importItems, std::map< uint32, uint16 > exportItems, double taxRate);
 
-    void PrioritizeRoute();
-
-    uint8 GetProductLevel(uint16 typeID);
-    uint32 GetHeadType(uint16 ecuTypeID, uint16 resTypeID);
+    void PrioritizeRoute(uint16 routeID, uint8 priority);
 
     uint32 GetOwner();
 
@@ -89,7 +89,7 @@ public:
     bool HasColony()                                    { return (ccPin->ccPinID ? true : false); }
 
     int8 GetLevel()                                     { return ccPin->level; }
-    int64 GetSimTime()                                 { return ccPin->currentSimTime; }
+    int64 GetSimTime()                                  { return m_procTime; }
 
 private:
     PyServiceMgr* m_svcMgr;
@@ -97,11 +97,14 @@ private:
     PI_CCPin* ccPin;
     Client* m_client;
 
+    Timer m_colonyTimer;
+
     PlanetDB m_db;
 
     bool m_active;
     bool m_loaded;
     bool m_newHead;
+    bool m_toUpdate;
 
     uint8 m_pLevel;
     uint16 m_pg;
@@ -112,104 +115,79 @@ private:
 
     std::vector<uint32> tempECUs;
     std::map<uint8, uint32> tempPinIDs;
+    // pLevel, pinID
+    std::multimap<uint8, uint32> m_plantMap;        // map plant's P level to pinID.  to be used during Update()
+    // srcPinID, routeData
+    std::multimap<uint32, PI_Route> m_srcRoutes;     // map sourcePin to routeData
+    // destPinID, routeData
+    std::multimap<uint32, PI_Route> m_destRoutes;     // map destPin to routeData
 };
 
-/* P0 - Raw Materials
- *  2267    Base Metals
- *  2270    Noble Metals
- *  2272    Heavy Metals
- *  2306    Non-CS Crystals
- *  2307    Felsic Magma
- *  2268    Aqueous Liquids
- *  2308    Suspended Plasma
- *  2309    Ionic Solutions
- *  2310    Noble Gas
- *  2311    Reactive Gas
- *  2073    Microorganisms
- *  2286    Planktic Colonies
- *  2287    Complex Organisms
- *  2288    Carbon Compounds
- *  2305    Autotrophs
+/*
  *
- * P1 - Basic Commodities
- *  2389    Plasmoids
- *  2390    Electrolytes
- *  2392    Oxidizing Compound
- *  2393    Bacteria
- *  2395    Proteins
- *  2396    Biofuels
- *  2397    Industrial Fibers
- *  2398    Reactive Metals
- *  2399    Precious Metals
- *  2400    Toxic Metals
- *  2401    Chiral Structures
- *  3779    Biomass
- *  9828    Silicon
- *  3683    Oxygen
- *  3645    Water
+ *  PlanetaryImportTax = 96,     // * Planet ID
+ *  PlanetaryExportTax = 97,     // * Planet ID
+ *  PlanetaryConstruction = 98,
+ *  AttrImportTax = 1638,
+ *  AttrExportTax = 1639,
+ *  AttrImportTaxMultiplier = 1640,
+ *  AttrExportTaxMultiplier = 1641,
+ *  AttrnpcCustomsOfficeTaxRate = 1780,
+ *  AttrdefaultCustomsOfficeTaxRate = 1781,
  *
- * P2 - Refined Commodities
- *    44    Enriched Uranium
- *  2312    Supertensile Plastics
- *  2317    Oxides
- *  2319    Test Cultures
- *  2321    Polyaramids
- *  2327    Microfiber Shielding
- *  2328    Water-Cooled CPU
- *  2329    Biocells
- *  2463    Nanites
- *  3689    Mechanical Parts
- *  3691    Synthetic Oil
- *  3693    Fertilizer
- *  3695    Polytextiles
- *  3697    Silicate Glass
- *  3725    Livestock
- *  3775    Viral Agent
- *  3828    Construction Blocks
- *  9830    Rocket Fuel
- *  9832    Coolant
- *  9836    Consumer Electronics
- *  9838    Superconductors
- *  9840    Transmitter
- *  9842    Miniature Electronics
- * 15317    Genetically Enhanced Livestock
- *
- * P3 - Specialized Commodities
- *  2344    Condensates
- *  2345    Camera Drones
- *  2346    Synthetic Synapses
- *  2348    Gel-Matrix Biopaste
- *  2349    Supercomputers
- *  2351    Smartfab Units
- *  2352    Nuclear Reactors
- *  2354    Neocoms
- *  2358    Biotech Research Reports
- *  2360    Industrial Explosives
- *  2361    Hermetic Membranes
- *  2366    Hazmat Detection Systems
- *  2367    Cryoprotectant Solution
- *  9834    Guidance Systems
- *  9846    Planetary Vehicles
- *  9848    Robotics
- * 12836    Transcranial Microcontrollers
- * 17136    Ukomi Superconductors
- * 17392    Data Chips
- * 17898    High-Tech Transmitters
- * 28974    Vaccines
- *
- *
- * P4 - Advanced Commodities
- *  2867    Broadcast Node
- *  2868    Integrity Response Drones
- *  2869    Nano-Factory
- *  2870    Organic Mortar Applicators
- *  2871    Recursive Computing Module
- *  2872    Self-Harmonizing Power Core
- *  2875    Sterile Conduits
- *  2876    Wetware Mainframe
- *
- */
+ Command Center Properties
+ Level    Capy    CPU        PG           Upgrade Cost
+ 0       500 m3  1,675 tf    6,000 MW       0  ISK
+ 1       500 m3  7,057 tf    9,000 MW     580k ISK
+ 2       500 m3  12,136 tf   12,000 MW    930k ISK
+ 3       500 m3  17,215 tf   15,000 MW    1.2m ISK
+ 4       500 m3  21,315 tf   17,000 MW    1.5m ISK
+ 5       500 m3  25,415 tf   19,000 MW    2.1m ISK
 
+ Structure Properties
+ Name                        CPU         Power       Cost
+ Extractor Control Unit      400 tf      2600 MW      45m ISK
+ Extractor Head              110 tf      550 MW        0  ISK
+ Basic Industry Facility     200 tf      800 MW       75m ISK
+ Advanced Industry Facility  500 tf      700 MW      250m ISK
+ High-Tech Industry Facility 1100 tf     400 MW      525m ISK
+ Storage Facility            500 tf      700 MW      250m ISK
+ Space Port                  3600 tf     700 MW      900m ISK
+
+
+ *
+ * Link Requirements by Distance
+ Distance   CPU         Power
+ 2.5 km      16 tf       11 MW
+ 10 km       18 tf       12 MW
+ 20 km       20 tf       14 MW
+ 50 km       26 tf       18 MW
+ 100 km      36 tf       26 MW
+ 200 km      56 tf       41 MW
+ 500 km      116 tf      86 MW
+ 1000 km     215 tf      160 MW
+ 2000 km     416 tf      311 MW
+ 5000 km     1016 tf     761 MW
+ 40000 km    8016 tf     6001 MW
+
+
+ Link Upgrade Costs
+
+ Data on relative costs of upgrading the link capacity (uses a link that is 500km as a base):
+ Level   Capacity    CPU         Power
+ 0       250 m3      116 tf      86 MW
+ 1       500 m3      280 tf      183 MW
+ 2       1000 m3     481 tf      291 MW
+ 3       2000 m3     713 tf      407 MW
+ 4       4000 m3     968 tf      528 MW
+ 5       8000 m3     1245 tf     655 MW
+ 6       16 km3      1542 tf     786 MW
+ 7       32 km3      1855 tf     921 MW
+ 8       64 km3      2185 tf     1059 MW
+ 9       128 km3     2530 tf     1200 MW
+ 10      256 km3     2889 tf     1344 MW
+
+ */
 #endif
 
 /*{'messageKey': 'RouteFailedValidationCannotRouteCommodities', 'dataID': 17875533, 'suppressable': False, 'bodyID': 256544, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3293}

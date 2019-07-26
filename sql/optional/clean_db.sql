@@ -105,7 +105,7 @@ TRUNCATE TABLE `piPinContents`;
 TRUNCATE TABLE `piPins`;
 TRUNCATE TABLE `piPlanets`;
 TRUNCATE TABLE `piRoutes`;
-TRUNCATE TABLE `posCustomOfficeData`;
+TRUNCATE TABLE `posCustomsOfficeData`;
 TRUNCATE TABLE `posJumpBridgeData`;
 TRUNCATE TABLE `posStructureData`;
 TRUNCATE TABLE `posTowerData`;
