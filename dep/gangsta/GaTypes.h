@@ -192,7 +192,7 @@ namespace Ga
 			return(x != 0.0f || y != 0.0f || z != 0.0f);
 		}
 
-        GaQuat rotationTo(const Ga::GaVec3& pos) const;
+        GaVec3 rotationTo(const Ga::GaVec3& pos) const;
 
         GaVec3 &operator=(const Parameter &oth);
 

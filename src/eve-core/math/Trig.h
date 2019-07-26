@@ -2,15 +2,18 @@
 /**
  * @name EVE_Trig.h
  *    math defines and methods for trig used in EvEmu
- *  using EVE namespace
+ *  using EvE namespace
  * @Author:         Allan
  * @date:   30 Aug 2015
  */
 
 #include "math/gpoint.h"
 
+// EvE uses the 3d left hand cartesian coordinate system, centered on star.
+// +x is left, +y is up elevation, +z is "into", or up in 2d
+
 namespace EvE {
-    
+
     namespace Trig {
 
         const double E = 2.71828182845904523536;
@@ -20,6 +23,7 @@ namespace EvE {
 
         inline double Deg2Rad(double deg) { return (deg * RadiansInDegrees); }
         inline double Rad2Deg(double rad) { return (rad * DegreesInRadians); }
+
 
 
 /*

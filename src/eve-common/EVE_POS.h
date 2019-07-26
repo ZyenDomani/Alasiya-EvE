@@ -13,39 +13,30 @@ class GVector;
 
 namespace EVEPOS {
     struct CustomsData {
-        bool allowAlliance;
-        bool allowStandings;
-        int8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
-        int16 selectedHour;
+        bool allowAlliance :1;;
+        bool allowStandings :1;;
+        int8 state;         /* used to hold POS state (online, reinforced, operating, etc) */
+        int8 status;        /* used to hold POS StructureStatus (online, reinforced, operating, etc) */
+        int8 selectedHour;  /* determines timeframe structure will come out of reinforced mode */
+        int8 standingValue; /* used to determine allowed access.  see StandingValues:: for details */
         int32 itemID;
-        int32 planetID;
+        int32 ownerID;
         int64 timestamp;
-        float status;
-        float taxRate;
-        float standingLevel;
-        GVector rotation;      /* yaw,pitch,roll - direction to planet (for correct orientation) */
+        std::map<uint8, float> taxRateValues;   /* taxRates based on standings with owner */
     };
 
     struct StructureData {
         int8 use;
         int8 view;
         int8 take;
-        int8 state;          /* used to hold POS state (online, reinforced, operating, etc) */
+        int8 state;         /* used to hold POS state (online, reinforced, operating, etc) */
+        int8 status;        /* used to hold POS StructureStatus (online, reinforced, operating, etc) */
         int32 itemID;
         int32 towerID;
         int32 moonID;
         int64 timestamp;
-        float status;
     };
     struct TowerData {
-        int8 anchor;
-        int8 unanchor;
-        int8 online;
-        int8 offline;
-        int32 harmonic;       /* this is POS ForceField status */
-        int32 standingOwnerID;
-        float standing;
-        std::string password;
         bool allowCorp :1;
         bool allowAlliance :1;
         bool allyStandings :1;
@@ -53,9 +44,21 @@ namespace EVEPOS {
         bool corpWar :1;
         bool showInCalendar :1;
         bool sendFuelNotifications :1;
+        int8 anchor;
+        int8 unanchor;
+        int8 online;
+        int8 offline;
+        int8 selectedHour;  /* determines timeframe structure will come out of reinforced mode */
+        int32 harmonic;       /* this is POS ForceField status */
+        int32 standingOwnerID;
+        float status;         /* this is different from structure.status:  it is used for defense standings and needs to be renamed */
+        float standing;
+        std::string password;
     };
 
     struct JumpBridgeData {
+        bool allowCorp :1;
+        bool allowAlliance :1;
         int32 itemID;
         int32 corpID;
         int32 allyID;
@@ -65,16 +68,15 @@ namespace EVEPOS {
         int32 toItemID;
         int32 toTypeID;
         std::string password;
-        bool allowCorp :1;
-        bool allowAlliance :1;
     };
 
     struct OrbitalData {
-        uint32 planetID;
         int8 level;
+        uint32 planetID;
         uint32 orbitalHackerID;
-        float orbitalHackerProgress;
         uint32 standingOwnerID; // corp/ally
+        float orbitalHackerProgress;
+        GVector rotation;      /* yaw,pitch,roll - direction to planet (for correct orientation) */
     };
 
     struct POS_Connections {
@@ -111,7 +113,7 @@ namespace EVEPOS {
         };
     }
 
-    namespace StructureState {
+    namespace StructureStatus {
         enum  {
             Incapacitated     = -1,
             Unanchored        = 0,
@@ -127,8 +129,8 @@ namespace EVEPOS {
         };
     }
 
-    namespace OrbitalState {
-    // not totally sure what these are for....customs offices for one...no, these are entityState (drones)
+    namespace EntityState {
+    // not totally sure what these are for....customs offices for one...these are also entityState (drones)
         enum  {
             Offlining             = -7,
             Anchoring             = -6,
@@ -158,6 +160,29 @@ namespace EVEPOS {
         };
     }
 
+    namespace TaxValues {
+        // used to determine tax rate on POCO based on relationship with owner
+        enum {
+            Corp                = 1,
+            Alliance            = 2,
+            StandingHigh        = 3,
+            StandingGood        = 4,
+            StandingNeutral     = 5,
+            StandingBad         = 6,
+            StandingHorrible    = 7,
+        };
+    }
+
+    namespace StandingValues {
+        // if access by standing, these set minimum standing required, and associated tax rate.
+        enum {
+            StandingHorrible    = -10,
+            StandingBad         = -5,
+            StandingNeutral     = 0,
+            StandingGood        = 5,
+            StandingHigh        = 10
+        };
+    }
 /*
  * typedef enum {
  *    posShieldStartLevel = 0.505f,

@@ -543,6 +543,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
                 continue;
             }
             dropped = true;
+            // need separate test for infrastructure hubs
             if (pSE->IsPOSSE())
                 pSE->GetPOSSE()->Init();
             pSystem->AddEntity(pSE);

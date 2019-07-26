@@ -153,7 +153,7 @@ bool SystemManager::BootSystem() {
     MapDB::SetSystemActive(m_data.systemID, true);
 
     //start minute timer
-    //m_minutetimer.Start(60000);
+    m_minutetimer.Start(60000);
 
     return (m_loaded = true);
 }
@@ -218,12 +218,11 @@ bool SystemManager::ProcessTic() {
     m_spawnMgr->Process();
 
     // process planets for PI
-    /*   may not need this..disabled for now
     if (m_minutetimer.Check()) {
         ++m_minutes;
         for (auto cur : m_planetMap)
             cur.second->Process();
-    } */
+    }
 
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(_systemProfile, GetTimeUSeconds() - profileStartTime);
@@ -564,6 +563,8 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
+            // ihub will need it's own se class
+            //if (entity.groupID == EVEDB::invGroups::Infrastructure_Hubs)
             StructureSE* sSE = new StructureSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
             _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return sSE;

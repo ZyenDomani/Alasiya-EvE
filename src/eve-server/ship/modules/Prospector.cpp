@@ -32,7 +32,7 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
 
     m_holdFlag = flagCargoHold;
     if (m_shipRef->HasAttribute(AttrSpecialSalvageHoldCapacity))
-        m_holdFlag = flagSpecializedSalvageHold;
+        m_holdFlag = flagSalvageHold;
 
     pChar = m_shipRef->GetPilot()->GetChar().get();
 }

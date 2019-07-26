@@ -1166,59 +1166,59 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
 uint32 StaticDataMgr::GetCorpID(uint32 factionID)
 {
     switch (factionID) {
-        case factionAngel:          return corpAngel;
-        case factionSanshas:        return corpSanshas;
+        case factionAngel:          return corpArchangels;
+        case factionSanshas:        return corpTruePower;
         case factionBloodRaider:    return corpBloodRaider;
         case factionGuristas:       return corpGuristas;
         case factionSerpentis:      return corpSerpentis;
         case factionRogueDrones:    return corpRogueDrones;
 
-        case factionCONCORD:          return corpCONCORD;
+        case factionCONCORD:        return corpCONCORD;
         case factionInterBus:       return corpInterbus;
-        case factionSociety:          return corpSociety;
-        case factionMordusLegion:        return corpMordusLegion;
+        case factionSociety:        return corpSocietyofCT;
+        case factionMordusLegion:   return corpMordusLegion;
 
-        /**  @todo  these are waiting for corp def updates...
-        case factionSleepers:    return corpRogueDrones;
-
-        case factionCaldari:          return corpAngel;
-        case factionMinmatar:        return corpSanshas;
-        case factionAmarr:    return corpBloodRaider;
+        case factionCaldari:        return corpCaldariNavy;
+        case factionORE:            return corpORE;
+        case factionAmarr:          return corpAmarrNavy;
         case factionGallente:       return corpGuristas;
-        case factionJove:      return corpSerpentis;
-        case factionAmmatar:    return corpRogueDrones;
+        case factionJove:           return corpJovianDirectorate;
+        case factionAmmatar:        return corpAmmatarConsulate;
 
-        case factionKhanid:        return corpSanshas;
-        case factionSyndicate:    return corpBloodRaider;
-        case factionORE:      return corpSerpentis;
-        case factionThukker:    return corpRogueDrones;
-        case factionSistersOfEVE:    return corpRogueDrones;
-        */
+        case factionKhanid:         return corpKhanidNavy;
+        case factionThukker:        return corpThukkerMix;
+        case factionSistersOfEVE:   return corpSoE;
 
         case factionNoFaction:
-        default:                return 0;
+        default:                    return 0;
+
+        //case factionSleepers:    return corpRogueDrones;
+        //case factionMinmatar:        return corp;
+        //case factionSyndicate:    return corps;
     }
 }
 
 std::string StaticDataMgr::GetCorpName(uint32 corpID)
 {
     switch (corpID) {
-        case corpAngel:             return "Angel";
-        case corpSanshas:           return "Sansha";
-        case corpBloodRaider:       return "Blood";
+        case corpArchangels:        return "Angel Cartel";
+        case corpTrueCreations:     return "True Creations/Sansha";    // sansha's nation
+        case corpTruePower:         return "True Power/Sansha";   // sansha's nation
+        case corpBloodRaider:       return "Blood Raiders";
         case corpGuristas:          return "Guristas";
         case corpSerpentis:         return "Serpentis";
-        case corpRogueDrones:       return "Drone";
+        case corpSerpentisInquest:  return "Serpentis Inquest";
+        case corpRogueDrones:       return "Rogue Drones";
     }
 }
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
 {
     switch (factionID) {
-        case factionAngel:          return "Angel";
-        case factionSanshas:        return "Sansha";
-        case factionBloodRaider:    return "Blood";
-        case factionGuristas:       return "Guristas";
+        case factionAngel:          return "Angel Cartel";
+        case factionSanshas:        return "Sansha Nation";
+        case factionBloodRaider:    return "Blood Raiders";
+        case factionGuristas:       return "Guristas Pirates";
         case factionSerpentis:      return "Serpentis";
         case factionRogueDrones:    return "Drone";
     }
@@ -1377,25 +1377,25 @@ std::string StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagSubSystem5:                            return "SubSystem5";
         case flagSubSystem6:                            return "SubSystem6";
         case flagSubSystem7:                            return "SubSystem7";
-        case flagSpecializedFuelBay:                    return "SpecializedFuelBay";
-        case flagSpecializedOreHold:                    return "SpecializedOreHold";
-        case flagSpecializedGasHold:                    return "SpecializedGasHold";
-        case flagSpecializedMineralHold:                return "SpecializedMineralHold";
-        case flagSpecializedSalvageHold:                return "SpecializedSalvageHold";
-        case flagSpecializedShipHold:                   return "SpecializedShipHold";
-        case flagSpecializedSmallShipHold:              return "SpecializedSmallShipHold";
-        case flagSpecializedMediumShipHold:             return "SpecializedMediumShipHold";
-        case flagSpecializedLargeShipHold:              return "SpecializedLargeShipHold";
-        case flagSpecializedIndustrialShipHold:         return "SpecializedIndustrialShipHold";
-        case flagSpecializedAmmoHold:                   return "SpecializedAmmoHold";
+        case flagFuelBay:                               return "FuelBay";
+        case flagOreHold:                               return "OreHold";
+        case flagGasHold:                               return "GasHold";
+        case flagMineralHold:                           return "MineralHold";
+        case flagSalvageHold:                           return "SalvageHold";
+        case flagShipHold:                              return "ShipHold";
+        case flagSmallShipHold:                         return "SmallShipHold";
+        case flagMediumShipHold:                        return "MediumShipHold";
+        case flagLargeShipHold:                         return "LargeShipHold";
+        case flagIndustrialShipHold:                    return "IndustrialShipHold";
+        case flagAmmoHold:                              return "AmmoHold";
         case flagStructureActive:                       return "StructureActive";
         case flagStructureInactive:                     return "StructureInactive";
         case flagJunkyardReprocessed:                   return "JunkyardReprocessed";
         case flagJunkyardTrashed:                       return "JunkyardTrashed";
-        case flagSpecializedCommandCenterHold:          return "SpecializedCommandCenterHold";
-        case flagSpecializedPlanetaryCommoditiesHold:   return "SpecializedPlanetaryCommoditiesHold";
+        case flagCommandCenterHold:                     return "CommandCenterHold";
+        case flagPlanetaryCommoditiesHold:              return "PlanetaryCommoditiesHold";
         case flagPlanetSurface:                         return "PlanetSurface";
-        case flagSpecializedMaterialBay:                return "SpecializedMaterialBay";
+        case flagMaterialBay:                           return "MaterialBay";
         case flagDustCharacterBackpack:                 return "DustCharacterBackpack";
         case flagDustCharacterBattle:                   return "DustCharacterBattle";
         case flagQuafeBay:                              return "QuafeBay";

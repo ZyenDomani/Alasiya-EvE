@@ -46,9 +46,9 @@ MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
 
     m_holdFlag = flagCargoHold;
     if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
-        m_holdFlag = flagSpecializedOreHold;
+        m_holdFlag = flagOreHold;
     else if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
-        m_holdFlag = flagSpecializedGasHold;
+        m_holdFlag = flagGasHold;
 
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", mRef->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }

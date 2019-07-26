@@ -295,40 +295,40 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             }
         } break;
 
-        // not sure if all of these flagSpecialized* are used.  if not, *may* update dgmData to add them....later.
-        case flagSpecializedFuelBay: {    //  AttrSpecialFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
+        // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
+        case flagFuelBay: {    //  AttrSpecialFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
             if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
                 pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
                 return false;
             }
         } break;
-        case flagSpecializedOreHold: {
+        case flagOreHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Asteroid) {
                 pClient->SendErrorMsg("Only mined ore may be placed into the ore hold.");
                 return false;
             }
         } break;
 /*
-        case flagSpecializedGasHold: {
+        case flagGasHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only ships may be placed into ship maintenance bay.");
                 return false;
             }
         } break;
 */
-        case flagSpecializedMineralHold: {
+        case flagMineralHold: {
             if (iRef->groupID() != EVEDB::invGroups::Mineral) {
                 pClient->SendErrorMsg("Only refined minerals may be placed into the mineral hold.");
                 return false;
             }
         } break;
-        case flagSpecializedSalvageHold: {
+        case flagSalvageHold: {
             if (iRef->groupID() != EVEDB::invGroups::Salvage_Materials) {
                 pClient->SendErrorMsg("Only salvaged materials may be placed into the salvage bay.");
                 return false;
             }
         } break;
-        case flagSpecializedShipHold: {
+        case flagShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only ships may be placed into the ship hold.");
                 return false;
@@ -336,31 +336,31 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
         } break;
 
         /** @todo need to figure out how to separate ships into s/m/l/i for these.... */
-        case flagSpecializedSmallShipHold: {
+        case flagSmallShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only small ships may be placed into the ship's small ship hold.");
                 return false;
             }
         } break;
-        case flagSpecializedMediumShipHold: {
+        case flagMediumShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only medium ships may be placed into the ship's medium ship hold.");
                 return false;
             }
         } break;
-        case flagSpecializedLargeShipHold: {
+        case flagLargeShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only large ships may be placed into the ship's large ship hold.");
                 return false;
             }
         } break;
-        case flagSpecializedIndustrialShipHold: {
+        case flagIndustrialShipHold: {
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only indy ships may be placed into the ship's industurial ship hold.");
                 return false;
             }
         } break;
-        case flagSpecializedAmmoHold: {
+        case flagAmmoHold: {
             if ((iRef->groupID() != EVEDB::invGroups::Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)

@@ -532,7 +532,7 @@ void InventoryItem::AddItem(InventoryItemRef iRef)
     // make error for invalid inventory?
     // only happens on char creation, when system isnt loaded yet, so we really dont need it.
     if (pInventory != nullptr)
-        pInventory->AddItem( iRef);
+        pInventory->AddItem(iRef);
 }
 
 void InventoryItem::RemoveItem(InventoryItemRef iRef)
@@ -556,6 +556,25 @@ void InventoryItem::Delete() {
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
     //PyDecRef(this);
+}
+
+void InventoryItem::ToVirtual(uint32 locationID)
+{
+    if (pInventory != nullptr)  // just in case
+        pInventory->RemoveItem(InventoryItemRef(this));
+    if (pAttributeMap != nullptr)   // should never be null, but just in case
+        pAttributeMap->Delete();
+
+    //notify about the changes.
+    std::map<int32, PyRep *> changes;
+    changes[Inv::Update::Location] = new PyInt(m_locationID);
+    SendItemChange( m_ownerID, changes);   //changes is consumed
+    m_locationID = locationID;
+
+    //take ourself out of the DB
+    sItemFactory.db()->DeleteItem(m_itemID);
+    //delete ourselves from factory cache
+    sItemFactory.RemoveItem(m_itemID);
 }
 
 void InventoryItem::Rename(std::string name)

@@ -11,9 +11,10 @@
  *  misc static consts
  */
 
-static const char alphaList[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-static const char numList[] = "0123456789";
-static const char hexList[] = "0123456789ABCDEF";
+static const char numList[]     = "0123456789";
+static const char hexList[]     = "0123456789ABCDEF";
+static const char alphaList[]   = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const char asciiList[]   = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ~!@#$%^&*()[]{};:'<>?";
 
 static const uint16 SHIP_PROCESS_TICK_MS = 5000;    // 5s
 

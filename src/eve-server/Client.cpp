@@ -221,6 +221,10 @@ Client& Client::operator=(Client&& oth) noexcept
 Client::~Client() {
     if (!m_loaded)
         return;
+    
+    if (pShipSE != nullptr)
+        WarpOut();
+
     if (m_char.get() != nullptr) {   // we have valid character
         /** @todo  - for warping to random point when client logs out in space...
          *      1)  check client IsInSpace(?)
@@ -255,9 +259,6 @@ Client::~Client() {
             m_ship->LogOut();
         }
     }
-
-    if (pShipSE != nullptr)
-        WarpOut();
 
     m_system->RemoveClient(this, true);
     // remove char from entitylist

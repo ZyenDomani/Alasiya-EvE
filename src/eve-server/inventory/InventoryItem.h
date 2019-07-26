@@ -152,6 +152,9 @@ public:
     virtual bool            HasPilot()                  { return false; }
     virtual Client*         GetPilot()                  { return nullptr; }
 
+    /* specific function from real item to virtual item for PI commodity xfer */
+    void                    ToVirtual(uint32 locationID);    // this deletes item without updating client with 'this is deleted' data
+
     /**********************************************************************************************
      * TEMPLATED LOADING INVOKATION EXPLANATION:
      * ItemCategory, ItemGroup, ItemType and Item classes and their children have special loading.

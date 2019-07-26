@@ -594,7 +594,7 @@ void DestinyManager::CheckBump()
      *   in relation to other objects in bubble.
      */
 
-    // NOTE:  object's "massive = true" means it can bump/collide
+    // NOTE:  object's "massive = true" means it can bump/collide  (massive = solid)
 
     // initial implementation will ONLY check player ships for bumping.
     std::vector<Client*> vPlayers;

@@ -2,7 +2,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    9 July 2019
+****    24 July 2019
 
 
 **********  found shit...high priority
@@ -56,7 +56,7 @@ addskill needs skill injection (not updating client)
 need to figure out how to load/queue assets for chars (on login or w/e)
     - this is needed for complete asset menu entries
 
-pi broke....again.  not sure wtf is going on here.  -priority level: low-med
+pi fixed.  currently rewriting process code  -priority level: hi
     - check/rewrite planet xml code as needed (minor improvement)
     - check if xml is needed or if structs are ok for all uses (improve code bloat)
     - code checks for route levels and mat'l volume xfer'd (limit volume xfer)
@@ -146,6 +146,7 @@ notificationMgr code needs love
 reproc code needs love
 certificateMgr needs looking at
 
+customs offices need capactiy verification
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
 
@@ -267,7 +268,7 @@ stations - look into individual hangers loaded into mem objects (charid/items)
     - not sure if this would be worth it, but would make 'by owner' searches much faster
 
 destiny shit - misc things found in destiny.dll text
-    - markers for ball's yaw, pitch, roll (may be unused)
+    - markers for ball's yaw, pitch, roll (dunRotation)
     - criuse velocity as a fraction of max velocity
     - id of bubble ball belongs to, current and former
 

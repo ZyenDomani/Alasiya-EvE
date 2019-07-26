@@ -64,40 +64,49 @@ GaFloat GaVec3::angle(float ax, float ay, float bx, float by)
     return result;
 }
 
-GaQuat GaVec3::rotationTo(const GaVec3 &pos) const
+GaVec3 GaVec3::rotationTo(const GaVec3 &pos) const
 {
-    GaVec3 toVec((pos.x - x), (pos.y - y), (pos.z - z)); // (to, from)
-
-    GaVec3 axis(*this);
-    axis.normalize();
-    GaVec3 heading(axis * 1.0e16);
-
-    GaVec3 targHeading((heading.x - x), (heading.y - y), (heading.z - z));
-    targHeading.normalize();
-
-    GaFloat dot = toVec.dotProduct(targHeading);
-    GaFloat radians = Math::arcCosine(dot);
+    // yaw, pitch, roll = dunRotation
 
     GaQuat q(GaQuat::ZERO);
-    q.w = Math::cosine(radians * 0.5);
+    GaVec3 axis(*this);
+    axis.normalize();
+    /*
+    GaVec3 toVec((pos.x - x), (pos.y - y), (pos.z - z)); // (to, from)
+    toVec.normalize();
+    GaFloat dot = toVec.dotProduct(axis);
+    GaFloat radians = Math::arcCosine(dot);
+    if (isnan(radians))
+        return q;
 
+    q.w = Math::cosine(radians * 0.5);
+    if ((q.w > 1) or (q.w < 0))
+        return GaQuat::ZERO;
+*/
+    q.v.x = Math::arcTangent(pos.z - z, pos.x - x);  // rad from dir to target on z axis
+    q.v.y = axis.x;
+    q.v.z = 0;
+
+    /*
     GaFloat sin_a = Math::sine(radians * 0.5);
     q.v.x = axis.x * sin_a;
     q.v.y = axis.y * sin_a;
     q.v.z = axis.z * sin_a;
-
-    q.v.x *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
-    q.v.y *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
+    */
+    //q.v.x *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
+    //q.v.y *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
     q.v.z *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
 
+    /*
     if (q.v.x < 0)
         q.v.x += 360;
     if (q.v.y < 0)
         q.v.y += 360;
     if (q.v.z < 0)
         q.v.z += 360;
+    */
 
-    return q;
+    return GaVec3(q.v.x, q.v.y, q.v.z);
 }
 /*
 GaVec3 GaVec3::rotByQuat(GaVec3 v, GaQuat q)
@@ -122,6 +131,19 @@ GaVec3 GaVec3::angleRot(GaVec3 from, GaVec3 to, double angle)
     q_temp.v.z = axis.z * sin(angle);
     q_temp.w = cos(angle);
 
+    /*
+     *    q.v.x *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
+     *    q.v.y *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
+     *    q.v.z *= Math::GaDegreesInRadian; //57.2957795131;   //  180/pi (rad->deg)
+     *
+     *    if (q.v.x < 0)
+     *        q.v.x += 360;
+     *    if (q.v.y < 0)
+     *        q.v.y += 360;
+     *    if (q.v.z < 0)
+     *        q.v.z += 360;
+     */
+    /*
     return rotByQuat(from, q_temp);
 }
 */
