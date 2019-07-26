@@ -28,9 +28,10 @@
 #include "EntityList.h"
 #include "PyBoundObject.h"
 #include "PyServiceCD.h"
+#include "packets/Planet.h"
 #include "planet/PlanetORBBound.h"
-#include "CustomsOffice.h"
-#include <system/SystemManager.h>
+#include "planet/CustomsOffice.h"
+#include "system/SystemManager.h"
 
 class PlanetORBBound
 : public PyBoundObject
@@ -102,15 +103,29 @@ PyBoundObject* PlanetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) 
 
 PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
 {
-    /*  taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
-     *
-     * 01:01:15 [SvcCall] Service PlanetORBBound::GetTaxRate()
-     * 01:01:15 [PlanetDebug] PlanetORBBound::Handle_GetTaxRate - size1
-     * 01:01:15 [PlanetCallDump]   Call Arguments:
-     * 01:01:15 [PlanetCallDump]       Tuple: 1 elements
-     * 01:01:15 [PlanetCallDump]         [ 0] Integer field: 140007483
-     *
-     * NOTE:  "return PyNone()" = access denied to customs office.
+    //  taxRate = moniker.GetPlanetOrbitalRegistry(session.solarsystemid).GetTaxRate(itemID)
+    // NOTE:  "return PyNone()" = access denied to customs office.
+
+    Call_SingleIntegerArg args;
+    if (!args.Decode(call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+
+    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
+
+    /** @todo  there's more to this...check for standings, alliance  */
+    if (IsPlayerCorp(pCOSE->GetOwnerID()))
+        if (call.client->GetCorporationID() != pCOSE->GetOwnerID())
+            return PyStatic.NewNone();
+
+    return new PyFloat(pCOSE->GetTaxRate(call.client));
+}
+
+PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
+{
+    /*   self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
+     *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
      */
     Call_SingleIntegerArg args;
     if (!args.Decode(call.tuple)) {
@@ -119,29 +134,32 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
     }
 
     CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.arg)->GetCOSE();
-    return new PyFloat(pCOSE->GetTaxRate());
+    return pCOSE->GetSettingsInfo();
 }
 
 PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
 {
-    /*  remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
-     */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_UpdateSettings - size %u", call.tuple->size() );
+    //remoteOrbitalRegistry.UpdateSettings(self.orbitalID, reinforceValue, taxRateValues, standingValue, allowAllianceValue, allowStandingsValue)
+    _log(INV__MESSAGE, "Calling PlanetORBBound::UpdateSettings()");
     call.Dump(PLANET__DUMP);
 
-    return new PyNone();
-}
+    Call_UpdateSettings args;
+    if (!args.Decode(call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
 
-PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
-{
-    /*
-     *   self.orbitalData = self.remoteOrbitalRegistry.GetSettingsInfo(self.orbitalID)  << for customs offices
-     *   self.selectedHour, self.taxRateValues, self.standingLevel, self.allowAlliance, self.allowStandings = self.orbitalData
-     */
-    _log(PLANET__DEBUG, "PlanetORBBound::Handle_GetSettingsInfo - size %u", call.tuple->size() );
-    call.Dump(PLANET__DUMP);
+    PyDict* input = args.taxRateValues->AsObject()->arguments()->AsDict();
+    Call_TaxRateValuesDict dict;
+    if (!dict.Decode(input)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
 
-    return new PyNone();
+    CustomsSE* pCOSE = sEntityList.FindOrBootSystem(m_systemID)->GetSE(args.orbitalID)->GetCOSE();
+    pCOSE->UpdateSettings(args.reinforceValue, args.standingValue, args.allowAlliance, args.allowStandings, dict);
+
+    return nullptr;
 }
 
 PyResult PlanetORBBound::Handle_GMChangeSpaceObjectOwner( PyCallArgs& call )

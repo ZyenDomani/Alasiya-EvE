@@ -25,7 +25,9 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    void GetPlanetData(uint32 planetID, std::vector<uint32> &typeIDs);
+    void GetPlanetData(uint32 planetID, std::vector<uint16> &typeIDs);
+
+    const char* GetCommandName(int8 commandID);
 
 protected:
     void _Populate();
@@ -40,7 +42,9 @@ private:
 ( PlanetDataMgr::get() )
 
 
-// this class is a singleton object to have a common place for all (cached) PI schematic data
+class Colony;
+
+// this class is a singleton object to have a common place for all (cached) PI schematic and program data
 class PIDataMgr
 : public Singleton< PIDataMgr >
 {
@@ -51,7 +55,17 @@ public:
     // Initializes the Table:
     int Initialize();
 
-    void GetSchematicData(uint16 schematicID, PI_Schematic& data);
+    PyRep* GetProgramResultInfo(Colony* pColony, uint32 pinID, uint16 typeID, PyList* heads, float headRadius);
+
+    void GetSchematicData(uint8 schematicID, PI_Schematic& data);
+
+    uint8 GetProductLevel(uint16 typeID);
+    const char* GetProductName(uint16 typeID);
+    uint16 GetHeadType(uint16 ecuTypeID, uint16 programType);
+
+    uint32 GetMaxOutput(InventoryItemRef iRef, uint32 qtyPerCycle = 0, int64 cycleTime = 0);
+    uint32 GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64 startTime = GetFileTimeNow() - 2*EvE::Time::Second, int64 currentTime = GetFileTimeNow());
+    uint32 GetProgramOutputPrediction(InventoryItemRef iRef, int64 cycleTime, uint32 numCycles = 0);
 
 protected:
     void _Populate();

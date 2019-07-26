@@ -24,6 +24,7 @@
 #include "StaticDataMgr.h"
 #include "manufacturing/Blueprint.h"
 #include "planet/Moon.h"
+#include <planet/CustomsOffice.h>
 #include "pos/Tower.h"
 #include "pos/Structure.h"
 #include "system/Container.h"
@@ -131,6 +132,36 @@ PyObject *StructureItem::StructureGetInfo()
     return result.Encode();
 }
 
+void StructureItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
+{
+    // Handle any flag, legal or not, by virtue of GetStoredVolume() and GetCapacity() that handle supported capacity types:
+    // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
+    // check for adding unpackaged ships to cargo of active ship...
+    double volume = iRef->GetPackagedVolume();
+    volume *= iRef->quantity();
+    double capacity = (pInventory->GetCapacity(flag) - pInventory->GetStoredVolume(flag));
+    if (capacity < volume) {
+        std::map<std::string, PyRep *> args;
+        args["available"] = new PyFloat(capacity);
+        args["volume"] = new PyFloat(volume);
+        throw PyException( MakeUserError("NotEnoughCargoSpace", args));
+    }
+}
+
+void StructureItem::AddItem(InventoryItemRef iRef)
+{
+    if (mySE->IsCOSE())
+        mySE->GetCOSE()->VerifyAddItem(iRef);
+
+    iRef->Move(m_itemID, flagHangar, true);
+    InventoryItem::AddItem(iRef);
+}
+
+void StructureItem::RemoveItem(InventoryItemRef iRef)
+{
+    InventoryItem::RemoveItem(iRef);
+}
+
 
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system),
@@ -140,6 +171,7 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
 {
     m_tcu = false;
     m_sbu = false;
+    m_ihub = false;
     m_miner = false;
     m_tower = false;
     m_bridge = false;
@@ -189,8 +221,10 @@ void StructureSE::InitData()
         m_db.SaveBridgeData(data);
     }
 
-    m_moonSE = m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
-    m_data.moonID = m_moonSE->GetID();
+    if (!m_ihub) {
+        m_moonSE = m_system->GetClosestMoonSE(GetPosition())->GetMoonSE();
+        m_data.moonID = m_moonSE->GetID();
+    }
 }
 
 void StructureSE::Init()
@@ -204,12 +238,14 @@ void StructureSE::Init()
         m_system->RemoveEntity(this);   //this may segfault here....
         return;
     }
-    m_data.state = EVEPOS::StructureState::Unanchored;
+    m_data.state = EVEPOS::StructureStatus::Unanchored;
     m_self->SetFlag(flagStructureInactive);
 
     switch(m_self->groupID()) {
         case EVEDB::invGroups::Orbital_Infrastructure: {
             // should not hit here, but dont want to use 'default'
+            sLog.Error("StructureSE::Init", "groupID is Orbital_Infrastructure.");
+            EvE::traceStack();
         } break;
         case EVEDB::invGroups::Sovereignty_Blockade_Units: {
             m_sbu = true;
@@ -242,6 +278,9 @@ void StructureSE::Init()
             m_module = true;
             m_reactor = true;
         } break;
+        case EVEDB::invGroups::Infrastructure_Hubs: {
+            m_ihub = true;
+        } break;
         default: {
             m_module = true;
         }
@@ -252,6 +291,9 @@ void StructureSE::Init()
         InitData();
         m_db.SaveBaseData(m_data);
     }
+
+    if (m_ihub)
+        return;
 
     if (m_data.moonID == 0) {
         // make error here.  this should never hit.
@@ -299,7 +341,7 @@ void StructureSE::Init()
         // do something constructive here.
     }
 
-    if (m_data.state > EVEPOS::StructureState::Anchored)
+    if (m_data.state > EVEPOS::StructureStatus::Anchored)
         m_self->SetFlag(flagStructureActive);
 }
 
@@ -331,13 +373,13 @@ void StructureSE::Process() {
                 m_db.UpdateBaseData(m_data);
             } break;
             case ProcState::Offlining: {
-                m_data.state = StructureState::Anchored;
+                m_data.state = StructureStatus::Anchored;
                 SetOffline();
                 SendSlimUpdate();
                 m_db.UpdateBaseData(m_data);
             } break;
             case ProcState::Onlining: {
-                m_data.state = StructureState::Online;
+                m_data.state = StructureStatus::Online;
                 SetOnline();
                 SendSlimUpdate();
                 m_db.UpdateBaseData(m_data);
@@ -355,8 +397,8 @@ void StructureSE::Process() {
             case ProcState::SheildReinforcing:
             case ProcState::ArmorReinforcing: {
                 m_self->SetFlag(flagStructureInactive);
-                m_data.state = StructureState::Invulnerable;
-                //m_data.state = StructureState::Reinforced;
+                m_data.state = StructureStatus::Invulnerable;
+                //m_data.state = StructureStatus::Reinforced;
                 m_db.UpdateBaseData(m_data);
                 // set timer for time to come out of reinforced
                 /*Reinforcement is an established system in EVE where a structure becomes invulnerable for a period of time.
@@ -413,7 +455,7 @@ void StructureSE::Process() {
  */
 void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 {
-    if (m_data.state > EVEPOS::StructureState::Unanchored) {
+    if (m_data.state > EVEPOS::StructureStatus::Unanchored) {
         pClient->SendErrorMsg("The %s is already anchored", m_self->itemName().c_str());
         return;  // make error here?
     }
@@ -456,7 +498,7 @@ void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
     m_self->SaveItem();
 
     m_procState = EVEPOS::ProcState::Anchoring;
-    m_data.state = EVEPOS::StructureState::Anchored;
+    m_data.state = EVEPOS::StructureStatus::Anchored;
     m_delayTime = m_self->GetAttribute(AttrAnchoringDelay).get_int();
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
@@ -478,7 +520,7 @@ void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 
 void StructureSE::PullAnchor()
 {
-    if (m_data.state > EVEPOS::StructureState::Anchored)
+    if (m_data.state > EVEPOS::StructureStatus::Anchored)
         return;  // make error here?
 
         /** @todo  check for other modules changing state...only allow one at a time */
@@ -487,7 +529,7 @@ void StructureSE::PullAnchor()
     //m_towerSE->GetSOI();
 
     m_procState = EVEPOS::ProcState::Unanchoring;
-    m_data.state = EVEPOS::StructureState::Unanchored;
+    m_data.state = EVEPOS::StructureStatus::Unanchored;
     m_delayTime = m_self->GetAttribute(AttrUnanchoringDelay).get_int();
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
@@ -518,7 +560,7 @@ void StructureSE::PullAnchor()
 
 void StructureSE::Activate(int32 effectID)
 {
-    if (m_data.state > EVEPOS::StructureState::Anchored)
+    if (m_data.state > EVEPOS::StructureStatus::Anchored)
         return;  // make error here?
 
         /** @todo  check for other modules changing state...only allow one at a time */
@@ -559,7 +601,7 @@ void StructureSE::Activate(int32 effectID)
     } else {
         ; // check for things that DONT use a tower.  not sure if we need anymore checks here.  yes....all sov structures will need checks for activation
     }
-    m_data.state = EVEPOS::StructureState::Onlining;
+    m_data.state = EVEPOS::StructureStatus::Onlining;
     m_procState = EVEPOS::ProcState::Onlining;
     m_delayTime = m_self->GetAttribute(AttrOnliningDelay).get_int();
     m_procTimer.SetTimer(m_delayTime);
@@ -590,7 +632,7 @@ void StructureSE::SetOnline()
     // this state is persistant until out of resources or changed
     m_self->SetFlag(flagStructureActive);
     m_procState = EVEPOS::ProcState::Online;
-    m_data.state = EVEPOS::StructureState::Online;
+    m_data.state = EVEPOS::StructureStatus::Online;
 
     SetTimer(m_duration);
     m_db.UpdateBaseData(m_data);
@@ -619,7 +661,7 @@ void StructureSE::SetOperating()
 {
     // this state is persistant until out of resources or changed
     m_procState = EVEPOS::ProcState::Operating;
-    m_data.state = EVEPOS::StructureState::Operating;
+    m_data.state = EVEPOS::StructureStatus::Operating;
     m_data.timestamp = GetFileTimeNow();
 
     SetTimer(m_duration);
@@ -664,11 +706,11 @@ void StructureSE::SendSlimUpdate()
         slim->SetItemString("incapacitated",            new PyInt(0));
         slim->SetItemString("posDelayTime",             new PyInt(m_delayTime));
     PyTuple* shipData = new PyTuple(2);
-        shipData->SetItem(0, new PyLong(m_data.itemID));
-        shipData->SetItem(1, new PyObject( "foo.SlimItem", slim));
+        shipData->SetItem(0,                            new PyLong(m_data.itemID));
+        shipData->SetItem(1,                            new PyObject( "foo.SlimItem", slim));
     PyTuple* sItem = new PyTuple(2);
-        sItem->SetItem(0, new PyString("OnSlimItemChange"));
-        sItem->SetItem(1, shipData);
+        sItem->SetItem(0,                               new PyString("OnSlimItemChange"));
+        sItem->SetItem(1,                               shipData);
     m_destiny->SendSingleDestinyUpdate(&sItem);   // consumed
 }
 
@@ -716,11 +758,11 @@ void StructureSE::EncodeDestiny( Buffer& into )
         head.flags = Ball::Flag::IsGlobal;
     } else if (m_tower) {
         head.mode = Ball::Mode::STOP;
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0)/*Ball::Flag::HasMiniBalls*/;
+        head.flags = (m_data.state < EVEPOS::StructureStatus::Anchored ? Ball::Flag::IsFree : 0)/*Ball::Flag::HasMiniBalls*/;
     } else {
         head.mode = Ball::Mode::RIGID;
         //TODO check for miniballs and add here if found.
-        head.flags = (m_data.state < EVEPOS::StructureState::Anchored ? Ball::Flag::IsFree : 0/*Ball::Flag::IsMassive*/) /*Ball::Flag::HasMiniBalls*/;
+        head.flags = (m_data.state < EVEPOS::StructureStatus::Anchored ? Ball::Flag::IsFree : 0/*Ball::Flag::IsMassive*/) /*Ball::Flag::HasMiniBalls*/;
     }
     into.Append( head );
 
@@ -735,7 +777,7 @@ void StructureSE::EncodeDestiny( Buffer& into )
         into.Append( mass );
     }
 
-    if (m_data.state < EVEPOS::StructureState::Anchored) {
+    if (m_data.state < EVEPOS::StructureStatus::Anchored) {
         DataSector data = DataSector();
             data.inertia = 1;
             data.velocity_x = 0;
@@ -801,7 +843,7 @@ PyDict *StructureSE::MakeSlimItem() {
         if (m_module or m_tower) {    // for control towers and structures
             slim->SetItemString("posTimestamp",         new PyLong(m_data.timestamp));
             slim->SetItemString("posState",             new PyInt(m_data.state));
-            slim->SetItemString("incapacitated",        new PyInt((m_data.state == EVEPOS::StructureState::Incapacitated) ? 1 : 0));
+            slim->SetItemString("incapacitated",        new PyInt((m_data.state == EVEPOS::StructureStatus::Incapacitated) ? 1 : 0));
             slim->SetItemString("posDelayTime",         new PyInt(m_delayTime));
         }
         if (m_outpost) {
@@ -846,8 +888,8 @@ eventSBUOnline = 256
 
 void StructureSE::GetEffectState(PyList& into) {
 	// this is for sending structure state info in destiny state data
-    if ((m_data.state != EVEPOS::StructureState::Online)
-    and (m_data.state != EVEPOS::StructureState::Operating))
+    if ((m_data.state != EVEPOS::StructureStatus::Online)
+    and (m_data.state != EVEPOS::StructureStatus::Operating))
         return;
 
     std::vector<int32, std::allocator<int32> > area;
@@ -997,7 +1039,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
         for (auto cur: survivedItems)
             cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived
 
-    DBSystemDynamicEntity wreckEntity;
+    DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = killer->GetAllianceID();
         wreckEntity.categoryID = EVEDB::invCategories::Celestial;
         wreckEntity.corporationID = killer->GetCorporationID();
@@ -1018,6 +1060,14 @@ void StructureSE::Killed(Damage &fatal_blow) {
     }
 }
 
+void StructureSE::Anchor()
+{
+
+}
+void StructureSE::Offline()
+{
+
+}
 
     /*      GetHybridBridgeMenu
      *      GetAllianceBeaconSubMenu

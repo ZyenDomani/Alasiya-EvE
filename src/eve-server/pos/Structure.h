@@ -31,15 +31,13 @@ class StructureItem
 {
     friend class InventoryItem;    // to let it construct us
 
-protected:
-    StructureItem(uint32 _structureID, const ItemType &_itemType, const ItemData &_data);
-    virtual ~StructureItem();
-
 public:
     static StructureItemRef Load( uint32 structureID);
     static StructureItemRef Spawn( ItemData &data);
 
-    virtual void Delete();
+    virtual void            Delete();
+    virtual void            AddItem(InventoryItemRef iRef);
+    virtual void            RemoveItem(InventoryItemRef iRef);
 
     /** @todo (Allan)  will probably need to rewrite all these, too.
      * Public fields:
@@ -48,7 +46,15 @@ public:
 
     PyObject *StructureGetInfo();
 
+    void SetMySE(SystemEntity* pSE)                     { mySE = pSE; }
+    SystemEntity* GetMySE()                             { return mySE; }
+
+    void TryHoldCapacity(EVEItemFlags toFlag, InventoryItemRef iRef);
+
 protected:
+    StructureItem(uint32 _structureID, const ItemType &_itemType, const ItemData &_data);
+    virtual ~StructureItem();
+
     using InventoryItem::_Load;
     virtual bool _Load();
 
@@ -67,6 +73,10 @@ protected:
 
         return StructureItemRef( new StructureItem(structureID, type, data ) );
     }
+
+private:
+    SystemEntity* mySE;
+
 };
 
 
@@ -145,13 +155,12 @@ public:
     void                        Activate(int32 effectID);
     void                        Deactivate(int32 effectID);
     void                        GetEffectState(PyList& into);
-    uint8                     GetStructureState() const { return m_data.state; }
+    uint8                       GetState() const        { return m_data.state; }
     float                       GetStatus()             { return m_data.status; }
     MoonSE*                     GetMoonSE()             { return m_moonSE; }
 
     inline void                SetPOSState(uint8 state) { m_data.state = state; }
     inline void                 SetTimer(uint32 time)   { m_procTimer.SetTimer(time); }
-    inline void                 SetStatus(float set)    { m_data.status = set; }
 
     void                        SetUsageFlags(int8 view=0, int8 take=0, int8 use=0);
     inline int8                 CanUse()                { return m_data.use; }
@@ -161,7 +170,6 @@ public:
     // for orbital infrastructure
     void                     SetPlanet(uint32 planetID) { m_planetID = planetID; }
     uint32                      GetPlanetID()           { return m_planetID; }
-    void                        SetRotation(GPoint dir) { m_rotation = dir; }
 
     // structure update methods....may not use like this
     void                        UpdateTimeStamp()       { m_db.UpdateTimeStamp(m_data.itemID, m_data); }
@@ -197,6 +205,7 @@ private:
 
     bool m_tcu :1;
     bool m_sbu :1;
+    bool m_ihub :1;
     bool m_tower :1;
     bool m_miner :1;
     bool m_bridge :1;
@@ -208,3 +217,13 @@ private:
 };
 
 #endif  // EVEMU_POS_STRUCTURE_H_
+
+
+
+    /*
+    self.variance = sm.GetService('clientDogmaStaticSvc').GetTypeAttribute(self.typeID, const.attributeReinforcementVariance)
+    self.reinforceHours = [ ('%.2d:00 - %.2d:00' % ((x - self.variance / 3600) % 24, (x + self.variance / 3600) % 24), x) for x in xrange(0, 24) ]
+    reinforceValue = 0-23
+
+    with a variance of 3600, reinforceValue of 0 sets hours of 23:00 to 01:00
+    */

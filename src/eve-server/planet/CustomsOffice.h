@@ -17,6 +17,8 @@
 #include "pos/PosMgrDB.h"
 #include "system/SystemEntity.h"
 
+class PlanetSE;
+class Call_TaxRateValuesDict;
 
 class CustomsSE
 : public ObjectSystemEntity
@@ -47,18 +49,26 @@ public:
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }
 
     /* specific functions handled in this class. */
+    void                        SetAnchor(Client* pClient, GPoint& pos);
+    void                        PullAnchor();
+    PlanetSE*                   GetPlanetSE()           { return m_planetSE; }
     void                        Reinforced()            { /* do nothing here yet */ }
     void                        GetEffectState(PyList& into);
-    uint8                     GetStructureState() const { return m_data.state; }
-    float                       GetStatus()             { return m_data.status; }
+    uint8                       GetState() const        { return m_cData.state; }
+    float                       GetStatus()             { return m_cData.status; }
     bool                        IsReinforced()          { return false; }   /** @todo  finish this...not sure how yet. */
 
     // for orbital infrastructure
-    void                     SetPlanet(uint32 planetID) { m_data.planetID = planetID; }
-    uint32                      GetPlanetID()           { return m_data.planetID; }
-    void                        SetRotation(GPoint dir) { m_data.rotation = dir; }
-    float                       GetTaxRate()            { return m_data.taxRate; }
+    void                     SetPlanet(uint32 planetID) { m_oData.planetID = planetID; }
+    uint32                      GetPlanetID()           { return m_oData.planetID; }
+    float                       GetTaxRate(Client* pClient);
 
+    PyRep*                      GetSettingsInfo();
+    void     GetSettingsInfo(EVEPOS::CustomsData &data) { data = m_cData; }
+
+    void    UpdateSettings(int8 selectedHour, int8 standingValue, bool ally, bool standings, Call_TaxRateValuesDict& taxRateValues);
+
+    void    VerifyAddItem(InventoryItemRef iRef);   // this must throw on failure
 
 protected:
     void                        SendSlimUpdate();
@@ -67,10 +77,11 @@ protected:
 private:
     PosMgrDB                    m_db;
 
-    EVEPOS::CustomsData         m_data;
+    EVEPOS::CustomsData         m_cData;
+    EVEPOS::OrbitalData         m_oData;
 
     SystemManager*              m_system;
-    SystemEntity*               m_planetSE;
+    PlanetSE*                   m_planetSE;
 };
 
 #endif  // EVEMU_POS_CUSTOMS_OFFICE_H_

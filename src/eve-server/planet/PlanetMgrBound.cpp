@@ -26,6 +26,21 @@
 
 //work in progress
 
+/*
+ * PLANET__ERROR
+ * PLANET__WARNING
+ * PLANET__MESSAGE
+ * PLANET__DEBUG
+ * PLANET__INFO
+ * PLANET__TRACE
+ * PLANET__DUMP
+ * PLANET__RES_DUMP
+ * PLANET__GC_DUMP
+ * PLANET__PKT_TRACE
+ * PLANET__DB_ERROR
+ * PLANET__DB_WARNING
+ */
+
 
 #include "eve-server.h"
 
@@ -126,7 +141,7 @@ protected:
 PyCallable_Make_InnerDispatcher(PlanetMgrService)
 
 PlanetMgrService::PlanetMgrService(PyServiceMgr *mgr)
-: PyService(mgr, "planetMgr"),  /*planetBaseBroker*/
+: PyService(mgr, "planetMgr"),  /*planetBaseBroker is for dust*/
   m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
@@ -159,11 +174,12 @@ PyBoundObject* PlanetMgrService::_CreateBoundObject(Client *pClient, const PyRep
     }
     SystemEntity* pSE = pSysMgr->GetSE(sData.itemID);
     if (!pSE->IsPlanetSE()) {
-        pClient->SendErrorMsg("itemID is not planetID or planet not found");
+        _log(PLANET__ERROR, "%s Service: itemID is not planetID or planet not found", GetName());
         return nullptr;
     }
     return new PlanetMgrBound(m_manager, pClient, pSE->GetPlanetSE());
 }
+
 PyResult PlanetMgrService::Handle_GetPlanetsForChar(PyCallArgs &call) {
   return m_db->GetPlanetsForChar(call.client->GetCharacterID());
 }
@@ -189,7 +205,10 @@ PyResult PlanetMgrBound::Handle_GetPlanetInfo(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_GetPlanetInfo() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 
-    return m_planet->GetPlanetInfo(m_colony);
+    PyRep* res = m_planet->GetPlanetInfo(m_colony);
+        res->Dump(PLANET__RES_DUMP, "    ");
+    
+    return res;
 }
 
 PyResult PlanetMgrBound::Handle_GetExtractorsForPlanet(PyCallArgs &call) {
@@ -255,8 +274,7 @@ PyResult PlanetMgrBound::Handle_GetProgramResultInfo(PyCallArgs &call) {
         return nullptr;
     }
 
-    //PyIncRef(args.heads);
-    return m_planetMgr->GetProgramResultInfo(args.ecuID, args.typeID, args.heads, args.headRadius);
+    return sPIDataMgr.GetProgramResultInfo(m_colony, args.ecuID, args.typeID, args.heads, args.headRadius);
 }
 
 PyResult PlanetMgrBound::Handle_GetResourceData(PyCallArgs &call) {
@@ -338,34 +356,21 @@ eve-server: /usr/local/src/eve/Alasiya-EvE/src/eve-common/python/PyRep.h:141: Py
         return nullptr;
     }
     PyDict* dict = args.dict->AsDict();
-    dict->Dump(PLANET__DUMP, "   ");
-    uint32 amount = 0;
+    //dict->Dump(PLANET__DUMP, "   ");
     std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); itr++ ) {
-        if (itr->second->IsInt())
-            amount = itr->second->AsInt()->value();
-        else if (itr->second->IsFloat())
-            amount = (uint32)itr->second->AsFloat()->value();
-        else
-            continue; // make error here
-        items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
-    }
+    for (; itr != dict->end(); ++itr)
+        items.insert(std::pair<uint16, uint32>(PyRep::IntegerValue(itr->first), PyRep::IntegerValue(itr->second)));
 
-    m_colony->LaunchCommodities(args.pinID, items);
-
-    // returns nodeID and timestamp
-    PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
-    return tuple;
+    return m_colony->LaunchCommodities(args.pinID, items);
 }
 
 PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
     _log(PLANET__DEBUG, "PlanetMgrBound::Handle_UserTransferCommodities() size=%u", call.tuple->size() );
     call.Dump(PLANET__DUMP);
 /*
-        simTime, sourceRunTime = self.remoteHandler.UserTransferCommodities(path, commodities)    {{ simTime = time to stop (complete time), sourceRunTime = previous runtime}}
+        simTime, sourceRunTime = self.remoteHandler.UserTransferCommodities(path, commodities)
+        {{ simTime = time to stop (complete time), sourceRunTime = previous runtime}}
         15:19:15 [PlanetDebug] PlanetMgrBound::Handle_UserTransferCommodities() size=2
         15:19:15 [PlanetCallDump]   Call Arguments:
         15:19:15 [PlanetCallDump]       Tuple: 2 elements
@@ -383,21 +388,13 @@ PyResult PlanetMgrBound::Handle_UserTransferCommodities(PyCallArgs &call) {
         */
 
     PyDict* dict = call.tuple->GetItem(1)->AsDict();
-    uint32 amount = 0;
     std::map<uint16, uint32> items;
     PyDict::const_iterator itr = dict->begin();
-    for (; itr != dict->end(); itr++ ) {
-        if (itr->second->IsInt())
-            amount = itr->second->AsInt()->value();
-        else if (itr->second->IsFloat())
-            amount = (uint32)itr->second->AsFloat()->value();
-        else
-            continue; // make error here
-        items.insert(std::pair<uint16, uint32>(itr->first->AsInt()->value(), amount));
-    }
+    for (; itr != dict->end(); ++itr)
+        items.insert(std::pair<uint16, uint32>(PyRep::IntegerValue(itr->first), PyRep::IntegerValue(itr->second)));
 
     PyList* list = call.tuple->GetItem(0)->AsList();
-    return m_colony->TransferCommodities(list->items.front()->AsInt()->value(), list->items.back()->AsInt()->value(), items);
+    return m_colony->TransferCommodities(PyRep::IntegerValue(list->items.front()), PyRep::IntegerValue(list->items.back()), items);
 }
 
 

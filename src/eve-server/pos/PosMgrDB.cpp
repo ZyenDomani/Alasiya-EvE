@@ -250,7 +250,7 @@ bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& o
     if (!sDatabase.RunQuery(res,
         "SELECT ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
         " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
-        " rotX, rotY, rotZ, rotW, orbitalHackerProgress, orbitalHackerID, state, status, level"
+        " rotX, rotY, rotZ, orbitalHackerProgress, orbitalHackerID, state, status, level"
         " FROM posCustomsOfficeData WHERE itemID = %u", cData.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetCustomsData query: %s", res.error.c_str());
@@ -278,12 +278,12 @@ bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& o
         taxRateValues[TaxValues::StandingHigh]      = row.GetFloat(11);
     cData.taxRateValues = taxRateValues;
     cData.timestamp = row.GetInt64(12);
-    oData.rotation = Ga::GaQuat(row.GetFloat(13), row.GetFloat(14), row.GetFloat(15), row.GetFloat(16));
-    oData.orbitalHackerProgress = row.GetInt(17);
-    oData.orbitalHackerID = row.GetInt(18);
-    cData.state = row.GetInt(19);
-    cData.status = row.GetInt(20);
-    oData.level = row.GetInt(21);
+    oData.rotation = GVector(row.GetFloat(13), row.GetFloat(14), row.GetFloat(15));
+    oData.orbitalHackerProgress = row.GetInt(16);
+    oData.orbitalHackerID = row.GetInt(17);
+    cData.state = row.GetInt(18);
+    cData.status = row.GetInt(19);
+    oData.level = row.GetInt(20);
     //oData.standingOwnerID = row.GetInt(19);   // not sure what this is for
 
     return true;
@@ -296,13 +296,13 @@ void PosMgrDB::SaveCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& 
     sDatabase.RunQuery(err,
         "INSERT INTO posCustomsOfficeData (itemID, ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
         " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
-        " rotX, rotY, rotZ, rotW, orbitalHackerProgress, orbitalHackerID, state, status, level)"
-        " VALUES (%u, %u, %u, %u, %u, %u, %f, %f, %f, %f, %f, %f, %f, %lli, %f, %f, %f, %f, %u, %u, %u, %u, %u)",
+        " rotX, rotY, rotZ, orbitalHackerProgress, orbitalHackerID, state, status, level)"
+        " VALUES (%u, %u, %u, %u, %u, %u, %f, %f, %f, %f, %f, %f, %f, %lli, %f, %f, %f, %f, %u, %i, %i, %i)",
         cData.itemID, cData.ownerID, cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
         cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
         cData.taxRateValues[TaxValues::StandingBad], cData.taxRateValues[TaxValues::StandingNeutral], cData.taxRateValues[TaxValues::StandingGood],
-        cData.taxRateValues[TaxValues::StandingHigh], cData.timestamp, oData.rotation.v.x, oData.rotation.v.y, oData.rotation.v.z,
-        oData.rotation.w, oData.orbitalHackerProgress, oData.orbitalHackerID, cData.state, cData.status, oData.level);
+        cData.taxRateValues[TaxValues::StandingHigh], cData.timestamp, oData.rotation.x, oData.rotation.y, oData.rotation.z,
+        oData.orbitalHackerProgress, oData.orbitalHackerID, cData.state, cData.status, oData.level);
 }
 
 void PosMgrDB::UpdateCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& oData)
@@ -313,7 +313,7 @@ void PosMgrDB::UpdateCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData
         "UPDATE posCustomsOfficeData"
         " SET allowAlly=%u, allowStandings=%u, selectedHour=%u, standingValue=%u,"
         " corpTax=%f, allyTax=%f, horribleTax=%f, badTax=%f, neutTax=%f, goodTax=%f, highTax=%f, timestamp=%lli,"
-        " orbitalHackerProgress=%u, orbitalHackerID=%u, state=%u, status=%u"
+        " orbitalHackerProgress=%f, orbitalHackerID=%u, state=%i, status=%i"
         " WHERE itemID=%i",
         cData.allowAlliance, cData.allowStandings, cData.selectedHour, cData.standingValue,
         cData.taxRateValues[TaxValues::Corp], cData.taxRateValues[TaxValues::Alliance], cData.taxRateValues[TaxValues::StandingHorrible],
