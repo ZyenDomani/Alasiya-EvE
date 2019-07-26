@@ -233,7 +233,7 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
         " isCommandCenter, isLaunchable, isProcess, isStorage, isECU,"
         " schematicID, programType, headRadius,"
         " launchTime, cycleTime, expiryTime, installTime, lastRunTime,"
-        " hasReceivedInputs, receivedInputsLastCycle"
+        " hasReceivedInputs, receivedInputsLastCycle, qtyPerCycle"
         " FROM piPins"
         " WHERE ccPinID = %u", ccPinID))
     {
@@ -269,6 +269,7 @@ void PlanetDB::LoadPins(uint32 ccPinID, std::map<uint32, PI_Pin>& pins)
             pin.lastRunTime             = row.GetInt64(19);
             pin.hasReceivedInputs       = row.GetBool(20);
             pin.receivedInputsLastCycle = row.GetBool(21);
+            pin.qtyPerCycle             = row.GetInt(22);
 
         if (pin.isStorage or pin.isProcess)
             LoadContents(row.GetInt(0), pin.contents);
