@@ -155,7 +155,7 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     // this is shit....but failsafe for blackscreen bug
     if (!call.client->IsSetStateSent())
-        //if (call.client->IsIdle())
+        if (!call.client->IsUndock())
             call.client->SetBallPark();
 
     //vicious crap.
