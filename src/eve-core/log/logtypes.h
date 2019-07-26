@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.2
+ Log Version: 9.3
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -135,10 +135,23 @@ LOG_TYPE( PLANET, INFO, DISABLED, "PlanetInfo" )
 LOG_TYPE( PLANET, TRACE, DISABLED, "PlanetTrace" )
 LOG_TYPE( PLANET, DUMP, DISABLED, "PlanetCallDump" )
 LOG_TYPE( PLANET, RES_DUMP, DISABLED, "PlanetResDump" )
-LOG_TYPE( PLANET, GC_DUMP, DISABLED, "GC_Dump" )
 LOG_TYPE( PLANET, PKT_TRACE, DISABLED, "PlanetPktTrace" )
-LOG_TYPE( PLANET, DB_ERROR,   ENABLED, "PlanetDBError" )
-LOG_TYPE( PLANET, DB_WARNING, DISABLED, "PlanetDBWarning" )
+LOG_TYPE( PLANET, DB_ERROR,   ENABLED, "PlanetDB:Error" )
+LOG_TYPE( PLANET, DB_WARNING, DISABLED, "PlanetDB:Warning" )
+
+LOG_CATEGORY( COLONY )
+LOG_TYPE( COLONY, ERROR,   ENABLED, "ColonyError" )
+LOG_TYPE( COLONY, WARNING, DISABLED, "ColonyWarning" )
+LOG_TYPE( COLONY, MESSAGE, DISABLED, "ColonyMsg" )
+LOG_TYPE( COLONY, DEBUG, DISABLED, "ColonyDebug" )
+LOG_TYPE( COLONY, INFO, DISABLED, "ColonyInfo" )
+LOG_TYPE( COLONY, TRACE, DISABLED, "ColonyTrace" )
+LOG_TYPE( COLONY, DUMP, DISABLED, "ColonyCallDump" )
+LOG_TYPE( COLONY, RES_DUMP, DISABLED, "ColonyResDump" )
+LOG_TYPE( COLONY, GC_DUMP, DISABLED, "GC_Dump" )
+LOG_TYPE( COLONY, PKT_TRACE, DISABLED, "ColonyPktTrace" )
+LOG_TYPE( COLONY, DB_ERROR,   ENABLED, "ColonyDB:Error" )
+LOG_TYPE( COLONY, DB_WARNING, DISABLED, "ColonyDB:Warning" )
 
 LOG_CATEGORY( SPAWN )
 LOG_TYPE( SPAWN, ERROR,   ENABLED, "SpawnError" )
