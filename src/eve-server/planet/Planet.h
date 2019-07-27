@@ -66,6 +66,7 @@ public:
     void                SetCustomsOffice(CustomsSE* pSE){ pCO = pSE; }
     CustomsSE*                  GetCustomsOffice()      { return pCO; }
 
+    bool                        HasColony()             { return !m_colonies.empty(); }
 
 protected:
     CustomsSE*                  pCO;  // our Customs Office SE  - we dont own this

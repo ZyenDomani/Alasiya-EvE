@@ -663,6 +663,9 @@ void Colony::RemovePin(uint32 pinID)
         ++rItr;
     }
 
+    m_srcRoutes.erase(pinID);
+    m_destRoutes.erase(pinID);
+
     ccPin->pins.erase(pinID);
     ccPin->plants.erase(pinID);  // may or may not be here.
     m_db.RemovePin(pinID);
@@ -688,6 +691,9 @@ void Colony::RemoveLink(uint32 src, uint32 dest)
 
 void Colony::RemoveRoute(uint16 routeID)
 {
+    std::map<uint16, PI_Route>::iterator routeItr = ccPin->routes.find(routeID);
+    m_srcRoutes.erase(routeItr->second.srcPinID);
+    m_destRoutes.erase(routeItr->second.destPinID);
     ccPin->routes.erase(routeID);
     m_db.RemoveRoute(routeID);
     _log(COLONY__INFO, "Colony::RemoveRoute() - Removed route: %u", routeID);
@@ -1351,6 +1357,12 @@ void Colony::ProcessECUs(bool& updateTimes)
                             ecu.second.expiryTime, m_procTime);
                 continue;
             }
+            if (ecu.second.cycleTime < 0.0f) {
+                if (is_log_enabled(COLONY__DEBUG))
+                    _log(COLONY__DEBUG, "Colony::ProcessECUs() - cycleTime < 0.");
+                continue;
+            }
+
             if (ecu.second.lastRunTime < EvE::Time::Hour)
                 ecu.second.lastRunTime = ecu.second.expiryTime - ecu.second.cycleTime;
 

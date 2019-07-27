@@ -137,6 +137,12 @@ bool SystemManager::BootSystem() {
         if (cur.second->IsPOSSE())
             cur.second->GetPOSSE()->Init();
 
+    // check planets for colony/customs office
+    for (auto cur : m_planetMap)
+        if (cur.second->HasColony())
+            if (!cur.second->HasCOSE())
+                cur.second->CreateCustomsOffice();
+
     if (sConfig.server.BountyPayoutDelayed)
         m_bountyTimer.Start(sConfig.server.BountyPayoutTimer * 60 * 1000);
 

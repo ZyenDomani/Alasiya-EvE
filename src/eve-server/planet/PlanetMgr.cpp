@@ -70,7 +70,7 @@ PyRep* PlanetMgr::UpdateNetwork(UUNCommandList& uuncl)
         }
     }
 
-    //m_colony->Save();
+    m_colony->Save();
 
     return m_colony->GetColony();
 }

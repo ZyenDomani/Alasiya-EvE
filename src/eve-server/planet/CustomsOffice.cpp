@@ -112,7 +112,7 @@ void CustomsSE::InitData()
     float y = targ.y - pos.y;   // rise on y axis
     float yaw = atan2(x, z);  // rad from position to target on xz plane
     float hyp = sqrt(pow(z, 2) + pow(x, 2));   // run on y plane
-    float pitch = atan(y / hyp);  // rad from position to target on hy plane
+    float pitch = atan2(y, hyp);  // rad from position to target on hy plane
 
     // verify quadrant and set rotation accordingly
     /*  quadrant signs and corrections

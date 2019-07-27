@@ -180,9 +180,9 @@ PyRep* PlanetSE::GetResourceData(Call_ResourceDataDict& dict)
     uint16 size = (uint16)pow(dict.newBand, 2) *4;
     std::string data = itr->second.substr(0, size);
     // adjust data for system security.  not sure how to make it 'less' yet
-    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %u using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %u, proximity: %u, newBand: %u, oldBand: %u, bufferSize: %u", \
-                dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, dict.updateTime, \
-                dict.proximity, dict.newBand, dict.oldBand, size);
+    _log(PLANET__DEBUG, "PlanetSE::GetResourceData() for %s (%u) using remoteSense: %u, planetology: %u, advPlanetology: %u - updateTime: %u, proximity: %u, newBand: %u, oldBand: %u, bufferSize: %u", \
+                sPIDataMgr.GetProductName(dict.resourceTypeID), dict.resourceTypeID, dict.remoteSensing, dict.planetology, dict.advancedPlanetology, \
+                dict.updateTime, dict.proximity, dict.newBand, dict.oldBand, size);
     PyDict* args = new PyDict();
         args->SetItemString("data", new PyString(data));
         args->SetItemString("numBands", new PyInt(dict.newBand));
@@ -291,10 +291,10 @@ void PlanetSE::CreateCustomsOffice()
 
     if (m_system->GetSystemSecurityRating() > 0.49) {
         typeID = EVEDB::invTypes::typePlanetaryCustomsOffice;
-        data.ownerID = 98000000;
-        data.factionID = 0; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
+        data.ownerID = corpCONCORD;
+        data.factionID = factionCONCORD; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;
-        data.corporationID = 98000000;
+        data.corporationID = corpCONCORD;
     }
 
     /*  this puts CO in warp-in bubble
@@ -318,7 +318,15 @@ void PlanetSE::CreateCustomsOffice()
     */
     // this puts CO in random 700km orbit around planet
     GPoint pos(GetPosition());
-    pos.MakeRandomPointOnSphere(GetRadius() + 700000);
+    //pos.MakeRandomPointOnSphere(GetRadius() + 700000);
+
+    //uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_int()*/;
+    uint32 radius = GetRadius();
+    float rad = EvE::Trig::Deg2Rad(25);
+
+    pos.x += radius + 700000 * std::sin(rad);
+    pos.z += radius + 700000 * std::cos(rad);
+    pos.y += MakeRandomInt(-1000, 1000);
 
     ItemData idata(typeID, data.ownerID, m_system->GetID(), flagAutoFit, 1, itoa(m_self->itemID()), false);
     StructureItemRef iRef = sItemFactory.SpawnStructure(idata);
