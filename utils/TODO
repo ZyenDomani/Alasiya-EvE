@@ -261,6 +261,7 @@ OnItemsChanged is for multiple changes in a single return.
 _Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSet.EveOwners (or server if empty)
     - as ownerID defaults to '0', client throws error when receives 'None' as response  (need more the 0 values to unpack)
     - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
+    -  could this be part of "EveOwners" bulkdata, which is why client is throwing error?  look into and fix as needed.
 
 Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders for some that are 'xxxxx' which need fixing
 
@@ -286,7 +287,11 @@ move *data calls from inventoryDB into static data mgr
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
+
 roids not inserted into itemfactory map
+characters not inserted into itemfactory map
+dynamic system items not inserted into itemfactory map
+
 
 ***  began putting specific throw msgs in approprate common/EVE_*.h files, if available, else src/*/*.h files ***
 
@@ -301,6 +306,9 @@ Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed
 
 player error msgs - pool of msgs adjusted for character secstatus, a la sphereScript's speech files
 
+update GetFlagName() to use const char* (c++) instead of std::string (c-style) for return
+
+object cache system still not understood or fully utilized.
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:

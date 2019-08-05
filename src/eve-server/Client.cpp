@@ -221,7 +221,7 @@ Client& Client::operator=(Client&& oth) noexcept
 Client::~Client() {
     if (!m_loaded)
         return;
-    
+
     if (pShipSE != nullptr)
         WarpOut();
 
@@ -1411,6 +1411,9 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         return;
     }
 
+    EVEItemFlags oldflag = flagIllegal;
+    oldflag = iRef->flag();
+    
     iRef->Move(location, flag, true);
 
     if (IsPlayerItem(location)) {
@@ -1419,10 +1422,12 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
         } else if (IsCargoHoldFlag(iRef->flag())) {
             // do nothing here.  this is to avoid throwing error msg below
         } else {
-            _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s(%u)", m_char->itemName().c_str(), iRef->itemName().c_str(), itemID);
+            _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s (%u) from flag %s to flag %s.", \
+                    m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag).c_str(), sDataMgr.GetFlagName(flag).c_str());
         }
     } else {
-        _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s(%u)", m_char->itemName().c_str(), iRef->itemName().c_str(), itemID);
+        _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s (%u) from flag %s to flag %s.", \
+        m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag).c_str(), sDataMgr.GetFlagName(flag).c_str());
     }
     sItemFactory.UnsetUsingClient();
 }
