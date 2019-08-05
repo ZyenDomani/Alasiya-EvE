@@ -1415,7 +1415,7 @@ void SystemManager::UpdateData()
 {
     uint16 jumps = 0;
     uint16 stamp = sEntityList.GetStamp() -60;
-    std::map<int32, int8>::iterator itr = m_jumpMap.begin();
+    std::map<uint32, uint8>::iterator itr = m_jumpMap.begin();
     while (itr != m_jumpMap.end()) {
         if (itr->first < stamp) {
             itr = m_jumpMap.erase(itr);
