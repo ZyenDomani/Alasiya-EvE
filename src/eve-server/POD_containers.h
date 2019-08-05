@@ -333,6 +333,22 @@ struct SystemData {
     std::string securityClass;
 };
 
+struct SystemKillData {
+    uint16 killsHour;
+    uint16 kills24Hour;
+    uint16 factionKills;
+    uint16 factionKills24Hour;
+    uint16 podKillsHour;
+    uint16 podKills24Hour;
+
+    int64 killsDateTime;
+    int64 kills24DateTime;
+    int64 factionDateTime;
+    int64 faction24DateTime;
+    int64 podDateTime;
+    int64 pod24DateTime;
+};
+
 /* POD structure for static items. */
 struct StaticData {
     uint16 typeID;

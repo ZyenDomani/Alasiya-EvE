@@ -18,7 +18,11 @@ replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --w
 systemmgr - use kills object instead of db hit
     - hit this object to avoid db hits for every kill
     - this will hold current counts
-    - save to db every 15m, called by ConsoleCommand::UpdateStatus() (from EntityList::Process())
+    - save to db every 15m, called by EntityList::Process() for active systems
+    - add kill tracking to systeMgr
+    - use systemMgr to update/track kills/hour data and update db as needed (use 15m call above)
+    - load kill times when system boots.  use 15m timer call (from EntityList) to update data
+    -  do we wanna change VisitedSystems calls to use this format or leave as db hit?  no, we'll leave it as-is for now.
 
 dbcore - query retry enables runaway server when query causes server disconnection (error)
     - should this be limited?
@@ -309,6 +313,10 @@ player error msgs - pool of msgs adjusted for character secstatus, a la sphereSc
 update GetFlagName() to use const char* (c++) instead of std::string (c-style) for return
 
 object cache system still not understood or fully utilized.
+
+when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
+
+check db selects for loading single-line data sets using WHILE().  change these to IF ... ELSE data=data(); 
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:

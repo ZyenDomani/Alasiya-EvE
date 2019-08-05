@@ -722,8 +722,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
                 pShipSE->DestinyMgr()->Halt();
             m_system->RemoveEntity(pShipSE);
         }
-        //MapDB::AddPilotToDynamicData(m_SystemData.systemID);
-        m_system->RemoveClient(this, (count = true));
+        m_system->RemoveClient(this, (count = true), IsJump());
         m_system = nullptr;
     }
 
@@ -742,9 +741,8 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_beyonce = false;
         m_setStateSent = false;
 
-        //MapDB::AddPilotToDynamicData(m_SystemData.systemID, true, IsStation(locationID), count);
         // register ourself with new system manager.
-        m_system->AddClient(this, count);
+        m_system->AddClient(this, count, IsJump());
     }
 
     m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
@@ -1277,23 +1275,13 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     }
     m_moveSystemID = toData.systemID;
     m_movePoint = toData.position;
-    m_movePoint.MakeRandomPointOnSphereLayer(7500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
+    m_movePoint.MakeRandomPointOnSphereLayer(6500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
 /*
     char ci[25];
     snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
     m_ship->SetCustomInfo(ci);
 */
-    // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
-    // this is the code for removing pilot from previous system
-    StaticData fromData = StaticData();
-    if (!sDataMgr.GetStaticInfo(fromGate, fromData)) {
-            sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), fromGate);
-            return;
-        }
-    //add jump in previous system
-    MapDB::AddJumpToDynamicData(fromData.systemID);
-    //add jump in this system
-    MapDB::AddJumpToDynamicData(toData.systemID);
+
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
     m_char->VisitSystem(toData.systemID);
 
@@ -1413,7 +1401,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
 
     EVEItemFlags oldflag = flagIllegal;
     oldflag = iRef->flag();
-    
+
     iRef->Move(location, flag, true);
 
     if (IsPlayerItem(location)) {

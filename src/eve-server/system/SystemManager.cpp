@@ -65,8 +65,10 @@ m_dungMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc)),
 m_loaded(false),
 m_entityChanged(false),
+m_jumps(0),
 m_docked(0),
 m_players(0),
+m_jumpTime(0),
 m_beltCount(0),
 m_gateCount(0),
 m_activityTime(0),
@@ -87,6 +89,10 @@ m_secValue(1.1f)
     m_roidBubbles.clear();
     m_ticEntities.clear();
     m_staticEntities.clear();
+
+    // zero-init our data containers
+    m_data = SystemData();
+    m_killData = SystemKillData();
 
     sDataMgr.GetSystemInfo(systemID, m_data);   // system data is now an internal memory (cached) object.  db is hit once at system boot.
     m_secValue -= m_data.securityRating;  // range is 0.1 for 1.0 system to 2.0 for -0.9 system
@@ -157,8 +163,10 @@ bool SystemManager::BootSystem() {
     //sMktBotMgr.AddSystem();
 
     // set system active for system status page
-    MapDB::chkDynamicSystemID(m_data.systemID);
     MapDB::SetSystemActive(m_data.systemID, true);
+
+    // load dynamic map data
+    MapDB::LoadDynamicData(m_data.systemID, m_killData);
 
     //start minute timer
     m_minutetimer.Start(60000);
@@ -789,15 +797,18 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
     return nullptr;
 }
 
-void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
+void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*false*/) {
     //called from Client::MoveToLocation() on login and when changing systems
     if (pClient == nullptr)
         return;
-    auto itr = m_clients.find(pClient->GetCharacterID());
-    if (itr == m_clients.end()) {
+    if (m_clients.find(pClient->GetCharacterID()) == m_clients.end()) {
         m_clients[pClient->GetCharacterID()] = pClient;
         _log(PLAYER__TRACE, "%s(%u): Added to system manager for %s(%u) - %u clients now in system. count %s", \
                     pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size(), count?"true":"false");
+    } else {
+        // error for player already in client map
+        _log(PLAYER__ERROR, "%s(%u): Already in player map for %s(%u)", \
+            pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
     }
 
     m_activityTime = 0;
@@ -807,18 +818,17 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/) {
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
+    if (jump)
+        ++m_jumps;
 }
 
-void SystemManager::RemoveClient(Client* pClient, bool count/*false*/) {
+void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump/*false*/) {
     //called from Client::~Client() and Client::MoveToLocation() when changing systems
     if (pClient == nullptr)
         return;
-    auto itr = m_clients.find(pClient->GetCharacterID());
-    if (itr != m_clients.end()) {
-        m_clients.erase(itr);
-        _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
-                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
-    }
+    m_clients.erase(pClient->GetCharacterID());
+    _log(PLAYER__TRACE, "%s(%u): Removed from system manager for %s(%u) - %u clients still in system.", \
+            pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_clients.size());
 
     if (count) {
         --m_players;
@@ -827,13 +837,15 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/) {
             _log(PLAYER__ERROR, "player count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
         }
 
-        if (!m_players) {
+        if (m_players < 1) {
             m_clients.clear();
             m_activityTime = sEntityList.GetStamp();
         }
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
+    if (jump)
+        --m_jumps;
 }
 
 void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
@@ -848,7 +860,7 @@ void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
         if (m_docked < 0) {
             m_docked = 0;
-            _log(PLAYER__ERROR, "docked count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
+            _log(PLAYER__ERROR, "docked count for %s(%u) is <0", m_data.name.c_str(), m_data.systemID);
         }
     }
 }
@@ -1377,7 +1389,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
             default: {
                 sig.sigGroupID = cur.second->GetGroupID();
                 sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-                sig.scanGroupID = Scanning::Group::Anomaly;  // Celestial(64) is invalid in client
+                sig.scanGroupID = Scanning::Group::Anomaly;  // Celestial (scanGroupID 64) is invalid in client
             } break;
         }
         vector.push_back(sig);
@@ -1386,8 +1398,36 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 
 void SystemManager::UpdateDynamicData()
 {
-    MapDB::UpdateSystemData(m_data.systemID, m_docked, (m_players - m_docked));
+    // update dynamic data timers and counts here at 15m intervals
+    ManipulateTimeData();
+
+    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
+    MapDB::UpdateJumps(m_data.systemID, m_jumps, m_jumpTime);
+    MapDB::UpdateKillData(m_data.systemID, m_killData);
 }
+
+//  time related methods to manipulate hour/24hour map data
+
+void SystemManager::ManipulateTimeData()
+{
+
+}
+
+/*
+    uint16 killsHour;
+    uint16 kills24Hour;
+    uint16 factionKills;
+    uint16 factionKills24Hour;
+    uint16 podKillsHour;
+    uint16 podKills24Hour;
+
+    int64 killsDateTime;
+    int64 kills24DateTime;
+    int64 factionDateTime;
+    int64 faction24DateTime;
+    int64 podDateTime;
+    int64 pod24DateTime;
+    */
 
 
 bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)
@@ -1403,7 +1443,7 @@ bool SystemManager::IsNull(std::map<uint32, SystemEntity*>::iterator& i)
     return *buffer == 0;
     /* I found that the size of any iterator is 12 bytes long.
      * I also found that if the first byte of the iterator that
-     * if copy to the buffer is zero, then the iterator is invalid.
+     * is copy to the buffer is zero, then the iterator is invalid.
      * Otherwise it is valid. I like to call invalid iterators also as "null iterators".
      */
 }

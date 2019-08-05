@@ -264,6 +264,7 @@ void StructureSE::Init()
         case EVEDB::invGroups::Cynosural_System_Jammer: {
             /** @todo (Allan) do we need anything else here?  check for and set system-wide cyno jammer?
              *    as we're nowhere even close to needing/using cyno, this can wait
+             * note: set generator active in mapDynamicData on activation of this module
              */
             m_jammer = true;
             m_module = true;

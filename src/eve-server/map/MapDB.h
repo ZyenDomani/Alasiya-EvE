@@ -41,26 +41,27 @@ public:
     static PyObject* GetStationOpServices();
     static PyObject* GetStationServiceInfo();
     static PyObject* GetSolSystemVisits(uint32);
-    static PyRep* GetDynamicData(uint8 type, uint8 time);
 
     static void GetStationCount(DBQueryResult& res);
 
     /* for MapData class */
     static void GetSystemJumps(DBQueryResult& res);
 
-    /* clear system static data on server start */
+    /* clear system dynamic data on server start */
     static void SystemStartup();
 
-    // for dynamic db functions    -allan
-    static void SetSystemActive(uint32 sysID, bool active=false);
-    static void UpdateSystemData(uint32 sysID, uint8 docked=0, uint8 space=0);
-    static void chkDynamicSystemID(uint32 solarSystemID);
-    static void AddJumpToDynamicData(uint32 solarSystemID);/**jumpsHour, jumps24Hours */
-    static void AddPilotToDynamicData(uint32 solarSystemID, bool isAdd=false, bool isDocked=false, bool isLogin=false); /**pilotsDocked, pilotsInSpace */
-    static void AddKillToDynamicData(uint32 solarSystemID); /**killsHour, kills24Hours */
-    static void AddPodKillToDynamicData(uint32 solarSystemID);/**podKillsHour, podKills24Hour */
-    static void AddFactionKillToDynamicData(uint32 solarSystemID);  /**factionKills*/
+    // for dynamic data handled in system manager
+    static void LoadDynamicData(uint32 sysID, SystemKillData& data);
 
+    // dynamic data db methods    -allan
+    static PyRep* GetDynamicData(uint8 type, uint8 time);
+    static void SetSystemActive(uint32 sysID, bool active=false);
+    static void UpdateJumps(uint32 sysID, uint16 jumps, int64 time);    //jumpsHour
+    static void UpdateKillData(uint32 sysID, SystemKillData& data);    // ship, faction, pod
+    static void UpdatePilotCount(uint32 sysID, uint16 docked=0, uint16 space=0); /**pilotsDocked, pilotsInSpace */
+    static void AddKillToDynamicData(uint32 sysID); /**killsHour, kills24Hours */
+    static void AddPodKillToDynamicData(uint32 sysID);/**podKillsHour, podKills24Hour */
+    static void AddFactionKillToDynamicData(uint32 sysID);  /**factionKills, factionKills24Hour*/
 };
 
 #endif

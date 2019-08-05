@@ -65,7 +65,7 @@ public:
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
     void UnloadSystem();
-    void UpdateDynamicData();   // called by EntityList every 15m
+    void UpdateDynamicData();   // called by EntityList every 15m while system is active
 
     bool IsLoaded()                                     { return m_loaded; }
 
@@ -117,8 +117,8 @@ public:
     void RemoveNPC(NPC* who);
     void AddEntity(SystemEntity* who);
     void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble
-    void AddClient(Client* pClient, bool count=false);
-    void RemoveClient(Client* pClient, bool count=false);
+    void AddClient(Client* pClient, bool count=false, bool jump=false);
+    void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);
 
     void AddItemToInventory(InventoryItemRef item);
@@ -166,9 +166,20 @@ private:
     DungeonMgr* m_dungMgr;      //we own this, never NULL.
     SpawnMgr* m_spawnMgr;       //we own this, never NULL.
 
-    SystemData m_data;
     PyServiceMgr& m_services;
     SolarSystemRef m_solarSystemRef;
+
+    // static system data
+    SystemData m_data;
+
+    float m_secValue;
+
+    // for dynamic data system  -allan 10June2019
+    SystemKillData m_killData;
+    uint16 m_jumps;
+    uint16 m_docked;
+    int64 m_jumpTime;
+    void ManipulateTimeData();
 
     // for spawn systems     -allan 15July15
     uint8 m_beltCount;
@@ -187,13 +198,8 @@ private:
     // for grid Unloading system  -allan  27June2015
     bool m_loaded;
     bool SystemActivity();
-    uint32 m_players;           // current total count
+    uint16 m_players;           // current total count
     uint32 m_activityTime;
-
-    float m_secValue;
-
-    // for player count system  -allan 10June2019
-    uint8 m_docked;
 
     // system entity lists:
     bool m_entityChanged;
