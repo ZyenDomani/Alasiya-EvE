@@ -220,8 +220,8 @@ void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 void MapDB::UpdatePilotCount(uint32 sysID, uint16 docked/*0*/, uint16 space/*0*/)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u, pilotsDateTime = %f WHERE solarSystemID = %u",
-                       docked, space, GetFileTimeNow(), sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u, WHERE solarSystemID = %u",
+                       docked, space, sysID );
 }
 
 void MapDB::UpdateJumps(uint32 sysID, uint16 jumps)
