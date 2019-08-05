@@ -82,8 +82,34 @@ PyResult CharMgrBound::Handle_List( PyCallArgs& call )
     _log(CHARACTER__DEBUG, "CharMgrBound::Handle_List() size=%u", call.tuple->size() );
     call.Dump(CHARACTER__DEBUG);
 
+    // maybe get all items owned by calling character?
 
-    return nullptr;
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT "
+        "  e.itemID, "
+        "  e.itemName, "
+        "  e.typeID, "
+        "  e.ownerID, "
+        "  e.locationID, "
+        "  e.flag AS flagID, "
+        "  e.quantity AS stacksize, "
+        "  e.customInfo, "
+        "  e.singleton, "
+        "  g.categoryID, "
+        "  g.groupID "
+        "FROM entity AS e"
+        "  LEFT JOIN invTypes USING (typeID)"
+        "  LEFT JOIN invGroups AS g USING (groupID)"
+        "WHERE e.ownerID=%u AND e.locationID < %u", m_ownerID, maxStation))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    //PyRep* rsp = DBResultToCRowset(res);
+   // if (is_log_enabled(CLIENT__RSP_DUMP))
+    //    rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return DBResultToCRowset(res);
 }
 
 PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )

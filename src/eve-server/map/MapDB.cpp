@@ -158,17 +158,14 @@ PyRep *MapDB::GetDynamicData(uint8 type, uint8 time) {
             // cynos arent implemented yet, so this will always return 0
             sDatabase.RunQuery(res, "SELECT solarSystemID, moduleCnt, structureCnt FROM mapDynamicData WHERE active=1" );
             DBResultRow row;
-            PyList* list = new PyList();
+            PyDict* dict = new PyDict();
             while (res.GetRow(row)) {
                 PyTuple* inner = new PyTuple(2);
                     inner->SetItem(0, new PyInt(row.GetInt(1)));    // cyno modules on ships (fields)
                     inner->SetItem(1, new PyInt(row.GetInt(2)));    // cyno generators (POS structures)
-                PyTuple* outer = new PyTuple(2);
-                    outer->SetItem(0, new PyInt(row.GetInt(0)));
-                    outer->SetItem(1, inner);
-                list->AddItem(outer);
+                dict->SetItem(new PyInt(row.GetInt(0)), inner);
             }
-            return list;
+            return dict;
         };
         case 3: {
             if (time == 1)
@@ -220,14 +217,14 @@ void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 void MapDB::UpdatePilotCount(uint32 sysID, uint16 docked/*0*/, uint16 space/*0*/)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u, WHERE solarSystemID = %u",
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET pilotsDocked = %u, pilotsInSpace = %u WHERE solarSystemID = %u",
                        docked, space, sysID );
 }
 
 void MapDB::UpdateJumps(uint32 sysID, uint16 jumps)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u, WHERE solarSystemID = %u", jumps, sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u WHERE solarSystemID = %u", jumps, sysID );
 }
 
 void MapDB::UpdateKillData(uint32 sysID, SystemKillData& data)
