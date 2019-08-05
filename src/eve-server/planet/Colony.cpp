@@ -195,14 +195,13 @@ void Colony::Save()
     m_db.SaveLinks(ccPin);
     m_db.SaveRoutes(ccPin);
     m_db.SaveContents(ccPin);
-    m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_pSE->GetTypeID(), ccPin->pins.size());
+    m_db.UpdatePlanetPins(m_colonyID, ccPin->pins.size());
 }
 
-// called by PlanetSE::Process()
+// called by PlanetSE::Process() for loaded colony.
+//  NOTE: colony is only loaded AFTER client calls for it.
 void Colony::Process()
 {
-    /** @todo  code timers/checks for individual ecus based on their cycletime */
-
     if (m_colonyTimer.Check()) { //  this will process colony data every 30 mins. (typical cycle time)
         if (ccPin->pins.empty()) {
             m_colonyTimer.Disable();
@@ -364,6 +363,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
     m_colonyID = itemID;
     ccPin->ccPinID = itemID;
     m_db.SaveCommandCenter(itemID, m_client->GetCharacterID(), m_pSE->GetID(), typeID, latitude, longitude);
+    m_db.AddPlanetForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_colonyID, m_pSE->GetTypeID());
     ccPin->level = PI::Pin::Level0;
     m_procTime = GetFileTimeNow();
     CreatePin(EVEDB::invGroups::Command_Centers, itemID, typeID, latitude, longitude);
@@ -372,6 +372,7 @@ void Colony::CreateCommandPin(uint32 itemID, uint32 typeID, double latitude, dou
 
 void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latitude, double longitude) {
     /** @todo will have to write code for effects and checks for pg/cpu/m3/etc for all of these.  */
+    // maybe not...client checks before sending command
     using namespace EVEDB::invGroups;
     PI_Pin pin = PI_Pin();
     InventoryItemRef iRef(nullptr);
@@ -671,7 +672,7 @@ void Colony::RemovePin(uint32 pinID)
     m_db.RemovePin(pinID);
     m_db.SaveLinks(ccPin);
     m_db.SaveRoutes(ccPin);
-    m_db.UpdatePlanetsForChar(m_pSE->SystemMgr()->GetID(), m_pSE->GetID(), m_client->GetCharacterID(), m_pSE->GetTypeID(), ccPin->pins.size());
+    m_db.UpdatePlanetPins(m_colonyID, ccPin->pins.size());
     _log(COLONY__INFO, "Colony::RemovePin() - Removed pin %u with %u routes and %u links.  Upset %u routes by removing this pin", \
                             pinID, routeCount, linkCount, pathCount);
 }
@@ -1180,6 +1181,13 @@ PyTuple* Colony::GetPins()
         dict->SetItem("state", new PyInt(cur.second.state));
         dict->SetItem("level", new PyInt(cur.second.level));
 
+        PyDict* contents = new PyDict();
+        contents->clear();
+        if (cur.second.isStorage)
+            for (auto cur2 : cur.second.contents)
+                contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
+        dict->SetItem("contents", contents);
+
         if (cur.second.isLaunchable)
             dict->SetItem("lastLaunchTime", (cur.second.lastLaunchTime > 0 ? new PyLong(cur.second.lastLaunchTime) : PyStatic.NewNone()));
 
@@ -1201,14 +1209,6 @@ PyTuple* Colony::GetPins()
                 dict->SetItem("hasReceivedInputs", PyStatic.NewFalse());
                 dict->SetItem("receivedInputsLastCycle", PyStatic.NewFalse());
             }
-
-        PyDict* contents = new PyDict();
-        contents->clear();
-        if (cur.second.isStorage)
-            for (auto cur2 : cur.second.contents)
-                contents->SetItem(new PyInt(cur2.first), new PyInt(cur2.second));
-
-        dict->SetItem("contents", contents);
 
         if (cur.second.isECU) {
             if (cur.second.installTime > 0) {
@@ -1337,6 +1337,7 @@ void Colony::Update(bool updateTimes/*false*/)
         m_toUpdate = true;
     }
 
+    // empty colony runs in 47 - 80 us
     _log(COLONY__INFO, "Colony::Update() - Update completed in %.3fus with %u links, %u pins, %u plants, and %u routes (s:%u, d:%u) ", \
                     GetTimeUSeconds() - profileStartTime, ccPin->links.size(), ccPin->pins.size(), ccPin->plants.size(), ccPin->routes.size(), \
                     m_srcRoutes.size(), m_destRoutes.size());

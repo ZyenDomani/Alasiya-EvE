@@ -87,17 +87,23 @@ PyRep* PlanetDB::GetPlanetsForChar(uint32 charID) {
     return DBResultToCRowset(res);
 }
 
-void PlanetDB::UpdatePlanetsForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint16 typeID, uint8 pins/*1*/)
+void PlanetDB::AddPlanetForChar(uint32 solarSystemID, uint32 planetID, uint32 charID, uint32 ccPinID, uint16 typeID)
 {
     DBerror err;
     if(!sDatabase.RunQuery(err,
-        "INSERT INTO piPlanets (solarSystemID, planetID, charID, typeID, numberOfPins)"
-        " VALUES (%u, %u, %u, %u, %u)"
-        " ON DUPLICATE KEY UPDATE "
-        " numberOfPins=VALUES(numberOfPins)",
-         solarSystemID, planetID, charID, typeID, pins))
+        "INSERT INTO piPlanets (solarSystemID, planetID, charID, typeID, ccPinID)"
+        " VALUES (%u, %u, %u, %u, %u)", solarSystemID, planetID, charID, typeID, ccPinID))
     {
-        _log(DATABASE__ERROR, "SaveCommandCenter - Unable to save CommandCenter: %s", err.GetError());
+        _log(DATABASE__ERROR, "AddPlanetForChar - Unable to add planet %u for char %u: %s", planetID, charID, err.GetError());
+    }
+
+}
+void PlanetDB::UpdatePlanetPins(uint32 ccPinID, uint8 pins)
+{
+    DBerror err;
+    if(!sDatabase.RunQuery(err, "UPDATE piPlanets SET numberOfPins = %u WHERE ccPinID = %u ", pins, ccPinID))
+    {
+        _log(DATABASE__ERROR, "UpdatePlanetPins - Unable to update ccPinID %u : %s", ccPinID, err.GetError());
     }
 }
 
@@ -415,9 +421,9 @@ void PlanetDB::SaveCommandCenter(uint32 pinID, uint32 charID, uint32 planetID, u
 {
     DBerror err;
     if(!sDatabase.RunQuery(err,
-        "INSERT INTO piCCPin (pinID, charID, planetID, typeID, latitude, longitude, lastRunTime) "
+        "INSERT INTO piCCPin (pinID, charID, planetID, typeID, latitude, longitude) "
         " VALUES (%u, %u, %u, %u, %f, %f, %f)",
-                           pinID, charID, planetID, typeID, latitude, longitude, GetFileTimeNow()))
+                           pinID, charID, planetID, typeID, latitude, longitude))
     {
         _log(DATABASE__ERROR, "SaveCommandCenter - Unable to save CommandCenter: %s", err.GetError());
     }
@@ -820,11 +826,11 @@ void PlanetDB::DeleteColony(uint32 ccPinID, uint32 planetID, uint32 charID)
     /** @todo  remove items from entity* table... */
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE locationID = %u AND ownerID = %u", planetID, charID);
-    sDatabase.RunQuery(err, "DELETE FROM piPlanets WHERE planetID = %u AND charID = %u", planetID, charID);
     sDatabase.RunQuery(err, "DELETE FROM piCCPin WHERE pinID = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM piPins WHERE ccPinID = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM piLinks WHERE ccPinID = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM piRoutes WHERE ccPinID = %u", ccPinID);
+    sDatabase.RunQuery(err, "DELETE FROM piPlanets WHERE ccPinID = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM piECUHeads WHERE ccPinID = %u", ccPinID);
     sDatabase.RunQuery(err, "DELETE FROM piPinContents WHERE ccPinID = %u", ccPinID);
 }

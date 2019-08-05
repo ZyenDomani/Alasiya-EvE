@@ -266,7 +266,9 @@ uint32 PIDataMgr::GetProgramOutput(InventoryItemRef iRef, int64 cycleTime, int64
     // this is in client to display the Extractor window program results.
 
     if (startTime == 0)
-        startTime = GetFileTimeNow();
+        startTime = GetFileTimeNow() - 2 * EvE::Time::Second;
+    if (currentTime == 0)
+        currentTime = GetFileTimeNow();
 
     int cycleNum = EvE::max((currentTime - startTime + EvE::Time::Second) / cycleTime - 1, 1);
     float barWidth = cycleTime / EvE::Time::Second / 900.0; //0.13888
