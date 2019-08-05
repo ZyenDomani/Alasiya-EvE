@@ -106,7 +106,11 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
         flagIDs << "," << flagCorpHangar2 << "," << flagCorpHangar3 << "," << flagCorpHangar4 << "," << flagCorpHangar5 << "," << flagCorpHangar6 << "," << flagCorpHangar7;
     }
 
-    /** @todo check into this to see if we're querying POS modules(uk) also. */
+    /** @todo check into this to see if we're querying POS modules(uk) also.
+     * if so, we'll need to revise location checks and somehow fix it so customs offices (and anything else using flagHangar)
+     *  doesnt show up, which leads to elusive "AttributeError: 'NoneType' object has no attribute 'solarSystemID'"  in client
+     *  when locationID is NOT station
+     */
     DBQueryResult res;
     if (blueprintOnly) {
         if (isCorp) {
@@ -117,8 +121,8 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
                 "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint))
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
@@ -129,8 +133,8 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
                 " FROM entity AS e"
                 "  LEFT JOIN invTypes USING (typeID)"
                 "  LEFT JOIN invGroups AS g USING (groupID)"
-                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint))
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
@@ -143,8 +147,8 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
                 "SELECT o.stationID, COUNT(e.itemID) as itemCount"
                 " FROM entity AS e"
                 "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
-                " WHERE e.ownerID=%u AND e.flag IN (%s)"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str()))
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
@@ -152,8 +156,8 @@ PyResult CharMgrBound::Handle_ListStations( PyCallArgs& call )
         } else {
             if (!sDatabase.RunQuery(res,
                 "SELECT locationID AS stationID, COUNT(itemID) as itemCount"
-                " FROM entity WHERE ownerID=%u AND flag IN (%s)"
-                " GROUP BY locationID", ownerID, flagIDs.str().c_str()))
+                " FROM entity WHERE ownerID=%u AND flag IN (%s) AND locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
             {
                 codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
                 return nullptr;
