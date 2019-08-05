@@ -158,7 +158,7 @@ faction24DateTime
           sDatabase.RunQuery(res, "SELECT solarSystemID, killsHour AS value1, factionKills AS value2, podKillsHour AS value3 FROM mapDynamicData" );
       else if (time == 24)
           sDatabase.RunQuery(res, "SELECT solarSystemID, kills24Hour AS value1, factionKills24Hour AS value2, podKills24Hour AS value3 FROM mapDynamicData" );
-    } else if (type == 5)
+    } else if (type == 5)   //FacWarSvc.GetMostDangerousSystems
         sDatabase.RunQuery(res, "SELECT solarSystemID, killsHour AS value1, factionKills AS value2, kills24Hour AS value3, factionKills24Hour AS value4, podKills24Hour AS value5 FROM mapDynamicData" );
     else
         return nullptr;

@@ -65,7 +65,7 @@
     PyTuple* data = new PyTuple(7);
         data->SetItem(0, first);
         data->SetItem(1, new PyNone()); //unknown
-        data->SetItem(2, new PyInt(704421)); //unknown
+        data->SetItem(2, new PyInt(704421)); //unknown - nodeID?
         data->SetItem(3, PyStatic.NewOne()); //unknown
         data->SetItem(4, new PySubStream(new PyString("http:://eve.alasiya.net/")));
         data->SetItem(5, new PyInt(0)); //unknown

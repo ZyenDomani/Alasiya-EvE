@@ -45,7 +45,6 @@ public:
     PyCallable_DECL_CALL(Add);
     PyCallable_DECL_CALL(MultiAdd);
     PyCallable_DECL_CALL(GetItem);
-    PyCallable_DECL_CALL(ListStations);
     PyCallable_DECL_CALL(ReplaceCharges);
     PyCallable_DECL_CALL(RemoveChargeToCargo);
     PyCallable_DECL_CALL(RemoveChargeToHangar);
@@ -73,7 +72,7 @@ protected:
     uint32 m_itemID;
     uint32 m_ownerID;
 
-    bool m_passive;
+    bool m_passive;     // still not sure what this is for
 
     std::vector< int32 > CatSortItems(std::vector< InventoryItemRef >& itemVec);
 

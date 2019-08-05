@@ -59,7 +59,6 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, MultiAdd);
     PyCallable_REG_CALL(InventoryBound, GetItem);
     PyCallable_REG_CALL(InventoryBound, ListDroneBay);
-    PyCallable_REG_CALL(InventoryBound, ListStations);
     PyCallable_REG_CALL(InventoryBound, ReplaceCharges);
     PyCallable_REG_CALL(InventoryBound, RemoveChargeToCargo);
     PyCallable_REG_CALL(InventoryBound, RemoveChargeToHangar);
@@ -85,18 +84,6 @@ InventoryBound::~InventoryBound()
 PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     return m_self->GetItem();
-}
-
-PyResult InventoryBound::Handle_ListStations( PyCallArgs& call )
-{
-    _log(INV__MESSAGE, "Calling InventoryBound::ListStations() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-
-    util_Rowset rowset;
-
-    rowset.header.push_back( "stationID" );
-    rowset.header.push_back( "itemCount" );
-
-    return rowset.Encode();
 }
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {

@@ -497,9 +497,7 @@ void StaticDataMgr::GetDgmTypeAttrVec(uint32 typeID, std::vector< DmgTypeAttribu
 
 bool StaticDataMgr::IsSkillTypeID(uint16 typeID)
 {
-    if (m_skills.find(typeID) != m_skills.end())
-        return true;
-    return false;
+    return (m_skills.find(typeID) != m_skills.end());
 }
 
 bool StaticDataMgr::GetSkillName(uint16 skillID, std::string& name)
@@ -1494,7 +1492,7 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
         case 26527:  //    Gallente Freighter Wreck
         case 26528:  //    Gallente Frigate Wreck
         case 26529:  //    Gallente Industrial Wreck
-        case 26530:  //   Gallente Mining Barge Wreck
+        case 26530:  //    Gallente Mining Barge Wreck
         case 26531:  //    Gallente Supercarrier Wreck
         case 26532:  //    Gallente Rookie ship Wreck
         case 26533:  //    Gallente Shuttle Wreck
@@ -1515,6 +1513,7 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
         case 26546:  //    Minmatar Elite Frigate Wreck
         case 26547:  //    Minmatar Elite Industrial Wreck
         case 26548:  //    Minmatar Elite Mining Barge Wreck
+        case 29036:  //    Minmatar Elite Freighter Wreck
         case 26549:  //    Minmatar Freighter Wreck
         case 26550:  //    Minmatar Frigate Wreck
         case 26551:  //    Minmatar Industrial Wreck
@@ -1655,10 +1654,8 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
 
     /*
      *    28255 :  //   Mission Faction Freighter Wreck
-     *    29036 :  //   Minmatar Elite Freighter Wreck
      *    29347:  //    Mission Faction Vessels Wreck
      *    29365:  //    Mission Faction Industrials Wreck
-     *
      */
 }
 

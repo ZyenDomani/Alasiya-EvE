@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan (rewrite)
 */
 
 #include "eve-server.h"
@@ -79,7 +80,7 @@ PyResult MapService::Handle_GetCurrentEntities(PyCallArgs &call)
 
 PyResult MapService::Handle_GetSolarSystemVisits(PyCallArgs &call)
 {
-    return m_db.GetSolSystemVisits(call.client->GetCharacterID());
+    return MapDB::GetSolSystemVisits(call.client->GetCharacterID());
 }
 
 PyResult MapService::Handle_GetMyExtraMapInfoAgents(PyCallArgs &call)
@@ -104,6 +105,7 @@ PyResult MapService::Handle_GetStationExtraInfo(PyCallArgs &call)
 
 PyResult MapService::Handle_GetSolarSystemPseudoSecurities(PyCallArgs &call)
 {
+    // cant find a call to this in client (possible old call)
     return sMapData.GetPseudoSecurities();
 }
 
@@ -262,9 +264,7 @@ PyResult MapService::Handle_GetDeadspaceAgentsMap(PyCallArgs &call)
         dungeons = sm.RemoteSvc('map').GetDeadspaceAgentsMap(eve.session.languageID)
         solarSystemID, dungeonID, difficulty, dungeonName = dungeons
 */
-    PyRep *result = NULL;
-
-    result = new PyDict();
+    PyRep *result = new PyDict();
 
     return result;
 }
@@ -281,9 +281,7 @@ PyResult MapService::Handle_GetDeadspaceComplexMap(PyCallArgs &call)
 */
   sLog.White( "MapService::Handle_GetDeadspaceComplexMap()", "size= %u", call.tuple->size() );
     call.Dump(SERVICE__CALL_DUMP);
-    PyRep *result = NULL;
-
-    result = new PyDict();
+    PyRep *result = new PyDict();
 
     return result;
 }
