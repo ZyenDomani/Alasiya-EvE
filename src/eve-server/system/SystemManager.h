@@ -53,7 +53,7 @@ class PyServiceMgr;
 class DynamicEntityFactory {
 public:
     // you MUST call (your SystemManager)->AddEntity([this returned object]) after this to actually put the entity in space
-    static SystemEntity* BuildEntity(SystemManager& sysRef, const DBSystemDynamicEntity& entity, int64 launcherID=0);
+    static SystemEntity* BuildEntity(SystemManager& pSysMgr, const DBSystemDynamicEntity& entity);
 };
 
 class SystemManager

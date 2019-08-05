@@ -249,9 +249,6 @@ bool SystemManager::ProcessTic() {
 bool SystemManager::SystemActivity() {
     if (m_activityTime == 0)
         return true;
-    //if (sConfig.world.gridUnload)
-    //    if (m_players < 1)
-    //        if (sConfig.world.gridUnloadTime < (sEntityList.GetStamp() - m_activityTime))
     if ((sEntityList.GetStamp() - m_activityTime) > 60)
         return false;
 
@@ -460,7 +457,7 @@ bool SystemManager::LoadPlayerDynamics() {
 }
 
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int64 launcherID/*0*/) {
-    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity, launcherID);
+    SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity);
     if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );
         return false;
@@ -468,16 +465,16 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
 
     _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_data.systemID );
     AddEntity(pSE);
+
     // this is only used for wrecks...
     if (launcherID) {
         WreckSE* pWE = pSE->GetWreckSE();
         pWE->SetLaunchedByID(launcherID);
-        pWE->DestinyMgr()->SendJettisonPacket();
     }
     return true;
 }
 
-SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DBSystemDynamicEntity& entity, int64 launcherID/*0*/)
+SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DBSystemDynamicEntity& entity)
 {
     FactionData data = FactionData();
         data.allianceID = entity.allianceID;
@@ -698,9 +695,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (iRef.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    ItemSystemEntity* aSE = new ItemSystemEntity(iRef, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(pSysMgr.GetServiceMgr()), &pSysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
-                    return aSE;
+                    return iSE;
                 } break;
             } break;
         } break;
@@ -844,14 +841,13 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
             _log(PLAYER__ERROR, "player count for %s(%u) is <1", m_data.name.c_str(), m_data.systemID);
         }
 
-        if (m_players < 1) {
+        if (m_players < 1)
             m_clients.clear();
-            m_activityTime = sEntityList.GetStamp();
-        }
+
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
-    if (jump){
+    if (jump) {
         uint16 stamp = sEntityList.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
@@ -1428,6 +1424,11 @@ void SystemManager::UpdateData()
 
     // this is jumps/hour data
     MapDB::UpdateJumps(m_data.systemID, jumps);
+    // if system and jumpmap are both empty, set activity time for unload timer
+    if (m_activityTime == 0)
+        if (m_clients.empty())
+            if (m_jumpMap.empty())
+                m_activityTime = sEntityList.GetStamp() -50;
 
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 

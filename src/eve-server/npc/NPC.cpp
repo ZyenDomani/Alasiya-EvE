@@ -378,4 +378,5 @@ void NPC::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
+    m_destiny->SendJettisonPacket();
 }

@@ -414,6 +414,7 @@ void Ship::Killed(Damage &fatal_blow) {
             ; /** @todo make error msg here */  //  PyException( MakeCustomError ( "Spawning Wreck Failed: typeID or typeName not supported." ) );
             wreckItemRef->Delete();
         }
+        m_destiny->SendJettisonPacket();
         return;
     }
 
@@ -539,7 +540,7 @@ void Ship::Killed(Damage &fatal_blow) {
             corpseEntity.x = wreckPosition.x;
             corpseEntity.y = wreckPosition.y;
             corpseEntity.z = wreckPosition.z;
-            if (!m_system->BuildDynamicEntity( corpseEntity)) {
+            if (!m_system->BuildDynamicEntity(corpseEntity)) {
                 sLog.Error("Ship::Killed()", "Spawning Corpse Failed: typeID or typeName not supported: '%u'", corpseTypeID);
             } else if (is_log_enabled(PHYSICS__TRACE)) {
                 _log(PHYSICS__TRACE, "Ship::Killed() - Pod %s(%u) Position: %.2f,%.2f,%.2f.  Corpse %s(%u) Position: %.2f,%.2f,%.2f.", \
@@ -603,5 +604,6 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckItemRef->Delete();
             return;
         }
+        m_destiny->SendJettisonPacket();
     }
 }

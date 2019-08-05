@@ -555,4 +555,5 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         wreckItemRef->Delete();
         return;
     }
+    m_destiny->SendJettisonPacket();
 }
