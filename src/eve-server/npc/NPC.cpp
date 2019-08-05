@@ -335,6 +335,10 @@ void NPC::Killed(Damage &fatal_blow) {
     }
 
     GPoint wreckPosition = m_destiny->GetPosition();
+    if (wreckPosition.isNaN()) {
+        sLog.Error("NPC::Killed()", "Wreck Position is NaN");
+        return;
+    }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
@@ -344,8 +348,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName();
     wreck_name += " Wreck";
-    const char* faction = itoa(m_allyID);
-    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, faction);
+    ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
     WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
     if (wreckItemRef.get() == nullptr) {
         sLog.Error("NPC::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);

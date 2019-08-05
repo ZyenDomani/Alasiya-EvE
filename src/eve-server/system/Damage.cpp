@@ -365,6 +365,11 @@ void Ship::Killed(Damage &fatal_blow) {
     MapDB::AddFactionKillToDynamicData(locationID);
 
     // set up basic wreck data
+    GPoint wreckPosition = m_destiny->GetPosition();
+    if (wreckPosition.isNaN()) {
+        sLog.Error("NPC::Killed()", "Wreck Position is NaN");
+        return;
+    }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
         sLog.Error("Ship::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
@@ -372,7 +377,6 @@ void Ship::Killed(Damage &fatal_blow) {
         wreckTypeID = 26557;
     }
 
-    GPoint wreckPosition = m_destiny->GetPosition();
     std::string wreck_name = m_self->itemName() + " Wreck";
 
     SystemBubble* pBubble(m_bubble);
@@ -382,7 +386,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
     if (!m_self->HasPilot()) {
         // Spawn a wreck for the Ship that was destroyed:
-        ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
+        ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
@@ -570,7 +574,7 @@ void Ship::Killed(Damage &fatal_blow) {
         podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
         pPilot->ResetAfterPopped(podPosition);
 
-        ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition);
+        ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
         WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
         if (wreckItemRef.get() == nullptr) {
             sLog.Error("Ship::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);

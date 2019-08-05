@@ -663,10 +663,6 @@ int64 DBResultRow::GetInt64( uint32 index ) const
         return 0;
     }
 
-    //int64 value;
-    //sscanf( mRow[index], "%" SCNd64, &value );
-    //return value;
-
     //use base 0 on the obscure chance that this is a string column with an 0x hex number in it.
     return strtoll( mRow[index], nullptr, 0 );
 }

@@ -115,7 +115,7 @@ struct vec3 {
 
 	vec3 mul(const vec3 & rhs) const { return{ x * rhs.x, y * rhs.y, z * rhs.z }; }
 	vec3 div(const vec3 & rhs) const { return{ x / rhs.x, y / rhs.y, z / rhs.z }; }
-	vec3 sqrt() const 
+	vec3 sqrt() const
 	{
 		vec3 signo = vec3{ sign_b(x), sign_b(y), sign_b(z) };
 		return vec3{ std::sqrt(abs(x)), std::sqrt(abs(y)), std::sqrt(abs(z)) }.mul(signo);
@@ -270,7 +270,7 @@ inline double angle_from_two_vectors(vec3 u, vec3 v)
 inline float angle_from_two_vectors_f(Vector3 u, Vector3 v)
 {
 	float valor = acosf(u.Dot(v) / (u.Length()*v.Length()));
-	if (isnan(valor)) return 0.f;
+	if (isnan(valor)) return 0.0f;
 	return valor;
 }
 //																																					//
