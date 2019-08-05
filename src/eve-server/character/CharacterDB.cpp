@@ -285,7 +285,7 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
     sDatabase.DoEscapeString(eName, name.c_str());
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
-    if (res.ColumnCount() > 0)  // name exists
+    if (res.GetRowCount() > 0)  // name exists
         return new PyInt(-101);
 
     /* if we got here the name is "new" */
@@ -295,7 +295,7 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
 /** @todo this should throw on error */
 void CharacterDB::ValidateCharName(std::string name)
 {
-    /*{'messageKey': 'CharNameInvalid', 'dataID': 17885077, 'suppressable': False, 'bodyID': 260107, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 471}
+    /* {'messageKey': 'CharNameInvalid', 'dataID': 17885077, 'suppressable': False, 'bodyID': 260107, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 471}
      * {'messageKey': 'CharNameInvalidBannedWord', 'dataID': 17884963, 'suppressable': False, 'bodyID': 260067, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 472}
      * {'messageKey': 'CharNameInvalidFirstChar', 'dataID': 17884966, 'suppressable': False, 'bodyID': 260068, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 473}
      * {'messageKey': 'CharNameInvalidLastChar', 'dataID': 17884969, 'suppressable': False, 'bodyID': 260069, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 474}
@@ -306,7 +306,7 @@ void CharacterDB::ValidateCharName(std::string name)
      * {'messageKey': 'CharNameInvalidTaken', 'dataID': 17884981, 'suppressable': False, 'bodyID': 260073, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 479}
      * {'messageKey': 'CharNameTooShort', 'dataID': 17884986, 'suppressable': False, 'bodyID': 260075, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 260074, 'messageID': 482}
      */
-    /*{'FullPath': u'UI/Messages', 'messageID': 260067, 'label': u'CharNameInvalidBannedWordBody'}(u'Character name contains a banned word.', None, None)
+    /* {'FullPath': u'UI/Messages', 'messageID': 260067, 'label': u'CharNameInvalidBannedWordBody'}(u'Character name contains a banned word.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 260068, 'label': u'CharNameInvalidFirstCharBody'}(u'First character in character name is illegal.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 260069, 'label': u'CharNameInvalidLastCharBody'}(u'Last character in character name is illegal.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 260070, 'label': u'CharNameInvalidMaxSpacesBody'}(u'Character name can only include 1 space.', None, None)
@@ -317,6 +317,9 @@ void CharacterDB::ValidateCharName(std::string name)
      * {'FullPath': u'UI/Messages', 'messageID': 260075, 'label': u'CharNameTooShortBody'}(u'The name must be at least 3 characters long.', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 260107, 'label': u'CharNameInvalidBody'}(u'The name you have selected for your character is not valid', None, None)
      * {'FullPath': u'UI/Messages', 'messageID': 260109, 'label': u'CharNameInvalidMaxLengthBody'}(u'Maximum length for a character name is 37 characters. The first and second name must be less than 24 character combined, and the third name must be less than 12 characters.', None, None)
+     * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233748, 'label': u'IllegalCharacter'}(u'Name contains illegal characters.', None, None)
+     * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233749, 'label': u'TooShort'}(u'Name is too short.', None, None)
+     * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233750, 'label': u'Unavailable'}(u'Name is unavailable.', None, None)
      */
 
     // *name  is sent from client WITHOUT leading space, if there is one, and will not allow more than one space.
@@ -356,7 +359,7 @@ void CharacterDB::ValidateCharName(std::string name)
     sDatabase.DoEscapeString(eName, name.c_str());
     DBQueryResult res;
     sDatabase.RunQuery(res, "SELECT characterID FROM chrCharacters WHERE name LIKE '%s' ", eName.c_str() );
-    if (res.ColumnCount() > 0)  // name exists
+    if (res.GetRowCount() > 0)  // name exists
         throw PyException( MakeUserError("CharNameInvalidTaken"));
 
     /* if we got here, the name is good */
