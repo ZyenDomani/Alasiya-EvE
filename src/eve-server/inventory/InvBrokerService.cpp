@@ -321,7 +321,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             flag = flagOffice;
         } break;
         case Inv::Container::Factory: { /*10006*/
-            // not sure on this one
+            // not sure on this one  (not coded in client)
             if (ownerID == 0)
                 ownerID = call.client->GetCharacterID();
             flag = flagFactory;
@@ -333,7 +333,13 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
             flag = flagProperty;
         } break;
 
-        //case Inv::Container::Global:/*10002*/    // used in asset listings.  means "everywhere"  not sure how to code it yet...
+        case Inv::Container::Global: { /*10002*/    // used in asset listings.  means "everywhere"
+            // not sure how to code it yet...
+            if (ownerID == 0)
+                ownerID = call.client->GetCharacterID();
+            flag = flagAutoFit;
+        } break;
+
         //case Inv::Container::ScrapHeap:/*10005*/
         //case Inv::Container::Bank:/*10007*/
         //case Inv::Container::Recycler:/*10008*/
