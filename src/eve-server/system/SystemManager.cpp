@@ -65,7 +65,6 @@ m_dungMgr(new DungeonMgr(this, svc)),
 m_spawnMgr(new SpawnMgr(this, svc)),
 m_loaded(false),
 m_entityChanged(false),
-m_jumps(0),
 m_docked(0),
 m_players(0),
 m_jumpTime(0),
@@ -81,6 +80,7 @@ m_secValue(1.1f)
 
     m_npcs.clear();
     m_clients.clear();
+    m_jumpMap.clear();
     m_moonMap.clear();
     m_entities.clear();
     m_planetMap.clear();
@@ -235,7 +235,7 @@ bool SystemManager::ProcessTic() {
 
     // process planets for PI
     if (m_minutetimer.Check()) {
-        ++m_minutes;
+        //++m_minutes;  // not used at this time
         for (auto cur : m_planetMap)
             cur.second->Process();
     }
@@ -249,10 +249,11 @@ bool SystemManager::ProcessTic() {
 bool SystemManager::SystemActivity() {
     if (m_activityTime == 0)
         return true;
-    if (sConfig.world.gridUnload)
-        if (m_players < 1)
-            if (sConfig.world.gridUnloadTime < (sEntityList.GetStamp() - m_activityTime))
-                return false;
+    //if (sConfig.world.gridUnload)
+    //    if (m_players < 1)
+    //        if (sConfig.world.gridUnloadTime < (sEntityList.GetStamp() - m_activityTime))
+    if ((sEntityList.GetStamp() - m_activityTime) > 60)
+        return false;
 
     return true;
 }
@@ -818,8 +819,14 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
         _log(PLAYER__INFO, "%s(%u): Added to player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
-    if (jump)
-        ++m_jumps;
+    if (jump) {
+        uint16 stamp = sEntityList.GetStamp();
+        std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
+        if (itr != m_jumpMap.end()) {
+            ++(itr->second);
+        } else
+            m_jumpMap.emplace(stamp, 1);
+    }
 }
 
 void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump/*false*/) {
@@ -844,8 +851,14 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
         _log(PLAYER__INFO, "%s(%u): Removed from player count for %s(%u) - new count: %u", \
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
-    if (jump)
-        --m_jumps;
+    if (jump){
+        uint16 stamp = sEntityList.GetStamp();
+        std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
+        if (itr != m_jumpMap.end()) {
+            ++(itr->second);
+        } else
+            m_jumpMap.emplace(stamp, 1);
+    }
 }
 
 void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
@@ -1396,21 +1409,40 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
     }
 }
 
-void SystemManager::UpdateDynamicData()
-{
-    // update dynamic data timers and counts here at 15m intervals
-    ManipulateTimeData();
-
-    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
-    MapDB::UpdateJumps(m_data.systemID, m_jumps, m_jumpTime);
-    MapDB::UpdateKillData(m_data.systemID, m_killData);
-}
 
 //  time related methods to manipulate hour/24hour map data
+void SystemManager::UpdateData()
+{
+    uint16 jumps = 0;
+    uint16 stamp = sEntityList.GetStamp() -60;
+    std::map<int32, int8>::iterator itr = m_jumpMap.begin();
+    while (itr != m_jumpMap.end()) {
+        if (itr->first < stamp) {
+            itr = m_jumpMap.erase(itr);
+            continue;
+        } else {
+            jumps += itr->second;
+            ++itr;
+        }
+    }
 
+    // this is jumps/hour data
+    MapDB::UpdateJumps(m_data.systemID, jumps);
+
+    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
+
+    ManipulateTimeData();
+}
+
+// not sure how to do this one yet...
 void SystemManager::ManipulateTimeData()
 {
+    int64 timeNow = GetFileTimeNow();
+    timeNow += EvE::Time::Hour;
 
+    //if (m_killData.killsDateTime < timeNow)
+
+    MapDB::UpdateKillData(m_data.systemID, m_killData);
 }
 
 /*

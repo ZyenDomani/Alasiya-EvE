@@ -55,8 +55,9 @@ public:
 
     // dynamic data db methods    -allan
     static PyRep* GetDynamicData(uint8 type, uint8 time);
+    static void ManipulateTimeData();
     static void SetSystemActive(uint32 sysID, bool active=false);
-    static void UpdateJumps(uint32 sysID, uint16 jumps, int64 time);    //jumpsHour
+    static void UpdateJumps(uint32 sysID, uint16 jumps);    //jumpsHour
     static void UpdateKillData(uint32 sysID, SystemKillData& data);    // ship, faction, pod
     static void UpdatePilotCount(uint32 sysID, uint16 docked=0, uint16 space=0); /**pilotsDocked, pilotsInSpace */
     static void AddKillToDynamicData(uint32 sysID); /**killsHour, kills24Hours */

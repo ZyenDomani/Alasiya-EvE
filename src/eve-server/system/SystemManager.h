@@ -65,7 +65,7 @@ public:
     bool ProcessTic();          // called at 1Hz.
     bool BootSystem();
     void UnloadSystem();
-    void UpdateDynamicData();   // called by EntityList every 15m while system is active
+    void UpdateData();          // called from EntityList every 5m for active systems
 
     bool IsLoaded()                                     { return m_loaded; }
 
@@ -176,10 +176,11 @@ private:
 
     // for dynamic data system  -allan 10June2019
     SystemKillData m_killData;
-    uint16 m_jumps;
     uint16 m_docked;
     int64 m_jumpTime;
     void ManipulateTimeData();
+    std::map<uint32, uint8> m_jumpMap;  // timestamp/jumps
+    // may have to do kill data like jumps above
 
     // for spawn systems     -allan 15July15
     uint8 m_beltCount;

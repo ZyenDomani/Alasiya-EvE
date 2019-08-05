@@ -34,6 +34,7 @@
 #include "EVEServerConfig.h"
 #include "ServiceDB.h"
 #include "agents/Agent.h"
+#include "map/MapDB.h"
 #include "market/MarketMgr.h"
 //#include "market/MarketBotMgr.h"
 #include "missions/MissionDataMgr.h"
@@ -50,7 +51,6 @@ EntityList::EntityList()
 : m_services( nullptr ),
 m_stampTimer(0, true),
 m_minutetimer(0, true),
-m_updateTimer(0),
 m_startTime(0)
 {
     m_agents.clear();
@@ -61,7 +61,7 @@ m_startTime(0)
     m_corpMembers.clear();
 
     m_npcs = 0;
-    m_stamp = 1000;   /* start at 1k.  in seconds.  used for destiny and client counters */
+    m_stamp = 1000;   /* arbitrary.  start at 1k.  in seconds.  used for destiny and client counters */
     m_minutes = 0;
     m_connections = 0;
     m_clientSeedID = 0;
@@ -77,8 +77,7 @@ void EntityList::Initialize() {
 
     /* start the timers */
     m_stampTimer.Start(1000);
-    m_minutetimer.Start(60000);
-    m_updateTimer.Start(sConfig.rates.WebUpdate * 60000);   // change minutes to ms for timer
+    m_minutetimer.Start(60000); // does this need to be accurate?
 
     m_clientSeedID = ServiceDB::SetClientSeed();
 
@@ -210,11 +209,11 @@ void EntityList::Process() {
             if (cur.second->IsValidSession())   // verify client is constructed before calling ProcessClient() on it
                 cur.second->ProcessClient();
 
-        std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
     /** @todo test for adding OpenMP here to enable MP per system. */
     // this wont work....possibility of removing systems, therefore invalidating the iterator.
     // bad things can happen if this is running parallel on MP
     //#pragma omp parallel  // starts a new team
+        std::map<uint32, SystemManager*>::iterator itr = m_systems.begin();
         while (itr != m_systems.end()) {
             if (itr->second == nullptr) { /* this shouldnt happen.  log error to make note */
                 sLog.Error(" EntityList::Proc", "Deleting System %u", itr->first);
@@ -229,24 +228,23 @@ void EntityList::Process() {
             ++itr;
         }
 
+        // these minute tics do not need to be precise
         if (m_minutetimer.Check()) {
-            // dont have a use for this yet, but have visions where this could be handy (like player online counters)
             ++m_minutes;
             sMissionDataMgr.Process();  // 1m
 
-            // these do not need to be precise
-            sWHMgr.Process();   // ~2m
-            if (m_minutes % 60 == 0) // ~1h
-                sMktMgr.Process();
-            if (m_updateTimer.Check()) { // 15m
+            if (m_minutes % 5 == 0) { // ~5m
+                sWHMgr.Process();   // ~2m
+                for (auto cur : m_systems)
+                    cur.second->UpdateData();   // update active system timers and dynamic data every 5m
+            }
+            if (m_minutes % 15 == 0) { // ~15m
                 //sMktBotMgr.Process();  // 15m to 30m
                 sConsole.UpdateStatus();
-                // loop thru loaded systems and save their current player counts
-                itr = m_systems.begin();
-                while (itr != m_systems.end()) {
-                    itr->second->UpdateDynamicData();
-                    ++itr;
-                }
+            }
+            if (m_minutes % 60 == 0) { // ~1h
+                MapDB::ManipulateTimeData();
+                sMktMgr.Process();  // not used - does nothing at this time
             }
 
             // write something to tic corps vote cases.

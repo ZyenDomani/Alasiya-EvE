@@ -224,10 +224,10 @@ void MapDB::UpdatePilotCount(uint32 sysID, uint16 docked/*0*/, uint16 space/*0*/
                        docked, space, GetFileTimeNow(), sysID );
 }
 
-void MapDB::UpdateJumps(uint32 sysID, uint16 jumps, int64 time)
+void MapDB::UpdateJumps(uint32 sysID, uint16 jumps)
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u, jumpsDateTime = %lli WHERE solarSystemID = %u", jumps, time, sysID );
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u, WHERE solarSystemID = %u", jumps, sysID );
 }
 
 void MapDB::UpdateKillData(uint32 sysID, SystemKillData& data)
@@ -262,4 +262,11 @@ void MapDB::AddPodKillToDynamicData(uint32 sysID) {   /**podKillsHour, podKills2
     sDatabase.RunQuery(err,
             "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1, pod24DateTime = %f WHERE solarSystemID = %u",
                 GetFileTimeNow(), sysID );
+}
+
+// will need to write methods to retrieve/manipulate/set system dynamic data as systems may/may not be loaded
+
+void MapDB::ManipulateTimeData()
+{
+
 }
