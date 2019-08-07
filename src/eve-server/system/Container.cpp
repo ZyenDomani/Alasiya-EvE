@@ -106,27 +106,11 @@ void CargoContainer::Delete()
 
 double CargoContainer::GetCapacity(EVEItemFlags flag) const
 {
-    switch( flag ) {
-        case flagAutoFit:
-        case flagCargoHold:
-            return GetAttribute(AttrCapacity).get_double();
-        // are there any other cases to check for here?
-        default:
-            return 0.0;
-    }
+    return pInventory->GetCapacity(flag);
 }
 
 void CargoContainer::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const {
-    if (flag == flagCargoHold )  {
-        EvilNumber capacityUsed(0);
-        std::vector<InventoryItemRef> items;
-        pInventory->GetItemsByFlag(flag, items);
-        for (auto cur : items)
-            capacityUsed += cur->GetAttribute(AttrVolume);
-        capacityUsed += item->GetAttribute(AttrVolume);
-        if (capacityUsed > GetAttribute(AttrCapacity) )
-            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Not enough cargo space!") );
-    }
+    pInventory->ValidateAddItem(flag, item);
 }
 
 PyObject *CargoContainer::CargoContainerGetInfo() {
@@ -422,7 +406,7 @@ void WreckContainer::Delete()
 
 double WreckContainer::GetCapacity(EVEItemFlags flag) const
 {
-    return GetAttribute(AttrCapacity).get_double();
+    return pInventory->GetCapacity(flag);
 }
 
 PyObject *WreckContainer::WreckContainerGetInfo()
@@ -446,6 +430,7 @@ PyObject *WreckContainer::WreckContainerGetInfo()
 
 void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item ) const
 {
+    // throw();
         //  no code here.  should NOT be able to add items to a wreck contaier.
 }
 

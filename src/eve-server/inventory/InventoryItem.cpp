@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:        Allan
+    Updates:     Allan
 */
 
 #include "eve-server.h"
@@ -146,11 +146,12 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
         data.name = iType->name();
 
     if (data.locationID == 0) {
-        _log(ITEM__ERROR, "LocationID = 0 for item");
-        //EvE::traceStack();
+        _log(ITEM__MESSAGE, "LocationID = 0 for item");
+        if (is_log_enabled(ITEM__TRACE))
+            EvE::traceStack();
     }
     // insert new entry into DB
-    return sItemFactory.db()->NewItem(data);
+    return InventoryDB::NewItem(data);
 }
 
 /* This Spawn function is meant for in-memory only items created from the following categorys...
@@ -552,7 +553,7 @@ void InventoryItem::Delete() {
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
     //take ourself out of the DB
-    sItemFactory.db()->DeleteItem(m_itemID);
+    m_db.DeleteItem(m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
     //PyDecRef(this);
@@ -572,7 +573,7 @@ void InventoryItem::ToVirtual(uint32 locationID)
     m_locationID = locationID;
 
     //take ourself out of the DB
-    sItemFactory.db()->DeleteItem(m_itemID);
+    m_db.DeleteItem(m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
 }
@@ -636,10 +637,11 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
 
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Donate()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
-    if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
-        SaveItem();
+    //if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
+    //    SaveItem();
+    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
@@ -689,13 +691,14 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     }
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
-                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag).c_str(), sDataMgr.GetFlagName(new_flag).c_str());
+                itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
 
     if (IsTempItem(m_itemID))
         return;
 
-    if (sConfig.world.saveOnMove)
-        SaveItem();
+    //if (sConfig.world.saveOnMove)
+    //    SaveItem();
+    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
 
     //notify about the changes.
     if (notify) {
@@ -722,7 +725,8 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
     InventoryItemRef iRef = sItemFactory.SpawnItem(idata);
     if (iRef.get() == nullptr)
         return InventoryItemRef(nullptr);  // couldnt spawn new item...we'll get over it.
-        iRef->Move(m_locationID, m_flag, true);
+
+    iRef->Move(m_locationID, m_flag, true);
     return iRef;
 }
 
@@ -825,8 +829,9 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
-    if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
-        SaveItem();
+    //if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
+    //    SaveItem();
+    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -842,7 +847,7 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
     if (singleton == m_singleton)
         return true;    //nothing to do...
 
-        bool old_singleton = m_singleton;
+    bool old_singleton = m_singleton;
     m_singleton = singleton;
 
     if (sConfig.world.saveOnUpdate)
@@ -921,7 +926,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
 }
 
 void InventoryItem::SaveItem() {
-    sItemFactory.db()->SaveItem(
+    m_db.SaveItem(
         m_itemID,
         ItemData(
             m_itemName.c_str(),
@@ -939,6 +944,11 @@ void InventoryItem::SaveItem() {
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
     SaveAttributes();
+}
+
+void InventoryItem::UpdateLocation()
+{
+    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {
@@ -1183,8 +1193,8 @@ double InventoryItem::GetPackagedVolume()
     if (m_singleton)
         return m_type.volume();
 
-    if ((m_type.categoryID() == EVEDB::invCategories::Ship)
-        or (m_type.categoryID() == EVEDB::invCategories::Celestial)) {
+   // if ((m_type.categoryID() == EVEDB::invCategories::Ship)
+    //or (m_type.categoryID() == EVEDB::invCategories::Celestial)) {
         // these volumes are hard-coded in client.
         switch (m_type.groupID()) {
             case 29:  //   Capsule
@@ -1255,30 +1265,30 @@ double InventoryItem::GetPackagedVolume()
                 return 10000000;
             }
         }
-        }
-        // catchall
-        return m_type.volume();
+    //}
+
+    // return basic volume for non-ship or non-container objects
+    return m_type.volume();
 }
 
-// new effects system  -allan 4Feb17
 bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 {
     EvilNumber need = 0, has = 0;
     uint16 attr = 182, skill = 277;
     for (int8 i = 0; i < 3; ++i, ++attr, ++skill) {
-        if ((refItem->HasAttribute(attr, need)) and (HasAttribute(skill, has))) {
+        if (refItem->HasAttribute(attr, need) and HasAttribute(skill, has)) {
             if (need > has)
                 return false;
         }
     }
-    if ((refItem->HasAttribute(1285, need)) and (HasAttribute(1286, has))) {
+    if (refItem->HasAttribute(1285, need) and HasAttribute(1286, has)) {
         if (need > has)
             return false;
     }
 
     attr = 1289; skill = 1287;
     for (int8 i = 0; i < 2; ++i, ++attr, ++skill) {
-        if ((refItem->HasAttribute(attr, need)) and (HasAttribute(skill, has))) {
+        if (refItem->HasAttribute(attr, need) and HasAttribute(skill, has)) {
             if (need > has)
                 return false;
         }
@@ -1287,6 +1297,7 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
     return true;
 }
 
+// new effects system  -allan 4Feb17
 void InventoryItem::AddModifier(fxData data)
 {
     m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
@@ -1318,8 +1329,6 @@ void InventoryItem::ClearModifiers()
 {
     _log(EFFECTS__TRACE, "Resetting modifier map for %s", m_itemName.c_str());
     m_modifiers.clear();
-    // saving makes no sense here.
-    //pAttributeMap->Save();
     pAttributeMap->Load(true);
 }
 

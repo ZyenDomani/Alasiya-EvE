@@ -428,6 +428,10 @@ PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     return nullptr;
 }
 
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
 PyResult InvBrokerBound::Handle_List(PyCallArgs &call) {
 /**
         inv = invCache.GetInventoryFromId(activeShipID, locationID=session.stationid2)

@@ -311,6 +311,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     // create and register here
     // all anomalies will be created/populated by dungmgr, except WH (handed off to WHMgr above)
+    /** @todo  check distances based on system size */
     if (!m_dungMgr->MakeDungeon(sig)) // pass by ref here, so other vars can be set.
         return;
     // add new sig to sysSigMaps

@@ -84,27 +84,32 @@ class CharacterDB : public ServiceDB
 {
 public:
     static uint32 NewCharacter(const CharacterData& data, const CorpData& corpData);
-    static bool SaveCharacter(uint32 characterID, const CharacterData &data);
-    static bool SaveCorpData(uint32 characterID, const CorpData &data);
-    void DeleteCharacter(uint32 characterID);
+    static bool SaveCharacter(uint32 charID, const CharacterData &data);
+    static bool SaveCorpData(uint32 charID, const CorpData &data);
+    void DeleteCharacter(uint32 charID);
     // this changes corp member counts, adds employment history, and updates char's corp and start date
     static void AddEmployment(uint32 charID, uint32 corpID, uint32 oldCorpID=0);
-    static void GetCharacterData(uint32 characterID, std::map<std::string, int64> &characterDataMap);
-    static bool GetCharHomeStation(uint32 characterID, uint32 &stationID);
-    //if you want to get the typeID of the clone, please use GetActiveCloneType
-    static bool GetActiveCloneID(uint32 characterID, uint32 &itemID);
-    static PyRep *GetInfoWindowDataForChar(uint32 characterID);
+    static void GetCharacterData(uint32 charID, std::map<std::string, int64> &characterDataMap);
+    static bool GetCharHomeStation(uint32 charID, uint32 &stationID);
+    //if you want to get the typeID of the clone use GetActiveCloneType
+    static bool GetActiveCloneID(uint32 charID, uint32 &itemID);
+    static PyRep *GetInfoWindowDataForChar(uint32 charID);
     static uint32 GetStartingStationByCareer(uint32 careerID);
 
+    static PyRep* List(uint32 ownerID);
+    static PyRep* ListStations(uint32 ownerID, std::ostringstream& flagIDs, bool forCorp=false, bool bpOnly=false);
+    static PyRep* ListStationItems(uint32 ownerID, uint32 stationID);
+    static PyRep* ListStationBlueprintItems(uint32 ownerID, uint32 stationID, bool forCorp=false);
+
     PyRep *GetCharacterList(uint32 accountID);
-    PyRep *GetCharSelectInfo(uint32 characterID);
+    PyRep *GetCharSelectInfo(uint32 charID);
     void SetAvatar(uint32 charID, PyRep* hairDarkness);
 	void SetAvatarColors(uint32 charID, uint32 colorID, uint32 colorNameA, uint32 colorNameBC, double weight, double gloss);
 	void SetAvatarModifiers(uint32 charID, PyRep* modifierLocationID,  PyRep* paperdollResourceID, PyRep* paperdollResourceVariation);
 	void SetAvatarSculpts(uint32 charID, PyRep* sculptLocationID, PyRep* weightUpDown, PyRep* weightLeftRight, PyRep* weightForwardBack);
     void SetPortraitInfo(uint32 charID, PortraitInfo &data);
-    PyRep *GetCharPublicInfo(uint32 characterID);
-    PyRep *GetCharPublicInfo3(uint32 characterID);
+    PyRep *GetCharPublicInfo(uint32 charID);
+    PyRep *GetCharPublicInfo3(uint32 charID);
     //PyObject *GetAgentPublicInfo(uint32 agentID);
     PyRep *GetOwnerNoteLabels(uint32 charID);
     PyRep *GetOwnerNote(uint32 charID, uint32 noteID);
@@ -112,17 +117,17 @@ public:
     void SetCurrentShip(uint32 charID, uint32 shipID);
     void SetCurrentPod(uint32 charID, uint32 podID);
 
-    bool ChangeCloneType(uint32 characterID, uint32 typeID);
-    static bool ChangeCloneLocation(uint32 characterID, uint32 locationID);
-	bool GetCharClones(uint32 characterID, std::vector<uint32> &into);
-    bool GetActiveCloneType(uint32 characterID, uint32 &typeID);
-    std::string GetCharName(uint32 characterID);
+    bool ChangeCloneType(uint32 charID, uint32 typeID);
+    static bool ChangeCloneLocation(uint32 charID, uint32 locationID);
+	bool GetCharClones(uint32 charID, std::vector<uint32> &into);
+    bool GetActiveCloneType(uint32 charID, uint32 &typeID);
+    std::string GetCharName(uint32 charID);
 
     PyRep* GetContacts(uint32 charID, bool blocked);
     void AddContact(uint32 charID);
     void UpdateContact(uint32 charID);
 
-    bool GetCharItems(uint32 characterID, std::vector<uint32> &into);
+    bool GetCharItems(uint32 charID, std::vector<uint32> &into);
     bool GetCareerBySchool(uint32 schoolID, uint8 &raceID, uint32 &careerID);
     bool GetCorporationBySchool(uint32 schoolID, uint32 &corporationID);
     bool GetLocationCorporationByCareer(CharacterData &cdata, uint32 &corporationID);
@@ -175,23 +180,23 @@ public:
     /**
      * Loads skill queue.
      *
-     * @param[in] characterID ID of character whose queue should be loaded.
+     * @param[in] charID ID of character whose queue should be loaded.
      * @param[in] into SkillQueue into which loaded data should be stored.
      * @return True if load succeeds, false if fails.
      */
-    bool        LoadSkillQueue(uint32 characterID, SkillQueue &into);
-    bool        LoadPausedSkillQueue(uint32 characterID, SkillQueue &into);
+    bool        LoadSkillQueue(uint32 charID, SkillQueue &into);
+    bool        LoadPausedSkillQueue(uint32 charID, SkillQueue &into);
     /**
      * Saves skill queue.
      *
-     * @param[in] characterID ID of character whose skill queue is saved.
+     * @param[in] charID ID of character whose skill queue is saved.
      * @param[in] queue Queue to save.
      * @return True if save succeeds, false if fails.
      */
-    bool        SaveSkillQueue(uint32 characterID, SkillQueue &queue);
-    bool        SavePausedSkillQueue(uint32 characterID, SkillQueue &queue);
-    void        SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
-    PyRep*      GetSkillHistory(uint32 characterID);
+    bool        SaveSkillQueue(uint32 charID, SkillQueue &queue);
+    bool        SavePausedSkillQueue(uint32 charID, SkillQueue &queue);
+    void        SaveSkillHistory(uint16 eventID, double logDate, uint32 charID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
+    PyRep*      GetSkillHistory(uint32 charID);
     void        UpdateSkillQueueEndTime(int64 endtime, uint32 charID);
 
     void        SetLogInTime(uint32 charID);

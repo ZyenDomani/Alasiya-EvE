@@ -1251,7 +1251,7 @@ EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
     }
 }
 
-std::string StaticDataMgr::GetRigSizeName(uint8 size)
+const char* StaticDataMgr::GetRigSizeName(uint8 size)
 {
     switch (size) {
         case 0:      return "Undefined";
@@ -1262,7 +1262,7 @@ std::string StaticDataMgr::GetRigSizeName(uint8 size)
     }
 }
 
-std::string StaticDataMgr::GetProcStateName(int8 state)
+const char* StaticDataMgr::GetProcStateName(int8 state)
 {
     using namespace EVEPOS;
     switch(state) {
@@ -1280,12 +1280,12 @@ std::string StaticDataMgr::GetProcStateName(int8 state)
     }
 }
 
-std::string StaticDataMgr::GetFlagName(uint16 flag)
+const char* StaticDataMgr::GetFlagName(uint16 flag)
 {
     return GetFlagName((EVEItemFlags)flag);
 }
 
-std::string StaticDataMgr::GetFlagName(EVEItemFlags flag)
+const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
 {
     switch (flag) {
         case flagAutoFit:                               return "AutoFit";

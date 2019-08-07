@@ -825,7 +825,7 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
 
             jcRef = sItemFactory.SpawnCargoContainer(p_idata);
             if (jcRef.get() == nullptr)
-                throw PyException(MakeCustomError("Unable to spawn item of type %u.", 23));
+                throw PyException(MakeCustomError("Unable to spawn jetcan."));
             // create new container
             ContainerSE* cSE = new ContainerSE(jcRef, *m_manager, pSysMgr, data);
 

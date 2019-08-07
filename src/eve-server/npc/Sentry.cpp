@@ -157,8 +157,8 @@ void Sentry::Killed(Damage &fatal_blow) {
 
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
+    MapDB::AddKill(locationID);
+    MapDB::AddFactionKill(locationID);
     if (pClient != nullptr) {
         //award kill bounty.
         //AwardBounty( pClient );
@@ -168,7 +168,7 @@ void Sentry::Killed(Damage &fatal_blow) {
 
     GPoint wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
-        sLog.Error("NPC::Killed()", "Wreck Position is NaN");
+        sLog.Error("Sentry::Killed()", "Wreck Position is NaN");
         return;
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -188,7 +188,7 @@ void Sentry::Killed(Damage &fatal_blow) {
     }
 
     if (is_log_enabled(PHYSICS__TRACE))
-        _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+        _log(PHYSICS__TRACE, "Sentry::Killed() - Sentry %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)

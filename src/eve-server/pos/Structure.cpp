@@ -355,7 +355,7 @@ void StructureSE::Process() {
     	m_procTimer.Disable();
         m_delayTime = 0;
 
-        _log(POS__DEBUG, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, sDataMgr.GetProcStateName(m_procState).c_str());
+        _log(POS__DEBUG, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, sDataMgr.GetProcStateName(m_procState));
 
         using namespace EVEPOS;
         switch (m_procState) {
@@ -417,7 +417,7 @@ void StructureSE::Process() {
             } break;
             default:
             case ProcState::Invalid: {
-                _log(POS__WARNING, "Module %s(%u) Processing State '%s'", GetName(), m_data.itemID, sDataMgr.GetProcStateName(m_procState).c_str());
+                // not sure what needs to be done at this point....we're nowhere close to having this coded.
             } break;
         }
 
@@ -918,7 +918,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
     if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
         return; // make error here?
 
-    m_bubble->SetTowerSE(nullptr);
+    if (m_tower)
+        m_bubble->SetTowerSE(nullptr);
 
     uint32 killerID = 0;
     Client* pClient(nullptr);
@@ -1002,8 +1003,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
+    MapDB::AddKill(locationID);
+    MapDB::AddFactionKill(locationID);
 
     if (pClient != nullptr) {
         //award kill bounty.
@@ -1014,7 +1015,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
 
     GPoint wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
-        sLog.Error("NPC::Killed()", "Wreck Position is NaN");
+        sLog.Error("StructureSE::Killed()", "Wreck Position is NaN");
         return;
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -1034,7 +1035,7 @@ void StructureSE::Killed(Damage &fatal_blow) {
     }
 
     if (is_log_enabled(PHYSICS__TRACE))
-        _log(PHYSICS__TRACE, "Ship::Killed() - Ship %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+        _log(PHYSICS__TRACE, "StructureSE::Killed() - Structure %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);

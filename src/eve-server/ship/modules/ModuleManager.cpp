@@ -288,7 +288,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
 bool ModuleManager::FitModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
-        sLog.Warning("ModuleManager::FitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        sLog.Warning("ModuleManager::FitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag));
         return false;
     }
 
@@ -301,7 +301,7 @@ bool ModuleManager::FitModule(ModuleItemRef mRef, EVEItemFlags flag)
 void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
-        sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag).c_str());
+        sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag));
         return;
     }
     if (pModuleCont->isSlotOccupied(flag)) {
@@ -382,7 +382,7 @@ void ModuleManager::Online(EVEItemFlags flag)
 {
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag).c_str());
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Online(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag));
         return;
     }
     if (pMod->isOnline()) {
@@ -415,7 +415,7 @@ void ModuleManager::Offline(EVEItemFlags flag)
 {
     GenericModule* pMod = pModuleCont->GetModule(flag);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag).c_str());
+        _log(SHIP__MODULE_ERROR, "ModuleManager::Offline(flag) -  Module not found in %s", sDataMgr.GetFlagName(flag));
         return;
     }
     if (!pMod->isOnline()) {
@@ -485,7 +485,6 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
     } else if (m_Ship->GetPilot()->IsJump()) {
         throw PyException( MakeUserError( "DeniedActivateInJump"));
     }
-    //ModuleActivationDeniedCriminalAssistance
 
     pMod->Activate(effectID, targetID, repeat);
 }
@@ -557,7 +556,7 @@ void ModuleManager::DamageModule(GenericModule* pMod, float amount)
             m_Ship->GetPilot()->SendNotifyMsg("Your group of %s has gone offline due to damage.", pMod->GetSelf()->itemName().c_str());
             m_Ship->OfflineGroup(pMod);
         } else */
-        m_Ship->GetPilot()->SendNotifyMsg("Your %s in %s has gone offline due to damage.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(pMod->flag()).c_str());
+        m_Ship->GetPilot()->SendNotifyMsg("Your %s in %s has gone offline due to damage.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(pMod->flag()));
         pMod->Offline();
     }
 }
@@ -664,7 +663,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         if (chargeRef->typeID() == pMod->GetLoadedChargeRef()->typeID())
             modCapacity -= (chargeVolume * pMod->GetLoadedChargeRef()->quantity());
         else
-            UnloadCharge(flag); // change charges
+            UnloadCharge(flag, true); // change charges
     }
 
     // check quantities
@@ -790,7 +789,7 @@ void ModuleManager::UnloadAllModules()
 
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
-    sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
+    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
     GenericModule* pMod(nullptr);
     m_Ship->SetAttribute(AttrCpuLoad,     EvilZero);
@@ -808,8 +807,8 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         SortModulesBySlotDec(modVec, modList);
         /** @todo check this.  may have to rework */
         for (auto cur : modList) {
-            if (m_Ship->IsUndocking())
-                cur->SetAttribute(AttrOnline, EvilZero, false);
+            //if (m_Ship->IsUndocking())
+            //    cur->SetAttribute(AttrOnline, EvilZero, false);
             cur->Online();
             //if (cur->IsLoaded())
             //    cur->ReprocessCharge();
@@ -826,7 +825,7 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
     // reset ship and module effect data, and reapply?
     // call ProcessEffects(false), ApplyEffects(), then UpdateModules() ?
     std::vector< GenericModule* > modVec;
-    // this returns only populated modules
+    // this returns only populated modules for this bank
     pModuleCont->GetModulesInBank(flag, modVec);
 
 }

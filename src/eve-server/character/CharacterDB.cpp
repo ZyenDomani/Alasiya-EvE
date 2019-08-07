@@ -1609,3 +1609,206 @@ void CharacterDB::VisitSystem(uint32 solarSystemID, uint32 charID) {
             " visits = visits +1,"
             " lastDateTime = %f", charID, solarSystemID, GetFileTimeNow(), GetFileTimeNow());
 }
+
+PyRep* CharacterDB::List(uint32 ownerID)
+{
+
+    // maybe get all items owned by calling character?
+
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT "
+        "  e.itemID, "
+        "  e.itemName, "
+        "  e.typeID, "
+        "  e.ownerID, "
+        "  e.locationID, "
+        "  e.flag AS flagID, "
+        "  e.quantity AS stacksize, "
+        "  e.customInfo, "
+        "  e.singleton, "
+        "  g.categoryID, "
+        "  g.groupID "
+        "FROM entity AS e"
+        "  LEFT JOIN invTypes USING (typeID)"
+        "  LEFT JOIN invGroups AS g USING (groupID)"
+        "WHERE e.ownerID=%u AND e.locationID < %u", ownerID, maxStation))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    //PyRep* rsp = DBResultToCRowset(res);
+    // if (is_log_enabled(CLIENT__RSP_DUMP))
+    //    rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return DBResultToCRowset(res);
+}
+
+PyRep* CharacterDB::ListStations(uint32 ownerID, std::ostringstream& flagIDs, bool forCorp/*false*/, bool bpOnly/*false*/)
+{
+
+    /** @todo check into this to see if we're querying POS modules(uk) also.
+     * if so, we'll need to revise location checks and somehow fix it so customs offices (and anything else using flagHangar)
+     *  doesnt show up, which leads to elusive "AttributeError: 'NoneType' object has no attribute 'solarSystemID'"  in client
+     *  when locationID is NOT station
+     */
+    DBQueryResult res;
+    if (bpOnly) {
+        if (forCorp) {
+            // this is some funky shit to get correct stationID for corp bps in hangar, as their location is officeID, but we need stationID for this call
+            if (!sDatabase.RunQuery(res,
+                "SELECT o.stationID, COUNT(e.itemID) as blueprintCount"
+                " FROM entity AS e"
+                "  LEFT JOIN invTypes USING (typeID)"
+                "  LEFT JOIN invGroups AS g USING (groupID)"
+                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        } else {
+            if (!sDatabase.RunQuery(res,
+                "SELECT e.locationID AS stationID, COUNT(e.itemID) as blueprintCount"
+                " FROM entity AS e"
+                "  LEFT JOIN invTypes USING (typeID)"
+                "  LEFT JOIN invGroups AS g USING (groupID)"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND g.categoryID = %u AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), EVEDB::invCategories::Blueprint, maxStation))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        }
+    } else {
+        if (forCorp) {
+            // this is some funky shit to get correct stationID for corp bps in hangar, as their location is officeID, but we need stationID for this call
+            if (!sDatabase.RunQuery(res,
+                "SELECT o.stationID, COUNT(e.itemID) as itemCount"
+                " FROM entity AS e"
+                "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+                " WHERE e.ownerID=%u AND e.flag IN (%s) AND e.locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        } else {
+            if (!sDatabase.RunQuery(res,
+                "SELECT locationID AS stationID, COUNT(itemID) as itemCount"
+                " FROM entity WHERE ownerID=%u AND flag IN (%s) AND locationID < %u"
+                " GROUP BY locationID", ownerID, flagIDs.str().c_str(), maxStation))
+            {
+                codelog(SERVICE__ERROR, "Error in ListStations query: %s", res.error.c_str());
+                return nullptr;
+            }
+        }
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return rsp;
+}
+
+PyRep* CharacterDB::ListStationItems(uint32 ownerID, uint32 stationID)
+{
+    /** @todo check into this to see if we're querying POS modules also */
+    DBQueryResult res;
+    if(!sDatabase.RunQuery(res,
+        "SELECT "
+        "  e.itemID, "
+        "  e.itemName, "
+        "  e.typeID, "
+        "  e.ownerID, "
+        "  e.locationID, "
+        "  e.flag AS flagID, "
+        "  e.quantity AS stacksize, "
+        "  e.customInfo, "
+        "  e.singleton, "
+        "  g.categoryID, "
+        "  g.groupID "
+        "FROM entity AS e"
+        "  LEFT JOIN invTypes USING (typeID)"
+        "  LEFT JOIN invGroups AS g USING (groupID)"
+        "WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4",
+        ownerID, stationID))
+    {
+        codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+        return nullptr;
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return rsp;
+}
+
+PyRep* CharacterDB::ListStationBlueprintItems(uint32 ownerID, uint32 stationID, bool forCorp/*false*/)
+{
+    /** @todo check into this to see if we're querying POS modules also(uk) */
+    DBQueryResult res;
+    if (forCorp) {
+        // do crazy shit here to get actual stationID/locationID of bp items in corp hangar
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "  e.itemID, "
+            "  e.itemName, "
+            "  e.typeID, "
+            "  e.ownerID, "
+            "  o.stationID AS locationID, "
+            "  e.flag AS flagID, "
+            "  e.quantity AS stacksize, "
+            "  e.customInfo, "
+            "  e.singleton, "
+            "  g.groupID, "
+            "  g.categoryID, "
+            "  b.productivityLevel, "
+            "  b.materialLevel, "
+            "  b.copy, "
+            "  b.licensedProductionRunsRemaining "
+            " FROM entity AS e"
+            "  LEFT JOIN invTypes USING (typeID)"
+            "  LEFT JOIN invGroups AS g USING (groupID)"
+            "  LEFT JOIN invBlueprints AS b USING (itemID)"
+            "  LEFT JOIN staOffices as o ON e.locationID = o.itemID"
+            " WHERE e.ownerID=%u AND o.stationID=%u AND g.categoryID = %u",
+            ownerID, stationID, EVEDB::invCategories::Blueprint))
+        {
+            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+    } else {
+        if(!sDatabase.RunQuery(res,
+            "SELECT "
+            "  e.itemID, "
+            "  e.itemName, "
+            "  e.typeID, "
+            "  e.ownerID, "
+            "  e.locationID, "
+            "  e.flag AS flagID, "
+            "  e.quantity AS stacksize, "
+            "  e.customInfo, "
+            "  e.singleton, "
+            "  g.groupID, "
+            "  g.categoryID, "
+            "  b.productivityLevel, "
+            "  b.materialLevel, "
+            "  b.copy, "
+            "  b.licensedProductionRunsRemaining "
+            " FROM entity AS e"
+            "  LEFT JOIN invTypes USING (typeID)"
+            "  LEFT JOIN invGroups AS g USING (groupID)"
+            "  LEFT JOIN invBlueprints AS b USING (itemID)"
+            " WHERE e.ownerID=%u AND e.locationID=%u AND e.flag=4 AND g.categoryID = %u",
+            ownerID, stationID, EVEDB::invCategories::Blueprint))
+        {
+            codelog(SERVICE__ERROR, "Error in query: %s", res.error.c_str());
+            return nullptr;
+        }
+
+    }
+    PyRep* rsp = DBResultToCRowset(res);
+    if (is_log_enabled(CLIENT__RSP_DUMP))
+        rsp->Dump(CLIENT__RSP_DUMP, "    ");
+    return rsp;
+
+}

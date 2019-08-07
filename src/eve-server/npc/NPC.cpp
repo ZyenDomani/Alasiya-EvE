@@ -324,8 +324,8 @@ void NPC::Killed(Damage &fatal_blow) {
 
     uint32 locationID = GetLocationID();
     //  log faction kill in dynamic data   -allan
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
+    MapDB::AddKill(locationID);
+    MapDB::AddFactionKill(locationID);
 
     if (pClient != nullptr) {
         //award kill bounty.

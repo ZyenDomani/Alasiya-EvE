@@ -24,6 +24,7 @@ public:
 
     /* ActiveModule overrides */
     virtual uint32 DoCycle();
+    //virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
 
     //  functions to be handled in derived classes as needed
     virtual void LoadCharge(InventoryItemRef charge);

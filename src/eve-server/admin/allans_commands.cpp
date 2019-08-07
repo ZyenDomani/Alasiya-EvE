@@ -479,7 +479,7 @@ PyResult Command_inventory(Client* pClient, CommandDB* db, PyServiceMgr* service
     str << "InventoryID %u(%p) (Item %p) has %u items.<br><br>"; //70
 
     for (auto cur : invMap)
-        str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()).c_str() << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
+        str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 70 for name (90)
 
     int count = invMap.size();
     int size = count * 90;

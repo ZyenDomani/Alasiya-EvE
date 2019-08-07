@@ -1066,8 +1066,11 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
     if (!IsModuleSlot(flag))
         throw PyException( MakeUserError("Destination is not weapon."));
 
-    if (IsModuleSlot(cRef->flag()))
+    if (IsModuleSlot(cRef->flag())) {
+        _log(SHIP__MODULE_TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
+                    cRef->itemName().c_str(), sDataMgr.GetFlagName(cRef->flag()), sDataMgr.GetFlagName(flag));
         throw PyException( MakeUserError("CantMoveChargesBetweenModules"));
+    }
 
     GenericModule* pMod = m_ModuleManager->GetModule(flag);
     if (pMod == nullptr)
@@ -1243,7 +1246,9 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
     }
 
     /** @note  this isnt gonna work as intended all the time....may look into later. */
-    if (flag == flagCargoHold) {
+    if ((flag == flagCargoHold)
+     or (flag == flagOreHold)
+     or (flag == flagGasHold)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);
         else
@@ -1288,7 +1293,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     }
 }
 
-uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
+uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool merge/*false*/)
 {
     if (IsModuleSlot(fromFlag)) {
         if (m_ModuleManager == nullptr) {
@@ -1307,7 +1312,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag)
             return 0;
 
         uint32 itemID = chargeRef->itemID();
-        m_ModuleManager->UnloadCharge(fromFlag, true);
+        m_ModuleManager->UnloadCharge(fromFlag, merge);
         return itemID;
     }
     return 0;
@@ -1318,7 +1323,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {
-        _log(SHIP__MODULE_TRACE, "Ship::MoveModuleSlot - modItemRef1 is null.");
+        _log(SHIP__MODULE_TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
         m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
         return;
     }
@@ -1818,7 +1823,7 @@ void ShipItem::LinkAllWeapons()
         if (itr->second.size() < 1) {
             if (is_log_enabled(SHIP__MODULE_INFO))
                 _log(SHIP__MODULE_INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
-                    itr->first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(itr->first->flag()).c_str());
+                    itr->first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(itr->first->flag()));
             itr = m_linkedWeapons.erase(itr);
         } else
             ++itr;
@@ -1836,7 +1841,7 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
         if ((*itr)->IsLoaded()) {
             if (is_log_enabled(SHIP__MODULE_INFO))
                 _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) IsLoaded.  Skipping.", \
-                    (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()).c_str(), (*itr)->itemID());
+                    (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID());
             itr = weaponList.erase(itr);
         } else if (master == nullptr) {
             // lets check if this module will match a master already in list before making new master...
@@ -1846,8 +1851,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
                     //master = item.first;
                     if (is_log_enabled(SHIP__MODULE_INFO))
                         _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() -(null master) %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
-                            (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()).c_str(), (*itr)->itemID(), \
-                            item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()).c_str(), item.first->itemID());
+                            (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
+                            item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()), item.first->itemID());
                     LinkWeapon(item.first, (*itr));
                     itr = weaponList.erase(itr);
                     match = true;
@@ -1859,7 +1864,7 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             master = (*itr);
             if (is_log_enabled(SHIP__MODULE_INFO))
                 _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - Setting %s(%s-%u) to master.",\
-                    (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()).c_str(), (*itr)->itemID());
+                    (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID());
             // set blank list for this master.
             std::list<GenericModule*> slaves;
             m_linkedWeapons[master] = slaves;
@@ -1868,8 +1873,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             if (master->typeID() == (*itr)->typeID()) {    // this item can be slave
                 if (is_log_enabled(SHIP__MODULE_INFO))
                     _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches master %s(%s-%u).  Adding.", \
-                        (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()).c_str(), (*itr)->itemID(), \
-                        master->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(master->flag()).c_str(), master->itemID());
+                        (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
+                        master->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(master->flag()), master->itemID());
                 LinkWeapon(master, (*itr));
                 itr = weaponList.erase(itr);
             } else {
@@ -1878,8 +1883,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
                         //master = item.first;
                         if (is_log_enabled(SHIP__MODULE_INFO))
                             _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
-                                (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()).c_str(), (*itr)->itemID(), \
-                                item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()).c_str(), item.first->itemID());
+                                (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
+                                item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()), item.first->itemID());
                         LinkWeapon(item.first, (*itr));
                         itr = weaponList.erase(itr);
                         break;

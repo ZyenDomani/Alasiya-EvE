@@ -67,7 +67,6 @@ m_loaded(false),
 m_entityChanged(false),
 m_docked(0),
 m_players(0),
-m_jumpTime(0),
 m_beltCount(0),
 m_gateCount(0),
 m_activityTime(0),
@@ -817,6 +816,9 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
     if (jump) {
+        //add jump in this system
+        MapDB::AddJump(m_data.systemID);
+
         uint16 stamp = sEntityList.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
@@ -848,6 +850,9 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
                 pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_players);
     }
     if (jump) {
+        //add jump in this system
+        MapDB::AddJump(m_data.systemID);
+
         uint16 stamp = sEntityList.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
         if (itr != m_jumpMap.end()) {
@@ -861,17 +866,18 @@ void SystemManager::SetDockCount(Client* pClient, bool docked/*false*/)
 {
     if (docked) {
         ++m_docked;
-        _log(PLAYER__INFO, "%s(%u): Added to docked count for %s(%u) - new count: %u", \
-                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
     } else {
         --m_docked;
-        _log(PLAYER__INFO, "%s(%u): Removed from docked count for %s(%u) - new count: %u", \
-                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID, m_docked);
         if (m_docked < 0) {
             m_docked = 0;
-            _log(PLAYER__ERROR, "docked count for %s(%u) is <0", m_data.name.c_str(), m_data.systemID);
+            _log(PLAYER__ERROR, "docked count for %s(%u) is <0.  Setting to 0.", m_data.name.c_str(), m_data.systemID);
         }
     }
+
+    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
+
+    _log(PLAYER__INFO, "%s(%u): %s docked count for %s(%u) - new count: %u", \
+            pClient->GetName(), pClient->GetCharacterID(), docked ? "Added to" : "Removed from",  m_data.name.c_str(), m_data.systemID, m_docked);
 }
 
 void SystemManager::AddNPC(NPC* pSE) {
@@ -1424,6 +1430,7 @@ void SystemManager::UpdateData()
 
     // this is jumps/hour data
     MapDB::UpdateJumps(m_data.systemID, jumps);
+
     // if system and jumpmap are both empty, set activity time for unload timer
     if (m_activityTime == 0)
         if (m_clients.empty())

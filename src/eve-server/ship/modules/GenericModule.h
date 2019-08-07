@@ -141,7 +141,7 @@ protected:
 
     int16            m_repeat;
 
-    std::string GetModuleStateName(int8 state);
+    const char* GetModuleStateName(int8 state);
 
 };
 

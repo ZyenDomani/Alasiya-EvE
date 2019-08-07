@@ -98,10 +98,10 @@ public:
 
     void                GetSalvage(uint32 factionID, std::vector<uint32> &itemList);
 
-    std::string         GetFlagName(uint16 flag);
-    std::string         GetFlagName(EVEItemFlags flag);
+    const char*         GetFlagName(uint16 flag);
+    const char*         GetFlagName(EVEItemFlags flag);
 
-    std::string         GetRigSizeName(uint8 size);
+    const char*         GetRigSizeName(uint8 size);
 
     PyInt*              GetAgentSystemID(int32 agentID);
 
@@ -109,7 +109,7 @@ public:
     std::string         GetOwnerName(int32 ownerID);
 
 
-    std::string         GetProcStateName(int8 state);
+    const char*         GetProcStateName(int8 state);
 
     uint32              GetWreckFaction(uint32 typeID);
 

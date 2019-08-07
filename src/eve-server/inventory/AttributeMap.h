@@ -50,7 +50,7 @@ public:
     EvilNumber GetAttribute(const uint16 attrID) const;
 
     bool HasAttribute(const uint16 attrID) const;
-    bool HasAttribute(const uint16 attrID, EvilNumber &value) const;
+    bool HasAttribute(const uint16 attrID, EvilNumber& value) const;
 
     bool Save();
 

@@ -155,7 +155,7 @@ void FxDataMgr::ConfigureEffects()
     std::vector<TypeEffects> typeFx;
     DBQueryResult res;
     DBResultRow row;
-    sDatabase.RunQuery(res, "SELECT typeID, typeName FROM `invTypes` WHERE `groupID` IN (46.475)");
+    sDatabase.RunQuery(res, "SELECT typeID, typeName FROM `invTypes` WHERE `groupID` IN (46,475)");
     FxProc fxProc;
     effectMapType::const_iterator itr;
     // begin the task of compiling effect data

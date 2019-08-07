@@ -20,7 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:        Zhur, Allan
+    Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -30,7 +31,7 @@
 PyObject *MapDB::GetPseudoSecurities() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res, "SELECT solarSystemID, security FROM mapSolarSystems")) {
+    if (!sDatabase.RunQuery(res, "SELECT solarSystemID, security FROM mapSolarSystems")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
     }
@@ -41,7 +42,7 @@ PyObject *MapDB::GetPseudoSecurities() {
 PyObject *MapDB::GetStationExtraInfo() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT"
         "   stationID,"
         "   solarSystemID,"
@@ -59,7 +60,7 @@ PyObject *MapDB::GetStationExtraInfo() {
 PyObject *MapDB::GetStationOpServices() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT operationID, serviceID FROM staOperationServices")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -71,7 +72,7 @@ PyObject *MapDB::GetStationOpServices() {
 PyObject *MapDB::GetStationServiceInfo() {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT serviceID, serviceName FROM staServices ")) {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -82,7 +83,7 @@ PyObject *MapDB::GetStationServiceInfo() {
 
 void MapDB::GetStationCount(DBQueryResult& res)
 {
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT map.solarSystemID, count(sta.stationID)"
         " FROM mapSolarSystems AS map"
         "  LEFT JOIN staStations AS sta USING(solarSystemID)"
@@ -96,7 +97,7 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
 {
     DBQueryResult res;
 
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         " SELECT"
         "   solarSystemID,"
         "   visits,"
@@ -116,7 +117,7 @@ PyObject *MapDB::GetSolSystemVisits(uint32 charID)
 void MapDB::LoadDynamicData(uint32 sysID, SystemKillData& data)
 {
     DBQueryResult res;
-    if(!sDatabase.RunQuery(res,
+    if (!sDatabase.RunQuery(res,
         "SELECT killsHour, kills24Hour, factionKills, factionKills24Hour, podKillsHour, podKills24Hour,"
         " killsDateTime, kills24DateTime, podDateTime, pod24DateTime, factionDateTime, faction24DateTime"
         " FROM mapDynamicData"
@@ -198,11 +199,10 @@ void MapDB::GetSystemJumps(DBQueryResult& res)
 void MapDB::SystemStartup()
 {
     DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = 0, pilotsDocked = 0, pilotsInSpace = 0, moduleCnt = 0, structureCnt = 0 WHERE 1");
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = 0, jumpsHour = 0, pilotsDocked = 0, pilotsInSpace = 0, moduleCnt = 0, structureCnt = 0 WHERE 1");
 }
 
-/** the following functions rely on solarSystemID being in the mapDynamicData table.
- *
+/**
  * UPDATE: this is populated when db is created.  we are not deleting from mapDynamicData, but setting active as needed
  *   notes concerning previous system configuration removed
  */
@@ -211,6 +211,12 @@ void MapDB::SetSystemActive(uint32 sysID, bool active/*false*/)
 {
     DBerror err;
     sDatabase.RunQuery(err, "UPDATE mapDynamicData SET active = %u WHERE solarSystemID = %u", active?1:0, sysID );
+}
+
+void MapDB::AddJump(uint32 sysID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = jumpsHour +1 WHERE solarSystemID = %u", sysID );
 }
 
 // these next 3 are updated to use systemMgr to manage dynamic data for it's system, and call these on a timer to update periodically
@@ -237,28 +243,23 @@ void MapDB::UpdateKillData(uint32 sysID, SystemKillData& data)
     data.killsDateTime, data.kills24DateTime, data.factionDateTime, data.faction24DateTime, data.podDateTime, data.pod24DateTime);
 }
 
-
-/** @todo  these need to follow system client count to avoid db hit on every kill  */
 //  client logs faction kills in total kills.  return is value1(total kills) - value2(faction kills) > 0:
-void MapDB::AddKillToDynamicData(uint32 sysID) {  /**killsHour, kills24Hours */
+void MapDB::AddKill(uint32 sysID) {
     DBerror err;
     sDatabase.RunQuery(err,
-            "UPDATE mapDynamicData SET killsHour = killsHour + 1, kills24Hour = kills24Hour + 1, kills24DateTime = %f WHERE solarSystemID = %u",
-                GetFileTimeNow(), sysID );
+            "UPDATE mapDynamicData SET killsHour = killsHour + 1, kills24Hour = kills24Hour + 1 WHERE solarSystemID = %u", sysID);
 }
 
-void MapDB::AddFactionKillToDynamicData(uint32 sysID) {     /**factionKills*/
+void MapDB::AddFactionKill(uint32 sysID) {
     DBerror err;
     sDatabase.RunQuery(err,
-            "UPDATE mapDynamicData SET factionKills = factionKills + 1, factionKills24Hour = factionKills24Hour + 1, faction24DateTime = %f WHERE solarSystemID = %u",
-                GetFileTimeNow(), sysID );
+            "UPDATE mapDynamicData SET factionKills = factionKills + 1, factionKills24Hour = factionKills24Hour + 1 WHERE solarSystemID = %u", sysID);
 }
 
-void MapDB::AddPodKillToDynamicData(uint32 sysID) {   /**podKillsHour, podKills24Hour */
+void MapDB::AddPodKill(uint32 sysID) {
     DBerror err;
     sDatabase.RunQuery(err,
-            "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1, pod24DateTime = %f WHERE solarSystemID = %u",
-                GetFileTimeNow(), sysID );
+            "UPDATE mapDynamicData SET podKillsHour = podKillsHour + 1, podKills24Hour = podKills24Hour + 1 WHERE solarSystemID = %u", sysID);
 }
 
 // will need to write methods to retrieve/manipulate/set system dynamic data as systems may/may not be loaded

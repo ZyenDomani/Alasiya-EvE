@@ -57,12 +57,15 @@ public:
     static PyRep* GetDynamicData(uint8 type, uint8 time);
     static void ManipulateTimeData();
     static void SetSystemActive(uint32 sysID, bool active=false);
+    
+    static void AddJump(uint32 sysID);      // jumpsHour
+    static void AddKill(uint32 sysID); /**killsHour, kills24Hours */
+    static void AddPodKill(uint32 sysID);/**podKillsHour, podKills24Hour */
+    static void AddFactionKill(uint32 sysID);  /**factionKills, factionKills24Hour*/
+
     static void UpdateJumps(uint32 sysID, uint16 jumps);    //jumpsHour
     static void UpdateKillData(uint32 sysID, SystemKillData& data);    // ship, faction, pod
     static void UpdatePilotCount(uint32 sysID, uint16 docked=0, uint16 space=0); /**pilotsDocked, pilotsInSpace */
-    static void AddKillToDynamicData(uint32 sysID); /**killsHour, kills24Hours */
-    static void AddPodKillToDynamicData(uint32 sysID);/**podKillsHour, podKills24Hour */
-    static void AddFactionKillToDynamicData(uint32 sysID);  /**factionKills, factionKills24Hour*/
 };
 
 #endif

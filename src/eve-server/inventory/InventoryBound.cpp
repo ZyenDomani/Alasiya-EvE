@@ -73,7 +73,7 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, ImportExportWithPlanet);
 
     _log(INV__BIND, "Created InventoryBound object %p for %s(%u) and ownerID %u with flag %s  (passive: %s)", \
-            this, m_self->itemName().c_str(), m_itemID, ownerID, sDataMgr.GetFlagName(flag).c_str(), (m_passive ? "true" : "false"));
+            this, m_self->itemName().c_str(), m_itemID, ownerID, sDataMgr.GetFlagName(flag), (m_passive ? "true" : "false"));
 }
 
 InventoryBound::~InventoryBound()
@@ -84,18 +84,6 @@ InventoryBound::~InventoryBound()
 PyResult InventoryBound::Handle_GetItem(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::GetItem() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     return m_self->GetItem();
-}
-
-PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    call.Dump(INV__DUMP);
-    return nullptr;
-}
-
-PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ListDroneBay() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    call.Dump(INV__DUMP);
-    return nullptr;
 }
 
 PyResult InventoryBound::Handle_StripFitting(PyCallArgs &call)
@@ -167,158 +155,6 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
     return nullptr;
 }
 
-
-PyResult InventoryBound::Handle_List(PyCallArgs &call) {
-    if (pInventory == nullptr)
-        return PyStatic.NewNone();
-
-    uint32 ownerID = m_ownerID;
-    // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
-    EVEItemFlags flag = m_flag, oldFlag = m_flag;
-    if (call.byname.find("flag") != call.byname.end())
-        flag = (EVEItemFlags)PyRep::IntegerValue(call.byname.find("flag")->second);
-
-    if (call.tuple->size() > 0) {
-        Call_List arg;
-        if (!arg.Decode(&call.tuple))
-            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        if (flag != arg.flag)
-            flag = (EVEItemFlags)arg.flag;
-    }
-
-    // check for owner type of this inventory for reference checks
-    if (IsOffice(m_itemID)) {
-        // office owned by corp in station
-        // check for owner or corp
-        if (call.client->GetCorporationID() != m_ownerID)
-            ; // calling char is not member of corp.  send error?
-    } else if (IsPlayerItem(m_itemID)) {
-        // this is probably a ship calling for all items
-        flag = flagAnywhere;
-        /*
-    } else if (IsPlayerCorp(m_itemID)) {
-        // this one probably will not be used.
-        //  what items in a corp would be listed?  corpItem dont have inventory
-    } else if (IsCharacter(m_itemID)) { // this is checked in Inventory::List()
-        // this is asking for skill list...char is a container for skills
-        flag = flagAnywhere;
-    } else if (IsSolarSystem(m_itemID)) {
-        //  not sure how to do this one...will have to check on WHEN system listing would be called
-        */
-    } else if (IsStation(m_itemID)) {
-        // this will get owners items only, including corps
-
-    } else if (IsControlBunker(m_itemID)) {
-        // not sure what this is yet
-
-    }
-/*
-    if (IsCargoHoldFlag(flag)) {
-        // check for owner or corpID
-
-    } else if (IsHangarFlag(flag)) {
-        // check for owner or corpID
-
-        flag = flagAnywhere;
-        if (call.client->GetCorporationID() != m_ownerID)
-            ; // calling char is not member of corp.  send error?
-    } else if (IsOfficeFlag(flag)) {
-        // flags for npc station containers, owned by station, but items owned by corp
-        //  this is market deliveries, impounded, etc.
-        // check for corpID
-
-        flag = flagAnywhere;
-        if (call.client->GetCorporationID() != m_ownerID)
-            ; // calling char is not member of corp.  send error?
-    }
-*/
-    _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
-                call.client->GetName(), ownerID, m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(flag).c_str(), (m_passive ? ":passive" : ""), \
-                sDataMgr.GetFlagName(oldFlag).c_str());
-
-    return pInventory->List(flag, ownerID);
-}
-
-PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
-    /*
-    bookmarksDeleted, newVouchers = self.CreateBookmarkVouchers(bookmarkIDs, flag, isMove)
-    */
-    sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
-    Call_CreateVouchers args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return nullptr;
-    }
-    args.Dump(COMMON__INFO);
-
-    // CanOnlyCreateVoucherInPersonalHangar     << dunno if i wanna pull an iRef JUST for this check....make voucher itemID group?
-    // m_self is *this itemRef
-
-    /**
-     * 00:39:12 [SvcCall]   Call Arguments:
-     * 00:39:12 [SvcCall]       Tuple: 3 elements
-     * 00:39:12 [SvcCall]         [ 0] List: 1 elements
-     * 00:39:12 [SvcCall]         [ 0]   [ 0] Integer field: 10    -this is bookmarkID(s)
-     * 00:39:12 [SvcCall]         [ 1] Integer field: 4            -flag  (?)
-     * 00:39:12 [SvcCall]         [ 2] Boolean field: true         -IsMove
-     * 00:39:12 [SvcCall]   Call Named Arguments:
-     * 00:39:12 [SvcCall]     Argument 'machoVersion':
-     * 00:39:12 [SvcCall]         Integer field: 1
-     * 00:39:13 L InventoryBound::Handle_CreateBookmarkVouchers(): 1 Vouchers created
-     *
-     * 00:43:37 [SvcCall]   Call Arguments:
-     * 00:43:37 [SvcCall]       Tuple: 3 elements
-     * 00:43:37 [SvcCall]         [ 0] List: 5 elements
-     * 00:43:37 [SvcCall]         [ 0]   [ 0] Integer field: 4
-     * 00:43:37 [SvcCall]         [ 0]   [ 1] Integer field: 6
-     * 00:43:37 [SvcCall]         [ 0]   [ 2] Integer field: 7
-     * 00:43:37 [SvcCall]         [ 0]   [ 3] Integer field: 11
-     * 00:43:37 [SvcCall]         [ 0]   [ 4] Integer field: 2
-     * 00:43:37 [SvcCall]         [ 1] Integer field: 4
-     * 00:43:37 [SvcCall]         [ 2] Boolean field: true
-     * 00:43:37 [SvcCall]   Call Named Arguments:
-     * 00:43:37 [SvcCall]     Argument 'machoVersion':
-     * 00:43:37 [SvcCall]         Integer field: 1
-     * 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
-     */
-
-    PyList* vouchers = new PyList();
-    PyList* deletedIDs = new PyList();
-
-    uint32 locationID = call.client->GetLocationID();
-    if (args.flag == flagCargoHold)
-        locationID = call.client->GetShipID();
-
-    if ( args.bmIDs->size() < 1 ) {
-        sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
-    } else {
-        PyList::const_iterator itr = args.bmIDs->begin();
-        for (; itr != args.bmIDs->end(); ++itr) {
-            //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
-            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa((*itr)->AsInt()->value()));
-            InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
-            if (iRef.get() == nullptr) {
-                codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
-                continue;
-            }
-            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value())));
-            iRef->Move(locationID, (EVEItemFlags)args.flag, true);
-            vouchers->AddItem(iRef->ItemGetInfo());
-            if (args.isMove)
-                deletedIDs->AddItem(new PyInt((*itr)->AsInt()->value()));
-        }
-    }
-
-    //  when bm is copied to another players' places tab, copy data from db using bookmarkID stored in ItemData.customInfo
-
-    call.client->SendInfoModalMsg("Creating Vouchers from Bookmarks isn't complete.  You will have to dock or relog to show the container inventory.");
-
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, deletedIDs);
-        tuple->SetItem(1, vouchers);
-    return tuple;
-}
-
 PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     // newItemID = inv.RemoveChargeToHangar(itemKey, quantity)
     /*
@@ -374,21 +210,12 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
         return new PyInt(0);
     }
 
+    bool merge = false;
+    if (call.byname.find("preferMerge") != call.byname.end())
+        merge = call.byname.find("preferMerge")->second->AsBool()->value();
+
     // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
-    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagCargoHold));
-}
-
-PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
-    _log(POS__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    call.Dump(POS__DUMP);
-    return nullptr;
-}
-
-PyResult InventoryBound::Handle_Voucher(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
-    call.Dump(INV__DUMP);
-    return nullptr;
+    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagCargoHold, merge));
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
@@ -448,7 +275,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
         stackFlag = (EVEItemFlags)arg.arg;
     }
 
-    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) with flag %s", m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag).c_str());
+    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) with flag %s", m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag));
 
     //Stack Items contained in this inventory
     pInventory->StackAll(stackFlag, m_ownerID);
@@ -518,7 +345,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         quantity = 1;
 
     _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u of item %u from (%u:%s) to me(%s:%u:%s).", \
-            quantity, args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
+            quantity, args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     std::vector<int32> items;
     items.push_back(args.itemID);
@@ -580,7 +407,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     }
 
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
-                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag).c_str(), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag).c_str());
+                args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
 }
@@ -910,4 +737,188 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
         call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
 
         return PyStatic.NewOne();
+}
+
+/**     ***********************************************************************
+ * @note   these below are partially coded
+ */
+
+PyResult InventoryBound::Handle_List(PyCallArgs &call) {
+    if (pInventory == nullptr)
+        return PyStatic.NewNone();
+
+    uint32 ownerID = m_ownerID;
+    // this item was originally boudn to this flag, but can send specific flag on rare occasions...not sure of criteria
+    EVEItemFlags flag = m_flag, oldFlag = m_flag;
+    if (call.byname.find("flag") != call.byname.end())
+        flag = (EVEItemFlags)PyRep::IntegerValue(call.byname.find("flag")->second);
+
+    if (call.tuple->size() > 0) {
+        Call_List arg;
+        if (!arg.Decode(&call.tuple))
+            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        if (flag != arg.flag)
+            flag = (EVEItemFlags)arg.flag;
+    }
+
+    // check for owner type of this inventory for reference checks
+    if (IsOffice(m_itemID)) {
+        // office owned by corp in station
+        // check for owner or corp
+        if (call.client->GetCorporationID() != m_ownerID)
+            ; // calling char is not member of corp.  send error?
+    } else if (IsPlayerItem(m_itemID)) {
+        // this is probably a ship calling for all items
+        flag = flagAnywhere;
+        /*
+    } else if (IsPlayerCorp(m_itemID)) {
+        // this one probably will not be used.
+        //  what items in a corp would be listed?  corpItem dont have inventory
+    } else if (IsCharacter(m_itemID)) { // this is checked in Inventory::List()
+        // this is asking for skill list...char is a container for skills
+        flag = flagAnywhere;
+    } else if (IsSolarSystem(m_itemID)) {
+        //  not sure how to do this one...will have to check on WHEN system listing would be called
+        */
+    } else if (IsStation(m_itemID)) {
+        // this will get owners items only, including corps
+
+    } else if (IsControlBunker(m_itemID)) {
+        // not sure what this is yet
+
+    }
+    /*
+     *    if (IsCargoHoldFlag(flag)) {
+     *        // check for owner or corpID
+     *
+} else if (IsHangarFlag(flag)) {
+    // check for owner or corpID
+
+    flag = flagAnywhere;
+    if (call.client->GetCorporationID() != m_ownerID)
+        ; // calling char is not member of corp.  send error?
+} else if (IsOfficeFlag(flag)) {
+    // flags for npc station containers, owned by station, but items owned by corp
+    //  this is market deliveries, impounded, etc.
+    // check for corpID
+
+    flag = flagAnywhere;
+    if (call.client->GetCorporationID() != m_ownerID)
+        ; // calling char is not member of corp.  send error?
+}
+*/
+    _log(INV__MESSAGE, "InventoryBound::List() called by %s with ownerID %u for %s(%u:%s%s) - origFlag: %s", \
+    call.client->GetName(), ownerID, m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(flag), (m_passive ? ":passive" : ""), \
+    sDataMgr.GetFlagName(oldFlag));
+
+    return pInventory->List(flag, ownerID);
+}
+
+PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
+    /*
+     *    bookmarksDeleted, newVouchers = self.CreateBookmarkVouchers(bookmarkIDs, flag, isMove)
+     */
+    sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
+    Call_CreateVouchers args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        return nullptr;
+    }
+    args.Dump(COMMON__INFO);
+
+    // CanOnlyCreateVoucherInPersonalHangar     << dunno if i wanna pull an iRef JUST for this check....make voucher itemID group?
+    // m_self is *this itemRef
+
+    /**
+     * 00:39:12 [SvcCall]   Call Arguments:
+     * 00:39:12 [SvcCall]       Tuple: 3 elements
+     * 00:39:12 [SvcCall]         [ 0] List: 1 elements
+     * 00:39:12 [SvcCall]         [ 0]   [ 0] Integer field: 10    -this is bookmarkID(s)
+     * 00:39:12 [SvcCall]         [ 1] Integer field: 4            -flag  (?)
+     * 00:39:12 [SvcCall]         [ 2] Boolean field: true         -IsMove
+     * 00:39:12 [SvcCall]   Call Named Arguments:
+     * 00:39:12 [SvcCall]     Argument 'machoVersion':
+     * 00:39:12 [SvcCall]         Integer field: 1
+     * 00:39:13 L InventoryBound::Handle_CreateBookmarkVouchers(): 1 Vouchers created
+     *
+     * 00:43:37 [SvcCall]   Call Arguments:
+     * 00:43:37 [SvcCall]       Tuple: 3 elements
+     * 00:43:37 [SvcCall]         [ 0] List: 5 elements
+     * 00:43:37 [SvcCall]         [ 0]   [ 0] Integer field: 4
+     * 00:43:37 [SvcCall]         [ 0]   [ 1] Integer field: 6
+     * 00:43:37 [SvcCall]         [ 0]   [ 2] Integer field: 7
+     * 00:43:37 [SvcCall]         [ 0]   [ 3] Integer field: 11
+     * 00:43:37 [SvcCall]         [ 0]   [ 4] Integer field: 2
+     * 00:43:37 [SvcCall]         [ 1] Integer field: 4
+     * 00:43:37 [SvcCall]         [ 2] Boolean field: true
+     * 00:43:37 [SvcCall]   Call Named Arguments:
+     * 00:43:37 [SvcCall]     Argument 'machoVersion':
+     * 00:43:37 [SvcCall]         Integer field: 1
+     * 00:43:37 L InventoryBound::Handle_CreateBookmarkVouchers(): 5 Vouchers created
+     */
+
+    PyList* vouchers = new PyList();
+    PyList* deletedIDs = new PyList();
+
+    uint32 locationID = call.client->GetLocationID();
+    if (args.flag == flagCargoHold)
+        locationID = call.client->GetShipID();
+
+    if ( args.bmIDs->size() < 1 ) {
+        sLog.Error( "InventoryBound::Handle_CreateBookmarkVouchers()", "%s: args.bmIDs->size() == 0.  Expected size > 0.", call.client->GetName() );
+    } else {
+        PyList::const_iterator itr = args.bmIDs->begin();
+        for (; itr != args.bmIDs->end(); ++itr) {
+            //ItemData ( typeID, ownerID, locationID, flag, quantity, customInfo, contraband)
+            ItemData iData( 51, call.client->GetCharacterID(), 0, flagAutoFit, 1, itoa((*itr)->AsInt()->value()));
+            InventoryItemRef iRef = sItemFactory.SpawnItem( iData );
+            if (iRef.get() == nullptr) {
+                codelog(ITEM__ERROR, "%s: Failed to spawn bookmark voucher for bmID %u", call.client->GetName(), (*itr)->AsInt()->value());
+                continue;
+            }
+            //iRef->Rename(itoa(BookmarkDB::GetBookmarkName((*itr)->AsInt()->value())));
+            iRef->Move(locationID, (EVEItemFlags)args.flag, true);
+            vouchers->AddItem(iRef->ItemGetInfo());
+            if (args.isMove)
+                deletedIDs->AddItem(new PyInt((*itr)->AsInt()->value()));
+        }
+    }
+
+    //  when bm is copied to another players' places tab, copy data from db using bookmarkID stored in ItemData.customInfo
+
+    call.client->SendInfoModalMsg("Creating Vouchers from Bookmarks isn't complete.  You will have to dock or relog to show the container inventory.");
+
+    PyTuple* tuple = new PyTuple(2);
+    tuple->SetItem(0, deletedIDs);
+    tuple->SetItem(1, vouchers);
+    return tuple;
+}
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
+    return nullptr;
+}
+
+PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::ListDroneBay() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
+    return nullptr;
+}
+
+PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
+    _log(POS__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(POS__DUMP);
+    return nullptr;
+}
+
+PyResult InventoryBound::Handle_Voucher(PyCallArgs &call) {
+    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
+    call.Dump(INV__DUMP);
+    return nullptr;
 }

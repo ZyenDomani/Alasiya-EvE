@@ -119,15 +119,17 @@ public:
     // same as Move() but xfer ownership also
     void                    Donate(uint32 new_owner, uint32 new_location, EVEItemFlags new_flag, bool notify=true);
     void                    SendItemChange(uint32 toID, std::map< int32, PyRep* >& changes);
-    // this is for stacking unloading charges in ships cargo
+    // this is for stacking unloading charges and mined ore in ships cargo
     void                    MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag=flagAutoFit);
     bool                    ChangeSingleton(bool singleton, bool notify=false);
+    // this also updates volume of item
     bool                    AlterQuantity(int32 qty_change, bool notify=false);
     bool                    SetQuantity(int32 qty_new, bool notify=false);
     bool                    SetFlag(EVEItemFlags new_flag, bool notify=false);
 
     /* public-access data functions handled in base class. */
     void                    SaveItem();  //save the item to the DB.
+    void                    UpdateLocation();
 
     /* virtual functions default to base class and overridden as needed */
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
@@ -145,7 +147,7 @@ public:
     static uint32           CreateTempItemID( ItemData &data);
     /* loads attributes for this item */
     //bool LoadAttributes();
-    double GetPackagedVolume();
+    double                  GetPackagedVolume();
 
     /* specific funtions for ShipItem, virtual here to allow generic class access */
     virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }
@@ -260,6 +262,9 @@ protected:
     EVEItemFlags            m_flag;
     GPoint                  m_position;
 
+private:
+    InventoryDB m_db;
+
 /* new effects processing system */
 public:
     /*  this checks this item's required skills against callers' current skills.
@@ -267,8 +272,7 @@ public:
     bool SkillCheck(InventoryItemRef refItem);
 
     // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
-    //  when called at the wrong time, this will really fuck up ship attributes.  ;)
-    void ClearModifiers();
+    void ClearModifiers();    //  when called at the wrong time, this will really fuck up ship attributes.  ;)
     void AddModifier(fxData data);
     void RemoveModifier(fxData data);
 

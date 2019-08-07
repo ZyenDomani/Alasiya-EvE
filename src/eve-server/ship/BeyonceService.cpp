@@ -422,6 +422,11 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
   _log(SERVICE__CALL_DUMP, "BeyonceBound::Handle_CmdWarpToStuff() - size %u", call.tuple->size() );
    call.Dump(SERVICE__CALL_DUMP);
 
+   /** @todo (allan) finish warp scramble system */
+   // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
+   if (call.client->GetShip()->GetAttribute(AttrWarpScrambleStatus) > 0)
+        throw PyException(MakeUserError("WarpScrambled"));
+
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
@@ -598,7 +603,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             distance += (radius /3);  // fudge the distance a bit for gates... its' a lil close by default
         } else if (pSE->IsMoonSE()) {
             if (pSE->GetMoonSE()->HasTower()) {
-                // if moon has a tower, make warpin point 7km inside edge of tower's bubble.
+                // if moon has a tower, make warpin point 20km inside edge of tower's bubble.
                 warpToPoint = pSE->GetMoonSE()->GetMyTower()->GetPosition();
                 GVector vectorFromOrigin(call.client->GetShipSE()->GetPosition(), warpToPoint);
                 vectorFromOrigin.normalize();   //we now have a direction
@@ -627,7 +632,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
         }
     }
     if (warpToPoint.isZero()) {
-        // pSE is null....make error and return
+        // point is zero ....make error and return
         codelog(CLIENT__ERROR, "%s: warpToPoint.isZero() = true.  Cannot find location %u for '%s'", call.client->GetName(), toID, type.c_str());
         call.client->SendErrorMsg("WarpTo: Item location not found.");
         return PyStatic.NewNone();
@@ -841,7 +846,8 @@ PyResult BeyonceBound::Handle_UpdateStateRequest(PyCallArgs &call) {
     if (pDestiny == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no destiny manager!", call.client->GetName());
         return PyStatic.NewNone();
-    } else if (pDestiny->IsWarping()) {
+    }
+    if (pDestiny->IsWarping()) {
         call.client->SendNotifyMsg( "You can't do this while warping");
         return PyStatic.NewNone();
     }

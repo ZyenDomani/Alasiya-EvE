@@ -441,7 +441,7 @@ uint32 InventoryDB::NewItem(const ItemData &data) {
     // check for common error ('common' is relative.)
     if (IsNaN(data.position.x) or IsNaN(data.position.y) or IsNaN(data.position.z))
         return 0;  // make error here?
-        
+
     DBerror err;
     uint32 uid = 0;
 
@@ -466,6 +466,14 @@ uint32 InventoryDB::NewItem(const ItemData &data) {
     }
 
     return uid;
+}
+
+void InventoryDB::UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag)
+{
+    DBerror err;
+    sDatabase.RunQuery(err,
+        "UPDATE entity SET locationID = %u, flag = %u WHERE itemID = %u",
+                           locationID, (uint16)flag, itemID);
 }
 
 bool InventoryDB::SaveItem(uint32 itemID, const ItemData &data) {

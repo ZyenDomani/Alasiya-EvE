@@ -100,6 +100,7 @@ m_needsTarget(false)
     }
 
     //Clear();
+    //GM_Modules = 353,
 
     if (m_reloadTime > 0)
         _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", mRef->itemName().c_str(), mRef->itemID(), m_reloadTime);
@@ -176,16 +177,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
             Clear();
             throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
         }
-
     }
-
-    /** @todo criminal shit isnt written yet....fix this once it is.
-    if (sFxDataMgr.isAssistance(effectID))
-        if (m_targetSE->IsShipSE())
-            if (m_targetSE->GetShipSE()->HasPilot())
-                if (m_targetSE->GetShipSE()->GetPilot()->IsCriminal())
-                    throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
-     */
 
     /*
      * AttrdisallowAgainstEwImmuneTarget
@@ -194,6 +186,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
      */
 
     if (m_targetSE != nullptr) {
+        /** @todo criminal shit isnt written yet....fix this once it is.
+        if (sFxDataMgr.isAssistance(effectID))
+            if (m_targetSE->HasPilot())
+                if (m_targetSE->GetPilot()->IsCriminal())
+                    throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
+        */
+
         if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
             Clear();
             throw PyException( MakeUserError( "DeniedActivateTargetAssistDisallowed"));
@@ -209,16 +208,18 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_Stop = false;
     m_repeat = repeat;
     m_effectID = effectID;
-    m_isWarpSafe = sFxDataMgr.isWarpSafe(effectID);
-    m_guidStr = sFxDataMgr.GetEffectGuid(effectID);
-    m_bubble = m_shipRef->GetPilot()->GetShipSE()->SysBubble();
-    m_targMgr = m_shipRef->GetPilot()->GetShipSE()->TargetMgr();
-    m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
 
     if (!CanActivate()) {
         Clear();
         return;
     }
+
+    m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
+    m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
+    Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
+    m_bubble = pShip->SysBubble();
+    m_targMgr = pShip->TargetMgr();
+    m_destinyMgr = pShip->DestinyMgr();
 
     // Do initial cycle immediately while we start timer
     SetTimer(DoCycle());
@@ -449,7 +450,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
     if ((m_ModuleState != Module::State::Deactivating) and (!abort)) {
         _log(SHIP__MODULE_ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
-                m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState).c_str());
+                m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         return;
     }
 
@@ -477,7 +478,6 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             PyTuple* result = new PyTuple(2);
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
-            result->SetItem(1, list);
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
                 std::vector<AsteroidSE*> vList;
@@ -493,12 +493,23 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                     }
                 }
             }
+            result->SetItem(1, list);
             // Send results.
             std::vector<PyTuple*> events;
             events.push_back(result);
             std::vector<PyTuple*> updates;
-            m_destinyMgr->SendDestinyUpdate(updates, events, false);
+            m_destinyMgr->SendDestinyUpdate(updates, events, true);
         } break;
+        /*
+        case EVEDB::invGroups::Warp_Scrambler: {
+            if (m_targetSE != nullptr)
+                m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus);
+        } break;
+        case EVEDB::invGroups::Warp_Core_Stabilizer: {
+            if (m_targetSE != nullptr)
+                m_targetSE->GetSelf()->SetAttribute(AttrWarpScrambleStatus);
+        } break;
+        */
         case EVEDB::invGroups::Ship_Scanner:
         case EVEDB::invGroups::Cargo_Scanner:
         case EVEDB::invGroups::System_Scanner: {
@@ -682,8 +693,8 @@ bool ActiveModule::CanActivate()
                 return false;
             }
         }
-        if (m_shipRef->groupID() == EVEDB::invGroups::Tractor_Beam)
-            if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE()) {
+        if (groupID() == EVEDB::invGroups::Tractor_Beam)
+            if (!m_targetSE->IsContainerSE() and !m_targetSE->IsWreckSE()) {
                 m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor %s", m_targetSE->GetName());
                 return false;
             }

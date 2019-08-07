@@ -55,6 +55,7 @@ m_radius_hysteresis(radius + BUBBLE_HYSTERESIS_METERS) //255km
     m_mission = false;
     m_spawned = false;
     m_incursion = false;
+    m_hasBubble = false;
     m_hasMarkers = false;
 
     m_markers.clear();
@@ -87,6 +88,7 @@ void SystemBubble::clear() {
     m_mission = false;
     m_spawned = false;
     m_incursion = false;
+    m_hasBubble = false;
     m_hasMarkers = false;
 
     m_markers.clear();

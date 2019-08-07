@@ -86,9 +86,9 @@ bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverabl
         return false;
     }
 
-    Recoverable rec;
 
     while (res.GetRow(row)) {
+        Recoverable rec = Recoverable();
         rec.typeID = row.GetInt(0);
         rec.amountPerBatch = row.GetInt(1);
         into.push_back(rec);
@@ -108,6 +108,7 @@ bool ReprocessingDB::GetRecoverables(const uint32 typeID, std::vector<Recoverabl
     }
 
     while (res.GetRow(row)) {
+        Recoverable rec = Recoverable();
         rec.typeID = row.GetInt(0);
         rec.amountPerBatch = row.GetInt(1);
         into.push_back(rec);

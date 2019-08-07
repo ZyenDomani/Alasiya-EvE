@@ -106,7 +106,7 @@ public:
     bool GetItem(uint32 itemID, ItemData &into);
     static bool DeleteItem(uint32 itemID);
 
-    uint32 NewItem(const ItemData &data);
+    static uint32 NewItem(const ItemData &data);
     bool SaveItem(uint32 itemID, const ItemData &data);
     void SaveItems(std::vector< SaveData >& data);
     void SaveAttributes(bool isChar, std::vector< AttrData >& data);
@@ -115,6 +115,7 @@ public:
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
+    static void UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag);
     static void DeleteTrackingCans();
 
     /*

@@ -177,7 +177,6 @@ private:
     // for dynamic data system  -allan 10June2019
     SystemKillData m_killData;
     uint16 m_docked;
-    int64 m_jumpTime;
     void ManipulateTimeData();
     std::map<uint32, uint8> m_jumpMap;  // timestamp/jumps
     // may have to do kill data like jumps above

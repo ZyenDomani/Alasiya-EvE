@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updated:        Allan
+    Updates:    Allan (rewrite)
 */
 
 // this class is for objects that move
@@ -1609,8 +1609,9 @@ void DestinyManager::_InitWarp() {
 
     //drain cap
     if (mySE->HasPilot()) {
-        mySE->GetPilot()->GetShip()->SetAttribute(AttrCapacitorCharge, m_capNeeded);
+        mySE->GetSelf()->SetAttribute(AttrCapacitorCharge, m_capNeeded);
         mySE->GetPilot()->GetShip()->Warp();
+        m_capNeeded = 0;
     }
 
     //clear targets
@@ -1937,14 +1938,6 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     else
         GotoPoint(where);
 
-    /** @todo (allan) finish warp scramble system */
-    // >0 means ship cannot warp (warp stabs are neg values, warp scrams are pos values)
-    if (mySE->GetSelf()->GetAttribute(AttrWarpScrambleStatus) > 0) {
-        if (mySE->HasPilot() and mySE->GetPilot()->CanThrow())
-            throw PyException(MakeUserError("WarpScrambled"));
-        return;
-    }
-
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
 
@@ -1960,17 +1953,6 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
     if (is_log_enabled(DESTINY__WARP_TRACE))
         _log(DESTINY__TRACE, "Destiny::WarpTo() - %s(%u) target bubble: %u  m_stopDistance: %i  m_targetDistance: %.1f",
             mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
-
-    /*supercap warp modifiers
-     * these will go here, and modify distance, target, and range accordingly
-     *
-     * AttrWarpAccuracyMaxRange = 1021,
-     * AttrWarpAccuracyFactor = 1022,
-     * AttrWarpAccuracyFactorMultiplier = 1023,
-     * AttrWarpAccuracyMaxRangeMultiplier = 1024,
-     * AttrWarpAccuracyFactorPercentage = 1025,
-     * AttrWarpAccuracyMaxRangePercentage = 1026,
-     */
 
     if (mySE->IsNPCSE()) {
         m_ballMode = Destiny::Ball::Mode::WARP;
@@ -1997,7 +1979,20 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
                     mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), mySE->SysBubble()->GetID(), \
                     m_targetPoint.x, m_targetPoint.y, m_targetPoint.z, m_stopDistance, m_targetDistance);
         return;
-    } else if (mySE->HasPilot()) {
+    }
+
+    /*supercap warp modifiers
+     * these will go here, and modify distance, target, and range accordingly
+     *
+     * AttrWarpAccuracyMaxRange = 1021,
+     * AttrWarpAccuracyFactor = 1022,
+     * AttrWarpAccuracyFactorMultiplier = 1023,
+     * AttrWarpAccuracyMaxRangeMultiplier = 1024,
+     * AttrWarpAccuracyFactorPercentage = 1025,
+     * AttrWarpAccuracyMaxRangePercentage = 1026,
+     */
+
+    if (mySE->HasPilot()) {
         if (m_targetDistance < minWarpDistance) {
             mySE->GetPilot()->SendErrorMsg("That is too close for your Warp Drive.");
             // warp distance too close.  cancel warp and return
@@ -2012,16 +2007,19 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
         /*  capacitor for warp forumlas from https://oldforums.eveonline.com/?a=topic&threadID=332116
          *  Energy to warp = warpCapacitorNeed * mass * au * (1 - warp_drive_operation_skill_level * 0.10)
          */
-        double currentShipCap = pShip->GetAttribute(AttrCapacitorCharge).get_float();
-        double adjDistance = m_targetDistance / ONE_AU_IN_METERS; // change distance in meters to AU.
-        double capNeeded = m_mass * m_warpCapacitorNeed * adjDistance;
+        float currentShipCap = pShip->GetAttribute(AttrCapacitorCharge).get_float();
+        float adjDistance = m_targetDistance / ONE_AU_IN_METERS; // change distance in meters to AU.
+        float capNeeded = m_mass * m_warpCapacitorNeed * adjDistance;
         capNeeded *= (1 - (0.1 *(pClient->GetChar()->GetSkillLevel(skillWarpDriveOperation, true))));
+
+        if (capNeeded < 5)
+            _log(DESTINY__WARNING, "Warp Cap need for %s(%u) is %0.4f", mySE->GetName(), mySE->GetID(), capNeeded);
 
         //  check if ship has enough capacitor to warp full distance
         if (capNeeded > currentShipCap) {
             /** @todo (allan) this is wrong...
              * //  nope...enough cap to min warp?
-             *        double cap_check = ((150000 /ONE_AU_IN_METERS) * m_mass * adjWarpCapNeed);
+             *        float cap_check = ((150000 /ONE_AU_IN_METERS) * m_mass * adjWarpCapNeed);
              *        if (cap_check > 0) {
              *          //reset distance based on avalible capacitor
              *            // adjust warp distance based on cap left.   NPC's are not restricted by this. (or wont be in EvEmu)
@@ -2050,7 +2048,12 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
      * AttrWarpBubbleImmune = 1538,
      * AttrWarpBubbleImmuneModifier = 1539,
      *   NOTE:  warp bubble in path (or within 100km of m_targetPoint) will change m_targetDistance and m_targetPoint
+     *   however, this does NOT affect original calculations for energy needed, etc...
      */
+    if (m_targBubble->HasWarpBubble()) {
+        if (!mySE->GetSelf()->HasAttribute(AttrWarpBubbleImmune))
+            ;   // not immune to bubble
+    }
 
     m_ballMode = Destiny::Ball::Mode::WARP;
 

@@ -301,6 +301,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
      * 02:13:11 [SvcCall]     Argument 'qty':
      * 02:13:11 [SvcCall]         (None)
      */
+    _log(SHIP__MODULE_TRACE, "DogmaIMBound::Handle_LoadAmmoToModules()");
     call.Dump(SHIP__MODULE_TRACE);
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
@@ -338,6 +339,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
    *                                    ship,   module,  charge type, charge item, charge location, stack qty (usually none - havent found otherwise)
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
+  _log(SHIP__MODULE_TRACE, "DogmaIMBound::Handle_LoadAmmoToBank()");
   call.Dump(SHIP__MODULE_TRACE);
 	Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
@@ -368,7 +370,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
         sRef->LoadLinkedWeapons(pMod, args.itemIDs);
     else
         sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());
-        //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
+
+    //sRef->LoadChargesToBank(pMod->flag(), args.itemIDs);
 
     return nullptr;
 }

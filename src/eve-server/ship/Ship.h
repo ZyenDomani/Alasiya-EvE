@@ -292,7 +292,7 @@ public:
     void LoadCharge(InventoryItemRef cRef, EVEItemFlags flag);
     // this can throw. returns nothing
     void LoadChargesToBank(EVEItemFlags flag, std::vector<int32>& chargeIDs);
-    uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag);
+    uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool merge=false);
     /* end new module manager interface */
 
     // Tactical Interface:

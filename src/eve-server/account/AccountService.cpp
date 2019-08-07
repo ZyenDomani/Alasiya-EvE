@@ -32,7 +32,7 @@
 #include "StaticDataMgr.h"
 #include "account/AccountService.h"
 #include "cache/ObjCacheService.h"
-#include <corporation/CorporationDB.h>
+#include "corporation/CorporationDB.h"
 
 /*
  * ACCOUNT__ERROR
@@ -88,8 +88,10 @@ PyResult AccountService::Handle_GetWalletDivisionsInfo(PyCallArgs &call)
 
 PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
     //corrected, updated, optimized     -allan 26jan15      ReVisited/Rewrote  -allan 7Dec17    Update  -allan 20May19
-    sLog.Log( "AccountService::Handle_GetCashBalance()", "size=%u", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
+    if (is_log_enabled(ACCOUNT__CALL_DUMP)) {
+        sLog.Log( "AccountService::Handle_GetCashBalance()", "size=%u", call.tuple->size());
+        call.Dump(ACCOUNT__CALL_DUMP);
+    }
     bool isCorp = false;
     if (call.tuple->size() > 0)
         isCorp = PyRep::IntegerValue(call.tuple->GetItem(0));
@@ -115,8 +117,10 @@ PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {
 
 PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
 {    // this asks for data for a single acctKey
-    sLog.Log( "AccountService::Handle_GetJournal()", "size=%u", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
+    if (is_log_enabled(ACCOUNT__CALL_DUMP)) {
+        sLog.Log( "AccountService::Handle_GetJournal()", "size=%u", call.tuple->size());
+        call.Dump(ACCOUNT__CALL_DUMP);
+    }
     Call_GetJournal args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
@@ -136,9 +140,10 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
 PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
     // this asks for data for multiple acctKeys
     // self.journalData[key] = self.GetAccountSvc().GetJournalForAccounts(accountKeys, fromDate, entryTypeID, corpAccount, transactionID, rev)
-    sLog.Log( "AccountService::Handle_GetJournalForAccounts()", "size=%u", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
-
+    if (is_log_enabled(ACCOUNT__CALL_DUMP)) {
+        sLog.Log( "AccountService::Handle_GetJournalForAccounts()", "size=%u", call.tuple->size());
+        call.Dump(ACCOUNT__CALL_DUMP);
+    }
     Call_GetJournals args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
@@ -162,9 +167,10 @@ PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
 
 PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
 {
-    sLog.Log( "AccountService::Handle_GiveCash()", "size=%u", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
-
+    if (is_log_enabled(ACCOUNT__CALL_DUMP)) {
+        sLog.Log( "AccountService::Handle_GiveCash()", "size=%u", call.tuple->size());
+        call.Dump(ACCOUNT__CALL_DUMP);
+    }
     Call_GiveCash args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
@@ -188,9 +194,10 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
 
 PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
 {
-    sLog.Log( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
-    call.Dump(ACCOUNT__CALL_DUMP);
-
+    if (is_log_enabled(ACCOUNT__CALL_DUMP)) {
+        sLog.Log( "AccountService::Handle_GiveCashFromCorpAccount()", "size=%u", call.tuple->size());
+        call.Dump(ACCOUNT__CALL_DUMP);
+    }
     Call_GiveCorpCash args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
@@ -221,7 +228,8 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
 void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std::string reason /*""*/, uint8 entryTypeID /*Journal::EntryType::Undefined*/, \
                                   uint32 referenceID/*0*/, uint16 fromKey/*Account::KeyType::Cash*/, uint16 toKey/*Account::KeyType::Cash*/)
 {
-    _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
+    if (is_log_enabled(ACCOUNT__TRACE))
+        _log(ACCOUNT__TRACE, "TranserFunds() - from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, fKey: %u, tKey: %u", \
                             fromID, toID, entryTypeID, referenceID, amount, fromKey, toKey);
     uint8 fromCurrency = Account::CreditType::ISK;
     if (IsAUR(fromKey))
@@ -324,7 +332,8 @@ void AccountService::TranserFunds(uint32 fromID, uint32 toID, double amount, std
 void AccountService::HandleCorpTransaction(uint32 ownerID, int8 entryTypeID, uint32 fromID, uint32 toID, int8 currency, \
                                            uint16 accountKey, double amount, std::string description, uint32 referenceID)
 {
-    _log(ACCOUNT__TRACE, "HandleCorpTransaction() - owner: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
+    if (is_log_enabled(ACCOUNT__TRACE))
+        _log(ACCOUNT__TRACE, "HandleCorpTransaction() - owner: %u, from: %u, to: %u, entry: %u, refID: %u, amount: %.2f, key: %u, currency: %u", \
                         ownerID, fromID, toID, entryTypeID, referenceID, amount,accountKey, currency);
     double balance = AccountDB::GetCorpBalance(ownerID, accountKey);
     // verify funds available for withdraw first

@@ -339,7 +339,7 @@ void Ship::Killed(Damage &fatal_blow) {
     /* {'messageKey': 'ShipExploded', 'dataID': 17881627, 'suppressable': True, 'bodyID': 258841, 'messageType': 'info', 'urlAudio': '', 'urlIcon': '', 'titleID': 258840, 'messageID': 1558}
      * u'ShipExplodedBody'}(u'Your ship has been destroyed by {[character]charID.name}.', None, {u'{[character]charID.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'charID'}})
      */
-    uint32 killerID = 0;
+    uint32 killerID = 0, locationID = GetLocationID();
     Client* pClient(nullptr);
     SystemEntity* killer(fatal_blow.srcSE);
 
@@ -350,7 +350,7 @@ void Ship::Killed(Damage &fatal_blow) {
         pClient = killer->GetDroneSE()->GetOwner();
         if (pClient == nullptr) {
             /** @todo  make error here */
-            sLog.Error("Client::Killed()", "killer == IsDrone and pPlayer == nullptr");
+            sLog.Error("Ship::Killed()", "killer == IsDrone and pPlayer == nullptr");
             EvE::traceStack();
         } else
             killerID = pClient->GetCharacterID();
@@ -360,14 +360,13 @@ void Ship::Killed(Damage &fatal_blow) {
     // AttrFwLpKill
 
     //  log faction kill in dynamic data   -allan
-    uint32 locationID = GetLocationID();
-    MapDB::AddKillToDynamicData(locationID);
-    MapDB::AddFactionKillToDynamicData(locationID);
+    MapDB::AddKill(locationID);
+    MapDB::AddFactionKill(locationID);
 
     // set up basic wreck data
     GPoint wreckPosition = m_destiny->GetPosition();
     if (wreckPosition.isNaN()) {
-        sLog.Error("NPC::Killed()", "Wreck Position is NaN");
+        sLog.Error("Ship::Killed()", "Wreck Position is NaN");
         return;
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
@@ -423,9 +422,8 @@ void Ship::Killed(Damage &fatal_blow) {
     }
 
     Client* pPilot(m_self->GetPilot());
-    if (pPilot == nullptr) {
+    if (pPilot == nullptr)
         return;    //  make error here
-    }
 
     if (pClient != nullptr)
         if (m_system->GetSystemSecurityRating() > 0) {
@@ -521,6 +519,9 @@ void Ship::Killed(Damage &fatal_blow) {
     pPilot->GetChar()->LogKill(data);
 
     if (pPilot->InPod()) {
+        // log podKill
+        MapDB::AddPodKill(locationID);
+
         if (pClient != nullptr)
             pClient->GetChar()->PayBounty(pPilot->GetChar());
 

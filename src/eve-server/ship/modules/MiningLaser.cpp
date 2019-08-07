@@ -45,11 +45,6 @@ MiningLaser::MiningLaser(ModuleItemRef mRef, ShipItemRef sRef)
     }
 
     m_holdFlag = flagCargoHold;
-    if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
-        m_holdFlag = flagOreHold;
-    else if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
-        m_holdFlag = flagGasHold;
-
     _log(MINING__TRACE, "MiningLaser Created for %s with %ums Duration.", mRef->itemName().c_str(), GetAttribute(AttrDuration).get_int());
 }
 
@@ -90,11 +85,37 @@ bool MiningLaser::CanActivate()
         m_crystalDmgAmount = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
         m_crystalDmgChance = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
     }
-    // verify module vs target for activation.  disallow if not compatible.
-    if ((m_rMiner and (m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid) and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit))
-    or (m_dcMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit))
-    or (m_iMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice))
-    or (m_gMiner and (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud))) {
+
+    bool canActivate = false;
+    // verify module vs target for activation.  disallow if not compatible.  set special ore hold if applicable
+    if (m_rMiner) {
+        if ((m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid)
+        and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit)) {
+            canActivate = true;
+            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+                m_holdFlag = flagOreHold;
+        }
+    } else if (m_dcMiner) {
+        if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit) {
+            canActivate = true;
+            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+                m_holdFlag = flagOreHold;
+        }
+    } else if (m_iMiner) {
+        if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice) {
+            canActivate = true;
+            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+                m_holdFlag = flagOreHold;
+        }
+    } else if (m_gMiner) {
+        if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud) {
+            canActivate = true;
+            if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
+                m_holdFlag = flagGasHold;
+        }
+    }
+
+    if (canActivate) {
         m_IsInitialCycle = true;
         m_targetSE->SystemMgr()->GetBeltMgr()->SetActive(m_targetSE->SysBubble()->GetID());
         return ActiveModule::CanActivate();
@@ -129,6 +150,7 @@ void MiningLaser::DeactivateCycle(bool abort/*false*/)
     ShowEffect(false, abort);
 
     ProcessCycle(abort);
+    m_holdFlag = flagCargoHold;
 
     SetModuleState(Module::State::Online);
     Clear();
@@ -143,11 +165,13 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         if (m_targetSE->GetGroupID() == m_crystalRoidGrp)
             cycleVol = GetAttribute(AttrSpecialtyMiningAmount).get_float();
 
-    // fleet invlovement enhances targeting range using InformationWarfare of highest member (2%/lvl)
+    // fleet invlovement enhances mining amount using MiningForeman of highest member (3%/lvl)
+        // this should apply to modules/ship when boost activated, but this is easier at this time.
+        //  downside is client will have the original, lower cycle amount as this isnt set in module
     Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
     if (pShip != nullptr)
         if (pShip->IsBoosted())
-            cycleVol *= (1 + (0.02 * pShip->GetMiningBoostAmount())); // 2% increase/level
+            cycleVol *= (1 + (0.03 * pShip->GetMiningBoostAmount())); // 3% increase/level
 
 	InventoryItemRef roidRef = m_targetSE->GetSelf();
 	// verify gas clouds have volume attr.

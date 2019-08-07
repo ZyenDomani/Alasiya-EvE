@@ -76,7 +76,7 @@ void GenericModule::Online()
     }
     if (m_ModuleState != Module::State::Offline) {
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
-                itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState).c_str());
+                itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState));
         return;     // already online
     }
 
@@ -284,7 +284,7 @@ void GenericModule::Repair(EvilNumber amount)
                 m_modRef->itemName().c_str(), amount, GetAttribute(AttrDamage).get_int());
 }
 
-std::string GenericModule::GetModuleStateName(int8 state)
+const char* GenericModule::GetModuleStateName(int8 state)
 {
     using namespace Module;
     switch(state) {

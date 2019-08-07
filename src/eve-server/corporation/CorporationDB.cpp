@@ -485,18 +485,16 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
         return false;
     }
 
-    // It has to go into the eveStaticOwners too
-    if (!sDatabase.RunQuery(err, " INSERT INTO eveStaticOwners (ownerID,ownerName,typeID) VALUES (%u, '%s', 2)", corpID, cName.c_str()))  {
-        codelog(CORP__DB_ERROR, "Error in query: %s", err.c_str());
-        return false;
-    }
-
+    // dont care if these fail....
     // create default wallet info
     sDatabase.RunQuery(err, "INSERT INTO crpWalletDivisons (corporationID) VALUES (%u)", corpID);
 
     // create corp-owned shares
     sDatabase.RunQuery(err, "INSERT INTO crpShares (corporationID, shareholderID, shares, shareholderCorporationID)"
                             " VALUES (%u, %u, 1000, %u)", corpID, corpID, corpID);
+
+    // It has to go into the eveStaticOwners too
+    sDatabase.RunQuery(err, " INSERT INTO eveStaticOwners (ownerID,ownerName,typeID) VALUES (%u, '%s', 2)", corpID, cName.c_str());
 
     return true;
 }
@@ -1926,7 +1924,7 @@ PyRep* CorporationDB::GetRoleHistroy(uint32 corpID, uint32 charID, int64 fromDat
     return DBResultToCRowset(res);
 /*
     PyList* list = new PyList();
-    if (res.ColumnCount() > 0) {
+    if (res.GetRowCount() > 0) {
         DBResultRow row;
         while (res.GetRow(row)) {
         PyDict* dict = new PyDict();

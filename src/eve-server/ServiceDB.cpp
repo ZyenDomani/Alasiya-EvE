@@ -558,9 +558,12 @@ PyRep* ServiceDB::LookupKnownLocationsByGroup(const std::string & search, uint32
     return DBResultToRowset(res);
 }
 
+/** @todo look into this...may be wrong */
 PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
 {
     DBQueryResult res;
+    DBResultRow row;
+    PyDict* dict = new PyDict();
     for (auto cur : itemIDs) {
         if (IsCharacter(cur))
             sDatabase.RunQuery(res, "SELECT characterID, name, typeID FROM chrCharacters WHERE characterID = %u", cur);
@@ -570,16 +573,13 @@ PyRep* ServiceDB::PrimeOwners(std::vector< int32 >& itemIDs)
             sDatabase.RunQuery(res, "SELECT allianceID, name, typeID FROM alnAlliance WHERE allianceID = %u", cur);
         else
             ; // make error
-    }
-
-    DBResultRow row;
-    PyDict* dict = new PyDict();
-    while (res.GetRow(row)) {
-        PyList* list = new PyList();
-        list->AddItem(new PyInt(row.GetInt(0)));
-        list->AddItem(new PyString(row.GetText(1)));
-        list->AddItem(new PyInt(row.GetInt(2)));
-        dict->SetItem(new PyInt(row.GetInt(0)), list);
+        if (res.GetRow(row)) {
+            PyList* list = new PyList();
+                list->AddItem(new PyInt(row.GetInt(0)));
+                list->AddItem(new PyString(row.GetText(1)));
+                list->AddItem(new PyInt(row.GetInt(2)));
+            dict->SetItem(new PyInt(row.GetInt(0)), list);
+        }
     }
 
     return dict;

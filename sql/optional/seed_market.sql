@@ -1,9 +1,10 @@
 -- seeds specified region with skills and ships
 -- regionID, 02: The Forge - 01:derelik - 30:heimatar - 16:lonetrek - 42:metropolis - 43:domain - 32:Sinq Laison
+--  10000065, 10000020, 10000064, 10000068
 set @regionid=10000001;
 set @saturation=0.8; -- fuzzy logic.  % of stations to fill with orders (random selection)
 
-use EVE_Crucible;   -- set this to your db name
+use Alasiya_EvE;   -- set this to your db name
 
 -- select stations to fill
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int, corporationID int, security float);
@@ -14,21 +15,20 @@ insert into tStations
   select stationID,solarSystemID,regionID, corporationID, security from staStations where (@i:=@i+1)<=@lim AND regionID=@regionid  order by rand();
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
-minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID, corporationID as ownerID, regionID, stationID, 0 as bid,  basePrice / security  as price,
-  550 as volEntered, 550 as volRemaining, 131889844991575488 as issued,1 as orderState, 1 as minVolume,0 as contraband,
-  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 5 as jumps
-  FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued, orderState,
+minVolume, duration, solarSystemID, jumps)
+  SELECT typeID, corporationID, regionID, stationID, basePrice / security,550, 550, 132094760660000000 ,1, 1, 250, solarSystemID, 5
+  FROM tStations, invTypes inner join invGroups USING (groupID)
   WHERE invTypes.published = 1 AND invTypes.basePrice != 0
-  AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+  AND invGroups.categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+
 
 
   ****************************
  -- use this to spawn items in market for single station
 
 set @stationid=60014809;     --Ryddinjorn VIM2 - Pator Tech School
-set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech
+set @solarSystemID=30003410; --Ryddinjorn  - minmatar noob system for pator tech (pts)
 set @regionid=10000042;      --metropolis
 -----------------
 set @stationid=60014140;     --Zemalu IXM2 - Thukker Mix Factory(60014140)
@@ -41,6 +41,10 @@ set @regionid=10000001;      --Derelik
 -----------------
 set @stationid=60004591;     --Abudban IX - Brutor Tribe Bureau
 set @solarSystemID=30002507; --Abudban
+set @regionid=10000030;      --Heimatar
+-----------------
+set @stationid=60014779;     --Hulm VIII - Republic University
+set @solarSystemID=30002505; --Hulm     - minmatar noob system for republic uni. (run)
 set @regionid=10000030;      --Heimatar
 -----------------
 set @stationid=60012178;     --Aranir VIIIM8 - Ammatar Fleet Logistic Support

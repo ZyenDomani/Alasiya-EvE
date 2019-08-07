@@ -57,11 +57,11 @@ bool AttributeMap::Load(bool reset/*false*/) {
     /* Then we load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
     DBQueryResult res;
     if (IsCharacter(mItem.itemID())) {
-        if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
             _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
         }
     } else {
-        if (!sDatabase.RunQuery(res, "SELECT  attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID())) {
             _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
         }
     }

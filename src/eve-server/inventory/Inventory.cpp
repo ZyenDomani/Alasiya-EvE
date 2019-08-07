@@ -190,10 +190,10 @@ void Inventory::AddItem(InventoryItemRef iRef) {
 
     if (test.second)
         _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %s.", \
-                m_myID, this, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()).c_str());
+                m_myID, this, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     else
         _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %s.", \
-                m_myID, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()).c_str());
+                m_myID, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -282,7 +282,7 @@ InventoryItemRef Inventory::FindFirstByFlag(EVEItemFlags flag) const {
         if (cur.second->flag() == flag)
             return cur.second;
 
-        return InventoryItemRef(nullptr);
+    return InventoryItemRef(nullptr);
 }
 
 InventoryItemRef Inventory::GetByID(uint32 id) const {
@@ -299,7 +299,7 @@ InventoryItemRef Inventory::GetByTypeFlag(uint32 typeID, EVEItemFlags flag) cons
         and (cur.second->flag() == flag))
             return cur.second;
 
-        return InventoryItemRef(nullptr);
+    return InventoryItemRef(nullptr);
 }
 
 void Inventory::GetInventoryList(std::map<uint32, InventoryItemRef> &inventory) {
@@ -560,7 +560,8 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();
     }
 
-    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %s(%u) called for item %u", sDataMgr.GetFlagName(flag).c_str(), flag, m_myID);
+    _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %s(%u) called for %s(%u)", \
+                sDataMgr.GetFlagName(flag), flag, m_self->itemName().c_str(), m_myID);
     return 0.0;
 }
 

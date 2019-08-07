@@ -249,8 +249,8 @@ Client::~Client() {
                 if (GetTradeSession()) {
                     TradeService* mts = (TradeService*)(m_services.LookupService("trademgr"));
                     mts->CancelTrade(this);
-                    OnCharNoLongerInStation();
                 }
+                OnCharNoLongerInStation();
             }
 
             // char logout removes fleet data, if any
@@ -755,9 +755,6 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s (%u) Docked in %u.", m_char->itemName().c_str(), m_char->itemID(), m_locationID);
         stDataMgr.GetStationData(m_locationID, m_StationData);
         snprintf(ci, sizeof(ci), "Docked: %s(%u)", GetName(), m_char->itemID());
-        StationItemRef sRef = sEntityList.GetStationByID(m_locationID);
-        sRef->LoadStationOffice(GetCorporationID());
-        sRef->AddGuest(this);
         m_char->Move(m_locationID, flagAutoFit, true);
         m_ship->Move(m_locationID, flagHangar, true);
 
@@ -779,6 +776,11 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
             LoadStationHangar(m_locationID);
         OnCharNowInStation();
         DestroyShipSE();
+        StationItemRef sRef = sEntityList.GetStationByID(m_locationID);
+        if (sRef.get() != nullptr) {
+            sRef->LoadStationOffice(GetCorporationID());
+            sRef->AddGuest(this);
+        }
         m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
     } else {
         _log(PLAYER__WARNING, "MoveToLocation() - Character %s(%u) InSpace in %u. (setState %s, beyonce %s)", \
@@ -1411,11 +1413,11 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
             // do nothing here.  this is to avoid throwing error msg below
         } else {
             _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s (%u) from flag %s to flag %s.", \
-                    m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag).c_str(), sDataMgr.GetFlagName(flag).c_str());
+                    m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
         }
     } else {
         _log(INV__WARNING, "Client::MoveItem() - %s Unhandled NonPlayerItem %s (%u) from flag %s to flag %s.", \
-        m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag).c_str(), sDataMgr.GetFlagName(flag).c_str());
+        m_char->itemName().c_str(), iRef->itemName().c_str(), itemID, sDataMgr.GetFlagName(oldflag), sDataMgr.GetFlagName(flag));
     }
     sItemFactory.UnsetUsingClient();
 }
@@ -1426,11 +1428,11 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         return false;
     }
     if (!IsSolarSystem(m_locationID)) {
-        sLog.White("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
+        sLog.Warning("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
         return false;
     }
 
-    sLog.White("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
+    sLog.Magenta("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
 
     drone->Move(m_locationID, flagAutoFit, true);
 
