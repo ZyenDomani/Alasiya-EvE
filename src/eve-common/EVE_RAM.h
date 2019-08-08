@@ -75,10 +75,10 @@ namespace EvERam {
         : typeID(_typeID), quantity(_quantity), damagePerJob(_damagePerJob), isSkill(_isSkill), extra(_extra) {}
 
         bool extra;
+        bool isSkill;
         uint16 typeID;
         uint32 quantity;
         double damagePerJob;
-        bool isSkill;
     };
 
     /* POD structure for indy job data  */
@@ -94,3 +94,44 @@ namespace EvERam {
 }
 
 #endif  //EVE_RAM_ENUMS_H
+
+/*{'FullPath': u'UI/Messages', 'messageID': 258445, 'label': u'RamInstalledItemMustBeInShipTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258446, 'label': u'RamInstalledItemMustBeInShipBody'}(u'The item you are attempting to install must be located in your ship. It may not be in a container in your ship.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258447, 'label': u'RamInstalledItemInStructureNotInContainerTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258448, 'label': u'RamInstalledItemInStructureNotInContainerBody'}(u'The item you are attempting to install must be either in a station or on the floor of the structure. It may not be in a container.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258449, 'label': u'RamInstalledItemInStructureUnknownLocationTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258450, 'label': u'RamInstalledItemInStructureUnknownLocationBody'}(u'The item you are attempting to install must be either in a station or on the floor of the structure. It may not be in a container.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258451, 'label': u'RamRemoteInstalledItemNotInStationTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258452, 'label': u'RamRemoteInstalledItemNotInStationBody'}(u'The remote item you are trying to install must be on a hangar floor or in your corporate hangar. It may not be in a container at either of these locations.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258453, 'label': u'RamRemoteInstalledItemImpoundedTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258454, 'label': u'RamRemoteInstalledItemImpoundedBody'}(u'The remote item you are trying to install is an impounded item. You must unimpound the item before attempting to use it.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258455, 'label': u'RamRemoteInstalledItemNotInOfficeTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258456, 'label': u'RamRemoteInstalledItemNotInOfficeBody'}(u'The remote item you are trying to install must be located on your corporate hangar floor. It may not be located in some container on that floor.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258457, 'label': u'RamRemoteInstalledItemInStationNotHangarTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258458, 'label': u'RamRemoteInstalledItemInStationNotHangarBody'}(u'The remote item you are trying to install must be located on your hangar floor. It may not be located in some container on that floor.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258459, 'label': u'RamInstalledItemBadLocationTitle'}(u'Item Warning', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258460, 'label': u'RamInstalledItemBadLocationBody'}(u'The item you are trying to install is not in an acceptable location. For example, the item may not be in a container.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258461, 'label': u'RamPleasePickAnInstalltionTitle'}(u'Select Installation?', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258462, 'label': u'RamPleasePickAnInstalltionBody'}(u'You have not selected an installation. Please select an installation and then try again.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258463, 'label': u'RamPleasePickAnItemToInstallTitle'}(u'Nothing to Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258464, 'label': u'RamPleasePickAnItemToInstallBody'}(u'You have not selected an item to install. Please select an item, such as a blueprint to install and try again.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258465, 'label': u'RamAssemblyLineHasNoActivityTitle'}(u'Bad Assembly Line', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258466, 'label': u'RamAssemblyLineHasNoActivityBody'}(u'The selected assembly line does not support any activities. Please select a different one and try again.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258467, 'label': u'RamCorpInstalledItemNotInCargoTitle'}(u'Item Warning', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258468, 'label': u'RamCorpInstalledItemNotInCargoBody'}(u'The item you are trying to install appears to be in your cargo. Please place the item on your hangar floor or corporate hangar floor and try again.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258469, 'label': u'RamNotYourItemToInstallTitle'}(u'Item Warning', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258470, 'label': u'RamNotYourItemToInstallBody'}(u'It would appear that the item you are trying to install does not belong to you or your corporation. Please pick a different item to install and try again.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258471, 'label': u'CannotRemoveActivatedModuleBody'}(u'You cannot remove a module while it is still activated.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258472, 'label': u'RamStructureNotIsSolarsystemTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258473, 'label': u'RamStructureNotIsSolarsystemBody'}(u'The structure you are trying to use in is not in a solar system. Thus it cannot be online.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258474, 'label': u'RamInstalledItemMustBeInInstallationTitle'}(u'Failed To Install', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258475, 'label': u'RamInstalledItemMustBeInInstallationBody'}(u'The item you are trying to install must be in the same location as the installation you are trying to use.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258476, 'label': u'RamCompletionMustBeInShipTitle'}(u'Failed to Deliver', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258477, 'label': u'RamCompletionMustBeInShipBody'}(u'You cannot deliver this job unless you are the pilot of the ship that the job is installed in.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258478, 'label': u'SetNameInvalidBody'}(u"You can't rename that type of object.", None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258479, 'label': u'SetNameShipMustBePilotBody'}(u'You can only rename ships that you are currently piloting.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258480, 'label': u'SetNameObjectMustBeAnchoredInSpaceBody'}(u'You can only rename this type of object if it is anchored in space (and you have a right to do so).', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258481, 'label': u'RamCannotInstallForCorpByRoleFactoryManagerTitle'}(u'Access Denied', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258482, 'label': u'RamCannotInstallForCorpByRoleFactoryManagerBody'}(u'You cannot install this job for your corporation because you do not possess the role "Factory Manager"', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 258483, 'label': u'RamNoShipTitle'}(u"You don't have a ship", None, None)
+ */

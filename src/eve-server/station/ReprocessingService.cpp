@@ -139,9 +139,13 @@ void ReprocessingServiceBound::Release() {
 }
 
 PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &call) {
+    _log(MANUF__INFO, "%s: Calling GetOptionsForItemTypes().", call.client->GetName());
+    call.Dump(MANUF__DUMP);
+
     Call_GetOptionsForItemTypes args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }
 
@@ -172,6 +176,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
     Call_SingleIntegerArg arg;    // itemID
     if (!arg.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }
 
@@ -183,6 +188,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
      Call_GetQuotes args;
      if (!args.Decode(&call.tuple)) {
          codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
          return nullptr;
      }
 
@@ -198,25 +204,28 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
 
 PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
     if (!IsStation(call.client->GetLocationID())) {
-        _log(SERVICE__MESSAGE, "Character %s tried to reprocess, but isn't is station.", call.client->GetName());
+        _log(MANUF__WARNING, "Character %s tried to reprocess, but isn't is station.", call.client->GetName());
         return nullptr;
     }
+
+    _log(MANUF__INFO, "%s: Calling Reprocess().", call.client->GetName());
+    call.Dump(MANUF__DUMP);
 
     Call_Reprocess args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }
 
-    if (args.ownerID == 0)
+    if (args.ownerID == 0)  // should never hit.
         args.ownerID = call.client->GetCharacterID();
 
-    if (args.flag == flagAutoFit)
+    if (args.flag == flagAutoFit)  // should never hit.
         args.flag = flagHangar;
 
     if (args.ownerID == call.client->GetCorporationID()) {
-        int64 roles = call.client->GetCorpRole();
-        if (roles & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
+        if (call.client->GetCorpRole() & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
             _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
                         call.client->GetName(), call.client->GetCharacterID());
             call.client->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
@@ -224,17 +233,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
             return nullptr;
         }
 
-        if ((args.flag == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
-        or  (args.flag == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
-        or  (args.flag == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
-        or  (args.flag == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
-        or  (args.flag == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
-        or  (args.flag == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
-        or  (args.flag == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
-            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", call.client->GetName(), call.client->GetCharacterID());
-            call.client->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
-            //throw error here...dunno the format yet.
-            return nullptr;
+        sRamMthd.LocationRolesCheck(call.client, args.flag);
     }
 
     InventoryItemRef iRef(nullptr);
@@ -259,14 +258,14 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         if ( !m_db.GetRecoverables( iRef->typeID(), recoverables ) )
             continue;
 
-        std::vector<Recoverable>::iterator cur_rec = recoverables.begin();
-        for (; cur_rec != recoverables.end(); cur_rec++) {
-			uint32 full = cur_rec->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
+        std::vector<Recoverable>::iterator itr = recoverables.begin();
+        for (; itr != recoverables.end(); ++itr) {
+			uint32 full = itr->amountPerBatch * iRef->quantity() / iRef->type().portionSize();
             uint32 quantity = uint32(full * efficiency * (1.0 - tax) );
 			if (quantity == 0)
                 continue;
 
-            ItemData idata(cur_rec->typeID, args.ownerID, 0, flagAutoFit, quantity);
+            ItemData idata(itr->typeID, args.ownerID, 0, flagAutoFit, quantity);
             InventoryItemRef iRef2 = sItemFactory.SpawnItem( idata );
             if (iRef2.get() == nullptr)
                 continue;
@@ -298,15 +297,15 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
     /** @todo  check for implants here ... once they're working  */
     CharacterRef cRef = pClient->GetChar();
     double efficiency =  (0.375
-                        * (1 + (0.02 * cRef->GetSkillLevel(skillRefining)))
-                        * (1 + (0.04 * cRef->GetSkillLevel(skillRefineryEfficiency))));
+                        * (1 + (0.02 * cRef->GetSkillLevel(skillRefining)))             // 2% lvl
+                        * (1 + (0.04 * cRef->GetSkillLevel(skillRefineryEfficiency)))); // 4% lvl
 
     if (item.get() != nullptr) {
         uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
         if (specificSkill)
             efficiency *= (1 + 0.05 * cRef->GetSkillLevel(specificSkill));
         else
-            efficiency *= (1 + 0.05 * cRef->GetSkillLevel(skillScrapmetalProcessing));    // use Scrapmetal Processing as default
+            efficiency *= (1 + 0.04 * cRef->GetSkillLevel(skillScrapmetalProcessing));    // use Scrapmetal Processing as default
     }
 
     efficiency += m_staEfficiency;
@@ -337,23 +336,23 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
             return nullptr;
         }
 
-        if ((iRef->flag() == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
-        or  (iRef->flag() == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
-        or  (iRef->flag() == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
-        or  (iRef->flag() == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
-        or  (iRef->flag() == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
-        or  (iRef->flag() == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
-        or  (iRef->flag() == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
-            _log(MANUF__WARNING, "%s(%u) tried to reprocess items they are not allowed to access.", \
-                    pClient->GetName(), pClient->GetCharacterID());
-            pClient->SendErrorMsg("You do not have the role required to access the materials in this hangar.");
-            //throw error here...dunno the format yet.
-            return nullptr;
+        sRamMthd.LocationRolesCheck(pClient, iRef->flag());
     } else if (iRef->ownerID() != pClient->GetCharacterID()) {
         _log(SERVICE__ERROR, "Character %u tried to reprocess item %u of character %u.", pClient->GetCharacterID(), iRef->itemID(), iRef->ownerID());
         pClient->SendErrorMsg("The requested item is not yours.");
         return nullptr;
     }
+
+    if (iRef->quantity() < iRef->type().portionSize()) {
+        std::map<std::string, PyRep *> args;
+        args["typename"] = new PyString(iRef->itemName().c_str());
+        args["portion"] = new PyInt(iRef->type().portionSize());
+        throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
+    }
+
+    std::vector<Recoverable> recoverables;
+    if (!m_db.GetRecoverables( iRef->typeID(), recoverables))
+        return nullptr;
 
     Rsp_GetQuote quote;
     quote.lines = new PyList();
@@ -362,28 +361,16 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
     quote.playerStanding = GetStanding(pClient);
 
     double tax = CalcTax( quote.playerStanding );
+    double efficiency = CalcReprocessingEfficiency(pClient, iRef);
 
-    if (iRef->quantity() >= iRef->type().portionSize()) {
-        std::vector<Recoverable> recoverables;
-        if (!m_db.GetRecoverables( iRef->typeID(), recoverables))
-            return nullptr;
-
-        double efficiency = CalcReprocessingEfficiency(pClient, iRef);
-
-        for (auto cur :recoverables) {
-            uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
-            Rsp_GetQuote_Recoverables_Line line;
-                line.typeID			= cur.typeID;
-                line.client			= uint32(efficiency * (1.0 - tax)   * ratio);
-                line.station		= uint32(efficiency * tax           * ratio);
-                line.unrecoverable	= ratio - line.client - line.station;
-            quote.lines->AddItem( line.Encode() );
-        }
-    } else {
-        std::map<std::string, PyRep *> args;
-        args["typename"] = new PyString(iRef->itemName().c_str());
-        args["portion"] = new PyInt(iRef->type().portionSize());
-        throw(PyException(MakeUserError("QuantityLessThanMinimumPortion", args)));
+    for (auto cur :recoverables) {
+        uint32 ratio = cur.amountPerBatch * quote.quantityToProcess / iRef->type().portionSize();
+        Rsp_GetQuote_Recoverables_Line line;
+            line.typeID			= cur.typeID;
+            line.client			= uint32(efficiency * (1.0 - tax)   * ratio);
+            line.station		= uint32(efficiency * tax           * ratio);
+            line.unrecoverable	= ratio - line.client - line.station;
+        quote.lines->AddItem( line.Encode() );
     }
 
     return quote.Encode();

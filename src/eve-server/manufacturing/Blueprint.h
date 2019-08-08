@@ -118,7 +118,7 @@ public:
     virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
     // overload to split the blueprints properly
     virtual InventoryItemRef Split(int32 qty_to_take, bool notify=true) { return SplitBlueprint( qty_to_take, notify ); }
-    BlueprintRef            SplitBlueprint(int32 qty_to_take, bool notify);
+    BlueprintRef            SplitBlueprint(int32 qty_to_take, bool notify=true);
 
     static BlueprintRef     Load( uint32 blueprintID);
     static BlueprintRef     Spawn( ItemData& data, BlueprintData& bpData);

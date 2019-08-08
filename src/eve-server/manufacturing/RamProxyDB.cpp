@@ -29,7 +29,6 @@
 #include "StaticDataMgr.h"
 #include "manufacturing/RamProxyDB.h"
 
-/** @todo  go thru and update/optimize this class */
 
 PyRep *RamProxyDB::GetJobs2(const int32 ownerID, const bool completed)
 {
@@ -324,7 +323,7 @@ bool RamProxyDB::InstallJob(const uint32 ownerID, const  uint32 installerID,
     // update nextFreeTime
     if (!sDatabase.RunQuery(err,
         "UPDATE ramAssemblyLines"
-        " SET nextFreeTime = %" PRIi64
+        " SET nextFreeTime = %lli"
         " WHERE assemblyLineID = %u",
         endProductionTime, assemblyLineID))
     {
@@ -509,8 +508,6 @@ bool RamProxyDB::GetMultipliers(const uint32 assemblyLineID, uint32 groupID, dou
         timeMultiplier = row.GetDouble(1);
         return true;
     }
-
-    //res.Reset();
 
     // then ramAssemblyLineTypeDetailPerCategory
     if (!sDatabase.RunQuery(res,

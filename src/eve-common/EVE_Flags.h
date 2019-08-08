@@ -13,11 +13,11 @@
 enum EVEItemFlags {
     flagAutoFit                     = 0,
     flagWallet                      = 1,
-    flagFactory                     = 2,
-    flagWardrobe                    = 3,
+    flagFactory                     = 2,  // dunno what this is for
+    flagWardrobe                    = 3,  // dunno what this is for  clothes?
     flagHangar                      = 4,
-    flagCargoHold                   = 5,
-    flagBriefcase                   = 6,
+    flagCargoHold                   = 5,    //AttrCapacity
+    flagBriefcase                   = 6,  // dunno what this is for
     flagSkill                       = 7,
     flagReward                      = 8,
     flagConnected                   = 9,    //Character in station connected
@@ -78,9 +78,11 @@ enum EVEItemFlags {
 
     flagCapsule                     = 56,    //Capsule item in space
     flagPilot                       = 57,
-    flagPassenger                   = 58,     // not sure about this one.  is defined, but not sure if we can use it (or want to)
+    // not sure about these next 3.  not defined, not sure if we can use them (or want to)
+    flagPassenger                   = 58,
     flagBoardingGate                = 59,
     flagCrew                        = 60,
+
     flagSkillInTraining             = 61,
 
     // these are flags for items in stations' corp offices (from client code)
@@ -107,10 +109,10 @@ enum EVEItemFlags {
     flagUnknown16                   = 85,
     */
     flagBonus                       = 86,    //Char bonus/penalty
-    flagDroneBay                    = 87,
+    flagDroneBay                    = 87,   //AttrDroneCapacity
     flagBooster                     = 88,
     flagImplant                     = 89,
-    flagShipHangar                  = 90,
+    flagShipHangar                  = 90,    //AttrShipMaintenanceBayCapacity
     flagShipOffline                 = 91,
 
     flagRigSlot0                    = 92,    //Rig power slot 1
@@ -124,7 +126,7 @@ enum EVEItemFlags {
 
     flagFactoryOperation            = 100,   // dunno what this is for
 
-    //  these are flags for items in corp hangars (station, container, ship), by divisionID
+    //  these are flags for items in corp hangars (station, container, ship), by divisionID    all use AttrCorporateHangarCapacity
     flagCorpHangar2                 = 116,   // formerly corpSAG* or Security Access Group.
     flagCorpHangar3                 = 117,
     flagCorpHangar4                 = 118,
@@ -146,17 +148,17 @@ enum EVEItemFlags {
     flagSubSystem6                  = 131,    //Sub system slot 6
     flagSubSystem7                  = 132,    //Sub system slot 7
 
-    flagFuelBay                     = 133,
+    flagFuelBay                     = 133,  //AttrFuelCargoCapacity or AttrSpecialFuelBayCapacity ?
     flagOreHold                     = 134,
     flagGasHold                     = 135,
     flagMineralHold                 = 136,
-    flagSalvageHold                 = 137,
+    flagSalvageHold                 = 137,  // also for refinables (drone compounds)
     flagShipHold                    = 138,
     flagSmallShipHold               = 139,
     flagMediumShipHold              = 140,
     flagLargeShipHold               = 141,
     flagIndustrialShipHold          = 142,
-    flagAmmoHold                    = 143,
+    flagAmmoHold                    = 143,  //AttrAmmoCapacity
 
     flagStructureActive             = 144,
     flagStructureInactive           = 145,

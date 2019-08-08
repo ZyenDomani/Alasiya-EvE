@@ -201,7 +201,10 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     return result.Encode();
 }
 
-PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call) {
+PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
+{
+    //  bookmarkID, itemID, typeID, x, y, z, locationID = self.bookmarkMgr.BookmarkScanResult(locationID, memo, comment, resultID, ownerID, folderID=0)
+
     Call_BookmarkScanResult args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -285,6 +288,7 @@ PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
   /**
             newBookmarks, message = bookmarkMgr.CopyBookmarks(bookmarksToCopy, folderID)
             */
+  //{'FullPath': u'UI/Messages', 'messageID': 258505, 'label': u'CantTradeMissionBookmarksBody'}(u'You cannot trade or copy mission bookmarks.', None, None)
 
       sLog.Error( "BookmarkService::Handle_CopyBookmarks()", "Service is not handled yet.  Returning NULL.");
   call.Dump(COMMON__INFO);
@@ -304,7 +308,3 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
     return PyStatic.NewNone();
 }
 
-/**
-  bookmarkID, itemID, typeID, x, y, z, locationID = self.bookmarkMgr.BookmarkScanResult(locationID, memo, comment, resultID, ownerID, folderID=0)
-
-*/

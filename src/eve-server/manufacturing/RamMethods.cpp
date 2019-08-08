@@ -25,18 +25,7 @@
  * MANUF__DUMP
  */
 
-
 static const uint32 ramProductionTimeLimit = 60*60*24*30;   //30 days
-
-RamMethods::RamMethods()
-{
-
-}
-
-RamMethods::~RamMethods()
-{
-
-}
 
 /*
  *    UNKNOWN/NOT IMPLEMENTED EXCEPTIONS:
@@ -227,7 +216,6 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
             if (args.installationContainerID == pClient->GetLocationID()) {
                 std::map<std::string, PyRep *> exceptArgs;
                 exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
-
                 if (args.isCorpJob)
                     throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
                 else
@@ -240,7 +228,6 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                     if (args.installationContainerID == pClient->GetLocationID()) {
                         std::map<std::string, PyRep *> exceptArgs;
                         exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
-
                         throw(PyException(MakeUserError("RamCorpInstalledItemWrongLocation", exceptArgs)));
                     } else
                         throw(PyException(MakeUserError("RamRemoteInstalledItemNotInOffice")));
@@ -250,7 +237,6 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
                     if (args.installationInvLocationID == pClient->GetLocationID()) {
                         std::map<std::string, PyRep *> exceptArgs;
                         exceptArgs["location"] = new PyString(stDataMgr.GetStationName(args.installationContainerID));
-
                         throw(PyException(MakeUserError("RamInstalledItemWrongLocation", exceptArgs)));
                     } else {
                         throw(PyException(MakeUserError("RamRemoteInstalledItemInStationNotHangar")));
@@ -279,17 +265,17 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
 void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
 {
     int64 roles = pClient->GetCorpRole();
-    if ((flagID == flagHangar and (roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1)
-    or  (flagID == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2)
-    or  (flagID == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3)
-    or  (flagID == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4)
-    or  (flagID == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5)
-    or  (flagID == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6)
-    or  (flagID == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7))
+    if ((flagID == flagHangar and (roles & Corp::Role::HangarCanTake1 != Corp::Role::HangarCanTake1))
+    or  (flagID == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2 != Corp::Role::HangarCanTake2))
+    or  (flagID == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3 != Corp::Role::HangarCanTake3))
+    or  (flagID == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4 != Corp::Role::HangarCanTake4))
+    or  (flagID == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5 != Corp::Role::HangarCanTake5))
+    or  (flagID == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6 != Corp::Role::HangarCanTake6))
+    or  (flagID == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7 != Corp::Role::HangarCanTake7)))
         throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
 }
 
-void RamMethods::MaterialSkillsCheck(Client*const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems)
+void RamMethods::MaterialSkillsCheck(Client* const pClient, uint32 runs, const PathElement& bomLocation, const Rsp_InstallJob& rsp, const std::vector< EvERam::RequiredItem >& reqItems)
 {
     std::map<uint16, InventoryItemRef> items;   // typeID, itemRef
     GetBOMItemsMap( bomLocation, items );
@@ -335,20 +321,22 @@ void RamMethods::ProductionTimeCheck(uint32 productionTime)
     }
 }
 
-void RamMethods::CompleteJob(const Call_CompleteJob &args, Client *const c) {
-    if (args.containerID == c->GetShipID())
-        if ((c->GetLocationID() != args.containerID) or (c->GetChar()->flag() != flagPilot))
+void RamMethods::CompleteJob(const Call_CompleteJob &args, Client* const pClient)
+{
+    // this isnt entirely right....if job is installed in ship, receiver must be pilot in active ship to complete job.
+    if (args.containerID == pClient->GetShipID())
+        if (pClient->GetChar()->flag() != flagPilot)
             throw(PyException(MakeUserError("RamCompletionMustBeInShip")));
 
-        uint32 ownerID;
-    int64 endProductionTime;
-    int8 status, restrictionMask;
+    uint32 ownerID = 0;
+    int64 endProductionTime = 0;
+    int8 status = 0, restrictionMask = 0;
     if (!RamProxyDB::GetJobVerifyProperties(args.jobID, ownerID, endProductionTime, restrictionMask, status))
         throw(PyException(MakeUserError("RamCompletionNoSuchJob")));
 
-    if (ownerID != c->GetCharacterID()) {
-        if (ownerID == c->GetCorporationID()) {
-            if ((c->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
+    if (ownerID != pClient->GetCharacterID()) {
+        if (ownerID == pClient->GetCorporationID()) {
+            if ((pClient->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager)
                 throw(PyException(MakeUserError("RamCompletionAccessDeniedByCorpRole")));
         } else  // alliances not implemented
             throw(PyException(MakeUserError("RamCompletionAccessDenied")));
@@ -361,11 +349,12 @@ void RamMethods::CompleteJob(const Call_CompleteJob &args, Client *const c) {
         throw(PyException(MakeUserError("RamCompletionInProduction")));
 }
 
-bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client *const c, Rsp_InstallJob &into) {
+bool RamMethods::Calculate(const Call_InstallJob &args, InventoryItemRef installedItem, Client* const pClient, Rsp_InstallJob &into)
+{
     if (!RamProxyDB::GetAssemblyLineProperties(args.installationAssemblyLineID, into))
         return false;
 
-    Character* pChar = c->GetChar().get();
+    Character* pChar = pClient->GetChar().get();
 
     const ItemType* pType(nullptr);
     switch(args.activityID) {
@@ -579,7 +568,7 @@ void RamMethods::GetAdjustedRamRequiredMaterials()
 
 }
 
-std::string RamMethods::GetActivityName(int8 activityID)
+const char* RamMethods::GetActivityName(int8 activityID)
 {
     switch (activityID) {
         case EvERam::Activity::Copying:             return "Copying";
@@ -593,9 +582,6 @@ std::string RamMethods::GetActivityName(int8 activityID)
         case EvERam::Activity::ResearchTech: {
             codelog(MANUF__ERROR, "RamMethods::GetActivityName - invalid activity sent: %u", activityID);
         } break;
-        default: {
-
-        }
     }
 }
 

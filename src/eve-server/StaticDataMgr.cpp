@@ -204,8 +204,9 @@ void StaticDataMgr::Populate()
         m_stationSystem.emplace(row.GetInt(0), row.GetInt(1));
     }
 
+    std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.begin(), end = m_stationList.end();
     for (auto cur : m_stationSystem) {
-        std::map<uint32, std::vector<uint32>>::iterator itr = m_stationList.find(cur.second), end = m_stationList.end();
+        itr = m_stationList.find(cur.second);
         if (itr != end) {
             itr->second.push_back(cur.first);
         } else {
@@ -244,7 +245,7 @@ void StaticDataMgr::Populate()
     //res->Reset();
     start = GetTimeMSeconds();
     ManagerDB::GetRAMMaterials(*res);
-    EvERam::RamMaterials ramMatls;
+    EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
     while (res->GetRow(row)) {
         //SELECT typeID, materialTypeID, quantity FROM invTypeMaterials
         ramMatls.quantity       = row.GetInt(2);
@@ -253,7 +254,7 @@ void StaticDataMgr::Populate()
     }
     //res->Reset();
     ManagerDB::GetRAMRequirements(*res);
-    EvERam::RamRequirements ramReq;
+    EvERam::RamRequirements ramReq = EvERam::RamRequirements();
     while (res->GetRow(row)) {
         //SELECT typeID, activityID, requiredTypeID, quantity, damagePerJob, extra FROM ramTypeRequirements
         ramReq.activityID       = row.GetInt(1);

@@ -246,12 +246,12 @@ bool StationItem::HasShip(Client* pClient)
 
 ShipItemRef StationItem::GetShipFromInventory(uint32 shipID)
 {
-    return RefPtr<ShipItem>::StaticCast( pInventory->GetByID( shipID ) );
+    return ShipItemRef::StaticCast( pInventory->GetByID( shipID ) );
 }
 
 CargoContainerRef StationItem::GetContainerFromInventory(uint32 contID)
 {
-    return RefPtr<CargoContainer>::StaticCast( pInventory->GetByID( contID ) );
+    return CargoContainerRef::StaticCast( pInventory->GetByID( contID ) );
 }
 
 

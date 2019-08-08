@@ -69,7 +69,7 @@ enum EveAttrEnum {
     AttrInetia = 70,   // listed in db as "agility", this is actually Inertia, where agility is an internal variable
     AttrCapacityBonus = 72,
     AttrDuration = 73,      //durationAttributeID in dgmEffects
-    AttrHpToCapacity = 75,
+    AttrHpToCapacity = 75,  // dunno what this is for
     AttrMaxTargetRange = 76,
     AttrMiningAmount = 77,
     AttrScanSpeed = 79,     //ship scanning speed in milliseconds

@@ -106,7 +106,7 @@ PyResult FactoryService::Handle_GetBlueprintInformationAtLocation(PyCallArgs &ca
 
 PyResult FactoryService::Handle_GetBlueprintInformationAtLocationWithFlag(PyCallArgs &call) {
     //blueprints = sm.RemoteSvc('factory').GetBlueprintInformationAtLocationWithFlag(locationID, self.flagInput, 1)
-    sLog.White( "FactoryService::Handle_GetBlueprintInformationAtLocationWithFlag()", "size= %u", call.tuple->size());
+    _log(MANUF__MESSAGE, "FactoryService::Handle_GetBlueprintInformationAtLocationWithFlag() size= %u", call.tuple->size());
     call.Dump(MANUF__DUMP);
     return nullptr;
 }

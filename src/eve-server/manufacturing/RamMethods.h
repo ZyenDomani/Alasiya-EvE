@@ -16,11 +16,10 @@
 
 class Client;
 
-class RamMethods {
+class RamMethods
+: public Singleton< RamMethods >
+{
 public:
-    RamMethods();
-    ~RamMethods();
-
     static void ActivityCheck(Client* const pClient, const Call_InstallJob& args, InventoryItemRef installedItem);
     static void JobsCheck(Character* pChar, const Call_InstallJob& args);
     static void InstallationCheck(Client* const pClient, int32 installationContainerID);
@@ -44,8 +43,12 @@ public:
     static bool GetMultipliers(const uint32 assemblyLineID, const uint32 productGroupID, double &materialMultiplier, double &timeMultiplier);
 
     static void GetAdjustedRamRequiredMaterials();
-    static std::string GetActivityName(int8 activityID);
+    const char* GetActivityName(int8 activityID);
 };
+
+//Singleton
+#define sRamMthd \
+( RamMethods::get() )
 
 
 #endif  // EVE_MANUF_RAM_METHODS_H

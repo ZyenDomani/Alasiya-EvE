@@ -1272,17 +1272,17 @@ NPC* SystemManager::GetNPCSE(uint32 entityID) const
 
 ShipItemRef SystemManager::GetShipFromInventory(uint32 shipID)
 {
-    return RefPtr<ShipItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( shipID ) );
+    return ShipItemRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( shipID ) );
 }
 
 CargoContainerRef SystemManager::GetContainerFromInventory(uint32 contID)
 {
-    return RefPtr<CargoContainer>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( contID ) );
+    return CargoContainerRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( contID ) );
 }
 
 StationItemRef SystemManager::GetStationFromInventory(uint32 stationID)
 {
-    return RefPtr<StationItem>::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
+    return StationItemRef::StaticCast( m_solarSystemRef->GetMyInventory()->GetByID( stationID ) );
 }
 
 SystemEntity* SystemManager::GetPlanet(uint32 planetID)

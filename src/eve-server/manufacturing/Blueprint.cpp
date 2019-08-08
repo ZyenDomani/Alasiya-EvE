@@ -109,7 +109,7 @@ void Blueprint::Delete() {
     InventoryItem::Delete();
 }
 
-BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify) {
+BlueprintRef Blueprint::SplitBlueprint(int32 qty_to_take, bool notify/*true*/) {
     // split item
     BlueprintRef bRef = BlueprintRef::StaticCast( InventoryItem::Split( qty_to_take, notify ) );
     if (bRef.get() == nullptr)
