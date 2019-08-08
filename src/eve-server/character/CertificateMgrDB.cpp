@@ -102,7 +102,7 @@ bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertMap &into )
         CharCerts cert = CharCerts();
         cert.certificateID     = row.GetUInt( 0 );
         cert.grantDate         = row.GetInt64( 1 );
-        cert.visibilityFlags   = row.GetUInt( 2 );
+        cert.visibilityFlags   = row.GetBool( 2 );
         into.emplace(row.GetUInt( 0 ), cert );
     }
 
