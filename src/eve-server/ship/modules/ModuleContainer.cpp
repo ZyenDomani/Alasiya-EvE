@@ -67,6 +67,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 
     // module is fit so change state from Unfitted to Offline
     pMod->SetModuleState(Module::State::Offline);
+    //pMod->SetAttribute(AttrOnline, EvilZero, false);
     return true;
 }
 

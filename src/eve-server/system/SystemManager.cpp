@@ -1323,6 +1323,7 @@ void SystemManager::GetClientList(std::vector< Client* >& cVec)
 
 void SystemManager::GetCurrentEntities(std::vector< SystemEntity* >& vector)
 {
+    /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
     for (auto cur : m_ticEntities)
         vector.push_back(cur.second);
 }

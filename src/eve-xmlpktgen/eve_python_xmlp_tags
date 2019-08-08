@@ -1,6 +1,7 @@
 ====================
 XMLP Tags and their uses:
 (UD by allan for Alasiya_EvE code)
+latest: 7Aug19
 ====================
 
 <elementDef>
@@ -108,7 +109,7 @@ for token, pyobject dict and ??  optional means if this tag IsNone(), set *ident
 "safe" will decode given numeric type into *type* listed
   - update.  decoder now uses PyRep::IntegerValue() which will test for all integer types, including 'none'
   - this renders 'safe' and 'none_marker' useless on decoding int and long types
-  - 'safe' enables PyRep::IntegerValue() decoding on float and real types
+  - 'safe' enables PyRep::IntegerValue() decoding on float and real types, but decodes these as integer
 
 there is "default" in all numeric tags which initializes variable to this value if set.
 if "default" is not set, variable is initialized to "0".

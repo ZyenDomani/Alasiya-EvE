@@ -189,11 +189,11 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
 
     if (test.second)
-        _log(INV__TRACE, "Inventory::AddItem()  Updated location %u(%p) to contain item %u with flag %s.", \
-                m_myID, this, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+        _log(INV__TRACE, "Inventory::AddItem()  Updated %s(%u) to contain %s(%u) in %s.", \
+                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     else
-        _log(INV__TRACE, "Inventory::AddItem()  location %u already contains item %u with flag %s.", \
-                m_myID, iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+        _log(INV__TRACE, "Inventory::AddItem()  %s(%u) already contains %s(%u) in %s.", \
+                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -202,9 +202,11 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr);
-        _log(INV__TRACE, "Inventory::RemoveItem()  Updated location %u(%p) to no longer contain item %u.", m_myID, this, iRef->itemID());
+        _log(INV__TRACE, "Inventory::RemoveItem()  Updated %s(%u) to no longer contain %s(%u) at %s.", \
+                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem()  location %u does not contain item %u.", m_myID, iRef->itemID());
+        _log(INV__TRACE,"Inventory::RemoveItem()  %s(%u) does not contain %s(%u) at %s.", \
+                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::DeleteContents()
@@ -399,10 +401,10 @@ InventoryItemRef Inventory::GetItemByTypeFlag(uint16 typeID, EVEItemFlags flag)
     return InventoryItemRef(nullptr);
 }
 
-bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &item) const {
+bool Inventory::GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef& iRef) const {
     for (auto cur : mContents)
         if (cur.second->flag() == flag) {
-            item = cur.second;
+            iRef = cur.second;
             return true;
         }
     return false;
@@ -497,30 +499,49 @@ double Inventory::GetStoredVolume(EVEItemFlags locationFlag) const
     return totalVolume;
 }
 
-bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const
+bool Inventory::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const
 {
-    float volume = item->quantity() * item->GetAttribute(AttrVolume).get_float();
+    float volume = iRef->quantity() * iRef->GetAttribute(AttrVolume).get_float();
     double capacity = GetRemainingCapacity(flag);
     if (volume > capacity) {
         Client* pClient = sItemFactory.GetUsingClient();
         if (pClient != nullptr) {
             std::map<std::string, PyRep *> args;
-            args["available"] = new PyFloat(capacity);
             args["volume"] = new PyFloat(volume);
             sItemFactory.UnsetUsingClient();
-            if (flag == flagCargoHold)
+            if (IsCargoHoldFlag(flag)) {
+                args["available"] = new PyFloat(capacity);
                 throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-            else if (flag == flagDroneBay)
-                throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
-            else if (IsModuleSlot(flag))
+            } else if (IsSpecialHoldFlag(flag)) {
+                args["item"] = new PyString(iRef->itemName());
+                args["maximum"] = new PyFloat(capacity);
+                args["used"] = new PyFloat(capacity);
+                throw PyException(MakeUserError("NotEnoughSpecialBaySpaceOverload", args));
+            } else if (IsModuleSlot(flag)) {
+                args["capacity"] = new PyFloat(capacity);
                 throw PyException(MakeUserError("NotEnoughChargeSpace", args));
-            else
+            } else if (IsHangarFlag(flag)) {
+                args["item"] = new PyString(iRef->itemName());
+                args["maximum"] = new PyFloat(capacity);
+                args["used"] = new PyFloat(capacity);
+                throw PyException(MakeUserError("NotEnoughSpaceOverload", args));
+            } else if (flag == flagDroneBay) {
+                args["available"] = new PyFloat(capacity);
+                throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
+            } else
                 throw PyException(MakeUserError("NoSpaceForThat", args));
         }
         return false;
     }
     return true;
 }
+//{'FullPath': u'UI/Messages', 'messageID': 259141, 'label': u'NotEnoughCargoSpaceFor1UnitBody'}(u'One unit of {[item]type.name} would take {[numeric]required, decimalPlaces=2} units of space. This container only has {[numeric]free, decimalPlaces=2} units free.', None, {u'{[numeric]free, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'free'}, u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}, u'{[numeric]required, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'required'}})
+//{'FullPath': u'UI/Messages', 'messageID': 259208, 'label': u'NotEnoughCargoSpaceOverloadBody'}(u'The cargo bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
+//{'FullPath': u'UI/Messages', 'messageID': 259210, 'label': u'NotEnoughDroneBaySpaceOverloadBody'}(u'The drone bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
+//{'FullPath': u'UI/Messages', 'messageID': 259213, 'label': u'NotEnoughSpaceOverloadBody'}(u'The storage area is overloaded and cannot be made to fit any {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
+//{'FullPath': u'UI/Messages', 'messageID': 257337, 'label': u'NotEnoughSpecialBaySpaceOverloadBody'}(u'That cargo bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used}units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
+
+
 
 double Inventory::GetCapacity(EVEItemFlags flag) const {
     // added hangar capy for all hangar types

@@ -31,10 +31,10 @@ public:
     int8            GetEnvironmentEnum(const std::string& domain);
     int8            GetAssociationEnum(const std::string& association);
 
-    std::string     GetSourceName(int8 id);
-    std::string     GetMathMethodName(int8 id);
-    std::string     GetTargLocName(int8 id);
-    std::string     GetStateName(int8 id);
+    const char*     GetSourceName(int8 id);
+    const char*     GetMathMethodName(int8 id);
+    const char*     GetTargLocName(int8 id);
+    const char*     GetStateName(int8 id);
 
     EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*FX::Math*/int8 method);
 

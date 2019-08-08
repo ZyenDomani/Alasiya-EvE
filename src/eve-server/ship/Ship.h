@@ -281,8 +281,6 @@ public:
 
     // this also checks for fit-by-type and rig restrictions
     void TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
-    // calls methods to verify hold capy based on flag
-    void TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef);     // this must throw on error
     EVEItemFlags FindAvailableModuleSlot( InventoryItemRef iRef );
     // make sure this does NOT throw.
     // must return integer
@@ -346,7 +344,8 @@ public:
     uint8 GetLinkedCount(GenericModule* pMod);
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
-    void LinkWeapon(uint32 masterID, uint32 slaveID); // this should throw if applicable
+    void LinkWeapon(uint32 masterID, uint32 slaveID);       // this should throw if applicable
+    void MergeModuleGroups(uint32 masterID, uint32 slaveID);  // this should throw if applicable
     uint32 UnlinkWeapon(uint32 moduleID);
     void UnlinkGroup(uint32 memberID);
     void UnlinkAllWeapons();
@@ -356,6 +355,7 @@ public:
     // to load with ammo
     void LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod);
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
+
 protected:
     /* linking weapons methods */
     void LinkWeapon(GenericModule* pMaster, GenericModule* pSlave);

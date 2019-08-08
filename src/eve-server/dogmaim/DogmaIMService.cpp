@@ -33,6 +33,7 @@
 #include "ship/modules/GenericModule.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
+#include <station/Station.h>
 
 /** @todo this is actually DogmaLM (Location Manager) for bound objecs... */
 class DogmaIMBound
@@ -583,9 +584,18 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
      */
     if (!IsPlayerItem(args.shipID))
         return nullptr;
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.shipID);
-    if (sRef.get() == nullptr)
+
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
+    else
+        sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
         return nullptr;
+    }
     sRef->LinkWeapon(args.masterID, args.slaveID);
     return sRef->GetLinkedWeapons();
 }
@@ -599,9 +609,18 @@ PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
 
     if (!IsPlayerItem(arg.arg))
         return nullptr;
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(arg.arg);
-    if (sRef.get() == nullptr)
+
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(arg.arg);
+    else
+        sRef = pSysMgr->GetShipFromInventory(arg.arg);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
         return nullptr;
+    }
     // locate and link all weapons on ship, if possible.
     sRef->LinkAllWeapons();
     return sRef->GetLinkedWeapons();
@@ -617,9 +636,18 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
 
     if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
         return nullptr;
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.arg1);
-    if (sRef.get() == nullptr)
+
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.arg1);
+    else
+        sRef = pSysMgr->GetShipFromInventory(args.arg1);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
         return nullptr;
+    }
     sRef->UnlinkGroup(args.arg2);
     return nullptr;
 }
@@ -634,9 +662,18 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
 
     if (!IsPlayerItem(arg.arg))
         return nullptr;
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(arg.arg);
-    if (sRef.get() == nullptr)
+
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(arg.arg);
+    else
+        sRef = pSysMgr->GetShipFromInventory(arg.arg);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
         return nullptr;
+    }
     sRef->UnlinkAllWeapons();
     return nullptr;
 }
@@ -649,14 +686,23 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     if (!IsPlayerItem(args.arg1) or !IsPlayerItem(args.arg2))
-        return new PyInt(0);
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.arg1);
-    if (sRef.get() == nullptr)
-        return new PyInt(0);
+        return PyStatic.NewZero();
+
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.arg1);
+    else
+        sRef = pSysMgr->GetShipFromInventory(args.arg1);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
+        return PyStatic.NewZero();
+    }
 
     return new PyInt(sRef->UnlinkWeapon(args.arg2));
 }
@@ -677,12 +723,21 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
      */
     if (!IsPlayerItem(args.shipID))
         return nullptr;
-    ShipItemRef sRef = call.client->SystemMgr()->GetShipFromInventory(args.shipID);
-    if (sRef.get() == nullptr)
+    SystemManager* pSysMgr(call.client->SystemMgr());
+    ShipItemRef sRef(nullptr);
+    if (call.client->IsDocked())
+        sRef = pSysMgr->GetStationFromInventory(call.client->GetStationID())->GetShipFromInventory(args.shipID);
+    else
+        sRef = pSysMgr->GetShipFromInventory(args.shipID);
+    if (sRef.get() == nullptr) {
+        _log(INV__ERROR, "ShipRef not found in containers inventory for %s", call.client->GetName());
+        call.client->SendErrorMsg("Your ship was not found.  Ref: ServerError xxxxx");
         return nullptr;
+    }
 
-    // not sure what to do here
-    return nullptr;
+    // locate and link all weapons on ship, if possible.
+    sRef->MergeModuleGroups(args.masterID, args.slaveID);
+    return sRef->GetLinkedWeapons();
 }
 
 PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)

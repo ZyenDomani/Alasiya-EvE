@@ -92,8 +92,10 @@ bool ModuleManager::Initialize() {
                         pMod->SetChargeState(Module::State::Loaded);
                         m_charges.emplace(cur->flag(), cur);
                     } else {
-                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module to load charge %s(%u) into at flag %u",\
-                                cur->itemName().c_str(), cur->itemID(), cur->flag() );
+                        // module to load not found...
+                        cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
+                        _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module at %s to load charge %s(%u) into",\
+                                sDataMgr.GetFlagName(cur->flag()), cur->itemName().c_str(), cur->itemID() );
                     }
                     pMod = nullptr;
                 } break;
@@ -165,14 +167,16 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
 void ModuleManager::UninstallRig(uint32 itemID)
 {
     GenericModule* pMod = pModuleCont->GetModule(itemID);
-    if (pMod != nullptr) {
-        pMod->Offline();
-        if (!sConfig.debug.IsTestServer)
-            pMod->DestroyRig();
-        m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UninstallRig() -  Rig %u not found", itemID);
+        return;
     }
 
+    pMod->Offline();
+    if (!sConfig.debug.IsTestServer)
+        pMod->RemoveRig();
     pModuleCont->RemoveModule(itemID);
+    m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
     m_Ship->SetAttribute(AttrUpgradeSlotsLeft, m_Ship->GetAttribute(AttrUpgradeSlotsLeft) +1);
 
     if (pMod->groupID() == EVEDB::invGroups::Rig_Electronics) {
@@ -272,6 +276,10 @@ void ModuleManager::UnfitModule(uint32 itemID)
     }
     // update avalible slots
     if (pMod->isHighPower()) {
+        if (pMod->isTurretFitted())
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
+        else if (pMod->isLauncherFitted())
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
         ++m_HighSlots;
     } else if (pMod->isMediumPower()) {
         ++m_MidSlots;
@@ -337,6 +345,7 @@ void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
     } else if (pMod->isSubSystem()) {
         --m_SubSystemSlots;
     } else if (pMod->isRig()) {
+        pMod->Online();
         m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
     }
@@ -665,6 +674,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
         else
             UnloadCharge(flag, true); // change charges
     }
+    //{'FullPath': u'UI/Messages', 'messageID': 256676, 'label': u'CannotLoadNotEnoughChargesBody'}(u'There are not enough charges to fully load all of your modules. Some of your modules have been left partially loaded or empty.', None, None)
 
     // check quantities
     if (modCapacity < chargeVolume)

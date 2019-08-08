@@ -61,17 +61,15 @@ set @regionid=10000001;      --Derelik
 
 create temporary table if not exists tStations (stationId int, solarSystemID int, regionID int);
 truncate table tStations;
-insert into tStations values (60012949, 30000051, 10000001);
+insert into tStations values (60014137, 30000053, 10000001);
 
 -- actual seeding
-INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, bid, price, volEntered, volRemaining, issued, orderState,
-minVolume, contraband, accountID, duration, isCorp, solarSystemID, escrow, jumps)
-  SELECT typeID,1 as ownerID, regionID, stationID, 0 as bid,  basePrice as price,
-  550 as volEntered, 550 as volRemaining, 131889844991575488 as issued,1 as orderState, 1 as minVolume,0 as contraband,
-  0 as accountID, 250 as duration,0 as isCorp, solarSystemID, 0 as escrow, 25 as jumps
+INSERT INTO mktOrders (typeID, ownerID, regionID, stationID, price, volEntered, volRemaining, issued, orderState,
+minVolume, duration, solarSystemID, jumps)
+  SELECT typeID,1, regionID, stationID, basePrice, 550, 550, 131989844991575488,1, 1, 250, solarSystemID, 25
   FROM tStations, invTypes inner join invGroups on invTypes.groupID=invGroups.groupID
   WHERE invTypes.published = 1 AND invTypes.basePrice != 0
-  AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
+  AND categoryID IN (4, 5, 6, 7, 8, 9, 16, 17, 18, 20, 22, 23, 24, 25, 32, 34, 35, 39, 40, 41, 42, 43, 46);
 
 categoryID  categoryName
 4   Material

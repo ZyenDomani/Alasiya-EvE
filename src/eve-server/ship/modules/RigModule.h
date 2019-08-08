@@ -23,7 +23,8 @@ public:
     int8 GetModulePowerLevel();
 
     //  not real sure what to do here yet.
-    void DestroyRig();
+    virtual void RemoveRig();
+    virtual void DestroyRig();
 };
 
 #endif  // _EVE_SHIP_MODULES_RIG_MODULE_H_

@@ -132,22 +132,6 @@ PyObject *StructureItem::StructureGetInfo()
     return result.Encode();
 }
 
-void StructureItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
-{
-    // Handle any flag, legal or not, by virtue of GetStoredVolume() and GetCapacity() that handle supported capacity types:
-    // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
-    // check for adding unpackaged ships to cargo of active ship...
-    double volume = iRef->GetPackagedVolume();
-    volume *= iRef->quantity();
-    double capacity = (pInventory->GetCapacity(flag) - pInventory->GetStoredVolume(flag));
-    if (capacity < volume) {
-        std::map<std::string, PyRep *> args;
-        args["available"] = new PyFloat(capacity);
-        args["volume"] = new PyFloat(volume);
-        throw PyException( MakeUserError("NotEnoughCargoSpace", args));
-    }
-}
-
 void StructureItem::AddItem(InventoryItemRef iRef)
 {
     if (mySE->IsCOSE())
@@ -453,6 +437,9 @@ void StructureSE::Process() {
  * {'messageKey': 'CantOnlineTowerLacksPowerResources', 'dataID': 17885226, 'suppressable': False, 'bodyID': 260157, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 404}
  * {'messageKey': 'CantOnlineTowerLacksResources', 'dataID': 17885363, 'suppressable': False, 'bodyID': 260207, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 405}
  * {'messageKey': 'CantOnlineWithinGlobalDisruptor', 'dataID': 17876951, 'suppressable': False, 'bodyID': 257068, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3180}
+ *
+ * {'FullPath': u'UI/Messages', 'messageID': 259215, 'label': u'OnlineRequiredAnchorBody'}(u'The {item} can only be brought online when it is firmly anchored. It cannot be brought online while unanchored, unanchoring or while anchoring.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+ *
  */
 void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 {

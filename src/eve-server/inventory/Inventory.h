@@ -44,8 +44,8 @@ public:
 
     void Reset();
     void Unload();  // used by stations and solar systems for item saving and unloading
-    void AddItem(InventoryItemRef item);
-    void RemoveItem(InventoryItemRef item);
+    void AddItem(InventoryItemRef iRef);
+    void RemoveItem(InventoryItemRef iRef);
     void DeleteContents();
     void GetInventoryList(std::map<uint32, InventoryItemRef> &inventory);
     // this method also sorts in order - cargo, modules, charge, subsystems.
@@ -55,7 +55,7 @@ public:
     bool IsEmpty()                                      { return mContents.empty(); }
     bool LoadContents();
     // this will throw if it fails.
-    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) const;
+    bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef) const;
     bool ContentsLoaded() const                         { return mContentsLoaded; }
     bool ContainsItem(uint32 itemID) const              { return mContents.find( itemID ) != mContents.end(); }
     bool ContainsTypeQty(uint16 typeID, uint32 qty=0) const;
@@ -71,7 +71,7 @@ public:
     /* Inventory-by-Flag methods */
     /** @todo update to use m_usedVolumeByFlag container? */
     bool IsEmptyByFlag(EVEItemFlags flag) const;
-    bool GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &item) const;
+    bool GetSingleItemByFlag(EVEItemFlags flag, InventoryItemRef &iRef) const;
     bool GetTypesByFlag(EVEItemFlags flag, std::map<uint16, InventoryItemRef> &items);
     uint32 GetItemsByFlag(EVEItemFlags flag, std::vector<InventoryItemRef> &items) const;
     uint32 GetItemsByFlagRange(EVEItemFlags low_flag, EVEItemFlags high_flag, std::vector<InventoryItemRef> &items) const;

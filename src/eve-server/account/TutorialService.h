@@ -56,3 +56,5 @@ protected:
 };
 
 #endif
+
+//{'FullPath': u'UI/Messages', 'messageID': 257694, 'label': u'TutorialGoodiesNotEnoughSpaceInCargoBody'}(u'Some of the items in this tutorial were relocated to the station you were last in ({stationName}) because there was not enough space in your cargo hold.', None, {u'{stationName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'stationName'}})

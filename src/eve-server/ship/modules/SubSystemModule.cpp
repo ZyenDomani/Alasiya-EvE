@@ -22,3 +22,4 @@ int8 SubSystemModule::GetModulePowerLevel()
 
 //not much to do here... this will be for t3 ships, which arent implented yet
 
+//{'FullPath': u'UI/Messages', 'messageID': 257702, 'label': u'CannotFitSubSystemNotShipBody'}(u"You can't fit {subSystemName}. It only fits to {validShipName} but you're trying to fit it to {shipName}.", None, {u'{subSystemName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'subSystemName'}, u'{validShipName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'validShipName'}, u'{shipName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'shipName'}})

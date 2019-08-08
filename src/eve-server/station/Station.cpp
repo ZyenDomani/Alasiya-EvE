@@ -32,6 +32,7 @@
 #include "station/Station.h"
 #include "station/StationOffice.h"
 #include "station/StationDataMgr.h"
+#include "system/Container.h"
 #include "system/DestinyManager.h"
 #include "system/SystemEntity.h"
 #include "system/SystemManager.h"
@@ -241,6 +242,16 @@ bool StationItem::HasShip(Client* pClient)
         if (cur->categoryID() == EVEDB::invCategories::Ship)
             return true;
     return false;
+}
+
+ShipItemRef StationItem::GetShipFromInventory(uint32 shipID)
+{
+    return RefPtr<ShipItem>::StaticCast( pInventory->GetByID( shipID ) );
+}
+
+CargoContainerRef StationItem::GetContainerFromInventory(uint32 contID)
+{
+    return RefPtr<CargoContainer>::StaticCast( pInventory->GetByID( contID ) );
 }
 
 

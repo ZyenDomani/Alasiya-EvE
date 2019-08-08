@@ -96,6 +96,7 @@ public:
     // this does not physically remove charge from module,
     // must NOT throw
     virtual void UnloadCharge()                         { /* Do nothing here */ }
+    virtual void RemoveRig()                            { /* Do nothing here */ }
     virtual void DestroyRig()                           { /* Do nothing here */ }
     virtual void ReprocessCharge()                      { /* Do nothing here */ }
 

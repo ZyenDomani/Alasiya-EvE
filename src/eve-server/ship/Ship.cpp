@@ -954,22 +954,6 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
     return InventoryItemRef(nullptr);
 }
 
-void ShipItem::TryHoldCapacity(EVEItemFlags flag, InventoryItemRef iRef)
-{
-    // Handle any flag, legal or not, by virtue of GetRemainingVolumeByFlag() and GetCapacity() that handle supported capacity types:
-    // (unsupported or illegal flags report capacity of 0.0, so are automatically rejected)
-    // check for adding unpackaged ships to cargo of active ship...
-    double volume = iRef->GetPackagedVolume();
-    volume *= iRef->quantity();
-    double capacity = GetRemainingVolumeByFlag(flag);
-    if (capacity < volume) {
-        std::map<std::string, PyRep *> args;
-        args["available"] = new PyFloat(capacity);
-        args["volume"] = new PyFloat(volume);
-        throw PyException( MakeUserError("NotEnoughCargoSpace", args));
-    }
-}
-
 void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 {
     if (m_ModuleManager->IsSlotOccupied(flag))
@@ -1001,6 +985,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
                  */
             }
         }
+        /** @todo verify module size vs ship slot size?   do we want to limit putting med modules on small ships?? */
     } else if (IsRigSlot(flag)) {
         if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
             std::map<std::string, PyRep *> args;
@@ -1245,10 +1230,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         m_ModuleManager->UpdateModules(flag);
     }
 
-    /** @note  this isnt gonna work as intended all the time....may look into later. */
-    if ((flag == flagCargoHold)
-     or (flag == flagOreHold)
-     or (flag == flagGasHold)) {
+    if ((flag == flagCargoHold) or (flag == flagOreHold) or (flag == flagGasHold)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);
         else
@@ -1292,6 +1274,8 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
         m_ModuleManager->UpdateModules(iRef->flag());
     }
 }
+
+//{'FullPath': u'UI/Messages', 'messageID': 257270, 'label': u'NotEnoughCargoSpaceToUnloadBankBody'}(u'There is not enough cargo space left to unload the charges in the weapon bank. Try freeing up some space and try again.', None, None)
 
 uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool merge/*false*/)
 {
@@ -1796,6 +1780,11 @@ void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
     pMaster->SetLinked(true);
     pMaster->SetLinkMaster(true);
     pSlave->SetLinked(true);
+}
+
+void ShipItem::MergeModuleGroups(uint32 masterID, uint32 slaveID)
+{
+    _log(SHIP__MODULE_ERROR, "MergeModuleGroups() called by %s(%u).  It still needs to be written.", itemName().c_str(), itemID());
 }
 
 void ShipItem::LinkAllWeapons()

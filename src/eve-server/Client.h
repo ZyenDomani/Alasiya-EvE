@@ -125,6 +125,7 @@ public:
     bool                    IsLoaded()                  { return m_loaded; }
 
     PyServiceMgr&           services() const            { return m_services; }
+    // this should never be null
     SystemManager*          SystemMgr() const           { return m_system; }
     bool                    IsClient() const            { return true; }
     // used in msgs and other places where a const char* is needed instead of me forgetting to use .c_str()

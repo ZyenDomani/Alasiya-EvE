@@ -94,6 +94,8 @@ public:
     static StationItemRef Load( uint32 stationID);
 
     StationType* GetStationType() { return &m_stationType; }
+    ShipItemRef GetShipFromInventory(uint32 shipID);
+    CargoContainerRef GetContainerFromInventory(uint32 contID);
 
     // station methods here for offices, reprocessing, and docking.
     PyRep* GetOffices()                                 { PyIncRef(m_officePyData); return m_officePyData; }  // cached officeData for client call

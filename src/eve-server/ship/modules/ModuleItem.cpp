@@ -51,7 +51,7 @@ bool ModuleItem::_Load()
         return false;
 
     // modules need the Online attribute set.  easier to do here than add to item attributes
-    if (!HasAttribute(AttrOnline))
+    //if (!HasAttribute(AttrOnline))
         SetAttribute(AttrOnline, EvilZero, false);
 
     return true;
@@ -62,7 +62,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
     m_modifiers.clear();
-    if (!isRig)   // rigs DO NOT get isOnline attrib set.
+    //if (!isRig)   // rigs DO NOT get isOnline attrib set.
         SetAttribute(AttrOnline, (online?1:0));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);

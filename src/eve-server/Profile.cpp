@@ -233,7 +233,7 @@ void Profile::PrintProfile()
     } else
         std::printf("        Colony   Disabled.\n");
 
-    std::printf(" Profile Times Compiled in %s\n", (GetTimeUSeconds() -startTime) );
+    std::printf(" Profile Times Compiled in %uus\n", (GetTimeUSeconds() -startTime) );
 }
 
 void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a)

@@ -27,3 +27,14 @@ void RigModule::DestroyRig()
     //delete the item
     m_modRef->Delete();
 }
+
+void RigModule::RemoveRig()
+{
+    uint8 hp = m_modRef->GetAttribute(AttrHP).get_int();
+    if (hp < 10) {
+        DestroyRig();
+        return;
+    }
+    hp -= 10;
+    m_modRef->SetAttribute(AttrHP, hp);
+}

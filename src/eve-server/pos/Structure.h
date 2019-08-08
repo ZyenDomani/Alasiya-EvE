@@ -49,7 +49,6 @@ public:
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE; }
     SystemEntity* GetMySE()                             { return mySE; }
 
-    void TryHoldCapacity(EVEItemFlags toFlag, InventoryItemRef iRef);
 
 protected:
     StructureItem(uint32 _structureID, const ItemType &_itemType, const ItemData &_data);
@@ -227,3 +226,33 @@ private:
 
     with a variance of 3600, reinforceValue of 0 sets hours of 23:00 to 01:00
     */
+
+    /*{'FullPath': u'UI/Messages', 'messageID': 256800, 'label': u'ClaimMarkerNoAllianceOnlinedBody'}(u'The {structure} can not be put online because the owner is not part of an alliance.', None, {u'{structure}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'structure'}})
+     { 'Fu*llPath': u'UI/Messages', 'messageID': 256801, 'label': u'ClaimMarkerNoAllianceAnchoredBody'}(u'The {structure} can not be anchored because the owner is not part of an alliance.', None, {u'{structure}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'structure'}})
+     {'FullPath': u'UI/Messages', 'messageID': 256802, 'label': u'EffectAlreadyActive2Body'}(u'{modulename} is already active', None, {u'{modulename}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'modulename'}})
+     {'FullPath': u'UI/Messages', 'messageID': 256803, 'label': u'CantAnchorInfrasturctureHubWrongAllianceBody'}(u'Sovereignty has not been claimed in this system by your alliance!', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256804, 'label': u'CantAnchorNoInfrastructureHubBody'}(u'This structure can only be anchored in a system that has a infrastructure hub!', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256805, 'label': u'NotAllProbesReturnedSuccessfullyBody'}(u'Not all probes were called back. You possibly do not have room for all of them in your cargo hold.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256806, 'label': u'ConfirmBreakCourierPackageTitle'}(u'Fail contract?', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256807, 'label': u'ConfirmBreakCourierPackageBody'}(u'Breaking this courier package will make it impossible to complete the courier contract. Are you sure you want to do this?', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256808, 'label': u'CantAnchorInfrastructureHubNoPlanetBody'}(u'You can not anchor Infrastructure Hub here. It needs to be close to a planet that has no station near it.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256809, 'label': u'CantAnchorInfrastructureHubNearAStationBody'}(u'You can not anchor Infrastructure Hub near a station.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256810, 'label': u'CantOnlineInfrastructureHubAlreadyInSystemBody'}(u'This Infrastructure Hub cannot be onlined since there is another one operating in the system already.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256811, 'label': u'ChannelTryingToCreateTitle'}(u'Create Channel', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256812, 'label': u'ChannelTryingToCreateBody'}(u'Attempting to create a channel', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256813, 'label': u'ChannelTryingToJoinTitle'}(u'Join Channel', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256814, 'label': u'ChannelTryingToJoinBody'}(u'Attempting to join a channel', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256815, 'label': u'CantOnlineNoInfrastructureHubBody'}(u'This structure can only be onlined in a system that has a infrastructure hub!', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256816, 'label': u'CantAnchorInfrastructureHubAnotherHubPresentBody'}(u'The Infrastructure Hub fails to anchor as there is another hub active in the system.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256817, 'label': u'CanOnlyInstallStructureUpgradeToIHBody'}(u'You can only install structure upgrades to the infrastructure hub.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256837, 'label': u'CantAnchorInfrastructureHubNearStationBody'}(u'You cannot anchor the Infrastructure Hub near a station. Try another planet which does not have a station in orbit around it.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256875, 'label': u'CantAnchorToFarFromSunBody'}(u'The Territorial Claim Unit cannot be anchored this far from the sun, move it closer to less than 300 AU.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256876, 'label': u'CantOnlineAnotherClaimMarkerOnliningBody'}(u'Your corporation can only online one Territorial Claim Unit per system.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256877, 'label': u'CantOnlineInfrastructureDontOwnFlagBody'}(u"You can not online a infrastructure hub because your corporation doesn't own the Territorial Claim Unit.", None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256878, 'label': u'CantOnlineSovereigntyAlreadyClaimedBody'}(u'The Territorial Claim Unit cannot online because sovereignty has already been claimed in this system.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256879, 'label': u'CantAnchorDisruptorIHProtectingBody'}(u'There is a infrastructure hub that is preventing you from anchoring the Sovereignty Blockade Unit.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256880, 'label': u'CantAnchorDisruptorOutpostProtectingBody'}(u'The sovereignty holder holds the outpost, you can not anchor Sovereignty Blockade Unit while this is true.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256881, 'label': u'CantAnchoredDisruptorNotClaimedBody'}(u'The Sovereignty Blockade Unit cannot be anchored because sovereignty has not been claimed in this system.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256882, 'label': u'CantOnlineDisruptorOutpostProtectingBody'}(u'The sovereignty holder holds an outpost in the solar system. You cannot online the Sovereignty Blockade Unit while this is true.', None, None)
+     {'FullPath': u'UI/Messages', 'messageID': 256892, 'label': u'CantAnchorDefenseBunkerNotHereBody'}(u'Defense bunkers must be anchored withing 50 - 100 km of a stargate, station, control tower, or infrastructure hub.', None, None)
+     */

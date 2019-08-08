@@ -125,6 +125,8 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
      * 23:21:49 [PlanetPktTrace]       Dictionary: Empty
      * 23:21:49 [PlanetPktTrace]  taxRate=0.0500000007451
      */
+    //{'FullPath': u'UI/Messages', 'messageID': 256577, 'label': u'CannotImportNotEnoughWarehouseSpaceBody'}(u'You cannot import commodities to that spaceport, as it does not have sufficient storage space to handle the incoming goods.', None, None)
+    //{'FullPath': u'UI/Messages', 'messageID': 256626, 'label': u'CannotExportNotEnoughSpaceBody'}(u'You cannot export commodities to the customs office, as it does not have sufficient storage space to handle the incoming goods.', None, None)
 
     //  this is (should be) customs office
     if (m_self->groupID() != EVEDB::invGroups::Orbital_Infrastructure) {
@@ -158,22 +160,24 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     // newItemID = inv.RemoveChargeToHangar(itemKey, quantity)
     /*
-     * 17:57:52 [SvcCallDump]   Call Arguments:
-     * 17:57:52 [SvcCallDump]      Tuple: 1 elements
-     * 17:57:52 [SvcCallDump]       [ 0]  Tuple: 3 elements
-     * 17:57:52 [SvcCallDump]       [ 0]   [ 0]    Integer: 140002038       <- shipID OR chargeID  (could be either)
-     * 17:57:52 [SvcCallDump]       [ 0]   [ 1]    Integer: 28              <- flagID
-     * 17:57:52 [SvcCallDump]       [ 0]   [ 2]    Integer: 184             <- typeID
+     * 12:27:55 [InvDump]   Call Arguments:
+     * 12:27:55 [InvDump]      Tuple: 2 elements
+     * 12:27:55 [InvDump]       [ 0]  Tuple: 3 elements
+     * 12:27:55 [InvDump]       [ 0]   [ 0]    Integer: 140000877   <- shipID OR chargeID  (could be either)
+     * 12:27:55 [InvDump]       [ 0]   [ 1]    Integer: 27          <- flagID
+     * 12:27:55 [InvDump]       [ 0]   [ 2]    Integer: 181         <- typeID
+     * 12:27:55 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
+     *
      */
     _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
 
-    PyTuple* tuple(call.tuple);
-    if (tuple->size() == 2)
-        tuple = tuple->GetItem(0)->AsTuple();
+    uint32 quantity = 0;
+    if (call.tuple->size() == 2)
+        quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
 
-    Call_RemoveChargeToHangar args;
-    if (!args.Decode(&tuple)) {
+    Call_RemoveCharge args;
+    if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyInt(0);
     }
@@ -189,9 +193,9 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
      * 20:18:58 [InvDump]   Call Arguments:
      * 20:18:58 [InvDump]      Tuple: 2 elements
      * 20:18:58 [InvDump]       [ 0]  Tuple: 3 elements
-     * 20:18:58 [InvDump]       [ 0]   [ 0]    Integer: 140002044
-     * 20:18:58 [InvDump]       [ 0]   [ 1]    Integer: 31
-     * 20:18:58 [InvDump]       [ 0]   [ 2]    Integer: 178
+     * 20:18:58 [InvDump]       [ 0]   [ 0]    Integer: 140002044   <- shipID OR chargeID  (could be either)
+     * 20:18:58 [InvDump]       [ 0]   [ 1]    Integer: 31          <- flagID
+     * 20:18:58 [InvDump]       [ 0]   [ 2]    Integer: 178         <- typeID
      * 20:18:58 [InvDump]       [ 1]       None                     <- when set, this is quantity to move
      * 20:18:58 [InvDump]  Named Arguments:
      * 20:18:58 [InvDump]   preferMerge
@@ -200,12 +204,12 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToCargo() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
 
-    PyTuple* tuple(call.tuple);
-    if (tuple->size() == 2)
-        tuple = tuple->GetItem(0)->AsTuple();
+    uint32 quantity = 0;
+    if (call.tuple->size() == 2)
+        quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
 
-    Call_RemoveChargeToCargo args;
-    if (!args.Decode(&tuple)) {
+    Call_RemoveCharge args;
+    if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return new PyInt(0);
     }
@@ -537,15 +541,18 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             float volume = quantity * iRef->GetAttribute(AttrVolume).get_float();
             if (volume > capacity) {
                 std::map<std::string, PyRep *> args;
-                args["available"] = new PyFloat(capacity);
                 args["volume"] = new PyFloat(volume);
-                if (toFlag == flagCargoHold)
+                sItemFactory.UnsetUsingClient();
+                if (toFlag == flagCargoHold) {
+                    args["available"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-                else if (toFlag == flagDroneBay)
+                } else if (toFlag == flagDroneBay) {
+                    args["available"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
-                else if (IsModuleSlot(toFlag))
+                } else if (IsModuleSlot(toFlag)) {
+                    args["capacity"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughChargeSpace", args));
-                else
+                } else
                     throw PyException(MakeUserError("NoSpaceForThat", args));
             }
         } else if (quantity < 1) {
@@ -567,7 +574,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
-            } else {
+            } else if (ship) {
                 pShip->RemoveItem(iRef);
             }
         } else {
@@ -587,9 +594,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 }
             }
         }
-
-        if (pInventory != nullptr)  // not sure if this would be null, but check anyway
-            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
 
         if (donating) {
             iRef->Donate(m_ownerID, m_itemID, toFlag);
@@ -616,7 +620,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
             else if (IsCargoHoldFlag(toFlag))
-                m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
+                pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
+                //m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1)
@@ -626,10 +631,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             // reset in case of MultiAdd
             toFlag = origFlag;
         } else if (customs) {
+            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
             StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
-            sRef->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
+            //sRef->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
             sRef->AddItem(iRef);// this will throw if it fails
         } else {
+            pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
             iRef->Donate(m_ownerID, m_itemID, toFlag);
         }
     }

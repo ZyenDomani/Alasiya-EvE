@@ -204,7 +204,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      * if (pClient->CrimeMgr()->IsWeaponFlagActive())
      *  deny eject
      */
-
+    //{'FullPath': u'UI/Messages', 'messageID': 256625, 'label': u'NoEjectingToSpaceInStationBody'}(u"You can't eject into space while you're docked. Try leaving your ship the usual way.", None, None)
+    
     SystemEntity* pShipSE = pClient->GetShipSE();
     if (pShipSE == nullptr)
         throw PyException(MakeCustomError("Invalid Ship.  Ref: ServerError xxxxx"));
@@ -345,103 +346,6 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
         tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
         tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
-}
-
-PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
-
-    /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
-     * 13:05:41 [BindDump]   Call Arguments:
-     * 13:05:41 [BindDump]       Tuple: 1 elements
-     * 13:05:41 [BindDump]         [ 0] List: 5 elements
-     * 13:05:41 [BindDump]         [ 0]   [ 0] Integer field: 140000073
-     * 13:05:41 [BindDump]         [ 0]   [ 1] Integer field: 140000074
-     * 13:05:41 [BindDump]         [ 0]   [ 2] Integer field: 140000075
-     * 13:05:41 [BindDump]         [ 0]   [ 3] Integer field: 140000076
-     * 13:05:41 [BindDump]         [ 0]   [ 4] Integer field: 140000077
-     *
-              [PyTuple 2 items]     << response to AssembleShip call
-                [PyList 1 items]
-                  [PyPackedRow 33 bytes]
-                    ["itemID" => <1002333477860> [I8]]
-                    ["typeID" => <24700> [I4]]
-                    ["ownerID" => <1661059544> [I4]]
-                    ["locationID" => <61000012> [I8]]
-                    ["flagID" => <4> [I2]]
-                    ["quantity" => <-1> [I4]]
-                    ["groupID" => <419> [I2]]
-                    ["categoryID" => <6> [I2]]
-                    ["customInfo" => <empty string> [Str]]
-                [PyDict 1 kvp]
-                  [PyInt 10]        << flagdisconnect??
-                  [PyInt 0]
-            */
-
-    call.Dump(COLLECT__CALL_DUMP);
-    if (call.tuple->empty())
-        return nullptr;
-
-    Call_AssembleShip args;
-    //Call_AssembleShipWithName argsNamed;
-
-    std::vector<int32> itemIDList;
-    bool completeTech3Assembly = false;
-    if (call.tuple->GetItem(0)->IsList()) {
-        if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return nullptr;
-        }
-        itemIDList = args.items;
-    } else if (call.tuple->GetItem(0)->IsInt() &&
-               call.tuple->GetItem(1)->IsString()) {
-        // This block is for how DNA calls AssembleShip
-        // @TODO Ignoring name
-        // Can't get xmlpktgen to pickup the change so.. lol
-        //if (!argsNamed.Decode(&call.tuple)) {
-        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-        //    return nullptr;
-        //}
-        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
-    } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
-        sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
-        throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
-        return nullptr;
-        Call_AssembleShipTech3 argsT3;
-        argsT3.item;
-    }
-
-    ShipItemRef ship(nullptr);
-    for (auto cur : itemIDList) {
-        ship = sItemFactory.GetShip(cur);
-
-        if (ship.get() == nullptr) {
-            _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
-            continue;
-        }
-
-        //check if the ship is a stack
-        if (ship->quantity() > 1) {
-            // Split the stack into a new inventory item with quantity of one, cast to ShipItemRef then assembled:
-            // original item stack will be left with qty-1 at original location
-            ship = ShipItemRef::StaticCast(ship->Split(1, true));
-            if (ship.get() == nullptr) {
-                _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", cur);
-                continue;
-            }
-        }
-
-        ship->ChangeSingleton(true, true);
-
-        if (completeTech3Assembly) {
-            std::vector<uint32> subSystemList;
-            // Move the five specified subsystems to the newly assembled Tech 3 ship
-            InventoryItemRef subSystemItem(nullptr);
-            for (auto cur : subSystemList) {
-                subSystemItem = sItemFactory.GetItem(cur);
-                subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
-            }
-        }
-    }
-    return nullptr;
 }
 
 PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
@@ -670,16 +574,6 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     return nullptr;
 }
 
-// ShipMaintenanceArray
-PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
-    /*      ******* no packet data ***********     */
-
-    sLog.White("ShipBound::Handle_ScoopToSMA()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
@@ -843,6 +737,121 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     return tuple;
 }
 
+/**     ***********************************************************************
+ * @note   these below are partially coded
+ */
+
+PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
+
+    /* 13:05:41 [BindDump] NodeID: 888444 BindID: 129 calling AssembleShip in service manager 'ShipBound'
+     * 13:05:41 [BindDump]   Call Arguments:
+     * 13:05:41 [BindDump]       Tuple: 1 elements
+     * 13:05:41 [BindDump]         [ 0] List: 5 elements
+     * 13:05:41 [BindDump]         [ 0]   [ 0] Integer field: 140000073
+     * 13:05:41 [BindDump]         [ 0]   [ 1] Integer field: 140000074
+     * 13:05:41 [BindDump]         [ 0]   [ 2] Integer field: 140000075
+     * 13:05:41 [BindDump]         [ 0]   [ 3] Integer field: 140000076
+     * 13:05:41 [BindDump]         [ 0]   [ 4] Integer field: 140000077
+     *
+     *              [PyTuple 2 items]     << response to AssembleShip call
+     *                [PyList 1 items]
+     *                  [PyPackedRow 33 bytes]
+     *                    ["itemID" => <1002333477860> [I8]]
+     *                    ["typeID" => <24700> [I4]]
+     *                    ["ownerID" => <1661059544> [I4]]
+     *                    ["locationID" => <61000012> [I8]]
+     *                    ["flagID" => <4> [I2]]
+     *                    ["quantity" => <-1> [I4]]
+     *                    ["groupID" => <419> [I2]]
+     *                    ["categoryID" => <6> [I2]]
+     *                    ["customInfo" => <empty string> [Str]]
+     *                [PyDict 1 kvp]
+     *                  [PyInt 10]        << flagdisconnect??
+     *                  [PyInt 0]
+     */
+
+    call.Dump(COLLECT__CALL_DUMP);
+    if (call.tuple->empty())
+        return nullptr;
+
+    Call_AssembleShip args;
+    //Call_AssembleShipWithName argsNamed;
+
+    std::vector<int32> itemIDList;
+    bool completeTech3Assembly = false;
+    if (call.tuple->GetItem(0)->IsList()) {
+        if (!args.Decode(&call.tuple)) {
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            return nullptr;
+        }
+        itemIDList = args.items;
+    } else if (call.tuple->GetItem(0)->IsInt() &&
+        call.tuple->GetItem(1)->IsString()) {
+        // This block is for how DNA calls AssembleShip
+        // @TODO Ignoring name
+        // Can't get xmlpktgen to pickup the change so.. lol
+        //if (!argsNamed.Decode(&call.tuple)) {
+        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        //    return nullptr;
+        //}
+        itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
+        } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
+            sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
+            throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
+            return nullptr;
+            Call_AssembleShipTech3 argsT3;
+            argsT3.item;
+        }
+
+        ShipItemRef ship(nullptr);
+        for (auto cur : itemIDList) {
+            ship = sItemFactory.GetShip(cur);
+
+            if (ship.get() == nullptr) {
+                _log(ITEM__ERROR, "Failed to load ship %u to assemble.", cur);
+                continue;
+            }
+
+            //check if the ship is a stack
+            if (ship->quantity() > 1) {
+                // Split the stack into a new inventory item with quantity of one, cast to ShipItemRef then assembled:
+                // original item stack will be left with qty-1 at original location
+                ship = ShipItemRef::StaticCast(ship->Split(1, true));
+                if (ship.get() == nullptr) {
+                    _log(ITEM__ERROR, "Failed to split stack to assemble ship %u.", cur);
+                    continue;
+                }
+            }
+
+            ship->ChangeSingleton(true, true);
+
+            if (completeTech3Assembly) {
+                std::vector<uint32> subSystemList;
+                // Move the five specified subsystems to the newly assembled Tech 3 ship
+                InventoryItemRef subSystemItem(nullptr);
+                for (auto cur : subSystemList) {
+                    subSystemItem = sItemFactory.GetItem(cur);
+                    subSystemItem->Move(ship->itemID(), (EVEItemFlags)(subSystemItem->GetAttribute(AttrSubSystemSlot).get_int()), true);
+                }
+            }
+        }
+        return nullptr;
+}
+
+
+/**     ***********************************************************************
+ * @note   these do absolutely nothing at this time....
+ */
+
+// ShipMaintenanceArray
+PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
+    /*      ******* no packet data ***********     */
+
+    sLog.White("ShipBound::Handle_ScoopToSMA()", "size=%u", call.tuple->size());
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
 
 PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
     /** @todo finish this later

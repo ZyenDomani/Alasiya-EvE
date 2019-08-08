@@ -97,7 +97,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
             if (data.math > Math::MaxMathMethod) {
                 Operand operand = sFxDataMgr.GetOperand(expression.operandID);
                 _log(EFFECTS__ERROR, "FxProc::ParseExpression(): out of range mathOp: %s(%i) for operand %u (%s).", \
-                        GetMathMethodName(data.math).c_str(), data.math, expression.operandID, operand.operandKey.c_str());
+                        GetMathMethodName(data.math), data.math, expression.operandID, operand.operandKey.c_str());
             }
         } break;
         case Operands::DEFENVIDX: {     //24
@@ -483,7 +483,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case Target::Area:
                     case Target::PowerCore:  //defined but not used
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Skill target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Skill target undefined - %s.", GetTargLocName(cur.second.targLoc));
                     } break;
                 }
             } break;
@@ -517,17 +517,17 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     case Target::PowerCore:  //defined but not used
                     case Target::Char:
                     default: {
-                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Self target undefined - %s.", GetTargLocName(cur.second.targLoc).c_str());
+                        _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Source::Self target undefined - %s.", GetTargLocName(cur.second.targLoc));
                     } break;
                 }
             } break;
             case Source::Ship: {      // source is a subsystem
                 ;   // not sure how to do this on yet.  t3 ships arent implemented (actually blocked)
-                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling ship target.");
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): %s is ship source calling target %s.", srcItemRef->itemName().c_str(), GetTargLocName(cur.second.targLoc));
             } break;
             case Source::Gang: {      // source is a gang leader skill
                 ;   //Target::Self is ship of gang member to apply leader's skill bonuses to
-                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): calling gang target.");
+                _log(EFFECTS__DEBUG, "FxProc::ApplyEffects(): %s is gang source calling target %s.", srcItemRef->itemName().c_str(), GetTargLocName(cur.second.targLoc));
             } break;
             case Source::Invalid: {
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location invalid.");
@@ -536,7 +536,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             // these are not used (not coded)
             case Source::Target:
             case Source::Owner: {
-                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location %s not coded.", GetSourceName(cur.second.fxSrc).c_str());
+                _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): source location %s not coded.", GetSourceName(cur.second.fxSrc));
                 continue;
             } break;
         }
@@ -552,7 +552,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         if (srcValue.isNaN() or srcValue.isInf()) {
             srcValue = srcItemRef->GetDefaultAttribute(cur.second.srcAttr);
             _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): srcValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) set to %.3f.", \
-            srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float());
+            srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float());
         }
 
         // set target attr to modified value
@@ -567,8 +567,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             if (targValue.isNaN() or targValue.isInf()) {
                 targValue = item->GetDefaultAttribute(cur.second.targAttr);
                 _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): targValue isInf or isNaN.  Data: %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ to %.3f.", \
-                srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), \
-                    GetMathMethodName(opID).c_str(), GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float());
+                srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), \
+                    GetMathMethodName(opID), GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float());
             }
 
             switch (opID) {
@@ -588,8 +588,8 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             //    continue;
             // set new calculated value for target attribute
             _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", cur.first, srcItemRef->itemName().c_str(), \
-            srcItemRef->itemID(), GetSourceName(cur.second.fxSrc).c_str(), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID).c_str(), \
-                GetTargLocName(cur.second.targLoc).c_str(), cur.second.targAttr, targValue.get_float(), newValue.get_float());
+            srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID), \
+                GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
@@ -683,7 +683,7 @@ int8 FxProc::GetEnvironmentEnum(const std::string& env)
         return FX::Target::Invalid;  //throw std::bad_typeid();
 }
 
-std::string FxProc::GetMathMethodName(int8 id)
+const char* FxProc::GetMathMethodName(int8 id)
 {
     switch (id) {
         case FX::Math::PreAssignment:  return "PreAssignment";
@@ -704,7 +704,7 @@ std::string FxProc::GetMathMethodName(int8 id)
     }
 }
 
-std::string FxProc::GetSourceName(int8 id)
+const char* FxProc::GetSourceName(int8 id)
 {
     switch (id) {
         case FX::Source::Self:            return "Self";
@@ -719,7 +719,7 @@ std::string FxProc::GetSourceName(int8 id)
     }
 }
 
-std::string FxProc::GetTargLocName(int8 id)
+const char* FxProc::GetTargLocName(int8 id)
 {
     switch (id) {
         case FX::Target::Self:        return "Self";
@@ -734,7 +734,7 @@ std::string FxProc::GetTargLocName(int8 id)
     }
 }
 
-std::string FxProc::GetStateName(int8 id)
+const char* FxProc::GetStateName(int8 id)
 {
     switch (id) {
         case FX::State::Passive:       return "Passive";

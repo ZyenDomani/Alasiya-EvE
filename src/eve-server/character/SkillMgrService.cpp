@@ -101,26 +101,6 @@ PyResult SkillMgrBound::Handle_GetSkillHistory( PyCallArgs& call ) {
     return call.client->GetChar()->GetSkillHistory();
 }
 
-PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call) {
-    sLog.White( "SkillMgrBound::Handle_GetCharacterAttributeModifiers()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    // expected data: for (itemID, typeID, operation, value,) in modifiers:
-    /*
-     * client sends attrib# of stat in question...
-            [PyString "GetCharacterAttributeModifiers"]
-            [PyTuple 1 items]
-              [PyInt 165]
-     * we return this...
-        [PyList 1 items]
-          [PyTuple 4 items]
-            [PyIntegerVar 1866309449]   << implantID
-            [PyInt 9943]                << implantTypeID
-            [PyInt 2]                   << operation
-            [PyFloat 3]                 << value
-            */
-    return new PyList;
-}
-
 PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
 //  look into this again, redesign so these calls arent needed.....
     CharacterRef ch = call.client->GetChar();
@@ -131,36 +111,6 @@ PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
     ch->UpdateSkillQueue();
 
     return ch->GetSkillQueue();
-}
-
-PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
-{
-    sLog.White( "SkillMgrBound::Handle_CharAddImplant()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    //takes itemid
-    Call_SingleIntegerArg args;
-    if( !args.Decode( &call.tuple ) )
-    {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
-        return nullptr;
-    }
-
-    return nullptr;
-}
-
-PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
-{
-    sLog.White( "SkillMgrBound::Handle_RemoveImplantFromCharacter()", "size= %u", call.tuple->size() );
-    call.Dump(SERVICE__CALL_DUMP);
-    //takes itemid
-    Call_SingleIntegerArg args;
-    if( !args.Decode( &call.tuple ) )
-    {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
-        return nullptr;
-    }
-
-    return nullptr;
 }
 
 PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
@@ -260,6 +210,66 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
             /** @todo build and send UserError about injection failure. */
             _log(ITEM__WARNING, "%s: Injection of skill %u failed", call.client->GetName(), skill->itemID() );
         }
+    }
+
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
+{
+    // expected data: for (itemID, typeID, operation, value,) in modifiers:
+    /*
+     * client sends attrib# of stat in question...
+     *            [PyString "GetCharacterAttributeModifiers"]
+     *            [PyTuple 1 items]
+     *              [PyInt 165]
+     * we return this...
+     *        [PyList 1 items]
+     *          [PyTuple 4 items]
+     *            [PyIntegerVar 1866309449]   << implantID
+     *            [PyInt 9943]                << implantTypeID
+     *            [PyInt 2]                   << operation
+     *            [PyFloat 3]                 << value
+     */
+    Call_SingleIntegerArg args;
+    if( !args.Decode( &call.tuple ) )
+    {
+        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        return nullptr;
+    }
+    PyTuple* tuple = new PyTuple(4);
+        tuple->SetItem(0, new PyInt(0));   //implantID
+        tuple->SetItem(1, new PyInt(0));   //implantTypeID
+        tuple->SetItem(2, new PyInt(0));   //operation
+        tuple->SetItem(3, new PyInt(0));   //value
+    PyList* list = new PyList();
+        list->AddItem(tuple);
+    return list;
+}
+
+PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
+{
+    //sends itemid
+    Call_SingleIntegerArg args;
+    if( !args.Decode( &call.tuple ) )
+    {
+        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        return nullptr;
+    }
+    //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
+    //{'FullPath': u'UI/Messages', 'messageID': 259243, 'label': u'OnlyOneImplantActiveBody'}(u'You cannot install the {typeName} as there is already an implant installed in the slot it needs to occupy.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+
+    return nullptr;
+}
+
+PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
+{
+    //sends itemid
+    Call_SingleIntegerArg args;
+    if( !args.Decode( &call.tuple ) )
+    {
+        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        return nullptr;
     }
 
     return nullptr;

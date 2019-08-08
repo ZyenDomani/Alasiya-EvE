@@ -845,7 +845,14 @@ void Colony::SetProgramResults(uint32 ecuID, uint16 typeID, uint16 numCycles, fl
     if (!m_colonyTimer.Enabled())
         m_colonyTimer.Start(30*60*1000);
 }
-
+/*{'FullPath': u'UI/Messages', 'messageID': 256790, 'label': u'PlanetBlackListedBody'}(u'{planet} is not available for the general public.', None, {u'{planet}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'planet'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256791, 'label': u'CannotInstallWithoutScanResultsBody'}(u'Your mining foreman reports that an intern seems to have misplaced the necessary mineral survey results. You will need to order a fresh deposit scan before this {typeName} can begin operating.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256792, 'label': u'QueueCannotTrainPastMaximumLevelBody'}(u'You cannot train {typeName} further, as is it already at maximum level.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256793, 'label': u'CannotUpgradeLinkAlreadyMaxedBody'}(u"You cannot upgrade this {typeName}, as it has already been upgraded to technology's bleeding edge.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256794, 'label': u'CreateRouteDestinationCannotAcceptCommodityBody'}(u'You are unable to create that route, as the destination is unable to utilize {typeName}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256795, 'label': u'CreateRouteCommodityProductionTooSmallBody'}(u"You are unable to create this shipping route as the route's origin would not produce enough {typeName} to fulfill all of its existing routes, in addition to the new one.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ * {'FullPath': u'UI/Messages', 'messageID': 256796, 'label': u'CreateRouteCommodityNotProducedBody'}(u"You are unable to create a shipping route for {typeName}, as it is not produced at the route's origin.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+ */
 PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint16, uint32 > items)
 {
     std::map<uint32, PI_Pin>::iterator src = ccPin->pins.find(srcID);
@@ -862,6 +869,13 @@ PyDict* Colony::TransferCommodities(uint32 srcID, uint32 destID, std::map< uint1
             throw PyException(MakeCustomError("Destination not found."));
         return nullptr; // make error and exit.
     }
+    /*{'FullPath': u'UI/Messages', 'messageID': 256630, 'label': u'ExpeditedTransferNotEnoughSpaceBody'}(u'There is not enough space at the transfer destination for the selected commodities.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 256775, 'label': u'CannotPutMissionItemInCargolinkBody'}(u'You cannot store the {typeName} in a planetary customs facility, as it an agent has issued a special embargo for this particular item.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 256776, 'label': u'CannotExportCommodityNotEnoughBody'}(u'Your request to export {desired} units of {typeName} cannot be fulfilled, as the spaceport only has {contained} in stock.', None, {u'{contained}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'contained'}, u'{desired}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'desired'}, u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 256777, 'label': u'CannotExportCommodityNotFoundBody'}(u"You cannot export {typeName}, as your spaceport's storehouse does not appear to contain any.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 256778, 'label': u'RouteFailedValidationExpeditedSourceLacksCommodityQtyBody'}(u"You cannot perform this expedited transfer as the facility from which you're sourcing your commodities currently lacks the requested {qty} units of {typeName}.", None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{qty}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'qty'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 256779, 'label': u'RouteFailedValidationExpeditedSourceLacksCommodityBody'}(u'You cannot perform this expedited transfer, as the facility from which you are sourcing your commodities appears to lack the {typeName} which you wish to transfer.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}})
+     */
 
     // capacities are checked in client.  procede with xfer
     for (auto cur : items) {

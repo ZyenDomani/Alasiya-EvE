@@ -280,7 +280,11 @@ maxDustCharacter = 2130000000
   || ((flag >= flagSubSystem0) && (flag<=flagSubSystem7)))
 
 #define IsCargoHoldFlag(flag) \
-((flag == flagCargoHold) || (flag == flagDroneBay) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
+((flag == flagCargoHold) || (flag == flagSecondaryStorage) || (flag == flagShipHangar) \
+  || ((flag >= flagFuelBay) && (flag <= flagAmmoHold)))
+
+#define IsSpecialHoldFlag(flag) \
+((flag == flagSecondaryStorage) || (flag == flagShipHangar) \
   || ((flag >= flagFuelBay) && (flag <= flagAmmoHold)))
 
 #define IsHangarFlag(flag) \

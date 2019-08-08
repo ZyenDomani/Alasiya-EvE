@@ -18,7 +18,7 @@ no cap check on jetcans (jetcan mining with unlimited storage!!!  woot! )
     - this will need more work...
 
 .showall not disabling
-cant warp to scanned items (jetcan) when using .showall (item sigID not registered)
+cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 dropping items on ship fit window allows fit.  dragging modules to position throws 'no room for charge' error
 moving mwd from one slot to another throws groupfit limited error
 check anomaly spawn distance.  could be too far....no, it's 3.86au, but in small system, this seems far.
@@ -90,8 +90,12 @@ ship modules - needs a bit more thought for misc things
 fleet boosts - apply directly to ship/modules when calculated
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
+many fleet error msgs in client unused
 
 ServiceDB::Lookup* methods need db safeguarding coded (direct db hits from client input)
+
+more NotEnoughCargoSpace msgs in client that arent used in server
+
 
 ********* old - no date - still relevant
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
@@ -341,6 +345,10 @@ stations have a reprocessingHangarFlag.  implement this for RAM shit (they are a
 
 better checks and reverts when creating corps fail - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
 
+on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt implemented at this time, prefering to remove all loaded charges
+
+implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~15 on live), existing 1-6pt implants are negligable.
+    update for ~20+ or so points to make a difference in our attributes
 
 *********  shit in original webpage.  click on char for info
 [Fri Dec 28 22:57:46.592144 2018] [:error] [pid 29530] [client 127.0.0.1:56382] PHP Warning:

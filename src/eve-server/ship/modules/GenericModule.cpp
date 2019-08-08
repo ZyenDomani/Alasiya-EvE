@@ -254,7 +254,7 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
     std::map<uint16, Effect> effectMap;
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
-            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state).c_str(), (active ? "true" : "false"));
+            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state), (active ? "true" : "false"));
     for (auto it : effectMap) {
         if (it.first == 16)    // skip the online effect.  this is done internally elsewhere
             continue;
