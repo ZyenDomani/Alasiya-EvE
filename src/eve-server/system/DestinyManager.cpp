@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan (rewrite)
+    Rewrite:    Allan
 */
 
 // this class is for objects that move

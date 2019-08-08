@@ -21,7 +21,7 @@
  *    http://www.gnu.org/copyleft/lesser.txt.
  *    ------------------------------------------------------------------------------------
  *    Author:     Zhur
- *    Updates:    Allan (rewrite)
+ *    Rewrite:    Allan
  */
 #ifndef EVE_INVENTORY_ITEM_H
 #define EVE_INVENTORY_ITEM_H

@@ -115,25 +115,3 @@ PyBoundObject *AggressionMgrService::_CreateBoundObject(Client *c, const PyRep *
 
     return (new AggressionMgrBound(m_manager));
 }
-
-/**  @todo  this is formula for hits...
-void SystemEntity::AwardSecurityStatus(InventoryItemRef m_self, Character* pChar) {
-    if (pChar->GetSecurityRating() > 5) return;     // npc's dont give secAward above +5.0
-    if (m_self->GetAttribute(AttrEntitySecurityStatusKillBonus) == 0) return;
-    //  TODO  this needs tweaking...
-    //New Status = ((10 - Old Status) * Sec Incr) + Old Status
-    double killBonus = m_self->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
-    killBonus /= 100;
-    double oldSec = pChar->GetSecurityRating();
-    double secAward = (((10 -oldSec) *killBonus) +oldSec) /1000;
-    secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
-    secAward *= sConfig.rates.secRate;
-    if (secAward) {
-        sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
-                     GetName(), GetID(), killBonus, oldSec, secAward);
-        //pChar->secStatusChange( secAward );
-        //std::string msg = "Status Change for killing pirates in ";
-        //msg += System()->GetName();
-        //StandingMgr::UpdateStandings( m_self->itemID(),  pChar->itemID(), 1,  eventID,  eventType, secAward, msg);
-    }
-} */

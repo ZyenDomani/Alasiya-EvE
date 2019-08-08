@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:    Allan (rewrite)
+    Rewrite:    Allan
 */
 
 #include "eve-server.h"
@@ -210,7 +210,7 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(skillFastTalk, true))));      // 5% increase
     if (killBonus and secAward) {
         secAward *= sConfig.rates.secRate;
-        sLog.Magenta("SystemEntity::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
+        sLog.Magenta("SE::AwardSecurityStatus()"," %s(%u): killBonus: %f.  oldSec: %f.  secAward: %f.",
                      GetName(), iRef->itemID(), killBonus, oldSec, secAward);
         pChar->secStatusChange( secAward );
         std::string msg = "Status Change for killing";
@@ -230,6 +230,11 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
 
     /** @todo msg need work for details to appear correctly.  currently working, but could be better. (incomplete, but working)
      * see data in eve/common/script/util/eveFormat.py:300 for details
+     *
+     *
+     * SE::AwardSecurityStatus():  Shadow Serpentis Port Admiral(750000006): killBonus: 0.072000.  oldSec: 0.044933.  secAward: 0.007617.
+     * SE::AwardSecurityStatus():               Estamel Tharchon(750000001): killBonus: 0.244141.  oldSec: 0.000000.  secAward: 0.024414.
+     *
      */
 }
 
