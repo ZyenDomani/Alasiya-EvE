@@ -44,8 +44,8 @@ public:
     AttributeMap(InventoryItem& item);
     ~AttributeMap() noexcept;
 
-    void SetAttribute(uint16 attrID, EvilNumber& num, bool nofity = true);
-    void MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity = false);
+    void SetAttribute(uint16 attrID, EvilNumber& num, bool notify=true);
+    void MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify=false);
 
     EvilNumber GetAttribute(const uint16 attrID) const;
 
@@ -64,7 +64,7 @@ public:
     void SaveShipState();
     bool SaveAttributes();
 
-    void ResetAttribute(uint16 attrID, bool notify);
+    void ResetAttribute(uint16 attrID, bool notify=false);
     void CopyAttributes(std::map<uint16, EvilNumber>& attrMap);
 
     /**

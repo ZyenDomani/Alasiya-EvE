@@ -163,17 +163,18 @@ bool AttributeMap::Save() {
 }
 
 
-void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*true*/ )
+void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/)
 {
     if (num.isNaN() or num.isInf()) {
-        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf.");
+        ResetAttribute(attrID, notify);
+        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for %s(%u). Reset to default.", mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
         return;
     }
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end()) {
         mAttributes.emplace(attrID, num);
-        if (nofity)
+        if (notify)
             Add(attrID, num);
         return;
     }
@@ -181,18 +182,27 @@ void AttributeMap::SetAttribute( uint16 attrID, EvilNumber& num, bool nofity /*t
     if (itr->second == num)
         return;
 
-    if (nofity)
+    if (notify)
         Change(attrID, itr->second, num);
 
     itr->second = num;
 }
 
-void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity/*false*/)
+void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify/*false*/)
 {
-    if (num.isNaN() or num.isInf())
-        return;     // make error here for bad number?
-    if (num == EvilZero)
-        return;     // could this be on purpose?
+    if (num.isNaN() or num.isInf()) {
+        ResetAttribute(attrID, notify);
+        _log(ITEM__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %s(%u). Reset to default.", mItem.itemName().c_str(), mItem.itemID());
+        EvE::traceStack();
+        return;
+    }
+    if (num == EvilZero) {
+        // could this be on purpose?
+        //ResetAttribute(attrID, notify);
+        _log(ITEM__WARNING, "AttributeMap::MultiplyAttribute() - Something sent 0 for %s(%u). Continuing.", mItem.itemName().c_str(), mItem.itemID());
+        //EvE::traceStack();
+        //return;
+    }
     AttrMapItr itr = mAttributes.find(attrID);
     if (itr == mAttributes.end())
         return; // it doesnt exist...nothing to do.
@@ -200,12 +210,12 @@ void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool nofity
     EvilNumber oldValue = itr->second;
     itr->second *= num;
 
-    if (nofity)
+    if (notify)
         Change(attrID, oldValue, itr->second);
 }
 
 
-EvilNumber AttributeMap::GetAttribute( const uint16 attrID ) const
+EvilNumber AttributeMap::GetAttribute(const uint16 attrID) const
 {
     AttrMapConstItr itr = mAttributes.find(attrID);
     if (itr != mAttributes.end())
@@ -232,7 +242,7 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
     return false;
 }
 
-bool AttributeMap::Change( uint16 attrID, EvilNumber& old_val, EvilNumber& new_val ) {
+bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
     if (old_val == new_val) return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -244,7 +254,7 @@ bool AttributeMap::Change( uint16 attrID, EvilNumber& old_val, EvilNumber& new_v
 	return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
+bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
@@ -255,7 +265,7 @@ bool AttributeMap::Add( uint16 attrID, EvilNumber& num ) {
     return SendChanges(modChange.Encode());
 }
 
-bool AttributeMap::SendChanges( PyTuple* attrChange ) {
+bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
     if (IsCorp(mItem.ownerID()))
@@ -282,7 +292,7 @@ bool AttributeMap::SendChanges( PyTuple* attrChange ) {
     return true;
 }
 
-void AttributeMap::ResetAttribute(uint16 attrID, bool notify) {
+void AttributeMap::ResetAttribute(uint16 attrID, bool notify/*false*/) {
     EvilNumber value = mItem.GetDefaultAttribute(attrID);
     SetAttribute(attrID, value, notify);
 }
