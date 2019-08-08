@@ -89,7 +89,7 @@ void CertificateMgrDB::UpdateCertificate ( uint32 charID, uint32 certificateID, 
 }
 
 
-bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertVector &into )
+bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertMap &into )
 {
     DBQueryResult res;
     if ( !sDatabase.RunQuery( res, "SELECT certificateID, grantDate, visibilityFlags FROM chrCertificates WHERE characterID=%u", characterID)) {
@@ -103,13 +103,13 @@ bool CertificateMgrDB::LoadCertificates( uint32 characterID, CertVector &into )
         cert.certificateID     = row.GetUInt( 0 );
         cert.grantDate         = row.GetInt64( 1 );
         cert.visibilityFlags   = row.GetUInt( 2 );
-        into.push_back( cert );
+        into.emplace(row.GetUInt( 0 ), cert );
     }
 
     return true;
 }
 
-bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertVector &data )
+bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertMap &data )
 {
     std::ostringstream Inserts;
     // start the insert into command.
@@ -122,7 +122,7 @@ bool CertificateMgrDB::SaveCertificates( uint32 characterID, const CertVector &d
             first = false;
         } else
             Inserts << ", ";
-        Inserts << "(" << characterID << ", " << cur.certificateID << ", " << cur.grantDate << ", " << cur.visibilityFlags << ")";
+        Inserts << "(" << characterID << ", " << cur.first << ", " << cur.second.grantDate << ", " << cur.second.visibilityFlags << ")";
     }
 
     if (!first) {

@@ -378,7 +378,7 @@ public:
      * This will get the char's certificates
      * @author almamu
      */
-    void GetCertificates( CertVector& crt );
+    void GetCertificates( CertMap& crt );
 
     /*
      * Primary public packet builders:
@@ -568,7 +568,7 @@ private:
     SkillQueue m_skillQueue;
     uint32 m_freePoints;
 
-    CertVector m_certificates;
+    CertMap m_certificates;
 
     bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
 

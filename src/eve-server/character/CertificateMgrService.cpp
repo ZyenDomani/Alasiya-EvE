@@ -54,7 +54,7 @@ CertificateMgrService::~CertificateMgrService()
 }
 
 PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
-    CertVector crt;
+    CertMap crt;
     crt.clear();
     call.client->GetChar()->GetCertificates( crt );
 
@@ -66,9 +66,9 @@ PyResult CertificateMgrService::Handle_GetMyCertificates(PyCallArgs &call) {
 
     for (auto cur : crt) {
         PyList* fieldData = new PyList();
-            fieldData->AddItemInt( cur.certificateID );
-            fieldData->AddItemLong( cur.grantDate );
-            fieldData->AddItemInt( cur.visibilityFlags );
+            fieldData->AddItemInt( cur.first );
+            fieldData->AddItemLong( cur.second.grantDate );
+            fieldData->AddItemInt( cur.second.visibilityFlags );
         rs.lines->AddItem( fieldData );
     }
     return rs.Encode();
@@ -174,7 +174,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
         return PyStatic.NewNone();
     }
 
-    CertVector crt;
+    CertMap crt;
     sItemFactory.GetCharacter(arg.arg)->GetCertificates(crt);
 
     util_Rowset rs;

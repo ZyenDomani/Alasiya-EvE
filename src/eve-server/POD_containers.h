@@ -17,7 +17,7 @@ struct CharCerts {
     uint32 certificateID;
     int64 grantDate;
 };
-typedef std::vector<CharCerts> CertVector;
+typedef std::map<uint16, CharCerts> CertMap;
 
 /* POD structure for skills in queue */
 struct QueuedSkill {

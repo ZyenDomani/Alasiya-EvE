@@ -39,8 +39,8 @@ public:
     PyRep *GetAllShipCertificateRecommendations();
     PyRep *GetCertificateClasses();
 
-    bool LoadCertificates( uint32 characterID, CertVector &into );
-    bool SaveCertificates( uint32 characterID, const CertVector& from );
+    bool LoadCertificates( uint32 characterID, CertMap &into );
+    bool SaveCertificates( uint32 characterID, const CertMap& from );
     void AddCertificate(uint32 charID, CharCerts cert);
     void UpdateCertificate(uint32 charID, uint32 certificateID, bool pub=false);
 

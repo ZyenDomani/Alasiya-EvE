@@ -1090,30 +1090,30 @@ void Character::SetLogonMinutes() {
 }
 
 // certificate system
-bool Character::HasCertificate( uint32 certificateID ) const {
-    for (auto cur : m_certificates)
-        if (cur.certificateID == certificateID)
-            return true;
+bool Character::HasCertificate( uint32 certID ) const {
+    CertMap::iterator itr = m_certificates.find(certID);
+    if (itr != m_certificates.end())
+        return true;
 
     return false;
 }
 
-void Character::GetCertificates( CertVector &crt ) {
+void Character::GetCertificates( CertMap &crt ) {
     crt = m_certificates;
 }
 
-void Character::GrantCertificate( uint32 certificateID )
+void Character::GrantCertificate( uint32 certID )
 {
     CharCerts cert = CharCerts();
-        cert.certificateID = certificateID;
+        cert.certificateID = certID;
         cert.grantDate = GetFileTimeNow();
         cert.visibilityFlags = 0;
-    m_certificates.push_back(cert);
+    m_certificates.emplace(certID, cert);
     m_cdb.AddCertificate(m_itemID, cert);
 }
 
-void Character::UpdateCertificate( uint32 certificateID, bool pub ) {
-    m_cdb.UpdateCertificate(m_itemID, certificateID, pub);
+void Character::UpdateCertificate( uint32 certID, bool pub ) {
+    m_cdb.UpdateCertificate(m_itemID, certID, pub);
 }
 
 void Character::SaveCertificates() {
