@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Captnoord, Aknor Jaden
+    Updates:    Allan
 */
 
 #ifndef EvilNumber_h__
@@ -59,11 +60,12 @@ class PyRep;
 class EvilNumber
 {
 public:
-    /* generic value union */
+    /* generic value union
     typedef union _GenVal {
         double fVal;
         int64 iVal;
     } GenVal;
+    */
 
     EvilNumber();
     EvilNumber(int8 val);
@@ -144,9 +146,9 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<int64>(val); \
+                return this->iVal a static_cast<int64>(val); \
             else \
-                return this->mValue.fVal a static_cast<double>(val); \
+                return this->fVal a static_cast<double>(val); \
         }
 
     /**
@@ -195,13 +197,13 @@ public:
     bool operator==(const EvilNumber& val)
     {
         if (this->mType == val.mType) {
-            return this->mValue.iVal == val.mValue.iVal;
+            return this->iVal == val.iVal;
         } else {
             // if parameter 1 is int then parameter 2 is float
             if (this->mType == evil_number_int) {
-                return double(this->mValue.iVal) == val.mValue.fVal;
+                return double(this->iVal) == val.fVal;
             } else {
-                return this->mValue.fVal == double(val.mValue.iVal);
+                return this->fVal == double(val.iVal);
             }
         }
     }
@@ -211,13 +213,13 @@ public:
     {
         // see comments from '==' operator.
         if (this->mType == val.mType) {
-            return this->mValue.iVal != val.mValue.iVal;
+            return this->iVal != val.iVal;
         } else {
             // if parameter 1 is int then parameter 2 is float
             if (this->mType == evil_number_int) {
-                return double(this->mValue.iVal) != val.mValue.fVal;
+                return double(this->iVal) != val.fVal;
             } else {
-                return this->mValue.fVal != double(val.mValue.iVal);
+                return this->fVal != double(val.iVal);
             }
         }
     }
@@ -225,49 +227,49 @@ public:
     bool operator<(const EvilNumber& val)
     {
         if (this->mType == evil_number_int && val.mType == evil_number_int)
-            return this->mValue.iVal < val.mValue.iVal;
+            return this->iVal < val.iVal;
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
-            return this->mValue.fVal < val.mValue.fVal;
+            return this->fVal < val.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal < double(val.mValue.iVal);
+            return this->fVal < double(val.iVal);
         else
-            return double(this->mValue.iVal) < val.mValue.fVal;
+            return double(this->iVal) < val.fVal;
     }
 
     bool operator>(const EvilNumber& val)
     {
         if (this->mType == evil_number_int && val.mType == evil_number_int)
-            return this->mValue.iVal > val.mValue.iVal;
+            return this->iVal > val.iVal;
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
-            return this->mValue.fVal > val.mValue.fVal;
+            return this->fVal > val.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal > double(val.mValue.iVal);
+            return this->fVal > double(val.iVal);
         else
-            return double(this->mValue.iVal) > val.mValue.fVal;
+            return double(this->iVal) > val.fVal;
     }
 
     bool operator<=(const EvilNumber& val)
     {
         if (this->mType == evil_number_int && val.mType == evil_number_int)
-            return this->mValue.iVal <= val.mValue.iVal;
+            return this->iVal <= val.iVal;
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
-            return this->mValue.fVal <= val.mValue.fVal;
+            return this->fVal <= val.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal <= double(val.mValue.iVal);
+            return this->fVal <= double(val.iVal);
         else
-            return double(this->mValue.iVal) <= val.mValue.fVal;
+            return double(this->iVal) <= val.fVal;
     }
 
     bool operator>=(const EvilNumber& val)
     {
         if (this->mType == evil_number_int && val.mType == evil_number_int)
-            return this->mValue.iVal >= val.mValue.iVal;
+            return this->iVal >= val.iVal;
         else if (this->mType == evil_number_float && val.mType == evil_number_float)
-            return this->mValue.fVal >= val.mValue.fVal;
+            return this->fVal >= val.fVal;
         else if (this->mType == evil_number_float)
-            return this->mValue.fVal >= double(val.mValue.iVal);
+            return this->fVal >= double(val.iVal);
         else
-            return double(this->mValue.iVal) >= val.mValue.fVal;
+            return double(this->iVal) >= val.fVal;
     }
 
     /************************************************************************/
@@ -313,9 +315,9 @@ public:
         bool operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
-                return this->mValue.iVal a static_cast<int64>(val); \
+                return this->iVal a static_cast<int64>(val); \
             else \
-                return this->mValue.fVal a static_cast<double>(val); \
+                return this->fVal a static_cast<double>(val); \
         }
 
     /**
@@ -356,9 +358,9 @@ public:
     {
         char buff[32]; // max uint32 will result in a 10 char string, a float will result in a ? char string.
         if (mType == evil_number_int)
-            snprintf(buff, 32, "%" PRIu64, mValue.iVal);
+            snprintf(buff, 32, "%lli", iVal);
         else if (mType == evil_number_float)
-            snprintf(buff, 32, "%f", mValue.fVal);
+            snprintf(buff, 32, "%f", fVal);
         else
             assert(false); // bleh crash..
         return std::string(buff);
@@ -398,7 +400,9 @@ public:
     /************************************************************************/
 
 private:
-    GenVal mValue;
+    //GenVal mValue;
+    double fVal;
+    int64 iVal;
     EVIL_NUMBER_TYPE mType;
 
 protected:
