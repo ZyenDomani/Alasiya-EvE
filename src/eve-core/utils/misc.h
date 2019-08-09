@@ -91,8 +91,10 @@ inline bool IsNaN(double x)                             { return x!= x; }
 uint32 CreatePIDFile(const std::string& filename);
 
 namespace EvE {
-    // returns the minimum of x,y
+    // returns the minimum of x,y as double
     inline double min(double x, double y)               { return ((x < y) ? x : y); }
+    // returns the minimum of x,y as 32b integer
+    inline int32 min(int32 x, int32 y)                  { return ((x < y) ? x : y); }
     // returns the minimum of x,y and 1
     double min1(double x, double y);
     // returns the minimum of x,y and z

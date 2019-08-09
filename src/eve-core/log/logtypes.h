@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.3
+ Log Version: 9.4
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -517,7 +517,15 @@ LOG_TYPE( CHARACTER, INFO, DISABLED, "CharInfo" )
 LOG_TYPE( CHARACTER, DEBUG, DISABLED, "CharDebug" )
 LOG_TYPE( CHARACTER, TRACE, DISABLED, "CharTrace" )
 LOG_TYPE( CHARACTER, BIND, DISABLED, "CharBindDump" )
-LOG_TYPE( CHARACTER, SKILL_TRACE, DISABLED, "CharSkill" )
+
+LOG_CATEGORY( SKILL )
+LOG_TYPE( SKILL, ERROR, ENABLED, "SkillError" )
+LOG_TYPE( SKILL, WARNING, DISABLED, "SkillWarning" )
+LOG_TYPE( SKILL, MESSAGE, DISABLED, "SkillMsg" )
+LOG_TYPE( SKILL, INFO, DISABLED, "SkillInfo" )
+LOG_TYPE( SKILL, DEBUG, DISABLED, "SkillDebug" )
+LOG_TYPE( SKILL, TRACE, DISABLED, "SkillTrace" )
+LOG_TYPE( SKILL, QUEUE, DISABLED, "SkillQueue" )
 
 LOG_CATEGORY( CLIENT )
 LOG_TYPE( CLIENT, ERROR, ENABLED, "ClientError" )
