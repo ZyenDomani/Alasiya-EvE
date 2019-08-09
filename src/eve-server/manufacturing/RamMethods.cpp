@@ -518,7 +518,7 @@ void RamMethods::EncodeMissingMaterials(const std::vector<EvERam::RequiredItem> 
         for (; curi != endi and qtyReq > 0; ++curi) {
             if ((*curi)->typeID() == cur.typeID and (*curi)->ownerID() == pClient->GetCharacterID()) {
                 if (cur.isSkill)
-                    qtyReq -= std::min(qtyReq, (uint32)(*curi)->GetAttribute(AttrSkillLevel).get_int() );
+                    qtyReq -= std::min(qtyReq, (*curi)->GetAttribute(AttrSkillLevel).get_uint32() );
                 else
                     qtyReq -= std::min(qtyReq, (uint32)(*curi)->quantity() );
             }
