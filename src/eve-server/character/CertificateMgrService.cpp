@@ -179,15 +179,15 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
 
     util_Rowset rs;
         rs.lines = new PyList();
-        rs.header.push_back("certificateID");
         rs.header.push_back("grantDate");
+        rs.header.push_back("certificateID");
         rs.header.push_back("visibilityFlags");
 
     for (auto cur : crt) {
         PyList* fieldData = new PyList();
-            fieldData->AddItemInt( cur.certificateID );
-            fieldData->AddItemLong( cur.grantDate );
-            fieldData->AddItemInt( cur.visibilityFlags );
+            fieldData->AddItemLong( cur.second.grantDate );
+            fieldData->AddItemInt( cur.second.certificateID );
+            fieldData->AddItemInt( cur.second.visibilityFlags );
         rs.lines->AddItem( fieldData );
     }
     return rs.Encode();
