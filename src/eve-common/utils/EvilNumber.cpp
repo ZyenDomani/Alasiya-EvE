@@ -45,49 +45,49 @@ const EvilNumber EvilTime_Year = EvilTime_Month * 12 + 5;
 EvilNumber::EvilNumber() : mType(evil_number_int)
 {
     iVal = 0;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( int8 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( uint8 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( int16 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( uint16 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( int32 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( uint32 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( int64 val ) : mType(evil_number_int)
 {
     iVal = val;
-    fVal = 0;
+    fVal = 0.0;
 }
 
 EvilNumber::EvilNumber( float val ) : mType(evil_number_float)
