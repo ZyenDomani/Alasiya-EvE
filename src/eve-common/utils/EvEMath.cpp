@@ -9,25 +9,25 @@
 #include "utils/EvEMath.h"
 
 // skill Equations
-EvilNumber EvEMath::Skill::PointsAtLevel( EvilNumber SkillLevel, EvilNumber SkillRank )
+uint32 EvEMath::Skill::PointsAtLevel(uint8 level, uint8 rank)
 {
     //math.ceil(250 * skillTimeConstant * 2 ** (2.5 * (level - 1)))
-    return pow(sqrt(32), (SkillLevel.get_int() -1)) * 250 * SkillRank.get_int();
+    return pow(sqrt(32), (level -1)) * 250 * rank;
 }
 
-EvilNumber EvEMath::Skill::PointsPerMinute( EvilNumber EffectivePrimaryAttribute, EvilNumber EffectiveSecondaryAttribute )
+uint8 EvEMath::Skill::PointsPerMinute(uint8 pAttr, uint8 sAttr)
 {
-    return (EffectivePrimaryAttribute + (0.5 * EffectiveSecondaryAttribute));
+    return (pAttr + (0.5 * sAttr));
 }
 
-EvilNumber EvEMath::Skill::StartTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow )
+int64 EvEMath::Skill::StartTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
 {
-    return (timeNow - (((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * EvE::Time::Minute));
+    return (timeNow - (((nextSP - currentSP) / SPMin) * EvE::Time::Minute));
 }
 
-EvilNumber EvEMath::Skill::EndTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow )
+int64 EvEMath::Skill::EndTime(uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow)
 {
-    return ((((nextLevelSkillSP - currentSkillSP) / effectiveSPperMinute) * EvE::Time::Minute) + timeNow);
+    return ((((nextSP - currentSP) / SPMin) * EvE::Time::Minute) + timeNow);
 }
 
 

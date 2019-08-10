@@ -95,34 +95,34 @@ m_returnTimer(0)
     }
 
     // skills
-    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(skillAstrometrics)));             // +5% scan probe strength per level
-    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(skillSignatureAnalysis)));        // +5% scan probe strength per level
-    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(skillAstrometricRangefinding)));   // +10% scan probe strength per level
-    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(skillAstrometrics)));            // -5% scan probe deviation per level
-    m_scanDeviation *= (1 - (0.1 * pChar->GetSkillLevel(skillAstrometricPinpointing)));   // -10% scan probe deviation per level
-    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(skillSensorLinking)));           // -5% scan probe deviation per level
+    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(EvESkill::Astrometrics)));             // +5% scan probe strength per level
+    m_scanStrength *= (1 + (0.05 * pChar->GetSkillLevel(EvESkill::SignatureAnalysis)));        // +5% scan probe strength per level
+    m_scanStrength *= (1 + (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricRangefinding)));   // +10% scan probe strength per level
+    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(EvESkill::Astrometrics)));            // -5% scan probe deviation per level
+    m_scanDeviation *= (1 - (0.1 * pChar->GetSkillLevel(EvESkill::AstrometricPinpointing)));   // -10% scan probe deviation per level
+    m_scanDeviation *= (1 - (0.05 * pChar->GetSkillLevel(EvESkill::SensorLinking)));           // -5% scan probe deviation per level
 
     // ship
     switch (shipRef->typeID()) {
         //t1
         case 29248: { /* Magnate */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(skillAmarrFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::AmarrFrigate, true)))); // +5% scan probe strength per level
         } break;
         case 605: { /* Heron */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(skillCaldariFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::CaldariFrigate, true)))); // +5% scan probe strength per level
         } break;
         case 607: { /* Imicus */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(skillGallenteFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::GallenteFrigate, true)))); // +5% scan probe strength per level
         } break;
         case 586: { /* Probe */
-            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(skillMinmatarFrigate, true)))); // +5% scan probe strength per level
+            m_scanStrength *= (1 + (0.05 * (pChar->GetSkillLevel(EvESkill::MinmatarFrigate, true)))); // +5% scan probe strength per level
         } break;
         //t2 - Anathema, Buzzard, Cheetah, Helios
         case 11188:  /* Anathema */
         case 11192:  /* Buzzard */
         case 11172:  /* Helios */
         case 11182: { /* Cheetah */
-            m_scanStrength *= (1 + (0.1 * (pChar->GetSkillLevel(skillCovertOps, true)))); // +10% scan probe strength per level
+            m_scanStrength *= (1 + (0.1 * (pChar->GetSkillLevel(EvESkill::CovertOps, true)))); // +10% scan probe strength per level
         } break;
         //t3
         // just test for subsystem here... typeIDs 30042, 30052, 30062, 30072
@@ -416,7 +416,7 @@ float ProbeSE::GetDeviation()
     //Max Deviation = (Scan Range/Base Scan Range) × Base Maximum Deviation × (1 - Pinpointing Skill/10)
     float maxDeviation = m_scanRange /m_self->GetAttribute(AttrBaseScanRange).get_float();
     maxDeviation *= m_scanDeviation;
-    maxDeviation *= (1 - (m_client->GetChar()->GetSkillLevel(skillAstrometricPinpointing) /10));
+    maxDeviation *= (1 - (m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricPinpointing) /10));
     return maxDeviation;
 }
 

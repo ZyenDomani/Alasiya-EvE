@@ -297,15 +297,15 @@ float ReprocessingServiceBound::CalcReprocessingEfficiency(const Client* pClient
     /** @todo  check for implants here ... once they're working  */
     CharacterRef cRef = pClient->GetChar();
     double efficiency =  (0.375
-                        * (1 + (0.02 * cRef->GetSkillLevel(skillRefining)))             // 2% lvl
-                        * (1 + (0.04 * cRef->GetSkillLevel(skillRefineryEfficiency)))); // 4% lvl
+                        * (1 + (0.02 * cRef->GetSkillLevel(EvESkill::Refining)))             // 2% lvl
+                        * (1 + (0.04 * cRef->GetSkillLevel(EvESkill::RefineryEfficiency)))); // 4% lvl
 
     if (item.get() != nullptr) {
         uint32 specificSkill = item->GetAttribute(AttrReprocessingSkillType).get_int();
         if (specificSkill)
             efficiency *= (1 + 0.05 * cRef->GetSkillLevel(specificSkill));
         else
-            efficiency *= (1 + 0.04 * cRef->GetSkillLevel(skillScrapmetalProcessing));    // use Scrapmetal Processing as default
+            efficiency *= (1 + 0.04 * cRef->GetSkillLevel(EvESkill::ScrapmetalProcessing));    // use Scrapmetal Processing as default
     }
 
     efficiency += m_staEfficiency;
@@ -380,9 +380,9 @@ float ReprocessingServiceBound::GetStanding(const Client* pClient) const
 {
     float standing = pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCharacterID());
     if (standing < 0)
-        standing += ((10 +standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillDiplomacy));
+        standing += ((10 +standing) * 0.04 * pClient->GetChar()->GetSkillLevel(EvESkill::Diplomacy));
     else
-        standing += ((10 -standing) * 0.04 * pClient->GetChar()->GetSkillLevel(skillConnections));
+        standing += ((10 -standing) * 0.04 * pClient->GetChar()->GetSkillLevel(EvESkill::Connections));
 
     return EvE::max(standing, pClient->GetChar()->GetStanding(m_stationCorpID, pClient->GetCorporationID()));
 }

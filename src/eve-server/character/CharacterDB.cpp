@@ -1411,11 +1411,11 @@ bool CharacterDB::SavePausedSkillQueue(uint32 characterID, SkillQueue &data) {
     return true;
 }
 
-void CharacterDB::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints) {
+void CharacterDB::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints) {
     DBerror err;
     if ( !sDatabase.RunQuery( err,
         "INSERT INTO chrSkillHistory (eventTypeID, logDate, characterID, skillTypeID, skillLevel, absolutePoints)"
-        " VALUES (%u, %f, %u, %u, %u, %f)", eventID, logDate, characterID, skillTypeID, skillLevel, absolutePoints ))
+        " VALUES (%u, %f, %u, %u, %u, %u)", eventID, logDate, characterID, skillTypeID, skillLevel, absolutePoints ))
             _log(DATABASE__ERROR, "Failed to set chrSkillHistory for character %u: %s", characterID, err.c_str());
 }
 

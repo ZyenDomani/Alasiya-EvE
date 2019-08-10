@@ -77,8 +77,8 @@ void Scan::ProcessScan(bool useProbe/*false*/)
         }
     }
     if (idle) {
-        //duration *= (1 - (0.05 * m_client->GetChar()->GetSkillLevel(skillAstrometrics)));           // −5% scan probe scan time per level
-        //duration *= (1 - (0.1 * m_client->GetChar()->GetSkillLevel(skillAstrometricAcquisition)));  // −10% scan probe scan time per level
+        //duration *= (1 - (0.05 * m_client->GetChar()->GetSkillLevel(EvESkill::Astrometrics)));           // −5% scan probe scan time per level
+        //duration *= (1 - (0.1 * m_client->GetChar()->GetSkillLevel(EvESkill::AstrometricAcquisition)));  // −10% scan probe scan time per level
         m_probeScan = true;
         SystemScanStarted(duration);
         for (auto cur : m_probeMap) {

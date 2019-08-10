@@ -105,9 +105,6 @@ class Client
   protected EVEPacketDispatcher
 {
 public:
-    Client(PyServiceMgr &services, EVETCPConnection** con);
-    ~Client();
-
     /** @todo  derive and execute tests to determing if these are needed...
     // copy c'tor
     Client(const Client& oth);
@@ -119,7 +116,12 @@ public:
     Client& operator= (Client&& oth) noexcept;
     */
 
+    Client(PyServiceMgr &services, EVETCPConnection** con);
+    ~Client();
+
+    // called from main() loop
     bool                    ProcessNet();
+    // called by EntityList on 1Hz tic
     void                    ProcessClient();
 
     bool                    IsLoaded()                  { return m_loaded; }
@@ -420,7 +422,7 @@ protected:
     std::set<LSCChannel*>   m_channels;    //we do not own these.
     std::map<uint32, bool>  m_hangarLoaded;
 
-    double                  m_timeEndTrain;
+    int64                   m_timeEndTrain;
 
     ClientState             m_clientState;
 

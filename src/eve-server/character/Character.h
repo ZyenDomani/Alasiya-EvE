@@ -256,7 +256,7 @@ public:
      * @param[in] skillTypeID ID of skill type to be checked.
      * @return True if character has the skill, false if doesn't.
      */
-    bool HasSkill(uint32) const;
+    bool            HasSkill(uint16 skillTypeID) const;
     /**
      * Checks whether the character has the skill, and if so, if it has been trained to the level specified.
      *
@@ -264,14 +264,14 @@ public:
      * @param[in] skillLevel Level of the skill to be checked to see if it is trained already to at least this level
      * @return True if character has the skill AND that skill has been trained to at least the level specified, False otherwise
      */
-    bool HasSkillTrainedToLevel(uint32 skillTypeID, uint32 skillLevel) const;
+    bool            HasSkillTrainedToLevel(uint16 skillTypeID, uint8 skillLevel) const;
     /**
      * Returns skill.
      *
      * @param[in] skillTypeID ID of skill type to be returned.
      * @return Pointer to Skill object; NULL if skill was not found.
      */
-    SkillRef GetSkill(uint32 skillTypeID) const;
+    SkillRef        GetSkill(uint16 skillTypeID) const;
     /**
      * Gets level of skill that is trained.
      *
@@ -281,7 +281,7 @@ public:
      * @return value 0..5 - the level of skill trained, or, if it was not injected,
      *  0 if zeroForNotInjected.is true, -1 otherwise
      */
-    int8             GetSkillLevel(uint32 skillTypeID, bool zeroForNotInjected=true) const;
+    int8            GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected = true) const;
     /**
      * Get char's Research and Manufacturing skills
      *
@@ -290,12 +290,6 @@ public:
      */
     PyRep*          GetRAMSkills();
 
-    /**
-     * Returns skill currently in training.
-     *
-     * @param[in] newref Whether new reference should be returned.
-     * @return Pointer to Skill object; NULL if skill was not found.
-     */
     SkillRef        GetSkillInTraining() const;
     /**
      * Returns entire list of skills learned by this character
@@ -311,11 +305,11 @@ public:
      * @param[in] skill Skill for which the rate is calculated.
      * @return Skillpoints per minute rate.
      */
-    EvilNumber      GetSPPerMin(Skill* skill);
+    uint8           GetSPPerMin(Skill* skill);
     /**
      * @return Timestamp at which current skill training finishes.
      */
-    double GetEndOfTraining() const;
+    int64           GetEndOfTraining() const;
 
     /* InjectSkillIntoBrain(InventoryItem* skill)
      *
@@ -339,20 +333,9 @@ public:
      * Update skill training end time on char select screen.
      * @author allan
      */
-    void            UpdateSkillQueueEndTime( const SkillQueue& queue);
-    /**
-     * Send Skill Completion Info to client.
-     * @author allan
-	 * @param[in] pSkill  pointer to completed skill object
-     * @param[in] oldLevel  previous level (can be 0)
-     * @param[in] newLevel  level just completed
-	 * @param[in] EN_Points  previous skill point value
-     * @param[in] newPoints  current skill point value
-	 * @param[in] stopped	is training not finished?
-     */
-    void            SendSkillComplete(Skill* pSkill, uint8 oldLevel, uint8 newLevel, EvilNumber EN_Points, int64 newPoints, bool stopped=false);
+    void            UpdateSkillQueueEndTime( );
 
-    PyRep* GetSkillHistory();
+    PyRep*          GetSkillHistory();
 	EvilNumber      GetTotalSP();
 
     /* GrantCertificate( uint32 certificateID )
@@ -428,11 +411,11 @@ public:
     void                    SetCorpHQ(uint32 stationID)         { m_corpData.corpHQ = stationID; UpdateCorpData(m_corpData);}
 
     // Corporation role:
-    int64                  corpRole() const                     { return m_corpData.corpRole; }
-    int64                  rolesAtAll() const                   { return m_corpData.rolesAtAll; }
-    int64                  rolesAtBase() const                  { return m_corpData.rolesAtBase; }
-    int64                  rolesAtHQ() const                    { return m_corpData.rolesAtHQ; }
-    int64                  rolesAtOther() const                 { return m_corpData.rolesAtOther; }
+    int64                   corpRole() const                    { return m_corpData.corpRole; }
+    int64                   rolesAtAll() const                  { return m_corpData.rolesAtAll; }
+    int64                   rolesAtBase() const                 { return m_corpData.rolesAtBase; }
+    int64                   rolesAtHQ() const                   { return m_corpData.rolesAtHQ; }
+    int64                   rolesAtOther() const                { return m_corpData.rolesAtOther; }
 
     // Fleet:
     int64                   fleetJoinTime()                     { return m_fleetData.joinTime; }
@@ -456,8 +439,8 @@ public:
     uint32                  careerSpecialityID() const          { return m_charData.careerSpecialityID; }
 
     // Some important dates:
-    int64                  startDateTime() const               { return m_corpData.startDateTime; }
-    int64                  createDateTime() const              { return m_charData.createDateTime; }
+    int64                   startDateTime() const               { return m_corpData.startDateTime; }
+    int64                   createDateTime() const              { return m_charData.createDateTime; }
 
     uint32                  shipID() const                      { return m_charData.shipID; }
     uint32                  capsuleID() const                   { return m_charData.capsuleID; }
@@ -476,7 +459,7 @@ public:
     void                    SaveFullCharacter();
     void                    SaveSkillQueue();
     void                    SaveCertificates();
-    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
+    void                    SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
 
     void                    SetLoaded(bool set=false)   { m_loaded = set; }
 
@@ -570,7 +553,7 @@ private:
 
     CertMap m_certificates;
 
-    bool m_loaded;      /* to avoid multiple load calls (_Load is called ~4x) */
+    bool m_loaded :1;      /* to avoid multiple load calls (_Load is called ~4x) */
 
     uint32 m_loginTime;
 

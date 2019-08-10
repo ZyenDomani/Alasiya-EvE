@@ -61,7 +61,7 @@ m_needsTarget(false)
             case EVEDB::invGroups::Cargo_Scanner:
             case EVEDB::invGroups::System_Scanner: {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
-                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting, true)))); // 3% increase in range (here)
+                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true)))); // 3% increase in range (here)
                 SetAttribute(AttrSurveyScanRange, m_range);
             } break;
         }
@@ -892,7 +892,7 @@ void ActiveModule::LaunchProbe()
         pClient->SetScan(new Scan(pClient));
 
     uint8 pcount = pClient->scan()->GetProbeCount();
-    if (pcount == (pClient->GetChar()->GetSkillLevel(skillAstrometrics) +1)) {
+    if (pcount == (pClient->GetChar()->GetSkillLevel(EvESkill::Astrometrics) +1)) {
         pClient->SendErrorMsg("You can only control %u probes based on your current skills.", pcount);
         return;
     }

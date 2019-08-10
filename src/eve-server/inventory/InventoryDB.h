@@ -30,6 +30,29 @@
 #include "inventory/ItemRef.h"
 
 
+/* POD structure for saving items */
+struct SaveData {
+    bool            contraband :1;
+    bool            singleton :1;
+    EVEItemFlags    flag;
+    uint16          typeID;
+    uint32          itemID;
+    uint32          ownerID;
+    uint32          locationID;
+    uint32          quantity;
+    GPoint          position;
+    std::string     customInfo;
+};
+
+/* POD structure for saving attribute data */
+struct AttrData {
+    uint16 attrID;
+    uint32 itemID;
+    int64 valueInt;
+    double valueFloat;
+};
+
+
 class CategoryData;
 class GroupData;
 class TypeData;

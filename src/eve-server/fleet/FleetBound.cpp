@@ -116,9 +116,9 @@ PyResult FleetBound::Handle_Init(PyCallArgs &call) {
         join.job = pChar->fleetJob();
         join.role = pChar->fleetRole();
         join.shipTypeID = pClient->GetShip()->typeID();
-        join.skillFleetCommand = pChar->GetSkillLevel(skillFleetCommand);
-        join.skillLeadership = pChar->GetSkillLevel(skillLeadership);
-        join.skillWingCommand = pChar->GetSkillLevel(skillWingCommand);
+        join.skillFleetCommand = pChar->GetSkillLevel(EvESkill::FleetCommand);
+        join.skillLeadership = pChar->GetSkillLevel(EvESkill::Leadership);
+        join.skillWingCommand = pChar->GetSkillLevel(EvESkill::WingCommand);
         join.squadID = pChar->squadID();
         join.roleBooster = pChar->fleetBooster();
         join.solarSystemID = pClient->GetSystemID();
@@ -222,9 +222,9 @@ PyResult FleetBound::Handle_GetInitState(PyCallArgs &call) {
             member.job = cur->GetChar()->fleetJob();
             member.role = cur->GetChar()->fleetRole();
             member.shipTypeID = cur->GetShip()->typeID();
-            member.skillFleetCommand = cur->GetChar()->GetSkillLevel(skillFleetCommand);
-            member.skillLeadership = cur->GetChar()->GetSkillLevel(skillLeadership);
-            member.skillWingCommand = cur->GetChar()->GetSkillLevel(skillWingCommand);
+            member.skillFleetCommand = cur->GetChar()->GetSkillLevel(EvESkill::FleetCommand);
+            member.skillLeadership = cur->GetChar()->GetSkillLevel(EvESkill::Leadership);
+            member.skillWingCommand = cur->GetChar()->GetSkillLevel(EvESkill::WingCommand);
             member.squadID = cur->GetChar()->squadID();
             member.roleBooster = cur->GetChar()->fleetBooster();
             member.solarSystemID = cur->GetSystemID();
@@ -506,16 +506,16 @@ PyResult FleetBound::Handle_GetFleetComposition(PyCallArgs &call) {
         dict->SetItemString("characterID", new PyInt(cur->GetCharacterID()));
         dict->SetItemString("shipTypeID", new PyInt(cur->GetShip()->typeID()));
         dict->SetItemString("solarSystemID", new PyInt(cur->GetSystemID()));
-        if (pChar->HasSkill(skillLeadership) or pChar->HasSkill(skillFleetCommand) or pChar->HasSkill(skillWingCommand)) {
+        if (pChar->HasSkill(EvESkill::Leadership) or pChar->HasSkill(EvESkill::FleetCommand) or pChar->HasSkill(EvESkill::WingCommand)) {
             PyTuple* skills = new PyTuple(3);
-                skills->SetItem(0, new PyInt(pChar->GetSkillLevel(skillLeadership)));
-                skills->SetItem(1, new PyInt(pChar->GetSkillLevel(skillFleetCommand)));
-                skills->SetItem(2, new PyInt(pChar->GetSkillLevel(skillWingCommand)));
+                skills->SetItem(0, new PyInt(pChar->GetSkillLevel(EvESkill::Leadership)));
+                skills->SetItem(1, new PyInt(pChar->GetSkillLevel(EvESkill::FleetCommand)));
+                skills->SetItem(2, new PyInt(pChar->GetSkillLevel(EvESkill::WingCommand)));
             dict->SetItemString("skills", skills);
             PyTuple* skillIDs = new PyTuple(3);
-                skillIDs->SetItem(0, new PyInt(skillLeadership));
-                skillIDs->SetItem(1, new PyInt(skillFleetCommand));
-                skillIDs->SetItem(2, new PyInt(skillWingCommand));
+                skillIDs->SetItem(0, new PyInt(EvESkill::Leadership));
+                skillIDs->SetItem(1, new PyInt(EvESkill::FleetCommand));
+                skillIDs->SetItem(2, new PyInt(EvESkill::WingCommand));
             dict->SetItemString("skillIDs", skillIDs);
         }
         list->AddItem(new PyObject("util.KeyVal", dict));

@@ -406,7 +406,7 @@ void Client::ProcessClient() {
     }
 
     if (m_timeEndTrain > 0)
-        if (m_timeEndTrain < GetFileTimeNow())
+        if (m_timeEndTrain < Win32TimeNow())
             m_char->UpdateSkillQueue();
 
     if (m_sessionTimer.Check(false)) {
@@ -565,12 +565,12 @@ void Client::ProcessClient() {
                 if ((fData.leader != nullptr) and (fData.booster != nullptr))
                     if ((fData.leader->IsInSpace()) and (fData.booster->IsInSpace())) {
                         CharacterRef bRef = fData.booster->GetChar();
-                        bData.leader    = fData.leader->GetChar()->GetSkillLevel(skillLeadership);
-                        bData.armored   = bRef->GetSkillLevel(skillArmoredWarfare);
-                        bData.info      = bRef->GetSkillLevel(skillInformationWarfare);
-                        bData.mining    = bRef->GetSkillLevel(skillMiningForeman);
-                        bData.siege     = bRef->GetSkillLevel(skillSiegeWarfare);
-                        bData.skirmish  = bRef->GetSkillLevel(skillSkirmishWarfare);
+                        bData.leader    = fData.leader->GetChar()->GetSkillLevel(EvESkill::Leadership);
+                        bData.armored   = bRef->GetSkillLevel(EvESkill::ArmoredWarfare);
+                        bData.info      = bRef->GetSkillLevel(EvESkill::InformationWarfare);
+                        bData.mining    = bRef->GetSkillLevel(EvESkill::MiningForeman);
+                        bData.siege     = bRef->GetSkillLevel(EvESkill::SiegeWarfare);
+                        bData.skirmish  = bRef->GetSkillLevel(EvESkill::SkirmishWarfare);
                     }
             }
             pShipSE->ApplyBoost(bData);

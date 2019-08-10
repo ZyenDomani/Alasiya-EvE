@@ -11,18 +11,12 @@ warping not draining cap
 
 survey scanner not showing results
 
-
 look into anomaly roids....kernite/jasper in 0.9 (rens)
-no cap check on jetcans (jetcan mining with unlimited storage!!!  woot! )
-    - this will need more work...
 
-.showall not disabling
 cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 
 moving mwd from one slot to another throws groupfit limited error
 check anomaly spawn distance.  could be too far....no, it's 3.86au, but in small system, this seems far.
-
-refining works.  doesnt stack when refining multiple ores.
 
 
 ********  improvements
@@ -59,9 +53,6 @@ bookmark system - still incomplete
 
 
 check allianceID sending.  see if we can/need to send None() instead of -1
-
-
-skills dont train correctly when char is offline.  (persistant broken...again)
 
 
 need to figure out how to load/queue assets for chars (on login or w/e)
@@ -114,7 +105,7 @@ AttributeError: 'NoneType' object has no attribute 'contracts'
 
 
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
-next up is security missions. will need dungeon work for these.   -priority level: hi
+next up is security missions.  will need dungeon work for these.   -priority level: hi
 
 anomaly system - working. may need revisit after other systems mature.   -priority level: med
 

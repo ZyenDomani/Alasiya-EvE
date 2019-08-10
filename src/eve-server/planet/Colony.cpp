@@ -396,13 +396,13 @@ void Colony::CreatePin(uint32 groupID, uint32 pinID, uint32 typeID, double latit
         m_cpu = iRef->GetAttribute(AttrCpuLoad).get_int();
         if (groupID != Planetary_Links) {
             // reset pg/cpu needs based on char skills for all modules (ex links)
-            m_pg *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(skillEngineering, true))));               // 5% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillEnergyManagement, true))));          // 1% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillCommandCenterUpgrades, true))));     // 1% decrease in need
-            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillEnergySystemsOperation, true))));    // 1% decrease in need
+            m_pg *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(EvESkill::Engineering, true))));               // 5% decrease in need
+            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergyManagement, true))));          // 1% decrease in need
+            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));     // 1% decrease in need
+            m_pg *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::EnergySystemsOperation, true))));    // 1% decrease in need
 
-            m_cpu *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(skillElectronics, true))));              // 5% decrease in need
-            m_cpu *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(skillCommandCenterUpgrades, true))));    // 1% decrease in need
+            m_cpu *= (1 - ( 0.05 * (m_client->GetChar()->GetSkillLevel(EvESkill::Electronics, true))));              // 5% decrease in need
+            m_cpu *= (1 - ( 0.01 * (m_client->GetChar()->GetSkillLevel(EvESkill::CommandCenterUpgrades, true))));    // 1% decrease in need
         } */
     }
 

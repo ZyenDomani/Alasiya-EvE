@@ -180,7 +180,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         /** @todo  this works, but still needs work....
         if (HasPilot()) {
             float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
-            uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(skillTacticalShieldManipulation));
+            uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(EvESkill::TacticalShieldManipulation));
             if ((damageID) and (available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
                 float bleedthru = (d.GetTotal() * 0.01);
                 m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));

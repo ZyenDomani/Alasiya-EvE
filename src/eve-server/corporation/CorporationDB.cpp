@@ -451,10 +451,10 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     uint8 raceID = (uint8)pChar->race();
 
     // set member limit based on creator's skills
-    uint16 mLimit = (pChar->GetSkillLevel(skillCorporationManagement) * 20);//101
-    mLimit += (pChar->GetSkillLevel(skillMegacorpManagement) * 100);        //601
-    mLimit += (pChar->GetSkillLevel(skillEmpireControl) * 400);             //2601
-    mLimit += (pChar->GetSkillLevel(skillSovereignty) * 2000);              //12601
+    uint16 mLimit = (pChar->GetSkillLevel(EvESkill::CorporationManagement) * 20);//101
+    mLimit += (pChar->GetSkillLevel(EvESkill::MegacorpManagement) * 100);        //601
+    mLimit += (pChar->GetSkillLevel(EvESkill::EmpireControl) * 400);             //2601
+    mLimit += (pChar->GetSkillLevel(EvESkill::Sovereignty) * 2000);              //12601
 
     /** @todo  allowedMemberRaceIDs will need to be bitwise...it is a flag.
      * also called 'raceMask' and isnt implemented yet.

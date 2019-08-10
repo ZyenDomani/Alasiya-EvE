@@ -547,16 +547,16 @@ void Agent::UpdateStandings(Client* pClient, uint8 eventID, bool important/*fals
     uint32 charID = pChar->itemID();
 
     float charStanding = pChar->GetStanding(m_agentID, charID);
-    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, pChar->GetSkillLevel(skillConnections), pChar->GetSkillLevel(skillDiplomacy), pChar->GetSkillLevel(skillCriminalConnections));
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, pChar->GetSkillLevel(EvESkill::Connections), pChar->GetSkillLevel(EvESkill::Diplomacy), pChar->GetSkillLevel(EvESkill::CriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
-    float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(skillNegotiation), standing);
+    float quality = EvEMath::Agent::EffectiveQuality(m_agentData.quality, pChar->GetSkillLevel(EvESkill::Negotiation), standing);
     float newStanding = EvEMath::Agent::Efficiency(m_agentData.level, quality);    // 0.018 to 0.38
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(m_agentData.solarSystemID);
     if (pSysMgr != nullptr)
         newStanding *= pSysMgr->GetSecValue(); // 0.0018 to .76
 
     //newStanding = EvEMath::Agent::AgentStandingIncrease(standing, (newStanding /10));     -- this isnt used.
-    newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(skillSocial));
+    newStanding = EvEMath::Agent::MissionStandingIncrease(newStanding, pChar->GetSkillLevel(EvESkill::Social));
     newStanding /= 8;
 
     newStanding *= sConfig.standings.BaseMissionMultiplier;
@@ -719,9 +719,9 @@ bool Agent::CanUseAgent(Client* pClient)
 
     Character* pChar = pClient->GetChar().get();
     uint32 charID = pChar->itemID();
-    uint8 sConn = pChar->GetSkillLevel(skillConnections);
-    uint8 sDiplo = pChar->GetSkillLevel(skillDiplomacy);
-    uint8 sCrim = pChar->GetSkillLevel(skillCriminalConnections);
+    uint8 sConn = pChar->GetSkillLevel(EvESkill::Connections);
+    uint8 sDiplo = pChar->GetSkillLevel(EvESkill::Diplomacy);
+    uint8 sCrim = pChar->GetSkillLevel(EvESkill::CriminalConnections);
     float charStanding = pChar->GetStanding(m_agentID, charID);
     float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agentData.factionID, sConn, sDiplo, sCrim);
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);

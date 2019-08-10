@@ -573,7 +573,8 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
 
         SkillRef skill;
         uint8 oldLevel = 0;
-        uint32 skillID = 0, oldPoints = 0, newPoints = 0;
+        uint16 skillID = 0;
+        uint32 oldPoints = 0, newPoints = 0;
 
         std::vector<uint32>::const_iterator cur = skillList.begin();
         for (; cur != skillList.end(); ++cur) {
@@ -582,8 +583,8 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
                 return PyStatic.NewNone();
             else if (character->HasSkill(skillID)) {
                 skill = character->GetSkill(skillID);
-                oldLevel = skill->GetAttribute(AttrSkillLevel).get_int();
-                oldPoints = skill->GetAttribute(AttrSkillPoints).get_int();
+                oldLevel = skill->GetAttribute(AttrSkillLevel).get_uint32();
+                oldPoints = skill->GetAttribute(AttrSkillPoints).get_uint32();
                 skill->SetAttribute(AttrSkillLevel, level);
                 skill->SetAttribute(AttrSkillPoints, skill->GetSPForLevel(level));
                 if (skill->flag() == flagSkillInTraining) {
@@ -605,7 +606,7 @@ PyResult Command_giveallskills(Client* who, CommandDB* db, PyServiceMgr* service
 
             //  save gm skill gift in history  -allan
             //  maybe not for this....WAAAAYYY  to much DB traffic for this.
-            //character->SaveSkillHistory(skillEventGMGive, Win32TimeNow(), ownerID, skillID.get_int(), level, \
+            //character->SaveSkillHistory(EvESkill::Event::GMGift, Win32TimeNow(), ownerID, skillID.get_uint32(), level, \
             skill->GetAttribute(AttrSkillPoints).get_double());
         }
         // END LOOP
@@ -625,7 +626,7 @@ PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, 
 PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     uint8 level = 0;
     uint32 ownerID = 0, skillID = 0;
-    EvilNumber newPoints = 0;
+    uint32 newPoints = 0;
     CharacterRef character;
     Client *pTarget = nullptr;
 
@@ -673,9 +674,9 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
                 throw PyException(MakeCustomError("Unable to get item for skillID %u.", skillID));
                 return new PyString ("Skill Gifting Failure - Unable to get item for skillID %u.", skillID);
             }
-            newPoints = skill->GetSPForLevel((EvilNumber)level);
+            newPoints = skill->GetSPForLevel(level);
             skill->SetAttribute(AttrSkillLevel, level);
-            skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
+            skill->SetAttribute(AttrSkillPoints, newPoints);
             if (skill->flag() == flagSkillInTraining) {
                 skill->SetFlag(flagSkill, true);
                 skill->SetAttribute(AttrExpiryTime, EvilZero);
@@ -688,21 +689,21 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
                 return new PyString ("Skill Gifting Failure - Unable to create item for skillID %u.", skillID);
             } else {
                 character->AddItem(skill);
-                newPoints = skill->GetSPForLevel((EvilNumber)level);
+                newPoints = skill->GetSPForLevel(level);
                 skill->SetAttribute(AttrSkillLevel, level);
-                skill->SetAttribute(AttrSkillPoints, newPoints.get_int());
+                skill->SetAttribute(AttrSkillPoints, newPoints);
             }
         }
         skill->SaveItem();
         //  save gm skill gift in history  -allan
-        character->SaveSkillHistory(skillEventGMGive, GetFileTimeNow(), ownerID, skillID, level, newPoints.get_double());
+        character->SaveSkillHistory(EvESkill::Event::GMGift, GetFileTimeNow(), ownerID, skillID, level, newPoints);
 
         OnSkillTrained ost;
         ost.itemID = skill->itemID();
         PyTuple* tmp = ost.Encode();
         pTarget->QueueDestinyEvent(&tmp);
 
-        sLog.White("Command::GiveSkill", "skill %u set to level %u with %lli SP.", skillID, level, newPoints.get_int());
+        sLog.White("Command::GiveSkill", "skill %u set to level %u with %u SP.", skillID, level, newPoints);
 
         return new PyString ("Skill Gifting Complete");
     } else

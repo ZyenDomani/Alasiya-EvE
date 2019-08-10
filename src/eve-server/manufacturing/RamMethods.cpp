@@ -92,8 +92,8 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
     if (args.activityID == EvERam::Activity::Manufacturing) {
         uint32 jobCount = RamProxyDB::CountManufacturingJobs(pChar->itemID());
         uint charMaxJobs = pChar->GetAttribute(AttrManufactureSlotLimit).get_int()
-                            + pChar->GetSkillLevel(skillMassProduction)
-                            + pChar->GetSkillLevel(skillAdvancedMassProduction);
+                            + pChar->GetSkillLevel(EvESkill::MassProduction)
+                            + pChar->GetSkillLevel(EvESkill::AdvancedMassProduction);
 
         if (charMaxJobs <= jobCount) {
             std::map<std::string, PyRep *> exceptArgs;
@@ -103,8 +103,8 @@ void RamMethods::JobsCheck(Character* pChar, const Call_InstallJob& args)
         }
     } else {
         uint charMaxJobs = pChar->GetAttribute(AttrMaxLaborotorySlots).get_int()
-                            + pChar->GetSkillLevel(skillLaboratoryOperation)
-                            + pChar->GetSkillLevel(skillAdvancedLaboratoryOperation);
+                            + pChar->GetSkillLevel(EvESkill::LaboratoryOperation)
+                            + pChar->GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
 
         uint32 jobCount = RamProxyDB::CountResearchJobs(pChar->itemID());
         if (charMaxJobs <= jobCount) {

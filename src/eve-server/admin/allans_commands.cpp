@@ -534,7 +534,7 @@ PyResult Command_skilllist(Client* pClient, CommandDB* db, PyServiceMgr* service
 
     std::ostringstream str;
     str.clear();
-    str << "InventoryID %u(%p) (%s) has %u skills.<br><br>"; //80
+    str << "InventoryID %u(%p) of %s has %u skills.<br><br>"; //80
 
     for (auto cur : invMap) {
         str << cur.first << " - " << cur.second->itemName();    //45

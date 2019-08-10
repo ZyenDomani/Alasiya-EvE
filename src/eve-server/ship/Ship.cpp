@@ -50,7 +50,7 @@ m_skillType(_skillType)
 
 ShipType *ShipType::Load(uint32 shipTypeID)
 {
-    return ItemType::Load<ShipType>(shipTypeID );
+    return ItemType::Load<ShipType>(shipTypeID);
 }
 
 /*
@@ -79,17 +79,17 @@ ShipItem::~ShipItem()
 
 ShipItemRef ShipItem::Load( uint32 shipID)
 {
-    return InventoryItem::Load<ShipItem>( shipID );
+    return InventoryItem::Load<ShipItem>( shipID);
 }
 
 ShipItemRef ShipItem::Spawn( ItemData &data) {
-    uint32 shipID = ShipItem::CreateItemID( data );
-    if ( shipID == 0 )
+    uint32 shipID = ShipItem::CreateItemID( data);
+    if (shipID == 0)
         return ShipItemRef(nullptr);
 
-    return ShipItem::Load( shipID );
+    return ShipItem::Load( shipID);
     /*
-    ShipItemRef sShipRef = ShipItem::Load( shipID );
+    ShipItemRef sShipRef = ShipItem::Load( shipID);
     // this cause error when sending attr change (no owner found)
     sShipRef->InitAttribs();
     return sShipRef;
@@ -279,7 +279,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
 
     switch (flag) {
         case flagDroneBay: {
-            if ( iRef->categoryID() != EVEDB::invCategories::Drone ) {
+            if (iRef->categoryID() != EVEDB::invCategories::Drone) {
                 pClient->SendErrorMsg("Item Cannot be stowed in the Drone Bay");
                 return false;
             }
@@ -437,14 +437,14 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
 
 // this one is called from ShipGetInfo
 PyDict* ShipItem::ShipGetInfo() {
-    if ( !pInventory->LoadContents()) {
+    if (!pInventory->LoadContents()) {
         _log( SHIP__ERROR, "%s(%u): Failed to load contents for ShipGetInfo", itemName().c_str(), itemID());
         return nullptr;
     }
 
     Rsp_CommonGetInfo_Entry entry;
     //first populate the ship.
-    if ( !Populate( entry ))
+    if (!Populate( entry))
         return nullptr;    //print already done.
 
     PyDict* result = new PyDict();
@@ -452,8 +452,8 @@ PyDict* ShipItem::ShipGetInfo() {
     //now encode contents...
     std::vector<InventoryItemRef> equipped;
     //find all the equipped items and rigs
-    uint8 mod = pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped );
-    uint8 rig = pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot7, equipped );
+    uint8 mod = pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped);
+    uint8 rig = pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot7, equipped);
     //encode an entry for each one.
     for (auto cur : equipped) {
         if (cur->Populate(entry))
@@ -474,7 +474,7 @@ PyDict* ShipItem::GetShipInfo()
 
     //first populate the ship.
     Rsp_CommonGetInfo_Entry entry;
-    if ( !Populate( entry ))
+    if (!Populate( entry))
         return nullptr;
 
     PyDict *result = new PyDict();
@@ -483,8 +483,8 @@ PyDict* ShipItem::GetShipInfo()
     //now encode contents...
     std::vector<InventoryItemRef> equipped;
     //find all the equipped items and rigs
-    uint8 mod = pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped );
-    uint8 rig = pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot7, equipped );
+    uint8 mod = pInventory->GetItemsByFlagRange( flagLowSlot0, flagFixedSlot, equipped);
+    uint8 rig = pInventory->GetItemsByFlagRange( flagRigSlot0, flagRigSlot7, equipped);
     //encode an entry for each one.
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
@@ -858,14 +858,14 @@ void ShipItem::AddModuleToOnlineVec(uint32 modID)
 //  Updated fractional ship defense settings.  -allan 1Feb15
 void ShipItem::SetShipCapacitorLevel(float fraction)
 {
-    if ( fraction > 1.0 ) fraction = 1.0;
-    if ( fraction < 0.0 ) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
 
     EvilNumber newCapacitorCharge(EvilZero);
     newCapacitorCharge = GetAttribute(AttrCapacitorCapacity) * fraction;
-    if ( (newCapacitorCharge + 0.5) > GetAttribute(AttrCapacitorCapacity))
+    if ((newCapacitorCharge + 0.5f) > GetAttribute(AttrCapacitorCapacity).get_float())
         newCapacitorCharge = GetAttribute(AttrCapacitorCapacity);
-    if ( (newCapacitorCharge - 0.5) < 0 )
+    if ((newCapacitorCharge - 0.5f) < 0)
         newCapacitorCharge = 0;
 
     SetAttribute(AttrCapacitorCharge, newCapacitorCharge);
@@ -873,14 +873,14 @@ void ShipItem::SetShipCapacitorLevel(float fraction)
 
 void ShipItem::SetShipShield(float fraction)
 {
-    if ( fraction > 1.0 ) fraction = 1.0;
-    if ( fraction < 0.0 ) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
 
     EvilNumber newShieldCharge(EvilZero);
     newShieldCharge = GetAttribute(AttrShieldCapacity) * fraction;
-    if ( (newShieldCharge + 0.2) > GetAttribute(AttrShieldCapacity))
+    if ((newShieldCharge + 0.2f) > GetAttribute(AttrShieldCapacity).get_float())
         newShieldCharge = GetAttribute(AttrShieldCapacity);
-    if ( (newShieldCharge - 0.2) < 0 )
+    if ((newShieldCharge - 0.2f) < 0)
         newShieldCharge = 0;
 
     SetAttribute(AttrShieldCharge, newShieldCharge);
@@ -890,14 +890,14 @@ void ShipItem::SetShipArmor(float fraction)
 {
     fraction = 1 - fraction;
 
-    if ( fraction > 1.0 ) fraction = 1.0;
-    if ( fraction < 0.0 ) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
 
     EvilNumber newArmorDamage(EvilZero);
     newArmorDamage = GetAttribute(AttrArmorHP) * fraction;
-    if ( (newArmorDamage + 0.2) > GetAttribute(AttrArmorHP))
+    if ((newArmorDamage + 0.2f) > GetAttribute(AttrArmorHP).get_float())
         newArmorDamage = GetAttribute(AttrArmorHP);
-    if ( (newArmorDamage - 0.2) < 0 )
+    if ((newArmorDamage - 0.2f) < 0)
         newArmorDamage = 0;
 
     SetAttribute(AttrArmorDamage, newArmorDamage);
@@ -907,14 +907,14 @@ void ShipItem::SetShipHull(float fraction)
 {
     fraction = 1 - fraction;
 
-    if ( fraction > 1.0 ) fraction = 1.0;
-    if ( fraction < 0.0 ) fraction = 0.0;
+    if (fraction > 1.0) fraction = 1.0;
+    if (fraction < 0.0) fraction = 0.0;
 
     EvilNumber newHullDamage(EvilZero);
     newHullDamage = GetAttribute(AttrHP) * fraction;
-    if ( (newHullDamage + 0.2) > GetAttribute(AttrHP))
+    if ((newHullDamage + 0.2f) > GetAttribute(AttrHP).get_float())
         newHullDamage = GetAttribute(AttrHP);
-    if ( (newHullDamage - 0.2) < 0 )
+    if ((newHullDamage - 0.2f) < 0)
         newHullDamage = 0;
 
     SetAttribute(AttrDamage, newHullDamage);
@@ -1180,9 +1180,9 @@ void ShipItem::AddItem(InventoryItemRef iRef)
 {
     if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
         // make singleton
-        iRef->ChangeSingleton( true );
+        iRef->ChangeSingleton( true);
     }
-    pInventory->AddItem( iRef );
+    pInventory->AddItem( iRef);
 }
 
 uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
@@ -1414,7 +1414,7 @@ void ShipItem::Online(uint32 modID)
         float Capacity = GetAttribute(AttrCapacitorCapacity).get_float();
         float newCharge = 0;
         SetAttribute(AttrCapacitorCharge, newCharge);
-        _log(SHIP__MESSAGE, "ShipItem::Online(): %s(%u) - New Cap Charge: %f", GetPilot()->GetName(), itemID(), newCharge );
+        _log(SHIP__MESSAGE, "ShipItem::Online(): %s(%u) - New Cap Charge: %f", GetPilot()->GetName(), itemID(), newCharge);
         */
     }
     /* {'messageKey': 'EffectAlreadyActive2', 'dataID': 17876243, 'suppressable': False, 'bodyID': 256802, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3252}
@@ -1452,7 +1452,7 @@ void ShipItem::Activate(int32 itemID, std::string effectName, int32 targetID, in
     else
         m_targetRef = InventoryItemRef(nullptr);
 
-    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat );
+    m_ModuleManager->Activate( itemID, sFxDataMgr.GetEffectID(effectName), targetID, repeat);
 }
 
 
@@ -2277,7 +2277,7 @@ m_processTimer(SHIP_PROCESS_TICK_MS)
 
 double Ship::CalculateRechargeRate(double Capacity, double Current, double RechargeTimeMS)
 {
-    // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1 ) * EXP((t0-t1)/tau) ] ^ 2
+    // C = Cmax * [ 1 + ( SQRT(C0/Cmax) - 1) * EXP((t0-t1)/tau) ] ^ 2
     // dC/dt = (SQRT(C/Cmax) - C/Cmax) * 2 * Cmax / tau
     // tau = "Cap Recharge Time" / 5.0
 
@@ -2293,7 +2293,7 @@ double Ship::CalculateRechargeRate(double Capacity, double Current, double Recha
     double C = Current;
     // C / Cmax
     double C_Cmax = (C / Cmax);
-    // sqrt( C / Cmax )
+    // sqrt( C / Cmax)
     double sC_Cmax = sqrt(C_Cmax);
     // charge rate in Gj / sec
     return (Cmax2_tau * (sC_Cmax - C_Cmax));
@@ -2323,7 +2323,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrShieldCharge, newCharge);
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge );
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Shield Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
 
         // cap
@@ -2336,7 +2336,7 @@ void Ship::Process() {
             else if ((Capacity - newCharge) < 0.3)
                 newCharge = Capacity;
             m_self->SetAttribute(AttrCapacitorCharge, newCharge);
-            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge );
+            _log(SHIP__MESSAGE, "Ship::Process(): %s(%u) - New Cap Charge: %f", m_self->GetPilot()->GetName(), m_self->itemID(), newCharge);
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
@@ -2384,7 +2384,7 @@ void Ship::SetPilot(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
 }
 
-void Ship::EncodeDestiny( Buffer& into ) {
+void Ship::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 
     uint8 mode = Ball::Mode::STOP;
@@ -2412,14 +2412,14 @@ void Ship::EncodeDestiny( Buffer& into ) {
             head.flags = Ball::Flag::IsInteractive | Ball::Flag::IsFree;
         else
             head.flags = Ball::Flag::IsFree;
-    into.Append( head );
+    into.Append( head);
     MassSector mass = MassSector();
         mass.mass = m_destiny->GetMass();
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
         mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
-    into.Append( mass );
+    into.Append( mass);
     DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
         data.maxVelocity = m_destiny->GetMaxVelocity();
@@ -2427,7 +2427,7 @@ void Ship::EncodeDestiny( Buffer& into ) {
         data.velocity_y = m_destiny->GetVelocity().y;
         data.velocity_z = m_destiny->GetVelocity().z;
         data.speedfraction = m_destiny->GetSpeedFraction();
-    into.Append( data );
+    into.Append( data);
     switch (mode) {
         case Ball::Mode::WARP: {
             GPoint target = m_destiny->GetTargetPoint();
@@ -2441,21 +2441,21 @@ void Ship::EncodeDestiny( Buffer& into ) {
                 warp.effectStamp = -1; //m_destiny->GetStateStamp();   //timestamp when warp started
                 warp.followRange = 0;   //this isnt right
                 warp.followID = 0;  //this isnt right
-            into.Append( warp );
+            into.Append( warp);
         }  break;
         case Ball::Mode::FOLLOW: {
             FOLLOW_Struct follow;
                 follow.followID = m_destiny->GetTargetID();
                 follow.followRange = m_destiny->GetFollowDistance();
                 follow.formationID = 0xFF;
-            into.Append( follow );
+            into.Append( follow);
         }  break;
         case Ball::Mode::ORBIT: {
             ORBIT_Struct orbit;
                 orbit.followID = m_destiny->GetTargetID();
                 orbit.followRange = m_destiny->GetFollowDistance();
                 orbit.formationID = 0xFF;
-            into.Append( orbit );
+            into.Append( orbit);
         }  break;
         case Ball::Mode::GOTO: {
             GPoint target = m_destiny->GetTargetPoint();
@@ -2464,12 +2464,12 @@ void Ship::EncodeDestiny( Buffer& into ) {
                 go.x = target.x;
                 go.y = target.y;
                 go.z = target.z;
-            into.Append( go );
+            into.Append( go);
         }  break;
         default: {
             STOP_Struct main;
                 main.formationID = 0xFF;
-            into.Append( main );
+            into.Append( main);
         } break;
     }
 

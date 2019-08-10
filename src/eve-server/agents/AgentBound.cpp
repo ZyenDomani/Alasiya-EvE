@@ -99,8 +99,8 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
 
     Character* pchar = call.client->GetChar().get();
     float charStanding = pchar->GetStanding(m_agent->GetID(), pchar->itemID());
-    float quality = EvEMath::Agent::EffectiveQuality(m_agent->GetQuality(), pchar->GetSkillLevel(skillConnections), charStanding);
-    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agent->GetFactionID(), pchar->GetSkillLevel(skillConnections), pchar->GetSkillLevel(skillDiplomacy), pchar->GetSkillLevel(skillCriminalConnections));
+    float quality = EvEMath::Agent::EffectiveQuality(m_agent->GetQuality(), pchar->GetSkillLevel(EvESkill::Connections), charStanding);
+    float bonus = EvEMath::Agent::GetStandingBonus(charStanding, m_agent->GetFactionID(), pchar->GetSkillLevel(EvESkill::Connections), pchar->GetSkillLevel(EvESkill::Diplomacy), pchar->GetSkillLevel(EvESkill::CriminalConnections));
     float standing = EvEMath::Agent::EffectiveStanding(charStanding, bonus);
 
     std::string response = "";

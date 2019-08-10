@@ -198,7 +198,7 @@ namespace Standings {
      *  GMCommodityTake = 285
      *  GMDeletionSlashPathDungeon = 182
      *  GMDepositInstall = 296
-     *  GMGiveSkill = 39
+     *  GMGiftSkill = 39
      *  GMLPChanged = 205
      *  GMMailDeleteBy = 275
      *  GMMailUndeleteBy = 276

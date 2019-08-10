@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Bloody.Rabbit
+    Updates:    Allan
 */
 
 #ifndef __SKILL__H__INCL__
@@ -48,7 +49,7 @@ class Skill
 {
     friend class InventoryItem;
 public:
-    virtual ~Skill() { /* do nothing here */ }
+    ~Skill() { /* do nothing here */ }
 
     /**
      * Loads skill.
@@ -67,28 +68,15 @@ public:
      */
     static SkillRef Spawn( ItemData &data);
 
-    /**
-     * Calculates required amount of skillpoints for level.
-     *
-     * @param[in] level Level to calculate SP for.
-     * @return Amount of SP required.
-     */
-    EvilNumber GetSPForLevel(EvilNumber level);
-    /**
-     * Checks whether requirements of skill has been fulfilled.
-     *
-     * @param[in] ch Character which is checked.
-     * @return True if requirements are OK, false if not.
-     */
+    uint32 GetSPForLevel(uint8 level);
+    uint32 GetCurrentSP(Character* ch);
     bool SkillPrereqsComplete(Character &ch);
 
-    /**
-     *Performs check on fitting items
-     */
     static bool FitModuleSkillCheck(InventoryItemRef item, CharacterRef ch);
 
     void VerifySP();
     void VerifyAttribs();
+
 
 protected:
     Skill(uint32 _skillID, const ItemType &_type, const ItemData &_data );

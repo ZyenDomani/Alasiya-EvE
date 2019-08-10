@@ -303,7 +303,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //spawn all the skills
     uint8 skillLevel = 0;
-    EvilNumber skillPoints(EvilZero), totalPoints(EvilZero);
+    uint32 skillPoints = 0, totalPoints = 0;
     for (auto cur : startingSkills) {
         ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
         SkillRef skill = sItemFactory.SpawnSkill( skillItem );
@@ -316,16 +316,16 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
         skillLevel = cur.second;
         skill->SetAttribute(AttrSkillLevel, skillLevel, false);
-        skillPoints = skill->GetSPForLevel( (EvilNumber)skillLevel );
+        skillPoints = skill->GetSPForLevel(skillLevel);
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
         totalPoints += skillPoints;
-        charRef->SaveSkillHistory(skillEventSkillPointsApplied/*skillEventCharCreation*/, // #33 shows as "Unknown" in PD>Skill>History
+        charRef->SaveSkillHistory(EvESkill::Event::SkillPointsApplied/*EvESkill::Event::CharCreation*/, // #33 shows as "Unknown" in PD>Skill>History
                                   GetFileTimeNow(),
                                     charRef->itemID(),
                                     cur.first,
                                     skillLevel,
-                                    skillPoints.get_double());
+                                    skillPoints);
     }
 
     //now set up some initial inventory:

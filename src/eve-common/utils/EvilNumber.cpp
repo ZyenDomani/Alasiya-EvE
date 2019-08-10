@@ -115,10 +115,10 @@ PyRep* EvilNumber::GetPyObject()
     } else if (mType == evil_number_float) {
         return (PyRep*)new PyFloat(fVal);
     } else {
-        sLog.Error("EvilNumber::GetPyObject()", "EvilNumber is neither integer nor float");
+        sLog.Error("EvilNumber::GetPyObject()", "EvilNumber is neither integer nor float.  Returning None");
         EvE::traceStack();
         assert(false);
-        return PyStatic.NewZero();
+        return PyStatic.NewNone();
     }
 }
 
@@ -136,10 +136,8 @@ bool EvilNumber::isNaN()
 {
     if( mType == evil_number_nan )
         return true;
-
     if ( mType == evil_number_int )
         return false;
-
     return std::isnan(fVal);
 }
 
@@ -147,10 +145,8 @@ bool EvilNumber::isInf()
 {
     if ( mType == evil_number_nan )
         return true;
-
     if ( mType == evil_number_int )
         return false;
-
     return std::isinf(fVal);
 }
 
@@ -173,11 +169,10 @@ int64 EvilNumber::get_int()
 uint32 EvilNumber::get_uint32()
 {
     uint32 value = 0;
-    if (mType == evil_number_float) {
+    if (mType == evil_number_float)
         value = (uint32)floor(fVal);
-    } else {
+    else
         value = (uint32)iVal;
-    }
 
     return value;
 }
@@ -201,98 +196,84 @@ double EvilNumber::get_double()
 EvilNumber EvilNumber::sin( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::sin( val.fVal );
-    else {
+    else
         result.fVal = std::sin( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::cos( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::cos( val.fVal );
-    else {
+    else
         result.fVal = std::cos( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::tan( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::tan( val.fVal );
-    else {
+    else
         result.fVal = std::tan( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::asin( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::asin( val.fVal );
-    else {
+    else
         result.fVal = std::asin( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::acos( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::acos( val.fVal );
-    else {
+    else
         result.fVal = std::acos( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::atan( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::atan( val.fVal );
-    else {
+    else
         result.fVal = std::atan( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::sqrt( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::sqrt( val.fVal );
-    else {
+    else
         result.fVal = std::sqrt( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
@@ -300,8 +281,7 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 {
     EvilNumber exponent = EvilNumber();
     EvilNumber result = EvilNumber();
-
-    if( val2.mType == evil_number_float )
+    if ( val2.mType == evil_number_float )
         exponent.fVal = val2.fVal;
     else
         exponent.fVal = (double)(val2.iVal);
@@ -309,53 +289,46 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 
     if( val1.mType == evil_number_float )
         result.fVal = std::pow( val1.fVal, exponent.fVal );
-    else {
+    else
         result.fVal = std::pow( (double)(val1.iVal), exponent.fVal );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::log( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::log( val.fVal );
-    else {
+    else
         result.fVal = std::log( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::log10( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::log10( val.fVal );
-    else {
+    else
         result.fVal = std::log10( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
 EvilNumber EvilNumber::exp( const EvilNumber & val )
 {
     EvilNumber result = EvilNumber();
-
-    if( val.mType == evil_number_float )
+    if ( val.mType == evil_number_float )
         result.fVal = std::exp( val.fVal );
-    else {
+    else
         result.fVal = std::exp( (double)(val.iVal) );
-    }
-    result.mType = evil_number_float;
 
+    result.mType = evil_number_float;
     return result;
 }
 
@@ -365,7 +338,6 @@ EvilNumber EvilNumber::exp( const EvilNumber & val )
 EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & val2 )
 {
     EvilNumber result = EvilNumber();
-
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {
         if (val1.mType == evil_number_float) {
@@ -374,6 +346,8 @@ EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & va
         } else if (val1.mType == evil_number_int) {
             result.iVal = val1.iVal * val2.iVal;
             result.mType = evil_number_int;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val1 argument type is the opposite of the val2 argument type
@@ -387,10 +361,10 @@ EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & va
         } else {
             assert(false); // crash
         }
-
-        // check if we are an integer
-        result.CheckIntegrity();
     }
+    // check if we are an integer
+    result.CheckIntegrity();
+
     return result;
 }
 
@@ -401,6 +375,8 @@ EvilNumber EvilNumber::_SelfMultiply( const EvilNumber & val )
             this->fVal = this->fVal * val.fVal;
         } else if (mType == evil_number_int) {
             this->iVal = this->iVal * val.iVal;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -413,10 +389,10 @@ EvilNumber EvilNumber::_SelfMultiply( const EvilNumber & val )
         } else {
             assert(false); // crash
         }
-
-        // check if we are an integer
-        CheckIntegrity();
     }
+    // check if we are an integer
+    CheckIntegrity();
+
     return *this;
 }
 
@@ -433,8 +409,8 @@ EvilNumber EvilNumber::_Divide( const EvilNumber & val1, const EvilNumber & val2
             // make sure we can do things like 2 / 4 = 0.5f
             result.fVal = double(val1.iVal) / double(val2.iVal);
             result.mType = evil_number_float;
-            // check if its possibly an integer
-            result.CheckIntegrity();
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val1 argument type is the opposite of the val2 argument type
@@ -448,10 +424,10 @@ EvilNumber EvilNumber::_Divide( const EvilNumber & val1, const EvilNumber & val2
         } else {
             assert(false); // crash
         }
-
-        // check if we are an integer
-        result.CheckIntegrity();
     }
+    // check if we are an integer
+    result.CheckIntegrity();
+
     return result;
 }
 
@@ -464,8 +440,8 @@ EvilNumber EvilNumber::_SelfDivide( const EvilNumber & val )
             // make sure we can do things like 2 / 4 = 0.5f
             this->fVal = double(this->iVal) / double(val.iVal);
             mType = evil_number_float;
-            // check if its possibly a integer
-            CheckIntegrity();
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -478,10 +454,10 @@ EvilNumber EvilNumber::_SelfDivide( const EvilNumber & val )
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        CheckIntegrity();
     }
+    // check if we are a integer
+    CheckIntegrity();
+
     return *this;
 }
 
@@ -497,6 +473,8 @@ EvilNumber EvilNumber::_Add( const EvilNumber & val1, const EvilNumber & val2 )
         } else if (val1.mType == evil_number_int) {
             result.iVal = val1.iVal + val2.iVal;
             result.mType = evil_number_int;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -510,10 +488,10 @@ EvilNumber EvilNumber::_Add( const EvilNumber & val1, const EvilNumber & val2 )
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        result.CheckIntegrity();
     }
+    // check if we are a integer
+    result.CheckIntegrity();
+
     return result;
 }
 
@@ -524,6 +502,8 @@ EvilNumber EvilNumber::_SelfAdd( const EvilNumber & val )
             this->fVal = this->fVal + val.fVal;
         } else if (mType == evil_number_int) {
             this->iVal = this->iVal + val.iVal;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -536,10 +516,10 @@ EvilNumber EvilNumber::_SelfAdd( const EvilNumber & val )
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        CheckIntegrity();
     }
+    // check if we are a integer
+    CheckIntegrity();
+
     return *this;
 }
 
@@ -555,6 +535,8 @@ EvilNumber EvilNumber::_Subtract( const EvilNumber & val1, const EvilNumber & va
         } else if (val1.mType == evil_number_int) {
             result.iVal = val1.iVal - val2.iVal;
             result.mType = evil_number_int;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -568,10 +550,10 @@ EvilNumber EvilNumber::_Subtract( const EvilNumber & val1, const EvilNumber & va
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        result.CheckIntegrity();
     }
+    // check if we are a integer
+    result.CheckIntegrity();
+
     return result;
 }
 
@@ -582,6 +564,8 @@ EvilNumber EvilNumber::_SelfSubtract( const EvilNumber & val )
             this->fVal = this->fVal - val.fVal;
         } else if (mType == evil_number_int) {
             this->iVal = this->iVal - val.iVal;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val argument is the opposite of the 'this' type
@@ -594,10 +578,10 @@ EvilNumber EvilNumber::_SelfSubtract( const EvilNumber & val )
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        CheckIntegrity();
     }
+    // check if we are a integer
+    CheckIntegrity();
+
     return *this;
 }
 
@@ -613,6 +597,8 @@ EvilNumber EvilNumber::_Modulus( const EvilNumber & val1, const EvilNumber & val
         } else if (val1.mType == evil_number_int) {
             result.iVal = val1.iVal % val2.iVal;
             result.mType = evil_number_int;
+        } else {
+            assert(false); // crash
         }
     } else {
         // we assume that the val1 argument type is the opposite of the val2 argument type
@@ -625,10 +611,10 @@ EvilNumber EvilNumber::_Modulus( const EvilNumber & val1, const EvilNumber & val
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        result.CheckIntegrity();
     }
+    // check if we are a integer
+    result.CheckIntegrity();
+
     return result;
 }
 
@@ -641,7 +627,10 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
         } else if (mType == evil_number_int) {
             this->iVal = this->iVal % val.iVal;
             mType = evil_number_int;
+        } else {
+            assert(false); // crash
         }
+
     } else {
         // we assume that the val argument is the opposite of the 'this' type
         if (mType == evil_number_float) {
@@ -653,10 +642,10 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
         } else {
             assert(false); // crash
         }
-
-        // check if we are a integer
-        CheckIntegrity();
     }
+    // check if we are a integer
+    CheckIntegrity();
+
     return *this;
 }
 
@@ -675,35 +664,35 @@ EvilNumber EvilNumber::_SelfDecrement()
 
 EvilNumber operator+(const EvilNumber& val, const EvilNumber& val2)
 {
-    EvilNumber result = val;
-    result = result + val2;
+    EvilNumber result(val);
+    result += val2;
     return result;
 }
 
 EvilNumber operator-(const EvilNumber& val, const EvilNumber& val2)
 {
-    EvilNumber result = val;
-    result = result - val2;
+    EvilNumber result(val);
+    result -= val2;
     return result;
 }
 
 EvilNumber operator*(const EvilNumber& val, const EvilNumber& val2)
 {
-    EvilNumber result = val;
-    result = result * val2;
+    EvilNumber result(val);
+    result *= val2;
     return result;
 }
 
 EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2)
 {
-    EvilNumber result = val;
-    result = result / val2;
+    EvilNumber result(val);
+    result /= val2;
     return result;
 }
 
 EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2)
 {
-    EvilNumber result = val;
-    result = result % val2;
+    EvilNumber result(val);
+    result %= val2;
     return result;
 }

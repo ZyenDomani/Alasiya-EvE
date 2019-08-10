@@ -13,10 +13,10 @@ class EvilNumber;
 
 namespace EvEMath {
     namespace Skill {
-        EvilNumber EndTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow );
-        EvilNumber StartTime( EvilNumber currentSkillSP, EvilNumber nextLevelSkillSP, EvilNumber effectiveSPperMinute, int64 timeNow );
-        EvilNumber PointsAtLevel( EvilNumber SkillLevel, EvilNumber SkillRank );
-        EvilNumber PointsPerMinute( EvilNumber EffectivePrimaryAttribute, EvilNumber EffectiveSecondaryAttribute );
+        int64 EndTime( uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow );
+        int64 StartTime( uint32 currentSP, uint32 nextSP, uint8 SPMin, int64 timeNow );
+        uint32 PointsAtLevel(uint8 level, uint8 rank);
+        uint8 PointsPerMinute(uint8 pAttr, uint8 sAttr);
     }
 
     namespace RAM {

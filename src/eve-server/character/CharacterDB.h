@@ -68,6 +68,13 @@ struct PortraitInfo {
     float smileRight;
 };
 
+/* POD structure for skills in queue */
+struct QueuedSkill {
+    uint8 level;
+    uint16 typeID;
+};
+typedef std::vector<QueuedSkill> SkillQueue;
+
 class PyObject;
 class PyString;
 class PyObjectEx;
@@ -195,7 +202,7 @@ public:
      */
     bool        SaveSkillQueue(uint32 charID, SkillQueue &queue);
     bool        SavePausedSkillQueue(uint32 charID, SkillQueue &queue);
-    void        SaveSkillHistory(uint16 eventID, double logDate, uint32 charID, uint32 skillTypeID, uint8 skillLevel, double absolutePoints);
+    void        SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints);
     PyRep*      GetSkillHistory(uint32 charID);
     void        UpdateSkillQueueEndTime(int64 endtime, uint32 charID);
 

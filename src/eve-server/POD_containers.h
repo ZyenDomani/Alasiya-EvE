@@ -19,21 +19,6 @@ struct CharCerts {
 };
 typedef std::map<uint16, CharCerts> CertMap;
 
-/* POD structure for skills in queue */
-struct QueuedSkill {
-    uint8 level;
-    uint16 typeID;
-};
-typedef std::vector<QueuedSkill> SkillQueue;
-
-/* POD structure for saving attribute data */
-struct AttrData {
-    uint16 attrID;
-    uint32 itemID;
-    int64 valueInt;
-    double valueFloat;
-};
-
 /* POD structure for account data */
 struct AccountData {
     bool online:1;
@@ -70,11 +55,11 @@ struct CharacterData {
     uint32 careerSpecialityID;
     int64 loginTime;
     int64 createDateTime;
+    int64 skillPoints;
     double bounty;
     double balance;
     double aurBalance;
     double securityRating;
-    double skillPoints;
     std::string name;
     std::string title;
     std::string description;
@@ -404,20 +389,6 @@ struct OfficeData {
     int64 rentalFee;
     int64 expiryTime;
     std::string ticker;
-};
-
-/* POD structure for saving items */
-struct SaveData {
-    bool            contraband :1;
-    bool            singleton :1;
-    EVEItemFlags    flag;
-    uint16          typeID;
-    uint32          itemID;
-    uint32          ownerID;
-    uint32          locationID;
-    uint32          quantity;
-    GPoint          position;
-    std::string     customInfo;
 };
 
 /* POD structure for loading dynamic items */

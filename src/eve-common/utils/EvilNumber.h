@@ -58,6 +58,12 @@ class PyRep;
 
 class EvilNumber
 {
+
+private:
+    double fVal;
+    int64 iVal;
+    EVIL_NUMBER_TYPE mType;
+
 public:
 
     EvilNumber();
@@ -128,6 +134,12 @@ public:
         return temp;
     }
 
+    /* this causes errors when enabled
+     *  there are comparisons using (ENum + (float) > ENum) [mainly in ship cap/hp]
+     * this causes a return of float then tries to use '>' for which the inputs are on wrong sides
+     * will need offending code rewrote to use this system
+     * may not be worth the effort, as things are working as-is
+     */
     /**
      * @brief Code generation macro to create basic binary math operator overload using supplied operator and type being compared to EvilNumber
      *
@@ -135,30 +147,31 @@ public:
      * @param[in] b
      * @return operator overload function for operator 'a'  to a value 'val' of type 'b'
      */
+    /*
     #define MATH_OPERATOR(a, b) \
-        bool operator a ( b val) \
+        b operator a ( b val) \
         { \
             if (this->mType == evil_number_int) \
                 return this->iVal a static_cast<int64>(val); \
             else \
                 return this->fVal a static_cast<double>(val); \
         }
-
+*/
     /**
      * @brief Code generation macro to create all basic binary math operator overload functions for a specified type
      *
      * @param[in] a
      * @return all basic binary math operator overload functions for the specified type
      */
+    /*
     #define MATH_OPERATORS_FOR( type ) \
         MATH_OPERATOR( +, type ) \
         MATH_OPERATOR( -, type ) \
         MATH_OPERATOR( *, type ) \
         MATH_OPERATOR( /, type )
     //    MATH_OPERATOR( %, type )
-
-    /* using a code generating macro to generate basic binary math operator handlers
-     * @note expand these if needed.
+*/
+    /** use a code generating macro to generate basic binary math operator handlers
      */
 /*
 	MATH_OPERATORS_FOR( const int8)
@@ -167,7 +180,6 @@ public:
     MATH_OPERATORS_FOR( const uint16)
     MATH_OPERATORS_FOR( const int32)
     MATH_OPERATORS_FOR( const uint32)
-    MATH_OPERATORS_FOR( const int64)
     MATH_OPERATORS_FOR( const int64)
     MATH_OPERATORS_FOR( const float)
     MATH_OPERATORS_FOR( const double)
@@ -180,6 +192,51 @@ public:
     /************************************************************************/
     /* EvilNumber logic operator handlers                                   */
     /************************************************************************/
+
+    /**
+     * @brief Code generation macro to create comparison operator overload using supplied operator and type being compared to EvilNumber
+     *
+     * @param[in] a
+     * @param[in] b
+     * @return operator overload function for operator 'a' comparing to a value 'val' of type 'b'
+     */
+    #define LOGIC_OPERATOR(a, b) \
+        bool operator a ( b val) \
+        { \
+            if (this->mType == evil_number_int) \
+                return this->iVal a static_cast<int64>(val); \
+            else \
+                return this->fVal a static_cast<double>(val); \
+        }
+
+    /**
+     * @brief Code generation macro to create all comparison operator overload functions for a specified type
+     *
+     * @param[in] a
+     * @return all comparison operator overload functions for the specified type
+     */
+    #define LOGIC_OPERATORS_FOR( type ) \
+        LOGIC_OPERATOR( <, type ) \
+        LOGIC_OPERATOR( <=, type ) \
+        LOGIC_OPERATOR( >, type ) \
+        LOGIC_OPERATOR( >=, type ) \
+        LOGIC_OPERATOR( ==, type ) \
+        LOGIC_OPERATOR( !=, type )
+
+    /* using a code generating macro to generate logic operator handlers
+     * @note expand these if needed.
+     */
+    LOGIC_OPERATORS_FOR( const int8)
+    LOGIC_OPERATORS_FOR( const uint8)
+    LOGIC_OPERATORS_FOR( const int16)
+    LOGIC_OPERATORS_FOR( const uint16)
+    LOGIC_OPERATORS_FOR( const int32)
+    LOGIC_OPERATORS_FOR( const uint32)
+    LOGIC_OPERATORS_FOR( const int64)
+    LOGIC_OPERATORS_FOR( const float)
+    LOGIC_OPERATORS_FOR( const double)
+
+
     /**
      * @brief '==' operator overload
      *
@@ -265,7 +322,6 @@ public:
     /************************************************************************/
 
 
-
     /************************************************************************/
     /* EvilNumber Mathematical functions                                    */
     /************************************************************************/
@@ -293,50 +349,6 @@ public:
 
 
     /**
-     * @brief Code generation macro to create comparison operator overload using supplied operator and type being compared to EvilNumber
-     *
-     * @param[in] a
-     * @param[in] b
-     * @return operator overload function for operator 'a' comparing to a value 'val' of type 'b'
-     */
-    #define LOGIC_OPERATOR(a, b) \
-        bool operator a ( b val) \
-        { \
-            if (this->mType == evil_number_int) \
-                return this->iVal a static_cast<int64>(val); \
-            else \
-                return this->fVal a static_cast<double>(val); \
-        }
-
-    /**
-     * @brief Code generation macro to create all comparison operator overload functions for a specified type
-     *
-     * @param[in] a
-     * @return all comparison operator overload functions for the specified type
-     */
-    #define LOGIC_OPERATORS_FOR( type ) \
-        LOGIC_OPERATOR( <, type ) \
-        LOGIC_OPERATOR( <=, type ) \
-        LOGIC_OPERATOR( >, type ) \
-        LOGIC_OPERATOR( >=, type ) \
-        LOGIC_OPERATOR( ==, type ) \
-        LOGIC_OPERATOR( !=, type )
-
-    /* using a code generating macro to generate logic operator handlers
-     * @note expand these if needed.
-     */
-    LOGIC_OPERATORS_FOR( const int8)
-    LOGIC_OPERATORS_FOR( const uint8)
-    LOGIC_OPERATORS_FOR( const int16)
-    LOGIC_OPERATORS_FOR( const uint16)
-    LOGIC_OPERATORS_FOR( const int32)
-    LOGIC_OPERATORS_FOR( const uint32)
-    LOGIC_OPERATORS_FOR( const int64)
-    LOGIC_OPERATORS_FOR( const float)
-    LOGIC_OPERATORS_FOR( const double)
-
-
-    /**
      * @brief converts the EvilNumber value into a string
      *
      * @return the text representative of the value.
@@ -360,13 +372,6 @@ public:
      */
     PyRep* GetPyObject();
 
-    /************************************************************************/
-    /* old system support                                                   */
-    /* @note we call this old system support because even that it would be  */
-    /* faster doing the math with ints and floats we would like to do all   */
-    /* the math within the variant system to make sure we don't introduce   */
-    /* extra errors into the math.( see warnings on get_int and get_float ) */
-    /************************************************************************/
     EVIL_NUMBER_TYPE get_type()                         { return mType; }
 
     bool isInt()                                        { return ( mType == evil_number_int ); }
@@ -379,14 +384,6 @@ public:
     uint32 get_uint32();    // be careful with using this one...no overflow checks
     float get_float();
     double get_double();
-    /************************************************************************/
-    /* end of old system support                                            */
-    /************************************************************************/
-
-private:
-    double fVal;
-    int64 iVal;
-    EVIL_NUMBER_TYPE mType;
 
 protected:
     /**

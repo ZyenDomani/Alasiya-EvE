@@ -476,9 +476,9 @@ float TargetManager::TimeToLock(ShipItemRef ship, SystemEntity *target) const {
     /*
     uint8 sLevel = 1;
     if (ship->HasPilot()) {
-        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillLongRangeTargeting);   // bonus to target range
-        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillSignatureAnalysis); // skill at operating target systems
-        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(skillElectronics);   // basic ship sensor and computer systems
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting);   // bonus to target range
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(EvESkill::SignatureAnalysis); // skill at operating target systems
+        sLevel += ship->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Electronics);   // basic ship sensor and computer systems
     }
     */
     //if (mySE->IsNPCSE())      // not all snipers are npc
