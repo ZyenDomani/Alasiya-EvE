@@ -29,7 +29,8 @@
 #include "python/PyRep.h"
 #include "utils/EvilNumber.h"
 
-EvilNumber EvilZero = 0;
+EvilNumber EvilZero = EvilNumber();
+EvilNumber EvilZerof = EvilNumber(0.0f);
 EvilNumber EvilOne = 1;
 const EvilNumber EvilTime_Second = EvE::Time::Second;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
@@ -153,16 +154,6 @@ bool EvilNumber::isInf()
     return std::isinf(fVal);
 }
 
-bool EvilNumber::isInt()
-{
-    return ( mType == evil_number_int );
-}
-
-bool EvilNumber::isFloat()
-{
-    return ( mType == evil_number_float );
-}
-
 bool EvilNumber::get_bool()
 {
     if (mType == evil_number_float)
@@ -209,7 +200,7 @@ double EvilNumber::get_double()
 
 EvilNumber EvilNumber::sin( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::sin( val.fVal );
@@ -223,7 +214,7 @@ EvilNumber EvilNumber::sin( const EvilNumber & val )
 
 EvilNumber EvilNumber::cos( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::cos( val.fVal );
@@ -237,7 +228,7 @@ EvilNumber EvilNumber::cos( const EvilNumber & val )
 
 EvilNumber EvilNumber::tan( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::tan( val.fVal );
@@ -251,7 +242,7 @@ EvilNumber EvilNumber::tan( const EvilNumber & val )
 
 EvilNumber EvilNumber::asin( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::asin( val.fVal );
@@ -265,7 +256,7 @@ EvilNumber EvilNumber::asin( const EvilNumber & val )
 
 EvilNumber EvilNumber::acos( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::acos( val.fVal );
@@ -279,7 +270,7 @@ EvilNumber EvilNumber::acos( const EvilNumber & val )
 
 EvilNumber EvilNumber::atan( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::atan( val.fVal );
@@ -293,7 +284,7 @@ EvilNumber EvilNumber::atan( const EvilNumber & val )
 
 EvilNumber EvilNumber::sqrt( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::sqrt( val.fVal );
@@ -307,8 +298,8 @@ EvilNumber EvilNumber::sqrt( const EvilNumber & val )
 
 EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber exponent;
-    EvilNumber result;
+    EvilNumber exponent = EvilNumber();
+    EvilNumber result = EvilNumber();
 
     if( val2.mType == evil_number_float )
         exponent.fVal = val2.fVal;
@@ -328,7 +319,7 @@ EvilNumber EvilNumber::pow( const EvilNumber & val1, const EvilNumber & val2 )
 
 EvilNumber EvilNumber::log( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::log( val.fVal );
@@ -342,7 +333,7 @@ EvilNumber EvilNumber::log( const EvilNumber & val )
 
 EvilNumber EvilNumber::log10( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::log10( val.fVal );
@@ -356,7 +347,7 @@ EvilNumber EvilNumber::log10( const EvilNumber & val )
 
 EvilNumber EvilNumber::exp( const EvilNumber & val )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     if( val.mType == evil_number_float )
         result.fVal = std::exp( val.fVal );
@@ -373,7 +364,7 @@ EvilNumber EvilNumber::exp( const EvilNumber & val )
 
 EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {
@@ -431,7 +422,7 @@ EvilNumber EvilNumber::_SelfMultiply( const EvilNumber & val )
 
 EvilNumber EvilNumber::_Divide( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {
@@ -496,7 +487,7 @@ EvilNumber EvilNumber::_SelfDivide( const EvilNumber & val )
 
 EvilNumber EvilNumber::_Add( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {
@@ -554,7 +545,7 @@ EvilNumber EvilNumber::_SelfAdd( const EvilNumber & val )
 
 EvilNumber EvilNumber::_Subtract( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {
@@ -612,7 +603,7 @@ EvilNumber EvilNumber::_SelfSubtract( const EvilNumber & val )
 
 EvilNumber EvilNumber::_Modulus( const EvilNumber & val1, const EvilNumber & val2 )
 {
-    EvilNumber result;
+    EvilNumber result = EvilNumber();
 
     // WARNING!  There should be NO implicit or explicit use of the 'this' pointer here!
     if (val2.mType == val1.mType) {

@@ -35,7 +35,7 @@
 // this file should have all stuff regarding damage type attribute caching..
 enum EVIL_NUMBER_TYPE
 {
-    evil_number_nan,
+    evil_number_nan = 0,
     evil_number_int,
     evil_number_float,
 };
@@ -54,18 +54,11 @@ class PyRep;
  * @author Captnoord.
  * @date Juni 2010
  * @todo try to create a performance test for this.
- * @todo complete the compare operator overloads.
  */
 
 class EvilNumber
 {
 public:
-    /* generic value union
-    typedef union _GenVal {
-        double fVal;
-        int64 iVal;
-    } GenVal;
-    */
 
     EvilNumber();
     EvilNumber(int8 val);
@@ -196,32 +189,27 @@ public:
      */
     bool operator==(const EvilNumber& val)
     {
-        if (this->mType == val.mType) {
+        if (this->mType == evil_number_int && val.mType == evil_number_int)
             return this->iVal == val.iVal;
-        } else {
-            // if parameter 1 is int then parameter 2 is float
-            if (this->mType == evil_number_int) {
-                return double(this->iVal) == val.fVal;
-            } else {
-                return this->fVal == double(val.iVal);
-            }
-        }
+        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+            return this->fVal == val.fVal;
+        else if (this->mType == evil_number_float)
+            return this->fVal == double(val.iVal);
+        else
+            return double(this->iVal) == val.fVal;
     }
 
     // doesnt work when compared to 0 (num != 0)
     bool operator!=(const EvilNumber& val)
     {
-        // see comments from '==' operator.
-        if (this->mType == val.mType) {
+        if (this->mType == evil_number_int && val.mType == evil_number_int)
             return this->iVal != val.iVal;
-        } else {
-            // if parameter 1 is int then parameter 2 is float
-            if (this->mType == evil_number_int) {
-                return double(this->iVal) != val.fVal;
-            } else {
-                return this->fVal != double(val.iVal);
-            }
-        }
+        else if (this->mType == evil_number_float && val.mType == evil_number_float)
+            return this->fVal != val.fVal;
+        else if (this->mType == evil_number_float)
+            return this->fVal != double(val.iVal);
+        else
+            return double(this->iVal) != val.fVal;
     }
 
     bool operator<(const EvilNumber& val)
@@ -344,7 +332,6 @@ public:
     LOGIC_OPERATORS_FOR( const int32)
     LOGIC_OPERATORS_FOR( const uint32)
     LOGIC_OPERATORS_FOR( const int64)
-    //LOGIC_OPERATORS_FOR( const int64)
     LOGIC_OPERATORS_FOR( const float)
     LOGIC_OPERATORS_FOR( const double)
 
@@ -380,15 +367,12 @@ public:
     /* the math within the variant system to make sure we don't introduce   */
     /* extra errors into the math.( see warnings on get_int and get_float ) */
     /************************************************************************/
-    EVIL_NUMBER_TYPE get_type()
-    {
-        return mType;
-    }
+    EVIL_NUMBER_TYPE get_type()                         { return mType; }
 
-    bool isInt();
+    bool isInt()                                        { return ( mType == evil_number_int ); }
     bool isNaN();
     bool isInf();
-    bool isFloat();
+    bool isFloat()                                      { return ( mType == evil_number_float ); }
 
     bool get_bool();
     int64 get_int();
@@ -400,7 +384,6 @@ public:
     /************************************************************************/
 
 private:
-    //GenVal mValue;
     double fVal;
     int64 iVal;
     EVIL_NUMBER_TYPE mType;
@@ -410,7 +393,7 @@ protected:
      * @brief check if its possible a integer and do the conversion
      *
      * checking every calculation for float/int conversion can be a drain on
-     * performance. But as integer math is fast then floating point math.
+     * performance. But integer math is faster than floating point math.
      */
     void CheckIntegrity();
 
@@ -489,6 +472,7 @@ EvilNumber operator/(const EvilNumber& val, const EvilNumber& val2);
 EvilNumber operator%(const EvilNumber& val, const EvilNumber& val2);
 
 extern EvilNumber EvilZero;
+extern EvilNumber EvilZerof;
 extern EvilNumber EvilOne;
 extern const EvilNumber EvilTime_Second;
 extern const EvilNumber EvilTime_Minute;
