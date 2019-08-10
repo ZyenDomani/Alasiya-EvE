@@ -227,7 +227,7 @@ void StaticDataMgr::Populate()
         if (row.IsNull(2))
             typeAttr.value = row.GetDouble(3);
         else
-            typeAttr.value = row.GetInt(2);
+            typeAttr.value = row.GetInt(2); // highest value seen is 2,000,000,000 (struct HP)
 
         m_typeAttrMap.emplace(row.GetInt(0), typeAttr);
     }

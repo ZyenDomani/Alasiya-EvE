@@ -30,6 +30,7 @@ enum EveAttrEnum {
     AttrOnline = 2,
     AttrDamage = 3,
     AttrMass = 4,
+    AttrSkillStartTime = 5,      // filetime of when skill started (or will start) - specific to Alasiya
     AttrCapacitorNeed = 6,  //dischargeAttributeID in dgmEffects
     AttrMinRange = 8,
     AttrHP = 9,

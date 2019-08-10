@@ -30,7 +30,7 @@ typedef std::vector<QueuedSkill> SkillQueue;
 struct AttrData {
     uint16 attrID;
     uint32 itemID;
-    uint32 valueInt;
+    int64 valueInt;
     double valueFloat;
 };
 
@@ -39,8 +39,8 @@ struct AccountData {
     bool online:1;
     bool banned:1;
     int32 id;
-    int64 role;
     int32 visits;
+    int64 role;
     int64 clientID;
     std::string name;
     std::string hash;
@@ -83,11 +83,11 @@ struct CharacterData {
 /* POD structure for corp data */
 struct CorpData {
     int16 corpAccountKey;
+    int32 allianceID;
+    int32 warFactionID;
     uint32 corporationID;
     uint32 corpHQ;
     uint32 baseID;
-    int32 allianceID;
-    int32 warFactionID;
     int64 startDateTime;
     int64 corpRole;
     int64 rolesAtAll;
@@ -361,7 +361,7 @@ struct StaticData {
 
 /* POD structure for stations. */
 struct StationData {
-    bool conquerable;
+    bool conquerable :1;
     uint8 officeSlots;
     uint8 operationID;
     uint16 typeID;
@@ -395,7 +395,7 @@ struct StationData {
 /* POD structure for corp office data */
 // this is used by multiple systems.  keep here instead of in corpData.h
 struct OfficeData {
-    bool lockDown;
+    bool lockDown :1;
     uint32 officeID;
     uint32 folderID;
     uint16 typeID;
@@ -408,9 +408,9 @@ struct OfficeData {
 
 /* POD structure for saving items */
 struct SaveData {
+    bool            contraband :1;
+    bool            singleton :1;
     EVEItemFlags    flag;
-    bool            contraband;
-    bool            singleton;
     uint16          typeID;
     uint32          itemID;
     uint32          ownerID;

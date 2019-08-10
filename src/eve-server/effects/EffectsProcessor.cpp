@@ -461,7 +461,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Other: {
                         // ....ship from 'core' pilot skills (electronics, mechanics, etc)
-                        itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
+                        itemRefVec.push_back(static_cast<InventoryItemRef>(pShip)); //is this right way?
                     } break;
                     case Target::Charge: {
                         // ....charges

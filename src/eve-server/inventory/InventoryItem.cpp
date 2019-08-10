@@ -826,6 +826,9 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
 }
 
 bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
+    if (m_flag == flag)
+        return true;
+
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
@@ -867,7 +870,8 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
 void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
     if (new_owner == m_ownerID)
         return; //nothing to do...
-        uint32 old_owner = m_ownerID;
+        
+    uint32 old_owner = m_ownerID;
     m_ownerID = new_owner;
 
     if (sConfig.world.saveOnUpdate)

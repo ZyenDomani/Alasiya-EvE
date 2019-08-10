@@ -67,7 +67,7 @@ bool AttributeMap::Load(bool reset/*false*/) {
     }
 
     DBResultRow row;
-    EvilNumber value = EvilZero;
+    EvilNumber value = EvilNumber();
     while (res.GetRow(row)) {
         if (row.IsNull(1)) {
             if (row.IsNull(2))
@@ -137,7 +137,7 @@ bool AttributeMap::Save() {
     for (; itr != end; ++itr) {
         save = false;
         if (skill)
-            if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime))
+            if ((itr->first == AttrSkillPoints) or (itr->first == AttrSkillLevel) or (itr->first == AttrExpiryTime) or (itr->first == AttrSkillStartTime))
                 save = true;
         if (damage)
             if (itr->first == AttrDamage)
@@ -261,13 +261,14 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = num.GetPyObject();
-        modChange.oldValue = new PyNone();
+        modChange.oldValue = PyStatic.NewNone();
     return SendChanges(modChange.Encode());
 }
 
 bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
+    /** @todo update this to notifiy approprate corp ppl of change */
     if (IsCorp(mItem.ownerID()))
         return true;
     if ((mItem.ownerID() == 1)
@@ -288,6 +289,8 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (is_log_enabled(CLIENT__TRACE))
         attrChange->Dump(CLIENT__TRACE, "");
     pClient->QueueDestinyEvent(&attrChange);
+
+    //Save();
 
     return true;
 }

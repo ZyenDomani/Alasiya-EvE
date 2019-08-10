@@ -78,18 +78,18 @@ struct BoostData {
 class Client;
 
 struct FleetAdvert {
-    bool hideInfo;
-    bool joinNeedsApproval;
+    bool hideInfo :1;
+    bool joinNeedsApproval :1;
     uint8 inviteScope;
-    Client* leader;
-    uint32 solarSystemID;
     int32 fleetID;
+    uint32 solarSystemID;
     int64 advertTime;
     int64 dateCreated;
     float local_minSecurity;
     float public_minStanding;
     float local_minStanding;
     float public_minSecurity;
+    Client* leader;
     std::string fleetName;
     std::string description;
     std::vector<uint32> public_allowedEntities;
@@ -97,10 +97,10 @@ struct FleetAdvert {
 };
 
 struct FleetData {
-    bool isFreeMove;
-    bool isRegistered;
-    bool isVoiceEnabled;
-    bool isLootLogging;
+    bool isFreeMove :1;
+    bool isRegistered :1;
+    bool isVoiceEnabled :1;
+    bool isLootLogging :1;
     int8 squads;
     int64 dateCreated;
     Client* creator;
@@ -114,30 +114,30 @@ struct FleetData {
 
 // fleetID, wing name and squad count (5 per fleet)
 struct WingData {
-    Client* leader;
-    Client* booster;
     uint32 fleetID;
     BoostData boost;
+    Client* leader;
+    Client* booster;
     std::string name;
 };
 
 // wingID, squad name and member count (5 per wing)
 struct SquadData {
-    Client* leader;
-    Client* booster;
     uint32 fleetID;
     uint32 wingID;
     BoostData boost;
+    Client* leader;
+    Client* booster;
     std::string name;
     std::map<uint32, Client*> members;
 };
 
 struct InviteData {
-    Client* inviteBy;
-    Client* invited;
+    int8 role;
     int32 wingID;
     int32 squadID;
-    int8 role;
+    Client* invited;
+    Client* inviteBy;
 };
 
 #endif  // EVEMU_SRC_FLEET_DATA_H_
