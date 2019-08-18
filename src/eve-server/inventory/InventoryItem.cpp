@@ -353,7 +353,7 @@ RefPtr<_Ty> InventoryItem::_LoadItem( uint32 itemID, const ItemType &type, const
 
 InventoryItemRef InventoryItem::SpawnTemp(ItemData& data)
 {
-    // will need to update this to get 'proper' item creation for temps...
+    /** @todo will need to update this to get 'proper' item creation for temps... */
     //  for now, return generic item
     return InventoryItem::SpawnItem(InventoryItem::CreateTempItemID(data), data);
 }
@@ -870,7 +870,7 @@ bool InventoryItem::ChangeSingleton(bool singleton, bool notify/*false*/) {
 void InventoryItem::ChangeOwner(uint32 new_owner, bool notify/*false*/) {
     if (new_owner == m_ownerID)
         return; //nothing to do...
-        
+
     uint32 old_owner = m_ownerID;
     m_ownerID = new_owner;
 

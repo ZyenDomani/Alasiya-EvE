@@ -173,20 +173,22 @@ public:
      *
      *  virtual _Load():
      *    Performs post-construction loading (container contents) if needed,
-     *    then calls InventoryItem::_Load() to load the item's attributes and add the
-     *    created item to it's location's inventory.
+     *    then calls InventoryItem::_Load() to load the item's attributes
+     *    then add the created item to it's location's inventory.
      */
 
     /*  Item Loading methods */
     /* calls _Ty::Load<_Ty>.  */
     static InventoryItemRef Load( uint32 itemID);
     /* creates new Item and calls item::_Load() */
+    /* does not save to db.  does not add item to ItemFactory */
     static InventoryItemRef SpawnItem( uint32 itemID, const ItemData &data);
-    /* Spawns new Item.  whats difference here?? */
+    /* Spawns new Item and saves to db, except missile, sentry, forcefields */
     static InventoryItemRef Spawn( ItemData &data);
     /* Spawns new temp Item.  not saved to db */
-    static InventoryItemRef SpawnTemp( ItemData &data);
+    static InventoryItemRef SpawnTemp( ItemData &data);     // incomplete.  returns generic SpawnItem()
 
+    /* base class _Load() only loads attributes */
     virtual bool _Load();
 
 protected:

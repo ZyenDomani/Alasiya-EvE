@@ -1,7 +1,7 @@
 
  /**
   * @name WormholeMgr.cpp
-  *     WH Spawn managment system for Alasiya EvEmu
+  *     WH managment system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015
@@ -41,13 +41,13 @@ WormholeMgr::WormholeMgr()
 
 WormholeMgr::~WormholeMgr()
 {
-    // remove created wormholes
+    /* nothing to do here */
 }
 
 void WormholeMgr::Initialize(PyServiceMgr* svc) {
     m_services = svc;
 
-    m_updateTimer.Start(120000);    // arbitrary 2m default
+    m_updateTimer.Start(300000);    // arbitrary 5m default
 
     m_initalized = true;
 
@@ -75,8 +75,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // create and spawn and save actual anomaly item
     // typeID, ownerID, locationID, flag, name, &_position
     ItemData aData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    /** @todo update this to use temp items */
-    InventoryItemRef iRef = sItemFactory.SpawnItem(aData);
+    InventoryItemRef iRef = InventoryItem.SpawnItem(sItemFactory.GetNextTempID(), aData);
     if (iRef.get() == nullptr) // make error and exit
         return;
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
@@ -107,28 +106,28 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // create k162 here
     pos += 25000;   // move 25k for WormHole position
     ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    /** @todo update this to use temp items */
-    iRef = sItemFactory.SpawnItem(wData);
-    if (iRef.get() == nullptr) // we'll survive...
+    iRef = InventoryItem.SpawnItem(sItemFactory.GetNextTempID(), wData);
+    if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
         return;
     sig.sigItemID = iRef->itemID();
     // update entity data for k162
+    //entity = DBSystemDynamicEntity();
     entity.categoryID = iRef->categoryID();
     entity.groupID = iRef->groupID();
     entity.itemID = iRef->itemID();
     entity.itemName = "K162";
     entity.typeID = 30831;
-    entity.x = pos.x;
-    entity.y = pos.y;
-    entity.z = pos.z;
-    entity.ownerID = sig.ownerID;
-    entity.allianceID = -1;
-    entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
+    //entity.x = pos.x;
+    //entity.y = pos.y;
+    //entity.z = pos.z;
+    //entity.ownerID = sig.ownerID;
+    //entity.allianceID = -1;
+    //entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
     // do the spawn using SystemManager's BuildEntity:
     pSysMgr->BuildDynamicEntity(entity);
     m_wormholes.push_back(entity.itemID);
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created WormHole %s in system %u", iRef->itemName().c_str(), sig.systemID);
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created WormHole %s in %s (%u)", iRef->itemName().c_str(), pSysMgr->GetName().c_str(), sig.systemID);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
