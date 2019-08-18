@@ -140,7 +140,7 @@ PyRep *SearchDB::Query(std::string string, std::vector<int> *searchID, uint32 ch
                 id = "typeID";
                 break;
         }
-        if (res.ColumnCount())
+        if (res.GetRowCount())
             dict->SetItem(new PyInt(searchID->at(i)),DBResultToIntIntDict(res));
     }
 

@@ -992,9 +992,7 @@ bool CharacterDB::DoesCorporationExist(uint32 corpID) {
         return false;
     }
 
-    if (!res.ColumnCount() > 0)
-        return true;
-    return false;
+    return (res.GetRowCount() != 0);
 }
 
 void CharacterDB::SetAvatar(uint32 charID, PyRep* hairDarkness) {

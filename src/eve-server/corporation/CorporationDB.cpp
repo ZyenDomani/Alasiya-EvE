@@ -1875,7 +1875,7 @@ PyRep* CorporationDB::GetItemEvents(uint32 corpID, uint32 charID, int64 fromDate
     return DBResultToCRowset(res);
 /*
     PyList* list = new PyList();
-    if (res.ColumnCount() > 0) {
+    if (res.GetRowCount() > 0) {
         DBResultRow row;
         while (res.GetRow(row)) {
             PyDict* dict = new PyDict();
