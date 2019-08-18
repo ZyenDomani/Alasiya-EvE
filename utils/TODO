@@ -103,6 +103,7 @@ contractProxy::GetMyExpiredContractList()
         numCorpRequiresAttention = 0
 AttributeError: 'NoneType' object has no attribute 'contracts'
 
+cargo modules update for specialized holds.   -priority level: low
 
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
 next up is security missions.  will need dungeon work for these.   -priority level: hi
@@ -293,3 +294,17 @@ on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt imp
 
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
     update for ~20+ or so points to make a difference in our attributes
+
+
+turns use quadratic bezier code or quanternion lerp curve
+
+wtf is ShipType() and where is it used?  delete this shit if we dont need it (and i dont think we use it)
+
+check for skill time attributes using evil floats
+
+check ActiveModule() c'tor for use of surveyscanrange adding skills to see if this is already modified by fx system
+
+
+********************************
+website updates:
+replace/update outdated mysql_connect with newer mysqli_connect
