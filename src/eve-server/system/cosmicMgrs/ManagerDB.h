@@ -81,6 +81,7 @@ public:
     static void GetDunSpawnInfo(DBQueryResult& res);
     static void SaveActiveDungeon(ActiveDungeon& dun);
     static void ClearDungeons();
+    static void ClearDungeons(uint32 systemID);
     static bool GetSavedDungeons(uint32 systemID, std::vector< ActiveDungeon >& into);
 
     /* anomaly manager */

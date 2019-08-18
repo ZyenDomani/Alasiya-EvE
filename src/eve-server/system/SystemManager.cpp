@@ -318,6 +318,10 @@ void SystemManager::UnloadSystem() {
     // this still needs some work... seems ok to me.  26Dec18
     sBubbleMgr.ClearSystemBubbles(m_data.systemID);
 
+    // remove dungeon shit for this system?
+    //  are we saving it for later or is it make-on-boot?
+    ManagerDB::ClearDungeons(m_data.systemID);
+
     // set system inactive for system status page
     MapDB::SetSystemActive(m_data.systemID, false);
 

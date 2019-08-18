@@ -667,6 +667,19 @@ void ManagerDB::ClearDungeons()
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE 1");
     sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE 1");
+    // anomaly items are all temp, except roids, so we may not need this...
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID IN (SELECT itemID FROM entity WHERE customInfo LIKE 'Dungeon%%'");
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE 'Dungeon%%'");
+}
+
+void ManagerDB::ClearDungeons(uint32 systemID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM dunActive WHERE systemID = %u", systemID);
+    sDatabase.RunQuery(err, "DELETE FROM sysSignatures WHERE  systemID = %u", systemID);
+    // anomaly items are all temp, except roids, so we may not need this...
+    sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID IN (SELECT itemID FROM entity WHERE locationID = %u AND customInfo LIKE 'Dungeon%%'", systemID);
+    sDatabase.RunQuery(err, "DELETE FROM entity WHERE locationID = %u AND customInfo LIKE 'Dungeon%%'", systemID);
 }
 
 /*

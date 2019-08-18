@@ -265,12 +265,18 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
 
     GPoint pos(sig.x, sig.y, sig.z);
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
-    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
+    /** @todo make specific table for dungeon items:  dungeonID, systemID, entity shit if we decide to keep them. */
+    std::string info = "Dungeon: ";
+    info += sig.sigName;
+    info += " in ";
+    info += m_system->GetName();
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos, info);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;
-    // add item to itemFactory
-    sItemFactory.AddItem(iRef);
+    // add item to itemFactory  - do we really wanna do this?
+    //  not sure how to remove from running server on system/dungeon unload
+    //sItemFactory.AddItem(iRef);
     CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
     m_system->AddEntity(cSE);
     sig.sigItemID = iRef->itemID();
@@ -355,8 +361,8 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), dData);
         if (iRef.get() == nullptr) // we'll survive...
             continue;
-        // add item to itemFactory
-        sItemFactory.AddItem(iRef);
+        // add item to itemFactory. nope...see above
+        //sItemFactory.AddItem(iRef);
         // should ALL of these be CelestialSEs?
         cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
         m_system->AddEntity(cSE);
@@ -367,8 +373,8 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (dTemplate.dunSpawnClass > 0)
         m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), pos), dTemplate.dunSpawnClass);
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created with %u items in system %u using template %u.", \
-              sig.sigItemID, m_anomalyItems.size(), sig.systemID, templateID);
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %u items in system %u using template %u.", \
+              sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size(), sig.systemID, templateID);
 
     m_anomalyItems.clear();
     if (!items.empty())
@@ -775,7 +781,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             size = count /size;
         if (size < 1)
             size = 1;
-        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %s, size %u, count %u, range %u, faction %u",\
+        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %u, size %u, count %u, range %u, faction %u",\
                     cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, type, size, count, origSize, factionID);
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
