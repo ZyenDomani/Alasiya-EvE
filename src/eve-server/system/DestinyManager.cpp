@@ -132,7 +132,7 @@ void DestinyManager::Process() {
     ProcessState();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_destinyProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(destinyProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void DestinyManager::ProcessState() {
@@ -619,7 +619,7 @@ void DestinyManager::CheckBump()
      */
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_collisionProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(collisionProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void DestinyManager::Bump(SystemEntity* pSE)

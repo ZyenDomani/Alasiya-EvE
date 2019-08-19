@@ -95,7 +95,7 @@ void StaticDataMgr::Clear()
 
 void StaticDataMgr::Populate()
 {
-    double begin = GetTimeMSeconds();
+    double beginTime = GetTimeMSeconds();
 
     m_keyMap = ManagerDB::GetKeyMap();
     if (m_keyMap == nullptr)
@@ -134,7 +134,7 @@ void StaticDataMgr::Populate()
     if (m_factionInfo == nullptr)
         sLog.Error("    StaticDataMgr", "m_factionInfo is null");
 
-    double start = GetTimeMSeconds();
+    double startTime = GetTimeMSeconds();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
 
@@ -150,19 +150,19 @@ void StaticDataMgr::Populate()
         sysData.securityRating    = row.GetFloat(5);
         m_systemData.emplace(row.GetInt(0), sysData);
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Static System data sets loaded in %.3fms.", m_systemData.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetWHSystemClass(*res);
     while (res->GetRow(row)) {
         //SELECT locationID, wormholeClassID FROM mapLocationWormholeClasses
         m_whRegions.emplace(row.GetInt(0), row.GetInt(1));
     }
-    sLog.Cyan("    StaticDataMgr", "%u WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u WH System Classes loaded in %.3fms.", m_whRegions.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetStaticData(*res);
     while (res->GetRow(row)) {
         //SELECT itemID, regionID, constellationID, solarSystemID, typeID, x, y, z FROM mapDenormalize
@@ -175,10 +175,10 @@ void StaticDataMgr::Populate()
         staticData.position        = GPoint(row.GetDouble(5),row.GetDouble(6),row.GetDouble(7));
         m_staticData.emplace(row.GetInt(0), staticData);
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Static Entity data sets loaded in %.3fms.", m_staticData.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     MapDB::GetStationCount(*res);
     while (res->GetRow(row)) {
         //SELECT map.solarSystemID, count(sta.stationID) FROM staStations sta
@@ -215,10 +215,10 @@ void StaticDataMgr::Populate()
             m_stationList.emplace(std::pair<uint32, std::vector<uint32>>(cur.second, sVec));
         }
     }
-    sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Static Station query sets loaded in %.3fms.", (m_stationConst.size() + m_stationRegion.size() + m_stationSystem.size() + m_stationList.size()), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetTypeAttributes(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, attributeID, valueInt, valueFloat FROM dgmTypeAttributes
@@ -231,19 +231,19 @@ void StaticDataMgr::Populate()
 
         m_typeAttrMap.emplace(row.GetInt(0), typeAttr);
     }
-    sLog.Cyan("    StaticDataMgr", "%u Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Type Attribute Sets loaded in %.3fms", m_typeAttrMap.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetSkillList(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, typeName FROM invTypes [where type=skill]
         m_skills.insert(std::pair<uint16, std::string>(row.GetInt(0), row.GetText(1)));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Skills loaded in %.3fms.", m_skills.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetRAMMaterials(*res);
     EvERam::RamMaterials ramMatls = EvERam::RamMaterials();
     while (res->GetRow(row)) {
@@ -265,10 +265,10 @@ void StaticDataMgr::Populate()
         m_ramReq.emplace(row.GetInt(0), ramReq);
     }
 
-    sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u R.A.M. defs loaded in %.3fms.", (m_ramMatl.size() + m_ramReq.size()), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetBlueprintType(*res);
     while (res->GetRow(row)) {
         //SELECT blueprintTypeID, parentBlueprintTypeID, productTypeID, productionTime, techLevel, researchProductivityTime, researchMaterialTime, researchCopyTime,
@@ -293,19 +293,19 @@ void StaticDataMgr::Populate()
     for (auto cur : m_bpTypeData)
         m_bpMatlData[cur.first] = SetBPMatlType(cur.second.catID, cur.first, cur.second.productTypeID);
 
-    sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", (m_bpTypeData.size() + m_bpMatlData.size()), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u BP Type defs loaded in %.3fms.", (m_bpTypeData.size() + m_bpMatlData.size()), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetMoonResouces(*res);
     while (res->GetRow(row)) {
         //SELECT typeID,volume FROM invTypes [where group=moongoo]
         m_moonGoo.emplace(row.GetInt(0), (uint8)(row.GetFloat(1) *10));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Moon Resources loaded in %.3fms.", m_moonGoo.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetOreBySSC(*res);
     while (res->GetRow(row)) {
         //SELECT systemSec, roidID, percent FROM roidDistribution
@@ -314,18 +314,18 @@ void StaticDataMgr::Populate()
             oreChance.chance  = row.GetFloat(2);
         m_oreBySecClass.emplace(row.GetText(0), oreChance);
     }
-    sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Ore defs loaded in %.3fms.", m_oreBySecClass.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     //SELECT factionID, itemID FROM facSalvage
     ManagerDB::GetSalvageGroups(*res);
     while( res->GetRow(row) )
         m_salvageMap.emplace(row.GetInt(0), row.GetInt(1));
-    sLog.Cyan("    StaticDataMgr", "%u salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u salvage definitions loaded in %.3fms.", m_salvageMap.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetRegionFaction(*res);
     while (res->GetRow(row)) {
         //SELECT regionID, factionID FROM mapRegions
@@ -338,10 +338,10 @@ void StaticDataMgr::Populate()
         //SELECT regionID, ratFactionID FROM mapRegions WHERE ratFactionID != 0
         m_ratRegions.emplace(row.GetInt(0), row.GetInt(1));
     }
-    sLog.Cyan("    StaticDataMgr", "%u Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Region Faction Data Sets loaded in %.3fms.", (m_regions.size() + m_ratRegions.size()), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     ManagerDB::GetFactionGroups(*res);
     DBQueryResult* res2 = new DBQueryResult();
     DBResultRow row2;
@@ -390,19 +390,19 @@ void StaticDataMgr::Populate()
         m_npcClasses.emplace((uint8)row.GetInt(0), spawnClass);
     }
     sLog.Cyan("    StaticDataMgr", "%u Rat Groups, %u Rat Classes, and %u Rat Types for %u regions loaded in %.3fms.",\
-              m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - start));
+              m_npcGroups.size(), m_npcClasses.size(), typeCount, m_ratRegions.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     SystemDB::GetWrecksToTypes(*res);
     while (res->GetRow(row)) {
         //SELECT typeID, wreckTypeID FROM invTypesToWrecks
         m_WrecksToTypesMap[row.GetInt(0)] = row.GetInt(1);
     }
-    sLog.Cyan("    StaticDataMgr", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u wreck objects loaded in %.3fms.", m_WrecksToTypesMap.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     SystemDB::GetLootGroups(*res);
     while (res->GetRow(row)) {
         //SELECT npcGroupID, itemGroupID, groupDropChance FROM lootGroup
@@ -413,7 +413,7 @@ void StaticDataMgr::Populate()
     }
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     SystemDB::GetLootGroupTypes(*res);
     while (res->GetRow(row)) {
         //SELECT itemGroupID, itemID, itemMetaLevel, minAmount, maxAmount FROM lootItemGroup
@@ -426,10 +426,10 @@ void StaticDataMgr::Populate()
         m_LootGroupTypeMap.emplace(row.GetInt(0), GroupType);
     }
     sLog.Cyan("    StaticDataMgr", "%u loot groups and %u loot group types loaded in %.3fms.",
-              m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - start));
+              m_LootGroupMap.size(), m_LootGroupTypeMap.size(), (GetTimeMSeconds() - startTime));
 
     //res->Reset();
-    start = GetTimeMSeconds();
+    startTime = GetTimeMSeconds();
     uint32 locationID = 0;
     ManagerDB::GetAgentLocation(*res);
     while (res->GetRow(row)) {
@@ -444,13 +444,13 @@ void StaticDataMgr::Populate()
 
         m_agentSystem.emplace(row.GetInt(0), locationID);
     }
-    sLog.Cyan("    StaticDataMgr", "%u Agent Data Sets loaded in %.3fms.", m_agentSystem.size(), (GetTimeMSeconds() - start));
+    sLog.Cyan("    StaticDataMgr", "%u Agent Data Sets loaded in %.3fms.", m_agentSystem.size(), (GetTimeMSeconds() - startTime));
 
     //cleanup
     SafeDelete(res);
     SafeDelete(res2);
 
-    sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - begin));
+    sLog.Cyan("    StaticDataMgr", "Static Data loaded in %.3fms.", (GetTimeMSeconds() - beginTime));
 }
 
 void StaticDataMgr::GetInfo()
@@ -646,7 +646,7 @@ void StaticDataMgr::GetLoot(uint32 groupID, std::vector<LootList>& lootList) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_lootProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(lootProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void StaticDataMgr::GetBpTypeData(uint32 typeID, BlueprintTypeData& bpData)

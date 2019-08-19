@@ -25,8 +25,9 @@
 /*  this class will keep track of all Anomalies for its system
  *.   the scan system will query this class for current anomaly data
  *
- *  it will need access to its system manager (thru m_system), the wh mgr (thru sWHMgr), dungeon mgr (thru m_dungeon), and ???
- *.  **UPDATE**  this will use spawn mgr to spawn npcs, using npc class groups following roid rat layout
+ *  it will need access to its system manager (thru m_system), the wh mgr (thru sWHMgr), dungeon mgr (thru m_dungeon),
+ *       belt mgr (thru m_beltMgr), and spawn mgr (thru m_spawnMgr)
+ *. this will use spawn mgr to spawn npcs, using npc class groups following roid rat layout
  *
  *  when one anomaly despawns, this class is in charge of calling cleanup and creating another as needed.
  *
@@ -80,37 +81,37 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_spawnMgr = spawnMgr;
 
     if (m_beltMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. beltMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. beltMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return m_initalized;
     }
 
     if (m_dungMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. dungMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. dungMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return m_initalized;
     }
 
     if (m_spawnMgr == nullptr) {
-        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__ERROR, "System Init Fault. spawnMgr == nullptr.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return m_initalized;
     }
 
     if (!sConfig.cosmic.AnomalyEnabled) {
-         _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+         _log(COSMIC_MGR__MESSAGE, "Anomaly System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
     if (!sConfig.cosmic.DungeonEnabled){
-        _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Dungeon System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     // update the next two for new mission/anomaly/deadspace data.  see notes in spawn mgr
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Spawn System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     if (!sConfig.cosmic.BeltEnabled) {
-        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "BeltMgr System Disabled.  Not Initializing Anomaly Manager for %s(%u)", m_system->GetName(), m_system->GetID());
         return true;
     }
 
@@ -141,14 +142,13 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     m_Complex = 0;
 
     /* load current data?, start timers, process current data, and create new items, if needed */
+    /** @todo all anomalies are currently temp items.  if/when we start saving them, create new table and itemIDs*/
     if (sConfig.debug.IsTestServer)
-        m_anomTimer.Start(1000);  // 1s
+        m_anomTimer.Start(5000);  // 5s
     else
-        m_anomTimer.Start(120000);  // 120s
+        m_anomTimer.Start(120000);  // 2m
 
-    // if we're not saving/loading data, need to figure out how to delete it from db....shits getting outta hand.
-
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals", m_system->GetName().c_str(), m_system->GetID(), m_maxSigs);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals", m_system->GetName(), m_system->GetID(), m_maxSigs);
     return (m_initalized = true);
 }
 
@@ -194,18 +194,20 @@ void AnomalyMgr::SaveAnomaly()
         m_mdb.SaveAnomaly(sig.second);
 }
 
-void AnomalyMgr::RemoveAnomaly(uint32 itemID)
+void AnomalyMgr::GetSignatureList(std::vector<CosmicSignature>& sig)
 {
-    std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
-    if (itr != m_sigByItemID.end()) {
-        std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
-        if (itr2 != m_sigBySigID.end())
-            m_sigBySigID.erase(itr2);
-        m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
-        m_sigByItemID.erase(itr);
-    }
+    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
+    // retrieval method for scan queries
+    for (auto cur : m_sigByItemID)
+        sig.push_back(cur.second);
 }
 
+void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
+    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
+    // retrieval method for scan queries
+    for (auto cur : m_anomByItemID)
+        sig.push_back(cur.second);
+}
 
 void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 {
@@ -421,6 +423,8 @@ GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
 
 
 void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
+    if (!m_initalized)
+        return;
     // registration method for pos items, wrecks and abandoned ships
     // creation method for missions, escalations and ??
     /*
@@ -480,20 +484,36 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
             sig.scanGroupID = Scanning::Group::Celestial;
         } break;
     }
+
+    // add new sig to sysSigMaps
+    m_sigBySigID.emplace(sig.sigID, sig);
+    //if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
+        m_anomByItemID.emplace(sig.sigItemID, sig);
+    //else
+    //    m_sigByItemID.emplace(sig.sigItemID, sig);
+
 }
 
-void AnomalyMgr::GetSignatureList(std::vector<CosmicSignature>& sig)
+void AnomalyMgr::RemoveAnomaly(uint32 itemID)
 {
-    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-    // retrieval method for scan queries
-    for (auto cur : m_sigByItemID)
-        sig.push_back(cur.second);
-}
-
-void AnomalyMgr::GetAnomalyList(std::vector<CosmicSignature>& sig) {
-    // sysSignatures (sigID,sigItemID,dungeonType,sigName,systemID,sigTypeID,sigGroupID,scanGroupID,scanAttributeID,x,y,z)
-    // retrieval method for scan queries
-    for (auto cur : m_anomByItemID)
-        sig.push_back(cur.second);
+    // for sigs in map
+    std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
+    if (itr != m_sigByItemID.end()) {
+        std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
+        if (itr2 != m_sigBySigID.end())
+            m_sigBySigID.erase(itr2);
+        m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
+        m_sigByItemID.erase(itr);
+    } else {
+        // for anoms in map
+        itr = m_anomByItemID.find(itemID);
+        if (itr != m_anomByItemID.end()) {
+            std::map<std::string, CosmicSignature>::iterator itr2 = m_sigBySigID.find(itr->second.sigID);
+            if (itr2 != m_sigBySigID.end())
+                m_sigBySigID.erase(itr2);
+            m_system->RemoveItemFromInventory(sItemFactory.GetItem(itr->first));
+            m_anomByItemID.erase(itr);
+        }
+    }
 }
 

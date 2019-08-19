@@ -108,7 +108,7 @@ void Drone::Process() {
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_droneProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Drone::Orbit(SystemEntity *who) {

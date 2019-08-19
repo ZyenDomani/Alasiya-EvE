@@ -30,6 +30,7 @@
 #include "system/Container.h"
 #include "system/Damage.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 /*
  * Base Structure Item for all POS types
@@ -1026,6 +1027,8 @@ void StructureSE::Killed(Damage &fatal_blow) {
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    // add wreck to system's AnomalyMgr
+    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
     if (survivedItems.size())
         for (auto cur: survivedItems)

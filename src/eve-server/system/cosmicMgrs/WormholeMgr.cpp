@@ -30,6 +30,8 @@
  *
  *  this class is also in charge of all dynamic WH data in the db
  *
+ * WH groupID: 988
+ *      70 items in db
  */
 
 WormholeMgr::WormholeMgr()
@@ -127,7 +129,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     pSysMgr->BuildDynamicEntity(entity);
     m_wormholes.push_back(entity.itemID);
 
-    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created WormHole %s in %s (%u)", iRef->itemName().c_str(), pSysMgr->GetName().c_str(), sig.systemID);
+    _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u)", iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
@@ -136,53 +138,116 @@ void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
 
 
     _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
-                pFromSys->GetName().c_str(), pFromSys->GetID(), pToSys->GetName().c_str(), pToSys->GetID());
+                pFromSys->GetName(), pFromSys->GetID(), pToSys->GetName(), pToSys->GetID());
 }
 
-/*
-graphicID    graphicFile     description     obsolete    graphicType     collidable  explosionID     directoryID     graphicName
-2907    res:/dx9/Model/WorldObject/Wormhole/SpatialRift.re...   A spatial rift effect which is used in dungeons.    0   NULL    NULL    NULL    NULL
-3428    res:/Model/WorldObject/Warpgate/WormholeBig.blue    Large, angry version of Eve wormhole - WormholeBig  0   NULL    NULL    NULL    NULL
-3715    res:/dx9/model/WorldObject/Wormhole/Wormhole.red    Wormhole    0   NULL    NULL    NULL    NULL
-11781   res:/dx9/Scene/Wormholes/wormhole_class_01.red      0   NULL    NULL    NULL    NULL
-11782   res:/dx9/Scene/Wormholes/wormhole_class_02.red      0   NULL    NULL    NULL    NULL
-11783   res:/dx9/Scene/Wormholes/wormhole_class_03.red      0   NULL    NULL    NULL    NULL
-11784   res:/dx9/Scene/Wormholes/wormhole_class_04.red      0   NULL    NULL    NULL    NULL
-11785   res:/dx9/Scene/Wormholes/wormhole_class_05.red      0   NULL    NULL    NULL    NULL
-11786   res:/dx9/Scene/Wormholes/wormhole_class_06.red      0   NULL    NULL    NULL    NULL
-*/
+/** @todo  our db is missing data for these.  search newer db files for updated data  */
 
-/*
-    AttrWormholeTargetSystemClass = 1381,
-    AttrWormholeMaxStableTime = 1382,
-    AttrWormholeMaxStableMass = 1383,
-    AttrWormholeMassRegeneration = 1384,
-    AttrWormholeMaxJumpMass = 1385,
-    AttrWormholeTargetRegion1 = 1386,
-    AttrWormholeTargetRegion2 = 1387,
-    AttrWormholeTargetRegion3 = 1388,
-    AttrWormholeTargetRegion4 = 1389,
-    AttrWormholeTargetRegion5 = 1390,
-    AttrWormholeTargetRegion6 = 1391,
-    AttrWormholeTargetRegion7 = 1392,
-    AttrWormholeTargetRegion8 = 1393,
-    AttrWormholeTargetRegion9 = 1394,
-    AttrWormholeTargetConstellation1 = 1395,
-    AttrWormholeTargetConstellation2 = 1396,
-    AttrWormholeTargetConstellation3 = 1397,
-    AttrWormholeTargetConstellation4 = 1398,
-    AttrWormholeTargetConstellation5 = 1399,
-    AttrWormholeTargetConstellation6 = 1400,
-    AttrWormholeTargetConstellation7 = 1401,
-    AttrWormholeTargetConstellation8 = 1402,
-    AttrWormholeTargetConstellation9 = 1403,
-    AttrWormholeTargetSystem1 = 1404,
-    AttrWormholeTargetSystem2 = 1405,
-    AttrWormholeTargetSystem3 = 1406,
-    AttrWormholeTargetSystem4 = 1407,
-    AttrWormholeTargetSystem5 = 1408,
-    AttrWormholeTargetSystem6 = 1409,
-    AttrWormholeTargetSystem7 = 1410,
-    AttrWormholeTargetSystem8 = 1411,
-    AttrWormholeTargetSystem9 = 1412,
+/* attributeID  attributeName   attributeCategory   attributeIdx    description     categoryID
+1381    wormholeTargetSystemClass   4   0   Target System Class for wormholes   7
+1382    wormholeMaxStableTime   5   0   The maximum amount of time a wormhole will stay open    7
+1383    wormholeMaxStableMass   5   0   The maximum amount of mass a wormhole can transit before collapsing     7
+1384    wormholeMassRegeneration    5   0   The amount of mass a wormhole regenerates per cycle     7
+1385    wormholeMaxJumpMass     5   0   The maximum amount of mass that can transit a wormhole in one go    7
+1386    wormholeTargetRegion1   4   0   Specific target region 1 for wormholes  7
+1387    wormholeTargetRegion2   4   0   Specific target region 2 for wormholes  7
+1388    wormholeTargetRegion3   4   0   Specific target region 3 for wormholes  7
+1389    wormholeTargetRegion4   4   0   Specific target region 4 for wormholes  7
+1390    wormholeTargetRegion5   4   0   Specific target region 5 for wormholes  7
+1391    wormholeTargetRegion6   4   0   Specific target region 6 for wormholes  7
+1392    wormholeTargetRegion7   4   0   Specific target region 7 for wormholes  7
+1393    wormholeTargetRegion8   4   0   Specific target region 8 for wormholes  7
+1394    wormholeTargetRegion9   4   0   Specific target region 9 for wormholes  7
+1395    wormholeTargetConstellation1    5   0   Specific target constellation 1 for wormholes   7
+1396    wormholeTargetConstellation2    4   0   Specific target constellation 2 for wormholes   7
+1397    wormholeTargetConstellation3    4   0   Specific target constellation 3 for wormholes   7
+1398    wormholeTargetConstellation4    4   0   Specific target constellation 4 for wormholes   7
+1399    wormholeTargetConstellation5    4   0   Specific target constellation 5 for wormholes   7
+1400    wormholeTargetConstellation6    4   0   Specific target constellation 6 for wormholes   7
+1401    wormholeTargetConstellation7    4   0   Specific target constellation 7 for wormholes   7
+1402    wormholeTargetConstellation8    4   0   Specific target constellation 8 for wormholes   7
+1403    wormholeTargetConstellation9    4   0   Specific target constellation 9 for wormholes   7
+1404    wormholeTargetSystem1   4   0   Specific target system 1 for wormholes  7
+1405    wormholeTargetSystem2   4   0   Specific target system 2 for wormholes  7
+1406    wormholeTargetSystem3   4   0   Specific target system 3 for wormholes  7
+1407    wormholeTargetSystem4   4   0   Specific target system 4 for wormholes  7
+1408    wormholeTargetSystem5   4   0   Specific target system 5 for wormholes  7
+1409    wormholeTargetSystem6   4   0   Specific target system 6 for wormholes  7
+1410    wormholeTargetSystem7   4   0   Specific target system 7 for wormholes  7
+1411    wormholeTargetSystem8   4   0   Specific target system 8 for wormholes  7
+1412    wormholeTargetSystem9   4   0   Specific target system 9 for wormholes  7
+1457   wormholeTargetDistribution  4   0   This is the distribution ID of the target wormhole distribution     7
     */
+
+/* typeID   typeName    graphicID
+30463   Test wormhole   2907
+30579   Wormhole Z971   3715
+30583   Wormhole R943   3715
+30584   Wormhole X702   3715
+30642   Wormhole O128   3715
+30643   Wormhole N432   3715
+30644   Wormhole M555   3715
+30645   Wormhole B041   3715
+30646   Wormhole U319   3715
+30647   Wormhole B449   3715
+30648   Wormhole N944   3715
+30649   Wormhole S199   3715
+30657   Wormhole A641   3715
+30658   Wormhole R051   3715
+30659   Wormhole V283   3715
+30660   Wormhole H121   3715
+30661   Wormhole C125   3715
+30662   Wormhole O883   3715
+30663   Wormhole M609   3715
+30664   Wormhole L614   3715
+30665   Wormhole S804   3715
+30666   Wormhole N110   3715
+30667   Wormhole J244   3715
+30668   Wormhole Z060   3715
+30671   Wormhole Z647   3715
+30672   Wormhole D382   3715
+30673   Wormhole O477   3715
+30674   Wormhole Y683   3715
+30675   Wormhole N062   3715
+30676   Wormhole R474   3715
+30677   Wormhole B274   3715
+30678   Wormhole A239   3715
+30679   Wormhole E545   3715
+30680   Wormhole V301   3715
+30681   Wormhole I182   3715
+30682   Wormhole N968   3715
+30683   Wormhole T405   3715
+30684   Wormhole N770   3715
+30685   Wormhole A982   3715
+30686   Wormhole S047   3715
+30687   Wormhole U210   3715
+30688   Wormhole K346   3715
+30689   Wormhole P060   3715
+30690   Wormhole N766   3715
+30691   Wormhole C247   3715
+30692   Wormhole X877   3715
+30693   Wormhole H900   3715
+30694   Wormhole U574   3715
+30695   Wormhole D845   3715
+30696   Wormhole N290   3715
+30697   Wormhole K329   3715
+30698   Wormhole Y790   3715
+30699   Wormhole D364   3715
+30700   Wormhole M267   3715
+30701   Wormhole E175   3715
+30702   Wormhole H296   3715
+30703   Wormhole V753   3715
+30704   Wormhole D792   3715
+30705   Wormhole C140   3715
+30706   Wormhole Z142   3715
+30707   Wormhole Q317   3715
+30708   Wormhole G024   3715
+30709   Wormhole L477   3715
+30710   Wormhole Z457   3715
+30711   Wormhole V911   3715
+30712   Wormhole W237   3715
+30713   Wormhole B520   3715
+30714   Wormhole C391   3715
+30715   Wormhole C248   3715
+30831   Wormhole K162   3715
+*/

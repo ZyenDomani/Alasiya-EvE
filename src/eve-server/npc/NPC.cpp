@@ -39,6 +39,7 @@
 #include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
@@ -101,7 +102,7 @@ void NPC::Process() {
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_npcProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(npcProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void NPC::Orbit(SystemEntity *who) {
@@ -361,6 +362,9 @@ void NPC::Killed(Damage &fatal_blow) {
 
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
+
+    // add wreck to system's AnomalyMgr
+    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
     DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
         wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());

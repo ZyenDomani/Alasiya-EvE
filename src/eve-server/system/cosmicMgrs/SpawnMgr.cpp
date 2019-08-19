@@ -65,19 +65,19 @@ bool SpawnMgr::Init()
     m_initalized = true;
 
     if (!sConfig.npc.RoamingSpawns and !sConfig.npc.StaticSpawns) {
-        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - config option off.", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - config option off.", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     if (m_system->BeltCount() < 1) {
-        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - no belts.", m_system->GetName().c_str(), m_system->GetID());
+        _log(COSMIC_MGR__MESSAGE, "Belt Spawns Disabled while Initalizing SpawnMgr for %s(%u) - no belts.", m_system->GetName(), m_system->GetID());
         return true;
     }
 
     m_ratEnabled = true;
     m_groupTimerSetTime = 150;  // (in seconds) 2.5m default check time. this will allow a max wait time of 7.5m for respawn
 
-    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Fully Initialized for %s(%u)", m_system->GetName().c_str(), m_system->GetID());
+    _log(COSMIC_MGR__MESSAGE, "SpawnMgr Fully Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
     return m_initalized;
 }
 
@@ -110,8 +110,8 @@ void SpawnMgr::Process() {
     if (m_ratGroupTimer.Enabled())
         if (m_ratGroupTimer.Check()) {
             bool killTimer = true;
-            SpawnEntryDef::iterator itr = m_spawns.begin();
-            while (itr != m_spawns.end()) {
+            SpawnEntryDef::iterator itr = m_spawns.begin(), end = m_spawns.end();
+            while (itr != end) {
                 if (itr->second.enabled) {
                     killTimer = false;
                     if (itr->second.stamp < sEntityList.GetStamp()) {
@@ -130,12 +130,12 @@ void SpawnMgr::Process() {
             if (killTimer) {
                 m_ratGroupTimer.Disable();
                 _log(SPAWN__MESSAGE, "SpawnMgr::Process() - Rat Spawn Groups full (or no spawns) for %s(%u).  RatGroup Timer disabled.", \
-                            m_system->GetName().c_str(), m_system->GetID());
+                            m_system->GetName(), m_system->GetID());
             }
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(spawnProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void SpawnMgr::MoveSpawn(NPC* pNPC, SystemBubble* pBubble)
@@ -209,7 +209,7 @@ void SpawnMgr::StartRatTimer()
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::StartRatTimer() - Main Spawn Timer started for %s(%u) at %u ms.", \
-            m_system->GetName().c_str(), m_system->GetID(), time);
+            m_system->GetName(), m_system->GetID(), time);
 }
 
 void SpawnMgr::StartRatGroupTimer()
@@ -223,7 +223,7 @@ void SpawnMgr::StartRatGroupTimer()
 
     if (is_log_enabled(SPAWN__MESSAGE))
         _log(SPAWN__MESSAGE, "SpawnMgr::StartRatGroupTimer() - Group Spawn Timer started for %s(%u) at %us.", \
-            m_system->GetName().c_str(), m_system->GetID(), m_groupTimerSetTime);
+            m_system->GetName(), m_system->GetID(), m_groupTimerSetTime);
 }
 
 void SpawnMgr::SpawnKilled(SystemBubble* pBubble, uint32 itemID)
@@ -369,7 +369,7 @@ bool SpawnMgr::DoSpawnForBubble(SystemBubble* pBubble)
 
     /* this will throw off the accuracy of the profile, as this and SpawnMgr::Process() use the same data container */
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_spawnProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(spawnProfile, GetTimeUSeconds() - profileStartTime);
     return true;
 }
 
@@ -745,7 +745,8 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     m_toSpawn.clear();
     m_ratSpawns.clear();
 
-    _log(SPAWN__TRACE, "MakeSpawn() completed. %u bubbles in m_bubbles. %u entities in m_spawns.", m_bubbles.size(), m_spawns.size());
+    _log(SPAWN__TRACE, "MakeSpawn() completed in %s(%u) with %u bubbles in m_bubbles and %u entities in m_spawns.", \
+                m_system->GetName(), m_system->GetID(), m_bubbles.size(), m_spawns.size());
 }
 
 void SpawnMgr::ReSpawn(SystemBubble* pBubble, SpawnEntry& spawnEntry)

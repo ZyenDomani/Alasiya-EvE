@@ -78,7 +78,8 @@ public:
 
     uint32 GetID() const                                { return m_data.systemID; }
     uint32 GetRegionID()                                { return m_data.regionID; }
-    const std::string& GetName() const                  { return m_data.name; }
+    const std::string& GetNameStr() const               { return m_data.name; }
+    const char* GetName() const                         { return m_data.name.c_str(); }
     const char* GetSystemSecurityClass()                { return m_data.securityClass.c_str(); }
     const double GetSystemSecurityRating()              { return m_data.securityRating; }
 

@@ -40,6 +40,15 @@
 #include "ship/modules/ActiveModule.h"
 #include "system/DestinyManager.h"
 
+/*
+ * SHIP__MODULE_ERROR
+ * SHIP__MODULE_WARNING
+ * SHIP__MODULE_MESSAGE
+ * SHIP__MODULE_INFO
+ * SHIP__MODULE_TRACE
+ * SHIP__MODULE_DEBUG
+ * SHIP__MODULE_DAMAG
+ */
 
 ModuleManager::ModuleManager(ShipItem *const pShip)
 : m_Ship(pShip),
@@ -111,7 +120,7 @@ void ModuleManager::Process()
     pModuleCont->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_modulesProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(modulesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
@@ -799,7 +808,8 @@ void ModuleManager::UnloadAllModules()
 
 void ModuleManager::UpdateModules(std::vector<uint32> modVec)
 {
-    //sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
     GenericModule* pMod(nullptr);
     m_Ship->SetAttribute(AttrCpuLoad,     EvilZero);
@@ -830,7 +840,8 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
 {
     /** @todo  figure out what needs to be done here and implement it. */
     //  this should update all ship attribs for this bank.
-    sLog.Magenta("ModuleManager::UpdateModules(flag)","Needs to be implemented");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::UpdateModules(flag)","Needs to be implemented");
 
     // reset ship and module effect data, and reapply?
     // call ProcessEffects(false), ApplyEffects(), then UpdateModules() ?
@@ -842,7 +853,8 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
 
 void ModuleManager::CharacterBoardingShip()
 {
-    sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be tested");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be tested");
     if (!m_initalized)
         Initialize();
 
@@ -855,7 +867,8 @@ void ModuleManager::CharacterLeavingShip()
     if (m_Ship->IsPopped())
         return;
 
-    sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::CharacterLeavingShip()","Needs to be implemented");
     //OfflineAll();
 
     /*  this is complicated and im gonna leave it alone for now
@@ -871,14 +884,16 @@ void ModuleManager::CharacterLeavingShip()
 
 void ModuleManager::ShipWarping()
 {
-    sLog.Magenta("ModuleManager::ShipWarping()","Deactivating non-warpsafe modules.");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::ShipWarping()","Deactivating non-warpsafe modules.");
     // check modules for warpsafe-ness and Deactivate accordingly
     pModuleCont->ShipWarping();
 }
 
 void ModuleManager::ShipJumping()
 {
-    sLog.Magenta("ModuleManager::ShipJumping()","Deactivating all modules.");
+    if (is_log_enabled(SHIP__MODULE_WARNING))
+        sLog.Magenta("ModuleManager::ShipJumping()","Deactivating all modules.");
 
     // no modules are jumpsafe
     AbortCycle();

@@ -34,10 +34,11 @@
 #include "manufacturing/Blueprint.h"
 #include "npc/NPC.h"
 #include "npc/NPCAI.h"
-#include <npc/Drone.h>
+#include "npc/Drone.h"
 #include "ship/Ship.h"
 #include "system/Container.h"
 #include "system/SystemBubble.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 /*
 DAMAGE
@@ -270,7 +271,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     if (killed) {
         if (m_killed) {
             if (sConfig.debug.UseProfiling)
-                sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
+                sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
 
             return true;
         }
@@ -325,7 +326,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_damageProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(damageProfile, GetTimeUSeconds() - profileStartTime);
 
     return killed;
 }
@@ -397,6 +398,8 @@ void Ship::Killed(Damage &fatal_blow) {
                     GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DropLoot(wreckItemRef, m_self->groupID(), killerID);
+        // add wreck to system's AnomalyMgr
+        m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
         DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
             wreckEntity.allianceID = killer->GetAllianceID();
@@ -587,6 +590,8 @@ void Ship::Killed(Damage &fatal_blow) {
             GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DropLoot(wreckItemRef, groupID, killerID);
+        // add wreck to system's AnomalyMgr
+        m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
         for (auto cur: survivedItems)
             cur->Move(wreckItemRef->itemID(), flagAutoFit); // populate wreck with items that survived

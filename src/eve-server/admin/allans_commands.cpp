@@ -208,7 +208,7 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     int size = count * 90;
     size += 130;    // header
     char reply[size];
-    snprintf(reply, size, str.str().c_str(), pSys->GetName().c_str(), pSys->GetID(), beltCount, roidSpawns, ratSpawns, npcs, players);
+    snprintf(reply, size, str.str().c_str(), pSys->GetName(), pSys->GetID(), beltCount, roidSpawns, ratSpawns, npcs, players);
 
     pClient->SendInfoModalMsg(reply);
     return new PyString(reply);

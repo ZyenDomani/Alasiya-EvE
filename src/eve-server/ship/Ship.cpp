@@ -2340,7 +2340,7 @@ void Ship::Process() {
         }
         // profile timer for the ship recharge shit
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(_shipProfile, GetTimeUSeconds() - profileStartTime);
+            sProfile.AddTime(shipProfile, GetTimeUSeconds() - profileStartTime);
 
         // proc heat on the 5s cap/shield tic, if enabled
         if (sConfig.testing.ShipHeat)

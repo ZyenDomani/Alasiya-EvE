@@ -84,7 +84,7 @@ void TargetManager::Process() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_targetsProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(targetsProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void TargetManager::ClearTarget(SystemEntity *who) {

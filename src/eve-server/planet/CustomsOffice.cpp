@@ -32,6 +32,7 @@
 #include "system/Damage.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 
 CustomsSE::CustomsSE(StructureItemRef sRef, PyServiceMgr &services, SystemManager* system, const FactionData& data)
@@ -531,6 +532,8 @@ void CustomsSE::Killed(Damage &fatal_blow) {
         GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     DropLoot(wreckItemRef, m_self->groupID(), killerID);
+    // add wreck to system's AnomalyMgr
+    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 
     if (survivedItems.size())
         for (auto cur: survivedItems)

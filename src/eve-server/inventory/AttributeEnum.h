@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Captnoord
+    Updates:    Allan
 */
 
 #ifndef AttributeEnum_h__

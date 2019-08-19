@@ -101,7 +101,7 @@ void BubbleManager::Process() {
                     continue;
                 }
                 _log(DESTINY__WARNING, "BubbleManager::Process() - Wanderer %s(%u) in system %s(%u) is being added to a bubble.", \
-                        cur->GetName(), cur->GetID(), cur->SystemMgr()->GetName().c_str(), cur->SystemMgr()->GetID());
+                        cur->GetName(), cur->GetID(), cur->SystemMgr()->GetName(), cur->SystemMgr()->GetID());
                 CheckBubble(cur);
             }
             m_wanderers.clear();
@@ -112,7 +112,7 @@ void BubbleManager::Process() {
         RemoveEmpty();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_bubblesProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(bubblesProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void BubbleManager::CheckBubble(SystemEntity *pSE) {
@@ -183,7 +183,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
         pBubble->Add(pSE);
     } else
         _log(DESTINY__ERROR, "BubbleManager::Add(): GetBubble() returned nullptr for %s:%u, at (%.2f, %.2f, %.2f).", \
-                    pSE->SystemMgr()->GetName().c_str(), pSE->SystemMgr()->GetID(), center.x, center.y, center.z );
+                    pSE->SystemMgr()->GetName(), pSE->SystemMgr()->GetID(), center.x, center.y, center.z );
 }
 
 void BubbleManager::NewBubbleCenter(GVector shipVelocity, GPoint &newCenter) {

@@ -175,7 +175,7 @@ bool Inventory::LoadContents() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_itemloadProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(itemloadProfile, GetTimeUSeconds() - profileStartTime);
 
     return (mContentsLoaded = true);
 }
@@ -366,7 +366,7 @@ std::vector<InventoryItemRef> Inventory::SortVector(std::vector<InventoryItemRef
 
     if (sConfig.debug.IsTestServer)
         if (sConfig.debug.UseProfiling)
-            sLog.Warning("Inventory::SortVector", "%u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
+            _log(ITEM__TRACE, "Inventory::SortVector() - %u items sorted in %.3fus with %u loops.", itemVec.size(), (GetTimeUSeconds() - start), count);
     return itemVec;  //returns sorted list
 }
 

@@ -163,7 +163,7 @@ void Missile::Process() {
         HitTarget();
     }
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_missileProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(missileProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Missile::EncodeDestiny( Buffer& into )

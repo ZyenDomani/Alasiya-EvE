@@ -448,7 +448,7 @@ void Client::ProcessClient() {
                 _log(AUTOPILOT__TRACE, "ProcessClient() - Docked - m_clientState set to Idle");
             }
         if (sConfig.debug.UseProfiling)
-            sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
+            sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
         return;
     }
 
@@ -577,7 +577,7 @@ void Client::ProcessClient() {
         }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_clientProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Client::SetAutoPilot(bool set/*false*/)

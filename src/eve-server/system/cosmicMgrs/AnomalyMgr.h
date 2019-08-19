@@ -40,6 +40,7 @@ class AnomalyMgr
       void CreateAnomaly(int8 typeID=0);
       void LoadAnomalies();
 
+      //  assign sigID and add to anom list to allow showing on scanner
       void AddAnomaly(InventoryItemRef iRef);
       void RemoveAnomaly(uint32 itemID);
       // list for ship scanner

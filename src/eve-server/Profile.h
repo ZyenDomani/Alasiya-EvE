@@ -24,30 +24,30 @@
 #include "eve-common.h"
 
 typedef enum {          // implemented?  (* = yes)
-    _destinyProfile     = 1,    //*
-    _mapProfile         = 2,    //
-    _clientProfile      = 3,    //*
-    _npcProfile         = 4,    //*
-    _bubblesProfile     = 5,    //*
-    _itemsProfile       = 6,    //
-    _modulesProfile     = 7,    //*
-    _functionsProfile   = 8,    //
-    _dbProfile          = 9,    //
-    _shipProfile        = 10,   //*
-    _targetsProfile     = 11,   //
-    _serverProfile      = 12,   //
-    _missileProfile     = 13,   //
-    _systemProfile      = 14,   //*
-    _entitySProfile     = 15,   //*
-    _lootProfile        = 16,   //*
-    _salvageProfile     = 17,   //
-    _spawnProfile       = 18,   //*
-    _collisionProfile   = 19,   //*
-    _droneProfile       = 20,   //*
-    _itemloadProfile    = 21,   //*
-    _concordProfile     = 22,   //*
-    _colonyProfile      = 23,   //*
-    _damageProfile      = 24
+    destinyProfile     = 1,    //*
+    mapProfile         = 2,    //
+    clientProfile      = 3,    //*
+    npcProfile         = 4,    //*
+    bubblesProfile     = 5,    //*
+    itemsProfile       = 6,    //
+    modulesProfile     = 7,    //*
+    functionsProfile   = 8,    //
+    dbProfile          = 9,    //
+    shipProfile        = 10,   //*
+    targetsProfile     = 11,   //
+    serverProfile      = 12,   //
+    missileProfile     = 13,   //
+    systemProfile      = 14,   //*
+    entitySProfile     = 15,   //*
+    lootProfile        = 16,   //*
+    salvageProfile     = 17,   //
+    spawnProfile       = 18,   //*
+    collisionProfile   = 19,   //*
+    droneProfile       = 20,   //*
+    itemloadProfile    = 21,   //*
+    concordProfile     = 22,   //*
+    colonyProfile      = 23,   //*
+    damageProfile      = 24
 } profile;
 
 class Profile

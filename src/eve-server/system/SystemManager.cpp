@@ -240,7 +240,7 @@ bool SystemManager::ProcessTic() {
     }
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_systemProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(systemProfile, GetTimeUSeconds() - profileStartTime);
 
     return SystemActivity();
 }
@@ -259,7 +259,7 @@ void SystemManager::UnloadSystem() {
     if (!m_loaded)
         return;
 
-    sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", GetName().c_str(), m_data.systemID);
+    sLog.Magenta("    SystemManager", "UnloadSystem() called for %s(%u).", m_data.name.c_str(), m_data.systemID);
 
     // inform MarketBot of system unloading to remove system stations from proc loop.
     //sMktBotMgr.RemoveSystem();
@@ -306,7 +306,7 @@ void SystemManager::UnloadSystem() {
     m_solarSystemRef->GetMyInventory()->Unload();
     sItemFactory.RemoveItem(m_data.systemID);
 
-    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - left in maps: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
+    _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
     m_npcs.clear();
     // at this point, system entity list should be clear...but just in case, hit it again
@@ -336,7 +336,7 @@ bool SystemManager::LoadSystemStatics() {
     m_entities.clear();
     m_staticEntities.clear();
     if (!SystemDB::LoadSystemStaticEntities(m_data.systemID, entities)) {
-        _log(INV__ERROR, "Unable to load celestial entities during boot of system %u.", m_data.systemID);
+        sLog.Error( "SystemManager::LoadSystemStatics()", "Unable to load celestial entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
@@ -380,15 +380,19 @@ bool SystemManager::LoadSystemStatics() {
                 m_moonMap.insert(std::pair<uint32, SystemEntity*>(cur.itemID, pMSE));
                 pSE = pMSE;
             } break;
-            default: /*sun*/ {    // suns dont have anything special, so they are generic StaticSystemEntitys
+            case EVEDB::invGroups::Sun: {    // suns dont have anything special, so they are generic StaticSystemEntitys
                 CelestialObjectRef itemRef = sItemFactory.GetCelestialObject(cur.itemID);
                 itemRef->SetAttribute(AttrRadius, cur.radius, false);
                 StaticSystemEntity *pSSE = new StaticSystemEntity(itemRef, *(GetServiceMgr()), this);
                 pSE = pSSE;
             } break;
+            default: {
+                sLog.Error( "SystemManager::LoadSystemStatics()", "create static entity called for unhandled item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
+                continue;
+            }
         }
         if (pSE == nullptr) {
-            _log(INV__WARNING, "Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
+            sLog.Error( "SystemManager::LoadSystemStatics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
             continue;
         }
         if (pSE->IsGateSE() or pSE->IsStationSE())
@@ -398,7 +402,7 @@ bool SystemManager::LoadSystemStatics() {
             m_beltVector.push_back(cur.itemID);
         }
         if (!pSE->LoadExtras())
-            _log(INV__WARNING, "Failed to load additional data for entity %u. Continuing.", cur.itemID);
+            _log(INV__WARNING, "SystemManager::LoadSystemStatics() - Failed to load additional data for entity %u. Continuing.", cur.itemID);
 
         m_entities[cur.itemID] = pSE;
         m_staticEntities[cur.itemID] = pSE;
@@ -408,7 +412,7 @@ bool SystemManager::LoadSystemStatics() {
     if (m_entities.size())
         m_entityChanged = true;
 
-    _log(SERVER__INIT, "%u Static System entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %u Static System entities loaded for system %u", entities.size(), m_data.systemID);
     entities.clear();
     return m_entityChanged;
 }
@@ -417,7 +421,7 @@ bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     entities.clear();
     if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
+        sLog.Error( "SystemManager::LoadSystemDynamics()", "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -425,13 +429,13 @@ bool SystemManager::LoadSystemDynamics() {
     for (auto cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
-            _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
+            sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
             continue;
         }
         _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "%u Dynamic System entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %u Dynamic System entities loaded for system %u", entities.size(), m_data.systemID);
 
     return true;
 }
@@ -440,7 +444,7 @@ bool SystemManager::LoadPlayerDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     entities.clear();
     if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entities)) {
-        _log(SERVICE__ERROR, "Unable to load player dynamic entities in system %u.", m_data.systemID);
+        sLog.Error( "SystemManager::LoadPlayerDynamics()", "Unable to load player dynamic entities in system %u.", m_data.systemID);
         return false;
     }
 
@@ -448,13 +452,13 @@ bool SystemManager::LoadPlayerDynamics() {
     for (auto cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
-            _log(ITEM__WARNING, "LoadSystemDynamics() Failed to create entity for item %u (type %u)", cur.itemID, cur.typeID);
+            sLog.Error( "SystemManager::LoadPlayerDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
             continue;
         }
         _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "%u Dynamic Player entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for system %u", entities.size(), m_data.systemID);
 
     return true;
 }
@@ -462,7 +466,7 @@ bool SystemManager::LoadPlayerDynamics() {
 bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int64 launcherID/*0*/) {
     SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity);
     if (pSE == nullptr) {
-        sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (type %u)", entity.itemID, entity.typeID );
+        sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", entity.itemID, entity.groupID, entity.typeID);
         return false;
     }
 
@@ -477,7 +481,7 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
     return true;
 }
 
-SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DBSystemDynamicEntity& entity)
+SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBSystemDynamicEntity& entity)
 {
     FactionData data = FactionData();
         data.allianceID = entity.allianceID;
@@ -490,7 +494,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             InventoryItemRef asteroid = sItemFactory.GetItem( entity.itemID );
             if (asteroid.get() == nullptr)
                 ; /** @todo make error msg here */
-            AsteroidSE* aSE = new AsteroidSE(asteroid, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+            AsteroidSE* aSE = new AsteroidSE(asteroid, *(sysMgr.GetServiceMgr()), &sysMgr);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AsteroidSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return aSE;
         } break;
@@ -498,8 +502,10 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             ShipItemRef ship = sItemFactory.GetShip( entity.itemID );
             if (ship.get() == nullptr)
                 return nullptr;
+            // add abandoned ship to system's AnomalyMgr
+            sysMgr.GetAnomMgr()->AddAnomaly(ship);
             /** @todo make error msg here */
-            Ship* sSE = new Ship(ship, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+            Ship* sSE = new Ship(ship, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Ship item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return sSE;
         } break;
@@ -508,8 +514,10 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             if (deployable.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
+            // add deployable to system's AnomalyMgr
+            sysMgr.GetAnomMgr()->AddAnomaly(deployable);
             deployable->SetAttribute(AttrRadius, deployable->type().radius());     // Can you set this somehow from the type class ?
-            DeployableSE* dSE = new DeployableSE(deployable, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+            DeployableSE* dSE = new DeployableSE(deployable, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making DeployableSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
@@ -520,10 +528,12 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
+            // add structure to system's AnomalyMgr
+            sysMgr.GetAnomMgr()->AddAnomaly(structure);
             StructureSE* pSSE(nullptr);
             switch(entity.groupID) {
                 case EVEDB::invGroups::Control_Tower: {
-                    TowerSE* tSE = new TowerSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    TowerSE* tSE = new TowerSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making TowerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = tSE;
                 } break;
@@ -531,7 +541,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 case EVEDB::invGroups::Mobile_Projectile_Sentry:
                 case EVEDB::invGroups::Mobile_Laser_Sentry:
                 case EVEDB::invGroups::Mobile_Hybrid_Sentry: {
-                    WeaponSE* wSE = new WeaponSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    WeaponSE* wSE = new WeaponSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making WeaponSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE =  wSE;
                 } break;
@@ -541,7 +551,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 case EVEDB::invGroups::Warp_Scrambling_Battery:
                 case EVEDB::invGroups::Energy_Neutralizing_Battery:
                 case EVEDB::invGroups::Target_Painting_Battery: {
-                    BatterySE* bSE = new BatterySE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    BatterySE* bSE = new BatterySE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making BatterySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = bSE;
                 } break;
@@ -556,19 +566,19 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 case EVEDB::invGroups::Logistics_Array:
                 case EVEDB::invGroups::Cynosural_Generator_Array:
                 case EVEDB::invGroups::Structure_Repair_Array: {
-                    ArraySE* aSE = new ArraySE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    ArraySE* aSE = new ArraySE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ArraySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = aSE;
                 } break;
                 case EVEDB::invGroups::Silo:
                 case EVEDB::invGroups::Moon_Mining:
                 case EVEDB::invGroups::Mobile_Reactor: {
-                    ReactorSE* rSE = new ReactorSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    ReactorSE* rSE = new ReactorSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making ReactorSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = rSE;
                 } break;
                 default: {
-                    StructureSE* sSE = new StructureSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    StructureSE* sSE = new StructureSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     pSSE = sSE;
                 } break;
@@ -580,9 +590,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             if (structure.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
+            // add structure to system's AnomalyMgr
+            sysMgr.GetAnomMgr()->AddAnomaly(structure);
             // ihub will need it's own se class
             //if (entity.groupID == EVEDB::invGroups::Infrastructure_Hubs)
-            StructureSE* sSE = new StructureSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+            StructureSE* sSE = new StructureSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(POS__TRACE, "DynamicEntityFactory::BuildEntity() making StructureSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return sSE;
         } break;
@@ -596,11 +608,11 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 case EVEDB::invGroups::Test_Orbitals:
                 case EVEDB::invGroups::Orbital_Construction_Platform:
                 case EVEDB::invGroups::Orbital_Infrastructure: {
-                    pCoSE = new CustomsSE(structure, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    pCoSE = new CustomsSE(structure, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     //structure->GetMyInventory()->LoadContents();  this is called during structureItem creation
                     if ((entity.planetID) and (entity.groupID != EVEDB::invGroups::Test_Orbitals)) {
                         pCoSE->SetPlanet(entity.planetID);
-                        SystemEntity* pPE = pSysMgr.GetSE(entity.planetID);
+                        SystemEntity* pPE = sysMgr.GetSE(entity.planetID);
                         if ((pPE != nullptr) and pPE->IsPlanetSE())
                             pPE->GetPlanetSE()->SetCustomsOffice(pCoSE);
                     }
@@ -620,7 +632,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (wreck.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    WreckSE* wSE = new WreckSE(wreck, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    // add wreck to system's AnomalyMgr
+                    sysMgr.GetAnomMgr()->AddAnomaly(wreck);
+                    WreckSE* wSE = new WreckSE(wreck, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     wreck->GetMyInventory()->LoadContents();
                     wreck->SetMySE(wSE);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WreckSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -635,7 +649,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (contRef.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    ContainerSE* cSE = new ContainerSE(contRef, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                    // add container to system's AnomalyMgr
+                    sysMgr.GetAnomMgr()->AddAnomaly(contRef);
+                    ContainerSE* cSE = new ContainerSE(contRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                     contRef->GetMyInventory()->LoadContents();
                     contRef->SetMySE(cSE);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -668,7 +684,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    CelestialSE* cSE = new CelestialSE(celestial, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                    // add celestial to system's AnomalyMgr
+                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
+                    CelestialSE* cSE = new CelestialSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making CelestialSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return cSE;
                 } break;
@@ -677,7 +695,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    WormholeSE* wSE = new WormholeSE(celestial, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                    // add celestial to system's AnomalyMgr
+                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
+                    WormholeSE* wSE = new WormholeSE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making WormholeSE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return wSE;
                 } break;
@@ -687,7 +707,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (celestial.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    AnomalySE* aSE = new AnomalySE(celestial, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                    // add celestial to system's AnomalyMgr
+                    sysMgr.GetAnomMgr()->AddAnomaly(celestial);
+                    AnomalySE* aSE = new AnomalySE(celestial, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making AnomalySE item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return aSE;
                 } break;
@@ -698,7 +720,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                     if (iRef.get() == nullptr)
                         return nullptr;
                     /** @todo make error msg here */
-                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                    ItemSystemEntity* iSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
                     _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                     return iSE;
                 } break;
@@ -712,7 +734,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 if (contRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
-                ContainerSE* cSE = new ContainerSE(contRef, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                ContainerSE* cSE = new ContainerSE(contRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                 contRef->GetMyInventory()->LoadContents();
                 contRef->SetMySE(cSE);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ContainerEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -755,7 +777,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 if (npcRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
-                NPC* npcSE = new NPC(npcRef, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                NPC* npcSE = new NPC(npcRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                 npcSE->Load();
                 sEntityList.AddNPC();
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making NPC item for %s (%u)", entity.itemName.c_str(), entity.itemID);
@@ -767,7 +789,9 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 if (sentryRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
-                Sentry* SentrySE = new Sentry(sentryRef, *(pSysMgr.GetServiceMgr()), &pSysMgr, data);
+                // add sentry to system's AnomalyMgr
+                sysMgr.GetAnomMgr()->AddAnomaly(sentryRef);
+                Sentry* SentrySE = new Sentry(sentryRef, *(sysMgr.GetServiceMgr()), &sysMgr, data);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Sentry item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return SentrySE;
             }
@@ -777,7 +801,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
                 if (iRef.get() == nullptr)
                     return nullptr;
                 /** @todo make error msg here */
-                ItemSystemEntity* cSE = new ItemSystemEntity(iRef, *(pSysMgr.GetServiceMgr()), &pSysMgr);
+                ItemSystemEntity* cSE = new ItemSystemEntity(iRef, *(sysMgr.GetServiceMgr()), &sysMgr);
                 _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making ItemSystemEntity item for %s (%u)", entity.itemName.c_str(), entity.itemID);
                 return cSE;
             }
@@ -787,8 +811,10 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& pSysMgr, const DB
             if (drone.get() == nullptr)
                 return nullptr;
             /** @todo make error msg here */
+            // add drone to system's AnomalyMgr
+            sysMgr.GetAnomMgr()->AddAnomaly(drone);
             GPoint location(entity.x, entity.y, entity.z);
-            Drone* dSE = new Drone(drone, *(pSysMgr.GetServiceMgr()), &pSysMgr, location, data);
+            Drone* dSE = new Drone(drone, *(sysMgr.GetServiceMgr()), &sysMgr, location, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Drone item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;
@@ -958,6 +984,9 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
 
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);
+    
+    // remove from anomaly map, if exists
+    m_anomMgr->RemoveAnomaly(itemID);
 }
 
 void SystemManager::AddBounty(uint32 charID, BountyData& data)
@@ -1083,7 +1112,7 @@ void SystemManager::DoSpawnForBubble(SystemBubble* pBubble)
 void SystemManager::GetSpawnBubbles(SpawnBubbleMap* bubbleMap)
 {
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", GetName().c_str(), m_data.systemID);
+        _log(SPAWN__MESSAGE, "SystemManager::GetSpawnBubbles() - called for %s(%u)", m_data.name.c_str(), m_data.systemID);
     SpawnBubbleMap::iterator itr = m_ratBubbles.begin();
     while (itr != m_ratBubbles.end())
         bubbleMap->emplace(itr->first, itr->second);
@@ -1099,7 +1128,7 @@ void SystemManager::RemoveSpawnBubble(SystemBubble* pBubble)
         --m_activeGateSpawns;
     }
     if (is_log_enabled(SPAWN__MESSAGE))
-        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u).", pBubble->GetID(), GetName().c_str(), m_data.systemID);
+        _log(SPAWN__MESSAGE, "SystemManager::RemoveSpawnBubble() - called for bubbleID %u in %s(%u).", pBubble->GetID(), m_data.name.c_str(), m_data.systemID);
 }
 
 uint32 SystemManager::GetRandBeltID()
@@ -1190,7 +1219,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     into.solItem = row;
 
     if (is_log_enabled(DESTINY__SETSTATE)) {
-        _log( DESTINY__SETSTATE, "Current State of %s", GetName().c_str() );
+        _log( DESTINY__SETSTATE, "Current State of %s", m_data.name.c_str() );
         into.Dump( DESTINY__SETSTATE, "    " );
     }
 

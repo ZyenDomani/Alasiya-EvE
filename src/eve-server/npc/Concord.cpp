@@ -99,7 +99,7 @@ void Concord::Process() {
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(_concordProfile, GetTimeUSeconds() - profileStartTime);
+        sProfile.AddTime(concordProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void Concord::Orbit(SystemEntity *who) {
