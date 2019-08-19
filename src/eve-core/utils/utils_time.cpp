@@ -129,6 +129,26 @@ const std::string currentDateTime() {
     return buf;
 }
 
+std::string GetUTimeTillNow(double fromTime)
+{
+    double elapsed = GetTimeUSeconds() - fromTime;
+    if (elapsed > 999999)
+        return sprintf("0.4fs",elapsed /1000000);
+    else if (elapsed > 999)
+        return sprintf("0.4fms",elapsed /1000);
+    else
+        return sprintf("0.4fus",elapsed);
+}
+
+std::string GetMTimeTillNow(double fromTime)
+{
+    double elapsed = GetTimeMSeconds() - fromTime;
+    if (elapsed > 999)
+        return sprintf("0.4fs",elapsed /1000);
+    else
+        return sprintf("0.4fms",elapsed);
+}
+
 
 /*  this doesnt work....std::get_time() is unavalible
 // Converts UTC time string to a time_t value.

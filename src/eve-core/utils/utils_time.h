@@ -71,6 +71,11 @@ double GetTimeMSeconds();
 //  this returns microseconds in nanosecond resolution
 double GetTimeUSeconds();
 
+// return elapsed time formatted in units
+std::string GetUTimeTillNow(double fromTime);
+// return elapsed time formatted in units
+std::string GetMTimeTillNow(double fromTime);
+
 // Get current date/time, format is YYYY-MM-DD.HH:mm:ss
 const std::string currentDateTime();
 
