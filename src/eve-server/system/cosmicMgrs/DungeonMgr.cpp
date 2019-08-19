@@ -266,11 +266,13 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     GPoint pos(sig.x, sig.y, sig.z);
     // spawn and save actual anomaly item  // typeID, ownerID, locationID, flag, name, &_position
     /** @todo make specific table for dungeon items:  dungeonID, systemID, entity shit if we decide to keep them. */
+    /*
     std::string info = "Dungeon: ";
     info += sig.sigName;
     info += " in ";
     info += m_system->GetName();
-    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos, info);
+    */
+    ItemData iData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos/*, info*/);
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;

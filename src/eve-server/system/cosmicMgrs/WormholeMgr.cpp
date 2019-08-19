@@ -75,7 +75,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // create and spawn and save actual anomaly item
     // typeID, ownerID, locationID, flag, name, &_position
     ItemData aData(sig.sigTypeID, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    InventoryItemRef iRef = InventoryItem.SpawnItem(sItemFactory.GetNextTempID(), aData);
+    InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), aData);
     if (iRef.get() == nullptr) // make error and exit
         return;
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
@@ -106,7 +106,7 @@ void WormholeMgr::Create(CosmicSignature& sig)
     // create k162 here
     pos += 25000;   // move 25k for WormHole position
     ItemData wData(30831, sig.ownerID, sig.systemID, flagAutoFit, sig.sigName.c_str(), pos);
-    iRef = InventoryItem.SpawnItem(sItemFactory.GetNextTempID(), wData);
+    iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
     if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
         return;
     sig.sigItemID = iRef->itemID();
