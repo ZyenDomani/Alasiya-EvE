@@ -118,13 +118,13 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     // set internal check data
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
     float security = 1.1 - m_system->GetSystemSecurityRating();
-         if (security == 2.0)  m_maxSigs = 30;
-    else if (security > 1.501) m_maxSigs = 25;
-    else if (security > 1.001) m_maxSigs = 20;
-    else if (security > 0.751) m_maxSigs = 15;
-    else if (security > 0.451) m_maxSigs = 12;
-    else if (security > 0.251) m_maxSigs = 8;
-    else                       m_maxSigs = 5;
+         if (security == 2.0)  m_maxSigs = 25;
+    else if (security > 1.501) m_maxSigs = 20;
+    else if (security > 1.001) m_maxSigs = 15;
+    else if (security > 0.751) m_maxSigs = 12;
+    else if (security > 0.451) m_maxSigs = 8;
+    else if (security > 0.251) m_maxSigs = 5;
+    else                       m_maxSigs = 3;
 
     if (sConfig.debug.IsTestServer)
         m_maxSigs = 2;
@@ -148,7 +148,9 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     else
         m_anomTimer.Start(120000);  // 2m
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals", m_system->GetName(), m_system->GetID(), m_maxSigs);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals for security class %0.2f", \
+                m_system->GetName(), m_system->GetID(), m_maxSigs, security);
+
     return (m_initalized = true);
 }
 
@@ -372,14 +374,12 @@ uint8 AnomalyMgr::GetDungeonType()
                 return GetDungeonType();
 
             ++m_WH;
-            ++m_Sigs;
         } break;
         case Anomaly: {   // 7. this is noob dungeon, no probe required
             if (m_Anoms > (m_maxSigs /2))
                 return GetDungeonType();
 
             ++m_Anoms;
-            //++m_Sigs;
         } break;
         case Unrated: {   // 8
             if ((m_Unrated < 0) or (m_Unrated > 2)) // cap at 3
