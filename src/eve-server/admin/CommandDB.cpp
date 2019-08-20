@@ -57,6 +57,35 @@ uint32_t CommandDB::GetSolarSystem(const char *name) {
     return row.GetUInt(0);
 }
 
+uint32_t CommandDB::GetStation(const char* name)
+{
+    if (!sDatabase.IsSafeString(name))
+        return 0;
+
+    std::string escaped;
+    sDatabase.DoEscapeString(escaped, name);
+
+    DBQueryResult result;
+    if (!sDatabase.RunQuery(result,
+                "SELECT `stationID`"
+                " FROM `staStations`"
+                " WHERE `stationName` LIKE '%%%s%%';",
+                escaped.c_str()
+        )) {
+        codelog(DATABASE__ERROR, "Error in query: %s", result.error.c_str());
+        return 0;
+    }
+
+    DBResultRow row;
+    if (!result.GetRow(row)) {
+        codelog(COMMAND__ERROR, "Station query returned nothing");
+        return 0;
+    }
+
+    return row.GetUInt(0);
+}
+
+
 bool CommandDB::ItemSearch(const char *query, std::map<uint32, std::string> &into) {
 
     into.clear();

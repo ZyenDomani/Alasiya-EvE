@@ -37,6 +37,7 @@ class CommandDB
     int GetAttributeID(const char *attributeName);
     int GetAccountID(std::string name);
     bool FullSkillList(std::vector<uint32> &skillList);
+    uint32_t GetStation(const char *name);
     uint32_t GetSolarSystem(const char *name);
 
 };

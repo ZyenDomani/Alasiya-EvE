@@ -6,6 +6,8 @@
 
 #include "eve-server.h"
 
+#include <boost/algorithm/string.hpp>
+
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "npc/NPC.h"
@@ -63,6 +65,16 @@ PyResult Command_translocate(Client* pClient, CommandDB* db, PyServiceMgr* servi
  * ('/tr me me offset=%d,%d,%d' % (int(v.x), int(v.y), int(v.z)))
  * ('/tr %d me noblock' % charID)       << used to group-move all players in <chat>
  */
+/* {'messageKey': 'LocationNameInvalid', 'dataID': 17882829, 'suppressable': False, 'bodyID': 259279, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1112}
+ * {'messageKey': 'LocationNameInvalidBannedWord', 'dataID': 17882832, 'suppressable': False, 'bodyID': 259280, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1113}
+ * {'messageKey': 'LocationNameInvalidFirstChar', 'dataID': 17882835, 'suppressable': False, 'bodyID': 259281, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1114}
+ * {'messageKey': 'LocationNameInvalidLastChar', 'dataID': 17882838, 'suppressable': False, 'bodyID': 259282, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1115}
+ * {'messageKey': 'LocationNameInvalidMaxLength', 'dataID': 17882841, 'suppressable': False, 'bodyID': 259283, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1116}
+ * {'messageKey': 'LocationNameInvalidMaxSpaces', 'dataID': 17882844, 'suppressable': False, 'bodyID': 259284, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1117}
+ * {'messageKey': 'LocationNameInvalidMinLength', 'dataID': 17882847, 'suppressable': False, 'bodyID': 259285, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1118}
+ * {'messageKey': 'LocationNameInvalidSomeChar', 'dataID': 17882850, 'suppressable': False, 'bodyID': 259286, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1119}
+ * {'messageKey': 'LocationNameInvalidTaken', 'dataID': 17882853, 'suppressable': False, 'bodyID': 259287, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1120}
+ */
 /** @todo this is a good start, but will need a bit more logic to idiot-proof and finish  */
 PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
     // i dont expect this to be used very often, so a bit of bloat is acceptable
@@ -98,8 +110,19 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             snprintf(reply, size, str.str().c_str());
             pClient->SendInfoModalMsg(reply);
             return nullptr;
-        } else
-            throw PyException(MakeCustomError("Translocate: Missing Arguments"));
+        } else {
+            // tr <me> to <locationName>?
+            // this hits db directly, so test for possible sql injection code
+            for (const auto cur : badCharsSearch)
+                if (boost::icontains(args.arg(1), cur))
+                    throw PyException( MakeCustomError("Location contains invalid characters"));
+            locationID = db->GetSolarSystem(args.arg(1));
+            if (!IsSolarSystem(locationID)) {
+                locationID = db->GetStation(args.arg(1));
+                if (!IsStation(locationID))
+                    throw PyException(MakeCustomError("Translocate: Name Argument is neither SolarSystem nor StationName"));
+            }
+        }
     } else if (args.argCount() == 3) {  // 2 args - me, player, ship, item, fleet, {invalid} : help, home, last, ship, location, moon, planet, {invalid}
         // test for 'help' command
         if ((strcmp(args.arg(1).c_str(), Help) == 0)
@@ -182,17 +205,22 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             pt = sGP.GetRandPointOnPlanet(pOtherClient == nullptr ? pClient->GetSystemID() : pOtherClient->GetSystemID());
             //throw PyException(MakeCustomError("Translocate: This option is Incomplete"));
         } else {
-            // what are we missing?   get location by name?
-            /* {'messageKey': 'LocationNameInvalid', 'dataID': 17882829, 'suppressable': False, 'bodyID': 259279, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1112}
-             * {'messageKey': 'LocationNameInvalidBannedWord', 'dataID': 17882832, 'suppressable': False, 'bodyID': 259280, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1113}
-             * {'messageKey': 'LocationNameInvalidFirstChar', 'dataID': 17882835, 'suppressable': False, 'bodyID': 259281, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1114}
-             * {'messageKey': 'LocationNameInvalidLastChar', 'dataID': 17882838, 'suppressable': False, 'bodyID': 259282, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1115}
-             * {'messageKey': 'LocationNameInvalidMaxLength', 'dataID': 17882841, 'suppressable': False, 'bodyID': 259283, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1116}
-             * {'messageKey': 'LocationNameInvalidMaxSpaces', 'dataID': 17882844, 'suppressable': False, 'bodyID': 259284, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1117}
-             * {'messageKey': 'LocationNameInvalidMinLength', 'dataID': 17882847, 'suppressable': False, 'bodyID': 259285, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1118}
-             * {'messageKey': 'LocationNameInvalidSomeChar', 'dataID': 17882850, 'suppressable': False, 'bodyID': 259286, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1119}
-             * {'messageKey': 'LocationNameInvalidTaken', 'dataID': 17882853, 'suppressable': False, 'bodyID': 259287, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 1120}
-             */
+            if (me) {
+                // tr me to <locationName>?
+                // this hits db directly, so test for possible sql injection code
+                for (const auto cur : badCharsSearch)
+                    if (boost::icontains(args.arg(1), cur))
+                        throw PyException( MakeCustomError("Location contains invalid characters"));
+                    locationID = db->GetSolarSystem(args.arg(1));
+                if (!IsSolarSystem(locationID)) {
+                    locationID = db->GetStation(args.arg(1));
+                    if (!IsStation(locationID))
+                        throw PyException(MakeCustomError("Translocate: Name Argument is neither SolarSystem nor StationName"));
+                }
+            } else {
+                // what are we missing?
+                throw PyException(MakeCustomError("Translocate: Missing Arguments"));
+            }
         }
     } else if (args.argCount() == 4) { // 3 args - me, player, ship,  coords, {invalid} : me, home, last, location, {invalid} : last, moon, planet, {invalid}
         // test for 'help' command
