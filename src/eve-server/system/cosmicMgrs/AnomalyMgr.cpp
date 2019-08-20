@@ -158,9 +158,10 @@ void AnomalyMgr::Process() {
     if (!m_initalized)
         return;
     if (m_anomTimer.Check(!sConfig.debug.IsTestServer)) {
-        /* do something useful here */
-        if ((m_Sigs < m_maxSigs) or (m_Anoms < (m_maxSigs /2)))
+        if (m_Sigs < m_maxSigs)
             CreateAnomaly();
+        if (m_Anoms < (m_maxSigs /2))
+            CreateAnomaly(Dungeon::Type::Anomaly);
     }
 
     if (m_spawnTimer.Check(false)) {

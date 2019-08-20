@@ -375,8 +375,8 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     if (dTemplate.dunSpawnClass > 0)
         m_spawnMgr->DoSpawnForAnomaly(sBubbleMgr.FindBubble(m_system->GetID(), pos), dTemplate.dunSpawnClass);
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %u items in system %u using template %u.", \
-              sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size(), sig.systemID, templateID);
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - dungeonID %u created for %s with %u items.", \
+              sig.sigItemID, sig.sigName.c_str(), m_anomalyItems.size());
 
     m_anomalyItems.clear();
     if (!items.empty())
@@ -782,7 +782,8 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
         else
             size = count /size;
         if (size < 1)
-            size = 1;
+            continue;
+        
         _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %u, size %u, count %u, range %u, faction %u",\
                     cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, type, size, count, origSize, factionID);
 
