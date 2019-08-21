@@ -1649,8 +1649,8 @@ void DestinyManager::_WarpAccel(uint16 sec_into_warp) {
     _WarpUpdate(currentShipSpeed);
 
     if (is_log_enabled(DESTINY__WARP_TRACE))
-        _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go.  Current distance %.4f from bubble %u.", \
-                mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance, mySE->SysBubble()->GetID());
+        _log(DESTINY__WARP_TRACE, "Destiny::_WarpAccel(): %s(%u) - Warp Accelerating(%us): velocity %.4f m/s with %.4f m left to go. Current distance %.4f from origin.", \
+                mySE->GetName(), mySE->GetID(), sec_into_warp, currentShipSpeed, m_targetDistance, currentDistance);
 }
 
 void DestinyManager::_WarpCruise(uint16 sec_into_warp) {
