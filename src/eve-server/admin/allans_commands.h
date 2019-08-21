@@ -1,9 +1,5 @@
 
 
- COMMAND( spawndungeon, Acct::Role::CONTENT,
-          " - spawns dungeon <dungeonID> in your system, with BM to location")
- COMMAND( removedungeon, Acct::Role::CONTENT,
-          " - removes identified dungeon")
  COMMAND( siglist, Acct::Role::CONTENT,
           " - lists all active signatures, with location, name, and type." )
  COMMAND( heal, Acct::Role::HEALSELF,

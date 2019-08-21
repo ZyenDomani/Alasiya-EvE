@@ -15,6 +15,7 @@
 #include "inventory/InventoryItem.h"
 #include "manufacturing/Blueprint.h"
 #include "npc/Drone.h"
+#include "planet/Moon.h"
 #include "station/Station.h"
 #include "system/Damage.h"
 #include "system/DestinyManager.h"
@@ -23,43 +24,11 @@
 #include "system/cosmicMgrs/AnomalyMgr.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 #include "system/cosmicMgrs/DungeonMgr.h"
-#include <planet/Moon.h>
 
-
-
-PyResult Command_spawndungeon(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
-     *
-     * upon execution, this command will spawn a random dungeon from db in callers solarSystem,
-     *   then create a bookmark in their PnP/BM window
-     */
-
-    if (args.argCount() != 2)
-        throw PyException(MakeCustomError("Correct Usage: .spawndungeon <dungeonTemplateID>"));
-
-    if (!args.isNumber(1))
-        throw PyException(MakeCustomError("Argument 1 must be a template ID."));
-
-    /** @todo update this to new creation code */
-    /*
-        if (!pClient->SystemMgr()->GetDungMgr()->Create(atoi(args.arg(1).c_str())))
-            pClient->SendErrorMsg("RoomID = 0 for templateID %u", atoi(args.arg(1).c_str()));
-    */
-    return nullptr;
-}
-
-PyResult Command_removedungeon(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
-     *
-     * upon execution, this command will spawn a random dungeon from db in callers solarSystem,
-     *   then create a bookmark in their PnP/BM window
-     */
-    return nullptr;
-}
 
 PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    /* this command is used to test dungeon spawn system - wip.   -allan 21Feb15
-     *   will list currently active dungeons, by systemID.
+    /* this command is used to test anomaly system   -allan 21Feb15
+     *   will list all anomalies, by systemID.
      */
 
     std::vector<CosmicSignature> sig;
@@ -69,7 +38,7 @@ PyResult Command_siglist(Client* pClient, CommandDB* db, PyServiceMgr* services,
 
     std::ostringstream str;
     str.clear();
-    str << "There are currently %u active dungeons<br>"; //50
+    str << "There are currently %u active signatures.<br>"; //50
     str << "LocationID aID iID 'Name'<br>"; //30
 
     for (auto sigs : sig) {

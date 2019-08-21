@@ -398,9 +398,9 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
  *       E = faction - 0=code defined, 1=Serpentis, 2=Angel, 3=Blood, 4=Guristas, 5=Sansha, 6=Drones, 7=region sov, 8=region rat, 9=other
  *
  * NOTE:  mag sites have multiple types and levels based on other variables.
- *      levels are defined as relic(1), salvage(2), and drone(3), with salvage being dominant.
- *      for hisec and losec, types are 1-8 for relic and salvage.  there are no drone mag sites here
- *      for nullsec, relic site types are 1-8, salvage site types are 1-4, and drone site types are 1-7
+ *      types are defined as relic(1), salvage(2), and drone(3), with salvage being dominant.
+ *      for hisec and losec, levels are 1-8 for relic and salvage.  there are no drone mag sites here
+ *      for nullsec, relic site levels are 1-8, salvage site levels are 1-4, and drone site levels are 1-7
  *
  * NOTE:  faction can only be 8 for grav and anomaly sites, unless drones (6). all others MUST use 1-6
  */
@@ -783,7 +783,7 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             size = count /size;
         if (size < 1)
             continue;
-        
+
         _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %u, size %u, count %u, range %u, faction %u",\
                     cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, type, size, count, origSize, factionID);
 

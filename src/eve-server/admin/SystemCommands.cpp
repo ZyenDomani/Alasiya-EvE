@@ -116,9 +116,9 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             for (const auto cur : badCharsSearch)
                 if (boost::icontains(args.arg(1), cur))
                     throw PyException( MakeCustomError("Location contains invalid characters"));
-            locationID = db->GetSolarSystem(args.arg(1));
+            locationID = db->GetSolarSystem(args.arg(1).c_str());
             if (!IsSolarSystem(locationID)) {
-                locationID = db->GetStation(args.arg(1));
+                locationID = db->GetStation(args.arg(1).c_str());
                 if (!IsStation(locationID))
                     throw PyException(MakeCustomError("Translocate: Name Argument is neither SolarSystem nor StationName"));
             }
@@ -211,9 +211,9 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
                 for (const auto cur : badCharsSearch)
                     if (boost::icontains(args.arg(1), cur))
                         throw PyException( MakeCustomError("Location contains invalid characters"));
-                    locationID = db->GetSolarSystem(args.arg(1));
+                    locationID = db->GetSolarSystem(args.arg(1).c_str());
                 if (!IsSolarSystem(locationID)) {
-                    locationID = db->GetStation(args.arg(1));
+                    locationID = db->GetStation(args.arg(1).c_str());
                     if (!IsStation(locationID))
                         throw PyException(MakeCustomError("Translocate: Name Argument is neither SolarSystem nor StationName"));
                 }
