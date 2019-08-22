@@ -47,7 +47,9 @@ typedef enum {          // implemented?  (* = yes)
     itemloadProfile    = 21,   //*
     concordProfile     = 22,   //*
     colonyProfile      = 23,   //*
-    damageProfile      = 24
+    damageProfile      = 24,
+    parseFXProfile     = 25,
+    applyFXProfile     = 26
 } profile;
 
 class Profile
@@ -95,6 +97,8 @@ private:
     std::vector<double> m_concord;
     std::vector<double> m_colony;
     std::vector<double> m_damage;
+    std::vector<double> m_effects1;
+    std::vector<double> m_effects2;
 };
 
 #define sProfile \

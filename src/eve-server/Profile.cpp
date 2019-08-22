@@ -30,30 +30,32 @@ void Profile::AddTime(uint8 key, double value) {
         EvE::traceStack();
     }
     /*
-    _destinyProfile     = 1,    *
-    _mapProfile         = 2,
-    _clientProfile      = 3,    *
-    _npcProfile         = 4,    *
-    _bubblesProfile     = 5,    *
-    _itemsProfile       = 6,
-    _modulesProfile     = 7,    *
-    _functionsProfile   = 8,
-    _dbProfile          = 9,    *
-    _shipProfile        = 10,   *
-    _targetsProfile     = 11,
-    _serverProfile      = 12,
-    _missileProfile     = 13,
-    _systemProfile      = 14,
-    _entitySProfile     = 15,   *
-    _lootProfile        = 16,   *
-    _salvageProfile     = 17,
-    _spawnProfile       = 18,   *
-    _collisionProfile   = 19,   *
-    _droneProfile       = 20,   *
-    _itemloadProfile    = 21,   *
-    _concordProfile     = 22,   *
-    _colonyProfile      = 23,   *
-    _damageProfile      = 24
+    destinyProfile     = 1,    *
+    mapProfile         = 2,
+    clientProfile      = 3,    *
+    npcProfile         = 4,    *
+    bubblesProfile     = 5,    *
+    itemsProfile       = 6,
+    modulesProfile     = 7,    *
+    functionsProfile   = 8,
+    dbProfile          = 9,    *
+    shipProfile        = 10,   *
+    targetsProfile     = 11,
+    serverProfile      = 12,
+    missileProfile     = 13,
+    systemProfile      = 14,
+    entitySProfile     = 15,   *
+    lootProfile        = 16,   *
+    salvageProfile     = 17,
+    spawnProfile       = 18,   *
+    collisionProfile   = 19,   *
+    droneProfile       = 20,   *
+    itemloadProfile    = 21,   *
+    concordProfile     = 22,   *
+    colonyProfile      = 23,   *
+    damageProfile      = 24,
+    parseFXProfile     = 25,
+    applyFXProfile     = 26
     */
     switch(key) {
         case 1:
@@ -128,6 +130,12 @@ void Profile::AddTime(uint8 key, double value) {
         case 24:
             m_damage.push_back(value);
             break;
+        case 25:
+            m_effects1.push_back(value);
+            break;
+        case 26:
+            m_effects2.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -160,6 +168,8 @@ void Profile::ClearAll()
     m_concord.clear();
     m_colony.clear();
     m_damage.clear();
+    m_effects1.clear();
+    m_effects2.clear();
 }
 
 void Profile::PrintProfile()
@@ -194,6 +204,10 @@ void Profile::PrintProfile()
     std::printf("       Bubbles   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_bubbles.size()),  h, l, a );
     GetRunTimes(m_destiny, h, l, a);
     std::printf("       Destiny   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_destiny.size()),  h, l, a );
+    GetRunTimes(m_effects1, h, l, a);
+    std::printf(" Parse Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects1.size()),  h, l, a );
+    GetRunTimes(m_effects2, h, l, a);
+    std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
     std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()),  h, l, a );
     GetRunTimes(m_itemload, h, l, a);
@@ -217,7 +231,7 @@ void Profile::PrintProfile()
         std::printf("        Spawns   Disabled.\n");
     if (sConfig.cosmic.BumpEnabled) {
         GetRunTimes(m_collision, h, l, a);
-        std::printf("    Collisions   %u times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_collision.size()), h, l, a );
+        std::printf("    Collisions   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_collision.size()), h, l, a );
     } else
         std::printf("    Collisions   Disabled.\n");
 
@@ -233,7 +247,7 @@ void Profile::PrintProfile()
     } else
         std::printf("        Colony   Disabled.\n");
 
-    std::printf(" Profile Times Compiled in %uus\n", (GetTimeUSeconds() -startTime) );
+    std::printf(" Profile Times Compiled in %.4fus\n", (GetTimeUSeconds() -startTime) );
 }
 
 void Profile::GetRunTimes(std::vector< double >& container, double& h, double& l, double& a)
@@ -312,7 +326,9 @@ std::string Profile::GetKeyName(uint8 key)
         case itemloadProfile:      return "ItemLoad";  //  21,
         case concordProfile:       return "Concord";   //  22,
         case colonyProfile:        return "Colony";    //  23,
-        case damageProfile:        return "Damage";    //  24
+        case damageProfile:        return "Damage";    //  24,
+        case parseFXProfile:       return "ParseFX";   //  25,
+        case applyFXProfile:       return "ApplyFX";   //  26
     }
 }
 

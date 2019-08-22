@@ -29,6 +29,8 @@
 
 void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod/*nullptr*/)
 {
+    double profileStartTime = GetTimeUSeconds();
+    
     bool skill = false, core = false, self = false, module = false, charge = false, isRig = false, subSys = false;
     switch (data.srcRef->categoryID()) {
         case EVEDB::invCategories::Module: {
@@ -375,11 +377,15 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
      * 23:14:11 [FxWarning] FxProc::ParseExpression(): opGROUP using expressionValue     None called by     None
      *
      */
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(parseFXProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 // attrib nerf and caps arent needed, from what ive seen while testing.
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
+    double profileStartTime = GetTimeUSeconds();
+    
     bool isRig = false, subSys = false, charge = false;
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
@@ -556,7 +562,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         }
 
         // set target attr to modified value
-        EvilNumber targValue = 0;
+        EvilNumber targValue = EvilZero;
         int8 opID = cur.first;
         for (auto item : itemRefVec) {
             if (item.get() == nullptr)  // not sure why i need this, but have seen nulls in the vector (segfaults)
@@ -576,20 +582,18 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 case Math::PostMul:
                 case Math::PreDiv:
                 case Math::PostDiv:{
-                    if (targValue == 0)
-                        targValue = 1;
+                    if (targValue == EvilZero)
+                        targValue = EvilOne;
                 } break;
             }
 
             // send data to calculator
             EvilNumber newValue = CalculateAttributeValue(targValue, srcValue, opID);
-            // avoid creating 0-value attributes on items
-            //if (newValue == 0)
-            //    continue;
             // set new calculated value for target attribute
-            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", cur.first, srcItemRef->itemName().c_str(), \
-            srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID), \
-                GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
+            _log(EFFECTS__MESSAGE, "FxProc::ApplyEffects(%i): %s(%u) - src(%s:%u) %.3f <%s> targ(%s:%u) set targ from %.3f to %.3f.", \
+                    cur.first, srcItemRef->itemName().c_str(), srcItemRef->itemID(), \
+                    GetSourceName(cur.second.fxSrc), cur.second.srcAttr, srcValue.get_float(), GetMathMethodName(opID), \
+                    GetTargLocName(cur.second.targLoc), cur.second.targAttr, targValue.get_float(), newValue.get_float());
 
             // update is used to send attrib changes to client when changing module states while in space, but NOT for pilot login. (client acts funky)
             item->SetAttribute(cur.second.targAttr, newValue, update);
@@ -598,13 +602,15 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
     /*  not used
     if (action)
         sFxAct.DoAction(action, pShip->GetPilot()->GetShipSE());   // this MUST be called AFTER all active effects are applied, as it uses those modified values
-    */
+        */
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(applyFXProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber val2/*src*/, int8 method)
 {
-    if (val2 == 0)
-        return val1;
+    //if (val2 == EvilZero)
+    //    return val1;
 
     switch (method) {
         case FX::Math::SkillCheck:
@@ -630,7 +636,7 @@ EvilNumber FxProc::CalculateAttributeValue(EvilNumber val1/*targ*/, EvilNumber v
             return val1;
     }
     _log(EFFECTS__ERROR, "FxProc::CalculateNewAttributeValue() - Unknown Association used: %i", (int8)method);
-    return 0;
+    return val1;
 }
 
 int8 FxProc::GetAssociationEnum(const std::string& association)
