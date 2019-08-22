@@ -681,6 +681,40 @@ int main( int argc, char* argv[] )
     /* program events system */
     SetupSignals();
 
+    /*
+    #ifndef _WIN32 // Windows
+
+    ///- Handle affinity for multiple processors and process priority
+    uint32 affinity = sConfigMgr->GetIntDefault("UseProcessors", 0);
+    bool highPriority = sConfigMgr->GetBoolDefault("ProcessPriority", false);
+
+    if (affinity > 0) {
+        cpu_set_t mask;
+        CPU_ZERO(&mask);
+
+        for (unsigned int i = 0; i < sizeof(affinity) * 8; ++i)
+            if (affinity & (1 << i))
+                CPU_SET(i, &mask);
+
+        if (sched_setaffinity(0, sizeof(mask), &mask))
+            sLog->outError("Can't set used processors (hex): %x, error: %s", affinity, strerror(errno));
+        else {
+            CPU_ZERO(&mask);
+            sched_getaffinity(0, sizeof(mask), &mask);
+            sLog->outString("Using processors (bitmask, hex): %lx", *(__cpu_mask*)(&mask));
+        }
+    }
+
+    if (highPriority) {
+        if (setpriority(PRIO_PROCESS, 0, PROCESS_HIGH_PRIORITY))
+            sLog->outError("Can't set worldserver process priority class, error: %s", strerror(errno));
+        else
+            sLog->outString("worldserver process priority class set to %i", getpriority(PRIO_PROCESS, 0));
+    }
+
+    #endif
+    */
+    
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
