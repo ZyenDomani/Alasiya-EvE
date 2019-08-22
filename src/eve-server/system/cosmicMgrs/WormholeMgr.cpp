@@ -1,7 +1,7 @@
 
  /**
   * @name WormholeMgr.cpp
-  *     WH managment system for Alasiya EvEmu
+  *     WH management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015

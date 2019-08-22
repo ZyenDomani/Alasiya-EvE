@@ -1,7 +1,7 @@
 
  /**
   * @name BeltMgr.h
-  *     Asteroid Belt Spawn managment system for Alasiya EvEmu
+  *     Asteroid Belt Spawn management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          15 April 2016
@@ -35,7 +35,7 @@ class BeltMgr
 {
 public:
     BeltMgr(SystemManager* mgr, PyServiceMgr& svc);
-    ~BeltMgr();
+    ~BeltMgr()    { /* do nothing here */ }
 
     void Init(uint32 regionID);
     void Save();
@@ -49,7 +49,7 @@ public:
     bool Load(uint16 bubbleID);
     bool IsActive(uint16 bubbleID);
     bool IsSpawned(uint16 bubbleID);
-    bool CheckSpawn(uint16 bubbleID);
+    void CheckSpawn(uint16 bubbleID);
 
     void GetList(uint32 beltID, std::vector< AsteroidSE* >& list);
 

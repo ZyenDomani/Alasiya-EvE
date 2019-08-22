@@ -1,7 +1,7 @@
 
  /**
   * @name SpawnMgr.cpp
-  *     NPC Spawn managment system for Alasiya EvEmu
+  *     NPC Spawn management system for Alasiya EvEmu
   *
   * @Author:         Allan
   * @date:          15 July 2015

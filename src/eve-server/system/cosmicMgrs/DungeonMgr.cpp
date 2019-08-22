@@ -1,7 +1,7 @@
 
  /**
   * @name DungeonMgr.cpp
-  *     Dungeon managment system for Alasiya EvEmu
+  *     Dungeon management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015
@@ -167,9 +167,12 @@ m_spawnMgr(nullptr)
 DungeonMgr::~DungeonMgr()
 {
     //for now we're deleting everything till i can write proper item handling code
+
+    /*  this is not needed as all items are temp at this time.
     for (auto cur : m_dungeonList)
         for (auto item : cur.second)
             InventoryDB::DeleteItem(item);
+     */
 }
 
 bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
@@ -283,7 +286,7 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     m_system->AddEntity(cSE);
     sig.sigItemID = iRef->itemID();
 
-    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - templateID %u, roomID %i for %s", templateID, dTemplate.dunRoomID, sig.sigName.c_str());
+    _log(COSMIC_MGR__TRACE, "DungeonMgr::Create() - %s using templateID %u and roomID %i", sig.sigName.c_str(), templateID, dTemplate.dunRoomID);
 
     /* do we need this?  persistant dungeons?
     if ((typeID == 1) or (typeID == 8) or (typeID == 9) or (typeID == 10)) {
@@ -337,13 +340,15 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
         if (chance < 0.01)
             chance = 0.01;
         std::unordered_multimap<float, uint16> roidTypes;
-        std::vector< DunGroupData >::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
+        //std::vector< DunGroupData >::iterator itr = m_anomalyItems.begin(), end = m_anomalyItems.end();
         for (auto cur : m_anomalyItems)
             roidTypes.emplace(chance, cur.typeID);
 
         m_system->GetBeltMgr()->Create(sig, roidTypes);
         // clear out extra roids data to continue with room deco
         m_anomalyItems.clear();
+    } else {
+        // other types have a chance for roids.
     }
 
     // create deco items for this dungeon
@@ -643,6 +648,7 @@ struct CosmicSignature {
 */
 void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
 {
+    /** @todo this needs work for proper sizing of deco.  */
     /* templateID format.  ABCDE
      *       A = site - 1:mission, 2:grav, 3:mag, 4:radar, 5:ladar, 6:ded, 7:anomaly, 8:unrated, 9:escalation
      *       B = sec - mission: 1-9 (incomplete); others - sysSec: 1=hi, 2=lo, 3=null, 4=mid;
@@ -660,11 +666,9 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
 
     // templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + factionID;
     uint8 factionID = templateID % 10;
-    uint8 size = templateID / 10 % 10;
+    uint8 level = templateID / 10 % 10;
     uint8 type = templateID / 100 % 10;
     //uint8 sec = templateID / 1000 % 10;
-
-    uint16 groupID = 0, radius = 0;
 
     // create groupIDs for this dungeon, and add to vector
     //  NOTE:  these are NOT invGroups here....
@@ -674,6 +678,10 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
     groupVec.push_back(131);    //misc roids
     groupVec.push_back(132);    //worthless mining types
     groupVec.push_back(691);    // misc
+    // add worthless shit to vector
+    AddDecoToVector(sig.dungeonType, templateID, groupVec);
+    // clear out vector before adding specific types
+    groupVec.clear();
 
     using namespace Dungeon::Type;
     switch (sig.dungeonType) {
@@ -728,6 +736,10 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             groupVec.push_back(650);    // Indestructible
         } break;
     }
+    // add misc shit to vector
+    AddDecoToVector(sig.dungeonType, templateID, groupVec);
+    // clear out vector before adding specific faction types
+    groupVec.clear();
     switch (sig.dungeonType) {
         case Anomaly:     //7
         case Unrated:     //8
@@ -762,36 +774,43 @@ void DungeonMgr::CreateDeco(uint32 templateID, CosmicSignature& sig)
             }
         }
     }
+    AddDecoToVector(sig.dungeonType, templateID, groupVec);
+}
+
+void DungeonMgr::AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<uint16>& groupVec)
+{
+    // templateID = (sig.dungeonType *10000) + (sec *1000) + (type *100) + (level *10) + factionID;
+    uint8 factionID = templateID % 10;
+    uint8 level = templateID / 10 % 10;
+    uint8 type = templateID / 100 % 10;
+    uint8 sec = templateID / 1000 % 10;
 
     int8 step = 0;
-    uint16 count = 0, amount = 0, pos = 10000;
-    pos *= size;
-
+    uint16 count = 0, radius = 0, pos = 10000 * level;
     double theta = 0;
-    // range is 1 to 20 (which puts 3-60 items in bubble)
-    size *= (m_system->GetSecValue() *3);  // config variable here?
-    uint8 origSize = size;
-    DunGroupData grp;
+
+    // level is 0 to 9, system multiplier is 0.1 to 2.0 (x10 is 1-20)
+    level *= (m_system->GetSecValue() *10);  // config variable here?
+    // set origLevel 0 to 18, rounding up
+    uint8 origLevel = ceil(level /10);
+    if (origLevel < 1)
+        origLevel = 1;
     for (auto cur : groupVec) {
-        size = origSize;
+        level = origLevel;
         count = sDunDataMgr.groups.count(cur);
-        if ((count < 1) or (size < 1))
-            continue;
-        else if (size > count)
-            size /= count;
-        else
-            size = count /size;
-        if (size < 1)
+        if (count < 1)
             continue;
 
-        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::CreateDeco() - Adding Deco group %u for %s(%u), type %u, size %u, count %u, range %u, faction %u",\
-                    cur, sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, type, size, count, origSize, factionID);
+        _log(COSMIC_MGR__MESSAGE, "DungeonMgr::AddDecoToVector() - %s(%u):  faction %u, group %u, type %u, level %u, count %u, baseLvl %u",\
+                    sDunDataMgr.GetDungeonType(dunType).c_str(), dunType, factionID, \
+                    cur, type, level, count, origLevel);
 
         auto groupRange = sDunDataMgr.groups.equal_range(cur);
         auto it = groupRange.first;
-        double degreeSeparation = (250/size);
+        double degreeSeparation = (250/level);
         // make 1-20 random items in the anomaly based on system trusec
-        for (uint8 i=0; i < size; ++i) {
+        for (uint8 i=0; i < level; ++i) {
+            DunGroupData grp = DunGroupData();
             step = MakeRandomInt(1,count);
             std::advance(it,step);      // this is some fancy shit here
             grp.typeID = it->second.typeID;

@@ -1,7 +1,7 @@
 
 /**
  * @name AnomalyMgr.cpp
- *     Anomaly managment system for Alasiya EvEmu
+ *     Anomaly management system for Alasiya EvEmu
  *
  * @Author:        Allan
  * @date:          12 December 2015 (original idea)
@@ -330,8 +330,8 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
 
     //m_mdb.SaveAnomaly(sig);
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal %s for type %s(%u) in system %u", \
-                sig.sigName.c_str(), sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, sig.systemID);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::Create() - Creating Signal type %s(%u) for %s in system %u", \
+                sDunDataMgr.GetDungeonType(sig.dungeonType).c_str(), sig.dungeonType, sig.sigName.c_str(), sig.systemID);
 }
 
 uint8 AnomalyMgr::GetDungeonType()

@@ -1,6 +1,6 @@
  /**
   * @name AnomalyMgr.h
-  *     Anomaly managment system for Alasiya EvEmu
+  *     Anomaly management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015

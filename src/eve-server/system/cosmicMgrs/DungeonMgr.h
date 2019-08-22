@@ -1,7 +1,7 @@
 
  /**
   * @name DungeonMgr.h
-  *     Dungeon managment system for Alasiya EvEmu
+  *     Dungeon management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015
@@ -110,6 +110,8 @@ protected:
 
     /* we do not own any of these */
 private:
+    bool m_initalized;
+    
     AnomalyMgr* m_anomMgr;
     SpawnMgr* m_spawnMgr;
     SystemManager* m_system;
@@ -118,7 +120,8 @@ private:
     int8 GetFaction(uint32 factionID);
     int8 GetRandLevel();
 
-    bool m_initalized;
+    void AddDecoToVector(uint8 dunType, uint32 templateID, std::vector<uint16>& groupVec);
+
 
     std::vector<DunGroupData> m_anomalyItems;
 

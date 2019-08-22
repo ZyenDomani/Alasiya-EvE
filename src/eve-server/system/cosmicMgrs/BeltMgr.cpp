@@ -1,7 +1,7 @@
 
  /**
   * @name BeltMgr.cpp
-  *     Asteroid Belt Spawn managment system for Alasiya EvEmu
+  *     Asteroid Belt Spawn management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          15 April 2016
@@ -26,16 +26,11 @@
 
 
 BeltMgr::BeltMgr(SystemManager* mgr, PyServiceMgr& svc)
-:m_system(mgr),
+: m_respawnTimer(0),
+m_system(mgr),
 m_services(svc),
-m_respawnTimer(0),
 m_initialized(false)
 {
-}
-
-BeltMgr::~BeltMgr()
-{
-
 }
 
 void BeltMgr::Init(uint32 regionID)
@@ -83,10 +78,10 @@ void BeltMgr::ClearAll() {
     m_belts.clear();
 }
 
-bool BeltMgr::CheckSpawn(uint16 bubbleID)
+void BeltMgr::CheckSpawn(uint16 bubbleID)
 {
     if (IsSpawned(bubbleID))
-        return true;
+        return;
     /*  if there are already roids created for this belt, they will be loaded in Load()
      * if Load() has roids for this belt, this belt will have true already set, and checked in SpawnBelt()
      */
@@ -241,10 +236,8 @@ bool BeltMgr::Create(CosmicSignature& sig, std::unordered_multimap<float, uint16
     SystemEntity* pSE = m_system->GetSE(sig.sigItemID);
     if (pSE == nullptr)
         return false;
-    sBubbleMgr.AddSpawnID(pSE->SysBubble()->GetID(), sig.sigItemID);
-    RegisterBelt(pSE->GetSelf());
+    pSE->SysBubble()->SetBelt(pSE->GetSelf());
     SpawnBelt(pSE->SysBubble()->GetID(), roidTypes, 0, true);
-
     return true;
 }
 

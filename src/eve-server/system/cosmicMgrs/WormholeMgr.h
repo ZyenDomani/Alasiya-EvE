@@ -1,7 +1,7 @@
 
  /**
   * @name WormholeMgr.h
-  *     WH Spawn managment system for Alasiya EvEmu
+  *     WH Spawn management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 December 2015
@@ -19,7 +19,7 @@
 
 /* this class will control all aspects of
  * creating, monitoring, removing, logging
- * connecting, and saving of all wormholes.
+ * connecting, and saving of wormholes.
  */
 
 class PyServiceMgr;

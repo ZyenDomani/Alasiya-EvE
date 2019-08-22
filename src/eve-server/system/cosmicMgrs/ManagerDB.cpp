@@ -437,20 +437,13 @@ void ManagerDB::DeleteSpawnedRats()
     sDatabase.RunQuery(err, "DELETE FROM entity WHERE customInfo LIKE '%beltrat%'");
 }
 
-uint32 ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)
+void ManagerDB::CreateRoidItemID(ItemData& idata, AsteroidData& adata)
 {
     DBerror err;
-    uint32 uid = 0;
-    if (!sDatabase.RunQueryLID(err, uid,
+    sDatabase.RunQueryLID(err, adata.itemID,
         "INSERT INTO sysAsteroids (itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
         " VALUES ('%s', %u, %u, %u, %f, %f, %f, %f, %f)",
-                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z ))
-    {
-        codelog(DATABASE__ERROR, "Failed to insert new asteroid entity: %s", err.c_str());
-        return 0;
-    }
-
-    return (adata.itemID = uid);
+                adata.itemName.c_str(), adata.typeID, adata.systemID, adata.beltID, adata.quantity, adata.radius, adata.x, adata.y, adata.z );
 }
 
 bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
@@ -460,7 +453,7 @@ bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
         "SELECT itemName, typeID, systemID, beltID, quantity, radius, x, y, z"
         " FROM sysAsteroids"
         " WHERE itemID = %u", asteroidID)) {
-        _log(DATABASE__ERROR, "Error in LoadSystemRoids query: %s", res.error.c_str());
+        _log(DATABASE__ERROR, "Error in GetAsteroidData query: %s", res.error.c_str());
             return false;
     }
 
@@ -477,7 +470,8 @@ bool ManagerDB::GetAsteroidData(uint32 asteroidID, AsteroidData& dbData)
         dbData.y = row.GetDouble(7);
         dbData.z = row.GetDouble(8);
         return true;
-    }
+    } else
+        dbData = AsteroidData();
 
     return false;
 }
@@ -524,17 +518,18 @@ void ManagerDB::ClearAsteroids()
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM sysAsteroids WHERE 1");
+    sDatabase.RunQuery(err, "ALTER TABLE `sysAsteroids` auto_increment = 450000000");
 }
 
 void ManagerDB::SaveRoid(AsteroidData& data)
 {
     DBerror err;
     if (!sDatabase.RunQuery(err,
-        "INSERT INTO sysAsteroids"
-        " (itemID,itemName,typeID,systemID,beltID,quantity,radius,x, y, z)"
-        " VALUES "
-        "(%u, '%s', %u, %u, %u, %f, %f, %f, %f, %f)",
-        data.itemID, data.itemName.c_str(), data.typeID, data.systemID, data.beltID, data.quantity, data.radius, data.x, data.y, data.z))
+        "UPDATE sysAsteroids"
+        " SET quantity = %f,"
+        " radius = %f"
+        " WHERE itemID = %u",
+        data.quantity, data.radius, data.itemID))
     {
         _log(DATABASE__ERROR, "SaveSystemRoids - unable to save roids - %s", err.c_str());
     }

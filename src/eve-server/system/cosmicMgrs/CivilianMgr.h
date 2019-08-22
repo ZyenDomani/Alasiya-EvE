@@ -1,7 +1,7 @@
 
  /**
   * @name CivilianMgr.h
-  *     Civilian (non-combatant NPC) managment system for Alasiya EvEmu
+  *     Civilian (non-combatant NPC) management system for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          12 Feb 2017

@@ -37,7 +37,7 @@ class AsteroidItem
 {
     friend class InventoryItem; // to let it construct us
 public:
-    AsteroidItem(uint32 _asteroidID, const ItemType &_type, const ItemData &_data, const AsteroidData &_cData);
+    AsteroidItem(const ItemType& type, const ItemData& idata, const AsteroidData& adata);
     virtual ~AsteroidItem()                             { /* Do nothing here */ }
 
     static AsteroidItemRef Load( uint32 asteroidID);
@@ -59,11 +59,11 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        AsteroidData dbData = AsteroidData();
-        if ( !ManagerDB::GetAsteroidData( asteroidID, dbData ) )
+        AsteroidData adata = AsteroidData();
+        if ( !ManagerDB::GetAsteroidData( asteroidID, adata ) )
             return RefPtr<_Ty>();
 
-        return AsteroidItemRef( new AsteroidItem(asteroidID, type, data, dbData ) );
+        return AsteroidItemRef( new AsteroidItem(type, data, adata ) );
     }
 
 private:

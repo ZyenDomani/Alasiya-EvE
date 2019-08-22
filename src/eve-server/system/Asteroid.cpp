@@ -33,11 +33,11 @@
 #include "system/SystemBubble.h"
 
 
-AsteroidItem::AsteroidItem(uint32 _asteroidID, const ItemType& _type, const ItemData& _idata, const AsteroidData& _adata)
-: InventoryItem(_asteroidID, _type, _idata),
-m_data(_adata)
+AsteroidItem::AsteroidItem(const ItemType& type, const ItemData& idata, const AsteroidData& adata)
+: InventoryItem( adata.itemID, type, idata ),
+m_data( adata )
 {
-    _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", _idata.name.c_str(), _asteroidID);
+    _log(ITEM__TRACE, "Created AsteroidItem for %s(%u).", adata.itemName.c_str(), adata.itemID);
 }
 
 AsteroidItemRef AsteroidItem::Load( uint32 asteroidID)
@@ -50,14 +50,14 @@ AsteroidItemRef AsteroidItem::Spawn( ItemData& idata, AsteroidData& adata) {
     if (type == nullptr)
         return AsteroidItemRef(nullptr);
 
+    idata.name = type->name();
     adata.itemName = type->name();
 
-    // this isnt right...this is for saving roids...
-    uint32 asteroidID = ManagerDB::CreateRoidItemID(idata, adata);
-    if (asteroidID == 0)
+    ManagerDB::CreateRoidItemID(idata, adata);
+    if (adata.itemID == 0)
         return AsteroidItemRef(nullptr);
 
-    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(asteroidID, *type, idata, adata));
+    AsteroidItemRef roidRef = AsteroidItemRef(new AsteroidItem(*type, idata, adata));
     roidRef->SetAttribute(AttrRadius,    adata.radius);
     roidRef->SetAttribute(AttrQuantity,  adata.quantity);
     roidRef->SetAttribute(AttrVolume,    type->volume());
