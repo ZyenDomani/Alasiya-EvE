@@ -236,7 +236,7 @@ public:
      * Primary public interface:
      */
     bool AlterBalance(double amount, uint8 type);
-    void SetLocation(uint32 stationID, uint32 solarSystemID, uint32 constellationID, uint32 regionID);
+    void SetLocation(uint32 stationID, SystemData& data);
 	void JoinCorporation(const CorpData& data);
     void SetDescription(const char *newDescription);
     void SetAccountKey(int32 accountKey);
@@ -298,7 +298,7 @@ public:
      */
     void            GetSkillsList(std::vector<InventoryItemRef>& skills) const;
     void            VerifySP();
-    double          GetTotalSPTrained()                 { return m_charData.skillPoints; };
+    uint32          GetTotalSPTrained()                 { return m_charData.skillPoints; };
     /**
      * Calculates Skillpoints per minute rate.
      *
@@ -336,7 +336,7 @@ public:
     void            UpdateSkillQueueEndTime( );
 
     PyRep*          GetSkillHistory();
-	EvilNumber      GetTotalSP();
+	uint32          GetTotalSP();
 
     /* GrantCertificate( uint32 certificateID )
      *

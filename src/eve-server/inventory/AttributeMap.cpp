@@ -399,16 +399,18 @@ void AttributeMap::Delete() {
 
 void AttributeMap::DeleteAttribute(uint16 attrID) {
     AttrMapItr itr = mAttributes.find(attrID);
-    if (itr != mAttributes.end())
+    if (itr != mAttributes.end()) {
         mAttributes.erase(itr);
-    DBerror err;
-    if (IsCharacter(mItem.itemID())) {
-        if (!sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
-            _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
-        }
-    } else {
-        if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
-            _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+        // if it's not in the map, it's not in db, either...
+        DBerror err;
+        if (IsCharacter(mItem.itemID())) {
+            if (!sDatabase.RunQuery(err, "DELETE FROM chrCharacterAttributes WHERE charID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
+                _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+            }
+        } else {
+            if (!sDatabase.RunQuery(err, "DELETE FROM entity_attributes WHERE itemID = %u AND attributeID = %u", mItem.itemID(), attrID)) {
+                _log(DATABASE__ERROR, "DeleteAttribute - unable to delete attribute %u for %u - %s", attrID, mItem.itemID(), err.c_str());
+            }
         }
     }
 }

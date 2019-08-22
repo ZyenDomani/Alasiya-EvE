@@ -24,7 +24,6 @@
     Updates:        Allan
 */
 
-#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "EVEServerConfig.h"
@@ -81,7 +80,7 @@ bool CharacterDB::SaveCharacter(uint32 characterID, const CharacterData &data) {
         "  aurBalance = %f,"
         "  securityRating = %f,"
         "  logonMinutes = %u,"
-        "  skillPoints = %f,"
+        "  skillPoints = %u,"
         "  locationID = %u,"
         "  stationID = %u,"
         "  solarSystemID = %u,"
@@ -262,15 +261,15 @@ PyRep* CharacterDB::ValidateCharNameRep(std::string name)
         return new PyInt(-5);
 
     for (const auto cur : badWords)
-        if (boost::icontains(name, cur))
+        if (EvE::icontains(name, cur))
             return new PyInt(-5);
 
     for (const auto cur : badChars)
-        if (boost::icontains(name, cur))
+        if (EvE::icontains(name, cur))
             return new PyInt(-5);
 
     // check for consecutive spaces
-    if (boost::icontains(name, "  "))
+    if (EvE::icontains(name, "  "))
         return new PyInt(-7);
 
     // check for multiple spaces
@@ -341,10 +340,10 @@ void CharacterDB::ValidateCharName(std::string name)
 
     // check for banned words in char name
     for (const auto cur : badWords)
-        if (boost::icontains(name, cur))
+        if (EvE::icontains(name, cur))
             throw PyException( MakeUserError("CharNameInvalidBannedWord"));
     for (const auto cur : badChars)
-        if (boost::icontains(name, cur))
+        if (EvE::icontains(name, cur))
             throw PyException( MakeUserError("CharNameInvalidSomeChar"));
 
     // check for multiple spaces

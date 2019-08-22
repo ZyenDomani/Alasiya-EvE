@@ -417,16 +417,16 @@ bool Character::AlterBalance(double amount, uint8 type) {
     PyTuple *answer = ac.Encode();
     m_pClient->SendNotification("OnAccountChange", "cash", &answer, false);
 
-    /** @todo  save to db here.  */
+    SaveCharacter();
     return true;
 }
 
-void Character::SetLocation(uint32 stationID, uint32 solarSystemID, uint32 constellationID, uint32 regionID) {
-    m_charData.locationID = (stationID == 0 ? solarSystemID : stationID);
+void Character::SetLocation(uint32 stationID, SystemData& data) {
+    m_charData.locationID = (stationID == 0 ? data.systemID : stationID);
     m_charData.stationID = stationID;
-    m_charData.solarSystemID = solarSystemID;
-    m_charData.constellationID = constellationID;
-    m_charData.regionID = regionID;
+    m_charData.solarSystemID = data.systemID;
+    m_charData.constellationID = data.constellationID;
+    m_charData.regionID = data.regionID;
     SaveCharacter();
 }
 
@@ -772,7 +772,7 @@ void Character::UpdateSkillQueue() {
             if (skill == nullptr) {
                 if (!m_pClient->IsLogin())
                     m_pClient->SendErrorMsg("SkillID %u was not found for training.  Removing from queue.", skillID);
-                _log( SKILL__WARNING, "%s(%u): SkillID %u to train was not found.  Erase and continue.", itemName().c_str(), m_itemID, skillID );
+                _log( SKILL__WARNING, "%s(%u): SkillID %u to train was not found.  Erase from queue and continue.", itemName().c_str(), m_itemID, skillID );
                 m_skillQueue.erase( m_skillQueue.begin() );
                 continue;
             }
@@ -852,7 +852,7 @@ void Character::UpdateSkillQueue() {
             skill->SaveItem();
 
             if (is_log_enabled(SKILL__INFO))
-                _log(SKILL__INFO, "%s:%s(%u) endTime = 0 - Update Values:  currentSP %u, startTime %lli, endTime %lli, timeNow: %i", \
+                _log(SKILL__INFO, "%s:%s(%u) endTime = 0 - Update Values:  currentSP %u, startTime %lli, endTime %lli, timeNow: %lli", \
                         itemName().c_str(), skill->itemName().c_str(), skill->typeID(), currentSP, startTime, endTime, currTime);
         }
 
@@ -860,7 +860,7 @@ void Character::UpdateSkillQueue() {
             if (endTime == 0) {
                 // this should not hit at this point.
                 if (is_log_enabled(SKILL__INFO))
-                    _log(SKILL__INFO, "%s:%s(%u) endTime is still 0.  Erasing current skill from queue and continuing.", \
+                    _log(SKILL__INFO, "%s:%s(%u) endTime is still 0.  Erase from queue and continue.", \
                             itemName().c_str(), skill->itemName().c_str(), skill->typeID());
                 skill->SetAttribute(AttrExpiryTime, EvilZero.get_uint32(), sent);
                 skill->SetAttribute(AttrSkillStartTime, EvilZero, false);
@@ -876,7 +876,7 @@ void Character::UpdateSkillQueue() {
             SaveSkillHistory(EvESkill::Event::QueueTrainingCompleted, endTime, m_itemID, skill->typeID(), level, currentSP);
 
             if (is_log_enabled(SKILL__TRACE))
-                _log(SKILL__TRACE, "%s:%s(%u) Queued Training completed - endTime: %lli, timeNow: %i", \
+                _log(SKILL__TRACE, "%s:%s(%u) Queued Training completed - endTime: %lli, timeNow: %lli", \
                     itemName().c_str(), skill->itemName().c_str(), skill->typeID(), endTime, currTime);
 
             if (is_log_enabled(SKILL__INFO))
@@ -913,7 +913,7 @@ void Character::UpdateSkillQueue() {
                     default: {
                         if (!sent) {
                             sent = true;
-                            m_pClient->SendInfoModalMsg("%s Completed Training to Level %u.<br>Your ship will update to the new skill level the next time you undock.",\
+                            m_pClient->SendInfoModalMsg("%s Completed Training to Level %u.<br>Your ship will update to the new level the next time you undock.",\
                                 skill->itemName().c_str(), level);
                         }
                     } break;
@@ -942,10 +942,10 @@ void Character::UpdateSkillQueue() {
     else
         SaveSkillQueue();
 
-    GetTotalSP();
     UpdateSkillQueueEndTime();
     m_pClient->UpdateSkillTraining();
     GetSkillQueue();
+    SaveCharacter();
 
     _log(SKILL__QUEUE, "%s(%u):  UpdateSkillQueue() completed in %0.4fms", itemName().c_str(), m_itemID, (GetTimeMSeconds() - start));
 }
@@ -1076,13 +1076,15 @@ void Character::ResetClone()
 void Character::SaveCharacter() {
     _log( CHARACTER__INFO, "Saving character info for %u.", m_itemID );
 
+    // update skill points before save
+    GetTotalSP();
     SetLogonMinutes();
     m_db.SaveCharacter(m_itemID, m_charData);
 }
 
 void Character::SaveFullCharacter() {
     _log( CHARACTER__INFO, "Saving full character info for %u.", m_itemID );
-    GetTotalSP();
+    //GetTotalSP();
 	SaveCharacter();
     m_db.SaveCorpData(m_itemID, m_corpData);
     SaveAttributes();
@@ -1096,15 +1098,16 @@ void Character::SaveSkillQueue() {
     m_db.SaveSkillQueue( m_itemID, m_skillQueue );
 }
 
-EvilNumber Character::GetTotalSP() {
-    // Loop through all skills trained and calculate total SP this character has trained so far
-    EvilNumber totalSP = 0;
+uint32 Character::GetTotalSP() {
+    // Loop through all skills trained and calculate total SP this character has trained
+    //  this will also update charData for current SP
+    m_charData.skillPoints = 0;
     std::vector<InventoryItemRef> skills;
     GetSkillsList( skills );
     for (auto cur : skills)
-        totalSP += cur->GetAttribute( AttrSkillPoints );    // much cleaner and more accurate    -allan
+        m_charData.skillPoints += cur->GetAttribute( AttrSkillPoints ).get_uint32();    // much cleaner and more accurate    -allan
 
-    return (m_charData.skillPoints = totalSP.get_int());
+    return m_charData.skillPoints;
 }
 
 void Character::SaveSkillHistory(uint16 eventID, double logDate, uint32 characterID, uint32 skillTypeID, uint8 skillLevel, uint32 absolutePoints)

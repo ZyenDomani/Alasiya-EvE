@@ -603,7 +603,7 @@ bool InventoryDB::DeleteItem(uint32 itemID) {
     }
 
     DBerror err;
-    if (!sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID=%u", itemID)) {
+    if (!sDatabase.RunQuery(err, "DELETE FROM entity WHERE itemID = %u", itemID)) {
         codelog(DATABASE__ERROR, "Failed to delete item %u: %s", itemID, err.c_str());
         return false;
     }
@@ -832,7 +832,7 @@ bool InventoryDB::GetCharacterData(uint32 characterID, CharacterData &into) {
     into.capsuleID = row.GetUInt( 21 );
     into.flag = row.GetUInt(22);
     into.name = row.GetText(23);
-    into.skillPoints = row.GetDouble(24);
+    into.skillPoints = row.GetUInt(24);
     into.typeID = row.GetUInt(25);
 
     return true;

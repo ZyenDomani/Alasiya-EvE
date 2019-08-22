@@ -132,6 +132,8 @@ void ItemFactory::SaveItems() {
 }
 
 void ItemFactory::RemoveItem(uint32 itemID) {
+    if (IsTempItem(itemID))
+        return;
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
@@ -416,8 +418,9 @@ InventoryItemRef ItemFactory::SpawnTempItem(ItemData &data) {
         return iRef;
 
     // spawn successful; store the ref
-    m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
-    ++m_itemCount;
+    // we're not storing temp shit unless its needed (probably wont be)
+    //m_items.insert( std::make_pair( iRef->itemID(), iRef ) );
+    //++m_itemCount;
     return iRef;
 }
 

@@ -848,6 +848,9 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
     if (jump) {
         //add jump in this system
         MapDB::AddJump(m_data.systemID);
+        
+        _log(PLAYER__INFO, "%s(%u): Add Jump to %s(%u)", \
+        pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
 
         uint16 stamp = sEntityList.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
@@ -882,6 +885,9 @@ void SystemManager::RemoveClient(Client* pClient, bool count/*false*/, bool jump
     if (jump) {
         //add jump in this system
         MapDB::AddJump(m_data.systemID);
+
+        _log(PLAYER__INFO, "%s(%u): Add Jump to %s(%u)", \
+                pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
 
         uint16 stamp = sEntityList.GetStamp();
         std::map<uint32, uint8>::iterator itr = m_jumpMap.find(stamp);
@@ -984,7 +990,7 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
 
     m_ticEntities.erase(itemID);
     m_staticEntities.erase(itemID);
-    
+
     // remove from anomaly map, if exists
     m_anomMgr->RemoveAnomaly(itemID);
 }

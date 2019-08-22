@@ -303,7 +303,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
 
     //spawn all the skills
     uint8 skillLevel = 0;
-    uint32 skillPoints = 0, totalPoints = 0;
+    uint32 skillPoints = 0;
     for (auto cur : startingSkills) {
         ItemData skillItem( cur.first, charRef->itemID(), charRef->itemID(), flagSkill );
         SkillRef skill = sItemFactory.SpawnSkill( skillItem );
@@ -319,7 +319,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         skillPoints = skill->GetSPForLevel(skillLevel);
         skill->SetAttribute(AttrSkillPoints, skillPoints, false);
         skill->SaveItem();
-        totalPoints += skillPoints;
+        cdata.skillPoints += skillPoints;
         charRef->SaveSkillHistory(EvESkill::Event::SkillPointsApplied/*EvESkill::Event::CharCreation*/, // #33 shows as "Unknown" in PD>Skill>History
                                   GetFileTimeNow(),
                                     charRef->itemID(),

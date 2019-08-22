@@ -53,9 +53,9 @@ struct CharacterData {
     uint32 careerID;
     uint32 schoolID;
     uint32 careerSpecialityID;
+    uint32 skillPoints;
     int64 loginTime;
     int64 createDateTime;
-    int64 skillPoints;
     double bounty;
     double balance;
     double aurBalance;
