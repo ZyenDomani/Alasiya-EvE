@@ -107,6 +107,8 @@ namespace EvE {
     double max(double x, double y, double z);
     // prints the top10 items in stack to stdout
     void traceStack(void);
+    // Find Case Insensitive Sub String in a given substring
+    bool icontains(std::string data, std::string toSearch, size_t pos = 0);
 }
 
 #endif /* !__MISC_H__INCL__ */

@@ -6,8 +6,6 @@
 
 #include "eve-server.h"
 
-#include <boost/algorithm/string.hpp>
-
 #include "Client.h"
 #include "ConsoleCommands.h"
 #include "npc/NPC.h"
@@ -114,7 +112,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
             // tr <me> to <locationName>?
             // this hits db directly, so test for possible sql injection code
             for (const auto cur : badCharsSearch)
-                if (boost::icontains(args.arg(1), cur))
+                if (EvE::icontains(args.arg(1), cur))
                     throw PyException( MakeCustomError("Location contains invalid characters"));
             locationID = db->GetSolarSystem(args.arg(1).c_str());
             if (!IsSolarSystem(locationID)) {
@@ -209,7 +207,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
                 // tr me to <locationName>?
                 // this hits db directly, so test for possible sql injection code
                 for (const auto cur : badCharsSearch)
-                    if (boost::icontains(args.arg(1), cur))
+                    if (EvE::icontains(args.arg(1), cur))
                         throw PyException( MakeCustomError("Location contains invalid characters"));
                     locationID = db->GetSolarSystem(args.arg(1).c_str());
                 if (!IsSolarSystem(locationID)) {

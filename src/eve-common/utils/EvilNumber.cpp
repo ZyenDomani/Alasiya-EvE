@@ -31,7 +31,7 @@
 
 EvilNumber EvilZero = EvilNumber();
 EvilNumber EvilZerof = EvilNumber(0.0f);
-EvilNumber EvilOne = 1;
+EvilNumber EvilOne = EvilNumber(1);
 const EvilNumber EvilTime_Second = EvE::Time::Second;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;
@@ -124,10 +124,13 @@ PyRep* EvilNumber::GetPyObject()
 
 inline void EvilNumber::CheckIntegrity()
 {
-    // check if we are a integer
-    int cmp_val = (int)fVal;
+    // check if we are already an integer
+    if (mType == evil_number_int)
+        return;
+    int64 cmp_val = (int64)fVal;
     if (double(cmp_val) == fVal) {
         iVal = cmp_val;
+        fVal = 0;
         mType = evil_number_int;
     }
 }
@@ -352,17 +355,14 @@ EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & va
     } else {
         // we assume that the val1 argument type is the opposite of the val2 argument type
         if (val1.mType == evil_number_float) {
-            result.fVal = val1.fVal * double(val2.iVal);
-            result.mType = evil_number_float;
+            result.fVal = val1.fVal * val2.iVal;
         } else if (val1.mType == evil_number_int) {
-            double tVal = (double)val1.iVal; // normal integer number
-            result.fVal = tVal * val2.fVal;
-            result.mType = evil_number_float;
+            result.fVal = val2.fVal * val1.iVal;
         } else {
             assert(false); // crash
         }
+        result.mType = evil_number_float;
     }
-    // check if we are an integer
     result.CheckIntegrity();
 
     return result;
@@ -381,16 +381,14 @@ EvilNumber EvilNumber::_SelfMultiply( const EvilNumber & val )
     } else {
         // we assume that the val argument is the opposite of the 'this' type
         if (mType == evil_number_float) {
-            this->fVal = this->fVal * double(val.iVal);
+            this->fVal = this->fVal * val.iVal;
         } else if (mType == evil_number_int) {
-            double tVal = (double)iVal; // normal integer number
-            this->fVal = tVal * val.fVal;
+            this->fVal = val.fVal * iVal;
             mType = evil_number_float;
         } else {
             assert(false); // crash
         }
     }
-    // check if we are an integer
     CheckIntegrity();
 
     return *this;
@@ -404,28 +402,23 @@ EvilNumber EvilNumber::_Divide( const EvilNumber & val1, const EvilNumber & val2
     if (val2.mType == val1.mType) {
         if (val1.mType == evil_number_float) {
             result.fVal = val1.fVal / val2.fVal;
-            result.mType = evil_number_float;
         } else if (val1.mType == evil_number_int) {
             // make sure we can do things like 2 / 4 = 0.5f
             result.fVal = double(val1.iVal) / double(val2.iVal);
-            result.mType = evil_number_float;
         } else {
             assert(false); // crash
         }
     } else {
         // we assume that the val1 argument type is the opposite of the val2 argument type
         if (val1.mType == evil_number_float) {
-            result.fVal = val1.fVal / double(val2.iVal);
-            result.mType = evil_number_float;
+            result.fVal = val1.fVal / val2.iVal;
         } else if (val1.mType == evil_number_int) {
-            double tVal = (double)val1.iVal; // normal integer number
-            result.fVal = tVal / val2.fVal;
-            result.mType = evil_number_float;
+            result.fVal = val1.iVal / val2.fVal;
         } else {
             assert(false); // crash
         }
     }
-    // check if we are an integer
+    result.mType = evil_number_float;
     result.CheckIntegrity();
 
     return result;
@@ -446,16 +439,14 @@ EvilNumber EvilNumber::_SelfDivide( const EvilNumber & val )
     } else {
         // we assume that the val argument is the opposite of the 'this' type
         if (mType == evil_number_float) {
-            this->fVal = this->fVal / double(val.iVal);
+            this->fVal = this->fVal / val.iVal;
         } else if (mType == evil_number_int) {
-            double tVal = (double)iVal; // normal integer number
-            this->fVal = tVal / val.fVal;
+            this->fVal = iVal / val.fVal;
             mType = evil_number_float;
         } else {
             assert(false); // crash
         }
     }
-    // check if we are a integer
     CheckIntegrity();
 
     return *this;
@@ -479,17 +470,14 @@ EvilNumber EvilNumber::_Add( const EvilNumber & val1, const EvilNumber & val2 )
     } else {
         // we assume that the val argument is the opposite of the 'this' type
         if (val1.mType == evil_number_float) {
-            result.fVal = val1.fVal + double(val2.iVal);
-            result.mType = evil_number_float;
+            result.fVal = val1.fVal + val2.iVal;
         } else if (val1.mType == evil_number_int) {
-            double tVal = (double)val1.iVal; // normal integer number
-            result.fVal = tVal + val2.fVal;
-            result.mType = evil_number_float;
+            result.fVal = val1.iVal + val2.fVal;
         } else {
             assert(false); // crash
         }
+        result.mType = evil_number_float;
     }
-    // check if we are a integer
     result.CheckIntegrity();
 
     return result;
@@ -517,7 +505,6 @@ EvilNumber EvilNumber::_SelfAdd( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    // check if we are a integer
     CheckIntegrity();
 
     return *this;
@@ -551,7 +538,6 @@ EvilNumber EvilNumber::_Subtract( const EvilNumber & val1, const EvilNumber & va
             assert(false); // crash
         }
     }
-    // check if we are a integer
     result.CheckIntegrity();
 
     return result;
@@ -579,7 +565,6 @@ EvilNumber EvilNumber::_SelfSubtract( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    // check if we are a integer
     CheckIntegrity();
 
     return *this;
@@ -612,7 +597,6 @@ EvilNumber EvilNumber::_Modulus( const EvilNumber & val1, const EvilNumber & val
             assert(false); // crash
         }
     }
-    // check if we are a integer
     result.CheckIntegrity();
 
     return result;
@@ -643,7 +627,6 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    // check if we are a integer
     CheckIntegrity();
 
     return *this;
@@ -651,12 +634,12 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
 
 EvilNumber EvilNumber::_SelfIncrement()
 {
-    return _SelfAdd(EvilNumber(1));
+    return _SelfAdd(EvilOne);
 }
 
 EvilNumber EvilNumber::_SelfDecrement()
 {
-    return _SelfSubtract(EvilNumber(1));
+    return _SelfSubtract(EvilOne);
 }
 
 

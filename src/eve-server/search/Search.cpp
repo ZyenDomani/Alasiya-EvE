@@ -24,7 +24,6 @@
 */
 
 
-#include <boost/algorithm/string.hpp>
 #include "eve-server.h"
 
 #include "search/Search.h"
@@ -58,7 +57,7 @@ PyResult Search::Handle_Query( PyCallArgs& call ) {
 
     // this hits db directly, so test for possible sql injection code
     for (const auto cur : badCharsSearch)
-        if (boost::icontains(args.str, cur))
+        if (EvE::icontains(args.str, cur))
             throw PyException( MakeCustomError("Search String contains invalid characters"));
 
     return m_db->Query( str, &args.ids, call.client->GetCharacterID() );
@@ -87,7 +86,7 @@ PyResult Search::Handle_QuickQuery( PyCallArgs& call )  {
 
     // this hits db directly, so test for possible sql injection code
     for (const auto cur : badCharsSearch)
-        if (boost::icontains(args.str, cur))
+        if (EvE::icontains(args.str, cur))
             throw PyException( MakeCustomError("Search String contains invalid characters"));
 
     return m_db->QuickQuery( str, &args.ids, call.client->GetCharacterID(), hideNPC, onlyAltName);

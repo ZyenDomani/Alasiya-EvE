@@ -205,8 +205,10 @@ public:
         { \
             if (this->mType == evil_number_int) \
                 return this->iVal a static_cast<int64>(val); \
-            else \
+            else if (this->mType == evil_number_float) \
                 return this->fVal a static_cast<double>(val); \
+            else \
+                assert(false); \
         }
 
     /**
