@@ -447,6 +447,7 @@ void Client::ProcessClient() {
                     } break;
                     case ClientState::csJump:
                     case ClientState::csDock:
+                    case ClientState::csUndock:
                     case ClientState::csBoard: {
                         // do nothing for these.  they are space only calls.
                     } break;
@@ -535,6 +536,7 @@ void Client::ProcessClient() {
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
                     SetBallPark();
+                    m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csJump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
@@ -630,6 +632,8 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/, bool update/*fals
 }
 
 void Client::SetBallPark() {
+    _log(PLAYER__AP_TRACE, "Client::SetBallPark():  State: %s, SetState: %s, Beyonce: %s", \
+                GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
     m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
@@ -1278,30 +1282,35 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
         return;
     }
 
-    m_toGate = toGate;
-    StaticData toData = StaticData();
-    if (!sDataMgr.GetStaticInfo(m_toGate, toData)) {
-        sLog.Error("Client","%s: Failed to query information for stargate %u", m_char->itemName().c_str(), toGate);
-        return;
-    }
-    m_moveSystemID = toData.systemID;
-    m_movePoint = toData.position;
-    m_movePoint.MakeRandomPointOnSphereLayer(6500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
-/*
-    char ci[25];
-    snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
-    m_ship->SetCustomInfo(ci);
-*/
-
-    // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
-    m_char->VisitSystem(toData.systemID);
-
+    // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
+    MapDB::AddJump(m_SystemData.systemID);
+      
     // call Stop() per packet sniff - shuts off AP.  Halt() does also.  try not calling any movement updates
     //pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
     pShipSE->DestinyMgr()->SendJumpOut(fromGate);
     //  show gate animation in from gate.   -working -allan 15Nov15
     pShipSE->DestinyMgr()->SendGateActivity(fromGate);
 
+    m_toGate = toGate;
+    StaticData toData = StaticData();
+    if (!sDataMgr.GetStaticInfo(m_toGate, toData)) {
+        sLog.Error("Client","%s: Failed to query system information for stargate %u", m_char->itemName().c_str(), toGate);
+        return;
+    }
+    // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
+    MapDB::AddJump(toData.systemID);
+    
+    // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
+    m_char->VisitSystem(toData.systemID);
+
+    m_movePoint = toData.position;
+    m_movePoint.MakeRandomPointOnSphereLayer(6500, 9500);   // Make Jump-In point a random spot on ~10km radius sphere about the stargate
+    m_moveSystemID = toData.systemID;
+/*
+    char ci[25];
+    snprintf(ci, sizeof(ci), "Jumping:%u", toGate);
+    m_ship->SetCustomInfo(ci);
+*/
     //delay the move 4sec so they can see the JumpOut animation
     SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
 }
