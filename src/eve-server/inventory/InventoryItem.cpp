@@ -617,21 +617,31 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
     InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID, old_owner = m_ownerID;
     EVEItemFlags old_flag = m_flag;
-
+    
+    if (new_location != m_locationID) {
+        // remove from current location
+        if (IsValidLocation(m_locationID)) {
+            iRef = sItemFactory.GetItem(m_locationID);
+            if (iRef.get() != nullptr)
+                iRef->RemoveItem(InventoryItemRef(this));
+            else
+                _log(INV__WARNING, "Donate(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
+        }
+    }
+    
+    // update data
     m_flag = new_flag;
     m_ownerID = new_owner;
     m_locationID = new_location;
-
-    if (old_location != new_location) {
-        if (IsValidLocation(old_location)) {
-            iRef = sItemFactory.GetItem( old_location);
-            if (iRef.get() != nullptr)
-                iRef->RemoveItem(InventoryItemRef(this));
-        }
-        if (IsValidLocation(new_location)) {
-            iRef = sItemFactory.GetItem( new_location);
+    
+    if (old_location != m_locationID) {      
+        // add to new location
+        if (IsValidLocation(m_locationID)) {
+            iRef = sItemFactory.GetItem(m_locationID);
             if (iRef.get() != nullptr)
                 iRef->AddItem(InventoryItemRef(this));
+            else
+                _log(INV__WARNING, "Donate(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
         }
     }
 
@@ -672,23 +682,33 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
-    m_flag = new_flag;
-    m_locationID = new_location;
 
-    if (old_location != m_locationID) {
-        if (IsValidLocation(old_location)) {
-            iRef = sItemFactory.GetItem(old_location);
+    if (new_location != m_locationID) {
+        // remove from current location
+        if (IsValidLocation(m_locationID)) {
+            iRef = sItemFactory.GetItem(m_locationID);
             if (iRef.get() != nullptr)
                 iRef->RemoveItem(InventoryItemRef(this));
+            else
+                _log(INV__WARNING, "Move(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
         }
+    }
+        
+    // update data
+    m_flag = new_flag;
+    m_locationID = new_location;
+    
+    if (old_location != m_locationID) {     
+        // add to new location
         if (IsValidLocation(m_locationID)) {
             iRef = sItemFactory.GetItem(m_locationID);
             if (iRef.get() != nullptr)
                 iRef->AddItem(InventoryItemRef(this));
             else
-                _log(INV__WARNING, "Item %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
+                _log(INV__WARNING, "Move(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
         }
     }
+    
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
@@ -696,8 +716,6 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    //if (sConfig.world.saveOnMove)
-    //    SaveItem();
     m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
 
     //notify about the changes.
