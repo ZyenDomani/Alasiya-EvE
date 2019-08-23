@@ -253,13 +253,14 @@ Client::~Client() {
                 OnCharNoLongerInStation();
             }
 
-            // char logout removes fleet data, if any
-            m_char->LogOut();
-            // ship logout also offlines modules.  this resets ship effects data for error fix on char relog
-            m_ship->LogOut();
         }
+        // remove fleet data and set logout time
+        m_char->LogOut();
     }
 
+    // save shipstate and remove from sItemFactory, as *something* in sItemFactory.save changes ship position
+    m_ship->LogOut();
+    
     m_system->RemoveClient(this, true);
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
@@ -283,11 +284,12 @@ bool Client::ProcessNet()
 
     PyPacket *p(nullptr);
     while (p = PopPacket()) {
+        /*
         if (is_log_enabled(CLIENT__IN_ALL)) {
             _log(CLIENT__IN_ALL, "Received packet:");
             PyLogDumpVisitor dumper(CLIENT__IN_ALL, CLIENT__IN_ALL);
             p->Dump(CLIENT__IN_ALL, dumper);
-        }
+        }*/
         try {
             if (!DispatchPacket(p))
                 sLog.Error("Client", "%s: Failed to dispatch packet of type %s (%d).", m_char->itemName().c_str(), MACHONETMSG_TYPE_NAMES[ p->type ], (int)p->type);
@@ -366,7 +368,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     MoveToLocation(m_locationID, pos);
 
     if (IsSolarSystem(m_locationID)) {
-        SetInvulTimer(ClientTimers::WarpInInvul);
         WarpIn();
     } else {
         if (m_ship->typeID() == itemTypeCapsule)
@@ -374,8 +375,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
                     // error here...
-                } else if (!sRef->HasShip(this))    // need to get hangar items (flagHangar) by owner
+                } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
                     SpawnNewRookieShip();
+                }
             } else
                 SpawnNewRookieShip();
     }
@@ -392,7 +394,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     sItemFactory.UnsetUsingClient();
     UpdateSkillTraining();
 
-    SetClientTimer(ClientState::csLogin, (IsSolarSystem(m_locationID) ? ClientTimers::LoginTimer *2 : ClientTimers::LoginTimer));
+    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return (m_loaded = true);
 }
 
@@ -442,6 +444,11 @@ void Client::ProcessClient() {
                     } break;
                     case ClientState::csKilled: {
                         _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csKilled");
+                    } break;
+                    case ClientState::csJump:
+                    case ClientState::csDock:
+                    case ClientState::csBoard: {
+                        // do nothing for these.  they are space only calls.
                     } break;
                 }
                 m_clientState = ClientState::csIdle;
@@ -499,6 +506,10 @@ void Client::ProcessClient() {
             _log(CLIENT__TIMER, "Client::ProcessClient() - timer check: timenow %u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
+                case ClientState::csIdle: {
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
+                    // this shouldnt hit...error
+                } break;
                 case ClientState::csDock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
                     DockToStation();
@@ -506,6 +517,7 @@ void Client::ProcessClient() {
                 case ClientState::csUndock: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
                     SetBallPark();
+                    m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csKilled: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
@@ -527,9 +539,6 @@ void Client::ProcessClient() {
                 case ClientState::csJump: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
                     ExecuteJump();
-                } break;
-                case ClientState::csIdle: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
                 } break;
                 case ClientState::csLogout: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
@@ -621,7 +630,6 @@ void Client::SetDestiny(const GPoint& pt, bool count/*false*/, bool update/*fals
 }
 
 void Client::SetBallPark() {
-    m_login = false;
     m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
     if (pShipSE->SysBubble() == nullptr)
         m_system->AddEntity(pShipSE);
@@ -631,7 +639,7 @@ void Client::SetBallPark() {
         pShipSE->DestinyMgr()->Jump();
     if (!m_setStateSent and m_beyonce)  // MUST have beyonce before sending setstate data.
         pShipSE->DestinyMgr()->SendSetState();
-    if (!IsIdle()) {
+    if (!IsIdle() and !IsJump() and !IsLogin()) {
         m_clientState = ClientState::csIdle;
         _log(AUTOPILOT__TRACE, "SetBallPark() - m_clientState set to Idle");
     }
@@ -745,7 +753,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_system->AddClient(this, count, IsJump());
     }
 
-    m_char->SetLocation(stationID, m_SystemData.systemID, m_SystemData.constellationID, m_SystemData.regionID);   // stationID MUST be 0 when InSpace.
+    m_char->SetLocation(stationID, m_SystemData);   // stationID MUST be 0 when InSpace.
 
     /** @todo  verify 'pt' is within system boundries */
     m_ship->SetPosition(pt);
@@ -864,8 +872,9 @@ void Client::DockToStation() {
                 // error here...
             } else if (!sRef->HasShip(this))    // need to get hangar items (flagHangar) by owner
                 SpawnNewRookieShip();
-        } else
+        } else {
             SpawnNewRookieShip();
+        }
 
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
@@ -945,7 +954,7 @@ void Client::SetPodItem() {
 void Client::CheckShipRef(ShipItemRef newShipRef)
 {
     if (newShipRef.get() == nullptr) {
-        _log(PLAYER__ERROR, "BoardShip() - %s: newShipRef == NULL.", m_char->itemName().c_str());
+        _log(PLAYER__ERROR, "CheckShipRef() - %s: newShipRef == NULL.", m_char->itemName().c_str());
         throw PyException(MakeCustomError("Could not find ship's ItemRef.  Cannot Board.   Ref: ServerError 12321."));
     } else if (!newShipRef->singleton()) {
         _log(PLAYER__MESSAGE, "%s tried to board ship %u, which is not assembled.", m_char->itemName().c_str(), newShipRef->itemID());
@@ -2366,12 +2375,6 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
             throw PyException(MakeUserError("ServiceNotFound"));
         }
     }
-
-    //Debug code
-    //if (req.method != "BeanCount")
-        //_log(CLIENT__CALL_REP, "%s call made to %s",req.method.c_str(),packet->dest.service.c_str());
-        //sLog.Warning("Client::BeanCount","(%s/%s) BeanCount error reporting and handling is not implemented yet.", \
-                     req.method.c_str(),packet->dest.service.c_str());
 
     //build arguments
     PyCallArgs args(this, req.arg_tuple, req.arg_dict);
