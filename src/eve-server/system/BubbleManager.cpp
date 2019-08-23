@@ -266,7 +266,7 @@ void BubbleManager::RemoveBubble(uint32 systemID, SystemBubble* pSB)
 {
     auto range = m_bubbleMap.equal_range(systemID);
     for ( auto itr = range.first; itr != range.second; ++itr)
-        if (itr->second = pSB) {
+        if (itr->second == pSB) {
             m_bubbleMap.erase(itr);
             return;
         }
@@ -283,7 +283,7 @@ void BubbleManager::RemoveSpawnID(uint16 bubbleID, uint32 spawnID)
     // is this right??
     auto range = m_spawnIDs.equal_range(bubbleID);
     for ( auto itr = range.first; itr != range.second; ++itr )
-        if (itr->second = spawnID) {
+        if (itr->second == spawnID) {
             m_spawnIDs.erase(itr);
             return;
         }
