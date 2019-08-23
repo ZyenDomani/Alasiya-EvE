@@ -159,8 +159,9 @@ void EntityList::AddPlayer(Client* pClient)
                 role.emplace(pClient, pClient->GetCorpRole());
                 m_corpMembers.emplace(pClient->GetCorporationID(), role);
             }
-        } else
+        } else {
             m_players.emplace(pClient->GetCharID(), pClient);
+        }
 }
 
 void EntityList::RemovePlayer(Client* pClient)
@@ -177,8 +178,9 @@ void EntityList::RemovePlayer(Client* pClient)
                         itr->second.erase(itr2);
                 }
             }
-        } else
+        } else {
             m_players.erase(pClient->GetCharID());
+        }
 }
 
 
@@ -234,7 +236,7 @@ void EntityList::Process() {
             sMissionDataMgr.Process();  // 1m
 
             if (m_minutes % 5 == 0) { // ~5m
-                sWHMgr.Process();   // ~2m
+                sWHMgr.Process(); 
                 for (auto cur : m_systems)
                     cur.second->UpdateData();   // update active system timers and dynamic data every 5m
             }
@@ -394,9 +396,9 @@ void EntityList::CorpNotify(uint32 corpID, uint8 type, const char* notifyType, c
             // who else wants/needs this?
             // PersonnelManager is only role that can view corp applications
             while (itr != cItr->second.end()) {
-                //if (itr->second &Corp::Role::Director == Corp::Role::Director)
+                //if ((itr->second &Corp::Role::Director) == Corp::Role::Director)
                 //    cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
-                if (itr->second &Corp::Role::PersonnelManager == Corp::Role::PersonnelManager)
+                if ((itr->second &Corp::Role::PersonnelManager) == Corp::Role::PersonnelManager)
                     cMap.emplace(std::make_pair(itr->first->GetCharacterID(), itr->first));
                 ++itr;
             }

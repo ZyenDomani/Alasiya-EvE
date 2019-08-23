@@ -61,13 +61,12 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(pMod->groupID()) != m_ModulesFittedByGroupID.end() )
-        ++(m_ModulesFittedByGroupID.find(pMod->groupID())->second);
+        m_ModulesFittedByGroupID.find(pMod->groupID())->second += 1;
     else
         m_ModulesFittedByGroupID.emplace(pMod->groupID(), 1);
 
     // module is fit so change state from Unfitted to Offline
     pMod->SetModuleState(Module::State::Offline);
-    //pMod->SetAttribute(AttrOnline, EvilZero, false);
     return true;
 }
 
@@ -225,14 +224,15 @@ uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
             return flagIllegal;
             } break;
     }
+    return flagIllegal;
 }
 
 uint8 ModuleContainer::GetFittedModuleCountByGroup(uint16 groupID)
 {
-    if ( m_ModulesFittedByGroupID.find(groupID) == m_ModulesFittedByGroupID.end() )
-        return 0;
-    else
+    if ( m_ModulesFittedByGroupID.find(groupID) != m_ModulesFittedByGroupID.end() )
         return m_ModulesFittedByGroupID.find(groupID)->second;
+        
+    return 0;
 }
 
 GenericModule* ModuleContainer::GetRandModule()
@@ -330,7 +330,7 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     if (m_ModulesFittedByGroupID.find(pMod->groupID()) != m_ModulesFittedByGroupID.end()) {
         if (m_ModulesFittedByGroupID.find(pMod->groupID())->second > 1) {
             // We still have more than one module of this group fitted, so just reduce number fitted by 1:
-            --(m_ModulesFittedByGroupID.find(pMod->groupID())->second);
+            m_ModulesFittedByGroupID.find(pMod->groupID())->second -= 1;
         } else {
             // This was the last (or only) module of this group fitted, so remove the entry from the map:
             m_ModulesFittedByGroupID.erase(pMod->groupID());
