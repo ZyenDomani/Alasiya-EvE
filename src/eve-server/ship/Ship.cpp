@@ -16,7 +16,7 @@
 
 /*
  * ShipType
- */
+ *
 ShipType::ShipType(
     uint32 _id,
     // ItemType stuff:
@@ -28,13 +28,13 @@ ShipType::ShipType(
 ShipType *ShipType::Load(uint32 shipTypeID)
 {
     return ItemType::Load<ShipType>(shipTypeID);
-}
+}*/
 
 /*
  * ShipItem
  */
-ShipItem::ShipItem(uint32 _shipID, const ShipType &_shipType, const ItemData &_data)
-: InventoryItem(_shipID, _shipType, _data),
+ShipItem::ShipItem(uint32 shipID, const ItemType &type, const ItemData &data)
+: InventoryItem(shipID, type, data),
 m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {

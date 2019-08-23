@@ -235,9 +235,7 @@ _Ty* ItemType::_LoadType( uint32 typeID, const ItemGroup &group, const TypeData 
         case EVEDB::invCategories::Blueprint: {
             return BlueprintType::_LoadType<BlueprintType>(typeID, group, data );
         }
-        case EVEDB::invCategories::Ship: {
-            return ShipType::_LoadType<ShipType>(typeID, group, data );
-        }
+        case EVEDB::invCategories::Ship: 
         case EVEDB::invCategories::Accessories:  // clone, voucher, outpost improvement/upgrade, plex
         case EVEDB::invCategories::Commodity:
         case EVEDB::invCategories::Celestial:
@@ -286,17 +284,17 @@ bool ItemType::_Load()
 
     // load required skills and levels into their own map, for later checks
     if (HasAttribute(AttrRequiredSkill1))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_int(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill1).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill1Level).get_uint32()));
     if (HasAttribute(AttrRequiredSkill2))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill2).get_int(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill2).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill2Level).get_uint32()));
     if (HasAttribute(AttrRequiredSkill3))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill3).get_int(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill3).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill3Level).get_uint32()));
     if (HasAttribute(AttrRequiredSkill4))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill4).get_int(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill4).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill4Level).get_uint32()));
     if (HasAttribute(AttrRequiredSkill5))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill5).get_int(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill5).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill5Level).get_uint32()));
     if (HasAttribute(AttrRequiredSkill6))
-        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill6).get_int(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_int()));
+        m_reqSkillMap.insert(std::pair<uint16, uint8>((uint16)GetAttribute(AttrRequiredSkill6).get_uint32(), (uint8)GetAttribute(AttrRequiredSkill6Level).get_uint32()));
 
     LoadEffects();
 

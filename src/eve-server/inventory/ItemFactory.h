@@ -45,7 +45,6 @@ class AsteroidData;
 
 class BlueprintType;
 class CharacterType;
-class ShipType;
 class StationType;
 class Missile;
 class Client;
@@ -75,8 +74,10 @@ public:
     InventoryDB* db()                                   { return m_db; }
 
     Client* GetUsingClient()                            { return m_pClient; }
-    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);     // load=true will load the item and its container (recursively) into server, up to solarSystem
-    Inventory* GetItemContainerInventory(uint32 itemID, bool load = true);   // load=true will load the item and its container (recursively) into server, up to solarSystem
+    // load=true will load the item and its container (recursively) into server, up to solarSystem
+    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);  
+    // load=true will load the item and its container (recursively) into server, up to solarSystem
+    Inventory* GetItemContainerInventory(uint32 itemID, bool load=true); 
 
     /**
      * these load type, cache it and return it.
@@ -87,7 +88,7 @@ public:
     const ItemCategory*     GetCategory(EVEItemCategories category);
     const ItemGroup*        GetGroup(uint32 groupID);
     const ItemType*         GetType(uint32 typeID);
-    const ShipType*         GetShipType(uint32 shipTypeID);
+    //const ShipType*         GetShipType(uint32 shipTypeID);
     const StationType*      GetStationType(uint32 stationTypeID);
     const CharacterType*    GetCharacterType(uint32 characterTypeID);
     const BlueprintType*    GetBlueprintType(uint32 blueprintTypeID);
@@ -123,7 +124,6 @@ public:
      *
      * @param[in] data Item data (for entity table).
      * @param[in] charData Character data.
-     * @param[in] appData Character's appearance.
      * @param[in] corpData Character's corporation-membership data.
      * @return RefPtr to _Ty; NULL if load failed.
      */

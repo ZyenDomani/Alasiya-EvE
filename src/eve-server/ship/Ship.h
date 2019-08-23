@@ -38,7 +38,7 @@
 
 /**
  * Class managing ship type data.
- */
+ *
 class ShipType
 : public ItemType
 {
@@ -54,9 +54,7 @@ protected:
         const TypeData &_data
     );
 
-    /*
-     * Member functions:
-     */
+    // Member functions:
     using ItemType::_Load;
 
     // Template loader:
@@ -66,13 +64,16 @@ protected:
         // verify it's a ship
         if( group.categoryID() != EVEDB::invCategories::Ship ) {
             _log( ITEM__ERROR, "Tried to load %u (%s) as a Ship.", shipTypeID, group.category().name().c_str() );
-            return NULL;
+            if (sConfig.server.StackTrace)
+                EvE::traceStack();
+            return RefPtr<_Ty>();
         }
 
         return new ShipType(shipTypeID, group, data );
     }
 
 };
+*/
 
 /**
  * InventoryItem which represents ShipItem.
@@ -86,12 +87,7 @@ class ShipItem
     friend class InventoryItem;    // to let it construct us
 
 protected:
-    ShipItem(
-        uint32 _shipID,
-        // InventoryItem stuff:
-        const ShipType &_shipType,
-        const ItemData &_data
-    );
+    ShipItem(uint32 shipID, const ItemType &type, const ItemData &data);
     ~ShipItem() noexcept;
 
 public:
@@ -124,7 +120,7 @@ public:
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
-    const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
+  //  const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
 
     bool IsPopped()                                     { return m_isPopped; }
     void SetPopped(bool set=false)                      { m_isPopped = set; }
@@ -251,8 +247,8 @@ protected:
             return RefPtr<_Ty>();
         }
 
-        const ShipType &shipType = static_cast<const ShipType &>( type );
-        return ShipItemRef( new ShipItem(shipID, shipType, data ));
+       // const ShipType &shipType = static_cast<const ShipType &>( type );
+        return ShipItemRef( new ShipItem(shipID, type, data ));
     }
 
     //bool LoadAttributes();

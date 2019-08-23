@@ -296,10 +296,10 @@ const CharacterType* ItemFactory::GetCharacterTypeByBloodline(uint32 bloodlineID
         return nullptr;
     return GetCharacterType(characterTypeID);
 }
-
+/*
 const ShipType* ItemFactory::GetShipType(uint32 shipTypeID) {
     return _GetType<ShipType>(shipTypeID);
-}
+}*/
 
 const StationType* ItemFactory::GetStationType(uint32 stationTypeID) {
     return _GetType<StationType>(stationTypeID);

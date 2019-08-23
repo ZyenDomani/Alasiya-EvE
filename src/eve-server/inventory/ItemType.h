@@ -161,11 +161,6 @@ protected:
     static ItemGroup *_Load( uint16 groupID);
     static ItemGroup *_Load( uint16 groupID, const ItemCategory &category, const GroupData &data);
 
-    const uint16 m_id;
-    const ItemCategory *m_category;
-
-    std::string m_name;
-    std::string m_description;
     // using a bitfield here saves
     // considerable amount of memory ...
     bool m_useBasePrice : 1;
@@ -175,6 +170,12 @@ protected:
     bool m_anchorable : 1;
     bool m_fittableNonSingleton : 1;
     bool m_published : 1;
+    
+    const uint16 m_id;
+    const ItemCategory *m_category;
+
+    std::string m_name;
+    std::string m_description;
 };
 
 /*
@@ -222,7 +223,6 @@ public:
     /**
      * Loads type from DB.
      *
-     * @param[in] factory
      * @param[in] typeID ID of type to load.
      * @return Pointer to new ItemType object; NULL if failed.
      */
@@ -327,14 +327,14 @@ private:
     std::map<uint16, uint8> m_reqSkillMap;              // k,v map of required skill, level for this ItemType, if any.
     std::map<uint16, EvilNumber> m_AttributeMap;        // k,v map of attributeID, value
 
+    bool m_published;
     const uint16 m_id;
     const ItemGroup *m_group;
     std::string m_name;
     std::string m_description;
     uint32 m_portionSize;
-    double m_basePrice;
-    bool m_published;
     uint32 m_marketGroupID;
+    double m_basePrice;
     double m_chanceOfDuplicating;
     double m_radius;
     double m_mass;
@@ -363,15 +363,15 @@ public:
               const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);
 
     // Content:
-    std::string     name;
+    bool            contraband :1;
+    bool            singleton :1;
+    EVEItemFlags    flag;
     uint32          typeID;
     uint32          ownerID;
     uint32          locationID;
-    EVEItemFlags    flag;
-    bool            contraband :1;
-    bool            singleton :1;
     uint32          quantity;
     GPoint          position;
+    std::string     name;
     std::string     customInfo;
 };
 
