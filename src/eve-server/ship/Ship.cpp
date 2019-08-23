@@ -15,38 +15,15 @@
 #include "system/SolarSystem.h"
 
 /*
- * ShipTypeData
- */
-ShipTypeData::ShipTypeData( uint32 weaponTypeID, uint32 miningTypeID, uint32 skillTypeID)
-: mWeaponTypeID(weaponTypeID),
-mMiningTypeID(miningTypeID),
-mSkillTypeID(skillTypeID) {}
-/*
  * ShipType
  */
 ShipType::ShipType(
     uint32 _id,
     // ItemType stuff:
     const ItemGroup &_group,
-    const TypeData &_data,
-    // ShipType stuff:
-    const ItemType *_weaponType,
-    const ItemType *_miningType,
-    const ItemType *_skillType,
-    const ShipTypeData &stData)
-: ItemType(_id, _group, _data),
-m_weaponType(_weaponType),
-m_miningType(_miningType),
-m_skillType(_skillType)
-{
-    // data consistency checks:
-    if (_weaponType)
-        assert(_weaponType->id() == stData.mWeaponTypeID);
-    if (_miningType)
-        assert(_miningType->id() == stData.mMiningTypeID);
-    if (_skillType)
-        assert(_skillType->id() == stData.mSkillTypeID);
-}
+    const TypeData &_data)
+: ItemType(_id, _group, _data)
+{}
 
 ShipType *ShipType::Load(uint32 shipTypeID)
 {
@@ -88,12 +65,6 @@ ShipItemRef ShipItem::Spawn( ItemData &data) {
         return ShipItemRef(nullptr);
 
     return ShipItem::Load( shipID);
-    /*
-    ShipItemRef sShipRef = ShipItem::Load( shipID);
-    // this cause error when sending attr change (no owner found)
-    sShipRef->InitAttribs();
-    return sShipRef;
-    */
 }
 
 uint32 ShipItem::CreateItemID( ItemData &data) {

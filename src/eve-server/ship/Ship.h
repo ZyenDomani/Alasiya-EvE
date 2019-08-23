@@ -37,58 +37,21 @@
 #include "system/SystemEntity.h"
 
 /**
- * Basic container for raw ship type data.
- */
-class ShipTypeData {
-public:
-    ShipTypeData(
-        uint32 _weaponTypeID = 0,
-        uint32 _miningTypeID = 0,
-        uint32 _skillTypeID = 0
-    );
-
-    // Content:
-    uint32 mWeaponTypeID;
-    uint32 mMiningTypeID;
-    uint32 mSkillTypeID;
-};
-
-/**
  * Class managing ship type data.
- ** @todo wtf is this for???  delete it.
  */
 class ShipType
 : public ItemType
 {
     friend class ItemType; // to let them construct us
 public:
-    /**
-     * Loads ship type.
-     *
-     * @param[in] factory
-     * @param[in] shipTypeID ID of ship type to load.
-     * @return Pointer to new ShipType object; NULL if failed.
-     */
     static ShipType *Load(uint32 shipTypeID);
-
-    /*
-     * Access methods:
-     */
-    const ItemType *weaponType() const { return m_weaponType; }
-    const ItemType *miningType() const { return m_miningType; }
-    const ItemType *skillType() const { return m_skillType; }
 
 protected:
     ShipType(
         uint32 _id,
         // ItemType stuff:
         const ItemGroup &_group,
-        const TypeData &_data,
-        // ShipType stuff:
-        const ItemType *_weaponType,
-        const ItemType *_miningType,
-        const ItemType *_skillType,
-        const ShipTypeData &stData
+        const TypeData &_data
     );
 
     /*
@@ -98,9 +61,7 @@ protected:
 
     // Template loader:
     template<class _Ty>
-    static _Ty *_LoadType( uint32 shipTypeID,
-        // ItemType stuff:
-        const ItemGroup &group, const TypeData &data)
+    static _Ty *_LoadType( uint32 shipTypeID, const ItemGroup &group, const TypeData &data)
     {
         // verify it's a ship
         if( group.categoryID() != EVEDB::invCategories::Ship ) {
@@ -108,44 +69,9 @@ protected:
             return NULL;
         }
 
-        // load additional ship type stuff
-        ShipTypeData stData;
-        if( !sItemFactory.db()->GetShipType(shipTypeID, stData) )
-            return NULL;
-//  i dunno wtf this is or what it's used for....
-        // try to load weapon type
-        const ItemType *weaponType = NULL;
-        if( stData.mWeaponTypeID != 0 ) {
-            weaponType = sItemFactory.GetType( stData.mWeaponTypeID );
-            if( weaponType == NULL )
-                return NULL;
-        }
-
-        // try to load mining type
-        const ItemType *miningType = NULL;
-        if( stData.mMiningTypeID != 0 ) {
-            miningType = sItemFactory.GetType( stData.mMiningTypeID );
-            if( miningType == NULL )
-                return NULL;
-        }
-
-        // try to load skill type
-        const ItemType *skillType = NULL;
-        if( stData.mSkillTypeID != 0 ) {
-            skillType = sItemFactory.GetType( stData.mSkillTypeID );
-            if( skillType == NULL )
-                return NULL;
-        }
-
-        return new ShipType(shipTypeID, group, data, weaponType, miningType, skillType, stData );
+        return new ShipType(shipTypeID, group, data );
     }
 
-    /*
-     * Data content:
-     */
-    const ItemType *m_weaponType;
-    const ItemType *m_miningType;
-    const ItemType *m_skillType;
 };
 
 /**
@@ -166,7 +92,7 @@ protected:
         const ShipType &_shipType,
         const ItemData &_data
     );
-    virtual ~ShipItem() noexcept;
+    ~ShipItem() noexcept;
 
 public:
     /* class type pointer querys. */
