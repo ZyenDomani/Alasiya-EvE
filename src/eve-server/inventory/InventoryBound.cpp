@@ -574,7 +574,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
-            } else if (ship) {
+            } else /*if (ship)*/ {
                 pShip->RemoveItem(iRef);
             }
         } else {
