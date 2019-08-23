@@ -363,7 +363,7 @@ EvilNumber EvilNumber::_Multiply( const EvilNumber & val1, const EvilNumber & va
         }
         result.mType = evil_number_float;
     }
-    result.CheckIntegrity();
+    //result.CheckIntegrity();
 
     return result;
 }
@@ -389,7 +389,7 @@ EvilNumber EvilNumber::_SelfMultiply( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    CheckIntegrity();
+   // CheckIntegrity();
 
     return *this;
 }
@@ -419,7 +419,7 @@ EvilNumber EvilNumber::_Divide( const EvilNumber & val1, const EvilNumber & val2
         }
     }
     result.mType = evil_number_float;
-    result.CheckIntegrity();
+   // result.CheckIntegrity();
 
     return result;
 }
@@ -447,7 +447,7 @@ EvilNumber EvilNumber::_SelfDivide( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    CheckIntegrity();
+    //CheckIntegrity();
 
     return *this;
 }
@@ -478,7 +478,7 @@ EvilNumber EvilNumber::_Add( const EvilNumber & val1, const EvilNumber & val2 )
         }
         result.mType = evil_number_float;
     }
-    result.CheckIntegrity();
+    //result.CheckIntegrity();
 
     return result;
 }
@@ -505,7 +505,7 @@ EvilNumber EvilNumber::_SelfAdd( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    CheckIntegrity();
+    //CheckIntegrity();
 
     return *this;
 }
@@ -538,7 +538,7 @@ EvilNumber EvilNumber::_Subtract( const EvilNumber & val1, const EvilNumber & va
             assert(false); // crash
         }
     }
-    result.CheckIntegrity();
+    //result.CheckIntegrity();
 
     return result;
 }
@@ -565,7 +565,7 @@ EvilNumber EvilNumber::_SelfSubtract( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    CheckIntegrity();
+    //CheckIntegrity();
 
     return *this;
 }
@@ -597,7 +597,7 @@ EvilNumber EvilNumber::_Modulus( const EvilNumber & val1, const EvilNumber & val
             assert(false); // crash
         }
     }
-    result.CheckIntegrity();
+   // result.CheckIntegrity();
 
     return result;
 }
@@ -627,7 +627,7 @@ EvilNumber EvilNumber::_SelfModulus( const EvilNumber & val )
             assert(false); // crash
         }
     }
-    CheckIntegrity();
+   // CheckIntegrity();
 
     return *this;
 }

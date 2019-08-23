@@ -1165,10 +1165,7 @@ void Character::SetLogonMinutes() {
 // certificate system
 bool Character::HasCertificate( uint32 certID ) const {
     CertMap::const_iterator itr = m_certificates.find(certID);
-    if (itr != m_certificates.end())
-        return true;
-
-    return false;
+    return (itr != m_certificates.end());
 }
 
 void Character::GetCertificates( CertMap &crt ) {

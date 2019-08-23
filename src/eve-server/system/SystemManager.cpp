@@ -1394,6 +1394,7 @@ PyRep* SystemManager::GetCurrentEntities()
 void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 {
     /** @todo this will need to put entity's sigID into anomaly map for Scan::WarpTo object */
+    /** @todo this should be updated/current/correct in system's AnomalyMgr.  try to get data from there for this list  */
     for (auto cur : m_ticEntities) {
         CosmicSignature sig = CosmicSignature();
         sig.dungeonType = Dungeon::Type::Anomaly;
@@ -1455,6 +1456,8 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 //  time related methods to manipulate hour/24hour map data
 void SystemManager::UpdateData()
 {
+    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
+    
     uint16 jumps = 0;
     uint16 stamp = sEntityList.GetStamp() -60;
     std::map<uint32, uint8>::iterator itr = m_jumpMap.begin();
@@ -1476,8 +1479,6 @@ void SystemManager::UpdateData()
         if (m_clients.empty())
             if (m_jumpMap.empty())
                 m_activityTime = sEntityList.GetStamp() -50;
-
-    MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
 
     ManipulateTimeData();
 }

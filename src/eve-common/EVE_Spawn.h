@@ -32,6 +32,7 @@ namespace Spawn {
             Hauler       = 10,
             Commander    = 11,
             Officer      = 12,
+            
             BeltSpawn    = 19,   // test spot for non-belt/gate
 
             // W.I.P.
