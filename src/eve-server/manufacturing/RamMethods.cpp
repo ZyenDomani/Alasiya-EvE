@@ -265,13 +265,13 @@ void RamMethods::ItemLocationCheck(Client*const pClient, const Call_InstallJob& 
 void RamMethods::LocationRolesCheck(Client* const pClient, int16 flagID)
 {
     int64 roles = pClient->GetCorpRole();
-    if ((flagID == flagHangar and (roles & Corp::Role::HangarCanTake1 != Corp::Role::HangarCanTake1))
-    or  (flagID == flagCorpHangar2 and (roles & Corp::Role::HangarCanTake2 != Corp::Role::HangarCanTake2))
-    or  (flagID == flagCorpHangar3 and (roles & Corp::Role::HangarCanTake3 != Corp::Role::HangarCanTake3))
-    or  (flagID == flagCorpHangar4 and (roles & Corp::Role::HangarCanTake4 != Corp::Role::HangarCanTake4))
-    or  (flagID == flagCorpHangar5 and (roles & Corp::Role::HangarCanTake5 != Corp::Role::HangarCanTake5))
-    or  (flagID == flagCorpHangar6 and (roles & Corp::Role::HangarCanTake6 != Corp::Role::HangarCanTake6))
-    or  (flagID == flagCorpHangar7 and (roles & Corp::Role::HangarCanTake7 != Corp::Role::HangarCanTake7)))
+    if ((flagID == flagHangar and ((roles & Corp::Role::HangarCanTake1) != Corp::Role::HangarCanTake1))
+    or  (flagID == flagCorpHangar2 and ((roles & Corp::Role::HangarCanTake2) != Corp::Role::HangarCanTake2))
+    or  (flagID == flagCorpHangar3 and ((roles & Corp::Role::HangarCanTake3) != Corp::Role::HangarCanTake3))
+    or  (flagID == flagCorpHangar4 and ((roles & Corp::Role::HangarCanTake4) != Corp::Role::HangarCanTake4))
+    or  (flagID == flagCorpHangar5 and ((roles & Corp::Role::HangarCanTake5) != Corp::Role::HangarCanTake5))
+    or  (flagID == flagCorpHangar6 and ((roles & Corp::Role::HangarCanTake6) != Corp::Role::HangarCanTake6))
+    or  (flagID == flagCorpHangar7 and ((roles & Corp::Role::HangarCanTake7) != Corp::Role::HangarCanTake7)))
         throw(PyException(MakeUserError("RamAccessDeniedToBOMHangar")));
 }
 

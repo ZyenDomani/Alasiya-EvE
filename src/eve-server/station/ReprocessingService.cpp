@@ -225,7 +225,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
         args.flag = flagHangar;
 
     if (args.ownerID == call.client->GetCorporationID()) {
-        if (call.client->GetCorpRole() & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
+        if ((call.client->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager) {
             _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
                         call.client->GetName(), call.client->GetCharacterID());
             call.client->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
@@ -328,7 +328,7 @@ PyRep *ReprocessingServiceBound::GetQuote(uint32 itemID, Client* pClient) {
         //roles = pClient->GetRolesAtBase() | pClient->GetRolesAtAll();
         //roles = pClient->GetRolesAtHQ() | pClient->GetRolesAtAll();
         //roles = pClient->GetRolesAtOther() | pClient->GetRolesAtAll();
-        if (pClient->GetCorpRole() & Corp::Role::FactoryManager != Corp::Role::FactoryManager) {
+        if ((pClient->GetCorpRole() & Corp::Role::FactoryManager) != Corp::Role::FactoryManager) {
             _log(MANUF__WARNING, "%s(%u) doesnt have FactoryManager role to access materials for reprocessing.", \
                     pClient->GetName(), pClient->GetCharacterID());
             pClient->SendErrorMsg("You do not have the role \'Factory Manager\' which is required to access factory services on behalf of a corporation.");
