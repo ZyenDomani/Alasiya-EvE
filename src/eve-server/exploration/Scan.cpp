@@ -104,7 +104,7 @@ PyRep* Scan::ConeScan(Call_ConeScan args) {
             res.id         = cur->GetID();
             res.typeID     = cur->GetSelf()->typeID();
             res.groupID    = cur->GetSelf()->groupID();
-            res.categoryID = cur->GetSelf()->categoryID();
+            res.categoryID = cur->GetSelf()->categoryID();  // this may not be needed.  client code only asks for id,type,group
         list->AddItem(res.Encode());
     }
 

@@ -323,8 +323,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             return false;
     }
 
-    if (is_log_enabled(DATABASE__QUERIES))
-        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+   // if (is_log_enabled(DATABASE__QUERIES))
+   //     _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     if (mysql_real_query(mysql, query, querylen)) {
         uint num = mysql_errno(mysql);

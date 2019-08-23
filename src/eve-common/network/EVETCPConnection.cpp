@@ -69,8 +69,8 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
         success = MarshalDeflate(rep, *pBuffer, PACKET_SIZE_LIMIT);
 
     if (success) {
-        if (is_log_enabled(DEBUG__DEBUG))
-            DumpBuffer( pBuffer, PACKET_OUTBOUND );
+       // if (is_log_enabled(DEBUG__DEBUG))
+       //     DumpBuffer( pBuffer, PACKET_OUTBOUND );
         // write length
         *bufLen = ( pBuffer->size() - sizeof( uint32 ) );
         Send( &pBuffer );
@@ -91,8 +91,8 @@ PyRep* EVETCPConnection::PopRep()
         if ( PACKET_SIZE_LIMIT < packet->size() ) {
             sLog.Error( "Network", "Packet length %lu exceeds hardcoded packet length limit %u.", packet->size(), PACKET_SIZE_LIMIT );
         } else {
-            if (is_log_enabled(DEBUG__DEBUG))
-                DumpBuffer( packet, PACKET_INBOUND );
+           // if (is_log_enabled(DEBUG__DEBUG))
+           //     DumpBuffer( packet, PACKET_INBOUND );
             res = InflateUnmarshal( *packet );
         }
 
