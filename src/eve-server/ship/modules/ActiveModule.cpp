@@ -703,8 +703,8 @@ bool ActiveModule::CanActivate()
         if (sFxDataMgr.isOffensive(m_effectID))
             if ((m_targetSE->IsItemEntity())
             or (m_targetSE->IsStaticEntity())
-            or (m_targetSE->IsAsteroidSE())
-            or (m_targetSE->IsLogin()))
+            or (m_targetSE->IsAsteroidSE()))
+           // or (m_targetSE->IsLogin()))       // this is incomplete, so always returns false
             {
                 m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s.  Ref: ServerError 16228.", m_targetSE->GetName());
                 return false;

@@ -229,8 +229,9 @@ void MapDB::UpdatePilotCount(uint32 sysID, uint16 docked/*0*/, uint16 space/*0*/
 
 void MapDB::UpdateJumps(uint32 sysID, uint16 jumps)
 {
-    DBerror err;
-    sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u WHERE solarSystemID = %u", jumps, sysID );
+    //DBerror err;
+    //sDatabase.RunQuery(err, "UPDATE mapDynamicData SET jumpsHour = %u WHERE solarSystemID = %u", jumps, sysID );
+    sLog.Warning("MapDB::UpdateJumps", "UPDATE mapDynamicData SET jumpsHour = %u WHERE solarSystemID = %u", jumps, sysID);
 }
 
 void MapDB::UpdateKillData(uint32 sysID, SystemKillData& data)

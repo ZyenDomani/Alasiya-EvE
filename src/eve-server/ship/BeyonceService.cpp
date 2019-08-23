@@ -77,11 +77,6 @@ public:
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughAlliance);
         PyCallable_REG_CALL(BeyonceBound, CmdJumpThroughCorporationStructure);
 
-        // beyonce is constructed when player first enters system and not removed until sys change or logout.
-        // these functions are only called when beyonce is created. (fix for BlackScreen Bug)
-        if (pClient->IsLogin())
-            pClient->SetBallPark();
-
         pClient->SetBeyonce(true);
     }
 
@@ -153,11 +148,11 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
-    // this is shit....but failsafe for blackscreen bug
-    if (!call.client->IsSetStateSent())
-        if (!call.client->IsUndock())
-            call.client->SetBallPark();
-
+    // beyonce is constructed when player first enters system and not removed until sys change or logout.
+    // this function is called immediatly beyonce is created. (fix for BlackScreen Bug)
+    if (!call.client->IsUndock())
+        call.client->SetBallPark();
+    
     //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;
@@ -173,9 +168,11 @@ PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
             f.pos1.x = 100;
             f.pos1.z = -50;
             f.pos2.x = 50;
+            f.pos2.y = 0;
             f.pos3.x = -100;
             f.pos3.z = -50;
             f.pos4.x = -50;
+            f.pos4.y = 0;
         res->SetItem( 1, f.Encode() );
     return res;
 }

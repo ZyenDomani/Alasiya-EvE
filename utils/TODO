@@ -1,22 +1,17 @@
 
-
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    6 August 2019
+****    22 August 2019
 
 
 **********  found shit...high priority
-check roaming spawns.  bs rats in 0.9??
-warping not draining cap
 
-survey scanner not showing results
 
 look into anomaly roids....kernite/jasper in 0.9 (rens)
 
 cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 
 moving mwd from one slot to another throws groupfit limited error
-check anomaly spawn distance.  could be too far....no, it's 3.86au, but in small system, this seems far.
 
 
 ********  improvements
@@ -68,7 +63,6 @@ module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -pr
 
 
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
- - still havent figured out how to track/delete dungeon items on server shutdown/crash.    -priority level: low
 
 
 statistic system is currently inaccurate.  -priority level: low
@@ -80,7 +74,6 @@ fleet boosts - apply directly to ship/modules when calculated
     - this will give proper data to client when GetAllInfo() is sent
 many fleet error msgs in client unused
 
-ServiceDB::Lookup* methods need db safeguarding coded (direct db hits from client input)
 
 
 ********* old - no date - still relevant
@@ -181,8 +174,6 @@ store/board ship (cap ship hangar) not coded
 
 ship selfdestruct not coded
 
-asteroid sizes in nullsec may be too large.  look into and fix as needed
-
 
 0 AS landmarkNameID
 
@@ -244,7 +235,7 @@ Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have place
 stations - look into individual hangers loaded into mem objects (charid/items)
     - not sure if this would be worth it, but would make 'by owner' searches much faster
 
-destiny shit - misc things found in destiny.dll text
+destiny shit - misc things found in destiny.dll
     - markers for ball's yaw, pitch, roll (dunRotation)
     - criuse velocity as a fraction of max velocity
     - id of bubble ball belongs to, current and former
@@ -264,8 +255,6 @@ move *data calls from inventoryDB into static data mgr
 GetChar()->HasShares())  // not written, no underlying code yet
 
 
-roids not inserted into itemfactory map
-characters not inserted into itemfactory map
 dynamic system items not inserted into itemfactory map
 
 
@@ -278,7 +267,7 @@ update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
 
 create data needed for killboard, and integrate killboard into site
 
-Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed
+Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
 
 player error msgs - pool of msgs adjusted for character secstatus, a la sphereScript's speech files
 
@@ -296,13 +285,14 @@ implants....update existing data for more bonus.  as we are running ~60 on char 
     update for ~20+ or so points to make a difference in our attributes
 
 
-turns use quadratic bezier code or quanternion lerp curve
+turns use quanternion lerp curve
 
-wtf is ShipType() and where is it used?  delete this shit if we dont need it (and i dont think we use it)
 
-check for skill time attributes using evil floats
+check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
-check ActiveModule() c'tor for use of surveyscanrange adding skills to see if this is already modified by fx system
+update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
+
+put ship jumps back on db hits (performance hit is negligable...system mem obj isnt working and will take more thought/code)
 
 
 ********************************

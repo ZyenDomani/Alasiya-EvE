@@ -279,9 +279,6 @@ bool DungeonMgr::Create(uint32 templateID, CosmicSignature& sig)
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), iData);
     if (iRef.get() == nullptr) // make error and exit
         return false;
-    // add item to itemFactory  - do we really wanna do this?
-    //  not sure how to remove from running server on system/dungeon unload
-    //sItemFactory.AddItem(iRef);
     CelestialSE* cSE = new CelestialSE(iRef, *(m_system->GetServiceMgr()), m_system);
     m_system->AddEntity(cSE);
     sig.sigItemID = iRef->itemID();
@@ -416,6 +413,8 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
     int8 sec = 1; // > 0.6
     if (secRating < 0.1)
         sec = 3;
+    else if (secRating < 0.4)
+        sec = 4;
     else if (secRating < 0.6)
         sec = 2;
 
@@ -477,7 +476,7 @@ bool DungeonMgr::MakeDungeon(CosmicSignature& sig)
             }
             if (level == 3)
                 faction = 6;  // drone
-            else if (faction = 6) {
+            else if (faction == 6) {
                 // cannot be drone here.  set to region pirate
                 faction = GetFaction(sDataMgr.GetRegionRatFaction(m_system->GetRegionID()));
             }

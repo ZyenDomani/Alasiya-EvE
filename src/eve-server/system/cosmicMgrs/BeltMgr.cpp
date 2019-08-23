@@ -154,7 +154,7 @@ bool BeltMgr::Load(uint16 bubbleID) {
 
         AsteroidSE* pASE = new AsteroidSE(itemRef, *(m_system->GetServiceMgr()), m_system );
         if (pASE == nullptr) {
-            _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn entity #%u:'%s' of type %u.", entity.itemID, entity.itemName.c_str(), entity.typeID);
+            _log(COSMIC_MGR__WARNING, "BeltMgr::Load() -  Unable to spawn itemID %u - %s (type %u).", entity.itemID, entity.itemName.c_str(), entity.typeID);
             continue;
         }
         _log(COSMIC_MGR__TRACE, "BeltMgr::Load() - Loaded asteroid %u, type %u for %s(%u)", entity.itemID, entity.typeID, m_system->GetName(), m_systemID );
@@ -304,7 +304,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     for (uint8 i = 0; i <= pcs; ++i) {
         if (ice) {
             //if (secRating > -0.3)
-                roidradius = MakeRandomInt(40, 70) *1000; // (40k,70k)  72-102k radius
+                roidradius = MakeRandomInt(20, 40) *1000; // (40k,70k)  72-102k radius
             //else
             //    roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
             radius += roidradius;

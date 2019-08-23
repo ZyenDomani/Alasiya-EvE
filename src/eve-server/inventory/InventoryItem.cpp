@@ -929,11 +929,9 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     changes.clear();    //reset change map for next update.
 }
 
-void InventoryItem::SaveItem() {
-    m_db.SaveItem(
-        m_itemID,
-        ItemData(
-            m_itemName.c_str(),
+void InventoryItem::SaveItem()
+{    
+    ItemData data(m_itemName.c_str(),
                  m_type.id(),
                  m_ownerID,
                  m_locationID,
@@ -943,8 +941,9 @@ void InventoryItem::SaveItem() {
                  m_quantity,
                  m_position,
                  customInfo().c_str()
-        )
-    );
+                );
+    
+    m_db.SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
     SaveAttributes();

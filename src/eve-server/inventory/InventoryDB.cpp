@@ -257,7 +257,7 @@ bool InventoryDB::GetCharacterTypeByBloodline(uint32 bloodlineID, uint32 &charac
         return false;
     return GetCharacterType(bloodlineID, into);
 }
-
+/*
 // what is this shit for??
 bool InventoryDB::GetShipType(uint32 shipTypeID, ShipTypeData &into) {
     DBQueryResult res;
@@ -285,6 +285,7 @@ bool InventoryDB::GetShipType(uint32 shipTypeID, ShipTypeData &into) {
 
     return true;
 }
+*/
 
 bool InventoryDB::GetItem(uint32 itemID, ItemData &into) {
     /* called by RefPtr<_Ty> _Load() at InventoryItem.h:189 */
