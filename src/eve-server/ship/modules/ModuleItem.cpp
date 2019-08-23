@@ -46,13 +46,13 @@ bool ModuleItem::_Load()
     // test for character creation (which throws errors here and isnt really needed)
     if ((pClient != nullptr) and pClient->IsCharCreation())
         return true;
+    
+    // modules need the Online attribute set.  if it already has it, _Load() will update with current setting
+    SetAttribute(AttrOnline, EvilZero, false);
+    
     // load attributes
     if (!InventoryItem::_Load())
         return false;
-
-    // modules need the Online attribute set.  easier to do here than add to item attributes
-    //if (!HasAttribute(AttrOnline))
-        SetAttribute(AttrOnline, EvilZero, false);
 
     return true;
 }

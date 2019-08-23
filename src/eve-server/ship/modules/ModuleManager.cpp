@@ -125,9 +125,7 @@ void ModuleManager::Process()
 
 bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
 {
-    if (pModuleCont->GetModule(flag))
-        return true;
-    return false;
+    return (pModuleCont->GetModule(flag) != nullptr);
 }
 
 uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
@@ -207,11 +205,13 @@ void ModuleManager::UninstallRig(uint32 itemID)
 bool ModuleManager::InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (mRef->categoryID() != EVEDB::invCategories::Subsystem) {
-        sLog.Warning("ModuleManager","%s tried to fit item %u, which is not a subsystem", m_Ship->GetPilot()->GetName(), mRef->itemID());
+        sLog.Warning("ModuleManager","%s tried to fit %s(%u) at %s, which is not a subsystem", \
+                m_Ship->GetPilot()->GetName(), mRef->itemName().c_str(), mRef->itemID(), sDataMgr.GetFlagName(flag));
         return false;
     }
 
     fitModule(mRef,flag);
+    return true;
 }
 
 void ModuleManager::CheckSlotFitLimited(EVEItemFlags flag)
@@ -354,11 +354,12 @@ void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
     } else if (pMod->isSubSystem()) {
         --m_SubSystemSlots;
     } else if (pMod->isRig()) {
-        pMod->Online();
         m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
     }
-
+    
+    if (mRef->GetAttribute(AttrOnline).get_bool())
+        pMod->Online();
     /*
     if (is_log_enabled(SHIP__MODULE_DEBUG)) { // debug msg?
         std::map<std::string, PyRep *> args;
@@ -511,6 +512,13 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
 {
     GenericModule* pMod = pModuleCont->GetModule(itemID);
     if (pMod != nullptr) {
+        // test for effectName "online", which is sent thru rclick menu in HUD to offline module
+        if (pMod->GetModuleState() == Module::State::Online)
+            if (effectName.compare("online") == 0) {
+                _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Offlining - '%s'", pMod->GetSelf()->itemName().c_str(), effectName.c_str());
+                pMod->Offline();
+                return;
+            }
         if (pMod->GetModuleState() != Module::State::Activated)  // we dont need an error msgs here....this is acceptable, as the module may not be active
             return;
         _log(SHIP__MODULE_TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", pMod->GetSelf()->itemName().c_str(), effectName.c_str());

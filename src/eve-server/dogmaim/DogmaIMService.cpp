@@ -33,7 +33,7 @@
 #include "ship/modules/GenericModule.h"
 #include "system/Container.h"
 #include "system/SystemManager.h"
-#include <station/Station.h>
+#include "station/Station.h"
 
 /** @todo this is actually DogmaLM (Location Manager) for bound objecs... */
 class DogmaIMBound
@@ -841,29 +841,13 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     return PyStatic.NewOne();
 }
 
-// this one is called from Deactivate() when module is OL
-PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
-{
-    // return self.GetDogmaLM().StopOverload(itemID, effectID)
-
-    Client* pClient(call.client);
-    Call_TwoIntegerArgs args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
-        return PyStatic.NewNone();
-    }
-
-    //  cancel overload then deactivate module
-    pClient->GetShip()->CancelOverloading(args.arg1);
-    pClient->GetShip()->Deactivate(args.arg1, sFxDataMgr.GetEffectName(args.arg2));
-}
-
 
 PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
 {
     //  return self.statemanager.Deactivate(self.itemID, self.effectName)
     //  dogmaLM.Deactivate(itemID, const.effectOnlineForStructures)
     sLog.Warning("DogmaIMBound::Handle_Deactivate()", "size=%u", call.tuple->size());
+    call.Dump(SHIP__INFO);
 
     Client* pClient(call.client);
 
@@ -902,7 +886,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
             ; // make error here
 
     } else if (call.tuple->items.at(1)->IsWString()) {
-        //if effect is wide string, then call is for module
+        //if effect is wide string, then call is for module, including calls to online/offline (rclick module in HUD)
         Call_Dogma_Deactivate args;
         if (!args.Decode(&call.tuple)) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
@@ -938,6 +922,23 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     // AttrRequiredThermoDynamicsSkill
     pClient->GetShip()->Overload(args.arg1);
     return nullptr;
+}
+
+// this one is called from Deactivate() when module is OL
+PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
+{
+    // return self.GetDogmaLM().StopOverload(itemID, effectID)
+
+    Client* pClient(call.client);
+    Call_TwoIntegerArgs args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        return PyStatic.NewNone();
+    }
+
+    //  cancel overload then deactivate module
+    pClient->GetShip()->CancelOverloading(args.arg1);
+    pClient->GetShip()->Deactivate(args.arg1, sFxDataMgr.GetEffectName(args.arg2));
 }
 
 PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
