@@ -51,16 +51,13 @@ m_system(mgr),
 m_beltMgr(nullptr),
 m_dungMgr(nullptr),
 m_spawnMgr(nullptr),
-m_spawnTimer(10000),
-m_anomTimer(10000)
+m_spawnTimer(0),
+m_anomTimer(0)
 {
     m_initalized = false;
 
     m_sigBySigID.clear();
     m_sigByItemID.clear();
-
-    m_anomTimer.Disable();
-    m_spawnTimer.Disable(); // is this needed?
 }
 
 AnomalyMgr::~AnomalyMgr()
@@ -117,7 +114,7 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 
     // set internal check data
     // range is 0.1 for 1.0 system to 2.0 for -0.9 system
-    float security = 1.1 - m_system->GetSystemSecurityRating();
+    float security = m_system->GetSecValue();
          if (security == 2.0)  m_maxSigs = 25;
     else if (security > 1.501) m_maxSigs = 20;
     else if (security > 1.001) m_maxSigs = 15;
@@ -267,7 +264,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             return;
         } break;
         case Gravimetric: { // 2
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly; //dont need probes or skills for anomalies
+            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly; //dont need probes or skills for anomalies..these will
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanGravimetricStrength;

@@ -859,7 +859,7 @@ void DestinyManager::MoveObject() {
         speed *= m_maxOrbitSpeedFraction;
         move += " in orbit";
     }
-
+/*
     if ((m_prevSpeed) or (m_prevSpeedFraction)) {
         if (is_log_enabled(DESTINY__MOVE_TRACE))
             _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f pSpeed:%.2f(%.3f), sec: %.3f).", \
@@ -869,7 +869,7 @@ void DestinyManager::MoveObject() {
             _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - %s(%u) is %s at %.4f m/s (csf:%.4f asf:%.4f  sec: %.3f).", \
                 mySE->GetName(), mySE->GetID(), move.c_str(), speed, m_currentSpeedFraction, m_activeSpeedFraction, timeStamp);
     }
-
+*/
     //set speed, direction and position for this round of movement
     m_velocity = m_shipHeading * speed;
     SetPosition(m_position + m_velocity, sConfig.debug.PositionHack);   // (PositionHack == true) here will force position update to client
