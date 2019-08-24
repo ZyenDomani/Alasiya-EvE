@@ -1043,17 +1043,21 @@ PyTuple *Character::GetSkillQueue() {
     return tuple;
 }
 
-void Character::AddItem(InventoryItemRef item) {
-    pInventory->AddItem( item );
+void Character::AddItem(InventoryItemRef iRef) 
+{
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::AddItem(iRef);
 
-    if ((item->flag() == flagSkill) or (item->flag() == flagSkillInTraining)) {
+    if ((iRef->flag() == flagSkill) or (iRef->flag() == flagSkillInTraining)) {
         // may not need this anymore after fixing skill attribute initalizing
-        SkillRef skill = SkillRef::StaticCast( item );
+        SkillRef skill = SkillRef::StaticCast( iRef );
         skill->VerifySP();
         skill->VerifyAttribs();
     }
-
-    _log( CHARACTER__INFO, "%s(%u) has been added with flag %d.", itemName().c_str(), m_itemID, (int)item->flag() );
+    
+    _log( CHARACTER__INFO, "%s(%u) has been added to %s with flag %d.", iRef->itemName().c_str(), iRef->itemID(), itemName.c_str(), (int)iRef->flag() );
 }
 
 void Character::SetActiveShip(uint32 shipID)

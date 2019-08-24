@@ -135,15 +135,20 @@ PyObject *StructureItem::StructureGetInfo()
 
 void StructureItem::AddItem(InventoryItemRef iRef)
 {
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::AddItem(iRef);
+    
     if (mySE->IsCOSE())
         mySE->GetCOSE()->VerifyAddItem(iRef);
-
-    iRef->Move(m_itemID, flagHangar, true);
-    InventoryItem::AddItem(iRef);
 }
 
 void StructureItem::RemoveItem(InventoryItemRef iRef)
 {
+    if (iRef.get() == nullptr)
+        return;
+    
     InventoryItem::RemoveItem(iRef);
 }
 

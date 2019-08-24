@@ -96,16 +96,25 @@ PyObject *StationOffice::StationOfficeGetInfo() {
     return result.Encode();
 }
 
-void StationOffice::AddItem(InventoryItemRef item)
+void StationOffice::AddItem(InventoryItemRef iRef)
 {
     if (!m_loaded)
         return; // make error here?
-    pInventory->AddItem( item );
+        
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::AddItem(iRef);
+    
 }
 
-void StationOffice::RemoveItem(InventoryItemRef item)
+void StationOffice::RemoveItem(InventoryItemRef iRef)
 {
     if (!m_loaded)
         return; // make error here?
-    pInventory->RemoveItem( item );
+        
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::RemoveItem(iRef);
 }

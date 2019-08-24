@@ -46,7 +46,6 @@ public:
     /**
      * Loads CargoContainer from DB.
      *
-     * @param[in] factory
      * @param[in] containerID ID of container to load.
      * @return Pointer to CargoContainer object; NULL if failed.
      */
@@ -54,7 +53,6 @@ public:
     /**
      * Spawns new CargoContainer.
      *
-     * @param[in] factory
      * @param[in] data Item data for CargoContainer.
      * @return Pointer to new CargoContainer object; NULL if failed.
      */

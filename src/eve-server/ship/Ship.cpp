@@ -223,9 +223,9 @@ void ShipItem::InitAttribs()
     if (!HasAttribute(AttrShieldMaxDamageResonance))    SetAttribute(AttrShieldMaxDamageResonance, EvilOne, false);
     // hull res is stored in item type as AttrHull*Resonance for 6 ships.  set accordingly
     if (!HasAttribute(AttrEmDamageResonance))           SetAttribute(AttrEmDamageResonance,  GetAttribute(AttrHullEmDamageResonance), false);
-    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
     if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance), false);
     if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance), false);
+    if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
 }
 
 void ShipItem::Delete() {
@@ -1152,18 +1152,22 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
 
 void ShipItem::AddItem(InventoryItemRef iRef)
 {
-    // i dont think this is used.
-    codelog(SHIP__ERROR, "ShipItem::AddItem() called with %s(%u)", iRef->itemName().c_str(), iRef->itemID());
-    EvE::traceStack();
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::AddItem(iRef);
+    
     if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
         // make singleton
         iRef->ChangeSingleton( true);
     }
-    pInventory->AddItem( iRef);
 }
 
 uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient/*nullptr*/)
 {
+    if (iRef.get() == nullptr)
+        return 0;
+    
     if (flag == flagAutoFit) {
         // make error.  nothing at this point should be "autoFit"
         codelog(SHIP__ERROR, "ShipItem::AddItem() - old_flag = flagAutoFit.");
@@ -1220,8 +1224,8 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-
-    pInventory->RemoveItem(iRef);
+    
+    InventoryItem::RemoveItem(iRef);
 
     if (m_pilot == nullptr)
         return;

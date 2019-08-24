@@ -144,11 +144,16 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
     double loss = penalty * (client->GetSecurityRating() + 10);
     client->GetChar()->secStatusChange( loss );
     */
-    pInventory->RemoveItem( iRef );
+    
+    if (iRef.get() == nullptr)
+        return;
+    
     if (m_isAnchored)
         return;
-   // if (typeID() == EVEDB::invTypes::typeCargoContainer)
-    if (pInventory->IsEmpty())
+    
+    InventoryItem::RemoveItem(iRef);
+    
+    if (pInventory->IsEmpty()) {
         if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
             PlanetDB::UpdateLaunchStatus(m_itemID, PI::Cargo::Claimed);
         } else if (typeID() == EVEDB::invTypes::typeCargoContainer) {
@@ -158,6 +163,7 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
             sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );
             Delete();
         }
+    }
 }
 
 void CargoContainer::MakeDamageState(DoDestinyDamageState &into) const
@@ -436,7 +442,11 @@ void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item )
 
 void WreckContainer::RemoveItem(InventoryItemRef iRef)
 {
-    pInventory->RemoveItem( iRef );
+    if (iRef.get() == nullptr)
+        return;
+    
+    InventoryItem::RemoveItem(iRef);
+    
     if (pInventory->IsEmpty()) {
         MakeSlimItemChange();
         _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
