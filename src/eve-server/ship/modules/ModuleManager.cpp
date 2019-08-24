@@ -86,7 +86,8 @@ bool ModuleManager::Initialize() {
                     cur->itemName().c_str(), cur->itemID(), m_Ship->itemName().c_str() );
             cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
         }
-        if (IsModuleSlot(cur->flag()))
+        if (IsModuleSlot(cur->flag())) {
+            // m_Ship->ValidateAddItem(cur->flag(), cur);
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
@@ -109,6 +110,7 @@ bool ModuleManager::Initialize() {
                     pMod = nullptr;
                 } break;
             }
+        }
     }
     return (m_initalized = true);
 }
@@ -309,31 +311,28 @@ bool ModuleManager::FitModule(ModuleItemRef mRef, EVEItemFlags flag)
         return false;
     }
 
-    fitModule(mRef, flag);
-
-    //Online(mRef->itemID());
-    return true;
+    return fitModule(mRef, flag);
 }
 
-void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
+bool ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
 {
     if (!IsModuleSlot(flag)) {
         sLog.Warning("ModuleManager::fitModule","%s is not a module slot.", sDataMgr.GetFlagName(flag));
-        return;
+        return false;
     }
     if (pModuleCont->isSlotOccupied(flag)) {
         throw PyException( MakeUserError("SlotAlreadyOccupied"));
         /** @todo change this to use movemodule? */
-        return;
+        return false;
     }
 
     // create new module object
     GenericModule* pMod = ModuleFactory(mRef, ShipItemRef(m_Ship));
     if (pMod == nullptr)
-        return; // error here?
+        return false; // error here?
 
     if (!pModuleCont->AddModule(flag, pMod))
-        return; // error here?
+        return false; // error here?
 
     // update avalible slots
     if (pMod->isHighPower()) {
@@ -360,6 +359,8 @@ void ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
     
     if (mRef->GetAttribute(AttrOnline).get_bool())
         pMod->Online();
+    
+    return true;
     /*
     if (is_log_enabled(SHIP__MODULE_DEBUG)) { // debug msg?
         std::map<std::string, PyRep *> args;

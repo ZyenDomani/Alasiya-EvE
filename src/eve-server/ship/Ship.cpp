@@ -367,7 +367,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     return false;
                 }
                 if (!ValidateItemSpecifics(iRef)) {
-                    pClient->SendErrorMsg("Your ship cannot equip this %s.  Ref: ServerError 25165.", iRef->itemName().c_str());
+                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>%s are not allowed on your %s.", \
+                            iRef->itemName().c_str(), iRef->group().name().c_str(), itemName().c_str());
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
@@ -621,7 +622,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
 {
     bool result = false;
     EvilNumber fitID = 0;
-    uint16 groupID = m_pilot->GetShip()->groupID();
+    uint16 groupID = m_type.groupID();
     // If a ship group restriction is specified, the item must be able to fit to at least one ship group.
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the group validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
     if (iRef->HasAttribute(AttrCanFitShipGroup1, fitID)) {
@@ -660,30 +661,32 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
     }
 
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Group Validation returning %s.", (result ? "true" : "false"));
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
+    
+    if (result) {
+        _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
 
-    uint16 typeID = m_pilot->GetShip()->typeID();
-    if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
-        result = false;
-        if (fitID == groupID)
-            result = true;
-        if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
+        uint16 typeID = m_type.id();
+        if (iRef->HasAttribute(AttrCanFitShipType1, fitID)) {
+            result = false;
             if (fitID == groupID)
                 result = true;
-            if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
+            if (iRef->HasAttribute(AttrCanFitShipType2, fitID)) {
                 if (fitID == groupID)
                     result = true;
-                if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
+                if (iRef->HasAttribute(AttrCanFitShipType3, fitID)) {
                     if (fitID == groupID)
                         result = true;
+                    if (iRef->HasAttribute(AttrCanFitShipType4, fitID)) {
+                        if (fitID == groupID)
+                            result = true;
+                    }
                 }
             }
         }
-    } else {
-        result = true;
-    }
 
-    _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
+        _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
+    } 
+    
     return result;
 }
 
@@ -1149,6 +1152,9 @@ void ShipItem::LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& charge
 
 void ShipItem::AddItem(InventoryItemRef iRef)
 {
+    // i dont think this is used.
+    codelog(SHIP__ERROR, "ShipItem::AddItem() called with %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+    EvE::traceStack();
     if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
         // make singleton
         iRef->ChangeSingleton( true);
@@ -1177,10 +1183,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             iRef->ChangeSingleton(false, false);
             m_ModuleManager->LoadCharge(iRef, flag);
-            InventoryItemRef loadedChargeOnModule = m_ModuleManager->GetLoadedChargeOnModule(flag);
-            if (loadedChargeOnModule.get() != nullptr)
-                return loadedChargeOnModule->itemID();
-            else
+            iRef = m_ModuleManager->GetLoadedChargeOnModule(flag);
+            if (iRef.get() == nullptr)
                 return 0;
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
             ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
@@ -1199,8 +1203,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
                 return 0;
         }
         m_ModuleManager->UpdateModules(flag);
-    }
-
+    } 
+    
     if ((flag == flagCargoHold) or (flag == flagOreHold) or (flag == flagGasHold)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);

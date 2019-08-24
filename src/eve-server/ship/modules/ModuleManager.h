@@ -40,6 +40,7 @@ public:
     ModuleManager(ShipItem* const pShip);
     ~ModuleManager();
 
+    // i dont think this can throw
     bool Initialize();
     bool IsSlotOccupied(EVEItemFlags flag);
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
@@ -127,7 +128,7 @@ public:
 
 private:
     bool m_initalized;
-    void fitModule(ModuleItemRef mRef, EVEItemFlags flag);
+    bool fitModule(ModuleItemRef mRef, EVEItemFlags flag);
 
     ShipItem* m_Ship;
 

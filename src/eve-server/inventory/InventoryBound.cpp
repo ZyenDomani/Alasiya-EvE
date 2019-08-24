@@ -560,7 +560,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             quantity = 1;
         }
 
-        // remove item from current location
+        // remove item from current location - this is for items that need specific handling
         if (IsRigSlot(oldFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
         } else if (IsModuleSlot(oldFlag)) {
@@ -574,24 +574,23 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
-            } else /*if (ship)*/ {
-                pShip->RemoveItem(iRef);
             }
-        } else {
-            if (!manyFlags and (quantity < iRef->quantity())) {
-                InventoryItemRef newItem = iRef->Split(quantity);
-                if (newItem.get() == nullptr) {
-                    _log(INV__ERROR, "InventoryBound::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
-                    continue;
-                }
-                iRef = newItem;
-                if (iRef.get() == nullptr) {
-                    _log(INV__ERROR, "InventoryBound::MoveItems() - Error getting split item. Skipping.");
-                    continue;
-                }
-                if (iRef->quantity() > quantity) {
-                    _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", iRef->itemID(), iRef->quantity(), quantity);
-                }
+        }
+          
+        if (!manyFlags and (quantity < iRef->quantity())) {
+            InventoryItemRef newItem = iRef->Split(quantity);
+            if (newItem.get() == nullptr) {
+                _log(INV__ERROR, "InventoryBound::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
+                continue;
+            }
+            iRef = newItem;
+            if (iRef.get() == nullptr) {
+                _log(INV__ERROR, "InventoryBound::MoveItems() - Error getting split item. Skipping.");
+                continue;
+            }
+            if (iRef->quantity() > quantity) {
+                _log(INV__ERROR, "InventoryBound::MoveItems() - Split item %u qty(%u) > requested qty of %u.  Continuing.", \
+                            iRef->itemID(), iRef->quantity(), quantity);
             }
         }
 
@@ -608,7 +607,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
-                        pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", iRef->itemName().c_str());
+                        pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", \
+                                    iRef->itemName().c_str());
                         toFlag = flagCargoHold;
                     }
                 } else {
@@ -616,12 +616,11 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                     toFlag = m_flag;
                 }
             }
-
+            
             if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
             else if (IsCargoHoldFlag(toFlag))
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
-                //m_self->GetShipItem()->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1)
@@ -633,7 +632,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         } else if (customs) {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
             StructureItemRef sRef = StructureItemRef::StaticCast(m_self);
-            //sRef->TryHoldCapacity(toFlag, iRef); // this will throw if it fails
             sRef->AddItem(iRef);// this will throw if it fails
         } else {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails

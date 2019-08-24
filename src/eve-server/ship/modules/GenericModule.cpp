@@ -92,6 +92,7 @@ void GenericModule::Online()
     EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
     if (cpuNeed  > m_shipRef->GetAttribute(AttrCpuOutput)) {
         if (!m_shipRef->GetPilot()->IsLogin()) {
+            m_modRef->SetOnline(false, isRig());
             float require = GetAttribute(AttrCpu).get_float();
             float total = m_shipRef->GetAttribute(AttrCpuOutput).get_float();
             float remaining = total - m_shipRef->GetAttribute(AttrCpuLoad).get_float();
@@ -119,6 +120,7 @@ void GenericModule::Online()
     EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
     if (pgNeed > m_shipRef->GetAttribute(AttrPowerOutput)) {
         if (!m_shipRef->GetPilot()->IsLogin()) {
+            m_modRef->SetOnline(false, isRig());
             float require = GetAttribute(AttrPower).get_float();
             float total = m_shipRef->GetAttribute(AttrPowerOutput).get_float();
             float remaining = total - m_shipRef->GetAttribute(AttrPowerLoad).get_float();
@@ -145,7 +147,8 @@ void GenericModule::Online()
     //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
-    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", \
+            itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
@@ -174,14 +177,17 @@ void GenericModule::Online()
 void GenericModule::Offline()
 {
     if (m_ModuleState == Module::State::Unfitted) {
+        m_modRef->SetOnline(false, isRig());
         _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == Module::State::Offline) {
+        m_modRef->SetOnline(false, isRig());
         _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState == Module::State::Deactivating) {
+        m_modRef->SetOnline(false, isRig());
         _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
         m_ModuleState = Module::State::Offline;
         m_modRef->SetOnline(false, isRig());
