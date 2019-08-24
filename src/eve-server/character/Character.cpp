@@ -1057,7 +1057,7 @@ void Character::AddItem(InventoryItemRef iRef)
         skill->VerifyAttribs();
     }
     
-    _log( CHARACTER__INFO, "%s(%u) has been added to %s with flag %d.", iRef->itemName().c_str(), iRef->itemID(), itemName.c_str(), (int)iRef->flag() );
+    _log( CHARACTER__INFO, "%s(%u) has been added to %s with flag %d.", iRef->itemName().c_str(), iRef->itemID(), itemName().c_str(), (int)iRef->flag() );
 }
 
 void Character::SetActiveShip(uint32 shipID)
