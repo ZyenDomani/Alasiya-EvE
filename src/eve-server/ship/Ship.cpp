@@ -367,8 +367,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                     return false;
                 }
                 if (!ValidateItemSpecifics(iRef)) {
-                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>%s are not allowed on your %s.", \
-                            iRef->itemName().c_str(), iRef->group().name().c_str(), itemName().c_str());
+                    pClient->SendErrorMsg("Your ship cannot equip the %s.<br>The %s group is not allowed on your %s.", \
+                            iRef->itemName().c_str(), iRef->group().name().c_str(), m_type.name().c_str());
                     return false;
                 }
                 if (iRef->categoryID() == EVEDB::invCategories::Charge) {
