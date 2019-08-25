@@ -377,6 +377,7 @@ PyResult Command_tr(Client* pClient, CommandDB* db, PyServiceMgr* services, cons
         throw PyException(MakeCustomError("Translocate: Fleet Move - This command is currently incomplete."));
     }
 
+//  need to test locationID here to verify its valid.
 
     if (!IsValidLocation(locationID))
         throw PyException(MakeCustomError("Translocate: Invalid Location %i", locationID));
