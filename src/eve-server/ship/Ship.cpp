@@ -661,7 +661,7 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
     }
 
     _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Group Validation returning %s.", (result ? "true" : "false"));
-    
+
     if (result) {
         _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Beginning the type validation for %s(%u):", iRef->itemName().c_str(), iRef->itemID());
 
@@ -685,8 +685,8 @@ bool ShipItem::ValidateItemSpecifics(InventoryItemRef iRef)
         }
 
         _log(SHIP__TRACE, "Ship::ValidateItemSpecifics - Type Validation returning %s.", (result ? "true" : "false"));
-    } 
-    
+    }
+
     return result;
 }
 
@@ -1154,9 +1154,9 @@ void ShipItem::AddItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::AddItem(iRef);
-    
+
     if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
         // make singleton
         iRef->ChangeSingleton( true);
@@ -1167,7 +1167,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
 {
     if (iRef.get() == nullptr)
         return 0;
-    
+
     if (flag == flagAutoFit) {
         // make error.  nothing at this point should be "autoFit"
         codelog(SHIP__ERROR, "ShipItem::AddItem() - old_flag = flagAutoFit.");
@@ -1207,8 +1207,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
                 return 0;
         }
         m_ModuleManager->UpdateModules(flag);
-    } 
-    
+    }
+
     if ((flag == flagCargoHold) or (flag == flagOreHold) or (flag == flagGasHold)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);
@@ -1224,7 +1224,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::RemoveItem(iRef);
 
     if (m_pilot == nullptr)
@@ -1714,10 +1714,17 @@ void ShipItem::StripFitting()
     }
 
     UnlinkAllWeapons();
+
+    EVEItemFlags flag = flagCargoHold;
+    if IsStation(locationID())
+        flag = flagHangar;
+
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
-    for (auto cur : moduleList)
+    for (auto cur : moduleList) {
         m_ModuleManager->UnfitModule(cur->itemID());
+        cur->Move(locationID(), flag, true);
+    }
 }
 
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
