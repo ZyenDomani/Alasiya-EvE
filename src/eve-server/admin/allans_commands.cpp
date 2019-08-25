@@ -188,11 +188,8 @@ PyResult Command_bubblelist(Client* pClient, CommandDB* db, PyServiceMgr* servic
      * wip.   -allan 2June16
      */
 
-    if (!pClient->GetShipSE()->SysBubble())
-        if (pClient->IsInSpace())
-            pClient->EnterSystem(pClient->GetSystemID());
-        else
-            throw PyException(MakeCustomError("You must be in space to list space inventory."));
+    if (pClient->IsDocked())
+        throw PyException(MakeCustomError("You must be in space to list bubble inventory."));
 
     SystemBubble *b = pClient->GetShipSE()->SysBubble();
     uint32 bubble = b->GetID();
