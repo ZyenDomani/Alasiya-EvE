@@ -83,6 +83,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_pod = ShipItemRef(nullptr);
     m_ship = ShipItemRef(nullptr);
 
+    m_SystemData = SystemData();
     m_StationData = StationData();
 
     m_afk = false;
@@ -260,16 +261,16 @@ Client::~Client() {
 
     // save shipstate and remove from sItemFactory, as *something* in sItemFactory.save changes ship position
     m_ship->LogOut();
-    
+
     m_system->RemoveClient(this, true);
     // remove char from entitylist
     sEntityList.RemovePlayer(this);
     //sEntityList.RemoveSID(GetSessionID());
     m_services.ClearBoundObjects(this);
 
-    m_TS = nullptr; // should we delete this?
-    m_system = nullptr; // DO NOT delete this here.
+    m_system = nullptr; // DO NOT delete this
 
+    SafeDelete(m_TS);
     SafeDelete(m_scan);
     SafeDelete(pShipSE);
     SafeDelete(pSession);
@@ -283,7 +284,7 @@ bool Client::ProcessNet()
         return false;
 
     PyPacket *p(nullptr);
-    while (p = PopPacket()) {
+    while ((p = PopPacket())) {
         /*
         if (is_log_enabled(CLIENT__IN_ALL)) {
             _log(CLIENT__IN_ALL, "Received packet:");
@@ -318,13 +319,12 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     InitSession(charID);
 
     sEntityList.AddPlayer(this);
-
     sItemFactory.SetUsingClient(this);
-    m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
 
+    m_system = sEntityList.FindOrBootSystem(m_SystemData.systemID);
     if (m_system == nullptr) {
         sLog.Error("Client::SelectCharacter()", "Failed to boot system %u for char %u.", m_SystemData.systemID, charID);
-        SendErrorMsg("Unable to boot system %u", m_SystemData.systemID);
+        SendErrorMsg("Unable to boot SolarSystem %s(%u)", m_SystemData.name.c_str(), m_SystemData.systemID);
         return false;
     }
 
@@ -378,8 +378,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
                 } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
                     SpawnNewRookieShip();
                 }
-            } else
+            } else {
                 SpawnNewRookieShip();
+            }
     }
 
     //create corp and ally chat channels (if not already created)
@@ -1284,7 +1285,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
 
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     MapDB::AddJump(m_SystemData.systemID);
-      
+
     // call Stop() per packet sniff - shuts off AP.  Halt() does also.  try not calling any movement updates
     //pShipSE->DestinyMgr()->Halt();  // Stop() disables ap.  try Halt() to reset ship movement to null
     pShipSE->DestinyMgr()->SendJumpOut(fromGate);
@@ -1299,7 +1300,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     }
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     MapDB::AddJump(toData.systemID);
-    
+
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
     m_char->VisitSystem(toData.systemID);
 
@@ -1667,13 +1668,14 @@ void Client::InitSession(int32 characterID)
     pSession->SetInt("hqID",             (int32)(characterDataMap["corporationHQ"]));
     pSession->SetInt("baseID",           characterDataMap["baseID"]);
     pSession->SetInt("corpAccountKey",   characterDataMap["corpAccountKey"]);
+    pSession->SetInt("allianceid",       characterDataMap["allianceID"]);
+    pSession->SetInt("warfactionid",     characterDataMap["warFactionID"]);
+
     pSession->SetLong("corprole",        characterDataMap["corpRole"]);
     pSession->SetLong("rolesAtAll",      characterDataMap["rolesAtAll"]);
     pSession->SetLong("rolesAtBase",     characterDataMap["rolesAtBase"]);
     pSession->SetLong("rolesAtHQ",       characterDataMap["rolesAtHQ"]);
     pSession->SetLong("rolesAtOther",    characterDataMap["rolesAtOther"]);
-    pSession->SetInt("allianceid",       characterDataMap["allianceID"]);
-    pSession->SetInt("warfactionid",     characterDataMap["warFactionID"]);
 
     /*  solarSystemID != 0  -character in space
      *   also used as current system in following menus:
@@ -1689,9 +1691,9 @@ void Client::InitSession(int32 characterID)
         pSession->SetInt("worldspaceid", stationID);
     } else {
         m_locationID = solarSystemID;
-        pSession->Clear("stationid");
-        pSession->Clear("stationid2");
-        pSession->Clear("worldspaceid");
+        pSession->Clear("stationid");   //must be 0 in space
+        pSession->Clear("stationid2");  //must be 0 in space
+        pSession->Clear("worldspaceid");  //must be 0 in space
         pSession->SetInt("shipid", m_shipId);
         pSession->SetInt("solarsystemid", solarSystemID);
         pSession->SetInt("locationid", solarSystemID);
