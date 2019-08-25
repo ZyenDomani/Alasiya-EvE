@@ -87,6 +87,8 @@ public:
     // this will remove charge item from module and update client
     // must NOT throw
     void UnloadCharge(EVEItemFlags fromFlag, bool merge=false);
+    // unload charge from module by itemID
+    void UnloadModule(uint32 itemID);
     // this will remove charge items from all modules
     void UnloadAllModules();
     void UnloadWeapons();

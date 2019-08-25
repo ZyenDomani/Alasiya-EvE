@@ -285,7 +285,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
             pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
         pMod->UnloadCharge();
     }
-    // update avalible slots
+    // update availible slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted())
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
@@ -299,6 +299,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
     } else if (pMod->isSubSystem()) {
         ++m_SubSystemSlots;
     }
+
     pModuleCont->RemoveModule(itemID);
     // delete the module object
     SafeDelete(pMod);
@@ -356,10 +357,10 @@ bool ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
         m_Ship->SetAttribute(AttrUpgradeLoad, (m_Ship->GetAttribute(AttrUpgradeLoad) + pMod->GetAttribute(AttrUpgradeCost)));
         m_Ship->SetAttribute(AttrUpgradeSlotsLeft, (m_Ship->GetAttribute(AttrUpgradeSlotsLeft) -1));
     }
-    
+
     if (mRef->GetAttribute(AttrOnline).get_bool())
         pMod->Online();
-    
+
     return true;
     /*
     if (is_log_enabled(SHIP__MODULE_DEBUG)) { // debug msg?
@@ -781,6 +782,23 @@ bool ModuleManager::VerifySlotExchange(EVEItemFlags slot1, EVEItemFlags slot2)
     return false;
 }
 
+void ModuleManager::UnloadModule(uint32 itemID)
+{
+    GenericModule* pMod = pModuleCont->GetModule(itemID);
+    if (pMod == nullptr) {
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found for %u", itemID);
+        return;
+    }
+    InventoryItemRef iRef = pMod->GetLoadedChargeRef();
+    pMod->UnloadCharge();
+    if IsStation(m_Ship->locationID())
+        iRef->Move(m_Ship->locationID(), flagHangar, true);
+    else if (m_Ship->GetMyInventory()->ContainsTypeByFlag(iRef->typeID(), flagCargoHold))
+        iRef->MergeTypesInCargo(m_Ship, flagCargoHold);
+    else
+        iRef->SetFlag(flagCargoHold, true);
+}
+
 void ModuleManager::UnloadWeapons()
 {
     pModuleCont->UnloadWeapons();
@@ -806,8 +824,6 @@ void ModuleManager::UnloadAllModules()
     for (auto cur : m_charges) {
         if IsStation(m_Ship->locationID())
             cur.second->Move(m_Ship->locationID(), flagHangar, true);
-        else if (m_Ship->GetMyInventory()->ContainsTypeByFlag(cur.second->typeID(), flagCargoHold))
-            cur.second->MergeTypesInCargo(m_Ship, flagCargoHold);
         else
             cur.second->SetFlag(flagCargoHold, true);
     }
