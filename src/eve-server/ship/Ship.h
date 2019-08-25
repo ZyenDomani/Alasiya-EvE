@@ -104,13 +104,13 @@ public:
     static ShipItemRef Spawn( ItemData &data);
 
     virtual void SetPlayer(Client* pClient);
-    virtual bool HasPilot()                             { return (m_pilot == nullptr ? false : true); }
+    virtual bool HasPilot()                             { return (m_pilot != nullptr); }
     virtual Client* GetPilot()                          { return m_pilot; }
 
     virtual void AddItem(InventoryItemRef iRef);
     virtual void RemoveItem( InventoryItemRef iRef);
 
-    bool HasModuleManager()                             { return (m_ModuleManager == nullptr ? false : true); }
+    bool HasModuleManager()                             { return (m_ModuleManager != nullptr); }
     ModuleManager* GetModuleManager()                   { return m_ModuleManager; }
 
     virtual void Delete();
@@ -165,7 +165,7 @@ public:
     void RemoveRig(InventoryItemRef iRef);
     void UpdateModules();
     void UpdateModules(EVEItemFlags flag);
-    void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnfitModule(itemID); }
+    void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnloadModule(itemID); }
     void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void StripFitting();

@@ -714,7 +714,7 @@ int main( int argc, char* argv[] )
 
     #endif
     */
-    
+
     uint32 start = 0;
     EVETCPConnection* tcpc(nullptr);
 
@@ -739,7 +739,7 @@ int main( int argc, char* argv[] )
         /* Freeze Detector Code */
         //++m_worldLoopCounter;
 
-        if (tcpc = tcps.PopConnection())
+        if ((tcpc = tcps.PopConnection()))
             sEntityList.Add(new Client(pyServMgr, &tcpc));
 
         sEntityList.Process();
