@@ -2282,7 +2282,7 @@ PyResult DestinyManager::AttemptDockOperation() {
             throw PyException(MakeUserError("DockingApproach"));
     }
 
-    pClient->SetClientTimer(ClientState::csDock, sConfig.world.StationDockDelay *1000); // default @ 4sec();
+    pClient->SetStateTimer(ClientState::csDock, sConfig.world.StationDockDelay *1000); // default @ 4sec();
 
     return new PyLong(Win32TimeNow());
 }

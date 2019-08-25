@@ -169,7 +169,7 @@ void BubbleManager::Add(SystemEntity* pSE, bool isPostWarp /*false*/) {
         if (pSE->SysBubble() != nullptr) {
             if (pBubble->GetSystemID() != pSE->SystemMgr()->GetID()) {
                 // this is an error.  bad bubble
-                _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
+                _log(DESTINY__ERROR, "BubbleManager::Add(): bubble SysID %u != pSE SysID %u", pBubble->GetSystemID(), pSE->SystemMgr()->GetID() );
                 pSE->SysBubble()->Remove(pSE);
             } else if (pSE->SysBubble() != pBubble) {
                 _log(DESTINY__BUBBLE_TRACE, "BubbleManager::Add(): bubbleID %u != pSE bubbleID %u", pBubble->GetID(), pSE->SysBubble()->GetID() );

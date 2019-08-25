@@ -48,7 +48,7 @@
 enum ClientTimers {
     DefaultTimer     = 1000,
     BoardTimer       = 600,
-    JumpTimer        = 300,
+    JumpTimer        = 500,
     UndockTimer      = 1500,     // used to delay sending Destiny::State (client error fix)
     DockingTimer     = 1000,    // Timer to delay docking (as on live)
     JumpingTimer     = 4000,    // Timer to delay jumping
@@ -244,8 +244,8 @@ public:
     void MoveToPosition(const GPoint &pt);
     void MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag);
     void SetInvulTimer(uint32 time=ClientTimers::DefaultTimer);
-    void SetClientTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
-    void SetDestiny(const GPoint& pt, bool count=false, bool update=false);
+    void SetStateTimer(ClientState state, uint32 time=ClientTimers::DefaultTimer);
+    void SetDestiny(const GPoint& pt, bool update=false);
     void UpdateSkillTraining();
     ShipItemRef SpawnNewRookieShip();
     void LoadStationHangar(uint32 stationID);

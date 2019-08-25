@@ -148,11 +148,6 @@ PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_
 
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
-    // beyonce is constructed when player first enters system and not removed until sys change or logout.
-    // this function is called immediatly beyonce is created. (fix for BlackScreen Bug)
-    if (!call.client->IsUndock())
-        call.client->SetBallPark();
-    
     //vicious crap.
     PyTuple* res = new PyTuple( 2 );
         Beyonce_Formation f;
@@ -470,7 +465,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
     if (type == "item" ) {
 		pSE = pSystem->GetSE(toID);
         if (pSE == nullptr) {
-            codelog(CLIENT__ERROR, "%s: unable to find item location %d", call.client->GetName(), toID);
+            codelog(CLIENT__ERROR, "%s: unable to find item location %u in %s(%u)", call.client->GetName(), toID, pSystem->GetName(), pSystem->GetID());
 			return PyStatic.NewNone();
 		}
     } else if (type == "bookmark" ) {
@@ -497,7 +492,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuff(PyCallArgs &call) {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             pSE = pSystem->GetSE( toID );
             if (pSE == nullptr) {
-                codelog(CLIENT__ERROR, "%s: unable to find bookmark location %d", call.client->GetName(), toID);
+                codelog(CLIENT__ERROR, "%s: unable to find bookmark location %u in %s(%u)", call.client->GetName(), toID, pSystem->GetName(), pSystem->GetID());
                 return PyStatic.NewNone();
             }
         }

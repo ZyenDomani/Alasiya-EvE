@@ -412,7 +412,7 @@ bool SystemManager::LoadSystemStatics() {
     if (m_entities.size())
         m_entityChanged = true;
 
-    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %u Static System entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemStatics() - %u Static System entities loaded for %s (%u)", entities.size(), m_data.name.c_str(), m_data.systemID);
     entities.clear();
     return m_entityChanged;
 }
@@ -421,7 +421,7 @@ bool SystemManager::LoadSystemDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     entities.clear();
     if (!SystemDB::LoadSystemDynamicEntities(m_data.systemID, entities)) {
-        sLog.Error( "SystemManager::LoadSystemDynamics()", "Unable to load dynamic entities during boot of system %u.", m_data.systemID);
+        sLog.Error( "SystemManager::LoadSystemDynamics()", "Unable to load dynamic entities during boot of %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
@@ -429,13 +429,15 @@ bool SystemManager::LoadSystemDynamics() {
     for (auto cur : entities) {
         pSE = DynamicEntityFactory::BuildEntity(*this, cur);
         if (pSE == nullptr) {
-            sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
+            sLog.Error( "SystemManager::LoadSystemDynamics()", "Failed to create entity for item %u (grp: %u, type %u)",
+                                cur.itemID, cur.groupID, cur.typeID);
             continue;
         }
-        _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
+        _log(ITEM__TRACE, "SystemManager::LoadSystemDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
+                    cur.itemID, cur.typeID, m_data.name.c_str(), m_data.systemID);
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %u Dynamic System entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadSystemDynamics - %u Dynamic System entities loaded for %s(%u)", entities.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
@@ -444,7 +446,7 @@ bool SystemManager::LoadPlayerDynamics() {
     std::vector<DBSystemDynamicEntity> entities;
     entities.clear();
     if (!SystemDB::LoadPlayerDynamicEntities(m_data.systemID, entities)) {
-        sLog.Error( "SystemManager::LoadPlayerDynamics()", "Unable to load player dynamic entities in system %u.", m_data.systemID);
+        sLog.Error( "SystemManager::LoadPlayerDynamics()", "Unable to load player dynamic entities in %s(%u).", m_data.name.c_str(), m_data.systemID);
         return false;
     }
 
@@ -455,10 +457,12 @@ bool SystemManager::LoadPlayerDynamics() {
             sLog.Error( "SystemManager::LoadPlayerDynamics()", "Failed to create entity for item %u (grp: %u, type %u)", cur.itemID, cur.groupID, cur.typeID);
             continue;
         }
-        _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for system %u", cur.itemID, cur.typeID, m_data.systemID);
+        _log(ITEM__TRACE, "SystemManager::LoadPlayerDynamics() - Loaded dynamic entity %u of type %u for %s(%u)", \
+                    cur.itemID, cur.typeID, m_data.name.c_str(),m_data.systemID);
         AddEntity(pSE);
     }
-    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for system %u", entities.size(), m_data.systemID);
+    _log(SERVER__INIT, "SystemManager::LoadPlayerDynamics() - %u Dynamic Player entities loaded for %s(%u)", \
+                entities.size(), m_data.name.c_str(),m_data.systemID);
 
     return true;
 }
@@ -470,7 +474,8 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
         return false;
     }
 
-    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for system %u", entity.itemID, entity.typeID, m_data.systemID );
+    _log(ITEM__TRACE, "SystemManager::BuildDynamicEntity() - Created dynamic entity %u of type %u for %s(%u)", \
+                entity.itemID, entity.typeID, m_data.name.c_str(),m_data.systemID );
     AddEntity(pSE);
 
     // this is only used for wrecks...
@@ -848,7 +853,7 @@ void SystemManager::AddClient(Client* pClient, bool count/*false*/, bool jump/*f
     if (jump) {
         //add jump in this system
         MapDB::AddJump(m_data.systemID);
-        
+
         _log(PLAYER__INFO, "%s(%u): Add Jump to %s(%u)", \
         pClient->GetName(), pClient->GetCharacterID(), m_data.name.c_str(), m_data.systemID);
 
@@ -1457,7 +1462,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
 void SystemManager::UpdateData()
 {
     MapDB::UpdatePilotCount(m_data.systemID, m_docked, (m_players - m_docked));
-    
+
     uint16 jumps = 0;
     uint16 stamp = sEntityList.GetStamp() -60;
     std::map<uint32, uint8>::iterator itr = m_jumpMap.begin();

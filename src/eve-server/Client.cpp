@@ -337,10 +337,8 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     m_char->SetClient(this);
     m_char->VerifySP();
-    m_char->UpdateSkillQueue();
     m_char->SetLoginTime();
-
-    m_system->AddClient(this, true);
+    m_char->UpdateSkillQueue();
 
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     //  fleet data is zeroed when char item is created
@@ -359,8 +357,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         SetShip(m_ship);
     }
 
-    m_ship->SetPlayer(this);
-
     GPoint pos(NULL_ORIGIN);
     if (IsSolarSystem(m_locationID))
         pos = m_ship->position();
@@ -370,7 +366,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     if (IsSolarSystem(m_locationID)) {
         WarpIn();
     } else {
-        if (m_ship->typeID() == itemTypeCapsule)
+        if (m_ship->typeID() == itemTypeCapsule) {
             if (sConfig.server.NoobShipCheck) {
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
@@ -381,6 +377,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
             } else {
                 SpawnNewRookieShip();
             }
+        }
     }
 
     //create corp and ally chat channels (if not already created)
@@ -395,7 +392,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     sItemFactory.UnsetUsingClient();
     UpdateSkillTraining();
 
-    SetClientTimer(ClientState::csLogin, ClientTimers::LoginTimer);
+    SetStateTimer (ClientState::csLogin, ClientTimers::LoginTimer);
     return (m_loaded = true);
 }
 
@@ -434,23 +431,17 @@ void Client::ProcessClient() {
                 m_stateTimer.Disable();
                 switch (m_clientState) {
                     case ClientState::csLogin: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csLogin");
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Login");
                         m_login = false;
                     } break;
                     case ClientState::csIdle: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csIdle");
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Idle");
                     } break;
                     case ClientState::csLogout: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csLogout");
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Logout");
                     } break;
                     case ClientState::csKilled: {
-                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: csKilled");
-                    } break;
-                    case ClientState::csJump:
-                    case ClientState::csDock:
-                    case ClientState::csUndock:
-                    case ClientState::csBoard: {
-                        // do nothing for these.  they are space only calls.
+                        _log(CLIENT__TIMER, "Client::ProcessClient()::IsDocked()::CheckState():  case: Killed");
                     } break;
                 }
                 m_clientState = ClientState::csIdle;
@@ -489,9 +480,6 @@ void Client::ProcessClient() {
             pShipSE->DestinyMgr()->SendGateActivity(m_toGate);
             m_toGate = 0;
             SetJumpTimers();    // starts invul and cloak timers
-            // infant AP system needs this to stay as "Jumping" for now...timer is 4s
-            // i have no idea why this needs to stay as "jumping"....
-            SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
         }
 
     if (pShipSE->DestinyMgr()->IsCloaked())
@@ -505,46 +493,47 @@ void Client::ProcessClient() {
 
     if (m_stateTimer.Enabled())
         if (m_stateTimer.Check(false)) {
-            _log(CLIENT__TIMER, "Client::ProcessClient() - timer check: timenow %u", m_stateTimer.GetCurrentTime());
+            _log(CLIENT__TIMER, "Client::ProcessClient(): state timer hit: timenow %u", m_stateTimer.GetCurrentTime());
             m_stateTimer.Disable();
             switch (m_clientState) {
                 case ClientState::csIdle: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csIdle");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Idle");
                     // this shouldnt hit...error
                 } break;
                 case ClientState::csDock: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csDock");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Dock");
                     DockToStation();
                 } break;
                 case ClientState::csUndock: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csUndock");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Undock");
                     SetBallPark();
                     m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csKilled: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csKilled");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Killed");
                     // live does NOT resend destiny state when killed.  see csBoard notes.
                     SendSessionChange();
                     m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csBoard: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csBoard");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Board");
                     // calling OnSessionChanged() in client with shipid in change will update ego with new ship.
                     // NOTE: all items must be in same bubble.
                     SendSessionChange();
                     m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csLogin: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogin");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Login");
                     SetBallPark();
                     m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csJump: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csJump");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Jump");
                     ExecuteJump();
+                    m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csLogout: {
-                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: csLogout");
+                    _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Logout");
                     // can we use this to allow WarpOut?
                 } break;
                 default: {
@@ -592,64 +581,6 @@ void Client::ProcessClient() {
         sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void Client::SetAutoPilot(bool set/*false*/)
-{
-    // itemID=10644  flag=*module*  not published - not in client data
-    m_autoPilot = set;
-    _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
-}
-
-
-void Client::SetDestiny(const GPoint& pt, bool count/*false*/, bool update/*false*/) {
-    if (!IsSolarSystem(m_locationID)) {
-        _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
-        return;
-    }
-    m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
-    m_setStateSent = false;
-
-    if ((pShipSE == nullptr) or (pShipSE->DestinyMgr() == nullptr)) {
-        CreateShipSE();
-        m_system->AddEntity(pShipSE);
-        UpdateNewShip();
-    }
-
-    if (pt.isZero()) {
-        if (pShipSE->GetPosition().isZero())
-            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnPlanet(m_system->GetID()), update);
-        else
-            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
-    } else
-        pShipSE->DestinyMgr()->SetPosition(pt, update);
-
-    sBubbleMgr.Add(pShipSE);
-
-    if (count and !m_login)
-        pShipSE->ResetShipSystemMgr(m_system);
-    if (m_beyonce)
-        return;
-    if ((!m_login) and (!IsJump()) and (!m_undock))
-        SetBallPark();
-}
-
-void Client::SetBallPark() {
-    _log(PLAYER__AP_TRACE, "Client::SetBallPark():  State: %s, SetState: %s, Beyonce: %s", \
-                GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
-    m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
-    if (pShipSE->SysBubble() == nullptr)
-        m_system->AddEntity(pShipSE);
-    if (m_clientState == ClientState::csUndock)
-        pShipSE->DestinyMgr()->Undock(m_movePoint);
-    if (m_clientState == ClientState::csJump)
-        pShipSE->DestinyMgr()->Jump();
-    if (!m_setStateSent and m_beyonce)  // MUST have beyonce before sending setstate data.
-        pShipSE->DestinyMgr()->SendSetState();
-    if (!IsIdle() and !IsJump() and !IsLogin()) {
-        m_clientState = ClientState::csIdle;
-        _log(AUTOPILOT__TRACE, "SetBallPark() - m_clientState set to Idle");
-    }
-}
-
 void Client::WarpIn() {
     sLog.Blue("Client::WarpIn()", "%s(%u) called WarpIn().  Finish code here.", GetName(), m_char->itemID());
     char ci[45];
@@ -659,17 +590,19 @@ void Client::WarpIn() {
         m_ship->SetFlag(flagAutoFit);
     SetInvulTimer(ClientTimers::WarpInInvul);
     return;
+    /*
     // We are just logging in, so we need to warp to our last position from our WarpOut spot.
-    /** @todo  when implemented, make sure we move the ship item, if needed....check this  */
+    //  when implemented, make sure we move the ship item, if needed....check this
     GPoint warpToPoint(m_ship->position());
     GPoint warpFromPoint(m_ship->position());
     warpFromPoint.MakeRandomPointOnSphere(0.5*ONE_AU_IN_METERS);
     pShipSE->DestinyMgr()->SetPosition(warpFromPoint);
     pShipSE->DestinyMgr()->WarpTo(warpToPoint);        // Warp ship from the random login point to the position saved on last disconnect
+    */
 }
 
 void Client::WarpOut() {
-	sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
+    sLog.Blue("Client::WarpOut()", "Client Destructor for %s(%u) called WarpOut().  Finish code here.", GetName(), m_char->itemID());
     char ci[45];
     snprintf(ci, sizeof(ci), "Logout: %s(%u)", GetName(), m_char->itemID());
     m_ship->SetCustomInfo(ci);
@@ -678,6 +611,7 @@ void Client::WarpOut() {
     pShipSE->SetPosition(m_ship->position());
     DestroyShipSE();
     return;
+    /*
     SetInvulTimer(ClientTimers::WarpOutInvul);
     // We are logging out, so we need to warp to a random spot 1Mm away:
     GPoint warpToPoint(m_ship->position());
@@ -686,6 +620,14 @@ void Client::WarpOut() {
         pShipSE->SetPosition(warpToPoint);
     else
         pShipSE->DestinyMgr()->WarpTo(warpToPoint);
+    */
+}
+
+void Client::SetAutoPilot(bool set/*false*/)
+{
+    // itemID=10644  flag=*module*  not published - not in client data
+    m_autoPilot = set;
+    _log(AUTOPILOT__MESSAGE, "%s called SetAutoPilot to %s", GetName(), (set ? "true" : "false"));
 }
 
 void Client::EnterSystem(uint32 systemID)
@@ -705,7 +647,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (!m_login and (m_locationID == locationID) and !IsStation(locationID)) {
         _log(PLAYER__WARNING, "MoveToLocation() - m_locationID == location");
         // This is a simple movement
-        SetDestiny(pt, false, true);
+        SetDestiny(pt, true);
         return;
     }
 
@@ -723,18 +665,19 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     // location changed...verify current system and set session data for current system.
     if (IsJump() or ((m_system != nullptr) and (m_system->GetID() != m_SystemData.systemID))) {
         //we have different m_system
-        _log(PLAYER__WARNING, "MoveToLocation() - m_system = %p, m_system->GetID(%u) != locationID(%u)", m_system, m_system->GetID(), m_locationID);
+        _log(PLAYER__WARNING, "MoveToLocation() - current m_system is %s, systemData is for %s, m_system->GetID(%u) != locationID(%u)", \
+                    m_system->GetName(), m_SystemData.name.c_str(), m_system->GetID(), m_locationID);
         // if docked, update guestlist
         if (wasDocked) {
             OnCharNoLongerInStation();
             wasDocked = false;  // dont update station again on this call (redundant check later in this method)
         }
-        // remove from 'current' system before resetting system vars
         if (pShipSE != nullptr) {
             if (IsJump() and !m_autoPilot)
                 pShipSE->DestinyMgr()->Halt();
-            m_system->RemoveEntity(pShipSE);
         }
+        // remove from 'current' system before resetting system vars
+        m_system->RemoveEntity(pShipSE);
         m_system->RemoveClient(this, (count = true), IsJump());
         m_system = nullptr;
     }
@@ -828,19 +771,65 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, true);
 
-        SetDestiny(pt, !m_undock);
+        SetDestiny(pt, !m_login);
+        pShipSE->ResetShipSystemMgr(m_system);
 
         if (IsJump() and !m_autoPilot)
             pShipSE->DestinyMgr()->Stop();
     }
 
-    if (!m_login) {
-        m_ship->SetCustomInfo(ci);
+    m_ship->SetCustomInfo(ci);
+
+    if (!m_login)
         m_ship->SaveShip(); // this saves everything on ship
-    }
 
     UpdateSession();
     SendSessionChange();
+}
+
+void Client::SetDestiny(const GPoint& pt, bool update/*false*/) {
+    if (!IsSolarSystem(m_locationID)) {
+        _log(CLIENT__ERROR, "%s(%u) - Calling SetDestiny() when not in space.", GetName(), m_char->itemID());
+        return;
+    }
+    m_bubbleWait = false;        // allow client processing of subsquent destiny msgs
+    m_setStateSent = false;
+
+    bool updateShip = false;
+    if (pShipSE == nullptr) {
+        updateShip = true;
+        CreateShipSE();
+    }
+
+    _log(PLAYER__AP_TRACE, "Client::SetDestiny():  shipSystemID: %u, SystemID: %u, update: %s, jump: %s", \
+            pShipSE->SystemMgr()->GetID(), m_system->GetID(), update?"true":"false", IsJump()?"true":"false");
+
+    if (pt.isZero()) {
+        if (pShipSE->GetPosition().isZero())
+            pShipSE->DestinyMgr()->SetPosition(m_SGP.GetRandPointOnPlanet(m_system->GetID()), update);
+        else
+            pShipSE->DestinyMgr()->SetPosition(pShipSE->GetPosition(), update);
+    } else
+        pShipSE->DestinyMgr()->SetPosition(pt, update);
+
+    m_system->AddEntity(pShipSE);
+
+    if (updateShip)
+        UpdateNewShip();
+}
+
+void Client::SetBallPark() {
+    _log(PLAYER__AP_TRACE, "Client::SetBallPark():  State: %s, SetState: %s, Beyonce: %s", \
+                GetStateName(m_clientState).c_str(), m_setStateSent?"true":"false", m_beyonce?"true":"false");
+    m_bubbleWait = false;   // allow client processing of subsquent destiny msgs
+    if (pShipSE->SysBubble() == nullptr)
+        m_system->AddEntity(pShipSE);
+    if (m_clientState == ClientState::csUndock)
+        pShipSE->DestinyMgr()->Undock(m_movePoint);
+    if (m_clientState == ClientState::csJump)
+        pShipSE->DestinyMgr()->Jump();
+    if (!m_setStateSent and m_beyonce)  // MUST have beyonce before sending setstate data.
+        pShipSE->DestinyMgr()->SendSetState();
 }
 
 void Client::MoveToPosition(const GPoint &pt) {
@@ -908,7 +897,7 @@ void Client::UndockFromStation() {
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
-    SetClientTimer(ClientState::csUndock, ClientTimers::UndockTimer);
+    SetStateTimer (ClientState::csUndock, ClientTimers::UndockTimer);
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetInvulTimer(ClientTimers::UndockInvul);
     SetSessionTimer();
@@ -1034,7 +1023,7 @@ void Client::Board(Ship* newShipSE)
     }
 
     UpdateNewShip();
-    //SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetStateTimer(ClientState::csBoard, ClientTimers::BoardTimer);
     SendSessionChange();
 }
 
@@ -1105,7 +1094,7 @@ void Client::Eject()
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    //SetClientTimer(ClientState::csBoard, ClientTimers::BoardTimer);
+    //SetStateTimer(ClientState::csBoard, ClientTimers::BoardTimer);
     SendSessionChange();
 }
 
@@ -1140,7 +1129,7 @@ void Client::ResetAfterPopped(GPoint& position)
     pShipSE = newShipSE;
 
     UpdateNewShip();
-    //SetClientTimer(ClientState::csKilled, ClientTimers::KilledTimer);
+    //SetStateTimer(ClientState::csKilled, ClientTimers::KilledTimer);
     SendSessionChange();
 }
 
@@ -1280,6 +1269,7 @@ PyRep *Client::GetAggressors() const {
 void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     if ((m_clientState != csIdle) or m_stateTimer.Enabled()) {
         sLog.Error("Client","%s: StargateJump called when a move is already pending. Ignoring.", m_char->itemName().c_str());
+        // send client msg about state change in progress
         return;
     }
 
@@ -1296,11 +1286,14 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     StaticData toData = StaticData();
     if (!sDataMgr.GetStaticInfo(m_toGate, toData)) {
         sLog.Error("Client","%s: Failed to query system information for stargate %u", m_char->itemName().c_str(), toGate);
+        // send client msg about new system info failure
         return;
     }
+
+    // this is where we can put the msgs about system closed or w/e
+
     // add jump to mapDynamicData for showing in StarMap (F10)    -allan 06Mar14
     MapDB::AddJump(toData.systemID);
-
     // used for showing Visited Systems in StarMap(F10)  -allan 30Jan14
     m_char->VisitSystem(toData.systemID);
 
@@ -1313,7 +1306,7 @@ void Client::StargateJump(uint32 fromGate, uint32 toGate) {
     m_ship->SetCustomInfo(ci);
 */
     //delay the move 4sec so they can see the JumpOut animation
-    SetClientTimer(ClientState::csJump, ClientTimers::JumpingTimer);
+    SetStateTimer (ClientState::csJump, ClientTimers::JumpingTimer);
 }
 
 void Client::ExecuteJump() {
@@ -1331,6 +1324,7 @@ void Client::ExecuteJump() {
     m_jumpTimer.Start(ClientTimers::JumpTimer);
 
     m_movePoint = NULL_ORIGIN;
+    m_moveSystemID = 0;
 }
 
 void Client::SetJumpTimers() {
@@ -1340,13 +1334,14 @@ void Client::SetJumpTimers() {
 
 void Client::SetInvulTimer(uint32 time/*ClientTimers::DefaultTimer*/)
 {
-    _log(CLIENT__TIMER, "%s: InvulTimer set at %ums.  timenow %u", m_char->itemName().c_str(), time, m_stateTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: InvulTimer set at %ums.  timenow %u", m_char->itemName().c_str(), time, m_invulTimer.GetCurrentTime());
     m_invulTimer.Start(time);
 }
 
-void Client::SetClientTimer(ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
+void Client::SetStateTimer (ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
 {
-    _log(CLIENT__TIMER, "%s: ClientTimer set from %s to %s at %ums.  timenow %u", m_char->itemName().c_str(), GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
+    _log(CLIENT__TIMER, "%s: StateTimer set from %s to %s at %ums.  timenow %u", m_char->itemName().c_str(), \
+            GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);
 }
