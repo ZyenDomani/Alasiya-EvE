@@ -69,6 +69,9 @@ void WormholeMgr::Process() {
 
 void WormholeMgr::Create(CosmicSignature& sig)
 {
+    if (sig.dungeonType != Dungeon::Type::Wormhole)
+        return;
+
     /** @note  this creates a k162 for deco only at this time.
      * it is more POC than usable
      */
@@ -80,29 +83,30 @@ void WormholeMgr::Create(CosmicSignature& sig)
     InventoryItemRef iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), aData);
     if (iRef.get() == nullptr) // make error and exit
         return;
+
     SystemManager* pSysMgr = sEntityList.FindOrBootSystem(sig.systemID);
     if (pSysMgr == nullptr) {
         _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - Boot failure for system %u", sig.systemID);
         return;
     }
-    // do this or create/add generic se here?
-    DBSystemDynamicEntity entity = DBSystemDynamicEntity();
-        entity.categoryID = iRef->categoryID();
-        entity.groupID = iRef->groupID();
-        entity.itemID = iRef->itemID();
-        entity.itemName = sig.sigName;
-        entity.typeID = sig.sigTypeID;
-        entity.x = pos.x;
-        entity.y = pos.y;
-        entity.z = pos.z;
-        entity.ownerID = sig.ownerID;
-        entity.allianceID = -1;
-        entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
-    /** @todo this is more shit that should NOT be in db */
-    pSysMgr->BuildDynamicEntity(entity);
-    // set itemID to return to anomaly mgr
-    sig.sigItemID = entity.itemID;
+
+    CelestialSE* cSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
+    if (cSE == nullptr) {
+        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+        return;
+    }
+    // set itemID to return to anomaly mgr after creation succedes
+    sig.sigItemID = iRef->itemID();
+    // add signal to system
+    pSysMgr->AddEntity(cSE);
+
+    /*
+     * Band        1/5     1/10    1/15    1/20    1/25    1/40    1/45    1/60    1/80
+     * Percentage  20.0%   10.0%   6.67%   5.0%    4.0%    2.5%    2.22%   1.67%   1.25%
+     */
+
     // set sigStrenth based on wh type and location
+    // default to 1/25 for now (base defauilt is 1/80)
     sig.sigStrength = 0.04;
 
     // create k162 here
@@ -111,32 +115,47 @@ void WormholeMgr::Create(CosmicSignature& sig)
     iRef = InventoryItem::SpawnItem(sItemFactory.GetNextTempID(), wData);
     if (iRef.get() == nullptr) // we'll survive...anomaly is temp item, so not worried about deleting it here.
         return;
-    sig.sigItemID = iRef->itemID();
-    // update entity data for k162
-    //entity = DBSystemDynamicEntity();
-    entity.categoryID = iRef->categoryID();
-    entity.groupID = iRef->groupID();
-    entity.itemID = iRef->itemID();
-    entity.itemName = "K162";
-    entity.typeID = 30831;
-    //entity.x = pos.x;
-    //entity.y = pos.y;
-    //entity.z = pos.z;
-    //entity.ownerID = sig.ownerID;
-    //entity.allianceID = -1;
-    //entity.corporationID = sDataMgr.GetCorpID(entity.ownerID);
-    // do the spawn using SystemManager's BuildEntity:
-    pSysMgr->BuildDynamicEntity(entity);
-    m_wormholes.push_back(entity.itemID);
+
+    CelestialSE* wSE = new CelestialSE(iRef, *(pSysMgr->GetServiceMgr()), pSysMgr);
+    if (wSE == nullptr) {
+        _log(COSMIC_MGR__ERROR, "WormholeMgr::Create() - SE Create failure for %s(%u)", iRef->itemName().c_str(), iRef->itemID());
+        return;
+    }
+    // add wormhole to system
+    pSysMgr->AddEntity(wSE);
+    // add exit to vector
+    m_wormholes.push_back(iRef->itemID());
 
     _log(COSMIC_MGR__TRACE, "WormholeMgr::Create() - Created %s in %s(%u)", iRef->itemName().c_str(), pSysMgr->GetName(), sig.systemID);
 }
 
 void WormholeMgr::CreateExit(SystemManager* pFromSys, SystemManager* pToSys)
 {
+    // compile data for exit
     CosmicSignature sig = CosmicSignature();
+    /*
+    sig.sigID = sEntityList.GetAnomalyID();
+    sig.systemID = pToSys->GetID();
+    sig.dungeonType = Dungeon::Type::Wormhole;
 
+    sig.sigItemID = 0;
+    sig.sigName = "WormHole K162 ";
+    //default to 1/80
+    sig.sigStrength = 0.0125;
 
+    // determine owner - default to rogue drones
+    sig.ownerID = 500022;
+    if (MakeRandomFloat() > 0.1) // 10% chance to be rogue drones
+        sig.ownerID = sDataMgr.GetRegionRatFaction(pToSys->GetRegionID());
+
+    GPoint pos = m_gp.GetAnomalyPoint(pToSys);
+        sig.x = pos.x;
+        sig.y = pos.y;
+        sig.z = pos.z;
+
+    // send data to Create() for processing
+    Create(sig);
+*/
     _log(COSMIC_MGR__TRACE, "WormholeMgr::CreateExit() - Creating Exit from %s(%u) to %s(%u)", \
                 pFromSys->GetName(), pFromSys->GetID(), pToSys->GetName(), pToSys->GetID());
 }

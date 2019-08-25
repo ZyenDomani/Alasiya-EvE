@@ -252,15 +252,19 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
     switch(sig.dungeonType) {
         case Wormhole: {    // 6
             // enable WH to be warped to...they are deco only at this time.
+            //  once working, these will be by probe only, and removed from anomaly list
             sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
             // hand off to WHMgr and exit after return
             sWHMgr.Create(sig);
-            m_sigBySigID.emplace(sig.sigID, sig);
-            /*m_sigByItemID*/m_anomByItemID.emplace(sig.sigItemID, sig);    // update later...
-            //m_mdb.SaveAnomaly(sig);
+            // creation falure will set itemID to 0
+            if (sig.sigItemID) {
+                m_sigBySigID.emplace(sig.sigID, sig);
+                /*m_sigByItemID*/m_anomByItemID.emplace(sig.sigItemID, sig);    // update later...
+                //m_mdb.SaveAnomaly(sig);
+            }
             return;
         } break;
         case Gravimetric: { // 2
