@@ -870,7 +870,8 @@ void Client::DockToStation() {
         if (sConfig.server.NoobShipCheck) {
             StationItemRef sRef = m_system->GetStationFromInventory(m_dockStationID);
             if (sRef.get() == nullptr) {
-                // error here...
+                _log(CLIENT__ERROR, "%s(%u): DockToStation() - Station %u not found in inventory of %s(%u).", \
+                        GetName(), m_char->itemID(), m_dockStationID, m_system->GetName(), m_system->GetID());
             } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
                 SpawnNewRookieShip();
             }
