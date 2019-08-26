@@ -134,8 +134,8 @@ PyResult Command_list(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     str.clear();
     str << "System: %s(%u)<br>"; //42
     str << "Belts: %u<br>"; //20
-    str << "Asteroids: %u<br>"; //25
-    str << "NPCs: %u<br>"; //18
+    str << "RoidSpawns: %u<br>"; //25
+    str << "RatSpawns: %u<br>"; //18
     str << "Players: %u<br>"; //23
     str << "<br>"; //5
 

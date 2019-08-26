@@ -201,6 +201,9 @@ dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
 ship scanner disables after trying to scan while warping (which tells you it cant be done)
 
+rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
+    - this should be fairly easy to set up
+    - if no faction presence in system, continue with random point
 
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)

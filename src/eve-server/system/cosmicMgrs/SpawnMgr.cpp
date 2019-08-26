@@ -660,9 +660,9 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
      * for non-rat spawns, this is the intial spawn which and they will already be in pocket.
      *  waves will be spawned at structure (template positioning data), OR will warp in if no structure in pocket
      */
-    NPC* pNPC(nullptr);
     GPoint startPos(pBubble->GetCenter());
-    const GPoint warpToPoint(startPos);
+    GPoint warpToPoint(startPos);
+
     std::string name = "BeltRat";
     if (anomaly) {
         name = GetSpawnClassName(sClass);
@@ -679,6 +679,7 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
         data.factionID = (factionID == factionRogueDrones ? 0 : factionID); // the faction of rogue drones is wrong....should be "0" for client to use it right.
         data.ownerID = corpID;
 
+    NPC* pNPC(nullptr);
     InventoryItemRef iRef(nullptr);
     for (auto cur : m_toSpawn) {
         if (IsValidTarget(cur.typeID))
@@ -712,8 +713,12 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
             pNPC->DestinyMgr()->SetPosition(startPos);
             //  begin warp.  this may have to be looked into later for timing of large spawns (>6)
             //  actually looks kinda cool when larger ships come in later...
-            if (sClass <= Spawn::Class::Officer)    // ratspawn will warp in, others will not.
-                pNPC->DestinyMgr()->WarpTo(warpToPoint, (MakeRandomInt(-5, 10) *1000));
+            if (sClass <= Spawn::Class::Officer) {   // ratspawn will warp in, others will not.
+                // adjust warpIn point so show some variation instead of a straight line.
+                GPoint warpTo(warpToPoint);
+                warpTo.MakeRandomPointOnSphere(sClass *1000);  // random point <class (1-12)> x 1k from center
+                pNPC->DestinyMgr()->WarpTo(warpTo, (MakeRandomInt(-5, 10) *1000));
+            }
 
             SpawnEntry se = SpawnEntry();
             se.enabled = false;
