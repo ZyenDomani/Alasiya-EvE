@@ -3018,25 +3018,25 @@ void DestinyManager::SendSetState() const {
     mySE->GetPilot()->SetStateSent(true);
 }
 
-void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only) const
+void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const
 {
     std::vector<PyTuple*> updates;
     std::vector<PyTuple*> events(1, *ev);
     SendDestinyUpdate(updates, events, self_only);
 }
 
-void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only) const {
+void DestinyManager::SendSingleDestinyUpdate(PyTuple **up, bool self_only/*false*/) const {
     std::vector<PyTuple*> updates(1, *up);
     std::vector<PyTuple*> events;
     SendDestinyUpdate(updates, events, self_only);
 }
 
-void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only) const {
+void DestinyManager::SendDestinyUpdate(std::vector<PyTuple*> &updates, bool self_only/*false*/) const {
     std::vector<PyTuple*> events;
     SendDestinyUpdate(updates, events, self_only);
 }
 
-void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only ) const {
+void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vector<PyTuple*>& events, bool self_only/*false*/) const {
     if (!mySE->SystemMgr()->IsLoaded())
         return;
     if (self_only) {

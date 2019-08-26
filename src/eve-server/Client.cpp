@@ -328,6 +328,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         return false;
     }
 
+    // register with our system manager.
+    m_system->AddClient(this, true);
+
     m_char = sItemFactory.GetCharacter(charID);
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
@@ -336,9 +339,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     }
 
     m_char->SetClient(this);
-    m_char->VerifySP();
-    m_char->SetLoginTime();
-    m_char->UpdateSkillQueue();
 
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     //  fleet data is zeroed when char item is created
@@ -356,6 +356,8 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         }
         SetShip(m_ship);
     }
+
+    m_ship->SetPlayer(this);
 
     GPoint pos(NULL_ORIGIN);
     if (IsSolarSystem(m_locationID))
@@ -390,6 +392,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
     ServiceDB::SetAccountOnlineStatus(GetUserID(), true);
     sItemFactory.UnsetUsingClient();
+
+    m_char->VerifySP();
+    m_char->SetLoginTime();
+    m_char->UpdateSkillQueue();
+
     UpdateSkillTraining();
 
     SetStateTimer (ClientState::csLogin, ClientTimers::LoginTimer);
@@ -859,16 +866,18 @@ void Client::DockToStation() {
     //Check if player is in pod and have no ships in hangar, in which case they get a rookie ship for free
     //  on live, SCC sends mail about the loss of the players ship, and offers a shiny, new, fully-fitted ship as replacement.  we dont....yet
     // this needs to be done before player is docked
-    if (m_ship->typeID() == itemTypeCapsule)
+    if (m_ship->typeID() == itemTypeCapsule) {
         if (sConfig.server.NoobShipCheck) {
-            StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
+            StationItemRef sRef = m_system->GetStationFromInventory(m_dockStationID);
             if (sRef.get() == nullptr) {
                 // error here...
-            } else if (!sRef->HasShip(this))    // need to get hangar items (flagHangar) by owner
+            } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
                 SpawnNewRookieShip();
+            }
         } else {
             SpawnNewRookieShip();
         }
+    }
 
     MoveToLocation(m_dockStationID, NULL_ORIGIN);
 
@@ -1124,7 +1133,13 @@ void Client::ResetAfterPopped(GPoint& position)
 
     newShipSE->SetLauncherID(pShipSE->GetID());
     pShipSE->DestinyMgr()->Eject();
+    // nullify pilot before removing from bubble, which removes player from bubble map
+    pShipSE->SetPilot(nullptr);
+    // remove dead ship from bubble before calling SetShip() (it deletes pShipSE)
+    sBubbleMgr.Remove(pShipSE);
+    //  set shipSE to null.  this allows sending AddBalls when pod added to system
     SetShip(m_pod);
+    // add pod to system
     m_system->AddEntity(newShipSE);
     pShipSE = newShipSE;
 
@@ -1143,13 +1158,16 @@ void Client::ResetAfterPodded() {
     m_autoPilot = false;
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
+
     SpawnNewRookieShip();
     CreateNewPod();
     SetShip(m_pod);
+
     m_ship->Move(m_locationID, flagHangar);
     m_ship->SaveShip();
     m_char->ResetClone();
     m_char->SaveCharacter();
+
     //update session with new values
     UpdateSession();
     SendSessionChange();
@@ -1159,8 +1177,10 @@ void Client::SetShip(ShipItemRef shipRef) {
     shipRef->ChangeOwner(m_char->itemID());
     if (pShipSE != nullptr)
         pShipSE->SetPilot(nullptr);
+
+    // nullify ship pointer, but do NOT delete...most callers need existing ship for system and destiny pointers
     pShipSE = nullptr;
-    //m_ship->SetPlayer(nullptr); // nullify ship pilot pointer (just in case)
+
     m_ship = shipRef;
     m_shipId = shipRef->itemID();
     m_char->SetActiveShip(m_shipId);

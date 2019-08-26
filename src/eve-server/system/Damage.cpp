@@ -280,9 +280,9 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
 
         //m_destiny->Halt();
-        Killed(d);  // this must NOT remove dead SE from system.
-
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
+
+        Killed(d);  // this must NOT remove dead SE from system.
 
         SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
     } else {
@@ -572,10 +572,13 @@ void Ship::Killed(Damage &fatal_blow) {
         AbortCycle();
         PayInsurance();
 
+        m_destiny->SendJettisonPacket();
+
         uint16 groupID = m_self->groupID();
         ShipItemRef deadShipRef = pPilot->GetShip();
         GPoint podPosition(wreckPosition);
         podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
+        // this resets client ship data
         pPilot->ResetAfterPopped(podPosition);
 
         ItemData wreckItemData(wreckTypeID, pPilot->GetCharacterID(), locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
@@ -614,6 +617,5 @@ void Ship::Killed(Damage &fatal_blow) {
             wreckItemRef->Delete();
             return;
         }
-        m_destiny->SendJettisonPacket();
     }
 }
