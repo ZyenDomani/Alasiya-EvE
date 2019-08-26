@@ -307,10 +307,11 @@ void SystemBubble::SetSpawnTimer(bool isBelt/*false*/)
     if (sConfig.debug.SpawnTest) {
         m_spawnTimer.Start(5000); /* 5s for testing */
     } else {
+        // these randoms should be changed to reflect this npc's faction presence in system
         if (isBelt)
-            m_spawnTimer.Start(sConfig.npc.RoamingTimer *60 *1000);
+            m_spawnTimer.Start(MakeRandomInt(30, sConfig.npc.RoamingTimer) *1000);
         else
-            m_spawnTimer.Start(sConfig.npc.StaticTimer *60 *1000);
+            m_spawnTimer.Start(MakeRandomInt(60, sConfig.npc.StaticTimer) *1000);
     }
 }
 

@@ -374,6 +374,8 @@ int main( int argc, char* argv[] )
         sLog.Green("   Roaming Spawns","Enabled.  Checks every %u minutes", sConfig.npc.RoamingTimer /60);
     else
         sLog.Warning("   Roaming Spawns","Disabled.");
+    if (sConfig.npc.RoamingSpawns or sConfig.npc.StaticSpawns)
+        sLog.Green("   Spawns Enabled","Respawn timer checks every %u minutes", sConfig.npc.RespawnTimer /60);
     if (sConfig.server.BountyPayoutDelayed) {
         sLog.Green(" Delayed Bounties","Delayed Bounties are Enabled.  Loop runs every %u minutes", sConfig.server.BountyPayoutTimer);
         if (sConfig.server.FleetShareDelayed)
