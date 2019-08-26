@@ -26,6 +26,7 @@ dungeon spawn error....(and they white)
 11:20:50 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000004)
 11:20:50 [NPCTrace] Terrorist Leader(750000004): Added to system manager for Yuzier(30000007)
 
+
 ********  improvements
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
     - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
@@ -198,6 +199,7 @@ map::GetIncursionGlobalReport()
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
+ship scanner disables after trying to scan while warping (which tells you it cant be done)
 
 
 *****************  uk calls

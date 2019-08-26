@@ -277,7 +277,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         }
 
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
-        sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
+        //sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
 
         //m_destiny->Halt();
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());

@@ -351,7 +351,7 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     pClient->CreateNewPod();
     pClient->GetPod()->Move(cdata.locationID, flagHangar);
 
-    ShipItemRef sRef = pClient->SpawnNewRookieShip();
+    ShipItemRef sRef = pClient->SpawnNewRookieShip(cdata.locationID);
     // set shipID in client and char objects and save (shipID error fix)
     pClient->SetShip(sRef);
     charRef->SaveFullCharacter();

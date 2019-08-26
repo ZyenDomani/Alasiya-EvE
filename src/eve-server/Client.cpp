@@ -374,10 +374,10 @@ bool Client::SelectCharacter(int32 charID/*0*/)
                 if (sRef.get() == nullptr) {
                     // error here...
                 } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
-                    SpawnNewRookieShip();
+                    SpawnNewRookieShip(m_locationID);
                 }
             } else {
-                SpawnNewRookieShip();
+                SpawnNewRookieShip(m_locationID);
             }
         }
     }
@@ -778,7 +778,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         if (m_char->flag() != flagPilot)
             m_char->Move(m_shipId, flagPilot, true);
 
-        SetDestiny(pt, !m_login);
+        SetDestiny(pt);
         pShipSE->ResetShipSystemMgr(m_system);
 
         if (IsJump() and !m_autoPilot)
@@ -873,10 +873,10 @@ void Client::DockToStation() {
                 _log(CLIENT__ERROR, "%s(%u): DockToStation() - Station %u not found in inventory of %s(%u).", \
                         GetName(), m_char->itemID(), m_dockStationID, m_system->GetName(), m_system->GetID());
             } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
-                SpawnNewRookieShip();
+                SpawnNewRookieShip(m_dockStationID);
             }
         } else {
-            SpawnNewRookieShip();
+            SpawnNewRookieShip(m_dockStationID);
         }
     }
 
@@ -1128,7 +1128,7 @@ void Client::ResetAfterPopped(GPoint& position)
         _log(PLAYER__ERROR, "%s ResetAfterPopped() - pShipSE = NULL for shipID %u.", m_char->itemName().c_str(), m_pod->itemID());
         // we should probably send char to their clone station if this happens....
         MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
-        SpawnNewRookieShip();
+        SpawnNewRookieShip(m_locationID);
         throw PyException(MakeCustomError("There was a problem creating your pod in space.<br>You have been transfered to your home station.<br>Ref: ServerError 15107."));
     }
 
@@ -1140,6 +1140,8 @@ void Client::ResetAfterPopped(GPoint& position)
     sBubbleMgr.Remove(pShipSE);
     //  set shipSE to null.  this allows sending AddBalls when pod added to system
     SetShip(m_pod);
+    // just in case something's a bit off, reset pod to full
+    m_pod->Heal();
     // add pod to system
     m_system->AddEntity(newShipSE);
     pShipSE = newShipSE;
@@ -1160,7 +1162,7 @@ void Client::ResetAfterPodded() {
 
     MoveToLocation(GetCloneStationID(), NULL_ORIGIN);
 
-    SpawnNewRookieShip();
+    SpawnNewRookieShip(m_locationID);
     CreateNewPod();
     SetShip(m_pod);
 
@@ -1210,7 +1212,7 @@ void Client::CreateNewPod() {
     m_char->SetActivePod(m_pod->itemID());  // is this used?
 }
 
-ShipItemRef Client::SpawnNewRookieShip() {
+ShipItemRef Client::SpawnNewRookieShip(uint32 stationID) {
     /** @todo  create/send mail from scc about lost ship as needed....create char uses this method also */
     //create rookie ship of appropriate type
     uint16 shipID = amarrRookie, gunID = amarrWeapon;
@@ -1241,15 +1243,17 @@ ShipItemRef Client::SpawnNewRookieShip() {
     if (sRef.get() != nullptr) {
         // noob ships come pre-assembled (and "fully fit")
         sRef->ChangeSingleton(true);
-        sRef->Move(m_char->stationID(), flagHangar);
+        sRef->Move(stationID, flagHangar);
     }
     if (mRef.get() != nullptr) {
         mRef->ChangeSingleton(true);
         mRef->Move(sRef->itemID(), flagHiSlot0);
+        mRef->SetAttribute(AttrOnline, EvilOne, false);
     }
     if (wRef.get() != nullptr) {
         wRef->ChangeSingleton(true);
         wRef->Move(sRef->itemID(), flagHiSlot1);
+        wRef->SetAttribute(AttrOnline, EvilOne, false);
     }
     if (cRef.get() != nullptr)
         cRef->Move(sRef->itemID(), flagCargoHold);

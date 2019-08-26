@@ -113,13 +113,15 @@ void SystemBubble::Process()
 
     // this must run a second time for spawn to actually hit.  first time only sets main system spawn timer.
     // may be nuts, but will remain enabled as long as player in bubble and bubble has no rats.
-    if (m_spawnTimer.Enabled())
-        if (m_spawnTimer.Check())
+    if (m_spawnTimer.Enabled()) {
+        if (m_spawnTimer.Check()) {
             if (!m_players.empty()) {
                 m_system->DoSpawnForBubble(this);
             } else {
                 m_spawnTimer.Disable();
             }
+        }
+    }
 }
 
 //called every 30s from the bubble manager.
@@ -222,10 +224,10 @@ void SystemBubble::Add(SystemEntity* pSE)
         }
         Client* pClient(pSE->GetPilot());
         SendAddBalls( pSE );
-        if (!pClient->IsJump()) {
+        if (!pClient->IsJump())
             if (!m_players.empty())
                 AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
-        }
+
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
 
         if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */

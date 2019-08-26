@@ -270,8 +270,8 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
 // for stations only
 void Inventory::GetInvForOwner(uint32 ownerID, std::vector< InventoryItemRef >& items)
 {
-    if (!IsOffice(m_myID) or !IsStation(m_myID)) {
-        _log(INV__ERROR, "GetInvForOwner called for non-station item %s", m_self->itemName().c_str());
+    if (!IsOffice(m_myID) and !IsStation(m_myID)) {
+        _log(INV__ERROR, "GetInvForOwner called on non-station item %s(%u)", m_self->itemName().c_str(), m_myID);
         EvE::traceStack();
     }
     for (auto cur : mContents)
