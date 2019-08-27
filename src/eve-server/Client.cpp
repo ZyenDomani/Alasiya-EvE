@@ -399,7 +399,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     UpdateSkillTraining();
 
-    SetStateTimer (ClientState::csLogin, ClientTimers::LoginTimer);
+    SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
     return (m_loaded = true);
 }
 
@@ -532,6 +532,7 @@ void Client::ProcessClient() {
                 case ClientState::csLogin: {
                     _log(CLIENT__TIMER, "Client::ProcessClient()::CheckState():  case: Login");
                     SetBallPark();
+                    m_login = false;
                     m_clientState = ClientState::csIdle;
                 } break;
                 case ClientState::csJump: {

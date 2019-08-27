@@ -514,7 +514,7 @@ void NPCAIMgr::Target(SystemEntity* pSE) {
     if (!m_mainAttackTimer.Enabled())
         m_mainAttackTimer.Start(m_attackSpeed);
 
-    if (!m_missileTimer.Enabled())
+    if (!m_missileTimer.Enabled() and (m_launcherCycleTime > 100))
         m_missileTimer.Start(m_launcherCycleTime);
 }
 

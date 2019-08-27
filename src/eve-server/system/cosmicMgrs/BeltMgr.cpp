@@ -262,9 +262,8 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     float secValue = m_system->GetSecValue();
     std::unordered_multimap<float, uint16> roidDist;
     if (ice) {
-        uint8 quarter = sDataMgr.GetRegionQuarter(m_regionID);
         // caldari=1, minmatar=2, amarr=3, gallente=4, none=5
-        GetIceDist(quarter, secRating, roidDist);
+        GetIceDist(sDataMgr.GetRegionQuarter(m_regionID), secRating, roidDist);
     } else if (anomaly) {
         roidDist = roidTypes;
     } else {
@@ -285,8 +284,10 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
         radius *= 3; //24k base
         if (secRating > 0.7)
             pcs = 1;
-        else if (secRating > 0.3)
+        else if (secRating > 0.4)
             pcs = 2;
+        else if (secRating > 0.0)
+            pcs = 3;
         else if (secRating > -0.4)
             pcs = 4;
         else
@@ -303,10 +304,10 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     GPoint mposition(NULL_ORIGIN);
     for (uint8 i = 0; i <= pcs; ++i) {
         if (ice) {
-            //if (secRating > -0.3)
+            if (secRating > -0.2)
                 roidradius = MakeRandomInt(20, 40) *1000; // (40k,70k)  72-102k radius
-            //else
-            //    roidradius = MakeRandomInt(50, 80) *1000; // (50k,80k)  82-112k radius
+            else
+                roidradius = MakeRandomInt(40, 70) *1000; // (40k,80k)  82-112k radius
             radius += roidradius;
             elevation = (radius + (roidradius /2) /2);
         } else {
@@ -403,15 +404,15 @@ void BeltMgr::SpawnAsteroid(uint32 beltID, uint32 typeID, double radius, const G
 
 void BeltMgr::RemoveAsteroid(uint32 beltID, AsteroidSE* pASE)
 {
+    m_db.RemoveAsteroid(pASE->GetID());
     // this doesnt work right.  not sure why yet.
     auto range = m_asteroids.equal_range(beltID);
     for (auto itr = range.first; itr != range.second; ++itr) {
         if (pASE == itr->second) {
             m_asteroids.erase(itr);
-            continue;
+            return;
         }
     }
-    m_db.RemoveAsteroid(pASE->GetID());
 /*
     if (m_asteroids.count(beltID)) {
         std::map<uint32, bool>::iterator itr =  m_spawned.find(beltID);

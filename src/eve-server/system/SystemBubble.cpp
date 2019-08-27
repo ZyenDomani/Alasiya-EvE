@@ -145,6 +145,7 @@ void SystemBubble::ProcessWander(std::vector<SystemEntity*> &wanderers) {
             ++itr;
             continue;
         }
+        // is this shit really needed??
         if (pDSE->SystemMgr()->GetID() != m_systemID) {
             // this entity is in a different system!  this shouldnt happen....
             // remove this entity, insert into wanderers, and continue
@@ -230,7 +231,7 @@ void SystemBubble::Add(SystemEntity* pSE)
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
 
-        if (m_gate and sConfig.npc.StaticSpawns) /* m_gate = false.  will fix when gate spawns are finished */
+        if (m_gate and sConfig.npc.StaticSpawns)
             if (!m_spawnTimer.Enabled())
                 SetSpawnTimer(false);
     } else {
@@ -418,12 +419,13 @@ void SystemBubble::PrintEntityList() {
         found = false;
         if (cur.second->isGlobal())  //this should only hit beacons and cynos as global AND not static
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Global.", cur.second->GetName(), cur.second->GetID() );
-        if (cur.second->IsShipSE())
+        if (cur.second->IsShipSE()) {
             if (cur.second->HasPilot()) {
                 sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             } else {
                 sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is Empty Player Ship.", cur.second->GetName(), cur.second->GetID() ); found = true;
             }
+        }
         if (cur.second->IsNPCSE()) {
             sLog.Warning( "SystemBubble::PrintEntityList()", "entity %s(%u) is NPC.", cur.second->GetName(), cur.second->GetID() ); found = true;
         }
