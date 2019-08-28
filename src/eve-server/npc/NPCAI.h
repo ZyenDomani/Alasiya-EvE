@@ -57,6 +57,7 @@ public:
     NPCAIMgr(NPC *who);
     ~NPCAIMgr()                                         { /* do nothing here */ }
 
+    // this is called from NPC::Process() which is called from SystemManager::Process()
     void Process();
 
     void Target(SystemEntity *by_who);

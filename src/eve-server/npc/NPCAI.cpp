@@ -22,14 +22,14 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Rewrite:    Allan
-    AI Version: 0.51
+    AI Version: 0.55
 */
 
 /** @todo  ai update ideas
  *   bubble call *SomeFunction* to tell ai of new ship arriving in bubble
- *   method to use npc's prefered sig radius for targets
+ *   method to use npc's preferred sig radius for targets
  *   finish flee and signal action methods (and determine who can use them and when)
- *   add methods to check target/targeter warping out and chance of npc following (and possibably calling backup)
+ *   add methods to check target/targeter warping out and chance of npc following (and possibly calling backup)
  *
  *  have data...needs coding...
  *   missiles
@@ -51,11 +51,11 @@
 NPCAIMgr::NPCAIMgr(NPC* who)
 : m_state(NPCAI::State::Idle),
   m_npc(who),
-  m_self(who->GetSelf()),
   m_destiny(who->DestinyMgr()),
-  m_warpOutTimer(0),
-  m_mainAttackTimer(0),
+  m_self(who->GetSelf()),
   m_processTimer(0),
+  m_mainAttackTimer(0),
+  m_warpOutTimer(0),
   m_missileTimer(0),
   m_shieldBoosterTimer(0),
   m_armorRepairTimer(0),
@@ -79,6 +79,8 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_missileTypeID = m_self->GetAttribute(AttrEntityMissileTypeID).get_int();
     else
         m_missileTypeID = 0;
+
+    //  AttrEntityDefenderChance = 497,  <<< for defender missiles
 
     /** @todo  all of these need to be verified and/or updated */
 
@@ -110,14 +112,17 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     // some npcs have flyRange > boostRange.  this corrects it. (extends boost range)
     if (m_flyRange > m_boostRange)
         m_boostRange += m_boostRange + m_flyRange;
-    // max firing range   default:10000
+    // max firing range   default:10000  (lowest in db is 1000)
     m_maxAttackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();
-    if (!m_maxAttackRange)
+    // this should be set according to npc size.
+    if (m_maxAttackRange < 1000)
         m_maxAttackRange = 10000;
-    // 'sight' range
+    // 'sight' range (undefined in db)
     m_sightRange = 20000;
     if (m_maxAttackRange > m_sightRange)
         m_sightRange = m_maxAttackRange *2;
+
+    /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
 
     // this is chance an npc has of delaying it's rep (if applicable)
     if (m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_int())
@@ -188,14 +193,21 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     AttrWarpScrambleDuration = 505,
     */
 
+    /*
+    AttrEntityEquipmentMin = 456,
+    AttrEntityEquipmentMax = 457,
+    */
+
     // does this need to be running if there are no players in bubble?
     //  yes...npcs will warp out when no targets in sight range, but need a process tic to do that.
-    m_processTimer.Start(m_attackSpeed);
+   // m_processTimer.Start(m_attackSpeed);
+
+    // maybe this can be used to tell spawnMgr to respawn this npc as required....
+    //    AttrEntityGroupRespawnChance = 640,
 }
 
 void NPCAIMgr::Process() {
-    if ((!m_processTimer.Check())
-    or m_destiny->IsWarping())
+    if (m_destiny->IsWarping())
         return;
 
     if (m_shieldBoosterTimer.Enabled())
@@ -233,13 +245,21 @@ void NPCAIMgr::Process() {
                 DestinyManager* pDestiny(nullptr);
                 m_npc->SysBubble()->GetPlayers(clientVec); // what about player drones?  yes...later
                 for (auto cur : clientVec) {
-                    if (cur->IsLogin() or cur->IsInvul() or cur->InPod())
+                    if (cur->IsInvul())
                         continue;
-                    if (!cur->GetShipSE())
+                    if (cur->GetShipSE() == nullptr)
                         continue;
-                    if ((!cur->GetShipSE()->DestinyMgr()) or (!cur->GetShipSE()->SysBubble()))    // this shouldnt be needed, but whatever...
-                        continue;
+                    if (cur->InPod()) {
+                        if (sConfig.npc.TargetPod) {
+                            if (m_npc->SystemMgr()->GetSystemSecurityRating() > sConfig.npc.TargetPodSec)
+                                continue;
+                        } else {
+                            continue;
+                        }
+                    }
                     pDestiny = cur->GetShipSE()->DestinyMgr();
+                    if (pDestiny == nullptr)   // this shouldnt be needed, but whatever...
+                        continue;
                     if (pDestiny->IsCloaked() or pDestiny->IsWarping())
                         continue;
                     if (m_npc->GetPosition().distance(cur->GetShipSE()->GetPosition()) > m_sightRange)

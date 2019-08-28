@@ -99,6 +99,9 @@ void NPC::Process() {
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
+
+    // add profile for npc ai
+    // make checks here for npc states to avoid calling ai::Process() if we dont have to
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
