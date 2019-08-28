@@ -199,13 +199,14 @@ void SystemEntity::DropLoot(WreckContainerRef wreckRef, uint32 groupID, uint32 o
 
 /** @todo (allan)  this doesnt need to be here */
 void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) {
+
     //New Status = ((10 - Old Status) * Sec Incr) + Old Status
     double oldSec = pChar->GetSecurityRating();
     EvilNumber maxGain = 0;
-    if (iRef->HasAttribute(AttrEntitySecurityStatusKillBonus, maxGain))
+    if (iRef->HasAttribute(AttrEntitySecurityMaxGain, maxGain))
         if (oldSec > maxGain.get_double())
             return;
-    double killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_double();
+    float killBonus = iRef->GetAttribute(AttrEntitySecurityStatusKillBonus).get_float();
     double secAward = (((10 -oldSec) *killBonus) +oldSec) /100;
     secAward *=  (1 + ( 0.05 * (pChar->GetSkillLevel(EvESkill::FastTalk, true))));      // 5% increase
     if (killBonus and secAward) {

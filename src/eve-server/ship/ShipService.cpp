@@ -137,6 +137,19 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     Client* pClient = call.client;
 
+    Ship* pShipSE =  pClient->GetShipSE();
+    if (pShipSE == nullptr)
+        throw PyException(MakeCustomError("Invalid Ship.  Ref: ServerError xxxxx"));
+    /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
+    if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
+        /* find proper error msg for this...im sure there is one  */
+        throw PyException(MakeCustomError("You cannot eject current ship with an active Cyno Field."));
+    }
+
+    //  do we need this? yes....this needs more work in destiny to implement correctly
+    if (pShipSE->DestinyMgr()->IsMoving())
+        throw PyException(MakeCustomError("You cannot eject current ship while moving. Ref: ServerError 05139."));
+
     SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
         codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
@@ -144,7 +157,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     // this will segfault if newShipID is invalid or not in system inventory
-    Ship* pShipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
+    pShipSE = pSystem->GetSE(args.newShipID)->GetShipSE();
 
     if (pShipSE == nullptr) {
         _log(SHIP__ERROR, "Handle_Board() - Failed to get new ship %u for %s.", args.newShipID, pClient->GetName());
@@ -205,7 +218,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
      *  deny eject
      */
     //{'FullPath': u'UI/Messages', 'messageID': 256625, 'label': u'NoEjectingToSpaceInStationBody'}(u"You can't eject into space while you're docked. Try leaving your ship the usual way.", None, None)
-    
+
     SystemEntity* pShipSE = pClient->GetShipSE();
     if (pShipSE == nullptr)
         throw PyException(MakeCustomError("Invalid Ship.  Ref: ServerError xxxxx"));
