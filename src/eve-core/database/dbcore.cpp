@@ -323,8 +323,8 @@ bool DBcore::DoQuery_locked(DBerror &err, const char *query, int querylen, bool 
             return false;
     }
 
-   // if (is_log_enabled(DATABASE__QUERIES))
-   //     _log(DATABASE__QUERIES, "DBcore Query - %s", query);
+    if (is_log_enabled(DATABASE__QUERIES))
+        _log(DATABASE__QUERIES, "DBcore Query - %s", query);
 
     if (mysql_real_query(mysql, query, querylen)) {
         uint num = mysql_errno(mysql);
@@ -456,7 +456,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_SIGNED[] =
     DBTYPE_ERROR,   //[14]MYSQL_TYPE_NEWDATE            /* ??? */
     DBTYPE_ERROR,   //[15]MYSQL_TYPE_VARCHAR            /* ??? */
     DBTYPE_BOOL,    //[16]MYSQL_TYPE_BIT                /* BIT field (MySQL 5.0.3 and up) */
-    DBTYPE_ERROR,   //[17]MYSQL_TYPE_NEWDECIMAL=246     /* Precision math DECIMAL or NUMERIC field (MySQL 5.0.3 and up) */
+    DBTYPE_R8,      //[17]MYSQL_TYPE_NEWDECIMAL=246     /* Precision math DECIMAL or NUMERIC field (MySQL 5.0.3 and up) */
     DBTYPE_ERROR,   //[18]MYSQL_TYPE_ENUM=247           /* ENUM field */
     DBTYPE_ERROR,   //[19]MYSQL_TYPE_SET=248            /* SET field */
     DBTYPE_WSTR,    //[20]MYSQL_TYPE_TINY_BLOB=249      /* TINYBLOB or TINYTEXT field */
@@ -487,7 +487,7 @@ const DBTYPE DBQueryResult::MYSQL_DBTYPE_TABLE_UNSIGNED[] =
     DBTYPE_ERROR,   //[14]MYSQL_TYPE_NEWDATE            /* ??? */
     DBTYPE_ERROR,   //[15]MYSQL_TYPE_VARCHAR            /* ??? */
     DBTYPE_BOOL,    //[16]MYSQL_TYPE_BIT                /* BIT field (MySQL 5.0.3 and up) */
-    DBTYPE_ERROR,   //[17]MYSQL_TYPE_NEWDECIMAL=246     /* Precision math DECIMAL or NUMERIC field (MySQL 5.0.3 and up) */
+    DBTYPE_R8,      //[17]MYSQL_TYPE_NEWDECIMAL=246     /* Precision math DECIMAL or NUMERIC field (MySQL 5.0.3 and up) */
     DBTYPE_ERROR,   //[18]MYSQL_TYPE_ENUM=247           /* ENUM field */
     DBTYPE_ERROR,   //[19]MYSQL_TYPE_SET=248            /* SET field */
     DBTYPE_WSTR,    //[20]MYSQL_TYPE_TINY_BLOB=249      /* TINYBLOB or TINYTEXT field */
@@ -591,6 +591,11 @@ DBTYPE DBQueryResult::ColumnType( uint32 index ) const
         columnType -= 229;  //( MYSQL_TYPE_NEWDECIMAL - MYSQL_TYPE_BIT - 1 )
 
     DBTYPE result = ( IsUnsigned( index ) ? MYSQL_DBTYPE_TABLE_UNSIGNED : MYSQL_DBTYPE_TABLE_SIGNED )[ columnType ];
+
+    // test for numeric type and set to signed 64b integer.  may have to revise this to float/double depending on what's found.
+    if (result == DBTYPE_ERROR)
+        if (IS_NUM(columnType))
+            result = DBTYPE_I8;
 
     /* if result is (wide) binary string, set result to DBTYPE_BYTES. */
     if (((DBTYPE_STR == result) or (DBTYPE_WSTR == result)) and IsBinary(index))

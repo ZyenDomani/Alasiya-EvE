@@ -1823,10 +1823,10 @@ PyRep* CorporationDB::GetMemberTrackingInfo(uint32 corpID)
     // no idea how to do that short of pulling/updating column every (x time) interval....and uh, no.
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-        "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.baseID, c.grantableRoles, c.blockRoles, c.logonDateTime,"
-        "  c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, -1 AS lastOnline"
+        "SELECT c.characterID, c.corporationID, c.title, c.startDateTime, c.corpRole AS roles, c.baseID, c.grantableRoles, c.blockRoles,"
+        " c.logonDateTime, c.logoffDateTime, c.locationID, IFNULL(e.typeID, 0) AS shipTypeID, -1 AS lastOnline"
         " FROM chrCharacters AS c"
-        "  LEFT JOIN entity AS e ON c.shipID = e.itemID"
+        "  LEFT JOIN entity AS e ON e.itemID = c.shipID"
         " WHERE c.corporationID = %u", corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
@@ -1842,7 +1842,7 @@ PyRep* CorporationDB::GetMemberTrackingInfoSimple(uint32 corpID)
         "SELECT c.characterID, c.corporationID, c.logoffDateTime, c.logonDateTime, c.title, c.startDateTime, c.corpRole AS roles,"
         " c.baseID, c.blockRoles, IFNULL(e.typeID, 0) AS shipTypeID"
         " FROM chrCharacters AS c"
-        "  LEFT JOIN entity AS e ON c.shipID = e.itemID"
+        "  LEFT JOIN entity AS e ON e.itemID = c.shipID"
         " WHERE corporationID = %u", corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
