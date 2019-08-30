@@ -478,13 +478,16 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             PyTuple* result = new PyTuple(2);
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
+            std::vector<AsteroidSE*> vList;
+            m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
+            // when roids are spawned, BeltMgr sets this bubble "IsBelt = true", even in anomalies
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
-                std::vector<AsteroidSE*> vList;
-                m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
+                float distance = 0;
                 for (auto pASE : vList) {
-                    // allow ice scanning without a radius check....may change later.
-                    if (m_bubble->IsIce() or (m_shipRef->position().distance(pASE->GetPosition()) < m_range)) {
+                    distance = m_shipRef->position().distance(pASE->GetPosition());
+                    distance -= pASE->GetRadius();
+                    if (distance < m_range) {
                         PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
@@ -492,7 +495,17 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                         list->AddItem(tuple2);
                     }
                 }
+            } else if (m_bubble->IsIce()) {
+                // allow ice scanning without a radius check....may change later.
+                for (auto pASE : vList) {
+                    PyTuple* tuple2 = new PyTuple(3);
+                    tuple2->SetItem(0, new PyInt(pASE->GetID()));
+                    tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
+                    tuple2->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
+                    list->AddItem(tuple2);
+                }
             }
+
             result->SetItem(1, list);
             // Send results.
             std::vector<PyTuple*> events;
@@ -687,6 +700,7 @@ bool ActiveModule::CanActivate()
         if (!m_turret and !m_launcher) {
             float range = GetAttribute(AttrMaxRange).get_float();
             float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
+            distance -= m_targetSE->GetRadius();
             if (distance > range) {
                 m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
                         m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
@@ -864,9 +878,9 @@ void ActiveModule::LaunchMissile()
     if (pMissile == nullptr)
         return; // make error here
 
-    double distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
-    double missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    double travelTime = (distance/missileSpeed);
+    float distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
+    float missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
+    float travelTime = (distance/missileSpeed);
     if (travelTime < 1)
         travelTime = 1;
     pMissile->SetSpeed(missileSpeed);

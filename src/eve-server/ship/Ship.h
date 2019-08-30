@@ -37,45 +37,6 @@
 #include "system/SystemEntity.h"
 
 /**
- * Class managing ship type data.
- *
-class ShipType
-: public ItemType
-{
-    friend class ItemType; // to let them construct us
-public:
-    static ShipType *Load(uint32 shipTypeID);
-
-protected:
-    ShipType(
-        uint32 _id,
-        // ItemType stuff:
-        const ItemGroup &_group,
-        const TypeData &_data
-    );
-
-    // Member functions:
-    using ItemType::_Load;
-
-    // Template loader:
-    template<class _Ty>
-    static _Ty *_LoadType( uint32 shipTypeID, const ItemGroup &group, const TypeData &data)
-    {
-        // verify it's a ship
-        if( group.categoryID() != EVEDB::invCategories::Ship ) {
-            _log( ITEM__ERROR, "Tried to load %u (%s) as a Ship.", shipTypeID, group.category().name().c_str() );
-            if (sConfig.server.StackTrace)
-                EvE::traceStack();
-            return RefPtr<_Ty>();
-        }
-
-        return new ShipType(shipTypeID, group, data );
-    }
-
-};
-*/
-
-/**
  * InventoryItem which represents ShipItem.
  */
 class Client;
