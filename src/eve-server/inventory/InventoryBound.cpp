@@ -70,6 +70,7 @@ m_passive(passive)
     PyCallable_REG_CALL(InventoryBound, CreateBookmarkVouchers);
     PyCallable_REG_CALL(InventoryBound, RunRefiningProcess);
     PyCallable_REG_CALL(InventoryBound, Voucher);
+    PyCallable_REG_CALL(InventoryBound, TakeOutTrash);
     PyCallable_REG_CALL(InventoryBound, ImportExportWithPlanet);
 
     _log(INV__BIND, "Created InventoryBound object %p for %s(%u) and ownerID %u with flag %s  (passive: %s)", \
@@ -906,6 +907,13 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 /**     ***********************************************************************
  * @note   these do absolutely nothing at this time....
  */
+
+PyResult InventoryBound::Handle_TakeOutTrash(PyCallArgs &call) {
+    //TakeOutTrash([ invItem.itemID for invItem in invItems ])
+    _log(INV__MESSAGE, "Calling InventoryBound::TakeOutTrash() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    call.Dump(INV__DUMP);
+    return nullptr;
+}
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_itemID);

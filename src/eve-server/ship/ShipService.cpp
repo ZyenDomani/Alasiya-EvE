@@ -62,6 +62,7 @@ public:
         PyCallable_REG_CALL(ShipBound, Scoop);
         PyCallable_REG_CALL(ShipBound, ScoopDrone);
         PyCallable_REG_CALL(ShipBound, ScoopToSMA);
+        PyCallable_REG_CALL(ShipBound, LaunchFromContainer);
         PyCallable_REG_CALL(ShipBound, Jettison);
         PyCallable_REG_CALL(ShipBound, GetShipConfiguration);
         PyCallable_REG_CALL(ShipBound, SelfDestruct);
@@ -86,6 +87,7 @@ public:
     PyCallable_DECL_CALL(Scoop);
     PyCallable_DECL_CALL(ScoopDrone);
     PyCallable_DECL_CALL(ScoopToSMA);
+    PyCallable_DECL_CALL(LaunchFromContainer);
     PyCallable_DECL_CALL(Jettison);
     PyCallable_DECL_CALL(GetShipConfiguration);
     PyCallable_DECL_CALL(SelfDestruct);
@@ -812,8 +814,8 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
             sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
             throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
             return nullptr;
-            Call_AssembleShipTech3 argsT3;
-            argsT3.item;
+            //Call_AssembleShipTech3 argsT3;
+            //argsT3.item;
         }
 
         ShipItemRef ship(nullptr);
@@ -856,11 +858,70 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
  * @note   these do absolutely nothing at this time....
  */
 
+
+
+PyResult ShipBound::Handle_LaunchFromContainer(PyCallArgs &call) {
+    /*
+     * def LaunchSMAContents(self, invItems):
+     *        ids = []
+     *        for invItem in invItems:
+     *            structureID = invItem.locationID
+     *            ids += [invItem.itemID] * invItem.stacksize
+     *
+     *  LaunchFromContainer(structureID, ids)
+     */
+
+    _log(SERVICE__CALL_DUMP, "ShipBound::Handle_LaunchFromContainer()");
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+
 // ShipMaintenanceArray
 PyResult ShipBound::Handle_ScoopToSMA(PyCallArgs &call) {
     /*      ******* no packet data ***********     */
 
-    sLog.White("ShipBound::Handle_ScoopToSMA()", "size=%u", call.tuple->size());
+    _log(SERVICE__CALL_DUMP, "ShipBound::Handle_ScoopToSMA()");
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
+    /*      ******* no packet data ***********
+     *
+     *     13:15:58 L ShipBound::Handle_GetShipConfiguration(): size=0
+     *     13:15:58 [SvcCall]   Call Arguments:
+     *     13:15:58 [SvcCall]       Tuple: Empty
+     *     _log(SERVICE__CALL_DUMP, "ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
+     *     call.Dump(SERVICE__CALL_DUMP);
+     */
+
+    /*
+     *        self.conf = self.ship.GetShipConfiguration()
+     *        self.sr.smballowfleet.SetChecked(self.conf['allowFleetSMBUsage']) (SMB = ShipMaintenanceBay)
+     */
+
+    return nullptr;
+}
+
+
+PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
+    /*      ******* no packet data ***********
+     */
+    //sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
+    _log(SERVICE__CALL_DUMP, "ShipBound::Handle_BoardStoredShip()");
+    call.Dump(SERVICE__CALL_DUMP);
+
+    return nullptr;
+}
+
+PyResult ShipBound::Handle_StoreVessel(PyCallArgs &call) {
+    /*      ******* no packet data ***********
+     */
+    //sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
+    _log(SERVICE__CALL_DUMP, "ShipBound::Handle_StoreVessel()");
     call.Dump(SERVICE__CALL_DUMP);
 
     return nullptr;
@@ -873,7 +934,7 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
      * 22:13:29 [SvcCall]       Tuple: 1 elements
      * 22:13:29 [SvcCall]         [ 0] Integer field: 140000378     <- ship id
      *
-  sLog.White("ShipBound::Handle_SelfDestruct()", "size=%u", call.tuple->size());
+  _log(SERVICE__CALL_DUMP, "ShipBound::Handle_SelfDestruct()");
     call.Dump(SERVICE__CALL_DUMP);
     [PyTuple 1 items]
       [PyTuple 2 items]
@@ -971,43 +1032,4 @@ PyResult ShipBound::Handle_SelfDestruct(PyCallArgs &call) {
         tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
         tuple->SetItem(1, new PyLong(GetFileTimeNow()));
     return tuple;
-}
-
-PyResult ShipBound::Handle_GetShipConfiguration(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     *
-     13:15:58 L ShipBound::Handle_GetShipConfiguration(): size=0
-     13:15:58 [SvcCall]   Call Arguments:
-     13:15:58 [SvcCall]       Tuple: Empty
-     sLog.White("ShipBound::Handle_GetShipConfiguration()", "size=%u", call.tuple->size());
-     call.Dump(SERVICE__CALL_DUMP);
-     */
-
-    /*
-        self.conf = self.ship.GetShipConfiguration()
-        self.sr.smballowfleet.SetChecked(self.conf['allowFleetSMBUsage']) (SMB = ShipMaintenanceBay)
-    */
-
-    return nullptr;
-}
-
-
-PyResult ShipBound::Handle_BoardStoredShip(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     */
-//sm.StartService('sessionMgr').PerformSessionChange('board', ship.BoardStoredShip, structureID, shipID)
-    sLog.White("ShipBound::Handle_BoardStoredShip()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
-}
-
-PyResult ShipBound::Handle_StoreVessel(PyCallArgs &call) {
-    /*      ******* no packet data ***********
-     */
-//sm.StartService('sessionMgr').PerformSessionChange('storeVessel', ship.StoreVessel, destID)
-    sLog.White("ShipBound::Handle_StoreVessel()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
-
-    return nullptr;
 }

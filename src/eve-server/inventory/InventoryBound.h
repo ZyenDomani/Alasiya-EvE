@@ -57,6 +57,7 @@ public:
     PyCallable_DECL_CALL(RunRefiningProcess);
     PyCallable_DECL_CALL(Voucher);
     PyCallable_DECL_CALL(ImportExportWithPlanet);
+    PyCallable_DECL_CALL(TakeOutTrash);
     PyCallable_DECL_CALL(ListDroneBay);
 
 
