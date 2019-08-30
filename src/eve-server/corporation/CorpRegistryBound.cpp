@@ -674,7 +674,26 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
         return nullptr;
     }
-    //CorpTickerNameInvalidTaken
+
+    // verify they're not using bad words in their corp name
+    for (const auto cur : badWords)
+        if (EvE::icontains(args.corpName, cur))
+            throw PyException( MakeCustomError("Corp Name contains banned words"));
+
+    // this hits db directly, so test for possible sql injection code
+    for (const auto cur : badCharsSearch)
+        if (EvE::icontains(args.corpName, cur))
+            throw PyException( MakeCustomError("Corp Name contains invalid characters"));
+
+
+    // this hits db directly, so test for possible sql injection code
+    for (const auto cur : badCharsSearch)
+        if (EvE::icontains(args.corpTicker, cur))
+            throw PyException( MakeCustomError("Corp Ticker contains invalid characters"));
+
+    // verify ticker is available
+    if (m_db.IsTickerTaken(args.corpTicker))
+        throw PyException(MakeUserError("CorpTickerNameInvalidTaken"));
 
     double corp_cost = sConfig.rates.corpCost;
     if (pClient->GetBalance(Account::CreditType::ISK) < corp_cost) {

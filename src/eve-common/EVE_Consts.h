@@ -45,7 +45,7 @@ static const double Gc = 6.6725985e-11;     //per client (changed from original 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands
 static const std::array<std::string, 28> badWords {
-    "ccp",
+    {"ccp",
     "admin",
     "fucker",
     "cunt",
@@ -53,7 +53,7 @@ static const std::array<std::string, 28> badWords {
     "collate",
     "select",
     "drop",
-    "trunicate",
+    "truncate",
     "count",
     "char",
     "load",
@@ -72,12 +72,12 @@ static const std::array<std::string, 28> badWords {
     "encode",
     "compress",
     "row_",
-    "bulk"
+    "bulk"}
 };
 // check for common mysql injection hacks
 //  special chars are illegal just because
 static const std::array<std::string, 18> badChars {
-    ";",
+    {";",
     "--",
     "#",
     "/*",
@@ -94,11 +94,11 @@ static const std::array<std::string, 18> badChars {
     "&",
     "*",
     "(",
-    ")"
+    ")"}
 };
 
 static const std::array<std::string, 16> badCharsSearch {
-    ";",
+    {";",
     "--",
     "#",
     "/*",
@@ -113,7 +113,7 @@ static const std::array<std::string, 16> badCharsSearch {
     "^",
     "&",
     "(",
-    ")"
+    ")"}
 };
 #endif  // EVE_CONSTANTS_H
 

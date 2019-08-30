@@ -431,6 +431,11 @@ void CorporationDB::SetMedalStatus(uint32 charID, uint16 medalID, uint8 status)
     sDatabase.RunQuery(err, "UPDATE chrMedals SET status = %u WHERE recepientID = %u AND medalID = %u", status, charID, medalID);
 }
 
+bool CorporationDB::IsTickerTaken(std::string ticker) {
+    DBQueryResult res;
+    sDatabase.RunQuery(res, " SELECT corporationID FROM crpCorporation WHERE tickerName = %s", ticker);
+    return (res.GetRowCount() != 0);
+}
 
 static std::string _IoN( PyRep* r )
 {
@@ -463,12 +468,12 @@ bool CorporationDB::AddCorporation(Call_AddCorporation & corpInfo, Client* pClie
     if (!sDatabase.RunQueryLID(err, corpID,
         " INSERT INTO crpCorporation ( "
         "   corporationName, description, tickerName, url, taxRate, corporationType, hasPlayerPersonnelManager, "
-        "   creatorID, ceoID, stationID, raceID, shares, memberCount, memberLimit, allowedMemberRaceIDs,"
+        "   creatorID, ceoID, stationID, raceID, shares, memberLimit, allowedMemberRaceIDs,"
         "   graphicID, color1, color2, color3, shape1, shape2, shape3, "
         "   isRecruiting ) "
         " VALUES "
         "   ('%s', '%s', '%s', '%s', %f, 2, 1, "
-        "    %u, %u, %u, %u, 1000, 1, %u, %u,"
+        "    %u, %u, %u, %u, 1000, %u, %u,"
         "    0, %s, %s, %s, %s, %s, %s, "
         "    %u) ",
         cName.c_str(), cDesc.c_str(), cTick.c_str(), cURL.c_str(), corpInfo.taxRate,

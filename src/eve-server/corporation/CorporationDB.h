@@ -104,6 +104,7 @@ public:
     void EditLabel(uint32 corpID, uint32 labelID, uint32 color, std::string name);
     void DeleteLabel(uint32 corpID, uint32 labelID);
 
+    bool IsTickerTaken(std::string ticker);
     bool AddCorporation(Call_AddCorporation & corpInfo, Client* pClient, uint32 & corpID);
     bool CreateCorporationChangePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID);
     bool CreateCorporationCreatePacket(OnCorporationChanged & cc, uint32 oldCorpID, uint32 newCorpID);
