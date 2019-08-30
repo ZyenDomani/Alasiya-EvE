@@ -2415,14 +2415,13 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         // ....sitting still
         // - do nothing
         if (m_userSpeedFraction) {
-            if (is_log_enabled(DESTINY__MOVE_TRACE))
-                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf>asf=0) -  sitting still.  not coded yet");
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf>asf=0) -  sitting still.  not coded yet");
         } else {
-            if (is_log_enabled(DESTINY__MOVE_TRACE))
-                _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf=asf=0) -  sitting still.  not coded yet");
+            _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::(usf=asf=0) -  sitting still.  not coded yet");
         }
     }
 
+    /** @todo need to delay sending this till next server update (next tic at earliest) */
     std::vector<PyTuple*> updates;
     SetBallAgility sbagility;
         sbagility.entityID =  mySE->GetID();
