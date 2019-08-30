@@ -166,9 +166,10 @@ bool AttributeMap::Save() {
 void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*true*/)
 {
     if (num.isNaN() or num.isInf()) {
-        ResetAttribute(attrID, notify);
-        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for %s(%u). Reset to default.", mItem.itemName().c_str(), mItem.itemID());
+        _log(ITEM__ERROR, "AttributeMap::SetAttribute() - Something sent NaN or Inf for Attr %u on %s(%u). Reset to default.",\
+                attrID, mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
+        ResetAttribute(attrID, notify);
         return;
     }
     AttrMapItr itr = mAttributes.find(attrID);
