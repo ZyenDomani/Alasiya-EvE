@@ -693,26 +693,10 @@ void ActiveModule::ReprocessCharge()
 bool ActiveModule::CanActivate()
 {
     // there is still more to be done here.  wip
-    //  specific modules that require specific tests are coded in their module class, which will call this if checks pass
+    //  modules that require specific tests are coded in their module class, which will call this if their specific checks pass
 
     // check distance for targetable actions
     if (m_targetSE != nullptr) {
-        if (!m_turret and !m_launcher) {
-            float range = GetAttribute(AttrMaxRange).get_float();
-            float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
-            distance -= m_targetSE->GetRadius();
-            if (distance > range) {
-                m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
-                        m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
-                return false;
-            }
-        }
-        if (groupID() == EVEDB::invGroups::Tractor_Beam)
-            if (!m_targetSE->IsContainerSE() and !m_targetSE->IsWreckSE()) {
-                m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor %s", m_targetSE->GetName());
-                return false;
-            }
-
         // if target is non-combatant deny attack
         if (sFxDataMgr.isOffensive(m_effectID))
             if ((m_targetSE->IsItemEntity())
@@ -723,6 +707,84 @@ bool ActiveModule::CanActivate()
                 m_shipRef->GetPilot()->SendNotifyMsg("You cannot attack the %s.  Ref: ServerError 16228.", m_targetSE->GetName());
                 return false;
             }
+
+        if (m_turret or m_launcher)
+            return  true;
+
+        // test for specific targets and distance here
+        float range = 0;
+        using namespace EVEDB::invGroups;
+        switch (groupID()) {
+            case Tractor_Beam: {
+                if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE()) {
+                    return true;
+                } else {
+                    m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor the %s", m_targetSE->GetName());
+                    return false;
+                }
+            } break;
+            case Shield_Transporter: {
+                range = GetAttribute(AttrShieldTransferRange).get_float();
+            } break;
+            case Energy_Transfer_Array: {
+                range = GetAttribute(AttrPowerTransferRange).get_float();
+            } break;
+            case Energy_Vampire: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Energy_Destabilizer: {
+                range = GetAttribute(AttrEnergyDestabilizationRange).get_float();
+            } break;
+            case Remote_Sensor_Damper: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Remote_Sensor_Booster: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Tracking_Disruptor: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Shield_Disruptor: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Armor_Repair_Projector: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Target_Painter: {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+            case Warp_Scrambler: {
+                range = GetAttribute(AttrWarpScrambleRange).get_float();
+            } break;
+            //  AttrShieldDrainRange, AttrEmpFieldRange, AttrEcmBurstRange, AttrModifyTargetSpeedRange, AttrMaxTargetRange
+
+            // these scanners *may* not hit here, as they dont need a target, and we really dont want them to test for target
+            //  the pilot *may* have a target locked, in which case we really dont want these to hit
+            /*
+            case Cargo_Scanner: {
+                range = GetAttribute(AttrCargoScanRange).get_float();
+            } break;
+            case Ship_Scanner: {
+                range = GetAttribute(AttrShipScanRange).get_float();
+            } break;
+            case Survey_Scanner: {
+                range = GetAttribute(AttrSurveyScanRange).get_float();
+            } break;
+            */
+            default: {
+                // make error here with group
+                return false;
+            } break;
+        }
+
+        float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
+        distance -= m_targetSE->GetRadius();
+
+        if (distance > range) {
+            m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
+                    m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
+            return false;
+        }
     }
     //AttrDeadspaceUnsafe
     return true;
