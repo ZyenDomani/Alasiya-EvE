@@ -1329,7 +1329,7 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagFactoryMinerals:                       return "FactoryMinerals";
         case flagFactoryOutput:                         return "FactoryOutput";
         case flagFactoryActive:                         return "FactoryActive";
-        case flagPromenadeSlot1:                        return "PromenadeSlot1";
+        //case flagPromenadeSlot1:                        return "PromenadeSlot1";
         case flagCapsule:                               return "Capsule";
         case flagPilot:                                 return "Pilot";
         case flagPassenger:                             return "Passenger";
