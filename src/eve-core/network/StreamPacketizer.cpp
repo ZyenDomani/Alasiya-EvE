@@ -72,6 +72,6 @@ Buffer* StreamPacketizer::PopPacket()
 void StreamPacketizer::ClearBuffers()
 {
     Buffer* buf(nullptr);
-    while (buf = PopPacket())
+    while ((buf = PopPacket()))
         SafeDelete( buf );
 }

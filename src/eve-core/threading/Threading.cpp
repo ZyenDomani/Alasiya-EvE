@@ -120,7 +120,7 @@ void Threading::EndThreads() {
     }
     _log(THREAD__MESSAGE, "EndThreads() - Joining %u currently active threads.", m_threads.size());
     std::vector<pthread_t>::iterator cur = m_threads.begin();
-    while (cur != m_threads.end()) {
+    while ((cur != m_threads.end())) {
         _log(THREAD__TRACE, "EndThreads() - Removing threadID 0x%X", (*cur));
         cur = m_threads.erase(cur);
     }

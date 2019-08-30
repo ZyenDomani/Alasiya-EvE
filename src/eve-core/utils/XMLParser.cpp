@@ -74,7 +74,7 @@ bool XMLParser::ParseElementChildren( const TiXmlElement* element, size_t max ) 
     const TiXmlNode* child = nullptr;
 
     size_t count = 0;
-    while (child = element->IterateChildren(child)) {
+    while ((child = element->IterateChildren(child))) {
         if (child->Type() == TiXmlNode::TINYXML_ELEMENT) {
             const TiXmlElement* childElement = child->ToElement();
             if ((max > 0) && (max <= count)) {

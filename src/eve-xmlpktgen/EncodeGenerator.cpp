@@ -897,7 +897,7 @@ bool ClassEncodeGenerator::ProcessDictInline( const TiXmlElement* field )
     const TiXmlNode* i = nullptr;
 
     uint32 count = 0;
-    while (i = field->IterateChildren(i)) {
+    while ((i = field->IterateChildren(i))) {
         if (i->Type() == TiXmlNode::TINYXML_ELEMENT) {
             const TiXmlElement* ele = i->ToElement();
 

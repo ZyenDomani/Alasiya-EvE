@@ -161,7 +161,7 @@ void BaseTCPServer::ListenNewConnections()
     unsigned int fromlen = sizeof( from );
     MutexLock lock( mMSock );
 
-    while (sock = mSock->accept((sockaddr*)&from, &fromlen)) {
+    while ((sock = mSock->accept((sockaddr*)&from, &fromlen))) {
         sock->fcntl( F_SETFL, O_NONBLOCK );
         unsigned int bufsize = 64 * 1024; // 64kbyte receive buffer, up from default of 8k
         sock->setopt( SOL_SOCKET, SO_RCVBUF, &bufsize, sizeof( bufsize ) );
