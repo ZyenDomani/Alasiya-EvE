@@ -29,6 +29,24 @@
 
 #include "PyService.h"
 
+//  -allan 5Aug14
+enum SearchTypes {
+    searchResultAgent           = 1,
+    searchResultCharacter       = 2,
+    searchResultCorporation     = 3,
+    searchResultAlliance        = 4,
+    searchResultFaction         = 5,
+    searchResultConstellation   = 6,
+    searchResultSolarSystem     = 7,
+    searchResultRegion          = 8,
+    searchResultStation         = 9,
+    searchResultInventoryType   = 10,
+    //searchResultAllOwners = [1, 2, 3, 4, 5],
+    //searchResultAllLocations = [6, 7, 8, 9],
+    searchMaxResults            = 500,
+    searchMinWildcardLength     = 3
+};
+
 class SearchDB
 : public ServiceDB {
 public:

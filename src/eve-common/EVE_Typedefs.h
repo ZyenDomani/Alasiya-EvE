@@ -110,24 +110,6 @@ enum EVERookieWeaponTypes {
     minmatarWeapon              = 3636
 };
 
-//  -allan 5Aug14
-enum SearchTypes {
-    searchResultAgent           = 1,
-    searchResultCharacter       = 2,
-    searchResultCorporation     = 3,
-    searchResultAlliance        = 4,
-    searchResultFaction         = 5,
-    searchResultConstellation   = 6,
-    searchResultSolarSystem     = 7,
-    searchResultRegion          = 8,
-    searchResultStation         = 9,
-    searchResultInventoryType   = 10,
-    //searchResultAllOwners = [1, 2, 3, 4, 5],
-    //searchResultAllLocations = [6, 7, 8, 9],
-    searchMaxResults            = 500,
-    searchMinWildcardLength     = 3
-};
-
 enum EVETutorialTypes {
     advchannelsTutorial = 50,
     cloningTutorial = 42,
@@ -334,7 +316,7 @@ typedef enum {
     salvageOther    = 5
 } SalvageTypes;
 
-// mostly pirate corps for now...
+//
 typedef enum {
     corpRogueDrones         = 1000001,
      corpCBD    = 1000002,
@@ -516,21 +498,6 @@ typedef enum {
      corpFederalDefenseUnion   = 1000181,
      corpTribalLiberationForce     = 1000182
 } corpDef;
-
-// only for drones
-typedef enum {
-    droneIdle              = 0,
-    droneCombat            = 1,
-    droneMining            = 2,
-    droneApproaching       = 3,
-    droneDeparting         = 4,
-    droneDeparting2        = 5,
-    dronePursuit           = 6,
-    droneFleeing           = 7,
-    droneUnknown           = 8,
-    droneOperating         = 9,
-    droneEngage            = 10
-} aiState;
 
 // not sure what these are used for...stateFlags??
 typedef enum {

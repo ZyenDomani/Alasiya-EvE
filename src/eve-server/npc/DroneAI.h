@@ -28,6 +28,21 @@
 
 #include "ship/modules/TurretFormulas.h"
 
+// only for drones
+typedef enum {
+    droneIdle              = 0,
+    droneCombat            = 1,
+    droneMining            = 2,
+    droneApproaching       = 3,
+    droneDeparting         = 4,
+    droneDeparting2        = 5,
+    dronePursuit           = 6,
+    droneFleeing           = 7,
+    droneUnknown           = 8,
+    droneOperating         = 9,
+    droneEngage            = 10
+} aiState;
+
 class Drone;
 class SystemEntity;
 class Timer;
