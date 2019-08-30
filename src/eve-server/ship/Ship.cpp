@@ -1827,15 +1827,23 @@ void ShipItem::StripFitting()
     UnlinkAllWeapons();
 
     EVEItemFlags flag = flagCargoHold;
-    if IsStation(locationID())
+    if IsStation(m_locationID)
         flag = flagHangar;
 
     std::vector<InventoryItemRef> moduleList;
     m_ModuleManager->GetModuleListOfRefsAsc(moduleList);
     for (auto cur : moduleList) {
         m_ModuleManager->UnfitModule(cur->itemID());
-        cur->Move(locationID(), flag, true);
+        cur->Move(m_locationID, flag, true);
     }
+}
+
+void ShipItem::EmptyCargo()
+{
+    std::map<uint32, InventoryItemRef> invList;
+    pInventory->GetInventoryList(invList);
+    for (auto cur : invList)
+        cur.second->Move(m_locationID, flagHangar, true);
 }
 
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)

@@ -362,6 +362,13 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                             // Item cannot be repackaged once used!
                             continue;
                         }
+                        // if this is a ship, remove all modules and empty cargo holds before repacking
+                        //  maybe we should instruct player that ship is fitted/has cargo, and let them do this
+                        if (iRef->IsShipItem()) {
+                            iRef->GetShipItem()->EmptyCargo();
+                            iRef->GetShipItem()->StripFitting();
+                        }
+
                         iRef->ChangeSingleton(false, true);
                     }
                 }

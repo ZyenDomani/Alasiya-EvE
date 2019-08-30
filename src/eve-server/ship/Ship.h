@@ -130,6 +130,8 @@ public:
     void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
     void MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2);
     void StripFitting();
+    // this will remove all items from all ship cargo holds
+    void EmptyCargo();
 
     void RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction);
 
