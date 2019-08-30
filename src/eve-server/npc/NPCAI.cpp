@@ -198,6 +198,34 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     AttrEntityEquipmentMax = 457,
     */
 
+    /*
+    AttrEntityTargetJam = 928,
+    AttrEntityTargetJamDuration = 929,
+    AttrEntityTargetJamDurationChance = 930,    // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityCapacitorDrainDurationChance = 931,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntitySensorDampenDurationChance = 932,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityTrackingDisruptDurationChance = 933,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityTargetPaintDurationChance = 935,   // npcActivationChanceAttributeID in dgmEffects
+    AttrEntityTargetJamMaxRange = 936,
+    AttrEntityCapacitorDrainMaxRange = 937,
+    AttrEntitySensorDampenMaxRange = 938,
+    AttrEntityTrackingDisruptMaxRange = 940,
+    AttrEntityTargetPaintMaxRange = 941,
+    AttrEntityCapacitorDrainDuration = 942,
+    AttrEntitySensorDampenDuration = 943,
+    AttrEntityTrackingDisruptDuration = 944,
+    AttrEntityTargetPaintDuration = 945,
+    AttrEntityCapacitorDrainAmount = 946,
+    AttrEntitySensorDampenMultiplier = 947,
+    AttrEntityTrackingDisruptMultiplier = 948,
+    AttrEntityTargetPaintMultiplier = 949,
+    AttrEntitySensorDampenFallOff = 950,
+    AttrEntityTrackingDisruptFallOff = 951,
+    AttrEntityCapacitorFallOff = 952,
+    AttrEntityTargetJamFallOff = 953,
+    AttrEntityTargetPaintFallOff = 954,
+    */
+
     // does this need to be running if there are no players in bubble?
     //  yes...npcs will warp out when no targets in sight range, but need a process tic to do that.
    // m_processTimer.Start(m_attackSpeed);

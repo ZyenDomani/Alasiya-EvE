@@ -226,6 +226,117 @@ void ShipItem::InitAttribs()
     if (!HasAttribute(AttrKineticDamageResonance))      SetAttribute(AttrKineticDamageResonance,  GetAttribute(AttrHullKineticDamageResonance), false);
     if (!HasAttribute(AttrThermalDamageResonance))      SetAttribute(AttrThermalDamageResonance,  GetAttribute(AttrHullThermalDamageResonance), false);
     if (!HasAttribute(AttrExplosiveDamageResonance))    SetAttribute(AttrExplosiveDamageResonance,  GetAttribute(AttrHullExplosiveDamageResonance), false);
+
+    // ship bonuses....are these set in ship fx?
+    /*
+    AttrMaxRangeBonus = 351,
+    AttrDroneRangeBonus = 459,
+    AttrExplosionRangeBonus = 558,
+    AttrMaxRangeBonus2 = 769,
+
+    */
+
+    // cap ships have bonuses to various systems....these may be set in ship fx
+    /*
+    AttrSurveyScannerRangeBonus = 1234,
+    AttrCargoScannerRangeBonus = 1235,
+    AttrCommandBonusEffective = 1236,
+    AttrCommandBonusAdd = 1237,
+    AttrCommandBonusEffectiveAdd = 1238,
+    AttrShipBonusORECapital1 = 1239,
+    AttrShipBonusORECapital2 = 1240,
+    AttrShipBonusORECapital3 = 1243,
+    AttrShipBonusORECapital4 = 1244,
+
+    AttrEliteBonusHeavyInterdictors1 = 1246,
+    AttrEliteBonusHeavyInterdictors2 = 1247,
+    AttrEliteBonusElectronicAttackShip1 = 1249,
+    AttrEliteBonusElectronicAttackShip2 = 1250,
+    AttrEliteBonusViolators1 = 1265,
+    AttrEliteBonusViolators2 = 1266,
+    AttrEliteBonusJumpFreighter1 = 1311,
+    AttrEliteBonusJumpFreighter2 = 1312,
+    AttrMaxTargetRangeBonusBonus = 1313,
+    AttrScanResolutionBonusBonus = 1314,
+    AttrMaxRangeBonusBonus = 1315,
+    AttrTrackingSpeedBonusBonus = 1316,
+    AttrEliteBonusViolatorsRole1 = 1268,
+    AttrEliteBonusViolatorsRole2 = 1269,
+    AttrWarpScrambleRangeBonus = 1327,
+    AttrDroneBandwidthMultiplier = 1328,
+    AttrDroneBandwidthBonusAdd = 1329,
+    AttrShipOrcaTractorBeamRangeBonus1 = 1355,
+    AttrShipOrcaCargoBonusOrca1 = 1356,
+    AttrShipOrcaTractorBeamVelocityBonus2 = 1357,
+    AttrShipOrcaForemanBonus = 1358,
+    AttrShipOrcaSurveyScannerBonus = 1359,
+    AttrShipBonusHPExtender1 = 1360,
+    AttrEliteIndustrialCovertCloakBonus = 1361,
+
+    AttrShipBonusOreIndustrial1 = 1669,
+    AttrShipBonusOreIndustrial2 = 1670,
+
+    AttrtitanAmarrBonus5 = 1592,
+    AttrtitanGallenteBonus5 = 1593,
+    AttrtitanMinmatarBonus5 = 1594,
+    AttrtitanCaldariBonus5 = 1596,
+
+    */
+
+    // t3 ships
+    /*
+    AttrSubsystemBonusAmarrEngineering = 1431,
+    AttrSubsystemBonusAmarrElectronic = 1432,
+    AttrSubsystemBonusAmarrDefensive = 1433,
+    AttrSubsystemBonusAmarrOffensive = 1434,
+    AttrSubsystemBonusAmarrPropulsion = 1435,
+    AttrSubsystemBonusGallenteEngineering = 1436,
+    AttrSubsystemBonusGallenteElectronic = 1437,
+    AttrSubsystemBonusGallenteDefensive = 1438,
+    AttrSubsystemBonusGallenteOffensive = 1439,
+    AttrSubsystemBonusGallentePropulsion = 1440,
+    AttrSubsystemBonusCaldariEngineering = 1441,
+    AttrSubsystemBonusCaldariElectronic = 1442,
+    AttrSubsystemBonusCaldariDefensive = 1443,
+    AttrSubsystemBonusCaldariOffensive = 1444,
+    AttrSubsystemBonusCaldariPropulsion = 1445,
+    AttrSubsystemBonusMinmatarEngineering = 1446,
+    AttrSubsystemBonusMinmatarElectronic = 1447,
+    AttrSubsystemBonusMinmatarDefensive = 1448,
+    AttrSubsystemBonusMinmatarOffensive = 1449,
+    AttrSubsystemBonusMinmatarPropulsion = 1450,
+
+    AttrShipBonusStrategicCruiserAmarr = 1503,
+    AttrShipBonusStrategicCruiserCaldari = 1504,
+    AttrShipBonusStrategicCruiserGallente = 1505,
+    AttrShipBonusStrategicCruiserMinmatar = 1506,
+
+    AttrSubsystemBonusAmarrDefensive2 = 1507,
+    AttrSubsystemBonusAmarrElectronic2 = 1508,
+    AttrSubsystemBonusAmarrEngineering2 = 1509,
+    AttrSubsystemBonusCaldariOffensive2 = 1510,
+    AttrSubsystemBonusAmarrOffensive2 = 1511,
+    AttrSubsystemBonusAmarrPropulsion2 = 1512,
+    AttrSubsystemBonusCaldariPropulsion2 = 1513,
+    AttrSubsystemBonusCaldariElectronic2 = 1514,
+    AttrSubsystemBonusCaldariEngineering2 = 1515,
+    AttrSubsystemBonusCaldariDefensive2 = 1516,
+    AttrSubsystemBonusGallenteDefensive2 = 1517,
+    AttrSubsystemBonusGallenteElectronic2 = 1518,
+    AttrSubsystemBonusGallenteEngineering2 = 1519,
+    AttrSubsystemBonusGallentePropulsion2 = 1520,
+    AttrSubsystemBonusGallenteOffensive2 = 1521,
+    AttrSubsystemBonusMinmatarOffensive2 = 1522,
+    AttrSubsystemBonusMinmatarPropulsion2 = 1523,
+    AttrSubsystemBonusMinmatarElectronic2 = 1524,
+    AttrSubsystemBonusMinmatarEngineering2 = 1525,
+    AttrSubsystemBonusMinmatarDefensive2 = 1526,
+
+    AttrSubsystemBonusAmarrOffensive3 = 1531,
+    AttrSubsystemBonusGallenteOffensive3 = 1532,
+    AttrSubsystemBonusCaldariOffensive3 = 1533,
+    AttrSubsystemBonusMinmatarOffensive3 = 1534,
+    */
 }
 
 void ShipItem::Delete() {
