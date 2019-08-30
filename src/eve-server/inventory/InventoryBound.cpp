@@ -552,8 +552,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 } else if (IsModuleSlot(toFlag)) {
                     args["capacity"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughChargeSpace", args));
-                } else
+                } else {
+                    args["item"] = new PyString(iRef->itemName());
+                    args["itemVolume"] = new PyFloat(volume);
+                    args["volumeAvailable"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NoSpaceForThat", args));
+                }
             }
         } else if (quantity < 1) {
             _log(INV__ERROR, "InventoryBound::MoveItems() - Quantity < 1.  Setting quantity = 1.");
@@ -576,7 +580,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 return result.Encode();
             }
         }
-          
+
         if (!manyFlags and (quantity < iRef->quantity())) {
             InventoryItemRef newItem = iRef->Split(quantity);
             if (newItem.get() == nullptr) {
@@ -616,7 +620,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                     toFlag = m_flag;
                 }
             }
-            
+
             if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
             else if (IsCargoHoldFlag(toFlag))
