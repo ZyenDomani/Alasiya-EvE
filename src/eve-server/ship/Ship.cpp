@@ -378,7 +378,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
         } break;
 
         // not sure if all of these flag* are used.  if not, *may* update dgmData to add them....later.
-        case flagFuelBay: {    //  AttrSpecialFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
+        case flagFuelBay: {    //  AttrFuelBayCapacity        [dunno on this one - AttrFuelCargoCapacity]
             if (iRef->groupID() != EVEDB::invGroups::FuelBlock) {
                 pClient->SendErrorMsg("Only fuel blocks may be placed into the fuel bay.");
                 return false;

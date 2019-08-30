@@ -172,7 +172,7 @@ void PIDataMgr::GetSchematicData(uint8 schematicID, PI_Schematic& data)
  *    AttrPinCycleTime = 1643,
  *    AttrExtractorDepletionRange = 1644,
  *    AttrExtractorDepletionRate = 1645,
- *    AttrSpecialCommandCenterHoldCapacity = 1646,
+ *    AttrCommandCenterHoldCapacity = 1646,
  *    AttrECUDecayFactor = 1683,            // this attr is empty
  *    AttrECUMaxVolume = 1684,
  *    AttrECUOverlapFactor = 1685,

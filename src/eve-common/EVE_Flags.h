@@ -58,7 +58,7 @@ enum EVEItemFlags {
     flagFactoryOutput               = 38,
     flagFactoryActive               = 39,
 
-   //not real sure wtf this is, or what it's used for.  have not found refereces to any of these
+   /*  not real sure wtf this is, or what it's used for.  have not found refereces to any of these.  not defined in client
     flagPromenadeSlot1              = 40,  //Promenade slot 1
     flagPromenadeSlot2              = 41,
     flagPromenadeSlot3              = 42,
@@ -75,6 +75,7 @@ enum EVEItemFlags {
     flagPromenadeSlot14             = 53,
     flagPromenadeSlot15             = 54,
     flagPromenadeSlot16             = 55,  //Promenade slot 16
+    */
 
     flagCapsule                     = 56,    //Capsule item in space
     flagPilot                       = 57,
@@ -148,7 +149,7 @@ enum EVEItemFlags {
     flagSubSystem6                  = 131,    //Sub system slot 6
     flagSubSystem7                  = 132,    //Sub system slot 7
 
-    flagFuelBay                     = 133,  //AttrFuelCargoCapacity or AttrSpecialFuelBayCapacity ?
+    flagFuelBay                     = 133,  //AttrFuelCargoCapacity or AttrFuelBayCapacity ?
     flagOreHold                     = 134,
     flagGasHold                     = 135,
     flagMineralHold                 = 136,

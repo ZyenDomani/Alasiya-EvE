@@ -568,19 +568,19 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
         case flagDroneBay:                      return m_self->GetAttribute(AttrDroneCapacity).get_float();
         case flagShipHangar:                    return m_self->GetAttribute(AttrShipMaintenanceBayCapacity).get_float();
         case flagSecondaryStorage:              return m_self->GetAttribute(AttrCapacitySecondary).get_float();
-        case flagFuelBay:                       return m_self->GetAttribute(AttrSpecialFuelBayCapacity).get_float();
-        case flagOreHold:                       return m_self->GetAttribute(AttrSpecialOreHoldCapacity).get_float();
-        case flagGasHold:                       return m_self->GetAttribute(AttrSpecialGasHoldCapacity).get_float();
-        case flagAmmoHold:                      return m_self->GetAttribute(AttrSpecialAmmoHoldCapacity).get_float();
-        case flagShipHold:                      return m_self->GetAttribute(AttrSpecialShipHoldCapacity).get_float();
-        case flagMineralHold:                   return m_self->GetAttribute(AttrSpecialMineralHoldCapacity).get_float();
-        case flagSalvageHold:                   return m_self->GetAttribute(AttrSpecialSalvageHoldCapacity).get_float();
-        case flagSmallShipHold:                 return m_self->GetAttribute(AttrSpecialSmallShipHoldCapacity).get_float();
-        case flagLargeShipHold:                 return m_self->GetAttribute(AttrSpecialLargeShipHoldCapacity).get_float();
-        case flagIndustrialShipHold:            return m_self->GetAttribute(AttrSpecialIndustrialShipHoldCapacity).get_float();
+        case flagFuelBay:                       return m_self->GetAttribute(AttrFuelBayCapacity).get_float();
+        case flagOreHold:                       return m_self->GetAttribute(AttrOreHoldCapacity).get_float();
+        case flagGasHold:                       return m_self->GetAttribute(AttrGasHoldCapacity).get_float();
+        case flagAmmoHold:                      return m_self->GetAttribute(AttrAmmoHoldCapacity).get_float();
+        case flagShipHold:                      return m_self->GetAttribute(AttrShipHoldCapacity).get_float();
+        case flagMineralHold:                   return m_self->GetAttribute(AttrMineralHoldCapacity).get_float();
+        case flagSalvageHold:                   return m_self->GetAttribute(AttrSalvageHoldCapacity).get_float();
+        case flagSmallShipHold:                 return m_self->GetAttribute(AttrSmallShipHoldCapacity).get_float();
+        case flagLargeShipHold:                 return m_self->GetAttribute(AttrLargeShipHoldCapacity).get_float();
+        case flagIndustrialShipHold:            return m_self->GetAttribute(AttrIndustrialShipHoldCapacity).get_float();
         // for PI
-        case flagCommandCenterHold:             return m_self->GetAttribute(AttrSpecialCommandCenterHoldCapacity).get_float();
-        case flagPlanetaryCommoditiesHold:      return m_self->GetAttribute(AttrSpecialPlanetaryCommoditiesHoldCapacity).get_float();
+        case flagCommandCenterHold:             return m_self->GetAttribute(AttrCommandCenterHoldCapacity).get_float();
+        case flagPlanetaryCommoditiesHold:      return m_self->GetAttribute(AttrPlanetaryCommoditiesHoldCapacity).get_float();
         // for pos battery/array
         case flagHiSlot0:                       return m_self->GetAttribute(AttrAmmoCapacity).get_float();
     }

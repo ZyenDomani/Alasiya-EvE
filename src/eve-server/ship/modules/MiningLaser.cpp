@@ -92,25 +92,25 @@ bool MiningLaser::CanActivate()
         if ((m_targetSE->GetSelf()->categoryID() == EVEDB::invCategories::Asteroid)
         and (m_targetSE->GetSelf()->groupID() != EVEDB::invGroups::Mercoxit)) {
             canActivate = true;
-            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+            if (m_shipRef->HasAttribute(AttrOreHoldCapacity))
                 m_holdFlag = flagOreHold;
         }
     } else if (m_dcMiner) {
         if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Mercoxit) {
             canActivate = true;
-            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+            if (m_shipRef->HasAttribute(AttrOreHoldCapacity))
                 m_holdFlag = flagOreHold;
         }
     } else if (m_iMiner) {
         if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Ice) {
             canActivate = true;
-            if (m_shipRef->HasAttribute(AttrSpecialOreHoldCapacity))
+            if (m_shipRef->HasAttribute(AttrOreHoldCapacity))
                 m_holdFlag = flagOreHold;
         }
     } else if (m_gMiner) {
         if (m_targetSE->GetSelf()->groupID() == EVEDB::invGroups::Harvestable_Cloud) {
             canActivate = true;
-            if (m_shipRef->HasAttribute(AttrSpecialGasHoldCapacity))
+            if (m_shipRef->HasAttribute(AttrGasHoldCapacity))
                 m_holdFlag = flagGasHold;
         }
     }

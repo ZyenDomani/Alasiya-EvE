@@ -31,7 +31,7 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
     m_accessChance = 0;
 
     m_holdFlag = flagCargoHold;
-    if (m_shipRef->HasAttribute(AttrSpecialSalvageHoldCapacity))
+    if (m_shipRef->HasAttribute(AttrSalvageHoldCapacity))
         m_holdFlag = flagSalvageHold;
 
     pChar = m_shipRef->GetPilot()->GetChar().get();
