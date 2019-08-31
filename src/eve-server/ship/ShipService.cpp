@@ -173,15 +173,9 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 
     //CantBoardTargeted
 
-    /** @todo  check for active cyno (when we implement it...) and other things that affect eject */
-    if (pShipSE->isGlobal()) { /* close enough.  cyno (isGlobal() = true), so this will work */
-        /* find proper error msg for this...im sure there is one  */
-        throw PyException(MakeCustomError("You cannot eject with an active Cyno Field."));
-    }
-
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->IsMoving())
-        throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
+    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+        throw PyException(MakeCustomError("You cannot board the ship while it's moving faster than 20m/s. Ref: ServerError 05139."));
 
     // should we eject player here and deny boarding new ship, or just leave char in current ship and return?
     if (!pShipSE->GetShipItemRef()->ValidateBoardShip(pClient->GetChar()))
