@@ -164,15 +164,27 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      */
     // calculate the fraction value
     const ItemType type = shipRef->type();
-    double paymentFraction = (args.amount / (type.basePrice()));
-    float fraction = 0.0f;  // with no insurance, SCC pays 40% on live.  on alasiya-eve, i pay 30%.
-    if (paymentFraction < 0.05) fraction = 0.3f;    /* minimum payout, and catchall for fuckedup prices.  */
-    else if (paymentFraction == 0.05) fraction = 0.5f;
-    else if (paymentFraction == 0.1) fraction = 0.6f;
-    else if (paymentFraction == 0.15) fraction = 0.7f;
-    else if (paymentFraction == 0.2) fraction = 0.8f;
-    else if (paymentFraction == 0.25) fraction = 0.9f;
-    else if (paymentFraction == 0.3) fraction = 1.0f;
+    double paymentFraction = (args.amount / type.basePrice());
+    if (paymentFraction < 0.05) {
+            // catchall for fuckedup prices.
+        call.client->SendErrorMsg("Your payment of %.2f is below the minimum payment of %.2f required for coverage.", \
+                    args.amount, type.basePrice() * 0.05);
+        return PyStatic.NewNone();
+    }
+
+    float fraction = 0.0f;  // with no insurance, SCC pays 40%
+    if (paymentFraction == 0.05)
+        fraction = 0.5f;
+    else if (paymentFraction == 0.1)
+        fraction = 0.6f;
+    else if (paymentFraction == 0.15)
+        fraction = 0.7f;
+    else if (paymentFraction == 0.2)
+        fraction = 0.8f;
+    else if (paymentFraction == 0.25)
+        fraction = 0.9f;
+    else if (paymentFraction == 0.3)
+        fraction = 1.0f;
 
     if (fraction == 0) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
@@ -207,7 +219,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             body = "Dear valued customer,<BR>" \
                     "Congratulations on the insurance on your ship. A very wise choice indeed.<br>" \
                     "This letter is to confirm that we have issued an insurance contract for your ship, %s at a level of %u%.<BR>" \
-                    "This contract will expire at *insert endDate Here*, after %u weeks.<BR><BR>" \
+                    "This contract will expire at *insert endDate Here*, after 12 weeks.<BR><BR>" \
                     "Best,<BR>" \
                     "The Secure Commerce Commission,<BR>" \
                     "Reference ID: %u <BR><BR>" \
