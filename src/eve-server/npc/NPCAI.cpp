@@ -235,16 +235,10 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 }
 
 void NPCAIMgr::Process() {
+    double profileStartTime = GetTimeUSeconds();
+
     if (m_destiny->IsWarping())
         return;
-
-    if (m_shieldBoosterTimer.Enabled())
-        if (m_shieldBoosterTimer.Check())
-            m_npc->UseShieldRecharge();
-
-    if (m_armorRepairTimer.Enabled())
-        if (m_armorRepairTimer.Check())
-            m_npc->UseArmorRepairer();
 
     if (m_warpOutTimer.Check(false)) {
         // disallow warpout if spawn has active respawn timer (spawn is being chained)
@@ -256,6 +250,15 @@ void NPCAIMgr::Process() {
             return;
         }
     }
+
+    if (m_shieldBoosterTimer.Enabled())
+        if (m_shieldBoosterTimer.Check())
+            m_npc->UseShieldRecharge();
+
+    if (m_armorRepairTimer.Enabled())
+        if (m_armorRepairTimer.Check())
+            m_npc->UseArmorRepairer();
+
     /* NPCAI::State definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit random object in bubble ~10-20k at 1/2 orbit speed
      *   Chasing,    // target within npc sight range.  attacking begins here.  use m_maxSpeed to get within falloff
@@ -335,6 +338,9 @@ void NPCAIMgr::Process() {
             // not sure how im gonna do these
         } break;
     }
+
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(npcAIProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void NPCAIMgr::WarpOut()

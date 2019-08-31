@@ -26,8 +26,6 @@ dungeon spawn error....(and they white)
 11:20:50 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000004)
 11:20:50 [NPCTrace] Terrorist Leader(750000004): Added to system manager for Yuzier(30000007)
 
-make profile for npc ai
-
 
 ********  improvements
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
@@ -87,7 +85,7 @@ statistic system is currently inaccurate.  -priority level: low
 fleet boosts - apply directly to ship/modules when calculated
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
-many fleet error msgs in client unused
+many fleet error msgs in client unused - noted in fleetdata.h
 
 
 
@@ -163,12 +161,18 @@ update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -
 
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
+market system....this needs a lot of attention 
+    - unneeded bcasts
+    - vague error msgs
+    - abundance of checks (probably overkill)
+    - db hits abound
+    - EVEYTHING is uint32 but we really dont need that
+    - multiple client error msgs not implemented, nor has all the msg data been pulled out (none, actually)
+    
 
 will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
  - classes built using xml have a c'tor that zero-initalizes all items in class
  - this is almost complete.  there may be a few more i havent found yet.
-check db selects for loading single-line data sets using WHILE().  change these to IF ... ELSE data=data();
-    - have looked but cant find any more at this time. (but i did find couple more structs to fix zero-init on)
 
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
@@ -249,15 +253,15 @@ _Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSe
     - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
     -  could this be part of "EveOwners" bulkdata, which is why client is throwing error?  look into and fix as needed.
 
-Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders for some that are 'xxxxx' which need fixing
+Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders in some as 'xxxxx' which need fixing
 
 stations - look into individual hangers loaded into mem objects (charid/items)
     - not sure if this would be worth it, but would make 'by owner' searches much faster
 
 destiny shit - misc things found in destiny.dll
     - markers for ball's yaw, pitch, roll (dunRotation)
-    - criuse velocity as a fraction of max velocity
-    - id of bubble ball belongs to, current and former
+    - criuse velocity as a fraction of max velocity (uk)
+    - id of bubble ball belongs to, current and former (uk)
 
 update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
 

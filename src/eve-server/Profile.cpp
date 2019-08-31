@@ -55,7 +55,8 @@ void Profile::AddTime(uint8 key, double value) {
     colonyProfile      = 23,   *
     damageProfile      = 24,
     parseFXProfile     = 25,
-    applyFXProfile     = 26
+    applyFXProfile     = 26,
+    npcAIProfile       = 27
     */
     switch(key) {
         case 1:
@@ -136,6 +137,9 @@ void Profile::AddTime(uint8 key, double value) {
         case 26:
             m_effects2.push_back(value);
             break;
+        case 27:
+            m_npcAI.push_back(value);
+            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -149,6 +153,7 @@ void Profile::ClearAll()
     m_map.clear();
     m_client.clear();
     m_npc.clear();
+    m_npcAI.clear();
     m_bubbles.clear();
     m_items.clear();
     m_modules.clear();
@@ -210,6 +215,8 @@ void Profile::PrintProfile()
     std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()).c_str(),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
     std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()).c_str(),  h, l, a );
+    GetRunTimes(m_npcAI, h, l, a);
+    std::printf("        NPC AI   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npcAI.size()).c_str(),  h, l, a );
     GetRunTimes(m_itemload, h, l, a);
     std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()).c_str(),  h, l, a );
     GetRunTimes(m_modules, h, l, a);
@@ -283,7 +290,7 @@ std::string Profile::GetSize(size_t cSize)
     } else if (cSize > 9999) {
         ret = itoa(cSize /1000);
         ret += "k";
-    } else 
+    } else
         ret = itoa(cSize);
     return ret;
 }
