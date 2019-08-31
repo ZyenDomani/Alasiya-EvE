@@ -335,4 +335,4 @@ struct InviteData {
  * {'FullPath': u'UI/Messages', 'messageID': 257276, 'label': u'FleetWaitForLSCTitle'}(u'Initiating Fleet Chat', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 257277, 'label': u'FleetWaitForLSCBody'}(u'CONCORDs Initiative Against Anti-Social Behavior (CIAASB) stipulates that fleet members must have a chance to greet you before you resign your post.<BR>\r\nPlease wait while we connect you to your fleet channel before trying again.', None, None)
  * {'FullPath': u'UI/Messages', 'messageID': 257574, 'label': u'FleetTooManyFavoritesBody'}(u' Watch lists can support at most <b>{num}</b> members and you cannot add any more.', None, {u'{num}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'num'}})
- *
+ */

@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:     Zhur
-    Updates:	Allan  (updated dependecy loading order)
+    Updates:	Allan  (updated dependency loading order)
 */
 
 #ifndef __EVE_SERVER_H__INCL__
@@ -60,7 +60,7 @@
 // packets
 // TODO  work on moving these OUT of this file
 #include "packets/AccountPkts.h"
-//#include "packets/Bookmarks.h"
+//  #include "packets/Bookmarks.h"
 //  #include "packets/CorporationPkts.h"
 #include "packets/Crypto.h"
 #include "packets/Character.h"
@@ -72,7 +72,7 @@
 //  #include "packets/Language.h"
 //  #include "packets/LSCPkts.h"
 //  #include "packets/Manufacturing.h"
-#include "packets/Market.h"
+//  #include "packets/Market.h"
 #include "packets/Mail.h"
 //  #include "packets/Map.h"
 //  #include "packets/Missions.h"
