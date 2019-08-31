@@ -39,7 +39,7 @@ m_needsTarget(false)
     m_needsCharge = mRef->HasAttribute(AttrChargeGroup1);
     if (m_needsCharge) {
         switch (mRef->groupID()) {
-            // these neither require nor consume charges
+            // these neither require nor consume charges...may be wrong.  some of these use scripts.  to verify
             case EVEDB::invGroups::Remote_Sensor_Damper:
             case EVEDB::invGroups::Tracking_Link:
             case EVEDB::invGroups::Signal_Amplifier:
@@ -54,21 +54,62 @@ m_needsTarget(false)
                 m_needsCharge = false;
             } break;
         }
-    } else {
-        switch (mRef->groupID()) {
-            case EVEDB::invGroups::Survey_Scanner:
-            case EVEDB::invGroups::Ship_Scanner:
-            case EVEDB::invGroups::Cargo_Scanner:
-            case EVEDB::invGroups::System_Scanner: {
-                float m_range = GetAttribute(AttrSurveyScanRange).get_float();
-                m_range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true)))); // 3% increase in range (here)
-                SetAttribute(AttrSurveyScanRange, m_range);
-            } break;
-        }
+    }
+
+    // these groups receive a 3% increase in scan range on Alasiya
+    switch (mRef->groupID()) {
+        case EVEDB::invGroups::Ship_Scanner: {
+            float range = GetAttribute(AttrShipScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrShipScanRange, range);
+        } break;
+        case EVEDB::invGroups::Cargo_Scanner: {
+            float range = GetAttribute(AttrCargoScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrCargoScanRange, range);
+        } break;
+        case EVEDB::invGroups::Survey_Scanner: {
+            float range = GetAttribute(AttrSurveyScanRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrSurveyScanRange, range);
+        } break;
+        case EVEDB::invGroups::Shield_Transporter: {
+            float range = GetAttribute(AttrShieldTransferRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrShieldTransferRange, range);
+        } break;
+        case EVEDB::invGroups::Energy_Vampire:
+        case EVEDB::invGroups::Energy_Transfer_Array: {
+            float range = GetAttribute(AttrPowerTransferRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrPowerTransferRange, range);
+        } break;
+        case EVEDB::invGroups::Energy_Destabilizer: {
+            float range = GetAttribute(AttrEnergyDestabilizationRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrEnergyDestabilizationRange, range);
+        } break;
+        case EVEDB::invGroups::Target_Painter:
+        case EVEDB::invGroups::Tracking_Disruptor:
+        case EVEDB::invGroups::Gas_Cloud_Harvester:
+        case EVEDB::invGroups::Remote_Sensor_Damper:
+        case EVEDB::invGroups::Remote_Sensor_Booster:
+        case EVEDB::invGroups::Armor_Repair_Projector: {
+            float range = GetAttribute(AttrMaxRange).get_float();
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrMaxRange, range);
+        } break;
+        /*  these are 50AU.  we dont need to increase it...
+        case EVEDB::invGroups::System_Scanner:  {
+            float range = GetAttribute(AttrScanRange).get_float();        // range in AU
+            range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
+            SetAttribute(AttrScanRange, range);
+        } break;
+        */
     }
 
     // this is an internal variable only.
-    m_reloadTime = GetAttribute(AttrReloadTime).get_int();
+    m_reloadTime = GetAttribute(AttrReloadTime).get_uint32();
     // set default of 4s for turrets, 5s for snowball and probe launchers, 7s for missile launchers, and 10s for others.
     if (m_needsCharge)  {
         if (m_reloadTime < 1) {
@@ -245,7 +286,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         } break;
         case EVEDB::invGroups::Tractor_Beam: {
             if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE());
+                m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
         } break;
         case EVEDB::invGroups::Stasis_Web: {
             if (m_targetSE != nullptr)
@@ -708,16 +749,17 @@ bool ActiveModule::CanActivate()
                 return false;
             }
 
+        // weapons use ships AttrMaxTargetRange which is checked in TargetMgr
         if (m_turret or m_launcher)
             return  true;
 
         // test for specific targets and distance here
-        float range = 0;
+        float range = 0.0f;
         using namespace EVEDB::invGroups;
         switch (groupID()) {
             case Tractor_Beam: {
                 if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE()) {
-                    return true;
+                    range = GetAttribute(AttrMaxRange).get_float();
                 } else {
                     m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor the %s", m_targetSE->GetName());
                     return false;
@@ -726,46 +768,41 @@ bool ActiveModule::CanActivate()
             case Shield_Transporter: {
                 range = GetAttribute(AttrShieldTransferRange).get_float();
             } break;
+            case Energy_Vampire:
             case Energy_Transfer_Array: {
                 range = GetAttribute(AttrPowerTransferRange).get_float();
-            } break;
-            case Energy_Vampire: {
-                range = GetAttribute(AttrMaxRange).get_float();
             } break;
             case Energy_Destabilizer: {
                 range = GetAttribute(AttrEnergyDestabilizationRange).get_float();
             } break;
-            case Remote_Sensor_Damper: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
-            case Remote_Sensor_Booster: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
-            case Tracking_Disruptor: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
-            case Shield_Disruptor: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
-            case Armor_Repair_Projector: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
-            case Target_Painter: {
-                range = GetAttribute(AttrMaxRange).get_float();
-            } break;
             case Warp_Scrambler: {
                 range = GetAttribute(AttrWarpScrambleRange).get_float();
             } break;
-            //  AttrShieldDrainRange, AttrEmpFieldRange, AttrEcmBurstRange, AttrModifyTargetSpeedRange, AttrMaxTargetRange
-
-            // these scanners *may* not hit here, as they dont need a target, and we really dont want them to test for target
-            //  the pilot *may* have a target locked, in which case we really dont want these to hit
-            /*
             case Cargo_Scanner: {
                 range = GetAttribute(AttrCargoScanRange).get_float();
             } break;
             case Ship_Scanner: {
                 range = GetAttribute(AttrShipScanRange).get_float();
+            } break;
+            case Shield_Disruptor:      // no modules in this group
+            case Strip_Miner:
+            case Mining_Laser:
+            case Target_Painter:
+            case Tracking_Disruptor:
+            case Gas_Cloud_Harvester:
+            case Remote_Sensor_Damper:
+            case Remote_Sensor_Booster:
+            case Armor_Repair_Projector:
+            case Frequency_Mining_Laser:  {
+                range = GetAttribute(AttrMaxRange).get_float();
+            } break;
+
+            // these scanners *may* not hit here, as they dont need a target, and we really dont want them to test for target
+            //  the pilot *may* have a target locked, in which case we really dont want these to hit
+            /*
+            case System_Scanner: {
+                range = GetAttribute(AttrScanRange).get_float();    // this is in AU
+                range *= oneauinmeters;
             } break;
             case Survey_Scanner: {
                 range = GetAttribute(AttrSurveyScanRange).get_float();
@@ -773,12 +810,17 @@ bool ActiveModule::CanActivate()
             */
             default: {
                 // make error here with group
-                return false;
+                range = GetAttribute(AttrMaxRange).get_float();
+                _log(SHIP__WARNING, "Activate::RangeTest - Default hit for %s(%u).  Using %.1f", \
+                            m_modRef->itemName().c_str(), m_modRef->itemID(), range);
             } break;
         }
 
         float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
         distance -= m_targetSE->GetRadius();
+
+        _log(SHIP__MODULE_MESSAGE, "Activate::RangeTest - distance between %s and target %s: %.1f.  range of %s is %.1f", \
+                    m_shipRef->itemName().c_str(), m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
 
         if (distance > range) {
             m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
@@ -787,6 +829,7 @@ bool ActiveModule::CanActivate()
         }
     }
     //AttrDeadspaceUnsafe
+    //AttrMaxGroupActive
     return true;
 }
 

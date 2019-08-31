@@ -82,7 +82,7 @@ enum EveAttrEnum {
     AttrArmorDamageAmount = 84,
     AttrShieldTransferRange = 87,  //rangeAttributeID in dgmEffects
     AttrShieldDrainAmount = 88,
-    AttrShieldDrainRange = 89,
+    AttrShieldDrainRange = 89,      // not used.  no items with this attribute
     AttrPowerTransferAmount = 90,
     AttrPowerTransferRange = 91,  //rangeAttributeID in dgmEffects
     AttrKineticDampeningFieldStrength = 92,
@@ -91,7 +91,7 @@ enum EveAttrEnum {
     AttrEnergyReflectionBonus = 96,
     AttrEnergyDestabilizationAmount = 97,
     AttrEnergyDestabilizationRange = 98,  //rangeAttributeID in dgmEffects
-    AttrEmpFieldRange = 99,  //rangeAttributeID in dgmEffects
+    AttrEmpFieldRange = 99,  //rangeAttributeID in dgmEffects       -smartbombs
     AttrLauncherSlotsLeft = 101,
     AttrTurretSlotsLeft = 102,
     AttrWarpScrambleRange = 103,  //rangeAttributeID in dgmEffects
@@ -131,7 +131,7 @@ enum EveAttrEnum {
     AttrExplosiveDamageBonus = 139,
     AttrKineticDamageBonus = 140,
     AttrThermalDamageBonus = 141,
-    AttrEcmBurstRange = 142,  //rangeAttributeID in dgmEffects
+    AttrEcmBurstRange = 142,  //rangeAttributeID in dgmEffects      -ecm burst
     AttrTargetHostileRange = 143,
     AttrCapacitorRechargeRateMultiplier = 144,
     AttrPowerOutputMultiplier = 145,
@@ -472,7 +472,7 @@ enum EveAttrEnum {
     AttrShipScanResistance = 511,
     AttrModifyTargetSpeedChance = 512,      // npcUsageChanceAttributeID in dgmEffects
     AttrModifyTargetSpeedDuration = 513,
-    AttrModifyTargetSpeedRange = 514,       //rangeAttributeID in dgmEffects
+    AttrModifyTargetSpeedRange = 514,       //rangeAttributeID in dgmEffects        --npcs
     AttrModifyTargetSpeedCapacitorNeed = 515,
     AttrChassisType = 516,
     AttrFallofMultiplier = 517,
@@ -697,7 +697,7 @@ enum EveAttrEnum {
     AttrControlTowerHybridProximityRangeBonus = 762,
     AttrMaxGroupActive = 763,
     AttrControlTowerEwRofBonus = 764,
-    AttrScanRange = 765,
+    AttrScanRange = 765,                // range in AU
     AttrControlTowerHybridDamageBonus = 766,
     AttrTrackingSpeedBonus = 767,
     AttrMaxRangeBonus2 = 769,

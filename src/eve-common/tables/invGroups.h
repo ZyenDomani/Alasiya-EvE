@@ -222,7 +222,7 @@ namespace EVEDB {
             Computer_Interface_Node = 317,
             Landmark = 318,
             Large_Collidable_Structure = 319,
-            Shield_Disruptor = 321,
+            Shield_Disruptor = 321,                  // no modules in this group
             Billboard = 323,
             AssaultShip = 324,
             Armor_Repair_Projector = 325,
