@@ -107,7 +107,7 @@ public:
 
     /* TractorBeam */
 	void TractorBeamStop();
-    void TractorBeamStart(SystemEntity* pShipSE);
+    void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Local Movement */
     void Orbit(SystemEntity* who, double distance=0);

@@ -2664,7 +2664,7 @@ void DestinyManager::UnCloak() {
     mySE->SysBubble()->AddBallExclusive(mySE);
 }
 
-void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
+void DestinyManager::TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed)
 {
     /** @todo  need to update this */
     m_ballMode = Destiny::Ball::Mode::FOLLOW;
@@ -2683,7 +2683,7 @@ void DestinyManager::TractorBeamStart(SystemEntity* pShipSE)
     moveVector.normalize();
     m_shipHeading = moveVector;
 
-    m_maxShipSpeed = 500;
+    m_maxShipSpeed = speed.get_float();   //AttrMaxTractorVelocity
     m_maxSpeed = m_maxShipSpeed;
     m_velocity = m_shipHeading * m_maxSpeed;
 
