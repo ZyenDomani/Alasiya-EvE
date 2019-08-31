@@ -121,7 +121,7 @@ public:
     void WarpTo(const GPoint& where, int32 distance = 0, bool autoPilot = false, SystemEntity* pSE = nullptr);
 
     /* Ship State Query functions */
-    bool IsMoving()                                     { return (m_currentSpeedFraction ? true : false); }
+    bool IsMoving()                                     { return (m_currentSpeedFraction > 0); }
 
     /* Movement checks */
     bool IsAligned(GPoint &targetPoint);

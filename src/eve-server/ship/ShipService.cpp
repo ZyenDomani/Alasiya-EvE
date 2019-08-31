@@ -149,8 +149,8 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     }
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->IsMoving())
-        throw PyException(MakeCustomError("You cannot eject current ship while moving. Ref: ServerError 05139."));
+    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+        throw PyException(MakeCustomError("You cannot eject current ship while moving faster than 20m/s. Ref: ServerError 05139."));
 
     SystemManager* pSystem = pClient->SystemMgr();
     if (pSystem == nullptr) {
@@ -231,8 +231,8 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     }
 
     //  do we need this? yes....this needs more work in destiny to implement correctly
-    if (pShipSE->DestinyMgr()->IsMoving())
-        throw PyException(MakeCustomError("You cannot eject while moving. Ref: ServerError 05139."));
+    if (pShipSE->DestinyMgr()->GetSpeed() > 20)
+        throw PyException(MakeCustomError("You cannot eject current ship while moving faster than 20m/s. Ref: ServerError 05139."));
 
     pClient->Eject();
 
