@@ -191,6 +191,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     AttrWarpScrambleStrength = 105,
     AttrEntityWarpScrambleChance = 504,
     AttrWarpScrambleDuration = 505,
+    AttrModifyTargetSpeedRange = 514
     */
 
     /*

@@ -72,6 +72,7 @@ pi working.  currently rewriting process code  -priority level: lo
 
 
 module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
+activemodule c'tor - check/verify needsCharge code as some modules listed use scripts
 
 
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
