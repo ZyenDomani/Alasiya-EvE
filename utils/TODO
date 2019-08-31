@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    22 August 2019
+****    31 August 2019
 
 
 **********  found shit...high priority
@@ -322,3 +322,4 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 ********************************
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
+--  major updates needed in website code

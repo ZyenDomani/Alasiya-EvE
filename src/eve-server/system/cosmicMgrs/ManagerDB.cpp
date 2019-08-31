@@ -686,7 +686,7 @@ void ManagerDB::GetStatisticData(DBQueryResult& res, int64 starttime)
     if (!sDatabase.RunQuery(res,
         "SELECT pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket, probesLaunched, sitesScanned"
         " FROM srvStatisticData"
-        " WHERE timeStamp > %lli", starttime - EvE::Time::Day))
+        " WHERE timeStamp > %lli", starttime))
         codelog(DATABASE__ERROR, "Error in GetStatisticData query: %s", res.error.c_str());
 }
 

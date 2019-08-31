@@ -56,12 +56,18 @@ void StatisticMgr::Process()
         m_counter = 0;
         // every [increment][time] save stat history data
         CompileData();
-        sEntityList.ResetStartTime();
+        //sEntityList.ResetStartTime();
     }
     /*
      * SELECT timeStamp, timeSpan, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticData
      * SELECT month, pcShots, pcMissiles, ramJobs, shipsSalvaged, pcBounties, npcBounties, oreMined, iskMarket FROM srvStatisticHistory
      */
+}
+
+void StatisticMgr::SaveData()
+{
+    m_data.span = sEntityList.GetMinutes();
+    ManagerDB::SaveStatisticData(m_data);
 }
 
 void StatisticMgr::Add(uint8 key, double value)
@@ -130,18 +136,11 @@ void StatisticMgr::PrintInfo()
     sLog.Cyan("     StatisticMgr", " R.A.M. Jobs: %u", m_data.ramJobs);
 }
 
-void StatisticMgr::SaveData()
-{
-    m_data.span = sEntityList.GetMinutes();
-    ManagerDB::SaveStatisticData(m_data);
-}
-
 void StatisticMgr::CompileData()
 {
-    int64 startTime = sEntityList.GetStartTime();
     DBQueryResult* res = new DBQueryResult();
     DBResultRow row;
-    ManagerDB::GetStatisticData(*res, startTime);
+    ManagerDB::GetStatisticData(*res, sEntityList.GetStartTime());
     if (res->GetRowCount() > 0) {
         StatisticData data = StatisticData();
         while (res->GetRow(row)) {
