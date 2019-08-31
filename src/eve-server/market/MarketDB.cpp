@@ -100,7 +100,7 @@ PyRep *MarketDB::GetRegionBest(uint32 regionID) {
     return DBResultToIndexRowset(res, "typeID");
 }
 
-PyRep *MarketDB::GetOrders( uint32 regionID, uint32 typeID )
+PyRep *MarketDB::GetOrders( uint32 regionID, uint16 typeID )
 {
     // returns a tuple (sell, buy) of PyObjectEx with data in PyPackedRows
 
@@ -188,14 +188,8 @@ PyRep *MarketDB::GetOrderRow(uint32 orderID) {
 }
 
 //NOTE: needs a lot of work to implement orderRange
-uint32 MarketDB::FindBuyOrder(
-    uint32 stationID,
-    uint32 typeID,
-    double price,
-    uint32 quantity,
-    uint32 orderRange
-) {
-    price += 0.01;
+uint32 MarketDB::FindBuyOrder(Call_PlaceCharOrder &call) {
+    call.price += 0.01;
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -208,10 +202,10 @@ uint32 MarketDB::FindBuyOrder(
         "        AND price < %.2f"
         "    ORDER BY price DESC"
         "    LIMIT %u",
-        typeID,
-        stationID,
-        quantity,
-        price,
+        call.typeID,
+        call.stationID,
+        call.quantity,
+        call.price,
         sConfig.market.FindBuyOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -219,20 +213,14 @@ uint32 MarketDB::FindBuyOrder(
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
-        return 0;    //no order found.
+    if (res.GetRow(row))
+        return row.GetUInt(0);
 
-    return row.GetUInt(0);
+    return 0;    //no order found.
 }
 
-uint32 MarketDB::FindSellOrder(
-    uint32 stationID,
-    uint32 typeID,
-    double price,
-    uint32 quantity,
-    uint32 orderRange
-) {
-    price += 0.01;
+uint32 MarketDB::FindSellOrder(Call_PlaceCharOrder &call) {
+    call.price += 0.01;
 
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -244,10 +232,10 @@ uint32 MarketDB::FindSellOrder(
         "        AND volRemaining >= %u"
         "        AND price < %.2f"
         "    LIMIT %u",
-        typeID,
-        stationID,
-        quantity,
-        price,
+        call.typeID,
+        call.stationID,
+        call.quantity,
+        call.price,
         sConfig.market.FindSellOrder))
     {
         codelog(DATABASE__ERROR, "Error in query: %s", res.error.c_str());
@@ -265,7 +253,7 @@ uint32 MarketDB::FindSellOrder(
 bool MarketDB::GetOrderInfo(
     uint32 orderID,
     uint32 *ownerID,
-    uint32 *typeID,
+    uint16 *typeID,
     uint32 *stationID,
     uint32 *quantity,
     double *price,
@@ -336,7 +324,7 @@ bool MarketDB::DeleteOrder(uint32 orderID) {
     return true;
 }
 
-bool MarketDB::RecordTransaction( uint32 typeID, uint32 quantity, double price, MktTransType transactionType, uint32 charID, uint32 regionID, uint32 stationID) {
+bool MarketDB::RecordTransaction( uint16 typeID, uint32 quantity, double price, MktTransType transactionType, uint32 charID, uint32 regionID, uint32 stationID) {
     DBerror err;
     /** @todo implement the accountKey field here */
     if (!sDatabase.RunQuery(err,
@@ -363,7 +351,7 @@ uint32 MarketDB::StoreBuyOrder(
     uint32 ownerID,
     uint32 accountID,
     uint32 stationID,
-    uint32 typeID,
+    uint16 typeID,
     double price,
     uint32 quantity,
     int16 orderRange,
@@ -378,7 +366,7 @@ uint32 MarketDB::StoreSellOrder(
     uint32 ownerID,
     uint32 accountID,
     uint32 stationID,
-    uint32 typeID,
+    uint16 typeID,
     double price,
     uint32 quantity,
     int16 orderRange,
@@ -390,7 +378,7 @@ uint32 MarketDB::StoreSellOrder(
 }
 
 uint32 MarketDB::_StoreOrder(
-    uint32 ownerID, uint32 accountID, uint32 stationID, uint32 typeID, double price, uint32 quantity, int16 orderRange, uint32 minVolume, uint8 duration, bool isCorp, bool isBuy
+    uint32 ownerID, uint32 accountID, uint32 stationID, uint16 typeID, double price, uint32 quantity, int16 orderRange, uint32 minVolume, uint8 duration, bool isCorp, bool isBuy
 ) {
     // get the solar system and region IDs.
     // note:  GetSystemInfo can use either stationID OR solarSystemID.  -allan 3Aug16
@@ -433,7 +421,7 @@ uint32 MarketDB::_StoreOrder(
 
 PyRep *MarketDB::GetTransactions(
     uint32 characterID,
-    uint32 typeID,
+    uint16 typeID,
     uint32 quantity,
     double minPrice,
     double maxPrice,
@@ -534,6 +522,7 @@ void MarketDB::SetUpdateTime(int64 setTime)
     sDatabase.RunQuery(err, "UPDATE mktUpdates SET timeStamp = %lli WHERE server = 1", setTime);
 }
 
+/** @todo this needs work for better logic.   may need to pull data from transactions */
 void MarketDB::UpdateHistory()
 {
     DBerror err;

@@ -224,7 +224,8 @@ void MarketMgr::InvalidateOrdersCache(uint32 typeID)
  */
 
 void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *seller, InventoryItemRef item, bool isCorp) {
-    uint32 ownerID = 0, typeID = 0, qtyReq = 0;
+    uint16 typeID = 0;
+    uint32 ownerID = 0, qtyReq = 0;
     double price = 0;
 
     if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, nullptr, &qtyReq, &price, nullptr, nullptr)) {
@@ -312,7 +313,8 @@ void MarketMgr::ExecuteBuyOrder(uint32 orderID, uint32 stationID, uint32 quantit
 }
 
 void MarketMgr::ExecuteSellOrder(uint32 orderID, uint32 stationID, uint32 quantity, Client *buyer, bool isCorp) {
-    uint32 ownerID = 0, typeID = 0, qtyAvail = 0;
+    uint16 typeID = 0;
+    uint32 ownerID = 0, qtyAvail = 0;
     double price = 0;
 
     if (!m_db.GetOrderInfo(orderID, &ownerID, &typeID, nullptr, &qtyAvail, &price, nullptr, nullptr)) {

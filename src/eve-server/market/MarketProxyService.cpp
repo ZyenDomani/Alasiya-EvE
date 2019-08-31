@@ -104,6 +104,14 @@ PyResult MarketProxyService::Handle_GetCorporationOrders(PyCallArgs &call) {
     return m_db.GetOrdersForOwner(call.client->GetCorporationID());
 }
 
+void MarketProxyService::InvalidateOrdersCache(uint32 typeID)
+{
+    std::string method_name ("GetOrders_");
+    method_name += itoa(typeID);
+    ObjectCachedMethodID method_id(GetName(), method_name.c_str());
+    m_manager->cache_service->InvalidateCache( method_id );
+}
+
 // this is called 3x on every market transaction
 /** @todo  make this static data, updated on a timer.  can be done in MarketMgr code  */
 PyResult MarketProxyService::Handle_GetOldPriceHistory(PyCallArgs &call) {
@@ -124,6 +132,33 @@ PyResult MarketProxyService::Handle_GetNewPriceHistory(PyCallArgs &call) {
     }
 
     return sMktMgr.GetNewPriceHistory(call.client->GetRegionID(), args.arg);
+}
+
+PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
+{
+    Call_GetNewCharTransactions args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(MARKET__ERROR, "Invalid arguments");
+        return nullptr;
+    }
+
+    double minPrice = PyRep::IntegerValue(args.minPrice);
+
+    return m_db.GetTransactions(call.client->GetCharacterID(), args.typeID, args.quantity, minPrice, args.maxPrice, args.fromDate, args.buySell);
+}
+
+PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
+{
+    Call_GetNewCorpTransactions args;
+    if (!args.Decode(&call.tuple)) {
+        codelog(MARKET__ERROR, "Invalid arguments");
+        return nullptr;
+    }
+
+    double minPrice = PyRep::IntegerValue(args.minPrice);
+
+    return m_db.GetTransactions(call.client->GetCorporationID(), args.typeID, args.quantity, minPrice,\
+    args.maxPrice, args.fromDate, args.buySell, args.accountKey, args.memberID);
 }
 
 PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
@@ -153,10 +188,16 @@ PyResult MarketProxyService::Handle_GetOrders(PyCallArgs &call) {
     //cached object cached method call result.
     result = m_manager->cache_service->MakeObjectCachedMethodCallResult(method_id);
 
+    /*{'FullPath': u'UI/Messages', 'messageID': 258616, 'label': u'MktMarketOpeningTitle'}(u'Market not open yet', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 258617, 'label': u'MktMarketOpeningBody'}(u'{region} market region is currently opening up for business and is not yet ready. Please try again in a few minutes, or refer to another market region for your trading needs.', None, {u'{region}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'region'}})
+     */
     return result;
 }
 
 PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
+    //self.GetMarketProxy().PlaceCharOrder(int(stationID), int(typeID), round(float(price), 2), int(quantity), int(bid), int(orderRange),
+    //                                      itemID, int(minVolume), int(duration), useCorp, located)
+
   /**
 17:15:42 [SvcCall]   Call Arguments:
 17:15:42 [SvcCall]       Tuple: 11 elements
@@ -178,7 +219,8 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         return nullptr;
     }
 
-    args.Dump(MARKET__DUMP, "CharOrder    ");
+    _log(MARKET__DUMP, "Mkt::PlaceCharOrder()");
+    args.Dump(MARKET__DUMP, "    ");
 
     //TODO: verify the validity of args.stationID (range vs. skill)
     //TODO: handle located?  'located' is officeFolderID, officeID.  not sure how its' sent yet.
@@ -189,16 +231,17 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
      * check corp has office in target station
      * check player can use given corp acct (get current division from char data)
      * check corp wallet division has funds (get current division from char data)
+     * code to handle 'located' as sent (still unsure)
      *   ...more?
      */
 
     if (args.bid) {  //buy order
         //try to satisfy immediately...
-        uint32 order_id = m_db.FindSellOrder(args.stationID, args.typeID, args.price, args.quantity, args.orderRange);
+        uint32 order_id = m_db.FindSellOrder(args);
         _log(MARKET__TRACE, "MarketProxyService::Handle_PlaceCharOrder - %s: Trying buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %i)", \
                     call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-        if (order_id) {
+        if (order_id > 0) {
             _log(MARKET__TRACE, "%s: Found sell order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %i)", \
                         call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
@@ -208,7 +251,7 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
 
         //unable to satisfy immediately...
         if (args.duration == 0) {
-            _log(MARKET__ERROR, "%s: Failed to satisfy buy order for %d of type %d at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID, args.price);
+            _log(MARKET__ERROR, "%s: Failed to satisfy buy order for %i of type %i at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID, args.price);
             call.client->SendErrorMsg("No such order found.");
             return nullptr;
         }
@@ -240,38 +283,38 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
             ; //  corp item in corp hangar
 
         //verify that they actually have the item in the quantity specified...
-        InventoryItemRef item = sItemFactory.GetItem( args.itemID );
-        if ( !item ) {
-            codelog(MARKET__ERROR, "%s: Failed to find item %d for sell order.", call.client->GetName(), args.itemID);
-            call.client->SendErrorMsg("Unable to find items %d to sell!", args.itemID);
+        InventoryItemRef iRef = sItemFactory.GetItem( args.itemID );
+        if (iRef.get() == nullptr) {
+            codelog(MARKET__ERROR, "%s: Failed to find item %i for sell order.", call.client->GetName(), args.itemID);
+            call.client->SendErrorMsg("Unable to find items %i to sell!", args.itemID);
             return nullptr;
         }
         //verify right to sell this thing..
         //TODO: this should be a much more complicated check with corp stuff....
-        if (item->ownerID() != call.client->GetCharacterID()) {
-            codelog(MARKET__ERROR, "%s: Char %d Tried to sell item %d with owner %d.", call.client->GetName(), call.client->GetCharacterID(), item->itemID(), item->ownerID());
+        if ( iRef->ownerID() != call.client->GetCharacterID()) {
+            codelog(MARKET__ERROR, "%s: Char %i Tried to sell item %u with owner %u.", call.client->GetName(), call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
             call.client->SendErrorMsg("You cannot sell items you do not own.");
             return nullptr;
         }
 
         //verify that they specified a valid station ID to sell from.
-        if ((item->locationID() != args.stationID)   //item in station hanger
-           and !(call.client->GetShip()->GetMyInventory()->ContainsItem( item->itemID() )  //item is in our ship
+        if (( iRef->locationID() != args.stationID)   //item in station hanger
+           and !(call.client->GetShip()->GetMyInventory()->ContainsItem( iRef->itemID() )  //item is in our ship
                 and call.client->GetStationID() == args.stationID ))   //and our ship is in the station
         {
-            codelog(MARKET__ERROR, "%s: Tried to sell item %d which is in location %d through station %d while in station %d", call.client->GetName(), item->itemID(), item->locationID(), args.stationID, call.client->GetStationID());
+            codelog(MARKET__ERROR, "%s: Tried to sell item %u which is in location %u through station %i while in station %d", call.client->GetName(), iRef->itemID(), iRef->locationID(), args.stationID, call.client->GetStationID());
             call.client->SendErrorMsg("You cannot sell that item in that station.");
             return nullptr;
         }
 
-        if ((item->singleton() && args.quantity != 1) or  item->quantity() < args.quantity ) {
-            codelog(MARKET__ERROR, "%s: Tried to sell %d of item %d which has qty %d singleton %d", call.client->GetName(), args.quantity, item->itemID(), item->quantity(), item->singleton());
+        if (( iRef->singleton() && args.quantity != 1) or  iRef->quantity() < args.quantity ) {
+            codelog(MARKET__ERROR, "%s: Tried to sell %i of item %u which has qty %u singleton %b", call.client->GetName(), args.quantity, iRef->itemID(), iRef->quantity(), iRef->singleton());
             call.client->SendErrorMsg("You cannot sell more than you have.");
             return nullptr;
         }
 
-        if (item->typeID() != args.typeID) {
-            codelog(MARKET__ERROR, "%s: Tried to sell item %d of type %d using type ID %d", call.client->GetName(), item->itemID(), item->typeID(), args.typeID);
+        if ( iRef->typeID() != args.typeID) {
+            codelog(MARKET__ERROR, "%s: Tried to sell item %u of type %u using type ID %i", call.client->GetName(), iRef->itemID(), iRef->typeID(), args.typeID);
             call.client->SendErrorMsg("Invalid sell order item type.");
             return nullptr;
         }
@@ -281,11 +324,11 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         //ok, we think they are allowed to sell this thing...
 
         //try to satisfy immediately...
-        uint32 order_id = m_db.FindBuyOrder(args.stationID, args.typeID, args.price, args.quantity, args.orderRange);
+        uint32 order_id = m_db.FindBuyOrder(args);
         if (order_id) {
             _log(MARKET__TRACE, "%s: Found buy order %u to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), order_id, args.typeID, args.stationID, args.price, args.quantity, args.orderRange);
 
-            sMktMgr.ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, item, args.useCorp);
+            sMktMgr.ExecuteBuyOrder(order_id, args.stationID, args.quantity, call.client, iRef, args.useCorp);
             return nullptr;
         }
 
@@ -293,20 +336,20 @@ PyResult MarketProxyService::Handle_PlaceCharOrder(PyCallArgs &call) {
         _log(MARKET__TRACE, "%s: Unable to find an immediate order to satisfy (type %u, station %u, price %.2f, qty %u, range %u)", call.client->GetName(), args.stationID, args.typeID, args.price, args.quantity, args.orderRange);
 
         if (args.duration == 0) {
-            _log(MARKET__ERROR, "%s: Failed to satisfy sell order for %d of type %d at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID,  args.price);
+            _log(MARKET__ERROR, "%s: Failed to satisfy sell order for %i of type %i at %.2f ISK.", call.client->GetName(), args.quantity, args.typeID,  args.price);
             return nullptr;
         }
 
         //TODO: take broker cost.
 
         //take item from seller
-        if (item->quantity() == args.quantity) {
-            call.client->SystemMgr()->RemoveItemFromInventory(item);
-            item->Delete();
+        if ( iRef->quantity() == args.quantity) {
+            call.client->SystemMgr()->RemoveItemFromInventory( iRef );
+            iRef->Delete();
         } else {
             //update the item.
-            if (!item->AlterQuantity(-args.quantity, true)) {
-                codelog(MARKET__ERROR, "%s: Failed to consume %u units from item %u", call.client->GetName(), args.quantity, item->itemID());
+            if (!iRef->AlterQuantity(-args.quantity, true)) {
+                codelog(MARKET__ERROR, "%s: Failed to consume %i units from item %u", call.client->GetName(), args.quantity, iRef->itemID());
                 return nullptr;
             }
         }
@@ -346,7 +389,8 @@ PyResult MarketProxyService::Handle_ModifyCharOrder(PyCallArgs &call) {
         return nullptr;
     }
     // client coded to throw error if price > 9223372036854.0
-    uint32 typeID = 0, quantity = 0;
+    uint16 typeID = 0;
+    uint32 quantity = 0;
     double price = 0;
     bool isBuy = false, isCorp = false;
 
@@ -382,7 +426,8 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
         return nullptr;
     }
 
-    uint32 ownerID = 0, typeID = 0, stationID = 0, quantity = 0;
+    uint16 typeID = 0;
+    uint32 ownerID = 0, stationID = 0, quantity = 0;
     double price = 0;
     bool isBuy = false, isCorp = false;
 
@@ -407,44 +452,10 @@ PyResult MarketProxyService::Handle_CancelCharOrder(PyCallArgs &call) {
         codelog(MARKET__ERROR, "Failed to delete order %u.", args.orderID);
         return nullptr;
     }
+
     InvalidateOrdersCache(typeID);
     sMktMgr.BroadcastOnOwnOrderChanged(call.client->GetRegionID(), args.orderID, "Expiry", isCorp, order); //force a refresh of market data.
 
     return nullptr;
-}
-
-PyResult MarketProxyService::Handle_CharGetNewTransactions(PyCallArgs &call)
-{
-    Call_GetNewCharTransactions args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
-        return nullptr;
-    }
-
-    double minPrice = PyRep::IntegerValue(args.minPrice);
-
-    return m_db.GetTransactions(call.client->GetCharacterID(), args.typeID, args.quantity, minPrice, args.maxPrice, args.fromDate, args.buySell);
-}
-
-PyResult MarketProxyService::Handle_CorpGetNewTransactions(PyCallArgs &call)
-{
-    Call_GetNewCorpTransactions args;
-    if (!args.Decode(&call.tuple)) {
-        codelog(MARKET__ERROR, "Invalid arguments");
-        return nullptr;
-    }
-
-    double minPrice = PyRep::IntegerValue(args.minPrice);
-
-    return m_db.GetTransactions(call.client->GetCorporationID(), args.typeID, args.quantity, minPrice,\
-                                  args.maxPrice, args.fromDate, args.buySell, args.accountKey, args.memberID);
-}
-
-void MarketProxyService::InvalidateOrdersCache(uint32 typeID)
-{
-    std::string method_name ("GetOrders_");
-    method_name += itoa(typeID);
-    ObjectCachedMethodID method_id(GetName(), method_name.c_str());
-    m_manager->cache_service->InvalidateCache( method_id );
 }
 
