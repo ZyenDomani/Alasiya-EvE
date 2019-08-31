@@ -624,8 +624,7 @@ PyResult Command_giveskills(Client* who, CommandDB* db, PyServiceMgr* services, 
 }
 
 PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, const Seperator& args) {
-    uint8 level = 0;
-    uint32 ownerID = 0, skillID = 0;
+    uint32 ownerID = 0, skillID = 0, level = 0;
     uint32 newPoints = 0;
     CharacterRef character;
     Client *pTarget = nullptr;
@@ -640,12 +639,14 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
             pTarget = who;
         } else if (!args.isNumber(1)) {
             throw PyException(MakeCustomError("The use of string based Character names for this command is not yet supported!  Use 'me' instead or the entityID of the character to which you wish to give skills."));
+            /*
             const char *name = args.arg(1).c_str();
             pTarget = sEntityList.FindClientByName(name);
             if (!pTarget)
                 throw PyException(MakeCustomError("Cannot find Character by the name of %s", name));
             ownerID = pTarget->GetCharacterID();
             character = pTarget->GetChar();
+            */
         } else
             throw PyException(MakeCustomError("Argument 1 must be Character ID or Character Name "));
 
@@ -703,7 +704,7 @@ PyResult Command_giveskill(Client* who, CommandDB* db, PyServiceMgr* services, c
         PyTuple* tmp = ost.Encode();
         pTarget->QueueDestinyEvent(&tmp);
 
-        sLog.White("Command::GiveSkill", "skill %u set to level %u with %u SP.", skillID, level, newPoints);
+        _log(SKILL__MESSAGE, "GiveSkill - skill %u set to level %u with %u SP.", skillID, level, newPoints);
 
         return new PyString ("Skill Gifting Complete");
     } else

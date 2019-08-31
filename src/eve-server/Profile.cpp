@@ -325,6 +325,7 @@ std::string Profile::GetKeyName(uint8 key)
         case parseFXProfile:       return "ParseFX";   //  25,
         case applyFXProfile:       return "ApplyFX";   //  26,
         case npcAIProfile:         return "NPC AI";    //  27
+        default:                   return "Invalid Key";
     }
 }
 
