@@ -320,6 +320,13 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
     }
     m_beginFindTarget.Disable();
     CheckDistance(pTarget);
+
+    /*
+    std::map<std::string, PyRep *> arg;
+    arg["target"] = new PyInt(args.arg);
+    throw PyException( MakeUserError( "DeniedDroneTargetForceField", arg));DeniedDroneTargetForceField
+    */
+
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {

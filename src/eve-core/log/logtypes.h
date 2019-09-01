@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.4
+ Log Version: 9.5
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -362,6 +362,14 @@ LOG_TYPE( NPC, MESSAGE, DISABLED, "NPCMsg" )
 LOG_TYPE( NPC, INFO, DISABLED, "NPCInfo" )
 LOG_TYPE( NPC, TRACE, DISABLED, "NPCTrace" )
 LOG_TYPE( NPC, AI_TRACE, DISABLED, "NPCAITrace" )
+
+LOG_CATEGORY( DRONE )
+LOG_TYPE( DRONE, ERROR,   ENABLED, "DroneError" )
+LOG_TYPE( DRONE, WARNING, DISABLED, "DroneWarning" )
+LOG_TYPE( DRONE, MESSAGE, DISABLED, "DroneMsg" )
+LOG_TYPE( DRONE, INFO, DISABLED, "DroneInfo" )
+LOG_TYPE( DRONE, TRACE, DISABLED, "DroneTrace" )
+LOG_TYPE( DRONE, AI_TRACE, DISABLED, "DroneAITrace" )
 
 LOG_CATEGORY( CONCORD )
 LOG_TYPE( CONCORD, ERROR,   ENABLED, "ConcordError" )
