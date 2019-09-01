@@ -390,6 +390,8 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if (pClient->GetShipID() == args.arg)
         throw PyException( MakeUserError( "DeniedTargetSelf"));
 
+    //DeniedTargetAfterCloak
+
     Rsp_Dogma_AddTarget rsp;
         rsp.flag = false;
         rsp.targetList.push_back(args.arg);
@@ -405,17 +407,27 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(PLAYER__ERROR, "%s: Client has no destiny manager!", pClient->GetName());
         return rsp.Encode();
     }
-    if (pMyDestiny->IsCloaked())
+    /*  checked in TargetMgr
+    if (pMyDestiny->IsCloaked()) {
         throw PyException( MakeUserError( "CantTargetWhileCloaked"));
-
+        return rsp.Encode();
+    }
+    if (pMyDestiny->IsWarping()) {
+        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(pTSE->GetName());
+        throw PyException( MakeUserError( "DeniedTargetSelfWarping", arg));
+    }
+    */
     if (pShip->TargetMgr() == nullptr)
         return rsp.Encode();
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(PLAYER__WARNING, "Unable to find system manager from '%s'", pClient->GetName());
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed"));
-        //return rsp.Encode();
+        std::map<std::string, PyRep *> arg;
+        arg["target"] = new PyInt(args.arg);
+        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
     }
 
     SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
@@ -426,24 +438,27 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     if ((pShip->SysBubble() == nullptr)
     or (pTSE->SysBubble() == nullptr)) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), pTSE->GetName());
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed"));
-        //return rsp.Encode();
+        std::map<std::string, PyRep *> arg;
+        arg["target"] = new PyInt(args.arg);
+        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
     }
-
-    if (pMyDestiny->IsWarping()) {
-        std::map<std::string, PyRep *> args;
-        args["targetName"] = new PyString(pTSE->GetName());
-        throw PyException( MakeUserError( "DeniedTargetSelfWarping", args));
+/*  checked in TargetMgr
+    if (pTSE->DestinyMgr()->IsWarping()) {
+        _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
+        std::map<std::string, PyRep *> arg;
+        arg["targetName"] = new PyString(pTSE->GetName());
+        throw PyException( MakeUserError( "DeniedTargetOtherWarping", arg));
     }
-
+    */
     if (pTSE->HasPilot())
         if (pTSE->GetPilot()->IsInvul())
             throw PyException( MakeUserError( "DeniedTargetInvulnerable"));
 
     if (!pShip->TargetMgr()->StartTargeting(pTSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed.");
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed"));
-        //return rsp.Encode();
+        std::map<std::string, PyRep *> arg;
+        arg["target"] = new PyInt(args.arg);
+        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
     }
 
     if (sConfig.debug.IsTestServer)

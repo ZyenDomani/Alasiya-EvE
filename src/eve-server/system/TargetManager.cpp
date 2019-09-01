@@ -176,6 +176,15 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
         args["targetName"] = new PyString(tSE->GetName());
         throw PyException( MakeUserError("DeniedTargetEvadesSensors", args));
     }
+    // my DestinyMgr tested in dogma
+    if (mySE->DestinyMgr()->IsWarping()) {
+        std::map<std::string, PyRep *> args;
+        args["targetName"] = new PyString(tSE->GetName());
+        throw PyException( MakeUserError("DeniedTargetSelfWarping", args));
+    }
+    if (mySE->DestinyMgr()->IsCloaked())
+        throw PyException( MakeUserError("DeniedTargetingCloaked"));
+
     if (tSE->DestinyMgr() != nullptr) {
         if (tSE->DestinyMgr()->IsCloaked())
             throw PyException( MakeUserError("DeniedTargetingTargetCloaked"));
@@ -185,15 +194,6 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
             throw PyException( MakeUserError("DeniedTargetOtherWarping", args));
         }
     }
-    if (mySE->DestinyMgr() != nullptr) {
-        if (mySE->DestinyMgr()->IsWarping()) {
-            std::map<std::string, PyRep *> args;
-            args["targetName"] = new PyString(tSE->GetName());
-            throw PyException( MakeUserError("DeniedTargetSelfWarping", args));
-        }
-        if (mySE->DestinyMgr()->IsCloaked())
-            throw PyException( MakeUserError("DeniedTargetingCloaked"));
-    }
 
     if (tSE->IsPOSSE())
         if (tSE->GetPOSSE()->IsReinforced()) {
@@ -202,24 +202,27 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
             throw PyException( MakeUserError("DeniedTargetReinforcedStructure", args));
         }
 
-    if (tSE->SysBubble()->HasTower())
-        if (tSE->SysBubble()->GetTowerSE()->HasForceField())
-            if (tSE->GetPosition().distance(tSE->GetTowerSE()->GetPosition()) < tSE->GetTowerSE()->GetSOI()) {
+    if (tSE->SysBubble()->HasTower()) {
+        TowerSE* ptSE = tSE->SysBubble()->GetTowerSE();
+        if (ptSE->HasForceField())
+            if (tSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
                 std::map<std::string, PyRep *> args;
                 args["target"] = new PyInt(tSE->GetID());
-                args["range"] = new PyInt(tSE->GetTowerSE()->GetSOI());
-                args["item"] = new PyInt(tSE->GetTowerSE()->GetID());
+                args["range"] = new PyInt(ptSE->GetSOI());
+                args["item"] = new PyInt(ptSE->GetID());
                 throw PyException( MakeUserError("DeniedTargetForceField", args));
             }
+    }
 
-    if (mySE->SysBubble()->HasTower())
-        if (mySE->SysBubble()->GetTowerSE()->HasForceField())
-            if (mySE->GetPosition().distance(mySE->GetTowerSE()->GetPosition()) < mySE->GetTowerSE()->GetSOI()) {
+    if (mySE->SysBubble()->HasTower()) {
+        TowerSE* ptSE = mySE->SysBubble()->GetTowerSE();
+        if (ptSE->HasForceField())
+            if (mySE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI()) {
                 std::map<std::string, PyRep *> args;
                 args["target"] = new PyInt(tSE->GetID());
                 throw PyException( MakeUserError("DeniedTargetingInsideField", args));
             }
-
+    }
 
     TargetTry(tSE);
     //first make sure they are not already in the list
@@ -236,7 +239,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
         return TargetFail(tSE);
     }
 
-	uint8 maxLockedTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_int();
+	uint8 maxLockedTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
     if (maxLockedTargets < 1)
         maxLockedTargets = 1;
     if (GetTotalTargets() >= maxLockedTargets) {
