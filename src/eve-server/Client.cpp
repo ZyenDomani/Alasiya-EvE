@@ -1012,9 +1012,11 @@ void Client::Board(Ship* newShipSE)
         //  check for POS/FF in bubble.  check for ship in FF.  if so, then not abandoned.
         /** @todo  incomplete...just cause bubble has FF, dont mean ship is INSIDE said FF */
         bool abandoned = true;
-        if (pShipSE->SysBubble()->HasTower())
-            if (pShipSE->SysBubble()->GetTowerSE()->HasForceField())
-                abandoned = false;
+        TowerSE* ptSE = pShipSE->SysBubble()->GetTowerSE();
+        if (ptSE != nullptr)
+            if (ptSE->HasForceField())
+                if (pShipSE->GetPosition().distance(ptSE->GetPosition()) < ptSE->GetSOI())
+                    abandoned = false;
 
         char ci[45];
         if (abandoned) {
