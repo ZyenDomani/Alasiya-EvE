@@ -99,18 +99,18 @@ PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bin
 
 PyResult InsuranceService::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called in space */
-    const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice()/15);
+        return new PyFloat(type->basePrice() /15);
 
     return PyStatic.NewNone();
 }
 
 PyResult InsuranceBound::Handle_GetInsurancePrice( PyCallArgs& call ) {
     /* called when docked */
-    const ItemType *type = sItemFactory.GetType(call.tuple->GetItem(0)->AsInt()->value());
+    const ItemType *type = sItemFactory.GetType(PyRep::IntegerValue(call.tuple->GetItem(0)));
     if (type != nullptr)
-        return new PyFloat(type->basePrice()/15);
+        return new PyFloat(type->basePrice() /15);
 
     return PyStatic.NewNone();
 }
@@ -163,12 +163,11 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
      *   Basic      0.5       0.05
      */
     // calculate the fraction value
-    const ItemType type = shipRef->type();
-    double paymentFraction = (args.amount / type.basePrice());
+    double paymentFraction = (args.amount / (shipRef->type().basePrice() /15));
     if (paymentFraction < 0.05) {
             // catchall for fuckedup prices.
         call.client->SendErrorMsg("Your payment of %.2f is below the minimum payment of %.2f required for coverage.", \
-                    args.amount, type.basePrice() * 0.05);
+                    args.amount, (shipRef->type().basePrice() /15) * 0.05);
         return PyStatic.NewNone();
     }
 
@@ -186,7 +185,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     else if (paymentFraction == 0.3)
         fraction = 1.0f;
 
-    if (fraction == 0) {
+    if (fraction < 0.05) {
         call.client->SendErrorMsg("There was a problem with your insurance premium calculation.  Ref: ServerError 75520.");
         throw PyException( MakeUserError( "InsureShipFailed"));
     } else if (fraction == 0.3)
@@ -202,10 +201,11 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     uint8 numWeeks = 12;    // TODO make this a config variable
 
-    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, type.basePrice(), args.isCorp, numWeeks)) {
+    if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
         //  it sucessfully added, now, have the player pay for the insurance
         std::string reason = "Insurance Premium on ";
-        reason += call.client->GetShip()->itemName().c_str();
+        reason += call.client->GetShip()->itemName();
+        reason += ".  Reference ID : xxxxx";     // put contractID here
         AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
 	} else {
         call.client->SendErrorMsg("Failed to install new insurance contract.");
@@ -214,16 +214,18 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 
     // TODO:  send mail detailing insurance coverage and length of coverage
 
-    const std::string
-            subject = "New Ship Insurance", //std::string("New application from ") + call.client->GetName(),
-            body = "Dear valued customer,<BR>" \
-                    "Congratulations on the insurance on your ship. A very wise choice indeed.<br>" \
-                    "This letter is to confirm that we have issued an insurance contract for your ship, %s at a level of %u%.<BR>" \
-                    "This contract will expire at *insert endDate Here*, after 12 weeks.<BR><BR>" \
-                    "Best,<BR>" \
-                    "The Secure Commerce Commission,<BR>" \
-                    "Reference ID: %u <BR><BR>" \
-                    "jav";
+    const std::string subject = "New Ship Insurance"; //std::string("New application from ") + call.client->GetName(),
+    std::string body = "Dear valued customer,<br>";
+            body += "Congratulations on the insurance on your ship. A very wise choice indeed.<br>";
+            body += "This letter is to confirm that we have issued an insurance contract for your ship, ";
+            body += shipRef->itemName();
+            body += ", at level of ";
+            body += itoa(fraction *100);
+            body += "%.<br>This contract will expire after 12 weeks.<br><br>";   //*insert endDate Here*,
+            body += "Best,<br>";
+            body += "The Secure Commerce Commission,<br><br>";
+            body += "Reference ID: xxxxx <br>"; // put contractID here
+            body += "jav";
 
     m_manager->lsc_service->SendMail(ownerSCC, call.client->GetCharacterID(), subject, body);
 
