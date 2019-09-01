@@ -49,8 +49,7 @@ typedef enum {          // implemented?  (* = yes)
     colonyProfile      = 23,   //*
     damageProfile      = 24,
     parseFXProfile     = 25,
-    applyFXProfile     = 26,
-    npcAIProfile       = 27
+    applyFXProfile     = 26
 } profile;
 
 class Profile
@@ -83,7 +82,7 @@ private:
     std::vector<double> m_system;
     std::vector<double> m_entityS;
     std::vector<double> m_npc;
-    std::vector<double> m_npcAI;
+    std::vector<double> m_drone;
     std::vector<double> m_bubbles;
     std::vector<double> m_items;
     std::vector<double> m_itemload;
@@ -95,7 +94,6 @@ private:
     std::vector<double> m_salvage;
     std::vector<double> m_spawn;
     std::vector<double> m_collision;
-    std::vector<double> m_drone;
     std::vector<double> m_concord;
     std::vector<double> m_colony;
     std::vector<double> m_damage;

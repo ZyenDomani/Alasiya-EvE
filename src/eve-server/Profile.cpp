@@ -53,10 +53,9 @@ void Profile::AddTime(uint8 key, double value) {
     itemloadProfile    = 21,   *
     concordProfile     = 22,   *
     colonyProfile      = 23,   *
-    damageProfile      = 24,
-    parseFXProfile     = 25,
-    applyFXProfile     = 26,
-    npcAIProfile       = 27
+    damageProfile      = 24,   *
+    parseFXProfile     = 25,   *
+    applyFXProfile     = 26    *
     */
     switch(key) {
         case 1:
@@ -137,9 +136,6 @@ void Profile::AddTime(uint8 key, double value) {
         case 26:
             m_effects2.push_back(value);
             break;
-        case 27:
-            m_npcAI.push_back(value);
-            break;
         default:
             sLog.Error("Profile::AddTime()", "Default reached on key %u.", key );
             break;
@@ -153,7 +149,7 @@ void Profile::ClearAll()
     m_map.clear();
     m_client.clear();
     m_npc.clear();
-    m_npcAI.clear();
+    m_drone.clear();
     m_bubbles.clear();
     m_items.clear();
     m_modules.clear();
@@ -215,8 +211,6 @@ void Profile::PrintProfile()
     std::printf(" Apply Effects   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_effects2.size()).c_str(),  h, l, a );
     GetRunTimes(m_npc, h, l, a);
     std::printf("           NPC   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npc.size()).c_str(),  h, l, a );
-    GetRunTimes(m_npcAI, h, l, a);
-    std::printf("        NPC AI   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_npcAI.size()).c_str(),  h, l, a );
     GetRunTimes(m_itemload, h, l, a);
     std::printf("  Item Loading   %s times.   \tHi: %.4fus   \tLo: %.4fus   \tAvg: %.4fus\n", GetSize(m_itemload.size()).c_str(),  h, l, a );
     GetRunTimes(m_modules, h, l, a);
@@ -323,8 +317,7 @@ std::string Profile::GetKeyName(uint8 key)
         case colonyProfile:        return "Colony";    //  23,
         case damageProfile:        return "Damage";    //  24,
         case parseFXProfile:       return "ParseFX";   //  25,
-        case applyFXProfile:       return "ApplyFX";   //  26,
-        case npcAIProfile:         return "NPC AI";    //  27
+        case applyFXProfile:       return "ApplyFX";   //  26
         default:                   return "Invalid Key";
     }
 }

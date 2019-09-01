@@ -78,16 +78,15 @@ DroneAIMgr::DroneAIMgr(Drone* who)
 }
 
 void DroneAIMgr::Process() {
-    if ((!m_processTimer.Check()) or (!m_drone->SysBubble()->HasPlayers()) or m_drone->DestinyMgr()->IsWarping())
-        return;
+    double profileStartTime = GetTimeUSeconds();
 
-    if (m_shieldBoosterTimer.Enabled() && m_shieldBoosterTimer.Check())
-        if (MakeRandomFloat() < m_shieldBoosterChance)
+    if (m_shieldBoosterTimer.Enabled())
+        if (m_shieldBoosterTimer.Check())
             m_drone->UseShieldRecharge();
 
-    if (m_armorRepairTimer.Enabled() && m_armorRepairTimer.Check())
-        if (MakeRandomFloat() < m_armorRepairChance)
-            m_drone->UseArmorRepairer();
+        if (m_armorRepairTimer.Enabled())
+            if (m_armorRepairTimer.Check())
+                m_drone->UseArmorRepairer();
 
     /* NPC::State definitions   -allan 25July15
      *   Idle,       // not doing anything, nothing in sight....idle.
@@ -187,6 +186,8 @@ void DroneAIMgr::Process() {
 
     //no default on purpose
     }
+    if (sConfig.debug.UseProfiling)
+        sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void DroneAIMgr::SetIdle() {

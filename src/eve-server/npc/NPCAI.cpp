@@ -236,8 +236,6 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 }
 
 void NPCAIMgr::Process() {
-    double profileStartTime = GetTimeUSeconds();
-
     if (m_destiny->IsWarping())
         return;
 
@@ -270,7 +268,6 @@ void NPCAIMgr::Process() {
      */
     switch(m_state) {
         case NPCAI::State::Idle: {
-            // The parameter proximityRange (154) tells us how far we "see" (npc's dont have this, but drones do)
             if (m_beginFindTarget.Check()) {
                 std::vector<Client*> clientVec;
                 clientVec.clear();
@@ -339,9 +336,6 @@ void NPCAIMgr::Process() {
             // not sure how im gonna do these
         } break;
     }
-
-    if (sConfig.debug.UseProfiling)
-        sProfile.AddTime(npcAIProfile, GetTimeUSeconds() - profileStartTime);
 }
 
 void NPCAIMgr::WarpOut()
