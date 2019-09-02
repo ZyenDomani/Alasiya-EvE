@@ -199,7 +199,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
             throw PyException( MakeUserError( "InsureShipFailedSingleContract"));
     }
 
-    uint8 numWeeks = 12;    // TODO make this a config variable
+    uint8 numWeeks = 12;
 
     if (m_db->InsertInsuranceByShipID(args.shipID, shipRef->itemName().c_str(), call.client->GetCharacterID(), fraction, shipRef->type().basePrice(), args.isCorp, numWeeks)) {
         //  it sucessfully added, now, have the player pay for the insurance

@@ -55,9 +55,9 @@ PyRep *ShipDB::GetInsuranceByOwnerID(uint32 ownerID) {
 
 bool ShipDB::InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float fraction, double payOut, bool isCorpItem, uint8 numWeeks) {
     DBerror err;
-    return sDatabase.RunQuery(err, "INSERT INTO "
-        "  shipInsurance (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
-        " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
+    return sDatabase.RunQuery(err, "INSERT INTO shipInsurance"
+            " (shipID, shipName, ownerID, isCorpItem, startDate, endDate, fraction, payOutAmount)"
+            " VALUES (%u, '%s', %u, %u, %f, %f, %.2f, %f)",
                        shipID, name.c_str(), ownerID, isCorpItem, GetFileTimeNow(), (GetFileTimeNow() + (EvE::Time::Week * numWeeks)), fraction, payOut );
 }
 
