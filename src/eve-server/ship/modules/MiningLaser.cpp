@@ -181,7 +181,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         _log(MINING__ERROR, "%s(%u) - Mining Laser could not extract ore from %s(%u)", \
               m_modRef->itemName().c_str(), m_modRef->itemID(), roidRef->itemName().c_str(), m_targetSE->GetID() );
         m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because there was an error in it's processing.  Ref: ServerError 06428.", m_modRef->itemName().c_str());
-        ActiveModule::DeactivateCycle(true);
+        ActiveModule::AbortCycle();
         return;
     }
 
@@ -206,10 +206,13 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
             oreAmount = remainingCargoVolume /oreVolume;
         else
             oreAmount = 0;
-        /** @todo  check for other lasers running, and deactivate them also.  */
-        // go straight to base class DeactivateCycle to reset module timer and checks
-        //  passing abort=true here will negate the possibability of running a loop here and overfilling cargohold (elusive error)
+        // check for other lasers running, and deactivate them also.
+        m_targetSE->TargetMgr()->Destroyed();
+
+        // go straight to base class AbortCycle to reset module timer and checks
+        //  passing abort=true here will negate the possibility of running a loop here and overfilling cargo (elusive error)
         ActiveModule::DeactivateCycle(true);
+        //ActiveModule::AbortCycle();
         if (!abort) // dont notify client if they deactivated laser
             m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates because your cargohold is full.", m_modRef->itemName().c_str());
     }
@@ -247,9 +250,12 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         }
     } else {
         m_shipRef->GetPilot()->SendNotifyMsg("Your %s deactivates as its target has been depleted.", m_modRef->itemName().c_str());
+        // targMgr->Destroyed() calls AbortCycle() on all modules targeting this asteroid.
+        m_targetSE->TargetMgr()->Destroyed();
         m_targetSE->Delete();
         SafeDelete(m_targetSE);
-        // do we need to update m_targetSE now?  no...SafeDelete() does that for us.
+        // do target shit before calling AbortCycle(), as this clears target shit for this module.
+        ActiveModule::AbortCycle();
     }
 
     if (m_chargeLoaded and (m_crystalDmgChance > 0.0f))
