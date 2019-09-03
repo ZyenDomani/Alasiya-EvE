@@ -56,7 +56,7 @@ TargetManager::TargetManager(SystemEntity *self)
 void TargetManager::Process() {
      double profileStartTime = GetTimeUSeconds();
 
-    //process outgoing targeting (outgoing will call incomming as needed)
+    //process outgoing targeting (outgoing will call incoming as needed)
     std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.begin();
     while (itr != m_targets.end()) {
         if ((itr->first == nullptr) or (itr->second == nullptr)) {
@@ -99,6 +99,7 @@ void TargetManager::ClearTarget(SystemEntity *who) {
 }
 
 void TargetManager::ClearAllTargets(bool notify_self/*true*/) {
+    Destroyed();
     ClearTargets(notify_self);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", mySE->GetName(), mySE->GetID());
@@ -655,6 +656,17 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
             ++count;
         }
     }
+    if (!m_modules.empty()) {
+        str << "Active Modules: (ship:module)<br>";
+        length += 30;
+        for (auto cur : m_modules) {
+            str << "  " << cur.second->GetShipRef()->itemName();
+            str << ":" << cur.second->GetSelf()->itemName() << "<br>";
+            length += 55;
+            ++count;
+        }
+    }
+
     return str.str();
 }
 
@@ -665,10 +677,9 @@ void TargetManager::Dump() const {
     for (auto cur : m_targetedBy)
         cur.second->Dump();
 
-    _log(TARGET__DUMP, "    Targeted By Modules: (ship:module)");
-    for (auto cur : m_modules) {
+    _log(TARGET__DUMP, "    Active Modules: (ship:module)");
+    for (auto cur : m_modules)
         _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
-    }
 }
 
 void TargetManager::TargetEntry::Dump() const {
