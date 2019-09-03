@@ -58,7 +58,7 @@ enum EVEItemFlags {
     flagFactoryOutput               = 38,
     flagFactoryActive               = 39,
 
-   /*  not real sure wtf this is, or what it's used for.  have not found refereces to any of these.  not defined in client
+   /*  not real sure wtf this is, or what it's used for.  have not found references to any of these.  not defined in client
     flagPromenadeSlot1              = 40,  //Promenade slot 1
     flagPromenadeSlot2              = 41,
     flagPromenadeSlot3              = 42,

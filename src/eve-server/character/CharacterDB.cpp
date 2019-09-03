@@ -319,6 +319,12 @@ void CharacterDB::ValidateCharName(std::string name)
      * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233748, 'label': u'IllegalCharacter'}(u'Name contains illegal characters.', None, None)
      * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233749, 'label': u'TooShort'}(u'Name is too short.', None, None)
      * {'FullPath': u'UI/CharacterCreation/InvalidName', 'messageID': 233750, 'label': u'Unavailable'}(u'Name is unavailable.', None, None)
+     *
+     * {'FullPath': u'UI/Messages', 'messageID': 258506, 'label': u'CharCreationNameError1Title'}(u'Information', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 258507, 'label': u'CharCreationNameError1Body'}(u'You have to type some name to be able to proceed.', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 258508, 'label': u'CharCreationNameError3Title'}(u'Information', None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 258509, 'label': u'CharCreationNameError3Body'}(u'The name contains either illegal characters, is already taken or is not allowed.', None, None)
+     *
      */
 
     // *name  is sent from client WITHOUT leading space, if there is one, and will not allow more than one space.

@@ -480,7 +480,7 @@ void ActiveModule::AbortCycle()
 {
     if (m_Stop)
         return;
-    // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destoryed, target left bubble, or miner deactivated by player:
+    // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
@@ -565,11 +565,12 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         } break;
         */
         case EVEDB::invGroups::Ship_Scanner:
-        case EVEDB::invGroups::Cargo_Scanner:
-        case EVEDB::invGroups::System_Scanner: {
+        case EVEDB::invGroups::Cargo_Scanner:{
             if (m_targetSE != nullptr)
                 ;  // not sure if we need this here.....do these work like belt scanner?
         } break;
+        // not sure just how this works yet
+        // case EVEDB::invGroups::System_Scanner:
     }
 
     Clear();
@@ -958,6 +959,8 @@ void ActiveModule::LaunchMissile()
 {
     // cannot throw here...
     //throw PyException( MakeUserError("TargetingMissileToSelf"));
+
+    //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 
     if (m_linked)
         if (!m_linkMaster) {    // only firing ONE missile for linked lanuchers, but they ALL use a charge

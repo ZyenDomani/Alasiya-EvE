@@ -173,6 +173,24 @@ void Agent::GetOffer(uint32 charID, MissionOffer& offer)
         _log(AGENT__WARNING, "Agent::GetOffer() - offer not found for characterID %u", charID);
 }
 
+/*{'FullPath': u'UI/Messages', 'messageID': 259310, 'label': u'MisMissionExpiredBody'}(u'This mission has already expired.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259311, 'label': u'MisNoItemsTitle'}(u'No items available', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259312, 'label': u'MisNoItemsBody'}(u"There's nothing available at this station.", None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259313, 'label': u'MisNoShipsInCourierTitle'}(u'Cannot create courier mission', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259314, 'label': u'MisNoShipsInCourierBody'}(u'Only packaged ships can be couriered.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259315, 'label': u'MisNoSuchMissionTitle'}(u'Mission not found', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259316, 'label': u'MisNoSuchMissionBody'}(u'This mission is no longer available.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259317, 'label': u'MisNotAvailableBody'}(u'"This mission is no longer available"', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259318, 'label': u'MisPackageNotHereTitle'}(u"Can't deliver package", None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259319, 'label': u'MisPackageNotHereBody'}(u'The package is not on your hangar floor.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259320, 'label': u'MisPilotOnBoardBody'}(u"Can't add ships with people in it in a courier mission.", None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259321, 'label': u'MisRewardLessAcceptTitle'}(u'Too unfair', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259322, 'label': u'MisRewardLessAcceptBody'}(u'Please make the reward higher than the accept fee.', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259323, 'label': u'MissMissionAcceptedHelpTitle'}(u'Mission Accepted', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259325, 'label': u'MissionItemAlreadyThereTitle'}(u'Create the Mission', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259326, 'label': u'MissionItemAlreadyThereBody'}(u'The item is already here. Are you sure you want to continue?', None, None)
+ {'FullPath': u'UI/Messages', 'messageID': 259327, 'label': u'MissionNotIssuedBody'}(u'This mission cannot be accepted.', None, None)
+ */
 void Agent::UpdateOffer(uint32 charID, MissionOffer& offer)
 {
     std::map<uint32, MissionOffer>::iterator itr = m_offers.find(charID);

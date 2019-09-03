@@ -733,6 +733,8 @@ PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
             ContainerSE* cSE = new ContainerSE(jcRef, *m_manager, pSysMgr, data);
 
             jcRef->SetMySE(cSE);
+            // set anchored to avoid deletion when empty
+            jcRef->SetAnchor(true);
             pSysMgr->AddEntity(cSE);
             pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
             pClient->StartJetcanTimer();
