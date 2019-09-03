@@ -99,6 +99,10 @@ void CargoContainer::Delete()
     if (m_type.id() == EVEDB::invTypes::typePlanetaryLaunchContainer)
         PlanetDB::DeleteLaunch(m_itemID);
 
+    // if SE exists, remove from system before deleting item
+    if (mySE != nullptr)
+        mySE->Delete();
+
     pInventory->LoadContents();
     pInventory->DeleteContents();
     InventoryItem::Delete();
@@ -123,7 +127,7 @@ PyObject *CargoContainer::CargoContainerGetInfo() {
     Rsp_CommonGetInfo_Entry entry;
 
     //first populate the CargoContainer.
-    if (!Populate( entry ) )
+    if (!Populate(entry))
         return nullptr;    //print already done.
 
     result.items[ m_itemID ] = entry.Encode();
@@ -144,25 +148,25 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
     double loss = penalty * (client->GetSecurityRating() + 10);
     client->GetChar()->secStatusChange( loss );
     */
-    
+
     if (iRef.get() == nullptr)
         return;
-    
+
+    InventoryItem::RemoveItem(iRef);
+
     if (m_isAnchored)
         return;
-    
-    InventoryItem::RemoveItem(iRef);
-    
+
     if (pInventory->IsEmpty()) {
         if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
+            sLog.Warning( "CargoContainer::RemoveItem()", "Launch Container %u is empty and being deleted.", m_itemID );
             PlanetDB::UpdateLaunchStatus(m_itemID, PI::Cargo::Claimed);
         } else if (typeID() == EVEDB::invTypes::typeCargoContainer) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
-            Delete();
         } else {
             sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );
-            Delete();
         }
+        Delete();
     }
 }
 
@@ -242,16 +246,9 @@ void ContainerSE::Process() {
     if (m_deleteTimer.Check(false)) {
         m_deleteTimer.Disable();
         sLog.Magenta( "ContainerSE::Process()", "Garbage Collection is removing Cargo Container %u.", m_contRef->itemID() );
-        Delete();
         m_contRef->Delete();
         delete this;
     }
-}
-
-void ContainerSE::Delete()
-{
-    if (m_system != nullptr)
-        m_system->RemoveEntity(this);
 }
 
 void ContainerSE::Activate(int32 effectID)
@@ -437,16 +434,16 @@ PyObject *WreckContainer::WreckContainerGetInfo()
 void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item ) const
 {
     // throw();
-        //  no code here.  should NOT be able to add items to a wreck contaier.
+        //  no code here.  should NOT be able to add items to a wreck container.
 }
 
 void WreckContainer::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::RemoveItem(iRef);
-    
+
     if (pInventory->IsEmpty()) {
         MakeSlimItemChange();
         _log(INV__INFO, "WreckContainer::IsEmpty() for %s(%u)", itemName().c_str(), itemID());
@@ -507,12 +504,6 @@ void WreckSE::Process() {
         m_contRef->Delete();
         delete this;
     }
-}
-
-void WreckSE::Delete()
-{
-    if (m_system != nullptr)
-        m_system->RemoveEntity(this);
 }
 
 void WreckSE::Abandon()

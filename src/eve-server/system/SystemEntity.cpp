@@ -253,7 +253,8 @@ void SystemEntity::Delete()
 {
     if (m_system != nullptr)
         m_system->RemoveEntity(this);
-   m_self->Delete();
+    if (!IsContainerSE())
+        m_self->Delete();
 }
 
 

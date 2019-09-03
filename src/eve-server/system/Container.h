@@ -72,6 +72,7 @@ public:
 
     virtual void RemoveItem(InventoryItemRef iRef);
 
+    // also used for jetcans to NOT delete when empty.
     bool IsAnchored()                                   { return m_isAnchored; }
     void SetAnchor(bool set=false)                      { m_isAnchored = set; }
 
@@ -151,7 +152,6 @@ public:
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
     virtual void MakeDamageState(DoDestinyDamageState &into);
-    virtual void Delete();
 
     /* specific functions handled in this class. */
     void Activate(int32 effectID);
@@ -242,7 +242,6 @@ public:
     virtual void Process();
     virtual void EncodeDestiny(Buffer& into);
     virtual PyDict* MakeSlimItem();
-    virtual void Delete();
 
     /* virtual functions default to base class and overridden as needed */
     virtual void Abandon();
