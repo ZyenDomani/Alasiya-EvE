@@ -237,6 +237,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 
     sItemFactory.SetUsingClient(call.client);
     std::vector<PyRep *>::const_iterator cur = args.MMElements->begin();
+    Inventory* pInv(nullptr);
     for (; cur != args.MMElements->end(); ++cur) {
         if (!element.Decode( *cur )) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -256,9 +257,13 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
             continue;
         }
 
-        if (sItemFactory.GetItemContainerInventory(stationaryItem->itemID())->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
+        pInv = sItemFactory.GetItemContainerInventory(stationaryItem->itemID());
+        if (pInv == nullptr)
+            continue;
+
+        if (pInv->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
             // this shits not right.....
-            draggedItem->ChangeOwner(m_ownerID);
+            // draggedItem->ChangeOwner(m_ownerID);
             stationaryItem->Merge( draggedItem, element.draggedQty );
         } // if false, error is thrown in ValidateAddItem() call
     }
@@ -321,7 +326,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
     InventoryItemRef iRef = sItemFactory.GetItem(args.itemID);
 
-    bool manyFlags = false;
+    bool moveStack = false;
     int32 quantity = 0;
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
@@ -337,9 +342,9 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         args.itemID = iRef->itemID();
     // we're not dividing the stack, so check for removing loaded charges
     } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(toFlag))) {
-        manyFlags = true;
+        moveStack = true;
     } else if (call.client->IsInSpace() and (toFlag == flagCargoHold) and (quantity == 0)) {
-        manyFlags = true;
+        moveStack = true;
     }
 
     float capacity = 0.0f;
@@ -355,7 +360,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     std::vector<int32> items;
     items.push_back(args.itemID);
 
-    return MoveItems(call.client, items, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
+    return MoveItems(call.client, items, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
 }
 
 // this call is for moving items to *THIS* inventory
@@ -380,31 +385,33 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
+    if (toFlag == flagAutoFit)
+        toFlag = m_flag;
 
     int32 quantity = 1;
     if (call.byname.find("qty") != call.byname.end())
         quantity = PyRep::IntegerValue(call.byname.find("qty")->second);
 
     //bool byname(fromManyFlags):true == unload charges from module referenced
-    bool manyFlags = false;
+    bool moveStack = false;
     if (call.byname.find("fromManyFlags") != call.byname.end())
         if (!call.byname.find("fromManyFlags")->second->IsNone())
-            manyFlags = true;
+            moveStack = true;
 
     float capacity = 0.0f;
     if (call.byname.find("capacity") != call.byname.end())
         capacity = PyRep::IntegerValue(call.byname.find("capacity")->second);
 
     if (capacity > 1)
-        manyFlags = true;
+        moveStack = true;
     else if (quantity < 1)
-        manyFlags = true;
+        moveStack = true;
 
-    // moving TO hangar...move all items in stack, if applicable
+    // moving TO hangar...move all items in stack, if applicable...this includes ship corp hangars - is this what we want here?
     if (IsHangarFlag(toFlag))
-        manyFlags = true;
+        moveStack = true;
 
-    if (m_self->IsShipItem() and !manyFlags) {
+    if (m_self->IsShipItem() and !moveStack) {
         std::vector<InventoryItemRef> itemVec;
         for (auto cur : args.itemIDs)
             itemVec.push_back(sItemFactory.GetItem(cur));
@@ -414,10 +421,10 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     _log(INV__MESSAGE, "InventoryBound::Handle_MultiAdd() - moving %u items from (%u:%s) to me(%s:%u:%s).", \
                 args.itemIDs.size(), args.containerID, sDataMgr.GetFlagName(m_flag), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
-    return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, manyFlags, capacity);
+    return MoveItems( call.client, args.itemIDs, (EVEItemFlags)toFlag, quantity, moveStack, capacity);
 }
 
-PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool manyFlags, float capacity)
+PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool moveStack, float capacity)
 {   // complete method rewrite -allan 21Dec17
     InventoryItemRef contRef(nullptr);
     ShipItem* pShip = pClient->GetShip().get();
@@ -438,7 +445,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             // may have to reset flags based on type
             switch (m_self->groupID()) {
                 case EVEDB::invGroups::Control_Tower: {
-                    // flag 0 = fuel bay, flag = 122 stronium bay (2nd storage)
+                    // flag 0 = fuel bay, flag = 122 strontium bay (2nd storage)
                 } break;
                 case EVEDB::invGroups::Mobile_Missile_Sentry:
                 case EVEDB::invGroups::Mobile_Projectile_Sentry:
@@ -531,35 +538,46 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
         oldFlag = iRef->flag();
 
-        if (manyFlags)
+        if (moveStack)
             quantity = iRef->quantity();
 
-        // if client send capy, check here and throw on fail
+        // if client send capy, it is TOTAL space in this container, NOT current space.
         if (capacity > 0) {
             if (quantity < 1)
                 quantity = iRef->quantity();    // assume all.
-
+/*
             float volume = quantity * iRef->GetAttribute(AttrVolume).get_float();
             if (volume > capacity) {
                 std::map<std::string, PyRep *> args;
                 args["volume"] = new PyFloat(volume);
                 sItemFactory.UnsetUsingClient();
-                if (toFlag == flagCargoHold) {
+                if (IsCargoHoldFlag(toFlag)) {
                     args["available"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-                } else if (toFlag == flagDroneBay) {
-                    args["available"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
+                } else if (IsSpecialHoldFlag(toFlag)) {
+                    args["item"] = new PyString(iRef->itemName());
+                    args["maximum"] = new PyFloat(capacity);
+                    args["used"] = new PyFloat(capacity);
+                    throw PyException(MakeUserError("NotEnoughSpecialBaySpaceOverload", args));
                 } else if (IsModuleSlot(toFlag)) {
                     args["capacity"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NotEnoughChargeSpace", args));
-                } else {
+                } else if (IsHangarFlag(toFlag)) {
                     args["item"] = new PyString(iRef->itemName());
+                    args["maximum"] = new PyFloat(capacity);
+                    args["used"] = new PyFloat(capacity);
+                    throw PyException(MakeUserError("NotEnoughSpaceOverload", args));
+                } else if (toFlag == flagDroneBay) {
+                    args["available"] = new PyFloat(capacity);
+                    throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
+                } else {
+                    args["itemTypeName"] = new PyInt(iRef->itemID());
                     args["itemVolume"] = new PyFloat(volume);
                     args["volumeAvailable"] = new PyFloat(capacity);
                     throw PyException(MakeUserError("NoSpaceForThat", args));
                 }
             }
+    */
         } else if (quantity < 1) {
             _log(INV__ERROR, "InventoryBound::MoveItems() - Quantity < 1.  Setting quantity = 1.");
             quantity = 1;
@@ -569,7 +587,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         if (IsRigSlot(oldFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
         } else if (IsModuleSlot(oldFlag)) {
-            // can we remove modules from an inative ship?  no.
+            // can we remove modules from an inactive ship?  no.
             if (pShip == nullptr)
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
@@ -582,7 +600,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             }
         }
 
-        if (!manyFlags and (quantity < iRef->quantity())) {
+        if (!moveStack and (quantity < iRef->quantity())) {
             InventoryItemRef newItem = iRef->Split(quantity);
             if (newItem.get() == nullptr) {
                 _log(INV__ERROR, "InventoryBound::MoveItems() - Error splitting item %u. Skipping.", iRef->itemID());
@@ -617,7 +635,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         toFlag = flagCargoHold;
                     }
                 } else {
-                    // this needs work to verify mFlag is correct for application, and that it is intially set correctly
+                    // this needs work to verify mFlag is correct for application, and that it is initially set correctly
                     toFlag = m_flag;
                 }
             }
@@ -626,14 +644,16 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
             else if (IsCargoHoldFlag(toFlag))
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
+            else if (IsHangarFlag(toFlag))  // test for cap ships with corp hangars
+                pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
-            if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1)
+            if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1) {
                 contRef->AddItem(iRef);
-            else
-                iRef->ChangeOwner(m_ownerID);
-            // reset in case of MultiAdd
-            toFlag = origFlag;
+                // reset in case of MultiAdd
+                toFlag = origFlag;
+                continue;
+            }
         } else if (customs) {
             pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
             StructureItemRef sRef = StructureItemRef::StaticCast(m_self);

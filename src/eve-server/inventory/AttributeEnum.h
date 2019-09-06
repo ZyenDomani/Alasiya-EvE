@@ -1142,7 +1142,7 @@ enum EveAttrEnum {
     AttrOverloadArmorDamageAmount = 1230,
     AttrOverloadShieldBonus = 1231,
     AttrLeechBalanceFactor = 1232,
-    AttrCapacitySecondary = 1233,
+    AttrSecondaryCapacity = 1233,
     AttrSurveyScannerRangeBonus = 1234,
     AttrCargoScannerRangeBonus = 1235,
     AttrCommandBonusEffective = 1236,

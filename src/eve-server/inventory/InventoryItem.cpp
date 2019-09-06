@@ -617,7 +617,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
     InventoryItemRef iRef(nullptr);
     uint32 old_location = m_locationID, old_owner = m_ownerID;
     EVEItemFlags old_flag = m_flag;
-    
+
     if (new_location != m_locationID) {
         // remove from current location
         if (IsValidLocation(m_locationID)) {
@@ -628,13 +628,13 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
                 _log(INV__WARNING, "Donate(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
         }
     }
-    
+
     // update data
     m_flag = new_flag;
     m_ownerID = new_owner;
     m_locationID = new_location;
-    
-    if (old_location != m_locationID) {      
+
+    if (old_location != m_locationID) {
         // add to new location
         if (IsValidLocation(m_locationID)) {
             iRef = sItemFactory.GetItem(m_locationID);
@@ -693,12 +693,12 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
                 _log(INV__WARNING, "Move(): Location %u not found. Could not remove %s from it's inventory.", m_locationID, itemName().c_str());
         }
     }
-        
+
     // update data
     m_flag = new_flag;
     m_locationID = new_location;
-    
-    if (old_location != m_locationID) {     
+
+    if (old_location != m_locationID) {
         // add to new location
         if (IsValidLocation(m_locationID)) {
             iRef = sItemFactory.GetItem(m_locationID);
@@ -708,7 +708,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
                 _log(INV__WARNING, "Move(): Location %u not found. Could not add %s to it's inventory.", m_locationID, itemName().c_str());
         }
     }
-    
+
     if ((old_flag != new_flag) and is_log_enabled(INV__TRACE))
         _log(INV__TRACE, "InventoryItem::Move()  Updated flag on %s(%u) from %s to %s.", \
                 itemName().c_str(), itemID(), sDataMgr.GetFlagName(old_flag), sDataMgr.GetFlagName(new_flag));
@@ -760,23 +760,17 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         return false;
     }
 
-    if (qty < 0) {
-        _log(ITEM__ERROR, "%s (%u): Asked to merge with %i units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
-        return false;
-    }
-
-    if (qty == 0)
+    if (qty < 1) {
+        _log(ITEM__ERROR, "%s (%u): Asked to merge with %u units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
         qty = to_merge->quantity();
-
-    if (qty == to_merge->quantity()) {
         to_merge->Delete();
     } else if (!to_merge->AlterQuantity(-qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %i.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
+        _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %u.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
         return false;
     }
 
     if (!AlterQuantity(qty, notify)) {
-        _log(ITEM__ERROR, "%s (%u): Failed to add quantity %i.", m_itemName.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "%s (%u): Failed to add quantity %u.", m_itemName.c_str(), m_itemID, qty);
         return false;
     }
 
@@ -948,7 +942,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
 }
 
 void InventoryItem::SaveItem()
-{    
+{
     ItemData data(m_itemName.c_str(),
                  m_type.id(),
                  m_ownerID,
@@ -960,7 +954,7 @@ void InventoryItem::SaveItem()
                  m_position,
                  customInfo().c_str()
                 );
-    
+
     m_db.SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change

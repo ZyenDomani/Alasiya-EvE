@@ -360,6 +360,8 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
     }
 
     switch (flag) {
+        case flagCargoHold:
+            return true;
         case flagDroneBay: {
             if (iRef->categoryID() != EVEDB::invCategories::Drone) {
                 pClient->SendErrorMsg("Item Cannot be stowed in the Drone Bay");
@@ -437,19 +439,30 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             }
         } break;
         case flagIndustrialShipHold: {
-            if (iRef->categoryID() != EVEDB::invCategories::Ship) {
+            if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
+            and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+            and (iRef->groupID() != EVEDB::invGroups::Industrial)
+            and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+            and (iRef->groupID() != EVEDB::invGroups::Freighter)
+            and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+            and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
                 pClient->SendErrorMsg("Only indy ships may be placed into the ship's industurial ship hold.");
                 return false;
             }
         } break;
         case flagAmmoHold: {
             if ((iRef->groupID() != EVEDB::invGroups::Ammo)
+            and (iRef->groupID() != EVEDB::invGroups::Frequency_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Mining_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Mercoxit_Mining_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Beam_Laser_Crystal)
+            and (iRef->groupID() != EVEDB::invGroups::Advanced_Pulse_Laser_Crystal)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Artillery_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Autocannon_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Blaster_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Advanced_Railgun_Ammo)
             and (iRef->groupID() != EVEDB::invGroups::Hybrid_Ammo)) {
-                pClient->SendErrorMsg("Only ammunition may be placed into the ammo bay.");
+                pClient->SendErrorMsg("Only ammunition and crystals may be placed into the ammo bay.");
                 return false;
             }
         } break;
@@ -460,6 +473,15 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             }
         } break;
         default: {
+            // {'FullPath': u'UI/Messages', 'messageID': 259450, 'label': u'ItemNotHardwareBody'}(u'{[item]itemname.name} cannot be fitted onto a ship. Only hardware modules can be fitted.', None, {u'{[item]itemname.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'itemname'}})
+
+            if ((iRef->categoryID() != EVEDB::invCategories::Module)
+            and (iRef->categoryID() != EVEDB::invCategories::Charge)
+            and (iRef->categoryID() != EVEDB::invCategories::Subsystem)) {
+                pClient->SendErrorMsg("%s cannot be fitted onto a ship. Only hardware modules can be fitted.", iRef->itemName().c_str());
+                return false;
+            }
+
             if (IsRigSlot(flag)) {
                 if (pClient->IsClient())
                     if (!Skill::FitModuleSkillCheck(iRef, pClient->GetChar())) {
