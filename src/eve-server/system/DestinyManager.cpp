@@ -2372,6 +2372,8 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
                 m_prevSpeed, (m_maxSpeed * m_userSpeedFraction), m_maxShipSpeed);
     }
 
+    m_changeDelay = true;   // skip a single tic before making change
+
     // check current movement and reset variables using modified values
     // ship is currently....
     if (deactivate) {
@@ -2384,7 +2386,6 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         m_maxSpeed = m_maxShipSpeed * m_userSpeedFraction;      // reset ship max speed using updated m_maxShipSpeed
         //m_currentSpeedFraction = 1 - m_activeSpeedFraction;    // reset csf
         m_moveTime = GetTimeMSeconds();    // reset timer
-        m_changeDelay = true;   // skip a single tic before making change
         if (is_log_enabled(DESTINY__MOVE_TRACE))
             _log(DESTINY__MOVE_TRACE, "Destiny::SpeedBoost()::Deactivate - csf: %.3f. asf: %.3f, check: %.3f, decelTime: %.3f, deltaTime: %.3f", \
                 m_currentSpeedFraction, m_activeSpeedFraction, fracCheck, m_shipMaxAccelTime, deltaTime);
