@@ -657,6 +657,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     }
 }
 
+//{'FullPath': u'UI/Messages', 'messageID': 259152, 'label': u'NoSpaceForReplacedItemBody'}(u'There is not enough space in the cargo hold for the charges currently in the {item} to be moved into.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+
 void ActiveModule::UnloadCharge()
 {
     if (m_chargeRef.get() != nullptr) {

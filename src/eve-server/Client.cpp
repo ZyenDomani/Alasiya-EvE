@@ -1474,6 +1474,8 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         return false;
     }
 
+    //{'FullPath': u'UI/Messages', 'messageID': 259203, 'label': u'NoDroneManagementAbilitiesBody'}(u'You cannot launch {[item]typeID.nameWithArticle} because you do not have the ability to control any drones.', None, {u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
+
     sLog.Magenta("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
 
     drone->Move(m_locationID, flagAutoFit, true);
