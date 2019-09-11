@@ -208,7 +208,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
         reason += ".  Reference ID : xxxxx";     // put contractID here
         AccountService::TranserFunds(call.client->GetCharacterID(), ownerSCC, args.amount, reason, Journal::EntryType::Insurance);
 	} else {
-        call.client->SendErrorMsg("Failed to install new insurance contract.");
+        //call.client->SendErrorMsg("Failed to install new insurance contract.");
         throw PyException( MakeUserError( "InsureShipFailed"));
     }
 
