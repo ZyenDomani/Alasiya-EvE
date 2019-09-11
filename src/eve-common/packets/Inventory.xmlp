@@ -84,18 +84,18 @@
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Inventory_CallMultiMergeElement">
+  <elementDef name="Call_MultiMerge">
     <tupleInline>
-      <int name="draggedItemID"/>
-      <int name="stationaryItemID"/>
-      <int name="draggedQty"/>
+      <list name="mergeData"/>
+      <int name="locationID"/>
     </tupleInline>
   </elementDef>
 
-  <elementDef name="Inventory_CallMultiMerge">
+  <elementDef name="MultiMergeData">
     <tupleInline>
-      <list name="MMElements"/>
-      <int name="stationID"/>
+      <int name="sourceID"/>
+      <int name="destID"/>
+      <int name="qty"/>
     </tupleInline>
   </elementDef>
 

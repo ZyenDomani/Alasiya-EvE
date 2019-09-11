@@ -24,9 +24,11 @@
     Rewrite:    Allan
 */
 
+
 #include "system/Damage.h"
 
 #include "../../eve-common/EVE_Damage.h"
+#include "packets/Damage.h"
 
 #include "Client.h"
 #include "EntityList.h"
@@ -137,11 +139,10 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
         case EVEDB::invGroups::Missile_Launcher_Rocket:
         case EVEDB::invGroups::Missile_Launcher_Siege:
-        case EVEDB::invGroups::Missile_Launcher_Snowball:
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             // apply damage modifier from config
             d *= sConfig.rates.missileDamage;
-            damageID = 4;
+            damageID = 6;
         } break;
         case EVEDB::invGroups::Super_Weapon: {
         /*   TODO
@@ -149,18 +150,25 @@ bool SystemEntity::ApplyDamage(Damage &d) {
          *  and modified/corrected as the weapon implementation is completed.
          *  all modifiers to be calc'd in weapon code and sent here for correct damageID
          */
-            damageID = 3;
+            damageID = 5;
+        } break;
+        case EVEDB::invGroups::Missile_Launcher_Snowball: {
+            // these dont do any damage
+            //  update this to use real toHit data (once we implement them....)
+            damageID = MakeRandomInt(0,8);
         } break;
         default: {
             float modifier = d.GetModifier();
             d *= modifier;
-                 if (modifier == 3.0)   damageID = 6;
-            else if (modifier > 1.2501) damageID = 5;
-            else if (modifier > 0.9999) damageID = 4;
-            else if (modifier > 0.7501) damageID = 3;
-            else if (modifier > 0.6251) damageID = 2;
-            else if (modifier > 0.3751) damageID = 1;   // modified from live's 0.5 to enable more "partial hits"
-            else                        damageID = 0;
+                 if (modifier == 3.0)   damageID = 8;  //strikes perfectly, wrecking
+            else if (modifier > 1.2501) damageID = 7;  //places an excellent hit
+            else if (modifier > 0.9999) damageID = 6;  //aims well
+            else if (modifier > 0.7501) damageID = 5;  //hits
+            else if (modifier > 0.6251) damageID = 4;  //lightly hits
+            else if (modifier > 0.4121) damageID = 3;  //barely scratches
+            else if (modifier > 0.3751) damageID = 2;  //glances off
+            else if (modifier > 0.2501) damageID = 1;  //barely misses
+            else                        damageID = 0;  //misses completely
             _log(DAMAGE__TRACE, "%s(%u): Modifier: %.3f, damageID: %u.", GetName(), GetID(), modifier, damageID);
         } break;
     }
@@ -294,30 +302,67 @@ bool SystemEntity::ApplyDamage(Damage &d) {
          * @todo this needs to be rewritten.  see notes in EVE_Damage.h
          * @todo  also need to check for linked weapons and send msgs accordingly
          * target, source, owner, damage, weapon, splash
+                  [PyList 3 items]
+                    [PyString "OnDamageMessage"]
+                    [PyString "AttackMiss1R"]
+                    [PyDict 3 kvp]
+                      [PyString "source"]
+                      [PyIntegerVar 9000000000001181882]
+                      [PyString "splash"]
+                      [PyString ""]
+                      [PyString "damage"]
+                      [PyFloat 0]
+
          */
         // only send damage msgs for ships NOT killed.
         if (HasPilot()) {
-            //  notify player of damage done by other
-            Notify_OnDamageMessage_Self ondam;
+            /*
+            //  notify player of damage done
+            OnDamagedMsg ondam;
             ondam.messageID = Dmg::Msg::Self[damageID];
             ondam.source = d.srcSE->GetID();
-            ondam.splash = "";
             ondam.damage = total_damage;
             up = ondam.Encode();
             GetPilot()->QueueDestinyEvent(&up);
+            */
+            // new shit...incomplete
+            PyDict* dict = new PyDict();
+                dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
+                dict->SetItemString("weapon", new PyInt((d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID())));
+                dict->SetItemString("target", new PyInt(GetID()));
+                dict->SetItemString("damage", new PyFloat(total_damage));
+            PyList* list = new PyList();
+                list->AddItemString("OnDamageMessage");
+                list->AddItemString(Dmg::Msg::Self[damageID]);
+                list->AddItem(dict);
+            PyTuple* tuple = new PyTuple(1);
+                tuple->SetItem(1, list);
+            std::vector<PyTuple*> updates;
+            std::vector<PyTuple*> events;
+                events.push_back(tuple);
+            GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, true);
         }
         if (d.srcSE->HasPilot()) {
             //Notifications to others:
-            Notify_OnDamageMessage ondamo;
+            OnDamageMsg ondamo;
             ondamo.messageID = Dmg::Msg::Other[damageID];
             ondamo.weapon = (d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID());
             ondamo.damage = total_damage;
             ondamo.target = GetID();
-            ondamo.splash = "";
             up = ondamo.Encode();
             d.srcSE->GetPilot()->QueueDestinyEvent(&up);
         }
         // make message with "owner" tag to enable msgs to drone owner
+        if (d.srcSE->IsDroneSE()) {
+            OnDamageMsgDrone ondamo;
+            ondamo.messageID = Dmg::Msg::Named[damageID];
+            ondamo.weapon = (d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID());
+            ondamo.damage = total_damage;
+            ondamo.owner = GetID(); // theres more to this....ownerData, ownerID = args['owner']
+            up = ondamo.Encode();
+            d.srcSE->GetDroneSE()->GetSelf()->GetOwner()->QueueDestinyEvent(&up);
+        }
+
 
         /** @todo update this to use targetmanager's queue tb destiny event method. */
         // need to update ALL ships targeting this SE with new damage state

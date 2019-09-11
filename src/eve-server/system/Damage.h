@@ -91,8 +91,8 @@ public:
 
     SystemEntity*           srcSE;     //we do not own this.
     uint16                  effectID;
-    InventoryItemRef        weaponRef;    //we own a ref to this.
-    InventoryItemRef        chargeRef;    //we own a ref to this. May be null.
+    InventoryItemRef        weaponRef;
+    InventoryItemRef        chargeRef;    // May be null.
 
 private:
     float kinetic;
