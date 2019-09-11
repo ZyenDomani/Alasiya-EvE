@@ -547,7 +547,6 @@ void InventoryItem::Delete() {
         //first, get out of client's sight.
         //this also removes us from our inventory.
         Move(0, flagAutoFit, true);
-        //ChangeOwner(1);
     }
 
     if (pAttributeMap != nullptr)   // should never be null, but just in case
@@ -556,7 +555,6 @@ void InventoryItem::Delete() {
     m_db.DeleteItem(m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
-    //PyDecRef(this);
 }
 
 void InventoryItem::ToVirtual(uint32 locationID)
@@ -774,6 +772,8 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         return false;
     }
 
+    if (to_merge->quantity() < 1)
+        to_merge->Delete();
     return true;
 }
 

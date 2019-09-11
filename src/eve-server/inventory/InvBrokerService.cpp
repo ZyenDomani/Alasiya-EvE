@@ -179,9 +179,13 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
 	return item->GetMyInventory()->List( flagAnywhere );
 }
 
-//this is a view into the entire inventory item.
+//this is a view into the entire inventory item.  this CAN throw.  find and implement client error msgs here for corp usage
 PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     /** @note this means "Get the Inventory of this itemID */
+    /*
+            if e.args[0] == 'CrpAccessDenied':
+                self.CloseContainer(itemid)
+    */
     _log(INV__DUMP, "InvBrokerBound::Handle_GetInventoryFromId()", "size=%u", call.tuple->size());
     call.Dump(INV__DUMP);
 
@@ -204,19 +208,27 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
     sItemFactory.UnsetUsingClient();
     if (iRef.get() == nullptr) {
         _log(INV__ERROR, "GetInventoryFromId() - Unable to load inventory for itemID %u", args.arg1);
+        // send error to player?
         return nullptr;
     }
 
-    /** @todo test for item types here, and set ownerID and flag accordingly  */
-    // **testing**  use container's owner as ownerID
+    // use container's owner as ownerID
     uint32 ownerID = iRef->ownerID();
 
     /** @todo  test for container types and set flag accordingly
      * this is used to later call List().  flags set here are used by list to determine what contents to return
+     *
+     * NOTE: found this in client.  'LoadFitting' not coded yet, but will need to test for it once implemented
+     * def LoadFitting(self, ownerID, fittingID):
+     *   ...
+        inv = self.invCache.GetInventoryFromId(const.containerHangar)
      */
     EVEItemFlags flag = flagHangar;
     switch (iRef->categoryID()) {
-        case EVEDB::invCategories::Ship:
+        case EVEDB::invCategories::Ship: {
+            // should we test for ships and hangar types here?
+            flag = flagCargoHold;
+        } break;
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {
                 case EVEDB::invGroups::Control_Tower: {
@@ -346,7 +358,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
         //case Inv::Container::StationCharacters:/*10010*/
             //flag = flagNone;
             //break;
-        // there is no 10005, 10006, or 10007 defind in client
+        // there is no 10005, 10006, or 10007 defined in client
         default:
             _log(INV__ERROR, "Unhandled container type %u for locationID %u", args.container, m_locationID);
             return nullptr;

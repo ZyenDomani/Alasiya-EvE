@@ -227,45 +227,43 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     _log(INV__MESSAGE, "InventoryBound::MultiMerge() called by %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
     //Decode Args
-    Inventory_CallMultiMerge args;
+    Call_MultiMerge args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-    Inventory_CallMultiMergeElement element;
-
     sItemFactory.SetUsingClient(call.client);
-    std::vector<PyRep *>::const_iterator cur = args.MMElements->begin();
-    Inventory* pInv(nullptr);
-    for (; cur != args.MMElements->end(); ++cur) {
-        if (!element.Decode( *cur )) {
+    Inventory* pInv = sItemFactory.GetInventoryFromId(args.locationID);
+    if (pInv == nullptr) {
+        _log(INV__WARNING, "Failed to get container inventory for locationID %u.", args.locationID);
+        return nullptr;
+    }
+
+    std::vector<PyRep *>::const_iterator itr = args.mergeData->begin(), end = args.mergeData->end();
+    for (; itr != end; ++itr) {
+        // sourceID, destID, qty
+        MultiMergeData data;
+        if (!data.Decode( *itr )) {
             codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
             continue;
         }
 
-        /** @todo  update this to use 'older' itemID as "stationaryItem"  (just semantics..) */
-        InventoryItemRef stationaryItem = sItemFactory.GetItem( element.stationaryItemID );
-        if (stationaryItem.get() == nullptr) {
-            _log(INV__WARNING, "Failed to load stationary item %u. Skipping.", element.stationaryItemID);
+        InventoryItemRef srcItem = sItemFactory.GetItem( data.sourceID );
+        if (srcItem.get() == nullptr) {
+            _log(INV__WARNING, "Failed to load stationary item %u. Skipping.", data.sourceID);
             continue;
         }
 
-        InventoryItemRef draggedItem = sItemFactory.GetItem( element.draggedItemID );
-        if (draggedItem.get() == nullptr) {
-            _log(INV__WARNING, "Failed to load dragged item %u. Skipping.", element.draggedItemID);
+        InventoryItemRef destItem = sItemFactory.GetItem( data.destID );
+        if (destItem.get() == nullptr) {
+            _log(INV__WARNING, "Failed to load dragged item %u. Skipping.", data.destID);
             continue;
         }
 
-        pInv = sItemFactory.GetItemContainerInventory(stationaryItem->itemID());
-        if (pInv == nullptr)
-            continue;
-
-        if (pInv->ValidateAddItem(stationaryItem->flag(), draggedItem)) {
-            // this shits not right.....
-            // draggedItem->ChangeOwner(m_ownerID);
-            stationaryItem->Merge( draggedItem, element.draggedQty );
-        } // if false, error is thrown in ValidateAddItem() call
+        if (pInv->ValidateAddItem(destItem->flag(), srcItem))
+            destItem->Merge( srcItem, data.qty, true );
+        // if false, error is thrown in ValidateAddItem() call
     }
     sItemFactory.UnsetUsingClient();
 
@@ -488,7 +486,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 } break;
                 case EVEDB::invGroups::Station_Services: {
                     // station offices, office and factory folders.
-                    if (m_self->typeID() == EVEDB::invTypes::typeOffice) //office.  use corp donating checks
+                    if (m_self->typeID() == EVEDB::invTypes::Office) //office.  use corp donating checks
                         donating = true;
                 } break;
             }
@@ -545,39 +543,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         if (capacity > 0) {
             if (quantity < 1)
                 quantity = iRef->quantity();    // assume all.
-/*
-            float volume = quantity * iRef->GetAttribute(AttrVolume).get_float();
-            if (volume > capacity) {
-                std::map<std::string, PyRep *> args;
-                args["volume"] = new PyFloat(volume);
-                sItemFactory.UnsetUsingClient();
-                if (IsCargoHoldFlag(toFlag)) {
-                    args["available"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughCargoSpace", args));
-                } else if (IsSpecialHoldFlag(toFlag)) {
-                    args["item"] = new PyString(iRef->itemName());
-                    args["maximum"] = new PyFloat(capacity);
-                    args["used"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughSpecialBaySpaceOverload", args));
-                } else if (IsModuleSlot(toFlag)) {
-                    args["capacity"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughChargeSpace", args));
-                } else if (IsHangarFlag(toFlag)) {
-                    args["item"] = new PyString(iRef->itemName());
-                    args["maximum"] = new PyFloat(capacity);
-                    args["used"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughSpaceOverload", args));
-                } else if (toFlag == flagDroneBay) {
-                    args["available"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NotEnoughDroneBaySpace", args));
-                } else {
-                    args["itemTypeName"] = new PyInt(iRef->itemID());
-                    args["itemVolume"] = new PyFloat(volume);
-                    args["volumeAvailable"] = new PyFloat(capacity);
-                    throw PyException(MakeUserError("NoSpaceForThat", args));
-                }
-            }
-    */
         } else if (quantity < 1) {
             _log(INV__ERROR, "InventoryBound::MoveItems() - Quantity < 1.  Setting quantity = 1.");
             quantity = 1;
@@ -642,9 +607,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
             if (IsModuleSlot(toFlag))
                 m_self->GetShipItem()->TryModuleLimitChecks(toFlag, iRef); // this will throw if it fails
-            else if (IsCargoHoldFlag(toFlag))
-                pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
-            else if (IsHangarFlag(toFlag))  // test for cap ships with corp hangars
+            else if (IsCargoHoldFlag(toFlag) or IsHangarFlag(toFlag))
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
@@ -751,22 +714,22 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     if ((iRef->ownerID() != call.client->GetCharacterID())
         or (iRef->ownerID() != call.client->GetCorporationID())) {
         _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
-    return nullptr;
+        return nullptr;
+    }
+
+    if (iRef->quantity() < args.quantity) {
+        _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
+    } else if (iRef->quantity() > args.quantity) {
+        iRef = iRef->Split(args.quantity);  // split item and get new item reference
+        if (iRef.get() == nullptr) {
+            _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
+            return nullptr;
         }
+    }
 
-        if (iRef->quantity() < args.quantity) {
-            _log(INV__WARNING, "%s: Item %u: Requested quantity (%i) exceeds actual quantity (%i), using actual.", call.client->GetName(), args.itemID, args.quantity, iRef->quantity());
-        } else if (iRef->quantity() > args.quantity) {
-            iRef = iRef->Split(args.quantity);  // split item and get new item reference
-            if (iRef.get() == nullptr) {
-                _log(INV__ERROR, "%s: Unable to split charge %i into %i", call.client->GetName(), args.itemID, args.quantity);
-                return nullptr;
-            }
-        }
+    call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
 
-        call.client->GetShip()->ReplaceCharges( (EVEItemFlags)args.flag, iRef );
-
-        return PyStatic.NewOne();
+    return PyStatic.NewOne();
 }
 
 /**     ***********************************************************************
@@ -930,32 +893,31 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
 
 PyResult InventoryBound::Handle_TakeOutTrash(PyCallArgs &call) {
     //TakeOutTrash([ invItem.itemID for invItem in invItems ])
-    _log(INV__MESSAGE, "Calling InventoryBound::TakeOutTrash() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::TakeOutTrash() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_SetPassword(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::SetPassword() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::SetPassword() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_ListDroneBay(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::ListDroneBay() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(INV__MESSAGE, "%s Calling InventoryBound::ListDroneBay() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_RunRefiningProcess(PyCallArgs &call) {
-    _log(POS__MESSAGE, "Calling InventoryBound::RunRefiningProcess() for %s(%u)", m_self->itemName().c_str(), m_itemID);
+    _log(POS__MESSAGE, "%s Calling InventoryBound::RunRefiningProcess() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
     call.Dump(POS__DUMP);
     return nullptr;
 }
 
 PyResult InventoryBound::Handle_Voucher(PyCallArgs &call) {
-    _log(INV__MESSAGE, "Calling InventoryBound::Voucher() for %s(%u)", m_self->itemName().c_str(), m_itemID);
-    sLog.White( "InventoryBound::Handle_Voucher()", "size= %u", call.tuple->size() );
+    _log(INV__MESSAGE, "%s Calling InventoryBound::Voucher() for %s(%u)", call.client->GetName(), m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
     return nullptr;
 }
