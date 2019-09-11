@@ -223,6 +223,10 @@ void SystemBubble::Add(SystemEntity* pSE)
                 if (!m_spawnTimer.Enabled())
                     SetSpawnTimer(true);
         }
+        if (m_gate and sConfig.npc.StaticSpawns)
+            if (!m_spawnTimer.Enabled())
+                SetSpawnTimer(false);
+
         Client* pClient(pSE->GetPilot());
         SendAddBalls( pSE );
         if (!pClient->IsJump())
@@ -230,10 +234,6 @@ void SystemBubble::Add(SystemEntity* pSE)
                 AddBallExclusive(pSE);  // adds new player to all players in bubble, if any
 
         m_players[pClient->GetCharacterID()] = pClient;   //add to bubble's player list
-
-        if (m_gate and sConfig.npc.StaticSpawns)
-            if (!m_spawnTimer.Enabled())
-                SetSpawnTimer(false);
     } else {
         if (!m_players.empty())
             AddBallExclusive(pSE);
@@ -357,7 +357,8 @@ void SystemBubble::GetEntities(std::map<uint32, SystemEntity*> &into) const {
 
 void SystemBubble::GetEntityVec(std::vector< SystemEntity* >& into) const
 {
-    if (m_players.empty()) return;
+    if (m_players.empty())
+        return;
 
     for (auto cur : m_dynamicEntities)
         into.push_back(cur.second);
@@ -371,7 +372,8 @@ void SystemBubble::GetPlayers(std::vector<Client*> &into) const {
      * this will also send player drones once that system is completed
 	 */
 	into.clear();
-	if (m_players.empty()) return;
+	if (m_players.empty())
+        return;
 
 	for (auto cur : m_players)
 		into.push_back(cur.second);
