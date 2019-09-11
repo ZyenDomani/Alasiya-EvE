@@ -96,7 +96,7 @@ uint32 CargoContainer::CreateItemID( ItemData &data)
 
 void CargoContainer::Delete()
 {
-    if (m_type.id() == EVEDB::invTypes::typePlanetaryLaunchContainer)
+    if (m_type.id() == EVEDB::invTypes::PlanetaryLaunchContainer)
         PlanetDB::DeleteLaunch(m_itemID);
 
     // if SE exists, remove from system before deleting item
@@ -158,10 +158,10 @@ void CargoContainer::RemoveItem(InventoryItemRef iRef)
         return;
 
     if (pInventory->IsEmpty()) {
-        if (typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer) {
+        if (typeID() == EVEDB::invTypes::PlanetaryLaunchContainer) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Launch Container %u is empty and being deleted.", m_itemID );
             PlanetDB::UpdateLaunchStatus(m_itemID, PI::Cargo::Claimed);
-        } else if (typeID() == EVEDB::invTypes::typeCargoContainer) {
+        } else if (typeID() == EVEDB::invTypes::CargoContainer) {
             sLog.Warning( "CargoContainer::RemoveItem()", "Cargo Container %u is empty and being deleted.", m_itemID );
         } else {
             sLog.Warning( "CargoContainer::RemoveItem()", "Non-Cargo Container %u (type: %u) is empty and being deleted.", m_itemID, typeID() );
@@ -226,7 +226,7 @@ ContainerSE::ContainerSE(CargoContainerRef self, PyServiceMgr& services, SystemM
     m_ownerID = data.ownerID;
 
     if (!IsStation(m_self->locationID())) { // should NEVER be true (SE object in station???)
-        if (m_self->typeID() == EVEDB::invTypes::typePlanetaryLaunchContainer)
+        if (m_self->typeID() == EVEDB::invTypes::PlanetaryLaunchContainer)
             m_deleteTimer.Start(5 *24 *60 *60 *1000);  //5d timer for PI launch.  should probably get this saved value from planet launches
         else
             m_deleteTimer.Start(sConfig.rates.WorldDecay *60 *1000);

@@ -1408,7 +1408,7 @@ void SystemManager::GetAllEntities(std::vector< CosmicSignature >& vector)
         sig.sigItemID = cur.first;
         sig.sigName = cur.second->GetName();
         sig.sigStrength = 100.0;
-        sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+        sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
         sig.systemID = m_data.systemID;
         sig.x = cur.second->x();
         sig.y = cur.second->y();
@@ -1477,7 +1477,7 @@ void SystemManager::UpdateData()
     }
 
     // this is jumps/hour data
-    MapDB::UpdateJumps(m_data.systemID, jumps);
+    //MapDB::UpdateJumps(m_data.systemID, jumps);
 
     // if system and jumpmap are both empty, set activity time for unload timer
     if (m_activityTime == 0)

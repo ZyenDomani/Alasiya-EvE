@@ -253,7 +253,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         case Wormhole: {    // 6
             // enable WH to be warped to...they are deco only at this time.
             //  once working, these will be by probe only, and removed from anomaly list
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -268,37 +268,37 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
             return;
         } break;
         case Gravimetric: { // 2
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly; //dont need probes or skills for anomalies..these will
+            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly; //dont need probes or skills for anomalies..these will
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanGravimetricStrength;
         } break;
         case Magnetometric: { // 3,
-            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;// need probes and exploring skills
+            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;// need probes and exploring skills
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanMagnetometricStrength;
         } break;
         case Radar: {       // 4,
-            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
+            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanRadarStrength;
         } break;
         case Ladar: {       // 5,
-            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
+            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanLadarStrength;
         } break;
         case Anomaly: {      // 7   simple combat sites
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+            sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
             sig.scanGroupID = Scanning::Group::Anomaly;
             sig.scanAttributeID = AttrScanAllStrength;
         } break;
         case Mission:       // 1
-            sig.sigTypeID = EVEDB::invTypes::typeCosmicSignature;
+            sig.sigTypeID = EVEDB::invTypes::CosmicSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -306,7 +306,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         case Escalation:   // 9
         case Unrated:       // 8
         case Rated: { // 10
-            sig.sigTypeID = EVEDB::invTypes::typeDeadspaceSignature;
+            sig.sigTypeID = EVEDB::invTypes::DeadspaceSignature;
             sig.sigGroupID = EVEDB::invGroups::Cosmic_Signature;
             sig.scanGroupID = Scanning::Group::Signature;
             sig.scanAttributeID = AttrScanAllStrength;  // Unknown
@@ -324,7 +324,7 @@ void AnomalyMgr::CreateAnomaly(int8 typeID/*0*/)
         return;
     // add new sig to sysSigMaps
     m_sigBySigID.emplace(sig.sigID, sig);
-    if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
+    if (sig.sigTypeID == EVEDB::invTypes::CosmicAnomaly)
         m_anomByItemID.emplace(sig.sigItemID, sig);
     else
         m_sigByItemID.emplace(sig.sigItemID, sig);
@@ -457,7 +457,7 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
     sig.sigItemID = iRef->itemID();
     sig.sigName = iRef->itemName();
     sig.sigStrength = 100.0;    // determine how to calculate this
-    sig.sigTypeID = EVEDB::invTypes::typeCosmicAnomaly;
+    sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
     sig.systemID = m_system->GetID();
     sig.x = iRef->position().x;
     sig.y = iRef->position().y;
@@ -491,7 +491,7 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
     // add new sig to sysSigMaps
     m_sigBySigID.emplace(sig.sigID, sig);
-    //if (sig.sigTypeID == EVEDB::invTypes::typeCosmicAnomaly)
+    //if (sig.sigTypeID == EVEDB::invTypes::CosmicAnomaly)
         m_anomByItemID.emplace(sig.sigItemID, sig);
     //else
     //    m_sigByItemID.emplace(sig.sigItemID, sig);

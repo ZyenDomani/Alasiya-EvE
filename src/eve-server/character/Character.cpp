@@ -543,8 +543,8 @@ PyRep* Character::GetRAMSkills()
     PyDict* skillLevels = new PyDict();
     PyDict* attributeValues = new PyDict();
 
-    skillLevels->SetItem(new PyInt(EVEDB::invTypes::typeScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
-    skillLevels->SetItem(new PyInt(EVEDB::invTypes::typeSupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
+    skillLevels->SetItem(new PyInt(EVEDB::invTypes::ScientificNetworking), new PyInt(GetSkillLevel(EvESkill::ScientificNetworking)));
+    skillLevels->SetItem(new PyInt(EVEDB::invTypes::SupplyChainManagement), new PyInt(GetSkillLevel(EvESkill::SupplyChainManagement)));
 
     uint8 mLab = 1 + GetSkillLevel(EvESkill::LaboratoryOperation) + GetSkillLevel(EvESkill::AdvancedLaboratoryOperation);
     attributeValues->SetItem(new PyInt(AttrMaxLaborotorySlots), new PyInt(mLab));

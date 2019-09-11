@@ -286,10 +286,10 @@ void PlanetSE::CreateCustomsOffice()
         data.factionID = factionInterBus;
         data.allianceID = 0;
         data.corporationID = corpInterbus;
-    uint16 typeID = EVEDB::invTypes::typeInterbusCustomsOffice;
+    uint16 typeID = EVEDB::invTypes::InterbusCustomsOffice;
 
     if (m_system->GetSystemSecurityRating() > 0.49) {
-        typeID = EVEDB::invTypes::typePlanetaryCustomsOffice;
+        typeID = EVEDB::invTypes::PlanetaryCustomsOffice;
         data.ownerID = corpCONCORD;
         data.factionID = factionCONCORD; //sDataMgr.GetRegionFaction(m_system->GetRegionID());
         data.allianceID = 0;

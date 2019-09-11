@@ -63,8 +63,8 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
                 case EVEDB::invGroups::Electronics:
                 case EVEDB::invGroups::Engineering:
                 case EVEDB::invGroups::Navigation: {
-                    if ((data.srcRef->typeID() == EVEDB::invTypes::typeTargeting)
-                    or (data.srcRef->typeID() == EVEDB::invTypes::typeMultitasking))
+                    if ((data.srcRef->typeID() == EVEDB::invTypes::Targeting)
+                    or (data.srcRef->typeID() == EVEDB::invTypes::Multitasking))
                         core = false;
                     else
                         core = true;    // define core skills that may/may not be processed correctly (!HasReqSkill(thisType))
@@ -434,7 +434,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         itemRefVec.push_back(mod);
             } break;
             case Source::Skill: {    // source of this effect is skill, implant, or booster
-                if (cur.second.typeID == EVEDB::invTypes::typeInvalid) {    //invalid
+                if (cur.second.typeID == EVEDB::invTypes::Invalid) {    //invalid
                     _log(EFFECTS__WARNING, "FxProc::ApplyEffects(): Source::Skill - typeID is invalid");
                     continue;  // make error here
                 }

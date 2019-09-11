@@ -39,7 +39,6 @@ class Client;
 class Concord;
 class ContainerSE;
 class Damage;
-class DBSystemEntity;
 class Drone;
 class NPC;
 class Player;
@@ -106,10 +105,12 @@ public:
     virtual WreckSE*            GetWreckSE()            { return nullptr; }
     virtual AnomalySE*          GetAnomalySE()          { return nullptr; }
     virtual WormholeSE*         GetWormholeSE()         { return nullptr; }
+    virtual FieldSE*            GetFieldSE()            { return nullptr; }
+    virtual ProbeSE*            GetProbeSE()            { return nullptr; }
+    /* Object */
     virtual ObjectSystemEntity* GetObjectSE()           { return nullptr; }
     virtual AsteroidSE*         GetAsteroidSE()         { return nullptr; }
     virtual StructureSE*        GetPOSSE()              { return nullptr; }
-    virtual FieldSE*            GetFieldSE()            { return nullptr; }
     virtual StructureSE*        GetJammerSE()           { return nullptr; }
     virtual StructureSE*        GetJumpBridgeSE()       { return nullptr; }
     virtual StructureSE*        GetOutpostSE()          { return nullptr; }
@@ -123,7 +124,6 @@ public:
     virtual Sentry*             GetSentrySE()           { return nullptr; }
     virtual ModuleSE*           GetModuleSE()           { return nullptr; }
     virtual ReactorSE*          GetReactorSE()          { return nullptr; }
-    virtual ProbeSE*            GetProbeSE()            { return nullptr; }
     virtual CustomsSE*          GetCOSE()               { return nullptr; }
     /* Dynamic */
     virtual DynamicSystemEntity* GetDynamicSE()         { return nullptr; }
@@ -253,16 +253,16 @@ public:
 protected:
     SystemBubble*               m_bubble;               /* we do not own this. never NULL in space */
     SystemManager*              m_system;               /* we do not own this  never NULL in space */
-    TargetManager*              m_targMgr;              /* we do not own this. only Destructable items will have it */
+    TargetManager*              m_targMgr;              /* we do not own this. only Destructible items will have it */
     DestinyManager*             m_destiny;              /* we do not own this. only mobile items will have it */
 
     PyServiceMgr&               m_services;
 
     InventoryItemRef            m_self;
 
-    double                      m_radius;
-
     bool                        m_killed;
+
+    double                      m_radius;
 
     /* this is POS ForceField status */
     int32                       m_harmonic;
@@ -351,7 +351,7 @@ protected:
 };
 
 
-/* Non-Static / Non-Mobile / Non-Destructable / Celestial Objects - Containers, Wrecks, DeadSpace  - no TargetMgr*/
+/* Non-Static / Non-Mobile / Non-Destructible / Celestial Objects - Containers, Wrecks, DeadSpace  - no TargetMgr*/
 class ItemSystemEntity : public SystemEntity {
 public:
     ItemSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
@@ -463,8 +463,8 @@ public:
 
     /* specific functions handled here. */
     void                        AwardBounty(Client* pClient);
-    void SetInvul(bool invul=false)                     { m_invul = invul; }
-    void SetFrozen(bool frozen=false)                   { m_frozen = frozen; }
+    void                    SetInvul(bool invul=false)  { m_invul = invul; }
+    void                   SetFrozen(bool frozen=false) { m_frozen = frozen; }
 
 private:
     bool m_invul;

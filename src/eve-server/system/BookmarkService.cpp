@@ -162,7 +162,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         folderID = PyRep::IntegerValue(call.byname.find("folderID")->second);
 
     if (IsPlayerItem(args.itemID)) {      // entity #'s above 140m are player-owned.  player is in ship
-        typeID = EVEDB::invTypes::typeSolarSystem;
+        typeID = EVEDB::invTypes::SolarSystem;
         point = call.client->GetShipSE()->GetPosition();       // Get x,y,z location.  bm type is coordinate as "spot in xxx system"
         locationID = call.client->GetLocationID();       // locationID of bm is current sol system
         itemID = locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
@@ -177,11 +177,11 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         locationID = call.client->GetSystemID();       // get sol system of current station
     } else {      // char is passing systemID from map.  char is marking a solar systemID for bm
         if (IsRegion(args.itemID))
-            typeID = EVEDB::invTypes::typeRegion;
+            typeID = EVEDB::invTypes::Region;
         else if (IsConstellation(args.itemID))
-            typeID = EVEDB::invTypes::typeConstellation;
+            typeID = EVEDB::invTypes::Constellation;
         else if (IsSolarSystem(args.itemID))
-            typeID = EVEDB::invTypes::typeSolarSystem;
+            typeID = EVEDB::invTypes::SolarSystem;
         locationID = args.itemID;  // this is systemID from map
         itemID = locationID;      //  itemID = locationID for coord bm.  shows jumps, s/c/r in bm window, green in system
     }
@@ -192,7 +192,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
     // (bookmarkID, itemID, typeID, x, y, z, locationID)
     Rsp_BookmarkLocation result;
         result.bookmarkID  = bookmarkID;
-        result.itemID      = (typeID == EVEDB::invTypes::typeSolarSystem ? 0 : itemID);     // itemID = 0 when typeID is SolarSystem
+        result.itemID      = (typeID == EVEDB::invTypes::SolarSystem ? 0 : itemID);     // itemID = 0 when typeID is SolarSystem
         result.typeID      = typeID;
         result.x           = point.x;
         result.y           = point.y;
@@ -219,7 +219,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
     * 22:25:58 [SvcCallDump]         [ 3] String: 'XIG-040'
     * 22:25:58 [SvcCallDump]         [ 4] Integer field: 140000000
     */
-    uint32 typeID = EVEDB::invTypes::typeSolarSystem, folderID = 0;
+    uint32 typeID = EVEDB::invTypes::SolarSystem, folderID = 0;
 
     // Check for presence of folderID in the packet
     if (call.byname.find("folderID") != call.byname.cend())
