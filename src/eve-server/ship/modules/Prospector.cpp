@@ -3,7 +3,7 @@
   * @name Prospector.cpp
   *   prospector module class (salvage, hacking, data mining)
   * @Author:         Allan
-  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RN 10 Feburary 2018
+  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RN 10 February 2018
   */
 
 

@@ -56,7 +56,7 @@ enum ClientTimers {
     ScanningTimer    = 10000,   // used to delay scan results based on skills, items, and other shit
     KilledTimer      = 800,    // used to reset ego after killed or otherwise changing ships
     ProcTimer        = 1000,    // used to give process ticks to docked players (for skill updates...tick cycle consumption negligible)
-    JetcanTimer      = 180000,  // used to delay jetcan creation.  3min default
+    JetcanTimer      = 600000,  // used to delay jetcan creation.  10min default
     LogoutTimer      = 10000,    // used to hold client object until WarpOut finishes
     LoginTimer       = 2500,
     SessionTimer     = 10000,   // used to prevent multiple session changes from occuring too fast

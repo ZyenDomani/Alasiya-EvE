@@ -705,7 +705,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_beyonce = false;
         m_setStateSent = false;
 
-        // register ourself with new system manager.
+        // register ourself with new system manager (this wont hit on login)
         m_system->AddClient(this, count, IsJump());
     }
 

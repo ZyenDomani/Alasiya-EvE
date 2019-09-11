@@ -194,12 +194,12 @@ static GenericModule* ModuleFactory(ModuleItemRef mRef, ShipItemRef sRef)
             case EVEDB::invGroups::Engineering_Systems:                     return (new SubSystemModule(mRef, sRef));
 
             // may need specific code for these gm modules
+            //case EVEDB::invGroups::GM_Modules:
             case EVEDB::invGroups::Cheat_Module_Group:                      return (new ActiveModule(mRef, sRef));
 
             // Uncategorized and Unknown Modules Groups (some of these groups contain NO REAL typeIDs in the 'invTypes' table:
             /**  @note  let these make an error to show they are used
             case EVEDB::invGroups::Computer_Interface_Node:
-            case EVEDB::invGroups::GM_Modules:
             case EVEDB::invGroups::Cruise_Control:
             case EVEDB::invGroups::Smartbomb_Supercharger:
             case EVEDB::invGroups::Anti_Ballistic_Defense_System:
@@ -219,13 +219,14 @@ static GenericModule* ModuleFactory(ModuleItemRef mRef, ShipItemRef sRef)
             case EVEDB::invGroups::Cloak_Enhancements:
             case EVEDB::invGroups::Mining_Enhancer:
             case EVEDB::invGroups::Covert_Cynosural_Field_Generator: {
-                return NULL;
+                return nullptr;
             }
             */
         }
     }
 
     _log(SHIP__MODULE_ERROR, "ModuleFactory - Module Group not found for %s - groupID: %u, typeID: %u", mRef->itemName().c_str(), mRef->groupID(), mRef->typeID());
+    return nullptr;
 }
 
 #endif /* __MODULEFACTORY_H__ */
