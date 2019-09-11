@@ -1,4 +1,3 @@
-
  /**
   * @name ActiveModule.cpp
   *   active module class
@@ -10,13 +9,13 @@
 #include "eve-server.h"
 
 #include "StatisticMgr.h"
+#include "exploration/Probes.h"
+#include "exploration/Scan.h"
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/ModuleItem.h"
-#include "system/SystemManager.h"
+//#include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
-#include <exploration/Probes.h>
-#include <exploration/Scan.h>
 
 ActiveModule::ActiveModule(ModuleItemRef mRef, ShipItemRef sRef)
 : GenericModule(mRef, sRef),
@@ -27,6 +26,7 @@ m_targetID(0),
 m_effectID(0),
 m_guidStr(""),
 m_bubble(nullptr),
+m_sysMgr(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
 m_destinyMgr(nullptr),
@@ -159,6 +159,7 @@ void ActiveModule::Clear()
     m_effectID = 0;
     m_guidStr = "";
     m_bubble = nullptr;
+    m_sysMgr = nullptr;
     m_targMgr = nullptr;
     m_targetSE = nullptr;
     m_destinyMgr = nullptr;
@@ -194,7 +195,7 @@ void ActiveModule::Process()
         if ((m_chargeRef.get() == nullptr) or (m_ChargeState == Module::State::Unloaded)
         or (m_chargeRef->quantity() < 1) or (!m_chargeLoaded)) {
             UnloadCharge();
-            m_ModuleState = Module::State::Deactivating;
+            SetModuleState(Module::State::Deactivating);
             DeactivateCycle(true);
         }
     }
@@ -220,12 +221,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         }
     }
 
-    /*
-     * AttrdisallowAgainstEwImmuneTarget
-     * AttrDisallowOffensiveModifiers
-     * AttrDisallowOffensiveModifierBonus
-     */
-
     if (m_targetSE != nullptr) {
         /** @todo criminal shit isnt written yet....fix this once it is.
         if (sFxDataMgr.isAssistance(effectID))
@@ -233,6 +228,12 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 if (m_targetSE->GetPilot()->IsCriminal())
                     throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
         */
+
+        /*
+         * AttrdisallowAgainstEwImmuneTarget
+         * AttrDisallowOffensiveModifiers
+         * AttrDisallowOffensiveModifierBonus
+         */
 
         if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
             Clear();
@@ -259,6 +260,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
     Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
     m_bubble = pShip->SysBubble();
+    m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
     m_destinyMgr = pShip->DestinyMgr();
 
@@ -307,7 +309,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
             effect.c_str(), m_modRef->itemName().c_str(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
-        AbortCycle();
+        ActiveModule::DeactivateCycle(true);
         return;
     }
 
@@ -335,7 +337,6 @@ void ActiveModule::DeOverload()
     m_overLoaded = false;
 }
 
-// yes, the xxCycle() shit below seems overkill, but each has a specific purpose
 uint32 ActiveModule::DoCycle()
 {
     if (m_destinyMgr == nullptr) {
@@ -370,9 +371,13 @@ uint32 ActiveModule::DoCycle()
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Artifacts_and_Prototypes: { // (this module group will need specific code)
         } break;
-        case EVEDB::invGroups::Passive_Targeting_System: { // (this passive module will need specific code)
+        case EVEDB::invGroups::Missile_Launcher_Defender:
+        case EVEDB::invGroups::Countermeasure_Launcher:
+        case EVEDB::invGroups::Passive_Targeting_System: { // (these passive modules will need specific code)
         } break;
-        case EVEDB::invGroups::Automated_Targeting_System: { // (this active module will need specific code)
+        case EVEDB::invGroups::Cynosural_Field:
+        case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
+        case EVEDB::invGroups::Automated_Targeting_System: { // (these active modules will need specific code)
         } break;
 
         // these im not sure about yet
@@ -383,12 +388,9 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Siege_Module:
         case EVEDB::invGroups::Super_Weapon:
         case EVEDB::invGroups::Interdiction_Sphere_Launcher:    // launch a sphere (like missile and probe)
-        case EVEDB::invGroups::Countermeasure_Launcher:     // dunno
         case EVEDB::invGroups::Jump_Portal_Generator:
-        case EVEDB::invGroups::Cynosural_Field:
         case EVEDB::invGroups::Remote_ECM_Burst:
         case EVEDB::invGroups::Warp_Disrupt_Field_Generator:
-        case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
         case EVEDB::invGroups::Smart_Bomb:
         case EVEDB::invGroups::ECM_Burst: {
         } break;
@@ -434,7 +436,6 @@ uint32 ActiveModule::DoCycle()
         case EVEDB::invGroups::Missile_Launcher_Bomb:   // not sure here
         case EVEDB::invGroups::Missile_Launcher_Citadel:
         case EVEDB::invGroups::Missile_Launcher_Cruise:
-        case EVEDB::invGroups::Missile_Launcher_Defender:   // not sure here
         case EVEDB::invGroups::Missile_Launcher_Heavy:
         case EVEDB::invGroups::Missile_Launcher_Heavy_Assault:
         case EVEDB::invGroups::Missile_Launcher_Rocket:
@@ -520,7 +521,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
             PyList* list = new PyList();
             std::vector<AsteroidSE*> vList;
-            m_shipRef->GetPilot()->GetShipSE()->SystemMgr()->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
+            m_sysMgr->GetBeltMgr()->GetList(sBubbleMgr.GetBeltID(m_bubble->GetID()), vList);
             // when roids are spawned, BeltMgr sets this bubble "IsBelt = true", even in anomalies
             if (m_bubble->IsBelt()) {
                 float m_range = GetAttribute(AttrSurveyScanRange).get_float();
@@ -528,6 +529,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 for (auto pASE : vList) {
                     distance = m_shipRef->position().distance(pASE->GetPosition());
                     distance -= pASE->GetRadius();
+                    distance -= m_shipRef->radius(); // do we need this one here?
                     if (distance < m_range) {
                         PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));

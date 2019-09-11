@@ -13,7 +13,9 @@
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
 #include "system/SystemBubble.h"
+#include "system/SystemManager.h"
 
+class MiningLaser;
 
 class ActiveModule : public GenericModule
 {
@@ -41,6 +43,7 @@ public:
     virtual uint32 DoCycle();
 
     /* functions to be handled in derived classes as needed */
+    virtual MiningLaser* GetMiningLaser()               { return nullptr; }
     virtual void ApplyDamage()                          { /* do nothing here */ }
     virtual uint16 GetReloadTime()                      { return m_reloadTime; }
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed
@@ -65,6 +68,7 @@ protected:
     SystemBubble* m_bubble;                             // we do not own this
     SystemEntity* m_targetSE;                           // we do not own this
     DestinyManager* m_destinyMgr;                       // we do not own this
+    SystemManager* m_sysMgr;                            // we do not own this
     TargetManager* m_targMgr;                           // we do not own this
 
     void Clear();

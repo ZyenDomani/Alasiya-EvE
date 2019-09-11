@@ -303,5 +303,6 @@ const char* GenericModule::GetModuleStateName(int8 state)
         case State::Online:         return "Online";
         case State::Activated:      return "Activated";
         case State::Deactivating:   return "Deactivating";
+        default:                    return "Invalid";
     }
 }
