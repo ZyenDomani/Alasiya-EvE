@@ -80,7 +80,7 @@ bool ShipItem::_Load()
     // load attributes
     if (!InventoryItem::_Load())
         return false;
-    if (type().id() == EVEDB::invTypes::typeCapsule)
+    if (type().id() == EVEDB::invTypes::Capsule)
         return (m_IsLoaded = true);
     if (m_IsLoaded and (m_ModuleManager != nullptr))
         return true;
@@ -373,6 +373,17 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                 pClient->SendErrorMsg("Your %s has no ship maintenance bay.", itemName().c_str());
                 return false;
             }
+            if (typeID() == EVEDB::invTypes::Rorqual)
+                if ((iRef->groupID() != EVEDB::invGroups::MiningBarge)
+                and (iRef->groupID() != EVEDB::invGroups::Exhumer)
+                and (iRef->groupID() != EVEDB::invGroups::Industrial)
+                and (iRef->groupID() != EVEDB::invGroups::TransportShip)
+                and (iRef->groupID() != EVEDB::invGroups::Freighter)
+                and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
+                and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
+                    pClient->SendErrorMsg("Only indy ships may be placed into this ship's maintenance ship hold.");
+                    return false;
+                }
             if (iRef->categoryID() != EVEDB::invCategories::Ship) {
                 pClient->SendErrorMsg("Only ships may be placed into the maintenance bay.");
                 return false;
@@ -446,7 +457,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
             and (iRef->groupID() != EVEDB::invGroups::Freighter)
             and (iRef->groupID() != EVEDB::invGroups::Prototype_Exploration_Ship)
             and (iRef->groupID() != EVEDB::invGroups::CapitalIndustrialShip)) {
-                pClient->SendErrorMsg("Only indy ships may be placed into the ship's industurial ship hold.");
+                pClient->SendErrorMsg("Only indy ships may be placed into the ship's industrial ship hold.");
                 return false;
             }
         } break;
@@ -1156,7 +1167,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         throw PyException( MakeUserError("CantFindChargeToAdd"));
 
     if (!IsModuleSlot(flag))
-        throw PyException( MakeUserError("Destination is not weapon."));
+        throw PyException( MakeCustomError("Destination is not weapon."));
 
     if (IsModuleSlot(cRef->flag())) {
         _log(SHIP__MODULE_TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
@@ -1326,7 +1337,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         } else if (iRef->categoryID() == EVEDB::invCategories::Module) {
             ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
             mRef->ChangeSingleton(true, false);
-            // rigs are classed in the module category.  check here and call approprate method as needed.
+            // rigs are classed in the module category.  check here and call appropriate method as needed.
             if (IsRigSlot(flag)) {
                 if (!m_ModuleManager->InstallRig(mRef, flag))
                     return 0;
@@ -1398,7 +1409,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool m
         }
         GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
         if (pMod == nullptr)
-            throw PyException( MakeUserError("Module was not found in that position."));
+            throw PyException( MakeCustomError("Module was not found in that position."));
 
         if (pMod->IsActive())
             throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
@@ -2335,7 +2346,7 @@ std::string ShipItem::GetShipDNA()
      * "587:8863;1:8863;1:8863;1:499;1:578;1:1798;1:6485;1:2046;1:8325;1:31788;1:31800;1:31788;1::"
      *  need to figure out how to group modules for correct condensed counts
      */
-    if (type().id() == EVEDB::invTypes::typeCapsule) {
+    if (type().id() == EVEDB::invTypes::Capsule) {
         std::stringstream dna;
         dna << type().id() << ":";
         _log(SHIP__INFO, "ShipDNA has compiled DNA of \"%s\" for %s(%u) ", dna.str().c_str(), itemName().c_str(), itemID());
