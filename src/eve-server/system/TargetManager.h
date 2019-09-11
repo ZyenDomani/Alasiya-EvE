@@ -21,7 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
-    Updates:        Allan
+    Updates:    Allan
 */
 
 
@@ -29,8 +29,9 @@
 #define __TARGETMANAGER_H_INCL__
 
 #include "inventory/ItemRef.h"
-//#include "ship/modules/ActiveModule.h"
 
+
+class MiningLaser;
 class ActiveModule;
 class SystemEntity;
 class PyRep;
@@ -77,8 +78,9 @@ public:
 
     /* PC Module Methods (for module deactivation on target removed) */
     void                Destroyed();
-    void            AddTargetModule(ActiveModule* pMod);
-    void         RemoveTargetModule(ActiveModule* pMod);
+    void                Depleted(MiningLaser* pMod);
+    void                AddTargetModule(ActiveModule* pMod);
+    void                RemoveTargetModule(ActiveModule* pMod);
 
     /* debugging methods */
     void                Dump() const;

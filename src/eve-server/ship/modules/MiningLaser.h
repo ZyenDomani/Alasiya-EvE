@@ -7,11 +7,12 @@
   */
 
 
-#ifndef __EVESERVER_SHIPMODULES_ACTIVE_MODULES_MININGLASER_H__
-#define __EVESERVER_SHIPMODULES_ACTIVE_MODULES_MININGLASER_H__
+#ifndef _EVE_SHIP_MODULES_MININGLASER_H_
+#define _EVE_SHIP_MODULES_MININGLASER_H_
 
 #include "ship/modules/ActiveModule.h"
 
+class AsteroidSE;
 
 class MiningLaser: public ActiveModule
 {
@@ -20,16 +21,29 @@ public:
     virtual ~MiningLaser()                              { /* do nothing here */ }
 
     /* GenericModule overrides */
+    virtual bool IsMiningLaser() const                  { return true; }
     virtual void DeactivateCycle(bool abort=false);
 
     /* ActiveModule overrides */
+    virtual MiningLaser* GetMiningLaser()               { return this; }
     virtual uint32 DoCycle();
     //virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
+    //virtual void Deactivate(std::string effect="");
 
     //  functions to be handled in derived classes as needed
     virtual void LoadCharge(InventoryItemRef charge);
     virtual void UnloadCharge();
     virtual bool CanActivate();
+
+    /* MiningLaser methods */
+    float GetMiningVolume();
+
+    // specific ProcessCycle call for depleted rocks
+    void Depleted(std::multimap<float, MiningLaser*> &mMap);
+    void Depleted(uint16 typeID, float amt, bool slave=true);
+
+    void CancelOnError()                                { ActiveModule::DeactivateCycle(true); }
+
 
 protected:
 	void ProcessCycle(bool abort=false);
@@ -49,4 +63,4 @@ private:
     EVEItemFlags m_holdFlag;
 };
 
-#endif  // __EVESERVER_SHIPMODULES_ACTIVE_MODULES_MININGLASER_H__
+#endif  // _EVE_SHIP_MODULES_MININGLASER_H_

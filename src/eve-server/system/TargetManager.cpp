@@ -39,6 +39,7 @@
 #include "pos/Tower.h"
 #include "ship/Ship.h"
 #include "ship/modules/ActiveModule.h"
+#include "ship/modules/MiningLaser.h"
 #include "system/TargetManager.h"
 #include "system/SystemEntity.h"
 #include "system/SystemBubble.h"
@@ -600,6 +601,10 @@ void TargetManager::TargetsCleared() {
 
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
+    if (mySE->IsAsteroidSE())
+        if (!pMod->IsMiningLaser())
+            return;
+
     m_modules.emplace(pMod->itemID(), pMod);
 }
 
@@ -614,6 +619,21 @@ void TargetManager::Destroyed()
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
     for (auto cur : m_modules)
         cur.second->Deactivate(effect);
+}
+
+// specific for asteroids; only called by asteroids
+void TargetManager::Depleted(MiningLaser* pMod)
+{
+    // remove master module (easier here)
+    m_modules.erase(pMod->itemID());
+
+    std::multimap<float, MiningLaser*> mMap;
+    // iterate thru the map of modules and add to map as MiningLasers with their mining volume
+    for (auto cur : m_modules)
+        mMap.emplace(cur.second->GetMiningLaser()->GetMiningVolume(), cur.second->GetMiningLaser());
+
+    // call Depleted() on master module with map of active modules
+    pMod->Depleted(mMap);
 }
 
 /* unused at this time */
