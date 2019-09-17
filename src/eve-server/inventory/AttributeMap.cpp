@@ -244,6 +244,8 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 }
 
 bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
+    if (attrID == AttrSkillStartTime)
+        return true;
     if (old_val == new_val) return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
@@ -256,6 +258,8 @@ bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_va
 }
 
 bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
+    if (attrID == AttrSkillStartTime)
+        return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
@@ -269,7 +273,7 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
 bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
-    /** @todo update this to notifiy approprate corp ppl of change */
+    /** @todo update this to notifiy appropriate corp ppl of change */
     if (IsCorp(mItem.ownerID()))
         return true;
     if ((mItem.ownerID() == 1)
