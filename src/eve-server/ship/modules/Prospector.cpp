@@ -28,6 +28,11 @@ Prospector::Prospector(ModuleItemRef mRef, ShipItemRef sRef)
     else if (m_modRef->groupID() == EVEDB::invGroups::Data_Miner)
         m_dataMiner = true;
 
+    // increase scan speed by level of survey skill
+    float cycleTime = GetAttribute(AttrDuration).get_float();
+    cycleTime *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Survey, true))));
+    SetAttribute(AttrDuration, cycleTime);
+
     m_accessChance = 0;
 
     m_holdFlag = flagCargoHold;
@@ -61,7 +66,7 @@ bool Prospector::CanActivate()
         if (m_targetSE->IsContainerSE())
             return ActiveModule::CanActivate();
 
-    throw PyException( MakeUserError( "DeniedActivateTargetModuleDisallowed"));
+    throw PyException(MakeUserError("DeniedActivateTargetModuleDisallowed"));
 }
 
 uint32 Prospector::DoCycle()
@@ -144,18 +149,18 @@ void Prospector::DropSalvage()
     list.clear();
     sDataMgr.GetSalvage(atoi(m_targetSE->GetSelf()->customInfo().c_str()), list);
 
-    uint8 drop = 0;
-    switch (m_accessChance) {       // drop qty * rate in config
-        case  30: drop = 1; break;  //  1 to 3
-        case  20: drop = 2; break;  //  2 to 6
-        case  10: drop = 3; break;  //  3 to 9
-        case   0: drop = 4; break;  //  4 to 12
-        case -10: drop = 5; break;  //  5 to 15
-        case -20: drop = 6; break;  //  6 to 18
-    }
-
     if (!list.empty()) {
-        InventoryItemRef itemRef;
+        uint8 drop = 0;
+        switch (m_accessChance) {       // drop qty * rate in config
+            case  30: drop = 1; break;  //  1 to 3
+            case  20: drop = 2; break;  //  2 to 6
+            case  10: drop = 3; break;  //  3 to 9
+            case   0: drop = 4; break;  //  4 to 12
+            case -10: drop = 5; break;  //  5 to 15
+            case -20: drop = 6; break;  //  6 to 18
+        }
+
+        InventoryItemRef iRef(nullptr);
         uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.RateDropItem);
         for (auto cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
@@ -163,11 +168,12 @@ void Prospector::DropSalvage()
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
             ItemData iLoot(cur, pChar->itemID(), m_targetSE->GetID(), flagAutoFit, quantity);
-            itemRef = sItemFactory.SpawnItem(iLoot);
-            if (itemRef.get() == nullptr) // we'll get over it...continue
+            iRef = sItemFactory.SpawnItem(iLoot);
+            if (iRef.get() == nullptr) // we'll get over it...continue
                 continue;
-            itemRef->Move(m_shipRef->itemID(), m_holdFlag, true);
-            m_shipRef->AddItem(itemRef);
+            iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
+            m_shipRef->AddItem(iRef);
+            _log(SHIP__MODULE_DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
         }
     }
 

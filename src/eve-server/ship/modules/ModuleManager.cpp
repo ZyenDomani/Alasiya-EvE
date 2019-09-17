@@ -103,9 +103,10 @@ bool ModuleManager::Initialize() {
                         m_charges.emplace(cur->flag(), cur);
                     } else {
                         // module to load not found...
-                        cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
                         _log(SHIP__MODULE_ERROR, "ModuleManager::Initialize() - Cannot find module at %s to load charge %s(%u) into",\
                                 sDataMgr.GetFlagName(cur->flag()), cur->itemName().c_str(), cur->itemID() );
+                        // put that bitch back in cargo
+                        cur->SetFlag(flagCargoHold);
                     }
                     pMod = nullptr;
                 } break;
@@ -132,8 +133,6 @@ bool ModuleManager::IsSlotOccupied(EVEItemFlags flag)
 
 uint16 ModuleManager::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
-	// Call into ModuleContainer class with slotBank effectID to have it check for and return first available slot flag in
-	// in the specified slot bank:
 	return pModuleCont->GetAvailableSlotInBank(slotBank);
 }
 
@@ -147,6 +146,7 @@ bool ModuleManager::InstallRig(ModuleItemRef mRef, EVEItemFlags flag) {
     or (mRef->groupID() == EVEDB::invGroups::Rig_Electronics_Superiority)) {
         fitModule(mRef,flag);
         // hack to get total scan bonus from rigs, if applicable
+        // do we need to check for and set anything else here?
         if (mRef->groupID() == EVEDB::invGroups::Rig_Electronics) {
             switch (mRef->typeID()) {
                 case 25936:   //  Large Gravity Capacitor Upgrade I
@@ -322,7 +322,13 @@ bool ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
         return false;
     }
     if (pModuleCont->isSlotOccupied(flag)) {
-        throw PyException( MakeUserError("SlotAlreadyOccupied"));
+        //throw PyException( MakeUserError("SlotAlreadyOccupied"));
+        GenericModule* pMod = pModuleCont->GetModule(flag);
+        if (pMod == nullptr)
+            return false;
+
+        m_Ship->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
+                mRef->itemName().c_str(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
         /** @todo change this to use movemodule? */
         return false;
     }
@@ -335,7 +341,7 @@ bool ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
     if (!pModuleCont->AddModule(flag, pMod))
         return false; // error here?
 
-    // update avalible slots
+    // update available slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted()) {
             // apply config modifier, if applicable
@@ -500,11 +506,11 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
         return;
     } else if (pDestiny->IsWarping()) {
         if (pMod->HasAttribute(AttrDisallowActivateOnWarp) or !sFxDataMgr.isWarpSafe(effectID))
-            throw PyException( MakeUserError( "DeniedActivateInWarp"));
+            throw PyException(MakeUserError("DeniedActivateInWarp"));
     } else if (pDestiny->IsCloaked()) {
-        throw PyException( MakeUserError( "DeniedActivateCloaked"));
+        throw PyException(MakeUserError("DeniedActivateCloaked"));
     } else if (m_Ship->GetPilot()->IsJump()) {
-        throw PyException( MakeUserError( "DeniedActivateInJump"));
+        throw PyException(MakeUserError("DeniedActivateInJump"));
     }
 
     pMod->Activate(effectID, targetID, repeat);

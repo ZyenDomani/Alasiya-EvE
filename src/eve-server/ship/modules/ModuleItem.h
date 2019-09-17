@@ -22,6 +22,11 @@ class ModuleItem
 public:
     virtual ~ModuleItem() { /* do nothing here */ }
 
+    /* class type pointer querys. */
+    virtual ModuleItem*     GetModuleItem()             { return this; }
+    /* class type tests. */
+    virtual bool            IsModuleItem()              { return true; }
+
     static ModuleItemRef Load(uint32 modID);
     static ModuleItemRef Spawn(ItemData &data);
 

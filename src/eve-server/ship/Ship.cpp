@@ -527,7 +527,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                             if (pMod->GetAttribute(AttrChargeSize) != iRef->GetAttribute(AttrChargeSize)) {
                                 sLog.Error("Ship::ValidateAddItem", "Charge size %u for %s does not match Module size %u for %s.",\
                                         iRef->GetAttribute(AttrChargeSize).get_int(), iRef->itemName().c_str(),\
-                                    pMod->GetAttribute(AttrChargeSize).get_int(), pMod->GetSelf()->itemName().c_str());
+                                        pMod->GetAttribute(AttrChargeSize).get_int(), pMod->GetSelf()->itemName().c_str());
                                 pClient->SendErrorMsg("Incorrect charge size for this module.");
                                 return false;
                             }
@@ -541,7 +541,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
                         }
                     // NOTE: Module Manager will check for actual room to load charges and make stack splits, or reject loading altogether
                     } else {
-                        pClient->SendErrorMsg("Module at flag '%u' does not exist.  Ref: ServerError 25162.", flag);
+                        pClient->SendErrorMsg("There is no module in %s.  Ref: ServerError 25162.", sDataMgr.GetFlagName(flag));
                         return false;
                     }
                 }
@@ -1081,7 +1081,7 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
     m_ModuleManager->CheckGroupFitLimited(flag, iRef);
 
     if (IsHiSlot(flag)) {
-        // check avalible turret/launcher slots
+        // check available turret/launcher hardpoints
         if (iRef->type().HasEffect(EVEEffectID::turretFitted)) {
             if (GetAttribute(AttrTurretSlotsLeft) < 1) {
                 std::map<std::string, PyRep *> args;
@@ -1103,7 +1103,6 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
                  */
             }
         }
-        /** @todo verify module size vs ship slot size?   do we want to limit putting med modules on small ships?? */
     } else if (IsRigSlot(flag)) {
         if (GetAttribute(AttrRigSize) != iRef->GetAttribute(AttrRigSize)) {
             std::map<std::string, PyRep *> args;
@@ -1140,23 +1139,19 @@ void ShipItem::TryModuleLimitChecks(EVEItemFlags flag, InventoryItemRef iRef)
 }
 
 EVEItemFlags ShipItem::FindAvailableModuleSlot(InventoryItemRef iRef) {
-    // CantFitModuleToThatShip
-    // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
     uint16 slotFound = flagIllegal;
-    if (iRef->type().HasEffect(EVEEffectID::loPower)) {
+    if (iRef->type().HasEffect(EVEEffectID::loPower))
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::loPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::medPower)) {
+    else if (iRef->type().HasEffect(EVEEffectID::medPower))
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::medPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::hiPower)) {
+    else if (iRef->type().HasEffect(EVEEffectID::hiPower))
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::hiPower);
-    } else if (iRef->type().HasEffect(EVEEffectID::subSystem)) {
+    else if (iRef->type().HasEffect(EVEEffectID::subSystem))
         slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::subSystem);
-    } else if (iRef->type().HasEffect(EVEEffectID::rigSlot)) {
-        slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
-    } else {
-        // ERROR: This is not a module that fits in any of the slot banks
-        codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s is not module type.", iRef->itemName().c_str());
-    }
+    else if (iRef->type().HasEffect(EVEEffectID::rigSlot))
+       slotFound = m_ModuleManager->GetAvailableSlotInBank(EVEEffectID::rigSlot);
+    else
+        codelog(SHIP__ERROR, "ShipItem::FindAvailableModuleSlot() - iRef %s has no bank effect.", iRef->itemName().c_str());
 
     return (EVEItemFlags)slotFound;
 }
@@ -1319,6 +1314,8 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             EvE::traceStack();
         flag = flagCargoHold;   //default to cargo (cause this is a ship)
     }
+    // CantFitModuleToThatShip
+    // u'CantFitModuleToThatShipBody'}(u"You can't fit {item} to {ship}", None, {u'{ship}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'ship'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
 
     if (!ValidateAddItem(flag, iRef, pClient))
         return 0;
@@ -1353,7 +1350,10 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
         m_ModuleManager->UpdateModules(flag);
     }
 
-    if ((flag == flagCargoHold) or (flag == flagOreHold) or (flag == flagGasHold)) {
+    // cannot stack assembled items
+    if (iRef->singleton())
+        iRef->Move(m_itemID, flag, true);
+    else if (IsCargoHoldFlag(flag) or IsHangarFlag(flag)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);
         else
@@ -1369,6 +1369,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     if (iRef.get() == nullptr)
         return;
 
+    // remove item from our inventory
     InventoryItem::RemoveItem(iRef);
 
     if (m_pilot == nullptr)
@@ -1380,7 +1381,6 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
-        //iRef->ClearModifiers();
         // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
         if (iRef->categoryID() == EVEDB::invCategories::Charge) {
             m_ModuleManager->UnloadCharge(iRef->flag(), true);
@@ -1418,9 +1418,8 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool m
         if (chargeRef.get() == nullptr)
             return 0;
 
-        uint32 itemID = chargeRef->itemID();
         m_ModuleManager->UnloadCharge(fromFlag, merge);
-        return itemID;
+        return chargeRef->itemID();
     }
     return 0;
 }
@@ -2671,7 +2670,6 @@ PyDict* Ship::MakeSlimItem() {
         }
 
         slim->SetItemString("modules", l);
-        //PySafeDecRef(l);
     }
 
     if (is_log_enabled(DESTINY__DEBUG)) {

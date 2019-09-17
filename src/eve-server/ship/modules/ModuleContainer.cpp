@@ -1,4 +1,3 @@
-
  /**
   * @name ModuleContainer.cpp
   *     module container class for ship's module manager
@@ -8,6 +7,8 @@
   *
   */
 
+
+#include "StaticDataMgr.h"
 
 #include "ship/Ship.h"
 #include "ship/modules/ModuleContainer.h"
@@ -57,7 +58,8 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
         return false;
     } else
         itr->second = pMod;
-    _log(SHIP__MODULE_TRACE, "AddModule() - adding %s.", pMod->GetSelf()->itemName().c_str());
+
+    _log(SHIP__MODULE_TRACE, "ModuleContainer::AddModule() - adding %s at %s.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(flag));
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(pMod->groupID()) != m_ModulesFittedByGroupID.end() )
@@ -231,7 +233,7 @@ uint8 ModuleContainer::GetFittedModuleCountByGroup(uint16 groupID)
 {
     if ( m_ModulesFittedByGroupID.find(groupID) != m_ModulesFittedByGroupID.end() )
         return m_ModulesFittedByGroupID.find(groupID)->second;
-        
+
     return 0;
 }
 

@@ -14,26 +14,27 @@
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/ModuleItem.h"
-//#include "system/SystemManager.h"
 #include "system/cosmicMgrs/BeltMgr.h"
 
 ActiveModule::ActiveModule(ModuleItemRef mRef, ShipItemRef sRef)
 : GenericModule(mRef, sRef),
 m_timer(0, true),
 m_reloadTimer(0),
-m_Stop(true),
-m_targetID(0),
-m_effectID(0),
-m_guidStr(""),
 m_bubble(nullptr),
 m_sysMgr(nullptr),
 m_targMgr(nullptr),
 m_targetSE(nullptr),
-m_destinyMgr(nullptr),
-m_needsCharge(false),
-m_needsTarget(false)
+m_destinyMgr(nullptr)
 {
+    m_Stop = true;
+    m_needsCharge = false;
+    m_needsTarget = false;
+
     m_repeat = 1000;    //arbitrary.
+
+    m_guidStr = "";
+    m_targetID = 0;
+    m_effectID = 0;
 
     // civilian turrets dont use charges.  this is checked/hacked in TurretModule() to fix error when firing.
     m_needsCharge = mRef->HasAttribute(AttrChargeGroup1);
@@ -49,7 +50,7 @@ m_needsTarget(false)
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Remote_Sensor_Booster:
             case EVEDB::invGroups::Tracking_Disruptor:
-            // mining laser can be used without charge, using default extraction rate
+            // t2 mining laser can be used without charge, using default extraction rate
             case EVEDB::invGroups::Frequency_Mining_Laser: {
                 m_needsCharge = false;
             } break;
@@ -89,6 +90,7 @@ m_needsTarget(false)
             range *= (1 + (0.03 * (m_shipRef->GetPilot()->GetChar()->GetSkillLevel(EvESkill::LongRangeTargeting, true))));
             SetAttribute(AttrEnergyDestabilizationRange, range);
         } break;
+        case EVEDB::invGroups::Salvager:
         case EVEDB::invGroups::Target_Painter:
         case EVEDB::invGroups::Tracking_Disruptor:
         case EVEDB::invGroups::Gas_Cloud_Harvester:
@@ -209,7 +211,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
     if (m_needsCharge and (!m_chargeLoaded or (m_chargeRef.get() == nullptr))) {
         Clear();
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        throw PyException(MakeUserError("CantFindChargeToAdd"));
     }
     if (IsValidTarget(targetID)) {
         m_needsTarget = true;       // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
@@ -217,7 +219,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
             Clear();
-            throw PyException( MakeUserError( "DeniedActivateTargetNotPresent"));
+            throw PyException(MakeUserError("DeniedActivateTargetNotPresent"));
         }
     }
 
@@ -226,7 +228,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         if (sFxDataMgr.isAssistance(effectID))
             if (m_targetSE->HasPilot())
                 if (m_targetSE->GetPilot()->IsCriminal())
-                    throw PyException( MakeUserError( "ModuleActivationDeniedCriminalAssistance"));
+                    throw PyException(MakeUserError("ModuleActivationDeniedCriminalAssistance"));
         */
 
         /*
@@ -237,11 +239,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
         if (m_targetSE->GetSelf()->HasAttribute(AttrDisallowAssistance)) {
             Clear();
-            throw PyException( MakeUserError( "DeniedActivateTargetAssistDisallowed"));
+            throw PyException(MakeUserError("DeniedActivateTargetAssistDisallowed"));
         }
         if (m_targetSE->IsCOSE()) {
             Clear();
-            throw PyException( MakeCustomError( "Attacking Customs Offices isn't implemented at this time."));
+            throw PyException(MakeCustomError("Attacking Customs Offices isn't implemented at this time."));
         }
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->AddTargetModule(this);
@@ -322,7 +324,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         m_targetSE = nullptr;
     }
     m_Stop = true;
-    SetModuleState(Module::State::Deactivating);
+    //SetModuleState(Module::State::Deactivating);
 }
 
 void ActiveModule::Overload()
@@ -790,6 +792,7 @@ bool ActiveModule::CanActivate()
                 range = GetAttribute(AttrShipScanRange).get_float();
             } break;
             case Shield_Disruptor:      // no modules in this group
+            case Salvager:
             case Strip_Miner:
             case Mining_Laser:
             case Target_Painter:
@@ -816,8 +819,8 @@ bool ActiveModule::CanActivate()
             default: {
                 // make error here with group
                 range = GetAttribute(AttrMaxRange).get_float();
-                _log(SHIP__WARNING, "Activate::RangeTest - Default hit for %s(%u).  Using %.1f", \
-                            m_modRef->itemName().c_str(), m_modRef->itemID(), range);
+                _log(SHIP__WARNING, "Activate::RangeTest - Default hit for %s(%u) group: %u.  Using %.1f", \
+                            m_modRef->itemName().c_str(), m_modRef->itemID(), m_modRef->groupID(), range);
             } break;
         }
 
@@ -886,7 +889,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             go.chargeTypeID = chgTypeID;
         ge.other = go.Encode();
     } else {
-        ge.other = new PyNone();
+        ge.other = PyStatic.NewNone();
     }
 
     timeLeft /= 1000;
@@ -936,7 +939,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             PyTuple* tuple = new PyTuple(2);
                 tuple->SetItem(0, new PyString("TargetNoLongerPresentGeneric"));
                 tuple->SetItem(1, dict);
-            shipEff.error = new PyNone();
+            shipEff.error = PyStatic.NewNone();
             m_shipRef->GetPilot()->SendNotification("TargetNoLongerPresentGeneric", "charid", &tuple);
             */
             m_targetID = 0;
@@ -948,7 +951,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
          *
          */
         } else
-            shipEff.error = new PyNone();
+            shipEff.error = PyStatic.NewNone();
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
@@ -963,6 +966,7 @@ void ActiveModule::LaunchMissile()
 {
     // cannot throw here...
     //throw PyException( MakeUserError("TargetingMissileToSelf"));
+    //throw PyException( MakeUserError("NoCharges"));
 
     //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 
@@ -981,14 +985,25 @@ void ActiveModule::LaunchMissile()
         return;
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
     InventoryItemRef missileRef = sItemFactory.SpawnItem(idata);
-    if (missileRef.get() == nullptr)
-        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
-        m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
+    if (missileRef.get() == nullptr) {
+        _log(ITEM__ERROR ,"Unable to spawn item #%u:'%s' of type %u.", \
+                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID());
+        pClient->SendErrorMsg("Your %s in %s experienced a loading error and was disabled.", \
+                m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+        AbortCycle();
+        return;
+    }
 
     SystemManager* pSystem = pClient->SystemMgr();
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE(), this);
-    if (pMissile == nullptr)
-        return; // make error here
+    if (pMissile == nullptr) {
+        _log(ITEM__ERROR ,"Unable to create SE #%u:'%s' of type %u.", \
+                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID());
+        pClient->SendErrorMsg("Your %s in %s experienced a launching error and was disabled.", \
+                m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+        AbortCycle();
+        return;
+    }
 
     float distance = pMissile->GetSelf()->position().distance(m_targetSE->GetPosition());
     float missileSpeed = pMissile->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
@@ -1031,7 +1046,7 @@ void ActiveModule::LaunchProbe()
     ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagAutoFit, 1);
     ProbeItemRef probeRef = ProbeItem::Spawn(idata);
     if (probeRef.get() == nullptr)
-        throw PyException( MakeCustomError( "Unable to spawn item #%u:'%s' of type %u.", \
+        throw PyException(MakeCustomError("Unable to spawn item #%u:'%s' of type %u.", \
                 m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
 
     probeRef->SetPosition(pos);
