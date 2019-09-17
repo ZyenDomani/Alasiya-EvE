@@ -28,7 +28,7 @@
 #include "system/Damage.h"
 
 #include "../../eve-common/EVE_Damage.h"
-#include "packets/Damage.h"
+//#include "packets/Damage.h"
 
 #include "Client.h"
 #include "EntityList.h"
@@ -52,59 +52,56 @@ DAMAGE__TRACE
 DAMAGE__DEBUG
 */
 
-Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _kinetic, double _thermal, double _em, double _explosive, double _modifier, uint16 eID)
+// this is for turrets
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod, uint16 eID)
+: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr))
 {
-    srcSE       = source;
-    effectID    = eID;
-    weaponRef   = weapon;
-    em          = _em;
-    kinetic     = _kinetic;
-    thermal     = _thermal;
-    explosive   = _explosive;
-    chargeRef   = InventoryItemRef(nullptr);
-    modifier    = _modifier;
+    em          = emp;
+    kinetic     = kin;
+    thermal     = ther;
+    explosive   = exp;
+    modifier    = mod;
 }
 
-Damage::Damage(SystemEntity* source, InventoryItemRef weapon, double _modifier, uint16 eID)
+// this is for npcs
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod, uint16 eID)
+: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(InventoryItemRef(nullptr))
 {
-    srcSE       = source;
-    effectID    = eID;
-    weaponRef   = weapon;
-    em          = weapon->GetAttribute(AttrEmDamage).get_float();
-    kinetic     = weapon->GetAttribute(AttrKineticDamage).get_float();
-    thermal     = weapon->GetAttribute(AttrThermalDamage).get_float();
-    explosive   = weapon->GetAttribute(AttrExplosiveDamage).get_float();
-    chargeRef   = InventoryItemRef(nullptr);
-    modifier    = _modifier;
+    modifier    = mod;
 
-    _log(DAMAGE__WARNING, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u).",
-            srcSE->GetName(), srcSE->GetID(), weapon->itemName().c_str(), weapon->itemID() );
+    em          = wRef->GetAttribute(AttrEmDamage).get_float();
+    kinetic     = wRef->GetAttribute(AttrKineticDamage).get_float();
+    thermal     = wRef->GetAttribute(AttrThermalDamage).get_float();
+    explosive   = wRef->GetAttribute(AttrExplosiveDamage).get_float();
+
+    _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u).",
+         srcSE->GetName(), srcSE->GetID(), wRef->itemName().c_str(), wRef->itemID() );
 }
 
-Damage::Damage(SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID)
+// this is for missiles
+Damage::Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef, uint16 eID)
+: srcSE(pSE), effectID(eID), weaponRef(wRef), chargeRef(cRef)
 {
-    srcSE       = source;
-    effectID    = eID;
-    weaponRef   = weapon;
-    em          = charge->GetAttribute(AttrEmDamage).get_float();
-    kinetic     = charge->GetAttribute(AttrKineticDamage).get_float();
-    thermal     = charge->GetAttribute(AttrThermalDamage).get_float();
-    explosive   = charge->GetAttribute(AttrExplosiveDamage).get_float();
-    chargeRef   = charge;
     modifier    = 1;
 
-    _log(DAMAGE__WARNING, "Damage:Constructor - Called by source %s(%u) with weapon %s(%u) using charge %s(%u).",
-            srcSE->GetName(), srcSE->GetID(), weapon->itemName().c_str(), weapon->itemID(), charge->itemName().c_str(), charge->itemID() );
+    em          = cRef->GetAttribute(AttrEmDamage).get_float();
+    kinetic     = cRef->GetAttribute(AttrKineticDamage).get_float();
+    thermal     = cRef->GetAttribute(AttrThermalDamage).get_float();
+    explosive   = cRef->GetAttribute(AttrExplosiveDamage).get_float();
+
+    _log(DAMAGE__WARNING, "Damage:C'tor - Called by source %s(%u) with weapon %s(%u) using charge %s(%u).",
+         srcSE->GetName(), srcSE->GetID(), wRef->itemName().c_str(), wRef->itemID(), cRef->itemName().c_str(), cRef->itemID() );
 }
 
 // No specific damage dealt here, just killed
-Damage::Damage(SystemEntity* _source, bool fatal_blow/*false*/)
-: srcSE(_source), effectID(EVEEffectID::targetAttack)
+Damage::Damage(SystemEntity* pSE, bool fatal_blow/*false*/)
+: srcSE(pSE), effectID(EVEEffectID::targetAttack)
 {
-    assert(fatal_blow and "Damage() constructor meant for fatal_blow called without 2nd param being true!");
+    assert(fatal_blow and "Damage() fatal_blow called without 2nd param being true!");
 
     em = kinetic = thermal = explosive = 0.0f;
-    weaponRef = chargeRef = InventoryItemRef(nullptr);
+    weaponRef = InventoryItemRef(nullptr);
+    chargeRef = InventoryItemRef(nullptr);
 }
 
 bool SystemEntity::ApplyDamage(Damage &d) {
@@ -142,6 +139,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         case EVEDB::invGroups::Missile_Launcher_Standard: {
             // apply damage modifier from config
             d *= sConfig.rates.missileDamage;
+            // should this be adjusted based on damage?
             damageID = 6;
         } break;
         case EVEDB::invGroups::Super_Weapon: {
@@ -187,20 +185,22 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
     if (shield_damage <= available_shield) {
         /** @todo  this works, but still needs work....
-        if (HasPilot()) {
-            float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
-            uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(EvESkill::TacticalShieldManipulation));
-            if ((damageID) and (available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
-                float bleedthru = (d.GetTotal() * 0.01);
-                m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));
-                shield_damage -= bleedthru;
+        if (HasPilot())
+            if (damageID > 2) {
+                float uniformity = m_self->GetAttribute(AttrShieldUniformity).get_float();
+                uniformity += (0.05 * GetPilot()->GetChar()->GetSkillLevel(EvESkill::TacticalShieldManipulation));
+                if ((available_shield /m_self->GetAttribute(AttrShieldCapacity).get_float()) < uniformity) {
+                    float bleedthru = (d.GetTotal() * 0.01);
+                    m_self->SetAttribute(AttrArmorDamage, (bleedthru + m_self->GetAttribute(AttrArmorDamage).get_float()));
+                    shield_damage -= bleedthru;
+                }
             }
-        } */
+        */
         total_damage += shield_damage;
         float new_charge = available_shield - shield_damage;
         m_self->SetAttribute(AttrShieldCharge, new_charge);
 
-        _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.3f.",
+        _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to shields. New charge: %.2f.",
              GetName(), GetID(), shield_damage, new_charge);
     } else {
         // get fraction of damage partial shield absorbs, and lower total damage by that fraction
@@ -224,30 +224,30 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         float armor_damage = DamageToArmor.GetTotal();
         if (armor_damage <= available_armor) {
             if (HasPilot()) {
-                if ((available_armor /m_self->GetAttribute(AttrArmorHP)) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
+                if ((available_armor /m_self->GetAttribute(AttrArmorHP).get_float()) < m_self->GetAttribute(AttrArmorUniformity).get_float()) {
                     float new_damage = d.GetTotal() * 0.01;
                     m_self->SetAttribute(AttrDamage, new_damage);
                     armor_damage -= new_damage;
                 }
             }
             total_damage += armor_damage;
-            EvilNumber new_damage = m_self->GetAttribute(AttrArmorDamage) + EvilNumber(armor_damage);
+            float new_damage = m_self->GetAttribute(AttrArmorDamage).get_float() + armor_damage;
             m_self->SetAttribute(AttrArmorDamage, new_damage);
             _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to armor. New armor damage: %.2f",
-                 GetName(), GetID(), armor_damage, new_damage.get_float());
+                 GetName(), GetID(), armor_damage, new_damage);
         } else {
             d *= (1 - (available_armor /armor_damage));
             total_damage += available_armor;
 
             if (available_armor > 0) {
-                _log(DAMAGE__INFO, "%s(%u): Armor depleated with %.2f damage. %.2f damage remains.",
+                _log(DAMAGE__INFO, "%s(%u): Armor depleted with %.2f damage. %.2f damage remains.",
                      GetName(), GetID(), available_armor, d.GetTotal());
                 m_self->SetAttribute(AttrArmorDamage, m_self->GetAttribute(AttrArmorHP));
             }
 
             //Hull/Structure:
             //The base hp and damage attributes represent structure.
-            float available_hull = m_self->GetAttribute(AttrHP).get_int() - m_self->GetAttribute(AttrDamage).get_float();
+            float available_hull = m_self->GetAttribute(AttrHP).get_float() - m_self->GetAttribute(AttrDamage).get_float();
             Damage DamageToHull = d.MultiplyDup(
                 m_self->GetAttribute(AttrKineticDamageResonance).get_float(),
                 m_self->GetAttribute(AttrThermalDamageResonance).get_float(),
@@ -257,17 +257,17 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             float hull_damage = DamageToHull.GetTotal();
             if (hull_damage < available_hull) {
                 total_damage += hull_damage;
-                EvilNumber new_damage = m_self->GetAttribute(AttrDamage) + EvilNumber(hull_damage);
+                float new_damage = m_self->GetAttribute(AttrDamage).get_float() + hull_damage;
                 m_self->SetAttribute(AttrDamage, new_damage);
                 _log(DAMAGE__DEBUG, "%s(%u): Applying %.2f damage to structure. New structure damage: %.2f",
-                     GetName(), GetID(), hull_damage, new_damage.get_float());
+                     GetName(), GetID(), hull_damage, new_damage);
             } else {
                 total_damage += available_hull;
                 //dead....
-                _log(DAMAGE__INFO, "%s(%u): %.2f damage has depleated our structure. Time to explode.",
+                _log(DAMAGE__INFO, "%s(%u): %.2f damage has depleted our structure. Time to explode.",
                      GetName(), GetID(), hull_damage);
                 killed = true;
-                m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
+                //m_self->SetAttribute(AttrDamage, m_self->GetAttribute(AttrHP));
             }
         }
         // module damage.
@@ -277,97 +277,74 @@ bool SystemEntity::ApplyDamage(Damage &d) {
     }
 
     if (killed) {
-        if (m_killed) {
-            if (sConfig.debug.UseProfiling)
-                sProfile.AddTime(clientProfile, GetTimeUSeconds() - profileStartTime);
-
+        if (m_killed)
             return true;
-        }
 
         // OnNotify:OnTransmission -  (235799, `You have killed this defenseless NPC, bully.  Also, you have killed this NPC and are receiving this message.`)
-        //sLog.Magenta("Damage::ApplyDamage"," Entity %s(%u) killed.",GetName(), GetID());
-
-        //m_destiny->Halt();
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         Killed(d);  // this must NOT remove dead SE from system.
-
         SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
     } else {
-        PyTuple* up(nullptr);
-        /**    def OnDamageMessage(self, msgKey, args):
-         * found in /eve/client/script/environment/godma.py
-         *
-         * ALL dmg msgs working  22Apr15 (hacked.    - found the actual msgIDs)
-         * @todo this needs to be rewritten.  see notes in EVE_Damage.h
-         * @todo  also need to check for linked weapons and send msgs accordingly
-         * target, source, owner, damage, weapon, splash
-                  [PyList 3 items]
-                    [PyString "OnDamageMessage"]
-                    [PyString "AttackMiss1R"]
-                    [PyDict 3 kvp]
-                      [PyString "source"]
-                      [PyIntegerVar 9000000000001181882]
-                      [PyString "splash"]
-                      [PyString ""]
-                      [PyString "damage"]
-                      [PyFloat 0]
-
+        /**
+         * ALL dmg msgs working  22Apr15 (hacked - found the actual msgIDs)
+         * fixed msgIDs and removed xmlp  - 15Sept19
          */
-        // only send damage msgs for ships NOT killed.
         if (HasPilot()) {
-            /*
-            //  notify player of damage done
-            OnDamagedMsg ondam;
-            ondam.messageID = Dmg::Msg::Self[damageID];
-            ondam.source = d.srcSE->GetID();
-            ondam.damage = total_damage;
-            up = ondam.Encode();
-            GetPilot()->QueueDestinyEvent(&up);
-            */
-            // new shit...incomplete
+            //  notify player of damage received
             PyDict* dict = new PyDict();
                 dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
                 dict->SetItemString("weapon", new PyInt((d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID())));
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
-            PyList* list = new PyList();
-                list->AddItemString("OnDamageMessage");
-                list->AddItemString(Dmg::Msg::Self[damageID]);
-                list->AddItem(dict);
-            PyTuple* tuple = new PyTuple(1);
-                tuple->SetItem(1, list);
-            std::vector<PyTuple*> updates;
-            std::vector<PyTuple*> events;
-                events.push_back(tuple);
-            GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, true);
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
+                tuple->SetItem(2, dict);
+            GetPilot()->QueueDestinyEvent(&tuple);
         }
         if (d.srcSE->HasPilot()) {
-            //Notifications to others:
-            OnDamageMsg ondamo;
-            ondamo.messageID = Dmg::Msg::Other[damageID];
-            ondamo.weapon = (d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID());
-            ondamo.damage = total_damage;
-            ondamo.target = GetID();
-            up = ondamo.Encode();
-            d.srcSE->GetPilot()->QueueDestinyEvent(&up);
+            //notify to player of damage done:
+            PyDict* dict = new PyDict();
+                dict->SetItemString("weapon", new PyInt((d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID())));
+                dict->SetItemString("target", new PyInt(GetID()));
+                dict->SetItemString("damage", new PyFloat(total_damage));
+            PyTuple* tuple = new PyTuple(3);
+            bool banked = false;
+            tuple->SetItem(0, new PyString("OnDamageMessage"));
+            if (d.weaponRef->IsModuleItem()) {
+                GenericModule* pMod = d.srcSE->GetShipSE()->GetShipItemRef()->GetModule(d.weaponRef->flag());
+                if (pMod != nullptr)
+                    if (pMod->IsLinked())
+                        banked = true;
+            }
+            if (banked)
+                tuple->SetItem(1, new PyString(Dmg::Msg::Banked[damageID]));
+            else
+                tuple->SetItem(1, new PyString(Dmg::Msg::Given[damageID]));
+            tuple->SetItem(2, dict);
+            d.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
         }
-        // make message with "owner" tag to enable msgs to drone owner
         if (d.srcSE->IsDroneSE()) {
-            OnDamageMsgDrone ondamo;
-            ondamo.messageID = Dmg::Msg::Named[damageID];
-            ondamo.weapon = (d.chargeRef.get() != nullptr ? d.chargeRef->typeID() : d.weaponRef->typeID());
-            ondamo.damage = total_damage;
-            ondamo.owner = GetID(); // theres more to this....ownerData, ownerID = args['owner']
-            up = ondamo.Encode();
-            d.srcSE->GetDroneSE()->GetSelf()->GetOwner()->QueueDestinyEvent(&up);
+            //  notify player of damage done by drone
+            PyDict* dict = new PyDict();
+                dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
+                dict->SetItemString("target", new PyInt(GetID()));
+            /*
+             PyTuple* tuple = new PyTuple(2);
+                tuple->AddItem(0, PyStatic.NewNone());  // i dont know what this is
+                tuple->AddItem(1, new PyInt(d.srcSE->GetDroneSE()->GetOwner()->GetCharID())):
+             */
+                //dict->SetItemString("owner", tuple));
+                dict->SetItemString("damage", new PyFloat(total_damage));
+            PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
+                tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
+                tuple->SetItem(2, dict);
+            d.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
         }
 
-
-        /** @todo update this to use targetmanager's queue tb destiny event method. */
-        // need to update ALL ships targeting this SE with new damage state
-        if (d.srcSE->HasPilot())
-            SendDamageStateChanged(d.srcSE);
+        // this uses targetMgr update to send to all interested parties
+        SendDamageStateChanged();
     }
 
     if (sConfig.debug.UseProfiling)

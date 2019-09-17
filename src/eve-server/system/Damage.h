@@ -32,11 +32,11 @@
 
 class Damage {
 public:
-    Damage( SystemEntity* source, InventoryItemRef weapon, double _modifier, uint16 eID);
-    Damage( SystemEntity* source, InventoryItemRef weapon, InventoryItemRef charge, uint16 eID );
-    Damage( SystemEntity* source, InventoryItemRef weapon, double kinetic, double thermal, double em, double explosive, double modifier, uint16 eID );
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, float mod, uint16 eID);
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, InventoryItemRef cRef, uint16 eID);
+    Damage(SystemEntity* pSE, InventoryItemRef wRef, float kin, float ther, float emp, float exp, float mod, uint16 eID);
     // constructor for Killed() methods of derived SystemEntity objects with no weapon
-    Damage( SystemEntity *source, bool fatal_blow=false);
+    Damage(SystemEntity *pSE, bool fatal_blow=false);
 
     ~Damage()                                           { /* do nothing here */ }
 
@@ -79,14 +79,6 @@ public:
         explosive   *= factor;
 
         return *this;
-    }
-
-    void SumWithMultFactor(float factor)
-    {
-        kinetic   += kinetic    * factor;
-        thermal   += thermal    * factor;
-        em        += em         * factor;
-        explosive += explosive  * factor;
     }
 
     SystemEntity*           srcSE;     //we do not own this.

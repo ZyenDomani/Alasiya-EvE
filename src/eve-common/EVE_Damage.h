@@ -24,31 +24,7 @@ namespace Dmg {
 
     namespace Msg {
 
-        static const char* Self[9] = {
-            "AttackMiss1R",   //misses completely
-            "AttackMiss2R",   //barely misses
-            "AttackMiss3R",   //glances off
-            "AttackHit1R",    //barely scratches
-            "AttackHit2R",    //lightly hits
-            "AttackHit3R",    //hits
-            "AttackHit4R",    //aims well at you
-            "AttackHit5R",    //places an excellent hit
-            "AttackHit6R"     //strikes you perfectly, wrecking
-        };
-
-        static const char* Named[9] = {
-            "AttackMiss1RD",   //misses completely
-            "AttackMiss2RD",   //barely misses
-            "AttackMiss3RD",   //glances off
-            "AttackHit1RD",    //barely scratches
-            "AttackHit2RD",    //lightly hits
-            "AttackHit3RD",    //hits
-            "AttackHit4RD",    //aims well at you
-            "AttackHit5RD",    //places an excellent hit
-            "AttackHit6RD"     //strikes you perfectly, wrecking
-        };
-
-        static const char* Other[9] = {
+        static const char* Given[9] = {
             "AttackMiss1",   //misses completely
             "AttackMiss2",   //barely misses
             "AttackMiss3",   //glances off
@@ -60,8 +36,31 @@ namespace Dmg {
             "AttackHit6"     //strikes perfectly, wrecking
         };
 
-        // banked... 1=miss, 2=barely misses, 3=glances off
-        //'banked' means 'group weapons' and is for shooter only.
+        static const char* Taken[9] = {
+            "AttackMiss1R",   //misses completely
+            "AttackMiss2R",   //barely misses
+            "AttackMiss3R",   //glances off
+            "AttackHit1R",    //barely scratches
+            "AttackHit2R",    //lightly hits
+            "AttackHit3R",    //hits
+            "AttackHit4R",    //aims well at you
+            "AttackHit5R",    //places an excellent hit
+            "AttackHit6R"     //strikes you perfectly, wrecking
+        };
+
+        static const char* Detail[9] = {
+            "AttackMiss1RD",   //misses completely
+            "AttackMiss2RD",   //barely misses
+            "AttackMiss3RD",   //glances off
+            "AttackHit1RD",    //barely scratches
+            "AttackHit2RD",    //lightly hits
+            "AttackHit3RD",    //hits
+            "AttackHit4RD",    //aims well at you
+            "AttackHit5RD",    //places an excellent hit
+            "AttackHit6RD"     //strikes you perfectly, wrecking
+        };
+
+        //'banked' means 'grouped weapons' and is for shooter only.
         // also in ship.modules.GetTurretSets in MakeSlimItem()
         static const char* Banked[9] = {
             "AttackMiss1Banked",   //misses completely
