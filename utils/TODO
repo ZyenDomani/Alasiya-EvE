@@ -1,7 +1,7 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    31 August 2019
+****    16 September 2019
 
 
 **********  found shit...high priority
@@ -15,6 +15,12 @@ InvBrokerBound::Handle_GetInventoryFromId
 cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 
 moving mwd from one slot to another throws groupfit limited error
+
+check insurance payouts.   rounds full ship value up 
+
+when moving module slots, module is offlined after refit
+
+ship modules in slim item may be incomplete.  search client for GetTurretSets
 
 dungeon spawn error....(and they white)
 11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
@@ -32,7 +38,7 @@ dungeon spawn error....(and they white)
 11:20:50 [NPCTrace] Terrorist Leader(750000004): Added to system manager for Yuzier(30000007)
 
     
-jetans dont check space before jettison 
+jetans dont check capy before jettison 
 
 
   
@@ -146,9 +152,9 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - reinforceValue data is in pos/Structure.h
 
 
-lsc system better, but incomplete needs revisiting (and possible rewrite. code updates at very least)   -priority level: med-hi
+lsc system better, but incomplete needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
-    -  (whole system needs update or possible rewrite)
+    -  whole system needs update or possible rewrite
 
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
@@ -231,10 +237,7 @@ rats should test for faction signals in system and set origin along that directi
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
-01:54:02 [SvcCall] Service slash::SlashCmd()
-01:54:02 [CmdError] Unable to find command 'entityspawn' for allan
-    - cant find this call in client
-
+  
 *****************  xmlp shit
   ** none at this time
 
@@ -251,7 +254,7 @@ after all, it works
 item flags are stored in db as 'entity.flag', but client wants 'flagID'.
 look into changing our code to conform.  most objects are built in-code and use flagID already, but some items need "flag AS flagID" in sql query.
 
-figure out how to colorize _log() msgs to console
+figure out how to colorize _log() msgs to console   -priority level: low
 
 CmdStargateJump has multiple client-side msgs that would be fun to implement (system shut down due to traffik, closed from congestion, etc)
 
@@ -262,7 +265,7 @@ ideas for holoscreen in CQ:
     - relevant system data for player's current system
     - others?  more?
 
-OnItemsChanged is for multiple changes in a single return.
+OnItemsChanged is for multiple changes in a single return.  -priority level: low
     - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
 
 _Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSet.EveOwners (or server if empty)
@@ -279,18 +282,16 @@ destiny shit - misc things found in destiny.dll
     - markers for ball's yaw, pitch, roll (dunRotation)
     - criuse velocity as a fraction of max velocity (uk)
     - id of bubble ball belongs to, current and former (uk)
+    - dunRotation is used for accel gates, customs offices, moon miners, and possibibly others i havent found yet
 
 update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
 
-move target state enums to seperate data file and fix namespace
-check 'targetModule' data and update as needed.  may have invalid modules after target destroyed or cleared
-
 
 jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
 
-move *data calls from inventoryDB into static data mgr
+move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
@@ -305,7 +306,7 @@ update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
     - this includes all decode errors
 
 
-create data needed for killboard, and integrate killboard into site
+create data needed for killboard, and integrate killboard into site  -priority level: low
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
 
@@ -315,7 +316,7 @@ object cache system still not understood or fully utilized.
 
 when cynos are implemented, remember to update mapDynamicData for counts on both fields and generators
 
-stations have a reprocessingHangarFlag.  implement this for RAM shit (they are all 4, but whatever)
+stations have a reprocessingHangarFlag.  implement this for RAM shit (they are all 4, but whatever)  -priority level: low
 
 better checks and reverts when creating corps fail - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
 
