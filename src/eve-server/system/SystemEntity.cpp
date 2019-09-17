@@ -82,7 +82,7 @@ void SystemEntity::Process() {
 
     /*  Enable base call to Process Targeting and Movement
      * this order WILL affect Point/Tackle  (kinda like on live)
-     * processing target first will benefit agressor
+     * processing target first will benefit aggressor
      * processing destiny first will benefit target
      */
     if (m_targMgr != nullptr)
@@ -157,7 +157,7 @@ double SystemEntity::DistanceTo2(const SystemEntity* other) {
     return GetPosition().distance(other->GetPosition());
 }
 
-void SystemEntity::SendDamageStateChanged(SystemEntity* source) {  //working 24Apr15
+void SystemEntity::SendDamageStateChanged() {  //working 24Apr15
      DamageDetails dmgState;
         dmgState.shield = m_self->GetAttribute(AttrShieldCharge).get_double() / m_self->GetAttribute(AttrShieldCapacity).get_double();
         dmgState.recharge = m_self->GetAttribute(AttrShieldRechargeRate).get_double();

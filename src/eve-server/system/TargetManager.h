@@ -54,8 +54,8 @@ public:
     void                TargetAdded(SystemEntity *who);
     void                TargetedAdd(SystemEntity *who);
     void                TargetedLost(SystemEntity *who);
-    void                ClearTargets(bool notify_self=true);
-    void                ClearAllTargets(bool notify_self=true);
+    void                ClearTargets(bool notify=true);
+    void                ClearAllTargets(bool notify=true);
 
     bool                TargetFail(SystemEntity* who);
     bool                StartTargeting(SystemEntity* tSE, ShipItemRef sRef);
@@ -64,7 +64,7 @@ public:
 
     uint8               GetTotalTargets() const         { return (uint8)m_targets.size(); }
 
-    float               TimeToLock(ShipItemRef ship, SystemEntity *target) const;
+    float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
 
     /* NPC AI Methods */
     bool                IsTargetedBy(SystemEntity *pSE);
@@ -104,44 +104,46 @@ protected:
 
     class TargetEntry {
     public:
-        TargetEntry(SystemEntity *_who)
-            : state(Idle), who(_who), timer(0) {}
+        TargetEntry(SystemEntity* se)
+        : state(Idle), pSE(se), timer(0) {}
 
         void Dump() const;
 
         enum {
-            Idle,
+            Idle = 0,
             PassiveLocking,
             Locking,
             Locked
         } state;
-        SystemEntity *const who;
+
+        SystemEntity *const pSE;
         Timer timer;
     };
 
     class TargetedByEntry {
     public:
-        TargetedByEntry(SystemEntity *_who)
-            : state(Idle), who(_who) {}
+        TargetedByEntry(SystemEntity* se)
+        : state(Idle), pSE(se) {}
 
         void Dump() const;
 
         enum {
-            Idle,
+            Idle = 0,
             Locking,
             Locked
         } state;
-        SystemEntity *const who;
+
+        SystemEntity *const pSE;
     };
 
 private:
     SystemEntity* mySE;    //we do not own this.
 
-    bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
-
     std::map<uint32, ActiveModule*> m_modules;  // map of modID/Mod* targeting this object
     std::map<SystemEntity*, TargetEntry*> m_targets;    //we own these values, not the keys
     std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;    //we own these values, not the keys
+
+    bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
 };
 
 #endif
