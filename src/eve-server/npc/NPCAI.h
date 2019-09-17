@@ -60,9 +60,9 @@ public:
     // this is called from NPC::Process() which is called from SystemManager::Process()
     void Process();
 
-    void Target(SystemEntity *by_who);
-    void Targeted(SystemEntity *by_who);
-    void TargetLost(SystemEntity *by_who);
+    void Target(SystemEntity* pSE);
+    void Targeted(SystemEntity* pSE);
+    void TargetLost(SystemEntity* pSE);
 
     void ClearTargets()                                 { m_npc->TargetMgr()->ClearTargets(); }
 	void ClearAllTargets()                              { m_npc->TargetMgr()->ClearAllTargets(); }
@@ -86,17 +86,18 @@ public:
     void MissileLaunched(Missile* pMissile); // them to us
 
 protected:
-    void Attack(SystemEntity* pTarget);
+    void Attack(SystemEntity* pSE);
     void SetIdle();
     void WarpOut();
     void SetWander();
-    void SetChasing(SystemEntity* pTarget);
-    void SetEngaged(SystemEntity* pTarget);
-    void SetFleeing(SystemEntity* pTarget);
-    void SetFollowing(SystemEntity* pTarget);
-    void SetSignaling(SystemEntity* pTarget);
-    void AttackTarget(SystemEntity* pTarget);
-    void CheckDistance(SystemEntity* pTarget);
+    void SetChasing(SystemEntity* pSE);
+    void SetEngaged(SystemEntity* pSE);
+    void SetFleeing(SystemEntity* pSE);
+    void ClearTarget(SystemEntity* pSE);
+    void SetFollowing(SystemEntity* pSE);
+    void SetSignaling(SystemEntity* pSE);
+    void AttackTarget(SystemEntity* pSE);
+    void CheckDistance(SystemEntity* pSE);
 
     double GetTargetTime();
 

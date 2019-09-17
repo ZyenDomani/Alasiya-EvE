@@ -268,12 +268,6 @@ maxDustCharacter = 2130000000
 #define IsTempItem(itemID) \
  (((itemID >= minTempItemID) && (itemID < minPIStructure)) || (itemID >= minNPC))
 
-#define FlagToSlot(flag) \
- (flag - flagSlotFirst)
-
-#define SlotToFlag(slot) \
- ((EVEItemFlags)(flagSlotFirst + slot))
-
 #define IsModuleSlot(flag) \
 (((flag >= flagLowSlot0) && (flag <= flagHiSlot7)) \
   || ((flag >= flagRigSlot0) && (flag <= flagRigSlot7)) \
@@ -318,6 +312,12 @@ maxDustCharacter = 2130000000
 #define IsDustKey(key) \
 (key >= 10000)
 
+
+#define FlagToSlot(flag) \
+(flag - flagSlotFirst)
+
+#define SlotToFlag(slot) \
+((EVEItemFlags)(flagSlotFirst + slot))
 
 
 /*

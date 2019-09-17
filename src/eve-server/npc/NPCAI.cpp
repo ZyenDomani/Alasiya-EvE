@@ -32,7 +32,6 @@
  *   add methods to check target/targeter warping out and chance of npc following (and possibly calling backup)
  *
  *  have data...needs coding...
- *   missiles
  *   chase duration/distance timers
  *   ewar shit, including point/tackle
  */
@@ -55,8 +54,8 @@ NPCAIMgr::NPCAIMgr(NPC* who)
   m_self(who->GetSelf()),
   m_processTimer(0),
   m_mainAttackTimer(0),
-  m_warpOutTimer(0),
   m_missileTimer(0),
+  m_warpOutTimer(0),
   m_shieldBoosterTimer(0),
   m_armorRepairTimer(0),
   m_beginFindTarget(0),
@@ -320,7 +319,7 @@ void NPCAIMgr::Process() {
                 return;
             }
             if (pSE->SysBubble() == nullptr) {
-                m_npc->TargetMgr()->ClearTarget(pSE);
+                ClearTarget(pSE);
                 return;
             }
             CheckDistance(pSE);
@@ -355,9 +354,9 @@ void NPCAIMgr::WarpOut()
      * to determine a warpto target for this npc, or this group
      *
      * for now, if there are players in system, just warp to another belt.
+     * if there are no players in this system, avoid using proc tics on npcs
      */
 
-    // if there are no players in this system, avoid using proc tics on npcs
     if (pSys->PlayerCount()) {
         // pSys->GetAnomMgr();
         uint32 newBeltID = pSys->GetRandBeltID();
@@ -517,17 +516,12 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
             // target is no longer in npc's "sight range" and is NOT targeting this npc.  unlock target and return to idle.
             //   should we do anything else here?  search for another target?  wander around?  yes..later
             // if npc is targeted greater than this distance, it will chase
-            m_npc->TargetMgr()->ClearTarget(pSE);
-            if (m_npc->TargetMgr()->HasNoTargets())
-                SetIdle();
+            ClearTarget(pSE);
         }
         return;
     }
 
     m_isWandering = false;
-
-    _log(NPC__AI_TRACE, "%s(%u): CheckDistance: %s(%u) - dist: %.0f, flyRange: %u, boostRange: %u.", \
-            m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), dist, m_flyRange, m_boostRange);
 
     if (dist < m_flyRange)
         SetEngaged(pSE);
@@ -535,6 +529,9 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
         SetFollowing(pSE);
     else
         SetChasing(pSE);
+
+    _log(NPC__AI_TRACE, "%s(%u): CheckDistance:  target: %s(%u), state: %s, dist: %.0f, flyRange: %u, boostRange: %u.", \
+            m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID(), GetStateName(m_state).c_str(), dist, m_flyRange, m_boostRange);
 
     Attack(pSE);
 }
@@ -659,14 +656,14 @@ void NPCAIMgr::Attack(SystemEntity* pSE)
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                     m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
             m_missileTimer.Disable();
-            m_npc->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
         if (pSE->DestinyMgr() == nullptr) {
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) has no destiny manager.  Clear target and move on",
                     m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
             m_missileTimer.Disable();
-            m_npc->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
         // Check to see if the target is not cloaked:
@@ -674,12 +671,19 @@ void NPCAIMgr::Attack(SystemEntity* pSE)
             _log(NPC__AI_TRACE, "%s(%u): Target %s(%u) is cloaked.  Clear target and move on",
                     m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
             m_missileTimer.Disable();
-            m_npc->TargetMgr()->ClearTarget(pSE);
+            ClearTarget(pSE);
             return;
         }
         if (m_npc->TargetMgr()->CanAttack())
             AttackTarget(pSE);
     }
+}
+
+void NPCAIMgr::ClearTarget(SystemEntity* pSE) {
+    m_npc->TargetMgr()->ClearTarget(pSE);
+
+    if (m_npc->TargetMgr()->HasNoTargets())
+        SetIdle();
 }
 
 //also check for special effects and write code to implement them
