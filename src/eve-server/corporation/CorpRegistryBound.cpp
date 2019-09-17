@@ -239,6 +239,7 @@ CorpRegistryBound::CorpRegistryBound(PyServiceMgr *mgr, CorporationDB& db, uint3
 
     PyCallable_REG_CALL(CorpRegistryBound, AddBulletin);
     PyCallable_REG_CALL(CorpRegistryBound, GetBulletins);
+    PyCallable_REG_CALL(CorpRegistryBound, DeleteBulletin);
 
     PyCallable_REG_CALL(CorpRegistryBound, CreateLabel);
     PyCallable_REG_CALL(CorpRegistryBound, GetLabels);
@@ -978,6 +979,16 @@ PyResult CorpRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
         m_db.EditBulletin(bulletinID, call.client->GetCharacterID(), editDateTime, args.title, args.body);
     else
         m_db.AddBulletin(m_corpID, m_corpID, call.client->GetCharacterID(), args.title, args.body);
+
+    return nullptr;
+}
+
+PyResult CorpRegistryBound::Handle_DeleteBulletin(PyCallArgs &call) {
+    //self.GetCorpRegistry().DeleteBulletin(id)
+    _log(CORP__CALL, "CorpRegistryBound::Handle_DeleteBulletin() size=%u", call.tuple->size() );
+    call.Dump(CORP__CALL_DUMP);
+
+    m_db.DeleteBulletin(PyRep::IntegerValue(call.tuple->GetItem(0)));
 
     return nullptr;
 }

@@ -60,6 +60,7 @@ public:
     PyObject *GetStations(uint32 corpID);
     PyObject *GetEveOwners(uint32 corpID);
     PyRep* GetBulletins(uint32 corpID);
+    void DeleteBulletin(uint32 bulletinID);
     void AddBulletin(uint32 corpID, uint32 ownerID, uint32 cCharID, std::string& title, std::string& body);
     void EditBulletin(uint32 bulletinID, uint32 eCharID, int64 eDataTime, std::string& title, std::string& body);
 

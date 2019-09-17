@@ -1176,6 +1176,12 @@ uint32 CorporationDB::GetStationOwner(uint32 stationID) {
     return row.GetUInt(0);
 }
 
+void CorporationDB::DeleteBulletin(uint32 bulletinID)
+{
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM crpBulletins WHERE bulletinID = %u", bulletinID);
+}
+
 void CorporationDB::AddBulletin(uint32 corpID, uint32 ownerID, uint32 cCharID, std::string& title, std::string& body)
 {
     DBerror err;

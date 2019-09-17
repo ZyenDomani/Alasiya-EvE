@@ -42,6 +42,7 @@ m_dispatch(new Dispatcher(this))
     PyCallable_REG_CALL(AllianceBound, GetAlliance);
     PyCallable_REG_CALL(AllianceBound, AddBulletin);
     PyCallable_REG_CALL(AllianceBound, GetBulletins);
+    PyCallable_REG_CALL(AllianceBound, DeleteBulletin);
     PyCallable_REG_CALL(AllianceBound, CreateLabel);
     PyCallable_REG_CALL(AllianceBound, GetLabels);
     PyCallable_REG_CALL(AllianceBound, DeleteLabel);
@@ -158,6 +159,13 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call) {
 
     //m_db.AddBulletin(*need list of corpIDs here*, m_allyID, call.client->GetCharacterID(), PyRep::StringContent(args.title), PyRep::StringContent(args.body));
 
+    return nullptr;
+}
+
+PyResult AllianceBound::Handle_DeleteBulletin(PyCallArgs &call) {
+    //   sm.GetService('alliance').GetMoniker().DeleteBulletin(id)
+    _log(ALLY__CALL, "AllianceBound::Handle_DeleteBulletin() size=%u", call.tuple->size() );
+    call.Dump(ALLY__CALL_DUMP);
     return nullptr;
 }
 

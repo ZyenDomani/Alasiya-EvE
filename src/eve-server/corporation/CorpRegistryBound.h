@@ -84,6 +84,7 @@ public:
 
     PyCallable_DECL_CALL(AddBulletin);
     PyCallable_DECL_CALL(GetBulletins);
+    PyCallable_DECL_CALL(DeleteBulletin);
 
     PyCallable_DECL_CALL(GetLocationalRoles);
     PyCallable_DECL_CALL(GetRecentKillsAndLosses);
