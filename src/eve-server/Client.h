@@ -49,7 +49,7 @@ enum ClientTimers {
     DefaultTimer     = 1000,
     BoardTimer       = 600,
     JumpTimer        = 500,
-    UndockTimer      = 2500,     // used to delay sending Destiny::State (client error fix)
+    UndockTimer      = 1500,     // used to delay sending Destiny::State (client error fix)
     DockingTimer     = 1000,    // Timer to delay docking (as on live)
     JumpingTimer     = 4000,    // Timer to delay jumping
     MovingTimer      = 1000,
