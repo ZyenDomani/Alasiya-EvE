@@ -298,6 +298,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
                 dict->SetItemString("target", new PyInt(GetID()));
                 dict->SetItemString("damage", new PyFloat(total_damage));
             PyTuple* tuple = new PyTuple(3);
+                tuple->SetItem(0, new PyString("OnDamageMessage"));
                 tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
                 tuple->SetItem(2, dict);
             GetPilot()->QueueDestinyEvent(&tuple);
