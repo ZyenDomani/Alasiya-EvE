@@ -105,6 +105,27 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
     return nullptr;
 }
 
+PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
+    EVEItemFlags stackFlag = m_flag;
+
+    if (call.tuple->items.size() != 0) {
+        Call_SingleIntegerArg arg;
+        if (!arg.Decode(&call.tuple)) {
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            return nullptr;
+        }
+
+        stackFlag = (EVEItemFlags)arg.arg;
+    }
+
+    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) with flag %s", m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag));
+
+    //Stack Items contained in this inventory
+    pInventory->StackAll(stackFlag, m_ownerID);
+
+    return nullptr;
+}
+
 PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
     /*
             customsOfficeInventory = sm.GetService('invCache').GetInventoryFromId(self.customsOfficeID)
@@ -270,27 +291,6 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     return nullptr;
 }
 
-PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
-    EVEItemFlags stackFlag = m_flag;
-
-    if (call.tuple->items.size() != 0) {
-        Call_SingleIntegerArg arg;
-        if (!arg.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
-            return nullptr;
-        }
-
-        stackFlag = (EVEItemFlags)arg.arg;
-    }
-
-    _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) with flag %s", m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag));
-
-    //Stack Items contained in this inventory
-    pInventory->StackAll(stackFlag, m_ownerID);
-
-    return nullptr;
-}
-
 /* this call is used for moving an item to *THIS* inventory
  * Moving items to/from containers
  * Removing Module/Charges from ship (using 'remove' button on item slot)
@@ -318,7 +318,8 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
     if (toFlag == flagLocked) {
         // corp role 'equip config' can move locked items (per client)
-        _log(INV__MESSAGE, "InventoryBound::Handle_Add() - item %u from %u sent flagLocked.", args.itemID, args.containerID);
+        _log(INV__ERROR, "InventoryBound::Handle_Add() - item %u from %u sent flagLocked.  continuing but this needs to be fixed.", \
+                args.itemID, args.containerID);
         toFlag = flagCargoHold;
     }
 
@@ -383,8 +384,6 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     uint16 toFlag = m_flag;
     if (call.byname.find("flag") != call.byname.end())
         toFlag = PyRep::IntegerValue(call.byname.find("flag")->second);
-    if (toFlag == flagAutoFit)
-        toFlag = m_flag;
 
     int32 quantity = 1;
     if (call.byname.find("qty") != call.byname.end())
@@ -509,12 +508,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 donating = true;
         } break;
         case EVEDB::invCategories::Ship: {
-            // do module checks for these items
+            // do module checks and specific removeItem() for these items
             ship = true;
         } break;
     }
 
-    EVEItemFlags oldFlag(flagAutoFit);
+    EVEItemFlags fromFlag(flagAutoFit);
     EVEItemFlags origFlag(toFlag);
     InventoryItemRef iRef(nullptr);
     sItemFactory.SetUsingClient(pClient);
@@ -534,7 +533,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             continue;
         }
 
-        oldFlag = iRef->flag();
+        fromFlag = iRef->flag();
 
         if (moveStack)
             quantity = iRef->quantity();
@@ -549,20 +548,22 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         }
 
         // remove item from current location - this is for items that need specific handling
-        if (IsRigSlot(oldFlag)) { //  cant remove rigs like this.  send error.
+        if (IsRigSlot(fromFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
-        } else if (IsModuleSlot(oldFlag)) {
+        } else if (IsModuleSlot(fromFlag)) {
             // can we remove modules from an inactive ship?  no.
             if (pShip == nullptr)
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
             if (IsModuleSlot(toFlag)) {
                 // we are wanting to change slots on a fitted module.
-                pShip->MoveModuleSlot(oldFlag, toFlag);
+                pShip->MoveModuleSlot(fromFlag, toFlag);
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
             }
+            // else this is a currently-fitted module.  call remove here and let MM code handle removal
+            //m_self->GetShipItem()->RemoveItem(iRef);
         }
 
         if (!moveStack and (quantity < iRef->quantity())) {
@@ -591,11 +592,11 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         if (ship) {
             // are we adding module to ship using autoFit?
             if (toFlag == flagAutoFit) {
-                assert(iRef->categoryID() != EVEDB::invCategories::Charge); // crash here...this should NOT happen.
+               // assert(iRef->categoryID() != EVEDB::invCategories::Charge); // crash here...this should NOT happen.
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
-                        pClient->SendNotifyMsg("Your ship has no avalible slots to fit this module.  Putting the %u in your CargoHold.", \
+                        pClient->SendNotifyMsg("Your ship has no availible slots to fit this module.  Putting the %s in your CargoHold.", \
                                     iRef->itemName().c_str());
                         toFlag = flagCargoHold;
                     }

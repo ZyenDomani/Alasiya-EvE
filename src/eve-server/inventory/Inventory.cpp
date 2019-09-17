@@ -441,12 +441,13 @@ bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 {
     uint16 count = 0;
     for (auto cur : mContents) {
-        if (cur.second->typeID() == typeID )
+        if (cur.second->typeID() == typeID ) {
             if (cur.second->quantity() >= qty) {
                 return true;
             } else {
                 count += cur.second->quantity();
             }
+        }
     }
     if (count >= qty)
         return true;
@@ -459,8 +460,8 @@ bool Inventory::ContainsTypeByFlag(uint16 typeID, EVEItemFlags flag) const
     if (GetItemsByFlag(flag, itemVec) < 1)
         return false;
     for (auto cur : itemVec)
-        if (cur->typeID() == typeID )
-                return true;
+        if (cur->typeID() == typeID)
+            return true;
     return false;
 }
 

@@ -746,7 +746,7 @@ InventoryItemRef InventoryItem::Split(int32 qty, bool notify/*false*/) {
     return iRef;
 }
 
-bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notify/*true*/) {
+bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify/*true*/) {
     if (to_merge.get() == nullptr)
         return false;
 
@@ -754,26 +754,26 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, uint32 qty/*0*/, bool notif
         throw PyException( MakeCustomError("You cannot stack assembled items."));
 
     if (m_type.id() != to_merge->typeID()) {
-        _log(ITEM__ERROR, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
+        _log(ITEM__WARNING, "%s (%u): Asked to merge with %s (%u).", m_itemName.c_str(), m_itemID, to_merge->itemName().c_str(), to_merge->itemID());
         return false;
     }
 
-    if (qty < 1) {
-        _log(ITEM__ERROR, "%s (%u): Asked to merge with %u units of item %u.", m_itemName.c_str(), m_itemID, qty, to_merge->itemID());
+    if (qty < 1)
         qty = to_merge->quantity();
-        to_merge->Delete();
-    } else if (!to_merge->AlterQuantity(-qty, notify)) {
+
+    if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %u.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
         return false;
     }
+
+    if (to_merge->quantity() < 1)
+        to_merge->Delete();
 
     if (!AlterQuantity(qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to add quantity %u.", m_itemName.c_str(), m_itemID, qty);
         return false;
     }
 
-    if (to_merge->quantity() < 1)
-        to_merge->Delete();
     return true;
 }
 
@@ -782,8 +782,21 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
     InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
     if (iRef.get() == nullptr)
         return;
-    // here we 'merge' with stack already in cargo
-    iRef->Merge(InventoryItemRef(this));
+    // fix for elusive error when using IB::Add() to remove loaded modules (charge trying to add to module item)
+    if (iRef->typeID() != typeID()) {
+        Move(pShip->itemID(), flag, true);
+        return;
+    }
+
+    // if either item is assembled, just move item (merge will throw on singleton)
+    if (iRef->singleton() or m_singleton) {
+        Move(pShip->itemID(), flag, true);
+        return;
+    }
+    // here we 'merge' with stack already in cargo (this is a feature in Alasiya)
+    //  if it dont work, just move item.
+    if (!iRef->Merge(InventoryItemRef(this)))
+        Move(pShip->itemID(), flag, true);
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {

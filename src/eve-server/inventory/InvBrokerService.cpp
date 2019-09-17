@@ -223,11 +223,35 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
      *   ...
         inv = self.invCache.GetInventoryFromId(const.containerHangar)
      */
-    EVEItemFlags flag = flagHangar;
+    EVEItemFlags flag = flagAutoFit;
     switch (iRef->categoryID()) {
+        case EVEDB::invCategories::Owner: {
+            switch (iRef->groupID()) {
+                case EVEDB::invGroups::Character: {
+                    flag = flagAutoFit;
+                    ownerID = call.client->GetCharacterID();
+                } break;
+                case EVEDB::invGroups::Corporation: {
+                    flag = flagAutoFit;
+                    ownerID = call.client->GetCorporationID();
+                } break;
+                case EVEDB::invGroups::Alliance: {
+                    flag = flagAutoFit;
+                    ownerID = call.client->GetAllianceID();
+                } break;
+                case EVEDB::invGroups::Faction: {
+                    // not sure if this is used...
+                    flag = flagAutoFit;
+                    ownerID = call.client->GetWarFactionID();
+                } break;
+            }
+        } break;
         case EVEDB::invCategories::Ship: {
-            // should we test for ships and hangar types here?
-            flag = flagCargoHold;
+            // should we test for ships and hangar types here?   yes.
+            if (iRef->HasAttribute(AttrHasCorporateHangars))
+                flag = flagCargoHold;
+            else
+                flag = flagCargoHold;
         } break;
         case EVEDB::invCategories::Structure: {
             switch(iRef->groupID()) {

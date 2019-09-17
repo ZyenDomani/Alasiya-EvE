@@ -39,6 +39,7 @@ class PyDict;
 class PyObject;
 class ShipItem;
 class ServiceDB;
+class ModuleItem;
 class ItemContainer;
 class Rsp_CommonGetInfo_Entry;
 
@@ -79,8 +80,10 @@ public:
 
     /* class type pointer querys. */
     virtual ShipItem*       GetShipItem()               { return nullptr; }
+    virtual ModuleItem*     GetModuleItem()             { return nullptr; }
     /* class type tests. */
     virtual bool            IsShipItem()                { return false; }
+    virtual bool            IsModuleItem()              { return false; }
 
     /* generic access functions handled here */
     Inventory*              GetMyInventory()            { return pInventory; }
@@ -135,10 +138,10 @@ public:
     virtual void            Delete();  //totally removes item from game and deletes from the DB.
     // makes new stack of 'qty' and returns ref of new stack, or null if failed
     virtual InventoryItemRef Split(int32 qty, bool notify=true);
-    virtual bool            Merge(InventoryItemRef to_merge, uint32 qty=0, bool notify=true);
+    virtual bool            Merge(InventoryItemRef to_merge, int32 qty=0, bool notify=true);
 
-    virtual void            AddItem(InventoryItemRef item);
-    virtual void            RemoveItem(InventoryItemRef item);
+    virtual void            AddItem(InventoryItemRef iRef);
+    virtual void            RemoveItem(InventoryItemRef iRef);
 
     /* specific functions handled here */
     /* returns uID for new item.  saves item data to db */
