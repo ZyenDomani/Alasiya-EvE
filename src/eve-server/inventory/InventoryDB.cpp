@@ -1199,7 +1199,7 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
     //Only time it should make it this far...
     if (ship->HasPilot())
         if (ship->GetPilot()->CanThrow())
-            throw PyException( MakeCustomError( "There are no available slots" ));
+            throw PyException(MakeCustomError("There are no available slots" ));
 
     return false;
 

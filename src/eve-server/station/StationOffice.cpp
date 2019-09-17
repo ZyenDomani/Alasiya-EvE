@@ -74,7 +74,7 @@ void StationOffice::ValidateAddItem(EVEItemFlags flag, InventoryItemRef item) co
             capacityUsed += cur->GetAttribute(AttrVolume);
         capacityUsed += item->GetAttribute(AttrVolume);
         if (capacityUsed > GetAttribute(AttrCapacity) )
-            ; /** @todo make error msg here */  //  PyException( MakeCustomError( "Not enough cargo space!") );
+            ; /** @todo make error msg here */  //  PyException(MakeCustomError("Not enough cargo space!") );
     }
 }
 

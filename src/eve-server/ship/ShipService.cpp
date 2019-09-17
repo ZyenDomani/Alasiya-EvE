@@ -808,7 +808,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());
         } else { // Because we check for the second item in the list being string we get here for t3 ship assembly
             sLog.Error( "Handle_AssembleShip", "Modular ships are not implemented yet" );
-            throw PyException( MakeCustomError( "Modular ships are not implemented yet." ) );
+            throw PyException(MakeCustomError("Modular ships are not implemented yet." ) );
             return nullptr;
             //Call_AssembleShipTech3 argsT3;
             //argsT3.item;

@@ -325,7 +325,7 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
     /*
     std::map<std::string, PyRep *> arg;
     arg["target"] = new PyInt(args.arg);
-    throw PyException( MakeUserError( "DeniedDroneTargetForceField", arg));
+    throw PyException(MakeUserError("DeniedDroneTargetForceField", arg));
     */
  //DeniedDroneTargetForceField
 }

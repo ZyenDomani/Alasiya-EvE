@@ -321,10 +321,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     ShipItemRef sRef = call.client->GetShip();
     InventoryItemRef cRef = sItemFactory.GetItem(args.itemID);
     if (cRef.get() == nullptr)
-        throw PyException( MakeUserError( "CantFindChargeToAdd"));
+        throw PyException(MakeUserError("CantFindChargeToAdd"));
     GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.moduleIDs[0])->flag());
     if (pMod == nullptr)
-        throw PyException( MakeUserError( "ModuleNoLongerPresentForCharges"));
+        throw PyException(MakeUserError("ModuleNoLongerPresentForCharges"));
 
     if (pMod->IsLinked())
         sRef->LoadLinkedWeapons(cRef, pMod);
@@ -385,10 +385,10 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     Client* pClient(call.client);
     if (pClient->IsJump())
-        throw PyException( MakeUserError( "CantTargetWhileJumping"));
+        throw PyException(MakeUserError("CantTargetWhileJumping"));
 
     if (pClient->GetShipID() == args.arg)
-        throw PyException( MakeUserError( "DeniedTargetSelf"));
+        throw PyException(MakeUserError("DeniedTargetSelf"));
 
     //DeniedTargetAfterCloak
 
@@ -409,14 +409,14 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     }
     /*  checked in TargetMgr
     if (pMyDestiny->IsCloaked()) {
-        throw PyException( MakeUserError( "CantTargetWhileCloaked"));
+        throw PyException(MakeUserError("CantTargetWhileCloaked"));
         return rsp.Encode();
     }
     if (pMyDestiny->IsWarping()) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - warping.");
         std::map<std::string, PyRep *> arg;
         arg["targetName"] = new PyString(pTSE->GetName());
-        throw PyException( MakeUserError( "DeniedTargetSelfWarping", arg));
+        throw PyException(MakeUserError("DeniedTargetSelfWarping", arg));
     }
     */
     if (pShip->TargetMgr() == nullptr)
@@ -427,7 +427,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(PLAYER__WARNING, "Unable to find system manager from '%s'", pClient->GetName());
         std::map<std::string, PyRep *> arg;
         arg["target"] = new PyInt(args.arg);
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
+        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
     }
 
     SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
@@ -440,25 +440,25 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), pTSE->GetName());
         std::map<std::string, PyRep *> arg;
         arg["target"] = new PyInt(args.arg);
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
+        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
     }
 /*  checked in TargetMgr
     if (pTSE->DestinyMgr()->IsWarping()) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed - target warping.");
         std::map<std::string, PyRep *> arg;
         arg["targetName"] = new PyString(pTSE->GetName());
-        throw PyException( MakeUserError( "DeniedTargetOtherWarping", arg));
+        throw PyException(MakeUserError("DeniedTargetOtherWarping", arg));
     }
     */
     if (pTSE->HasPilot())
         if (pTSE->GetPilot()->IsInvul())
-            throw PyException( MakeUserError( "DeniedTargetInvulnerable"));
+            throw PyException(MakeUserError("DeniedTargetInvulnerable"));
 
     if (!pShip->TargetMgr()->StartTargeting(pTSE, pClient->GetShip())) {
         _log(TARGET__WARNING, "Handle_AddTarget - TargMgr.StartTargeting() failed.");
         std::map<std::string, PyRep *> arg;
         arg["target"] = new PyInt(args.arg);
-        throw PyException( MakeUserError( "DeniedTargetingAttemptFailed", arg));
+        throw PyException(MakeUserError("DeniedTargetingAttemptFailed", arg));
     }
 
     if (sConfig.debug.IsTestServer)
@@ -852,7 +852,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     }
     // are there any other cases to test for here?
 
-    // returns 1 (from what i've seen in logs, but dont know why)
+    // returns 1 on success (throw error otherwise)
     return PyStatic.NewOne();
 }
 
