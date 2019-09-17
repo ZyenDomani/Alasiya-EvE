@@ -328,9 +328,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
         return false;
     }
 
-    // register with our system manager.
-    m_system->AddClient(this, true);
-
     m_char = sItemFactory.GetCharacter(charID);
     if (m_char.get() == nullptr) {
         sLog.Error("Client::SelectCharacter()", "GetChar for %u = nullptr", charID);
@@ -339,6 +336,9 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     }
 
     m_char->SetClient(this);
+
+    // register with our system manager AFTER character is constructed
+    m_system->AddClient(this, true);
 
     // this will eventually check for d/c timer and rejoin existing fleet if applicable
     //  fleet data is zeroed when char item is created
