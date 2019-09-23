@@ -76,6 +76,7 @@ bool ModuleManager::Initialize() {
 
     // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
+    // this will order by mod, charge, cargo
     m_Ship->GetMyInventory()->GetInventoryVec(itemVec);
 
     GenericModule* pMod(nullptr);
@@ -281,11 +282,9 @@ void ModuleManager::UnfitModule(uint32 itemID)
     pMod->Offline();
     if (pMod->IsLoaded()) {
         //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
-        if (pMod->GetLoadedChargeRef().get() != nullptr)    // just in case...
-            pMod->GetLoadedChargeRef()->Move((inSpace ? m_Ship->itemID() : m_Ship->locationID()), flag, true);
-        pMod->UnloadCharge();
+        UnloadCharge(pMod->flag());
     }
-    // update availible slots
+    // update available slots
     if (pMod->isHighPower()) {
         if (pMod->isTurretFitted())
             m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
@@ -329,7 +328,7 @@ bool ModuleManager::fitModule(ModuleItemRef mRef, EVEItemFlags flag)
 
         m_Ship->GetPilot()->SendErrorMsg("You cannot add %s to %s because %s is already there.", \
                 mRef->itemName().c_str(), sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
-        /** @todo change this to use movemodule? */
+        // change this to use movemodule?
         return false;
     }
 
@@ -509,9 +508,17 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
             throw PyException(MakeUserError("DeniedActivateInWarp"));
     } else if (pDestiny->IsCloaked()) {
         throw PyException(MakeUserError("DeniedActivateCloaked"));
+    } else if (pDestiny->IsTractored()) {
+        std::map<std::string, PyRep *> args;
+        args["module"]  = new PyInt(itemID);
+        throw PyException(MakeUserError("InvalidTargetCanAlreadyTractored", args));
     } else if (m_Ship->GetPilot()->IsJump()) {
         throw PyException(MakeUserError("DeniedActivateInJump"));
     }
+    /*{'FullPath': u'UI/Messages', 'messageID': 259628, 'label': u'InvalidTargetCanAlreadyTractoredBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is already being tractor beamed by something else.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259629, 'label': u'InvalidTargetCanOwnerBody'}(u'The {[item]module.name} cannot engage a tractor beam on that object as it is not owned by you, a fellow fleet member or another member of a player corporation you belong to.', None, {u'{[item]module.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'module'}})
+     * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
+     */
 
     pMod->Activate(effectID, targetID, repeat);
 }
@@ -732,12 +739,13 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
 {
     GenericModule* pMod = pModuleCont->GetModule(fromFlag);
     if (pMod == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at slot %i", fromFlag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module not found at %s", sDataMgr.GetFlagName(fromFlag));
         return;
     }
 
     if (!pMod->IsLoaded()) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at slot %i is not loaded", pMod->GetSelf()->itemName().c_str(), fromFlag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - module %s at %s is not loaded", \
+                pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(fromFlag));
         return;
     }
 
@@ -750,7 +758,8 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
         m_charges.erase(itr);
     }
     if (chargeRef.get() == nullptr) {
-        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found in chargeList or on module %s at slot %i", pMod->GetSelf()->itemName().c_str(), fromFlag);
+        _log(SHIP__MODULE_ERROR, "ModuleManager::UnloadCharge() - charge not found in chargeList or on module %s at %s", \
+                pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(fromFlag));
         return;
     }
     _log(SHIP__MODULE_TRACE, "ModuleManager::UnloadCharge() - %s unloading %s(%u) (merge:%s)",\
@@ -857,13 +866,8 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
         std::vector< GenericModule* > modList;
         SortModulesBySlotDec(modVec, modList);
         /** @todo check this.  may have to rework */
-        for (auto cur : modList) {
-            //if (m_Ship->IsUndocking())
-            //    cur->SetAttribute(AttrOnline, EvilZero, false);
+        for (auto cur : modList)
             cur->Online();
-            //if (cur->IsLoaded())
-            //    cur->ReprocessCharge();
-        }
     }
 }
 
@@ -879,7 +883,8 @@ void ModuleManager::UpdateModules(EVEItemFlags flag)
     std::vector< GenericModule* > modVec;
     // this returns only populated modules for this bank
     pModuleCont->GetModulesInBank(flag, modVec);
-
+    for (auto cur : modVec)
+        cur->Online();
 }
 
 void ModuleManager::CharacterBoardingShip()
@@ -888,8 +893,15 @@ void ModuleManager::CharacterBoardingShip()
         sLog.Magenta("ModuleManager::CharacterBoardingShip()","Needs to be tested");
     if (!m_initalized)
         Initialize();
-
-    //OnlineAll();
+    std::vector<uint32> modVec;
+    GetShipRigs(modVec);
+    GetShipSubSystems(modVec);
+    std::vector< GenericModule* > modList;
+    SortModulesBySlotDec(modVec, modList);
+    /** @todo check this.  may have to rework */
+    for (auto cur : modList)
+        if (cur->GetAttribute(AttrOnline).get_bool())
+            cur->Online();
 }
 
 void ModuleManager::CharacterLeavingShip()
@@ -1005,7 +1017,6 @@ void ModuleManager::SortModulesBySlotDec(std::vector<uint32>& modVec, std::vecto
     std::map<uint8, GenericModule*>::reverse_iterator itr = tmpList.rbegin();
     for (; itr != tmpList.rend(); ++itr)
         pModList.push_back(itr->second);
-
 }
 
 void ModuleManager::GetActiveModules(uint8 rack, std::vector< GenericModule* >& modVec)

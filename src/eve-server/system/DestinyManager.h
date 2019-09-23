@@ -131,12 +131,13 @@ public:
     bool IsFollowing()                                  { return (m_ballMode == Destiny::Ball::Mode::FOLLOW); }
     //bool IsJumping()                                  { return (m_ballMode == Destiny::Ball::Mode::STOP); }
     bool IsWarping()                                    { return (m_warpState ? true : false); }
-	bool IsCloaked()                                    { return m_cloaked; }
-	bool IsTurning()                                    { return m_turning; }
+    bool IsCloaked()                                    { return m_cloaked; }
+    bool IsTurning()                                    { return m_turning; }
+    bool IsTractored()                                  { return m_tractored; }
 
-	//Destiny Update stuff:
-	void Jump();
-	void Cloak();
+    //Destiny Update stuff:
+    void Jump();
+    void Cloak();
     void UnCloak();
 
     PyResult AttemptDockOperation();
