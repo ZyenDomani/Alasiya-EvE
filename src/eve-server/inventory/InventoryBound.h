@@ -62,18 +62,17 @@ public:
 
 
 protected:
-    class Dispatcher;
-    Dispatcher *const m_dispatch;
-    Inventory* pInventory;
-
-    InventoryItemRef m_self;
-
+    bool m_passive;     // still not sure what this is for
     EVEItemFlags m_flag;
 
     uint32 m_itemID;
     uint32 m_ownerID;
 
-    bool m_passive;     // still not sure what this is for
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
+    Inventory* pInventory;
+
+    InventoryItemRef m_self;
 
     std::vector< int32 > CatSortItems(std::vector< InventoryItemRef >& itemVec);
 

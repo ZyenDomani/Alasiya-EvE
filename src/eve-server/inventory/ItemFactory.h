@@ -62,6 +62,7 @@ public:
 
     void Close();
     int Initialize();
+    uint32 Count();
 
     void SaveItems();
     void RemoveItem(uint32 itemID);
@@ -69,15 +70,13 @@ public:
     void UnsetUsingClient()                             { m_pClient = nullptr; }
     void AddItem(InventoryItemRef iRef);
 
-    uint32 Count()                                      { return m_itemCount; }
-
     InventoryDB* db()                                   { return m_db; }
 
     Client* GetUsingClient()                            { return m_pClient; }
     // load=true will load the item and its container (recursively) into server, up to solarSystem
-    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);  
+    Inventory* GetInventoryFromId(uint32 itemID, bool load=true);
     // load=true will load the item and its container (recursively) into server, up to solarSystem
-    Inventory* GetItemContainerInventory(uint32 itemID, bool load=true); 
+    Inventory* GetItemContainerInventory(uint32 itemID, bool load=true);
 
     /**
      * these load type, cache it and return it.
@@ -173,8 +172,6 @@ private:
     uint32 m_nextTempID;
     uint32 m_nextMissileID;
 
-    //item to hold current number of currently loaded items
-    uint32 m_itemCount;
 };
 
 //Singleton

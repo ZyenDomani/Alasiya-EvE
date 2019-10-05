@@ -242,8 +242,8 @@ CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
         header->AddColumn("customInfo", DBTYPE_STR);
     CRowSet* rowset = new CRowSet(&header);
     List(rowset, flag, ownerID);
-    if (is_log_enabled(INV__DUMP))
-        rowset->Dump(INV__DUMP, "    ");
+   // if (is_log_enabled(INV__LIST))
+   //     rowset->Dump(INV__LIST, "    ");
     return rowset;
 }
 
@@ -315,7 +315,7 @@ void Inventory::GetInventoryVec(std::vector<InventoryItemRef> &itemVec) {
     for (auto cur : mContents)
         itemVecTmp.push_back(cur.second);
     /* sorting method to put modules first, charges second, and cargo last
-     *  this is needed to correctly online modules BEFORE trying to load charges
+     *  this is needed to correctly fit modules BEFORE trying to load charges
      */
     itemVec = SortVector(itemVecTmp);
 }

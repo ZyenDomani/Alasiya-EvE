@@ -289,6 +289,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         /**
          * ALL dmg msgs working  22Apr15 (hacked - found the actual msgIDs)
          * fixed msgIDs and removed xmlp  - 15Sept19
+         * @todo  still need to check/add detailed dmg msgs
          */
         if (HasPilot()) {
             //  notify player of damage received

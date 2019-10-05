@@ -128,6 +128,8 @@ protected:
     int8             m_ModuleState;
     int8             m_ChargeState;
 
+    int16            m_repeat;
+
     bool             m_linkMaster   :1;
     bool             m_linked       :1;
     bool             m_isWarpSafe   :1;
@@ -140,8 +142,6 @@ protected:
     bool             m_turret       :1;
     bool             m_overLoaded   :1;
     bool             m_chargeLoaded :1;
-
-    int16            m_repeat;
 
     const char* GetModuleStateName(int8 state);
 

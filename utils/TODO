@@ -6,17 +6,21 @@
 
 **********  found shit...high priority
 
+module add/remove isnt fully thought out at this point.
+
 InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
-    - there is NO checks for corp usage yet.  
+    - there is NO checks for corp usage yet.
     - suspect many error msgs in client for this, but none are found/coded yet
     - wtf does 'passive' mean??  only called for char and ship during 'Prime'
 
 cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 
+check repack/reproc ships for insurance and delete if applicable
+
 moving mwd from one slot to another throws groupfit limited error
 
-check insurance payouts.   rounds full ship value up 
+check insurance payouts.   rounds full ship value up
 
 when moving module slots, module is offlined after refit
 
@@ -37,19 +41,19 @@ dungeon spawn error....(and they white)
 11:20:50 [SpawnPop] SpawnMgr::MakeSpawn - Spawning NPC type 2012 (750000004)
 11:20:50 [NPCTrace] Terrorist Leader(750000004): Added to system manager for Yuzier(30000007)
 
-    
-jetans dont check capy before jettison 
+
+jetans dont check capy before jettison
 
 
-  
+
 ********  improvements
 
-check client's locationID vs stationID.  
+check client's locationID vs stationID.
     - multiple calls in client test for these as separate values (tested separately)
     - verify our use of these is correct....
     - most tests use locationID first, then stationID2
-    
-    
+
+
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
     - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
     - MultiCast() updated to remove the dumb shit.  safe to use for typical shit as intended now.  should be good to ~5k+ clients w/o noticable lag
@@ -109,6 +113,11 @@ many fleet error msgs in client unused - noted in fleetdata.h
 
 
 ********* old - no date - still relevant
+petition system missing most calls
+    - this system hasnt been started
+    - couple calls as skeleton code
+    - notes for ~20 system calls (may be complete)
+
 civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
 
 dungeons - complete current wip code   -priority level: med-hi
@@ -150,6 +159,7 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - towers (and maybe others) must use orbitalState in slimItem.  this is EVEPOS::EntityState sent to client.  also uses OnSlimItemUpdated.  search client for this
     - structures need 'state' and 'status' variables looked over and possibibly reset/fixed.  status is EVEPOS::StructureStatus and sent in slimItem.  state is EVEPOS::EntityState
     - reinforceValue data is in pos/Structure.h
+    - mgrDB needs looking over for data types
 
 
 lsc system better, but incomplete needs revisiting    -priority level: med-hi
@@ -170,7 +180,7 @@ CorpStationMgrIMBound incomplete
 corp jumpers? - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
-dividens incomplete
+dividends incomplete
 
 alliances?  not yet.  need other shit finished first.
 started coding alliance db
@@ -182,14 +192,14 @@ update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -
 
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
-market system....this needs a lot of attention 
+market system....this needs a lot of attention
     - unneeded bcasts
     - vague error msgs
     - abundance of checks (probably overkill)
     - db hits abound
     - EVEYTHING is uint32 but we really dont need that
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
-    
+
 
 will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
  - classes built using xml have a c'tor that zero-initalizes all items in class
@@ -233,16 +243,16 @@ rats should test for faction signals in system and set origin along that directi
     - this should be fairly easy to set up
     - if no faction presence in system, continue with random point
 
-    
+
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
-  
+
 *****************  xmlp shit
   ** none at this time
 
 
-*****************   eratta and miscellanous bullshit
+*****************   errata and miscellaneous bullshit
 
 rework bulkdata code.
 the current code is hacked to send bulk data in segments.  live uses *some other form* of data, which *MAY* be our cache files.
@@ -336,7 +346,18 @@ update conescan (dscan from ship) to use args.  these will determine what is fou
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
 
-    
+
+15:32:10 [ItemMsg] type 2525 (group: 1027, cat: 41) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2549 (group: 1027, cat: 41) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2400 (group: 1042, cat: 43) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2390 (group: 1042, cat: 43) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2270 (group: 1032, cat: 42) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 3697 (group: 1034, cat: 43) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2867 (group: 1041, cat: 43) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 3779 (group: 1042, cat: 43) called _LoadType, but is not handled.
+15:32:10 [ItemMsg] type 2329 (group: 1034, cat: 43) called _LoadType, but is not handled.
+
+
 ********************************
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
