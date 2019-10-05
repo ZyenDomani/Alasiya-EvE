@@ -1368,7 +1368,12 @@ void Client::SetInvulTimer(uint32 time/*ClientTimers::DefaultTimer*/)
 
 void Client::SetStateTimer (ClientState state, uint32 time/*ClientTimers::DefaultTimer*/)
 {
-    _log(CLIENT__TIMER, "%s: StateTimer set from %s to %s at %ums.  timenow %u", m_char->itemName().c_str(), \
+    if (m_stateTimer.Enabled()) {
+        _log(CLIENT__ERROR, "%s: SetStateTimer called but timer already enabled with %ums remaining.", m_char->itemName().c_str(), m_stateTimer.GetRemainingTime());
+        EvE::traceStack();
+        return;
+    }
+    _log(CLIENT__TIMER, "%s: StateTimer set from %s to %s at %ums.  current time: %u", m_char->itemName().c_str(), \
             GetStateName(m_clientState).c_str(), GetStateName(state).c_str(), time, m_stateTimer.GetCurrentTime());
     m_clientState = state;
     m_stateTimer.Start(time);

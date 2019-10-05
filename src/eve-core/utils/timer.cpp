@@ -24,35 +24,35 @@
     Rewrite:    Allan
 */
 
+#include <ctime>
 #include "eve-core.h"
 
 #include "utils/timer.h"
 #include "utils/utils_time.h"
-#include <ctime>
 
 static uint32 currentTime = 0;
 //static float currentSeconds = 0;
 static int64 lastTime = 0;
 
 Timer::Timer(uint32 time/*0*/, bool useAcurateTiming /*false*/) {
-    m_timerTime = time;
+    m_duration = time;
     m_startTime = currentTime;
-    m_setAtTrigger = m_timerTime;
+    m_setAtTrigger = time;
     m_useAcurateTiming = useAcurateTiming;
 
-	if (m_timerTime)
+    if (time)
         m_enabled = true;
     else
         m_enabled = false;
 }
 
 Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/) {
-    m_timerTime = time;
+    m_duration = time;
     m_startTime = startAt;
-    m_setAtTrigger = m_timerTime;
+    m_setAtTrigger = time;
     m_useAcurateTiming = useAcurateTiming;
 
-    if (m_timerTime)
+    if (time)
         m_enabled = true;
     else
         m_enabled = false;
@@ -61,19 +61,16 @@ Timer::Timer(uint32 startAt, uint32 time, bool useAcurateTiming /*false*/) {
 /* This function checks if the timer triggered */
 bool Timer::Check(bool reset /*true*/)
 {
-    if (!this) {
-        printf( "Null timer during ->Check()!?\n" );
-        return true;
-    }
     if (m_enabled)
-        if ((currentTime - m_startTime) > m_timerTime) {
+        if ((currentTime - m_startTime) > m_duration) {
             if (reset) {
                 if (m_useAcurateTiming)
-                    m_startTime += m_timerTime; /* set start time to end of last timer */
+                    m_startTime += m_duration; /* set start time to end of last timer */
                 else
                     m_startTime = currentTime; /* set start time to now */
-                m_timerTime = m_setAtTrigger;
-            }
+                m_duration = m_setAtTrigger;
+            } else
+                m_enabled = false;
             return true;
         }
 
@@ -88,11 +85,11 @@ void Timer::Start(uint32 setTimerTime, bool changeResetTimer /*true*/) {
     }
 
     if (m_enabled) {    // this will allow resetting of the time without changing the start time
-        if (m_timerTime != setTimerTime)
-            m_timerTime = setTimerTime;
+        if (m_duration != setTimerTime)
+            m_duration = setTimerTime;
     } else {
         m_startTime = currentTime;
-        m_timerTime = setTimerTime;
+        m_duration = setTimerTime;
     }
 
     if (changeResetTimer)
@@ -109,15 +106,15 @@ void Timer::SetTimer(uint32 setTimerTime) {
         m_enabled = true;
     }
     if (setTimerTime) {
-        m_timerTime = setTimerTime;
+        m_duration = setTimerTime;
         m_setAtTrigger = setTimerTime;
     }
 }
 
 uint32 Timer::GetRemainingTime() const {
     if (m_enabled)
-        if ((currentTime - m_startTime) < m_timerTime)
-            return (m_startTime + m_timerTime - currentTime);
+        if ((currentTime - m_startTime) < m_duration)
+            return (m_startTime + m_duration - currentTime);
 
     return 0;
 }
@@ -130,8 +127,8 @@ void Timer::SetAtTrigger(uint32 setAtTrigger, bool enableIfDisabled) {
 
 void Timer::Trigger() {
     m_enabled = true;
-    m_timerTime = m_setAtTrigger;
-    m_startTime = (currentTime - m_timerTime - 1);
+    m_duration = m_setAtTrigger;
+    m_startTime = (currentTime - m_duration - 1);
 }
 
 uint32 Timer::GetCurrentTime() {
@@ -140,10 +137,6 @@ uint32 Timer::GetCurrentTime() {
 
 const void Timer::SetCurrentTime()
 {
-    //double tickCount2 = GetFileTimeNow();
-    //int64 timerCount = GetTimeMSeconds();
-    //int64 timerCount2 = GetTickCount();
-
     int64 tickCount = GetSteadyTime();
     if (lastTime == 0)
         currentTime = 0;

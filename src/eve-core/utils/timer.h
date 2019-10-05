@@ -37,11 +37,10 @@ public:
 
     inline void Enable()                                { m_enabled = true; }
     inline void Disable()                               { m_enabled = false; }
-    inline const uint32& GetTimerTime()                 { return m_timerTime; }
     inline const uint32& GetSetAtTrigger()              { return m_setAtTrigger; }
     inline bool Enabled() const                         { return m_enabled; }
     inline uint32 GetStartTime() const                  { return m_startTime; }
-    inline uint32 GetDuration() const                   { return m_timerTime; }
+    inline uint32 GetDuration() const                   { return m_duration; }
 
     void Trigger();
     void SetTimer(uint32 setTimerTime = 0);
@@ -62,8 +61,8 @@ private:
     /* useAcurateTiming resets timer (on check()) to start_time += timer_time to eliminate discrepencies in calling time */
     bool    m_useAcurateTiming;
 
+    uint32	m_duration;
     uint32	m_startTime;
-    uint32	m_timerTime;
     uint32	m_setAtTrigger;
 
 };
