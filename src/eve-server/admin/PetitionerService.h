@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 #ifndef __PETITIONER_SERVICE_H_INCL__
 #define __PETITIONER_SERVICE_H_INCL__
@@ -41,14 +42,6 @@ protected:
     PyCallable_DECL_CALL(GetCategoryHierarchicalInfo);
     PyCallable_DECL_CALL(GetUnreadMessages);
 
-    //overloaded in order to support bound objects:
-    //virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
 };
 
-
-
-
-
 #endif
-
-

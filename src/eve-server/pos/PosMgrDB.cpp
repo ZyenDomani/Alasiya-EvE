@@ -92,7 +92,7 @@ bool PosMgrDB::GetBaseData(EVEPOS::StructureData& data)
     data.towerID = row.GetInt(0);
     data.moonID = row.GetInt(1);
     data.state = row.GetInt(2);
-    data.status = row.GetFloat(3);
+    data.status = row.GetInt(3);
     data.timestamp = row.GetInt64(4);
     data.use = row.GetInt(5);
     data.view = row.GetInt(6);
@@ -106,7 +106,7 @@ void PosMgrDB::SaveBaseData(EVEPOS::StructureData& data)
     sDatabase.RunQuery(err,
         "INSERT INTO posStructureData "
         "(itemID, towerID, moonID, state, status, timestamp, canUse, canView, canTake)"
-        " VALUES ( %i, %i, %i, %u, %f, %lli, %i, %i, %i)",
+        " VALUES ( %i, %i, %i, %i, %i, %lli, %i, %i, %i)",
         data.itemID, data.towerID, data.moonID, data.state, data.status, data.timestamp, data.use, data.view, data.take);
 }
 
@@ -114,7 +114,7 @@ void PosMgrDB::UpdateBaseData(EVEPOS::StructureData& data)
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "UPDATE posStructureData SET state=%u, status=%f, timestamp=%lli WHERE itemID = %i",
+        "UPDATE posStructureData SET state=%i, status=%i, timestamp=%lli WHERE itemID = %i",
         data.state, data.status, data.timestamp, data.itemID);
 }
 
@@ -122,19 +122,21 @@ bool PosMgrDB::GetTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sDa
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-            "SELECT "
-            " harmonic, standing, standingOwnerID, statusDrop, corpWar, allyStandings, showInCalendar, "
+            "SELECT"
+            " harmonic, standing, standingOwnerID, statusDrop, corpWar, allyStandings, showInCalendar,"
             " sendFuelNotifications, allowCorp, allowAlliance, password, anchor, unanchor, online, offline, status"
             " FROM posTowerData"
-            " WHERE itemID = %u", sData.itemID))
+            " WHERE itemID = %i", sData.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetTowerData query: %s", res.error.c_str());
         return false;
     }
 
     DBResultRow row;
-    if (!res.GetRow(row))
+    if (!res.GetRow(row)) {
+        tData = EVEPOS::TowerData();
         return false;
+    }
     tData.harmonic = row.GetInt(0);
     tData.standing = row.GetFloat(1);
     tData.standingOwnerID = row.GetInt(2);
@@ -158,10 +160,10 @@ void PosMgrDB::SaveTowerData(EVEPOS::TowerData& tData, EVEPOS::StructureData& sD
 {
     DBerror err;
     sDatabase.RunQuery(err,
-        "INSERT INTO posTowerData "
-        "(itemID, harmonic, standing, standingOwnerID, status, statusDrop, corpWar, allyStandings, showInCalendar, "
+        "INSERT INTO posTowerData"
+        " (itemID, harmonic, standing, standingOwnerID, status, statusDrop, corpWar, allyStandings, showInCalendar,"
         " sendFuelNotifications, allowCorp, allowAlliance, anchor, unanchor, online, offline)"
-        " VALUES ( %i, %i, %f, %i, %u, %u, %i, %i, %i, %i, %i, %i, %i, %i, %i)",
+        " VALUES ( %i, %i, %f, %i, %f, %u, %u, %u, %u, %u, %u, %u, %i, %i, %i,%i)",
         sData.itemID, tData.harmonic, tData.standing, tData.standingOwnerID, tData.status, tData.statusDrop, tData.corpWar, tData.allyStandings,
         tData.showInCalendar, tData.sendFuelNotifications, tData.allowCorp, tData.allowAlliance,
         tData.anchor, tData.unanchor, tData.online, tData.offline);
@@ -173,15 +175,17 @@ bool PosMgrDB::GetBridgeData(EVEPOS::JumpBridgeData& data)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT towerID, corpID, allyID, systemID, toItemID, toSystemID, toTypeID, password, allowCorp, allowAlliance"
-            " FROM posJumpBridgeData WHERE itemID = %u", data.itemID))
+            " FROM posJumpBridgeData WHERE itemID = %i", data.itemID))
         {
             codelog(DATABASE__ERROR, "Error in GetBridgeData query: %s", res.error.c_str());
             return false;
         }
 
     DBResultRow row;
-    if (!res.GetRow(row))
+    if (!res.GetRow(row)) {
+        data = EVEPOS::JumpBridgeData();
         return false;
+    }
 
     data.towerID = row.GetInt(0);
     data.corpID = row.GetInt(1);
@@ -204,7 +208,7 @@ void PosMgrDB::SaveBridgeData(EVEPOS::JumpBridgeData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "INSERT INTO posJumpBridgeData(itemID, towerID, corpID, allyID, systemID, toItemID, toTypeID, toSystemID, password, allowCorp, allowAlliance)"
-        " VALUES (%i,%i,%i,%i,%i,%i,%i,%i,'%s',%i,%i)",
+        " VALUES (%i,%i,%i,%i,%i,%i,%i,%i,'%s',%u,%u)",
         data.itemID, data.towerID, data.corpID, data.allyID, data.systemID, data.toItemID, data.toTypeID,
         data.toSystemID, escPass.c_str(), data.allowCorp, data.allowAlliance);
 }
@@ -216,7 +220,7 @@ void PosMgrDB::UpdateBridgeData(EVEPOS::JumpBridgeData& data)
     DBerror err;
     sDatabase.RunQuery(err,
         "UPDATE posJumpBridgeData"
-        " SET allyID=%i, toItemID=%i, toTypeID=%i, toSystemID=%i, password='%s', allowCorp=%i, allowAlliance=%i"
+        " SET allyID=%i, toItemID=%i, toTypeID=%i, toSystemID=%i, password='%s', allowCorp=%u, allowAlliance=%u"
         " WHERE itemID=%i",
         data.allyID, data.toItemID, data.toTypeID, data.toSystemID, escPass.c_str(), data.allowCorp, data.allowAlliance, data.itemID);
 }
@@ -251,7 +255,7 @@ bool PosMgrDB::GetCustomsData(EVEPOS::CustomsData& cData, EVEPOS::OrbitalData& o
         "SELECT ownerID, allowAlly, allowStandings, selectedHour, standingValue,"
         " corpTax, allyTax, horribleTax, badTax, neutTax, goodTax, highTax, timestamp,"
         " rotX, rotY, rotZ, orbitalHackerProgress, orbitalHackerID, state, status, level"
-        " FROM posCustomsOfficeData WHERE itemID = %u", cData.itemID))
+        " FROM posCustomsOfficeData WHERE itemID = %i", cData.itemID))
     {
         codelog(DATABASE__ERROR, "Error in GetCustomsData query: %s", res.error.c_str());
         return false;

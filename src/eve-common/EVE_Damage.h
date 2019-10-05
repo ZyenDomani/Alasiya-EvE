@@ -1,7 +1,7 @@
 
  /**
   * @name EVE_Damage.h
-  *     Damage Notifications and other notes for Alasiya EvEmu
+  *     Damage Notifications and killmail notes for Alasiya EvEmu
   *
   * @Author:        Allan
   * @date:          2 January 2018
@@ -21,7 +21,6 @@
  */
 
 namespace Dmg {
-
     namespace Msg {
 
         static const char* Given[9] = {

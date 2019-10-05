@@ -21,6 +21,7 @@
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
     Author:        Zhur
+    Updates:    Allan
 */
 
 #include "eve-server.h"
@@ -28,44 +29,12 @@
 #include "PyServiceCD.h"
 #include "admin/PetitionerService.h"
 
-/*
-class PetitionerBound
-: public PyBoundObject {
-public:
-
-    PyCallable_Make_Dispatcher(PetitionerBound)
-
-    PetitionerBound(PyServiceMgr *mgr, PetitionerDB *db)
-    : PyBoundObject(mgr, "PetitionerBound"),
-      m_db(db),
-      m_dispatch(new Dispatcher(this))
-    {
-        _SetCallDispatcher(m_dispatch);
-
-        PyCallable_REG_CALL(PetitionerBound, )
-        PyCallable_REG_CALL(PetitionerBound, )
-    }
-    virtual ~PetitionerBound() { delete m_dispatch; }
-    virtual void Release() {
-        //I hate this statement
-        delete this;
-    }
-
-    PyCallable_DECL_CALL()
-    PyCallable_DECL_CALL()
-
-protected:
-    PetitionerDB *const m_db;
-    Dispatcher *const m_dispatch;   //we own this
-};
-*/
 
 PyCallable_Make_InnerDispatcher(PetitionerService)
 
 PetitionerService::PetitionerService(PyServiceMgr *mgr)
 : PyService(mgr, "petitioner"),
   m_dispatch(new Dispatcher(this))
-//m_db(db)
 {
     _SetCallDispatcher(m_dispatch);
 

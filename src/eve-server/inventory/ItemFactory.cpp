@@ -137,6 +137,7 @@ void ItemFactory::RemoveItem(uint32 itemID) {
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end()) {
         _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
+        m_itemCount = m_items.size();
     } else {
         m_items.erase( itr );
         // seen weird shit with itemcount being wrong.  not sure why.  havent really cared

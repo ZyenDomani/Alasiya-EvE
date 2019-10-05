@@ -44,6 +44,7 @@ CorpMgrService::CorpMgrService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(CorpMgrService, GetCorporationStations);
     PyCallable_REG_CALL(CorpMgrService, GetCorporationIDForCharacter);
     PyCallable_REG_CALL(CorpMgrService, GetAssetInventoryForLocation);
+    PyCallable_REG_CALL(CorpMgrService, SearchAssets);
     PyCallable_REG_CALL(CorpMgrService, AuditMember);
 }
 
@@ -224,3 +225,12 @@ PyResult CorpMgrService::Handle_GetCorporationStations(PyCallArgs &call) {
     return nullptr;
 }
 
+
+PyResult CorpMgrService::Handle_SearchAssets(PyCallArgs &call) {
+    //   rows = sm.RemoteSvc('corpmgr').SearchAssets(which, itemCategoryID, itemGroupID, itemTypeID, qty)
+    // 'which' is a filter type or None
+    _log(CORP__CALL, "CorpMgrService::Handle_SearchAssets()");
+    call.Dump(CORP__CALL_DUMP);
+
+    return nullptr;
+}

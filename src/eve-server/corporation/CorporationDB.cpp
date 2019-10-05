@@ -269,7 +269,7 @@ uint16 CorporationDB::CreateMedal(uint32 ownerID, uint32 creatorID, std::string&
     uint32 medalID = 0;
     DBerror err;
     sDatabase.RunQueryLID(err, medalID,
-        " INSERT INTO crpMedals ( ownerID, creatorID, title, description, date)"
+        " INSERT INTO crpMedals (ownerID, creatorID, title, description, date)"
         " VALUES (%u, %u, '%s', '%s', %lli)", ownerID, creatorID, cTitle.c_str(), cDesc.c_str(), GetFileTimeNow());
 
     return medalID;
@@ -306,7 +306,7 @@ PyRep* CorporationDB::GetRecipientsOfMedal(int32 medalID)
     if (!sDatabase.RunQuery(res,
         "SELECT recepientID, issuerID, date, reason, status"
         " FROM chrMedals"
-        " WHERE medalID = %u", medalID))
+        " WHERE medalID = %i", medalID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -349,7 +349,7 @@ PyRep* CorporationDB::GetMedalsReceived(int32 charID)
         "SELECT chr.medalID, crp.creatorID, crp.noRecepients, crp.date, crp.title, crp.description, chr.status"
         " FROM chrMedals AS chr"
         " LEFT JOIN crpMedals AS crp USING (medalID)"
-        " WHERE chr.recepientID = %u", charID))
+        " WHERE chr.recepientID = %i", charID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -364,7 +364,7 @@ PyRep* CorporationDB::GetMedalsReceivedDetails(int32 charID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT medalID, part, graphic, color FROM crpMedalData"
-        " WHERE medalID IN (SELECT medalID FROM chrMedals WHERE recepientID = %u)", charID))
+        " WHERE medalID IN (SELECT medalID FROM chrMedals WHERE recepientID = %i)", charID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -379,7 +379,7 @@ PyObjectEx* CorporationDB::GetMedalDetails(int32 medalID)
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
         "SELECT medalID, ownerID, creatorID, noRecepients AS numberOfRecipients, date, title, description FROM crpMedals"
-        " WHERE medalID = %u)", medalID))
+        " WHERE medalID = %i", medalID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
         return nullptr;
@@ -433,7 +433,7 @@ void CorporationDB::SetMedalStatus(uint32 charID, uint16 medalID, uint8 status)
 
 bool CorporationDB::IsTickerTaken(std::string ticker) {
     DBQueryResult res;
-    sDatabase.RunQuery(res, " SELECT corporationID FROM crpCorporation WHERE tickerName = %s", ticker);
+    sDatabase.RunQuery(res, " SELECT corporationID FROM crpCorporation WHERE tickerName = %s", ticker.c_str());
     return (res.GetRowCount() != 0);
 }
 
