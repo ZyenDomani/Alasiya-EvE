@@ -898,7 +898,7 @@ void ModuleManager::CharacterBoardingShip()
     GetShipSubSystems(modVec);
     std::vector< GenericModule* > modList;
     SortModulesBySlotDec(modVec, modList);
-    /** @todo check this.  may have to rework */
+    /** @todo check this.  may have to rework...do rigs and subsystems have online attrib set?  */
     for (auto cur : modList)
         if (cur->GetAttribute(AttrOnline).get_bool())
             cur->Online();

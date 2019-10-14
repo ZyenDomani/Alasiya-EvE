@@ -19,7 +19,7 @@ ModuleContainer::ModuleContainer(ShipItem* pShip) {
 
     assert(pShip != nullptr);
 
-    // set max slotcount from ship attribs.  as slots are filled, change ship attrib to match avalible count
+    // set max slotcount from ship attribs.  as slots are filled, change ship attrib to match available count
     m_LowSlots = (uint8)pShip->GetAttribute(AttrLowSlots).get_int();
     m_MediumSlots = (uint8)pShip->GetAttribute(AttrMedSlots).get_int();
     m_HighSlots = (uint8)pShip->GetAttribute(AttrHiSlots).get_int();
@@ -38,7 +38,7 @@ ModuleContainer::~ModuleContainer()
 
 void ModuleContainer::ClearModMap() {
     // this will populate the module map for all possible slots with null pointer
-    //   this does NOT verify slot count for given ship
+
     // modules
     for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
@@ -76,7 +76,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr)
         return false;
-    _log(SHIP__MODULE_TRACE, "RemoveModule() - removing %s.", pMod->GetSelf()->itemName().c_str());
+    _log(SHIP__MODULE_TRACE, "ModuleContainer::RemoveModule(%s) - removing %s.", sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -86,7 +86,7 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr)
         return false;
-    _log(SHIP__MODULE_TRACE, "RemoveModule() - removing %s.", pMod->GetSelf()->itemName().c_str());
+    _log(SHIP__MODULE_TRACE, "ModuleContainer::RemoveModule(%u) - removing %s.",itemID, pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -197,27 +197,27 @@ uint16 ModuleContainer::GetAvailableSlotInBank(EVEEffectID slotBank)
 {
     switch (slotBank) {
         case EVEEffectID::loPower: {
-            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + 8); ++slot)
+            for (uint8 slot=flagLowSlot0; slot < (flagLowSlot0 + m_LowSlots/*8*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
         case EVEEffectID::medPower: {
-            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + 8); ++slot)
+            for (uint8 slot=flagMedSlot0; slot < (flagMedSlot0 + m_MediumSlots/*8*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
         case EVEEffectID::hiPower: {
-            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + 8); ++slot)
+            for (uint8 slot=flagHiSlot0; slot < (flagHiSlot0 + m_HighSlots/*8*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
         case EVEEffectID::rigSlot: {
-            for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + 3); ++slot)
+            for (uint8 slot=flagRigSlot0; slot < (flagRigSlot0 + m_RigSlots/*3*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
         case EVEEffectID::subSystem: {
-            for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + 5); ++slot)
+            for (uint8 slot=flagSubSystem0; slot < (flagSubSystem0 + m_SubSystemSlots/*5*/); ++slot)
                 if ( m_modules[slot] == nullptr )
                     return slot;
             } break;
