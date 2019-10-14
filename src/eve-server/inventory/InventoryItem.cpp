@@ -680,7 +680,6 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     uint32 old_location = m_locationID;
     EVEItemFlags old_flag = m_flag;
 
-
     if (new_location != m_locationID) {
         // remove from current location
         if (IsValidLocation(m_locationID)) {
@@ -761,16 +760,24 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
     if (qty < 1)
         qty = to_merge->quantity();
 
+    // AlterQuantity will delete items with qty < 1
     if (!to_merge->AlterQuantity(-qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to remove quantity %u.", to_merge->itemName().c_str(), to_merge->itemID(), qty);
+        if (IsCharacter(m_ownerID)) {
+            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+            if (pClient != nullptr)
+                pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63138");
+        }
         return false;
     }
 
-    if (to_merge->quantity() < 1)
-        to_merge->Delete();
-
     if (!AlterQuantity(qty, notify)) {
         _log(ITEM__ERROR, "%s (%u): Failed to add quantity %u.", m_itemName.c_str(), m_itemID, qty);
+        if (IsCharacter(m_ownerID)) {
+            Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
+            if (pClient != nullptr)
+                pClient->SendErrorMsg("Internal Server Error.  Ref: ServerError 63238");
+        }
         return false;
     }
 
@@ -779,16 +786,19 @@ bool InventoryItem::Merge(InventoryItemRef to_merge, int32 qty/*0*/, bool notify
 
 void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAutoFit*/)
 {
+    // get existing type in cargo
     InventoryItemRef iRef = pShip->GetMyInventory()->GetByTypeFlag(m_type.id(), flag);
-    if (iRef.get() == nullptr)
+    if (iRef.get() == nullptr) {
+        Move(pShip->itemID(), flag, true);
         return;
+    }
     // fix for elusive error when using IB::Add() to remove loaded modules (charge trying to add to module item)
     if (iRef->typeID() != typeID()) {
         Move(pShip->itemID(), flag, true);
         return;
     }
 
-    // if either item is assembled, just move item (merge will throw on singleton)
+    // if either item is assembled, just move item (merge will throw on assembled items)
     if (iRef->singleton() or m_singleton) {
         Move(pShip->itemID(), flag, true);
         return;
@@ -816,21 +826,22 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
 bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
     //if an object is singleton, it shouldn't be able to add/remove qty
     if (m_singleton) {
-        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i, the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
+        _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i; the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
         // make player error msg here.....
         return false;
     }
     int32 old_qty = m_quantity;
     m_quantity = qty;
-    if (m_quantity < 1)
+    if (m_quantity < 1) {
         Delete();
-    else if (m_quantity > EVEMU_MAX_SHORT_ID) {
+        return true;
+    } else if (m_quantity > EVEMU_MAX_SHORT_ID) {
         codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
         m_quantity = EVEMU_MAX_SHORT_ID -1;
         if (IsCharacter(m_ownerID)) {
             Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
             if (pClient != nullptr)
-                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.  If you try to add any more to this stack, you will loose items.  This is your only warning.", itemName().c_str());
+                pClient->SendInfoModalMsg("Your %s has reached quantity limits of this server.<br>If you try to add any more to this stack, you will lose items.  This is your only warning.", itemName().c_str());
         }
     }
 
@@ -839,7 +850,7 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
 
     if (notify) {
         std::map<int32, PyRep *> changes;
-        // this informs client of a stack change...still need to go over client code to verify exacty spec on which one is used for what purpose....modules/charges can use both
+        // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....modules/charges can use both
         if (IsModuleSlot(m_flag))
             changes[Inv::Update::Quantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
         else

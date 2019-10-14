@@ -272,13 +272,13 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
 
         InventoryItemRef srcItem = sItemFactory.GetItem( data.sourceID );
         if (srcItem.get() == nullptr) {
-            _log(INV__WARNING, "Failed to load stationary item %u. Skipping.", data.sourceID);
+            _log(INV__WARNING, "Failed to load source item %u. Skipping.", data.sourceID);
             continue;
         }
 
         InventoryItemRef destItem = sItemFactory.GetItem( data.destID );
         if (destItem.get() == nullptr) {
-            _log(INV__WARNING, "Failed to load dragged item %u. Skipping.", data.destID);
+            _log(INV__WARNING, "Failed to load destination item %u. Skipping.", data.destID);
             continue;
         }
 
@@ -423,7 +423,6 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
 
 PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, EVEItemFlags toFlag, int32 quantity, bool moveStack, float capacity)
 {   // complete method rewrite -allan 21Dec17
-    InventoryItemRef contRef(nullptr);
     ShipItem* pShip = pClient->GetShip().get();
     bool donating = false, ship = false, customs = false;
     int32 origQty = quantity;
@@ -520,16 +519,13 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
     std::vector<int32>::const_iterator itr = items.begin();
     for (; itr != items.end(); ++itr) {
+        // reset vars for adding multiple items
+        toFlag = origFlag;
         quantity = origQty;
+
         iRef = sItemFactory.GetItem(*itr);
         if (iRef.get() == nullptr) {
             _log(INV__ERROR, "InventoryBound::MoveItems() - item %i not found.  continuing.", (*itr));
-            continue;
-        }
-        //ALL items *should* have a loaded container item.
-        contRef = sItemFactory.GetItemContainer(*itr); // item container should be loaded at this point.
-        if (contRef.get() == nullptr) {
-            _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*itr));
             continue;
         }
 
@@ -551,7 +547,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         if (IsRigSlot(fromFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
         } else if (IsModuleSlot(fromFlag)) {
-            // can we remove modules from an inactive ship?  no.
+            // can we remove modules from an inactive ship?  not yet...
             if (pShip == nullptr)
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
@@ -562,8 +558,6 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 result.arg = iRef->itemID();
                 return result.Encode();
             }
-            // else this is a currently-fitted module.  call remove here and let MM code handle removal
-            //m_self->GetShipItem()->RemoveItem(iRef);
         }
 
         if (!moveStack and (quantity < iRef->quantity())) {
@@ -601,7 +595,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                         toFlag = flagCargoHold;
                     }
                 } else {
-                    // this needs work to verify mFlag is correct for application, and that it is initially set correctly
+                    // this needs work to verify mFlag is correct for application and that it is init'd correctly
                     toFlag = m_flag;
                 }
             }
@@ -613,9 +607,12 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
 
             // check adding item to ship...if it fails, return to previous container
             if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1) {
-                contRef->AddItem(iRef);
-                // reset in case of MultiAdd
-                toFlag = origFlag;
+                //ALL items *should* have a loaded container item.
+                InventoryItemRef contRef = sItemFactory.GetItemContainer(*itr);
+                if (contRef.get() != nullptr)
+                    contRef->AddItem(iRef);
+                else
+                    _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*itr));
                 continue;
             }
         } else if (customs) {
@@ -634,7 +631,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
         return nullptr;
 
     if (items.size() == 1) {
-        //call returns itemID for single-item adds
+        //call returns itemID for single-item adds...not sure about others
         Call_SingleIntegerArg result;
         result.arg = iRef->itemID();
         return result.Encode();
@@ -713,7 +710,7 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     }
 
     if ((iRef->ownerID() != call.client->GetCharacterID())
-        or (iRef->ownerID() != call.client->GetCorporationID())) {
+    or (iRef->ownerID() != call.client->GetCorporationID())) {
         _log(INV__ERROR, "Character %u tried to load charge %u of character %u.", call.client->GetCharacterID(), iRef->itemID(), iRef->ownerID());
         return nullptr;
     }

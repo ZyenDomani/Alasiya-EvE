@@ -51,8 +51,8 @@ class Rsp_CommonGetInfo_Entry;
  *
  *  NOTE:
  * this system cannot and should not be merged with SE class, as not all Items are SE.
- * doing so would cause unnecessiary SEs to be created for items that are NOT SE.
- * keeping this as a seperate class is cleaner and better for creation and destruction
+ * doing so would cause unnecessary SEs to be created for items that are NOT SE.
+ * keeping this as a separate class is cleaner and better for creation and destruction
  * for both base and derived classes.       -allan 23.2.16
  */
 
@@ -67,7 +67,7 @@ public:
     virtual ~InventoryItem() noexcept;
 
     /* begin rewrite and update */
-    /** @todo  derive and execute tests to determing if these are needed... */
+    /** @todo  derive and execute tests to determine if these are needed... */
     // copy c'tor
     InventoryItem(const InventoryItem& oth);
     // move c'tor
@@ -286,6 +286,7 @@ public:
 
     // gotta make this public for now...
     std::multimap<int8, fxData> m_modifiers;     // k,v of math, data<math, src, targLoc, targAttr, srcAttr, grpID, typeID>, ordered by key (mathMethod)
+
 
 /*  new attribute system */
     AttributeMap* GetAttributeMap()                     { return pAttributeMap; }
