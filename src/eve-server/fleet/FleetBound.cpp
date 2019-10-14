@@ -70,6 +70,7 @@ m_dispatch(new Dispatcher(this))
     PyCallable_REG_CALL(FleetBound, UpdateMemberInfo);
 
     // stubs
+    PyCallable_REG_CALL(FleetBound, Reconnect);
     PyCallable_REG_CALL(FleetBound, AddToVoiceChat);
     PyCallable_REG_CALL(FleetBound, SetVoiceMuteStatus);
     PyCallable_REG_CALL(FleetBound, ExcludeFromVoiceMute);
@@ -810,3 +811,10 @@ PyResult FleetBound::Handle_ExcludeFromVoiceMute(PyCallArgs &call) {
     return PyStatic.NewNone();
 }
 
+PyResult FleetBound::Handle_Reconnect(PyCallArgs &call) {
+    // no args
+    sLog.White("FleetBound", "Handle_Reconnect()) size=%u", call.tuple->size() );
+
+    // no return from this
+    return nullptr;
+}

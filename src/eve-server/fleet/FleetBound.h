@@ -60,6 +60,7 @@ class FleetBound
      PyCallable_DECL_CALL(CreateSquad);
      PyCallable_DECL_CALL(DeleteWing);
      PyCallable_DECL_CALL(DeleteSquad);
+     PyCallable_DECL_CALL(Reconnect);
 
   protected:
      class Dispatcher;
