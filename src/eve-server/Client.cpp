@@ -317,6 +317,11 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     }
 
     InitSession(charID);
+    if (!m_validSession){
+        sLog.Error("Client::SelectCharacter()", "Failed to init session for char %u.", charID);
+        SendErrorMsg("Unable to Initalize Character session.  Selection Failed.");
+        return false;
+    }
 
     sEntityList.AddPlayer(this);
     sItemFactory.SetUsingClient(this);
@@ -373,7 +378,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
                 StationItemRef sRef = m_system->GetStationFromInventory(m_locationID);
                 if (sRef.get() == nullptr) {
                     // error here...
-                } else if (!sRef->HasShip(this)) {   // need to get hangar items (flagHangar) by owner
+                } else if (!sRef->HasShip(this)) {
                     SpawnNewRookieShip(m_locationID);
                 }
             } else {
@@ -389,7 +394,7 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     //m_lpMap
 
     //johnsus - characterOnline mod
-    ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), true);
+    ServiceDB::SetCharacterOnlineStatus(charID, true);
     ServiceDB::SetAccountOnlineStatus(GetUserID(), true);
     sItemFactory.UnsetUsingClient();
 
@@ -1730,7 +1735,10 @@ void Client::InitSession(int32 characterID)
     }
 
     sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
-    m_validSession = true;
+    if ((IsSolarSystem(m_SystemData.systemID))
+    and (IsConstellation(m_SystemData.constellationID))
+    and (IsRegion(m_SystemData.regionID)))
+        m_validSession = true;
 }
 
 void Client::UpdateSession()
