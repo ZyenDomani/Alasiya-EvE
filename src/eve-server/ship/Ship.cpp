@@ -1351,9 +1351,9 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
     }
 
     // cannot stack assembled items
-    if (iRef->singleton())
+    if (iRef->singleton()) {
         iRef->Move(m_itemID, flag, true);
-    else if (IsCargoHoldFlag(flag) or IsHangarFlag(flag)) {
+    } else if (IsCargoHoldFlag(flag) or IsHangarFlag(flag)) {
         if (pInventory->ContainsTypeByFlag(iRef->typeID(), flag))
             iRef->MergeTypesInCargo(this, flag);
         else
@@ -1375,25 +1375,17 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     if (m_pilot == nullptr)
         return;
 
-    // check to see if item is currently in a module slot.  going by category is NOT working after _ExecAdd() updates.
+    // check to see if item is currently in a module slot.
     if (IsModuleSlot(iRef->flag())) {
         if (m_ModuleManager == nullptr) {
             m_ModuleManager = new ModuleManager(this);
             m_ModuleManager->Initialize();
         }
-        // if item being removed is in a module slot, remove it via Module Manager here, and let invBound take care of the rest.
-        if (iRef->categoryID() == EVEDB::invCategories::Charge) {
-            m_ModuleManager->UnloadCharge(iRef->flag(), true);
-        } else if ((iRef->categoryID() == EVEDB::invCategories::Module) or (iRef->categoryID() == EVEDB::invCategories::Subsystem)) {
-            if (IsRigSlot(iRef->flag()))
-                m_ModuleManager->UninstallRig(iRef->itemID());
-            else
-                m_ModuleManager->UnfitModule(iRef->itemID());
-        }
-        /*
-        if ((m_pilot != nullptr) and (m_pilot->IsInSpace()))
-            UpdateEffects();
-        */
+
+         if (IsRigSlot(iRef->flag()))
+            m_ModuleManager->UninstallRig(iRef->itemID());
+        else
+            m_ModuleManager->UnfitModule(iRef->itemID());
         m_ModuleManager->UpdateModules(iRef->flag());
     }
 }
@@ -1409,7 +1401,7 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool m
         }
         GenericModule* pMod = m_ModuleManager->GetModule(fromFlag);
         if (pMod == nullptr)
-            throw PyException( MakeCustomError("Module was not found in that position."));
+            throw PyException( MakeCustomError("Module was not found in %s.", sDataMgr.GetFlagName(toFlag)));
 
         if (pMod->IsActive())
             throw PyException( MakeUserError("CannotAccessChargeWhileInUse"));
@@ -1439,13 +1431,12 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     RemoveItem(modItemRef1);
 
     if (m_ModuleManager->IsSlotOccupied(slot2)) {
-        // dropped-on slot is occupied.  procede with moving the module currently in this slot.
+        // dropped-on slot is occupied.  proceed with moving the module currently in this slot.
         InventoryItemRef modItemRef2 = GetModuleRef(slot2);
         InventoryItemRef chargeItemRef2 = m_ModuleManager->GetLoadedChargeOnModule(slot2);
         if (chargeItemRef2.get() != nullptr)
             m_ModuleManager->UnloadCharge(slot2);
         RemoveItem(modItemRef2);
-
         AddItem(slot1, modItemRef2);
         if (chargeItemRef2.get() != nullptr)
             m_ModuleManager->LoadCharge(chargeItemRef2, slot1);

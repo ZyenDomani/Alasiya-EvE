@@ -240,7 +240,8 @@ bool StationItem::HasShip(Client* pClient)
 
     for (auto cur : items)
         if (cur->categoryID() == EVEDB::invCategories::Ship)
-            return true;
+            if (cur->typeID() != EVEDB::invTypes::Capsule)
+                return true;
     return false;
 }
 
