@@ -61,12 +61,12 @@ INCLUDE( "DetectScm" )
 # Intentionally specify the CMAKE_CXX_FLAGS as last to allow user
 # override the setup.
 #
-# Switch to the C++11 standard (required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++11 -fabi-version=6 ${CMAKE_CXX_FLAGS}" )
+# Switch to the C++14 standard (minimum C++11 required)
+SET( CMAKE_CXX_FLAGS "-std=gnu++14 ${CMAKE_CXX_FLAGS}" )
 # -Wall -Wextra -Weffc++
 
 #
-# Try to detemine the exact source version using SCM.
+# Try to determine the exact source version using SCM.
 #
 # Also check that the generated version string starts
 # with PROJECT_VERSION, issue a warning otherwise.
@@ -196,13 +196,3 @@ ADD_SUBDIRECTORY( "src/eve-core" )
 ADD_SUBDIRECTORY( "src/eve-xmlpktgen" )
 ADD_SUBDIRECTORY( "src/eve-common" )
 ADD_SUBDIRECTORY( "src/eve-server" )
-
-
-###############
-# CPack setup #
-###############
-#SET( CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PROJECT_DESCRIPTION_SUMMARY}" )
-#SET( CPACK_PACKAGE_VENDOR              "${PROJECT_VENDOR}" )
-#SET( CPACK_PACKAGE_VERSION             "${PROJECT_VERSION}" )
-
-#INCLUDE( "CPack" )

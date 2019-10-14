@@ -181,6 +181,8 @@ corp jumpers? - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
 dividends incomplete
+decorations list doesnt include recipients.  also time is shown as elapsed
+contacts incomplete
 
 alliances?  not yet.  need other shit finished first.
 started coding alliance db
