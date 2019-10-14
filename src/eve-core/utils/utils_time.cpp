@@ -59,7 +59,7 @@ std::string Win32TimeToString(int64 win32t) {
     char buf[256];
     std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&unix_time));
 
-    return(buf);
+    return buf;
 }
 
 int64 Win32TimeNow() {

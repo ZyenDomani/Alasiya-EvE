@@ -38,7 +38,7 @@
  * @brief A reference-counted object.
  *
  * This class has all stuff needed to cooperate with
- * RefPtr. If you want some of your classes to be
+ * RefPtr. If you want your class to be
  * reference-counted, derive them from this class.
  *
  * NOTE:  this class does NOT increment count on creation (whereas RefPtr does)
@@ -66,7 +66,7 @@ public:
     /**
      * @brief Destructor; must be virtual.
      *
-     * Must be virtual if proper destructor should be
+     * Must be virtual for proper destructor to be
      * invoked upon destruction.
      */
     virtual ~RefObject()
@@ -83,13 +83,13 @@ protected:
     {
         if (mDeleted) {
             // make error for this shit?
-            _log(REFPTR__ERROR, "mDeleted = true.");
+            _log(REFPTR__ERROR, "IncRef() - mDeleted = true.");
             EvE::traceStack();
             return;
         }
         assert( mDeleted == false );
-        //assert( mRefCount > 0 );  // RefPtr objects are created with a ref count of 0, then incremented during RefPtr c'tor
         ++mRefCount;
+        //assert( mRefCount > 0 );  // RefPtr objects are created with a ref count of 0, then incremented during RefPtr c'tor
         _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
     }
     /**
@@ -102,7 +102,7 @@ protected:
     {
         if (mDeleted) {
             // make error for this shit?
-            _log(REFPTR__ERROR, "mDeleted = true.");
+            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.");
             EvE::traceStack();
             return;
         }
