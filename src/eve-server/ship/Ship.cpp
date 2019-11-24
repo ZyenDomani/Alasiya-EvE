@@ -2491,8 +2491,8 @@ void Ship::PayInsurance() {
         return;
     std::string reason = "Insurance payment for loss of ship ";
     reason += m_self->itemName();
-    AccountService::TranserFunds(ownerSCC, m_ownerID, m_db.GetShipInsurancePayout(GetSelf()->itemID()), reason, Journal::EntryType::Insurance);
-    m_db.DeleteInsuranceByShipID(GetSelf()->itemID());
+    AccountService::TranserFunds(ownerSCC, m_ownerID, m_db.GetShipInsurancePayout(m_self->itemID()), reason, Journal::EntryType::Insurance);
+    ShipDB::DeleteInsuranceByShipID(m_self->itemID());
 }
 
 void Ship::ResetShipSystemMgr(SystemManager* pSystem)

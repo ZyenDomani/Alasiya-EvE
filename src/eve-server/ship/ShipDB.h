@@ -41,7 +41,7 @@ public:
     PyRep *GetInsuranceByShipID(uint32 shipID);
     PyRep *GetInsuranceByOwnerID(uint32 ownerID);
     bool InsertInsuranceByShipID(uint32 shipID, std::string name, uint32 ownerID, float level, double payOut, bool isCorpItem = false, uint8 numWeeks = 12);
-	void DeleteInsuranceByShipID(uint32 shipID);
+	static void DeleteInsuranceByShipID(uint32 shipID);
 
     float GetShipInsurancePayout(uint32 shipID);
 

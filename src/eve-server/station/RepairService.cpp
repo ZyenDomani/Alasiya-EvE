@@ -30,6 +30,7 @@
 #include "PyServiceCD.h"
 #include "Client.h"
 #include "packets/Repair.h"
+#include "ship/ShipDB.h"
 #include "station/RepairService.h"
 #include "station/Station.h"
 #include "system/SystemManager.h"
@@ -367,6 +368,8 @@ PyResult RepairService::Handle_UnasembleItems(PyCallArgs &call) {
                         if (iRef->IsShipItem()) {
                             iRef->GetShipItem()->EmptyCargo();
                             iRef->GetShipItem()->StripFitting();
+                            // check insurance and delete if applicable
+                            ShipDB::DeleteInsuranceByShipID(itemID);
                         }
 
                         iRef->ChangeSingleton(false, true);

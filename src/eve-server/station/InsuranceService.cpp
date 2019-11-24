@@ -194,7 +194,7 @@ PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
     if (m_db->IsShipInsured(args.shipID)) {     //this hits db...can you insure unloaded ship? (if no, make this a ship memobj)
         if (call.byname.find("voidOld") != call.byname.end()) {
             if (call.byname.find("voidOld")->second->AsBool()->value())
-                m_db->DeleteInsuranceByShipID(args.shipID);
+                ShipDB::DeleteInsuranceByShipID(args.shipID);
         } else  // this will send voidOld=true after asking player to cancel old insurance
             throw PyException(MakeUserError("InsureShipFailedSingleContract"));
     }

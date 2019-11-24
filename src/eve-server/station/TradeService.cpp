@@ -634,6 +634,8 @@ void TradeService::TransferContainerContents(SystemManager* pSysMgr, InventoryIt
     InventoryMap.clear();
 
     if (itemRef->categoryID() == EVEDB::invCategories::Ship) {
+        //  if we change this to use shipItem, this will need rework
+        ShipDB::DeleteInsuranceByShipID(itemRef->itemID());
         ShipItemRef shipRef = pSysMgr->GetShipFromInventory(itemRef->itemID());
         if (!shipRef)
             shipRef = sItemFactory.GetShip(itemRef->itemID());
