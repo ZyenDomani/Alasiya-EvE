@@ -168,6 +168,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     /** @todo SE->IsInvul() incomplete */
     if (tSE->IsInvul())
         throw PyException( MakeUserError("DeniedTargetInvulnerable"));
+    /** @todo SE->IsFrozen() incomplete */
     if (tSE->IsFrozen()) {
         std::map<std::string, PyRep *> args;
         args["targetName"] = new PyString(tSE->GetName());

@@ -307,6 +307,7 @@ public:
     virtual void MissileLaunched(Missile* pMissile)     { /* Do nothing here */ }
     virtual bool IsInvul()                              { return false; }      /** @todo finish this. client IsInvul coded. */
     virtual bool IsFrozen()                             { return false; }
+    virtual bool IsLogin()                              { return false; }      /** @todo finish this. client IsLogin coded. */
 
     /* virtual functions in base to allow common interface calls specific to ship entities */
     virtual void SetPilot(Client* pClient);

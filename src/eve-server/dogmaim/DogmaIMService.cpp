@@ -378,6 +378,10 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 }
 
 PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
+   // flag, targetList = self.GetDogmaLM().AddTargetOBO(sid, tid)
+    // flag, targetList = self.GetDogmaLM().AddTarget(tid)
+    // as a note, targetList isnt used once call returns to client
+    // throws here void returns.  client will raise and ignore expected return
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
@@ -435,6 +439,10 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
         _log(INV__WARNING, "Unable to find entity %u in system %u from '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
         return rsp.Encode();
     }
+    if (pTSE->IsStaticEntity())
+        throw PyException(MakeUserError("DeniedTargetInvulnerable"));
+    //DeniedTargetEvadesSensors
+
     if ((pShip->SysBubble() == nullptr)
     or (pTSE->SysBubble() == nullptr)) {
         _log(DESTINY__ERROR, "Client %u or Target %u does not have a bubble.", pClient->GetName(), pTSE->GetName());
