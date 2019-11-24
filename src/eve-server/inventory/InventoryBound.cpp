@@ -543,7 +543,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             quantity = 1;
         }
 
-        // remove item from current location - this is for items that need specific handling
+        // check for items that need specific handling
         if (IsRigSlot(fromFlag)) { //  cant remove rigs like this.  send error.
             throw PyException(MakeUserError("CannotRemoveUpgradeManually"));
         } else if (IsModuleSlot(fromFlag)) {
@@ -582,7 +582,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
             continue;
         }
 
-        // add item to new location
+        // move item to new location
         if (ship) {
             // are we adding module to ship using autoFit?
             if (toFlag == flagAutoFit) {
@@ -612,7 +612,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (contRef.get() != nullptr)
                     contRef->AddItem(iRef);
                 else
-                    _log(INV__ERROR, "InventoryBound::MoveItems() - container for item %i not found.  continuing.", (*itr));
+                    _log(INV__ERROR, "InventoryBound::MoveItems() - previous container for item %i not found.  continuing.", (*itr));
                 continue;
             }
         } else if (customs) {

@@ -6,7 +6,7 @@
 
 **********  found shit...high priority
 
-module add/remove isnt fully thought out at this point.
+module add/remove isnt fully thought out at this point.  will need complete walk thru to verify proper operation
 
 InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
@@ -17,6 +17,8 @@ InvBrokerBound::Handle_GetInventoryFromId
 cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
 
 check repack/reproc ships for insurance and delete if applicable
+    - does client need update when insurance deleted?
+also check containers for contents and remove/deny before repack
 
 moving mwd from one slot to another throws groupfit limited error
 
@@ -44,6 +46,7 @@ dungeon spawn error....(and they white)
 
 jetans dont check capy before jettison
 
+check trade - ships retain insurance
 
 
 ********  improvements
@@ -109,6 +112,7 @@ fleet boosts - apply directly to ship/modules when calculated
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
     - this will give proper data to client when GetAllInfo() is sent
 many fleet error msgs in client unused - noted in fleetdata.h
+few fleet calls not coded
 
 
 
@@ -165,6 +169,9 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
 lsc system better, but incomplete needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
     -  whole system needs update or possible rewrite
+
+
+link/unlink need a bit more logic work (as per notes in code)
 
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
