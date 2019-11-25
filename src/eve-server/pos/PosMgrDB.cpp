@@ -42,7 +42,7 @@ PyRep* PosMgrDB::GetCorpControlTowers(uint32 corpID)
             "SELECT e.typeID, e.itemID, e.locationID"
             " FROM entity AS e"
             " LEFT JOIN invTypes AS t USING (typeID)"
-            " LEFT JOIN posTowerData AS d USING (itemID)"// do we need ONLY anchored+ towers.  yes...we're not looking for towers in cargo
+            " LEFT JOIN posTowerData AS d USING (itemID)"// we're not looking for towers in cargo
             " WHERE e.ownerID = %u AND t.groupID = %u", corpID, EVEDB::invGroups::Control_Tower))
     {
         codelog(DATABASE__ERROR, "Error in GetCorpControlTowers query: %s", res.error.c_str());

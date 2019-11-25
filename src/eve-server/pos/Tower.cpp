@@ -146,7 +146,7 @@ void TowerSE::Init()
     // if password is already set and tower online, then we can online (create) the forcefield
     m_harmonic = m_tdata.harmonic;
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
-    and (m_tdata.password.compare("") != 0)
+    and (!m_tdata.password.empty())
     and (m_data.state > EVEPOS::StructureStatus::Anchored))
         CreateForceField();
 
