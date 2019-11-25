@@ -221,7 +221,7 @@ private:
     uint32 m_minutes;
 
     // check for null iterator.  this will need to be moved to a memory code file eventually.
-    // unfortunely, this is very specific for which iterators it can check.  see notes in code.
+    // unfortunately, this is very specific for which iterators it can check.  see notes in code.
     bool IsNull(std::map<uint32, SystemEntity*>::iterator& i);
 };
 

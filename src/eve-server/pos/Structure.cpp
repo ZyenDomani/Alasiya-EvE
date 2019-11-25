@@ -341,6 +341,11 @@ void StructureSE::Init()
         m_self->SetFlag(flagStructureActive);
 }
 
+void StructureSE::Scoop() {
+    m_db.DeleteData(m_data.itemID);
+    m_data = EVEPOS::StructureData();
+}
+
 void StructureSE::Process() {
     /* called by EntityList::Process on every loop */
     /*  Enable base call to Process Targeting and Movement  */
@@ -490,7 +495,8 @@ void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
         sBubbleMgr.Add(this);
 
         if (is_log_enabled(POS__TRACE))
-            _log(POS__TRACE, "StructureSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f", GetName(), m_data.itemID, pos.x, pos.y, pos.z);
+            _log(POS__TRACE, "StructureSE::Anchor() - TowerSE %s(%u) new position %.2f, %.2f, %.2f at %s", \
+                        GetName(), m_data.itemID, pos.x, pos.y, pos.z, m_moonSE->GetName());
     } else {
         if (!m_moonSE->HasTower()) {
             pClient->SendErrorMsg("There is no tower anchored at this moon.  You cannot anchor any structure without a tower");

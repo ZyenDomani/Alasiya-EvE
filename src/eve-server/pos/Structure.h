@@ -132,6 +132,7 @@ public:
     virtual void                Killed(Damage &fatal_blow);
     virtual void                Init();
     virtual void                InitData();
+    virtual void                Scoop();
 
     /* virtual functions to be overridden in derived classes */
     virtual void     MissileLaunched(Missile* pMissile) { /* Do nothing here */ }

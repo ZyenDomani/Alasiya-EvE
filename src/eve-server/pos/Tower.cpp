@@ -155,6 +155,9 @@ void TowerSE::Init()
         m_moonSE->SetTower(this);
 
     // set tower in bubble
+    if (m_bubble == nullptr)
+        assert(0);
+
     m_bubble->SetTowerSE(this);
 
     /** @todo
@@ -177,6 +180,14 @@ void TowerSE::InitData() {
     m_tdata.standingOwnerID = 0;    /** @todo  get sov holder here. */
 
     m_db.SaveTowerData(m_tdata, m_data);
+}
+
+void TowerSE::Scoop() {
+    StructureSE::Scoop();
+    m_moonSE->SetTower(nullptr);
+    m_tdata = EVEPOS::TowerData();
+    m_self->ChangeSingleton(false);
+    m_self->SaveItem();
 }
 
 void TowerSE::Process()

@@ -14,6 +14,14 @@
 #include "../DataClasses.h"
 
 
+void PosMgrDB::DeleteData(uint32 itemID) {
+    DBerror err;
+    sDatabase.RunQuery(err, "DELETE FROM posStructureData WHERE itemID = %u", itemID);
+    sDatabase.RunQuery(err, "DELETE FROM posCustomsOfficeData WHERE itemID = %u", itemID);
+    sDatabase.RunQuery(err, "DELETE FROM posJumpBridgeData WHERE itemID = %u", itemID);
+    sDatabase.RunQuery(err, "DELETE FROM posTowerData WHERE itemID = %u", itemID);
+}
+
 PyRep* PosMgrDB::GetSiloCapacityForType(uint16 typeID) {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
@@ -31,10 +39,11 @@ PyRep* PosMgrDB::GetCorpControlTowers(uint32 corpID)
 {
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
-            "SELECT typeID, itemID, locationID"
-            " FROM entity"
-            " LEFT JOIN invTypes USING (typeID)"    // do we need ONLY anchored+ towers.
-            " WHERE ownerID = %u AND groupID = %u", corpID, EVEDB::invGroups::Control_Tower))
+            "SELECT e.typeID, e.itemID, e.locationID"
+            " FROM entity AS e"
+            " LEFT JOIN invTypes AS t USING (typeID)"
+            " LEFT JOIN posTowerData AS d USING (itemID)"// do we need ONLY anchored+ towers.  yes...we're not looking for towers in cargo
+            " WHERE e.ownerID = %u AND t.groupID = %u", corpID, EVEDB::invGroups::Control_Tower))
     {
         codelog(DATABASE__ERROR, "Error in GetCorpControlTowers query: %s", res.error.c_str());
         return nullptr;

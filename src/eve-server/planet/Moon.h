@@ -43,7 +43,7 @@ public:
 
     /* specific functions handled in this class. */
     StructureSE* GetMyTower()                           { return m_towerSE; }
-    bool HasTower()                                     { return (m_towerSE == nullptr ? false : true); }
+    bool HasTower()                                     { return (m_towerSE != nullptr); }
     void SetTower(StructureSE* pSE)                     { m_towerSE = pSE; }
 
     std::map<uint16, uint8>::iterator GooEnd()          { return m_resources.end(); }

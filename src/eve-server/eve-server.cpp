@@ -222,6 +222,7 @@ int main( int argc, char* argv[] )
     sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
     sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
     sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
+    sLog.Log("   POS AI Version", " %.2f", POS_AI_Version );
     sLog.Log("MarketBot Version", " %.2f", Bot_Version );
     sLog.Log(" Missions Version", " %.2f", Mission_Version );
     std::printf("\n");     // spacer

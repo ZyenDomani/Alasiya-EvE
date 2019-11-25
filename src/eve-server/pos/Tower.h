@@ -49,6 +49,7 @@ public:
     virtual void                Operating();
     virtual void                Reinforced();
 
+    virtual void                Scoop();
 
     void                        ReinforceTower();
 

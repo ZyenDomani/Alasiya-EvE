@@ -30,6 +30,8 @@ public:
 
 
     // pos data methods
+    void DeleteData(uint32 itemID);
+
     bool GetBaseData(EVEPOS::StructureData& data);
     void SaveBaseData(EVEPOS::StructureData& data);
     void UpdateBaseData(EVEPOS::StructureData& data);

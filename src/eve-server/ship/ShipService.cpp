@@ -545,6 +545,9 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         iRef->ChangeOwner(pClient->GetCharacterID(), true);
         pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
         pSystem->RemoveEntity(pSE);
+        // perform data cleanup for structures
+        if (pSE->IsPOSSE())
+            pSE->GetPOSSE()->Scoop();
     }
 
     return nullptr;

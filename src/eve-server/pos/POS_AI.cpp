@@ -3,8 +3,9 @@
  * @name POS_AI.cpp
  *   Class for POS Weapon Artificial Intelligence.
  *
- * @Author:         Allan
+ * @Author:          Allan
  * @date:   28 December 17
+ * @version:          0.00
  */
 
 
@@ -15,3 +16,4 @@
 
 
 */
+
