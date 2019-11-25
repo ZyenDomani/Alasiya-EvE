@@ -1489,6 +1489,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     sLog.Magenta("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
 
     drone->Move(m_locationID, flagAutoFit, true);
+    drone->ChangeSingleton(true);
 
     GPoint position(pShipSE->GetPosition());
     position.MakeRandomPointOnSphere(500.0);
@@ -1503,7 +1504,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     Drone* pDrone = new Drone(drone, m_services, m_system, position, data);
     // add drone entity to system, set speed, begin orbit around launching ship
     m_system->AddEntity(pDrone);
-     OnDroneStateChange du;
+    OnDroneStateChange du;
         du.droneID = drone->itemID();
         du.ownerID = m_char->itemID();
         du.droneTypeID = drone->typeID();
@@ -1515,9 +1516,9 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
     pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
     PyDecRef(up);
 
-    pDrone->DestinyMgr()->Orbit(pShipSE, 800);  //FIXME
     pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
     pDrone->DestinyMgr()->SetSpeedFraction(0.5f);   //FIXME
+    pDrone->DestinyMgr()->Orbit(pShipSE, 800);  //FIXME
 
     return true;
 }

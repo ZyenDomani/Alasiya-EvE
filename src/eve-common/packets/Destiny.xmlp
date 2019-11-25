@@ -254,30 +254,6 @@ DST_WARPEXIT = 11
       </tupleInline>
   </elementDef>
 
-  <elementDef name="DoDestinyDamageState">
-    <tupleInline>
-      <tupleInline>
-        <!-- this is a ratio from 0-1 -->
-        <real name="shield" />
-        <!-- shield recharge rate in ms -->
-        <real name="recharge" />
-        <long name="timestamp" />
-      </tupleInline>
-      <!-- this is a ratio from 0-1 -->
-      <real name="armor" />
-      <!-- this is a ratio from 0-1 -->
-      <real name="structure" />
-    </tupleInline>
-  </elementDef>
-
-  <elementDef name="DoDestinyDamageState3">
-    <tupleInline>
-        <real name="shield" default="0" />
-        <real name="armor" default="0" />
-        <real name="structure" default="1" />
-    </tupleInline>
-  </elementDef>
-
 <!--
     def AddBalls2(self, chunk):
         state, extraBallData = chunk
@@ -307,6 +283,30 @@ DST_WARPEXIT = 11
             </tupleInline>
         </tupleInline>
       </tupleInline>
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestinyDamageState">
+    <tupleInline>
+      <tupleInline>
+        <!-- this is a ratio from 0-1 -->
+        <real name="shield" />
+        <!-- shield recharge rate in ms -->
+        <real name="recharge" />
+        <long name="timestamp" />
+      </tupleInline>
+      <!-- this is a ratio from 0-1 -->
+      <real name="armor" />
+      <!-- this is a ratio from 0-1 -->
+      <real name="structure" />
+    </tupleInline>
+  </elementDef>
+
+  <elementDef name="DoDestinyDamageState3">
+    <tupleInline>
+        <real name="shield" default="0" />
+        <real name="armor" default="0" />
+        <real name="structure" default="1" />
     </tupleInline>
   </elementDef>
 

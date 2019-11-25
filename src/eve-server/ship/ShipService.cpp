@@ -363,16 +363,18 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         return nullptr;
     }
 
-    Call_Drop3 drop3args;
-    if (!drop3args.Decode(&call.tuple)) {
+    Call_Drop3 args;
+    if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
         return nullptr;
     }
 
-    PyList* PyToDropList = drop3args.toDrop;
-    uint32 ownerID = drop3args.ownerID;
+    PyList* PyToDropList = args.toDrop;
+    uint32 ownerID = args.ownerID;
     //used for LaunchUpgradePlatformWarning
-    bool ignoreWarning = drop3args.ignoreWarning, dropped = false;
+    // args.ignoreWarning
+
+    bool dropped = false, shipDrop = false;
 
     Client* pClient = call.client;
     SystemManager* pSystem = pClient->SystemMgr();
@@ -381,109 +383,124 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
         return nullptr;
     }
 
-    DBSystemDynamicEntity entity = DBSystemDynamicEntity();
-        entity.categoryID = EVEDB::invCategories::_System;
-        entity.ownerID = ownerID;
-        entity.factionID = pClient->GetWarFactionID();
-        entity.allianceID = pClient->GetAllianceID();
-        entity.corporationID = pClient->GetCorporationID();
-
-    uint32 itemQuantity = 0;
+    uint8 qty = 0;
+    uint32 itemID = 0;
     double radius = pClient->GetShipSE()->GetRadius();
 
     InventoryItemRef iRef(nullptr);
     PyDict* dict = new PyDict();
     for (uint32 i = 0; i < PyToDropList->size(); ++i) {
+        dropped = false;
+        PyList* list = new PyList();
         GPoint location(pClient->GetShipSE()->GetPosition());
         location.MakeRandomPointOnSphereLayer(500,1500);
-        entity.itemID = PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value();
-        itemQuantity = PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value();
-
-        iRef = sItemFactory.GetItem(entity.itemID);
+        qty = PyToDropList->items.at(i)->AsTuple()->items.at(1)->AsInt()->value();
+        itemID = PyToDropList->items.at(i)->AsTuple()->items.at(0)->AsInt()->value();
+        iRef = sItemFactory.GetItem(itemID);
         if (iRef.get() == nullptr) {
-            sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), entity.itemID);
+            sLog.Error("ShipBound::Handle_Drop()", "%s: Unable to find item %u to drop.", pClient->GetName(), itemID);
             continue;
         }
-        if (iRef->quantity() > 1) {
-            InventoryItemRef newItem = iRef->Split(1);
-            if (newItem.get() == nullptr) {
-                _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
-                continue;
-            }
-            iRef = newItem;
-            if (iRef.get() == nullptr) {
-                _log(INV__ERROR, "ShipBound::Handle_Drop() - Error getting split item. Skipping.");
-                continue;
-            }
-            if (iRef->quantity() > 1)
-                _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", iRef->itemID(), iRef->quantity());
 
-            entity.itemID = iRef->itemID();
-        }
+        switch (iRef->categoryID()) {
+            case EVEDB::invCategories::Drone: {
+                if (iRef->flag() != flagDroneBay) {
+                    // make error here
+                    continue;
+                }
+                // This item is a drone, so launch it into space:
+                /** @todo  need to check stack and acquire all new itemIDs and put into list */
+                for (uint8 i = qty++; i < qty; ++i) {
+                    InventoryItemRef newItem = iRef->Split(1);
+                    if (newItem.get() == nullptr) {
+                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
+                        continue;
+                    }
+                    if (newItem.get() == nullptr) {
+                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Error getting split item. Skipping.");
+                        continue;
+                    }
+                    if (newItem->quantity() > 1)
+                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", newItem->itemID(), newItem->quantity());
 
-        PyList* list = new PyList();
-        if ((iRef->flag() == flagDroneBay) and (iRef->categoryID() == EVEDB::invCategories::Drone)) {
-            // This item is a drone, so launch it into space:
-            if (pClient->LaunchDrone(iRef)) {
-                dropped = true;
-                list->AddItem(new PyInt(entity.itemID));
-            }
-        } else {
-            if (iRef->groupID() == EVEDB::invGroups::Control_Tower)
+                    if (pClient->LaunchDrone(newItem)) {
+                        dropped = true;
+                        shipDrop = true;
+                        list->AddItem(new PyInt(newItem->itemID()));
+                    }
+                }
+            } break;
+            case EVEDB::invCategories::Structure: {
                 if (pClient->SystemMgr()->GetClosestMoonSE(location)->GetMoonSE()->HasTower()) {
-                    pClient->SendErrorMsg("This Moon already has a Control Tower in orbit.  Aborting.");
+                    pClient->SendErrorMsg("This Moon already has a Control Tower in orbit.  Aborting Drop.");
                     return nullptr;
                 }
 
-            // Move item from cargo bay to space:
-            iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
-            iRef->SetPosition(location + iRef->radius() + radius);
-            iRef->ChangeOwner(entity.ownerID);
+                DBSystemDynamicEntity entity = DBSystemDynamicEntity();
+                entity.ownerID = ownerID;
+                entity.factionID = pClient->GetWarFactionID();
+                entity.allianceID = pClient->GetAllianceID();
+                entity.corporationID = pClient->GetCorporationID();
+                entity.itemID = iRef->itemID();
+                entity.itemName = iRef->itemName();
+                entity.typeID = iRef->typeID();
+                entity.groupID = iRef->groupID();
+                entity.categoryID = iRef->categoryID();
 
-            entity.itemName = iRef->itemName();
-            entity.typeID = iRef->typeID();
-            entity.groupID = iRef->groupID();
-            entity.categoryID = iRef->categoryID();
-            entity.x = iRef->position().x;
-            entity.y = iRef->position().y;
-            entity.z = iRef->position().z;
-            if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
-                entity.planetID = pSystem->GetClosestPlanetID(location);
-            SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
-            if (pSE == nullptr) {
-                //couldnt create entity.  move item back to orig location and continue
-                iRef->Donate(pClient->GetCharacterID(), pClient->GetShipID(), flagCargoHold);
-                continue;
+                // Move item from cargo bay to space: (and send OnItemChange packet)
+                iRef->Move(pClient->GetLocationID(), flagAutoFit, true);
+                iRef->SetPosition(location + iRef->radius() + radius);
+                iRef->ChangeOwner(entity.ownerID);
+
+                entity.x = iRef->position().x;
+                entity.y = iRef->position().y;
+                entity.z = iRef->position().z;
+
+                if (entity.groupID == EVEDB::invGroups::Orbital_Infrastructure)
+                    entity.planetID = pSystem->GetClosestPlanetID(location);
+                SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*pSystem, entity);
+                if (pSE == nullptr) {
+                    //couldnt create entity.  move item back to orig location and continue
+                    iRef->Donate(pClient->GetCharacterID(), pClient->GetShipID(), flagCargoHold);
+                    continue;
+                }
+
+                // item was successfully created.  set singleton
+                iRef->ChangeSingleton(true);
+
+                dropped = true;
+                shipDrop = true;
+                pSE->GetPOSSE()->Drop(pClient->GetShipSE()->SysBubble());
+                pSystem->AddEntity(pSE);
+                list->AddItem(new PyInt(entity.itemID));
+                // may need separate test for infrastructure hubs
+            } break;
+            default: {
+                _log(INV__ERROR, "ShipBound::Handle_Drop() - Item %s (cat %u) is neither drone nor structure.", iRef->itemName().c_str(), iRef->categoryID());
             }
-            dropped = true;
-            // need separate test for infrastructure hubs
-            if (pSE->IsPOSSE())
-                pSE->GetPOSSE()->Init();
-            pSystem->AddEntity(pSE);
-            pSE->DestinyMgr()->SendJettisonPacket();
-            list->AddItem(new PyInt(entity.itemID));
         }
+
+    // returns dict of dropped items as {itemID, data} where data is list of itemIDs dropped (split stack if applicable)
+    // however, on non-throw error, data is tuple of errID, errDetailsType, errDetails (unknown where these are defined)
+
         if (dropped) {
-            iRef->ChangeSingleton(true);
-            dict->SetItem(new PyInt(entity.itemID), list);
+            dict->SetItem(new PyInt(iRef->itemID()), list);
+        } else {
+            PyTuple* err = new PyTuple(3);
+            err->SetItem(0, new PyInt(1));
+            err->SetItem(1, new PyString("unsure"));
+            err->SetItem(2, new PyString("misc error"));
+            dict->SetItem(new PyInt(iRef->itemID()), err);
         }
     }
 
-    if (!dropped) {
-        dict->clear();  // send empty list.
-        PyList* list = new PyList();
-        dict->SetItem(new PyInt(call.client->GetShipID()), list);
-    }
+    //  missing launch error throw msgs.... LaunchCPWarning, LaunchUpgradePlatformWarning
+    //   - these are thrown before item is launched and will negate entire launch group until warning is approved, then entire group is reprocessed
 
-    // returns nodeID and timestamp and dict of dropped items
-    PyTuple* tuple = new PyTuple(2);
-        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
-    PySubStruct* str = new PySubStruct(new PySubStream(tuple));
-    PyTuple* tuple1 = new PyTuple(2);
-        tuple1->SetItem(0, str);
-        tuple1->SetItem(1, dict);
-    return tuple1;
+    if (shipDrop)
+        pClient->GetShipSE()->DestinyMgr()->SendJettisonPacket();
+
+    return dict;
 }
 
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {

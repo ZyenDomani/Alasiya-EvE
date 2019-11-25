@@ -137,9 +137,11 @@ void StructureItem::AddItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
+    // test for item types and verify flags here...
+
     InventoryItem::AddItem(iRef);
-    
+
     if (mySE->IsCOSE())
         mySE->GetCOSE()->VerifyAddItem(iRef);
 }
@@ -148,7 +150,7 @@ void StructureItem::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::RemoveItem(iRef);
 }
 
@@ -187,6 +189,9 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
 
     // zero-init data
     m_data = EVEPOS::StructureData();
+
+    // update StructureItem with SE;
+    structure->SetMySE(this);
 
     _log(SE__DEBUG, "Created StructureSE for item %s (%u).", structure->itemName().c_str(), structure->itemID());
 }
@@ -418,6 +423,15 @@ void StructureSE::Process() {
             m_procState = ProcState::Invalid;
     }
 }
+
+void StructureSE::Drop(SystemBubble* pBubble) {
+    // this is for dropping items where Init() and Add() each need info from the other.
+    m_bubble = pBubble;
+    Init();
+    // now null bubble to be added correctly
+    m_bubble = nullptr;
+}
+
 /*{'messageKey': 'CantObjectInsideForceField', 'dataID': 17885214, 'suppressable': False, 'bodyID': 260153, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 399}
  * {'messageKey': 'CantOnlineAnotherClaimMarkerOnlining', 'dataID': 17876439, 'suppressable': False, 'bodyID': 256876, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3091}
  * {'messageKey': 'CantOnlineDamagedGoods', 'dataID': 17885104, 'suppressable': False, 'bodyID': 260116, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 400}

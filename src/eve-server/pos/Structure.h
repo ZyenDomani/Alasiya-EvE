@@ -147,6 +147,7 @@ public:
     virtual void                Reinforced()            { /* do nothing here yet */ }
 
     /* specific functions handled in this class. */
+    void                        Drop(SystemBubble* pBubble);
     void                        Anchor();
     void                        Offline();
     void                        PullAnchor();

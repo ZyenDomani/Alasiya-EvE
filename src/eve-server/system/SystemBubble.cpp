@@ -588,7 +588,7 @@ void SystemBubble::SendAddBalls2( SystemEntity* to_who ) {
     pClient->QueueDestinyUpdate(&t, true);    //consumed
 }
 
-void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
+void SystemBubble::AddBallExclusive( SystemEntity* pSE ) {
     if (!m_system->IsLoaded())
         return;
 	Buffer* destinyBuffer = new Buffer();
@@ -601,15 +601,15 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
 
 	AddBalls addballs;
 	//encode destiny binary
-	about_who->EncodeDestiny( *destinyBuffer );
+	pSE->EncodeDestiny( *destinyBuffer );
     addballs.state = new PyBuffer( &destinyBuffer );
 	//encode damage state
-    addballs.damageDict[ about_who->GetID() ] = about_who->MakeDamageState();
+    addballs.damageDict[ pSE->GetID() ] = pSE->MakeDamageState();
 	//encode SlimItem
     addballs.slims = new PyList();
-    addballs.slims->AddItem( new PyObject( "foo.SlimItem", about_who->MakeSlimItem() ) );
+    addballs.slims->AddItem( new PyObject( "foo.SlimItem", pSE->MakeSlimItem() ) );
 
-    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", about_who->GetID(), m_bubbleID);
+    _log(DESTINY__BUBBLE_TRACE, "SystemBubble::AddBallExclusive() - Adding entity %u to bubble %u", pSE->GetID(), m_bubbleID);
     if (is_log_enabled(DESTINY__BALL_DUMP))
         addballs.Dump( DESTINY__BALL_DUMP, "    " );
     _log( DESTINY__BALL_DECODE, "    Ball Decoded:" );
@@ -617,7 +617,7 @@ void SystemBubble::AddBallExclusive( SystemEntity* about_who ) {
         Destiny::DumpUpdate( DESTINY__BALL_DECODE, &( addballs.state->content() )[0], (uint32)addballs.state->content().size() );
 	//bubblecast the update
 	PyTuple* t = addballs.Encode();
-	BubblecastDestinyUpdateExclusive( &t, "AddBall", about_who );
+	BubblecastDestinyUpdateExclusive( &t, "AddBall", pSE );
 	PySafeDecRef( t );
 }
 
