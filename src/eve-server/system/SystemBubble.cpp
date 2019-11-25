@@ -505,7 +505,7 @@ void SystemBubble::SendAddBalls(SystemEntity* to_who) {
     addballs.slims = new PyList();
 
     for (auto cur : m_dynamicEntities) {
-        if (!cur.second->IsMissileSE())
+        if (!cur.second->IsMissileSE() or !cur.second->IsFieldSE())
             addballs.damageDict[cur.first] = cur.second->MakeDamageState();
         addballs.slims->AddItem( new PyObject( "foo.SlimItem", cur.second->MakeSlimItem() ) );
         cur.second->EncodeDestiny( *destinyBuffer );

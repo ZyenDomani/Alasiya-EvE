@@ -222,7 +222,7 @@ void TowerSE::SetOnline()
     SetTimer(m_self->GetAttribute(AttrPosControlTowerPeriod).get_int());
 
     if ((m_harmonic > EVEPOS::Harmonic::Offline)
-    and (m_tdata.password.compare("") != 0))
+    and (!m_tdata.password.empty()))
         CreateForceField();
 
     SendSlimUpdate();
