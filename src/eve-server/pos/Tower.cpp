@@ -211,11 +211,14 @@ void TowerSE::Process()
 
 void TowerSE::SetOnline()
 {
+    //StructureSE::SetOnline();
+
     m_data.timestamp = GetFileTimeNow();
     m_self->SetFlag(flagStructureActive);
     m_procState = EVEPOS::ProcState::Online;
     m_data.state = EVEPOS::StructureStatus::Online;
-    m_harmonic = m_tdata.harmonic = EVEPOS::Harmonic::Online;
+    m_harmonic = EVEPOS::Harmonic::Online;
+    m_tdata.harmonic = m_harmonic;
     SetTimer(m_self->GetAttribute(AttrPosControlTowerPeriod).get_int());
 
     if ((m_harmonic > EVEPOS::Harmonic::Offline)

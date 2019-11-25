@@ -627,7 +627,7 @@ void StructureSE::Activate(int32 effectID)
     if (m_module)
         m_towerSE->OnlineModule(this);
 
-    //m_db.UpdateBaseData(m_data);
+    m_db.UpdateBaseData(m_data);
 }
 
 void StructureSE::Deactivate(int32 effectID)
@@ -643,7 +643,7 @@ void StructureSE::Deactivate(int32 effectID)
 
 void StructureSE::SetOnline()
 {
-    // this state is persistant until out of resources or changed
+    // this state is persistent until out of resources or changed
     m_self->SetFlag(flagStructureActive);
     m_procState = EVEPOS::ProcState::Online;
     m_data.state = EVEPOS::StructureStatus::Online;

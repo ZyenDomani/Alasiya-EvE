@@ -834,7 +834,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         // determine if this pSE is pos or cont.
         //call (de)activate on pSE, pass effectID, send effect to clients (bubblecast) then set timers.
         if (pSE->IsPOSSE()) {
-            /*
+            /*  these two may be called in posMgr...
             if ((args.arg2 == anchorDropForStructures)
             or (args.arg2 == anchorDropOrbital))
                 pSE->GetPOSSE()->SetAnchor(args.arg2);
