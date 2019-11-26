@@ -330,6 +330,7 @@ public:
     void DamageRandModule(float chance);
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
     void SaveShip()                                     { m_shipRef->SaveShip(); }
+    void UpdateDrones(std::map<uint32, uint8> &attribs);    // used to update drone settings
 
     //cancel all active modules
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }

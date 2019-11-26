@@ -2733,3 +2733,15 @@ void Ship::ApplyBoost(BoostData& bData)
     m_boosted = true;
 }
 
+void Ship::UpdateDrones(std::map<uint32, uint8> &attribs) {
+    // need to get list of current drones in ship as items to update attributes here
+    std::vector<InventoryItemRef> items;
+    m_shipRef->GetMyInventory()->GetItemsByFlag(flagDroneBay, items);
+
+    for (auto cur : items) {
+        cur->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        cur->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
+        cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
+        //AttrDroneIsChaotic
+    }
+}

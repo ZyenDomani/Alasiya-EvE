@@ -1108,12 +1108,18 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      *    call.Dump(SHIP__INFO);
      */
 
-    //  how do you determine what drone we're changing settings for here???
-    //  gonna have to use client and update all his drones to these settings
+    if (!call.tuple->GetItem(0)->IsDict()) {
+        codelog(DRONE__ERROR, "Tuple Item is wrong type: %s.  Expected PyDict.", call.tuple->GetItem(0)->TypeString());
+        return nullptr;
+    }
 
-    _log(DRONE__INFO, "DogmaIMBound::ChangeDroneSettings() - size=%u", call.tuple->size());
-    call.Dump(DRONE__INFO);
+    PyDict* dict = call.tuple->GetItem(0)->AsDict();
 
+    std::map<uint32, uint8> attribs;
+    for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); ++itr)
+        attribs[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
+
+    call.client->GetShipSE()->UpdateDrones(attribs);
 
     // returns nothing
     return nullptr;
