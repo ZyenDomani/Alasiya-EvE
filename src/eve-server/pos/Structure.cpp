@@ -317,7 +317,7 @@ void StructureSE::Init()
 
     // all POS have 1h duration
     if (m_tower) {
-        m_duration = m_self->GetAttribute(AttrPosControlTowerPeriod).get_int();
+        m_duration = m_self->GetAttribute(AttrPosControlTowerPeriod).get_uint32();
     } else if (m_module) {
         SystemEntity* pSE = m_system->GetSE(m_data.towerID);
         if (pSE == nullptr) {
@@ -484,7 +484,7 @@ void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
         // this puts ship at Az: 0.785332, Ele: 0.615505, angle: 1.5708
         //warpToPoint -= (radius * 1.25);
 
-        uint32 dist = BUBBLE_RADIUS_METERS + 10000/*m_self->GetAttribute(AttrMoonAnchorDistance).get_int()*/;
+        uint32 dist = /*BUBBLE_RADIUS_METERS + 10000*/m_self->GetAttribute(AttrMoonAnchorDistance).get_uint32();
         uint32 radius = m_moonSE->GetRadius();
         float rad = EvE::Trig::Deg2Rad(90);
 
@@ -513,7 +513,7 @@ void StructureSE::SetAnchor(Client* pClient, GPoint& pos)
 
     m_procState = EVEPOS::ProcState::Anchoring;
     m_data.state = EVEPOS::StructureStatus::Anchored;
-    m_delayTime = m_self->GetAttribute(AttrAnchoringDelay).get_int();
+    m_delayTime = m_self->GetAttribute(AttrAnchoringDelay).get_uint32();
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
 
@@ -544,7 +544,7 @@ void StructureSE::PullAnchor()
 
     m_procState = EVEPOS::ProcState::Unanchoring;
     m_data.state = EVEPOS::StructureStatus::Unanchored;
-    m_delayTime = m_self->GetAttribute(AttrUnanchoringDelay).get_int();
+    m_delayTime = m_self->GetAttribute(AttrUnanchoringDelay).get_uint32();
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
 
@@ -617,7 +617,7 @@ void StructureSE::Activate(int32 effectID)
     }
     m_data.state = EVEPOS::StructureStatus::Onlining;
     m_procState = EVEPOS::ProcState::Onlining;
-    m_delayTime = m_self->GetAttribute(AttrOnliningDelay).get_int();
+    m_delayTime = m_self->GetAttribute(AttrOnliningDelay).get_uint32();
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
 
@@ -633,7 +633,7 @@ void StructureSE::Activate(int32 effectID)
 void StructureSE::Deactivate(int32 effectID)
 {
     m_procState = EVEPOS::ProcState::Offlining;
-    m_delayTime = 500 /*m_self->GetAttribute(AttrOnliningDelay).get_int()*/;
+    m_delayTime = 500 /*m_self->GetAttribute(AttrOnliningDelay).get_uint32()*/;
     m_procTimer.SetTimer(m_delayTime);
     m_data.timestamp = GetFileTimeNow();
 
@@ -1003,9 +1003,9 @@ void StructureSE::Killed(Damage &fatal_blow) {
         data.finalSecurityStatus = 0;  /* fix this */
         data.finalDamageDone = fatal_blow.GetTotal();
 
-        uint32 totalHP = m_self->GetAttribute(AttrHP).get_int();
-            totalHP += m_self->GetAttribute(AttrArmorHP).get_int();
-            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_int();
+        uint32 totalHP = m_self->GetAttribute(AttrHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrArmorHP).get_uint32();
+            totalHP += m_self->GetAttribute(AttrShieldCapacity).get_uint32();
         data.victimDamageTaken = totalHP;
 
         data.killBlob = blob.str().c_str();
