@@ -1515,9 +1515,10 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.activityState = droneIdle;
         du.targetID = 0;
     PyTuple* up = du.Encode();
-    // should this be bubblecast?
-    pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
-    //PyDecRef(up);
+
+    // bubblecast is faster than destiny::update
+    pShipSE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny");
+    //pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
 
     //pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
     //pDrone->DestinyMgr()->SetSpeedFraction(0.5f);   //FIXME

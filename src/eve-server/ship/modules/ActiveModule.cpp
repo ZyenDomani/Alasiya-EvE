@@ -553,10 +553,13 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
 
             result->SetItem(1, list);
             // Send results.
+            /*
             std::vector<PyTuple*> events;
             events.push_back(result);
             std::vector<PyTuple*> updates;
             m_destinyMgr->SendDestinyUpdate(updates, events, true);
+            */
+            m_shipRef->GetPilot()->QueueDestinyEvent(&result);
         } break;
         /*
         case EVEDB::invGroups::Warp_Scrambler: {
@@ -952,14 +955,21 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
          */
         } else
             shipEff.error = PyStatic.NewNone();
+    /*
     std::vector<PyTuple*> events;
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
 
-    // this should never hit, but just in case...
     if (m_destinyMgr == nullptr)
         m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+
     m_destinyMgr->SendDestinyUpdate(updates, events, m_destinyMgr->IsWarping());
+    */
+    PyTuple* tuple = shipEff.Encode();
+    if (m_destinyMgr->IsWarping())
+        m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
+    else
+        m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
 }
 
 void ActiveModule::LaunchMissile()

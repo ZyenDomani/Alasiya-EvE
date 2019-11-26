@@ -117,10 +117,13 @@ void Prospector::SendFailure()
             tup->SetItem(0, new PyString("OnRemoteMessage"));
             tup->SetItem(1, new PyString("SalvagingFailure"));
             tup->SetItem(2, dict);
+        /*
         std::vector<PyTuple*> events;
             events.push_back(tup);
         std::vector<PyTuple*> updates;
         m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, true);
+        */
+        m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
     }
     if (m_dataMiner) {
 
