@@ -157,7 +157,6 @@ void TowerSE::Init()
     // set tower in bubble
     if (m_bubble == nullptr)
         assert(0);
-
     m_bubble->SetTowerSE(this);
 
     /** @todo
@@ -291,10 +290,12 @@ void TowerSE::Reinforced()
 
 void TowerSE::UpdatePassword()
 {
-    if (m_tdata.password.compare("") == 0) {
-        m_harmonic = m_tdata.harmonic = EVEPOS::Harmonic::Offline;
+    if (m_tdata.password.empty()) {
+        m_harmonic =EVEPOS::Harmonic::Offline;
+        m_tdata.harmonic = m_harmonic;
         if (m_pShieldSE == nullptr)
             return;
+
         m_pShieldSE->SetHarmonic(m_harmonic);
 
         //  this is for UPDATING forcefield ONLY...do not send on creation.
@@ -314,7 +315,8 @@ void TowerSE::UpdatePassword()
         updates.push_back(sbh.Encode());
         m_destiny->SendDestinyUpdate(updates); //consumed
     } else {
-        m_harmonic = m_tdata.harmonic = EVEPOS::Harmonic::Online;
+        m_harmonic = EVEPOS::Harmonic::Online;
+        m_tdata.harmonic = m_harmonic;
 
         if (m_data.state > EVEPOS::StructureStatus::Anchored)
             CreateForceField();

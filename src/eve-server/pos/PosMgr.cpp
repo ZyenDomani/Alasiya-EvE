@@ -608,8 +608,11 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
         if (pTSE == nullptr)
             return PyStatic.NewNone();
 
-        if (args.password->IsString() or args.password->IsWString())
+        if (args.password->IsString() or args.password->IsWString()) {
             pTSE->SetPassword(PyRep::StringContent(args.password));
+            pTSE->UpdatePassword();
+        }
+
         pTSE->SetCorpAccess(args.allowCorp);
         pTSE->SetAllyAccess(args.allowAlliance);
         pTSE->UpdateAccess();
@@ -619,6 +622,9 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
 
     // set harmonic for ship to 'offline' (0)   -according to packet data
     call.client->GetShipSE()->SetHarmonic(EVEPOS::Harmonic::Offline);
+
+    // at this point, if ship password isnt updated, it should be kicked out of tower's ff.
+    //  not sure how we're gonna do this yet.  will have to wait till system matures
 
     return PyStatic.NewNone();
 }
