@@ -406,7 +406,10 @@ bool Client::SelectCharacter(int32 charID/*0*/)
     UpdateSkillTraining();
 
     SetStateTimer(ClientState::csLogin, ClientTimers::LoginTimer);
-    return (m_loaded = true);
+
+    m_loaded = true;
+
+    return m_loaded;
 }
 
 void Client::ProcessClient() {

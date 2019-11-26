@@ -428,9 +428,11 @@ GPoint AnomalyMgr::GetAnomalyPos(std::string& sigID)
 }
 
 
-void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
+void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
+{
     if (!m_initalized)
         return;
+
     // registration method for pos items, wrecks and abandoned ships
     // creation method for missions, escalations and ??
     /*

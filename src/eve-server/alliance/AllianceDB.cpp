@@ -94,13 +94,15 @@ bool AllianceDB::GetCurrentApplicationInfo(uint32 allyID, uint32 corpID, Corp::A
                             allyID, corpID))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-        return (aInfo.valid = false);
+        aInfo.valid = false;
+        return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         codelog(CORP__DB_WARNING, "There's no previous application.");
-        return (aInfo.valid = false);
+        aInfo.valid = false;
+        return false;
     }
 
     aInfo.appID = row.GetInt(0);
@@ -113,7 +115,8 @@ bool AllianceDB::GetCurrentApplicationInfo(uint32 allyID, uint32 corpID, Corp::A
     aInfo.appTime = row.GetInt64(5);
     aInfo.lastCID = row.GetInt(6);
     aInfo.deleted = row.GetInt(7);
-    return (aInfo.valid = true);
+    aInfo.valid = true;
+    return true;
 }
 
 bool AllianceDB::InsertApplication(Corp::ApplicationInfo& aInfo) {

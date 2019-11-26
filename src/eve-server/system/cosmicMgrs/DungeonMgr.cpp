@@ -214,7 +214,10 @@ bool DungeonMgr::Init(AnomalyMgr* anomMgr, SpawnMgr* spawnMgr)
     Load();
 
     _log(COSMIC_MGR__MESSAGE, "DungeonMgr Initialized for %s(%u)", m_system->GetName(), m_system->GetID());
-    return (m_initalized = true);
+
+    m_initalized = true;
+
+    return m_initalized;
 }
 
 // called from systemMgr

@@ -39,7 +39,7 @@ m_pilot(nullptr),
 m_ModuleManager(nullptr)
 {
     m_isPopped = false;
-    m_IsLoaded = false;
+    m_loaded = false;
     m_isDocking = false;
     m_isUndocking = false;
     m_onlineModuleVec.clear();
@@ -73,6 +73,13 @@ uint32 ShipItem::CreateItemID( ItemData &data) {
 
 bool ShipItem::_Load()
 {
+    if (type().id() == EVEDB::invTypes::Capsule) {
+        m_loaded = true;
+        return true;
+    }
+    if (m_loaded and (m_ModuleManager != nullptr))
+        return true;
+
     Client* pClient = sItemFactory.GetUsingClient();
     // test for character creation (which throws errors here and isnt really needed)
     if ((pClient != nullptr) and pClient->IsCharCreation())
@@ -80,15 +87,12 @@ bool ShipItem::_Load()
     // load attributes
     if (!InventoryItem::_Load())
         return false;
-    if (type().id() == EVEDB::invTypes::Capsule)
-        return (m_IsLoaded = true);
-    if (m_IsLoaded and (m_ModuleManager != nullptr))
-        return true;
     // load contents
     if (!pInventory->LoadContents())
         return false;
 
-    return (m_IsLoaded = true);
+    m_loaded = true;
+    return true;
 }
 
 void ShipItem::Init()

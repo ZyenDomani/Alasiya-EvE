@@ -211,6 +211,7 @@ private:
     bool m_miner :1;
     bool m_bridge :1;
     bool m_jammer :1;
+    bool m_loaded :1;
     bool m_module :1;
     bool m_reactor :1;
     bool m_outpost :1;

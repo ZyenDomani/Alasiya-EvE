@@ -1403,13 +1403,15 @@ bool CorporationDB::GetCurrentApplicationInfo(Corp::ApplicationInfo& aInfo) {
         aInfo.charID, aInfo.corpID, aInfo.appText.c_str()))
     {
         codelog(CORP__DB_ERROR, "Error in query: %s", res.error.c_str());
-        return (aInfo.valid = false);
+        aInfo.valid = false;
+        return false;
     }
 
     DBResultRow row;
     if (!res.GetRow(row)) {
         codelog(CORP__DB_WARNING, "There's no application matching the sent data.");
-        return (aInfo.valid = false);
+        aInfo.valid = false;
+        return false;
     }
 
     aInfo.appID = row.GetInt(0);
@@ -1420,7 +1422,8 @@ bool CorporationDB::GetCurrentApplicationInfo(Corp::ApplicationInfo& aInfo) {
     aInfo.appTime = row.GetInt64(5);
     aInfo.lastCID = row.GetInt(6);
     aInfo.deleted = row.GetInt(7);
-    return (aInfo.valid = true);
+    aInfo.valid = true;
+    return true;
 }
 
 bool CorporationDB::InsertApplication(Corp::ApplicationInfo& aInfo) {

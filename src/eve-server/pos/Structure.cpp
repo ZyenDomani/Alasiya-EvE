@@ -168,6 +168,7 @@ StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, Sys
     m_tower = false;
     m_bridge = false;
     m_jammer = false;
+    m_loaded = false;
     m_module = false;
     m_outpost = false;
     m_reactor = false;
@@ -224,6 +225,10 @@ void StructureSE::InitData()
 
 void StructureSE::Init()
 {
+    // are we already initialized?
+    if (m_loaded)
+        return;
+
     // init all data here.
     m_data.itemID = m_self->itemID();
     if (m_data.itemID == 0) {
@@ -288,6 +293,8 @@ void StructureSE::Init()
         m_db.SaveBaseData(m_data);
     }
 
+    m_loaded = true;
+
     if (m_ihub)
         return;
 
@@ -295,6 +302,7 @@ void StructureSE::Init()
         // make error here.  this should never hit.
         _log(POS__MESSAGE, "StructureSE::Init %s(%u) has no moonID.", m_self->itemName().c_str(), m_data.itemID);
         //iRef->Delete(); // really delete this?
+        m_loaded = false;
         return;
     }
 
@@ -303,6 +311,7 @@ void StructureSE::Init()
         if (pSE == nullptr) {
             //iRef->Delete(); // really delete this?
             _log(POS__WARNING, "StructureSE::Init %s(%u) has no moonID. again.", m_self->itemName().c_str(), m_data.itemID);
+            m_loaded = false;
             return;
         }
         m_moonSE = pSE->GetMoonSE();

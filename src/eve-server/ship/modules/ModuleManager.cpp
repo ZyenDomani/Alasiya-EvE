@@ -114,7 +114,8 @@ bool ModuleManager::Initialize() {
             }
         }
     }
-    return (m_initalized = true);
+    m_initalized = true;
+    return m_initalized;
 }
 
 void ModuleManager::Process()

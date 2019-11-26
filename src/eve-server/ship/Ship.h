@@ -215,7 +215,7 @@ protected:
     }
 
     //bool LoadAttributes();
-    bool m_IsLoaded;
+    bool m_loaded;
 
     static uint32 CreateItemID( ItemData &data);
 
