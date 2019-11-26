@@ -23,6 +23,9 @@
     Author:        AknorJaden
 */
 
+/** @todo  this entire file needs rework to update with current code  */
+
+
 #include "eve-server.h"
 
 #include "ship/Ship.h"
@@ -123,6 +126,7 @@ void SuperWeapon::StopCycle(bool abort)
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    //m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
 }
 
 double SuperWeapon::DoCycle()
@@ -242,6 +246,7 @@ void SuperWeapon::_ShowCycle()
         events.push_back(shipEff.Encode());
     std::vector<PyTuple*> updates;
     m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
+    //m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
 }
 
 void SuperWeapon::_SetCapNeed()
