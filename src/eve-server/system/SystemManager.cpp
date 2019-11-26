@@ -818,8 +818,7 @@ SystemEntity* DynamicEntityFactory::BuildEntity(SystemManager& sysMgr, const DBS
             /** @todo make error msg here */
             // add drone to system's AnomalyMgr
             sysMgr.GetAnomMgr()->AddAnomaly(drone);
-            GPoint location(entity.x, entity.y, entity.z);
-            Drone* dSE = new Drone(drone, *(sysMgr.GetServiceMgr()), &sysMgr, location, data);
+            Drone* dSE = new Drone(drone, *(sysMgr.GetServiceMgr()), &sysMgr, data);
             _log(ITEM__TRACE, "DynamicEntityFactory::BuildEntity() making Drone item for %s (%u)", entity.itemName.c_str(), entity.itemID);
             return dSE;
         } break;

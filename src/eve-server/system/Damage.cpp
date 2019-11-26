@@ -327,22 +327,28 @@ bool SystemEntity::ApplyDamage(Damage &d) {
             d.srcSE->GetPilot()->QueueDestinyEvent(&tuple);
         }
         if (d.srcSE->IsDroneSE()) {
-            //  notify player of damage done by drone
-            PyDict* dict = new PyDict();
-                dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
-                dict->SetItemString("target", new PyInt(GetID()));
-            /*
-             PyTuple* tuple = new PyTuple(2);
-                tuple->AddItem(0, PyStatic.NewNone());  // i dont know what this is
-                tuple->AddItem(1, new PyInt(d.srcSE->GetDroneSE()->GetOwner()->GetCharID())):
-             */
-                //dict->SetItemString("owner", tuple));
-                dict->SetItemString("damage", new PyFloat(total_damage));
-            PyTuple* tuple = new PyTuple(3);
-                tuple->SetItem(0, new PyString("OnDamageMessage"));
-                tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
-                tuple->SetItem(2, dict);
-            d.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
+            // verify drone has owner set
+            if (d.srcSE->GetDroneSE()->GetOwner() != nullptr) {
+                //  notify player of damage done by drone
+                PyDict* dict = new PyDict();
+                    dict->SetItemString("source", new PyInt(d.srcSE->GetID()));
+                    dict->SetItemString("target", new PyInt(GetID()));
+                /*
+                PyTuple* tuple = new PyTuple(2);
+                    tuple->AddItem(0, PyStatic.NewNone());  // i dont know what this is
+                    tuple->AddItem(1, new PyInt(d.srcSE->GetDroneSE()->GetOwner()->GetCharID())):
+                */
+                    //dict->SetItemString("owner", tuple));
+                    dict->SetItemString("damage", new PyFloat(total_damage));
+                PyTuple* tuple = new PyTuple(3);
+                    tuple->SetItem(0, new PyString("OnDamageMessage"));
+                    tuple->SetItem(1, new PyString(Dmg::Msg::Taken[damageID]));
+                    tuple->SetItem(2, dict);
+                d.srcSE->GetDroneSE()->GetOwner()->QueueDestinyEvent(&tuple);
+            } else {
+                // make error about active drone with no owner set
+                _log(DRONE__WARNING, "Drone %u attacking %s with no owner set.", d.srcSE->GetID(), GetName());
+            }
         }
 
         // this uses targetMgr update to send to all interested parties

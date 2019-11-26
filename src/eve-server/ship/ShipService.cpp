@@ -36,6 +36,8 @@
 #include "system/DestinyManager.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
+#include "system/cosmicMgrs/AnomalyMgr.h""
+
 
 class ShipBound
 : public PyBoundObject
@@ -406,27 +408,37 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
             case EVEDB::invCategories::Drone: {
                 if (iRef->flag() != flagDroneBay) {
                     // make error here
-                    continue;
+                    break;
                 }
-                // This item is a drone, so launch it into space:
-                /** @todo  need to check stack and acquire all new itemIDs and put into list */
-                for (uint8 i = qty++; i < qty; ++i) {
-                    InventoryItemRef newItem = iRef->Split(1);
-                    if (newItem.get() == nullptr) {
-                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
-                        continue;
-                    }
-                    if (newItem.get() == nullptr) {
-                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Error getting split item. Skipping.");
-                        continue;
-                    }
-                    if (newItem->quantity() > 1)
-                        _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", newItem->itemID(), newItem->quantity());
+                // verify player can launch another drone...counter for drones in space not written
+                //  AttrMaxActiveDrones
+                //  im sure there's error msgs about this, but havent found them yet (havent looked)
 
-                    if (pClient->LaunchDrone(newItem)) {
+                // This item is a drone, so launch it into space:
+                if (qty > 1) {
+                    /** @todo  need to check stack and acquire all new itemIDs and put into list */
+                    for (uint8 i = qty++; i < qty; ++i) {
+                        InventoryItemRef newItem = iRef->Split(1);
+                        if (newItem.get() == nullptr) {
+                            _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
+                            continue;
+                        }
+                        if (newItem->quantity() > 1)
+                            _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", newItem->itemID(), newItem->quantity());
+
+                        newItem->ChangeOwner(ownerID);
+                        if (pClient->LaunchDrone(newItem)) {
+                            dropped = true;
+                            shipDrop = true;
+                            list->AddItem(new PyInt(newItem->itemID()));
+                        }
+                    }
+                } else {
+                    iRef->ChangeOwner(ownerID);
+                    if (pClient->LaunchDrone(iRef)) {
                         dropped = true;
                         shipDrop = true;
-                        list->AddItem(new PyInt(newItem->itemID()));
+                        list->AddItem(new PyInt(iRef->itemID()));
                     }
                 }
             } break;
@@ -574,28 +586,28 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
     std::vector<int32>::const_iterator cur = args.ints.begin();
     for(; cur != args.ints.end(); cur++) {
         SystemEntity* pDroneSE = pSysMgr->GetSE(*cur);
-        if (!pDroneSE) {
+        if (pDroneSE == nullptr) {
             _log(SERVICE__ERROR, "%s: Unable to find drone %u to scoop.", pClient->GetName(), *cur);
             continue;
         }
 
-        InventoryItemRef item = pDroneSE->GetSelf();
+        InventoryItemRef iRef(pDroneSE->GetSelf());
 
         // Check to see that this is really a drone:
-        pClient->GetShip()->ValidateAddItem(flagDroneBay, item);
+        pClient->GetShip()->ValidateAddItem(flagDroneBay, iRef);
 
         /** @todo check ownership/control. */
 
         // Check drone bay capacity:
         double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagDroneBay);
-        double volume = item->GetAttribute(AttrVolume).get_float();
+        double volume = iRef->GetAttribute(AttrVolume).get_float();
         if (capacity < volume)
-            throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", item->itemName().c_str()));
+            throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", iRef->itemName().c_str()));
         else {
             // We have enough Drone bay capacity to hold the drone,
             // so take ownership of it and move it into the Drone bay:
-            item->ChangeOwner(pClient->GetCharacterID(), true);
-            pClient->MoveItem(item->itemID(), pClient->GetShipID(), flagDroneBay);
+            iRef->ChangeOwner(pClient->GetCharacterID(), true);
+            pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
             pSysMgr->RemoveEntity(pDroneSE);
         }
     }

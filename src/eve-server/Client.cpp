@@ -47,6 +47,7 @@
 #include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 #include "exploration/Scan.h"
 #include "station/Station.h"
 #include "station/TradeService.h"
@@ -1493,6 +1494,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
 
     GPoint position(pShipSE->GetPosition());
     position.MakeRandomPointOnSphere(500.0);
+    drone->SetPosition(position);
 
     //now we create an entity to represent it.
     FactionData data = FactionData();
@@ -1501,7 +1503,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         data.factionID = m_char->warFactionID();
         data.ownerID = m_char->itemID();
 
-    Drone* pDrone = new Drone(drone, m_services, m_system, position, data);
+    Drone* pDrone = new Drone(drone, m_services, m_system, data);
     // add drone entity to system, set speed, begin orbit around launching ship
     m_system->AddEntity(pDrone);
     OnDroneStateChange du;
@@ -1513,12 +1515,15 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.activityState = droneIdle;
         du.targetID = 0;
     PyTuple* up = du.Encode();
+    // should this be bubblecast?
     pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
-    PyDecRef(up);
+    //PyDecRef(up);
 
-    pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
-    pDrone->DestinyMgr()->SetSpeedFraction(0.5f);   //FIXME
-    pDrone->DestinyMgr()->Orbit(pShipSE, 800);  //FIXME
+    //pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
+    //pDrone->DestinyMgr()->SetSpeedFraction(0.5f);   //FIXME
+    //pDrone->DestinyMgr()->Orbit(pShipSE, 800);      //FIXME
+
+    m_system->GetAnomMgr()->AddAnomaly(drone);
 
     return true;
 }

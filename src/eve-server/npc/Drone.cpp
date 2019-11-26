@@ -34,7 +34,7 @@
 #include "npc/DroneAI.h"
 #include "system/SystemManager.h"
 
-Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const GPoint &position, const FactionData& data)
+Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
   m_AI(new DroneAIMgr(this))
 {
@@ -81,7 +81,7 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
 
-    _log(NPC__TRACE, "Created Drone object for %s (%u)", drone.get()->itemName().c_str(), drone.get()->itemID());
+    _log(DRONE__TRACE, "Created Drone object for %s (%u)", drone.get()->itemName().c_str(), drone.get()->itemID());
 }
 
 Drone::~Drone() {
@@ -105,7 +105,7 @@ void Drone::Process() {
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
     /** @todo (allan) finish drone AI and processing */
-    m_AI->Process();
+    //m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);

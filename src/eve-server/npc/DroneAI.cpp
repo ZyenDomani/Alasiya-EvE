@@ -36,13 +36,13 @@
 DroneAIMgr::DroneAIMgr(Drone* who)
 : m_state(Idle),
   m_drone(who),
-  m_mainAttackTimer(1000),
-  m_processTimer(5000),         //arbitrary.
-  m_shieldBoosterTimer(10000),  //arbitrary.
-  m_armorRepairTimer(8000),     //arbitrary.
-  m_beginFindTarget(5000),      //arbitrary.
-  m_warpScramblerTimer(5000),   //arbitrary.
-  m_webifierTimer(5000),        //arbitrary.
+  m_mainAttackTimer(0),// dont start timer until we have a target
+  m_processTimer(0),
+  m_shieldBoosterTimer(0),  //waiting till engaged
+  m_armorRepairTimer(0),      //waiting till engaged
+  m_beginFindTarget(0),
+  m_warpScramblerTimer(0),     //not implemented yet
+  m_webifierTimer(0),             //not implemented yet
   m_sigRadius(who->GetSelf()->GetAttribute(AttrSignatureRadius).get_float()),
   m_attackSpeed(who->GetSelf()->GetAttribute(AttrSpeed).get_float()),
   m_cruiseSpeed(who->GetSelf()->GetAttribute(AttrEntityCruiseSpeed).get_int()),
@@ -55,13 +55,6 @@ DroneAIMgr::DroneAIMgr(Drone* who)
   m_armorRepairDuration(who->GetSelf()->GetAttribute(AttrEntityArmorRepairDuration).get_int())
 {
     m_processTimer.Start(5000);     //arbitrary.
-
-    m_webifierTimer.Disable();      //not implemented yet
-    m_beginFindTarget.Disable();    //arbitrary.
-    m_mainAttackTimer.Disable();    // dont start timer until we have a target
-    m_armorRepairTimer.Disable();   //waiting till engaged
-    m_warpScramblerTimer.Disable();    //not implemented yet
-    m_shieldBoosterTimer.Disable(); //waiting till engaged
 
     if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
         m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
@@ -84,9 +77,9 @@ void DroneAIMgr::Process() {
         if (m_shieldBoosterTimer.Check())
             m_drone->UseShieldRecharge();
 
-        if (m_armorRepairTimer.Enabled())
-            if (m_armorRepairTimer.Check())
-                m_drone->UseArmorRepairer();
+    if (m_armorRepairTimer.Enabled())
+        if (m_armorRepairTimer.Check())
+            m_drone->UseArmorRepairer();
 
     /* NPC::State definitions   -allan 25July15
      *   Idle,       // not doing anything, nothing in sight....idle.

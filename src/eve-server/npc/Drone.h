@@ -45,7 +45,7 @@ class Drone
 : public DynamicSystemEntity
 {
 public:
-    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const GPoint& position, const FactionData& data);
+    Drone(InventoryItemRef drone, PyServiceMgr& services, SystemManager* pSystem, const FactionData& data);
     virtual ~Drone();
 
     /* class type pointer querys. */
@@ -65,7 +65,7 @@ public:
     virtual void TargetedLost(SystemEntity *who);
 
     /* specific functions handled here. */
-    Client* GetOwner()                                  { return ((m_pClient == nullptr) ? m_pClient : nullptr); }
+    Client* GetOwner()                                  { return (m_pClient == nullptr ? nullptr : m_pClient); }
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
     void SaveDrone();
@@ -76,14 +76,14 @@ public:
     void Orbit(SystemEntity *who);
     void SetOwner(Client* pClient);
 
-    uint32 GetBounty() const                            { return ((m_pClient == nullptr) ? m_pClient->GetChar()->bounty() : 0); }
-    uint32 GetOwnerID() const                           { return ((m_pClient == nullptr) ? m_pClient->GetCharacterID() : 1); }
+    uint32 GetBounty() const                            { return (m_pClient == nullptr ? 0 : m_pClient->GetChar()->bounty()); }
+    uint32 GetOwnerID() const                           { return (m_pClient == nullptr ? 1 : m_pClient->GetCharacterID()); }
 
     float GetThermal()                                  { return m_therDamage; }
     float GetEM()                                       { return m_emDamage; }
     float GetKinetic()                                  { return m_kinDamage; }
     float GetExplosive()                                { return m_expDamage; }
-    float GetSecurityRating() const                     { return ((m_pClient == nullptr) ? m_pClient->GetChar()->GetSecurityRating() : 1.0); }
+    float GetSecurityRating() const                     { return (m_pClient == nullptr ? 0.0 : m_pClient->GetChar()->GetSecurityRating()); }
 
     double GetOrbitRange()                              { return m_orbitRange; }
 
