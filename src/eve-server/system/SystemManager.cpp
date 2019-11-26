@@ -983,8 +983,6 @@ void SystemManager::RemoveEntity(SystemEntity* pSE) {
     auto itr = m_entities.find(itemID);
     if (itr != m_entities.end()) {
         _log(ITEM__TRACE, "%s(%u): Removed from system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
-        if (pSE->TargetMgr() != nullptr)
-            pSE->TargetMgr()->ClearAllTargets(false);
         m_entities.erase(itr);
         m_entityChanged = true;
         // Remove Entity's Item Ref from Solar System Dynamic Inventory:
