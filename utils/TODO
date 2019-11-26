@@ -6,6 +6,9 @@
 
 **********  found shit...high priority
 
+make log/config option for (en/dis)able client massive check.
+
+
 module add/remove isnt fully thought out at this point.  will need complete walk thru to verify proper operation
 
 InvBrokerBound::Handle_GetInventoryFromId
@@ -155,6 +158,8 @@ anomaly system - working. may need revisit after other systems mature.   -priori
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
+player drone ai - needs complete rework.  current drone ai is copy from npc, which is incorrect.
+drones are showing in client as "ownerID = 1"  (cannot reconnect)
 
 RAM code - implement invention, copy, re, tech    -priority level: hi
 
