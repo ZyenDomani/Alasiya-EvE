@@ -342,7 +342,6 @@ void StructureSE::Init()
 }
 
 void StructureSE::Scoop() {
-    m_system->GetAnomMgr()->RemoveAnomaly(m_data.itemID);
     m_db.DeleteData(m_data.itemID);
     m_data = EVEPOS::StructureData();
 }

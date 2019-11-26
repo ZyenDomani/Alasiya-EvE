@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.5
+ Log Version: 9.6
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -354,6 +354,7 @@ LOG_TYPE( INV, INFO, DISABLED, "InvInfo" )
 LOG_TYPE( INV, TRACE, DISABLED, "InvTrace" )
 LOG_TYPE( INV, DUMP, DISABLED, "InvDump" )
 LOG_TYPE( INV, BIND, DISABLED, "InvBind" )
+LOG_TYPE( INV, LIST, DISABLED, "InvList" )
 
 LOG_CATEGORY( NPC )
 LOG_TYPE( NPC, ERROR,   ENABLED, "NPCError" )

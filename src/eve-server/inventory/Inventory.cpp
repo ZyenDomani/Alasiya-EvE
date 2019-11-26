@@ -242,8 +242,8 @@ CRowSet* Inventory::List(EVEItemFlags flag, uint32 ownerID/*0*/) const
         header->AddColumn("customInfo", DBTYPE_STR);
     CRowSet* rowset = new CRowSet(&header);
     List(rowset, flag, ownerID);
-   // if (is_log_enabled(INV__LIST))
-   //     rowset->Dump(INV__LIST, "    ");
+    if (is_log_enabled(INV__LIST))
+        rowset->Dump(INV__LIST, "    ");
     return rowset;
 }
 

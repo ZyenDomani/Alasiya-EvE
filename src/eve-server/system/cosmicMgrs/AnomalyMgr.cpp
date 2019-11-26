@@ -145,10 +145,12 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
     else
         m_anomTimer.Start(120000);  // 2m
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals for security class %0.2f", \
-                m_system->GetName(), m_system->GetID(), m_maxSigs, security);
+    m_initalized = true;
 
-    return (m_initalized = true);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized(%s) for %s(%u) with %u Max Signals for security class %0.2f", \
+                m_initalized?"true":"false", m_system->GetName(), m_system->GetID(), m_maxSigs, security);
+
+    return m_initalized;
 }
 
 void AnomalyMgr::Process() {
@@ -447,21 +449,26 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
      *    }
      * }
      */
-        //  WIP....
+
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddAnomaly() - adding %s to anomaly list.", iRef->itemName().c_str());
+
+    //  WIP....
+
     CosmicSignature sig = CosmicSignature();
-    sig.dungeonType = Dungeon::Type::Anomaly;
-    sig.ownerID = iRef->ownerID();
-    sig.scanAttributeID = AttrScanAllStrength;  // Unknown
-    sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
-    sig.sigID = sEntityList.GetAnomalyID();
-    sig.sigItemID = iRef->itemID();
-    sig.sigName = iRef->itemName();
-    sig.sigStrength = 100.0;    // determine how to calculate this
-    sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
-    sig.systemID = m_system->GetID();
-    sig.x = iRef->position().x;
-    sig.y = iRef->position().y;
-    sig.z = iRef->position().z;
+        sig.dungeonType = Dungeon::Type::Anomaly;
+        sig.ownerID = iRef->ownerID();
+        sig.scanAttributeID = AttrScanAllStrength;  // Unknown
+        sig.sigGroupID = EVEDB::invGroups::Cosmic_Anomaly;
+        sig.sigID = sEntityList.GetAnomalyID();
+        sig.sigItemID = iRef->itemID();
+        sig.sigName = iRef->itemName();
+        sig.sigStrength = 100.0;    // determine how to calculate this
+        sig.sigTypeID = EVEDB::invTypes::CosmicAnomaly;
+        sig.systemID = m_system->GetID();
+        sig.x = iRef->position().x;
+        sig.y = iRef->position().y;
+        sig.z = iRef->position().z;
+
     switch (iRef->categoryID()) {
         case EVEDB::invCategories::Entity: {
             sig.scanGroupID = Scanning::Group::Scrap;
@@ -491,6 +498,10 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
     // add new sig to sysSigMaps
     m_sigBySigID.emplace(sig.sigID, sig);
+
+    // this code is to sort items by type (sig/anom) and determine use of probes.
+    //  right now, we're not using this, and ALL sigs can be scanned by ship scanners
+
     //if (sig.sigTypeID == EVEDB::invTypes::CosmicAnomaly)
         m_anomByItemID.emplace(sig.sigItemID, sig);
     //else
@@ -500,6 +511,7 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef) {
 
 void AnomalyMgr::RemoveAnomaly(uint32 itemID)
 {
+    _log(COSMIC_MGR__DEBUG, "AnomalyMgr::RemoveAnomaly() - removing %u from anomaly list.", itemID);
     // for sigs in map
     std::map<uint32, CosmicSignature>::iterator itr = m_sigByItemID.find(itemID);
     if (itr != m_sigByItemID.end()) {

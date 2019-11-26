@@ -1108,5 +1108,13 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      *    call.Dump(SHIP__INFO);
      */
 
+    //  how do you determine what drone we're changing settings for here???
+    //  gonna have to use client and update all his drones to these settings
+
+    _log(DRONE__INFO, "DogmaIMBound::ChangeDroneSettings() - size=%u", call.tuple->size());
+    call.Dump(DRONE__INFO);
+
+
+    // returns nothing
     return nullptr;
 }

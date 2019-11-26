@@ -37,6 +37,7 @@ PyRep* PosMgrDB::GetSiloCapacityForType(uint16 typeID) {
 
 PyRep* PosMgrDB::GetCorpControlTowers(uint32 corpID)
 {
+    /** @todo  update this to pull from tower data table first to avoid iterating thru entity */
     DBQueryResult res;
     if (!sDatabase.RunQuery(res,
             "SELECT e.typeID, e.itemID, e.locationID"

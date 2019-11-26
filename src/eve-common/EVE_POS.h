@@ -91,8 +91,8 @@ namespace EVEPOS {
 
     namespace Harmonic {
         enum  {
-            Inactive = -1,
-            Offline = 0,
+            Inactive = -1,  // shows 'offline' in mgr window
+            Offline = 0,    // shows 'offline' in mgr window
             Online = 1
         };
     }
