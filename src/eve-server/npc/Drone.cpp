@@ -330,7 +330,6 @@ void Drone::SetResists() {
 //OnDroneStateChange(droneID, ownerID, controllerID, activityState, droneTypeID, controllerOwnerID, targetID)
 
 /*
- * 21:59:29 L Server: ChangeDroneSettings call made to
  * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
  * 21:59:29 [SvcCall]   Call Arguments:
  * 22:04:44 [SvcCall]       Tuple: 1 elements

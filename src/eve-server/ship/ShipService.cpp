@@ -359,7 +359,11 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     return tuple;
 }
 
-PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
+PyResult ShipBound::Handle_Drop(PyCallArgs &call)
+{
+    _log(SHIP__INFO, "ShipBound::Handle_Drop()");
+    call.Dump(SHIP__INFO);
+
     if (IsStation(call.client->GetLocationID())) {
         _log(SERVICE__ERROR, "%s: Trying to drop items when not in space!", call.client->GetName());
         return nullptr;
@@ -372,7 +376,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
     }
 
     PyList* PyToDropList = args.toDrop;
-    uint32 ownerID = args.ownerID;
+    uint32 ownerID = args.ownerID;  // not sent for LaunchDrone() command  (not needed)
     //used for LaunchUpgradePlatformWarning
     // args.ignoreWarning
 
@@ -426,7 +430,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
                         if (newItem->quantity() > 1)
                             _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", newItem->itemID(), newItem->quantity());
 
-                        newItem->ChangeOwner(ownerID);
                         if (pClient->LaunchDrone(newItem)) {
                             dropped = true;
                             shipDrop = true;
@@ -434,7 +437,6 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call) {
                         }
                     }
                 } else {
-                    iRef->ChangeOwner(ownerID);
                     if (pClient->LaunchDrone(iRef)) {
                         dropped = true;
                         shipDrop = true;
