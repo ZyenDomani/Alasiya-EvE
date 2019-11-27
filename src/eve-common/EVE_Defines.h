@@ -155,7 +155,8 @@ maxDustCharacter = 2130000000
  (itemID >= minValidLocation)
 
 #define IsValidOwner(itemID) \
- (itemID >= minValidLocation)
+(((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation))) \
+|| ((itemID >= minPCCorporation) && (itemID < minAlliance)))
 
 #define IsCharacterLocation(itemID) \
  (itemID >= minValidCharLocation)
@@ -173,7 +174,7 @@ maxDustCharacter = 2130000000
 ((itemID >= minSquad) && (itemID < maxSquad))
 
 #define IsCorp(itemID) \
-((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation) \
+(((itemID >= minNPCCorporation) && (itemID <= maxNPCCorporation)) \
 || ((itemID >= minPCCorporation) && (itemID < minAlliance)))
 
 #define IsNPCCorp(itemID) \
