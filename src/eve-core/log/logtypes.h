@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.6
+ Log Version: 9.7
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -255,6 +255,7 @@ LOG_TYPE( ITEM, MESSAGE, DISABLED, "ItemMsg" )
 LOG_TYPE( ITEM, DEBUG, DISABLED, "ItemDebug" )
 LOG_TYPE( ITEM, TRACE, DISABLED, "ItemTrace" )
 LOG_TYPE( ITEM, RELOCATE, DISABLED, "ItemRelocate" )
+LOG_TYPE( ITEM, CHANGE, DISABLED, "ItemChange" )
 
 LOG_CATEGORY( SE )
 LOG_TYPE( SE, ERROR,   ENABLED, "SE:Error" )
