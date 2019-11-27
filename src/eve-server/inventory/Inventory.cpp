@@ -33,6 +33,7 @@
 #include "PyCallable.h"
 #include "character/Character.h"
 #include "inventory/Inventory.h"
+#include "inventory/ItemDB.h"
 #include "inventory/ItemFactory.h"
 #include "pos/Structure.h"
 #include "ship/Ship.h"
@@ -86,7 +87,7 @@ void Inventory::Unload()
             itr = mContents.erase(itr);
         }
 
-        m_db.SaveItems(items);
+        ItemDB::SaveItems(items);
     }
     mContents.clear();
     mContentsLoaded = false;

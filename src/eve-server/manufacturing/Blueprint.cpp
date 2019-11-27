@@ -97,7 +97,7 @@ uint32 Blueprint::CreateItemID( ItemData& data, BlueprintData& bpData) {
     FactoryDB mdb;
     // insert blueprint data into DB
     if (!mdb.SaveBlueprintData(blueprintID, bpData)) {
-        sItemFactory.db()->DeleteItem(blueprintID);
+        ItemDB::DeleteItem(blueprintID);
         return 0;
     }
 

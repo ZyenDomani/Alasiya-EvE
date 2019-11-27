@@ -28,6 +28,7 @@
 
 
 #include "POD_containers.h"
+#include "inventory/ItemDB.h"
 #include "inventory/Inventory.h"
 #include "inventory/InventoryDB.h"
 #include "inventory/ItemType.h"
@@ -217,7 +218,7 @@ protected:
     {
         // pull the item info
         ItemData data;
-        if( !sItemFactory.db()->GetItem( itemID, data ) )
+        if( !ItemDB::GetItem( itemID, data ) )
             return RefPtr<_Ty>();
 
         // obtain type

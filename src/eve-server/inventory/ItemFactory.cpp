@@ -130,7 +130,7 @@ void ItemFactory::SaveItems() {
             cur.second->SaveAttributes();
         }
     }
-    m_db->SaveItems(items);
+    ItemDB::SaveItems(items);
     sLog.Warning("        SaveItems", "Saved %u Dynamic Items in %.3fms.", count, (GetTimeMSeconds() -startTime) );
 }
 

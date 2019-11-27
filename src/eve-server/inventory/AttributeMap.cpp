@@ -158,7 +158,7 @@ bool AttributeMap::Save() {
     }
 
     if (!items.empty())
-        m_db.SaveAttributes(IsCharacter(mItem.itemID()), items);
+        ItemDB::SaveAttributes(IsCharacter(mItem.itemID()), items);
     return true;
 }
 

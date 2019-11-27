@@ -151,7 +151,7 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
             EvE::traceStack();
     }
     // insert new entry into DB
-    return InventoryDB::NewItem(data);
+    return ItemDB::NewItem(data);
 }
 
 /* This Spawn function is meant for in-memory only items created from the following categorys...
@@ -552,7 +552,7 @@ void InventoryItem::Delete() {
     if (pAttributeMap != nullptr)   // should never be null, but just in case
         pAttributeMap->Delete();
     //take ourself out of the DB
-    m_db.DeleteItem(m_itemID);
+    ItemDB::DeleteItem(m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
 }
@@ -571,7 +571,7 @@ void InventoryItem::ToVirtual(uint32 locationID)
     m_locationID = locationID;
 
     //take ourself out of the DB
-    m_db.DeleteItem(m_itemID);
+    ItemDB::DeleteItem(m_itemID);
     //delete ourselves from factory cache
     sItemFactory.RemoveItem(m_itemID);
 }
@@ -649,7 +649,7 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
 
     //if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
     //    SaveItem();
-    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
+    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     // changes are cleared after sending, so make 2 sets to send to old owner and new owner
     if (notify) {
@@ -713,7 +713,7 @@ void InventoryItem::Move(uint32 new_location, EVEItemFlags new_flag/*flagAutoFit
     if (IsTempItem(m_itemID))
         return;
 
-    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
+    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     //notify about the changes.
     if (notify) {
@@ -870,7 +870,7 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
 
     //if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
     //    SaveItem();
-    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
+    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     if (notify) {
         std::map<int32, PyRep *> changes;
@@ -936,6 +936,11 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
         change.changes = changes;
     PyTuple *tmp = change.Encode();
 
+    if (is_log_enabled(ITEM__CHANGE)) {
+        _log(ITEM__CHANGE, "Sending Item changes for %s", m_itemName.c_str());
+        tmp->Dump(ITEM__CHANGE, "    ");
+    }
+
     //TODO: figure out the appropriate list of interested people...
     if (IsCharacter(toID)) {
         Client* pClient = sEntityList.FindClientByCharID(toID);
@@ -978,7 +983,7 @@ void InventoryItem::SaveItem()
                  customInfo().c_str()
                 );
 
-    m_db.SaveItem(m_itemID, data);
+    ItemDB::SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
     SaveAttributes();
@@ -986,7 +991,7 @@ void InventoryItem::SaveItem()
 
 void InventoryItem::UpdateLocation()
 {
-    m_db.UpdateLocation(m_itemID, m_locationID, m_flag);
+    ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 }
 
 PyPackedRow* InventoryItem::GetItemStatusRow() const {

@@ -30,43 +30,15 @@
 #include "inventory/ItemRef.h"
 
 
-/* POD structure for saving items */
-struct SaveData {
-    bool            contraband :1;
-    bool            singleton :1;
-    EVEItemFlags    flag;
-    uint16          typeID;
-    uint32          itemID;
-    uint32          ownerID;
-    uint32          locationID;
-    uint32          quantity;
-    GPoint          position;
-    std::string     customInfo;
-};
-
-/* POD structure for saving attribute data */
-struct AttrData {
-    uint16 attrID;
-    uint32 itemID;
-    int64 valueInt;
-    double valueFloat;
-};
-
-
 class CategoryData;
 class GroupData;
 class TypeData;
 
 class CharacterTypeData;
 class ShipTypeData;
-class AsteroidData;
-class ItemData;
-class SaveData;
-class BlueprintData;
 class CharacterAppearance;
 class CelestialObjectData;
 class SolarSystemData;
-class OwnerData;
 
 class InventoryDB
 : public ServiceDB
@@ -125,20 +97,10 @@ public:
      */
     bool GetShipType(uint32 shipTypeID, ShipTypeData &into);
 
-    // get item data based on itemID
-    bool GetItem(uint32 itemID, ItemData &into);
-    static bool DeleteItem(uint32 itemID);
-
-    static uint32 NewItem(const ItemData &data);
-    bool SaveItem(uint32 itemID, const ItemData &data);
-    void SaveItems(std::vector< SaveData >& data);
-    void SaveAttributes(bool isChar, std::vector< AttrData >& data);
-
     bool GetItemContents(OwnerData &od, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, std::vector<uint32> &into);
     bool GetItemContents(uint32 itemID, EVEItemFlags flag, uint32 ownerID, std::vector<uint32> &into);
 
-    static void UpdateLocation(uint32 itemID, uint32 locationID, EVEItemFlags flag);
     static void DeleteTrackingCans();
 
     /*
