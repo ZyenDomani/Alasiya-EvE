@@ -267,9 +267,9 @@ void CustomsSE::SendSlimUpdate()
         slim->SetItemString("itemID",                   new PyLong(m_cData.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   new PyInt(m_corpID));
-        slim->SetItemString("allianceID",               new PyInt(m_allyID));
-        slim->SetItemString("warFactionID",             new PyInt(m_warID));
+        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_cData.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_cData.state));
         slim->SetItemString("incapacitated",            new PyInt(0));
@@ -397,9 +397,9 @@ PyDict *CustomsSE::MakeSlimItem() {
     slim->SetItemString("itemID",               new PyLong(m_cData.itemID));
     slim->SetItemString("typeID",               new PyInt(m_self->typeID()));
     slim->SetItemString("ownerID",              new PyInt(m_ownerID));  //1000148 for interbus customs office (to be done on creation)
-    slim->SetItemString("corpID",               new PyInt(m_corpID));  //1000148 for interbus customs office (to be done on creation)
-    slim->SetItemString("allianceID",           new PyInt(m_allyID));  // packets show this as none if not value
-    slim->SetItemString("warFactionID",         new PyInt(m_warID));  // packets show this as none if not value
+    slim->SetItemString("corpID",               IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+    slim->SetItemString("allianceID",           IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+    slim->SetItemString("warFactionID",         IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     slim->SetItemString("level",                new PyInt(m_oData.level));
     slim->SetItemString("orbitalTimestamp",     new PyLong(m_cData.timestamp));
     slim->SetItemString("planetID",             new PyInt(m_oData.planetID));  // planetID for this orbital

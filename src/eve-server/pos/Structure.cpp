@@ -721,9 +721,9 @@ void StructureSE::SendSlimUpdate()
         slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   new PyInt(m_corpID));
-        slim->SetItemString("allianceID",               new PyInt(m_allyID));
-        slim->SetItemString("warFactionID",             new PyInt(m_warID));
+        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("posTimestamp",             new PyLong(m_data.timestamp));
         slim->SetItemString("posState",                 new PyInt(m_data.state));
         slim->SetItemString("incapacitated",            new PyInt(0));
@@ -860,9 +860,9 @@ PyDict *StructureSE::MakeSlimItem() {
         slim->SetItemString("itemID",                   new PyLong(m_data.itemID));
         slim->SetItemString("typeID",                   new PyInt(m_self->typeID()));
         slim->SetItemString("ownerID",                  new PyInt(m_ownerID));
-        slim->SetItemString("corpID",                   new PyInt(m_corpID));
-        slim->SetItemString("allianceID",               new PyInt(m_allyID));
-        slim->SetItemString("warFactionID",             new PyInt(m_warID));
+        slim->SetItemString("corpID",                   IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         if (m_module or m_tower) {    // for control towers and structures
             slim->SetItemString("posTimestamp",         new PyLong(m_data.timestamp));
             slim->SetItemString("posState",             new PyInt(m_data.state));

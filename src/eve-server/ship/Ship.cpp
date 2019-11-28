@@ -2641,9 +2641,9 @@ PyDict* Ship::MakeSlimItem() {
         slim->SetItemString("name",                 new PyString(m_self->itemName()));
         slim->SetItemString("ownerID",              new PyInt(m_ownerID));
         slim->SetItemString("charID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCharacterID() : 0));
-        slim->SetItemString("corpID",               new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetCorporationID() : GetCorporationID()));
-        slim->SetItemString("allianceID",           new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetAllianceID() : GetAllianceID()));
-        slim->SetItemString("warFactionID",         new PyInt(m_self->GetPilot() ? m_self->GetPilot()->GetWarFactionID() : GetWarFactionID()));
+        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("bounty",               new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetBounty() : 0));
         slim->SetItemString("securityStatus",       new PyFloat(m_self->GetPilot() ? m_self->GetPilot()->GetSecurityRating() : 0.0));
     if (m_self->typeID() == itemTypeCapsule) {

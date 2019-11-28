@@ -328,14 +328,14 @@ void ContainerSE::MakeDamageState(DoDestinyDamageState &into)
 PyDict *ContainerSE::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for ContainerSE %s(%u)", m_self->itemName().c_str(), m_self->itemID());
     PyDict *slim = new PyDict();
-        slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
-        slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
-        slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("nameID",       new PyNone());
-        slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyInt(m_allyID));
-        slim->SetItemString("warFactionID", new PyInt(m_warID));
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("nameID",           new PyNone());
+        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         if (m_contRef->IsAnchored())        // not sure if this is right...testing
             slim->SetItemString("structureState",       new PyInt(EVEPOS::StructureStatus::Anchored));
 
@@ -557,17 +557,17 @@ PyDict *WreckSE::MakeSlimItem() {
         slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
         slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
         slim->SetItemString("name",             new PyString(m_self->itemName()));
-        /* this needs more work.... */
-        if (m_abandoned or (m_fleetID != 0)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
+        if (m_abandoned or (m_fleetID)) { // this is ONLY for abandoned wrecks or wrecks from fleet ops
             PyTuple* tuple1 = new PyTuple(4);
                 tuple1->SetItem(0,              new PyInt(m_ownerID));
-                tuple1->SetItem(1,              new PyInt(m_corpID));
-                tuple1->SetItem(2,              new PyInt(m_fleetID));
-                tuple1->SetItem(3,              new PyBool(false));
+                tuple1->SetItem(1,              IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+                tuple1->SetItem(2,              IsFleet(m_fleetID) ? new PyInt(m_fleetID) : PyStatic.NewNone());
+                tuple1->SetItem(3,              new PyBool(false)); // what is this??
             slim->SetItemString("lootRights",   tuple1);
         }
-        slim->SetItemString("corpID",           new PyInt(m_corpID));
-        slim->SetItemString("allianceID",       new PyInt(m_allyID));
+        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
         slim->SetItemString("isEmpty",          new PyBool(m_contRef->IsEmpty()));
         slim->SetItemString("launcherID",       new PyLong(m_launchedByID));
         slim->SetItemString("securityStatus",   new PyInt(0));  //FIXME TODO
@@ -578,7 +578,6 @@ PyDict *WreckSE::MakeSlimItem() {
             tuple2->SetItem(0, new PyString("UI/Inflight/WreckNameTypeID"));
             tuple2->SetItem(1, dict);
         slim->SetItemString("nameID",           tuple2);
-        slim->SetItemString("warFactionID",     new PyInt(m_warID));
 
     if (is_log_enabled(DESTINY__DEBUG)) {
         _log( DESTINY__DEBUG, "WreckSE::MakeSlimItem() - %s(%u)", GetName(), GetID());

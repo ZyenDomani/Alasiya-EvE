@@ -486,15 +486,15 @@ void ObjectSystemEntity::EncodeDestiny( Buffer& into )
 PyDict* ObjectSystemEntity::MakeSlimItem() {
     _log(SE__SLIMITEM, "MakeSlimItem for OSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
-        slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
-        slim->SetItemString("typeID",       new PyInt(GetTypeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
-        slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
-        slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
-        slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyInt(m_allyID));
-        slim->SetItemString("warFactionID", new PyInt(m_warID));
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",           new PyInt(GetTypeID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
+        slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+        slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     return slim;
 }
 
@@ -623,15 +623,15 @@ PyDict *DynamicSystemEntity::MakeSlimItem() {
         return SystemEntity::MakeSlimItem();
     _log(SE__SLIMITEM, "MakeSlimItem for DSE %s(%u)", GetName(), m_self->itemID());
     PyDict *slim = new PyDict();
-        slim->SetItemString("itemID",       new PyLong(m_self->itemID()));
-        slim->SetItemString("typeID",       new PyInt(m_self->typeID()));
-        slim->SetItemString("ownerID",      new PyInt(m_ownerID));
-        slim->SetItemString("categoryID",   new PyInt(m_self->categoryID()));
-        slim->SetItemString("groupID",      new PyInt(m_self->groupID()));
-        slim->SetItemString("name",         new PyString(m_self->itemName()));
-        slim->SetItemString("corpID",       new PyInt(m_corpID));
-        slim->SetItemString("allianceID",   new PyInt(m_allyID));
-        slim->SetItemString("warFactionID", new PyInt(m_warID));
+        slim->SetItemString("itemID",           new PyLong(m_self->itemID()));
+        slim->SetItemString("typeID",           new PyInt(m_self->typeID()));
+        slim->SetItemString("ownerID",          new PyInt(m_ownerID));
+        slim->SetItemString("categoryID",       new PyInt(m_self->categoryID()));
+        slim->SetItemString("groupID",          new PyInt(m_self->groupID()));
+        slim->SetItemString("name",             new PyString(m_self->itemName()));
+        slim->SetItemString("corpID",           IsCorp(m_corpID) ? new PyInt(m_corpID) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",       IsAlliance(m_allyID) ? new PyInt(m_allyID) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",     IsFaction(m_warID) ? new PyInt(m_warID) : PyStatic.NewNone());
     return (slim);
 }
 

@@ -2585,25 +2585,27 @@ void DestinyManager::UpdateNewShip(const ShipItemRef newShipRef) {
         return;
 
     Client* pClient = mySE->GetPilot();
+    if (pClient == nullptr)
+        return;
     // exactly why do we need this here??
     PyDict* slim = new PyDict();
-        slim->SetItemString("name",             new PyString(newShipRef->itemName()));
-        slim->SetItemString("itemID",           new PyInt(newShipRef->itemID()));
-        slim->SetItemString("typeID",           new PyInt(newShipRef->typeID()));
-        slim->SetItemString("ownerID",          new PyInt(pClient->GetCharacterID()));
-        slim->SetItemString("charID",           new PyInt(pClient->GetCharacterID()));
-        slim->SetItemString("corpID",           new PyInt(pClient->GetCorporationID()));
-        slim->SetItemString("allianceID",       new PyInt(pClient->GetAllianceID()));
-        slim->SetItemString("warFactionID",     new PyInt(pClient->GetWarFactionID()));
-        slim->SetItemString("bounty",           new PyFloat(pClient->GetBounty()));
-        slim->SetItemString("securityStatus",   new PyFloat(pClient->GetSecurityRating()));
+        slim->SetItemString("name",                     new PyString(newShipRef->itemName()));
+        slim->SetItemString("itemID",                   new PyInt(newShipRef->itemID()));
+        slim->SetItemString("typeID",                   new PyInt(newShipRef->typeID()));
+        slim->SetItemString("ownerID",                  new PyInt(mySE->GetOwnerID()));
+        slim->SetItemString("charID",                   new PyInt(pClient->GetCharacterID()));
+        slim->SetItemString("corpID",                   IsCorp(mySE->GetCorporationID()) ? new PyInt(mySE->GetCorporationID()) : PyStatic.NewNone());
+        slim->SetItemString("allianceID",               IsAlliance(mySE->GetAllianceID()) ? new PyInt(mySE->GetAllianceID()) : PyStatic.NewNone());
+        slim->SetItemString("warFactionID",             IsFaction(mySE->GetWarFactionID()) ? new PyInt(mySE->GetWarFactionID()) : PyStatic.NewNone());
+        slim->SetItemString("bounty",                   new PyFloat(pClient->GetBounty()));
+        slim->SetItemString("securityStatus",           new PyFloat(pClient->GetSecurityRating()));
     if (newShipRef->typeID() == itemTypeCapsule) {
-        slim->SetItemString("launcherID",       new PyInt(mySE->GetShipSE()->GetLauncherID()));
-        slim->SetItemString("modules",          new PyList());
+        slim->SetItemString("launcherID",               new PyInt(mySE->GetShipSE()->GetLauncherID()));
+        slim->SetItemString("modules",                  new PyList());
     } else {
-        slim->SetItemString("categoryID",       new PyInt(newShipRef->categoryID()));
-        slim->SetItemString("groupID",          new PyInt(newShipRef->groupID()));
-        slim->SetItemString("modules",          newShipRef->ShipGetModuleList());
+        slim->SetItemString("categoryID",               new PyInt(newShipRef->categoryID()));
+        slim->SetItemString("groupID",                  new PyInt(newShipRef->groupID()));
+        slim->SetItemString("modules",                  newShipRef->ShipGetModuleList());
     }
 
     std::vector<PyTuple*> updates;
@@ -2625,16 +2627,16 @@ void DestinyManager::UpdateOldShip(Ship* pShipSE)
     if (pShipSE->IsDead())
         return;
     PyDict* slimPod = new PyDict();
-        slimPod->SetItemString("itemID",           new PyInt(pShipSE->GetID()));
-        slimPod->SetItemString("typeID",           new PyInt(pShipSE->GetTypeID()));
-        slimPod->SetItemString("categoryID",       new PyInt(pShipSE->GetCategoryID()));
-        slimPod->SetItemString("ownerID",          new PyInt(pShipSE->GetOwnerID()));
-        slimPod->SetItemString("charID",           PyStatic.NewNone());
-        slimPod->SetItemString("corpID",           new PyInt(pShipSE->GetCorporationID()));
-        slimPod->SetItemString("allianceID",       new PyInt(pShipSE->GetAllianceID()));
-        slimPod->SetItemString("warFactionID",     new PyInt(pShipSE->GetWarFactionID()));
-        slimPod->SetItemString("bounty",           PyStatic.NewNone());
-        slimPod->SetItemString("securityStatus",   PyStatic.NewNone());
+        slimPod->SetItemString("itemID",                new PyInt(pShipSE->GetID()));
+        slimPod->SetItemString("typeID",                new PyInt(pShipSE->GetTypeID()));
+        slimPod->SetItemString("categoryID",            new PyInt(pShipSE->GetCategoryID()));
+        slimPod->SetItemString("ownerID",               new PyInt(pShipSE->GetOwnerID()));
+        slimPod->SetItemString("charID",                PyStatic.NewNone());
+        slimPod->SetItemString("corpID",                new PyInt(pShipSE->GetCorporationID()));
+        slimPod->SetItemString("allianceID",            new PyInt(pShipSE->GetAllianceID()));
+        slimPod->SetItemString("warFactionID",          new PyInt(pShipSE->GetWarFactionID()));
+        slimPod->SetItemString("bounty",                PyStatic.NewNone());
+        slimPod->SetItemString("securityStatus",        PyStatic.NewNone());
     PyTuple* shipData = new PyTuple(2);
         shipData->SetItem(0, new PyLong(pShipSE->GetID()));
         shipData->SetItem(1, new PyObject( "foo.SlimItem", slimPod));
