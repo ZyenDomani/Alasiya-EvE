@@ -245,8 +245,9 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     // get lower of ship and char target skills, with minimum of 1
     uint8 maxLockedTargets = 1;
     uint8 maxCharTargets = mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Targeting);
+    maxCharTargets += mySE->GetPilot()->GetChar()->GetSkillLevel(EvESkill::Multitasking);
     if (maxCharTargets > 0)
-        if (maxLockedTargets > maxCharTargets)
+        if (maxLockedTargets < maxCharTargets)
             maxLockedTargets = maxCharTargets;
 
     uint8 maxShipTargets = (uint8)sRef->GetAttribute(AttrMaxLockedTargets).get_uint32();
@@ -256,8 +257,8 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 
     if (GetTotalTargets() >= maxLockedTargets) {
         mySE->GetPilot()->SendNotifyMsg("Your ship and skills combination can only handle %u targets at a time.", maxLockedTargets);
-        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
-                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+        _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets of %u.  Ignoring request.", \
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), maxLockedTargets);
         return TargetFail(tSE);
     }
     // Check against max target range
