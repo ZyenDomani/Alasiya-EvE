@@ -29,6 +29,7 @@
 #include "account/AccountService.h"
 #include "chat/LSCService.h"
 #include "npc/NPC.h"
+#include "packets/Destiny.h"
 #include "planet/Planet.h"
 #include "planet/Moon.h"
 #include "planet/CustomsOffice.h"
@@ -116,16 +117,18 @@ SystemManager::~SystemManager() {
 }
 
 bool SystemManager::BootSystem() {
+    // dont fuck with this order...
+
     m_solarSystemRef = sItemFactory.GetSolarSystem(m_data.systemID);
     assert(m_solarSystemRef.get() != nullptr);
 
-    if (!LoadCosmicMgrs()) {
-        _log(SERVICE__ERROR, "Unable to load Cosmic Managers during boot of system %u.", m_data.systemID);
+    if (!LoadSystemStatics()) {
+        _log(SERVICE__ERROR, "Unable to load System Statics during boot of system %u.", m_data.systemID);
         return false;
     }
 
-    if (!LoadSystemStatics()) {
-        _log(SERVICE__ERROR, "Unable to load System Statics during boot of system %u.", m_data.systemID);
+    if (!LoadCosmicMgrs()) {
+        _log(SERVICE__ERROR, "Unable to load Cosmic Managers during boot of system %u.", m_data.systemID);
         return false;
     }
 
@@ -1205,7 +1208,7 @@ void SystemManager::MakeSetState(const SystemBubble* pBubble,  SetState& into) c
     }
 
     into.destiny_state = new PyBuffer( &stateBuffer );
-    into.droneState = SystemDB::GetSolDroneState( m_data.systemID );
+    into.droneState = pBubble->GetDroneState(); //SystemDB::GetSolDroneState( m_data.systemID );
 
     /* SolarSystem info.  this avoids the old way of a DB hit for every call.  */
     DBRowDescriptor* header = new DBRowDescriptor;

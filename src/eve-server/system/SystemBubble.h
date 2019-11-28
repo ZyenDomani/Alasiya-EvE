@@ -39,6 +39,8 @@ class SystemEntity;
 class SystemManager;
 class Timer;
 class TowerSE;
+class Drone;
+class PyObject;
 
 class SystemBubble {
 public:
@@ -127,6 +129,9 @@ public:
     TowerSE* GetTowerSE()                               { return m_towerSE; }
     void SetTowerSE(TowerSE* pTower)                    { m_towerSE = pTower; }
 
+    /* for system setstate */
+    PyObject* GetDroneState() const;
+
 protected:
     const GPoint m_center;
     const double m_radius;
@@ -152,6 +157,7 @@ private:
     std::map<uint32, SystemEntity*> m_markers;          // bubble marker cans.  we do own these.
     std::map<uint32, SystemEntity*> m_dynamicEntities;  //entities which may/may not move. we do not own these.
     std::map<uint32, SystemEntity*> m_entities;         //we do not own these.
+    std::map<uint32, Drone*> m_drones;                  //we do not own these.
 
     // for spawn system     -allan 15July15
     Timer m_spawnTimer;

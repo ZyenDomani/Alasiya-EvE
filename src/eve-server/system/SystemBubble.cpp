@@ -31,6 +31,7 @@
 
 #include "Client.h"
 #include "EntityList.h"
+#include "npc/Drone.h"
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
@@ -237,6 +238,8 @@ void SystemBubble::Add(SystemEntity* pSE)
     } else {
         if (!m_players.empty())
             AddBallExclusive(pSE);
+        if (pSE->IsDroneSE())
+            m_drones[pSE->GetID()] = pSE->GetDroneSE();
     }
 
     // all non-global entities (players, npcs, roids, containers, etc) are put into bubble's dynamicEntity map
@@ -271,6 +274,12 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     //notify everybody else in the bubble of the removal.
     if (!m_players.empty())
         RemoveBall(pSE);
+
+    if (pSE->IsDroneSE()) {
+        std::map<uint32, Drone*>::iterator itr = m_drones.find(pSE->GetID());
+        if (itr != m_drones.end())
+            m_drones.erase(itr);
+    }
 
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
         sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
@@ -698,6 +707,37 @@ void SystemBubble::RemoveBalls( SystemEntity* to_who ) {
 
     PyTuple* tmp = remove_balls.Encode();
     pClient->QueueDestinyUpdate( &tmp );
+}
+
+PyObject* SystemBubble::GetDroneState() const
+{
+    PyList* header = new PyList(7);
+        header->SetItemString(0, "droneID");
+        header->SetItemString(1, "ownerID");
+        header->SetItemString(2, "controllerID");
+        header->SetItemString(3, "activityState");
+        header->SetItemString(4, "typeID");
+        header->SetItemString(5, "controllerOwnerID");
+        header->SetItemString(6, "targetID");
+    PyList* lines = new PyList();
+    for (auto cur : m_drones) {
+        PyList* line = new PyList(7);
+            line->SetItem(0, new PyInt(cur.first));
+            line->SetItem(1, new PyInt(cur.second->GetOwnerID()));
+            line->SetItem(2, new PyInt(cur.second->GetControllerID()));
+            line->SetItem(3, new PyInt(cur.second->GetState()));
+            line->SetItem(4, new PyInt(cur.second->GetSelf()->typeID()));
+            line->SetItem(5, new PyInt(cur.second->GetControllerOwnerID()));
+            line->SetItem(6, new PyInt(cur.second->GetTargetID()));
+        lines->AddItem(line);
+    }
+
+    PyDict* dict = new PyDict();
+        dict->SetItemString("header", header);
+        dict->SetItemString("RowClass", new PyToken("util.Row"));
+        dict->SetItemString("lines", lines);
+
+    return new PyObject("util.Rowset", dict);
 }
 
 void SystemBubble::RemoveMarkers()
