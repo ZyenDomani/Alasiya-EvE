@@ -116,7 +116,7 @@ PyResult CertificateMgrService::Handle_GetCertificateClasses(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -127,7 +127,7 @@ PyResult CertificateMgrService::Handle_GrantCertificate(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) {
     Call_TwoIntegerArgs arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -138,7 +138,7 @@ PyResult CertificateMgrService::Handle_UpdateCertificateFlags(PyCallArgs &call) 
 PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
     Call_SingleIntList arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -155,7 +155,7 @@ PyResult CertificateMgrService::Handle_BatchCertificateGrant(PyCallArgs &call) {
 PyResult CertificateMgrService::Handle_BatchCertificateUpdate(PyCallArgs &call) {
     Call_BatchCertificateUpdate args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -170,7 +170,7 @@ PyResult CertificateMgrService::Handle_GetCertificatesByCharacter( PyCallArgs& c
 {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 

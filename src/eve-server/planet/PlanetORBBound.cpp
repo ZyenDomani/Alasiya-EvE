@@ -90,7 +90,7 @@ PlanetORB::~PlanetORB() {
     delete m_dispatch;
 }
 
-PyBoundObject* PlanetORB::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject* PlanetORB::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     _log(PLANET__INFO, "PlanetORB bind request for:");  // sends systemID in request
     bind_args->Dump(PLANET__INFO, "    ");
     if(!bind_args->IsInt()) {
@@ -108,7 +108,7 @@ PyResult PlanetORBBound::Handle_GetTaxRate( PyCallArgs& call )
 
     Call_SingleIntegerArg args;
     if (!args.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -129,7 +129,7 @@ PyResult PlanetORBBound::Handle_GetSettingsInfo( PyCallArgs& call )
      */
     Call_SingleIntegerArg args;
     if (!args.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -145,14 +145,14 @@ PyResult PlanetORBBound::Handle_UpdateSettings( PyCallArgs& call )
 
     Call_UpdateSettings args;
     if (!args.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
     PyDict* input = args.taxRateValues->AsObject()->arguments()->AsDict();
     Call_TaxRateValuesDict dict;
     if (!dict.Decode(input)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

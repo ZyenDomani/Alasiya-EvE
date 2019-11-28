@@ -42,7 +42,7 @@ protected:
 
     ReprocessingDB m_db;
 
-    virtual PyBoundObject* _CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
 };
 
 

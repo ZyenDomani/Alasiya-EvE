@@ -582,14 +582,14 @@ void InventoryItem::Rename(std::string name)
     SaveItem();
 
     PyList* list = new PyList();
-    list->AddItem(new PyInt(m_itemID));
-    list->AddItem(new PyString(name));
-    list->AddItem(new PyFloat(0));
-    list->AddItem(new PyFloat(0));
-    list->AddItem(new PyFloat(0));
+        list->AddItem(new PyInt(m_itemID));
+        list->AddItem(new PyString(name));
+        list->AddItem(new PyFloat(0));
+        list->AddItem(new PyFloat(0));
+        list->AddItem(new PyFloat(0));
     PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString("evelocations"));
-    tuple->SetItem(1, list);
+        tuple->SetItem(0, new PyString("evelocations"));
+        tuple->SetItem(1, list);
 
     // get owner
     if (IsCharacter(m_ownerID)) {
@@ -597,10 +597,10 @@ void InventoryItem::Rename(std::string name)
         Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
         if (pClient == nullptr)
             return;  //  make error here?
-            if (pClient->IsDocked())
-                pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
-                else // client in space.  sent update to all clients in bubble
-                    pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
+        if (pClient->IsDocked())
+            pClient->SendNotification("OnCfgDataChanged", "charid", &tuple, false); //unsequenced.
+        else // client in space.  sent update to all clients in bubble
+            pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
     } else if (IsPlayerCorp(m_ownerID))
         // not sure about this one yet.
         ;

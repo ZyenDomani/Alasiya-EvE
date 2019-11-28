@@ -61,7 +61,7 @@ void PyServiceMgr::Close() {
         bo = cur.second.destination;
         if (is_log_enabled(SERVICE__MESSAGE))
             _log(SERVICE__MESSAGE, "Service Mgr Destructor:  Deleting %s at node %u:%u", \
-                    bo->GetBoundObjectClassStr().c_str(), bo->m_nodeID, bo->m_bindID);
+                    bo->GetName(), bo->m_nodeID, bo->m_bindID);
         SafeDelete(bo);
     }
     m_boundObjects.clear();
@@ -110,7 +110,7 @@ PySubStruct* PyServiceMgr::BindObject(Client* pClient, PyBoundObject* pObj, PyDi
 
     std::string bindStr = pObj->GetBindStr();
     _log(SERVICE__MESSAGE, "Service Mgr Binding %s to node %u:%u for %s", \
-                pObj->GetBoundObjectClassStr().c_str(), pObj->m_nodeID, pObj->m_bindID, pClient->GetName());
+                pObj->GetName(), pObj->m_nodeID, pObj->m_bindID, pClient->GetName());
 
     PyTuple* tuple(nullptr);
     if (dict == nullptr) {
@@ -134,7 +134,7 @@ void PyServiceMgr::ClearBoundObjects(Client* pClient) {
         if (itr->second.client == pClient) {
             PyBoundObject *bo(itr->second.destination);
             _log(SERVICE__MESSAGE, "Service Mgr Releasing bound object %s at %s for %s", \
-                            bo->GetBoundObjectClassStr().c_str(), bo->GetBindStr().c_str(), pClient->GetName());
+                            bo->GetName(), bo->GetBindStr().c_str(), pClient->GetName());
             bo->Release();
             itr = m_boundObjects.erase(itr);
         } else
@@ -159,7 +159,7 @@ void PyServiceMgr::ClearBoundObject(uint32 bindID)
 
     PyBoundObject *bo(itr->second.destination);
 
-    _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetBoundObjectClassStr().c_str(), bo->GetBindStr().c_str());
+    _log(SERVICE__MESSAGE, "Service Mgr Clearing bound object %s at %s", bo->GetName(), bo->GetBindStr().c_str());
 
     m_boundObjects.erase(itr);
     bo->Release();

@@ -93,7 +93,7 @@ InsuranceService::~InsuranceService() {
     delete m_dispatch;
 }
 
-PyBoundObject* InsuranceService::_CreateBoundObject( Client* c, const PyRep* bind_args ) {
+PyBoundObject* InsuranceService::CreateBoundObject( Client* pClient, const PyRep* bind_args ) {
     return new InsuranceBound( m_manager, &m_db );
 }
 
@@ -119,7 +119,7 @@ PyResult InsuranceBound::Handle_GetContracts( PyCallArgs& call ) {
     if (call.tuple->size() > 1) {
         Call_IntBoolArg args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
 
@@ -136,7 +136,7 @@ PyResult InsuranceService::Handle_GetContractForShip( PyCallArgs& call ) {
 PyResult InsuranceBound::Handle_InsureShip( PyCallArgs& call ) {
 	Call_InsureShip args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

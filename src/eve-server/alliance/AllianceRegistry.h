@@ -47,11 +47,11 @@ protected:
     PyCallable_DECL_CALL(GetAllianceMembers);
 
     //overloaded in order to support bound objects:
-    virtual PyBoundObject* _CreateBoundObject(Client* pClient, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client* pClient, const PyRep *bind_args);
 
 private:
     AllianceDB m_db;
-    
+
 };
 
 #endif  // EVE_ALLIANCE_ALLIANCEREGISTRY_H_

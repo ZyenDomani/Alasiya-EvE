@@ -85,7 +85,7 @@ PyResult CorporationService::Handle_GetNPCDivisions(PyCallArgs &call)
 PyResult CorporationService::Handle_GetEmploymentRecord(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -116,7 +116,7 @@ PyResult CorporationService::Handle_GetCorpInfo(PyCallArgs &call)
     //corpmktinfo = sm.RemoteSvc('corporationSvc').GetCorpInfo(itemID)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -144,7 +144,7 @@ PyResult CorporationService::Handle_GetRecruitmentAdsByCriteria( PyCallArgs& cal
 
     Call_GetRecruitmentAdsByCriteria args;
     if ( !args.Decode( &call.tuple ) )   {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -188,7 +188,7 @@ PyResult CorporationService::Handle_CreateMedal(PyCallArgs &call)
     Call_CreateMedal args;
     if ( !args.Decode( &call.tuple ) )
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -244,7 +244,7 @@ PyResult CorporationService::Handle_GetMedalsReceived(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -263,7 +263,7 @@ PyResult CorporationService::Handle_GetMedalDetails(PyCallArgs &call)
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -279,7 +279,7 @@ PyResult CorporationService::Handle_GetAllCorpMedals( PyCallArgs& call )
     Call_SingleIntegerArg arg;
     if ( !arg.Decode( &call.tuple ) )
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -301,7 +301,7 @@ PyResult CorporationService::Handle_GetRecipientsOfMedal(PyCallArgs &call)
     Call_SingleIntegerArg arg;
     if ( !arg.Decode( &call.tuple ) )
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -331,7 +331,7 @@ PyResult CorporationService::Handle_GiveMedalToCharacters(PyCallArgs &call)
     Call_AwardMedal args;
     if ( !args.Decode( &call.tuple ) )
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

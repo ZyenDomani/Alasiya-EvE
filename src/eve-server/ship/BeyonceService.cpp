@@ -131,21 +131,10 @@ BeyonceService::~BeyonceService() {
     delete m_dispatch;
 }
 
-
-PyBoundObject* BeyonceService::_CreateBoundObject( Client* c, const PyRep* bind_args )
+PyBoundObject* BeyonceService::CreateBoundObject(Client* pClient, const PyRep* bind_args)
 {
-    if (is_log_enabled(CLIENT__MESSAGE)) {
-        _log( CLIENT__MESSAGE, "BeyonceService bind request for:" );
-        bind_args->Dump( CLIENT__MESSAGE, "    " );
-    }
-    /*
-     * 18:26:29 [ClientMessage] BeyonceService bind request for:
-     * 18:26:29 [ClientMessage]     Integer field: 30002547
-     */
-
-    return new BeyonceBound( m_manager, c );
+    return new BeyonceBound(m_manager, pClient);
 }
-
 
 PyResult BeyonceService::Handle_GetFormations(PyCallArgs &call) {
     //vicious crap.
@@ -190,7 +179,7 @@ PyResult BeyonceBound::Handle_CmdFollowBall(PyCallArgs &call) {
     }
     Call_FollowBall args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -225,7 +214,7 @@ PyResult BeyonceBound::Handle_CmdSetSpeedFraction(PyCallArgs &call) {
 
     Call_SingleRealArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     /** @todo  rework this...this is to set speed ONLY...NOT to begin moving.  */
@@ -262,7 +251,7 @@ PyResult BeyonceBound::Handle_CmdAlignTo(PyCallArgs &call) {
 
     CallAlignTo arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -295,7 +284,7 @@ PyResult BeyonceBound::Handle_CmdGotoDirection(PyCallArgs &call) {
 
     Call_PointArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -323,7 +312,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -384,7 +373,7 @@ PyResult BeyonceBound::Handle_CmdOrbit(PyCallArgs &call) {
     call.Dump(SERVICE__CALL_DUMP);
     Call_Orbit args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -658,7 +647,7 @@ PyResult BeyonceBound::Handle_CmdWarpToStuffAutopilot(PyCallArgs &call) {
   //  sends targeted celestial itemID as arg.destID
     CallWarpToStuffAutopilot arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
 	}
 
@@ -729,7 +718,7 @@ PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     }
     Call_TwoIntegerArgs args;  //sends stationID, shipID
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -783,7 +772,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 
     Call_StargateJump args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -807,7 +796,7 @@ PyResult BeyonceBound::Handle_CmdAbandonLoot(PyCallArgs &call) {
 
 	Call_SingleIntList arg;
 	if (!arg.Decode(&call.tuple)) {
-		codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+		codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
 		return PyStatic.NewNone();
 	}
 

@@ -153,7 +153,7 @@ PyResult AllianceBound::Handle_AddBulletin(PyCallArgs &call) {
 
     Call_AddBulletin args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

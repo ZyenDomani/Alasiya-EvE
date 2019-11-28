@@ -118,7 +118,7 @@ ShipService::~ShipService() {
     delete m_dispatch;
 }
 
-PyBoundObject *ShipService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject *ShipService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     _log(CLIENT__MESSAGE, "ShipService bind request");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
     return new ShipBound(m_manager, m_db);
@@ -135,7 +135,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -251,7 +251,7 @@ PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -283,7 +283,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     //     .arg1 (newShipID) -  itemID of the ship to be boarded
     //     .arg2 (oldShipID) -  itemID of the current ship
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -321,7 +321,7 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
 
     Call_IntBoolArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         throw PyException(MakeCustomError("Something bad happened as you prepared to board the ship.  Ref: ServerError 15173"));
     }
 
@@ -371,7 +371,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
     Call_Drop3 args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -520,7 +520,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -579,7 +579,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         */
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -611,16 +611,31 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
             iRef->ChangeOwner(pClient->GetCharacterID(), true);
             pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
             pSysMgr->RemoveEntity(pDroneSE);
+
+            // we have to create the stateChange packet by hand here...
+            PyTuple* tuple = new PyTuple(2);
+                tuple->SetItem(0, new PyString("OnDroneStateChange"));
+            PyList* list = new PyList(7);
+                list->SetItem(0, new PyInt(iRef->itemID()));
+                list->SetItem(1, PyStatic.NewNone());
+                list->SetItem(2, PyStatic.NewNone());
+                list->SetItem(3, PyStatic.NewNone());
+                list->SetItem(4, PyStatic.NewNone());
+                list->SetItem(5, PyStatic.NewNone());
+                list->SetItem(6, PyStatic.NewNone());
+            tuple->SetItem(1, list);
+            pClient->GetShipSE()->SysBubble()->BubblecastDestinyUpdate(&tuple, "destiny");
         }
     }
 
-    return nullptr;
+    // requires *some* return....
+    return new PyDict();
 }
 
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -826,7 +841,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
     bool completeTech3Assembly = false;
     if (call.tuple->GetItem(0)->IsList()) {
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
         itemIDList = args.items;
@@ -836,7 +851,7 @@ PyResult ShipBound::Handle_AssembleShip(PyCallArgs &call) {
         // @TODO Ignoring name
         // Can't get xmlpktgen to pickup the change so.. lol
         //if (!argsNamed.Decode(&call.tuple)) {
-        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        //    codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //    return nullptr;
         //}
         itemIDList.push_back(call.tuple->GetItem(0)->AsInt()->value());

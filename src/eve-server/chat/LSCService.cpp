@@ -182,7 +182,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
 
     Call_SingleStringArg name;
     if (!name.Decode(call.tuple))  {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -280,7 +280,7 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
 
     CallJoinChannels args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -293,13 +293,13 @@ PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {
         else if ((*cur)->IsTuple()) {
             PyTuple* prt = (*cur)->AsTuple();
             if (prt->items.size() != 1 or !prt->items[0]->IsTuple()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 continue;
             }
             prt = prt->items[0]->AsTuple();
 
             if (prt->items.size() != 2 or /* !prt->items[0]->IsString() or unnessecary */ !prt->items[1]->IsInt()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 continue;
             }
             toJoin.insert(prt->items[1]->AsInt()->value());
@@ -393,7 +393,7 @@ PyResult LSCService::Handle_SendMessage(PyCallArgs& call)
     } else {
         Call_SendMessage args;
         if (!args.Decode(call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
         channel_id = args.channel.id;
@@ -596,7 +596,7 @@ PyResult LSCService::Handle_Configure(PyCallArgs& call)
 
     //ChannelInfo args;
     //if (!args.Decode(call.tuple) {
-    //codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+    //codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
     //    return nullptr;
     //}
 
@@ -695,7 +695,7 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
 
     CallLeaveChannel arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -712,17 +712,17 @@ PyResult LSCService::Handle_LeaveChannel(PyCallArgs &call) {
             prt = prt->GetItem(0)->AsTuple();
 
             if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 return PyStatic.NewNone();
             }
 
             toLeave = prt->GetItem(1)->AsInt()->value();
         } else {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
     } else {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -752,7 +752,7 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
     CallLeaveChannels args;
 
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -772,7 +772,7 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
             }
 
             if (!prt->GetItem(0)->IsTuple()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 continue;
             }
             prt = prt->GetItem(0)->AsTuple();
@@ -781,13 +781,13 @@ PyResult LSCService::Handle_LeaveChannels(PyCallArgs &call) {
                 prt = prt->GetItem(0)->AsTuple();
 
             if (prt->size() != 2 or !prt->GetItem(1)->IsInt()) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 continue;
             }
 
             toLeave.insert(prt->GetItem(1)->AsInt()->value());
         } else {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             continue;
         }
     }
@@ -821,7 +821,7 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -852,7 +852,7 @@ PyResult LSCService::Handle_DestroyChannel(PyCallArgs& call)
 PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
     CallGetMembers arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -871,7 +871,7 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
 
             if (prt->items.size() != 2 or !prt->GetItem(1)->IsInt())
             {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+                _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 return nullptr;
             }
 
@@ -879,13 +879,13 @@ PyResult LSCService::Handle_GetMembers(PyCallArgs &call) {
         }
         else
         {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+            _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
     }
     else
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1165,7 +1165,7 @@ PyResult LSCService::Handle_GetMyMessages(PyCallArgs &call) {
 PyResult LSCService::Handle_GetMessageDetails(PyCallArgs &call) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1178,7 +1178,7 @@ PyResult LSCService::Handle_GetMessageDetails(PyCallArgs &call) {
 PyResult LSCService::Handle_Page(PyCallArgs &call) {
     Call_Page args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1250,7 +1250,7 @@ void Client::SelfEveMail(const char* subject, const char* fmt, ...)
 PyResult LSCService::Handle_MarkMessagesRead(PyCallArgs &call) {
     Call_SingleIntList args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1267,7 +1267,7 @@ PyResult LSCService::Handle_MarkMessagesRead(PyCallArgs &call) {
 PyResult LSCService::Handle_DeleteMessages(PyCallArgs &call) {
     Call_DeleteMessages args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

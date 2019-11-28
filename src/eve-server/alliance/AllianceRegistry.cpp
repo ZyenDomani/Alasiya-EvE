@@ -61,10 +61,10 @@ AllianceRegistry::~AllianceRegistry()
     delete m_dispatch;
 }
 
-PyBoundObject* AllianceRegistry::_CreateBoundObject( Client* pClient, const PyRep* bind_args )
+PyBoundObject* AllianceRegistry::CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
     if (!bind_args->IsTuple()){
-        sLog.Error( "AllianceRegistry::_CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
+        sLog.Error( "AllianceRegistry::CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
         pClient->SendErrorMsg("Could not bind object for Ally Registry.  Ref: ServerError 02808.");
         return nullptr;
     }
@@ -128,7 +128,7 @@ PyResult AllianceRegistry::Handle_GetEmploymentRecord(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

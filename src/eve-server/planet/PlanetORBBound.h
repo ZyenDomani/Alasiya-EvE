@@ -39,7 +39,7 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
 
 private:
     PlanetDB* m_db;

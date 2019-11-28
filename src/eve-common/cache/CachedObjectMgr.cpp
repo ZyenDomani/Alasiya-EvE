@@ -560,7 +560,7 @@ PyRep *CachedObjectMgr::_MakeCacheHint(const char *oname) {
     //cache files as the data source.
     PyCachedObject *obj = LoadCachedObject(oname);
     if (obj == nullptr) {
-        _log(CLIENT__ERROR, "Unable to load cache file for '%s' in order to build hint", oname);
+        _log(SERVICE__ERROR, "Unable to load cache file for '%s' in order to build hint", oname);
         return nullptr;
     }
 
@@ -701,7 +701,7 @@ bool PyCachedObjectDecoder::Decode(PySubStream **in_ss)
     }
     //ignore unknown [1]
     /*if (!args->items[1]->IsInt()) {
-        _log(CLIENT__ERROR, "Cache object's arg %d is not a None: %s", 1, args->items[1]->TypeString());
+        _log(SERVICE__ERROR, "Cache object's arg %d is not a None: %s", 1, args->items[1]->TypeString());
 
         PyDecRef( ss );
         return false;

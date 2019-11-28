@@ -109,11 +109,10 @@ TradeService::~TradeService() {
     delete m_dispatch;
 }
 
-PyBoundObject* TradeService::_CreateBoundObject(Client* pClient, const PyRep *bind_args) {
+PyBoundObject* TradeService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     // each client's trade session has it's own bound object.
     //   create code for multiple sessions per client, using TradeBound and TradeSession.
     Trade_BindArgs args;
-    //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
     if (!args.Decode(&t)) {
         codelog(PLAYER__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());

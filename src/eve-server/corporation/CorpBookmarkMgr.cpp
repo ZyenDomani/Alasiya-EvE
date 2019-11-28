@@ -97,7 +97,7 @@ PyResult CorpBookmarkMgr::Handle_UpdateBookmark(PyCallArgs& call) {
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -132,7 +132,7 @@ PyResult CorpBookmarkMgr::Handle_UpdatePlayerBookmark(PyCallArgs& call) {
     call.Dump(COMMON__INFO);
     Call_UpdateBookmark args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

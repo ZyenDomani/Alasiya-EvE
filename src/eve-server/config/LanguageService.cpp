@@ -78,7 +78,7 @@ LanguageService::~LanguageService() {
 
 
 /*
-PyBoundObject *LanguageService::_CreateBoundObject(Client *c, PyTuple *bind_args) {
+PyBoundObject *LanguageService::CreateBoundObject(Client *pClient, PyTuple *bind_args) {
     _log(CLIENT__MESSAGE, "LanguageService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 
@@ -97,7 +97,7 @@ PyResult LanguageService::Handle_GetTextsForGroup(PyCallArgs &call) {
     Call_GetTextsForGroup args;
 
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return NULL;
     }
 

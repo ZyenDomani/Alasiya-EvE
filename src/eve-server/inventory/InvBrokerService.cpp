@@ -132,12 +132,11 @@ InvBrokerService::~InvBrokerService() {
 }
 
 
-PyBoundObject* InvBrokerService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject* InvBrokerService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     InvBroker_BindArgs args;
-    //temp crap until I rework _CreateBoundObject's signature
     PyRep *t = bind_args->Clone();
     if(!args.Decode(&t)) {
-        codelog(INV__ERROR, "Failed to decode bind args from '%s'", c->GetName());
+        codelog(SERVICE__ERROR, "Failed to decode bind args from '%s'", pClient->GetName());
         return NULL;
     }
     _log(INV__BIND, "InvBrokerService bind request:");
@@ -154,7 +153,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
      * args.arg2 = locationID of container
      */
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -191,7 +190,7 @@ PyResult InvBrokerBound::Handle_GetInventoryFromId(PyCallArgs &call) {
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -304,7 +303,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
     call.Dump(INV__DUMP);
     Inventory_GetInventory args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -399,7 +398,7 @@ PyResult InvBrokerBound::Handle_GetInventory(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
     CallSetLabel args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -439,7 +438,7 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
 PyResult InvBrokerBound::Handle_TrashItems(PyCallArgs &call) {
     Call_TrashItems args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

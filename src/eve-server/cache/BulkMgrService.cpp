@@ -148,7 +148,7 @@ PyResult BulkMgrService::Handle_UpdateBulk(PyCallArgs &call)
 
     Call_UpdateBulk args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -216,7 +216,7 @@ PyResult BulkMgrService::Handle_GetFullFiles(PyCallArgs &call)
         */
     Call_GetFullFiles args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -307,7 +307,7 @@ PyResult BulkMgrService::Handle_GetFullFilesChunk(PyCallArgs &call)
      */
     Call_GetFullFilesChunk args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -398,7 +398,7 @@ PyResult BulkMgrService::Handle_GetChunk(PyCallArgs &call)
      */
     Call_GetChunk args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     /*
@@ -418,7 +418,7 @@ PyResult BulkMgrService::Handle_GetUnsubmittedChunk(PyCallArgs &call)
      */
     Call_GetUnsubmittedChunk args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     //args.chunkNumber;

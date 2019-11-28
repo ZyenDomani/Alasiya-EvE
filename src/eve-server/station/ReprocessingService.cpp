@@ -94,15 +94,15 @@ ReprocessingService::~ReprocessingService() {
     delete m_dispatch;
 }
 
-PyBoundObject *ReprocessingService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject *ReprocessingService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     if (!bind_args->IsInt()) {
-        codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
+        _log(SERVICE__ERROR, "%s: Non-integer bind argument '%s'", pClient->GetName(), bind_args->TypeString());
         return nullptr;
     }
 
     uint32 stationID = bind_args->AsInt()->value();
     if (!IsStation(stationID)) {
-        codelog(CLIENT__ERROR, "%s: Expected stationID, but got %u.", c->GetName(), stationID);
+        _log(SERVICE__ERROR, "%s: Expected stationID, but got %u.", pClient->GetName(), stationID);
         return nullptr;
     }
 
@@ -125,8 +125,13 @@ ReprocessingServiceBound::ReprocessingServiceBound(PyServiceMgr *mgr, Reprocessi
     PyCallable_REG_CALL(ReprocessingServiceBound, GetQuotes);
     PyCallable_REG_CALL(ReprocessingServiceBound, Reprocess);
 
+    m_stationCorpID = 0;
+    m_staEfficiency = 0.0f;
+    m_tax = 0.0f;
+
     m_station = sItemFactory.GetStation(stationID);
-    m_station->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
+    if (m_station.get() != nullptr)
+        m_station->GetRefineData(m_stationCorpID, m_staEfficiency, m_tax);
 }
 
 ReprocessingServiceBound::~ReprocessingServiceBound() {
@@ -144,7 +149,7 @@ PyResult ReprocessingServiceBound::Handle_GetOptionsForItemTypes(PyCallArgs &cal
 
     Call_GetOptionsForItemTypes args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }
@@ -175,7 +180,7 @@ PyResult ReprocessingServiceBound::Handle_GetReprocessingInfo(PyCallArgs &call) 
 PyResult ReprocessingServiceBound::Handle_GetQuote(PyCallArgs &call) {
     Call_SingleIntegerArg arg;    // itemID
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }
@@ -187,7 +192,7 @@ PyResult ReprocessingServiceBound::Handle_GetQuotes(PyCallArgs &call) {
     // why shipID here?  processing in cap indy ships?
      Call_GetQuotes args;
      if (!args.Decode(&call.tuple)) {
-         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
          call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
          return nullptr;
      }
@@ -213,7 +218,7 @@ PyResult ReprocessingServiceBound::Handle_Reprocess(PyCallArgs &call) {
 
     Call_Reprocess args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         call.client->SendErrorMsg("Internal Server Error.  Ref: ServerError 01588.");
         return nullptr;
     }

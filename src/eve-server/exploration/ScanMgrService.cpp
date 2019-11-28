@@ -134,7 +134,7 @@ PyResult ScanBound::Handle_ConeScan( PyCallArgs& call ) {
     //return sm.RemoteSvc('scanMgr').GetSystemScanMgr().ConeScan(scanangle, scanRange, x, y, z)
     Call_ConeScan args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -197,7 +197,7 @@ PyResult ScanBound::Handle_RecoverProbes( PyCallArgs& call ) {
     //successProbeIDs = sm.RemoteSvc('scanMgr').GetSystemScanMgr().RecoverProbes(probeIDs)
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
         return nullptr;
     }
@@ -222,7 +222,7 @@ PyResult ScanBound::Handle_DestroyProbe( PyCallArgs& call ) {
     //scanMan.DestroyProbe(probeID)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         //TODO: throw exception
         return nullptr;
     }

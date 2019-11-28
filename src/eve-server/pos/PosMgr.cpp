@@ -131,16 +131,16 @@ PosMgr::~PosMgr() {
     delete m_dispatch;
 }
 
-PyBoundObject* PosMgr::_CreateBoundObject( Client* pClient, const PyRep* bind_args ) {
+PyBoundObject* PosMgr::CreateBoundObject( Client* pClient, const PyRep* bind_args ) {
     _log( POS__DUMP, "PosMgr bind request for:" );
     bind_args->Dump( POS__DUMP, "    " );
 
     if (!bind_args->IsInt()){
-        sLog.Error( "PosMgr::_CreateBoundObject", "%s: bind_args is not int: '%s'. ", pClient->GetName(), bind_args->TypeString() );
+        sLog.Error( "PosMgr::CreateBoundObject", "%s: bind_args is not int: '%s'. ", pClient->GetName(), bind_args->TypeString() );
         return nullptr;
     }
 
-    return new PosMgrBound( m_manager, bind_args->AsInt()->value() );
+    return new PosMgrBound(m_manager, bind_args->AsInt()->value());
 }
 
 PyResult PosMgr::Handle_GetControlTowerFuelRequirements(PyCallArgs &call) {
@@ -252,7 +252,7 @@ PyResult PosMgrBound::Handle_InstallJumpBridgeLink(PyCallArgs &call) {
 
     InstallJumpBridgeLink args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -309,7 +309,7 @@ PyResult PosMgrBound::Handle_GetTowerNotificationSettings(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyObject("util.Row", dict);
     }
 
@@ -336,7 +336,7 @@ PyResult PosMgrBound::Handle_SetTowerNotifications(PyCallArgs &call) {
 
     SetTowerNotification args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -369,7 +369,7 @@ PyResult PosMgrBound::Handle_GetTowerSentrySettings(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyObject("util.Row", data);
     }
 
@@ -398,7 +398,7 @@ PyResult PosMgrBound::Handle_SetTowerSentrySettings(PyCallArgs &call) {
 
     SetTowerSentrySettings args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -426,7 +426,7 @@ PyResult PosMgrBound::Handle_GetStarbasePermissions(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -460,7 +460,7 @@ PyResult PosMgrBound::Handle_SetStarbasePermissions(PyCallArgs &call) {
 
     SetStarbasePermissions args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -536,7 +536,7 @@ if self.moon[1] is not None:
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -586,7 +586,7 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
     if (call.tuple->size() == 2) {
         SetTowerPassword2 args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
 
@@ -600,7 +600,7 @@ PyResult PosMgrBound::Handle_SetTowerPassword( PyCallArgs &call ) {
     } else if (call.tuple->size() == 4) {
         SetTowerPassword4 args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
 
@@ -651,7 +651,7 @@ PyResult PosMgrBound::Handle_AnchorStructure(PyCallArgs &call) {
 
     AnchorStructure args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -684,7 +684,7 @@ PyResult PosMgrBound::Handle_GetMoonProcessInfoForTower(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -771,7 +771,7 @@ PyResult PosMgrBound::Handle_ChangeStructureProvisionType(PyCallArgs &call) {
 
     ChangeStructureProvisionType args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 

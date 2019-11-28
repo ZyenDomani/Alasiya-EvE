@@ -79,7 +79,7 @@ PyResult AgentBound::Handle_DoAction(PyCallArgs &call) {
     // sends PyNone or actionID
     Call_SingleArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     // this actually returns a complicated tuple depending on other variables involving this agent and char.
@@ -465,7 +465,7 @@ PyResult AgentBound::Handle_GetMissionKeywords(PyCallArgs &call) {
     /*   none of this really matters as we're not using 'contentID' like live does
     Call_SingleArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

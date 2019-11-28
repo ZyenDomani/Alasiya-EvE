@@ -102,7 +102,7 @@ PyResult NotificationMgrService::Handle_GetByGroupID(PyCallArgs &call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for GetByGroupID call");
+        _log(SERVICE__ERROR, "Failed to decode args for GetByGroupID call");
         return NULL;
     }
     int groupID = args.arg;
@@ -113,7 +113,7 @@ PyResult NotificationMgrService::Handle_GetUnprocessed(PyCallArgs &call)
 {
     // called when mail window's notifications tab opened
     // see /journal/GetUnprocessed for info..
-    
+
     return new PyTuple(0);
 }
 
@@ -122,7 +122,7 @@ PyResult NotificationMgrService::Handle_MarkGroupAsProcessed(PyCallArgs &call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for MarkGroupAsProcessed call");
+        _log(SERVICE__ERROR, "Failed to decode args for MarkGroupAsProcessed call");
         return NULL;
     }
     int groupID = args.arg;
@@ -139,7 +139,7 @@ PyResult NotificationMgrService::Handle_MarkAsProcessed(PyCallArgs &call)
     Call_SingleArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for MarkAsProcessed call");
+        _log(SERVICE__ERROR, "Failed to decode args for MarkAsProcessed call");
         return NULL;
     }
     PyRep* notificationsList = args.arg;
@@ -151,7 +151,7 @@ PyResult NotificationMgrService::Handle_DeleteGroupNotifications(PyCallArgs &cal
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for DeleteGroupNotifications call");
+        _log(SERVICE__ERROR, "Failed to decode args for DeleteGroupNotifications call");
         return NULL;
     }
     int groupID = args.arg;
@@ -168,7 +168,7 @@ PyResult NotificationMgrService::Handle_DeleteNotifications(PyCallArgs &call)
     Call_SingleArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode args for DeleteNotifications call");
+        _log(SERVICE__ERROR, "Failed to decode args for DeleteNotifications call");
         return NULL;
     }
     PyRep* notificationsIDs = args.arg;

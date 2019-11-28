@@ -105,7 +105,7 @@ JumpCloneService::~JumpCloneService() {
     delete m_dispatch;
 }
 
-PyBoundObject* JumpCloneService::_CreateBoundObject( Client* c, const PyRep* bind_args )
+PyBoundObject* JumpCloneService::CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
     _log( CLIENT__MESSAGE, "JumpCloneService bind request for:" );
     bind_args->Dump( CLIENT__MESSAGE, "    " );

@@ -77,10 +77,10 @@ CorpRegistryService::~CorpRegistryService() {
     delete m_dispatch;
 }
 
-PyBoundObject* CorpRegistryService::_CreateBoundObject( Client* pClient, const PyRep* bind_args )
+PyBoundObject* CorpRegistryService::CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
     if (!bind_args->IsTuple()){
-        sLog.Error( "CorpRegistryService::_CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
+        sLog.Error( "CorpRegistryService::CreateBoundObject", "%s: bind_args is not tuple: '%s'. ", pClient->GetName(), bind_args->TypeString() );
         pClient->SendErrorMsg("Could not bind object for Corp Registry.  Ref: ServerError 02808.");
         return nullptr;
     }

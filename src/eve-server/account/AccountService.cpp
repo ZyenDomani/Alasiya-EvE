@@ -123,7 +123,7 @@ PyResult AccountService::Handle_GetJournal(PyCallArgs &call)
     }
     Call_GetJournal args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -146,7 +146,7 @@ PyResult AccountService::Handle_GetJournalForAccounts(PyCallArgs &call) {
     }
     Call_GetJournals args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -173,7 +173,7 @@ PyResult AccountService::Handle_GiveCash(PyCallArgs &call)
     }
     Call_GiveCash args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -200,7 +200,7 @@ PyResult AccountService::Handle_GiveCashFromCorpAccount(PyCallArgs &call)
     }
     Call_GiveCorpCash args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

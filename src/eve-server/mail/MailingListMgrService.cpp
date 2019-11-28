@@ -78,7 +78,7 @@ PyResult MailingListMgrService::Handle_Create(PyCallArgs& call)
     Call_CreateMailingList args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode Create(MailingList) args");
+        _log(SERVICE__ERROR, "Failed to decode Create(MailingList) args");
         return nullptr;
     }
     uint32 r = m_db.CreateMailingList(call.client->GetCharacterID(), args.name, args.defaultAccess,
@@ -95,7 +95,7 @@ PyResult MailingListMgrService::Handle_Join(PyCallArgs& call)
     sLog.Debug("MailingListMgrService", "Called Join stub" );
     Call_SingleStringArg args;
     if(!args.Decode(&call.tuple)) {
-        codelog(CLIENT__ERROR, "Failed to decode Join args");
+        _log(SERVICE__ERROR, "Failed to decode Join args");
         return nullptr;
     }
 
@@ -111,7 +111,7 @@ PyResult MailingListMgrService::Handle_Leave(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode DeleteLabel args");
+        _log(SERVICE__ERROR, "Failed to decode DeleteLabel args");
         return nullptr;
     }
 
@@ -127,7 +127,7 @@ PyResult MailingListMgrService::Handle_Delete(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode Delete args");
+        _log(SERVICE__ERROR, "Failed to decode Delete args");
         return nullptr;
     }
 
@@ -143,7 +143,7 @@ PyResult MailingListMgrService::Handle_KickMembers(PyCallArgs& call)
     Call_MemberList args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode KickMembers args");
+        _log(SERVICE__ERROR, "Failed to decode KickMembers args");
         return nullptr;
     }
 
@@ -163,7 +163,7 @@ PyResult MailingListMgrService::Handle_GetMembers(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode GetMembers args");
+        _log(SERVICE__ERROR, "Failed to decode GetMembers args");
         return nullptr;
     }
 
@@ -178,7 +178,7 @@ PyResult MailingListMgrService::Handle_SetEntityAccess(PyCallArgs& call)
     Call_SetEntityAccess args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SetEntityAccess args");
+        _log(SERVICE__ERROR, "Failed to decode SetEntityAccess args");
         return nullptr;
     }
     // no return values
@@ -192,7 +192,7 @@ PyResult MailingListMgrService::Handle_ClearEntityAccess(PyCallArgs& call)
     Call_ClearEntityAccess args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode ClearEntityAccess args");
+        _log(SERVICE__ERROR, "Failed to decode ClearEntityAccess args");
         return nullptr;
     }
     // no return values
@@ -206,7 +206,7 @@ PyResult MailingListMgrService::Handle_SetMembersMuted(PyCallArgs& call)
     Call_MemberList args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SetMembersClear args");
+        _log(SERVICE__ERROR, "Failed to decode SetMembersClear args");
         return nullptr;
     }
     return nullptr;
@@ -219,7 +219,7 @@ PyResult MailingListMgrService::Handle_SetMembersOperator(PyCallArgs& call)
     Call_MemberList args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SetMembersClear args");
+        _log(SERVICE__ERROR, "Failed to decode SetMembersClear args");
         return nullptr;
     }
     return nullptr;
@@ -232,7 +232,7 @@ PyResult MailingListMgrService::Handle_SetMembersClear(PyCallArgs& call)
     Call_MemberList args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SetMembersClear args");
+        _log(SERVICE__ERROR, "Failed to decode SetMembersClear args");
         return nullptr;
     }
     return nullptr;
@@ -245,7 +245,7 @@ PyResult MailingListMgrService::Handle_SetDefaultAccess(PyCallArgs& call)
     Call_SetDefaultAccess args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SetDefaultAccess args");
+        _log(SERVICE__ERROR, "Failed to decode SetDefaultAccess args");
         return nullptr;
     }
 
@@ -264,7 +264,7 @@ PyResult MailingListMgrService::Handle_GetInfo(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode GetInfo args");
+        _log(SERVICE__ERROR, "Failed to decode GetInfo args");
         return nullptr;
     }
 
@@ -284,7 +284,7 @@ PyResult MailingListMgrService::Handle_GetSettings(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode GetSettings args");
+        _log(SERVICE__ERROR, "Failed to decode GetSettings args");
         return nullptr;
     }
 
@@ -304,7 +304,7 @@ PyResult MailingListMgrService::Handle_GetWelcomeMail(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode GetWelcomeMail args");
+        _log(SERVICE__ERROR, "Failed to decode GetWelcomeMail args");
         return nullptr;
     }
 
@@ -319,7 +319,7 @@ PyResult MailingListMgrService::Handle_SaveWelcomeMail(PyCallArgs& call)
     Call_SaveWelcomeMail args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SaveWelcomeMail args");
+        _log(SERVICE__ERROR, "Failed to decode SaveWelcomeMail args");
         return nullptr;
     }
     return nullptr;
@@ -332,7 +332,7 @@ PyResult MailingListMgrService::Handle_SendWelcomeMail(PyCallArgs& call)
     Call_SaveWelcomeMail args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode SendWelcomeMail args");
+        _log(SERVICE__ERROR, "Failed to decode SendWelcomeMail args");
         return nullptr;
     }
     return nullptr;
@@ -345,7 +345,7 @@ PyResult MailingListMgrService::Handle_ClearWelcomeMail(PyCallArgs& call)
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple))
     {
-        codelog(CLIENT__ERROR, "Failed to decode ClearWelcomeMail args");
+        _log(SERVICE__ERROR, "Failed to decode ClearWelcomeMail args");
         return nullptr;
     }
 

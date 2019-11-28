@@ -68,7 +68,7 @@ PyResult SparseCorpOfficeListBound::Handle_Fetch(PyCallArgs &call)
     call.Dump(CORP__WARNING);   //so this will dump on all calls
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -409,7 +409,7 @@ PyResult CorpRegistryBound::Handle_GetRecruiters(PyCallArgs &call)
 {   // working
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -420,7 +420,7 @@ PyResult CorpRegistryBound::Handle_DeleteTitle(PyCallArgs &call)
 {   // working
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -432,7 +432,7 @@ PyResult CorpRegistryBound::Handle_DeleteRecruitmentAd(PyCallArgs &call)
 {   // working
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -444,7 +444,7 @@ PyResult CorpRegistryBound::Handle_GetSharesByShareholder(PyCallArgs &call)
 {   // working
     Call_SingleBoolArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -456,7 +456,7 @@ PyResult CorpRegistryBound::Handle_GetCorporations(PyCallArgs &call) {
     // working
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     return m_db.GetCorporations(args.arg);
@@ -466,7 +466,7 @@ PyResult CorpRegistryBound::Handle_GetRecentKillsAndLosses(PyCallArgs &call)
 {   // working
     Call_GetRecentKillsAndLosses args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -478,7 +478,7 @@ PyResult CorpRegistryBound::Handle_GetMember(PyCallArgs &call)
     _log(CORP__CALL, "CorpRegistryBound::Handle_GetMember()");
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -494,7 +494,7 @@ PyResult CorpRegistryBound::Handle_SetAccountKey(PyCallArgs &call)
 {   // working
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -510,7 +510,7 @@ PyResult CorpRegistryBound::Handle_GetSuggestedTickerNames(PyCallArgs &call)
 {
     Call_SingleWStringArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -531,7 +531,7 @@ PyResult CorpRegistryBound::Handle_GetSuggestedAllianceShortNames(PyCallArgs &ca
 {
     Call_SingleWStringArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     PyList* result = new PyList();
@@ -569,7 +569,7 @@ PyResult CorpRegistryBound::Handle_UpdateDivisionNames(PyCallArgs &call)
 {   // working
     Call_UpdateDivisionNames args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -604,7 +604,7 @@ PyResult CorpRegistryBound::Handle_GetMembersPaged(PyCallArgs &call) {
 
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -654,7 +654,7 @@ PyResult CorpRegistryBound::Handle_GetMembersByIds(PyCallArgs &call) {
 
     Call_GetMembersByID args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -672,7 +672,7 @@ PyResult CorpRegistryBound::Handle_AddCorporation(PyCallArgs &call) {
     Client* pClient(call.client);
     Call_AddCorporation args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -784,7 +784,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitle(PyCallArgs &call) {
 
     Call_UpdateTitleData args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -814,7 +814,7 @@ PyResult CorpRegistryBound::Handle_UpdateTitles(PyCallArgs &call) {
     }
     Call_UpdateTitle arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -871,7 +871,7 @@ PyResult CorpRegistryBound::Handle_UpdateCorporation(PyCallArgs &call) {
 
     Call_UpdateCorporation args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -901,7 +901,7 @@ PyResult CorpRegistryBound::Handle_UpdateLogo(PyCallArgs &call)
 {
     Call_UpdateLogo args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -950,7 +950,7 @@ PyResult CorpRegistryBound::Handle_AddBulletin(PyCallArgs &call) {
 
     Call_AddBulletin args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1014,7 +1014,7 @@ PyResult CorpRegistryBound::Handle_CreateRecruitmentAd(PyCallArgs &call) {
 
     Call_CreateRecruitmentAd args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1067,7 +1067,7 @@ PyResult CorpRegistryBound::Handle_UpdateRecruitmentAd(PyCallArgs &call) {
 
     Call_UpdateRecruitmentAd args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1115,7 +1115,7 @@ PyResult CorpRegistryBound::Handle_MoveCompanyShares(PyCallArgs &call) {
 
     Call_MoveShares args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1143,7 +1143,7 @@ PyResult CorpRegistryBound::Handle_MovePrivateShares(PyCallArgs &call) {
 
     Call_MoveShares args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1170,7 +1170,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
     call.Dump(CORP__CALL_DUMP);
     Call_GetMemberIDsByQuery_Main args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1226,7 +1226,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
         if (list->size() == 3) {
             Call_GetMemberIDsByQuery_List3 args3;
             if (!args3.Decode(&list)) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 return nullptr;
             }
 
@@ -1248,7 +1248,7 @@ PyResult CorpRegistryBound::Handle_GetMemberIDsByQuery(PyCallArgs &call) {
                 return nullptr;
             Call_GetMemberIDsByQuery_List4 args4;
             if (!args4.Decode(&list)) {
-                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+                codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
                 return nullptr;
             }
 
@@ -1434,7 +1434,7 @@ PyResult CorpRegistryBound::Handle_PayoutDividend(PyCallArgs &call) {
 
     Call_PayoutDividend args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1521,7 +1521,7 @@ PyResult CorpRegistryBound::Handle_UpdateMember(PyCallArgs &call) {
 
     Call_UpdateMember args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     if (!IsCharacter(args.charID))
@@ -1560,7 +1560,7 @@ PyResult CorpRegistryBound::Handle_InsertApplication(PyCallArgs &call)
 {
     Call_InsertApplication args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1650,7 +1650,7 @@ PyResult CorpRegistryBound::Handle_UpdateApplicationOffer(PyCallArgs &call) {
 
     Call_UpdateApplicationOffer args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -1767,7 +1767,7 @@ PyResult CorpRegistryBound::Handle_DeleteApplication(PyCallArgs & call)
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewFalse();
     }
 
@@ -1996,7 +1996,7 @@ PyResult CorpRegistryBound::Handle_InsertVoteCase(PyCallArgs &call) {
     }
     Call_InsertVoteCase args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2117,7 +2117,7 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call)
     if (call.tuple->size() == 3) {
         Call_GetVoteCases args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
         return m_db.GetVoteItems(args.corpid, args.status, args.maxLen);
@@ -2134,7 +2134,7 @@ PyResult CorpRegistryBound::Handle_GetVoteCaseOptions(PyCallArgs &call) {
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2152,7 +2152,7 @@ PyResult CorpRegistryBound::Handle_GetVotes(PyCallArgs &call) {
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     // this will need a bit more thought....
@@ -2244,7 +2244,7 @@ PyResult CorpRegistryBound::Handle_GetSanctionedActionsByCorporation(PyCallArgs 
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     /*  this still needs work...used to show voting items in corp that 'mean something'
@@ -2289,7 +2289,7 @@ PyResult CorpRegistryBound::Handle_InsertVote(PyCallArgs &call) {
 
     Call_InsertVote args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -2326,7 +2326,7 @@ PyResult CorpRegistryBound::Handle_AddCorporateContact(PyCallArgs &call) {
 
     Call_CorporateContactData args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2340,7 +2340,7 @@ PyResult CorpRegistryBound::Handle_EditCorporateContact(PyCallArgs &call) {
 
     Call_CorporateContactData args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2354,7 +2354,7 @@ PyResult CorpRegistryBound::Handle_EditContactsRelationshipID(PyCallArgs &call) 
 
     Call_EditCorporateContacts args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2368,7 +2368,7 @@ PyResult CorpRegistryBound::Handle_RemoveCorporateContacts(PyCallArgs &call) {
 
     Call_RemoveCorporateContacts args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -2385,7 +2385,7 @@ PyResult CorpRegistryBound::Handle_ExecuteActions(PyCallArgs &call) {
 
     Call_ExecuteActions args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(CORP__TRACE);

@@ -58,7 +58,7 @@ LookupService::~LookupService() {
 PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -68,7 +68,7 @@ PyResult LookupService::Handle_LookupEvePlayerCharacters(PyCallArgs& call) {
 PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -79,7 +79,7 @@ PyResult LookupService::Handle_LookupCharacters(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -89,7 +89,7 @@ PyResult LookupService::Handle_LookupPCOwners(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -99,7 +99,7 @@ PyResult LookupService::Handle_LookupOwners(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupNoneNPCAccountOwners(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -109,7 +109,7 @@ PyResult LookupService::Handle_LookupNoneNPCAccountOwners(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -118,7 +118,7 @@ PyResult LookupService::Handle_LookupPlayerCharacters(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -127,7 +127,7 @@ PyResult LookupService::Handle_LookupCorporations(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -136,7 +136,7 @@ PyResult LookupService::Handle_LookupFactions(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -145,7 +145,7 @@ PyResult LookupService::Handle_LookupCorporationTickers(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
     Call_LookupStringInt args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -155,7 +155,7 @@ PyResult LookupService::Handle_LookupStations(PyCallArgs &call) {
 PyResult LookupService::Handle_LookupKnownLocationsByGroup(PyCallArgs &call) {
     Call_LookupIntString args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

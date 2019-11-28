@@ -97,7 +97,7 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::DestroyFitting() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)){
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
     }
 
     call.client->GetShip()->RemoveRig(sItemFactory.GetItem(args.arg));
@@ -111,7 +111,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
     if (call.tuple->items.size() != 0) {
         Call_SingleIntegerArg arg;
         if (!arg.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return nullptr;
         }
 
@@ -158,7 +158,7 @@ PyResult InventoryBound::Handle_ImportExportWithPlanet(PyCallArgs &call) {
 
     Call_PlanetCustomsXfer args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(COLONY__PKT_TRACE);
@@ -200,7 +200,7 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
 
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyInt(0);
     }
 
@@ -232,7 +232,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
 
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyInt(0);
     }
 
@@ -250,7 +250,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
     //Decode Args
     Call_MultiMerge args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -266,7 +266,7 @@ PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
         // sourceID, destID, qty
         MultiMergeData data;
         if (!data.Decode( *itr )) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             continue;
         }
 
@@ -309,7 +309,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
 
     Call_Add_2 args;    // item and location
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -377,7 +377,7 @@ PyResult InventoryBound::Handle_MultiAdd(PyCallArgs &call) {
     Call_MultiAdd_2 args;
     if (!args.Decode(&call.tuple)) {
         //17:19:04 [DecodeError] Decode Call_MultiAdd_2 failed: Element 0 in list list_1 is not an integer: None
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -692,7 +692,7 @@ PyResult InventoryBound::Handle_ReplaceCharges(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::ReplaceCharges() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     Inventory_CallReplaceCharges args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -812,7 +812,7 @@ PyResult InventoryBound::Handle_CreateBookmarkVouchers(PyCallArgs &call) {
     sLog.White( "InventoryBound::Handle_CreateBookmarkVouchers()", "size= %u", call.tuple->size() );
     Call_CreateVouchers args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(COMMON__INFO);

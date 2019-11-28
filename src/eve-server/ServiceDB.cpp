@@ -226,27 +226,6 @@ void ServiceDB::SaveKillOrLoss(CharKillData &data) {
             data.killBlob.c_str(), data.killTime, data.moonID);
 }
 
-/** @todo  all of the following bullshit needs to be checked/updated/deleted as appropriate */
-//this function is temporary, I dont plan to keep this crap in the DB.
-//   will make mem object for droneState later...   test with this.
-PyRep* ServiceDB::GetSolDroneState(uint32 systemID) {
-    DBQueryResult res;
-
-    if (!sDatabase.RunQuery(res,
-        //not sure if this is gunna be valid all the time...
-        "SELECT "
-        "    droneID, solarSystemID, ownerID, controllerID,"
-        "    activityState, typeID, controllerOwnerID, targetID"
-        " FROM droneState "
-        " WHERE solarSystemID=%u",
-        systemID)) {
-        codelog(DATABASE__ERROR, "Error in GetSolDroneState query: %s", res.error.c_str());
-        return nullptr;
-    }
-
-    return DBResultToRowset(res);
-}
-
 uint32 ServiceDB::GetStationOwner(uint32 stationID)
 {
     DBQueryResult res;

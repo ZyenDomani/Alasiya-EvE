@@ -85,7 +85,7 @@ PyResult Standing::Handle_GetSecurityRating(PyCallArgs &call) {
     //takes an integer: characterID
     Call_SingleIntegerArg arg;
     if(!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -150,7 +150,7 @@ PyResult Standing::Handle_GetStandingTransactions(PyCallArgs &call) {
 
     Call_GetStandingTransactions args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     /*
@@ -202,7 +202,7 @@ _log(STANDING__MESSAGE,  "Standing::Handle_GetStandingCompositions()");
 
     Call_GetStandingComposition args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

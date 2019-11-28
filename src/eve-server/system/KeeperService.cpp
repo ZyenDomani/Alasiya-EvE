@@ -105,7 +105,7 @@ KeeperService::~KeeperService() {
     delete m_dispatch;
 }
 
-PyBoundObject *KeeperService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject *KeeperService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     _log(DUNG__TRACE, "KeeperService bind request for:");
     bind_args->Dump(DUNG__TRACE, "    ");
 
@@ -150,7 +150,7 @@ PyResult KeeperService::Handle_ActivateAccelerationGate(PyCallArgs &call) {
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

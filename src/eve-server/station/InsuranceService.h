@@ -45,7 +45,7 @@ protected:
     PyCallable_DECL_CALL(GetContractForShip);
     PyCallable_DECL_CALL(GetInsurancePrice);
 
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
 };
 
 

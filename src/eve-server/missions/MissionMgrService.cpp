@@ -76,7 +76,7 @@ MissionMgrService::~MissionMgrService() {
 }
 
 /*
-PyBoundObject *MissionMgrService::_CreateBoundObject(Client *c, PyTuple *bind_args) {
+PyBoundObject *MissionMgrService::CreateBoundObject(Client *pClient, PyTuple *bind_args) {
     _log(CLIENT__MESSAGE, "MissionMgrService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 

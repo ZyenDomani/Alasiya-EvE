@@ -66,7 +66,7 @@ public:
     virtual void TargetedLost(SystemEntity *who);
 
     /* specific functions handled here. */
-    Client* GetOwner()                                  { return (m_pClient == nullptr ? nullptr : m_pClient); }
+    Client* GetOwner()                                  { return m_pClient; }
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
     void SaveDrone();

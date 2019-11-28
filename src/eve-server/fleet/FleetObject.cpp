@@ -32,7 +32,7 @@ FleetObject::~FleetObject()
     delete m_dispatch;
 }
 
-PyBoundObject* FleetObject::_CreateBoundObject( Client* c, const PyRep* bind_args )
+PyBoundObject* FleetObject::CreateBoundObject( Client* pClient, const PyRep* bind_args )
 {
     if (is_log_enabled(FLEET__BIND_DUMP)) {
         _log( FLEET__BIND_DUMP, "FleetObject bind request for:" );
@@ -55,7 +55,7 @@ PyBoundObject* FleetObject::_CreateBoundObject( Client* c, const PyRep* bind_arg
 PyResult FleetObject::Handle_CreateFleet(PyCallArgs &call) {
     //self.fleet = sm.RemoteSvc('fleetObjectHandler').CreateFleet()
     FleetBindRSP fbr;
-        fbr.nodeID = 888444;
+        fbr.nodeID = 888444;    // may have to update this later, or use dedicated fleet node
         fbr.fleetID = sFltSvc.CreateFleet(call.client);
         fbr.unknown = 0;
     if (fbr.fleetID == 0)

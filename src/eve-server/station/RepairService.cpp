@@ -87,7 +87,7 @@ RepairService::~RepairService() {
     delete m_dispatch;
 }
 
-PyBoundObject* RepairService::_CreateBoundObject(Client* c, const PyRep* bind_args) {
+PyBoundObject* RepairService::CreateBoundObject(Client* pClient, const PyRep* bind_args) {
     _log(CLIENT__MESSAGE, "RepairService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 

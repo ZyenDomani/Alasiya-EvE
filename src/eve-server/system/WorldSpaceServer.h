@@ -30,7 +30,7 @@ protected:
     //PyCallable_DECL_CALL()
 
     //overloaded in order to support bound objects:
-    //virtual PyBoundObject *_CreateBoundObject(Client* pClient, const PyRep* bind_args);
+    //virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep* bind_args);
 };
 
 #endif  // __EVE_SYSTEM_WORLDSPACE_H_

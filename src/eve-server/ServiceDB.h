@@ -49,9 +49,6 @@ public:
 
     static void SaveKillOrLoss(CharKillData& data);
 
-    //destiny setstate stuff:
-    static PyRep* GetSolDroneState(uint32 systemID);
-
     uint32 GetStationOwner(uint32 stationID);
 
     // not used cause eveConstants table doesnt exist...omitted from ccp dump

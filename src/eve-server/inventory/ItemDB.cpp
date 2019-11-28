@@ -197,12 +197,10 @@ uint32 ItemDB::NewItem(const ItemData &data) {
         "   itemName, typeID, ownerID, locationID, flag,"
         "   contraband, singleton, quantity, x, y, z,"
         "   customInfo) "
-        "VALUES('%s', %u, %u, %u, %u,"
-        "   %u, %u, %u, %f, %f, %f,"
-        "   '%s' )",
-        nameEsc.c_str(), data.typeID, data.ownerID, data.locationID, data.flag,
-                              data.contraband?1:0, data.singleton?1:0, data.quantity, data.position.x, data.position.y, data.position.z,
-                              customInfoEsc.c_str()
+        "VALUES('%s', %u, %u, %u, %u,%u,"
+        "        %u, %u, %f, %f, %f, '%s' )",
+        nameEsc.c_str(), data.typeID, data.ownerID, data.locationID, data.flag, data.contraband?1:0,
+        data.singleton?1:0, data.quantity, data.position.x, data.position.y, data.position.z, customInfoEsc.c_str()
     )) {
         codelog(DATABASE__ERROR, "Failed to insert new entity: %s", err.c_str());
         return 0;
@@ -248,14 +246,14 @@ bool ItemDB::SaveItem(uint32 itemID, const ItemData &data) {
         "  customInfo = '%s'"
         " WHERE itemID = %u",
         nameEsc.c_str(),
-                           data.ownerID,
-                           data.locationID,
-                           (uint16)data.flag,
-                           (data.singleton?1:0),
-                           data.quantity,
-                           data.position.x, data.position.y, data.position.z,
-                           customInfoEsc.c_str(),
-                           itemID))
+        data.ownerID,
+        data.locationID,
+        (uint16)data.flag,
+        (data.singleton?1:0),
+        data.quantity,
+        data.position.x, data.position.y, data.position.z,
+        customInfoEsc.c_str(),
+        itemID))
     {
         codelog(DATABASE__ERROR, "Error in query: %s.", err.c_str());
         return false;
@@ -357,25 +355,4 @@ bool ItemDB::DeleteItem(uint32 itemID) {
     }
     return true;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

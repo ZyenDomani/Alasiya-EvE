@@ -42,7 +42,7 @@ SkillMgrService::~SkillMgrService() {
     delete m_dispatch;
 }
 
-PyBoundObject *SkillMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject *SkillMgrService::CreateBoundObject(Client *pClient, const PyRep *bind_args) {
     _log(CLIENT__MESSAGE, "SkillMgrService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");
 
@@ -116,7 +116,7 @@ PyResult SkillMgrBound::Handle_CharStopTrainingSkill(PyCallArgs &call) {
 PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     Call_SaveSkillQueue args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -127,7 +127,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
     std::vector<PyRep*>::const_iterator cur = args.queue->begin();
     for (; cur != args.queue->end(); cur++) {
         if (!el.Decode(*cur))         {
-            _log(CLIENT__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
+            _log(SERVICE__ERROR, "%s: Failed to decode element of SkillQueue (%u). Skipping.", call.client->GetName(), *cur);
             continue;
         }
         ch->AddToSkillQueue( el.typeID, el.level );
@@ -139,7 +139,7 @@ PyResult SkillMgrBound::Handle_SaveSkillQueue(PyCallArgs &call) {
 PyResult SkillMgrBound::Handle_AddToEndOfSkillQueue(PyCallArgs &call) {
     Call_TwoIntegerArgs args;
     if(!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -154,7 +154,7 @@ PyResult SkillMgrBound::Handle_RespecCharacter(PyCallArgs &call)
 {
     Call_RespecCharacter args;
     if (!args.Decode(call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -193,7 +193,7 @@ PyResult SkillMgrBound::Handle_InjectSkillIntoBrain(PyCallArgs &call)
 {
     Call_InjectSkillIntoBrain args;
     if (!args.Decode(&call.tuple)) {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
     }
 
@@ -234,7 +234,7 @@ PyResult SkillMgrBound::Handle_GetCharacterAttributeModifiers(PyCallArgs &call)
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
     }
     PyTuple* tuple = new PyTuple(4);
@@ -253,7 +253,7 @@ PyResult SkillMgrBound::Handle_CharAddImplant( PyCallArgs& call )
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
     }
     //{'FullPath': u'UI/Messages', 'messageID': 259242, 'label': u'OnlyOneBoosterActiveBody'}(u'You cannot consume the {typeName} as you are already using another similar booster {typeName2}.', None, {u'{typeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName'}, u'{typeName2}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'typeName2'}})
@@ -268,7 +268,7 @@ PyResult SkillMgrBound::Handle_RemoveImplantFromCharacter( PyCallArgs& call )
     Call_SingleIntegerArg args;
     if( !args.Decode( &call.tuple ) )
     {
-        codelog( CLIENT__ERROR, "%s: failed to decode arguments", call.client->GetName() );
+        codelog( SERVICE__ERROR, "%s: Failed to decode arguments.", GetName() );
         return nullptr;
     }
 

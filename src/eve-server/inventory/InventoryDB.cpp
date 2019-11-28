@@ -796,8 +796,7 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
 {
     /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
-    uint32 attributeID = 0;
-    uint32 firstFlag;
+    uint32 attributeID = 0, firstFlag = 0;
     DBResultRow row;
     uint32 slotsOnShip;
 

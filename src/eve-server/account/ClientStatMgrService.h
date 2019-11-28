@@ -38,7 +38,7 @@ protected:
     Dispatcher *const m_dispatch;
 
     //overloaded in order to support bound objects:
-    //virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    //virtual PyBoundObject *CreateBoundObject(Client *pClient, const PyRep *bind_args);
 
     //PyCallable_DECL_CALL(MachoBindObject)
     //PyCallable_DECL_CALL(SubmitStats)

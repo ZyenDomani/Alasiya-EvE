@@ -160,15 +160,11 @@ PyResult DogmaIMService::Handle_GetAttributeTypes(PyCallArgs& call) {
     return result;
 }
 
-PyBoundObject* DogmaIMService::_CreateBoundObject(Client* c, const PyRep* bind_args) {
-    _log(CLIENT__MESSAGE, "DogmaIMService bind request for:");
-    bind_args->Dump(CLIENT__MESSAGE, "    ");
-
-    DogmaLM_BindArgs args;
-    //temp crap until I rework _CreateBoundObject's signature
+PyBoundObject* DogmaIMService::CreateBoundObject(Client *pClient, const PyRep* bind_args) {
     PyRep *t = bind_args->Clone();
+    DogmaLM_BindArgs args;
     if(!args.Decode(&t)) {
-        codelog(INV__ERROR, "Failed to decode bind args from '%s'", c->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode bind args.", GetName());
         return nullptr;
     }
 
@@ -214,7 +210,7 @@ PyResult DogmaIMBound::Handle_GetCharacterBaseAttributes(PyCallArgs& call)
 PyResult DogmaIMBound::Handle_ItemGetInfo(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -245,7 +241,7 @@ PyResult DogmaIMBound::Handle_SetModuleOnline(PyCallArgs& call) {
 	Call_TwoIntegerArgs args; //locationID, moduleID
 
 	if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -275,7 +271,7 @@ PyResult DogmaIMBound::Handle_TakeModuleOffline(PyCallArgs& call) {
 
 	Call_TwoIntegerArgs args; //locationID, moduleID
 	if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -306,7 +302,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
     call.Dump(SHIP__MODULE_TRACE);
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -344,7 +340,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
   call.Dump(SHIP__MODULE_TRACE);
 	Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     /*
@@ -384,7 +380,7 @@ PyResult DogmaIMBound::Handle_AddTarget(PyCallArgs& call) {
     // throws here void returns.  client will raise and ignore expected return
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     Client* pClient(call.client);
@@ -485,7 +481,7 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
 
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -522,7 +518,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
 
     Call_TwoBoolArgs args; /* arg1: getCharInfo, arg2: getShipInfo */
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -598,7 +594,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     /* args.shipID
@@ -626,7 +622,7 @@ PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
 PyResult DogmaIMBound::Handle_LinkAllWeapons(PyCallArgs& call) {
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -653,7 +649,7 @@ PyResult DogmaIMBound::Handle_DestroyWeaponBank(PyCallArgs& call) {
     //self.remoteDogmaLM.DestroyWeaponBank(shipID, itemID)
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -679,7 +675,7 @@ PyResult DogmaIMBound::Handle_UnlinkAllModules(PyCallArgs& call) {
     //info = self.remoteDogmaLM.UnlinkAllModules(shipID)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -708,7 +704,7 @@ PyResult DogmaIMBound::Handle_UnlinkModule(PyCallArgs& call) {
 
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewZero();
     }
 
@@ -737,7 +733,7 @@ PyResult DogmaIMBound::Handle_MergeModuleGroups(PyCallArgs& call) {
 
     Call_Dogma_LinkWeapons args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
     /* args.shipID
@@ -807,7 +803,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         // online pos items
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewZero();
         }
         /*      this is deactivate call....
@@ -852,7 +848,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
         // activate ship module
         Call_Dogma_Activate args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewZero();
         }
 
@@ -884,7 +880,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         call.Dump(POS__DUMP);
         Call_TwoIntegerArgs args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
         SystemEntity* pSE = pClient->SystemMgr()->GetSE(args.arg1);
@@ -912,7 +908,7 @@ PyResult DogmaIMBound::Handle_Deactivate(PyCallArgs& call)
         //if effect is wide string, then call is for module, including calls to online/offline (rclick module in HUD)
         Call_Dogma_Deactivate args;
         if (!args.Decode(&call.tuple)) {
-            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+            codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
             return PyStatic.NewNone();
         }
 
@@ -937,7 +933,7 @@ PyResult DogmaIMBound::Handle_Overload(PyCallArgs& call) {
     Client* pClient(call.client);
     Call_TwoIntegerArgs args;   //itemID, effectID
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -955,7 +951,7 @@ PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
     Client* pClient(call.client);
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
 
@@ -970,7 +966,7 @@ PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
     Client* pClient(call.client);
     Call_SingleIntegerArg args;   //itemID
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -985,7 +981,7 @@ PyResult DogmaIMBound::Handle_OverloadRack(PyCallArgs& call) {
     Client* pClient(call.client);
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyList();
     }
 
@@ -1001,7 +997,7 @@ PyResult DogmaIMBound::Handle_StopOverloadRack(PyCallArgs& call) {
     Client* pClient(call.client);
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", pClient->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyList();
     }
 
@@ -1017,7 +1013,7 @@ PyResult DogmaIMBound::Handle_InitiateModuleRepair(PyCallArgs& call) {
 
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewFalse();
     }
 
@@ -1029,7 +1025,7 @@ PyResult DogmaIMBound::Handle_StopModuleRepair(PyCallArgs& call) {
 
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

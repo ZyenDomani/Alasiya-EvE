@@ -72,7 +72,7 @@ PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple))
     {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return NULL;
     }
 
@@ -85,7 +85,7 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
     Call_SingleIntegerArg arg;
     if (!arg.Decode(&call.tuple))
     {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return NULL;
     }
 
@@ -104,7 +104,7 @@ AggressionMgrService::~AggressionMgrService()
     delete m_dispatch;
 }
 
-PyBoundObject *AggressionMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args)
+PyBoundObject *AggressionMgrService::CreateBoundObject(Client *pClient, const PyRep *bind_args)
 {
     _log(CLIENT__MESSAGE, "AggressionMgrService bind request for:");
     bind_args->Dump(CLIENT__MESSAGE, "    ");

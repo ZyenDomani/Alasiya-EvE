@@ -80,16 +80,16 @@ AgentMgrService::~AgentMgrService() {
 
 // need a way to check created objects for client/agent combinations to avoid duplicates.
 //  also need a way to check/delete released objects/agents
-PyBoundObject *AgentMgrService::_CreateBoundObject(Client *c, const PyRep *bind_args) {
+PyBoundObject *AgentMgrService::CreateBoundObject(Client* pClient, const PyRep *bind_args) {
     if (!bind_args->IsInt()) {
-        codelog(CLIENT__ERROR, "%s: Non-integer bind argument '%s'", c->GetName(), bind_args->TypeString());
+        _log(SERVICE__ERROR, "%s: Non-integer bind argument '%s'", pClient->GetName(), bind_args->TypeString());
         return nullptr;
     }
 
     uint32 agentID = bind_args->AsInt()->value();
     Agent* pAgent = sEntityList.GetAgent(agentID);
     if (pAgent == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Unable to obtain agent %u", c->GetName(), agentID);
+        _log(SERVICE__ERROR, "%s: Unable to obtain agent %u", pClient->GetName(), agentID);
         return nullptr;
     }
 
@@ -105,7 +105,7 @@ PyResult AgentMgrService::Handle_GetSolarSystemOfAgent(PyCallArgs &call)
 {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: failed to decode arguments", call.client->GetName());
+        _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 

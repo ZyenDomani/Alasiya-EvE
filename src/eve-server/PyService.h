@@ -51,7 +51,7 @@ public:
     //overload Callable for binding:
     virtual PyResult Call(const std::string &method, PyCallArgs &args);
 
-    const char *GetName() const { return(m_name.c_str()); }
+    const char* GetName() const                         { return m_name.c_str(); }
 
 protected:
     typedef enum {    //enum to make sure the caller uses legit values.
@@ -82,7 +82,7 @@ protected:
     PyObject *_BuildCachedReturn(PySubStream **result, const char *sessionInfo, CacheCheckTime check);
 
     //you MUST overload this factory method if you offer any bound services:
-    virtual PyBoundObject *_CreateBoundObject(Client *c, const PyRep *bind_args);
+    virtual PyBoundObject* CreateBoundObject(Client *pClient, const PyRep *bind_args);
 
     //some service-level remote calls, need to be reworked:
     virtual PyResult Handle_MachoResolveObject(PyCallArgs &call);

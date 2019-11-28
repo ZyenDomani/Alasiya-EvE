@@ -147,8 +147,8 @@ bool AnomalyMgr::Init(BeltMgr* beltMgr, DungeonMgr* dungMgr, SpawnMgr* spawnMgr)
 
     m_initalized = true;
 
-    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized(%s) for %s(%u) with %u Max Signals for security class %0.2f", \
-                m_initalized?"true":"false", m_system->GetName(), m_system->GetID(), m_maxSigs, security);
+    _log(COSMIC_MGR__MESSAGE, "AnomalyMgr Initialized for %s(%u) with %u Max Signals for security class %0.2f.  Test Server is %s", \
+                m_system->GetName(), m_system->GetID(), m_maxSigs, security, sConfig.debug.IsTestServer?"enabled":"disabled");
 
     return m_initalized;
 }

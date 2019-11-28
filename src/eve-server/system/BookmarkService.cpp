@@ -94,7 +94,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
 PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
     Call_UpdateFolder args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyBool(false);
     }
     args.Dump(COMMON__INFO, "    ");
@@ -149,7 +149,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
   /*  bookmarkID, itemID, typeID, x, y, z, locationID = sm.RemoteSvc('bookmark').BookmarkLocation(itemID, ownerID, memo, comment, folderID)  */
     Call_BookmarkLocation args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
 
@@ -207,7 +207,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
 
     Call_BookmarkScanResult args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(COMMON__INFO, "    ");
@@ -245,7 +245,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
 PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
     Call_DeleteBookmarks args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(COMMON__INFO, "    ");
@@ -266,7 +266,7 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", call.client->GetName());
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
     args.Dump(COMMON__INFO, "    ");
