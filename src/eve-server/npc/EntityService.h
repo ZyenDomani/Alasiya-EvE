@@ -27,21 +27,8 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    PyCallable_DECL_CALL(CmdEngage);
-    PyCallable_DECL_CALL(CmdRelinquishControl);
-    PyCallable_DECL_CALL(CmdDelegateControl);
-    PyCallable_DECL_CALL(CmdAssist);
-    PyCallable_DECL_CALL(CmdGuard);
-    PyCallable_DECL_CALL(CmdMine);
-    PyCallable_DECL_CALL(CmdMineRepeatedly);
-    PyCallable_DECL_CALL(CmdUnanchor);
-    PyCallable_DECL_CALL(CmdReturnHome);
-    PyCallable_DECL_CALL(CmdReturnBay);
-    PyCallable_DECL_CALL(CmdAbandonDrone);
-    PyCallable_DECL_CALL(CmdReconnectToDrones);
-
     //overloaded in order to support bound objects:
-    virtual PyBoundObject *_CreateBoundObject(Client* pClient, const PyRep* bind_args);
+    virtual PyBoundObject *CreateBoundObject(Client* pClient, const PyRep* bind_args);
 };
 
 class EntityBound
@@ -56,6 +43,19 @@ public:
         //I hate this statement
         delete this;
     }
+
+    PyCallable_DECL_CALL(CmdEngage);
+    PyCallable_DECL_CALL(CmdRelinquishControl);
+    PyCallable_DECL_CALL(CmdDelegateControl);
+    PyCallable_DECL_CALL(CmdAssist);
+    PyCallable_DECL_CALL(CmdGuard);
+    PyCallable_DECL_CALL(CmdMine);
+    PyCallable_DECL_CALL(CmdMineRepeatedly);
+    PyCallable_DECL_CALL(CmdUnanchor);
+    PyCallable_DECL_CALL(CmdReturnHome);
+    PyCallable_DECL_CALL(CmdReturnBay);
+    PyCallable_DECL_CALL(CmdAbandonDrone);
+    PyCallable_DECL_CALL(CmdReconnectToDrones);
 
 protected:
     Dispatcher *const m_dispatch;
