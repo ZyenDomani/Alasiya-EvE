@@ -50,7 +50,7 @@ class EntityBound
 public:
     PyCallable_Make_Dispatcher(EntityBound)
 
-    EntityBound(PyServiceMgr* mgr, SystemManager* systemMgr, uint32 systemID, uint32 unknown);
+    EntityBound(PyServiceMgr* mgr, SystemManager* systemMgr, uint32 systemID);
     virtual ~EntityBound() { delete m_dispatch; }
     virtual void Release() {
         //I hate this statement
@@ -62,7 +62,6 @@ protected:
     SystemManager* m_sysMgr;
 
     uint32 m_systemID;
-    uint32 m_unknown;
 };
 
 #endif  // __EVEMU_NPC_ENTITY_H

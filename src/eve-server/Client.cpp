@@ -1465,7 +1465,7 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     if (IsPlayerItem(location)) {
         if (IsModuleSlot(iRef->flag())) {
             m_ship->UpdateModules(iRef->flag());
-        } else if (IsCargoHoldFlag(iRef->flag())) {
+        } else if (IsCargoHoldFlag(iRef->flag()) or (iRef->flag() == flagDroneBay)) {
             // do nothing here.  this is to avoid throwing error msg below
         } else {
             _log(INV__WARNING, "Client::MoveItem() - %s Unhandled PlayerItem %s (%u) from flag %s to flag %s.", \
@@ -1506,8 +1506,8 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         data.factionID = m_char->warFactionID();
         data.ownerID = m_char->itemID();
 
-    Drone* pDrone = new Drone(drone, m_services, m_system, data);
     // add drone entity to system, set speed, begin orbit around launching ship
+    Drone* pDrone = new Drone(drone, m_services, m_system, data);
     m_system->AddEntity(pDrone);
     OnDroneStateChange du;
         du.droneID = drone->itemID();
@@ -1515,7 +1515,7 @@ bool Client::LaunchDrone(InventoryItemRef drone) {
         du.droneTypeID = drone->typeID();
         du.controllerID = m_shipId;
         du.controllerOwnerID = m_char->itemID();
-        du.activityState = droneIdle;
+        du.activityState = DroneAI::State::Idle;  //  pDrone->GetAI()->GetState();
         du.targetID = 0;
     PyTuple* up = du.Encode();
 

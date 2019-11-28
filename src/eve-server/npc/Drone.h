@@ -28,12 +28,13 @@
 #define __DRONE__H__INCL__
 
 #include "Client.h"
+#include "npc/DroneAI.h"
 #include "system/SystemEntity.h"
 
 /**
  * DynamicSystemEntity which represents drone object in space
  */
-class DroneAIMgr;
+
 class PyServiceMgr;
 class Item;
 class DestinyManager;
@@ -77,7 +78,6 @@ public:
     void SetOwner(Client* pClient);
 
     uint32 GetBounty() const                            { return (m_pClient == nullptr ? 0 : m_pClient->GetChar()->bounty()); }
-    uint32 GetOwnerID() const                           { return (m_pClient == nullptr ? 1 : m_pClient->GetCharacterID()); }
 
     float GetThermal()                                  { return m_therDamage; }
     float GetEM()                                       { return m_emDamage; }
@@ -87,22 +87,31 @@ public:
 
     double GetOrbitRange()                              { return m_orbitRange; }
 
+    /* for destiny setstate */
+    uint8 GetState()                                    { return m_AI->GetState(); }
+    uint32 GetControllerID()                            { return m_controllerID; }
+    uint32 GetControllerOwnerID()                       { return m_controllerOwnerID; }
+    uint32 GetTargetID()                                { return m_orbitingID/*m_targMgr->GetFirstTarget()->GetID()*/; }
+
+
 protected:
     Client* m_pClient;
     DroneAIMgr* m_AI;
 
 private:
-    uint32 m_orbitingID = 0;
+    uint32 m_orbitingID;
+    uint32 m_controllerID;
+    uint32 m_controllerOwnerID;
 
-    double m_orbitRange = 0;
-    double m_emDamage = 0;
-    double m_expDamage = 0;
-    double m_kinDamage = 0;
-    double m_therDamage = 0;
-    double m_hullDamage = 0;
-    double m_armorDamage = 0;
-    double m_shieldCharge = 0;
-    double m_shieldCapacity = 0;
+    double m_orbitRange;
+    double m_emDamage;
+    double m_expDamage;
+    double m_kinDamage;
+    double m_therDamage;
+    double m_hullDamage;
+    double m_armorDamage;
+    double m_shieldCharge;
+    double m_shieldCapacity;
 };
 
 #endif /* !__DRONE__H__INCL__ */

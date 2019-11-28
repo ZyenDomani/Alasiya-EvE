@@ -220,6 +220,7 @@ int main( int argc, char* argv[] )
     sLog.Log("   Config Version", " %.1f", Config_Version );
     sLog.Log("      Log Version", " %.1f", Log_Version );
     sLog.Log("   NPC AI Version", " %.2f", NPC_AI_Version );
+    sLog.Log(" Drone AI Version", " %.2f", Drone_AI_Version );
     sLog.Log("    NC AI Version", " %.2f", Civilian_AI_Version );
     sLog.Log("Sentry AI Version", " %.2f", Sentry_AI_Version );
     sLog.Log("   POS AI Version", " %.2f", POS_AI_Version );
@@ -643,12 +644,12 @@ int main( int argc, char* argv[] )
     pyServMgr.Initalize(startTime);
     std::printf("\n");     // spacer
 
-    // Create In-Memory Database Objects for Critical and HighUse Systems:
+    // Create In-Memory Database Objects for Critical and High-Use Systems:
     sLog.Yellow("       ServerInit", "Loading Static Database Table Objects...");
     std::printf("\n");     // spacer
     /** @note  this is NOT used correctly yet...  */
-    sLog.Green("       ServerInit", "Priming cached objects.");
-    pyServMgr.cache_service->PrimeCache();
+    //sLog.Green("       ServerInit", "Priming cached objects.");
+    //pyServMgr.cache_service->PrimeCache();
     sLog.Green("       ServerInit", "Initalizing BulkData");
     if (sConfig.server.BulkDataOD)
         sLog.Yellow("      BulkDataMgr", "PreLoading Disabled. BulkData will load on first call.");

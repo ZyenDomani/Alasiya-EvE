@@ -47,8 +47,9 @@ static const float Config_Version = 9.4; /* eve-server.xml and EveServerConfig.c
 static const float Log_Version = 9.6;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp */
-/* these 5 dont have separate config files ...yet */
+/* these  dont have separate config files ...yet */
 static const float NPC_AI_Version = 0.55;
+static const float Drone_AI_Version = 0.15;
 static const float Mission_Version = 0.31;
 /* these arent used yet, but are placeholders for future expansion */
 static const float Civilian_AI_Version = 0.10;

@@ -31,7 +31,6 @@
 #include "inventory/AttributeEnum.h"
 #include "system/DestinyManager.h"
 #include "npc/Drone.h"
-#include "npc/DroneAI.h"
 #include "system/SystemManager.h"
 
 Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
@@ -45,9 +44,20 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
     m_pClient = sEntityList.FindClientByCharID(data.ownerID);
+    m_orbitingID = 0;
+    if (m_pClient != nullptr) {
+        m_controllerID = m_pClient->GetShipID();
+        if (m_pClient->GetShipSE() != nullptr)
+            m_controllerOwnerID = m_pClient->GetShipSE()->GetOwnerID();
+        else
+            m_controllerOwnerID = m_ownerID;
+    } else {
+        m_controllerID = 0;
+        m_controllerOwnerID = 0;
+    }
 
-    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_int();
-    if (!m_orbitRange) {
+    m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
+    if (m_orbitRange < 1) {
         if (m_self->GetAttribute(AttrMaxRange) < m_self->GetAttribute(AttrFalloff))
             m_orbitRange = m_self->GetAttribute(AttrMaxRange).get_float();
         else
@@ -95,6 +105,11 @@ void Drone::SetOwner(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
     m_allyID = pClient->GetAllianceID();
     m_warID = pClient->GetWarFactionID();
+    m_controllerID = m_pClient->GetShipID();
+    if (m_pClient->GetShipSE() != nullptr)
+        m_controllerOwnerID = m_pClient->GetShipSE()->GetOwnerID();
+    else
+        m_controllerOwnerID = m_ownerID;
 }
 
 void Drone::Process() {

@@ -44,37 +44,71 @@ EntityService::~EntityService() {
 }
 
 /*  drone states...
-entityApproaching = 3
-entityCombat = 1
-entityDeparting = 4
-entityDeparting2 = 5
-entityEngage = 10
-entityFleeing = 7
-entityIdle = 0
-entityMining = 2
-entityOperating = 9
-entityPursuit = 6
+namespace DroneAI {
+    namespace State {
+        enum {
+            Invalid           = -1,
+            // defined in client
+            Idle              = 0,  // not doing anything....idle.
+            Combat            = 1,  // fighting - needs targetID
+            Mining            = 2,  // unsure - needs targetID
+            Approaching       = 3,  // too close to chase, but to far to engage
+            Departing         = 4,  // return to ship
+            Departing2        = 5,  // leaving.  different from Departing
+            Pursuit           = 6,  // target out of range to attack/follow, but within npc sight range....use mwd/ab if equiped
+            Fleeing           = 7,  // running away
+            Operating         = 9,  // whats diff from engaged here?
+            Engaged           = 10, // non-combat? - needs targetID
+            // internal only
+            Unknown           = 8,  // as stated
+            Guarding          = 11,
+            Assisting         = 12,
+            Incapacicated     = 13  //
+        };
+    }
+}
+*/
+
+/*
+DRONE__ERROR
+# drone fighting with no owner set
+DRONE__WARNING
+# drone ? msgs in DRONE__MESSAGE
+DRONE__MESSAGE
+# drone settings call dump
+DRONE__INFO
+DRONE__TRACE
+DRONE__DUMP
+DRONE__AI_TRACE
 */
 
 /** @todo  will need to make sure this object is deleted when changing systems  */
 PyBoundObject *EntityService::_CreateBoundObject(Client* pClient, const PyRep* bind_args) {
-    _log(NPC__INFO, "EntityService bind request");
-    bind_args->Dump(NPC__INFO, "    ");
-    return new EntityBound(m_manager, pClient->SystemMgr(), bind_args->AsTuple()->GetItem(0)->AsInt()->value(), bind_args->AsTuple()->GetItem(1)->AsInt()->value());
+    _log(DRONE__DUMP, "EntityService bind request");
+    bind_args->Dump(DRONE__DUMP, "    ");
+    if (!bind_args->IsInt()) {
+        codelog(SERVICE__ERROR, "%s: Non-integer bind argument '%s'", pClient->GetName(), bind_args->TypeString());
+        return nullptr;
+    }
+
+    uint32 systemID = bind_args->AsInt()->value();
+    if (!IsSolarSystem(systemID)) {
+        codelog(SERVICE__ERROR, "%s: Expected systemID, but got %u.", pClient->GetName(), systemID);
+        return nullptr;
+    }
+
+    return new EntityBound(m_manager, pClient->SystemMgr(), systemID);
 }
 
-EntityBound::EntityBound(PyServiceMgr *mgr, SystemManager* systemMgr, uint32 systemID, uint32 unknown)
+EntityBound::EntityBound(PyServiceMgr *mgr, SystemManager* systemMgr, uint32 systemID)
 : PyBoundObject(mgr),
 m_sysMgr(systemMgr),
 m_systemID(systemID),
-m_unknown(unknown),
 m_dispatch(new Dispatcher(this))
 {
     _SetCallDispatcher(m_dispatch);
 
     m_strBoundObjectName = "EntityBound";
-
-
 }
 
 PyResult EntityService::Handle_CmdEngage(PyCallArgs &call) {
@@ -129,83 +163,83 @@ PyResult EntityService::Handle_CmdEngage(PyCallArgs &call) {
           [PyDict 0 kvp]
           */
 
-    sLog.White("EntityService::Handle_CmdEngage()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdEngage()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdRelinquishControl(PyCallArgs &call) {
  // ret = entity.CmdRelinquishControl(IDs)
-    sLog.White("EntityService::Handle_CmdRelinquishControl()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdRelinquishControl()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdDelegateControl(PyCallArgs &call) {
  // ret = entity.CmdDelegateControl(droneIDs, controllerID)
-    sLog.White("EntityService::Handle_CmdDelegateControl()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdDelegateControl()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdAssist(PyCallArgs &call) {
  // ret = entity.CmdAssist(assistID, droneIDs)
-    sLog.White("EntityService::Handle_CmdAssist()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdAssist()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdGuard(PyCallArgs &call) {
  // ret = entity.CmdGuard(guardID, droneIDs)
-    sLog.White("EntityService::Handle_CmdGuard()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdGuard()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdMine(PyCallArgs &call) {
  // ret = entity.CmdMine(droneIDs, targetID)
-    sLog.White("EntityService::Handle_CmdMine()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdMine()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdMineRepeatedly(PyCallArgs &call) {
  // ret = entity.CmdMineRepeatedly(droneIDs, targetID)
-    sLog.White("EntityService::Handle_CmdMineRepeatedly()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdMineRepeatedly()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdUnanchor(PyCallArgs &call) {
  // ret = entity.CmdUnanchor(droneIDs, targetID)
-    sLog.White("EntityService::Handle_CmdUnanchor()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdUnanchor()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdReturnHome(PyCallArgs &call) {
  // ret = entity.CmdReturnHome(droneIDs)
-    sLog.White("EntityService::Handle_CmdReturnHome()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdReturnHome()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdReturnBay(PyCallArgs &call) {
@@ -238,30 +272,40 @@ PyResult EntityService::Handle_CmdReturnBay(PyCallArgs &call) {
                 [PyIntegerVar 129756563162318175]
           [PyDict 0 kvp]
           */
-    sLog.White("EntityService::Handle_CmdReturnBay()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdReturnBay()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+
+    // returns nodeID and timestamp and dict of ?
+    /*
+    PyDict* dict = new PyDict();
+    PyTuple* tuple = new PyTuple(2);
+        tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
+        tuple->SetItem(1, new PyLong(GetFileTimeNow()));
+    PySubStruct* str = new PySubStruct(new PySubStream(tuple));
+    PyTuple* tuple1 = new PyTuple(2);
+        tuple1->SetItem(0, str);
+        tuple1->SetItem(1, dict);
+    return tuple1;
+    */
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdAbandonDrone(PyCallArgs &call) {
  // ret = entity.CmdAbandonDrone(droneIDs)
-    sLog.White("EntityService::Handle_CmdAbandonDrone()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdAbandonDrone()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
 
 PyResult EntityService::Handle_CmdReconnectToDrones(PyCallArgs &call) {
  // ret = entity.CmdReconnectToDrones(droneCandidates)
-    sLog.White("EntityService::Handle_CmdReconnectToDrones()", "size=%u", call.tuple->size());
-    call.Dump(SERVICE__CALL_DUMP);
+    _log(DRONE__TRACE, "EntityService::Handle_CmdReconnectToDrones()");
+    call.Dump(DRONE__DUMP);
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
-    return nullptr;
+    return new PyDict();
 }
-
-
-

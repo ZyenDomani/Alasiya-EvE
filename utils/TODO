@@ -8,6 +8,7 @@
 
 make log/config option for (en/dis)able client massive check.
 
+eveowners needs constant update and figure out how/when to send to client
 
 module add/remove isnt fully thought out at this point.  will need complete walk thru to verify proper operation
 
@@ -51,6 +52,7 @@ jetans dont check capy before jettison
 
 check trade - ships retain insurance
 
+dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
 ********  improvements
 
@@ -159,7 +161,7 @@ wh system - started.   k162 for deco only at this time (POC)   -priority level: 
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
 player drone ai - needs complete rework.  current drone ai is copy from npc, which is incorrect.
-drones are showing in client as "ownerID = 1"  (cannot reconnect)
+drones mass and maxspeed need attention
 
 RAM code - implement invention, copy, re, tech    -priority level: hi
 
@@ -194,6 +196,7 @@ set initial standings when corp is created.  need to write standings code for co
 when renting office, station offices dont refresh
 GetMemberTrackingInfo() incomplete
 CorpStationMgrIMBound incomplete
+CorpRegistryService incomplete
 corp jumpers? - decide/implement
 GetMemberIDsByQuery needs more work.  see notes in code.
 corp items not updating in db when moved (could be all items as we're not saving every item change)
