@@ -59,8 +59,8 @@ m_killed(false)
     assert(m_system != nullptr);
     assert(m_self.get() != nullptr);
 
-    m_warID = -1;
-    m_allyID = -1;
+    m_warID = 0;
+    m_allyID = 0;
     m_corpID = 0;
     m_fleetID = 0;
     m_ownerID = 1;
@@ -241,8 +241,8 @@ void SystemEntity::AwardSecurityStatus(InventoryItemRef iRef, Character* pChar) 
 
 void SystemEntity::Abandon()
 {
-    m_warID = -1;
-    m_allyID = -1;
+    m_warID = 0;
+    m_allyID = 0;
     m_corpID = 0;
     m_fleetID = 0;
     m_ownerID = 1;
@@ -571,7 +571,7 @@ void FieldSE::EncodeDestiny( Buffer& into )
         mass.cloak = 0;
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
+        mass.allianceID = m_allyID;
     into.Append( mass );
     if (head.mode == Ball::Mode::FIELD) {
         FIELD_Struct main;
@@ -652,7 +652,7 @@ void DynamicSystemEntity::EncodeDestiny( Buffer& into )
         mass.cloak = (m_destiny->IsCloaked() ? 1 : 0);
         mass.harmonic = m_harmonic;
         mass.corporationID = m_corpID;
-        mass.allianceID = (m_allyID > 0 ? m_allyID : -1);
+        mass.allianceID = m_allyID;
     into.Append( mass );
     DataSector data = DataSector();
         data.inertia = m_destiny->GetInertia();
