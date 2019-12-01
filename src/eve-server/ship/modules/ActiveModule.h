@@ -23,6 +23,8 @@ public:
     ActiveModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~ActiveModule()                             { /* Do nothing here */ }
 
+    /* class type pointer querys, public for anyone to access. */
+    virtual ActiveModule*       GetActiveModule()       { return this; }
     /* class type helpers.  public for anyone to access. */
     virtual bool IsActiveModule() const                 { return true; }
 
@@ -36,6 +38,7 @@ public:
     virtual void Deactivate(std::string effect="");
     virtual void DeactivateCycle(bool abort=false);
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
+    virtual void RemoveTarget(SystemEntity* pSE);
 
     /* generic DoCycle() for active modules that only affect ship on Activate/Deactivate (not recurring on each cycle)
      *  for modules that perform action on each DoCycle(), they will override this call in their class implementation
@@ -43,7 +46,6 @@ public:
     virtual uint32 DoCycle();
 
     /* functions to be handled in derived classes as needed */
-    virtual MiningLaser* GetMiningLaser()               { return nullptr; }
     virtual void ApplyDamage()                          { /* do nothing here */ }
     virtual uint16 GetReloadTime()                      { return m_reloadTime; }
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed

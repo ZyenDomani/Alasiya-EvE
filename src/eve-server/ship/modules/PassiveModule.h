@@ -18,7 +18,9 @@ public:
     PassiveModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~PassiveModule() { }
 
-    bool IsPassiveModule() const                { return true; }
+    virtual PassiveModule*      GetPassiveModule()      { return this; }
+
+    bool IsPassiveModule() const                        { return true; }
 
 protected:
 

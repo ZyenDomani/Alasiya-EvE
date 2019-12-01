@@ -146,7 +146,7 @@ m_destinyMgr(nullptr)
     //GM_Modules = 353,
 
     if (m_reloadTime > 0)
-        _log(SHIP__MODULE_TRACE, "Reload time for %s(%u) set to %ums", mRef->itemName().c_str(), mRef->itemID(), m_reloadTime);
+        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->itemName().c_str(), mRef->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Clear()
@@ -203,6 +203,15 @@ void ActiveModule::Process()
     }
 }
 
+void ActiveModule::RemoveTarget(SystemEntity* pSE) {
+    if (m_targetSE == pSE) {
+        // log this as trace or info
+        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s for %s", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        AbortCycle();
+    }
+}
+
+
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
     if (effectID == 16) {   // catchall for elusive online/offline error
@@ -210,8 +219,11 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         return;
     }
     if (m_needsCharge and (!m_chargeLoaded or (m_chargeRef.get() == nullptr))) {
+        _log(MODULE__TRACE, "ActiveModule::Activate - %s: needsCharge: %s, chargeLoaded: %s, chargeRef: %s", \
+                m_modRef->itemName().c_str(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
+                m_chargeRef.get() == nullptr ? "(none)":"m_chargeRef->itemName().c_str()");
         Clear();
-        throw PyException(MakeUserError("CantFindChargeToAdd"));
+        throw PyException(MakeCustomError("Your %s doesn't seem to be loaded.", m_modRef->itemName().c_str()));
     }
     if (IsValidTarget(targetID)) {
         m_needsTarget = true;       // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
@@ -307,7 +319,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     if (m_ModuleState != Module::State::Activated)
         return;
 
-    _log(SHIP__MODULE_TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
+    _log(MODULE__TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
             effect.c_str(), m_modRef->itemName().c_str(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
@@ -493,7 +505,7 @@ void ActiveModule::AbortCycle()
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
     if ((m_ModuleState != Module::State::Deactivating) and (!abort)) {
-        _log(SHIP__MODULE_ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
+        _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         return;
     }
@@ -609,14 +621,14 @@ void ActiveModule::SetTimer(uint32 time) {
     if (m_timer.Enabled())
         return;
     // updated timer will reset cycle time if changed, but i DO NOT have client display coded to reset...this will fuck up timer time in client.
-    _log(SHIP__MODULE_TRACE, "ActiveModule::SetTimer() - %s with %u ms.", (m_timer.Enabled()? "Updated" : "Started"), time);
+    _log(MODULE__TRACE, "ActiveModule::SetTimer() - %s with %u ms.", (m_timer.Enabled()? "Updated" : "Started"), time);
     m_timer.Start(time);
 }
 
 void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
     if (chargeRef.get() == nullptr) {
-        _log(SHIP__MODULE_WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
+        _log(MODULE__WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
         return;
     }
 
@@ -658,10 +670,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         data.srcRef = m_chargeRef;
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
-    if (pClient->IsLogin() or pClient->IsDocked()) {
+    //if (pClient->IsLogin() or pClient->IsDocked()) {
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-    }
+    //}
 }
 
 //{'FullPath': u'UI/Messages', 'messageID': 259152, 'label': u'NoSpaceForReplacedItemBody'}(u'There is not enough space in the cargo hold for the charges currently in the {item} to be moved into.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
@@ -830,7 +842,7 @@ bool ActiveModule::CanActivate()
         float distance = m_shipRef->position().distance(m_targetSE->GetPosition());
         distance -= m_targetSE->GetRadius();
 
-        _log(SHIP__MODULE_MESSAGE, "Activate::RangeTest - distance between %s and target %s: %.1f.  range of %s is %.1f", \
+        _log(MODULE__MESSAGE, "Activate::RangeTest - distance between %s and target %s: %.1f.  range of %s is %.1f", \
                     m_shipRef->itemName().c_str(), m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
 
         if (distance > range) {

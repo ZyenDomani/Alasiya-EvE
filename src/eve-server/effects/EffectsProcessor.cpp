@@ -30,7 +30,7 @@
 void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod/*nullptr*/)
 {
     double profileStartTime = GetTimeUSeconds();
-    
+
     bool skill = false, core = false, self = false, module = false, charge = false, isRig = false, subSys = false;
     switch (data.srcRef->categoryID()) {
         case EVEDB::invCategories::Module: {
@@ -358,13 +358,13 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
         } break;
         default: {              // in case the op hasnt been defined, make a note here
             if (is_log_enabled(EFFECTS__UNDEFINED)) {
-            std::ostringstream ret;
-            Operand operand = sFxDataMgr.GetOperand(expression.operandID);
-            ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
-            if (operand.format == "")
-                ret << " - has not been defined.";
-            else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
-                ret << " - should be added as " << operand.format.c_str();
+                std::ostringstream ret;
+                Operand operand = sFxDataMgr.GetOperand(expression.operandID);
+                ret << "Operand id:" << expression.operandID << " key:" << operand.operandKey;
+                if (operand.format.empty())
+                    ret << " - has not been defined.";
+                else                // % {'arg1': arg1, 'arg2': arg2, 'value': expression.expressionValue}
+                    ret << " - should be added as " << operand.format.c_str();
                 _log(EFFECTS__UNDEFINED, "FxProc::ParseExpression() - %s", ret.str().c_str());
             }
         } break;
@@ -385,7 +385,7 @@ void FxProc::ParseExpression(InventoryItem* pItem, Expression expression, fxData
 void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update/*false*/)
 {
     double profileStartTime = GetTimeUSeconds();
-    
+
     bool isRig = false, subSys = false, charge = false;
     using namespace FX;
     //uint8 action = Action::dgmActInvalid;
@@ -395,7 +395,16 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             action = cur.second.action;
             continue;
         } */
-        switch (cur.second.srcRef->groupID()) {
+        InventoryItemRef srcItemRef = cur.second.srcRef;
+        if (srcItemRef->flag() == flagAutoFit) {
+            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit.", srcItemRef->itemName().c_str());
+            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
+                    srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
+                    GetTargLocName(cur.second.targLoc), cur.second.targAttr);
+            continue;
+        }
+
+        switch (srcItemRef->groupID()) {
             case EVEDB::invGroups::Rig_Armor:
             case EVEDB::invGroups::Rig_Astronautic:
             case EVEDB::invGroups::Rig_Drones:
@@ -413,7 +422,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 isRig = true;
             } break;
         }
-        switch (cur.second.srcRef->categoryID()) {
+        switch (srcItemRef->categoryID()) {
             case EVEDB::invCategories::Charge: {
                 charge = true;
             } break;
@@ -421,7 +430,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                 subSys = true;
             } break;
         }
-        InventoryItemRef srcItemRef = cur.second.srcRef;
+
         std::vector<InventoryItemRef> itemRefVec;
         // affected target depends on source.  get source and target(s) here.
         switch (cur.second.fxSrc) {
@@ -442,7 +451,7 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     //  apply the modifier to ....
                     case Target::Self: {
                         // ....item itself
-                        itemRefVec.push_back(cur.second.srcRef);
+                        itemRefVec.push_back(srcItemRef);
                     } break;
                     case Target::Ship:  {
                         if (cur.second.typeID) {
@@ -450,13 +459,13 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                             pShip->GetModuleManager()->GetModuleListByReqSkill(cur.second.typeID, itemRefVec);
                         } else {
                             // ..... ship that require skill in 'srcRef'
-                            if (pShip->HasReqSkill(cur.second.srcRef->typeID()))
+                            if (pShip->HasReqSkill(srcItemRef->typeID()))
                                 itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                         }
                     } break;
                     case Target::Char: {
                         // ....char skills that require skill in 'srcRef' or defined in 'typeID'
-                        uint16 skillID = cur.second.srcRef->typeID();
+                        uint16 skillID = srcItemRef->typeID();
                         if (cur.second.typeID)
                             skillID = cur.second.typeID;
                         std::vector<InventoryItemRef> allSkills;
@@ -502,15 +511,15 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Self: {
                         // ....item itself
-                        itemRefVec.push_back(cur.second.srcRef);
+                        itemRefVec.push_back(srcItemRef);
                     } break;
                     case Target::Charge: {
                         // ....charge on src item (from module)
-                        itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(cur.second.srcRef->flag()));
+                        itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(srcItemRef->flag()));
                     } break;
                     case Target::Other: {
                         // ....module containing the src item (from charge)
-                        itemRefVec.push_back(pShip->GetModuleManager()->GetModule(cur.second.srcRef->flag())->GetSelf());
+                        itemRefVec.push_back(pShip->GetModuleManager()->GetModule(srcItemRef->flag())->GetSelf());
                     } break;
                     case Target::Target: {
                         // ...current target (focused, volatile...removed on 'invalid target')

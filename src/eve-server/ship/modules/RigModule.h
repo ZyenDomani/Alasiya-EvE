@@ -18,7 +18,9 @@ public:
     RigModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~RigModule()                                { /* do nothing here */ }
 
-    bool IsRigModule() const                            { return true; }
+    virtual RigModule*          GetRigModule()          { return this; }
+
+    bool                        IsRigModule() const     { return true; }
 
     int8 GetModulePowerLevel();
 

@@ -12,7 +12,7 @@
 
 #include "ship/Ship.h"
 #include "ship/modules/ModuleContainer.h"
-#include "GenericModule.h"
+#include "ship/modules/ActiveModule.h"
 
 
 ModuleContainer::ModuleContainer(ShipItem* pShip) {
@@ -50,6 +50,13 @@ void ModuleContainer::ClearModMap() {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 }
 
+void ModuleContainer::Initialize() {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            if (cur.second->GetAttribute(AttrOnline).get_bool())
+                cur.second->Online();
+}
+
 bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
@@ -59,7 +66,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
     } else
         itr->second = pMod;
 
-    _log(SHIP__MODULE_TRACE, "ModuleContainer::AddModule() - adding %s at %s.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(flag));
+    _log(MODULE__TRACE, "ModuleContainer::AddModule() - adding %s at %s.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(flag));
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(pMod->groupID()) != m_ModulesFittedByGroupID.end() )
@@ -76,7 +83,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr)
         return false;
-    _log(SHIP__MODULE_TRACE, "ModuleContainer::RemoveModule(%s) - removing %s.", sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
+    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%s) - removing %s.", sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -86,7 +93,7 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr)
         return false;
-    _log(SHIP__MODULE_TRACE, "ModuleContainer::RemoveModule(%u) - removing %s.",itemID, pMod->GetSelf()->itemName().c_str());
+    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%u) - removing %s.",itemID, pMod->GetSelf()->itemName().c_str());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -340,3 +347,8 @@ void ModuleContainer::deleteModuleRef(EVEItemFlags flag, GenericModule* pMod)
     }
 }
 
+void ModuleContainer::RemoveTarget(SystemEntity* pSE) {
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            cur.second->RemoveTarget(pSE);
+}

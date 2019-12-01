@@ -315,6 +315,7 @@ public:
     virtual Client* GetPilot()                          { return ((m_shipRef.get() == nullptr) ? nullptr : m_shipRef->GetPilot()); }
 
     /* specific functions handled here. */
+    void RemoveTarget(SystemEntity* pSE);
     void SetPassword(std::string pass)                  { m_towerPass = pass; }
     // fleet
     void ClearBoostData();

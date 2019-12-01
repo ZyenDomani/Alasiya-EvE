@@ -24,8 +24,8 @@ namespace Module {
             Unfitted         = 0,
             Offline          = 1,    // module fitted, but NOT put online yet - NOT used for rigs
             Online           = 2,    // module online  - rigs are either online or unfitted.
-            Activated        = 3,    // used only for activated ACTIVE modules (Overloaded mode is calculated separately)
-            Deactivating     = 4,    // module transistioning from Activated to Offline
+            Deactivating     = 3,    // module transitioning from Activated to Online (deactivate module - waiting for timer to run out)
+            Activated        = 4,    // used only for activated ACTIVE modules (Overloaded mode is calculated separately)
 
             // internal charge states
             Unloaded         = 5,

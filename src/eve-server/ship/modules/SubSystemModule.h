@@ -18,7 +18,9 @@ public:
     SubSystemModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~SubSystemModule()                          { /* do nothing here */ }
 
-    bool IsSubSystemModule() const                      { return true; }
+    virtual SubSystemModule*    GetSubSystemModule()    { return this; }
+
+    virtual bool IsSubSystemModule() const              { return true; }
 
     int8 GetModulePowerLevel();
 };

@@ -91,6 +91,9 @@ void TargetManager::Process() {
 void TargetManager::ClearTarget(SystemEntity *tSE) {
     //let the other entity know they are no longer targeted.
     tSE->TargetMgr()->TargetedByLost(mySE);
+    //tell modules this target is removed
+    // not sure if we should do this here or in ships MM
+
     //clear it from our own state
     TargetLost(tSE);
     if (m_targets.empty())
@@ -655,13 +658,17 @@ void TargetManager::Destroyed()
 // specific for asteroids; only called by asteroids
 void TargetManager::Depleted(MiningLaser* pMod)
 {
+    if (!mySE->IsAsteroidSE()) {
+        codelog(MODULE__ERROR, "Depleted() called by Non Astroid %s", mySE->GetName());
+        return;
+    }
     // remove master module (easier here)
     m_modules.erase(pMod->itemID());
 
     std::multimap<float, MiningLaser*> mMap;
     // iterate thru the map of modules and add to map as MiningLasers with their mining volume
     for (auto cur : m_modules)
-        mMap.emplace(cur.second->GetMiningLaser()->GetMiningVolume(), cur.second->GetMiningLaser());
+        mMap.emplace(cur.second->GetMiningModule()->GetMiningVolume(), cur.second->GetMiningModule());
 
     // call Depleted() on master module with map of active modules
     pMod->Depleted(mMap);

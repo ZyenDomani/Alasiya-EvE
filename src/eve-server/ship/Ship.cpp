@@ -842,7 +842,7 @@ void ShipItem::ProcessModules() {
     if (m_pilot->IsDocked())
         return;
     if (m_ModuleManager == nullptr){
-        _log(SHIP__MODULE_ERROR, "ProcessModules() - %s(%u) has no module manager.", itemName().c_str(), itemID());
+        _log(MODULE__ERROR, "ProcessModules() - %s(%u) has no module manager.", itemName().c_str(), itemID());
         EvE::traceStack();
         return;
     }
@@ -974,7 +974,7 @@ void ShipItem::Heal()
 void ShipItem::AddModuleToOnlineVec(uint32 modID)
 {
     m_onlineModuleVec.push_back(modID);
-    _log(SHIP__MODULE_INFO, "Added ModuleID %u to Online List", modID);
+    _log(MODULE__INFO, "Added ModuleID %u to Online List", modID);
 }
 
 //  Updated fractional ship defense settings.  -allan 1Feb15
@@ -1169,7 +1169,7 @@ void ShipItem::LoadCharge(InventoryItemRef cRef, EVEItemFlags flag)
         throw PyException( MakeCustomError("Destination is not weapon."));
 
     if (IsModuleSlot(cRef->flag())) {
-        _log(SHIP__MODULE_TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
+        _log(MODULE__TRACE, "ShipItem::LoadCharge - Trying to load %s from %s to %s.", \
                     cRef->itemName().c_str(), sDataMgr.GetFlagName(cRef->flag()), sDataMgr.GetFlagName(flag));
         throw PyException( MakeUserError("CantMoveChargesBetweenModules"));
     }
@@ -1342,7 +1342,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             if (IsRigSlot(flag)) {
                 if (!m_ModuleManager->InstallRig(mRef, flag))
                     return 0;
-            } else if (!m_ModuleManager->FitModule(mRef, flag))
+            } else if (!m_ModuleManager->AddModule(mRef, flag))
                 return 0;
         } else if (iRef->categoryID() == EVEDB::invCategories::Subsystem) {
             ModuleItemRef mRef = ModuleItemRef::StaticCast(iRef);
@@ -1379,6 +1379,9 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     if (m_pilot == nullptr)
         return;
 
+    if (iRef->categoryID() == EVEDB::invCategories::Charge)
+        return;
+
     // check to see if item is currently in a module slot.
     if (IsModuleSlot(iRef->flag())) {
         if (m_ModuleManager == nullptr) {
@@ -1386,7 +1389,7 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
             m_ModuleManager->Initialize();
         }
 
-         if (IsRigSlot(iRef->flag()))
+        if (IsRigSlot(iRef->flag()))
             m_ModuleManager->UninstallRig(iRef->itemID());
         else
             m_ModuleManager->UnfitModule(iRef->itemID());
@@ -1425,7 +1428,7 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
     // slot1 is occupied, as this is location module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {
-        _log(SHIP__MODULE_TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
+        _log(MODULE__TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
         m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
         return;
     }
@@ -1832,7 +1835,7 @@ void ShipItem::OfflineAll()
 
 void ShipItem::ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge)
 {
-    _log(SHIP__MODULE_ERROR, "ReplaceCharges() called by %s(%u).  It still needs to be written.", itemName().c_str(), itemID());
+    _log(MODULE__ERROR, "ReplaceCharges() called by %s(%u).  It still needs to be written.", itemName().c_str(), itemID());
 }
 
 void ShipItem::DeactivateAllModules()
@@ -1916,7 +1919,7 @@ void ShipItem::LinkWeapon(GenericModule* pMaster, GenericModule* pSlave)
 
 void ShipItem::MergeModuleGroups(uint32 masterID, uint32 slaveID)
 {
-    _log(SHIP__MODULE_ERROR, "MergeModuleGroups() called by %s(%u).  It still needs to be written.", itemName().c_str(), itemID());
+    _log(MODULE__ERROR, "MergeModuleGroups() called by %s(%u).  It still needs to be written.", itemName().c_str(), itemID());
 }
 
 void ShipItem::LinkAllWeapons()
@@ -1942,8 +1945,8 @@ void ShipItem::LinkAllWeapons()
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.begin(), end = m_linkedWeapons.end();
     while (itr != end) {
         if (itr->second.size() < 1) {
-            if (is_log_enabled(SHIP__MODULE_INFO))
-                _log(SHIP__MODULE_INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
+            if (is_log_enabled(MODULE__INFO))
+                _log(MODULE__INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
                     itr->first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(itr->first->flag()));
             itr = m_linkedWeapons.erase(itr);
         } else
@@ -1960,8 +1963,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
     std::list< GenericModule*>::iterator itr = weaponList.begin(), end = weaponList.end();
     while (itr != end) {
         if ((*itr)->IsLoaded()) {
-            if (is_log_enabled(SHIP__MODULE_INFO))
-                _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) IsLoaded.  Skipping.", \
+            if (is_log_enabled(MODULE__INFO))
+                _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) IsLoaded.  Skipping.", \
                     (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID());
             itr = weaponList.erase(itr);
         } else if (master == nullptr) {
@@ -1970,8 +1973,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             for (auto item : m_linkedWeapons)
                 if (item.first->typeID() == (*itr)->typeID()) {
                     //master = item.first;
-                    if (is_log_enabled(SHIP__MODULE_INFO))
-                        _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() -(null master) %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
+                    if (is_log_enabled(MODULE__INFO))
+                        _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() -(null master) %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
                             (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
                             item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()), item.first->itemID());
                     LinkWeapon(item.first, (*itr));
@@ -1983,8 +1986,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
                 continue;
             // didnt match, or list empty.  make new master.
             master = (*itr);
-            if (is_log_enabled(SHIP__MODULE_INFO))
-                _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - Setting %s(%s-%u) to master.",\
+            if (is_log_enabled(MODULE__INFO))
+                _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - Setting %s(%s-%u) to master.",\
                     (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID());
             // set blank list for this master.
             std::list<GenericModule*> slaves;
@@ -1992,8 +1995,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             itr = weaponList.erase(itr);
         } else {
             if (master->typeID() == (*itr)->typeID()) {    // this item can be slave
-                if (is_log_enabled(SHIP__MODULE_INFO))
-                    _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches master %s(%s-%u).  Adding.", \
+                if (is_log_enabled(MODULE__INFO))
+                    _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches master %s(%s-%u).  Adding.", \
                         (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
                         master->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(master->flag()), master->itemID());
                 LinkWeapon(master, (*itr));
@@ -2002,8 +2005,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
                 for (auto item : m_linkedWeapons)
                     if (item.first->typeID() == (*itr)->typeID()) {
                         //master = item.first;
-                        if (is_log_enabled(SHIP__MODULE_INFO))
-                            _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
+                        if (is_log_enabled(MODULE__INFO))
+                            _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - %s(%s-%u) matches list master %s(%s-%u).  Adding.", \
                                 (*itr)->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName((*itr)->flag()), (*itr)->itemID(), \
                                 item.first->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(item.first->flag()), item.first->itemID());
                         LinkWeapon(item.first, (*itr));
@@ -2014,8 +2017,8 @@ void ShipItem::LinkWeaponLoop(std::list<GenericModule*>& weaponList)
             }
         }
     }
-    if (is_log_enabled(SHIP__MODULE_INFO))
-        _log(SHIP__MODULE_INFO, "ShipItem::LinkWeaponLoop() - Completed loop in %.3fus.", GetTimeUSeconds() - start);
+    if (is_log_enabled(MODULE__INFO))
+        _log(MODULE__INFO, "ShipItem::LinkWeaponLoop() - Completed loop in %.3fus.", GetTimeUSeconds() - start);
 }
 
 /*
@@ -2166,9 +2169,9 @@ PyRep* ShipItem::GetLinkedWeapons()
         result->SetItem(new PyInt(cur.first->itemID()), slaves);
     }
 
-    if (is_log_enabled(SHIP__MODULE_MESSAGE)) {
+    if (is_log_enabled(MODULE__MESSAGE)) {
         sLog.Warning("Ship", "GetLinkedWeapons returns: ");
-        result->Dump(SHIP__MODULE_MESSAGE, "    ");
+        result->Dump(MODULE__MESSAGE, "    ");
     }
     return result;
 }
@@ -2744,4 +2747,11 @@ void Ship::UpdateDrones(std::map<uint32, uint8> &attribs) {
         cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
         //AttrDroneIsChaotic
     }
+}
+
+void Ship::RemoveTarget(SystemEntity* pSE) {
+    // target has been unlocked
+    m_shipRef->GetModuleManager()->RemoveTarget(pSE);
+    m_targMgr->ClearTarget(pSE);
+
 }

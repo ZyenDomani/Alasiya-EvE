@@ -20,8 +20,9 @@ public:
     TurretModule(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~TurretModule()                            { /* do nothing here */ }
 
+    virtual TurretModule*       GetTurretModule()       { return this; }
     //  class type helpers.  public for anyone to access.
-    virtual bool IsTurretModule()                      { return true; }
+    virtual bool                IsTurretModule()        { return true; }
 
     /* ActiveModule overrides */
     virtual void LoadCharge(InventoryItemRef charge);

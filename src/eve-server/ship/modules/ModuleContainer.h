@@ -17,6 +17,7 @@
 #include "ship/modules/ModuleDefs.h"
 
 class ShipItem;
+class SystemEntity;
 
 // Container for all ships modules
 class ModuleContainer
@@ -25,6 +26,7 @@ public:
     ModuleContainer(ShipItem* pShip);
     ~ModuleContainer();
 
+    void Initialize();
     void ClearModMap();
 
     GenericModule* GetRandModule();
@@ -56,6 +58,7 @@ public:
     void UnloadAll();
     void RepairAll();
     void UnloadWeapons();
+    void RemoveTarget(SystemEntity* pSE);
 
     // only called by MM::fitModule
     bool isSlotOccupied(EVEItemFlags flag); // flag is not checked in this call

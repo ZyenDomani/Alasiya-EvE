@@ -8,9 +8,17 @@
 
 make log/config option for (en/dis)able client massive check.
 
-eveowners needs constant update and figure out how/when to send to client
 
-module add/remove isnt fully thought out at this point.  will need complete walk thru to verify proper operation
+module add/remove isnt fully thought out at this point.
+    - will need complete walk thru to verify proper operation
+    - module states need a good lookover
+moving mwd from one slot to another throws groupfit limited error
+when moving module slots, module is offlined after refit
+check charge flag - getting segfault on flagAutoFit for chargeRef in fx
+
+
+ship modules in slim item may be incomplete.  search client for GetTurretSets
+
 
 InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
@@ -18,19 +26,12 @@ InvBrokerBound::Handle_GetInventoryFromId
     - suspect many error msgs in client for this, but none are found/coded yet
     - wtf does 'passive' mean??  only called for char and ship during 'Prime'
 
-cant warp to scanned items (jetcan) when using .showall (item sigID not registered...will take some doing to implement)
-
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?
 also check containers for contents and remove/deny before repack
 
-moving mwd from one slot to another throws groupfit limited error
-
 check insurance payouts.   rounds full ship value up
-
-when moving module slots, module is offlined after refit
-
-ship modules in slim item may be incomplete.  search client for GetTurretSets
+check trade - ships retain insurance
 
 dungeon spawn error....(and they white)
 11:20:49 [SpawnMsg] SpawnMgr::PrepSpawn() - faction: Angel Cartel, region 10000001. (config set false)
@@ -50,7 +51,6 @@ dungeon spawn error....(and they white)
 
 jetans dont check capy before jettison
 
-check trade - ships retain insurance
 
 dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
@@ -123,7 +123,6 @@ few fleet calls not coded
 scoop object needs a bit of attention
 
 
-********* old - no date - still relevant
 petition system missing most calls
     - this system hasnt been started
     - couple calls as skeleton code
@@ -160,7 +159,7 @@ anomaly system - working. may need revisit after other systems mature.   -priori
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
-player drone ai - needs complete rework.  current drone ai is copy from npc, which is incorrect.
+player drone ai - rework started.  needs completion
 drones mass and maxspeed need attention
 
 RAM code - implement invention, copy, re, tech    -priority level: hi

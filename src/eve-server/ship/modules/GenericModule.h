@@ -16,7 +16,16 @@
 #include "ship/Ship.h"
 #include "ship/modules/ModuleDefs.h"
 #include "ship/modules/ModuleItem.h"
+#include "system/SystemEntity.h"
 
+class ActiveModule;
+class PassiveModule;
+class MiningLaser;
+class Prospector;
+class TurretModule;
+class SuperWeapon;
+class RigModule;
+class SubSystemModule;
 
 /* generic module base class */
 class GenericModule
@@ -46,6 +55,15 @@ public:
     bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
     bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
 
+    /* class type pointer querys, public for anyone to access. */
+    virtual ActiveModule*       GetActiveModule()       { return nullptr; }
+    virtual PassiveModule*      GetPassiveModule()      { return nullptr; }
+    virtual MiningLaser*        GetMiningModule()       { return nullptr; }
+    virtual Prospector*         GetProspectModule()     { return nullptr; }
+    virtual TurretModule*       GetTurretModule()       { return nullptr; }
+    virtual SuperWeapon*        GetSuperWeapon()        { return nullptr; }
+    virtual RigModule*          GetRigModule()          { return nullptr; }
+    virtual SubSystemModule*    GetSubSystemModule()    { return nullptr; }
     /* class type helpers.  public for anyone to access. */
     virtual bool IsGenericModule() const                { return true; }
     virtual bool IsPassiveModule() const                { return false; }
@@ -103,6 +121,7 @@ public:
 
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0)
                                                         { /* Do nothing here */ }
+    virtual void RemoveTarget(SystemEntity* pSE)        { /* do nothing here */ }
 
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();
@@ -110,7 +129,7 @@ public:
     virtual uint16 GetReloadTime()                      { return 0; }
     virtual uint32 GetTargetID()                        { return 0; }
 
-    /* override for rigs and subsystems in approprate derived class */
+    /* override for rigs and subsystems in appropriate derived class */
     virtual int8 GetModulePowerLevel() {
         return m_hiPower ? Module::Bank::High
                 : ( m_medPower ? Module::Bank::Mid

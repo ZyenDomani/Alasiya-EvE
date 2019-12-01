@@ -18,6 +18,8 @@ public:
     Prospector(ModuleItemRef mRef, ShipItemRef sRef);
     virtual ~Prospector()                                 { /* do nothing here */ }
 
+    virtual Prospector*         GetProspectModule()     { return this; }
+
     /* ActiveModule overrides */
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
     uint32 DoCycle();

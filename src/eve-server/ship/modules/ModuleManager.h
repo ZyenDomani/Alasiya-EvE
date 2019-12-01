@@ -33,6 +33,7 @@
 #include "ship/modules/ModuleContainer.h"
 
 class GenericModule;
+class SystemEntity;
 
 class ModuleManager
 {
@@ -58,7 +59,7 @@ public:
     bool InstallRig(ModuleItemRef mRef, EVEItemFlags flag);
     void UninstallRig(uint32 itemID);
     bool InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag);
-    bool FitModule(ModuleItemRef mRef, EVEItemFlags flag);
+    bool AddModule(ModuleItemRef mRef, EVEItemFlags flag);
     void UnfitModule(uint32 itemID);// this will remove charge items from modules
     void Online(uint32 itemID);
     void Offline(uint32 itemID);
@@ -128,9 +129,10 @@ public:
     // scan method to check for scanning rigs.
     float GetRigScanBonus()                             { return m_rigScanBonus; }
 
+    void RemoveTarget(SystemEntity* pSE)                { pModuleCont->RemoveTarget(pSE); }
+
 private:
     bool m_initalized;
-    bool fitModule(ModuleItemRef mRef, EVEItemFlags flag);
 
     ShipItem* m_Ship;
 

@@ -21,11 +21,11 @@ public:
     virtual ~MiningLaser()                              { /* do nothing here */ }
 
     /* GenericModule overrides */
+    virtual MiningLaser*        GetMiningModule()       { return this; }
     virtual bool IsMiningLaser() const                  { return true; }
     virtual void DeactivateCycle(bool abort=false);
 
     /* ActiveModule overrides */
-    virtual MiningLaser* GetMiningLaser()               { return this; }
     virtual uint32 DoCycle();
     //virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
     //virtual void Deactivate(std::string effect="");

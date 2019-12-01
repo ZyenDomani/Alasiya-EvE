@@ -298,8 +298,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
      * 02:13:11 [SvcCall]     Argument 'qty':
      * 02:13:11 [SvcCall]         (None)
      */
-    _log(SHIP__MODULE_TRACE, "DogmaIMBound::Handle_LoadAmmoToModules()");
-    call.Dump(SHIP__MODULE_TRACE);
+    _log(MODULE__TRACE, "DogmaIMBound::Handle_LoadAmmoToModules()");
+    call.Dump(MODULE__TRACE);
     Call_Dogma_LoadAmmoToModules args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -310,7 +310,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToModules(PyCallArgs& call) {
         return nullptr;
     if (args.moduleIDs.size() > 1) {
         sLog.Error("DogmaIMBound::Handle_LoadAmmoToModules()", "args.moduleIDs.size = %u.", args.moduleIDs.size() );
-        call.Dump(SHIP__MODULE_WARNING);
+        call.Dump(MODULE__WARNING);
     }
 
     // Get Reference to Ship and Charge
@@ -336,8 +336,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
    *                                    ship,   module,  charge type, charge item, charge location, stack qty (usually none - havent found otherwise)
    *   *******    UPDATED VAR NAMES TO MATCH CLIENT CODE  -allan 26Jul14  *************
    */
-  _log(SHIP__MODULE_TRACE, "DogmaIMBound::Handle_LoadAmmoToBank()");
-  call.Dump(SHIP__MODULE_TRACE);
+  _log(MODULE__TRACE, "DogmaIMBound::Handle_LoadAmmoToBank()");
+  call.Dump(MODULE__TRACE);
 	Call_Dogma_LoadAmmoToBank args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
@@ -482,18 +482,18 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
     Call_SingleIntegerArg args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     SystemManager* pSysMgr = pClient->SystemMgr();
     if (pSysMgr == nullptr) {
         _log(SERVICE__ERROR, "Unable to find system manager for '%s'", pClient->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
     SystemEntity* pTSE = pSysMgr->GetSE(args.arg);
     if (pTSE == nullptr) {
         _log(SERVICE__ERROR, "Unable to find entity %u in system %u for '%s'", args.arg, pSysMgr->GetID(), pClient->GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     if (sConfig.debug.IsTestServer)
@@ -503,7 +503,8 @@ PyResult DogmaIMBound::Handle_RemoveTarget(PyCallArgs& call) {
                         pTSE->GetName(),pTSE->GetID(), vectorToTarget.length() );
         }
 
-    pClient->GetShipSE()->TargetMgr()->ClearTarget(pTSE);
+    // tell our ship this target has been removed
+    pClient->GetShipSE()->RemoveTarget(pTSE);
     return nullptr;
 }
 
