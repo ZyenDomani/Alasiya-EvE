@@ -1351,7 +1351,7 @@ uint32 ShipItem::AddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClie
             if (!m_ModuleManager->InstallSubSystem(mRef, flag))
                 return 0;
         }
-        m_ModuleManager->UpdateModules(flag);
+        //m_ModuleManager->UpdateModules(flag);
     }
 
     // cannot stack assembled items
@@ -1379,9 +1379,6 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
     if (m_pilot == nullptr)
         return;
 
-    if (iRef->categoryID() == EVEDB::invCategories::Charge)
-        return;
-
     // check to see if item is currently in a module slot.
     if (IsModuleSlot(iRef->flag())) {
         if (m_ModuleManager == nullptr) {
@@ -1391,9 +1388,11 @@ void ShipItem::RemoveItem(InventoryItemRef iRef)
 
         if (IsRigSlot(iRef->flag()))
             m_ModuleManager->UninstallRig(iRef->itemID());
+        else if (iRef->categoryID() == EVEDB::invCategories::Charge)
+            m_ModuleManager->UnloadCharge(iRef->flag());
         else
             m_ModuleManager->UnfitModule(iRef->itemID());
-        m_ModuleManager->UpdateModules(iRef->flag());
+        //m_ModuleManager->UpdateModules(iRef->flag());
     }
 }
 

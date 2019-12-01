@@ -186,13 +186,13 @@ void ActiveModule::Process()
             sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
         }
     }
-    if (m_ModuleState < Module::State::Activated)
+    if (m_ModuleState < Module::State::Deactivating)
         return;
 
     if (m_timer.Check())
         ProcessActiveCycle();
 
-    if (m_needsCharge) {
+    if (m_needsCharge and !m_Stop) {
         // is this right?  should i do something else here?
         if ((m_chargeRef.get() == nullptr) or (m_ChargeState == Module::State::Unloaded)
         or (m_chargeRef->quantity() < 1) or (!m_chargeLoaded)) {
@@ -205,9 +205,8 @@ void ActiveModule::Process()
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
     if (m_targetSE == pSE) {
-        // log this as trace or info
         _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s for %s", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
-        AbortCycle();
+        Deactivate();
     }
 }
 
@@ -327,16 +326,14 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         return;
     }
 
-    if (m_targetSE != nullptr)
+    if (effect.compare("TargetDestroyed") == 0) {
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
-
-    if (effect.compare("TargetDestroyed") == 0) {
         // this is sent back in OnGodmaShipEffect packet
         m_targetSE = nullptr;
     }
     m_Stop = true;
-    //SetModuleState(Module::State::Deactivating);
+    SetModuleState(Module::State::Deactivating);
 }
 
 void ActiveModule::Overload()
@@ -504,15 +501,18 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
-    if ((m_ModuleState != Module::State::Deactivating) and (!abort)) {
+    if ((m_ModuleState < Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         return;
     }
 
     ApplyEffect(FX::State::Active, false);
-    if (IsValidTarget(m_targetID))
+    if (IsValidTarget(m_targetID)
+    and (m_targetSE != nullptr))
         ApplyEffect(FX::State::Target, false);
+    else if (m_needsTarget)
+        _log(MODULE__WARNING, "ActiveModule::DeactivateCycle() - need target = true and targetID: %u, targSE: %x", m_targetID, m_targetSE);
 
     ShowEffect(false, abort);
 
@@ -967,18 +967,9 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
          */
         } else
             shipEff.error = PyStatic.NewNone();
-    /*
-    std::vector<PyTuple*> events;
-        events.push_back(shipEff.Encode());
-    std::vector<PyTuple*> updates;
 
-    if (m_destinyMgr == nullptr)
-        m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
-
-    m_destinyMgr->SendDestinyUpdate(updates, events, m_destinyMgr->IsWarping());
-    */
     PyTuple* tuple = shipEff.Encode();
-    if (m_destinyMgr->IsWarping())
+    if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
         m_bubble->BubblecastDestinyEvent(&tuple, "destiny");

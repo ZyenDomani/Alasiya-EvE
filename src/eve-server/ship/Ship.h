@@ -69,7 +69,7 @@ public:
     virtual Client* GetPilot()                          { return m_pilot; }
 
     virtual void AddItem(InventoryItemRef iRef);
-    virtual void RemoveItem( InventoryItemRef iRef);
+    virtual void RemoveItem(InventoryItemRef iRef);
 
     bool HasModuleManager()                             { return (m_ModuleManager != nullptr); }
     ModuleManager* GetModuleManager()                   { return m_ModuleManager; }

@@ -340,7 +340,7 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
         iRef = newItem;
         args.itemID = iRef->itemID();
     // we're not dividing the stack, so check for removing loaded charges
-    } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(toFlag))) {
+    } else if ((iRef->categoryID() == EVEDB::invCategories::Charge) and (IsModuleSlot(iRef->flag()))) {
         moveStack = true;
     } else if (call.client->IsInSpace() and (toFlag == flagCargoHold) and (quantity == 0)) {
         moveStack = true;
@@ -353,8 +353,9 @@ PyResult InventoryBound::Handle_Add(PyCallArgs &call) {
     if (quantity < 1)
         quantity = 1;
 
-    _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u of item %u from (%u:%s) to me(%s:%u:%s).", \
-            quantity, args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()), m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
+    _log(INV__MESSAGE, "InventoryBound::Handle_Add() - moving %u %s(%u) from (%u:%s) to me(%s:%u:%s).", \
+            quantity, iRef->itemName().c_str(), args.itemID, args.containerID, sDataMgr.GetFlagName(iRef->flag()),\
+            m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(toFlag));
 
     std::vector<int32> items;
     items.push_back(args.itemID);
@@ -557,7 +558,8 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 Call_SingleIntegerArg result;
                 result.arg = iRef->itemID();
                 return result.Encode();
-            }
+            } else
+                pShip->RemoveItem(iRef);
         }
 
         if (!moveStack and (quantity < iRef->quantity())) {

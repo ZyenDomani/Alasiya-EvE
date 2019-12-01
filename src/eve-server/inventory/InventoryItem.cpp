@@ -539,7 +539,7 @@ void InventoryItem::AddItem(InventoryItemRef iRef)
 void InventoryItem::RemoveItem(InventoryItemRef iRef)
 {
     if (pInventory != nullptr)  // just in case
-        pInventory->RemoveItem( iRef);
+        pInventory->RemoveItem(iRef);
 }
 
 void InventoryItem::Delete() {
@@ -602,7 +602,7 @@ void InventoryItem::Rename(std::string name)
         else // client in space.  sent update to all clients in bubble
             pClient->GetShipSE()->SysBubble()->BubblecastSendNotification("OnCfgDataChanged", "solarsystemid", &tuple, false);
     } else if (IsPlayerCorp(m_ownerID))
-        // not sure about this one yet.
+        // bcast to all online corp members
         ;
 
 }
@@ -656,19 +656,19 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         std::map<int32, PyRep *> changes, changes2;
         if (new_flag != old_flag) {
             changes[Inv::Update::Flag] = new PyInt(old_flag);
-            changes2[Inv::Update::Flag] = new PyInt(old_flag);
+           // changes2[Inv::Update::Flag] = new PyInt(old_flag);
         }
         if (new_owner != old_owner) {
             changes[Inv::Update::Owner] = new PyInt(old_owner);
-            changes2[Inv::Update::Owner] = new PyInt(old_owner);
+           // changes2[Inv::Update::Owner] = new PyInt(old_owner);
         }
         if (new_location != old_location) {
             changes[Inv::Update::Location] = new PyInt(old_location);
-            changes2[Inv::Update::Location] = new PyInt(old_location);
+           // changes2[Inv::Update::Location] = new PyInt(old_location);
         }
         if (new_owner != old_owner)
             SendItemChange(old_owner, changes);
-        SendItemChange(m_ownerID, changes2);
+        SendItemChange(m_ownerID, changes);
     }
 }
 
@@ -937,7 +937,7 @@ void InventoryItem::SendItemChange(uint32 toID, std::map<int32, PyRep *> &change
     PyTuple *tmp = change.Encode();
 
     if (is_log_enabled(ITEM__CHANGE)) {
-        _log(ITEM__CHANGE, "Sending Item changes for %s", m_itemName.c_str());
+        _log(ITEM__CHANGE, "Sending Item changes for %s(%u)", m_itemName.c_str(), m_itemID);
         tmp->Dump(ITEM__CHANGE, "    ");
     }
 

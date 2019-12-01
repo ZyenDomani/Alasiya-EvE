@@ -93,7 +93,7 @@ bool ModuleManager::Initialize() {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
                     _log(MODULE__ERROR, "ModuleManager::Initialize() - %s(%u) has flagAutoFit set in ship %s",\
-                    cur->itemName().c_str(), cur->itemID(), m_Ship->itemName().c_str() );
+                            cur->itemName().c_str(), cur->itemID(), m_Ship->itemName().c_str() );
                     ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
                     AddModule(mRef, cur->flag());
                 } break;
@@ -293,10 +293,13 @@ void ModuleManager::UnfitModule(uint32 itemID)
     }
     // update available slots
     if (pMod->isHighPower()) {
-        if (pMod->isTurretFitted())
-            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) +1));
-        else if (pMod->isLauncherFitted())
-            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) +1));
+        if (pMod->isTurretFitted()) {
+            uint8 count = m_Ship->GetAttribute(AttrTurretSlotsLeft).get_uint32() +1;
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, count);
+        } else if (pMod->isLauncherFitted()) {
+            uint8 count = m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_uint32() +1;
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, count);
+        }
         ++m_HighSlots;
     } else if (pMod->isMediumPower()) {
         ++m_MidSlots;
@@ -342,11 +345,13 @@ bool ModuleManager::AddModule(ModuleItemRef mRef, EVEItemFlags flag)
         if (pMod->isTurretFitted()) {
             // apply config modifier, if applicable
             mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.turretRoF);
-            m_Ship->SetAttribute(AttrTurretSlotsLeft, (m_Ship->GetAttribute(AttrTurretSlotsLeft) -1));
+            uint8 count = m_Ship->GetAttribute(AttrTurretSlotsLeft).get_uint32() -1;
+            m_Ship->SetAttribute(AttrTurretSlotsLeft, count);
         } else if (pMod->isLauncherFitted()) {
             // apply config modifier, if applicable
             mRef->MultiplyAttribute(AttrSpeed, sConfig.rates.missileRoF);
-            m_Ship->SetAttribute(AttrLauncherSlotsLeft, (m_Ship->GetAttribute(AttrLauncherSlotsLeft) -1));
+            uint8 count = m_Ship->GetAttribute(AttrLauncherSlotsLeft).get_uint32() -1;
+            m_Ship->SetAttribute(AttrLauncherSlotsLeft, count);
         }
         --m_HighSlots;
     } else if (pMod->isMediumPower()) {
@@ -766,8 +771,9 @@ void ModuleManager::UnloadCharge(EVEItemFlags fromFlag, bool merge/*false*/)
     // move item and update client
     if (IsStation(m_Ship->locationID()))
         chargeRef->Move(m_Ship->locationID(), flagHangar, true);
-    else if (merge and m_Ship->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
-        chargeRef->MergeTypesInCargo(m_Ship, flagCargoHold);
+    //  this causes errors when removing charges.  module icons dont update when using this (bad return)
+    //else if (merge and m_Ship->GetMyInventory()->ContainsTypeByFlag(chargeRef->typeID(), flagCargoHold))
+    //    chargeRef->MergeTypesInCargo(m_Ship, flagCargoHold);
     else
         chargeRef->SetFlag(flagCargoHold, true);
 }

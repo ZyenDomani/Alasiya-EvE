@@ -15,4 +15,6 @@ PassiveModule::PassiveModule(ModuleItemRef mRef, ShipItemRef sRef)
 {
 }
 
-//  we may not have anything to do here.
+//  set up cargo expanders to expand specialized cargo on higher-tier ships
+
+
