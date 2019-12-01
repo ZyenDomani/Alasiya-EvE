@@ -396,13 +396,6 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
             continue;
         } */
         InventoryItemRef srcItemRef = cur.second.srcRef;
-        if (srcItemRef->flag() == flagAutoFit) {
-            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit.", srcItemRef->itemName().c_str());
-            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
-                    srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
-                    GetTargLocName(cur.second.targLoc), cur.second.targAttr);
-            continue;
-        }
 
         switch (srcItemRef->groupID()) {
             case EVEDB::invGroups::Rig_Armor:
@@ -515,10 +508,26 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                     } break;
                     case Target::Charge: {
                         // ....charge on src item (from module)
+                        if (srcItemRef->flag() == flagAutoFit) {
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", srcItemRef->itemName().c_str());
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
+                            srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
+                            GetTargLocName(cur.second.targLoc), cur.second.targAttr);
+                            EvE::traceStack();
+                            continue;
+                        }
                         itemRefVec.push_back(pShip->GetModuleManager()->GetLoadedChargeOnModule(srcItemRef->flag()));
                     } break;
                     case Target::Other: {
                         // ....module containing the src item (from charge)
+                        if (srcItemRef->flag() == flagAutoFit) {
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): SourceItem.flag is AutoFit but needed to aquire module.", srcItemRef->itemName().c_str());
+                            _log(EFFECTS__ERROR, "FxProc::ApplyEffects(): Item Data for %s(%u) - src(%s:%u)  targ(%s:%u) .", \
+                            srcItemRef->itemName().c_str(), srcItemRef->itemID(), GetSourceName(cur.second.fxSrc), cur.second.srcAttr,  \
+                            GetTargLocName(cur.second.targLoc), cur.second.targAttr);
+                            EvE::traceStack();
+                            continue;
+                        }
                         itemRefVec.push_back(pShip->GetModuleManager()->GetModule(srcItemRef->flag())->GetSelf());
                     } break;
                     case Target::Target: {
