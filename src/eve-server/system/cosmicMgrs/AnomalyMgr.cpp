@@ -440,12 +440,12 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
      * //  -allan 7Jul14
      *    namespace Group {
      *        enum {
-     *            Scrap         = 1,      //wrecks in system (unused)
+     *            Scrap         = 1,      //wrecks in system (unused - throws error)
      *            Signature     = 4,      //advanced anomaly.  need probes to scan
      *            Ship          = 8,      //abandoned ships
      *            Structure     = 16,     //all pos structures
      *            DroneOrProbe  = 32,     //player items
-     *            Celestial     = 64,     //unknown  (unused)
+     *            Celestial     = 64,     //unknown  (unused - throws error)
      *            Anomaly       = 128     //detected using ship sensors
      *        };
      *    }
@@ -472,9 +472,6 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
         sig.z = iRef->position().z;
 
     switch (iRef->categoryID()) {
-        case EVEDB::invCategories::Entity: {
-            sig.scanGroupID = Scanning::Group::Scrap;
-        } break;
         case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
             sig.scanGroupID = Scanning::Group::DroneOrProbe;
         } break;
@@ -491,10 +488,21 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
         case EVEDB::invCategories::Charge: {    // probes, missiles (at time of scan), and ??
             sig.scanGroupID = Scanning::Group::DroneOrProbe;
         } break;
-        case EVEDB::invCategories::Celestial:
+        case EVEDB::invCategories::Entity: {
+            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add entity %s to anomaly list.", iRef->itemName().c_str());
+            sig.scanGroupID = Scanning::Group::Scrap;
+            return;
+        } break;
+        case EVEDB::invCategories::Celestial: { //wrecks
+            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add celestial %s to anomaly list.", iRef->itemName().c_str());
+            sig.scanGroupID = Scanning::Group::Scrap;
+            return;
+        } break;
         case EVEDB::invCategories::Asteroid:
         default: {
+            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add roid or default %s to anomaly list.", iRef->itemName().c_str());
             sig.scanGroupID = Scanning::Group::Celestial;
+            return;
         } break;
     }
 

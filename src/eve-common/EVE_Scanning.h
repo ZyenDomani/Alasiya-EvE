@@ -16,12 +16,12 @@ namespace Scanning {
 //  -allan 7Jul14
     namespace Group {
         enum {
-            Scrap         = 1,      //wrecks in system (unused)
+            Scrap         = 1,      //wrecks in system (unused - throws error)
             Signature     = 4,      //advanced anomaly.  need probes to scan
             Ship          = 8,      //abandoned ships
             Structure     = 16,     //all pos structures
             DroneOrProbe  = 32,     //player items
-            Celestial     = 64,     //unknown  (unused)
+            Celestial     = 64,     //unknown  (unused - throws error)
             Anomaly       = 128     //detected using ship sensors
         };
     }
