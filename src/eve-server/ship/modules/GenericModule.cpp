@@ -8,16 +8,16 @@
 
 /*
 # Ship Module Logging:
-SHIP__MODULE_ERROR=1
-# Charge not found reported in SHIP__MODULE_WARNING
-SHIP__MODULE_WARNING=1
-SHIP__MODULE_MESSAGE=0
-# Mod Create/Populate and Undocking "OnlineModules" list dumped in SHIP__MODULE_INFO
-SHIP__MODULE_INFO=1
-# group tests, set module item online/offline, and Salvaging chance msgs in SHIP__MODULE_DEBUG
-SHIP__MODULE_DEBUG=1
-# Mod timer setting, Online/Offline calls and Effects msgs reported in SHIP__MODULE_TRACE
-SHIP__MODULE_TRACE=1
+MODULE__ERROR=1
+# Charge not found reported in MODULE__WARNING
+MODULE__WARNING=1
+MODULE__MESSAGE=0
+# Mod Create/Populate and Undocking "OnlineModules" list dumped in MODULE__INFO
+MODULE__INFO=1
+# group tests, set module item online/offline, and Salvaging chance msgs in MODULE__DEBUG
+MODULE__DEBUG=1
+# Mod timer setting, Online/Offline calls and Effects msgs reported in MODULE__TRACE
+MODULE__TRACE=1
 */
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
@@ -58,7 +58,7 @@ m_launcher(false)
         m_subSystem = true;
     }
 
-    _log(SHIP__MODULE_DEBUG, "Created GenericModule %p for item %s (%u).", this, mRef->itemName().c_str(), mRef->itemID());
+    _log(MODULE__DEBUG, "Created GenericModule %p for item %s (%u).", this, mRef->itemName().c_str(), mRef->itemID());
 }
 
 GenericModule::~GenericModule()
@@ -71,11 +71,11 @@ GenericModule::~GenericModule()
 void GenericModule::Online()
 {
     if (m_ModuleState == Module::State::Unfitted) {
-        _log(SHIP__MODULE_ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
+        _log(MODULE__ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
         return;
     }
     if (m_ModuleState != Module::State::Offline) {
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
+        _log(MODULE__MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
                 itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState));
         return;     // already online
     }
@@ -139,7 +139,7 @@ void GenericModule::Online()
         return;
     }
 
-    // update avalible ship resources.
+    // update available ship resources.
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
@@ -147,17 +147,17 @@ void GenericModule::Online()
     //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
-    _log(SHIP__MODULE_TRACE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", \
+    _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", \
             itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
+            _log(MODULE__ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->itemName().c_str());
         } else {
-            _log(SHIP__MODULE_INFO, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
             m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
@@ -176,22 +176,28 @@ void GenericModule::Online()
 
 void GenericModule::Offline()
 {
-    if (m_ModuleState == Module::State::Unfitted) {
-        m_modRef->SetOnline(false, isRig());
-        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
-        return;
-    }
-    if (m_ModuleState == Module::State::Offline) {
-        m_modRef->SetOnline(false, isRig());
-        _log(SHIP__MODULE_WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
-        return;
-    }
-    if (m_ModuleState == Module::State::Deactivating) {
-        m_modRef->SetOnline(false, isRig());
-        _log(SHIP__MODULE_MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
-        m_ModuleState = Module::State::Offline;
-        m_modRef->SetOnline(false, isRig());
-        return;
+    switch(m_ModuleState) {
+        case Module::State::Unfitted: {
+            m_modRef->SetOnline(false, isRig());
+            _log(MODULE__WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            return;
+        }
+        case Module::State::Offline: {
+            m_modRef->SetOnline(false, isRig());
+            _log(MODULE__WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            return;
+        }
+        case Module::State::Deactivating: {
+            _log(MODULE__MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            m_ModuleState = Module::State::Offline;
+            m_modRef->SetOnline(false, isRig());
+            return;
+        }
+        case Module::State::Activated: {
+            _log(MODULE__MESSAGE, "GenericModule::Offline() called for active module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            m_shipRef->GetPilot()->SendNotifyMsg("Your %s must finish it's cycle before you can put it offline.", m_modRef->itemName().c_str());
+            return;
+        }
     }
 
     m_isWarpSafe = false;
@@ -203,18 +209,18 @@ void GenericModule::Offline()
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
-    _log(SHIP__MODULE_TRACE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(MODULE__MESSAGE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
 
     // module MUST be cleared before loading fx to remove.
     m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
-            _log(SHIP__MODULE_ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
+            _log(MODULE__ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->itemName().c_str());
         } else {
             m_chargeRef->ClearModifiers();
             /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-             *    also, DONT reset modifiermap before remoing, to use existing, modified data
+             *    also, DONT reset modifiermap before removing, to use existing, modified data
              */
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
@@ -286,7 +292,7 @@ void GenericModule::Repair(EvilNumber amount)
             newAmount = EvilZero;
         SetAttribute(AttrDamage, newAmount);
     }
-    _log(SHIP__MODULE_DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
+    _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
                 m_modRef->itemName().c_str(), amount, GetAttribute(AttrDamage).get_int());
 }
 

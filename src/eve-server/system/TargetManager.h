@@ -139,9 +139,9 @@ protected:
 private:
     SystemEntity* mySE;    //we do not own this.
 
-    std::map<uint32, ActiveModule*> m_modules;  // map of modID/Mod* targeting this object
-    std::map<SystemEntity*, TargetEntry*> m_targets;    //we own these values, not the keys
-    std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;    //we own these values, not the keys
+    std::map<uint32, ActiveModule*> m_modules;               // map of modID/Mod* targeting this object
+    std::map<SystemEntity*, TargetEntry*> m_targets;         //we own these values, not the keys
+    std::map<SystemEntity*, TargetedByEntry*> m_targetedBy;  //we own these values, not the keys
 
     bool m_canAttack;   // true if npcs can begin attack (to correct attacking before targetlock)
 };

@@ -341,9 +341,9 @@ PyResult ShipBound::Handle_Undock(PyCallArgs &call) {
     //    where key is slotID, value is moduleID
     if (call.byname.find("onlineModules") != call.byname.end()) {
         PyDict* onlineModules = call.byname["onlineModules"]->AsDict();
-        if (is_log_enabled(SHIP__MODULE_INFO)) {
-            _log(SHIP__MODULE_INFO, "Dumping 'onlineModules' List");
-            onlineModules->Dump(SHIP__MODULE_INFO, "   ");
+        if (is_log_enabled(MODULE__INFO)) {
+            _log(MODULE__INFO, "Dumping 'onlineModules' List");
+            onlineModules->Dump(MODULE__INFO, "   ");
         }
         PyDict::const_iterator cur = onlineModules->begin();
         for (; cur != onlineModules->end(); ++cur)

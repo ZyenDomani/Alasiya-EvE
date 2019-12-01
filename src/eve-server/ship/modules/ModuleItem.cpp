@@ -58,7 +58,7 @@ bool ModuleItem::_Load()
 }
 
 void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
-    _log(SHIP__MODULE_DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
+    _log(MODULE__DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
     m_modifiers.clear();
@@ -67,7 +67,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (pClient == nullptr) {
-        _log(SHIP__MODULE_WARNING, "ModuleItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
+        _log(MODULE__WARNING, "ModuleItem::SetOnline() - No client object found using m_ownerID (%u) for module %s(%u)", \
                             m_ownerID, m_itemName.c_str(), m_itemID);
         return;
     }

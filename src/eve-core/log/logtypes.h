@@ -20,7 +20,7 @@
  ------------------------------------------------------------------------------------
  Author:        Zhur
  Additions:  Allan
- Log Version: 9.7
+ Log Version: 9.8
  */
 /*  see above Log Version, log.ini and LogVersion displayed in server console for matching versions */
 
@@ -480,13 +480,15 @@ LOG_TYPE( SHIP, MESSAGE, DISABLED, "ShipMsg" )
 LOG_TYPE( SHIP, INFO, DISABLED, "ShipInfo" )
 LOG_TYPE( SHIP, TRACE, DISABLED, "ShipTrace" )
 LOG_TYPE( SHIP, HEAT, DISABLED, "ShipHeat" )
-LOG_TYPE( SHIP, MODULE_ERROR, ENABLED, "ModError" )
-LOG_TYPE( SHIP, MODULE_WARNING, ENABLED, "ModWarn" )
-LOG_TYPE( SHIP, MODULE_MESSAGE, DISABLED, "ModMsg" )
-LOG_TYPE( SHIP, MODULE_INFO, DISABLED, "ModInfo" )
-LOG_TYPE( SHIP, MODULE_DEBUG, DISABLED, "ModDebug" )
-LOG_TYPE( SHIP, MODULE_TRACE, DISABLED, "ModTrace" )
-LOG_TYPE( SHIP, MODULE_DAMAGE, DISABLED, "ModDmg" )
+
+LOG_CATEGORY( MODULE )
+LOG_TYPE( MODULE, ERROR, ENABLED, "ModError" )
+LOG_TYPE( MODULE, WARNING, ENABLED, "ModWarn" )
+LOG_TYPE( MODULE, MESSAGE, DISABLED, "ModMsg" )
+LOG_TYPE( MODULE, INFO, DISABLED, "ModInfo" )
+LOG_TYPE( MODULE, DEBUG, DISABLED, "ModDebug" )
+LOG_TYPE( MODULE, TRACE, DISABLED, "ModTrace" )
+LOG_TYPE( MODULE, DAMAGE, DISABLED, "ModDmg" )
 
 LOG_CATEGORY( TARGET )
 LOG_TYPE( TARGET, ERROR, ENABLED, "TargetError" )

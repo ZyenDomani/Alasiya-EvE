@@ -49,7 +49,7 @@ void TurretModule::ApplyDamage()
     if (m_chargeRef.get() == nullptr) {
         m_shipRef->GetPilot()->SendErrorMsg("Your %s in %s doesnt have a charge registered. You can try Unload/Reload, but if this error happens again, relog.", \
                 m_modRef->itemName().c_str(), sDataMgr.GetFlagName(m_modRef->flag()));
-        _log(SHIP__MODULE_ERROR, "TurretModule::ApplyDamage() - module %s(%u) does not have a m_chargeRef.",  m_modRef->itemName().c_str(), m_modRef->itemID());
+        _log(MODULE__ERROR, "TurretModule::ApplyDamage() - module %s(%u) does not have a m_chargeRef.",  m_modRef->itemName().c_str(), m_modRef->itemID());
         return;
     }
     // add data to StatisticMgr

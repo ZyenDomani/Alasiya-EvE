@@ -81,7 +81,7 @@ uint32 Prospector::DoCycle()
         AbortCycle();
         return 0;
     } else {
-        _log(SHIP__MODULE_ERROR, "Prospector::DoCycle() hit end of conditional.");
+        _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
     }
 
     return ActiveModule::DoCycle();
@@ -139,7 +139,7 @@ void Prospector::CheckSuccess()
     if (roll < chance)
         m_success = true;
 
-    _log(SHIP__MODULE_DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
+    _log(MODULE__DEBUG, "Prospector::CheckSuccess - chance: %i, roll: %u, success: %s", chance, roll, (m_success ? "true" : "false"));
 }
 
 void Prospector::DropSalvage()
@@ -176,7 +176,7 @@ void Prospector::DropSalvage()
                 continue;
             iRef->Move(m_shipRef->itemID(), m_holdFlag, true);
             m_shipRef->AddItem(iRef);
-            _log(SHIP__MODULE_DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
+            _log(MODULE__DEBUG, "Prospector::DropSalvage - dropped %u %s of %u/%u", quantity, iRef->itemName().c_str(), minDrop, maxDrop);
         }
     }
 
