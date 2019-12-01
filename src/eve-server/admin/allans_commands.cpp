@@ -75,6 +75,26 @@ PyResult Command_heal(Client* pClient, CommandDB* db, PyServiceMgr* services, co
     return(new PyString("Heal successful!"));
 }
 
+PyResult Command_healtarget(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (args.argCount()== 1)
+        pClient->GetShip()->Heal();
+    else if (args.argCount() == 2) {
+        if (!args.isNumber(1))
+            throw PyException(MakeCustomError("Argument 1 should be a character ID"));
+
+        uint32 entity = atoi(args.arg(1).c_str());
+
+        Client *target = sEntityList.FindClientByCharID(entity);
+        if (target == NULL)
+            throw PyException(MakeCustomError("Cannot find Character by the entityID %d", entity));
+
+        target->GetShip()->Heal();
+    }
+
+    return(new PyString("Heal successful!"));
+}
+
 PyResult Command_status(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     //if (!pClient->IsInSpace())

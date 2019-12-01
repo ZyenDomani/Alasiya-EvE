@@ -3,7 +3,9 @@
  COMMAND( siglist, Acct::Role::CONTENT,
           " - lists all active signatures, with location, name, and type." )
  COMMAND( heal, Acct::Role::HEALSELF,
-         "(entityID) - heal the character with the entityID" )
+          "(entityID) - heal the character with the entityID" )
+ COMMAND( healtarget, Acct::Role::HEALSELF,
+          "(entityID) - heal the currently active target" )
  COMMAND( status, Acct::Role::PLAYER,
           " - note giving you detailed ship status information")
  COMMAND( secstatus, Acct::Role::PLAYER,
