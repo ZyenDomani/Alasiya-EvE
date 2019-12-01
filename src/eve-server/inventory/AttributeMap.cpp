@@ -246,7 +246,8 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
     if (attrID == AttrSkillStartTime)
         return true;
-    if (old_val == new_val) return true;
+    if (old_val == new_val)
+        return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
         modChange.itemKey = mItem.itemID();
@@ -273,12 +274,26 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
 bool AttributeMap::SendChanges(PyTuple* attrChange) {
     if (attrChange == nullptr)
         return true;
-    /** @todo update this to notifiy appropriate corp ppl of change */
-    if (IsCorp(mItem.ownerID()))
-        return true;
     if ((mItem.ownerID() == 1)
     and (!IsCharacter(mItem.itemID())))
         return true;
+
+    /** @todo update this to notify appropriate corp ppl of change */
+    if (IsCorp(mItem.ownerID()))
+        return true;
+    /*
+    if (IsPlayerCorp(toID)) {
+        // there is more to this.  not sure what else or how yet.
+        MulticastTarget mct;
+        mct.corporations.insert(toID);
+        if (IsStation(m_locationID)) {
+            mct.locations.insert(m_locationID);
+            sEntityList.Multicast("OnItemChange", "*stationid&corpid", &tmp, mct);
+        } else {
+            sEntityList.Multicast("OnItemChange", "corpid", &tmp, mct);
+        }
+    }
+    */
 
     Client* pClient(nullptr);
     if (IsCharacter(mItem.itemID()))
@@ -291,8 +306,11 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         return false;
     }
 
-    if (is_log_enabled(CLIENT__TRACE))
-        attrChange->Dump(CLIENT__TRACE, "");
+    if (is_log_enabled(ITEM__CHANGE)) {
+        _log(ITEM__CHANGE, "Sending Attribute changes for %s(%u)", mItem.itemName().c_str(), mItem.itemID());
+        attrChange->Dump(ITEM__CHANGE, "");
+    }
+
     pClient->QueueDestinyEvent(&attrChange);
 
     //Save();
