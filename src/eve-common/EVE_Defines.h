@@ -1,11 +1,10 @@
 
 /*  EVE_Defines.h
  *   this file defines hard-coded values for game item classes
- *   we also define C-type macros for ease of readibilty in various item conditionals
+ *   we also define C-type macros for ease of readabilty in various item conditionals
  *
  */
 
-/** @todo  these values need to be udpated (here and in server code) to match values expected/tested in client */
 
 #ifndef EVE_DEFINES_H
 #define EVE_DEFINES_H
@@ -71,7 +70,7 @@
 #define maxOfficeFolder         67999999
 #define minFactoryFolder        68000000
 #define maxFactoryFolder        69999999
-#define minUniverseAsteroid     70000000        // deco only - not targettable, no bracket in overview
+#define minUniverseAsteroid     70000000        // deco only - not targetable, no bracket in overview
 #define maxUniverseAsteroid     79999999
 #define minControlBunker        80000000
 #define maxControlBunker        80099999
@@ -264,7 +263,10 @@ maxDustCharacter = 2130000000
  (itemID >= minFakeItem)
 
 #define IsValidTarget(itemID) \
- (((itemID >= minStargate) && (itemID <= maxStation)) || (itemID >= minCustomsOffice))
+ (((itemID >= minOutpost) && (itemID <= maxStation)) \
+ || ((itemID >= minControlBunker) && (itemID <= maxNPCItem)) \
+ || ((itemID >= minTempItemID) && (itemID <= minPIStructure)) \
+ || (itemID >= minCustomsOffice))
 
 #define IsTempItem(itemID) \
  (((itemID >= minTempItemID) && (itemID < minPIStructure)) || (itemID >= minNPC))
