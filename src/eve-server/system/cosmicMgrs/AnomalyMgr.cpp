@@ -450,6 +450,39 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
      *        };
      *    }
      * }
+     *
+     * these are used to determine groupName in scan results.
+     * -- from client --
+     *  exploration = result.sigGroupID in anomaly, signature
+     *  if certainty > probeResultGood (0.25)
+     *      if exploration
+     *          result.groupName = self.GetExplorationSiteType(result.strengthAttributeID)
+     *      else
+     *          result.groupName = result.groupID.name
+     *      if certainty > probeResultInformative (0.75)
+     *          if exploration
+     *              result.typeName = result.dungeonName
+     *          else
+     *              result.typeName = result.typeID.name or "Cosmic Anomaly"
+     *
+     *  these 5 defined in GetExplorationSiteType()
+     *     AttrScanRadarStrength = 208,            //Radar Site (scanning/exploration)
+     *     AttrScanLadarStrength = 209,            //Ladar Site (scanning/exploration)
+     *     AttrScanMagnetometricStrength = 210,    //Magnetometric Site (scanning/exploration)
+     *     AttrScanGravimetricStrength = 211,      //Gravimetric Site (scanning/exploration)
+     *     AttrScanAllStrength = 1136,             //Unknown Site  (scanning/exploration)
+     *
+     *     AttrScanGenericStrength = 1169,
+     *     AttrScanStrengthSignatures = 1117,
+     *     AttrScanStrengthDronesProbes = 1118,
+     *     AttrScanStrengthScrap = 1119,
+     *     AttrScanStrengthShips = 1120,
+     *     AttrScanStrengthStructures = 1121,
+     *     AttrScanWormholeStrength = 1908,         // not used
+     *
+     *  sig groups defined as sig, anom, ship, structure, drone
+     *    these are also the 5 filter groups
+     *
      */
 
     _log(COSMIC_MGR__DEBUG, "AnomalyMgr::AddAnomaly() - adding %s to anomaly list.", iRef->itemName().c_str());
@@ -472,37 +505,33 @@ void AnomalyMgr::AddAnomaly(InventoryItemRef iRef)
         sig.z = iRef->position().z;
 
     switch (iRef->categoryID()) {
-        case EVEDB::invCategories::Deployable:{ // mobile warp disruptor
-            sig.scanGroupID = Scanning::Group::DroneOrProbe;
-        } break;
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Structure:
         case EVEDB::invCategories::StructureUpgrade:
         case EVEDB::invCategories::SovereigntyStructure: {
             sig.scanGroupID = Scanning::Group::Structure;
+            sig.sigGroupID = iRef->groupID();
+            sig.scanAttributeID = AttrScanStrengthStructures;
         } break;
         case EVEDB::invCategories::Ship: {
             sig.scanGroupID = Scanning::Group::Ship;
+            sig.sigGroupID = iRef->groupID();
+            sig.scanAttributeID = AttrScanStrengthShips;
         } break;
         case EVEDB::invCategories::Drone:
-        case EVEDB::invCategories::Charge: {    // probes, missiles (at time of scan), and ??
+        case EVEDB::invCategories::Charge:          // probes, missiles (at time of scan), and ??
+        case EVEDB::invCategories::Deployable: {    // mobile warp disruptor
             sig.scanGroupID = Scanning::Group::DroneOrProbe;
+            sig.sigGroupID = iRef->groupID();
+            sig.scanAttributeID = AttrScanStrengthDronesProbes;
         } break;
-        case EVEDB::invCategories::Entity: {
-            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add entity %s to anomaly list.", iRef->itemName().c_str());
-            sig.scanGroupID = Scanning::Group::Scrap;
-            return;
+        case EVEDB::invCategories::Asteroid:{
+            sig.scanGroupID = Scanning::Group::Signature;
         } break;
-        case EVEDB::invCategories::Celestial: { //wrecks
-            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add celestial %s to anomaly list.", iRef->itemName().c_str());
-            sig.scanGroupID = Scanning::Group::Scrap;
-            return;
-        } break;
-        case EVEDB::invCategories::Asteroid:
-        default: {
-            _log(COSMIC_MGR__MESSAGE, "AnomalyMgr::AddAnomaly() - trying to add roid or default %s to anomaly list.", iRef->itemName().c_str());
-            sig.scanGroupID = Scanning::Group::Celestial;
-            return;
+        case EVEDB::invCategories::Entity:
+        case EVEDB::invCategories::Celestial:       //wrecks
+        default:  {
+            sig.scanGroupID = Scanning::Group::Anomaly;
         } break;
     }
 
