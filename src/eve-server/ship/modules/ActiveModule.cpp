@@ -521,7 +521,7 @@ uint32 ActiveModule::DoCycle()
     return cycleTime.get_int();
 }
 
-void ActiveModule::AbortCycle(bool removeSE/*false*/)
+void ActiveModule::AbortCycle()
 {
     if (m_Stop)
         return;
@@ -530,11 +530,6 @@ void ActiveModule::AbortCycle(bool removeSE/*false*/)
     SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
     m_timer.Disable();
-
-    if (removeSE) {
-        m_targetSE->Delete();
-        SafeDelete(m_targetSE);
-    }
 }
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
@@ -542,7 +537,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
-        return;
+   //     return;
     }
 
     ApplyEffect(FX::State::Active, false);
@@ -610,6 +605,17 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
             m_destinyMgr->SendDestinyUpdate(updates, events, true);
             */
             m_shipRef->GetPilot()->QueueDestinyEvent(&result);
+        } break;
+        //case EVEDB::invGroups::Data_Miner:
+        // some data containers will pop after successful access.  currently incomplete
+        case EVEDB::invGroups::Salvager: {
+            if (IsSuccess()) {
+                // just in case other modules are targeting this object, let them know it was destroyed.
+                if (m_targetSE->TargetMgr() != nullptr)
+                    m_targetSE->TargetMgr()->Destroyed();
+                m_targetSE->Delete();
+                SafeDelete(m_targetSE);
+            }
         } break;
         /*
         case EVEDB::invGroups::Warp_Scrambler: {

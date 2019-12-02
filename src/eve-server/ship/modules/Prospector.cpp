@@ -80,7 +80,7 @@ uint32 Prospector::DoCycle()
         CheckSuccess();
     } else if (m_success) {
         DropSalvage();
-        AbortCycle(true);
+        AbortCycle();
         return 0;
     } else {
         _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
@@ -128,7 +128,7 @@ void Prospector::SendFailure()
         m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
     }
     if (m_dataMiner) {
-
+        // not sure what client needs from this
     }
 }
 
@@ -146,7 +146,6 @@ void Prospector::CheckSuccess()
 
 void Prospector::DropSalvage()
 {
-    //m_accessChance = 0;
     if (m_targetSE == nullptr)
         return;
 

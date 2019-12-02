@@ -106,22 +106,25 @@ public:
     InventoryItemRef GetLoadedChargeRef()               { return m_chargeRef; }
 
 	/* generic access functions to be handled in derived classes (must override) */
-    virtual void Process()                              { /* Do nothing here */ }
-    virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
-    virtual void AbortCycle(bool removeSE=false)        { /* Do nothing here */ }
+    virtual void Process()                              { /* do nothing here */ }
+    virtual void Deactivate(std::string effect="")      { /* do nothing here */ }
+    virtual void AbortCycle(bool removeSE=false)        { /* do nothing here */ }
     // this does not physically add charge to module,
     // must NOT throw
-    virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }
+    virtual void LoadCharge(InventoryItemRef charge)    { /* do nothing here */ }
     // this does not physically remove charge from module,
     // must NOT throw
-    virtual void UnloadCharge()                         { /* Do nothing here */ }
-    virtual void RemoveRig()                            { /* Do nothing here */ }
-    virtual void DestroyRig()                           { /* Do nothing here */ }
-    virtual void ReprocessCharge()                      { /* Do nothing here */ }
+    virtual void UnloadCharge()                         { /* do nothing here */ }
+    virtual void RemoveRig()                            { /* do nothing here */ }
+    virtual void DestroyRig()                           { /* do nothing here */ }
+    virtual void ReprocessCharge()                      { /* do nothing here */ }
 
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0)
-                                                        { /* Do nothing here */ }
+                                                        { /* do nothing here */ }
     virtual void RemoveTarget(SystemEntity* pSE)        { /* do nothing here */ }
+
+    // check for Prospector (so far) modules defaulted here for generic access
+    virtual bool IsSuccess()                            { /* do nothing here */ }
 
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();

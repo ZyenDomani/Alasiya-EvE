@@ -646,6 +646,7 @@ void TargetManager::Destroyed()
             case EVEDB::invGroups::Ship_Scanner:
             case EVEDB::invGroups::Cargo_Scanner:
             case EVEDB::invGroups::Projected_ECCM: {
+                // should we tell player about this target being destroyed?
                 cur.second->AbortCycle();
             } break;
             default: {

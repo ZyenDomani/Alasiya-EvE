@@ -33,7 +33,7 @@ public:
     virtual void LoadCharge(InventoryItemRef charge);
     virtual void UnloadCharge();
     virtual void Overload();
-    virtual void AbortCycle(bool removeSE=false);
+    virtual void AbortCycle();
     virtual void DeOverload();
     virtual void Deactivate(std::string effect="");
     virtual void DeactivateCycle(bool abort=false);

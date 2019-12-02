@@ -26,6 +26,8 @@ public:
     // this is a check for those active modules that need it (mining, weapons) and overridden as needed
     virtual bool CanActivate();
 
+    virtual bool IsSuccess()                            { return m_success; }
+
 protected:
     void SendFailure();
     void CheckSuccess();
