@@ -300,9 +300,10 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     }
 
     double degreeSeparation = (180/pcs);
+    ++pcs;
     GPoint center(pSE->SysBubble()->GetCenter());
     GPoint mposition(NULL_ORIGIN);
-    for (uint8 i = 0; i <= pcs; ++i) {
+    for (uint8 i = 1; i < pcs; ++i) {
         if (ice) {
             if (secRating > -0.2)
                 roidradius = MakeRandomInt(20, 40) *1000; // (40k,70k)  72-102k radius
