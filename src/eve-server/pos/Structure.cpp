@@ -743,7 +743,7 @@ void StructureSE::SendEffectUpdate(int16 effectID, bool active)
         ge.selfID = m_data.itemID;
         ge.charID = m_ownerID;
         ge.shipID = m_data.itemID;
-        ge.targetID = 0;
+        ge.target = PyStatic.NewNone();
         ge.other = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = effectID;

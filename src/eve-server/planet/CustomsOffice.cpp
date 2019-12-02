@@ -238,7 +238,7 @@ void CustomsSE::SendEffectUpdate(int16 effectID, bool active)
         ge.selfID = m_cData.itemID;
         ge.charID = m_ownerID;
         ge.shipID = m_cData.itemID;
-        ge.targetID = 0;
+        ge.target = PyStatic.NewNone();
         ge.other = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = effectID;

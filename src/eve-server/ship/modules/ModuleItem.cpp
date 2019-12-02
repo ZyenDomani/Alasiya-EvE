@@ -46,10 +46,10 @@ bool ModuleItem::_Load()
     // test for character creation (which throws errors here and isnt really needed)
     if ((pClient != nullptr) and pClient->IsCharCreation())
         return true;
-    
+
     // modules need the Online attribute set.  if it already has it, _Load() will update with current setting
     SetAttribute(AttrOnline, EvilZero, false);
-    
+
     // load attributes
     if (!InventoryItem::_Load())
         return false;
@@ -76,7 +76,7 @@ void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
         ge.selfID = m_itemID;
         ge.charID = m_ownerID;
         ge.shipID = pClient->GetShipID();
-        ge.targetID = 0;
+        ge.target = PyStatic.NewNone();
         ge.other = PyStatic.NewNone();
         ge.area = new PyList();
         ge.effectID = 16;

@@ -107,8 +107,8 @@ void SuperWeapon::StopCycle(bool abort)
         ge.selfID = m_modRef->itemID();
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
-        ge.targetID = 0;
-        ge.other = sDataMgr.NewNone();
+        ge.target = PyStatic.NewNone();
+        ge.other = PyStatic.NewNone();
         ge.area = new PyList;
         ge.effectID = effectID;
     Notify_OnGodmaShipEffect shipEff;
@@ -121,12 +121,14 @@ void SuperWeapon::StopCycle(bool abort)
         shipEff.startTime = (shipEff.timeNow + (timeLeft * EvE::Time::Second));
         shipEff.duration = timeLeft;
         shipEff.repeat = 0;
-        shipEff.error = sDataMgr.NewNone();
-    std::vector<PyTuple*> events;
-        events.push_back(shipEff.Encode());
-    std::vector<PyTuple*> updates;
-    m_shipRef->GetPilot()->GetShipSE()->DestinyMgr()->SendDestinyUpdate(updates, events, false);
-    //m_shipRef->GetPilot()->QueueDestinyEvent(&tup);
+        shipEff.error = PyStatic.NewNone();
+
+    PyTuple* tuple = shipEff.Encode();
+
+    if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
+        m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
+    else
+        m_bubble->BubblecastDestinyEvent(&tuple, "destiny");
 }
 
 double SuperWeapon::DoCycle()

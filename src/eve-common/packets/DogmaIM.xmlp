@@ -132,8 +132,8 @@
       <int name="selfID" none_marker="0" default="0" />
       <int name="charID" none_marker="0" default="0" />
       <int name="shipID" none_marker="0" default="0" />
-      <int name="targetID" none_marker="0" default="0" />
-      <raw name="other" /> <!-- GodmaOther goes here, sometimes filled, sometimes PyNone-->
+      <raw name="target" /> <!-- targetID or PyNone-->
+      <raw name="other" /> <!-- GodmaOther goes here with charge data or PyNone-->
       <raw name="area" /><!-- ALWAYS a PyList, even empty -->
       <int name="effectID" none_marker="0" default="0" />
     </listInline>

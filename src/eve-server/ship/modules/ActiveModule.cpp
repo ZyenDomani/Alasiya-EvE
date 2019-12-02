@@ -610,6 +610,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
             if (IsSuccess()) {
+                m_targMgr->RemoveTarget(m_targetSE);
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
                     m_targetSE->TargetMgr()->Destroyed();
@@ -918,8 +919,11 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     int64 abortTime = GetFileTimeNow();
     if (abort) {
         active = false;
-        if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds))
-            abortTime += (3 * EvE::Time::Second);    // delay mining abort for 3s to simulate module "completing" its' cycle and dumping ore to cargo
+        if ((m_effectID == EVEEffectID::miningLaser)
+        or (m_effectID == EVEEffectID::miningClouds))
+            abortTime += (5 * EvE::Time::Second);    // delay abort for 5s to simulate module "completing" its' cycle and dumping ore to cargo
+        else
+            abortTime += (3 * EvE::Time::Second);    // delay abort for 3s to simulate module "completing" its' cycle
     }
 
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
@@ -949,7 +953,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
         ge.selfID = m_modRef->itemID();
         ge.charID = m_shipRef->ownerID();
         ge.shipID = m_shipRef->itemID();
-        ge.targetID = m_targetID;
+        ge.target = IsValidTarget(m_targetID) ? new PyInt(m_targetID) : PyStatic.NewNone();
         ge.area = new PyList();   // still dont know what this is.
         ge.effectID = m_effectID;
 
@@ -1025,6 +1029,24 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             shipEff.error = PyStatic.NewNone();
 
     PyTuple* tuple = shipEff.Encode();
+    /*
+    if (is_log_enabled(MODULE__DUMP)) {
+        _log(MODULE__DUMP ,"ShowEffects() Dump");
+        tuple->Dump(MODULE__DUMP, "    ");
+    }
+*/
+    /*
+     std::vector<PyTuple*> events;
+         events.push_back(tuple);
+     std::vector<PyTuple*> updates;
+
+    // this should never hit, but just in case...
+     if (m_destinyMgr == nullptr)
+         m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
+
+     m_destinyMgr->SendDestinyUpdate(updates, events, m_destinyMgr->IsWarping());
+     */
+
     if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
