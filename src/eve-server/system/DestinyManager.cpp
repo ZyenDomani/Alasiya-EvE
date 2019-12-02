@@ -1069,19 +1069,21 @@ void DestinyManager::_Follow() {
                 _log(AUTOPILOT__TRACE, "DestinyManager::_Follow() - Target within FollowDistance.  SpeedFraction = 0.1.");
                 return;
             }
-    // this will allow following entites to keep their follow state, yet stop movement if within their follow distance.
+    // this will allow following entities to keep their follow state, yet stop movement if within their follow distance.
     //  by keeping their follow state, once the distance is greater than their follow distance, they will begin movement again.
         if (m_tractored) {
             // specific to tractored entities.  sudden halt to mimic tractor stopping
+            if (!m_tractorPause) {
+                std::vector<PyTuple*> updates;
+                CmdSetSpeedFraction ssf;
+                    ssf.entityID = mySE->GetID();
+                    ssf.fraction = 0;
+                updates.push_back(ssf.Encode());
+                SendDestinyUpdate(updates);
+            }
             m_velocity = NULL_ORIGIN_V;
             m_tractorPause = true;
             m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = m_prevSpeedFraction = 0.0f;
-            std::vector<PyTuple*> updates;
-             CmdSetSpeedFraction ssf;
-                ssf.entityID = mySE->GetID();
-                ssf.fraction = 0;
-            updates.push_back(ssf.Encode());
-            SendDestinyUpdate(updates);
             return;
         } else {
             if ((m_targetEntity.second->IsDynamicEntity()) and (m_targetEntity.second->DestinyMgr()->IsMoving())) {
@@ -1095,6 +1097,14 @@ void DestinyManager::_Follow() {
     } else {
         if (m_tractored and m_tractorPause) {
             // tractored object is outside follow distance.  begin movement again
+            if (m_tractorPause) {
+                std::vector<PyTuple*> updates;
+                CmdSetSpeedFraction ssf;
+                    ssf.entityID = mySE->GetID();
+                    ssf.fraction = 1;
+                updates.push_back(ssf.Encode());
+                SendDestinyUpdate(updates);
+            }
             m_tractorPause = false;
             m_velocity = m_shipHeading * m_maxSpeed;
             m_moveTime = GetTimeMSeconds();
@@ -1102,12 +1112,6 @@ void DestinyManager::_Follow() {
             m_prevSpeedFraction = 0.0f;
             // there is no accel/decel for tractor'd items
             m_activeSpeedFraction = m_userSpeedFraction = m_currentSpeedFraction = 1;
-            std::vector<PyTuple*> updates;
-             CmdSetSpeedFraction ssf;
-                ssf.entityID = mySE->GetID();
-                ssf.fraction = 1;
-            updates.push_back(ssf.Encode());
-            SendDestinyUpdate(updates);
         } else if (m_userSpeedFraction != 0.0f) {
             SetSpeedFraction(1.0f);
         }
@@ -3023,7 +3027,7 @@ void DestinyManager::SendSetState() const {
 void DestinyManager::SendSingleDestinyEvent(PyTuple** ev, bool self_only/*false*/) const
 {
     std::vector<PyTuple*> updates;
-    std::vector<PyTuple*> events(1, *ev);
+    std::vector<PyTuple*> events(1, *ev);   // create vector of size "1" and insert "*ev" into it
     SendDestinyUpdate(updates, events, self_only);
 }
 
@@ -3057,12 +3061,12 @@ void DestinyManager::SendDestinyUpdate( std::vector<PyTuple*>& updates, std::vec
                     sEntityList.GetStamp(), updates.size(), events.size(), mySE->GetPilot()->GetName(), mySE->GetPilot()->GetCharacterID());
 
         for (std::vector<PyTuple*>::iterator cur = updates.begin(); cur != updates.end(); ++cur) {
-            //PyIncRef(*cur);
+            PyIncRef(*cur);
             mySE->GetPilot()->QueueDestinyUpdate(&(*cur));
         }
 
         for (std::vector<PyTuple*>::iterator cur = events.begin(); cur != events.end(); ++cur) {
-            //PyIncRef(*cur);
+            PyIncRef(*cur);
             mySE->GetPilot()->QueueDestinyEvent(&(*cur));
         }
     } else if (mySE->SysBubble() != nullptr) {
