@@ -19,6 +19,9 @@ check charge flag - getting segfault on flagAutoFit for chargeRef in fx
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
 
+multiple errors like this....
+19:25:58 [FxMsg] FxProc::ApplyEffects(12): Tracking Speed Disruption(140000265) - src(Self:1332) -100.000 <RevPostPercent> targ(Other:349) set targ from -15.750 to -inf.
+
 
 InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
@@ -118,6 +121,7 @@ fleet boosts - apply directly to ship/modules when calculated
     - this will give proper data to client when GetAllInfo() is sent
 many fleet error msgs in client unused - noted in fleetdata.h
 few fleet calls not coded
+determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
 
 
 scoop object needs a bit of attention

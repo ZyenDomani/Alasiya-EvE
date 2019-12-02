@@ -108,7 +108,7 @@ public:
 	/* generic access functions to be handled in derived classes (must override) */
     virtual void Process()                              { /* Do nothing here */ }
     virtual void Deactivate(std::string effect="")      { /* Do nothing here */ }
-    virtual void AbortCycle()                           { /* Do nothing here */ }
+    virtual void AbortCycle(bool removeSE=false)        { /* Do nothing here */ }
     // this does not physically add charge to module,
     // must NOT throw
     virtual void LoadCharge(InventoryItemRef charge)    { /* Do nothing here */ }

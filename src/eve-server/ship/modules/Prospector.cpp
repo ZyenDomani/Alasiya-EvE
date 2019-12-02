@@ -55,6 +55,8 @@ void Prospector::Activate(uint16 effectID, uint32 targetID, int16 repeat)
         return;
     }
     m_accessChance = m_targetSE->GetSelf()->GetAttribute(AttrAccessDifficulty).get_int();
+    // are there any modifiers for access here?
+    //  are rigs/skills added to module access chance?
 }
 
 bool Prospector::CanActivate()
@@ -78,7 +80,7 @@ uint32 Prospector::DoCycle()
         CheckSuccess();
     } else if (m_success) {
         DropSalvage();
-        AbortCycle();
+        AbortCycle(true);
         return 0;
     } else {
         _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
@@ -144,7 +146,7 @@ void Prospector::CheckSuccess()
 
 void Prospector::DropSalvage()
 {
-    m_accessChance = 0;
+    //m_accessChance = 0;
     if (m_targetSE == nullptr)
         return;
 
@@ -211,9 +213,6 @@ void Prospector::DropSalvage()
             m_targetSE->DestinyMgr()->SendJettisonPacket();
         }
     }
-
-    m_targetSE->Delete();
-    SafeDelete(m_targetSE);
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::shipsSalvaged);

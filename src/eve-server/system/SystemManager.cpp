@@ -474,7 +474,7 @@ bool SystemManager::LoadPlayerDynamics() {
     return true;
 }
 
-bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int64 launcherID/*0*/) {
+bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, uint32 launcherID/*0*/) {
     SystemEntity* pSE = DynamicEntityFactory::BuildEntity(*this, entity);
     if (pSE == nullptr) {
         sLog.Error( "SystemManager::BuildDynamicEntity()", "Failed to create entity for item %u (grp: %u, type %u)", entity.itemID, entity.groupID, entity.typeID);
@@ -489,6 +489,11 @@ bool SystemManager::BuildDynamicEntity(const DBSystemDynamicEntity& entity, int6
     if (launcherID) {
         WreckSE* pWE = pSE->GetWreckSE();
         pWE->SetLaunchedByID(launcherID);
+        if (IsCharacter(entity.ownerID)) {
+            Client* pClient = sEntityList.FindClientByCharID(entity.ownerID);
+            if (pClient->InFleet())
+                pWE->SetFleetID(pClient->GetFleetID());
+        }
     }
     return true;
 }

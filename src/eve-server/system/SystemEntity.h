@@ -211,6 +211,8 @@ public:
     int32                       GetWarFactionID()       { return m_warID; }
     uint32                      GetCorporationID()      { return m_corpID; }
     uint32                      GetOwnerID()            { return m_ownerID; }
+    uint32                      GetFleetID()            { return m_fleetID; }
+    void                        SetFleetID(uint32 set)  { m_fleetID = set; }
 
     int8                        GetHarmonic()           { return m_harmonic; }
     void                        SetHarmonic(int8 set)   { m_harmonic = set; }

@@ -14,7 +14,9 @@
 #include "ship/Missile.h"
 #include "ship/modules/ActiveModule.h"
 #include "ship/modules/ModuleItem.h"
+#include "system/Container.h"
 #include "system/cosmicMgrs/BeltMgr.h"
+
 
 ActiveModule::ActiveModule(ModuleItemRef mRef, ShipItemRef sRef)
 : GenericModule(mRef, sRef),
@@ -271,11 +273,57 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     m_isWarpSafe = sFxDataMgr.isWarpSafe(m_effectID);
     m_guidStr = sFxDataMgr.GetEffectGuid(m_effectID);
+
     Ship* pShip = m_shipRef->GetPilot()->GetShipSE();
     m_bubble = pShip->SysBubble();
     m_sysMgr = pShip->SystemMgr();
     m_targMgr = pShip->TargetMgr();
     m_destinyMgr = pShip->DestinyMgr();
+
+    switch (groupID()) {
+        case EVEDB::invGroups::Afterburner:
+        case EVEDB::invGroups::Microwarpdrive: {
+            m_destinyMgr->SpeedBoost();
+        } break;
+        case EVEDB::invGroups::Tractor_Beam: {
+            if (m_targetSE != nullptr) {
+                if (m_targetSE->DestinyMgr()->IsTractored()) {
+                    std::map<std::string, PyRep *> arg;
+                    arg["module"] = new PyInt(m_targetSE->GetID());
+                    Clear();
+                    throw PyException(MakeUserError("InvalidTargetCanAlreadyTractored", arg));
+                }
+                // test for ownership here...wip
+                // once crim shit is implemented, allow for tractoring no matter owner.
+                bool owner = false, fleet = false, corp = false, ally = false, war = false;
+                if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
+                    owner = true;
+                else if (m_targetSE->GetCorporationID() == pShip->GetCorporationID())
+                    corp = true;
+                else if (m_targetSE->GetAllianceID() == pShip->GetAllianceID())
+                    ally = true;
+                else if (m_targetSE->GetWarFactionID() == pShip->GetWarFactionID())
+                    war = true;
+                else if (m_shipRef->GetPilot()->InFleet())
+                    if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
+                        fleet = true;
+
+                if (owner or fleet or corp or ally or war) {
+                    m_targetSE->DestinyMgr()->TractorBeamStart(pShip, GetAttribute(AttrMaxTractorVelocity));
+                } else {
+                    std::map<std::string, PyRep *> arg;
+                    arg["module"] = new PyInt(m_targetSE->GetID());
+                    Clear();
+                    throw PyException(MakeUserError("InvalidTargetCanOwner", arg));
+                }
+
+            }
+        } break;
+        case EVEDB::invGroups::Stasis_Web: {
+            if (m_targetSE != nullptr)
+                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
+        } break;
+    }
 
     // Do initial cycle immediately while we start timer
     SetTimer(DoCycle());
@@ -293,21 +341,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     ShowEffect(true, false);
 
     SetModuleState(Module::State::Activated);
-
-    switch (groupID()) {
-        case EVEDB::invGroups::Afterburner:
-        case EVEDB::invGroups::Microwarpdrive: {
-            m_destinyMgr->SpeedBoost();
-        } break;
-        case EVEDB::invGroups::Tractor_Beam: {
-            if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->TractorBeamStart(m_shipRef->GetPilot()->GetShipSE(), GetAttribute(AttrMaxTractorVelocity));
-        } break;
-        case EVEDB::invGroups::Stasis_Web: {
-            if (m_targetSE != nullptr)
-                m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
-        } break;
-    }
 
     if (m_repeat < 1)
         m_Stop = true;
@@ -488,7 +521,7 @@ uint32 ActiveModule::DoCycle()
     return cycleTime.get_int();
 }
 
-void ActiveModule::AbortCycle()
+void ActiveModule::AbortCycle(bool removeSE/*false*/)
 {
     if (m_Stop)
         return;
@@ -497,11 +530,16 @@ void ActiveModule::AbortCycle()
     SetModuleState(Module::State::Deactivating);
     DeactivateCycle(true);
     m_timer.Disable();
+
+    if (removeSE) {
+        m_targetSE->Delete();
+        SafeDelete(m_targetSE);
+    }
 }
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
-    if ((m_ModuleState < Module::State::Activated) and (!abort)) {
+    if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
         return;
@@ -780,10 +818,22 @@ bool ActiveModule::CanActivate()
         using namespace EVEDB::invGroups;
         switch (groupID()) {
             case Tractor_Beam: {
-                if (m_targetSE->IsContainerSE() or m_targetSE->IsWreckSE()) {
+                /** @todo  add checks for other items vs cap tractors and maybe some items for small tractors */
+                bool allowed = false;
+                if ( m_targetSE->IsWreckSE())
+                    allowed = true;
+                else if (m_targetSE->IsContainerSE()) {
+                    if (m_targetSE->GetContSE()->IsAnchored()) {
+                        m_shipRef->GetPilot()->SendNotifyMsg("The %s is anchored.  It cannot be tractored.", m_targetSE->GetName());
+                        return false;
+                    }
+                    allowed = true;
+                }
+
+                if (allowed) {
                     range = GetAttribute(AttrMaxRange).get_float();
                 } else {
-                    m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor the %s", m_targetSE->GetName());
+                    m_shipRef->GetPilot()->SendNotifyMsg("You cannot tractor the %s.", m_targetSE->GetName());
                     return false;
                 }
             } break;
