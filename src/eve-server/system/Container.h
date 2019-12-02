@@ -198,6 +198,7 @@ public:
     bool IsEmpty()                                      { return pInventory->IsEmpty(); }
     void MakeSlimItemChange();
     void SetMySE(SystemEntity* pSE)                     { mySE = pSE;}
+    void Salvaged()                                     { m_salvaged = true; }
 
 protected:
     using InventoryItem::_Load;
@@ -220,6 +221,7 @@ protected:
 private:
     SystemEntity* mySE;
     bool m_delete;
+    bool m_salvaged;
 };
 
 /**
@@ -248,7 +250,8 @@ public:
     virtual void Abandon();
 
     /* specific functions handled in this class. */
-    void SetLaunchedByID(uint32 launcherID)              { m_launchedByID = launcherID; }
+    void Salvaged()                                     { m_contRef->Salvaged(); }
+    void SetLaunchedByID(uint32 launcherID)             { m_launchedByID = launcherID; }
     bool IsEmpty()                                      { return m_contRef->IsEmpty(); }
 
     /** @todo (allan) finish this */

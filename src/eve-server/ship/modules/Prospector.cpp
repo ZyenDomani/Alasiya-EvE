@@ -171,7 +171,7 @@ void Prospector::DropSalvage()
             if (IsEven(MakeRandomInt(0,10)))
                 continue;
             quantity = (MakeRandomInt(minDrop, maxDrop));
-            ItemData iLoot(cur, pChar->itemID(), m_targetSE->GetID(), flagAutoFit, quantity);
+            ItemData iLoot(cur, pChar->itemID(), 0, flagAutoFit, quantity);
             iRef = sItemFactory.SpawnItem(iLoot);
             if (iRef.get() == nullptr) // we'll get over it...continue
                 continue;
@@ -184,6 +184,9 @@ void Prospector::DropSalvage()
     if (!m_targetSE->GetSelf()->GetMyInventory()->IsEmpty()) {
 
         //{'FullPath': u'UI/Messages', 'messageID': 258062, 'label': u'SalvageTooMuchLootBody'}(u'You cannot salvage this wreck because it contains too much loot to fit into a single cargo container. <br>\r\nThe wreck contains <b>{[numeric]volume, useGrouping} m3</b> but can contain no more than <b>{[numeric]maxvolume, useGrouping} m3</b> to be salvageable.', None, {u'{[numeric]maxvolume, useGrouping}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 32, 'kwargs': {}, 'variableName': 'maxvolume'}, u'{[numeric]volume, useGrouping}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 32, 'kwargs': {}, 'variableName': 'volume'}})
+
+        // tell wreck it's being salvaged, so do not broadcast slim updates.
+        m_targetSE->GetWreckSE()->Salvaged();
 
         std::map<uint32, InventoryItemRef> shipLoot;
         shipLoot.clear();

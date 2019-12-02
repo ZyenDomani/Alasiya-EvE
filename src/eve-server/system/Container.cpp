@@ -355,6 +355,8 @@ WreckContainer::WreckContainer(uint32 _containerID, const ItemType &_containerTy
 m_delete(false)
 {
     pInventory = new Inventory(InventoryItemRef(this));
+    m_salvaged = false;
+
     _log(ITEM__TRACE, "Created WreckContainer object for item %s (%u).", itemName().c_str(), itemID());
 }
 
@@ -440,6 +442,9 @@ void WreckContainer::ValidateAddItem( EVEItemFlags flag, InventoryItemRef item )
 void WreckContainer::RemoveItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
+        return;
+
+    if (m_salvaged)
         return;
 
     InventoryItem::RemoveItem(iRef);
