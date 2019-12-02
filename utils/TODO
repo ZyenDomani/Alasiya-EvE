@@ -33,6 +33,7 @@ check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?
 also check containers for contents and remove/deny before repack
 
+cant insure ships again.
 check insurance payouts.   rounds full ship value up
 check trade - ships retain insurance
 
@@ -261,12 +262,17 @@ map::GetIncursionGlobalReport()
 expeditions.  not sure how to do this one.
 dungeonExplorationMgr::GetMyEscalatingPathDetails()
 
+added notes on scanner groupNames in anomalyMgr code
 ship scanner disables after trying to scan while warping (which tells you it cant be done)
+update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
 
 
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
     - this should be fairly easy to set up
     - if no faction presence in system, continue with random point
+
+
+journal - killing rats descriptions are a bit off...gives itemID (no name)
 
 
 *****************  uk calls
@@ -365,8 +371,6 @@ turns use quanternion lerp curve
 
 
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
-
-update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
 
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
