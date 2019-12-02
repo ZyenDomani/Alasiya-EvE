@@ -682,8 +682,6 @@ void SpawnMgr::MakeSpawn(SystemBubble* pBubble, uint32 factionID, uint8 sClass, 
     NPC* pNPC(nullptr);
     InventoryItemRef iRef(nullptr);
     for (auto cur : m_toSpawn) {
-        if (IsValidTarget(cur.typeID))
-            continue; // this is no longer an error.  continue iteration
         /*
          *        ItemData( uint32 _typeID, uint32 _ownerID, uint32 _locationID, EVEItemFlags _flag, const char *_name = "",
          *                  const GPoint &_position = NULL_ORIGIN, const char *_customInfo = "", bool _contraband = false);

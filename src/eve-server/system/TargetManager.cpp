@@ -88,6 +88,14 @@ void TargetManager::Process() {
         sProfile.AddTime(targetsProfile, GetTimeUSeconds() - profileStartTime);
 }
 
+void TargetManager::RemoveTarget(SystemEntity* tSE) {
+    std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.find(tSE);
+    if (itr != m_targets.end()) {
+        SafeDelete(itr->second);
+        m_targets.erase(itr);
+    }
+}
+
 void TargetManager::ClearTarget(SystemEntity *tSE) {
     //let the other entity know they are no longer targeted.
     tSE->TargetMgr()->TargetedByLost(mySE);
@@ -114,12 +122,14 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
         m_canAttack = false;
         return;
     }
-    std::map<SystemEntity*, TargetEntry*>::iterator cur = m_targets.begin();
-    for(; cur != m_targets.end(); ++cur) {
+
+    for (auto cur : m_targets) {
         _log(TARGET__INFO, "%s(%u) has cleared target %s(%u) during clear all.",
-                mySE->GetName(), mySE->GetID(), cur->first->GetName(), cur->first->GetID());
-        cur->first->TargetMgr()->TargetedByLost(mySE);
-        SafeDelete(cur->second);
+                mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
+        // failsafe   still chance this code is incomplete
+        if (cur.first->TargetMgr() != nullptr)
+            cur.first->TargetMgr()->TargetedByLost(mySE);
+        SafeDelete(cur.second);
     }
     m_targets.clear();
 
@@ -134,13 +144,12 @@ void TargetManager::ClearFromTargets() {
         return;
 
     std::vector<SystemEntity *> ToNotify;
-    std::map<SystemEntity*, TargetedByEntry*>::iterator cur = m_targetedBy.begin();
-    for (; cur != m_targetedBy.end(); ++cur) {
+    for (auto cur : m_targetedBy) {
         //do not notify until we clear our target list! otherwise bad things happen.
-        ToNotify.push_back(cur->first);
+        ToNotify.push_back(cur.first);
         _log(TARGET__TRACE, "ClearFromTargets:  Added %s(%u) to delete list for %s(%u).", \
-                            cur->first->GetName(), cur->first->GetID(), mySE->GetName(), mySE->GetID());
-        SafeDelete(cur->second);
+                            cur.first->GetName(), cur.first->GetID(), mySE->GetName(), mySE->GetID());
+        SafeDelete(cur.second);
     }
     m_targetedBy.clear();
 
@@ -300,8 +309,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
 bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxLockedTargets, double maxTargetLockRange, bool &chase)
 {       // NOTE  this is for npcs
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(tSE);
-    if (res != m_targets.end()) {
+    if (m_targets.find(tSE) != m_targets.end()) {
         //what to do?
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
              mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
@@ -366,42 +374,41 @@ void TargetManager::TargetLost(SystemEntity *tSE) {
     mySE->GetPilot()->SendNotification("OnMultiEvent", "clientID", &tmp);
 }
 
-void TargetManager::TargetedByLocked(SystemEntity *from_tSE) {
+void TargetManager::TargetedByLocked(SystemEntity* pSE) {
     //first make sure they are not already in the list
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(from_tSE);
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
     if (itr != m_targetedBy.end()) {
         //just re-use the old entry...
         itr->second->state = TargetedByEntry::Locked;
         return;
     } else {
         //new entry.
-        TargetedByEntry *te = new TargetedByEntry(from_tSE);
+        TargetedByEntry *te = new TargetedByEntry(pSE);
         te->state = TargetedByEntry::Locked;
-        m_targetedBy[from_tSE] = te;
+        m_targetedBy[pSE] = te;
     }
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
-         mySE->GetName(), mySE->GetID(), from_tSE->GetName(), from_tSE->GetID());
-    mySE->TargetMgr()->TargetedAdd(from_tSE);
+         mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
+    mySE->TargetMgr()->TargetedAdd(pSE);
 }
 
-void TargetManager::TargetedByLost(SystemEntity *from_tSE) {
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(from_tSE);
+void TargetManager::TargetedByLost(SystemEntity* pSE) {
+    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
     if (itr != m_targetedBy.end()) {
         SafeDelete(itr->second);
         m_targetedBy.erase(itr);
-        TargetedLost(from_tSE);
+        TargetedLost(pSE);
         _log(TARGET__INFO, "%s(%u) is no longer locked by %s(%u)", \
-             mySE->GetName(), mySE->GetID(), from_tSE->GetName(), from_tSE->GetID());
+             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     } else {
         _log(TARGET__DEBUG, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted.", \
-             mySE->GetName(), mySE->GetID(), from_tSE->GetName(), from_tSE->GetID());
+             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     }
 }
 
 bool TargetManager::IsTargetedBy(SystemEntity* pSE)
 {
-    std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
-    if (itr != m_targetedBy.end())
+    if (m_targetedBy.find(pSE) != m_targetedBy.end())
         return true;
     return false;
 }

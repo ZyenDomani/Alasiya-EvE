@@ -81,8 +81,6 @@ public:
     bool ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);     // this cannot throw.  must return bool
     bool ValidateItemSpecifics(InventoryItemRef iRef);
 
-  //  const ShipType & type() const                       { return static_cast<const ShipType &>(InventoryItem::type()); }
-
     bool IsPopped()                                     { return m_isPopped; }
     void SetPopped(bool set=false)                      { m_isPopped = set; }
     std::string GetShipDNA();

@@ -66,6 +66,9 @@ public:
 
     float               TimeToLock(ShipItemRef sRef, SystemEntity* tSE) const;
 
+    /* method to remove target without triggering anything else (target destroyed) */
+    void                RemoveTarget(SystemEntity* tSE);
+
     /* NPC AI Methods */
     bool                IsTargetedBy(SystemEntity *pSE);
     SystemEntity*       GetFirstTarget(bool need_locked=false);
@@ -77,7 +80,7 @@ public:
     bool                HasNoTargets() const            { return m_targets.empty(); }
 
     /* PC Module Methods (for module deactivation on target removed) */
-    void                Destroyed();
+    void                Destroyed();    // this does NOT remove target from targeters map
     void                Depleted(MiningLaser* pMod);
     void                AddTargetModule(ActiveModule* pMod);
     void                RemoveTargetModule(ActiveModule* pMod);

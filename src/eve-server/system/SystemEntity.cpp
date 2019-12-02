@@ -251,6 +251,8 @@ void SystemEntity::Abandon()
 
 void SystemEntity::Delete()
 {
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearFromTargets();
     if (m_system != nullptr)
         m_system->RemoveEntity(this);
     if (!IsContainerSE())
