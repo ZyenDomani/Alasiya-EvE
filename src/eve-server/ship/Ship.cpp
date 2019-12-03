@@ -1875,6 +1875,13 @@ void ShipItem::EmptyCargo()
         cur.second->Move(m_locationID, flagHangar, true);
 }
 
+void ShipItem::CargoFull() {
+    // loop thru modules and deactivate any type of miner
+    m_ModuleManager->CargoFull();
+    // tell drones cargo is full.  this will command mining types to return and orbit
+    // drones->return();
+}
+
 void ShipItem::LinkWeapon(uint32 masterID, uint32 slaveID)
 {
     if (masterID == slaveID)

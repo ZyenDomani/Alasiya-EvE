@@ -131,6 +131,9 @@ public:
     // this will remove all items from all ship cargo holds
     void EmptyCargo();
 
+    // loop thru modules that 'get' things and deactivate them
+    void CargoFull();
+
     void RepairModules(std::vector<InventoryItemRef>& itemRefVec, float fraction);
 
     void RepairModules()                                { m_ModuleManager->RepairModules(); }

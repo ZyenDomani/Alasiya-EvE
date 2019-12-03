@@ -59,6 +59,7 @@ public:
     void RepairAll();
     void UnloadWeapons();
     void RemoveTarget(SystemEntity* pSE);
+    void CargoFull();
 
     // only called by MM::fitModule
     bool isSlotOccupied(EVEItemFlags flag); // flag is not checked in this call

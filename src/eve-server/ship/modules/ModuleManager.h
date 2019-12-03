@@ -131,6 +131,9 @@ public:
 
     void RemoveTarget(SystemEntity* pSE)                { pModuleCont->RemoveTarget(pSE); }
 
+    void CargoFull()                                    { pModuleCont->CargoFull(); }
+
+
 private:
     bool m_initalized;
 

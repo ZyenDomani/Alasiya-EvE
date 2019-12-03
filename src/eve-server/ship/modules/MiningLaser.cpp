@@ -191,13 +191,15 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
 
     double remainingCargoVolume = m_shipRef->GetRemainingVolumeByFlag(m_holdFlag);
     if (remainingCargoVolume < cycleVol) {
+        // cargohold is full.  this module will fill to available volume and trash the rest
         if (remainingCargoVolume > oreVolume)
             oreAmount = remainingCargoVolume /oreVolume;
         else
             oreAmount = 0;
         // check for other lasers running, and deactivate them also.
+        // the ship will tell all miners cargo is full, and they automagically deactivate.
         // this is a feature.
-        m_targetSE->TargetMgr()->Destroyed();
+        m_shipRef->CargoFull();
 
         // explicitly calling base class method here will negate the possibility of running a loop from DeactivateCycle override and overfilling cargo (elusive error)
         ActiveModule::DeactivateCycle(true);

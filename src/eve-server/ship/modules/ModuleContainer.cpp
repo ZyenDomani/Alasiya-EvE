@@ -142,6 +142,24 @@ void ModuleContainer::OfflineAll() {
             cur.second->Offline();
 }
 
+void ModuleContainer::CargoFull() {
+    // loop thru modules and deactivate anything that drops items in cargo
+    std::string effect = "CargoFull";
+    for (auto cur : m_modules)
+        if (cur.second != nullptr)
+            switch (cur.second->groupID()) {
+                case EVEDB::invGroups::Mining_Laser:
+                case EVEDB::invGroups::Gas_Cloud_Harvester:
+                case EVEDB::invGroups::Frequency_Mining_Laser:
+                case EVEDB::invGroups::Strip_Miner:
+                case EVEDB::invGroups::Salvager:
+                case EVEDB::invGroups::Data_Miner: {
+                    cur.second->Deactivate();
+                } break;
+                // no default
+            }
+}
+
 void ModuleContainer::DeactivateAll() {
     for (auto cur : m_modules)
         if (cur.second != nullptr)
