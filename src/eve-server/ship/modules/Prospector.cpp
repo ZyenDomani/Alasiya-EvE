@@ -3,7 +3,7 @@
   * @name Prospector.cpp
   *   prospector module class (salvage, hacking, data mining)
   * @Author:         Allan
-  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RN 10 February 2018
+  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RW 10 February 2018
   */
 
 
@@ -79,8 +79,12 @@ uint32 Prospector::DoCycle()
         SendFailure();
         CheckSuccess();
     } else if (m_success) {
+        // make copy of m_targetSE
+        SystemEntity* pSE(m_targetSE);
         DropSalvage();
-        AbortCycle();
+        AbortCycle();   // m_targetSE is cleared after this returns
+        pSE->Delete();
+        SafeDelete(pSE);
         return 0;
     } else {
         _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
@@ -185,7 +189,7 @@ void Prospector::DropSalvage()
 
         //{'FullPath': u'UI/Messages', 'messageID': 258062, 'label': u'SalvageTooMuchLootBody'}(u'You cannot salvage this wreck because it contains too much loot to fit into a single cargo container. <br>\r\nThe wreck contains <b>{[numeric]volume, useGrouping} m3</b> but can contain no more than <b>{[numeric]maxvolume, useGrouping} m3</b> to be salvageable.', None, {u'{[numeric]maxvolume, useGrouping}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 32, 'kwargs': {}, 'variableName': 'maxvolume'}, u'{[numeric]volume, useGrouping}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 32, 'kwargs': {}, 'variableName': 'volume'}})
 
-        // tell wreck it's being salvaged, so do not broadcast slim updates.
+        // tell wreck it's being salvaged, so do not broadcast slim updates...may no longer need this.  jetcan set to initial location 0
         m_targetSE->GetWreckSE()->Salvaged();
 
         std::map<uint32, InventoryItemRef> shipLoot;
@@ -195,7 +199,7 @@ void Prospector::DropSalvage()
         // create new container
         ItemData p_idata(23,   // 23 = cargo container
                         m_targetSE->GetSelf()->ownerID(),
-                        m_targetSE->GetLocationID(),
+                        0,
                         flagAutoFit,
                         "Jettisoned Loot Container",
                         m_targetSE->GetPosition());
@@ -209,9 +213,9 @@ void Prospector::DropSalvage()
                 data.corporationID = m_targetSE->GetCorporationID();
                 data.factionID = m_targetSE->GetWarFactionID();
                 data.ownerID = m_targetSE->GetSelf()->ownerID();
-            ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_targetSE->SystemMgr(), data);
+            ContainerSE* cSE = new ContainerSE(jetCanRef, m_targetSE->GetServices(), m_sysMgr, data);
             jetCanRef->SetMySE(cSE);
-            m_targetSE->SystemMgr()->AddEntity(cSE);
+            m_sysMgr->AddEntity(cSE);
             m_targetSE->DestinyMgr()->SendJettisonPacket();
         }
     }
