@@ -21,6 +21,8 @@ MODULE__TRACE=1
 */
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
+#include "ship/modules/ActiveModule.h"
+
 
 GenericModule::GenericModule(ModuleItemRef mRef, ShipItemRef sRef)
 : m_repeat(0),
@@ -187,16 +189,16 @@ void GenericModule::Offline()
             _log(MODULE__WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
             return;
         }
+            // these two should only be called for activeModules...
         case Module::State::Deactivating: {
             _log(MODULE__MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
-            m_ModuleState = Module::State::Offline;
-            m_modRef->SetOnline(false, isRig());
-            return;
+            if (IsActiveModule())
+                GetActiveModule()->AbortCycle();
         }
         case Module::State::Activated: {
             _log(MODULE__MESSAGE, "GenericModule::Offline() called for active module %u(%s).",itemID(), m_modRef->itemName().c_str());
-            m_shipRef->GetPilot()->SendNotifyMsg("Your %s must finish it's cycle before you can put it offline.", m_modRef->itemName().c_str());
-            return;
+            if (IsActiveModule())
+                GetActiveModule()->AbortCycle();
         }
     }
 
