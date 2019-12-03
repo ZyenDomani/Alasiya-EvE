@@ -40,7 +40,7 @@ public:
     static const char* GetBookmarkName(uint32 bookmarkID);
     bool GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z);
 
-    bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID);
+    bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID=0);
     bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
     bool DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList);
 
@@ -48,7 +48,8 @@ public:
     bool DeleteFolderFromDatabase(int32 folderID);
 
     uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID);
-    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID, std::string note, uint32 creatorID, uint32 folderID);
+    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID,
+                                     std::string note, uint32 creatorID, uint32 folderID=0);
 
     void MoveBookmarkToFolder(int32 folderID, std::vector< int32 >* bookmarkList);
 

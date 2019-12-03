@@ -636,23 +636,29 @@ void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 
 void TargetManager::Destroyed()
 {
+    _log(TARGET__INFO, "%s(%u) has been destroyed. %u modules, %u targets, and %u targeters in maps.", \
+            mySE->GetName(), mySE->GetID(), m_modules.size(), m_targets.size(), m_targetedBy.size());
+
+    if (is_log_enabled(TARGET__DUMP))
+        Dump();
+
     std::string effect = "TargetDestroyed";
     // iterate thru the map of modules targeting this object, and call Deactivate on each.
     for (auto cur : m_modules) {
         //  some modules should immediately cease cycle when target destroyed.  miners are NOT in this call
         switch (cur.second->groupID()) {
-            case EVEDB::invGroups::Target_Painter:
-            case EVEDB::invGroups::Tracking_Disruptor:
-            case EVEDB::invGroups::Remote_Sensor_Damper:
-            case EVEDB::invGroups::Remote_Sensor_Booster:
-            case EVEDB::invGroups::Armor_Repair_Projector:
-            case EVEDB::invGroups::Shield_Transporter:
-            case EVEDB::invGroups::Energy_Vampire:
-            case EVEDB::invGroups::Energy_Transfer_Array:
-            case EVEDB::invGroups::Energy_Destabilizer:
+            //case EVEDB::invGroups::Target_Painter:
+            //case EVEDB::invGroups::Tracking_Disruptor:
+            //case EVEDB::invGroups::Remote_Sensor_Damper:
+            //case EVEDB::invGroups::Remote_Sensor_Booster:
+            //case EVEDB::invGroups::Armor_Repair_Projector:
+            //case EVEDB::invGroups::Shield_Transporter:
+            //case EVEDB::invGroups::Energy_Vampire:
+            //case EVEDB::invGroups::Energy_Transfer_Array:
+            //case EVEDB::invGroups::Energy_Destabilizer:
+            //case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Ship_Scanner:
-            case EVEDB::invGroups::Cargo_Scanner:
-            case EVEDB::invGroups::Projected_ECCM: {
+            case EVEDB::invGroups::Cargo_Scanner:{
                 // should we tell player about this target being destroyed?
                 cur.second->AbortCycle();
             } break;
@@ -757,8 +763,8 @@ void TargetManager::TargetEntry::Dump() const {
         case Locking:           sname = "Locking"; break;
         case Locked:            sname = "Locked";  break;
     }
-    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s with %ums remaining)", \
-            pSE->GetName(), pSE->GetID(), sname, timer.Enabled() ? "Running" : "Disabled", timer.GetRemainingTime());
+    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s)", \
+            pSE->GetName(), pSE->GetID(), sname, timer.Enabled() ? "Running with %ums remaining" : "Disabled", timer.GetRemainingTime());
 }
 
 void TargetManager::TargetedByEntry::Dump() const {

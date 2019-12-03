@@ -153,6 +153,7 @@ m_destinyMgr(nullptr)
 
 void ActiveModule::Clear()
 {
+    _log(MODULE__TRACE, "%s calling Clear()", m_modRef->itemName().c_str());
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
@@ -359,12 +360,18 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         return;
     }
 
+    /* these are not needed.  Clear() calls RemoveTargetModule
     if (effect.compare("TargetDestroyed") == 0) {
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
         // this is sent back in OnGodmaShipEffect packet
-        m_targetSE = nullptr;
+        //m_targetSE = nullptr;
     }
+    if (effect.compare("CargoFull") == 0) {
+        if (m_targetSE->TargetMgr() != nullptr)
+            m_targetSE->TargetMgr()->RemoveTargetModule(this);
+    }
+    */
     m_Stop = true;
     SetModuleState(Module::State::Deactivating);
 }
@@ -390,10 +397,12 @@ uint32 ActiveModule::DoCycle()
     }
     if (m_needsTarget) {
         if (m_targetSE == nullptr) {
+            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
             AbortCycle();
             return 0;
         }
         if (m_targetSE->GetID() != m_targetID) {
+            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
             AbortCycle();
             return 0;
         }
@@ -401,6 +410,7 @@ uint32 ActiveModule::DoCycle()
     if (m_needsCharge) {
         // modules that use scripts arent considered as needsCharge, as they work with or without the script.
         if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
+            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
             //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
             //{'FullPath': u'UI/Messages', 'messageID': 259232, 'label': u'NotEnoughChargesBody'}(u'{launcher} has {[numeric]got} charges, but needs {[numeric]need} to fire.', None, {u'{[numeric]got}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'got'}, u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}, u'{[numeric]need}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'need'}})
             //{'FullPath': u'UI/Messages', 'messageID': 258889, 'label': u'TooManyChargesForLauncherBody'}(u'The launcher is currently holding {[numeric]excess} too many excess units.', None, {u'{[numeric]excess}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'excess'}})
@@ -523,6 +533,7 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
+    _log(MODULE__TRACE, "%s calling AbortCycle() - stop:%s", m_modRef->itemName().c_str(), m_Stop?"true":"false");
     if (m_Stop)
         return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
@@ -534,6 +545,7 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
+    _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
                 m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
@@ -545,7 +557,8 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     and (m_targetSE != nullptr))
         ApplyEffect(FX::State::Target, false);
     else if (m_needsTarget)
-        _log(MODULE__WARNING, "ActiveModule::DeactivateCycle() - need target = true and targetID: %u, targSE: %x", m_targetID, m_targetSE);
+        _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
+                m_modRef->itemName().c_str(), m_targetID, m_targetSE);
 
     ShowEffect(false, abort);
 
@@ -725,6 +738,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
+    _log(MODULE__TRACE, "%s calling UnloadCharge()", m_modRef->itemName().c_str());
     if (m_chargeRef.get() != nullptr) {
         if (m_chargeRef->HasAttribute(AttrUnfitCapCost)) {
             float cap = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
@@ -864,6 +878,7 @@ bool ActiveModule::CanActivate()
                 range = GetAttribute(AttrShipScanRange).get_float();
             } break;
             case Shield_Disruptor:      // no modules in this group
+            case Stasis_Web:
             case Salvager:
             case Strip_Miner:
             case Mining_Laser:

@@ -15,6 +15,7 @@ module add/remove isnt fully thought out at this point.
 moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
+when modules' target is destroyed, verify targ->Destroyed() and inform all targeters by targ->TargLost()
 
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
@@ -59,6 +60,8 @@ jetans dont check capy before jettison
 dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
 ********  improvements
+
+.syncloc should synchronize all DSE in bubble to all clients in bubble when called.
 
 check client's locationID vs stationID.
     - multiple calls in client test for these as separate values (tested separately)
@@ -275,6 +278,8 @@ rats should test for faction signals in system and set origin along that directi
 journal - killing rats descriptions are a bit off...gives itemID (no name)
 
 
+many unimplemented salvage error msgs noted in prospector.h
+
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
@@ -328,6 +333,19 @@ destiny shit - misc things found in destiny.dll
 update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
 
 need timer/var for after cloak for targeting (cannot target x sec after uncloak - currently no delay)
+
+client calculates next level points as "skillPointsToNextLevel=int(skill.spHi + 0.5)" where
+            if attrKey == 'spHi':
+                return self.GetHi(itemKey)
+
+    def GetHi(self, skillID):
+        item = self.GetItem(skillID)
+        if item.skillLevel >= skillUtil.MAXSKILLLEVEL:
+            return None
+        else:
+            return skillUtil.GetSPForLevelRaw(item.skillTimeConstant, item.skillLevel + 1)
+
+    - thing to note here is the "points to next level = spHi + 0.5"
 
 
 jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.

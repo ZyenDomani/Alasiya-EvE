@@ -24,6 +24,8 @@
     Updated:        Allan (Zhy)   18Jan14
 */
 
+/** @todo  update this for better code and make sure folderID=0 is changed to NULL in db */
+
 #include "eve-server.h"
 
 #include "system/BookmarkDB.h"
@@ -38,7 +40,7 @@ PyRep* BookmarkDB::GetBMData(uint32 folderID)
         "  ownerID,"
         "  memo,"
         "  note,"
-        "  folderID" // CASE WHEN expr1 = expr2 THEN NULL ELSE expr1 END.
+        "  folderID" // NULLIF(exp1, exp2) {IF expr1 = expr2 THEN NULL ELSE expr1 END}
         " FROM bookmarks"
         " WHERE folderID = %u",
         folderID))
@@ -83,7 +85,7 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
         "  locationID,"
         "  note,"
         "  creatorID,"
-        "  folderID"    //NULLIF(folderID,0) AS folderID
+        "  NULLIF(folderID, 0)"    //NULLIF(folderID,0) AS folderID
         " FROM bookmarks"
         " WHERE ownerID = %u",
         ownerID))
@@ -248,7 +250,7 @@ bool BookmarkDB::DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList)
     return true;
 }
 
-bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID)
+bool BookmarkDB::UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID/*0*/)
 {
     std::string memo_fixed = "";
     sDatabase.DoEscapeString(memo_fixed, memo.c_str());

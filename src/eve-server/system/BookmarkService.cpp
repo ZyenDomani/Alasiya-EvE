@@ -111,13 +111,15 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
 
     call.Dump(COMMON__INFO);
 
-    if (!m_db.DeleteFolderFromDatabase(call.tuple->GetItem( 0 )->AsInt()->value()))
-        return nullptr;   // make client error here to let them know deltion failed
+    uint32 folderID = PyRep::IntegerValue(call.tuple->GetItem( 0 ));
+
+    if (!m_db.DeleteFolderFromDatabase(folderID))
+        return nullptr;   // make client error here to let them know deletion failed
 
     // call db to get list of bmIDs in deleted folder.  return result with this data
     std::vector< int32 > bmIDs;
     bmIDs.clear();
-    m_db.GetBookmarkByFolderID(call.tuple->GetItem( 0 )->AsInt()->value(), bmIDs);
+    m_db.GetBookmarkByFolderID(folderID, bmIDs);
     m_db.DeleteBookmarksFromDatabase(&bmIDs);
 
     if (bmIDs.size() < 1) {
@@ -126,7 +128,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
             data.ownerID = 0;
             data.memo = "";
             data.comment = "";
-            data.folderID = 0;
+            data.folderID = folderID;
         return data.Encode();
     }
 
@@ -137,7 +139,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
             data.ownerID = 0;
             data.memo = "";
             data.comment = "";
-            data.folderID = 0;
+            data.folderID = folderID;
         result->SetItem(i, data.Encode());
     }
     //return result;

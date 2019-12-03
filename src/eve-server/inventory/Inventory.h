@@ -32,7 +32,6 @@
 
 
 class CRowSet;
-class OwnerData;
 
 /* this class is content management for items that can contain other items */
 class Inventory

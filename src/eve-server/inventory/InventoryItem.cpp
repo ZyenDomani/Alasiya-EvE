@@ -144,12 +144,13 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
     // fix the name (if empty)
     if (data.name.empty())
         data.name = iType->name();
-
+    /*
     if (data.locationID == 0) {
         _log(ITEM__MESSAGE, "LocationID = 0 for item");
         if (is_log_enabled(ITEM__TRACE))
             EvE::traceStack();
     }
+    */
     // insert new entry into DB
     return ItemDB::NewItem(data);
 }

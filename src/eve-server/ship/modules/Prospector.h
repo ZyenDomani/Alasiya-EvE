@@ -3,7 +3,7 @@
   * @name Prospector.h
   *   prospector module class (salvage, hacking, data mining)
   * @Author:         Allan
-  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RN 10 Feburary 2018
+  * @date:   11 August 2016   -UD/RW 12 April 2017  -UD/RW 10 February 2018
   */
 
 #ifndef _EVE_SHIP_MODULES_PROSPECTOR_MODULE_H_
