@@ -79,12 +79,8 @@ uint32 Prospector::DoCycle()
         SendFailure();
         CheckSuccess();
     } else if (m_success) {
-        // make copy of m_targetSE
-        SystemEntity* pSE(m_targetSE);
         DropSalvage();
-        AbortCycle();   // m_targetSE is cleared after this returns
-        pSE->Delete();
-        SafeDelete(pSE);
+        AbortCycle();
         return 0;
     } else {
         _log(MODULE__ERROR, "Prospector::DoCycle() hit end of conditional.");
@@ -169,7 +165,7 @@ void Prospector::DropSalvage()
         }
 
         InventoryItemRef iRef(nullptr);
-        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * sConfig.rates.RateDropItem);
+        uint32 quantity = 0, minDrop = drop, maxDrop = (drop * 3 /*sConfig.rates.RateDropItem*/);
         for (auto cur : list) {
             // each drop has 50/50 chance.  may need to change this later.   base on char's salvage skill?
             if (IsEven(MakeRandomInt(0,10)))

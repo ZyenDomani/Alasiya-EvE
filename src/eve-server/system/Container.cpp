@@ -444,10 +444,10 @@ void WreckContainer::RemoveItem(InventoryItemRef iRef)
     if (iRef.get() == nullptr)
         return;
 
+    InventoryItem::RemoveItem(iRef);
+
     if (m_salvaged)
         return;
-
-    InventoryItem::RemoveItem(iRef);
 
     if (pInventory->IsEmpty()) {
         MakeSlimItemChange();

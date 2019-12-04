@@ -124,7 +124,6 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         _log(DAMAGE__MESSAGE, "%s(%u): Initalizing %.2f damage from unknown source.", GetName(), GetID(), d.GetTotal());
     }
 
-    bool killed = false;
     int8 damageID = 0;
     switch (d.weaponRef->groupID()) {
         case EVEDB::invGroups::Missile_Launcher_Assault:
@@ -180,6 +179,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         m_self->GetAttribute(AttrShieldEmDamageResonance).get_float(),
         m_self->GetAttribute(AttrShieldExplosiveDamageResonance).get_float() );
 
+    bool killed = false;
     float total_damage = 0.0;
     float shield_damage = DamageToShield.GetTotal();
     float available_shield = m_self->GetAttribute(AttrShieldCharge).get_float();
@@ -284,7 +284,7 @@ bool SystemEntity::ApplyDamage(Damage &d) {
         m_destiny->SendTerminalExplosion(m_self->itemID(), m_bubble->GetID(), isGlobal());
 
         Killed(d);  // this must NOT remove dead SE from system.
-        SystemEntity::Killed(d);    // this removes shipSE from system then deletes itemRef and all its contents
+        SystemEntity::Killed(d);    // this removes dead SE from system then deletes itemRef and all its contents
     } else {
         /**
          * ALL dmg msgs working  22Apr15 (hacked - found the actual msgIDs)

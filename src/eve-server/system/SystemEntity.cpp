@@ -77,8 +77,10 @@ SystemEntity::~SystemEntity()
 }
 
 void SystemEntity::Process() {
-    if (m_killed)
+    if (m_killed) {
+        _log(SE__DEBUG, "SE::Process() - %s(%u) is dead but still in system.", m_self->itemName().c_str(), m_self->itemID());
         return;
+    }
 
     /*  Enable base call to Process Targeting and Movement
      * this order WILL affect Point/Tackle  (kinda like on live)
@@ -143,12 +145,21 @@ void SystemEntity::EncodeDestiny( Buffer& into )
 void SystemEntity::Killed(Damage& fatal_blow)
 {
     if (m_targMgr != nullptr) {
-        m_targMgr->ClearAllTargets(false);
         // loop thru list of all modules targeting this entity and let them know it has been killed.
         m_targMgr->Destroyed();
     }
     m_killed = true;
     Delete();
+}
+
+void SystemEntity::Delete()
+{
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearFromTargets();
+    if (m_system != nullptr)
+        m_system->RemoveEntity(this);
+    if (!IsContainerSE())
+        m_self->Delete();
 }
 
 double SystemEntity::DistanceTo2(const SystemEntity* other) {
@@ -247,16 +258,6 @@ void SystemEntity::Abandon()
     m_fleetID = 0;
     m_ownerID = 1;
     m_self->ChangeOwner(1); // update this to use system owner?    not sure.  logs show this as "1" for all non-player items
-}
-
-void SystemEntity::Delete()
-{
-    if (m_targMgr != nullptr)
-        m_targMgr->ClearFromTargets();
-    if (m_system != nullptr)
-        m_system->RemoveEntity(this);
-    if (!IsContainerSE())
-        m_self->Delete();
 }
 
 

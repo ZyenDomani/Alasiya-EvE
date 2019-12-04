@@ -851,8 +851,11 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
 
     if (notify) {
         std::map<int32, PyRep *> changes;
-        // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....modules/charges can use both
-        if (IsModuleSlot(m_flag))
+        // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....
+        // modules/charges can use both, but charges throw client warning (invCache processing ixQuanity change)
+        if (categoryID() == EVEDB::invCategories::Charge)
+            changes[Inv::Update::StackSize] = new PyInt(old_qty);
+        else if (IsModuleSlot(m_flag))
             changes[Inv::Update::Quantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
         else
             changes[Inv::Update::StackSize] = new PyInt(old_qty);

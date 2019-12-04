@@ -74,7 +74,7 @@ void TargetManager::Process() {
                     itr->second->timer.Disable();
                     itr->second->state = TargetEntry::Locked;
                     _log(TARGET__TRACE, "%s(%u) has finished locking %s(%u)", \
-                                mySE->GetName(), mySE->GetID(), itr->first->GetName(), itr->first->GetID());
+                            mySE->GetName(), mySE->GetID(), itr->first->GetName(), itr->first->GetID());
                     TargetAdded(itr->first);
                     itr->first->TargetMgr()->TargetedByLocked(mySE);
                     m_canAttack = true;
@@ -89,6 +89,7 @@ void TargetManager::Process() {
 }
 
 void TargetManager::RemoveTarget(SystemEntity* tSE) {
+    // should this notify us of TargetLost?
     std::map<SystemEntity*, TargetEntry*>::iterator itr = m_targets.find(tSE);
     if (itr != m_targets.end()) {
         SafeDelete(itr->second);
@@ -106,25 +107,24 @@ void TargetManager::ClearTarget(SystemEntity *tSE) {
     TargetLost(tSE);
     if (m_targets.empty())
         m_canAttack = false;
-    _log(TARGET__TRACE, "ClearTarget:  %s(%u) has cleared target information for %s(%u).", \
-                    mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+    _log(TARGET__TRACE, "ClearTarget:  %s(%u) has cleared target %s(%u).", \
+            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
 }
 
 void TargetManager::ClearAllTargets(bool notify/*true*/) {
-    Destroyed();
     ClearTargets(notify);
     ClearFromTargets();
     _log(TARGET__TRACE, "ClearAllTargets:  %s(%u) has cleared all targeting information.", mySE->GetName(), mySE->GetID());
 }
 
 void TargetManager::ClearTargets(bool notify/*true*/) {
-    if (m_targets.empty()) {
-        m_canAttack = false;
+    m_canAttack = false;
+
+    if (m_targets.empty())
         return;
-    }
 
     for (auto cur : m_targets) {
-        _log(TARGET__INFO, "%s(%u) has cleared target %s(%u) during clear all.",
+        _log(TARGET__INFO, "ClearTarget() - %s(%u) has cleared target %s(%u).",
                 mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
         // failsafe   still chance this code is incomplete
         if (cur.first->TargetMgr() != nullptr)
@@ -135,8 +135,6 @@ void TargetManager::ClearTargets(bool notify/*true*/) {
 
     if (notify)
         TargetsCleared();
-
-    m_canAttack = false;
 }
 
 void TargetManager::ClearFromTargets() {
@@ -147,8 +145,8 @@ void TargetManager::ClearFromTargets() {
     for (auto cur : m_targetedBy) {
         //do not notify until we clear our target list! otherwise bad things happen.
         ToNotify.push_back(cur.first);
-        _log(TARGET__TRACE, "ClearFromTargets:  Added %s(%u) to delete list for %s(%u).", \
-                            cur.first->GetName(), cur.first->GetID(), mySE->GetName(), mySE->GetID());
+        _log(TARGET__TRACE, "ClearFrom() - %s(%u) has added %s(%u) to delete list.", \
+                mySE->GetName(), mySE->GetID(), cur.first->GetName(), cur.first->GetID());
         SafeDelete(cur.second);
     }
     m_targetedBy.clear();
@@ -244,13 +242,13 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     std::map<SystemEntity *, TargetEntry *>::iterator res = m_targets.find(tSE);
     if (res != m_targets.end()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return TargetFail(tSE);
     }
     // Check for client just logging into game.
     if (tSE->IsLogin()) {
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but they are just Logging In.  Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return TargetFail(tSE);
     }
 
@@ -298,7 +296,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, ShipItemRef sRef)
     tSE->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "Pilot %s in %s(%u) started targeting %s(%u) (%.2fs lock time)", \
-                mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), lockTime);
+            mySE->GetPilot()->GetName(), mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), lockTime);
 
     if (is_log_enabled(TARGET__DUMP))
         Dump();
@@ -312,20 +310,20 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     if (m_targets.find(tSE) != m_targets.end()) {
         //what to do?
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we are already targeting them. Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return true;
     }
     TargetTry(tSE);
     // Check against max locked target count
     if (m_targets.size() >= maxLockedTargets){
         _log(TARGET__DEBUG, " %s(%u): Told to target %s(%u), but we already have max targets.  Ignoring request.", \
-             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         return TargetFail(tSE);
     }
     // Check against max target range
     if (mySE->GetPosition().distance(tSE->GetPosition()) > maxTargetLockRange){
         _log(TARGET__TRACE, " %s(%u): Told to target %s(%u), but they are too far away.  Begin Approaching.", \
-             mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
+                mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID());
         chase = true;
         return TargetFail(tSE);
     }
@@ -337,7 +335,7 @@ bool TargetManager::StartTargeting(SystemEntity *tSE, float lockTime, uint8 maxL
     tSE->TargetMgr()->TargetedAdd(mySE);
 
     _log(TARGET__INFO, "NPC %s(%u) started targeting %s(%u) (%.2fs lock time)", \
-         mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime /1000));
+            mySE->GetName(), mySE->GetID(), tSE->GetName(), tSE->GetID(), (lockTime /1000));
 
     if (is_log_enabled(TARGET__DUMP))
         Dump();
@@ -378,6 +376,8 @@ void TargetManager::TargetedByLocked(SystemEntity* pSE) {
     //first make sure they are not already in the list
     std::map<SystemEntity *, TargetedByEntry *>::iterator itr = m_targetedBy.find(pSE);
     if (itr != m_targetedBy.end()) {
+        _log(TARGET__TRACE, "Adding %s(%u) to %s(%u)'s locked list, but they're already in there.", \
+                pSE->GetName(), pSE->GetID(), mySE->GetName(), mySE->GetID());
         //just re-use the old entry...
         itr->second->state = TargetedByEntry::Locked;
         return;
@@ -388,7 +388,7 @@ void TargetManager::TargetedByLocked(SystemEntity* pSE) {
         m_targetedBy[pSE] = te;
     }
     _log(TARGET__TRACE, "%s(%u) has been locked by %s(%u)", \
-         mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
+            mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     mySE->TargetMgr()->TargetedAdd(pSE);
 }
 
@@ -399,18 +399,16 @@ void TargetManager::TargetedByLost(SystemEntity* pSE) {
         m_targetedBy.erase(itr);
         TargetedLost(pSE);
         _log(TARGET__INFO, "%s(%u) is no longer locked by %s(%u)", \
-             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
+                mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     } else {
-        _log(TARGET__DEBUG, "%s(%u) was notified of targeted lost by %s(%u), but they did not have us targeted.", \
-             mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
+        _log(TARGET__DEBUG, "%s(%u) TargetByLost() - Tried to notify %s(%u) of target lost, but they did not have us targeted.", \
+                mySE->GetName(), mySE->GetID(), pSE->GetName(), pSE->GetID());
     }
 }
 
 bool TargetManager::IsTargetedBy(SystemEntity* pSE)
 {
-    if (m_targetedBy.find(pSE) != m_targetedBy.end())
-        return true;
-    return false;
+    return (m_targetedBy.find(pSE) != m_targetedBy.end());
 }
 
 SystemEntity* TargetManager::GetFirstTarget(bool need_locked/*false*/) {
@@ -440,6 +438,18 @@ PyList* TargetManager::GetTargets() const {
     return result;
 }
 
+PyList* TargetManager::GetTargeters() const {
+    PyList* result = new PyList();
+    if (m_targetedBy.empty())
+        return result;
+
+    std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
+    for(; itr != m_targetedBy.end(); ++itr)
+        result->AddItemInt( itr->first->GetID() );
+
+    return result;
+}
+
 // no longer used.  1Feb18
 SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/) const {
     if (m_targets.empty())
@@ -459,18 +469,6 @@ SystemEntity* TargetManager::GetTarget(uint32 targetID, bool need_locked/*true*/
     }
     _log(TARGET__WARNING, "Unable to find target %u (nl? %s)", targetID, need_locked?"yes":"no");
     return nullptr;    //not found.
-}
-
-PyList* TargetManager::GetTargeters() const {
-    PyList* result = new PyList();
-    if (m_targetedBy.empty())
-        return result;
-
-    std::map<SystemEntity*, TargetedByEntry*>::const_iterator itr = m_targetedBy.begin();
-    for(; itr != m_targetedBy.end(); ++itr)
-        result->AddItemInt( itr->first->GetID() );
-
-    return result;
 }
 
 float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
@@ -622,6 +620,9 @@ void TargetManager::TargetsCleared() {
 
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
+    _log(TARGET__WARNING, "%s Trying to add %s to %s's activeModule list.", \
+            pMod->GetShipRef()->GetPilot()->GetName(), pMod->GetSelf()->itemName().c_str(), mySE->GetName() );
+    // i think this check is redundant...shouldnt be able to activate non-miner on roid.
     if (mySE->IsAsteroidSE())
         if (!pMod->IsMiningLaser())
             return;
@@ -667,6 +668,8 @@ void TargetManager::Destroyed()
             } break;
         }
     }
+
+    ClearAllTargets();
 }
 
 // specific for asteroids; only called by asteroids
@@ -729,9 +732,12 @@ std::string TargetManager::TargetList(uint16 &length, uint16 &count) {
             ++count;
         }
     }
-    if (!m_modules.empty()) {
-        str << "Active Modules: (ship:module)<br>";
-        length += 30;
+    str << "Active Modules: (ship:module)<br>";
+    length += 30;
+    if (m_modules.empty()) {
+        str << "*NONE*";
+        length += 10;
+    } else {
         for (auto cur : m_modules) {
             str << "  " << cur.second->GetShipRef()->itemName();
             str << ":" << cur.second->GetSelf()->itemName() << "<br>";
@@ -751,8 +757,12 @@ void TargetManager::Dump() const {
         cur.second->Dump();
 
     _log(TARGET__DUMP, "    Active Modules: (ship:module)");
-    for (auto cur : m_modules)
-        _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
+    if (m_modules.empty()) {
+        _log(TARGET__DUMP, "*NONE*");
+    } else {
+        for (auto cur : m_modules)
+            _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
+    }
 }
 
 void TargetManager::TargetEntry::Dump() const {
@@ -763,8 +773,11 @@ void TargetManager::TargetEntry::Dump() const {
         case Locking:           sname = "Locking"; break;
         case Locked:            sname = "Locked";  break;
     }
-    _log(TARGET__DUMP, "    Targeted %s(%u): %s (Timer %s)", \
-            pSE->GetName(), pSE->GetID(), sname, timer.Enabled() ? "Running with %ums remaining" : "Disabled", timer.GetRemainingTime());
+    if (timer.Enabled())
+        _log(TARGET__DUMP, "    Targeted %s(%u): %s - Timer Running with %ums remaining.", \
+            pSE->GetName(), pSE->GetID(), sname, timer.GetRemainingTime());
+    else
+        _log(TARGET__DUMP, "    Targeted %s(%u): %s - Timer Disabled.", pSE->GetName(), pSE->GetID(), sname);
 }
 
 void TargetManager::TargetedByEntry::Dump() const {

@@ -219,7 +219,10 @@ bool SystemManager::ProcessTic() {
             ++itr;
             continue;
         }
-        itr->second->Process(); /* main process call. */
+
+         /* main process call. */
+        itr->second->Process();
+
         if (m_entityChanged) {
             mLast = itr->first;
             m_entityChanged = false;

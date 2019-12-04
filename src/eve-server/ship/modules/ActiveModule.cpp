@@ -192,13 +192,49 @@ void ActiveModule::Process()
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
+    if (m_ChargeState > Module::State::Loaded) {
+        _log(MODULE__TRACE, "ActiveModule::Process - %s for %s is loading.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        return;
+    }
+
     if (m_timer.Check())
         ProcessActiveCycle();
 
-    if (m_needsCharge and !m_Stop) {
+    if (m_Stop)
+        return;
+
+    if (m_needsTarget) {
+        if (m_targetSE == nullptr) {
+            _log(MODULE__TRACE, "%s - targetSE == nullptr.  calling DeactivateCycle()", m_modRef->itemName().c_str());
+            AbortCycle();
+            return;
+        }
+        if (m_targetSE->GetID() != m_targetID) {
+            _log(MODULE__TRACE, "%s - targetSE != targetID.  calling DeactivateCycle()", m_modRef->itemName().c_str());
+            AbortCycle();
+            return;
+        }
+    }
+
+    if (m_needsCharge) {
         // is this right?  should i do something else here?
-        if ((m_chargeRef.get() == nullptr) or (m_ChargeState == Module::State::Unloaded)
-        or (m_chargeRef->quantity() < 1) or (!m_chargeLoaded)) {
+        if (!m_chargeLoaded) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but is not loaded.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            m_Stop = true;
+        }
+        if (m_ChargeState == Module::State::Unloaded) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but is unloaded.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            m_Stop = true;
+        }
+        if (m_chargeRef.get() == nullptr) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has null chargeRef.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            m_Stop = true;
+        } else if (m_chargeRef->quantity() < 1) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has 0 qty.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            m_Stop = true;
+        }
+        if (m_Stop) {
+            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
             UnloadCharge();
             SetModuleState(Module::State::Deactivating);
             DeactivateCycle(true);
@@ -208,11 +244,10 @@ void ActiveModule::Process()
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
     if (m_targetSE == pSE) {
-        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s for %s", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
         Deactivate();
     }
 }
-
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
@@ -228,7 +263,9 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
         throw PyException(MakeCustomError("Your %s doesn't seem to be loaded.", m_modRef->itemName().c_str()));
     }
     if (IsValidTarget(targetID)) {
-        m_needsTarget = true;       // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
+        // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
+        // also need to make check for modules acting on OUR ship....in which case this will be wrong.
+        m_needsTarget = true;
         m_targetID = targetID;
         m_targetSE = m_shipRef->GetPilot()->SystemMgr()->GetSE(targetID);
         if (m_targetSE == nullptr) {
@@ -343,8 +380,18 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
 
     SetModuleState(Module::State::Activated);
 
+    --m_repeat;
     if (m_repeat < 1)
         m_Stop = true;
+
+    // hack for one-hit kills...
+    if (m_needsTarget)
+        if (m_targetSE->IsDead()) {
+            m_timer.Disable();
+            DeactivateCycle();
+            //SafeDelete(m_targetSE);
+            m_Stop = true;
+        }
 }
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
@@ -359,6 +406,9 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         ActiveModule::DeactivateCycle(true);
         return;
     }
+    // else wait for module to complete cycle then shut it down.
+    m_Stop = true;
+    SetModuleState(Module::State::Deactivating);
 
     /* these are not needed.  Clear() calls RemoveTargetModule
     if (effect.compare("TargetDestroyed") == 0) {
@@ -372,8 +422,6 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
     }
     */
-    m_Stop = true;
-    SetModuleState(Module::State::Deactivating);
 }
 
 void ActiveModule::Overload()
@@ -395,32 +443,6 @@ uint32 ActiveModule::DoCycle()
         AbortCycle();
         return 0;
     }
-    if (m_needsTarget) {
-        if (m_targetSE == nullptr) {
-            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
-            AbortCycle();
-            return 0;
-        }
-        if (m_targetSE->GetID() != m_targetID) {
-            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
-            AbortCycle();
-            return 0;
-        }
-    }
-    if (m_needsCharge) {
-        // modules that use scripts arent considered as needsCharge, as they work with or without the script.
-        if ((!m_chargeLoaded) or (m_chargeRef.get() == nullptr)) {
-            _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
-            //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
-            //{'FullPath': u'UI/Messages', 'messageID': 259232, 'label': u'NotEnoughChargesBody'}(u'{launcher} has {[numeric]got} charges, but needs {[numeric]need} to fire.', None, {u'{[numeric]got}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'got'}, u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}, u'{[numeric]need}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'need'}})
-            //{'FullPath': u'UI/Messages', 'messageID': 258889, 'label': u'TooManyChargesForLauncherBody'}(u'The launcher is currently holding {[numeric]excess} too many excess units.', None, {u'{[numeric]excess}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'excess'}})
-            // can this throw?
-            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
-            AbortCycle();
-            return 0;
-        }
-    }
-
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Artifacts_and_Prototypes: { // (this module group will need specific code)
@@ -576,6 +598,10 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, false);
         } break;
         case EVEDB::invGroups::Survey_Scanner: {
+            if (abort) {
+                Clear();
+                return;
+            }
             // this is the complete belt scanner rsp code here.
             PyTuple* result = new PyTuple(2);
             result->SetItem(0, new PyString("OnSurveyScanComplete"));
@@ -623,6 +649,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
             if (IsSuccess()) {
+                _log(MODULE__TRACE, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->itemName().c_str(), m_targetSE->GetName());
                 m_targMgr->RemoveTarget(m_targetSE);
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
@@ -678,15 +705,16 @@ void ActiveModule::SetTimer(uint32 time) {
     // timer must be restarted for fleet boosts to activate
     if (m_timer.Enabled())
         return;
-    // updated timer will reset cycle time if changed, but i DO NOT have client display coded to reset...this will fuck up timer time in client.
-    _log(MODULE__TRACE, "ActiveModule::SetTimer() - %s with %u ms.", (m_timer.Enabled()? "Updated" : "Started"), time);
+    // updated timer will reset cycle time if changed, but i DO NOT have client display coded to reset...this will fuck up timer time in client.  (worse than it already is)
+    _log(MODULE__TRACE, "ActiveModule::SetTimer() - %s with %u ms for %s on %s.", \
+            (m_timer.Enabled()? "Updated" : "Started"), time, m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
     m_timer.Start(time);
 }
 
 void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
     if (chargeRef.get() == nullptr) {
-        _log(MODULE__WARNING, "ActiveModule::LoadCharge() - Cannot find charge to load into this module");
+        _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Cannot find charge to load into this module", m_modRef->itemName().c_str());
         return;
     }
 
@@ -720,7 +748,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
         m_reloadTimer.Start(m_reloadTime);
     }
-    // process new charge's effects here
+    // process new charge's effects here...is this right?
     m_chargeRef->ClearModifiers();
     for (auto it : m_chargeRef->type().m_stateFxMap) {
         fxData data = fxData();
@@ -728,11 +756,15 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         data.srcRef = m_chargeRef;
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
-    //if (pClient->IsLogin() or pClient->IsDocked()) {
+    if (pClient->IsDocked() or (pClient->IsInSpace() and pClient->IsLogin())) {
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-    //}
+    }
 }
+
+//{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
+//{'FullPath': u'UI/Messages', 'messageID': 259232, 'label': u'NotEnoughChargesBody'}(u'{launcher} has {[numeric]got} charges, but needs {[numeric]need} to fire.', None, {u'{[numeric]got}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'got'}, u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}, u'{[numeric]need}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'need'}})
+//{'FullPath': u'UI/Messages', 'messageID': 258889, 'label': u'TooManyChargesForLauncherBody'}(u'The launcher is currently holding {[numeric]excess} too many excess units.', None, {u'{[numeric]excess}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'excess'}})
 
 //{'FullPath': u'UI/Messages', 'messageID': 259152, 'label': u'NoSpaceForReplacedItemBody'}(u'There is not enough space in the cargo hold for the charges currently in the {item} to be moved into.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
 
