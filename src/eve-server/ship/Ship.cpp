@@ -2525,6 +2525,12 @@ void Ship::SetPilot(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
 }
 
+void Ship::Dock() {
+    m_shipRef->Dock();
+    if (m_targMgr != nullptr)
+        m_targMgr->ClearAllTargets();
+}
+
 void Ship::EncodeDestiny( Buffer& into) {
     using namespace Destiny;
 

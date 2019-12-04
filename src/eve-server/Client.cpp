@@ -864,12 +864,12 @@ void Client::MoveToPosition(const GPoint &pt) {
 }
 
 void Client::DockToStation() {
+    pShipSE->Dock();
     // ap cleared on client side when docking.
     m_autoPilot = false;
     m_setStateSent = false;
     m_clientState = ClientState::csIdle;
     _log(AUTOPILOT__TRACE, "DockToStation()() - m_clientState set to Idle");
-    m_ship->Dock();
     pShipSE->DestinyMgr()->DockingAccepted();
     m_bubbleWait = true;     // deny client processing of subsquent destiny msgs
 
