@@ -132,6 +132,9 @@ public:
     /* for system setstate */
     PyObject* GetDroneState() const;
 
+    /* for command .syncloc - updates all players in bubble with positions of all dSE */
+    void SyncPos();
+
 protected:
     const GPoint m_center;
     const double m_radius;

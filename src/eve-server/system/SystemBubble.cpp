@@ -740,6 +740,11 @@ PyObject* SystemBubble::GetDroneState() const
     return new PyObject("util.Rowset", dict);
 }
 
+void SystemBubble::SyncPos() {
+    // send positions of all dSE in bubble to all players in bubble
+
+}
+
 void SystemBubble::RemoveMarkers()
 {
     if (m_hasMarkers)

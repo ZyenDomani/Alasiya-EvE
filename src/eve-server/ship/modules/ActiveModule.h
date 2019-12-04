@@ -36,7 +36,8 @@ public:
     virtual void AbortCycle();
     virtual void DeOverload();
     virtual void Deactivate(std::string effect="");
-    virtual void DeactivateCycle(bool abort=false);
+    /* cancel current cycle after timer ends. */
+    virtual void DeactivateCycle(bool abort=false); // this needs state=Deactivating for normal op.  set abort=true to cancel current cycle */
     virtual void Activate(uint16 effectID, uint32 targetID=0, int16 repeat=0);
     virtual void RemoveTarget(SystemEntity* pSE);
 
