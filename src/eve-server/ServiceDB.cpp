@@ -80,7 +80,8 @@ bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& 
     {
         sLog.Error( "ServiceDB", "Error in query: %s.", res.error.c_str() );
         failMsg = "Error in DB Query";
-        //failMsg += ": ";
+        failMsg += ": Account not found for ";
+        failMsg += eLogin;
         //failMsg += res.error.c_str();     // do we wanna sent the error msg to client?
         return false;
     }
@@ -296,9 +297,10 @@ void ServiceDB::ProcessRealChange(const char * key, double oldValue, double newV
     val->items[1] = new PyFloat(newValue);
     notif->SetItemString(key, val);
 
+    int* nullInt(nullptr);
     std::string qValue(key);
     qValue += " = ";
-    qValue += fcvt(newValue, 2, nullptr, nullptr);
+    qValue += fcvt(newValue, 2, nullInt, nullInt);
     dbQ.push_back(qValue);
 }
 

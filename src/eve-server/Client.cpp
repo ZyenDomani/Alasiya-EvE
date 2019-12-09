@@ -2134,7 +2134,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     // somewhere in here, client sends it's sessionID.  i still dont know how to get it.
 
-    std::string failMsg = "LoginAuthFailed";
+    std::string failMsg = "Login Authorization Invalid.";
 
     // test account name for invalid chars (which may allow sql injection)
     if (!ServiceDB::ValidateAccountName(ccp, failMsg))
@@ -2146,7 +2146,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     /* check wether the account has been banned and if so send the semi correct message */
     if (aData.banned) {
-        failMsg = "Your account is banned. Contact Administration for further support";
+        failMsg = "Your account is banned. Contact Allan for further support";
         return _LoginFail(failMsg);
     }
 
@@ -2157,12 +2157,16 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
 
     if (!ccp.user_password.empty()) {
         sLog.Warning("  Client::Login()", "%s(%lli) - Using Plain Password", aData.name.c_str(), aData.clientID);
-        if (strcmp(aData.password.c_str(), ccp.user_password.c_str()) != 0)
+        if (strcmp(aData.password.c_str(), ccp.user_password.c_str()) != 0) {
+            failMsg = "The plain Password you entered is incorrect for this account.";
             return _LoginFail(failMsg);
+        }
     } else {
         //sLog.Warning("  Client::Login()", "%s(%lli) - Using Hashed Password", aData.name.c_str(), aData.clientID);
-        if (strcmp(aData.hash.c_str(), ccp.user_password_hash.c_str()) != 0)
+        if (strcmp(aData.hash.c_str(), ccp.user_password_hash.c_str()) != 0) {
+            failMsg = "The Password you entered is incorrect for this account.";
             return _LoginFail(failMsg);
+        }
 
         if (!ccp.user_password.empty())
             ServiceDB::UpdatePassword(aData.id, ccp.user_password.c_str());
@@ -2213,7 +2217,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetLong("role", aData.role);
     pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
 
-    sLog.Green("  Client::Login()","Account \"%s\" logging in from IP %s", aData.name.c_str() ,EVEClientSession::GetAddress().c_str());
+    sLog.Green("  Client::Login()","Account \"%s\" (uid:%u) logging in from IP %s", aData.name.c_str(), aData.id, EVEClientSession::GetAddress().c_str());
 
     return true;
 }
