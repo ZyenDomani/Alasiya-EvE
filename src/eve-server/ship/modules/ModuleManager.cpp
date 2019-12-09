@@ -88,12 +88,11 @@ bool ModuleManager::Initialize() {
             cur->SetFlag(flagCargoHold);    // put that bitch back in cargo
         }
         if (IsModuleSlot(cur->flag())) {
-            // m_Ship->ValidateAddItem(cur->flag(), cur);
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    _log(MODULE__ERROR, "ModuleManager::Initialize() - %s(%u) has flagAutoFit set in ship %s",\
-                            cur->itemName().c_str(), cur->itemID(), m_Ship->itemName().c_str() );
+                    _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s loading %s(%u) during Init().",\
+                            m_Ship->itemName().c_str(), cur->itemName().c_str(), cur->itemID());
                     ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
                     AddModule(mRef, cur->flag());
                 } break;
