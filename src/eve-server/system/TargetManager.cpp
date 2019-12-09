@@ -758,7 +758,7 @@ void TargetManager::Dump() const {
 
     _log(TARGET__DUMP, "    Active Modules: (ship:module)");
     if (m_modules.empty()) {
-        _log(TARGET__DUMP, "*NONE*");
+        _log(TARGET__DUMP, "      *NONE*");
     } else {
         for (auto cur : m_modules)
             _log(TARGET__DUMP, "\t\t %s: %s", cur.second->GetShipRef()->itemName().c_str(), cur.second->GetSelf()->itemName().c_str());
@@ -773,11 +773,12 @@ void TargetManager::TargetEntry::Dump() const {
         case Locking:           sname = "Locking"; break;
         case Locked:            sname = "Locked";  break;
     }
-    if (timer.Enabled())
-        _log(TARGET__DUMP, "    Targeted %s(%u): %s - Timer Running with %ums remaining.", \
+    if (timer.Enabled()) {
+        _log(TARGET__DUMP, "    Targeting %s(%u): %s - Timer Running with %ums remaining.", \
             pSE->GetName(), pSE->GetID(), sname, timer.GetRemainingTime());
-    else
+    } else {
         _log(TARGET__DUMP, "    Targeted %s(%u): %s - Timer Disabled.", pSE->GetName(), pSE->GetID(), sname);
+    }
 }
 
 void TargetManager::TargetedByEntry::Dump() const {
