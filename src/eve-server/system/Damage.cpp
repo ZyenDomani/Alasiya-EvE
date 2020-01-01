@@ -526,9 +526,12 @@ void Ship::Killed(Damage &fatal_blow) {
                     BlueprintRef bpRef = BlueprintRef::StaticCast(cur.second);
                     s = (bpRef->copy() ? 2 : s);
                 }
+
                 blob << "<i t=" << cur.second->typeID() << " f=" << cur.second->flag() << " s=" << s ;
-                // all items have 50% chance of drop, even from popped ship
-                if (IsEven(MakeRandomInt(0, 100))) {
+                // all contained items have 50% chance of drop, except rigs, which do not survive
+                if (IsRigSlot(cur.second->flag())) {
+                    /* just avoiding survive check */;
+                } else if (IsEven(MakeRandomInt(0, 100))) {
                     // item survived.  check qty for drop
                     if (x > 1) {
                         d = MakeRandomInt(0, x);
