@@ -39,6 +39,17 @@
 #include "system/SystemManager.h"
 #include "system/cosmicMgrs/ManagerDB.h"
 
+/*
+BOOKMARK__ERROR
+BOOKMARK__WARNING
+BOOKMARK__MESSAGE
+BOOKMARK__DEBUG
+BOOKMARK__INFO
+BOOKMARK__TRACE
+BOOKMARK__CALL_DUMP
+BOOKMARK__RSP_DUMP
+*/
+
 
 PyCallable_Make_InnerDispatcher(BookmarkService)
 
@@ -74,7 +85,7 @@ PyResult BookmarkService::Handle_GetBookmarks(PyCallArgs &call) {
     PyTuple* result = new PyTuple(2);
         result->SetItem(0, m_db.GetBookmarks(call.client->GetCharacterID()));
         result->SetItem(1, m_db.GetFolders(call.client->GetCharacterID()));
-    result->Dump(COMMON__INFO, "    ");
+    result->Dump(BOOKMARK__RSP_DUMP, "    ");
     return result;
 }
 
@@ -87,7 +98,7 @@ PyResult BookmarkService::Handle_CreateFolder(PyCallArgs &call) {
         result.folderName = name;
         result.creatorID = ownerID;
 
-    result.Dump(COMMON__INFO, "    ");
+    result.Dump(BOOKMARK__RSP_DUMP, "    ");
     return result.Encode();
 }
 
@@ -97,7 +108,7 @@ PyResult BookmarkService::Handle_UpdateFolder(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return new PyBool(false);
     }
-    args.Dump(COMMON__INFO, "    ");
+    args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (!m_db.UpdateFolderInDatabase(args.folderID, PyRep::StringContent(args.folderName)))
         return new PyBool(false); // make client error here to let them know updating failed
@@ -109,7 +120,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
     // this also deletes ALL bookmarks in the folder to be deleted.
     //   this returns bm data for bookmarks deleted with this folder, if any
 
-    call.Dump(COMMON__INFO);
+    call.Dump(BOOKMARK__CALL_DUMP);
 
     uint32 folderID = PyRep::IntegerValue(call.tuple->GetItem( 0 ));
 
@@ -129,6 +140,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
             data.memo = "";
             data.comment = "";
             data.folderID = folderID;
+        data.Dump(BOOKMARK__RSP_DUMP, "    ");
         return data.Encode();
     }
 
@@ -142,6 +154,7 @@ PyResult BookmarkService::Handle_DeleteFolder(PyCallArgs &call) {
             data.folderID = folderID;
         result->SetItem(i, data.Encode());
     }
+    result->Dump(BOOKMARK__RSP_DUMP, "    ");
     //return result;
     /** @todo this needs more work */
     return nullptr;
@@ -155,7 +168,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         return nullptr;
     }
 
-    args.Dump(COMMON__INFO, "    ");
+    args.Dump(BOOKMARK__CALL_DUMP, "    ");
     uint32 itemID = 0, typeID = 0, locationID = 0, folderID = 0;
     GPoint point(NULL_ORIGIN);
 
@@ -200,6 +213,7 @@ PyResult BookmarkService::Handle_BookmarkLocation(PyCallArgs &call) {
         result.y           = point.y;
         result.z           = point.z;
         result.locationID  = locationID;
+    result.Dump(BOOKMARK__RSP_DUMP, "    ");
     return result.Encode();
 }
 
@@ -212,7 +226,7 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    args.Dump(COMMON__INFO, "    ");
+    args.Dump(BOOKMARK__CALL_DUMP, "    ");
     /*
     * 22:25:58 [SvcCallDump]       Tuple: 5 elements
     * 22:25:58 [SvcCallDump]         [ 0] Integer field: 30000053
@@ -241,16 +255,18 @@ PyResult BookmarkService::Handle_BookmarkScanResult(PyCallArgs &call)
         result.y           = point.y;
         result.z           = point.z;
         result.locationID  = args.locationID;
+    result.Dump(BOOKMARK__RSP_DUMP, "    ");
     return result.Encode();
 }
 
 PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
+    call.Dump(BOOKMARK__CALL_DUMP);
     Call_DeleteBookmarks args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    args.Dump(COMMON__INFO, "    ");
+    //args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (args.object->IsNone())
         return PyStatic.NewNone();
@@ -266,15 +282,18 @@ PyResult BookmarkService::Handle_DeleteBookmarks(PyCallArgs &call) {
 
 
 PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
+    // rows = bookmarkMgr.MoveBookmarksToFolder(folderID, bookmarkIDs)
+    //call.Dump(BOOKMARK__CALL_DUMP);
     Call_MoveBookmarksToFolder args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return nullptr;
     }
-    args.Dump(COMMON__INFO, "    ");
+    args.Dump(BOOKMARK__CALL_DUMP, "    ");
 
     if (args.object->IsNone())
         return PyStatic.NewNone();
+
     PyList* bmList = args.object->header()->AsTuple()->GetItem(1)->AsTuple()->GetItem(0)->AsList();
 
     std::vector<int32> bmIDs;
@@ -287,13 +306,12 @@ PyResult BookmarkService::Handle_MoveBookmarksToFolder(PyCallArgs &call) {
 }
 
 PyResult BookmarkService::Handle_CopyBookmarks(PyCallArgs &call) {
-  /**
-            newBookmarks, message = bookmarkMgr.CopyBookmarks(bookmarksToCopy, folderID)
-            */
+    //newBookmarks, message = bookmarkMgr.CopyBookmarks(bookmarksToCopy, folderID)
+
   //{'FullPath': u'UI/Messages', 'messageID': 258505, 'label': u'CantTradeMissionBookmarksBody'}(u'You cannot trade or copy mission bookmarks.', None, None)
 
-      sLog.Error( "BookmarkService::Handle_CopyBookmarks()", "Service is not handled yet.  Returning NULL.");
-  call.Dump(COMMON__INFO);
+    sLog.Error( "BookmarkService::Handle_CopyBookmarks()", "Service is not handled yet.  Returning NULL.");
+    call.Dump(BOOKMARK__CALL_DUMP);
 
     return PyStatic.NewNone();
 }
@@ -303,9 +321,9 @@ PyResult BookmarkService::Handle_AddBookmarkFromVoucher(PyCallArgs &call) {
 	 sm.RemoteSvc('bookmark').AddBookmarkFromVoucher, itemID, ownerID, folderID, violateSafetyTimer=True)
             */
 
-  sLog.Error( "BookmarkService::Handle_AddBookmarkFromVoucher()", "Service is not handled yet.  Returning NULL.");
-  call.client->SendInfoModalMsg("Creating Bookmarks from Vouchers is currently broken.");
-  call.Dump(COMMON__INFO);
+    sLog.Error( "BookmarkService::Handle_AddBookmarkFromVoucher()", "Service is not handled yet.  Returning NULL.");
+    call.client->SendInfoModalMsg("Creating Bookmarks from Vouchers is currently broken.");
+    call.Dump(BOOKMARK__CALL_DUMP);
 
     return PyStatic.NewNone();
 }
