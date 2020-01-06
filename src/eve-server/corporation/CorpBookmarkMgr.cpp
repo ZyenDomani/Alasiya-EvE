@@ -24,6 +24,12 @@
     Rewrite:    Allan
 */
 
+/* the distinction between bookmark Mgrs (corp/personal) is made on-the-fly when methods are called in client.
+ * most (if not all) will use same code and returns.  so far, i havent seen a difference between them.
+ * this may be used to separate corp and personal bm in db on live.
+ * not sure if im gonna do that here or not yet.
+ */
+
 #include "eve-server.h"
 
 #include "Client.h"

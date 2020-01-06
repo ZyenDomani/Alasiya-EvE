@@ -363,6 +363,8 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     if (pMod == nullptr)
         throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));
 
+    // figure out how to use args.qty for loading less-than-full charges
+    //  LoadCharge() can be easily updated to do this.
 	if (pMod->IsLinked())
         sRef->LoadLinkedWeapons(pMod, args.itemIDs);
     else
@@ -770,7 +772,7 @@ PyResult DogmaIMBound::Handle_Activate(PyCallArgs& call)
     Client* pClient(call.client);
 
     if (!pClient->IsInSpace()) {
-        pClient->SendNotifyMsg("You can't do this while docked");
+        pClient->SendNotifyMsg("You can't do this while docked.");
         return PyStatic.NewZero();
     }
     /* {'messageKey': 'DeniedActivateCloaked', 'dataID': 17883388, 'suppressable': False, 'bodyID': 259487, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 771}

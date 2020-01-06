@@ -208,7 +208,7 @@ void BubbleManager::Remove(SystemEntity *ent) {
  * introducing lag from bubble processing.
  *
  * to further reduce bubble-finding process times, testing an unordered multimap
- * with bubbles entered by <systemID, SystemBubble*> to search only bubbles in desired system,
+ * of bubbles by [systemID, SystemBubble*] to search only bubbles in desired system,
  * greatly reducing the search time for many loaded systems.
  *
  * NOTE:  these are only used here...

@@ -531,6 +531,7 @@ float TargetManager::TimeToLock ( ShipItemRef sRef, SystemEntity* tSE ) const {
             - StoppedTargeting
         *otherfail - problem with somebody else targeting you
             - StoppedTargeting
+            - WarpingOut
 */
 void TargetManager::TargetTry(SystemEntity *tSE) {
     if (!mySE->HasPilot())

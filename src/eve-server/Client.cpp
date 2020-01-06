@@ -2172,11 +2172,11 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
             ServiceDB::UpdatePassword(aData.id, ccp.user_password.c_str());
     }
 
-    // if we have gotten to this point, the password was matched.
+    // all checks pass.
 
     /** @todo  check this character/account for newbie status and revoke as needed before account update.  */
 
-    /* update account information, increase login count, last login timestamp */
+    /* update account information, increase login count, set last login timestamp */
     ServiceDB::IncrementLoginCount(aData.id);
 
     /* marshaled Python string "None" */

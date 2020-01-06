@@ -85,7 +85,7 @@ PyRep *BookmarkDB::GetBookmarks(uint32 ownerID) {
         "  locationID,"
         "  note,"
         "  creatorID,"
-        "  NULLIF(folderID, 0)"    //NULLIF(folderID,0) AS folderID
+        "  NULLIF(folderID, 0)"    //return NULL if folderID = 0
         " FROM bookmarks"
         " WHERE ownerID = %u",
         ownerID))

@@ -438,7 +438,7 @@ public:
 
 
 
-/* Non-Static / Mobile / Destructable / Celestial Objects - PC's, NPC's, Drones, Ships, Missiles  - has TargetMgr*/
+/* Non-Static / Mobile / Destructable / Celestial Objects - Drones, Ships, Missiles  - has TargetMgr*/
 class DynamicSystemEntity : public SystemEntity {
 public:
     DynamicSystemEntity(InventoryItemRef self, PyServiceMgr &services, SystemManager* system);
