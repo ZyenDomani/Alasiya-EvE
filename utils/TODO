@@ -72,6 +72,7 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 ********  improvements
 
 rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
+rename AttributeManager to Godma to follow client naming convention?
 
 update ValidateAddItem() to return >0 on error and use enums to determine/display error
 
