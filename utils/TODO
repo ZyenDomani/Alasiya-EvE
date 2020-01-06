@@ -29,6 +29,8 @@ modules freaking out when charge depleted
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
 
+
+
 multiple errors like this....
 19:25:58 [FxMsg] FxProc::ApplyEffects(12): Tracking Speed Disruption(140000265) - src(Self:1332) -100.000 <RevPostPercent> targ(Other:349) set targ from -15.750 to -inf.
 
@@ -70,6 +72,10 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
 
 ********  improvements
+
+inventory item - populate - effect timestamp
+    - this needs to be tracked/updated for proper effects handing and tracking.
+    - could be a problem with movement being funky
 
 rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
 rename AttributeManager to Godma to follow client naming convention?
