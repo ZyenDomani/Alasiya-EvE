@@ -193,10 +193,10 @@ void Inventory::AddItem(InventoryItemRef iRef) {
 
     if (test.second)
         _log(INV__TRACE, "Inventory::AddItem()  Updated %s(%u) to contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     else
         _log(INV__TRACE, "Inventory::AddItem()  %s(%u) already contains %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -206,10 +206,10 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     if (itr != mContents.end()) {
         mContents.erase(itr);
         _log(INV__TRACE, "Inventory::RemoveItem()  Updated %s(%u) to no longer contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
         _log(INV__TRACE,"Inventory::RemoveItem()  %s(%u) does not contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->itemName().c_str(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::DeleteContents()
@@ -442,7 +442,7 @@ uint32 Inventory::GetItemsByFlagSet(std::set<EVEItemFlags> flags, std::vector<In
 
 bool Inventory::ContainsTypeQty(uint16 typeID, uint32 qty/*0*/) const
 {
-    uint16 count = 0;
+    uint32 count = 0;
     for (auto cur : mContents) {
         if (cur.second->typeID() == typeID ) {
             if (cur.second->quantity() >= qty) {

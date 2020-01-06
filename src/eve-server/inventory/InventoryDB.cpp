@@ -796,37 +796,32 @@ bool InventoryDB::GetOpenPowerSlots(uint32 slotType, ShipItemRef ship, uint32 &i
 {
     /** @todo only used by gmcommands.  update and remove. */
     DBQueryResult res;
-    uint32 attributeID = 0, firstFlag = 0;
+    uint32 attributeID = 0, firstFlag = 0, slotsOnShip = 0;
     DBResultRow row;
-    uint32 slotsOnShip;
 
     if( slotType == 0 )
     {
         attributeID = 1137;
         firstFlag = 92; //rigslot0
-        //slotsOnShip = ship->rigSlots();
-        slotsOnShip = static_cast<uint32>(ship->GetAttribute(AttrRigSlots).get_int());
+        slotsOnShip = ship->GetAttribute(AttrRigSlots).get_uint32();
     }
     else if( slotType == 1 )
     {
         attributeID = 12;
         firstFlag = 11; //lowslot0
-        //slotsOnShip = ship->lowSlots();
-        slotsOnShip = static_cast<uint32>(ship->GetAttribute(AttrLowSlots).get_int());
+        slotsOnShip = ship->GetAttribute(AttrLowSlots).get_uint32();
     }
     else if( slotType == 2 )
     {
         attributeID = 13;
         firstFlag = 19; //medslot0
-        //slotsOnShip = ship->medSlots();
-        slotsOnShip = static_cast<uint32>(ship->GetAttribute(AttrMedSlots).get_int());
+        slotsOnShip = ship->GetAttribute(AttrMedSlots).get_uint32();
     }
     else if( slotType == 3 )
     {
         attributeID = 14;
         firstFlag = 27; //hislot0
-        //slotsOnShip = ship->hiSlots();
-        slotsOnShip = static_cast<uint32>(ship->GetAttribute(AttrHiSlots).get_int());
+        slotsOnShip = ship->GetAttribute(AttrHiSlots).get_uint32();
     }
 
     for( uint32 flag = firstFlag; flag < (firstFlag + slotsOnShip); flag++ ) {

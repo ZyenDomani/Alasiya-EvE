@@ -273,7 +273,7 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
     int8 pcs = 5;
     double radius = 8000;
     radius *= sConfig.cosmic.roidRadiusMultiplier;
-    double roidradius = 0, theta = 0, elevation = 0;
+    double roidradius = 0, theta = 0, randRadius = 0, elevation = 0;
     if (anomaly) {
         pcs += roidDist.size();
         radius += (radius *secValue);
@@ -320,10 +320,11 @@ void BeltMgr::SpawnBelt(uint16 bubbleID, std::unordered_multimap<float, uint16>&
             mposition.x = (radius + roidradius /5) * cos(theta);
             mposition.z = (radius + roidradius /5) * sin(theta);
         } else if (type == 0) {
+            randRadius = MakeRandomFloat(-radius /4, radius /2);
             // half-circle type
-            theta =  EvE::Trig::Deg2Rad(degreeSeparation * i);
-            mposition.x = (radius + roidradius) * cos(theta);
-            mposition.z = (radius + roidradius) * sin(theta);
+            theta = EvE::Trig::Deg2Rad(degreeSeparation * i);
+            mposition.x = (randRadius + roidradius + radius) * cos(theta);
+            mposition.z = (randRadius + roidradius + radius) * sin(theta);
         }
         mposition.y = MakeRandomFloat(-elevation, elevation);
         SpawnAsteroid(beltID, GetAsteroidType(MakeRandomFloat(), roidDist), roidradius, (center +mposition), ice);

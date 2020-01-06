@@ -409,11 +409,6 @@ void Ship::Killed(Damage &fatal_blow) {
 
     std::string wreck_name = m_self->itemName() + " Wreck";
 
-    SystemBubble* pBubble(m_bubble);
-    DestinyManager* pDestiny(m_destiny);
-    // this will nullify bubble and destiny.  system will remain valid (never null in SE base object)
-    //m_system->RemoveEntity(this);
-
     if (!m_self->HasPilot()) {
         // Spawn a wreck for the Ship that was destroyed:
         ItemData wreckItemData(wreckTypeID, killerID, locationID, flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
@@ -501,6 +496,10 @@ void Ship::Killed(Damage &fatal_blow) {
     if (pPilot->InPod())
         blob << "<items><i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/></items>";
     else {
+        AbortCycle();
+        // remove all charges (per packet data)
+        GetShipItemRef()->UnloadAllModules();
+
         blob << "<items>";
         /* killBlob contains destroyed/dropped items. u'<items><i t=3651 f=0 d=0 x=1/><i t=3634 f=0 d=0 x=1/></items>'  -allan 13July17
             " i*" tag is decoded as follows:
@@ -512,7 +511,7 @@ void Ship::Killed(Damage &fatal_blow) {
         */
         std::map<uint32, InventoryItemRef> deadShipInventory;
         deadShipInventory.clear();
-        pPilot->GetShip()->GetMyInventory()->GetInventoryList(deadShipInventory);
+        GetShipItemRef()->GetMyInventory()->GetInventoryList(deadShipInventory);
         if (deadShipInventory.empty()) {
             blob << "<i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/>";
         } else {
@@ -592,25 +591,13 @@ void Ship::Killed(Damage &fatal_blow) {
         // this method will reset char variables to last clone state after being podded.  NOTE  *** NOT TESTED YET ***
         pPilot->ResetAfterPodded();
 	} else {
-        /** @todo (allan)  when killed while in dock queue, this DOES NOT set client variables correctly,
-                meaning, it does not...
-                - remove client from system,
-                - remove destiny and system managers,
-                - set coords on client and ship items.
-            will have to look into this more later
-
-        @note  i cannot reproduce this error anymore.  not sure if it still exists  -28Dec18
-         */
-
-        AbortCycle();
         PayInsurance();
 
         m_destiny->SendJettisonPacket();
 
         uint16 groupID = m_self->groupID();
-        ShipItemRef deadShipRef = pPilot->GetShip();
         GPoint podPosition(wreckPosition);
-        podPosition.MakeRandomPointOnSphere(deadShipRef->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
+        podPosition.MakeRandomPointOnSphere(GetShipItemRef()->radius() + pPilot->GetPod()->radius() + MakeRandomFloat(100, 200));
         // this resets client ship data
         pPilot->ResetAfterPopped(podPosition);
 
@@ -626,6 +613,7 @@ void Ship::Killed(Damage &fatal_blow) {
             GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
         DropLoot(wreckItemRef, groupID, killerID);
+
         // add wreck to system's AnomalyMgr
         m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
 

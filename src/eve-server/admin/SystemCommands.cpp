@@ -489,7 +489,7 @@ static PyResult generic_createitem(Client *pClient, CommandDB *db, PyServiceMgr 
 
     //Move to location
     if (pClient->IsInSpace())
-        pClient->GetShip()->AddItem(flag, iRef);
+        pClient->GetShip()->AddItemByFlag(flag, iRef);
     else
         iRef->Move(locationID, flag, true);
 

@@ -194,18 +194,18 @@ PyResult InventoryBound::Handle_RemoveChargeToHangar(PyCallArgs &call) {
     _log(INV__MESSAGE, "Calling InventoryBound::RemoveChargeToHangar() for %s(%u)", m_self->itemName().c_str(), m_itemID);
     call.Dump(INV__DUMP);
 
+    Call_RemoveCharge args;
+    if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
+        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
+        return PyStatic.NewZero();
+    }
+
     uint32 quantity = 0;
     if (call.tuple->size() == 2)
         quantity = PyRep::IntegerValue(call.tuple->GetItem(1));
 
-    Call_RemoveCharge args;
-    if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
-        codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new PyInt(0);
-    }
-
     // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
-    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagHangar));
+    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID));
 }
 
 PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
@@ -233,7 +233,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
     Call_RemoveCharge args;
     if (!args.Decode(call.tuple->GetItem(0)->AsTuple())) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return new PyInt(0);
+        return PyStatic.NewZero();
     }
 
     bool merge = false;
@@ -241,7 +241,7 @@ PyResult InventoryBound::Handle_RemoveChargeToCargo(PyCallArgs &call) {
         merge = call.byname.find("preferMerge")->second->AsBool()->value();
 
     // this return is (sometimes) used by client to call InventoryBound::MultiAdd() to complete the remove process
-    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, flagCargoHold, merge));
+    return new PyInt(call.client->GetShip()->RemoveCharge((EVEItemFlags)args.flagID, merge));
 }
 
 PyResult InventoryBound::Handle_MultiMerge(PyCallArgs &call) {
@@ -592,8 +592,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 if (iRef->categoryID() == EVEDB::invCategories::Module) {
                     toFlag = pShip->FindAvailableModuleSlot(iRef);
                     if (toFlag == flagIllegal) {
-                        pClient->SendNotifyMsg("Your ship has no availible slots to fit this module.  Putting the %s in your CargoHold.", \
-                                    iRef->itemName().c_str());
+                        pClient->SendNotifyMsg("Your ship has no availible slots to fit this module.  Putting the %s in your CargoHold.", iRef->name());
                         toFlag = flagCargoHold;
                     }
                 } else {
@@ -608,7 +607,7 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 pInventory->ValidateAddItem(toFlag, iRef);  // this will throw if it fails
 
             // check adding item to ship...if it fails, return to previous container
-            if (m_self->GetShipItem()->AddItem(toFlag, iRef, pClient) < 1) {
+            if (m_self->GetShipItem()->AddItemByFlag(toFlag, iRef, pClient) < 1) {
                 //ALL items *should* have a loaded container item.
                 InventoryItemRef contRef = sItemFactory.GetItemContainer(*itr);
                 if (contRef.get() != nullptr)
