@@ -1,17 +1,18 @@
 Alasiya EvE Source Code Class definitions and descriptions
 these are modeled after EvEmu code, and highly modified/updated from official
-    official source should eventually use these, as they are conceived, designed, and updated from years of testing
+official source should eventually use these, as they are conceived, designed, and updated from years of testing
 
-** this data is incomplete, but better  4 jan 20 **
+** this data is still incomplete, but better  4 jan 20 **
 
-** NOTE:  items with an ampersand are not in official branch - see notes at end of this file for differences between branches **
+** NOTE:  items prefixed with an ampersand are not in official branch **
+    - see notes at end of this file for differences between branches (incomplete)
 
 ** NOTE:  i use the term "system" rather ambiguously here (and often).
     lowercase "system" is used to mean a server system in which code is run. (i.e. the bookmark system)
     capitalized "System" means a solar system
 
 
-* names for server systems used by ccp
+* names for systems used by ccp
 DogmaIM
     item instance manager
     processes item physical changes
@@ -45,17 +46,18 @@ ballpark
     this ballpark is destroyed (in client) when docking or jumping
 
 balls
-    objects in a solar system
+    space objects in a solar system
 
 bubble
-    a container within a solar system for non-static SE objects and have a set radius of 250km
+    a container within a solar system for all non-static and global SE objects and have a set radius of 250km
     also called a 'grid', these item containers hold data for all objects within its' sphere of influence (soi)
-    all non-static objects on a players screen are contained in the players current bubble
-    most objects must be in a bubble, and can only be in one bubble at a time
-    suns, planets, and moons are too big for a bubble and exempt from the bubble rule.  they are also static objects and displayed separately
+    all non-global objects on a players screen are contained in the players current bubble
+    all non-static objects must be in a bubble, and can only be in one bubble at a time
+    suns, planets, moons, and stations are static objects and displayed separately
+    some dynamic objects are considered global and displayed separately (i.e. cyno fields, system blocade units, customs offices)
 
 bracket
-    hud display manager for space objects
+    hud display manager for balls
 
 
 * non-class objects used by client/server systems *
@@ -286,7 +288,7 @@ Agent
 
     Structure
         the base DSE for POS items (following classes derived from this)
-        this includes territory claim units, system blockade units, planet orbitals, structure upgrades and all POS items
+        this includes territory claim units, system blockade units, planet orbitals (customs offices), structure upgrades and all POS items
 
     Tower
         also called Control Tower, or CT, this item is the main control structure of player-owned starbase systems
