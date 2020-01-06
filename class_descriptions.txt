@@ -1,6 +1,6 @@
 Alasiya EvE Source Code Class definitions and descriptions
 these are modeled after EvEmu code, and highly modified/updated from official
-    offical source should eventually use these, as they are conceived and designed from years of testing
+    official source should eventually use these, as they are conceived, designed, and updated from years of testing
 
 ** this data is incomplete, but better  4 jan 20 **
 
@@ -9,9 +9,72 @@ these are modeled after EvEmu code, and highly modified/updated from official
 ** NOTE:  i use the term "system" rather ambiguously here (and often).
     lowercase "system" is used to mean a server system in which code is run. (i.e. the bookmark system)
     capitalized "System" means a solar system
-    an "Instance" is an implementation of code at runtime in the server.
+    an "instance" is an implementation of code at runtime in the server for a given system.
         the server itself is a single instance.
         clients connected to the server are multiple instances of same system (each client has it's own instance)
+
+** ERRATA
+    a SystemEntity is an object that can survive being in space without a container, i.e. Moon, Ship, Station, CargoContainer
+        - there have been SE updates that no longer really make much sense, but have yet to be fixed in class descriptions
+
+    i define an 'object' as a game item that can be in space without being contained within another item.  all objects are SystemEntitys
+
+    i define an 'item' as a game item that must be in a container.  this container can be in another item, or be an object.
+        items cannot survive in space without a container.
+        most items have an inventory and can contain other items
+        some items only contain objects and have no real object themselves (i.e. solarsystems)
+        everything in game is an item.
+
+    items and objects are completely separate resources, but all objects are created for and from their respective item
+        as an example, a ship item is derived from InventoryItem and processes all inventory-type calls.
+        a ship object is the dynamic system entity found in space, created from it's relevant ship item.
+        most objects have references to their items (thru base SE class) but not vice-versa
+
+    all class pointers are derived from base class to allow generic dereferencing without knowing the specific derived class
+    all class pointer lifetime is handled in derived classes where applicable
+
+
+* names for server systems used by ccp
+DogmaIM
+    item instance manager
+    processes item physical changes
+    very blurry line between DogmaIM and DogmaLM
+
+DogmaLM
+    item location manager
+    processes item location changes
+    very blurry line between DogmaIM and DogmaLM
+
+Godma
+    item attribute manager
+    processes item attribute changes
+
+Destiny
+    server-side object movement manager
+
+Michelle
+    client-side object movement manager
+
+neocom
+    client-side information manager
+
+ballpark
+    client-side solar system object
+    each solar system has it's own ballpark in client
+    this ballpark is destroyed (in client) when docking or jumping
+
+balls
+    objects in a solar system
+
+bubble
+    a container within a solar system for non-static SE objects and have a set radius of 250km
+    also called a 'grid', these item containers hold data for all objects within its' sphere of influence (soi)
+    all non-static objects on a players screen are contained in the players current bubble
+    most objects must be in a bubble, and can only be in one bubble at a time
+    suns, planets, and moons are too big for a bubble and exempt from the bubble rule.  they are also static objects and displayed separately
+
+bracket
+    hud display manager for space objects
 
 
 * non-class objects used by client/server systems *
@@ -31,50 +94,116 @@ notification
 
 error
     data sent from server to client to describe an incorrect call or an error in processing
+    this data is usually sent as a notification
 
-
-* names for server systems used by ccp
-Dogma
-Godma
-Destiny
-Michelle
-neocom
-ballpark
-
+throw
+    this is an error sent on a specific 'channel' to client which calls client-side processing for the error
+    a throw will break out of the clients current processing loop
+    a throw can only be done during specific client calls
+    a throw cannot be sent during server processing of notifications
 
 
 * the static and singleton classes *
 *  these classes have only a single instance running in the server and are part of the base system
+
+eve-server
+    this is the main program code for the server emulator
+    it creates the initial static instances for main process systems and updates main loop timer
+
 EntityList
+    main loop processor for server
+    this class is a container for all loaded Systems, connected Clients, players ingame, and holds counts for loaded DSEs
 
 BubbleManager
+    main control for all SystemBubbles
+    keeps track of all bubbles (across all Systems) and used to determine placement for creating new bubbles
 
 PyServiceManager
     this manager is used to decode client calls and route packets to appropriate system for processing
     it is also used to create and track bound objects for system processing
 
+ItemFactory
+    class to process item creation and generic call processing
+    all generic item calls are run thru here to send to appropriate item class for processing
 
-* server class objects *
+ModuleFactory
+    class to process ship module creation
+    after creation, control of the module item is handed over to it's ship's ModuleManager
+
+& ConsoleManager
+    interactive console class for running server
+
+
+* server system class objects *
+Timer
+    a countdown for a specific function
+    there are multiple timer instances for a vast array of items and objects
+
+AttributeManager
+    class to maintain item attributes
+    attribute data consists of an attribute ID and a value
+    attribute values can be either float or integer, and can switch between types after creation
+    all items have their own instance of the AttributeManager class
+
+EvilNumber
+    a number class with data types for both float and integer variables
+    created specifically for attributes
+
 System
     ** there are multiple classes labeled as "System".  they are divided here for ease of defining
     Entity
-        Base
-        Static
-            Sun/Planet/Moon
+        (there are multiple derived classes from this base class, and multiple classes derived from the derived classes that arent completely defined here)
+        Base (abbreviated as 'SE')
+            base class code, consisting of all class tests and common data types used for all SEs
+            contains various methods that redirect and/or reference other systems for ease of data acquisition
+
+        Static (abbreviated as 'SSE')
+            static, non-mobile, non-destructible celestial objects - no TargetMgr, no DestinyMgr
+            (Sun, Planet, Moon, Station, Stargate, AsteroidBelt)
             Station
-        Item
-        Object
-        Dynamic
-            NPC
+                this is the SSE object of a station item
+
+            Stargate
+                this is the SSE object of a stargate item
+
+        Item (abbreviated as 'ISE')
+            non-static, mobile, non-destructible celestial objects - no TargetMgr, has DestinyMgr
+            (Containers, Wrecks, DeadSpace)
+            Container
+                ISE object of a cargo container item
+                unanchored objects have a timer for deletion from System when empty or after 2h
+
+            Wreck
+                ISE object of a destroyed ship object
+
+
+        Object (abbreviated as 'OSE')
+            non-static, non-mobile, destructible celestial objects - has TargetMgr, no DestinyMgr
+            (POS, Outposts, Asteroids, Deployables)
+            FieldSE
+                OSE object of force field for POS tower
+
+        Dynamic (abbreviated as 'DSE')
+            non-static, mobile, destructible celestial objects - has TargetMgr, has DestinyMgr
+            (Ships, Drones, Missiles)
+            NPC, Concord, Civilian, Sentry
+                DSE object for npc ships
             Ship
+                DSE object for player ships
 
     Manager
-        main control of items in a solar system
+        main control of solar system
+        maintains all objects within it's System
         each System has its' own Manager instance
 
     Bubble
-        main control of bubbles in a solar system.
-        not to be confused with BubbleManager
+        bubble objects in a solar system.
+        hold data on all objects within it's soi
+
+
+DestinyManager
+    movement manager class, processing all movement for a given SE
+    each applicable SE has it's own instance of DestinyMgr
 
 Client
     this system is currently a combination of both an object for processing the client's program data and an object for processing player calls and returns
@@ -95,11 +224,11 @@ Ship
 Inventory
 
 
-&Cosmic Manager
+& Cosmic Manager
 
 Corporation
 
-&Effects
+& Effects
 
 DogmaLM (Location Manager)
 
@@ -111,25 +240,103 @@ Agent
 
 
 
-&POS - Player Owned Structure
+& POS - Player Owned Structure
+    Manager
+        controls all aspects of POS systems
+
+    Structure
+        the DSE for all POS items
+        this includes territory claim units, system blockade units, planet orbitals, structure upgrades and all POS items
+
+    Tower
+        also called Control Tower, or CT, this item is the main control structure of player-owned starbase systems
+        this is the code for managing and controlling all CT operations
+
+    Module
+        any item to enhance or extend a CTs functions
+
+    Weapon
+
+    Array
+
+    Battery
 
 
 ModuleManager
     the control code for ship modules, each ship has it's own instance of this class
-    along with 'ModuleContainer' this class tracks all modules fitted on a ship
+    specific code for processing activation and other functions
 
+ModuleContainer
+    class for containing, tracking and processing all modules fit on a ship
+    has methods for install, remove, damage and destroy ship's modules
+    each ModuleManager has it's own instance of this class
 
 Damage
+    specific code for processing damage
+    uses generic SE call for base damage processing
+    uses virtual SE calls for specific damage processing and kill handling
+
+
+TargetManager
+    system for managing targets
+    each applicable SE has it's own TargetMgr instance
+
+
+* server python classes *
+these are the classes for python data
+PyRep
+
+
+* server python to c++ implementation classes *
+**  all these generators process the /eve-common/packets/*.xmlp files and convert into c++/python encode/decode implementations  **
+these generators have their own description file, along with a 'users manual' that isnt included here
+found in eve-xmlpktgen/
+ConstructGenerator
+DestructGenerator
+CloneGenerator
+DecodeGenerator
+EncodeGenerator
+HeaderGenerator
+DumpGenerator
 
 
 
+** Problems in Official branch (Alasiya corrections or updates) **
+* 'wrong' being an opportune word here, based on testing and client code review *
 
-** Differences between Offical and Alasiya code branches (and where official is wrong) **
+Client (major updates - needs refactoring)
+    this should be a control implementation for network data processing and client/server communication only
+    currently, both branches have multiple cross-contamination of network, communication, and player functions in the Client class
+    one of the original developers started separating this into a Client class for network processing/communication, and a Player class for game function calls  but never completed it, and his work was lost
 
-Client
+SystemEntity (complete rewrite)
+    incomplete base class for all game objects
+    this was designed without a complete understanding of game objects and how they interact
 
-SystemEntity
+ModuleManager (complete rewrite)
+    very crude implementation of a system to manage ship modules and their effects
+    this was poorly written without much thought to memory management or understanding of how game effects are processed
 
+ModuleContainer (complete rewrite)
+    intertwined into ModuleManager, this system is quite incomplete yet bloated at same time
 
-Dogma LM (Location Manager)
-    this is improperly labeled in evemu as "IM" but should be "LM"
+AttributeManager (complete rewrite)
+    incomplete
+    problematic
+    too generic
+    this implementation was not very well thought out
+
+EvilNumber (major update and completion)
+    bloated and incomplete
+    uses unions for data (problematic)
+    can get confused when calling data types at times
+    allows for sending float data for integer type and vice-versa
+    (mine is rewritten to use class variables for both integer and float types, explicitly initialized to 0, to avoid 'trash data' in uninitialized union)
+
+XMLP Generators (major update and refactoring)
+    lots of redundant coding
+    great idea, but appears unfinished/unrefined
+    actual generators only used when compiling server code, so most bloat and redundancy is acceptable
+    created code quite bloated - all objects created with all encoders and decoders, whether needed or not
+
+** there is more, but i dont remember all of them offhand **

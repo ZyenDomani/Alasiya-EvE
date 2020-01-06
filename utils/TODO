@@ -1,12 +1,18 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    16 September 2019
+****    23 December 2019
 
 
 **********  found shit...high priority
 
-make log/config option for (en/dis)able client massive check.
+new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
+
+
+attributes -- attribute updates are sent as "MODULEchange" which tells me this is for MODULES ONLY.
+go thru and check this, and adjust accordingly.
+if this is for modules only, fix all updates to use ixChanged from inventory to update non-modules
+** this will be a large undertaking.  may fix multiple item change errors **
 
 
 module add/remove isnt fully thought out at this point.
@@ -16,6 +22,9 @@ moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
 when modules' target is destroyed, verify targ->Destroyed() and inform all targeters by targ->TargLost()
+modules not stopping on targ unlock
+modules not stopping on offline?
+modules freaking out when charge depleted
 
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
@@ -28,7 +37,7 @@ InvBrokerBound::Handle_GetInventoryFromId
     - this sets inventory flag when bound object created....needs more thought to finish code
     - there is NO checks for corp usage yet.
     - suspect many error msgs in client for this, but none are found/coded yet
-    - wtf does 'passive' mean??  only called for char and ship during 'Prime'
+    - wtf does 'passive' mean??  only called for char and ship during 'Prime'.  "dont load item" maybe?
 
 check repack/reproc ships for insurance and delete if applicable
     - does client need update when insurance deleted?
@@ -59,7 +68,14 @@ jetans dont check capy before jettison
 
 dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
+
 ********  improvements
+
+rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
+
+update ValidateAddItem() to return >0 on error and use enums to determine/display error
+
+make log/config option for (en/dis)able client massive check.
 
 .syncloc should synchronize all DSE in bubble to all clients in bubble when called.
 
@@ -98,9 +114,7 @@ RefObjects - MEMORY MANAGEMENT!!
 bookmark system - still incomplete
     - very db heavy
     - needs lots more work for folders and copying bms
-
-
-check allianceID sending.  see if we can/need to send None() instead of -1
+    - check into sending None for folderIDs instead of zero....was something about this in logs.  will have to research a bit more.
 
 
 need to figure out how to load/queue assets for chars (on login or w/e)
@@ -309,7 +323,8 @@ ideas for holoscreen in CQ:
     - corp recruit ads
     - incursion data
     - relevant system data for player's current system
-    - others?  more?
+    - others?
+    - more?
 
 OnItemsChanged is for multiple changes in a single return.  -priority level: low
     - look into how we can implement this return, if needed, instead of using multiple returns (consolidate packet sending)
@@ -326,9 +341,9 @@ stations - look into individual hangers loaded into mem objects (charid/items)
 
 destiny shit - misc things found in destiny.dll
     - markers for ball's yaw, pitch, roll (dunRotation)
-    - criuse velocity as a fraction of max velocity (uk)
+    - cruise velocity as a fraction of max velocity (uk)
     - id of bubble ball belongs to, current and former (uk)
-    - dunRotation is used for accel gates, customs offices, moon miners, and possibibly others i havent found yet
+    - dunRotation is used for accel gates, customs offices, moon miners, and possibly others i havent found yet
 
 update station data's 'serviceID' to the more accurate (and client named) 'serviceMask'
 
@@ -379,13 +394,13 @@ stations have a reprocessingHangarFlag.  implement this for RAM shit (they are a
 
 better checks and reverts when creating corps fail - updated to not check for failure when adding data to evestaticowners, walletdivisions and corpshares
 
-on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt implemented at this time, prefering to remove all loaded charges
+on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt implemented at this time, preferring to remove all loaded charges
 
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
     update for ~20+ or so points to make a difference in our attributes
 
 
-turns use quanternion lerp curve
+turns use quanternion lerp curve (and mass/agility somehow)
 
 
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
