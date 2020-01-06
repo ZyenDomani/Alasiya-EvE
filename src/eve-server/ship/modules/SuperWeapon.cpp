@@ -139,11 +139,7 @@ double SuperWeapon::DoCycle()
         {
             Deactivate();
             return 0;
-        }/*
-        if (!m_chargeRef->quantity()) {
-            Deactivate();
-            return 0;
-        }*/
+        }
 
 		_ShowCycle();
 

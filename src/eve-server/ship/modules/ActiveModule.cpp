@@ -52,7 +52,7 @@ m_destinyMgr(nullptr)
             case EVEDB::invGroups::Projected_ECCM:
             case EVEDB::invGroups::Remote_Sensor_Booster:
             case EVEDB::invGroups::Tracking_Disruptor:
-            // t2 mining laser can be used without charge, using default extraction rate
+            // t2 mining laser can be used without charge by using default extraction rate
             case EVEDB::invGroups::Frequency_Mining_Laser: {
                 m_needsCharge = false;
             } break;
@@ -148,12 +148,12 @@ m_destinyMgr(nullptr)
     //GM_Modules = 353,
 
     if (m_reloadTime > 0)
-        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->itemName().c_str(), mRef->itemID(), m_reloadTime);
+        _log(MODULE__TRACE, "Reload time for %s(%u) set to %ums", mRef->name(), mRef->itemID(), m_reloadTime);
 }
 
 void ActiveModule::Clear()
 {
-    _log(MODULE__TRACE, "%s calling Clear()", m_modRef->itemName().c_str());
+    _log(MODULE__TRACE, "%s calling Clear()", m_modRef->name());
     if (m_targetSE != nullptr)
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
@@ -184,19 +184,25 @@ void ActiveModule::Process()
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
+            // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
+            if (!m_chargeLoaded)
+                sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            m_chargeLoaded = true;
             SetChargeState(Module::State::Loaded);
-            // apply charge effects here after "loading" is complete
-            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+            m_modRef->SetAttribute(AttrQuantity, m_chargeRef->GetAttribute(AttrQuantity));
         }
     }
+
     if (m_ModuleState < Module::State::Deactivating)
         return;
 
+    // if chargestate is loading or reloading, deny further processing and let m_reloadTimer handle it.
     if (m_ChargeState > Module::State::Loaded) {
-        _log(MODULE__TRACE, "ActiveModule::Process - %s for %s is loading.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        _log(MODULE__TRACE, "ActiveModule::Process - %s on %s is loading.", m_modRef->name(), m_shipRef->name());
         return;
     }
 
+    // check for module cycle timer.  if module is stopped, this will process the deactivation and set stop
     if (m_timer.Check())
         ProcessActiveCycle();
 
@@ -205,12 +211,14 @@ void ActiveModule::Process()
 
     if (m_needsTarget) {
         if (m_targetSE == nullptr) {
-            _log(MODULE__TRACE, "%s - targetSE == nullptr.  calling DeactivateCycle()", m_modRef->itemName().c_str());
+            _log(MODULE__TRACE, "%s - targetSE == nullptr.  calling AbortCycle()", m_modRef->name());
+            m_shipRef->GetPilot()->SendErrorMsg("The target for your %s not found.  Aborting current cycle.", m_modRef->name());
             AbortCycle();
             return;
         }
         if (m_targetSE->GetID() != m_targetID) {
-            _log(MODULE__TRACE, "%s - targetSE != targetID.  calling DeactivateCycle()", m_modRef->itemName().c_str());
+            _log(MODULE__TRACE, "%s - targetSE != targetID.  calling AbortCycle()", m_modRef->name());
+            m_shipRef->GetPilot()->SendErrorMsg("Your %s has target mismatch.  Aborting current cycle.", m_modRef->name());
             AbortCycle();
             return;
         }
@@ -218,25 +226,24 @@ void ActiveModule::Process()
 
     if (m_needsCharge) {
         // is this right?  should i do something else here?
-        if (!m_chargeLoaded) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but is not loaded.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        if (m_ChargeState == Module::State::Unloaded) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but moduleState is unloaded.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
         }
-        if (m_ChargeState == Module::State::Unloaded) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but is unloaded.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        if (!m_chargeLoaded) {
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but chargeLoaded is false.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
         }
         if (m_chargeRef.get() == nullptr) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has null chargeRef.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but chargeRef is NULL.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
         } else if (m_chargeRef->quantity() < 1) {
-            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has 0 qty.", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has 0 qty.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
+            UnloadCharge();
         }
         if (m_Stop) {
-            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->itemName().c_str());
-            UnloadCharge();
-            SetModuleState(Module::State::Deactivating);
+            m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->name());
             DeactivateCycle(true);
         }
     }
@@ -244,7 +251,7 @@ void ActiveModule::Process()
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
     if (m_targetSE == pSE) {
-        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s", m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s", m_modRef->name(), m_shipRef->name());
         Deactivate();
     }
 }
@@ -257,10 +264,10 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     }
     if (m_needsCharge and (!m_chargeLoaded or (m_chargeRef.get() == nullptr))) {
         _log(MODULE__TRACE, "ActiveModule::Activate - %s: needsCharge: %s, chargeLoaded: %s, chargeRef: %s", \
-                m_modRef->itemName().c_str(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
-                m_chargeRef.get() == nullptr ? "(none)":"m_chargeRef->itemName().c_str()");
+                m_modRef->name(), m_needsCharge?"True":"False", m_chargeLoaded?"True":"False", \
+                m_chargeRef.get() == nullptr ? "(none)":"m_chargeRef->name()");
         Clear();
-        throw PyException(MakeCustomError("Your %s doesn't seem to be loaded.", m_modRef->itemName().c_str()));
+        throw PyException(MakeCustomError("Your %s doesn't seem to be loaded.", m_modRef->name()));
     }
     if (IsValidTarget(targetID)) {
         // this is just a guess.  may have to use groupID test to verify if this doesnt work right.
@@ -336,13 +343,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 bool owner = false, fleet = false, corp = false, ally = false, war = false;
                 if (m_targetSE->GetOwnerID() == m_shipRef->ownerID())
                     owner = true;
-                else if (m_targetSE->GetCorporationID() == pShip->GetCorporationID())
+                if (m_targetSE->GetCorporationID() == pShip->GetCorporationID())
                     corp = true;
-                else if (m_targetSE->GetAllianceID() == pShip->GetAllianceID())
+                if (m_targetSE->GetAllianceID() == pShip->GetAllianceID())
                     ally = true;
-                else if (m_targetSE->GetWarFactionID() == pShip->GetWarFactionID())
+                if (m_targetSE->GetWarFactionID() == pShip->GetWarFactionID())
                     war = true;
-                else if (m_shipRef->GetPilot()->InFleet())
+                if (m_shipRef->GetPilot()->InFleet())
                     if (m_shipRef->GetPilot()->GetFleetID() == m_targetSE->GetFleetID())
                         fleet = true;
 
@@ -381,16 +388,18 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     SetModuleState(Module::State::Activated);
 
     --m_repeat;
-    if (m_repeat < 1)
+    if (m_repeat < 1) {
         m_Stop = true;
+        //m_timer.Disable();
+        //DeactivateCycle();
+    }
 
-    // hack for one-hit kills...
+    // check for one-hit kills and stop module after cycle completes
     if (m_needsTarget)
         if (m_targetSE->IsDead()) {
-            m_timer.Disable();
-            DeactivateCycle();
-            //SafeDelete(m_targetSE);
             m_Stop = true;
+            //m_timer.Disable();
+            //DeactivateCycle();
         }
 }
 
@@ -400,7 +409,7 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
         return;
 
     _log(MODULE__TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
-            effect.c_str(), m_modRef->itemName().c_str(), m_modRef->itemID(), GetRemainingCycleTimeMS());
+            effect.c_str(), m_modRef->name(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
         ActiveModule::DeactivateCycle(true);
@@ -445,15 +454,17 @@ uint32 ActiveModule::DoCycle()
     }
     // not sure if this is entirely accurate...wip
     switch (m_modRef->groupID()) {
-        case EVEDB::invGroups::Artifacts_and_Prototypes: { // (this module group will need specific code)
+        case EVEDB::invGroups::Artifacts_and_Prototypes: {
         } break;
+        // these passive modules will need specific code
         case EVEDB::invGroups::Missile_Launcher_Defender:
         case EVEDB::invGroups::Countermeasure_Launcher:
-        case EVEDB::invGroups::Passive_Targeting_System: { // (these passive modules will need specific code)
+        case EVEDB::invGroups::Passive_Targeting_System: {
         } break;
+        // these active modules will need specific code
         case EVEDB::invGroups::Cynosural_Field:
         case EVEDB::invGroups::Covert_Cynosural_Field_Generator:
-        case EVEDB::invGroups::Automated_Targeting_System: { // (these active modules will need specific code)
+        case EVEDB::invGroups::Automated_Targeting_System: {
         } break;
 
         // these im not sure about yet
@@ -472,7 +483,9 @@ uint32 ActiveModule::DoCycle()
         } break;
 
         case EVEDB::invGroups::Capacitor_Booster:{
+            ConsumeCharge();
             UpdateCharge(AttrCapacitorCharge, AttrCapacitorCapacity, AttrPowerTransferAmount, m_shipRef);
+            m_repeat = 1;
         } break;
         // i *think* these first 2 go here....need testing
         case EVEDB::invGroups::Energy_Vampire:
@@ -555,7 +568,8 @@ uint32 ActiveModule::DoCycle()
 
 void ActiveModule::AbortCycle()
 {
-    _log(MODULE__TRACE, "%s calling AbortCycle() - stop:%s", m_modRef->itemName().c_str(), m_Stop?"true":"false");
+    _log(MODULE__TRACE, "%s calling AbortCycle() - stop:%s", m_modRef->name(), m_Stop?"true":"false");
+    // if stop is already set, let module finish cycle
     if (m_Stop)
         return;
     // Immediately stop active cycle for things such as insufficient cap, remove module, init warp, target destroyed, target left bubble, or miner deactivated by player:
@@ -567,10 +581,11 @@ void ActiveModule::AbortCycle()
 
 void ActiveModule::DeactivateCycle(bool abort/*false*/)
 {
-    _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->itemName().c_str());
+    _log(MODULE__TRACE, "%s calling DeactivateCycle()", m_modRef->name());
     if ((m_ModuleState == Module::State::Activated) and (!abort)) {
         _log(MODULE__ERROR, "ActiveModule::DeactivateCycle() - Called on %s(%u) with current state %s and !abort.",  \
-                m_modRef->itemName().c_str(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
+                m_modRef->name(), m_modRef->itemID(), GetModuleStateName(m_ModuleState));
+        EvE::traceStack();
    //     return;
     }
 
@@ -580,7 +595,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         ApplyEffect(FX::State::Target, false);
     else if (m_needsTarget)
         _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
-                m_modRef->itemName().c_str(), m_targetID, m_targetSE);
+                m_modRef->name(), m_targetID, m_targetSE);
 
     ShowEffect(false, abort);
 
@@ -649,7 +664,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         // some data containers will pop after successful access.  currently incomplete
         case EVEDB::invGroups::Salvager: {
             if (IsSuccess()) {
-                _log(MODULE__TRACE, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->itemName().c_str(), m_targetSE->GetName());
+                _log(MODULE__TRACE, "%s - DeactivateCycle() - Salvage successful.  deleting target %s.", m_modRef->name(), m_targetSE->GetName());
                 m_targMgr->RemoveTarget(m_targetSE);
                 // just in case other modules are targeting this object, let them know it was destroyed.
                 if (m_targetSE->TargetMgr() != nullptr)
@@ -707,34 +722,35 @@ void ActiveModule::SetTimer(uint32 time) {
         return;
     // updated timer will reset cycle time if changed, but i DO NOT have client display coded to reset...this will fuck up timer time in client.  (worse than it already is)
     _log(MODULE__TRACE, "ActiveModule::SetTimer() - %s with %u ms for %s on %s.", \
-            (m_timer.Enabled()? "Updated" : "Started"), time, m_modRef->itemName().c_str(), m_shipRef->itemName().c_str());
+            (m_timer.Enabled()? "Updated" : "Started"), time, m_modRef->name(), m_shipRef->name());
     m_timer.Start(time);
 }
 
 void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 {
     if (chargeRef.get() == nullptr) {
-        _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Cannot find charge to load into this module", m_modRef->itemName().c_str());
+        _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Cannot find charge to load into this module", m_modRef->name());
         return;
     }
-
-    m_chargeRef = chargeRef;
-    m_chargeLoaded = true;
-    SetChargeState(Module::State::Loading);
 
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr) {
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
         SetChargeState(Module::State::Unloaded);
+        m_modRef->DeleteAttribute(AttrQuantity);
         return;  // make error here?
     }
+
+    m_chargeRef = chargeRef;
+    SetChargeState(Module::State::Loading);
+
     /*  **** this sets "reload blink" status on weapon button
      * def OnChargeBeingLoadedToModule(self, moduleIDs, chargeTypeID, reloadTime):
      *  {returns}
      *        [PyTuple 3 items]
      *          [PyTuple 1 items]
-     *            [PyIntegerVar 1005885547063]  << moduleID
+     *            [PyIntegerVar 1005885547063]  << moduleID (can be multiple, but not coded for multiples yet)
      *          [PyInt 203]                     << chargeTypeID
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
@@ -749,6 +765,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_reloadTimer.Start(m_reloadTime);
     }
     // process new charge's effects here...is this right?
+    //  ... not completely.  need to check for existing charge before processing new shit
     m_chargeRef->ClearModifiers();
     for (auto it : m_chargeRef->type().m_stateFxMap) {
         fxData data = fxData();
@@ -757,8 +774,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     }
     if (pClient->IsDocked() or (pClient->IsInSpace() and pClient->IsLogin())) {
+        m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
+        m_modRef->SetAttribute(AttrQuantity, m_chargeRef->GetAttribute(AttrQuantity), false);
     }
 }
 
@@ -770,7 +789,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
 void ActiveModule::UnloadCharge()
 {
-    _log(MODULE__TRACE, "%s calling UnloadCharge()", m_modRef->itemName().c_str());
+    _log(MODULE__TRACE, "%s calling AM::UnloadCharge()", m_modRef->name());
     if (m_chargeRef.get() != nullptr) {
         if (m_chargeRef->HasAttribute(AttrUnfitCapCost)) {
             float cap = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
@@ -786,16 +805,25 @@ void ActiveModule::UnloadCharge()
             sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
         }
         /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-         *    also, DONT reset modifiermap before remoing, to use existing, modified data
+         *    also, DONT reset modifiermap before removing, to use existing, modified data
          *  NOTE:  i've no clue how to do that yet....
          */
         Client* pClient = m_shipRef->GetPilot();
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
 
-    m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     m_chargeLoaded = false;
+    // unloading charge goes straight to attribMap, to send data to client without changing item qty
+    m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
+    m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     SetChargeState(Module::State::Unloaded);
+    m_modRef->DeleteAttribute(AttrQuantity);
+}
+
+void ActiveModule::ConsumeCharge() {
+    // common code to reduce ammo by one unit.
+    // this also updates item quantity
+    m_chargeRef->AlterChargeQuantity(-1);
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -822,8 +850,8 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
 {
     EvilNumber newValue = iRef->GetAttribute(attrID);
     newValue -= GetAttribute(srcAttrID);
-    if (newValue < 0) {
-        newValue = 0;
+    if (newValue < EvilZero) {
+        newValue = EvilZero;
         Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
@@ -939,7 +967,7 @@ bool ActiveModule::CanActivate()
                 // make error here with group
                 range = GetAttribute(AttrMaxRange).get_float();
                 _log(SHIP__WARNING, "Activate::RangeTest - Default hit for %s(%u) group: %u.  Using %.1f", \
-                            m_modRef->itemName().c_str(), m_modRef->itemID(), m_modRef->groupID(), range);
+                            m_modRef->name(), m_modRef->itemID(), m_modRef->groupID(), range);
             } break;
         }
 
@@ -947,11 +975,11 @@ bool ActiveModule::CanActivate()
         distance -= m_targetSE->GetRadius();
 
         _log(MODULE__MESSAGE, "Activate::RangeTest - distance between %s and target %s: %.1f.  range of %s is %.1f", \
-                    m_shipRef->itemName().c_str(), m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
+                    m_shipRef->name(), m_targetSE->GetName(), distance, m_modRef->name(), range);
 
         if (distance > range) {
             m_shipRef->GetPilot()->SendNotifyMsg("The %s is %.0f meters from you, outside the effective range of your %s, which is %.0f meters.", \
-                    m_targetSE->GetName(), distance, m_modRef->itemName().c_str(), range);
+                    m_targetSE->GetName(), distance, m_modRef->name(), range);
             return false;
         }
     }
@@ -975,7 +1003,8 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
     uint32 timeLeft = GetRemainingCycleTimeMS();
-    EvilNumber cycleTime = 0;
+    EvilNumber cycleTime = EvilZero;
+    // these are a bit weird...this HasAttribute() set variable if exists, but need to test each case.
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))
         ;
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
@@ -1102,16 +1131,17 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
 void ActiveModule::LaunchMissile()
 {
-    // cannot throw here...
+    // nust not throw here...
     //throw PyException( MakeUserError("TargetingMissileToSelf"));
     //throw PyException( MakeUserError("NoCharges"));
 
     //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 
+    // AttrAimedLaunch ?  what is this used for?
     if (m_linked)
         if (!m_linkMaster) {    // only firing ONE missile for linked lanuchers, but they ALL use a charge
             // Reduce ammo charge by 1 unit:
-            m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+            ConsumeCharge();
             // add data to StatisticMgr
             sStatMgr.Increment(Stat::pcMissiles);
             return;
@@ -1121,13 +1151,11 @@ void ActiveModule::LaunchMissile()
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr)
         return;
-    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagMissile, m_chargeRef->itemName().c_str(), m_shipRef->position() );
+    ItemData idata(m_chargeRef->typeID(), pClient->GetCharacterID(), pClient->GetLocationID(), flagMissile, m_chargeRef->name(), m_shipRef->position() );
     InventoryItemRef missileRef = sItemFactory.SpawnItem(idata);
     if (missileRef.get() == nullptr) {
-        _log(ITEM__ERROR ,"Unable to spawn item #%u:'%s' of type %u.", \
-                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID());
-        pClient->SendErrorMsg("Your %s in %s experienced a loading error and was disabled.", \
-                m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+        _log(ITEM__ERROR ,"Unable to spawn item #%u:'%s' of type %u.", m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID());
+        pClient->SendErrorMsg("Your %s in %s experienced a loading error and was disabled.", m_chargeRef->name(), m_modRef->name());
         AbortCycle();
         return;
     }
@@ -1135,10 +1163,8 @@ void ActiveModule::LaunchMissile()
     SystemManager* pSystem = pClient->SystemMgr();
     Missile* pMissile = new Missile(missileRef, *(pSystem->GetServiceMgr()), pSystem, m_modRef, m_targetSE, m_shipRef->GetPilot()->GetShipSE(), this);
     if (pMissile == nullptr) {
-        _log(ITEM__ERROR ,"Unable to create SE #%u:'%s' of type %u.", \
-                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID());
-        pClient->SendErrorMsg("Your %s in %s experienced a launching error and was disabled.", \
-                m_chargeRef->itemName().c_str(), m_modRef->itemName().c_str());
+        _log(ITEM__ERROR ,"Unable to create SE #%u:'%s' of type %u.", m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID());
+        pClient->SendErrorMsg("Your %s in %s experienced a launching error and was disabled.", m_chargeRef->name(), m_modRef->name());
         AbortCycle();
         return;
     }
@@ -1153,7 +1179,7 @@ void ActiveModule::LaunchMissile()
     pMissile->DestinyMgr()->MakeMissile(pMissile);
 
     // Reduce ammo charge by 1 unit:
-    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+    ConsumeCharge();
 
     // tell target a missile has been launched at them.. (defender missile trigger for ship, tower, pos, npc, others?)
     m_targetSE->MissileLaunched(pMissile);
@@ -1185,7 +1211,7 @@ void ActiveModule::LaunchProbe()
     ProbeItemRef probeRef = ProbeItem::Spawn(idata);
     if (probeRef.get() == nullptr)
         throw PyException(MakeCustomError("Unable to spawn item #%u:'%s' of type %u.", \
-                m_chargeRef->itemID(), m_chargeRef->itemName().c_str(), m_chargeRef->typeID() ) );
+                m_chargeRef->itemID(), m_chargeRef->name(), m_chargeRef->typeID() ) );
 
     probeRef->SetPosition(pos);
     SystemManager* pSystem = pClient->SystemMgr();
@@ -1198,7 +1224,7 @@ void ActiveModule::LaunchProbe()
     pClient->scan()->AddProbe(pProbe);
 
     // Reduce ammo charge by 1 unit:
-    m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+    ConsumeCharge();
 
     // add data to StatisticMgr
     sStatMgr.Increment(Stat::probesLaunched);

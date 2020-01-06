@@ -1,7 +1,7 @@
 
 /**
  * @name Module.cpp
- *   General Class for miscellanous POS Modules.
+ *   General Class for miscellaneous POS Modules.
  *
  * @Author:         Allan
  * @date:   28 December 17
@@ -427,7 +427,7 @@ void ReactorSE::Process()
  *    35% yield
  *    Cycle time: 1 hour
  *    Capacity: 40,000 m3
- *    Restricted to Security <0.4
+ *    Restricted to Security < 0.4
  *    20K Shield | 20K Armor | 10K Structure
  *
  * Medium Intensive Refining Array
@@ -439,7 +439,7 @@ void ReactorSE::Process()
  *    75% yield
  *    Cycle time: 1.5 Hours
  *    Capacity: 25,000 m3
- *    Restricted to Security <0.4
+ *    Restricted to Security < 0.4
  *    20K Shield | 20K Armor | 10K Structure
  *
  * Intensive Refining Array
@@ -451,7 +451,7 @@ void ReactorSE::Process()
  *    75% yield
  *    Cycle time: 3 hour
  *    Capacity: 200,000 m3
- *    Restricted to Security <0.4
+ *    Restricted to Security < 0.4
  *    20K Shield | 20K Armor | 10K Structure
  *
  *

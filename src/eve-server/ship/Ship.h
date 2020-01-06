@@ -171,12 +171,12 @@ public:
     // make sure this does NOT throw.
     // must return integer
     // will remove item from previous container
-    uint32 AddItem( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);
+    uint32 AddItemByFlag( EVEItemFlags flag, InventoryItemRef iRef, Client* pClient=nullptr);
     // this can throw. returns nothing
     void LoadCharge(InventoryItemRef cRef, EVEItemFlags flag);
     // this can throw. returns nothing
     void LoadChargesToBank(EVEItemFlags flag, std::vector<int32>& chargeIDs);
-    uint32 RemoveCharge(EVEItemFlags fromFlag, EVEItemFlags toFlag, bool merge=false);
+    uint32 RemoveCharge(EVEItemFlags fromFlag, bool merge=false);
     /* end new module manager interface */
 
     // Tactical Interface:
@@ -241,6 +241,7 @@ public:
     // to load with ammo
     void LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod);
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
+    void GetLinkedWeaponRefs(EVEItemFlags flag, std::vector<GenericModule*> modules);
 
 protected:
     /* linking weapons methods */

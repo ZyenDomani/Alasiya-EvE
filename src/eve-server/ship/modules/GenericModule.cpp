@@ -60,7 +60,7 @@ m_launcher(false)
         m_subSystem = true;
     }
 
-    _log(MODULE__DEBUG, "Created GenericModule %p for item %s (%u).", this, mRef->itemName().c_str(), mRef->itemID());
+    _log(MODULE__DEBUG, "Created GenericModule %p for item %s (%u).", this, mRef->name(), mRef->itemID());
 }
 
 GenericModule::~GenericModule()
@@ -73,17 +73,17 @@ GenericModule::~GenericModule()
 void GenericModule::Online()
 {
     if (m_ModuleState == Module::State::Unfitted) {
-        _log(MODULE__ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
+        _log(MODULE__ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->name());
         return;
     }
     if (m_ModuleState != Module::State::Offline) {
         _log(MODULE__MESSAGE, "GenericModule::Online() called for non-offline module %u(%s).  State is %s", \
-                itemID(), m_modRef->itemName().c_str(), GetModuleStateName(m_ModuleState));
+                itemID(), m_modRef->name(), GetModuleStateName(m_ModuleState));
         return;     // already online
     }
 
     if (GetAttribute(AttrDamage) >= GetAttribute(AttrHP)) {
-        m_shipRef->GetPilot()->SendNotifyMsg("Your %s is too damaged to be put online.", m_modRef->itemName().c_str());
+        m_shipRef->GetPilot()->SendNotifyMsg("Your %s is too damaged to be put online.", m_modRef->name());
         return;
         /*{'messageKey': 'ModuleTooDamagedToBeOnlined', 'dataID': 17878773, 'suppressable': False, 'bodyID': 257752, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 2303}
          *   u'ModuleTooDamagedToBeOnlinedBody'}(u'The module is too damaged to be onlined'
@@ -149,17 +149,16 @@ void GenericModule::Online()
     //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
-    _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", \
-            itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float());
 
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(MODULE__ERROR, "GenericModule::Online() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
-                    itemID(), m_modRef->itemName().c_str());
+                    itemID(), m_modRef->name());
         } else {
-            _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->itemName().c_str(), m_chargeRef->itemName().c_str());
+            _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->name(), m_chargeRef->name());
             m_chargeLoaded = true;
             m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
@@ -181,22 +180,22 @@ void GenericModule::Offline()
     switch(m_ModuleState) {
         case Module::State::Unfitted: {
             m_modRef->SetOnline(false, isRig());
-            _log(MODULE__WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            _log(MODULE__WARNING, "GenericModule::Offline() called for unfitted module %u(%s).",itemID(), m_modRef->name());
             return;
         }
         case Module::State::Offline: {
             m_modRef->SetOnline(false, isRig());
-            _log(MODULE__WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            _log(MODULE__WARNING, "GenericModule::Offline() called for offline module %u(%s).",itemID(), m_modRef->name());
             return;
         }
             // these two should only be called for activeModules...
         case Module::State::Deactivating: {
-            _log(MODULE__MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            _log(MODULE__MESSAGE, "GenericModule::Offline() called for deactivating module %u(%s).",itemID(), m_modRef->name());
             if (IsActiveModule())
                 GetActiveModule()->AbortCycle();
         }
         case Module::State::Activated: {
-            _log(MODULE__MESSAGE, "GenericModule::Offline() called for active module %u(%s).",itemID(), m_modRef->itemName().c_str());
+            _log(MODULE__MESSAGE, "GenericModule::Offline() called for active module %u(%s).",itemID(), m_modRef->name());
             if (IsActiveModule())
                 GetActiveModule()->AbortCycle();
         }
@@ -211,14 +210,14 @@ void GenericModule::Offline()
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
-    _log(MODULE__MESSAGE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->itemName().c_str(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(MODULE__MESSAGE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float());
 
     // module MUST be cleared before loading fx to remove.
     m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(MODULE__ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
-                    itemID(), m_modRef->itemName().c_str());
+                    itemID(), m_modRef->name());
         } else {
             m_chargeRef->ClearModifiers();
             /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
@@ -268,7 +267,7 @@ void GenericModule::ProcessEffects(int8 state, bool active/*false*/)
     std::map<uint16, Effect> effectMap;
     m_modRef->type().GetEffectMap(state, effectMap);
     _log(EFFECTS__TRACE, "GenericModule::ProcessEffects() called for %s. effects: %u, state: %s, online: %s", \
-            m_modRef->itemName().c_str(), effectMap.size(), sFxProc.GetStateName(state), (active ? "true" : "false"));
+            m_modRef->name(), effectMap.size(), sFxProc.GetStateName(state), (active ? "true" : "false"));
     for (auto it : effectMap) {
         if (it.first == 16)    // skip the online effect.  this is done internally elsewhere
             continue;
@@ -294,8 +293,7 @@ void GenericModule::Repair(EvilNumber amount)
             newAmount = EvilZero;
         SetAttribute(AttrDamage, newAmount);
     }
-    _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u",  \
-                m_modRef->itemName().c_str(), amount, GetAttribute(AttrDamage).get_int());
+    _log(MODULE__DAMAGE, "GenericModule::Repair() - %s repaired %u damage.  new damage %u", m_modRef->name(), amount, GetAttribute(AttrDamage).get_int());
 }
 
 const char* GenericModule::GetModuleStateName(int8 state)

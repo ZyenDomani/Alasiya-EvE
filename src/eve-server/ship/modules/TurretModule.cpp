@@ -31,6 +31,7 @@ TurretModule::TurretModule(ModuleItemRef mRef, ShipItemRef sRef)
 void TurretModule::LoadCharge(InventoryItemRef cRef)
 {
     ActiveModule::LoadCharge(cRef);
+
     m_crystalDmg        = m_chargeRef->GetAttribute(AttrDamage).get_float();
     m_crystalDmgAmount  = m_chargeRef->GetAttribute(AttrCrystalVolatilityDamage).get_float();
     m_crystalDmgChance  = m_chargeRef->GetAttribute(AttrCrystalVolatilityChance).get_float();
@@ -38,18 +39,20 @@ void TurretModule::LoadCharge(InventoryItemRef cRef)
 
 void TurretModule::UnloadCharge()
 {
-    ActiveModule::UnloadCharge();
+    _log(MODULE__TRACE, "%s calling TM::UnloadCharge()", m_modRef->name());
     m_crystalDmg        = 0;
     m_crystalDmgAmount  = 0;
     m_crystalDmgChance  = 0;
+
+    ActiveModule::UnloadCharge();
 }
 
 void TurretModule::ApplyDamage()
 {
     if (m_chargeRef.get() == nullptr) {
-        m_shipRef->GetPilot()->SendErrorMsg("Your %s in %s doesnt have a charge registered. You can try Unload/Reload, but if this error happens again, dock or relog.", \
-                m_modRef->itemName().c_str(), sDataMgr.GetFlagName(m_modRef->flag()));
-        _log(MODULE__ERROR, "TurretModule::ApplyDamage() - module %s(%u) does not have a m_chargeRef.",  m_modRef->itemName().c_str(), m_modRef->itemID());
+        m_shipRef->GetPilot()->SendErrorMsg("Your %s in %s doesnt have a charge registered.<br>You can try Unload/Reload, but if this error happens again, dock or relog.", \
+                m_modRef->name(), sDataMgr.GetFlagName(m_modRef->flag()));
+        _log(MODULE__ERROR, "TurretModule::ApplyDamage() - module %s(%u) does not have a m_chargeRef.",  m_modRef->name(), m_modRef->itemID());
         return;
     }
     // add data to StatisticMgr
@@ -79,7 +82,7 @@ void TurretModule::ApplyDamage()
     switch (m_modRef->groupID()) {
         case EVEDB::invGroups::Projectile_Weapon:
         case EVEDB::invGroups::Hybrid_Weapon: {
-            m_chargeRef->SetQuantity(m_chargeRef->quantity() - 1, true);
+            ConsumeCharge();
         } break;
         case EVEDB::invGroups::Energy_Weapon: {
             // AttrUsageDamagePercent

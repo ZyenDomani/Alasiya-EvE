@@ -57,13 +57,11 @@ bool AttributeMap::Load(bool reset/*false*/) {
     /* Then we load saved attribs from the db, if any, to update the defaults with items current (saved) values*/
     DBQueryResult res;
     if (IsCharacter(mItem.itemID())) {
-        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM chrCharacterAttributes WHERE charID=%u", mItem.itemID()))
             _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
-        }
     } else {
-        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID())) {
+        if (!sDatabase.RunQuery(res, "SELECT attributeID, valueInt, valueFloat FROM entity_attributes WHERE itemID=%u", mItem.itemID()))
             _log(DATABASE__ERROR, "AttributeMap", "Error in db load query: %s", res.error.c_str());
-        }
     }
 
     DBResultRow row;
@@ -95,12 +93,14 @@ bool AttributeMap::Save() {
      *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
      *   damage and online for modules
-     *   damage for charges, where applicable (ship damage saved separately)
+     *   damage for charges, where applicable
+     *
+     *  ship damage saved separately
      */
     if (IsStaticItem(mItem.itemID()))
         return true;
 
-    bool skill = false, damage = false, owner = false, module = false;
+    bool skill = false, damage = false, owner = false, module = false, charge = false;
     switch (mItem.categoryID()) {
         case EVEDB::invCategories::Asteroid:    // asteroids and blueprints are NOT saved here
         case EVEDB::invCategories::Blueprint: {
@@ -120,10 +120,13 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Deployable: {
             owner = true;
+        } break;                     // we're falling thru on purpose here to save module damage
+        case EVEDB::invCategories::Charge: {    // remember, crystals and lenses are charges, too.
+            charge = true;
+            damage = true;
         } break;
-        case EVEDB::invCategories::Module:      // save damage and online for these
-            module = true;                      // we're falling thru on purpose here
-        case EVEDB::invCategories::Charge:      // remember, crystals and lenses are charges, too.
+        case EVEDB::invCategories::Module:      // save online state for modules
+            module = true;
         case EVEDB::invCategories::Subsystem:
         case EVEDB::invCategories::Drone: {     // this may need more.  check once system is working
             damage = true;
@@ -141,6 +144,9 @@ bool AttributeMap::Save() {
                 save = true;
         if (damage)
             if (itr->first == AttrDamage)
+                save = true;
+        if (charge)
+            if (itr->first == AttrQuantity)
                 save = true;
         if (module)
             if (itr->first == AttrOnline)
@@ -243,18 +249,65 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
     return false;
 }
 
+uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
+    EvilNumber old_val = mAttributes.find(AttrQuantity)->second;
+    EvilNumber new_val = EvilZero;
+    if (loaded)
+        new_val = old_val + qty;
+    Notify_OnModuleAttributeChange modChange;
+    modChange.ownerID = mItem.ownerID();
+    if (IsModuleSlot(mItem.flag())) {
+        // locationID, flag, typeID = itemKey
+        PyTuple* itemKey = new PyTuple(3);
+        itemKey->SetItem(0, new PyInt(mItem.ownerID()));
+        itemKey->SetItem(1, new PyInt(mItem.flag()));
+        itemKey->SetItem(2, new PyInt(mItem.typeID()));
+        modChange.itemKey = itemKey;
+    } else {
+        // make error here for AlterChargeQuantity but item != charge?
+        modChange.itemKey = new PyInt(mItem.itemID());
+    }
+    modChange.attributeID = AttrQuantity;
+    modChange.time = GetFileTimeNow();
+    modChange.newValue = new_val.GetPyObject();
+    modChange.oldValue = old_val.GetPyObject();
+    PyTuple* change = modChange.Encode();
+
+    Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
+    pClient->QueueDestinyEvent(&change);
+
+    return new_val.get_uint32();
+}
+
+// [eventName,] ownerID, itemID, attributeID, time, newValue, oldValue = change (unless attrib = quantity)
 bool AttributeMap::Change(uint16 attrID, EvilNumber& old_val, EvilNumber& new_val) {
+    // check for internal skill time data
     if (attrID == AttrSkillStartTime)
         return true;
     if (old_val == new_val)
         return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
-        modChange.itemKey = mItem.itemID();
+        modChange.itemKey = new PyInt(mItem.itemID());
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = new_val.GetPyObject();
         modChange.oldValue = old_val.GetPyObject();
+        /*  not sure about this one yet, used in cap charge (more?)....oldValue is list for this server rsp
+         *
+                  [PyTuple 7 items]
+                    [PyString "OnModuleAttributeChange"]
+                    [PyInt 649670823]
+                    [PyIntegerVar 1005885567714]
+                    [PyInt 18]
+                    [PyIntegerVar 129756563388570240]
+                    [PyFloat 680.554999862301]
+                    [PyList 4 items]
+                      [PyFloat 526.692785423517]        <<- old value
+                      [PyIntegerVar 129756563391382864] <<- old time?
+                      [PyFloat 104400]                  <<-  ??
+                      [PyFloat 4860]                    <<-  ??
+        */
 	return SendChanges(modChange.Encode());
 }
 
@@ -263,7 +316,7 @@ bool AttributeMap::Add(uint16 attrID, EvilNumber& num) {
         return true;
     Notify_OnModuleAttributeChange modChange;
         modChange.ownerID = mItem.ownerID();
-        modChange.itemKey = mItem.itemID();
+        modChange.itemKey = new PyInt(mItem.itemID());
         modChange.attributeID = attrID;
         modChange.time = GetFileTimeNow();
         modChange.newValue = num.GetPyObject();

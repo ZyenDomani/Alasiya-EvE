@@ -195,7 +195,7 @@
       <!-- setup to go into an OnMultiEvent (notify_type) -->
       <stringInline value="OnModuleAttributeChange" />
       <int name="ownerID" />
-      <int name="itemKey" />
+      <raw name="itemKey" />
       <int name="attributeID" />
       <long name="time" />
       <raw name="newValue" />

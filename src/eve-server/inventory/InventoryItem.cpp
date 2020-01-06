@@ -66,6 +66,9 @@ InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemDa
 
     m_modifiers.clear();
 
+    // placeholder for fx timestamp, once implemented
+    m_timestamp = 0;
+
     _log(ITEM__TRACE, "Created Generic Item %p for item %s (%u).", this, m_itemName.c_str(), m_itemID);
 }
 
@@ -144,13 +147,13 @@ uint32 InventoryItem::CreateItemID( ItemData &data) {
     // fix the name (if empty)
     if (data.name.empty())
         data.name = iType->name();
-    /*
-    if (data.locationID == 0) {
-        _log(ITEM__MESSAGE, "LocationID = 0 for item");
-        if (is_log_enabled(ITEM__TRACE))
+
+    if (data.locationID == 0)
+        if (is_log_enabled(ITEM__TRACE)) {
+            _log(ITEM__MESSAGE, "LocationID = 0 for item");
             EvE::traceStack();
-    }
-    */
+        }
+
     // insert new entry into DB
     return ItemDB::NewItem(data);
 }
@@ -192,6 +195,11 @@ bool InventoryItem::_Load() {
         _log(ITEM__WARNING, "%s (%u): Failed to load attribute map.", m_itemName.c_str(), m_itemID);
         return false;
     }
+
+    if (m_type.categoryID() == EVEDB::invCategories::Charge)
+        if (IsModuleSlot(m_flag))
+            if (GetAttribute(AttrQuantity) == EvilZero)
+                SetAttribute(AttrQuantity, m_quantity, false);
 
     return true;
 }
@@ -810,6 +818,12 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
         Move(pShip->itemID(), flag, true);
 }
 
+void InventoryItem::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
+    // update qty here
+    m_quantity = pAttributeMap->AlterChargeQuantity(qty, loaded);
+    //return m_quantity;
+}
+
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
     if (qty == 0)
         return true;
@@ -825,7 +839,7 @@ bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
 }
 
 bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
-    //if an object is singleton, it shouldn't be able to add/remove qty
+    //if an object is singleton, there is only one, and it shouldn't be able to alter qty
     if (m_singleton) {
         _log(ITEM__ERROR, "%s (%u): Failed to set quantity %i; the items singleton bit is set", m_itemName.c_str(), m_itemID, qty);
         // make player error msg here.....
@@ -847,12 +861,11 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
     }
 
     if (sConfig.world.saveOnUpdate)
-        SaveItem();
+        SaveItem(); //pAttributeMap->SaveAttributes();
 
     if (notify) {
         std::map<int32, PyRep *> changes;
         // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....
-        // modules/charges can use both, but charges throw client warning (invCache processing ixQuanity change)
         if (categoryID() == EVEDB::invCategories::Charge)
             changes[Inv::Update::StackSize] = new PyInt(old_qty);
         else if (IsModuleSlot(m_flag))
@@ -872,8 +885,6 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
     EVEItemFlags old_flag = m_flag;
     m_flag = flag;
 
-    //if (sConfig.world.saveOnUpdate or sConfig.world.saveOnMove)
-    //    SaveItem();
     ItemDB::UpdateLocation(m_itemID, m_locationID, m_flag);
 
     if (notify) {
@@ -1027,38 +1038,20 @@ void InventoryItem::GetItemStatusRow( PyPackedRow* into ) const {
 /*  this is charge info for the module in question  */
 PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
     DBRowDescriptor* header = new DBRowDescriptor;
-        header->AddColumn( "instanceID", DBTYPE_I8);
-        header->AddColumn( "flagID",     DBTYPE_I2);
-        header->AddColumn( "typeID",     DBTYPE_I4);
-        header->AddColumn( "quantity",   DBTYPE_I4);
+        header->AddColumn("instanceID", DBTYPE_I8);
+        header->AddColumn("flagID",     DBTYPE_I2);
+        header->AddColumn("typeID",     DBTYPE_I4);
+        header->AddColumn("quantity",   DBTYPE_I4);
     PyPackedRow* row = new PyPackedRow( header);
     GetChargeStatusRow(shipID, row);
     return row;
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField( "instanceID",    new PyLong( shipID ));  /* this is shipID */
-    into->SetField( "flagID",        new PyInt( m_flag ));
-    into->SetField( "typeID",        new PyInt( m_type.id() ));
-    into->SetField( "quantity",      new PyInt( m_quantity));
-}
-
-PyPackedRow* InventoryItem::GetModuleStatusRow() const {
-    DBRowDescriptor* header = new DBRowDescriptor;
-    header->AddColumn( "instanceID", DBTYPE_I8);
-    header->AddColumn( "flagID",     DBTYPE_I2);
-    header->AddColumn( "typeID",     DBTYPE_I4);
-    header->AddColumn( "quantity",   DBTYPE_I4);
-    PyPackedRow* row = new PyPackedRow( header);
-    GetModuleStatusRow(row);
-    return row;
-}
-
-void InventoryItem::GetModuleStatusRow(PyPackedRow* into) const {
-    into->SetField( "instanceID",    new PyLong( m_itemID ));
-    into->SetField( "flagID",        new PyInt( m_flag ));
-    into->SetField( "typeID",        new PyInt( m_type.id() ));
-    into->SetField( "quantity",      new PyInt( m_singleton ? -1 : m_quantity));
+    into->SetField("instanceID",     new PyLong(shipID));  /* this is shipID */
+    into->SetField("flagID",         new PyInt(m_flag));
+    into->SetField("typeID",         new PyInt(m_type.id()));
+    into->SetField("quantity",       new PyInt(pAttributeMap->GetAttribute(AttrQuantity).get_int())); // AttrQuantity is used for loaded charges
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -1091,15 +1084,15 @@ void InventoryItem::GetItemRow( PyPackedRow* into ) const
         if (sItemFactory.GetBlueprint(m_itemID)->copy())
             qty = -2;
 
-    into->SetField( "itemID",     new PyLong( m_itemID ));
-    into->SetField( "typeID",     new PyInt( m_type.id() ));
-    into->SetField( "ownerID",    new PyInt( m_ownerID ));
-    into->SetField( "locationID", new PyInt( m_locationID ));
-    into->SetField( "flagID",     new PyInt( m_flag ));
-    into->SetField( "quantity",   new PyInt( qty ));
-    into->SetField( "groupID",    new PyInt( type().groupID() ));
-    into->SetField( "categoryID", new PyInt( type().categoryID() ));
-    into->SetField( "customInfo", new PyString( m_customInfo ));
+    into->SetField( "itemID",       new PyLong( m_itemID ));
+    into->SetField( "typeID",       new PyInt( m_type.id() ));
+    into->SetField( "ownerID",      new PyInt( m_ownerID ));
+    into->SetField( "locationID",   new PyInt( m_locationID ));
+    into->SetField( "flagID",       new PyInt( m_flag ));
+    into->SetField( "quantity",     new PyInt( qty ));
+    into->SetField( "groupID",      new PyInt( type().groupID() ));
+    into->SetField( "categoryID",   new PyInt( type().categoryID() ));
+    into->SetField( "customInfo",   new PyString( m_customInfo ));
 }
 
 bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
@@ -1108,9 +1101,9 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
 
     //make sure trash data is removed from &result
     result.attributes.clear();
-    PySafeDecRef( result.itemID);
-    PySafeDecRef( result.invItem);
-    result.time = Win32TimeNow();
+    PySafeDecRef(result.itemID);
+    PySafeDecRef(result.invItem);
+    result.time = GetFileTimeNow();
 
     if (m_type.groupID() == EVEDB::invCategories::Charge) {
         PyTuple* tuple = new PyTuple(3);
@@ -1144,7 +1137,9 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 es.env_other = PyStatic.NewNone();
                 es.env_area = PyStatic.NewNone();
                 es.env_effectID = 16;
-                es.startTime = Win32TimeNow() - EvE::Time::Minute; /** @todo fix this once we start tracking effects */
+                /** @todo fix this once we start tracking effects */
+                // on login, this is current time
+                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
                 es.duration = -1;
                 es.repeat = 1;
                 es.randomSeed = PyStatic.NewNone();
@@ -1234,85 +1229,81 @@ void InventoryItem::MultiplyAttribute(uint16 attrID, EvilNumber num, bool notify
     pAttributeMap->MultiplyAttribute(attrID, num, notify);
 }
 
-
 double InventoryItem::GetPackagedVolume()
 {
     if (m_singleton)
         return m_type.volume();
 
-   // if ((m_type.categoryID() == EVEDB::invCategories::Ship)
-    //or (m_type.categoryID() == EVEDB::invCategories::Celestial)) {
-        // these volumes are hard-coded in client.
-        switch (m_type.groupID()) {
-            case 29:  //   Capsule
-            case 31:  //   Shuttle
-            case 1022: {  //     Prototype Exploration Ship
-                return 500;
-            }
-            case 12:    //Cargo Container
-            case 306:   //Spawn Container
-            case 340:   //Secure Cargo Container
-            case 448:   //Audit Log Secure Container
-            case 649:   //Freight Container
-            case 952: {  //Mission Container
-                return 1000;
-            }
-            case 324: //    Assault Ship
-            case 830: //      Covert Ops
-            case 893: //      Electronic Attack Ship
-            case 25:  //   Frigate
-            case 831: //      Interceptor
-            case 237: //      Rookie ship
-            case 834: { //      Stealth Bomber
-                return 2500;
-            }
-            case 543: //      Exhumer
-            case 463: { //      Mining Barge
-                return 3750;
-            }
-            case 541:  //      Interdictor
-            case 420:  //      Destroyer
-            case 963: { //      Strategic Cruiser
-                return 5000;
-            }
-            case 906: //      Combat Recon Ship
-            case 26:  //   Cruiser
-            case 833: //      Force Recon Ship
-            case 358: //      Heavy Assault Ship
-            case 894: //      Heavy Interdictor
-            case 832: { //      Logistics
-                return 10000;
-            }
-            case 419: //      Battlecruiser
-            case 540: { //      Command Ship
-                return 15000;
-            }
-            case 28:  //   Industrial
-            case 380: {  //      Transport Ship
-                return 20000;
-            }
-            case 27:  //   Battleship
-            case 900: //      Marauder
-            case 898: //      Black Ops
-            case 381: { //      Elite Battleship
-                return 50000;
-            }
-            case 941: {  //      Industrial Command Ship
-                return 500000;
-            }
-            case 883: //      Capital Industrial Ship
-            case 547: //      Carrier
-            case 485: //      Dreadnought
-            case 513: //      Freighter
-            case 902: //      Jump Freighter
-            case 659: { //      Supercarrier
-                return 1000000;
-            }
-            case 30: {  //   Titan
-                return 10000000;
-            }
+    // these volumes are hard-coded in client.
+    switch (m_type.groupID()) {
+        case 29:  //   Capsule
+        case 31:  //   Shuttle
+        case 1022: {  //     Prototype Exploration Ship
+            return 500;
         }
-    //}
+        case 12:    //Cargo Container
+        case 306:   //Spawn Container
+        case 340:   //Secure Cargo Container
+        case 448:   //Audit Log Secure Container
+        case 649:   //Freight Container
+        case 952: {  //Mission Container
+            return 1000;
+        }
+        case 324: //    Assault Ship
+        case 830: //      Covert Ops
+        case 893: //      Electronic Attack Ship
+        case 25:  //   Frigate
+        case 831: //      Interceptor
+        case 237: //      Rookie ship
+        case 834: { //      Stealth Bomber
+            return 2500;
+        }
+        case 543: //      Exhumer
+        case 463: { //      Mining Barge
+            return 3750;
+        }
+        case 541:  //      Interdictor
+        case 420:  //      Destroyer
+        case 963: { //      Strategic Cruiser
+            return 5000;
+        }
+        case 906: //      Combat Recon Ship
+        case 26:  //   Cruiser
+        case 833: //      Force Recon Ship
+        case 358: //      Heavy Assault Ship
+        case 894: //      Heavy Interdictor
+        case 832: { //      Logistics
+            return 10000;
+        }
+        case 419: //      Battlecruiser
+        case 540: { //      Command Ship
+            return 15000;
+        }
+        case 28:  //   Industrial
+        case 380: {  //      Transport Ship
+            return 20000;
+        }
+        case 27:  //   Battleship
+        case 900: //      Marauder
+        case 898: //      Black Ops
+        case 381: { //      Elite Battleship
+            return 50000;
+        }
+        case 941: {  //      Industrial Command Ship
+            return 500000;
+        }
+        case 883: //      Capital Industrial Ship
+        case 547: //      Carrier
+        case 485: //      Dreadnought
+        case 513: //      Freighter
+        case 902: //      Jump Freighter
+        case 659: { //      Supercarrier
+            return 1000000;
+        }
+        case 30: {  //   Titan
+            return 10000000;
+        }
+    }
 
     // return basic volume for non-ship or non-container objects
     return m_type.volume();

@@ -103,6 +103,8 @@ public:
     const std::string &     itemName() const            { return m_itemName; }
     const std::string &     customInfo() const          { return m_customInfo; }
 
+    const char*             name()                      { return m_itemName.c_str(); }
+
     /* public type queries  */
     uint16                  typeID() const              { return m_type.id(); }
     uint16                  groupID() const             { return m_type.groupID(); }
@@ -152,8 +154,10 @@ public:
     /* loads attributes for this item */
     //bool LoadAttributes();
     double                  GetPackagedVolume();
+    /* for loaded charge quantity updating */
+    void AlterChargeQuantity(int16 qty=0, bool loaded=true);
 
-    /* specific funtions for ShipItem, virtual here to allow generic class access */
+    /* specific functions for ShipItem, virtual here to allow generic class access */
     virtual void            SetPlayer(Client* pClient)  { /* do nothing here */ }
     virtual bool            HasPilot()                  { return false; }
     virtual Client*         GetPilot()                  { return nullptr; }
@@ -240,7 +244,6 @@ public:
 
     void                    GetItemRow( PyPackedRow* into ) const;
     void                    GetItemStatusRow( PyPackedRow* into ) const;
-    void                    GetModuleStatusRow( PyPackedRow* into ) const;
     void                    GetChargeStatusRow( uint32 shipID, PyPackedRow* into ) const;
 
     bool                    Populate(Rsp_CommonGetInfo_Entry &into);
@@ -249,7 +252,6 @@ public:
     PyObject*               ItemGetInfo();
     PyPackedRow*            GetItemRow() const;
     PyPackedRow*            GetItemStatusRow() const;
-    PyPackedRow*            GetModuleStatusRow() const;
     PyPackedRow*            GetChargeStatusRow(uint32 shipID) const;
 
 protected:
@@ -310,6 +312,7 @@ public:
 
 protected:
     AttributeMap* pAttributeMap;
+    int64   m_timestamp;        // fx timestamp
 
 };
 
