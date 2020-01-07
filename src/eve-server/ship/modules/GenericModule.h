@@ -126,7 +126,7 @@ public:
     virtual void RemoveTarget(SystemEntity* pSE)        { /* do nothing here */ }
 
     // check for Prospector (so far) modules defaulted here for generic access
-    virtual bool IsSuccess()                            { /* do nothing here */ }
+    virtual bool IsSuccess()                            { return false; }
 
     /* generic access functions to be overridden in derived classes as needed */
     virtual void Overload();

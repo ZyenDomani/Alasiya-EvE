@@ -377,6 +377,7 @@ bool FleetService::AddMember(Client* pClient, uint32 fleetID, int32 wingID, int3
     SendFleetUpdate(fleetID, "OnFleetJoin", res);
 
     UpdateBoost(fleetID, fleet, wing, squad);
+    return true;
 }
 
 bool FleetService::UpdateMember(uint32 charID, uint32 fleetID, int32 newWingID, int32 newSquadID, int8 newJob, int8 newRole, int8 newBooster)

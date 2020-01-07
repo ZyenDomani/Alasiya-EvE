@@ -1405,8 +1405,9 @@ uint8 CorpRegistryBound::GetQueryType(std::string queryType)
         return Corp::QueryType::CharID;
     else if (queryType.compare("titleMask") == 0)
         return Corp::QueryType::TitleMask;
-    else
-        _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
+
+    _log(CORP__ERROR, "CorpRegistryBound::GetQueryType() - Invalid QueryType: %s", queryType.c_str());
+    return 0;
 }
 
 
@@ -2125,6 +2126,8 @@ PyResult CorpRegistryBound::Handle_GetVoteCasesByCorporation(PyCallArgs &call)
         return m_db.GetVoteItems(m_corpID);
     } else
         ; // error?
+
+    return nullptr;
 }
 
 PyResult CorpRegistryBound::Handle_GetVoteCaseOptions(PyCallArgs &call) {

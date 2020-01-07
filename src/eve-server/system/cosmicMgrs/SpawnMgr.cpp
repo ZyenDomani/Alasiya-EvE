@@ -922,6 +922,8 @@ uint8 SpawnMgr::GetSpawnGroup(uint8 sClass)
         case Spawn::Class::Server:
             return Spawn::Group::Deadspace;
     }
+    // default
+    return Spawn::Group::None;
 }
 
 std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
@@ -939,6 +941,7 @@ std::string SpawnMgr::GetSpawnGroupName(int8 sGroup)
         case Spawn::Group::Escalation:      return "Escalation";
         default:                            return "Invalid";
     }
+    return "Undefined";
 }
 
 std::string SpawnMgr::GetSpawnClassName(int8 sClass)
@@ -1007,4 +1010,5 @@ std::string SpawnMgr::GetSpawnClassName(int8 sClass)
         case Spawn::Class::Server:          return "Server";
         default:                            return "Invalid";
     }
+    return "Undefined";
 }

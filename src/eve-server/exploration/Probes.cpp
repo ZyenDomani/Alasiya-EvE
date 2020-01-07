@@ -408,6 +408,8 @@ std::string ProbeSE::GetStateName(uint8 state)
         case Probe::State::Scanning:   return "Scanning";
         case Probe::State::Returning:  return "Returning";
     }
+
+    return "Undefined";
 }
 
 /** @todo  change these to double for higher precision? */
@@ -454,8 +456,9 @@ float ProbeSE::GetRangeModifier(float dist)
         case 4:  return dist * 0.625;
         case 3:  return dist * 0.75;
         case 2:  return dist * 0.875;
-        case 1:  return dist;
+        //case 1:  return dist;
     }
+    return dist;
 }
 
 float ProbeSE::GetScanStrength()
@@ -468,6 +471,7 @@ float ProbeSE::GetScanStrength()
         case 4:  return m_scanStrength * 0.625;
         case 3:  return m_scanStrength * 0.75;
         case 2:  return m_scanStrength * 0.875;
-        case 1:  return m_scanStrength;
+        //case 1:  return m_scanStrength;
     }
+    return m_scanStrength;
 }

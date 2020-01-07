@@ -107,8 +107,8 @@ CHECK_CXX_SYMBOL_EXISTS( isfinite "cmath"  HAVE_ISFINITE )
 CHECK_CXX_SYMBOL_EXISTS( isnan    "cmath"  HAVE_ISNAN )
 CHECK_CXX_SYMBOL_EXISTS( _finite  "cfloat" HAVE__FINITE )
 CHECK_CXX_SYMBOL_EXISTS( _isnan   "cfloat" HAVE__ISNAN )
-CHECK_CXX_SYMBOL_EXISTS( __finite "cmath"  HAVE___FINITE )
-CHECK_CXX_SYMBOL_EXISTS( __isnan  "cmath"  HAVE___ISNAN )
+#CHECK_CXX_SYMBOL_EXISTS( __finite "cmath"  HAVE___FINITE )
+#CHECK_CXX_SYMBOL_EXISTS( __isnan  "cmath"  HAVE___ISNAN )
 
 CHECK_CXX_SOURCE_COMPILES(
   "#include <cmath>\nint main() { return std::finite( 0 ); }\n"

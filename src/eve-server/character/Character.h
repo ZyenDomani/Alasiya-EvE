@@ -509,8 +509,6 @@ public:
 protected:
     using InventoryItem::_Load;
 
-    static uint32 _Spawn( ItemData& data, CharacterData& charData, CorpData& corpData)  { }
-
     // Template loader:
     template<class _Ty>
     static RefPtr<_Ty> _LoadItem( uint32 characterID, const ItemType& type, const ItemData& data) {

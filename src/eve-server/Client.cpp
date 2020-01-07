@@ -1417,6 +1417,7 @@ std::string Client::GetStateName(ClientState state)
         case csBoard:   return "Board";
         case csLogin:   return "Login";
     }
+    return "Undefined";
 }
 
 void Client::UpdateSkillTraining() {

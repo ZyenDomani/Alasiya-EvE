@@ -345,4 +345,5 @@ std::string SentryAI::GetStateName(SentryAI::State name)
         case State::Engaged:   return "Engaged";
         case State::Signaling: return "Signaling";
     }
+    return "Undefined";
 }

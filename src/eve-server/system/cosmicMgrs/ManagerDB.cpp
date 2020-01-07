@@ -508,7 +508,7 @@ bool ManagerDB::LoadSystemRoids(uint32 systemID, uint32& beltID, std::vector< As
     return !into.empty();
 }
 
-bool ManagerDB::RemoveAsteroid(uint32 asteroidID)
+void ManagerDB::RemoveAsteroid(uint32 asteroidID)
 {
     DBerror err;
     sDatabase.RunQuery(err, "DELETE FROM sysAsteroids WHERE itemID = %u", asteroidID);

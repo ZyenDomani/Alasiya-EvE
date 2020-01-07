@@ -583,5 +583,6 @@ const char* RamMethods::GetActivityName(int8 activityID)
             codelog(MANUF__ERROR, "RamMethods::GetActivityName - invalid activity sent: %u", activityID);
         } break;
     }
+    return "Undefined";
 }
 

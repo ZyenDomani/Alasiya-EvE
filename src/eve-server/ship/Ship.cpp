@@ -2089,6 +2089,8 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     }
 
     SaveLinkedWeapons();
+    //default.  not sure how client will act with this here
+    return moduleID;
 }
 
 void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)

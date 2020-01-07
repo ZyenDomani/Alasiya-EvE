@@ -117,6 +117,7 @@ const GPoint SystemGPoint::Get2RandPlanets(uint32 systemID) {
     planetIDs.clear();
     m_db.GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
+    return NULL_ORIGIN;
 }
 
 const GPoint SystemGPoint::Get3RandPlanets(uint32 systemID) {
@@ -125,6 +126,8 @@ const GPoint SystemGPoint::Get3RandPlanets(uint32 systemID) {
     planetIDs.clear();
     m_db.GetPlanets(systemID, planetIDs, total);
     /** @todo finish this */
+
+    return NULL_ORIGIN;
 }
 
 uint32 SystemGPoint::GetRandMoon(uint32 systemID) {
@@ -143,6 +146,7 @@ uint32 SystemGPoint::GetRandMoon(uint32 systemID) {
 const GPoint SystemGPoint::GetRandPointInSystem(uint32 systemID, int64 distance) {
     // get system max diameter, verify distance is within system.
 
+    return NULL_ORIGIN;
 }
 
 const GPoint SystemGPoint::GetAnomalyPoint(SystemManager* pSys)

@@ -399,8 +399,8 @@ SystemEntity* SystemBubble::GetRandomEntity()
             return cur.second;
         if (cur.second->IsObjectEntity())
             return cur.second;
-        return nullptr;
     }
+    return nullptr;
 }
 
 uint32 SystemBubble::CountNPCs() {

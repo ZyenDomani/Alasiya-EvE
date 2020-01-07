@@ -781,6 +781,8 @@ uint8 StaticDataMgr::GetWHSystemClass(uint32 systemID)
         return 0;
     if (IsWSpace(systemID))
         return 0;
+
+    return 0;
 }
 
 bool StaticDataMgr::GetSystemInfo(uint32 locationID, SystemData& data)
@@ -1160,6 +1162,8 @@ uint8 StaticDataMgr::GetRegionQuarter(uint32 regionID)
         case factionMordusLegion:   //Mordu's Legion Command
             return 5;
     }
+    // default to 'none'
+    return 5;
 }
 
 uint32 StaticDataMgr::GetCorpID(uint32 factionID)
@@ -1195,6 +1199,8 @@ uint32 StaticDataMgr::GetCorpID(uint32 factionID)
         //case factionMinmatar:        return corp;
         //case factionSyndicate:    return corps;
     }
+
+    return 0;
 }
 
 std::string StaticDataMgr::GetCorpName(uint32 corpID)
@@ -1209,6 +1215,8 @@ std::string StaticDataMgr::GetCorpName(uint32 corpID)
         case corpSerpentisInquest:  return "Serpentis Inquest";
         case corpRogueDrones:       return "Rogue Drones";
     }
+
+    return "Undefined";
 }
 
 std::string StaticDataMgr::GetFactionName(uint32 factionID)
@@ -1221,6 +1229,7 @@ std::string StaticDataMgr::GetFactionName(uint32 factionID)
         case factionSerpentis:      return "Serpentis";
         case factionRogueDrones:    return "Drone";
     }
+    return "Undefined";
 }
 
 uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
@@ -1235,6 +1244,8 @@ uint32 StaticDataMgr::GetRaceFaction(EVERace raceID)
         case raceSleepers:      return factionSleepers;
         case raceORE:           return factionORE;
     }
+    // default to none
+    return factionNoFaction;
 }
 
 EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
@@ -1250,6 +1261,8 @@ EVERace StaticDataMgr::GetFactionRace(uint32 factionID)
         case factionORE:            return raceORE;
         case factionAmmatar:        return raceAmmatar;
     }
+    // default to Gallente
+    return raceGallente;
 }
 
 const char* StaticDataMgr::GetRigSizeName(uint8 size)
@@ -1261,6 +1274,7 @@ const char* StaticDataMgr::GetRigSizeName(uint8 size)
         case 3:      return "Large";
         case 4:      return "Capitol";
     }
+    return "Undefined";
 }
 
 const char* StaticDataMgr::GetProcStateName(int8 state)
@@ -1279,6 +1293,7 @@ const char* StaticDataMgr::GetProcStateName(int8 state)
         case ProcState::ArmorReinforcing:   return "ArmorReinforcing";
         default:                            return "Bad State";
     }
+    return "Undefined";
 }
 
 const char* StaticDataMgr::GetFlagName(uint16 flag)
@@ -1405,6 +1420,7 @@ const char* StaticDataMgr::GetFlagName(EVEItemFlags flag)
         case flagClone:                                 return "Clone";
         case flagIllegal:                               return "Illegal";
     }
+    return "Undefined";
 }
 
 uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
@@ -1652,6 +1668,9 @@ uint32 StaticDataMgr::GetWreckFaction(uint32 typeID)
         } break;
 
     }
+
+    // safe default
+    return factionUnknown;
 
     /*
      *    28255 :  //   Mission Faction Freighter Wreck

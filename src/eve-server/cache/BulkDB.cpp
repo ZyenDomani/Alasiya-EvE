@@ -110,6 +110,8 @@ uint8 BulkDB::GetNumChunks(uint8 setID /*0*/)
             return 4;
         }
     }
+
+    return 0;
 }
 int32 BulkDB::GetFileIDfromChunk(uint8 setID, uint8 chunkID)
 {
@@ -145,6 +147,9 @@ int32 BulkDB::GetFileIDfromChunk(uint8 setID, uint8 chunkID)
             return 800006;  //dgmTypeAttributes
         } break;
     }
+
+    // error.  caught in bulkMgr
+    return -1;
 }
 
 /** @todo  update this to use setIDs, and consolidate all data and calls */
@@ -181,7 +186,9 @@ PyRep* BulkDB::GetBulkDataChunks(uint8 setID, uint8 chunkID)
             return GetDogmaTypeAttribs(chunkID);
         } break;
     }
+
     // make error here.  should not reach this point.
+    return nullptr;
 }
 
 PyRep* BulkDB::GetOperands()

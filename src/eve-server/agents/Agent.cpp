@@ -454,6 +454,8 @@ std::string Agent::GetMinReqStanding(uint8 level)
         case 14:     return "5.5";
         case 15:     return "7.5";
     };
+
+    return "-0.5";
 }
 
 
@@ -476,6 +478,7 @@ uint32 Agent::GetAcceptRsp(uint32 charID)
         case 12:  return 236749; // `Wonderful.  I expect a quick result with you on the job.`)
         case 13:  return 135877; // `I knew we could count on you, {[character]player.name}. Please hurry. ')
     }
+    return 236745; // `Stay alive, friend.`)
 }
 
 uint32 Agent::GetDeclineRsp(uint32 charID)
@@ -497,6 +500,7 @@ uint32 Agent::GetDeclineRsp(uint32 charID)
         case 14:  return 136322; // 'I see. Easy money's not good enough, eh? Huh. ')
     }
     //(137499, 'Fine, I’ll get someone more capable. A word of advice: don’t repeat this display of cowardice and uselessness. We don’t tolerate such things in the Republic.  ')
+    return 137499;
 }
 
 uint32 Agent::GetCompleteRsp(uint32 charID)
@@ -523,6 +527,7 @@ uint32 Agent::GetCompleteRsp(uint32 charID)
         case 19:  return 236768; // `Your talents as a pilot never cease to amaze me.  Keep up the good work!`)
         case 20:  return 139398; // 'I knew you were the right pilot for the job.')
     }
+    return 236758; // `I'm grateful for your assistance.`)
 }
 
 //(235999, `You have failed the mission I gave you. I am disappointed in you. I was hoping for a little more competence.`)
@@ -530,6 +535,7 @@ uint32 Agent::GetCompleteRsp(uint32 charID)
 uint32 Agent::GetQuitRsp(uint32 charID)
 {
     //(236846, `Quitters never win.`)
+    return 236846;
 }
 
 uint32 Agent::GetStandingsRsp(uint32 charID)
@@ -543,6 +549,7 @@ uint32 Agent::GetStandingsRsp(uint32 charID)
         case 5:   return 236775; // `Hello, {[character]player.name}.  I was given the assignment of handing out a valuable item to loyal supporters of {[npcOrganization]agentFactionID.name}.  If you know of someone who has proven him or herself time and time again for {[npcOrganization]agentFactionID.nameWithArticle} then point that person to me and perhaps we can come to an 'arrangement' ...<br><br>You on the other hand do not meet my requirements or have already received my offer.`)
         case 6:   return 236853; // `I’m sorry pilot, but you do not have the required standings to receive any missions from me. You will need to raise your standings by doing missions for lower-ranked agents. Use the Agent Finder to locate agents that are available to you.`)
     }
+    return 236853; // `I’m sorry pilot, but you do not have the required standings to receive any missions from me. You will need to raise your standings by doing missions for lower-ranked agents. Use the Agent Finder to locate agents that are available to you.`)
 }
 
 

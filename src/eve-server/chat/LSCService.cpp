@@ -270,6 +270,7 @@ PyResult LSCService::Handle_CreateChannel(PyCallArgs& call)
      *            if info == CHTERR_ALREADYEXISTS:
      *            if info == CHTERR_NOSUCHCHANNEL:
      */
+    return nullptr;
 }
 
 PyResult LSCService::Handle_JoinChannels(PyCallArgs &call) {

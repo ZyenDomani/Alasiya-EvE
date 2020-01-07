@@ -955,12 +955,13 @@ PyResult DogmaIMBound::Handle_StopOverload(PyCallArgs& call)
     Call_TwoIntegerArgs args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return PyStatic.NewNone();
+        return nullptr;
     }
 
     //  cancel overload then deactivate module
     pClient->GetShip()->CancelOverloading(args.arg1);
     pClient->GetShip()->Deactivate(args.arg1, sFxDataMgr.GetEffectName(args.arg2));
+    return nullptr;
 }
 
 PyResult DogmaIMBound::Handle_CancelOverloading(PyCallArgs& call) {
