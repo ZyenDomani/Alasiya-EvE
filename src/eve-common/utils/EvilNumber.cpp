@@ -32,6 +32,7 @@
 EvilNumber EvilZero = EvilNumber();
 EvilNumber EvilZerof = EvilNumber(0.0f);
 EvilNumber EvilOne = EvilNumber(1);
+EvilNumber EvilNegOne = EvilNumber(-1);
 const EvilNumber EvilTime_Second = EvE::Time::Second;
 const EvilNumber EvilTime_Minute = EvilTime_Second * 60;
 const EvilNumber EvilTime_Hour = EvilTime_Minute * 60;

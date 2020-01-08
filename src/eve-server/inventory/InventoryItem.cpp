@@ -196,11 +196,6 @@ bool InventoryItem::_Load() {
         return false;
     }
 
-    if (m_type.categoryID() == EVEDB::invCategories::Charge)
-        if (IsModuleSlot(m_flag))
-            if (GetAttribute(AttrQuantity) == EvilZero)
-                SetAttribute(AttrQuantity, m_quantity, false);
-
     return true;
 }
 

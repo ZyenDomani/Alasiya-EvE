@@ -250,8 +250,15 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 }
 
 uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
-    EvilNumber old_val = mAttributes.find(AttrQuantity)->second;
-    EvilNumber new_val = EvilZero;
+    EvilNumber old_val = EvilZero, new_val = EvilZero;
+    AttrMapConstItr itr = mAttributes.find(AttrQuantity);
+    if (itr != mAttributes.end())
+        old_val = itr->second;
+    else {
+        _log(ITEM__WARNING, "%s doesnt have AttrQuantity properly initialized.", mItem.name());
+        old_val = (EvilNumber)mItem.quantity();
+    }
+
     if (loaded)
         new_val = old_val + qty;
     Notify_OnModuleAttributeChange modChange;
@@ -264,7 +271,7 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
         itemKey->SetItem(2, new PyInt(mItem.typeID()));
         modChange.itemKey = itemKey;
     } else {
-        // make error here for AlterChargeQuantity but item != charge?
+        _log(ITEM__WARNING, "%s calling AlterChargeQuantity() but isnt a charge.", mItem.name());
         modChange.itemKey = new PyInt(mItem.itemID());
     }
     modChange.attributeID = AttrQuantity;

@@ -184,12 +184,13 @@ void ActiveModule::Process()
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
+            m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+            m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
             // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
             if (!m_chargeLoaded)
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
             m_chargeLoaded = true;
             SetChargeState(Module::State::Loaded);
-            m_modRef->SetAttribute(AttrQuantity, m_chargeRef->GetAttribute(AttrQuantity));
         }
     }
 
@@ -735,10 +736,12 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr) {
+        // these two are just in case...
+        m_modRef->DeleteAttribute(AttrQuantity);
+        m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
         SetChargeState(Module::State::Unloaded);
-        m_modRef->DeleteAttribute(AttrQuantity);
         return;  // make error here?
     }
 
@@ -777,7 +780,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-        m_modRef->SetAttribute(AttrQuantity, m_chargeRef->GetAttribute(AttrQuantity), false);
+        m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+        m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
     }
 }
 
@@ -815,9 +819,10 @@ void ActiveModule::UnloadCharge()
     m_chargeLoaded = false;
     // unloading charge goes straight to attribMap, to send data to client without changing item qty
     m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
+    m_chargeRef->DeleteAttribute(AttrQuantity);
     m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
-    SetChargeState(Module::State::Unloaded);
     m_modRef->DeleteAttribute(AttrQuantity);
+    SetChargeState(Module::State::Unloaded);
 }
 
 void ActiveModule::ConsumeCharge() {
