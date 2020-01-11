@@ -184,7 +184,6 @@ void ActiveModule::Process()
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
-            m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
             m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
             // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
             if (!m_chargeLoaded)
@@ -242,6 +241,9 @@ void ActiveModule::Process()
             _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but has 0 qty.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
             UnloadCharge();
+            DeactivateCycle(true);
+            // dont send msg to client about no loaded charge...just silently DeactivateCycle.
+            return;
         }
         if (m_Stop) {
             m_shipRef->GetPilot()->SendErrorMsg("Your %s has no loaded charge.  Deactivating.", m_modRef->name());
@@ -737,7 +739,6 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr) {
         // these two are just in case...
-        m_modRef->DeleteAttribute(AttrQuantity);
         m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);
         m_chargeLoaded = false;
@@ -767,8 +768,8 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
         m_reloadTimer.Start(m_reloadTime);
     }
-    // process new charge's effects here...is this right?
-    //  ... not completely.  need to check for existing charge before processing new shit
+
+    // process new charge's effects (load timer will determine if fx are applied based on existing charge)
     m_chargeRef->ClearModifiers();
     for (auto it : m_chargeRef->type().m_stateFxMap) {
         fxData data = fxData();
@@ -780,7 +781,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-        m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+        //m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
         m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
     }
 }

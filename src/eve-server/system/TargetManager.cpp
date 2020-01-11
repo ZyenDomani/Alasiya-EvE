@@ -621,8 +621,8 @@ void TargetManager::TargetsCleared() {
 
 void TargetManager::AddTargetModule(ActiveModule* pMod)
 {
-    _log(TARGET__WARNING, "%s Trying to add %s to %s's activeModule list.", \
-            pMod->GetShipRef()->GetPilot()->GetName(), pMod->GetSelf()->itemName().c_str(), mySE->GetName() );
+    _log(TARGET__WARNING, "Adding %s:%s to %s's activeModule list.", \
+            pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
     // i think this check is redundant...shouldnt be able to activate non-miner on roid.
     if (mySE->IsAsteroidSE())
         if (!pMod->IsMiningLaser())
@@ -633,6 +633,8 @@ void TargetManager::AddTargetModule(ActiveModule* pMod)
 
 void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 {
+    _log(TARGET__WARNING, "Removing %s:%s from %s's activeModule list.", \
+            pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
     m_modules.erase(pMod->itemID());
 }
 

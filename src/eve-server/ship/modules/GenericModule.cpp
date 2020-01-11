@@ -142,8 +142,8 @@ void GenericModule::Online()
     }
 
     // update available ship resources.
-    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
-    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, !m_shipRef->GetPilot()->IsLogin());
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, !m_shipRef->GetPilot()->IsLogin());
 
     // clear map before adding new shit...avoids duplicating
     //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)

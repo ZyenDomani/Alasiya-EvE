@@ -251,12 +251,14 @@ bool AttributeMap::HasAttribute(const uint16 attrID, EvilNumber &value) const
 
 uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     EvilNumber old_val = EvilZero, new_val = EvilZero;
-    AttrMapConstItr itr = mAttributes.find(AttrQuantity);
-    if (itr != mAttributes.end())
+    AttrMapItr itr = mAttributes.find(AttrQuantity);
+    if (itr != mAttributes.end()) {
         old_val = itr->second;
-    else {
+        itr->second = old_val + qty;
+    } else {
         _log(ITEM__WARNING, "%s doesnt have AttrQuantity properly initialized.", mItem.name());
         old_val = (EvilNumber)mItem.quantity();
+        mAttributes.emplace(AttrQuantity, old_val + qty);
     }
 
     if (loaded)
@@ -266,7 +268,7 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     if (IsModuleSlot(mItem.flag())) {
         // locationID, flag, typeID = itemKey
         PyTuple* itemKey = new PyTuple(3);
-        itemKey->SetItem(0, new PyInt(mItem.ownerID()));
+        itemKey->SetItem(0, new PyInt(mItem.locationID()));
         itemKey->SetItem(1, new PyInt(mItem.flag()));
         itemKey->SetItem(2, new PyInt(mItem.typeID()));
         modChange.itemKey = itemKey;
@@ -280,8 +282,16 @@ uint32 AttributeMap::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     modChange.oldValue = old_val.GetPyObject();
     PyTuple* change = modChange.Encode();
 
+    if (is_log_enabled(MODULE__DUMP)) {
+        _log(MODULE__DUMP, "AlterChargeQuantity dump:");
+        change->Dump(MODULE__DUMP, "    ");
+    }
+
     Client* pClient = sEntityList.FindClientByCharID(mItem.ownerID());
-    pClient->QueueDestinyEvent(&change);
+    if (pClient != nullptr)
+        pClient->QueueDestinyEvent(&change);
+    else
+        _log(ITEM__WARNING, "AlterChargeQuantity - Cannot find owner for %s", mItem.name());
 
     return new_val.get_uint32();
 }
@@ -365,6 +375,9 @@ bool AttributeMap::SendChanges(PyTuple* attrChange) {
         _log(PLAYER__WARNING, "AttributeMap::SendChanges() - ownerID for %u not found", mItem.itemID() );
         return false;
     }
+
+    if (pClient->IsLogin())
+        return true;
 
     if (is_log_enabled(ITEM__CHANGE)) {
         _log(ITEM__CHANGE, "Sending Attribute changes for %s(%u)", mItem.itemName().c_str(), mItem.itemID());

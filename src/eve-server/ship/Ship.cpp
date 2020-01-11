@@ -593,9 +593,9 @@ PyDict* ShipItem::GetShipInfo()
     for (auto cur : equipped) {
         Rsp_CommonGetInfo_Entry entry2;
         if (cur->Populate(entry2)) {
-            if (cur->groupID() == EVEDB::invCategories::Charge) {
+            if (cur->categoryID() == EVEDB::invCategories::Charge) {
                 PyTuple* tuple = new PyTuple(3);
-                    tuple->SetItem(0, new PyInt(cur->itemID()));
+                    tuple->SetItem(0, new PyInt(cur->locationID()));
                     tuple->SetItem(1, new PyInt(cur->flag()));
                     tuple->SetItem(2, new PyInt(cur->typeID()));
                 result->SetItem(tuple, new PyObject("util.KeyVal", entry2.Encode()));

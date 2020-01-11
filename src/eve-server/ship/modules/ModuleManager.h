@@ -137,7 +137,7 @@ public:
 private:
     bool m_initalized;
 
-    ShipItem* m_Ship;
+    ShipItem* pShipItem;
 
     ModuleContainer* pModuleCont;      // Module objects container  - map of module slots [slot/Mod*]
 

@@ -884,7 +884,6 @@ bool InventoryItem::SetFlag(EVEItemFlags flag, bool notify/*false*/) {
 
     if (notify) {
         std::map<int32, PyRep *> changes;
-        //send the notify to the owner.
         changes[Inv::Update::Flag] = new PyInt(old_flag);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
@@ -1100,13 +1099,18 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     PySafeDecRef(result.invItem);
     result.time = GetFileTimeNow();
 
-    if (m_type.groupID() == EVEDB::invCategories::Charge) {
+    // updated charge info...again  -allan 8Jan20
+    if ((m_type.categoryID() == EVEDB::invCategories::Charge)
+    and IsModuleSlot(m_flag)) {
         PyTuple* tuple = new PyTuple(3);
-            tuple->SetItem(0, new PyInt(m_itemID));
+            tuple->SetItem(0, new PyInt(m_locationID));
             tuple->SetItem(1, new PyInt(m_flag));
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
+        result.description = m_itemName;
         result.invItem = PyStatic.NewNone();
+        for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr)
+            result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
 
@@ -1121,14 +1125,11 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         result.description = m_itemName;
     } else {
         if (IsOnline()) {
-            //there is an effect that goes along with this. We should
-            //probably be properly tracking the effect due to some
-            // timer things, but for now, were hacking it.
             EntityEffectState es;
                 es.env_itemID = m_itemID;
-                es.env_charID = m_ownerID;  //may not be quite right...
+                es.env_charID = m_ownerID;
                 es.env_shipID = m_locationID;
-                es.env_target = 0;  //may not be quite right...
+                es.env_target = m_locationID;
                 es.env_other = PyStatic.NewNone();
                 es.env_area = PyStatic.NewNone();
                 es.env_effectID = 16;
@@ -1136,7 +1137,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
                 // on login, this is current time
                 es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
                 es.duration = -1;
-                es.repeat = 1;
+                es.repeat = 0;
                 es.randomSeed = PyStatic.NewNone();
             result.activeEffects[es.env_effectID] = es.Encode();
         }
@@ -1144,7 +1145,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
         for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr) {
             //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
             if ((*itr).first == AttrWarpSpeedMultiplier)
-                result.attributes[AttrWarpSpeedMultiplier] = new PyFloat(GetAttribute(AttrWarpSpeedMultiplier).get_float() /3);
+                result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
             else
                 result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         }
