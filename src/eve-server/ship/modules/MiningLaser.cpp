@@ -228,10 +228,11 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         //rock is depleted.
         // this will get all active miners on depleted rock and set mined amount accordingly for each.
         m_targetSE->TargetMgr()->Depleted(this);
+        SystemEntity* pSE = m_targetSE;
         RemoveTarget(m_targetSE);
-        m_targetSE->Delete();
-        SafeDelete(m_targetSE);
-        ActiveModule::DeactivateCycle(true);
+        // m_targetSE is null after above call returns
+        pSE->Delete();
+        SafeDelete(pSE);
         return;
     }
 

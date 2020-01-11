@@ -158,6 +158,8 @@ void ActiveModule::Clear()
         if (m_targetSE->TargetMgr() != nullptr)
             m_targetSE->TargetMgr()->RemoveTargetModule(this);
 
+    m_targetSE = nullptr;
+
     m_Stop = true;
     m_repeat = 1000;
     m_targetID = 0;
@@ -254,7 +256,7 @@ void ActiveModule::Process()
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
     if (m_targetSE == pSE) {
-        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s", m_modRef->name(), m_shipRef->name());
+        _log(MODULE__TRACE, "ActiveModule::RemoveTarget called on %s on %s to remove %s", m_modRef->name(), m_shipRef->name(), pSE->GetName());
         Deactivate();
     }
 }
