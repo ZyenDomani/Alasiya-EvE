@@ -3,9 +3,9 @@
 
 host="localhost"    #Database Host
 port="3306"     #Database Port
-user="eve"     #Database Username
-pass="onlyme"     #Database Password
-database="EVE_Crucible"   #Database name
+user="allan"     #Database Username
+pass="none"     #Database Password
+database="Alasiya"   #Database name
 
 
 
