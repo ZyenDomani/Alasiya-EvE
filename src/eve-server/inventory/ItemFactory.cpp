@@ -59,7 +59,8 @@ ItemFactory::~ItemFactory()
     SafeDelete(m_db);
 }
 
-uint32 ItemFactory::Count() {
+uint32 ItemFactory::Count()
+{
     return m_items.size();
 }
 
@@ -106,7 +107,7 @@ void ItemFactory::SaveItems() {
     std::vector<SaveData> items;
     items.clear();
     for (auto cur : m_items) {
-        if (cur.second->quantity() < 1)
+        if (cur.second->quantity() < 1) // should we delete this?
             continue;
         if (IsAsteroid(cur.first))
             continue;

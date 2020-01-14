@@ -283,18 +283,21 @@ void SystemManager::UnloadSystem() {
 
     // remove dynamics
     //  not removing ship items and solar system object from ItemFactory.
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), sItr = m_staticEntities.end();
+    std::map<uint32, SystemEntity*>::iterator itr = m_entities.begin(), end = m_entities.end();
     SystemEntity* pSE(nullptr);
-    while (itr != m_entities.end()) {
+    while (itr != end) {
         if ((itr->first == 0) or (itr->second == nullptr)) {
             itr = m_entities.erase(itr);
             continue;
         }
         pSE = itr->second;
+        if (pSE->IsStaticEntity() or pSE->isGlobal()) {
+            // why are statics in entity list?
+            //itr = m_entities.erase(itr);
+            //continue;
+        }
         if (pSE->TargetMgr() != nullptr)
             pSE->TargetMgr()->ClearAllTargets(false);
-        if (pSE->IsStaticEntity() or pSE->isGlobal())
-            m_staticEntities.erase(itr->first);
         if (pSE->IsShipSE())
             pSE->GetShipSE()->GetShipItemRef()->LogOut();
         if (pSE->IsNPCSE()) {
@@ -312,17 +315,35 @@ void SystemManager::UnloadSystem() {
         SafeDelete(pSE);
     }
 
+    //  remove system statics from ItemFactory
+    itr = m_staticEntities.begin();
+    end = m_staticEntities.end();
+    while (itr != end) {
+        if ((itr->first == 0) or (itr->second == nullptr)) {
+            itr = m_staticEntities.erase(itr);
+            continue;
+        }
+        pSE = itr->second;
+        if (pSE->TargetMgr() != nullptr)
+            pSE->TargetMgr()->ClearAllTargets(false);
+
+        itr = m_staticEntities.erase(itr->first);
+        sItemFactory.RemoveItem(itr->first);
+        sBubbleMgr.Remove(pSE);
+        SafeDelete(pSE);
+    }
+
+
     // save items, then remove from system inventory, item factory and decrement item count
     m_solarSystemRef->GetMyInventory()->Unload();
-    sItemFactory.RemoveItem(m_data.systemID);
-
     _log(PHYSICS__MESSAGE, "SystemManager::UnloadSystem() - map count after unload: %u npcs, %u entities, %u statics.", m_npcs.size(), m_entities.size(), m_staticEntities.size());
 
     m_npcs.clear();
     // at this point, system entity list should be clear...but just in case, hit it again
     m_entities.clear();
-    // these next two are dupe containers. contents are not important for unload
+    // this is dupe container. contents unloaded in another call
     m_ticEntities.clear();
+    // at this point, system static entity list should be clear...but just in case, hit it again
     m_staticEntities.clear();
 
     // this still needs some work... seems ok to me.  26Dec18
