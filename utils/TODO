@@ -1,13 +1,16 @@
 
 *******************************************************
 ****  Allan's EvEmu TODO LIST
-****    23 December 2019
+****    12 January 2020
 
 
-**********  found shit...high priority
+**********  errors and other found shit...high priority
 
 new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
 
+stackall in orehold puts stack in cargo...need to step thru this one
+
+deactivate on miner DOESNT pull ore...just stops module
 
 attributes -- attribute updates are sent as "MODULEchange" which tells me this is for MODULES ONLY.
 go thru and check this, and adjust accordingly.
@@ -21,11 +24,6 @@ module add/remove isnt fully thought out at this point.
 moving mwd from one slot to another throws groupfit limited error
 when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
-when modules' target is destroyed, verify targ->Destroyed() and inform all targeters by targ->TargLost()
-modules not stopping on targ unlock
-modules not stopping on offline?
-modules freaking out when charge depleted
-
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
 
@@ -73,6 +71,10 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
 ********  improvements
 
+integrate UTF8 into code (or make my own class)
+   - same with zlib and gangsta
+   - is zlib even used??
+
 inventory item - populate - effect timestamp
     - this needs to be tracked/updated for proper effects handing and tracking.
     - could be a problem with movement being funky
@@ -90,7 +92,6 @@ check client's locationID vs stationID.
     - multiple calls in client test for these as separate values (tested separately)
     - verify our use of these is correct....
     - most tests use locationID first, then stationID2
-
 
 replace the bullshit EntityList::MultiCast() with EntityList::CorpNotify()   --wip
     - this is applicable for corporation notifications only, as CorpNotify() checks corp settings to determine recepients
@@ -123,7 +124,6 @@ bookmark system - still incomplete
     - needs lots more work for folders and copying bms
     - check into sending None for folderIDs instead of zero....was something about this in logs.  will have to research a bit more.
 
-
 need to figure out how to load/queue assets for chars (on login or w/e)
     - this is needed for complete asset menu entries
 
@@ -132,14 +132,11 @@ pi working.  currently rewriting process code  -priority level: lo
     - check if xml is needed or if structs are ok for all uses (improve code bloat)
     - code checks for route levels and mat'l volume xfer'd (limit volume xfer)
 
-
 module/rack OL incomplete.  includes OL Heat (basic heat code done/working)  -priority level: low-med
 activemodule c'tor - check/verify needsCharge code as some modules listed use scripts
 
-
 dungeon mgr - factionID of "region sov" needs to be written to determine region sov holder (set to rogue drones at this time)   -priority level: low-med
     - figure out how to determine LCO in dungeon and spawn rats/waves near objects instead of middle of bubble
-
 
 fleet boosts - apply directly to ship/modules when calculated
     - apply either when undocking or as fleet is created and use OnModuleAttributeChange packet
@@ -148,9 +145,7 @@ many fleet error msgs in client unused - noted in fleetdata.h
 few fleet calls not coded
 determine how to save fleetID for wrecks (SE has fleetID member...may save id to item.customdata)
 
-
 scoop object needs a bit of attention
-
 
 petition system missing most calls
     - this system hasnt been started
@@ -176,9 +171,7 @@ contractProxy::GetMyExpiredContractList()
         numCorpRequiresAttention = 0
 AttributeError: 'NoneType' object has no attribute 'contracts'
 
-
 expanded cargo modules update for specialized holds.   -priority level: low
-
 
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
 next up is security missions.  will need dungeon work for these.   -priority level: hi
@@ -205,14 +198,11 @@ pos - started. drop, anchor, unanchor, online, offline working but no in-class c
     - add checks for necessary items before online can be processed
     - timers (anchor/online) arent updated to client properly (non-persistent)
 
-
-lsc system better, but incomplete needs revisiting    -priority level: med-hi
+lsc system better, but incomplete and needs revisiting    -priority level: med-hi
     - may need xmlp code instead of muddled python decoding
     -  whole system needs update or possible rewrite
 
-
 link/unlink need a bit more logic work (as per notes in code)
-
 
 player corps - finish wip code for RAM, market  -priority level: med-hi
 raceMask isnt implemented yet...will need more thought/coding
@@ -236,7 +226,6 @@ alliances?  not yet.  need other shit finished first.
 started coding alliance db
 all alliance calls are skeleton code, except GetEmploymentRecord
 
-
 npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
 update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: low
 
@@ -250,11 +239,9 @@ market system....this needs a lot of attention
     - EVEYTHING is uint32 but we really dont need that
     - multiple client error msgs not implemented, nor has any of the msg data been pulled out of client
 
-
 will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
  - classes built using xml have a c'tor that zero-initalizes all items in class
  - this is almost complete.  there may be a few more i havent found yet.
-
 
 system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
 entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
@@ -266,7 +253,6 @@ notificationMgr  needs love
 reproc  needs love
 certificateMgr needs looking at
 
-
 PlanetORBBound needs work now that customs offices are working
 PI Launch status need *some way* to tick for launch reentry
 
@@ -274,11 +260,9 @@ store/board ship (cap ship hangar) not coded
 
 ship selfdestruct not coded
 
-
 0 AS landmarkNameID
 
 authentication and session still need work, but i dont fully understand them
-
 
 incursions.  this hasnt even been looked at yet.
 map::GetIncursionGlobalReport()
@@ -290,26 +274,31 @@ added notes on scanner groupNames in anomalyMgr code
 ship scanner disables after trying to scan while warping (which tells you it cant be done)
 update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
 
-
 rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
     - this should be fairly easy to set up
     - if no faction presence in system, continue with random point
 
-
 journal - killing rats descriptions are a bit off...gives itemID (no name)
 
-
 many unimplemented salvage error msgs noted in prospector.h
+
+attribMap has open db calls
+
+change warpstate variable in destiny from class (and using naked 'new') to struct?
 
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)
 
 
 *****************  xmlp shit
-  ** none at this time
 
+(bloat fix)
+look into using CALL_ RSP_ and encode=true/false decode=true/false for including/omitting the bloated encode/decode sections
+  - this will be involved and rather timeconsuming
 
 *****************   errata and miscellaneous bullshit
+
+add rule of 5 for Py* code (or =delete defaults)
 
 rework bulkdata code.
 the current code is hacked to send bulk data in segments.  live uses *some other form* of data, which *MAY* be our cache files.
@@ -341,8 +330,6 @@ _Prime uses slimItem.ownerID to set keys, which are then fetch()'d from RecordSe
     - all ownerIDs should be actual EveOwners, (default to current system owner when SOV is implemented), NOT '0' or '_System' (which is 1)
     -  could this be part of "EveOwners" bulkdata, which is why client is throwing error?  look into and fix as needed.
 
-Ref: ServerError numbers are a bit whacky.  others are just wrong.  i have placeholders in some as 'xxxxx' which need fixing
-
 stations - look into individual hangers loaded into mem objects (charid/items)
     - not sure if this would be worth it, but would make 'by owner' searches much faster
 
@@ -369,29 +356,27 @@ client calculates next level points as "skillPointsToNextLevel=int(skill.spHi + 
 
     - thing to note here is the "points to next level = spHi + 0.5"
 
-
 jump clones - when i start this, need to check into diff between active clone and jumpclone.  may have to rearrange things to properly implement jump clones.
 
 move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
-
 dynamic system items not inserted into itemfactory map
 
+began putting specific throw msgs in approprate common/EVE_*.h files if available,
+else src/*/*.h files
 
-***  began putting specific throw msgs in approprate common/EVE_*.h files if available, else src/*/*.h files ***
-
-
+Ref: ServerError numbers are a bit whacky.  others are just wrong.
+i have placeholders in some as 'xxxxx' which need fixing
 update sending Ref: ServerError xxxxx msgs on errors without existing msgs.
     - this includes all decode errors
-
 
 create data needed for killboard, and integrate killboard into site  -priority level: low
 
 Profile::GetRunTimes()  - adjust this to Automatically set us/ms/s as needed  ....not working right.  later.
 
-player error msgs - pool of msgs adjusted for character secstatus, a la sphereScript's speech files
+player error msgs - pool of msgs adjusted for character secstatus or standings with corp/sov holder, a la sphereScript's speech files
 
 object cache system still not understood or fully utilized.
 
@@ -406,15 +391,12 @@ on rare occasions, RemoveCharge* calls send quantity as tuple(1).  this isnt imp
 implants....update existing data for more bonus.  as we are running ~60 on char attributes (vs ~20 on live), existing 1-6pt implants are negligable.
     update for ~20+ or so points to make a difference in our attributes
 
-
 turns use quanternion lerp curve (and mass/agility somehow)
-
 
 check anomaly spawn distance for in small systems.  current 4au seems far when system is <8au
 
 system mem obj for jumpsHour isnt working and will take more thought/code
     - the idea for it is to keep track of jumps and times, then as time passes, remove those jumps from db data to show trend
-
 
 15:32:10 [ItemMsg] type 2525 (group: 1027, cat: 41) called _LoadType, but is not handled.
 15:32:10 [ItemMsg] type 2549 (group: 1027, cat: 41) called _LoadType, but is not handled.
@@ -430,4 +412,4 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 ********************************
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
---  major updates needed in website code
+--  major updates needed in website code for python 3

@@ -200,7 +200,7 @@ SystemEntity
     (there are multiple derived classes from this base class, and multiple classes derived from the derived classes that arent completely defined here)
     Base (abbreviated as 'SE')
         base class code, consisting of all class tests and common data types used for all SEs
-        contains various methods that redirect and/or reference other systems for ease of data acquisition
+        contains various virtual methods that redirect and/or reference other systems for ease of data acquisition
 
     Static (abbreviated as 'SSE')
         static, non-mobile, non-destructible celestial objects - no TargetMgr, no DestinyMgr
@@ -336,6 +336,20 @@ TargetManager
 
 BookmarkManager
     system to manage all aspects of bookmarks
+
+
+& StaticDataMgr
+
+& StatisticMgr
+
+& Profile
+
+& DataClasses
+
+& Colony
+
+& MapData
+
 
 
 * server python classes *

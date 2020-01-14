@@ -42,17 +42,17 @@ typedef enum {
 
 //userType id's used for accounts
 typedef enum {
-    userTypePlayer              = 1,        // i added this....not sure if it's right.
+    userTypePlayer              = 1,    // i added this....not sure if it's right.
     userTypeCCP                 = 13,
     userTypeUK                  = 17,
     userTypePBC                 = 20,
     userTypeETC                 = 21,
-    userTypeTrial               = 23,
-    userTypeMammon              = 30,       // this is default player account type
+    userTypeTrial               = 23,   // most client tests are >22
+    userTypeMammon              = 30,   // this is default player account type
     userTypeMedia               = 31,
     userTypeCDKey               = 33,
     userTypeIA                  = 34,
-
+// not used here
     userTypeDustPlayer          = 101,
     userTypeDustCCP             = 102,
     userTypeDustBattleServer    = 103

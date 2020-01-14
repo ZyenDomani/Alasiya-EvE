@@ -62,10 +62,12 @@ def main():
 
     for typeID in inv_types.keys():
         try:
-            sell_price = pricing[str(typeID)]["sell"]["weightedAverage"]
+            sell_price = pricing[str(typeID)]["buy"]["median"]
             if sell_price == 0:
-                print " >> Skipping typeID: " + str(typeID) + " no weightedAverage"
-                continue
+                sell_price = pricing[str(typeID)]["sell"]["min"]
+                if sell_price == 0:
+                    print " >> Skipping typeID: " + str(typeID) + " no median or min"
+                    continue
             try:
                 cursor.execute("UPDATE invTypes SET basePrice = " + str(sell_price) + " WHERE typeID = " + str(typeID))
             except Exception as e:

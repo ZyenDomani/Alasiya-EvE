@@ -54,6 +54,9 @@ const char* const XMLPacketGen::smGenFileComment =
 "  You should have received a copy of the GNU General Public License\n"
 "  along with this program; if not, write to the Free Software\n"
 "  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n"
+"  \n\n"
+"  Updated by Allan, 2016 - 2020"
+"  \n"
 "*/";
 
 XMLPacketGen::XMLPacketGen( const char* header, const char* source )

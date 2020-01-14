@@ -179,7 +179,7 @@ void DestinyManager::ProcessState() {
              *  3) Deceleration.
              *      this also is a fixed attribute, which is roughly 22s from full warp speed for all ships
              *
-             *  Acceleration and Deceleration are logrithmic with finite caps (instead of infinity) at the ends.
+             *  Acceleration and Deceleration are logarithmic with finite caps (instead of infinity) at the ends.
              *      see also:  my notes in _InitWarp()
              */
             if (m_warpState != nullptr) {
@@ -1129,7 +1129,7 @@ Prediction service for in-space flight
 """
 */
 void DestinyManager::_Orbit() {
-    // data consitency checks...
+    // data consistency checks...
     if ((m_targetDistance > BUBBLE_RADIUS_METERS) or (m_followDistance > BUBBLE_RADIUS_METERS)) {
         // well, something fucked up.  stop object and throw error.   player can reset if they want to.
         if (mySE->HasPilot())
@@ -1152,7 +1152,7 @@ void DestinyManager::_Orbit() {
      * m_stateStamp - used to track quadrant and positioning.  is tic in seconds
      * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far, 5=way too far
      * m_orbitRadTic - rad/sec in current orbit.  set by Orbit()
-     * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here
+     * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here yet
      *
      *   our target variables
      * Tr = target radius
@@ -1358,7 +1358,7 @@ GPoint DestinyManager::ComputePosition(double curRad) {
      * Th = target heading  (updated for movement, if applicable)
      * Tm = target mass
      * current = distance between object and target centers
-     * actual = distance between object and target closest edges  (counting for radius)
+     * actual = distance between object and target closest edges  (counting for object radii)
      *
      *   primary orbital elements:
      * i = inclination to the positive ecliptic (plane of our orbit) at node line
@@ -1371,14 +1371,15 @@ GPoint DestinyManager::ComputePosition(double curRad) {
      *   related orbital elements:
      * p  = N + w   = longitude of periapsis  (from N, ccw to periapsis)
      * L  = M + p   = mean longitude, measure of how far around its orbit a body has progressed since passing the argument of periapsis (w)
-     * q  = a*(1-e) = periapsis distance  (closest point of orbit)
-     * Q  = a*(1+e) = apoapsis distance (farthest point of orbit)
+     * q  = a*(1-e) = periapsis distance  (closest point of orbit to center)
+     * Q  = a*(1+e) = apoapsis distance (farthest point of orbit from center)
      * P  = a ^ 1.5 = orbital period,  time in seconds to complete one orbit (assuming all other variables remain constant)
      * T  = Epoch_of_M - (M(deg)/360_deg) / P  = time of periapsis
      * v  = true anomaly, position of the orbiting body along the orbit at a specific time (the "epoch"), measured from w (argument of periapsis) in radians
      * E  = eccentric anomaly, angle from target side of center point of line qQ, at which we are located
      *
-     * Under ideal conditions of a perfectly spherical central body and zero perturbations, all orbital elements except the mean anomaly (M) are constants.
+     * Under ideal conditions of a perfectly spherical central body and zero perturbations,
+     * all orbital elements except the mean anomaly (M) are constants.
      */
 
     // get current times
@@ -1477,7 +1478,7 @@ void DestinyManager::_InitWarp() {
     //  rewrite 3jan15  to use distance instead of time for warping.  more accurate now, and covers ALL distances.
     //  calculation and implementation update   9Jan15      accuracy is within 1000m
 
-    /*  my research into warp formulas, i have used these sites, with a few exerpts and ideas from each...
+    /*  my research into warp formulas, i have used these sites, with a few excerpts and ideas from each...
      *     https://wiki.eveonline.com/en/wiki/Acceleration
      *     http://oldforums.eveonline.com/?a=topic&threadID=1251486
      *     http://gaming.stackexchange.com/questions/115271/how-does-one-calculate-a-ships-agility
@@ -1489,12 +1490,12 @@ void DestinyManager::_InitWarp() {
      * checks here for distance < warp speed and distance < 2AU, (with all distances in meters)
      *  and adjusts accel/decel times accordingly
      *
-     *   accel/decel are logrithmic per ccp (see above).
+     *   accel/decel are logarithmic per ccp (see above).
      *
      * times are as follows, per this table.  http://cdn1.eveonline.com/www/newssystem/media/65418/1/numbers_table.png
      *
      * all warps are in same time groups for all ships, except freighters and caps.
-     * distance checks are seperated into 3 time groups, with subgroups for freighters and caps.
+     * distance checks are separated into 3 time groups, with subgroups for freighters and caps.
      *
      * the client seems to accept and agree with the math here.
      */
@@ -1577,7 +1578,7 @@ void DestinyManager::_InitWarp() {
     }
 
     //  set total warp time based on above math.
-    warpTime =  (m_warpAccelTime + m_warpDecelTime + std::floor(cruiseTime));
+    warpTime = (m_warpAccelTime + m_warpDecelTime + std::floor(cruiseTime));
 
     GVector warp_vector(m_position, m_targetPoint);
     warp_vector.normalize();

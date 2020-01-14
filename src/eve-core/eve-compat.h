@@ -158,14 +158,14 @@ typedef int SOCKET;
 #       define finite __finite
 #   endif /* HAVE___FINITE */
 #endif /* !HAVE_FINITE */
-/*
+
 #ifndef HAVE_ISNAN
-#   if defined( HAVE_STD_ISNAN )
-#       define isnan std::isnan
-#   elif defined( HAVE__ISNAN )
+//#   if defined( HAVE_STD_ISNAN )
+//#       define isnan std::isnan
+#   if defined( HAVE__ISNAN )
 #       define isnan _isnan
-#   elif defined( HAVE___ISNAN )
-#       define isnan __isnan
+//#   elif defined( HAVE___ISNAN )
+//#       define isnan __isnan
 #   endif
 #endif /* !HAVE_ISNAN */
 
