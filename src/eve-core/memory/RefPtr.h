@@ -82,8 +82,7 @@ protected:
     void IncRef() const
     {
         if (mDeleted) {
-            // make error for this shit?
-            _log(REFPTR__ERROR, "IncRef() - mDeleted = true.");
+            _log(REFPTR__ERROR, "IncRef() - mDeleted = true.  Count is %u", mRefCount);
             EvE::traceStack();
             return;
         }
@@ -101,8 +100,7 @@ protected:
     void DecRef() const
     {
         if (mDeleted) {
-            // make error for this shit?
-            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.");
+            _log(REFPTR__ERROR, "DecRef() - mDeleted = true.  Count is %u", mRefCount);
             EvE::traceStack();
             return;
         }

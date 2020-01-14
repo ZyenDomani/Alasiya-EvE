@@ -143,7 +143,7 @@ public:
     {
         MutexLock lock( mMQueue );
 
-        X* conn;
+        X* conn(nullptr);
         while( ( conn = PopConnection() ) )
             SafeDelete( conn );
     }
@@ -157,7 +157,7 @@ public:
     {
         MutexLock lock( mMQueue );
 
-        X* ret = NULL;
+        X* ret(nullptr);
         if( !mQueue.empty() )
         {
             ret = mQueue.front();

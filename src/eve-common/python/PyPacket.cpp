@@ -59,7 +59,11 @@ const char* MACHONETMSG_TYPE_NAMES[MACHONETMSG_TYPE_COUNT] =
     "PING_RSP"
 };
 
-PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(nullptr), named_payload(nullptr) {}
+PyPacket::PyPacket() : type_string("none"), type(__Fake_Invalid_Type), userid(0), payload(nullptr), named_payload(nullptr)
+{
+
+}
+
 PyPacket::~PyPacket()
 {
     PySafeDecRef(payload);
@@ -120,7 +124,6 @@ bool PyPacket::Decode(PyRep **in_packet)
     if (packet->IsChecksumedStream()) {
         //TODO: check cs->checksum
         packet = packet->AsChecksumedStream()->stream();
-        //PyIncRef( packet );
     }
     //Dragon nuance... it gets wrapped again
     if (packet->IsSubStream()) {
@@ -133,8 +136,6 @@ bool PyPacket::Decode(PyRep **in_packet)
         }
 
         packet = ss->decoded();
-        //PyIncRef( packet );
-        //PyDecRef(ss);
     }
 
     if (!packet->IsObject()) {
@@ -150,7 +151,6 @@ bool PyPacket::Decode(PyRep **in_packet)
     }
 
     PyTuple *tuple = packet->AsObject()->arguments()->AsTuple();
-    //PyDecRef(packet);
     if (tuple == nullptr) {
         codelog(NET__PACKET_ERROR, "PyPacket::Decode() - tuple is null.");
         return false;
@@ -333,7 +333,6 @@ bool PyAddress::Decode(PyRep *&in_object) {
     }
 
     PyTuple *tuple = base->AsObject()->arguments()->AsTuple();
-    //PyDecRef(base);
     if (tuple == nullptr) {
         codelog(NET__PACKET_ERROR, "PyAddress::Decode() - tuple is null.");
         return false;
@@ -524,48 +523,16 @@ PyRep *PyAddress::Encode() {
 
 bool PyAddress::_DecodeService(PyRep *rep) {
     service = PyRep::StringContent(rep);
-    /*
-    if (rep->IsString()) {
-        PyString *s = (PyString *) rep;
-        service = s->content();
-        PySafeDecRef(s);
-    } else if (rep->IsNone()) {
-        service = "";
-    } else {
-        codelog(NET__PACKET_ERROR, "Wrong type on service field");
-        rep->Dump(NET__PACKET_ERROR, "  ");
-        return false;
-    } */
     return true;
 }
 
 bool PyAddress::_DecodeCallID(PyRep *rep) {
     callID = PyRep::IntegerValue(rep);
-    /*
-    if (rep->IsInt()) {
-        callID = rep->AsInt()->value();
-    } else if (rep->IsNone()) {
-        callID = 0;
-    } else {
-        codelog(NET__PACKET_ERROR, "Wrong type on callID field");
-        rep->Dump(NET__PACKET_ERROR, "  ");
-        return false;
-    } */
     return true;
 }
 
 bool PyAddress::_DecodeObjectID(PyRep *rep) {
     objectID = PyRep::IntegerValue(rep);
-    /*
-    if (rep->IsInt()) {
-        objectID = rep->AsInt()->value();
-    } else if (rep->IsNone()) {
-        objectID = 0;
-    } else {
-        codelog(NET__PACKET_ERROR, "Wrong type on typed ID field");
-        rep->Dump(NET__PACKET_ERROR, "  ");
-        return false;
-    } */
     return true;
 }
 
@@ -671,7 +638,6 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     PySubStream *ss = payload2->items[1]->AsSubStream();
-    //PySafeDecRef(payload2);
     if (ss == nullptr) {
         codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - ss is null.");
         PyDecRef(payload);
@@ -697,7 +663,6 @@ bool PyCallStream::Decode(const std::string &type, PyTuple *&in_payload) {
     }
 
     PyTuple *maint = ss->decoded()->AsTuple();
-    //PySafeDecRef(ss);
     if (maint == nullptr) {
         codelog(NET__PACKET_ERROR, "PyCallStream::Decode() - maint is null.");
         return false;
@@ -895,7 +860,6 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     PySubStream *ss(payload2->items[1]->AsSubStream());
-    //PyDecRef(payload2);
     if (ss == nullptr) {
         codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - ss is null.");
         PyDecRef(payload);
@@ -920,7 +884,6 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     PyTuple *robjt = ss->decoded()->AsTuple();
-    //PySafeDecRef(ss);
     if (robjt == nullptr) {
         codelog(NET__PACKET_ERROR, "EVENotificationStream::Decode() - robjt is null.");
         PyDecRef(ss);
@@ -1014,7 +977,7 @@ bool EVENotificationStream::Decode(const std::string &pkt_type, const std::strin
     }
 
     args = subt->items[1]->AsTuple();
-    PyIncRef(args);
+    //PyIncRef(args);
 
     notifyType = notify_type;
 
@@ -1030,7 +993,6 @@ PyTuple *EVENotificationStream::Encode() {
     PyTuple *t4 = new PyTuple(2);
         t4->SetItem(0, PyStatic.NewOne());
         t4->SetItem(1, args);       // no need to clone here.  set actual rep in item, and it will be cleaned up by d'tor later
-        //PyIncRef(args);
     PyTuple *t3 = new PyTuple(2);
         t3->SetItem(0, new PyInt(0));
         t3->SetItem(1, t4);

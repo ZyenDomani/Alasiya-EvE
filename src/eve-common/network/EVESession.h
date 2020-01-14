@@ -107,7 +107,7 @@ protected:
      */
     virtual void _GetVersion( VersionExchangeServer& version ) = 0;
     /** @return Current count of connected users. */
-    //virtual uint32 _GetUserCount() = 0;
+    //virtual uint32 GetUserCount() = 0;
     /** @return Current position in connection queue. */
     virtual uint32 _GetQueuePosition() = 0;
 

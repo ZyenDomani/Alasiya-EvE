@@ -127,7 +127,7 @@ bool LSCChannel::JoinChannel(Client* pClient) {
     MulticastTarget mct;
     std::map<uint32, LSCChannelChar>::iterator cur;
     cur = m_chars.begin();
-    for( ; cur != m_chars.end(); cur++ )
+    for( ; cur != m_chars.end(); ++cur )
         mct.characters.insert( cur->first );
     PyTuple *answer = join.Encode();
     sEntityList.Multicast( "OnLSC", GetTypeString(), &answer, mct );
@@ -141,16 +141,19 @@ void LSCChannel::LeaveChannel(Client *pClient)
     if (sConsole.IsShutdown())
         return;
 
-    uint32 charID = pClient->GetCharacterID();
+    if (m_chars.empty())
+        return;
 
+    uint32 charID = pClient->GetCharacterID();
     if (m_chars.find(charID) == m_chars.end())
         return;
 
-    MulticastTarget mct;
+    m_chars.erase(charID);
 
+    MulticastTarget mct;
     std::map<uint32, LSCChannelChar>::iterator cur;
     cur = m_chars.begin();
-    for(; cur != m_chars.end(); cur++)
+    for(; cur != m_chars.end(); ++cur)
         mct.characters.insert( cur->first );
 
     OnLSC_LeaveChannel leave;
@@ -161,10 +164,13 @@ void LSCChannel::LeaveChannel(Client *pClient)
     PyTuple *answer = leave.Encode();
     sEntityList.Multicast("OnLSC", GetTypeString(), &answer, mct);
 
-    m_chars.erase(charID);
-    pClient->ChannelLeft(this);
     _log(LSC__CHANNELS, "%s Left Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
-    /** @todo check for chars in this channel, delete from system if non-static and empty */
+
+    // test for client logout...erasing channel does funky shit with channel logout loop
+    if (pClient->IsLoaded())
+        pClient->ChannelLeft(this);
+
+    /** @todo delete channel from system if non-static and empty */
 }
 
 void LSCChannel::Evacuate(Client * c) {

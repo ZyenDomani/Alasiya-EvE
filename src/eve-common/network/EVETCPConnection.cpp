@@ -77,6 +77,7 @@ void EVETCPConnection::QueueRep( const PyRep* rep, bool compress )
     } else
         sLog.Error( "Network", "Failed to marshal new packet." );
 
+    PySafeDecRef(rep);
     SafeDelete( pBuffer );
 }
 

@@ -221,8 +221,16 @@ class PyInt : public PyRep
 {
 public:
     PyInt( const int32 i );
+    // copy c'tor
     PyInt( const PyInt& oth );
+    // move c'tor
+    PyInt(PyInt&& oth) = delete;
+    // copy assignment
+    PyInt& operator= (const PyInt& oth) = delete;
+    // move assignment
+    PyInt& operator= (PyInt&& oth) = delete;
 
+    
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 

@@ -224,8 +224,14 @@ Client::~Client() {
     if (!m_loaded)
         return;
 
+    m_loaded = false;
+
     if (pShipSE != nullptr)
         WarpOut();
+
+    // LSC logout
+    for (auto cur : m_channels)
+        cur->LeaveChannel(this);
 
     if (m_char.get() != nullptr) {   // we have valid character
         /** @todo  - for warping to random point when client logs out in space...
@@ -241,10 +247,6 @@ Client::~Client() {
             ServiceDB::SetAccountOnlineStatus(GetUserID(), false);
             ServiceDB::SetCharacterOnlineStatus(m_char->itemID(), false);
         }
-
-        // LSC logout
-        for (auto cur : m_channels)
-            cur->LeaveChannel(this);
 
         if (!sConsole.IsShutdown()) {
             if (IsDocked()) {
@@ -396,7 +398,6 @@ bool Client::SelectCharacter(int32 charID/*0*/)
 
     //johnsus - characterOnline mod
     ServiceDB::SetCharacterOnlineStatus(charID, true);
-    ServiceDB::SetAccountOnlineStatus(GetUserID(), true);
     sItemFactory.UnsetUsingClient();
 
     m_char->VerifySP();
@@ -2077,7 +2078,7 @@ void Client::_GetVersion(VersionExchangeServer& version)
     version.project_version = EVEProjectVersion;
 }
 
-uint32 Client::_GetUserCount()
+uint32 Client::GetUserCount()
 {
     return sEntityList.GetClientCount();
 }
@@ -2117,7 +2118,6 @@ bool Client::_VerifyCrypto(CryptoRequestPacket& cr)
         //send out accept response
         PyRep* rsp = new PyString("OK CC");
         mNet->QueueRep(rsp);
-        PyDecRef(rsp);
     }
 
     return true;
@@ -2131,7 +2131,6 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     //  sending '1' will have client send hashed pass first, then a second authentication packet using plain pass
     PyRep* res = new PyInt(2);
     mNet->QueueRep(res);
-    PyDecRef(res);
 
     // somewhere in here, client sends it's sessionID.  i still dont know how to get it.
 
@@ -2145,14 +2144,13 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     if (!ServiceDB::GetAccountInformation(ccp, aData, failMsg))
         return _LoginFail(failMsg);
 
-    /* check wether the account has been banned and if so send the semi correct message */
     if (aData.banned) {
         failMsg = "Your account is banned. Contact Allan for further support";
         return _LoginFail(failMsg);
     }
 
     if (aData.online) {
-        failMsg = "This account is being used right now. Try logging in again later.";
+        failMsg = "This account is currently online.";
         return _LoginFail(failMsg);
     }
 
@@ -2173,12 +2171,11 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
             ServiceDB::UpdatePassword(aData.id, ccp.user_password.c_str());
     }
 
-    // all checks pass.
-
     /** @todo  check this character/account for newbie status and revoke as needed before account update.  */
 
-    /* update account information, increase login count, set last login timestamp */
+    /* update account online status, increase login count, set last login timestamp */
     ServiceDB::IncrementLoginCount(aData.id);
+    ServiceDB::SetAccountOnlineStatus(aData.id, true);
 
     /* marshaled Python string "None" */
     static const uint8 handshakeFunc[] = { 0x74, 0x04, 0x00, 0x00, 0x00, 0x4E, 0x6F, 0x6E, 0x65 };
@@ -2189,7 +2186,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.serverChallenge = "";
     server_shake.func_marshaled_code = new PyBuffer(handshakeFunc, handshakeFunc + sizeof(handshakeFunc));
     server_shake.verification = new PyBool(false);
-    server_shake.cluster_usercount = _GetUserCount();
+    server_shake.cluster_usercount = sEntityList.GetClientCount(); //GetUserCount();
     server_shake.proxy_nodeid = 0xFFAA;
     server_shake.user_logonqueueposition = _GetQueuePosition();
     // binascii.crc_hqx of marshaled single-element tuple containing 64 zero-bytes string
@@ -2205,7 +2202,6 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     server_shake.boot_region = EVEProjectRegion;
     res = server_shake.Encode();
     mNet->QueueRep(res);
-    PyDecRef(res);
 
     // Setup session, but don't send the change yet.
     pSession->SetString("address", EVEClientSession::GetAddress().c_str());
@@ -2218,7 +2214,7 @@ bool Client::_VerifyLogin(CryptoChallengePacket& ccp)
     pSession->SetLong("role", aData.role);
     pSession->SetLong("sessionID", 0/*pSession->CreateSessionID()*/);
 
-    sLog.Green("  Client::Login()","Account \"%s\" (uid:%u) logging in from IP %s", aData.name.c_str(), aData.id, EVEClientSession::GetAddress().c_str());
+    sLog.Green("  Client::Login()","Account \"%s\" (uid:%u) logging in from %s", aData.name.c_str(), aData.id, EVEClientSession::GetAddress().c_str());
 
     return true;
 }
@@ -2227,7 +2223,6 @@ bool Client::_LoginFail(std::string fail_msg)
 {
     GPSTransportClosed* except = new GPSTransportClosed(fail_msg);
     mNet->QueueRep(except);
-    PyDecRef(except);
     return false;
 }
 
@@ -2254,7 +2249,6 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     if (is_log_enabled(CLIENT__CALL_DUMP))
         res->Dump(CLIENT__CALL_DUMP, "    ");
     mNet->QueueRep(res, false);
-    PySafeDecRef(res);
 
     // Send out the session change
     SendSessionChange();
@@ -2262,7 +2256,7 @@ bool Client::_VerifyFuncResult(CryptoHandshakeResult& result)
     return true;
 }
 
-void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 clientID, PyRep** return_value, const char* channel)
+void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 clientID, PyRep** rsp, const char* channel)
 {
     //build the packet:
     PyPacket* packet = new PyPacket();
@@ -2278,8 +2272,8 @@ void Client::_SendCallReturn(const PyAddress& source, int64 callID, int64 client
     packet->userid = GetUserID();
 
     packet->payload = new PyTuple(1);
-    packet->payload->SetItem(0, new PySubStream(*return_value));
-    return_value = nullptr;   //consumed
+    packet->payload->SetItem(0, new PySubStream(*rsp ));
+    rsp = nullptr;   //consumed...no, it's not.
 
     if (channel != nullptr) {
         packet->named_payload = new PyDict();
@@ -2310,7 +2304,7 @@ void Client::_SendException(const PyAddress& source, int64 callID, MACHONETMSG_T
     ErrorResponse e;
     e.MsgType = msgType;
     e.ErrorCode = errCode;
-    e.payload = *payload;   //consumed
+    e.payload = *payload;
     payload = nullptr;
 
     packet->payload = e.Encode();
@@ -2455,7 +2449,6 @@ bool Client::Handle_CallReq(PyPacket* packet, PyCallStream& req)
 
     _SendCallReturn(packet->dest, packet->source.callID, GetClientID(), &result.ssResult);  //ssResult is consumed here
 
-    //PySafeDecRef(result.ssResult);
     return true;
 }
 

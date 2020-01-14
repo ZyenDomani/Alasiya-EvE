@@ -60,7 +60,7 @@ bool BaseTCPServer::IsOpen() const
 
 bool BaseTCPServer::Open( uint16 port, char* errbuf )
 {
-    if (errbuf)
+    if (errbuf != nullptr)
         errbuf[0] = 0;
 
     // mutex lock
@@ -68,7 +68,7 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
 
     if (IsOpen()) {
         _log(TCP_SERVER__ERROR, "Open() - Listening socket already open" );
-        if (errbuf)
+        if (errbuf != nullptr)
             snprintf( errbuf, TCPSRV_ERRBUF_SIZE, "Listening socket already open" );
         return false;
     } else {
@@ -85,11 +85,11 @@ bool BaseTCPServer::Open( uint16 port, char* errbuf )
 
     // Setup internet address information.
     // This is used with the bind() call
-    sockaddr_in address;
+    sockaddr_in address = sockaddr_in();
     memset( &address, 0, sizeof( address ) );
-        address.sin_family = AF_INET;
-        address.sin_port = htons( port );
-        address.sin_addr.s_addr = htonl( INADDR_ANY );
+    address.sin_family = AF_INET;
+    address.sin_port = htons( port );
+    address.sin_addr.s_addr = htonl( INADDR_ANY );
 
     if (mSock->bind((sockaddr*)&address, sizeof(address)) < 0) {
         _log(TCP_SERVER__ERROR, "Open()::bind() < 0" );
@@ -155,9 +155,9 @@ bool BaseTCPServer::Process()
 
 void BaseTCPServer::ListenNewConnections()
 {
-    Socket* sock = nullptr;
-    sockaddr_in from;
-        from.sin_family = AF_INET;
+    Socket* sock(nullptr);
+    sockaddr_in from = sockaddr_in();
+    from.sin_family = AF_INET;
     unsigned int fromlen = sizeof( from );
     MutexLock lock( mMSock );
 

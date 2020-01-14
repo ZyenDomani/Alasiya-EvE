@@ -105,18 +105,16 @@ class Client
   protected EVEPacketDispatcher
 {
 public:
-    /** @todo  derive and execute tests to determing if these are needed...
-    // copy c'tor
-    Client(const Client& oth);
-    // move c'tor
-    Client(Client&& oth) noexcept;
-    // assignment op
-    Client& operator= (const Client& oth);
-    // move op
-    Client& operator= (Client&& oth) noexcept;
-    */
-
     Client(PyServiceMgr &services, EVETCPConnection** con);
+    // copy c'tor
+    Client(const Client& oth) = delete;
+    // move c'tor
+    Client(Client&& oth) = delete;
+    // copy assignment
+    Client& operator= (const Client& oth) = delete;
+    // move assignment
+    Client& operator= (Client&& oth) = delete;
+
     ~Client();
 
     // called from main() loop
@@ -430,7 +428,7 @@ protected:
     /* EVEClientSession interface                                       */
     /********************************************************************/
     void _GetVersion( VersionExchangeServer& version );
-    uint32 _GetUserCount();
+    uint32 GetUserCount();
     uint32 _GetQueuePosition()                          { /* hack */ return 1; }
 
     /********************************************************************/

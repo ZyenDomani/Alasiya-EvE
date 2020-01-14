@@ -59,7 +59,6 @@ void EVEClientSession::Reset() {
 
     PyRep* res(version.Encode());
     mNet->QueueRep(res);
-    PyDecRef(res);
 
     mPacketHandler = &EVEClientSession::_HandleVersion;
 }
@@ -83,13 +82,16 @@ void EVEClientSession::FastQueuePacket( PyPacket* packet ) {
         return;
 
     PyRep* res(packet->Encode());
+
     if (res == nullptr) {
         sLog.Error("FastQueuePacket", "%s: Failed to encode a Fast queue packet.", GetAddress().c_str());
         return;
     }
 
     mNet->QueueRep( res );
-    PyDecRef( res );
+
+    // cleanup
+    //SafeDelete( packet );
 }
 
 PyPacket* EVEClientSession::PopPacket() {
@@ -133,7 +135,6 @@ PyPacket* EVEClientSession::_HandleCommand( PyRep* rep ) {
             //they return position in queue
             PyRep* rsp = new PyInt( _GetQueuePosition() );
             mNet->QueueRep( rsp );
-            PyDecRef( rsp );
 
             //now reset connection
             Reset();
