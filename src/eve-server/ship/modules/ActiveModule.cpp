@@ -416,13 +416,15 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
     _log(MODULE__TRACE, "ActiveModule::Deactivate(%s) - module %s(%u) remaining time %ums.", \
             effect.c_str(), m_modRef->name(), m_modRef->itemID(), GetRemainingCycleTimeMS());
 
+    SetModuleState(Module::State::Deactivating);
+
     if ((m_effectID == EVEEffectID::miningLaser) or (m_effectID == EVEEffectID::miningClouds)) {
-        ActiveModule::DeactivateCycle(true);
+        DeactivateCycle(true);
         return;
     }
-    // else wait for module to complete cycle then shut it down.
+
+    // if we're not mining, wait for module to complete current cycle then shut it down.
     m_Stop = true;
-    SetModuleState(Module::State::Deactivating);
 
     /* these are not needed.  Clear() calls RemoveTargetModule
     if (effect.compare("TargetDestroyed") == 0) {
