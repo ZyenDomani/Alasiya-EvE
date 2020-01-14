@@ -73,9 +73,9 @@ public:
     InventoryItem(const InventoryItem& oth);
     // move c'tor
     InventoryItem(InventoryItem&& oth) noexcept;
-    // assignment op
+    // copy assignment
     //InventoryItem& operator= (const InventoryItem& oth);
-    // move op
+    // move assignment
     InventoryItem& operator= (InventoryItem&& oth) noexcept;
 
 
@@ -312,7 +312,8 @@ public:
 
 protected:
     AttributeMap* pAttributeMap;
-    int64   m_timestamp;        // fx timestamp
+    // fx timestamp
+    int64   m_timestamp;        // not implemented yet
 
 };
 

@@ -24,6 +24,8 @@
     Updates:    Allan
 */
 
+/** @todo  most of this needs to go into static data */
+
 #include "eve-server.h"
 
 #include "Client.h"
@@ -588,8 +590,8 @@ bool InventoryDB::GetCorpData(uint32 characterID, CorpData &into) {
 }
 /*
  * This macro checks given CharacterAppearance object (app) if given value (v) is NULL:
- *  if yes, macro evaulates to string "NULL"
- *  if no, macro evaulates to call to function _ToStr, which turns given value to string.
+ *  if yes, macro evaluates to string "NULL"
+ *  if no, macro calls to function _ToStr, which turns given value to string.
  *
  * This macro is needed when saving CharacterAppearance values into DB (NewCharacter, SaveCharacterAppearance).
  * Resulting value must be const char *.

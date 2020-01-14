@@ -35,7 +35,7 @@
 #include "manufacturing/Blueprint.h"
 #include "pos/Structure.h"
 #include "ship/Ship.h"
-#include <ship/modules/ModuleItem.h>
+#include "ship/modules/ModuleItem.h"
 #include "station/Station.h"
 #include "station/StationOffice.h"
 #include "system/Asteroid.h"
@@ -46,20 +46,20 @@
  * InventoryItem
  */
 InventoryItem::InventoryItem(uint32 _itemID, const ItemType& _type, const ItemData& _data)
-: RefObject(0), // this may not be needed.  look into all *Ref objects to determine usefulness  (do they HAVE to be ref-counted?)
-  pAttributeMap(new AttributeMap(*this)),
-  pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
-  m_itemID(_itemID),
-  m_itemName(_data.name),
-  m_type(_type),
-  m_ownerID(_data.ownerID),
-  m_locationID(_data.locationID),
-  m_flag(_data.flag),
-  m_contraband(_data.contraband),
-  m_singleton(_data.singleton),
-  m_quantity(_data.quantity),
-  m_position(_data.position),
-  m_customInfo(_data.customInfo)
+: RefObject(0),
+pAttributeMap(new AttributeMap(*this)),
+pInventory(nullptr),      // this is created/destroyed in derived classes as needed.
+m_itemID(_itemID),
+m_itemName(_data.name),
+m_type(_type),
+m_ownerID(_data.ownerID),
+m_locationID(_data.locationID),
+m_flag(_data.flag),
+m_contraband(_data.contraband),
+m_singleton(_data.singleton),
+m_quantity(_data.quantity),
+m_position(_data.position),
+m_customInfo(_data.customInfo)
 {
     // assert for data consistency
     assert(_data.typeID == _type.id());
