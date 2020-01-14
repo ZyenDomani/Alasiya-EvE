@@ -69,7 +69,7 @@ bool ServiceDB::ValidateAccountName(CryptoChallengePacket& ccp, std::string& fai
 }
 
 bool ServiceDB::GetAccountInformation( CryptoChallengePacket& ccp, AccountData& aData, std::string& failMsg )
-{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18    -again 15Jun19
+{       //added auto account    -allan 18Jan14      //UD 16Jan18  -again 15Dec18    -ud failMsgs 15Jun19
     std::string eLogin;
     sDatabase.DoEscapeString(eLogin, ccp.user_name);
 
@@ -189,14 +189,9 @@ void ServiceDB::SetServerOnlineStatus(bool online) {
                        (online ? 1 : 0), (online ? "UNIX_TIMESTAMP(CURRENT_TIMESTAMP)" : "0"));
 
     //this is only called on startup/shutdown.  reset all char online counts/status'
-    sDatabase.RunQuery(err,
-                       "UPDATE chrCharacters, account"
-                       " SET chrCharacters.online = 0,"
-                       "     account.online = 0");
-
-    sDatabase.RunQuery( err,
-                        "DELETE FROM chrPausedSkillQueue"
-                        " WHERE 1");
+    sDatabase.RunQuery(err, "UPDATE chrCharacters SET online = 0 WHERE 1");
+    sDatabase.RunQuery(err, "UPDATE account SET online = 0 WHERE 1");
+    sDatabase.RunQuery( err, "DELETE FROM chrPausedSkillQueue WHERE 1");
 }
 
 void ServiceDB::SetAccountOnlineStatus(uint32 accountID, bool online) {
