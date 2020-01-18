@@ -39,8 +39,10 @@ static const int32 INCAPACITATION_DISTANCE = 250000;    // drone to ship max dis
 // Cosmic Managers constants here  *not used yet*
 static const uint32 ASTEROID_GROWTH_INTERVAL_MS = 3600000;  /* this is grow check in ms (1d) */
 
-// gravitational constant
-static const double Gc = 6.6725985e-11;     //per client (changed from original 6.673e-11)
+// gravitational constant (used for orbit math)
+static const double Gc = 0.000000000066725985;     //per client (changed from original 6.673e-11)
+static const float SMALL_NUMBER = 0.000000000000001;
+
 
 // verify that NO ONE tries to use "ccp" in their name
 // also check for mysql commands

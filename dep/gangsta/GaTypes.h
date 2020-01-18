@@ -186,13 +186,16 @@ namespace Ga
 
 		//optimized checks for a very common case
         GaExpInl bool isZero() const {
-			return (x == 0.0f && y == 0.0f && z == 0.0f);
-		}
-		GaExpInl bool isNotZero() const {
-			return (x != 0.0f || y != 0.0f || z != 0.0f);
-		}
+            return (x == 0.0f && y == 0.0f && z == 0.0f);
+        }
+        GaExpInl bool isNotZero() const {
+            return (x != 0.0f || y != 0.0f || z != 0.0f);
+        }
         GaExpInl bool isNaN() const {
             return (isnan(x) or isnan(y) or isnan(z));
+        }
+        GaExpInl bool isInf() const {
+            return (isinf(x) or isinf(y) or isinf(z));
         }
         GaVec3 rotationTo(const Ga::GaVec3& pos) const;
 
