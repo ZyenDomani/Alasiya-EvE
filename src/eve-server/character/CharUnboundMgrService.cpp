@@ -347,9 +347,9 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
         iData.customInfo += ")";
     sItemFactory.SpawnItem( iData )->SaveItem();
 
-    // give the player their pod
+    // give the player their pod and set in system (NOT hangar)
     pClient->CreateNewPod();
-    pClient->GetPod()->Move(cdata.locationID, flagHangar);
+    pClient->GetPod()->Move(cdata.solarSystemID, flagCapsule, false);
 
     ShipItemRef sRef = pClient->SpawnNewRookieShip(cdata.locationID);
     // set shipID in client and char objects and save (shipID error fix)
