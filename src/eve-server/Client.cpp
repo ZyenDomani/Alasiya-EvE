@@ -271,7 +271,7 @@ Client::~Client() {
     //sEntityList.RemoveSID(GetSessionID());
     m_services.ClearBoundObjects(this);
 
-    m_system = nullptr; // DO NOT delete this
+    m_system = nullptr; // DO NOT delete m_system
 
     SafeDelete(m_TS);
     SafeDelete(m_scan);
@@ -715,13 +715,13 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
         m_beyonce = false;
         m_setStateSent = false;
 
-        // register ourself with new system manager (this wont hit on login)
+        // register ourselves with new system manager (this wont hit on login)
         m_system->AddClient(this, count, IsJump());
     }
 
-    m_char->SetLocation(stationID, m_SystemData);   // stationID MUST be 0 when InSpace.
+    m_char->SetLocation(stationID, m_SystemData);
 
-    /** @todo  verify 'pt' is within system boundries */
+    /** @todo  verify 'pt' is within system boundaries */
     m_ship->SetPosition(pt);
 
     char ci[45];
@@ -1634,7 +1634,8 @@ void Client::ChannelJoined(LSCChannel *chan) {
 }
 
 void Client::ChannelLeft(LSCChannel *chan) {
-    m_channels.erase(chan);
+    if (m_loaded)
+        m_channels.erase(chan);
 }
 
 /************************************************************************/

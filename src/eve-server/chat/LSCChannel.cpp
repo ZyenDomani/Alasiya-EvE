@@ -166,9 +166,7 @@ void LSCChannel::LeaveChannel(Client *pClient)
 
     _log(LSC__CHANNELS, "%s Left Channel %u - %s", pClient->GetName(), m_channelID, m_displayName.c_str());
 
-    // test for client logout...erasing channel does funky shit with channel logout loop
-    if (pClient->IsLoaded())
-        pClient->ChannelLeft(this);
+    pClient->ChannelLeft(this);
 
     /** @todo delete channel from system if non-static and empty */
 }
