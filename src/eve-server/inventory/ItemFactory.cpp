@@ -141,7 +141,7 @@ void ItemFactory::RemoveItem(uint32 itemID) {
 
     std::map<uint32, InventoryItemRef>::iterator itr = m_items.find( itemID );
     if (itr == m_items.end())
-        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found when requesting removal", itemID );
+        _log(ITEM__MESSAGE, "ItemFactory::RemoveItem() - Item ID %u not found", itemID );
     else
         m_items.erase( itr );
 }
