@@ -32,6 +32,22 @@
 #include "destiny/DestinyStructs.h"
 #include "inventory/ItemRef.h"
 
+//0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
+namespace Destiny {
+    namespace Ball {
+        namespace Orbit {
+            enum {
+                None = 0,
+                Orbiting = 1,
+                Close = 2,
+                Far = 3,
+                TooClose = 4,
+                TooFar = 5
+            };
+        }
+    }
+}
+
 class InventoryItem;
 class Missile;
 class PyRep;
@@ -247,7 +263,8 @@ protected:
     int8 m_orbiting;                    //  -2=way too close, -1=too close, 0=no orbit, 1=at distance 2=too far, 3=way too far
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
-    float m_orbitRadTic;                //in rad/sec  - for orbiting
+    float m_orbitTime;                  //in s - time to complete one orbit using current variables
+    float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic 
     float m_turnFraction;               //fuzzy logic - speed % - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - speed % - previous speed fraction used for decel checks when (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command
@@ -286,7 +303,7 @@ private:
     void ClearTurn();
 
     // Internal Orbit shit
-    GPoint ComputePosition(double curRad);             // test code....not used yet
+    GPoint ComputePosition(double curRad);   // currently testing...wip
     double m_inclination;               //inclination of orbit
     double m_longAscNode;               //longitutdal of ascending node
 

@@ -102,11 +102,11 @@ OrbitData DestinyOrbit::elements_from_state_vector(GPoint r, GVector v, int mass
     double w = 0;
     double f = 0;
 
-    float SMALL_NUMBER = 1e-15f;
+    //float SMALL_NUMBER = 1e-15f;
 
     // Inclination is the angle between the angular
-    // momentum vector and its z component.
-    double i = acos(h.z / h.length());
+    // momentum vector and its z component. (which is 'y' in eve coords)
+    double i = acos(h.y / h.length());
 
     if (abs(i - 0) < SMALL_NUMBER) {
         // For non-inclined orbits, N is undefined;

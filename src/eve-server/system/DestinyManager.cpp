@@ -26,6 +26,7 @@
 
 // this class is for objects that move
 
+#include <complex>      // std::complex, std::norm
 #include "EVEServerConfig.h"
 
 #include "Client.h"
@@ -88,12 +89,13 @@ m_warpCapacitorNeed(0.00001f)
     m_capNeeded = 0.0f;
     m_prevSpeed = 0.0f;
     m_degPerTic = 0.0f;
+    m_orbitTime = 0.0f;
     m_orbitRadTic = 0.0f;
     m_prevSpeedFraction = 0.0f;
     m_userSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
     m_currentSpeedFraction = 0.0f;
-    m_maxOrbitSpeedFraction = 0.0f;
+    m_maxOrbitSpeedFraction = 1.0f;
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -510,9 +512,11 @@ void DestinyManager::Stop() {
     m_accel = false;
     m_decel = false;
     m_orbiting = 0;
+    m_orbitTime = 0.0f;
     m_prevSpeed = 0.0f;
     m_orbitRadTic = 0.0f;
     m_prevSpeedFraction = 0.0f;
+    m_maxOrbitSpeedFraction = 1.0f;
 
     ClearTurn();
     // reset move timers for new state
@@ -559,6 +563,7 @@ void DestinyManager::Halt() {
     m_userSpeedFraction = 0.0f;
     m_activeSpeedFraction = 0.0f;
     m_currentSpeedFraction = 0.0f;
+    m_maxOrbitSpeedFraction = 1.0f;
 
     m_targetEntity.first = 0;
     m_targetEntity.second = nullptr;
@@ -854,7 +859,7 @@ void DestinyManager::MoveObject() {
             m_shipHeading.y -= 0.07;
     }
 
-    if (m_orbiting) {
+    if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
         // object is orbiting...set orbit speed correctly.
         speed *= m_maxOrbitSpeedFraction;
         move += " in orbit";
@@ -1139,19 +1144,19 @@ void DestinyManager::_Orbit() {
         return;
     }
 
-    // this should ONLY set position of ship based on period of orbit.
+    // this will set position of ship relative to target, based on period of orbit.
 
     /*   destiny variables used here
      * m_position - probably the most important calculated value.
      * m_velocity - tied for above title
-     * m_targetDistance - commanded orbit distance
-     * m_followDistance - calculated orbit distance, including target gravity and ship variables
-     * m_targetHeading - direction to target from current heading
+     * m_followDistance - commanded orbit distance
+     * m_targetDistance - calculated orbit distance, including target gravity and ship variables
+     * m_targetHeading - direction to target from current position
      * m_targetPoint - calculated distant point from above variable
      * m_shipHeading - current direction ship is pointed
-     * m_stateStamp - used to track quadrant and positioning.  is tic in seconds
-     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=way too close , 3=too close, 4=too far, 5=way too far
-     * m_orbitRadTic - rad/sec in current orbit.  set by Orbit()
+     * m_stateStamp - used to track movement.  1Hz tic
+     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
+     * m_orbitRadTic - rad/sec in current orbit.  set by Orbit() (~2090)
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here yet
      *
      *   our target variables
@@ -1161,29 +1166,12 @@ void DestinyManager::_Orbit() {
      * Th = target heading   (updated for movement, if applicable)
      * Tm = target mass
      *
-     *   primary orbital elements:
-     * N = longitude of the ascending node
-     * i = inclination to the ecliptic (plane of the Earth's orbit)
-     * w = argument of perihelion
-     * a = semi-major axis, or mean distance from Sun
-     * e = eccentricity (0=circle, 0-1=ellipse, 1=parabola)
-     * M = mean anomaly (0 at perihelion; increases uniformly with time)
-     *
-     *   related orbital elements:
-     * w1 = N + w   = longitude of perihelion
-     * L  = M + w1  = mean longitude
-     * q  = a*(1-e) = perihelion distance
-     * Q  = a*(1+e) = aphelion distance
-     * P  = a ^ 1.5 = orbital period (years if a is in AU, astronomical units)
-     * T  = Epoch_of_M - (M(deg)/360_deg) / P  = time of perihelion
-     * v  = true anomaly (angle between position and perihelion)
-     * E  = eccentric anomaly
-     *
-     * current = distance between object and target centers
-     * actual = distance between object and target closest edges (counting for radius)
+     * centers = distance between object and target centers
+     * edges = distance between object and target closest edges (counting for radius)
      *
      */
 
+    /** @todo  will have to set/reset orbit time once actual orbit is started for proper radian setting */
     // get current times
     uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
     float Tr = m_targetEntity.second->GetRadius();
@@ -1195,230 +1183,251 @@ void DestinyManager::_Orbit() {
     GVector Th(m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
     Tp += (Tv*Th); // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
 
-    // current and actual are used to determine ship's orbit distance, and adjust position accordingly
-    double current = m_position.distance(Tp);
-    double actual = (current - m_radius - Tr);
+    // current and edges are used to determine ship's orbit distance, and adjust position accordingly
+    double centers = m_position.distance(Tp);
+    double edges = ( centers - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  current:%.2f, actual:%.2f, target:%.2f, follow:%.2f", \
-            mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "1 - %s: time:%u, centers:%.2f, edges:%.2f, target:%.2f, follow:%.2f", \
+            mySE->GetName(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
     // distances for orbit calculations for orbits within engage distance
-    double orbitDistNow = 0.0f, orbitDistNext = 0.0f, curSpeed = m_maxSpeed * m_activeSpeedFraction * m_maxOrbitSpeedFraction;
     GPoint mPos(NULL_ORIGIN);
-    double curRad = m_orbitRadTic * timeStamp;  // this isnt quite right...but pretty damn close
-
-    /*
-    double distance = (m_position.distance(Tp) - m_radius - Tr); (actual)
-    if ((distance - (m_targetDistance /10)) > m_followDistance) {
-        // too far to realistically orbit.
-    } else if (m_position.distance(Tp) < m_targetDistance) {    (current)
-        // to close to realistically orbit.  move away from target
-    } else if (distance < m_targetDistance) {                   (actual)
-        // we are too close to our target; move to increase distance to target.
-    */
-    // m_orbiting   -2=way too close, -1=too close, 0=no orbit, 1=at distance 2=too far, 3=way too far
-    // adjust 'distance' variable as needed to correct orbit circumfrence based on target distance
-    if ((actual - m_targetDistance /8) > m_followDistance) {
-        // too far to engage target.  move closer
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  way too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
-        if (m_orbiting > 1) {
+    float mPosAdj = 0.0f;
+    // check distances for this tic
+    if (( edges /2) > m_targetDistance) {
+        if (m_orbiting == Destiny::Ball::Orbit::TooFar) {
             MoveObject();
-            return; // this is all we need to do at this point.
+            return;
         }
-        m_orbiting = 3;
+        // too far to realistically orbit.
+        m_orbiting = Destiny::Ball::Orbit::TooFar;
         // set point to side of target (based on current position), to avoid near-zero angular velocity
-        double radTarg = std::atan2(Tp.z - m_position.z, Tp.x - m_position.x);  // rad from '0' to target
-        radTarg += std::atan2(m_targetDistance, current);  // rad from 'distance line' to target 'offset'
-        mPos.x = current * std::cos(radTarg);
-        mPos.z = current * std::sin(radTarg);
+        double radTarg = atan2(Tp.z - m_position.z, Tp.x - m_position.x);  // rad from '0' to target
+        //radTarg += atan2(m_targetDistance, edges);  // rad from 'distance line' to target 'offset'
+        mPos.x = m_targetDistance * cos(radTarg);
+        mPos.z = m_targetDistance * sin(radTarg);
+        //m_targetPoint.y = Tp.y;     // stay on 'y' elevation...easier this way.
         if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
-            mPos.y = Tp.y - m_position.y - m_followDistance;
+            mPos.y = Tp.y - m_position.y;
         else  // opposite of above
-            mPos.y = m_position.y - Tp.y + m_followDistance;
+            mPos.y = m_position.y - Tp.y;
         m_targetPoint = Tp + mPos;
         GVector heading(m_position, m_targetPoint);
         heading.normalize();
-        m_shipHeading = heading;    // this sets object velocity in MoveObject() (using speed)
-        m_stateStamp = sEntityList.GetStamp();
+        m_shipHeading = heading;    // this sets object velocity using speed
+        _log(DESTINY__ORBIT_TRACE, "2 - way too far - rads:%.3f, heading: %.3f, %.3f, %.3f", \
+                radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         MoveObject();
-        return; // this is all we need to do at this point.
-    } else if (actual < m_targetDistance) {
-        // way too close inside orbit.  move away quickly.
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  way too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
-        if (m_orbiting < 0) {
+        return;
+    } else if ( (centers + m_followDistance /3) < m_targetDistance) {
+        if (m_orbiting == Destiny::Ball::Orbit::TooClose) {
             MoveObject();
-            return; // this is all we need to do at this point.
+            return;
         }
-        m_orbiting = -2;
-        GVector heading(m_position, Tp);
+        // to close to realistically orbit.  move away from target
+        m_orbiting = Destiny::Ball::Orbit::TooClose;
+        // set point to side of target (based on current position), to avoid near-zero angular velocity
+        double radTarg = atan2(Tp.z - m_position.z, Tp.x - m_position.x);  // rad from '0' to target
+        //radTarg += atan2(m_targetDistance, edges);  // rad from 'distance line' to target 'offset'
+        mPos.x = m_targetDistance * cos(radTarg);
+        mPos.z = m_targetDistance * sin(radTarg);
+        //m_targetPoint.y = Tp.y;     // stay on 'y' elevation...easier this way.
+        if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
+            mPos.y = Tp.y - m_position.y;
+        else  // opposite of above
+            mPos.y = m_position.y - Tp.y;
+        m_targetPoint = Tp + mPos;
+        GVector heading(m_position, m_targetPoint);
         heading.normalize();
-        m_shipHeading = heading * -1;    // this sets object velocity in MoveObject() (using speed)
-        m_targetPoint = m_position + (m_shipHeading * 1.0e16);
-        m_stateStamp = sEntityList.GetStamp();
+        m_shipHeading = heading;    // this sets object velocity using speed
+        _log(DESTINY__ORBIT_TRACE, "2 - way too close - rads:%.3f, heading: %.3f, %.3f, %.3f", \
+                radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         MoveObject();
-        return; // this is all we need to do at this point.
-    // these below are within engage distance.
-    /** @note these should use a bit of trig to calculate true position, but im lazy, so will hack it for now.  will have to revisit later */
-    } else if (current > m_followDistance) {
-        // too far outside orbit.  move closer
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  too far.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
-        m_orbiting = 2;
-        // simulate orbiting distance here...the distance isnt a straight line, so we need to fudge it as ship will be trying for a larger orbit
-        orbitDistNow = current - (m_targetDistance /8);
-        // determine distance for next tic based on ship speed and position
-        orbitDistNext = orbitDistNow - (m_targetDistance /10);
-    } else if (current < m_targetDistance) {
-        // too close inside orbit; move away slowly.
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  too close.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
-        m_orbiting = -1;
-        orbitDistNow = current + (m_targetDistance /8);
-        // determine distance for next tic based on ship speed and position
-        orbitDistNext = orbitDistNow + (m_targetDistance /10);
+        return;
+    } else if ((edges - m_followDistance /4) > m_targetDistance) {
+        m_orbiting = Destiny::Ball::Orbit::Far;
+        // fudge distance for a smaller orbit
+        // modify this based on calculated distance
+        mPosAdj = -m_followDistance / 25;
+        _log(DESTINY__ORBIT_TRACE, "2 - too far");
+    } else if (centers < m_targetDistance) {
+        m_orbiting = Destiny::Ball::Orbit::Close;
+        // fudge distance for larger orbit
+        // modify this based on calculated distance
+        mPosAdj = m_followDistance / 25;
+        _log(DESTINY__ORBIT_TRACE, "2 - too close");
     } else {
-        // within orbit distance tolerance
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  within tolerance.  current: %.1f, actual: %.1f, target: %.1f, follow: %.1f", \
-                mySE->GetName(), mySE->GetID(), current, actual, m_targetDistance, m_followDistance);
-        m_orbiting = 1;
-        orbitDistNow = m_followDistance;  // this is calculated orbit distance for this ship
-        orbitDistNext = m_followDistance;
+        m_orbiting = Destiny::Ball::Orbit::Orbiting;
+        _log(DESTINY__ORBIT_TRACE, "2 - within tolerance");
     }
 
-    #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
+    #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "m - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
 
-    // distance was checked and adjusted as needed for this tic.
-    // use orbit math to set ship position and MoveObject() to set other attribs.
-    // set current position (this is where we are this tic)
+    // new orbit code
+    double radius = m_targetDistance + mPosAdj + m_radius; // fudge a bit as using targetDistance is a hair too close
+    // angle around y axis (from +x) - horizontal movement  - ccw from +x using ships orbit in rad/tic
+    double alpha = m_orbitRadTic * timeStamp;
+    //  todo get initial angle and apply here
 
-    // NOTE  for now, an orbit around a stationary object will be horizontal (y=0) and an orbit around a moving object will be vertical (x=0 or z=0)
-    /*
-    if (Tv) {
-        // target is moving.
-        // @note  remember, eve coords for y and z are backwards.... y is elevation
-        double radX = m_position.x - Tp.x + mPosAdj.x, radY = m_position.y - Tp.y + mPosAdj.y, radZ = m_position.z - Tp.z + mPosAdj.z;
-        mPos.x = radX * cos(curRad) + radZ * sin(curRad);
-        double intmZ = radZ * cos(curRad) - radX * sin(curRad);
-        mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
-        mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
-    } else {
-        mPos.x = orbitDistNow * std::cos(curRad);
-        mPos.z = orbitDistNow * std::sin(curRad);
-        mPos.y = 0; // flat horizontal orbit (hack)
-        */
-        double radX = m_position.x - Tp.x, radY = m_position.y - Tp.y, radZ = m_position.z - Tp.z;
-        mPos.x = radX * cos(curRad) + radZ * sin(curRad);
-        double intmZ = radZ * cos(curRad) - radX * sin(curRad);
-        mPos.z = intmZ * cos(curRad) + radY * sin(curRad);
-        mPos.y = radY * cos(curRad) - intmZ * sin(curRad);
-        LogMacro(mPos);
-    // testing orbit code here....no changes to ships
-    GPoint nPos = ComputePosition(curRad);
-        LogMacro(nPos);
-    //}
+    // angle around xz axis (from +y) - vertical movement
+    // initial angle will be calculated during orbit init.  testing code using 45*
+    double theta = 45; //atan2(m_position.z, m_position.x);
+    double delta = 90 - theta;  // for testing, this will be 45*
+    // fractional value of orbit period (0 < x < 1)
+    double period = fmod(timeStamp, m_orbitTime) /m_orbitTime;
+    // this isnt right....need to calculate a pendulum value here to adjust elevation (+/-y)
+    double omega = theta * 2;
+    if (period < 0.5)
+        delta -= (omega * period *2);
+    else
+        delta -= (omega * (1 - period *2));
 
-    if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::_Orbit() - %s(%u):  orbiting. curRad:%.5f, timestamp:%u, speed:%.2f, Now:%.2f Next:%.2f", \
-            mySE->GetName(), mySE->GetID(), curRad, timeStamp, curSpeed, orbitDistNow, orbitDistNext);
-
-    // set current heading as vector from current location to calculated location for this tic
-    GVector heading(m_position, Tp + mPos);
-    heading.normalize();
-    m_shipHeading = heading;
-    m_position = Tp + mPos;
-    m_targetPoint = m_position + (m_shipHeading * 1.0e16);
-    MoveObject();
+    mPos.x = radius /** sin( delta )*/ * cos( alpha );
+    mPos.z = radius /** sin( delta )*/ * sin( alpha );
+    mPos.y = 0; //(m_targetDistance + mPosAdj) * cos( delta );
+    _log(DESTINY__ORBIT_TRACE, "4 - alpha:%.5f, d:%.5f, p:%.5f, r:%.3f, mPosAdj:%.3f", alpha,delta,period,radius,mPosAdj);
+    LogMacro(mPos);
+    // apply calculated position to origin (our target)
+    mPos += Tp;
+    // set current position for this tic
+    m_position = mPos;
 
     // set heading for next tic
     GPoint mPosNext(NULL_ORIGIN);
-    curRad += m_orbitRadTic;
-    mPosNext.x = mPos.x * cos(curRad) + mPos.z * sin(curRad);
-    intmZ = mPos.z * cos(curRad) - mPos.x * sin(curRad);
-    mPosNext.z = intmZ * cos(curRad) + mPos.y * sin(curRad);
-    mPosNext.y = mPos.y * cos(curRad) - mPos.z * sin(curRad);
+    alpha += m_orbitRadTic;
+    mPosNext.x = radius * cos( alpha );
+    mPosNext.z = radius * sin( alpha );
+    mPosNext.y = 0;
     LogMacro(mPosNext);
+    // apply calculated position to origin (our target)
+    mPosNext += Tp;
+    // set heading for next tic
+    GVector heading(m_position, mPosNext);
+    heading.normalize();
+    m_shipHeading = heading;
+    m_targetPoint = m_position + (m_shipHeading * 1.0e16);
+    LogMacro( heading );
 
-    // set current heading as vector from current location to calculated (supposed) location for next tic
-    GVector heading2(m_position, Tp + mPosNext);
-    heading2.normalize();
-    //m_shipHeading = heading2;
-    //m_targetPoint = m_position + (m_shipHeading * 1.0e16);
-    LogMacro(heading);
-    LogMacro(heading2);
+    double curSpeed = m_maxSpeed * m_activeSpeedFraction * m_maxOrbitSpeedFraction;
+    if (is_log_enabled(DESTINY__ORBIT_TRACE))
+        _log(DESTINY__ORBIT_TRACE, "5(%u) - orbiting at %.2f. timestamp:%u, speed:%.2f", \
+            m_orbiting, m_position.distance(Tp), timeStamp, curSpeed);
+
+    MoveObject();
 }
 
 GPoint DestinyManager::ComputePosition(double curRad) {
     /*
-     *   our target variables
-     * Tr = target radius
-     * Tp = target position (updated for movement, if applicable)
-     * Tv = target velocity
-     * Th = target heading  (updated for movement, if applicable)
-     * Tm = target mass
-     * current = distance between object and target centers
-     * actual = distance between object and target closest edges  (counting for object radii)
+     *   orbital definitions:
+     * node line = ascending node
+     * ascending node = line of intersection between orbit plane and reference plane, on the 'upward' side
+     * periapsis = closest point of orbit to target point
+     * apoapsis = farthest point of orbit to target point
+     * ecliptic = plane of orbit
+     * reference direction = line on reference plane inline with periapsis
      *
      *   primary orbital elements:
-     * i = inclination to the positive ecliptic (plane of our orbit) at node line
-     * w = argument of periapsis, angle measured from the ascending node to the periapsis
-     * a = semi-major axis, or mean distance from target
+     * Y = reference direction (vector on reference plane that lines up with periapsis)
+     * i = inclination to the positive ecliptic at node line
+     * a = semi-major axis, or mean distance to target.  this will adjust ship's orbit based on distance
      * e = eccentricity (0=circle, 0-1=ellipse, 1=parabola)
-     * M = mean anomaly, radians between our current position and periapsis, using a circular orbit.
-     * N = longitude of the ascending node (from x, ccw to node line)
+     * w = argument of periapsis, angle from the node line to the periapsis
+     * N = longitude of the ascending node (from Y, ccw to node line)
+     * NOTE: w + N = 360*
+     * M = mean anomaly, radians between our current position and periapsis.  increases uniformly with time from 0 to 2pi (360_deg)
      *
-     *   related orbital elements:
-     * p  = N + w   = longitude of periapsis  (from N, ccw to periapsis)
+     *   calculated orbital elements:
      * L  = M + p   = mean longitude, measure of how far around its orbit a body has progressed since passing the argument of periapsis (w)
-     * q  = a*(1-e) = periapsis distance  (closest point of orbit to center)
-     * Q  = a*(1+e) = apoapsis distance (farthest point of orbit from center)
-     * P  = a ^ 1.5 = orbital period,  time in seconds to complete one orbit (assuming all other variables remain constant)
+     * P  = orbital period,  time in seconds to complete one orbit (assuming all other variables remain constant)
      * T  = Epoch_of_M - (M(deg)/360_deg) / P  = time of periapsis
-     * v  = true anomaly, position of the orbiting body along the orbit at a specific time (the "epoch"), measured from w (argument of periapsis) in radians
+     * v  = true anomaly, position of the orbiting body along the orbit at a specific time, measured from w
      * E  = eccentric anomaly, angle from target side of center point of line qQ, at which we are located
      *
      * Under ideal conditions of a perfectly spherical central body and zero perturbations,
-     * all orbital elements except the mean anomaly (M) are constants.
+     *    all orbital elements except the mean anomaly (M) are constants.
+     *
+     * As we're using circular orbits, the reference direction (Y) will be +x
+     *
      */
 
-    // get current times
-    uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
-    float Tr = m_targetEntity.second->GetRadius();
-    float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
+    double mu = Gc * m_mass, v = 0;
+    //M = mean anomaly, radians between our current position and periapsis.  increases uniformly with time from 0 to 2pi (360_deg)
+    double M = curRad; // was L
+
+    // angular momentum
+    GPoint h = m_position.crossProduct(m_velocity);
+    // node vector
+    GVector Y = GPoint(0, 0, 1).crossProduct(h);
+    double len = m_position.length();
+    double dp = m_position.dotProduct(m_velocity);
+    //i = inclination to the positive ecliptic at node line
+    //double i = acos(h.y / h.length());
+    // eccentricity vector
+    GVector ev = 1 / mu * ((pow(m_velocity.length(), 2) - mu / len) * m_position - dp * m_velocity);
+    //double e = ev.length();
+
+    // longitude of ascending node is the angle
+    // between the node vector and its x component.
+    double N = acos( Y.x / Y.length());     //m_longAscNode
+    // why would it be negative?
+    if ( Y.z < 0)
+        N = 2 * EvE::Trig::Pi - N;
+
     GPoint Tp(m_targetEntity.second->GetPosition());
-    // only dynamic entites have a destiny manager, others will return 0.
-    //  this still needs testing
-    float Tv = (m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
-    GVector Th(m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
-    // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
-    Tp += (Tv*Th);
+    //double a = m_position.distance(Tp);
+    double e = SMALL_NUMBER; // circular orbit: e = 0
 
-    float a = m_position.distance(Tp);
-    float e = 0.1f; // circular orbit: e = 0
-    double i = EvE::Trig::Deg2Rad(45);  // 45* testing
-    double L = curRad;
-    double p = EvE::Trig::Deg2Rad(45);  // 45* testing
-    double N = EvE::Trig::Deg2Rad(160); // 160* testing
+    //i = inclination to the positive ecliptic (plane of our orbit) at node line
+    double adj = sqrt(pow(m_position.x - Tp.x, 2) * pow(m_position.z - Tp.z, 2));
+    double opp = m_position.y - Tp.y;
+    double i = atan2(opp, adj);
 
-    double M = L - p;
-    double w = p - N;
+    //double i = EvE::Trig::Deg2Rad(m_position.angle(Tp));
+
+    //double L = curRad;
+    //double p = EvE::Trig::Deg2Rad(45);  // 45* testing
+
+    //double M = L - p;
+    double w = 2* EvE::Trig::Pi - N;
 
     double E = M;
     double dE = 0;
     while (true) {
-         dE = (E - e * sin(E) - M) / (1 - e * cos(E));
+        dE = ( E - e * sin( E ) - M) / (1 - e * cos( E ));
         E -= dE;
         if (abs(dE) < 1e-6)
             break;
     }
 
+    /*  not needed yet, but here just in case...
+    // to determine orbiters position relative to target, use RA and dec (from their point of view, with vernal equinox being their heading)
+    // calculating right ascension (RA)
+    double A = cos(w) * cos(N) - sin(w) * sin(N) * cos(i);
+    double B = cos(cos(w) * cos(N) + sin(w) * sin(N) * cos(i)) - sin(sin(w) * sin(i));
+    double RA = atan2(B, A);
+    // calculating declination (dec)
+    double C = sin(cos(w) * cos(N) + sin(w) * sin(N) * cos(i)) + cos(sin(w) * sin(i));
+    double dec = asin(C);
+    */
+
+    double a = -mu / (2 * E);
+    // calculate q (periapsis distance)
+    double q = a * sin( E ) * sqrt(1 - pow(e, 2));    // fudge this to modify orbit distances
+
+    // radius check
+    double r = a * (1 - e * cos( E ));
+    if (isnan(q) or q > m_targetDistance *2)
+        q = r;
+
+    //currently makes some weird x shape, centered on target, in the x,z plane (match ele with target)
+    // points are 500, ~1000, ~1500 going NE<->SW
+    // calculate P (orbital period)
     double P = EvE::Trig::Pi *2 / m_orbitRadTic;
-    double Q = a * sin(E) * sqrt(1 - pow(e, 2));
+
     GPoint mPos(NULL_ORIGIN);
     // rotate by argument of periapsis
-    mPos.x = cos(w) * P - sin(w) * Q;
-    mPos.z = sin(w) * P + cos(w) * Q;
+    mPos.x = cos(w) * P - sin(w) * q;
+    mPos.z = sin(w) * P + cos(w) * q;
     // rotate by inclination
     mPos.y = sin(i) * mPos.x;
     mPos.x = cos(i * mPos.x);
@@ -1427,47 +1436,17 @@ GPoint DestinyManager::ComputePosition(double curRad) {
     mPos.x = cos(N) * x - sin(N) * mPos.z;
     mPos.z = sin(N) * x + cos(N) * mPos.z;
 
-    // radius check
-    double r = a * (1 - e * cos(E));
+    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - a:%.5f, i:%.5f, v:%.5f, N:%.5f, M:%.5f, w:%.5f, e:%.5f, E:%f, P:%f", a,i,v,N,M,w,e,E,P);
+    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - mPos(%.3f, %.3f, %.3f) - radius check %.3f, q:%.3f", mPos.x, mPos.y, mPos.z, r,q);
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - a:%.2f, i:%.5f, L:%.5f, p:%.5f, N:%.5f, M:%.5f, w:%.5f, E:%f, P:%f, Q:%f", a,i,L,p,N,M,w,E,P,Q);
-    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - mPos(%.3f, %.3f, %.3f) - radius check %.3f", mPos.x, mPos.y, mPos.z, r);
-
-    // get new position as reference to target
-    //mPos += Tp;
-    return mPos;
-
-    /*
-    double a = semimajorAxis [0] + semimajorAxis [1];
-    double e = eccentricity [0] + eccentricity [1];
-    double i = EvE::Trig::Deg2Rad(inclination [0] + inclination [1]);
-    double L = EvE::Trig::Deg2Rad(std::remainder(std::remainder(meanLongitude[1], 360) + meanLongitude[0], 360));
-    double p = EvE::Trig::Deg2Rad(longitudeOfPerihelion [0] + longitudeOfPerihelion [1]);
-    double W = EvE::Trig::Deg2Rad(longitudeOfTheAscendingNode [0] + longitudeOfTheAscendingNode [1]);
-
-    double M = L - p;
-    double w = p - W;
-    double E = M;
-    while (true) {
-        double dE = (E - e * sin(E) - M) / (1 - e * cos(E));
-        E -= dE;
-        if (abs(dE) < 1e-6)
-            break;
+    // position test
+    if (mPos.isNaN()) {
+        _log(DESTINY__ERROR, "mPos calculated as NaN.  Stopping Orbit.");
+        Stop();
+        return NULL_ORIGIN;
     }
-
-    double P = a * (cos(E) - e);
-    double Q = a * sin(E) * sqrt(1 - pow(e, 2));
-    // rotate by argument of periapsis
-    double x = cos(w) * P - sin(w) * Q;
-    double y = sin(w) * P + cos(w) * Q;
-    // rotate by inclination
-    double z = sin(i) * x;
-    x = cos(i * x);
-    // rotate by longitude of ascending node
-    double xTemp = x;
-    x = cos(W) * xTemp - sin(W) * y;
-    y = sin(W) * xTemp + cos(W) * y;
-    */
+    // get new position as reference to target
+    return mPos;
 }
 
 void DestinyManager::_InitWarp() {
@@ -1809,6 +1788,17 @@ void DestinyManager::_BeginMovement() {
         m_stateStamp = sEntityList.GetStamp();
     }
 
+    // do any of these next 3 need to be on every movement check??
+    if (m_position.isNaN()) {
+        _log(DESTINY__ERROR, "%s position is NaN.", mySE->GetName());
+    }
+    if (m_position.isZero()) {
+        _log(DESTINY__ERROR, "%s position is zero.", mySE->GetName());
+    }
+    if (m_position.isInf()) {
+        _log(DESTINY__ERROR, "%s position is inf.", mySE->GetName());
+    }
+
     if (m_targetPoint.isNotZero()) {
         GVector targHeading(m_position, m_targetPoint);
         targHeading.normalize();
@@ -1826,11 +1816,12 @@ void DestinyManager::_BeginMovement() {
         m_targetHeading = m_shipHeading = targHeading;
     }
 
-    if (!m_orbiting) {
+    if (m_orbiting == Destiny::Ball::Orbit::None) {
         // reset target distance just in case it changed.
         GVector shipVector(m_position, m_targetPoint);
         m_targetDistance = shipVector.length();
         m_orbitRadTic = 0.0f;
+        m_maxOrbitSpeedFraction = 1;
     }
 
     // this will have to be adjusted for cloak mod.
@@ -2103,14 +2094,14 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     if (m_orbiting)
         m_shipHeading = NULL_ORIGIN_V;
 
-    /* this inital Orbit() call will, based on position delta, determine the orbit plane, rotation (cw/ccw)
+    /* this initial Orbit() call will, based on position data, determine the orbit plane, rotation (cw/ccw)
      *  initial heading, actual orbit radius, actual orbit velocity, and some other shit i havent thought about yet.
      *
      * m_targetPoint    - updated in _Orbit()
      * m_shipHeading    - updated in _Orbit()
      * m_targetEntity   - SE object to orbit
-     * m_targetDistance - commanded orbit distance
-     * m_followDistance - calculated orbit distance based on mass, velocity, gravity, etc...
+     * m_followDistance - commanded orbit distance
+     * m_targetDistance - calculated orbit distance based on mass, velocity, gravity, etc...
      * m_stateStamp (via _BeginMovement())
      * speed fractions (usf, csf, asf - via SetSpeedFraction() to begin or alter speed)
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit()
@@ -2120,7 +2111,7 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     m_targetEntity.first = pSE->GetID();
     m_targetEntity.second = pSE;
     m_targetPoint = pSE->GetPosition();
-    m_targetDistance = distance;
+    m_followDistance = distance;
     _BeginMovement();
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
@@ -2155,32 +2146,32 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     double four = (6 *  std::cbrt(one + 8 *  std::pow(Rc,6) + three));
     double five =  std::cbrt( std::sqrt(three *  std::pow(Rc,8) + two));
     double six = (one + (8 * Rc2) + (12 * five));
-    m_followDistance =  std::sqrt(four + (24 *  std::pow(Rc, 4) / six) + 12 * Rc2) / 6;
+    m_targetDistance =  std::sqrt(four + (24 *  std::pow(Rc, 4) / six) + 12 * Rc2) / 6;
 
-    double velocity = m_maxShipSpeed * ((distance / m_followDistance) + 0.065); // dunno where i got this from but seems to work very well.
+    double velocity = m_maxShipSpeed * ((distance / m_targetDistance) + 0.065); // dunno where i got this from but seems to work very well.
     m_maxOrbitSpeedFraction = velocity / m_maxShipSpeed;
 
-    double circ = 2 *  EvE::Trig::Pi * m_followDistance;
-    double orbitTime = circ / velocity;
-    m_orbitRadTic = (2 *  EvE::Trig::Pi) / orbitTime;
+    double circ = 2 *  EvE::Trig::Pi * m_targetDistance;
+    m_orbitTime = circ / velocity;
+    m_orbitRadTic = (2 *  EvE::Trig::Pi) / m_orbitTime;
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
         _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
-            Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, orbitTime, m_orbitRadTic);
+            Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
 /*  dont really need this here yet.....maybe not at all.
     double current = m_position.distance(pSE->GetPosition());
     double actual = (current - m_radius - Tr);
     // m_orbiting: -2=way too close  -1=too close, 0=no orbit, 1=at distance 2=too far, 3=way too far
-    if ((actual - m_targetDistance) > m_followDistance) {
+    if ((actual - m_followDistance) > m_targetDistance) {
         // too far to engage target.
         m_orbiting = 3;
     } else if (current > m_followDistance) {
         // too far outside orbit.  move closer
         m_orbiting = 2;
-    } else if (actual < m_targetDistance) {
+    } else if (actual < m_followDistance) {
         // way too close inside orbit.  move away quickly.
         m_orbiting = -2;
-    } else if (current < m_targetDistance) {
+    } else if (current < m_followDistance) {
         // too close inside orbit; move away slowly.
         m_orbiting = -1;
     } else {
