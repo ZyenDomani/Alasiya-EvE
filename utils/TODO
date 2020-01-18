@@ -6,6 +6,8 @@
 
 **********  errors and other found shit...high priority
 
+deny creating items < typeID 34
+
 new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
 
 stackall in orehold puts stack in cargo...need to step thru this one
@@ -67,6 +69,10 @@ jetans dont check capy before jettison
 
 
 dungeon/anomaly items need tracking for removal on cleanup/shutdown
+
+
+client error (from arinya)
+UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
 
 
 ********  improvements
