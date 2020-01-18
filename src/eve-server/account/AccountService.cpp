@@ -65,6 +65,8 @@ AccountService::AccountService(PyServiceMgr *mgr)
     PyCallable_REG_CALL(AccountService, GetJournal);
     PyCallable_REG_CALL(AccountService, GetJournalForAccounts);
     PyCallable_REG_CALL(AccountService, GetWalletDivisionsInfo);
+    PyCallable_REG_CALL(AccountService, GetDefaultContactCost);
+    PyCallable_REG_CALL(AccountService, SetContactCost);
 }
 
 AccountService::~AccountService() {
@@ -84,6 +86,41 @@ PyResult AccountService::Handle_GetEntryTypes(PyCallArgs &call)
 PyResult AccountService::Handle_GetWalletDivisionsInfo(PyCallArgs &call)
 {
     return m_db.GetWalletDivisionsInfo(call.client->GetCorporationID());
+}
+
+// from mail/label window->settings
+PyResult AccountService::Handle_GetDefaultContactCost(PyCallArgs &call)
+{
+    /*
+            self.defaultContactCost = self.GetAccountSvc().GetDefaultContactCost()
+            if self.defaultContactCost is None:
+                self.defaultContactCost = -1
+        */
+
+    sLog.Log( "AccountService::Handle_GetDefaultContactCost()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
+
+    //return m_db.GetDefaultContactCost(call.client->GetCorporationID());
+
+    // returning "none" will block all contact attempts
+    return PyStatic.NewNone();
+}
+
+PyResult AccountService::Handle_SetContactCost(PyCallArgs &call)
+{
+    /*
+        self.GetAccountSvc().SetContactCost(cost)
+
+    def BlockAll(self):
+        self.GetAccountSvc().SetContactCost(None)
+        */
+
+    sLog.Log( "AccountService::Handle_SetContactCost()", "size=%u", call.tuple->size());
+    call.Dump(ACCOUNT__CALL_DUMP);
+    // m_db.SetContactCost(call.client->GetCorporationID());
+
+    // returns nothing
+    return nullptr;
 }
 
 PyResult AccountService::Handle_GetCashBalance(PyCallArgs &call) {

@@ -59,7 +59,8 @@ protected:
     PyCallable_DECL_CALL(GetJournal);
     PyCallable_DECL_CALL(GetJournalForAccounts);
     PyCallable_DECL_CALL(GetWalletDivisionsInfo);
-
+    PyCallable_DECL_CALL(GetDefaultContactCost);
+    PyCallable_DECL_CALL(SetContactCost);
 };
 
 #endif
