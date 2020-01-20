@@ -62,17 +62,17 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, ShipGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, CharGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
-		PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
-		PyCallable_REG_CALL(DogmaIMBound, GetLocationInfo);
+        PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
+        PyCallable_REG_CALL(DogmaIMBound, GetLocationInfo);
         PyCallable_REG_CALL(DogmaIMBound, DestroyWeaponBank);
         PyCallable_REG_CALL(DogmaIMBound, GetCharacterBaseAttributes);
-		PyCallable_REG_CALL(DogmaIMBound, CheckSendLocationInfo);
+        PyCallable_REG_CALL(DogmaIMBound, CheckSendLocationInfo);
         PyCallable_REG_CALL(DogmaIMBound, Activate);
         PyCallable_REG_CALL(DogmaIMBound, Deactivate);
         PyCallable_REG_CALL(DogmaIMBound, Overload);
         PyCallable_REG_CALL(DogmaIMBound, StopOverload);
         PyCallable_REG_CALL(DogmaIMBound, CancelOverloading);
-		PyCallable_REG_CALL(DogmaIMBound, SetModuleOnline);
+        PyCallable_REG_CALL(DogmaIMBound, SetModuleOnline);
         PyCallable_REG_CALL(DogmaIMBound, TakeModuleOffline);
         PyCallable_REG_CALL(DogmaIMBound, LoadAmmoToBank);
         PyCallable_REG_CALL(DogmaIMBound, LoadAmmoToModules);
@@ -102,17 +102,17 @@ public:
     PyCallable_DECL_CALL(ShipGetInfo);
     PyCallable_DECL_CALL(CharGetInfo);
     PyCallable_DECL_CALL(ItemGetInfo);
-	PyCallable_DECL_CALL(GetAllInfo);
+    PyCallable_DECL_CALL(GetAllInfo);
     PyCallable_DECL_CALL(DestroyWeaponBank);
     PyCallable_DECL_CALL(GetLocationInfo);
     PyCallable_DECL_CALL(GetCharacterBaseAttributes);
-	PyCallable_DECL_CALL(CheckSendLocationInfo);
+    PyCallable_DECL_CALL(CheckSendLocationInfo);
     PyCallable_DECL_CALL(Activate);
     PyCallable_DECL_CALL(Deactivate);
     PyCallable_DECL_CALL(Overload);
     PyCallable_DECL_CALL(StopOverload);
     PyCallable_DECL_CALL(CancelOverloading);
-	PyCallable_DECL_CALL(SetModuleOnline);
+    PyCallable_DECL_CALL(SetModuleOnline);
     PyCallable_DECL_CALL(TakeModuleOffline);
     PyCallable_DECL_CALL(LoadAmmoToBank);
     PyCallable_DECL_CALL(LoadAmmoToModules);
@@ -354,7 +354,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     if (args.itemIDs.empty())
         return nullptr;
 
-	// Get Reference to Ship, Module, and Charge
+    // Get Reference to Ship, Module, and Charge
     ShipItemRef sRef = call.client->GetShip();
     if (sRef->itemID() != args.shipID)
         sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "passed shipID %u != current shipID %u.", args.shipID, sRef->itemID() );
@@ -365,7 +365,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
 
     // figure out how to use args.qty for loading less-than-full charges
     //  LoadCharge() can be easily updated to do this.
-	if (pMod->IsLinked())
+    if (pMod->IsLinked())
         sRef->LoadLinkedWeapons(pMod, args.itemIDs);
     else
         sRef->LoadCharge(sItemFactory.GetItem(args.itemIDs.at(0)), pMod->flag());

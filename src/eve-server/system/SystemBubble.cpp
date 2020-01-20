@@ -746,11 +746,11 @@ void SystemBubble::SyncPos() {
         for (auto dse : m_dynamicEntities) {
             SetBallPosition du;
             du.entityID = dse.first;
-            du.x = dse.second.GetPosition().x;
-            du.y = dse.second.GetPosition().y;
-            du.z = dse.second.GetPosition().z;
+            du.x = dse.second->GetPosition().x;
+            du.y = dse.second->GetPosition().y;
+            du.z = dse.second->GetPosition().z;
             PyTuple* up = du.Encode();
-            player.SendSingleDestinyUpdate(&up);
+            player.second->GetShipSE()->DestinyMgr()->SendSingleDestinyUpdate(&up);
         }
 }
 

@@ -727,7 +727,7 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
     return new PyString("Position synchronized.");
 }
 
-PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+PyResult Command_syncpos(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
 {
     if (!pClient->IsInSpace())
         throw PyException(MakeCustomError("You're not in space."));
