@@ -714,7 +714,7 @@ void DestinyManager::MoveObject() {
         return;
     }
 
-    //apply our velocity to our position for 1 unit of time (a second)
+    //apply our velocity to our position for 1 unit of time (second)
 
     /* acceleration and deceleration are both logarithmic, and the server needs to keep up with client position.
      * this is another step towards getting ready for collision detection.
@@ -751,10 +751,13 @@ void DestinyManager::MoveObject() {
      */
 
     double timeStamp = 0;   // keep all these timers in seconds.
-    // if usf>0 and ship is not within orbit distance, use Turn if needed
-    if (m_userSpeedFraction and m_orbiting)
+    // check for moving ship changing heading
+    if (m_userSpeedFraction) {
+        if (m_orbiting == Destiny::Ball::Orbit::None)
+            Turn();
         if (m_orbiting > Destiny::Ball::Orbit::Far)
             Turn();
+    }
 
     timeStamp = (GetTimeMSeconds() - m_moveTime) /1000;
 
@@ -981,6 +984,7 @@ void DestinyManager::Turn() {   // tracking within 900m for Frigates, 1k4m for B
      *   m_degPerTic = (65.0f - m_shipAgility) /10;  ([this file]:2317, reset for ab/mwd [this file]:2154)
      */
 
+    // this is off for rookie ship (maybe others)
     float turnTime = (m_shipAgility /2);
     if (!m_turning) {
         m_turning = true;
@@ -1184,8 +1188,8 @@ void DestinyManager::_Orbit() {
     double centers = m_position.distance(Tp);
     double edges = ( centers - m_radius - Tr);
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "1 - %s: time:%u, centers:%.2f, edges:%.2f, target:%.2f, follow:%.2f", \
-            mySE->GetName(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
+        _log(DESTINY__ORBIT_TRACE, "1 - %s(%u): time:%u, centers:%.2f, edges:%.2f, target:%.2f, follow:%.2f", \
+            mySE->GetName(), mySE->GetID(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
     // distances checks for orbit calculations
     GPoint mPos(NULL_ORIGIN);
@@ -1794,6 +1798,7 @@ void DestinyManager::_BeginMovement() {
         // reset m_moveTime for current ship speed vs time to allow correct movement calculations after velocity change
         double newTime = (-std::log(1 - m_currentSpeedFraction) * m_shipAgility);
         m_moveTime = (GetTimeMSeconds() - (newTime * 1000));
+        // TODO: verify m_moveTime is being set properly here.
         SetSpeedFraction(m_userSpeedFraction, true);
         // dont call MoveObject() here, as changes wont take affect till next tic.
     }
@@ -1842,7 +1847,7 @@ void DestinyManager::AlignTo(SystemEntity* ent) {
 void DestinyManager::GotoDirection(const GPoint& direction) {
     if (m_orbiting) {
         m_orbiting = 0;
-        m_shipHeading = NULL_ORIGIN_V;
+        //m_shipHeading = NULL_ORIGIN_V;
     }
 
    // sLog.Yellow("GotoDirection", "Heading: %.3f,%.3f,%.3f  Direction: %.3f,%.3f,%.3f",\
@@ -1863,7 +1868,7 @@ void DestinyManager::GotoDirection(const GPoint& direction) {
 void DestinyManager::GotoPoint(const GPoint& point) {
     if (m_orbiting) {
         m_orbiting = 0;
-        m_shipHeading = NULL_ORIGIN_V;
+        //m_shipHeading = NULL_ORIGIN_V;
     }
 
     m_ballMode = Destiny::Ball::Mode::GOTO;
@@ -2073,8 +2078,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     _BeginMovement();
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
-            m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Ship Data - agility:%.3f, inertia:%.3f, massMkg:%.3f, maxSpeed:%.2f, radius:%.2f", \
+            mySE->GetName(), mySE->GetID(), m_shipAgility, m_shipInertia, m_massMKg, m_maxShipSpeed, m_radius);
 
     // Target (orbited object)
     double Tr = pSE->GetRadius();
@@ -2083,8 +2088,8 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
         Tm = pSE->GetSelf()->type().mass();
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
-            Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Target Data - mass:%.3f, speed:%.2f, radius:%.2f", \
+            mySE->GetName(), mySE->GetID(), Tm, (pSE->DestinyMgr() ? pSE->DestinyMgr()->GetSpeed() : 0 ), Tr);
 
     // fudge distance to work 'close enough' with all targets...this was trial-n-error
     double Rc = ((distance + 150 + m_radius - (pSE->GetRadius() /12)) * 1.2);
@@ -2114,8 +2119,9 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
     m_orbitRadTic = (2 *  EvE::Trig::Pi) / m_orbitTime;
 
     if (is_log_enabled(DESTINY__ORBIT_TRACE))
-        _log(DESTINY__ORBIT_TRACE, "Destiny::Orbit() - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
-            Rc, velocity, m_maxOrbitSpeedFraction, m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
+        _log(DESTINY__ORBIT_TRACE, "%s(%u) - Orbit Data - Rc:%.3f, velocity:%.2f, osf:%.2f, targetDistance:%.2f, followDistance:%.2f, orbitTime:%.1f, radTic:%.5f", \
+                mySE->GetName(), mySE->GetID(), Rc, velocity, m_maxOrbitSpeedFraction, \
+                m_targetDistance, m_followDistance, m_orbitTime, m_orbitRadTic);
 /*  dont really need this here yet.....maybe not at all.
     double current = m_position.distance(pSE->GetPosition());
     double actual = (current - m_radius - Tr);
@@ -2142,6 +2148,9 @@ void DestinyManager::Orbit(SystemEntity *pSE, double distance/*0*/) {
 
     }
 */
+    if (m_followDistance == 0) // make error here?
+        m_followDistance = m_followDistance - Tr - m_radius; // fudge something here.  will have to fix later, but this is close enough
+
     CmdOrbit du;
         du.entityID = mySE->GetID();
         du.orbitEntityID = pSE->GetID();

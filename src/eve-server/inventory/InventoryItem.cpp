@@ -1099,6 +1099,8 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     PySafeDecRef(result.invItem);
     result.time = GetFileTimeNow();
     result.invItem = GetItemRow();
+    // this is for me, to display item name in logs.  not sure if client will react to it being here
+    result.description = m_itemName;
 
     // updated charge info...again  -allan 8Jan20
     if ((m_type.categoryID() == EVEDB::invCategories::Charge)
@@ -1108,7 +1110,6 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(1, new PyInt(m_flag));
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
-        result.description = m_itemName;
         //result.invItem = PyStatic.NewNone();
         for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
