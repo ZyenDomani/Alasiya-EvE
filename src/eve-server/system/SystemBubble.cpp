@@ -742,7 +742,16 @@ PyObject* SystemBubble::GetDroneState() const
 
 void SystemBubble::SyncPos() {
     // send positions of all dSE in bubble to all players in bubble
-
+    for (auto player : m_players)
+        for (auto dse : m_dynamicEntities) {
+            SetBallPosition du;
+            du.entityID = dse.first;
+            du.x = dse.second.GetPosition().x;
+            du.y = dse.second.GetPosition().y;
+            du.z = dse.second.GetPosition().z;
+            PyTuple* up = du.Encode();
+            player.SendSingleDestinyUpdate(&up);
+        }
 }
 
 void SystemBubble::RemoveMarkers()

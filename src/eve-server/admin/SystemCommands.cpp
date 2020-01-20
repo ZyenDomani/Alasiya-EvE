@@ -723,9 +723,22 @@ PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services,
         pClient->EnterSystem(pClient->GetSystemID());
 
     pClient->GetShipSE()->DestinyMgr()->SetPosition(pClient->GetShipSE()->GetPosition(), true);
-    //pClient->GetShipSE()->SysBubble()->SyncPos();
 
     return new PyString("Position synchronized.");
+}
+
+PyResult Command_syncloc(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    if (!pClient->IsInSpace())
+        throw PyException(MakeCustomError("You're not in space."));
+    if (pClient->GetShipSE()->DestinyMgr() == nullptr)
+        pClient->SetDestiny(NULL_ORIGIN);
+    if (pClient->GetShipSE()->SysBubble() == nullptr)
+        pClient->EnterSystem(pClient->GetSystemID());
+
+    pClient->GetShipSE()->SysBubble()->SyncPos();
+
+    return new PyString("All Positions synchronized.");
 }
 
 PyResult Command_update(Client *pClient, CommandDB *db, PyServiceMgr *services, const Seperator &args) {

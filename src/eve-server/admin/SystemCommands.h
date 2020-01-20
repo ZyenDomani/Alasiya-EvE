@@ -11,11 +11,13 @@ COMMAND( translocate, Acct::Role::VIP,
 COMMAND( tr, Acct::Role::VIP,
          "(who) (entityID) - Translocate the specified person to the specified entity" )
 COMMAND( halt, Acct::Role::VIP,
-         "- Immediatly stops ship, setting Destiny::State = dstball_halt.")
+         "- Immediately stops ship, setting Destiny::State = dstball_halt.")
 COMMAND( location, Acct::Role::PLAYER,
          "- Gives you back your current location in space." )
 COMMAND( syncloc, Acct::Role::PLAYER,
-         "- Synchonizes your location in client with location on server." )
+         "- Synchronizes your location in client with location on server." )
+COMMAND( syncpos, Acct::Role::PLAYER,
+         "- Synchronizes locations of all dynamic entities in current bubble with location on server for all players in callers bubble." )
 COMMAND( update, Acct::Role::PLAYER,
          "- Sets Current Position according to Server's DestinyManager, then Sends Bubble AddBalls and Destiny SetState. (resets spaceview with current server data)" )
 COMMAND( sendstate, Acct::Role::CONTENT,
