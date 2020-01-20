@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabbit
     Updates:    Allan
-    Version:    9.4
+    Version:    9.5
 */
 
 
@@ -41,7 +41,7 @@ EVEServerConfig::EVEServerConfig()
     // items with a "N" behind them are NOT implemented
     // items with a "P" behind them are PARTIALLY implemented
 
-    // items with /*x*/ behind them denote time idetifier, with x = (s=seconds, m=minutes, etc)
+    // items with /*x*/ behind them denote time identifier, with x = (s=seconds, m=minutes, etc)
 
     // server
     server.UseBeanCount = false;
@@ -100,6 +100,11 @@ EVEServerConfig::EVEServerConfig()
     rates.WebUpdate = 15 /*m*/;
     rates.TaxAmount = 10000;
     rates.TaxedAmount = 175000;
+    rates.PlayerCritChance = 0.02;
+    rates.NpcCritChance = 0.15;
+    rates.SentryCritChance = 0.02;
+    rates.DroneCritChance = 0.03;
+    rates.ConcordCritChance = 0.05;
 
     //market
     market.FindBuyOrder = 10;
@@ -397,6 +402,11 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     AddValueParser( "WebUpdate",            rates.WebUpdate );
     AddValueParser( "TaxAmount",            rates.TaxAmount );
     AddValueParser( "TaxedAmount",          rates.TaxedAmount );
+    AddValueParser( "PlayerCritChance",     rates.PlayerCritChance );
+    AddValueParser( "NpcCritChance",        rates.NpcCritChance );
+    AddValueParser( "SentryCritChance",     rates.SentryCritChance );
+    AddValueParser( "DroneCritChance",      rates.DroneCritChance );
+    AddValueParser( "ConcordCritChance",    rates.ConcordCritChance );
 
     const bool result = ParseElementChildren( ele );
 
@@ -421,6 +431,11 @@ bool EVEServerConfig::ProcessRates( const TiXmlElement* ele )
     RemoveParser( "WebUpdate" );
     RemoveParser( "TaxAmount" );
     RemoveParser( "TaxedAmount" );
+    RemoveParser( "PlayerCritChance" );
+    RemoveParser( "NpcCritChance" );
+    RemoveParser( "SentryCritChance" );
+    RemoveParser( "DroneCritChance" );
+    RemoveParser( "ConcordCritChance" );
 
     return result;
 }

@@ -99,7 +99,7 @@ protected:
     void AttackTarget(SystemEntity* pSE);
     void CheckDistance(SystemEntity* pSE);
 
-    double GetTargetTime();
+    float GetTargetTime();
 
     int8 m_state;
 

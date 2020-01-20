@@ -664,7 +664,7 @@ void DestinyManager::Bump(SystemEntity* pSE)
 
 void DestinyManager::Bounce(GVector direction, float speed)
 {
-    // bounce code here
+    // bounce code here (not used yet)
     /*  this code will update ship movement after being bumped
      *  all items will drift to a complete stop, unless other movement is called.
      */
@@ -751,11 +751,12 @@ void DestinyManager::MoveObject() {
      */
 
     double timeStamp = 0;   // keep all these timers in seconds.
-    if ((m_orbiting != 1) and m_userSpeedFraction)  // if usf==0 then ship is stopping, so continue movement along current ship heading (cancel turn)
-        Turn();
+    // if usf>0 and ship is not within orbit distance, use Turn if needed
+    if (m_userSpeedFraction and m_orbiting)
+        if (m_orbiting > Destiny::Ball::Orbit::Far)
+            Turn();
+
     timeStamp = (GetTimeMSeconds() - m_moveTime) /1000;
-    //if (timeStamp < 0.01)
-    //    return;
 
     float speed = 0.0f;
     std::string move = "";
@@ -859,10 +860,11 @@ void DestinyManager::MoveObject() {
             m_shipHeading.y -= 0.07;
     }
 
-    if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
-        // object is orbiting...set orbit speed correctly.
-        speed *= m_maxOrbitSpeedFraction;
-        move += " in orbit";
+    if (m_orbiting)
+        if (m_orbiting < Destiny::Ball::Orbit::TooClose) {
+            // object is orbiting...set orbit speed correctly.
+            speed *= m_maxOrbitSpeedFraction;
+            move += " in orbit";
     }
 /*
     if ((m_prevSpeed) or (m_prevSpeedFraction)) {
@@ -1148,7 +1150,7 @@ void DestinyManager::_Orbit() {
 
     /*   destiny variables used here
      * m_position - probably the most important calculated value.
-     * m_velocity - tied for above title
+     * m_velocity - 2nd most important calculated value
      * m_followDistance - commanded orbit distance
      * m_targetDistance - calculated orbit distance, including target gravity and ship variables
      * m_targetHeading - direction to target from current position
@@ -1177,11 +1179,6 @@ void DestinyManager::_Orbit() {
     float Tr = m_targetEntity.second->GetRadius();
     //float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
     GPoint Tp(m_targetEntity.second->GetPosition());
-    // only dynamic entites have a destiny manager, others will return 0.
-    //  this still needs testing
-    float Tv = (m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
-    GVector Th(m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
-    Tp += (Tv*Th); // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
 
     // current and edges are used to determine ship's orbit distance, and adjust position accordingly
     double centers = m_position.distance(Tp);
@@ -1190,7 +1187,7 @@ void DestinyManager::_Orbit() {
         _log(DESTINY__ORBIT_TRACE, "1 - %s: time:%u, centers:%.2f, edges:%.2f, target:%.2f, follow:%.2f", \
             mySE->GetName(), timeStamp, centers, edges, m_targetDistance, m_followDistance);
 
-    // distances for orbit calculations for orbits within engage distance
+    // distances checks for orbit calculations
     GPoint mPos(NULL_ORIGIN);
     float mPosAdj = 0.0f;
     // check distances for this tic
@@ -1201,12 +1198,12 @@ void DestinyManager::_Orbit() {
         }
         // too far to realistically orbit.
         m_orbiting = Destiny::Ball::Orbit::TooFar;
+        // TODO: update this to determine orbit and set heading/target to smoothly go from turn into orbit trajectory
         // set point to side of target (based on current position), to avoid near-zero angular velocity
         double radTarg = atan2(Tp.z - m_position.z, Tp.x - m_position.x);  // rad from '0' to target
-        //radTarg += atan2(m_targetDistance, edges);  // rad from 'distance line' to target 'offset'
+        radTarg += atan2(m_targetDistance, edges);  // rad from 'distance line' to target 'offset'
         mPos.x = m_targetDistance * cos(radTarg);
         mPos.z = m_targetDistance * sin(radTarg);
-        //m_targetPoint.y = Tp.y;     // stay on 'y' elevation...easier this way.
         if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
             mPos.y = Tp.y - m_position.y;
         else  // opposite of above
@@ -1219,7 +1216,7 @@ void DestinyManager::_Orbit() {
                 radTarg, m_shipHeading.x, m_shipHeading.y, m_shipHeading.z);
         MoveObject();
         return;
-    } else if ( (centers + m_followDistance /3) < m_targetDistance) {
+    } else if ( (centers + m_followDistance /3) < m_followDistance) {
         if (m_orbiting == Destiny::Ball::Orbit::TooClose) {
             MoveObject();
             return;
@@ -1231,7 +1228,6 @@ void DestinyManager::_Orbit() {
         //radTarg += atan2(m_targetDistance, edges);  // rad from 'distance line' to target 'offset'
         mPos.x = m_targetDistance * cos(radTarg);
         mPos.z = m_targetDistance * sin(radTarg);
-        //m_targetPoint.y = Tp.y;     // stay on 'y' elevation...easier this way.
         if (Tp.y > m_position.y)  // target is above us.  set point below target using calculated distance
             mPos.y = Tp.y - m_position.y;
         else  // opposite of above
@@ -1250,7 +1246,7 @@ void DestinyManager::_Orbit() {
         // modify this based on calculated distance
         mPosAdj = -m_followDistance / 25;
         _log(DESTINY__ORBIT_TRACE, "2 - too far");
-    } else if (centers < m_targetDistance) {
+    } else if (centers < m_followDistance) {
         m_orbiting = Destiny::Ball::Orbit::Close;
         // fudge distance for larger orbit
         // modify this based on calculated distance
@@ -1264,7 +1260,7 @@ void DestinyManager::_Orbit() {
     #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "m - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
 
     // new orbit code
-    float radius = m_targetDistance + mPosAdj + (m_radius *2) + Tr; // fudge a bit as using targetDistance is a hair too close
+    float radius = m_targetDistance + mPosAdj;// fudge a bit as using targetDistance is a hair too close
     // angle around y axis (from +x) - horizontal movement  - cw from +x using ships orbit in rad/tic
     float theta = m_orbitRadTic * timeStamp;
     // angle around xz axis (from 0) - vertical movement
@@ -1282,7 +1278,7 @@ void DestinyManager::_Orbit() {
     float s = sin(EvE::Trig::Deg2Rad(360 * period));
     float mu = EvE::Trig::Deg2Rad(inclination * s);
     // here we will adjust orbit plane by adding OrbitRotation angle to theta
-    // calculate position using trig.
+    // calculate position
     mPos.x = radius /* mu */* cos( theta );
     mPos.z = radius /* mu */* sin( theta );
     mPos.y = radius * phi;
@@ -1299,12 +1295,14 @@ void DestinyManager::_Orbit() {
     period = fmod(timeStamp+1, m_orbitTime) /m_orbitTime;
     c = cos(EvE::Trig::Deg2Rad(360 * period));
     phi = EvE::Trig::Deg2Rad(inclination * c);
-    //s = sin(EvE::Trig::Deg2Rad(360 * period));
-    //mu = EvE::Trig::Deg2Rad(inclination * s);
-    mPosNext.x = radius /* mu */* cos( theta );
-    mPosNext.z = radius /* mu */* sin( theta );
+    mPosNext.x = radius * cos( theta );
+    mPosNext.z = radius * sin( theta );
     mPosNext.y = radius * phi;
     LogMacro(mPosNext);
+    // determine where our target should be next tic, and figure that into our heading calculation
+    float Tv = (m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetSpeed() : 0);
+    GVector Th(m_targetEntity.second->DestinyMgr() != nullptr ? m_targetEntity.second->DestinyMgr()->GetHeading() : NULL_ORIGIN_V);
+    Tp += (Tv*Th); // use Tv*Th and add to position to account for target movement.  Tv for non-moving targets return 0.
     mPosNext += Tp;
     GVector heading(m_position, mPosNext);
     heading.normalize();

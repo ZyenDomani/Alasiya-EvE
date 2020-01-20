@@ -331,6 +331,29 @@ int main( int argc, char* argv[] )
         sLog.Green("     Missile Time","Normal.");
     std::printf("\n");     // spacer
 
+    sLog.Blue("     ServerConfig","Critical Hit Chances");
+    if (sConfig.rates.PlayerCritChance != 0.02f)
+        sLog.Yellow("           Player","Modified at %.1f%%.", (sConfig.rates.PlayerCritChance *100) );
+    else
+        sLog.Green("           Player","Normal at 2%%.");
+    if (sConfig.rates.NpcCritChance != 0.015f)
+        sLog.Yellow("              NPC","Modified at %.1f%%.", (sConfig.rates.NpcCritChance *100) );
+    else
+        sLog.Green("              NPC","Normal at 1.5%%.");
+    if (sConfig.rates.SentryCritChance != 0.02f)
+        sLog.Yellow("           Sentry","Modified at %.1f%%.", (sConfig.rates.SentryCritChance *100) );
+    else
+        sLog.Green("           Sentry","Normal at 2%%.");
+    if (sConfig.rates.DroneCritChance != 0.03f)
+        sLog.Yellow("            Drone","Modified at %.1f%%.", (sConfig.rates.DroneCritChance *100) );
+    else
+        sLog.Green("            Drone","Normal at 3%%.");
+    if (sConfig.rates.ConcordCritChance != 0.05f)
+        sLog.Yellow("          Concord","Modified at %.1f%%.", (sConfig.rates.ConcordCritChance *100) );
+    else
+        sLog.Green("          Concord","Normal at 5%%.");
+    std::printf("\n");     // spacer
+
     sLog.Blue("     ServerConfig", "Feature Switches");
     if (sConfig.server.ModuleAutoOff)
         sLog.Green("  Module Auto-Off","Enabled.");

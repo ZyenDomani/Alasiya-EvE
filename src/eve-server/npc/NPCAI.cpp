@@ -70,12 +70,12 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_damageMultiplier = m_self->GetAttribute(AttrDamageMultiplier).get_float();
 
     /* set npc ship data */
-    m_sigResolution = m_self->GetAttribute(AttrOptimalSigRadius).get_int();
-    m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_int();
-    m_sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_int();
-    m_launcherCycleTime = m_self->GetAttribute(AttrMissileLaunchDuration).get_int();
+    m_sigResolution = m_self->GetAttribute(AttrOptimalSigRadius).get_uint32();
+    m_attackSpeed = m_self->GetAttribute(AttrSpeed).get_uint32();
+    m_sigRadius = m_self->GetAttribute(AttrSignatureRadius).get_uint32();
+    m_launcherCycleTime = m_self->GetAttribute(AttrMissileLaunchDuration).get_uint32();
     if (m_launcherCycleTime > 100)
-        m_missileTypeID = m_self->GetAttribute(AttrEntityMissileTypeID).get_int();
+        m_missileTypeID = m_self->GetAttribute(AttrEntityMissileTypeID).get_uint32();
     else
         m_missileTypeID = 0;
 
@@ -85,9 +85,9 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     // ship speeds
     // absolute (boosted) Max Ship Speed
-    m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_int();
+    m_maxSpeed = m_self->GetAttribute(AttrMaxVelocity).get_uint32();
     // Orbit Velocity
-    m_orbitSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_int();   // ship speed when not chasing target
+    m_orbitSpeed = m_self->GetAttribute(AttrEntityCruiseSpeed).get_uint32();   // ship speed when not chasing target
     //AttrEntityChaseMaxDelay  - time before 'chase speed' kicks in
     //AttrEntityChaseMaxDelayChance  - chance npc will wait AttrEntityChaseMaxDelay before chasing
     //AttrEntityChaseMaxDuration  - max time a chase will last (unless weapons fired)
@@ -96,23 +96,23 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     // ship distances
     //AttrEntityMaxWanderRange
     // Optimal Range
-    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_int();  // distance which npc starts using weapons
+    m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // distance which npc starts using weapons
     // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half)
-    m_falloff = m_self->GetAttribute(AttrFalloff).get_int();
-    m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_float();  //rad/sec
+    m_falloff = m_self->GetAttribute(AttrFalloff).get_uint32();
+    m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_double();  //rad/sec
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target
-    m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_int();    //AttrOrbitRange is 0 for npc
+    m_flyRange = m_self->GetAttribute(AttrEntityFlyRange).get_uint32();    //AttrOrbitRange is 0 for npc
     if (!m_flyRange)
         m_flyRange = 0;
     // distance for Speed Boost activation  (this needs to be revisited)
-    m_boostRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_int();
+    m_boostRange = m_self->GetAttribute(AttrEntityChaseMaxDistance).get_uint32();
     if (!m_boostRange)
         m_boostRange = 0;
     // some npcs have flyRange > boostRange.  this corrects it. (extends boost range)
     if (m_flyRange > m_boostRange)
         m_boostRange += m_boostRange + m_flyRange;
     // max firing range   default:10000  (lowest in db is 1000)
-    m_maxAttackRange = m_self->GetAttribute(AttrEntityAttackRange).get_int();
+    m_maxAttackRange = m_self->GetAttribute(AttrEntityAttackRange).get_uint32();
     // this should be set according to npc size.
     if (m_maxAttackRange < 1000)
         m_maxAttackRange = 10000;
@@ -124,20 +124,20 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
 
     // this is chance an npc has of delaying it's rep (if applicable)
-    if (m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_int())
-        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_int();
-    else if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int())
-        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_int();
-    else if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int())
-        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_int();
-    else if (m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int())
-        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_int();
+    if (m_self->HasAttribute(AttrEntityArmorRepairDelayChance))
+        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChance).get_float();
+    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceSmall))
+        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
+    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceMedium))
+        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceMedium).get_float();
+    else if (m_self->HasAttribute(AttrEntityArmorRepairDelayChanceLarge))
+        m_armorRepairDelayChance = m_self->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
     else {
         m_armorRepairDuration = 0;
         m_armorRepairDelayChance = 0;
     }
     if (m_armorRepairDelayChance)
-        m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_int();
+        m_armorRepairDuration = m_self->GetAttribute(AttrEntityArmorRepairDuration).get_uint32();
 
     // this is chance an npc has of delaying it's sebo (if applicable)
     if (m_self->HasAttribute(AttrEntityShieldBoostDelayChance))
@@ -153,7 +153,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_shieldBoosterDelayChance = 0;
     }
     if (m_shieldBoosterDelayChance)
-        m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_int();
+        m_shieldBoosterDuration = m_self->GetAttribute(AttrEntityShieldBoostDuration).get_uint32();
 
     // advanced AI variables  only used by sleepers for now (and on live).  will update advanced npcs to use these also (unique to alasiya)
     if (m_self->HasAttribute(AttrAI_ShouldUseTargetSwitching))
@@ -166,7 +166,7 @@ NPCAIMgr::NPCAIMgr(NPC* who)
         m_useSecondTarget = false;
     if (m_self->HasAttribute(AttrAI_ShouldUseSignatureRadius)) {
         m_useSigRadius = true;
-        m_preferedSigRadius = m_self->GetAttribute(AttrAI_PreferredSignatureRadius).get_int();
+        m_preferedSigRadius = m_self->GetAttribute(AttrAI_PreferredSignatureRadius).get_uint32();
     } else {
         m_useSigRadius = false;
         m_preferedSigRadius = 0;
@@ -539,10 +539,10 @@ void NPCAIMgr::CheckDistance(SystemEntity* pSE)
 void NPCAIMgr::Target(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
-    double targetTime = GetTargetTime();
+    float targetTime = GetTargetTime();
     bool chase = false;
 
-	if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, (uint8)m_self->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+    if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, m_self->GetAttribute(AttrMaxAttackTargets).get_uint32(), m_sightRange, chase)) {
         if (chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                         m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -576,7 +576,7 @@ void NPCAIMgr::Targeted(SystemEntity* pSE) {
             SetChasing(pSE);
 
             bool chase = false;
-			if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, (uint8)m_self->GetAttribute(AttrMaxAttackTargets).get_int(), m_sightRange, chase)) {
+			if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, m_self->GetAttribute(AttrMaxAttackTargets).get_uint32(), m_sightRange, chase)) {
                 if (chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                             m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -695,7 +695,7 @@ void NPCAIMgr::AttackTarget(SystemEntity* pSE) {
     // put checks here for point/tackle
 
     m_destiny->SendSpecialEffect(m_self->itemID(), m_self->itemID(), m_self->typeID(), pSE->GetID(), 0,"effects.Laser",1,1,1,m_attackSpeed,0);
-    //m_self->GetAttribute(AttrGfxTurretID).get_int()    // graphicID for turret for drone type ships
+    //m_self->GetAttribute(AttrGfxTurretID).get_uint32()    // graphicID for turret for drone type ships
 
     Damage d(m_npc,
              m_self,
@@ -773,9 +773,9 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile)
         LaunchMissile(265, pMissile); // defender missile
 }
 
-double NPCAIMgr::GetTargetTime()
+float NPCAIMgr::GetTargetTime()
 {
-    double targetTime = (m_self->GetAttribute(AttrScanSpeed).get_int());
+    float targetTime = (m_self->GetAttribute(AttrScanSpeed).get_float());
     float radius = m_self->GetAttribute(AttrRadius).get_float();
     if (targetTime < 1) {
         if (radius < 30)

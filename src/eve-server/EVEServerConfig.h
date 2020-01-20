@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:     Zhur, Bloody.Rabit
     Updates:    Allan
-    Version:    9.4
+    Version:    9.5
 */
 
 #ifndef __EVE_SERVER_CONFIG__H__INCL__
@@ -120,6 +120,12 @@ public:
         uint32 corpCost;
         uint32 medalAwardCost;
         uint32 medalCreateCost;
+        // Crit chance
+        float PlayerCritChance;
+        float NpcCritChance;
+        float SentryCritChance;
+        float DroneCritChance;
+        float ConcordCritChance;
     } rates;
 
     // from <market>

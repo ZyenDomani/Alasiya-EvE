@@ -39,11 +39,11 @@ static const char* const EVEProjectCodename = "EVE-EVE-TRANQUILITY";
 static const int32 EVEBirthday = 170472;
 
 /*  Allan's Static Definitions */
-static const char* const EVEMU_REVISION = "0.9.69-allan";
-static const char* const EVEMU_BUILD_DATE = "13 January 2020";
-static const float EVE_Build = 2.97;     /* this is for bug tracking on my forums.  -allan 3July15 */
+static const char* const EVEMU_REVISION = "0.9.71-allan";
+static const char* const EVEMU_BUILD_DATE = "20 January 2020";
+static const float EVE_Build = 2.98;     /* this is for bug tracking on my forums.  -allan 3July15 */
 /* match versions here with stated files for full support */
-static const float Config_Version = 9.4; /* eve-server.xml and EveServerConfig.cpp */
+static const float Config_Version = 9.5; /* eve-server.xml and EveServerConfig.cpp */
 static const float Log_Version = 9.8;    /* logtypes.h and log.ini */
 /* AI versions for shitz-n-giggles */
 static const float Bot_Version = 0.10;   /* MarketBot.xml and MarketBotConf.cpp */
