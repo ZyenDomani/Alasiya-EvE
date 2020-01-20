@@ -35,6 +35,14 @@
 //0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
 namespace Destiny {
     namespace Ball {
+        struct stateStamp {
+            uint8 state;
+            uint16 time;
+        };
+        struct timeStamp {
+            uint8 mode;
+            int64 time;
+        };
         namespace Orbit {
             enum {
                 None = 0,
@@ -44,6 +52,7 @@ namespace Destiny {
                 TooClose = 4,
                 TooFar = 5
             };
+
         }
     }
 }
@@ -260,11 +269,13 @@ protected:
     int32 m_stopDistance;               //from destination, in m
 
     uint8 m_turnTic;                    //time into turn
-    int8 m_orbiting;                    //  -2=way too close, -1=too close, 0=no orbit, 1=at distance 2=too far, 3=way too far
+    int8 m_orbiting;                    // 0=no orbit, >0=in orbit, 1=at distance, 2=too close , 3=too far, 4=way too close, 5=way too far
+    //Destiny::Ball::stateStamp m_stateStamp; //state and count of current state since beginning, in seconds
+    //Destiny::Ball::timeStamp m_timeStamp; //mode and timestamp of when current mode began
     uint32 m_stateStamp;                //statestamp of when current state began, in seconds
 
     float m_orbitTime;                  //in s - time to complete one orbit using current variables
-    float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic 
+    float m_orbitRadTic;                //in rad/sec  - radians around orbit per tic
     float m_turnFraction;               //fuzzy logic - speed % - used for turn accel/decel checks
     float m_prevSpeedFraction;          //fuzzy logic - speed % - previous speed fraction used for decel checks when (m_userSpeedFraction == 0)
     float m_userSpeedFraction;          //fuzzy logic - speed % - set by user command

@@ -26,7 +26,6 @@
 
 // this class is for objects that move
 
-#include <complex>      // std::complex, std::norm
 #include "EVEServerConfig.h"
 
 #include "Client.h"
@@ -43,7 +42,6 @@
 #include "system/BubbleManager.h"
 #include "system/Container.h"
 #include "system/DestinyManager.h"
-#include "system/DestinyOrbit.h"
 #include "system/SystemBubble.h"
 #include "system/SystemManager.h"
 
@@ -254,10 +252,12 @@ void DestinyManager::ProcessState() {
  */
  //Velocity setting methods
 void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
-    /** @todo  this does NOT start movement or anything like that.
-     * it ONLY SETS speed fraction for object.
-     * need to update this based on this new data
-     */
+    // this sets current speed fraction for object.
+
+    // if orbiting, call Orbit() and let code reset the variables
+    if (m_orbiting != 0)
+        Orbit(m_targetEntity.second, m_targetDistance);
+
     if ((fraction == m_userSpeedFraction) and (!startMovement))
         return;
     if (is_log_enabled(DESTINY__MOVE_TRACE))
@@ -1155,7 +1155,7 @@ void DestinyManager::_Orbit() {
      * m_targetPoint - calculated distant point from above variable
      * m_shipHeading - current direction ship is pointed
      * m_stateStamp - used to track movement.  1Hz tic
-     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance 2=too close , 3=too far, 4=way too close, 5=way too far
+     * m_orbiting - 0=no orbit, >0=in orbit, 1=at distance, 2=too close , 3=too far, 4=way too close, 5=way too far
      * m_orbitRadTic - rad/sec in current orbit.  set by Orbit() (~2090)
      * m_maxOrbitSpeedFraction - calculated max speed to maintain commanded orbit distance.  set in Orbit() but not used here yet
      *
@@ -1175,7 +1175,7 @@ void DestinyManager::_Orbit() {
     // get current times
     uint32 timeStamp = sEntityList.GetStamp() - m_stateStamp;
     float Tr = m_targetEntity.second->GetRadius();
-    float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
+    //float Tm = m_targetEntity.second->GetSelf()->GetAttribute(AttrMass).get_float();
     GPoint Tp(m_targetEntity.second->GetPosition());
     // only dynamic entites have a destiny manager, others will return 0.
     //  this still needs testing
@@ -1264,44 +1264,48 @@ void DestinyManager::_Orbit() {
     #define LogMacro(v) _log(DESTINY__ORBIT_TRACE, "m - " #v ": (%.3f, %.3f, %.3f)   len=%.3f", v.x, v.y, v.z, v.length())
 
     // new orbit code
-    double radius = m_targetDistance + mPosAdj + m_radius; // fudge a bit as using targetDistance is a hair too close
-    // angle around y axis (from +x) - horizontal movement  - ccw from +x using ships orbit in rad/tic
-    double alpha = m_orbitRadTic * timeStamp;
-    //  todo get initial angle and apply here
-
-    // angle around xz axis (from +y) - vertical movement
-    // initial angle will be calculated during orbit init.  testing code using 45*
-    double theta = 45; //atan2(m_position.z, m_position.x);
-    double delta = 90 - theta;  // for testing, this will be 45*
+    float radius = m_targetDistance + mPosAdj + (m_radius *2) + Tr; // fudge a bit as using targetDistance is a hair too close
+    // angle around y axis (from +x) - horizontal movement  - cw from +x using ships orbit in rad/tic
+    float theta = m_orbitRadTic * timeStamp;
+    // angle around xz axis (from 0) - vertical movement
+    //GVector target(m_position, Tp);
+    //LogMacro(target);
+    //float hyp = sqrt(pow(target.z, 2) + pow(target.x, 2));
+    float inclination = 45; //atan(hyp / target.y);
     // fractional value of orbit period (0 < x < 1)
-    double period = fmod(timeStamp, m_orbitTime) /m_orbitTime;
-    // this isnt right....need to calculate a pendulum value here to adjust elevation (+/-y)
-    double omega = theta * 2;
-    if (period < 0.5)
-        delta -= (omega * period *2);
-    else
-        delta -= (omega * (1 - period *2));
-
-    mPos.x = radius /** sin( delta )*/ * cos( alpha );
-    mPos.z = radius /** sin( delta )*/ * sin( alpha );
-    mPos.y = 0; //(m_targetDistance + mPosAdj) * cos( delta );
-    _log(DESTINY__ORBIT_TRACE, "4 - alpha:%.5f, d:%.5f, p:%.5f, r:%.3f, mPosAdj:%.3f", alpha,delta,period,radius,mPosAdj);
+    float period = fmod(timeStamp, m_orbitTime) /m_orbitTime;
+    // calculate a pendulum value here to adjust elevation (+/-y) where +x is 1, 0x is 0, -x is -1
+    float c = cos(EvE::Trig::Deg2Rad(360 * period));
+    // get elevation modifier based on orbit period
+    float phi = EvE::Trig::Deg2Rad(inclination * c);
+    // set xz plane modifier from elevation
+    float s = sin(EvE::Trig::Deg2Rad(360 * period));
+    float mu = EvE::Trig::Deg2Rad(inclination * s);
+    // here we will adjust orbit plane by adding OrbitRotation angle to theta
+    // calculate position using trig.
+    mPos.x = radius /* mu */* cos( theta );
+    mPos.z = radius /* mu */* sin( theta );
+    mPos.y = radius * phi;
+    _log(DESTINY__ORBIT_TRACE, "4 - theta:%.5f, phi:%.3f, mu:%.2f period:%.5f, radius:%.3f, inc:%.5f", theta,phi,mu,period,radius,inclination);
     LogMacro(mPos);
-    // apply calculated position to origin (our target)
+    // apply origin to our calculated position
     mPos += Tp;
-    // set current position for this tic
+    // set position for this tic
     m_position = mPos;
 
-    // set heading for next tic
+    // set heading for this tic
     GPoint mPosNext(NULL_ORIGIN);
-    alpha += m_orbitRadTic;
-    mPosNext.x = radius * cos( alpha );
-    mPosNext.z = radius * sin( alpha );
-    mPosNext.y = 0;
+    theta += m_orbitRadTic;
+    period = fmod(timeStamp+1, m_orbitTime) /m_orbitTime;
+    c = cos(EvE::Trig::Deg2Rad(360 * period));
+    phi = EvE::Trig::Deg2Rad(inclination * c);
+    //s = sin(EvE::Trig::Deg2Rad(360 * period));
+    //mu = EvE::Trig::Deg2Rad(inclination * s);
+    mPosNext.x = radius /* mu */* cos( theta );
+    mPosNext.z = radius /* mu */* sin( theta );
+    mPosNext.y = radius * phi;
     LogMacro(mPosNext);
-    // apply calculated position to origin (our target)
     mPosNext += Tp;
-    // set heading for next tic
     GVector heading(m_position, mPosNext);
     heading.normalize();
     m_shipHeading = heading;
@@ -1318,7 +1322,7 @@ void DestinyManager::_Orbit() {
 
 GPoint DestinyManager::ComputePosition(double curRad) {
     /*
-     *   orbital definitions:
+     *   orbital definitions for Alasiya-EvE:
      * node line = ascending node
      * ascending node = line of intersection between orbit plane and reference plane, on the 'upward' side
      * periapsis = closest point of orbit to target point
@@ -1350,54 +1354,11 @@ GPoint DestinyManager::ComputePosition(double curRad) {
      *
      */
 
-    double mu = Gc * m_mass, v = 0;
-    //M = mean anomaly, radians between our current position and periapsis.  increases uniformly with time from 0 to 2pi (360_deg)
-    double M = curRad; // was L
-
-    // angular momentum
-    GPoint h = m_position.crossProduct(m_velocity);
-    // node vector
-    GVector Y = GPoint(0, 0, 1).crossProduct(h);
-    double len = m_position.length();
-    double dp = m_position.dotProduct(m_velocity);
-    //i = inclination to the positive ecliptic at node line
-    //double i = acos(h.y / h.length());
-    // eccentricity vector
-    GVector ev = 1 / mu * ((pow(m_velocity.length(), 2) - mu / len) * m_position - dp * m_velocity);
-    //double e = ev.length();
-
-    // longitude of ascending node is the angle
-    // between the node vector and its x component.
-    double N = acos( Y.x / Y.length());     //m_longAscNode
-    // why would it be negative?
-    if ( Y.z < 0)
-        N = 2 * EvE::Trig::Pi - N;
-
     GPoint Tp(m_targetEntity.second->GetPosition());
-    //double a = m_position.distance(Tp);
-    double e = SMALL_NUMBER; // circular orbit: e = 0
-
     //i = inclination to the positive ecliptic (plane of our orbit) at node line
     double adj = sqrt(pow(m_position.x - Tp.x, 2) * pow(m_position.z - Tp.z, 2));
     double opp = m_position.y - Tp.y;
     double i = atan2(opp, adj);
-
-    //double i = EvE::Trig::Deg2Rad(m_position.angle(Tp));
-
-    //double L = curRad;
-    //double p = EvE::Trig::Deg2Rad(45);  // 45* testing
-
-    //double M = L - p;
-    double w = 2* EvE::Trig::Pi - N;
-
-    double E = M;
-    double dE = 0;
-    while (true) {
-        dE = ( E - e * sin( E ) - M) / (1 - e * cos( E ));
-        E -= dE;
-        if (abs(dE) < 1e-6)
-            break;
-    }
 
     /*  not needed yet, but here just in case...
     // to determine orbiters position relative to target, use RA and dec (from their point of view, with vernal equinox being their heading)
@@ -1410,34 +1371,33 @@ GPoint DestinyManager::ComputePosition(double curRad) {
     double dec = asin(C);
     */
 
-    double a = -mu / (2 * E);
-    // calculate q (periapsis distance)
-    double q = a * sin( E ) * sqrt(1 - pow(e, 2));    // fudge this to modify orbit distances
-
-    // radius check
-    double r = a * (1 - e * cos( E ));
-    if (isnan(q) or q > m_targetDistance *2)
-        q = r;
-
-    //currently makes some weird x shape, centered on target, in the x,z plane (match ele with target)
-    // points are 500, ~1000, ~1500 going NE<->SW
-    // calculate P (orbital period)
-    double P = EvE::Trig::Pi *2 / m_orbitRadTic;
-
     GPoint mPos(NULL_ORIGIN);
-    // rotate by argument of periapsis
-    mPos.x = cos(w) * P - sin(w) * q;
-    mPos.z = sin(w) * P + cos(w) * q;
-    // rotate by inclination
-    mPos.y = sin(i) * mPos.x;
-    mPos.x = cos(i * mPos.x);
-    // rotate by longitude of ascending node
-    double x = mPos.x;
-    mPos.x = cos(N) * x - sin(N) * mPos.z;
-    mPos.z = sin(N) * x + cos(N) * mPos.z;
+    // fig 8 on nw of targ sphere
+    float radius = m_targetDistance + (m_radius *2); // fudge a bit as using targetDistance is a hair too close
+    // angle around y axis (from +x) - horizontal movement  - cw from +x using ships orbit in rad/tic
+    float theta = m_orbitRadTic * 0/*timeStamp*/;
+    // angle around xz axis (from 0) - vertical movement
+    GVector target(m_position, Tp);
+    LogMacro(target);
+    float hyp = sqrt(pow(target.z, 2) + pow(target.x, 2));
+    float inclination = 45; //atan(hyp / target.y);
+    // fractional value of orbit period (0 < x < 1)
+    float period = fmod(0/*timeStamp*/, m_orbitTime) /m_orbitTime;
+    // calculate a pendulum value here to adjust elevation (+/-y) where +x is 1, 0x is 0, -x is -1
+    float c = cos(EvE::Trig::Deg2Rad(360 * period));
+    // get elevation modifier based on orbit period
+    float phi = EvE::Trig::Deg2Rad(inclination * c);
+    // set xz plane modifier from elevation
+    //float s = sin(EvE::Trig::Deg2Rad(360 * period));
+    //float mu = EvE::Trig::Deg2Rad(inclination * s);
+    // here we will adjust orbit plane by adding OrbitRotation angle to theta
+    // calculate position using trig.
+    mPos.x = radius /* mu */* cos( theta );
+    mPos.z = radius /* mu */* sin( theta );
+    mPos.y = radius * phi;
 
-    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - a:%.5f, i:%.5f, v:%.5f, N:%.5f, M:%.5f, w:%.5f, e:%.5f, E:%f, P:%f", a,i,v,N,M,w,e,E,P);
-    _log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - mPos(%.3f, %.3f, %.3f) - radius check %.3f, q:%.3f", mPos.x, mPos.y, mPos.z, r,q);
+    //_log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - a:%.5f, i:%.5f, v:%.5f, N:%.5f, M:%.5f, w:%.5f, e:%.5f, E:%f, P:%f", a,i,v,N,M,w,e,E,P);
+    //_log(DESTINY__ORBIT_TRACE, "Destiny::ComputePosition() - mPos(%.3f, %.3f, %.3f) - radius check %.3f, q:%.3f", mPos.x, mPos.y, mPos.z, r,q);
 
     // position test
     if (mPos.isNaN()) {
@@ -2434,9 +2394,6 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
     updates.push_back(sbms.Encode());
     SendDestinyUpdate(updates);
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in _BeginMovement() (called from Orbit())
-
-    if (m_orbiting != 0) // if orbiting, call Orbit() and let code reset the variables
-        Orbit(m_targetEntity.second, m_targetDistance);
 
     SetSpeedFraction(m_userSpeedFraction, true);
 }
