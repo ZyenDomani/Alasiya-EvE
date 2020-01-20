@@ -95,9 +95,9 @@ NPCAIMgr::NPCAIMgr(NPC* who)
 
     // ship distances
     //AttrEntityMaxWanderRange
-    // Optimal Range
+    // Optimal Range  - TODO: test for 0
     m_optimalRange = m_self->GetAttribute(AttrMaxRange).get_uint32();  // distance which npc starts using weapons
-    // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half)
+    // Accuracy falloff  (distance past optimal range at which accuracy has fallen by half) - TODO: test for 0
     m_falloff = m_self->GetAttribute(AttrFalloff).get_uint32();
     m_trackingSpeed = m_self->GetAttribute(AttrTrackingSpeed).get_double();  //rad/sec
     // Orbit Range, Follow Range  - npc tries to stay at this distance from active target

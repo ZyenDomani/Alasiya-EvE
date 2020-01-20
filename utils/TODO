@@ -5,7 +5,47 @@
 
 
 **********  errors and other found shit...high priority
+)
+STACKTRACE #5 logged at 01/20/2020 9:48:46
+Godma:UpdateItem - QUANTITY MISSING
+/common/lib/bluepy.py(86) CallWrapper
+/../carbon/common/script/net/machonet.py(4543) TransportReader
+/common/lib/bluepy.py(396) Wrapper
+/../carbon/common/script/net/machonet.py(4714) HandleMessage
+/../carbon/common/script/net/machonettransport.py(599) SessionNotification
+/../carbon/common/script/net/sessionchangegpcs.py(46) NotifyUp
+/../carbon/common/script/sys/sessions.py(1183) ApplyRemoteAttributeChanges
+/../carbon/common/script/sys/servicemanager.py(677) ChainEvent
+/../carbon/common/script/sys/servicemanager.py(700) ChainEventWithoutTheStars
+/client/script/environment/invcache.py(142) ProcessSessionChange
+/client/script/environment/godma.py(516) ProcessSessionChange
+/client/script/environment/godma.py(1247) ProcessSessionChange
+/client/script/environment/godma.py(2661) Prime
+/client/script/environment/godma.py(1874) UpdateItem
+        itemFlag = 28
+        itemCategoryID = 8
+        item = None
+        itemLocationID = 140000029
+        self = <godma.StateManager instance at 0x3D7B2F30>
+        locationItem = <DBRow object [140000029L, 588, 90000000, 30000053, 0, -1, 237, 6, 'InSpace: Allan(90000000)', 1, 1]>
+        l = <DBRow object [(140000029, 28, 178), 178, 90000000, 140000029L, 28, 83, 8]>
+        ret = None
+        doUpdate = False
+        typeOb = <Instance of class sys.InvType>
+                       typeID:                 178
+                       groupID:                83
+                       typeName:               Carbonized Lead S
+                       ...
+        itemGroupID = 83
+        defaultQty = 0.0
+        itemKey = (140000029, 28, 178)
+        dontGetInfo = 0
+        itemTypeID = 178
+        infoz = <Anonymous KeyVal: {'itemID': (140000029, 28, 178), 'invItem': None, 'description': 'Carbonized Lead S', 'activeEffects': {}, 'time': 132240089263374960L, 'attributes': {128: 1, 116: 1.0, 162: 1.0, 612: 0.0, 613: 0.0, 422: 1, 161: 0.0025, 137: 55, 779: 1.6, 114: 0.0, 244: 1.05, 117: 4.0, 118: 0.0, 120: 1.6, 4: 0.01, 124: 4082279}}>
+        isSubLocation = True
 
+
+        
 deny creating items < typeID 34
 
 new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
@@ -19,6 +59,7 @@ go thru and check this, and adjust accordingly.
 if this is for modules only, fix all updates to use ixChanged from inventory to update non-modules
 ** this will be a large undertaking.  may fix multiple item change errors **
 
+load/unload module broken again.  test docked/space in all aspects of load/unload
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -29,6 +70,7 @@ check charge flag - getting segfault on flagAutoFit for chargeRef in fx
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
 
+check item merge in cargo not removing merged items (ghost items)
 
 
 multiple errors like this....
@@ -285,6 +327,8 @@ rats should test for faction signals in system and set origin along that directi
     - if no faction presence in system, continue with random point
 
 journal - killing rats descriptions are a bit off...gives itemID (no name)
+
+account - alter balance should be changed to xfer funds where applicable
 
 many unimplemented salvage error msgs noted in prospector.h
 

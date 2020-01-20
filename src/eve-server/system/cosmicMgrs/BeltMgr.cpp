@@ -604,6 +604,8 @@ void BeltMgr::GetIceDist(uint8 quarter, float secStatus, std::unordered_multimap
         mposition.x = cos(theta) *radius + (roidradius *2) + MakeRandomFloat(-1000, 5000 );
         mposition.z = sin(theta) *radius + (roidradius *2) + MakeRandomFloat(-3000, 5000 );
         mposition.y += MakeRandomFloat(-2000, 3000 ) + roidradius;
+
+        TODO:  make neocom note "there is odd vortex here..", then make ships drift!  (and update position)
      */
     /*
      *  flat circle @ 50k
