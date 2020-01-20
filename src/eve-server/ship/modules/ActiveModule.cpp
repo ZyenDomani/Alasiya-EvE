@@ -822,10 +822,12 @@ void ActiveModule::UnloadCharge()
     }
 
     m_chargeLoaded = false;
-    // unloading charge goes straight to attribMap, to send data to client without changing item qty
-    m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
-    m_chargeRef->DeleteAttribute(AttrQuantity);
-    m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
+    if (m_chargeRef.get() != nullptr) {
+        // unloading charge goes straight to attribMap, to send data to client without changing item qty
+        m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
+        m_chargeRef->DeleteAttribute(AttrQuantity);
+        m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
+    }
     m_modRef->DeleteAttribute(AttrQuantity);
     SetChargeState(Module::State::Unloaded);
 }

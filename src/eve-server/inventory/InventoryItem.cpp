@@ -1098,6 +1098,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     PySafeDecRef(result.itemID);
     PySafeDecRef(result.invItem);
     result.time = GetFileTimeNow();
+    result.invItem = GetItemRow();
 
     // updated charge info...again  -allan 8Jan20
     if ((m_type.categoryID() == EVEDB::invCategories::Charge)
@@ -1108,14 +1109,13 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         result.description = m_itemName;
-        result.invItem = PyStatic.NewNone();
+        //result.invItem = PyStatic.NewNone();
         for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
 
     result.itemID = new PyInt(m_itemID);
-    result.invItem = GetItemRow();
 
     if (m_type.categoryID() == EVEDB::invCategories::Skill) {
         result.attributes[AttrSkillTimeConstant] = new PyInt(GetAttribute(AttrSkillTimeConstant).get_uint32());
