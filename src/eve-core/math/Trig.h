@@ -16,10 +16,11 @@ namespace EvE {
 
     namespace Trig {
 
-        const double E = 2.71828182845904523536;
+        const double E = 2.71828182845904523536028747135;
         const double Pi = 3.1415926535897932384626433832795;
-        const double RadiansInDegrees = 0.01745329251;    //  pi/180
-        const double DegreesInRadians = 57.2957795131;   //  180/pi
+        const double Pi2 = 6.28318530717958647692528676656;
+        const double RadiansInDegrees = 0.0174532925199432957692369076849;   //  pi/180
+        const double DegreesInRadians = 57.2957795130823208767981548141;   //  180/pi
 
         inline double Deg2Rad(double deg) { return (deg * RadiansInDegrees); }
         inline double Rad2Deg(double rad) { return (rad * DegreesInRadians); }
