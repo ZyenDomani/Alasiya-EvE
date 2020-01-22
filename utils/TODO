@@ -122,6 +122,8 @@ finish DestinyManager::SendCloakFx()
 
 ********  improvements
 
+change AddBalance (et al) to TransferFunds()
+
 integrate UTF8 into code (or make my own class)
    - same with zlib and gangsta
    - is zlib even used??

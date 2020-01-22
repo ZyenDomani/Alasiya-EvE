@@ -633,8 +633,8 @@ void TargetManager::AddTargetModule(ActiveModule* pMod)
 
 void TargetManager::RemoveTargetModule(ActiveModule* pMod)
 {
-    _log(TARGET__WARNING, "Removing %s:%s from %s's activeModule list.", \
-            pMod->GetShipRef()->name(), pMod->GetSelf()->name(), mySE->GetName() );
+    _log(TARGET__WARNING, "Removing the %s on %s from %s's activeModule list.", \
+            pMod->GetSelf()->name(), pMod->GetShipRef()->name(), mySE->GetName() );
     m_modules.erase(pMod->itemID());
 }
 

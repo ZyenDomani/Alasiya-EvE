@@ -815,8 +815,8 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
 
 void InventoryItem::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
     // update qty here
-    m_quantity = pAttributeMap->AlterChargeQuantity(qty, loaded);
-    //return m_quantity;
+    pAttributeMap->AlterChargeQuantity(qty, loaded);
+    AlterQuantity(qty, true);
 }
 
 bool InventoryItem::AlterQuantity(int32 qty, bool notify/*false*/) {
