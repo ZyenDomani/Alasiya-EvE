@@ -115,7 +115,7 @@ public:
     // this is only used by my bubble debug command
     uint8 GetState()                                    { return m_ballMode; }
 
-    void EntityRemoved(SystemEntity* who);
+    void EntityRemoved(SystemEntity* pSE);
 
     /* Configuration methods */
     void WebbedMe(InventoryItemRef modRef, bool apply=false);
@@ -135,9 +135,9 @@ public:
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Local Movement */
-    void Orbit(SystemEntity* who, double distance=0);
-    void Follow(SystemEntity* pSE, double distance);
-    void AlignTo(SystemEntity* ent);
+    void Orbit(SystemEntity* pSE, double distance=0);
+    void Follow(SystemEntity* pSE, double distance=0);
+    void AlignTo(SystemEntity* pSE);
     void GotoPoint(const GPoint &point);
     void GotoDirection(const GPoint &direction);
     void SetSpeedFraction(float fraction=1.0f, bool startMovement=false);
@@ -172,8 +172,8 @@ public:
     void SendSetState() const;
     void SendJumpOut(uint32 gateID) const;
     void SendGateActivity(uint32 gateID) const;
-	void SendJumpInEffect(std::string JumpEffect) const;
-	void SendJumpOutEffect(std::string JumpEffect, uint32 locationID) const;
+    void SendJumpInEffect(std::string JumpEffect) const;
+    void SendJumpOutEffect(std::string JumpEffect, uint32 locationID) const;
     void SendTerminalExplosion(uint32 shipID, uint32 bubbleID, bool isGlobal=false) const;
     void SendBallInteractive(const ShipItemRef shipRef, bool set = false) const;
     void UpdateNewShip(const ShipItemRef newShipRef);
@@ -181,8 +181,7 @@ public:
     void SendJettisonPacket() const;
     void SendAnchorDrop() const;
     void SendAnchorLift() const;
-    void SendCloakShip(const bool IsWarpSafe) const;
-    void SendUncloakShip() const;
+    void SendCloakFx(bool apply=false, bool module=false) const;
     void SendSpecialEffect10(uint32 entityID, uint32 targetID, std::string guid, bool isOffensive, bool start, bool isActive) const;
     void SendSpecialEffect(uint32 entityID, uint32 moduleID, uint32 moduleTypeID, uint32 targetID, uint32 chargeTypeID, std::string guid,
                            bool isOffensive, bool start, bool isActive, double duration, uint32 repeat, int32 graphicInfo=0) const;
@@ -244,7 +243,7 @@ protected:
     double m_shipInertia;               //in s/Mkg  - reciprocal of drag constant in EvE
                                         //          - the drag coefficient is 1/I and in Mkg/s
 
-    //derrived from above params:
+    //derived from above params:
     float m_maxSpeed;                   //in m/s
     float m_degPerTic;                  //in deg/s  - used to determine rate of direction change
     float m_shipMaxAccelTime;           //in s      - used to determine accel rate, and total accel time
@@ -294,9 +293,9 @@ protected:
 
     // movement methods
     void MoveObject();                  //apply velocity to our position for for this round of movement
-    void _Orbit();
-    void _Follow();                     //follow or approach object in space
-    void _BeginMovement();              //set initial variables for all movement (common code)
+    void Orbit();
+    void Follow();                      //follow or approach object in space
+    void BeginMovement();               //set initial variables for all movement (common code)
     void UpdateVelocity(bool isMoving=false);
 
 private:
@@ -313,19 +312,20 @@ private:
     void Turn();                       //apply velocity and heading updates as needed for turning
     void ClearTurn();
 
-    // Internal Orbit shit
+    // Internal Orbit shit      -allan  Jan 2020
     GPoint ComputePosition(double curRad);   // currently testing...wip
     double m_inclination;               //inclination of orbit
-    double m_longAscNode;               //longitutdal of ascending node
+    double m_longAscNode;               //longitude of ascending node
+    void ClearOrbit();
 
     // Internal Warp Methods
     Timer m_warpTimer;
-    void _InitWarp();
-    void _WarpAccel(uint16 sec_into_warp);
-    void _WarpCruise(uint16 sec_into_warp);
-    void _WarpDecel(uint16 sec_into_warp);
-    void _WarpStop(double currentShipSpeed);
-    void _WarpUpdate(double currentShipSpeed);
+    void InitWarp();
+    void WarpAccel(uint16 sec_into_warp);
+    void WarpCruise(uint16 sec_into_warp);
+    void WarpDecel(uint16 sec_into_warp);
+    void WarpStop(double currentShipSpeed);
+    void WarpUpdate(double currentShipSpeed);
 
     // Variables used during Warp.
     class WarpState {
