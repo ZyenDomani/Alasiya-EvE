@@ -45,7 +45,7 @@ Godma:UpdateItem - QUANTITY MISSING
         isSubLocation = True
 
 
-        
+
 deny creating items < typeID 34
 
 new players in bubble not updated correctly for existing ship states (destiny state/mode shit?)
@@ -115,6 +115,9 @@ dungeon/anomaly items need tracking for removal on cleanup/shutdown
 
 client error (from arinya)
 UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
+
+
+finish DestinyManager::SendCloakFx()
 
 
 ********  improvements

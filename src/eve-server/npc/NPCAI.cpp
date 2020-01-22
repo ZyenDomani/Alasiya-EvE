@@ -473,6 +473,7 @@ void NPCAIMgr::SetEngaged(SystemEntity* pSE) {
     m_warpOutTimer.Disable();
 }
 
+// not used yet
 void NPCAIMgr::SetFleeing(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
@@ -488,6 +489,7 @@ void NPCAIMgr::SetFleeing(SystemEntity* pSE) {
     m_warpOutTimer.Disable();
 }
 
+// not used yet
 void NPCAIMgr::SetSignaling(SystemEntity* pSE) {
     if (pSE == nullptr)
         return;
