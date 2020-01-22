@@ -106,6 +106,8 @@ PyResult InventoryBound::Handle_DestroyFitting(PyCallArgs &call) {
 }
 
 PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
+    call.Dump(INV__DUMP);
+
     EVEItemFlags stackFlag = m_flag;
 
     if (call.tuple->items.size() != 0) {
@@ -120,8 +122,7 @@ PyResult InventoryBound::Handle_StackAll(PyCallArgs &call) {
 
     _log(INV__MESSAGE, "Calling InventoryBound::StackAll() for %s(%u) in %s.  Bound flag is %s", \
             m_self->itemName().c_str(), m_itemID, sDataMgr.GetFlagName(stackFlag), sDataMgr.GetFlagName(m_flag));
-    call.Dump(INV__DUMP);
-
+    
     //Stack Items contained in this inventory
     pInventory->StackAll(stackFlag, m_ownerID);
 
