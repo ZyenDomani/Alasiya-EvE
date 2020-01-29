@@ -35,25 +35,25 @@ public:
     virtual ~GenericModule();
 
     /* generic functions handled in base class */
-    void Online();    // this function must NOT throw
-    void Offline();   // this function must NOT throw
+    void                Online();    // this function must NOT throw
+    void                Offline();   // this function must NOT throw
 
-    ModuleItemRef GetSelf()                             { return m_modRef; }
-    ShipItemRef GetShipRef()                            { return m_shipRef; }
+    ModuleItemRef       GetSelf()                       { return m_modRef; }
+    ShipItemRef         GetShipRef()                    { return m_shipRef; }
 
-    void ProcessEffects(int8 state, bool active = false);
+    void                ProcessEffects(int8 state, bool active = false);
 
-    void Repair()                                       { m_modRef->ResetAttribute(AttrDamage, true); }
-    void Repair(EvilNumber amount);
+    void                Repair()                        { m_modRef->ResetAttribute(AttrDamage, true); }
+    void                Repair(EvilNumber amount);
 
     bool HasAttribute(uint32 attrID)                    { return m_modRef->HasAttribute(attrID); }
     void SetAttribute(uint32 attrID, EvilNumber val, bool update=true) { m_modRef->SetAttribute(attrID, val, update); }
     void ResetAttribute(uint32 attrID)                  { m_modRef->ResetAttribute(attrID); }
     EvilNumber GetAttribute(uint32 attrID)              { return m_modRef->GetAttribute(attrID); }
 
-    bool isWarpSafe()                                   { return m_isWarpSafe; }
-    bool isTurretFitted()                               { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
-    bool isLauncherFitted()                             { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
+    bool                isWarpSafe()                    { return m_isWarpSafe; }
+    bool                isTurretFitted()                { return m_modRef->type().HasEffect(EVEEffectID::turretFitted); }
+    bool                isLauncherFitted()              { return m_modRef->type().HasEffect(EVEEffectID::launcherFitted); }
 
     /* class type pointer querys, public for anyone to access. */
     virtual ActiveModule*       GetActiveModule()       { return nullptr; }
@@ -65,35 +65,35 @@ public:
     virtual RigModule*          GetRigModule()          { return nullptr; }
     virtual SubSystemModule*    GetSubSystemModule()    { return nullptr; }
     /* class type helpers.  public for anyone to access. */
-    virtual bool IsGenericModule() const                { return true; }
-    virtual bool IsPassiveModule() const                { return false; }
-    virtual bool IsActiveModule() const                 { return false; }
-    virtual bool IsMiningLaser() const                  { return false; }
-    virtual bool IsRigModule() const                    { return false; }   // check this in m_rigSlot?
-    virtual bool IsSubSystemModule() const              { return false; }   // check this in m_subSystem?
+    virtual bool        IsGenericModule() const         { return true; }
+    virtual bool        IsPassiveModule() const         { return false; }
+    virtual bool        IsActiveModule() const          { return false; }
+    virtual bool        IsMiningLaser() const           { return false; }
+    virtual bool        IsRigModule() const             { return false; }   // check this in m_rigSlot?
+    virtual bool        IsSubSystemModule() const       { return false; }   // check this in m_subSystem?
 
-    bool IsLoaded()                                     { return m_chargeLoaded; }
-    bool IsTurretModule()                               { return m_turret; }
-    bool IsLauncherModule()                             { return m_launcher; }
-    bool IsOverloaded()                                 { return m_overLoaded; }
-    bool IsLinked()                                     { return m_linked; }
-    bool IsMaster()                                     { return m_linkMaster; }
-    bool IsDamaged()                                    { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
-    bool IsActive()                                     { return (m_ModuleState == Module::State::Activated ? true : m_ModuleState == Module::State::Deactivating ? true : false); }
-    bool IsLoading()                                    { return m_ModuleState == Module::State::Loading; }
+    bool                IsLoaded()                      { return m_chargeLoaded; }
+    bool                IsTurretModule()                { return m_turret; }
+    bool                IsLauncherModule()              { return m_launcher; }
+    bool                IsOverloaded()                  { return m_overLoaded; }
+    bool                IsLinked()                      { return m_linked; }
+    bool                IsMaster()                      { return m_linkMaster; }
+    bool                IsDamaged()                     { return m_modRef->GetAttribute(AttrDamage) != EvilZero; }
+    bool                IsActive()                      { return (m_ModuleState == Module::State::Activated ? true : m_ModuleState == Module::State::Deactivating ? true : false); }
+    bool                IsLoading()                     { return m_ModuleState == Module::State::Loading; }
 
     /* generic access functions handled here, but set elsewhere.  only slightly slower than above */
-    bool isOnline()                                     { return m_modRef->IsOnline(); }
-    bool isLowPower()                                   { return m_loPower; }
-    bool isHighPower()                                  { return m_hiPower; }
-    bool isMediumPower()                                { return m_medPower; }
-    bool isRig()                                        { return m_rigSlot; }
-    bool isSubSystem()                                  { return m_subSystem; }
+    bool                isOnline()                      { return m_modRef->IsOnline(); }
+    bool                isLowPower()                    { return m_loPower; }
+    bool                isHighPower()                   { return m_hiPower; }
+    bool                isMediumPower()                 { return m_medPower; }
+    bool                isRig()                         { return m_rigSlot; }
+    bool                isSubSystem()                   { return m_subSystem; }
 
-    uint32 itemID()                                     { return m_modRef->itemID(); }
-    uint32 typeID()                                     { return m_modRef->typeID(); }
-    uint32 groupID()                                    { return m_modRef->groupID(); }
-    EVEItemFlags flag()                                 { return m_modRef->flag(); }
+    uint32              itemID()                        { return m_modRef->itemID(); }
+    uint32              typeID()                        { return m_modRef->typeID(); }
+    uint32              groupID()                       { return m_modRef->groupID(); }
+    EVEItemFlags        flag()                          { return m_modRef->flag(); }
 
     void SetChargeRef(InventoryItemRef iRef)            { m_chargeRef = iRef; }
     void SetModuleState(int8 state)                     { m_ModuleState = state; }
@@ -145,30 +145,29 @@ public:
     }
 
 protected:
-    ModuleItemRef    m_modRef;
-    ShipItemRef      m_shipRef;
-    InventoryItemRef m_chargeRef;
+    const char*         GetModuleStateName(int8 state);
 
-    int8             m_ModuleState;
-    int8             m_ChargeState;
+    ModuleItemRef       m_modRef;
+    ShipItemRef         m_shipRef;
+    InventoryItemRef    m_chargeRef;
 
-    int16            m_repeat;
+    int8                m_ModuleState;
+    int8                m_ChargeState;
 
-    bool             m_linkMaster   :1;
-    bool             m_linked       :1;
-    bool             m_isWarpSafe   :1;
-    bool             m_hiPower      :1;
-    bool             m_medPower     :1;
-    bool             m_loPower      :1;
-    bool             m_rigSlot      :1;
-    bool             m_subSystem    :1;
-    bool             m_launcher     :1;
-    bool             m_turret       :1;
-    bool             m_overLoaded   :1;
-    bool             m_chargeLoaded :1;
+    int16               m_repeat;
 
-    const char* GetModuleStateName(int8 state);
-
+    bool                m_linkMaster   :1;
+    bool                m_linked       :1;
+    bool                m_isWarpSafe   :1;
+    bool                m_hiPower      :1;
+    bool                m_medPower     :1;
+    bool                m_loPower      :1;
+    bool                m_rigSlot      :1;
+    bool                m_subSystem    :1;
+    bool                m_launcher     :1;
+    bool                m_turret       :1;
+    bool                m_overLoaded   :1;
+    bool                m_chargeLoaded :1;
 };
 
 #endif  // _EVE_SHIP_MODULES_GENERIC_MODULE_H

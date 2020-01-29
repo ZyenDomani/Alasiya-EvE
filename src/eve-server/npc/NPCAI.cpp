@@ -240,12 +240,13 @@ void NPCAIMgr::Process() {
 
     if (m_warpOutTimer.Check(false)) {
         // disallow warpout if spawn has active respawn timer (spawn is being chained)
+        if (m_npc->GetSpawnMgr() == nullptr) {
+            WarpOut();
+            return;
+        }
         if (m_npc->GetSpawnMgr()->IsChaining(m_npc->SysBubble()->GetID())) {
             m_state = NPCAI::State::Idle;
             m_warpOutTimer.Disable();
-        } else {
-            WarpOut();
-            return;
         }
     }
 

@@ -93,7 +93,7 @@ bool AttributeMap::Save() {
      *   level, sp and endtime attribs for skills
      *   all attribs for ISEs and CSEs, where applicable
      *   damage and online for modules
-     *   damage for charges, where applicable
+     *   damage and quantity for charges, where applicable
      *
      *  ship damage saved separately
      */
@@ -120,13 +120,13 @@ bool AttributeMap::Save() {
         case EVEDB::invCategories::Orbitals:
         case EVEDB::invCategories::Deployable: {
             owner = true;
-        } break;                     // we're falling thru on purpose here to save module damage
+        } break;
         case EVEDB::invCategories::Charge: {    // remember, crystals and lenses are charges, too.
             charge = true;
             damage = true;
         } break;
         case EVEDB::invCategories::Module:      // save online state for modules
-            module = true;
+            module = true;            // we're falling thru on purpose here to save module damage
         case EVEDB::invCategories::Subsystem:
         case EVEDB::invCategories::Drone: {     // this may need more.  check once system is working
             damage = true;
@@ -198,9 +198,9 @@ void AttributeMap::SetAttribute(uint16 attrID, EvilNumber& num, bool notify/*tru
 void AttributeMap::MultiplyAttribute(uint16 attrID, EvilNumber& num, bool notify/*false*/)
 {
     if (num.isNaN() or num.isInf()) {
-        ResetAttribute(attrID, notify);
         _log(ITEM__ERROR, "AttributeMap::MultiplyAttribute() - Something sent NaN or Inf for %s(%u). Reset to default.", mItem.itemName().c_str(), mItem.itemID());
         EvE::traceStack();
+        ResetAttribute(attrID, notify);
         return;
     }
     if (num == EvilZero) {

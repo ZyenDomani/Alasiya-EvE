@@ -359,6 +359,7 @@ PyResult DogmaIMBound::Handle_LoadAmmoToBank(PyCallArgs& call) {
     if (sRef->itemID() != args.shipID)
         sLog.Error("DogmaIMBound::Handle_LoadAmmoToBank()", "passed shipID %u != current shipID %u.", args.shipID, sRef->itemID() );
 
+    // if shipID passed in call isnt active ship (from client->GetShip()), would this work right?
     GenericModule* pMod = sRef->GetModule(sItemFactory.GetItem(args.masterID)->flag());
     if (pMod == nullptr)
         throw PyException( MakeUserError("ModuleNoLongerPresentForCharges"));

@@ -980,7 +980,6 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
     } else {
         _log(ITEM__TRACE, "%s(%u): Added to system manager for %s(%u)", pSE->GetName(), itemID, m_data.name.c_str(), m_data.systemID);
         m_entities[itemID] = pSE;
-        m_entityChanged = true;
 
         if ((pSE->GetCategoryID() == EVEDB::invCategories::SovereigntyStructure)
          or (pSE->IsCOSE())
@@ -990,8 +989,10 @@ void SystemManager::AddEntity(SystemEntity* pSE) {
                 SendStaticBall(pSE);
         }
         // *most* dynamic items need proc tics.  add to proc list
-        if (!IsStaticItem(itemID))
+        if (!IsStaticItem(itemID)) {
+            m_entityChanged = true;
             m_ticEntities[itemID] = pSE;
+        }
         // Add Entity's Item Ref to Solar System Dynamic Inventory:
         AddItemToInventory( pSE->GetSelf() );
     }

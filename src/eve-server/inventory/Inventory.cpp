@@ -75,7 +75,7 @@ void Inventory::Unload()
                     itr = mContents.erase(itr);
                     continue;
                 }
-                
+
                 SaveData data = SaveData();
                     data.itemID = itr->first;
                     data.contraband = itr->second->contraband();
@@ -198,11 +198,11 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
 
     if (test.second)
-        _log(INV__TRACE, "Inventory::AddItem()  Updated %s(%u) to contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+        _log(INV__TRACE, "Inventory::AddItem()  Updated %s(%u) to contain %u of %s(%u) in %s.", \
+                m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     else
         _log(INV__TRACE, "Inventory::AddItem()  %s(%u) already contains %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::RemoveItem(InventoryItemRef iRef) {
@@ -212,10 +212,10 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     if (itr != mContents.end()) {
         mContents.erase(itr);
         _log(INV__TRACE, "Inventory::RemoveItem()  Updated %s(%u) to no longer contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
         _log(INV__TRACE,"Inventory::RemoveItem()  %s(%u) does not contain %s(%u) in %s.", \
-                m_self->itemName().c_str(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
+                m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
 void Inventory::DeleteContents()
@@ -280,7 +280,7 @@ void Inventory::List(CRowSet* into, EVEItemFlags flag, uint32 ownerID) const {
 void Inventory::GetInvForOwner(uint32 ownerID, std::vector< InventoryItemRef >& items)
 {
     if (!IsOffice(m_myID) and !IsStation(m_myID)) {
-        _log(INV__ERROR, "GetInvForOwner called on non-station item %s(%u)", m_self->itemName().c_str(), m_myID);
+        _log(INV__ERROR, "GetInvForOwner called on non-station item %s(%u)", m_self->name(), m_myID);
         EvE::traceStack();
     }
     for (auto cur : mContents)
@@ -678,7 +678,7 @@ double Inventory::GetCapacity(EVEItemFlags flag) const {
     }
 
     _log(INV__WARNING, "Inventory::GetCapacity() - Unsupported flag %s(%u) called for %s(%u)", \
-                sDataMgr.GetFlagName(flag), flag, m_self->itemName().c_str(), m_myID);
+                sDataMgr.GetFlagName(flag), flag, m_self->name(), m_myID);
     return 0.0;
 }
 

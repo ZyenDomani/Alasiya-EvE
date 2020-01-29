@@ -174,7 +174,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         return;
     }
 
-    double oreAmount = (cycleVol /oreVolume);
+    float oreAmount = (cycleVol /oreVolume);
     if (abort) {
         // adjust amount AND cycle for partial cycle
         float delta = 1 - (GetRemainingCycleTimeMS() / GetAttribute(AttrDuration).get_float());
@@ -185,7 +185,7 @@ void MiningLaser::ProcessCycle(bool abort/*false*/)
         _log(MINING__DEBUG, "ProcessCycle(abort) -  cycleVol:%.2f, oreAmount:%.2f, delta:%.5f", cycleVol, oreAmount, delta);
     }
 
-    double roidQuantity = roidRef->GetAttribute(AttrQuantity).get_double();
+    float roidQuantity = roidRef->GetAttribute(AttrQuantity).get_float();
     if (oreAmount > roidQuantity)
         oreAmount = roidQuantity;
 
