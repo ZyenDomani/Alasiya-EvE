@@ -228,6 +228,7 @@ public:
 
     /* linking weapons methods */
     uint8 GetLinkedCount(GenericModule* pMod);
+    uint8 GetLoadedLinkedCount(GenericModule* pMod);
     bool HasLinkedWeapons()                             { return (!m_linkedWeapons.empty()); }
     void LinkAllWeapons();
     void LinkWeapon(uint32 masterID, uint32 slaveID);       // this should throw if applicable
@@ -241,7 +242,7 @@ public:
     // to load with ammo
     void LoadLinkedWeapons(InventoryItemRef cRef, GenericModule* pMod);
     void LoadLinkedWeapons(GenericModule* pMod, std::vector<int32>& chargeIDs);
-    void GetLinkedWeaponRefs(EVEItemFlags flag, std::vector<GenericModule*> modules);
+    void GetLinkedWeaponMods(EVEItemFlags flag, std::vector<GenericModule*> &modules);
 
 protected:
     /* linking weapons methods */

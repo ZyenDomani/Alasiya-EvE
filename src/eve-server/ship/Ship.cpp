@@ -540,6 +540,7 @@ bool ShipItem::ValidateAddItem(EVEItemFlags flag, InventoryItemRef iRef, Client*
 }
 
 // this one is called from ShipGetInfo
+/** @note  cannot find this in client code....no longer used? */
 PyDict* ShipItem::ShipGetInfo() {
     if (!pInventory->LoadContents()) {
         _log( SHIP__ERROR, "%s(%u): Failed to load contents for ShipGetInfo", name(), itemID());
@@ -683,15 +684,15 @@ PyDict* ShipItem::GetChargeState() {
     std::map< EVEItemFlags, InventoryItemRef > charges;
     m_ModuleManager->GetLoadedCharges(charges);
 
+    PyDict *result = new PyDict();
     if (charges.empty())
-        return new PyDict();
+        return result;
 
     // Create entries in "shipState" dictionary for loaded charges on ship:
     PyDict* chargeDict = new PyDict();
     for (auto cur : charges)
-        chargeDict->SetItem(new PyInt((uint32)cur.first), cur.second->GetChargeStatusRow(itemID()));
+        chargeDict->SetItem(new PyInt((uint16)cur.first), cur.second->GetChargeStatusRow(itemID()));
 
-    PyDict *result = new PyDict();
     result->SetItem(new PyInt(itemID()), chargeDict);
     return result;
 }
@@ -1875,7 +1876,7 @@ void ShipItem::CargoFull() {
     // drones->return();
 }
 
-void ShipItem::GetLinkedWeaponRefs(EVEItemFlags flag, std::vector<GenericModule*> modules) {
+void ShipItem::GetLinkedWeaponMods( EVEItemFlags flag, std::vector<GenericModule*> &modules ) {
     GenericModule* pMod = m_ModuleManager->GetModule(flag);
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
     if (itr != m_linkedWeapons.end()) {
@@ -1888,7 +1889,7 @@ void ShipItem::GetLinkedWeaponRefs(EVEItemFlags flag, std::vector<GenericModule*
             std::list<GenericModule*>::iterator itr2 = cur.second.begin(), end = cur.second.end();
             while (itr2 != end) {
                 if ((*itr2) == pMod) {
-                    GetLinkedWeaponRefs(cur.first->flag(), modules);
+                    GetLinkedWeaponMods(cur.first->flag(), modules);
                     return;
                 }
                 ++itr2;
@@ -1948,9 +1949,6 @@ void ShipItem::LinkAllWeapons()
     std::list< GenericModule* > weaponList;
     m_ModuleManager->GetWeapons(weaponList);
 
-    //if (sConfig.server.UnloadOnLinkAll)
-    //    m_ModuleManager->UnloadWeapons();
-
     // remove current links
     for (auto cur : weaponList) {
         if (sConfig.server.UnloadOnLinkAll)
@@ -1965,7 +1963,7 @@ void ShipItem::LinkAllWeapons()
     // remove empty masters from map
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.begin(), end = m_linkedWeapons.end();
     while (itr != end) {
-        if (itr->second.size() < 1) {
+        if (itr->second.empty()) {
             if (is_log_enabled(MODULE__INFO))
                 _log(MODULE__INFO, "ShipItem::LinkAllWeapons() - %s(%s) has empty link list.  Removing.", \
                     itr->first->GetSelf()->name(), sDataMgr.GetFlagName(itr->first->flag()));
@@ -2056,10 +2054,6 @@ uint32 ShipItem::UnlinkWeapon(uint32 moduleID)
     GenericModule* pMod1 = m_ModuleManager->GetModule(moduleID);
     if (pMod1 == nullptr)
         return 0; // make error here?
-    if (pMod1->IsActive())
-        throw PyException( MakeUserError("CantUngroupModuleActive"));
-    if (pMod1->IsLoading())
-        throw PyException( MakeUserError("CantUngroupModuleLoading"));
 
     if (pMod1->IsActive()) {
         m_pilot->SendNotifyMsg("You cannot ungroup active modules, please deactivate them first.");
@@ -2101,6 +2095,13 @@ void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
     GenericModule* pMod2 = m_ModuleManager->GetModule(slaveID);
     if ((pMod1 == nullptr) or (pMod2 == nullptr))
         return; // make error here?
+
+    // if master is loading or active, then whole group is
+    if (pMod1->IsActive())
+        throw PyException( MakeUserError("CantUngroupModuleActive"));
+    if (pMod1->IsLoading())
+        throw PyException( MakeUserError("CantUngroupModuleLoading"));
+
     pMod2->SetLinked(false);
 
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod1);
@@ -2110,12 +2111,13 @@ void ShipItem::UnlinkWeapon(uint32 masterID, uint32 slaveID)
             if ((*itr2) == pMod2) {
                 itr2 = itr->second.erase(itr2);
                 if (itr->second.empty()) {
+                    pMod1->SetLinked(false);
                     pMod1->SetLinkMaster(false);
                     m_linkedWeapons.erase(itr);
-                    return;
                 }
-            } else
-                ++itr2;
+                return;
+            }
+            ++itr2;
         }
     }
 }
@@ -2125,8 +2127,16 @@ void ShipItem::UnlinkGroup(uint32 memberID)
     GenericModule* pMod1 = m_ModuleManager->GetModule(memberID);
     if (pMod1 == nullptr)
         return; // make error here?
+
+    // if master is loading or active, then whole group is
+    if (pMod1->IsActive())
+        throw PyException( MakeUserError("CantUngroupModuleActive"));
+    if (pMod1->IsLoading())
+        throw PyException( MakeUserError("CantUngroupModuleLoading"));
+
     std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod1);
     if (itr != m_linkedWeapons.end()) {
+        pMod1->SetLinked(false);
         pMod1->SetLinkMaster(false);
         std::list<GenericModule*>::iterator itr2 = itr->second.begin();
         while (itr2 != itr->second.end()) {
@@ -2137,6 +2147,7 @@ void ShipItem::UnlinkGroup(uint32 memberID)
                 SaveLinkedWeapons();
                 return;
             }
+            ++itr2;
         }
     } else {
         // this module isnt master... loop thru all links to see if we can find it
@@ -2178,6 +2189,21 @@ uint8 ShipItem::GetLinkedCount(GenericModule* pMod)
     return itr->second.size() +1;
 }
 
+uint8 ShipItem::GetLoadedLinkedCount(GenericModule* pMod)
+{
+    uint8 count = 1;
+    std::map<GenericModule*, std::list<GenericModule*>>::iterator itr = m_linkedWeapons.find(pMod);
+    if (itr != m_linkedWeapons.end()) {
+        std::list<GenericModule*>::iterator itr2 = itr->second.begin(), end = itr->second.end();
+        while (itr2 != end) {
+            if ((*itr2)->IsLoaded())
+                ++count;
+            ++itr2;
+        }
+    }
+    return count;
+}
+
 PyRep* ShipItem::GetLinkedWeapons()
 {
     if (m_linkedWeapons.empty())
@@ -2193,7 +2219,7 @@ PyRep* ShipItem::GetLinkedWeapons()
     }
 
     if (is_log_enabled(MODULE__MESSAGE)) {
-        sLog.Warning("Ship", "GetLinkedWeapons returns: ");
+        _log(MODULE__MESSAGE, "GetLinkedWeapons()");
         result->Dump(MODULE__MESSAGE, "    ");
     }
     return result;

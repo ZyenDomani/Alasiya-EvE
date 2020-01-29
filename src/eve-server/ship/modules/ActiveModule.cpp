@@ -161,7 +161,7 @@ void ActiveModule::Clear()
     m_targetSE = nullptr;
 
     m_Stop = true;
-    m_repeat = 1000;
+    m_repeat = 1;
     m_targetID = 0;
     m_effectID = 0;
     m_guidStr = "";
@@ -186,7 +186,6 @@ void ActiveModule::Process()
         if (m_reloadTimer.Check(false)) {
             // charge loading complete
             m_reloadTimer.Disable();
-            m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
             // apply charge effects here after loading is complete, but only for empty modules (no previous charge fx)
             if (!m_chargeLoaded)
                 sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
@@ -204,6 +203,11 @@ void ActiveModule::Process()
         return;
     }
 
+    // decrement repeat and check for single activation.
+    --m_repeat;
+    if (m_repeat < 1)
+        m_Stop = true;
+
     // check for module cycle timer.  if module is stopped, this will process the deactivation and set stop
     if (m_timer.Check())
         ProcessActiveCycle();
@@ -212,6 +216,7 @@ void ActiveModule::Process()
         return;
 
     if (m_needsTarget) {
+        // these shouldnt be needed anymore
         if (m_targetSE == nullptr) {
             _log(MODULE__TRACE, "%s - targetSE == nullptr.  calling AbortCycle()", m_modRef->name());
             m_shipRef->GetPilot()->SendErrorMsg("The target for your %s not found.  Aborting current cycle.", m_modRef->name());
@@ -225,9 +230,9 @@ void ActiveModule::Process()
             return;
         }
     }
-
+/*
     if (m_needsCharge) {
-        // is this right?  should i do something else here?
+        // these shouldnt be needed anymore
         if (m_ChargeState == Module::State::Unloaded) {
             _log(MODULE__TRACE, "ActiveModule::Process - %s on %s needs charge but moduleState is unloaded.", m_modRef->name(), m_shipRef->name());
             m_Stop = true;
@@ -252,6 +257,7 @@ void ActiveModule::Process()
             DeactivateCycle(true);
         }
     }
+    */
 }
 
 void ActiveModule::RemoveTarget(SystemEntity* pSE) {
@@ -263,7 +269,8 @@ void ActiveModule::RemoveTarget(SystemEntity* pSE) {
 
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
-    if (effectID == 16) {   // catchall for elusive online/offline error
+    if (effectID == 16) {
+        // catchall for elusive online/offline error, but should be caught in Ship::Activate()
         Online();
         return;
     }
@@ -393,19 +400,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     SetModuleState(Module::State::Activated);
 
     --m_repeat;
-    if (m_repeat < 1) {
+    if (m_repeat < 1)
         m_Stop = true;
-        //m_timer.Disable();
-        //DeactivateCycle();
-    }
 
     // check for one-hit kills and stop module after cycle completes
     if (m_needsTarget)
-        if (m_targetSE->IsDead()) {
+        if (m_targetSE->IsDead())
             m_Stop = true;
-            //m_timer.Disable();
-            //DeactivateCycle();
-        }
 }
 
 void ActiveModule::Deactivate(std::string effect/*""*/)
@@ -425,19 +426,6 @@ void ActiveModule::Deactivate(std::string effect/*""*/)
 
     // if we're not mining, wait for module to complete current cycle then shut it down.
     m_Stop = true;
-
-    /* these are not needed.  Clear() calls RemoveTargetModule
-    if (effect.compare("TargetDestroyed") == 0) {
-        if (m_targetSE->TargetMgr() != nullptr)
-            m_targetSE->TargetMgr()->RemoveTargetModule(this);
-        // this is sent back in OnGodmaShipEffect packet
-        //m_targetSE = nullptr;
-    }
-    if (effect.compare("CargoFull") == 0) {
-        if (m_targetSE->TargetMgr() != nullptr)
-            m_targetSE->TargetMgr()->RemoveTargetModule(this);
-    }
-    */
 }
 
 void ActiveModule::Overload()
@@ -642,7 +630,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                         PyTuple* tuple2 = new PyTuple(3);
                         tuple2->SetItem(0, new PyInt(pASE->GetID()));
                         tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
-                        tuple2->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
+                        tuple2->SetItem(2, pASE->GetSelf()->GetAttribute(AttrQuantity).GetPyObject());
                         list->AddItem(tuple2);
                     }
                 }
@@ -652,7 +640,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
                     PyTuple* tuple2 = new PyTuple(3);
                     tuple2->SetItem(0, new PyInt(pASE->GetID()));
                     tuple2->SetItem(1, new PyInt(pASE->GetTypeID()));
-                    tuple2->SetItem(2, new PyInt(pASE->GetSelf()->GetAttribute(AttrQuantity).get_int()));
+                    tuple2->SetItem(2, pASE->GetSelf()->GetAttribute(AttrQuantity).GetPyObject());
                     list->AddItem(tuple2);
                 }
             }
@@ -742,6 +730,7 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 
     Client* pClient = m_shipRef->GetPilot();
     if (pClient == nullptr) {
+        _log(MODULE__WARNING, "ActiveModule::LoadCharge() for %s - Pilot is null.  Cannot load charge.", m_modRef->name());
         // these two are just in case...
         m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);
@@ -785,9 +774,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-        //m_modRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
-        m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
     }
+    // set quantity and save, as subsequent calls will reset charge attribs
+    m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
+    m_chargeRef->SaveAttributes();
 }
 
 //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
@@ -799,6 +789,10 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
 void ActiveModule::UnloadCharge()
 {
     _log(MODULE__TRACE, "%s calling AM::UnloadCharge()", m_modRef->name());
+
+    // make sure module isnt currently active
+    Deactivate();
+
     if (m_chargeRef.get() != nullptr) {
         if (m_chargeRef->HasAttribute(AttrUnfitCapCost)) {
             float cap = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
@@ -819,23 +813,27 @@ void ActiveModule::UnloadCharge()
          */
         Client* pClient = m_shipRef->GetPilot();
         sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
-    }
 
-    m_chargeLoaded = false;
-    if (m_chargeRef.get() != nullptr) {
         // unloading charge goes straight to attribMap, to send data to client without changing item qty
         m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
         m_chargeRef->DeleteAttribute(AttrQuantity);
         m_chargeRef = InventoryItemRef(nullptr);       // Ensure ref is NULL
     }
-    m_modRef->DeleteAttribute(AttrQuantity);
+
+    m_chargeLoaded = false;
     SetChargeState(Module::State::Unloaded);
 }
 
 void ActiveModule::ConsumeCharge() {
-    // common code to reduce ammo by one unit.
-    // this also updates item quantity
-    m_chargeRef->AlterChargeQuantity(-1);
+    if (m_linkMaster) {
+        // remove charges from linked modules, if applicable
+        std::vector<GenericModule*> modules;
+        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+        for (auto cur : modules)
+            if (cur->IsLoaded())
+                cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
+    } else
+        m_chargeRef->AlterChargeQuantity(-1);
 }
 
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
@@ -853,7 +851,8 @@ void ActiveModule::UpdateCharge(uint16 attrID, uint16 testAttrID, uint16 srcAttr
     newValue += GetAttribute(srcAttrID);
     if (newValue > iRef->GetAttribute(testAttrID)) {
         newValue = iRef->GetAttribute(testAttrID);
-        Deactivate();
+        if (m_shipRef->GetPilot()->AutoStop())
+            Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
 }
@@ -864,7 +863,8 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
     newValue -= GetAttribute(srcAttrID);
     if (newValue < EvilZero) {
         newValue = EvilZero;
-        Deactivate();
+        if (m_shipRef->GetPilot()->AutoStop())
+            Deactivate();
     }
     iRef->SetAttribute(attrID, newValue);
 }

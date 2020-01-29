@@ -814,7 +814,7 @@ void InventoryItem::MergeTypesInCargo(ShipItem* pShip, EVEItemFlags flag/*flagAu
 }
 
 void InventoryItem::AlterChargeQuantity(int16 qty/*0*/, bool loaded/*true*/) {
-    // update qty here
+    // update qty here and in attribMap
     pAttributeMap->AlterChargeQuantity(qty, loaded);
     AlterQuantity(qty, true);
 }
@@ -842,10 +842,8 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
     }
     int32 old_qty = m_quantity;
     m_quantity = qty;
-    if (m_quantity < 1) {
-        Delete();
-        return true;
-    } else if (m_quantity > EVEMU_MAX_SHORT_ID) {
+
+    if (m_quantity > EVEMU_MAX_SHORT_ID) {
         codelog(ITEM__ERROR, "%s (%u): quantity overflow", m_itemName.c_str(), m_itemID);
         m_quantity = EVEMU_MAX_SHORT_ID -1;
         if (IsCharacter(m_ownerID)) {
@@ -855,20 +853,19 @@ bool InventoryItem::SetQuantity(int32 qty, bool notify/*false*/) {
         }
     }
 
-    if (sConfig.world.saveOnUpdate)
-        SaveItem(); //pAttributeMap->SaveAttributes();
-
     if (notify) {
         std::map<int32, PyRep *> changes;
-        // this informs client of a stack change...still need to go over client code to verify exact spec on which one is used for what purpose....
-        if (categoryID() == EVEDB::invCategories::Charge)
-            changes[Inv::Update::StackSize] = new PyInt(old_qty);
-        else if (IsModuleSlot(m_flag))
+        if (IsModuleSlot(m_flag))
             changes[Inv::Update::Quantity] = new PyInt(old_qty);    // this one is to trigger ship module button fx
         else
             changes[Inv::Update::StackSize] = new PyInt(old_qty);
         SendItemChange(m_ownerID, changes); //changes is consumed
     }
+
+    if (m_quantity < 1)
+        Delete();
+    else if (sConfig.world.saveOnUpdate)
+        SaveItem();
 
     return true;
 }
@@ -995,7 +992,8 @@ void InventoryItem::SaveItem()
     ItemDB::SaveItem(m_itemID, data);
     // item attributes are saved in ItemFactory.cpp:96  (save loop on shutdown for loaded items)
     // make call here for items saved after *some* change
-    SaveAttributes();
+    //SaveAttributes();
+    pAttributeMap->Save();
 }
 
 void InventoryItem::UpdateLocation()
@@ -1042,10 +1040,10 @@ PyPackedRow* InventoryItem::GetChargeStatusRow(uint32 shipID) const {
 }
 
 void InventoryItem::GetChargeStatusRow(uint32 shipID, PyPackedRow* into) const {
-    into->SetField("instanceID",     new PyLong(shipID));  /* this is shipID */
+    into->SetField("instanceID",     new PyLong(shipID));  /* this is shipID (locationID) */
     into->SetField("flagID",         new PyInt(m_flag));
     into->SetField("typeID",         new PyInt(m_type.id()));
-    into->SetField("quantity",       new PyInt(pAttributeMap->GetAttribute(AttrQuantity).get_int())); // AttrQuantity is used for loaded charges
+    into->SetField("quantity",       pAttributeMap->GetAttribute(AttrQuantity).GetPyObject()); // AttrQuantity is used for loaded charges
 }
 
 PyPackedRow* InventoryItem::GetItemRow() const
@@ -1066,7 +1064,7 @@ PyPackedRow* InventoryItem::GetItemRow() const
         header->AddColumn( "customInfo", DBTYPE_STR);
 
     PyPackedRow* row = new PyPackedRow( header);
-    GetItemRow( row);
+    GetItemRow(row);
 
     return row;
 }
@@ -1111,7 +1109,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
             tuple->SetItem(2, new PyInt(m_type.id()));
         result.itemID = tuple;
         //result.invItem = PyStatic.NewNone();
-        for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr)
+        for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr)
             result.attributes[(*itr).first] = (*itr).second.GetPyObject();
         return true;
     }
@@ -1119,37 +1117,38 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     result.itemID = new PyInt(m_itemID);
 
     if (m_type.categoryID() == EVEDB::invCategories::Skill) {
-        result.attributes[AttrSkillTimeConstant] = new PyInt(GetAttribute(AttrSkillTimeConstant).get_uint32());
-        result.attributes[AttrSkillPoints] = new PyInt(GetAttribute(AttrSkillPoints).get_uint32());
-        result.attributes[AttrSkillLevel] = new PyInt(GetAttribute(AttrSkillLevel).get_uint32());
-    } else if (m_type.id() == 51) { // for vouchers
-        result.description = m_itemName;
-    } else {
-        if (IsOnline()) {
-            EntityEffectState es;
-                es.env_itemID = m_itemID;
-                es.env_charID = m_ownerID;
-                es.env_shipID = m_locationID;
-                es.env_target = m_locationID;
-                es.env_other = PyStatic.NewNone();
-                es.env_area = PyStatic.NewNone();
-                es.env_effectID = 16;
-                /** @todo fix this once we start tracking effects */
-                // on login, this is current time
-                es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
-                es.duration = -1;
-                es.repeat = 0;
-                es.randomSeed = PyStatic.NewNone();
-            result.activeEffects[es.env_effectID] = es.Encode();
-        }
+        result.attributes[AttrSkillTimeConstant] = GetAttribute(AttrSkillTimeConstant).GetPyObject();
+        result.attributes[AttrSkillPoints] = GetAttribute(AttrSkillPoints).GetPyObject();
+        result.attributes[AttrSkillLevel] = GetAttribute(AttrSkillLevel).GetPyObject();
+        return true;
+    }
+    //} else if (m_type.id() == 51) { // for vouchers
+    //    result.description = m_itemName;
 
-        for (AttrMapItr itr = pAttributeMap->begin(); itr != pAttributeMap->end(); ++itr) {
-            //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
-            if ((*itr).first == AttrWarpSpeedMultiplier)
-                result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
-            else
-                result.attributes[(*itr).first] = (*itr).second.GetPyObject();
-        }
+    if (pAttributeMap->GetAttribute(AttrOnline).get_bool()) {
+        EntityEffectState es;
+            es.env_itemID = m_itemID;
+            es.env_charID = m_ownerID;
+            es.env_shipID = m_locationID;
+            es.env_target = m_locationID;
+            es.env_other = PyStatic.NewNone();
+            es.env_area = PyStatic.NewNone();
+            es.env_effectID = 16;
+            /** @todo fix this once we start tracking effects */
+            // on login, this is current time
+            es.startTime = GetFileTimeNow() - EvE::Time::Minute; // m_timestamp
+            es.duration = -1;
+            es.repeat = 0;
+            es.randomSeed = PyStatic.NewNone();
+        result.activeEffects[es.env_effectID] = es.Encode();
+    }
+
+    for (AttrMapItr itr = pAttributeMap->begin(), end = pAttributeMap->end(); itr != end; ++itr) {
+        //localization.GetByLabel('UI/Fitting/FittingWindow/WarpSpeed', distText=util.FmtDist(max(1.0, bws) * wsm * 3 * const.AU, 2))
+        if ((*itr).first == AttrWarpSpeedMultiplier)
+            result.attributes[AttrWarpSpeedMultiplier] = new PyFloat((*itr).second.get_float() /3);
+        else
+            result.attributes[(*itr).first] = (*itr).second.GetPyObject();
     }
 
     return true;

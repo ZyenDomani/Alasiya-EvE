@@ -92,8 +92,8 @@ bool ModuleManager::Initialize() {
             switch (cur->categoryID()) {
                 case EVEDB::invCategories::Module:
                 case EVEDB::invCategories::Subsystem: {
-                    _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s loading %s(%u) during Init().",\
-                            pShipItem->name(), cur->name(), cur->itemID());
+                    _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s loading %s(%u) at %s.",\
+                            pShipItem->name(), cur->name(), cur->itemID(), sDataMgr.GetFlagName(cur->flag()));
                     ModuleItemRef mRef = ModuleItemRef::StaticCast(cur);
                     AddModule(mRef, cur->flag());
                 } break;
@@ -106,6 +106,9 @@ bool ModuleManager::Initialize() {
                         // put that bitch back in cargo
                         cur->SetFlag(flagCargoHold);
                     } else {
+                        _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s loading %s(%u) into %s(%u) at %s.",\
+                                pShipItem->name(), cur->name(), cur->itemID(), \
+                                pMod->GetSelf()->name(), pMod->GetSelf()->itemID(), sDataMgr.GetFlagName(cur->flag()));
                         pMod->LoadCharge(cur);
                         m_charges.emplace(cur->flag(), cur);
                     }
@@ -524,7 +527,8 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
      * {'FullPath': u'UI/Messages', 'messageID': 259630, 'label': u'InvalidTargetGroupBody'}(u'Invalid target, can only activate this on {groupName}.', None, {u'{groupName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'groupName'}})
      */
 
-    pMod->Activate(effectID, targetID, repeat);
+    if (pMod->IsMaster() or !pMod->IsLinked())
+        pMod->Activate(effectID, targetID, repeat);
 }
 
 void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
@@ -715,7 +719,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
     // check quantities
     if (modCapacity < chargeVolume)
         return;
-    uint32 loadQty = floor((modCapacity / chargeVolume));
+    int32 loadQty = floor((modCapacity / chargeVolume));
     if (loadQty < 1)
         return;
     InventoryItemRef oRef(chargeRef);   // make copy of chargeRef
@@ -730,6 +734,7 @@ void ModuleManager::LoadCharge(InventoryItemRef chargeRef, EVEItemFlags flag)
 
     if (pMod->IsLoaded()) {
         pMod->GetLoadedChargeRef()->Merge(chargeRef);
+        pMod->GetLoadedChargeRef()->GetAttributeMap()->AlterChargeQuantity(loadQty, true);
     } else {
         chargeRef->Donate(pShipItem->ownerID(), pShipItem->itemID(), flag, true);
         pMod->LoadCharge(chargeRef);
@@ -982,6 +987,8 @@ void ModuleManager::StripModules()
 void ModuleManager::SaveModules()
 {
     pModuleCont->SaveModules();
+    for (auto cur : m_charges)
+        cur.second->SaveItem();
 }
 
 void ModuleManager::GetShipRigs(std::vector< uint32 >& modVec)
