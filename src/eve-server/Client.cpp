@@ -97,6 +97,7 @@ Client::Client(PyServiceMgr &services, EVETCPConnection** con)
     m_undock = false;
     m_showall = false;
     m_beyonce = false;
+    m_autoStop = true;
     m_canThrow = false;
     m_packaged = false;
     m_portrait = false;
@@ -678,7 +679,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     if (IsStation(m_locationID))
         stationID = m_locationID;
 
-    m_bubbleWait = false;           // allow client processing of subsquent destiny msgs
+    m_bubbleWait = false;           // allow client processing of subsequent destiny msgs
 
     // location changed...verify current system and set session data for current system.
     if (IsJump() or ((m_system != nullptr) and (m_system->GetID() != m_SystemData.systemID))) {

@@ -54,3 +54,5 @@
           " - shows list of online players")
  COMMAND( showall, Acct::Role::GMH,
           " - shows all dynamic items in system on ship scanner.")
+ COMMAND( autostop, Acct::Role::PLAYER,
+          " - sets repair, boost, and ?? modules to stop when target full")

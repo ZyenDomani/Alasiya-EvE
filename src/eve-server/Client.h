@@ -300,6 +300,9 @@ public:
     void SetShowAll(bool set=false)                     { m_showall = set; }
     bool IsShowall()                                    { return m_showall; }
 
+    void SetAutoStop(bool set=false)                    { m_autoStop = set; }
+    bool AutoStop()                                     { return m_autoStop; }
+    
     //messages and LSC
     // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);
@@ -384,6 +387,7 @@ protected:
     bool m_loaded;
     bool m_beyonce;
     bool m_showall;         // boolean for showing all dynamics in system on ships scanner (ROLE_GMH)
+    bool m_autoStop;        // boolean for auto-stopping modules when target attrib is full (ROLE_PLAYER)
     bool m_packaged;        // used to correctly package updates into a PackagedAction list
     bool m_portrait;        // used to verify new char pic received
     bool m_autoPilot;       // set true for using autopilot.

@@ -871,6 +871,22 @@ PyResult Command_showall(Client* pClient, CommandDB* db, PyServiceMgr* services,
     return new PyString(reply);
 }
 
+PyResult Command_autostop(Client* pClient, CommandDB* db, PyServiceMgr* services, const Seperator& args)
+{
+    std::string stop = "Enabled";
+    if (pClient->AutoStop()) {
+        pClient->SetAutoStop(false);
+        stop = "Disabled";
+    } else
+        pClient->SetAutoStop(true);
+
+    char reply[35];
+    snprintf(reply, 35, "Module Auto-Stop is %s.", stop.c_str());
+
+    pClient->SendNotifyMsg(reply);
+    return new PyString(reply);
+}
+
 
 /* groove's new command.....
  *    /fit [me|itemID] [typeID] [flag=slot]
