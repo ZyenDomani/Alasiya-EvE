@@ -401,7 +401,7 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     else
         modules.push_back(this);
     for (auto cur : modules)
-        cur->ShowEffect(true, false);
+        cur->GetActiveModule()->ShowEffect(true, false);
 
     SetModuleState(Module::State::Activated);
 
@@ -604,7 +604,7 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
     else
         modules.push_back(this);
     for (auto cur : modules)
-        cur->ShowEffect(false, abort);
+        cur->GetActiveModule()->ShowEffect(false, abort);
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
