@@ -395,7 +395,13 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     if (IsValidTarget(targetID))
         ApplyEffect(FX::State::Target, true);
 
-    ShowEffect(true, false);
+    std::vector<GenericModule*> modules;
+    if (m_linkMaster)
+        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+    else
+        modules.push_back(this);
+    for (auto cur : modules)
+        cur->ShowEffect(true, false);
 
     SetModuleState(Module::State::Activated);
 
@@ -592,7 +598,13 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
                 m_modRef->name(), m_targetID, m_targetSE);
 
-    ShowEffect(false, abort);
+    std::vector<GenericModule*> modules;
+    if (m_linkMaster)
+        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+    else
+        modules.push_back(this);
+    for (auto cur : modules)
+        cur->ShowEffect(false, abort);
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
@@ -826,11 +838,11 @@ void ActiveModule::UnloadCharge()
 
 void ActiveModule::ConsumeCharge() {
     if (m_linkMaster) {
-        // remove charges from linked modules, if applicable
+        // remove charges from linked modules as applicable
         std::vector<GenericModule*> modules;
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
         for (auto cur : modules)
-            if (cur->IsLoaded())
+            if (cur->IsLoaded()) // should we check for online also?  maybe later.  client may not allow group with one offline
                 cur->GetLoadedChargeRef()->AlterChargeQuantity(-1);
     } else
         m_chargeRef->AlterChargeQuantity(-1);
@@ -1016,7 +1028,7 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
     uint16 chgTypeID = (m_chargeLoaded ? m_chargeRef->typeID() : 0);
     uint32 timeLeft = GetRemainingCycleTimeMS();
     EvilNumber cycleTime = EvilZero;
-    // these are a bit weird...this HasAttribute() set variable if exists, but need to test each case.
+    // these are a bit weird...this HasAttribute() will set variable if exists, but need to test each case.
     if (m_modRef->HasAttribute(AttrDuration, cycleTime))
         ;
     else if (m_modRef->HasAttribute(AttrSpeed, cycleTime))
@@ -1117,24 +1129,6 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
             shipEff.error = PyStatic.NewNone();
 
     PyTuple* tuple = shipEff.Encode();
-    /*
-    if (is_log_enabled(MODULE__DUMP)) {
-        _log(MODULE__DUMP ,"ShowEffects() Dump");
-        tuple->Dump(MODULE__DUMP, "    ");
-    }
-*/
-    /*
-     std::vector<PyTuple*> events;
-         events.push_back(tuple);
-     std::vector<PyTuple*> updates;
-
-    // this should never hit, but just in case...
-     if (m_destinyMgr == nullptr)
-         m_destinyMgr = m_shipRef->GetPilot()->GetShipSE()->DestinyMgr();
-
-     m_destinyMgr->SendDestinyUpdate(updates, events, m_destinyMgr->IsWarping());
-     */
-
     if (m_destinyMgr->IsWarping() or (m_bubble == nullptr))
         m_shipRef->GetPilot()->QueueDestinyEvent(&tuple);
     else
@@ -1143,21 +1137,13 @@ void ActiveModule::ShowEffect(bool active/*false*/, bool abort/*false*/)
 
 void ActiveModule::LaunchMissile()
 {
-    // nust not throw here...
+    // must not throw here...
     //throw PyException( MakeUserError("TargetingMissileToSelf"));
     //throw PyException( MakeUserError("NoCharges"));
 
     //{'FullPath': u'UI/Messages', 'messageID': 259200, 'label': u'NoChargesBody'}(u'{launcher} has run out of charges', None, {u'{launcher}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'launcher'}})
 
     // AttrAimedLaunch ?  what is this used for?
-    if (m_linked)
-        if (!m_linkMaster) {    // only firing ONE missile for linked lanuchers, but they ALL use a charge
-            // Reduce ammo charge by 1 unit:
-            ConsumeCharge();
-            // add data to StatisticMgr
-            sStatMgr.Increment(Stat::pcMissiles);
-            return;
-        }
 
     // Launch a missile, creating a new Destiny object for it
     Client* pClient = m_shipRef->GetPilot();
