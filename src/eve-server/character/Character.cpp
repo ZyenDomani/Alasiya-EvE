@@ -362,7 +362,8 @@ void Character::LogOut()
 
     pInventory->Unload();
 
-    sItemFactory.RemoveItem(m_itemID);
+    if (!m_pClient->IsCharCreation())
+        sItemFactory.RemoveItem(m_itemID);
 }
 
 void Character::Delete() {
@@ -1043,11 +1044,11 @@ PyTuple *Character::GetSkillQueue() {
     return tuple;
 }
 
-void Character::AddItem(InventoryItemRef iRef) 
+void Character::AddItem(InventoryItemRef iRef)
 {
     if (iRef.get() == nullptr)
         return;
-    
+
     InventoryItem::AddItem(iRef);
 
     if ((iRef->flag() == flagSkill) or (iRef->flag() == flagSkillInTraining)) {
@@ -1056,7 +1057,7 @@ void Character::AddItem(InventoryItemRef iRef)
         skill->VerifySP();
         skill->VerifyAttribs();
     }
-    
+
     _log( CHARACTER__INFO, "%s(%u) has been added to %s with flag %d.", iRef->itemName().c_str(), iRef->itemID(), itemName().c_str(), (int)iRef->flag() );
 }
 

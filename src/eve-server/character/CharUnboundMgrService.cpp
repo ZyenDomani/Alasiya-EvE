@@ -371,14 +371,14 @@ PyResult CharUnboundMgrService::Handle_CreateCharacterWithDoll(PyCallArgs &call)
     AccountService::TranserFunds(ownerSCC, charRef->itemID(), sConfig.character.startAurBalance, reason, \
                             Journal::EntryType::Inheritance, 0, Account::KeyType::AUR, Account::KeyType::AUR);
 
-    _log( CLIENT__MESSAGE, "Created New Character  - Sending charID %u as reply", charRef->itemID() );
-
     charRef->LogOut();
     sRef->LogOut();
 
     sEntityList.RemovePlayer(pClient);
 
     pClient->CreateChar(false);
+
+    _log( CLIENT__MESSAGE, "Created New Character  - Sending charID %u as reply", charRef->itemID() );
 
     return new PyInt(charRef->itemID());
 }
