@@ -12,14 +12,7 @@ new players in bubble not updated correctly for existing ship states (destiny st
 
 stackall in orehold puts stack in cargo...need to step thru this one
 
-deactivate on miner DOESNT pull ore...just stops module
-
-attributes -- attribute updates are sent as "MODULEchange" which tells me this is for MODULES ONLY.
-go thru and check this, and adjust accordingly.
-if this is for modules only, fix all updates to use ixChanged from inventory to update non-modules
-** this will be a large undertaking.  may fix multiple item change errors **
-
-load/unload module broken again.  test docked/space in all aspects of load/unload
+    /** @todo  check this for cargo other than hangar....stackall in ore hold puts ore in cargo */
 
 module add/remove isnt fully thought out at this point.
     - will need complete walk thru to verify proper operation
@@ -29,8 +22,6 @@ when moving module slots, module is offlined after refit
 check charge flag - getting segfault on flagAutoFit for chargeRef in fx
 
 ship modules in slim item may be incomplete.  search client for GetTurretSets
-
-check item merge in cargo not removing merged items (ghost items)
 
 
 multiple errors like this....
@@ -77,10 +68,12 @@ client error (from arinya)
 UserError: [DeniedTargetInvulnerable.notify] None - Target is invulnerable. {}
 
 
-finish DestinyManager::SendCloakFx()
-
-
 ********  improvements
+
+write new methods for List() and Move() for bookmarks where owner != player
+currently, all bookmarks are donated to calling player when moved into cargo/hangar
+
+finish DestinyManager::SendCloakFx()
 
 check/fix loading linked weapons
 look over and correct loading with partial stacks (see UserError at MM::LoadCharge)
@@ -136,11 +129,7 @@ RefObjects - MEMORY MANAGEMENT!!
 Py* objects that have string as key need 'delete' called on string when destroyed per valgrind...cannot find ref to this error now
 Py* objects that have long int as key need 'delete' called on key when destroyed (mem leak)
 
-
-bookmark system - still incomplete
-    - very db heavy
-    - needs lots more work for folders and copying bms
-    - check into sending None for folderIDs instead of zero....was something about this in logs.  will have to research a bit more.
+InvBrokerBound::Handle_GetInventory incomplete
 
 need to figure out how to load/queue assets for chars (on login or w/e)
     - this is needed for complete asset menu entries
@@ -384,7 +373,15 @@ move *data calls from inventoryDB into static data mgr  -priority level: low
 
 GetChar()->HasShares())  // not written, no underlying code yet
 
+InventoryBound  incomplete
+  Handle_List()
+  ListDroneBay()
+  SetPassword()
+  RunRefiningProcess()
+  TakeOutTrash()
+
 dynamic system items not inserted into itemfactory map
+static items not being removed from itemfactory map upon system unload
 
 began putting specific throw msgs in approprate common/EVE_*.h files if available,
 else src/*/*.h files
@@ -443,3 +440,5 @@ system mem obj for jumpsHour isnt working and will take more thought/code
 website updates:
 replace/update outdated mysql_connect with newer mysqli_connect
 --  major updates needed in website code for python 3
+
+revert main server back to mageia 5 (will require full wipe)
