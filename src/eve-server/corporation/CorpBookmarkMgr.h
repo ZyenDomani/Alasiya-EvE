@@ -46,6 +46,13 @@ protected:
     PyCallable_DECL_CALL(UpdateBookmark);
     PyCallable_DECL_CALL(UpdatePlayerBookmark);
     PyCallable_DECL_CALL(MoveBookmarksToFolder);
+    PyCallable_DECL_CALL(CreateFolder);
+    PyCallable_DECL_CALL(UpdateFolder);
+    PyCallable_DECL_CALL(CopyBookmarks);
+    PyCallable_DECL_CALL(DeleteFolder);
+    PyCallable_DECL_CALL(MoveFoldersToDB);
+    PyCallable_DECL_CALL(DeleteBookmarks);
+
 };
 
 #endif  // __EVEMU_CORP_CORPBM_H

@@ -660,19 +660,19 @@ void InventoryItem::Donate(uint32 new_owner, uint32 new_location, EVEItemFlags n
         std::map<int32, PyRep *> changes, changes2;
         if (new_flag != old_flag) {
             changes[Inv::Update::Flag] = new PyInt(old_flag);
-           // changes2[Inv::Update::Flag] = new PyInt(old_flag);
+            changes2[Inv::Update::Flag] = new PyInt(old_flag);
         }
         if (new_owner != old_owner) {
             changes[Inv::Update::Owner] = new PyInt(old_owner);
-           // changes2[Inv::Update::Owner] = new PyInt(old_owner);
+            changes2[Inv::Update::Owner] = new PyInt(old_owner);
         }
         if (new_location != old_location) {
             changes[Inv::Update::Location] = new PyInt(old_location);
-           // changes2[Inv::Update::Location] = new PyInt(old_location);
+            changes2[Inv::Update::Location] = new PyInt(old_location);
         }
-        if (new_owner != old_owner)
-            SendItemChange(old_owner, changes);
         SendItemChange(m_ownerID, changes);
+        if (new_owner != old_owner)
+            SendItemChange(old_owner, changes2);
     }
 }
 

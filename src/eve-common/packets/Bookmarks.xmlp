@@ -16,6 +16,14 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Call_AddBookmarkFromVoucher">
+      <tupleInline>
+          <int name="itemID" />
+          <int name="ownerID" />
+          <int name="folderID"  none_marker="0"/>
+      </tupleInline>
+  </elementDef>
+
   <elementDef name="Rsp_BookmarkLocation">
     <tupleInline>
         <int name="bookmarkID" />
@@ -41,6 +49,13 @@
     </tupleInline>
   </elementDef>
 
+  <elementDef name="Call_CopyBookmarks">
+      <tupleInline>
+          <objectEx name="object" type="PyObjectEx" optional="true" />
+          <int name="folderID" none_marker="0"/>
+      </tupleInline>
+  </elementDef>
+
   <elementDef name="Call_UpdateBookmark">
     <tupleInline>
         <int name="bookmarkID" />
@@ -63,7 +78,7 @@
         <int name="locationID" />
         <raw name="memo" />
         <raw name="comment" />
-        <string name="scanID" />
+        <string name="resultID" />
         <int name="ownerID" />
     </tupleInline>
   </elementDef>
@@ -83,29 +98,6 @@
         </dictInlineEntry>
         <dictInlineEntry key="creatorID">
           <int name="creatorID" />
-        </dictInlineEntry>
-      </dictInline>
-    </objectInline>
-  </elementDef>
-
-  <elementDef name="Rsp_BMData">
-    <objectInline>
-      <stringInline value="util.KeyVal" />
-      <dictInline>
-        <dictInlineEntry key="bookmarkID">
-          <int name="bookmarkID" />
-        </dictInlineEntry>
-        <dictInlineEntry key="ownerID">
-          <int name="ownerID" />
-        </dictInlineEntry>
-        <dictInlineEntry key="memo">
-          <wstring name="memo" />
-        </dictInlineEntry>
-        <dictInlineEntry key="comment">
-          <string name="comment" />
-        </dictInlineEntry>
-        <dictInlineEntry key="folderID">
-          <int name="folderID" none_marker="0"/>
         </dictInlineEntry>
       </dictInline>
     </objectInline>

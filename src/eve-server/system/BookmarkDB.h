@@ -29,31 +29,59 @@
 
 #include "ServiceDB.h"
 
+/*
+validCategories =
+    const.categoryCelestial,
+    const.categoryAsteroid,
+    const.categoryStation,
+    const.categoryShip,
+    const.categoryStructure,
+    const.categoryPlanetaryInteraction
+*/
+
+struct BmData {
+    // uint8 flag;
+    uint16 typeID;
+    uint32 bookmarkID;
+    uint32 ownerID;
+    uint32 itemID;
+    uint32 locationID;
+    uint32 folderID;
+    uint32 creatorID;
+    int64 created;
+    GPoint point;
+    std::string memo;
+    std::string note;
+};
+
 class BookmarkDB
 : public ServiceDB
 {
 public:
-    PyRep* GetBMData(uint32 folderID);
+    PyRep* GetBookmarksInFolder(uint32 folderID);
     PyRep* GetBookmarks(uint32 ownerID);
     PyRep* GetFolders(uint32 ownerID);
 
+    static PyTuple* GetBookmarkDescription(uint32 bookmarkID);
     static const char* GetBookmarkName(uint32 bookmarkID);
     bool GetBookmarkInformation(uint32 bookmarkID, uint32& itemID, uint32& typeID, uint32& locationID, double& x, double& y, double& z);
 
-    bool UpdateBookmarkInDatabase(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID=0);
-    bool DeleteBookmarkFromDatabase(uint32 ownerID, uint32 bookmarkID);
-    bool DeleteBookmarksFromDatabase(std::vector<int32>* bookmarkList);
+    bool UpdateBookmark(uint32 bookmarkID, uint32 ownerID, std::string memo, std::string note, uint32 folderID=0);
+    bool DeleteBookmark(uint32 ownerID, uint32 bookmarkID);
+    bool DeleteBookmarks(std::vector<int32>* bookmarkList);
 
-    bool UpdateFolderInDatabase(int32 folderID, std::string folderName);
-    bool DeleteFolderFromDatabase(int32 folderID);
+    bool UpdateFolder(int32 folderID, std::string folderName);
+    bool DeleteFolder(int32 folderID);
 
-    uint32 SaveNewFolderToDatabase(std::string folderName, uint32 ownerID);
-    uint32 SaveNewBookmarkToDatabase(uint32 ownerID, uint32 itemID, uint32 typeID, std::string memo, GPoint point, uint32 locationID,
-                                     std::string note, uint32 creatorID, uint32 folderID=0);
+    uint32 SaveNewFolder(std::string folderName, uint32 ownerID);
+    void SaveNewBookmark(BmData &data);
 
+    void ChangeOwner(uint32 bookmarkID, uint32 ownerID=1);
     void MoveBookmarkToFolder(int32 folderID, std::vector< int32 >* bookmarkList);
 
     void GetBookmarkByFolderID(int32 folderID, std::vector< int32 >& bmIDs);
+
+    void GetVoucherData(BmData &data);
 };
 
 #endif  // __EVEMU_SYSTEM_BOOKMARKDB_H_

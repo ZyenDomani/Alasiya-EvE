@@ -55,7 +55,6 @@ public:
     PyCallable_DECL_CALL(SetPassword);
     PyCallable_DECL_CALL(CreateBookmarkVouchers);
     PyCallable_DECL_CALL(RunRefiningProcess);
-    PyCallable_DECL_CALL(Voucher);
     PyCallable_DECL_CALL(ImportExportWithPlanet);
     PyCallable_DECL_CALL(TakeOutTrash);
     PyCallable_DECL_CALL(ListDroneBay);

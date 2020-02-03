@@ -316,13 +316,13 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
-	double x = 0.0, y = 0.0, z = 0.0;
+    double x = 0.0, y = 0.0, z = 0.0;
     uint32 itemID = 0, typeID = 0, locationID = 0;
 
-    BookmarkService* pBMSvc = (BookmarkService *)(call.client->services().LookupService( "bookmark" ));
+    BookmarkService* pBMSvc = (BookmarkService*)(call.client->services().LookupService( "bookmark" ));
 
     if (pBMSvc == nullptr) {
-        sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService *)(call.client->services().LookupService(\"bookmark\")) returned NULL pointer." );
+        sLog.Error( "BeyonceService::Handle_GotoBookmark()", "Attempt to access BookmarkService via (BookmarkService*)(call.client->services().LookupService(\"bookmark\")) returned NULL." );
         return PyStatic.NewNone();
     } else {
         pBMSvc->LookupBookmark(arg.arg, itemID, typeID, locationID, x, y, z);
@@ -337,7 +337,7 @@ PyResult BeyonceBound::Handle_CmdGotoBookmark(PyCallArgs &call) {
         } else {
             // Bookmark type is of a static system entity, so search for it and obtain its coordinates:
             SystemEntity* pSE = call.client->SystemMgr()->GetSE(itemID);
-            if (!pSE) {
+            if (pSE == nullptr) {
                 sLog.Error( "BeyonceService::Handle_GotoBookmark()", "%s: unable to find location %d", call.client->GetName(), itemID );
                 return PyStatic.NewNone();
             }

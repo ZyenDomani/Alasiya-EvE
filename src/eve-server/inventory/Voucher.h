@@ -28,6 +28,7 @@
 #define EVEMU_INVENTORY_VOUCHER_H_
 
 #include "PyService.h"
+#include "PyBoundObject.h"
 
 class VoucherService : public PyService {
 public:
@@ -38,10 +39,55 @@ protected:
     class Dispatcher;
     Dispatcher *const m_dispatch;
 
-    //VoucherDB m_db;
 
     PyCallable_DECL_CALL(GetObject);
 
 };
 
+
+class VoucherBound
+: public PyBoundObject
+{
+public:
+    VoucherBound(PyServiceMgr* mgr, InventoryItemRef itemRef);
+
+    virtual ~VoucherBound();
+
+    virtual void Release() {
+        //I hate this statement
+        delete this;
+    }
+
+    PyCallable_DECL_CALL(GetDescription);
+
+protected:
+    class Dispatcher;
+    Dispatcher *const m_dispatch;
+
+
+private:
+    InventoryItemRef m_itemRef;
+
+};
+
 #endif  // EVEMU_INVENTORY_VOUCHER_H_
+
+
+/*typeID        typeName        description
+49      Player Kill     Kill confirmation
+50      Company Shares  Shares of a corporation.
+51      Bookmark
+29247   Loyalty Points  Loyalty points are rewarded to capsuleers for successfully completing missions for a corporation, which can be redeemed for special items from that corporation.
+
+
+
+To see your current amount of loyalty points, open your journal and click on the Loyalty Points tab.
+
+
+
+To spend them, open the LP Store in any station owned by a corporation with which you have loyalty points.
+
+
+
+For more information, please refer to the EVElopedia article about <a href="evebrowser: http://wiki.eveonline.com/en/wiki/Loyalty_point">loyalty points</a>.
+*/

@@ -102,7 +102,7 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
 
         default: {
             sLog.Error( "DBColumnToPyRep", "invalid column type: %u", type );
-            return new PyNone();
+            return PyStatic.NewNone();
         }
 
     }
@@ -110,7 +110,6 @@ PyRep* DBColumnToPyRep( const DBResultRow& row, uint32 index )
 
 PyObject *DBResultToRowset(DBQueryResult &result)
 {
-    uint32 r;
     uint32 cc = result.ColumnCount();
 
     PyDict *args = new PyDict();
@@ -123,9 +122,8 @@ PyObject *DBResultToRowset(DBQueryResult &result)
     //list off the column names:
     PyList *header = new PyList( cc );
     args->SetItemString("header", header);
-    for(r = 0; r < cc; r++) {
+    for(uint32 r = 0; r < cc; ++r)
         header->SetItemString( r, result.ColumnName(r));
-    }
 
     //RowClass:
     args->SetItemString("RowClass", new PyToken("util.Row"));
@@ -135,14 +133,13 @@ PyObject *DBResultToRowset(DBQueryResult &result)
     args->SetItemString("lines", rowlist);
 
     //add a line entry for each result row:
+    uint32 r = 0;
     DBResultRow row;
     while(result.GetRow(row)) {
         PyList *linedata = new PyList( cc );
         rowlist->AddItem(linedata);
-
-        for(r = 0; r < cc; r++) {
+        for(r = 0; r < cc; ++r)
             linedata->SetItem( r, DBColumnToPyRep(row, r) );
-        }
     }
 
     return res;
@@ -153,8 +150,6 @@ PyTuple *DBResultToTupleSet(DBQueryResult &result) {
     if(cc == 0)
         return new PyTuple(0);
 
-    uint32 r;
-
     PyTuple *res = new PyTuple(2);
     PyList *cols = new PyList(cc);
     PyList *reslist = new PyList();
@@ -162,18 +157,17 @@ PyTuple *DBResultToTupleSet(DBQueryResult &result) {
     res->items[1] = reslist;
 
     //list off the column names:
-    for(r = 0; r < cc; r++) {
+    for(uint32 r = 0; r < cc; ++r)
         cols->SetItemString(r, result.ColumnName(r));
-    }
 
     //add a line entry for each result row:
+    uint32 r = 0;
     DBResultRow row;
     while(result.GetRow(row)) {
         PyList *linedata = new PyList(cc);
         reslist->items.push_back(linedata);
-        for(r = 0; r < cc; r++) {
+        for(r = 0; r < cc; ++r)
             linedata->SetItem(r, DBColumnToPyRep(row, r));
-        }
     }
 
     return res;
@@ -181,9 +175,9 @@ PyTuple *DBResultToTupleSet(DBQueryResult &result) {
 
 PyObject *DBResultToIndexRowset(DBQueryResult &result, const char *key) {
     uint32 cc = result.ColumnCount();
-    uint32 key_index;
+    uint32 key_index = 0;
 
-    for(key_index = 0; key_index < cc; key_index++)
+    for(key_index = 0; key_index < cc; ++key_index)
         if(strcmp(key, result.ColumnName(key_index)) == 0)
             break;
 
@@ -209,7 +203,7 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
     //list off the column names:
     PyList *header = new PyList(cc);
     args->SetItemString("header", header);
-    for(uint32 i = 0; i < cc; i++)
+    for(uint32 i = 0; i < cc; ++i)
         header->SetItemString(i, result.ColumnName(i));
 
     //RowClass:
@@ -222,12 +216,13 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
     args->SetItemString("items", items);
 
     //add a line entry for each result row:
+    uint32 i = 0;
     DBResultRow row;
     while(result.GetRow(row)) {
         PyRep *key = DBColumnToPyRep(row, key_index);
 
         PyList *line = new PyList(cc);
-        for(uint32 i = 0; i < cc; i++)
+        for(i = 0; i < cc; ++i)
             line->SetItem(i, DBColumnToPyRep(row, i));
 
         items->SetItem(key, line);
@@ -237,14 +232,12 @@ PyObject *DBResultToIndexRowset(DBQueryResult &result, uint32 key_index) {
 }
 
 PyObject *DBRowToKeyVal(DBResultRow &row) {
-
     PyDict *args = new PyDict();
     uint32 cc = row.ColumnCount();
-    for( uint32 r = 0; r < cc; r++ )
+    for( uint32 r = 0; r < cc; ++r )
         args->SetItemString( row.ColumnName(r), DBColumnToPyRep(row, r));
 
-    PyObject *res = new PyObject( "util.KeyVal", args );
-    return res;
+    return new PyObject( "util.KeyVal", args );
 }
 
 PyObject *DBRowToRow(DBResultRow &row, const char *type)
@@ -254,21 +247,20 @@ PyObject *DBRowToRow(DBResultRow &row, const char *type)
     //list off the column names:
     uint32 cc = row.ColumnCount();
     PyList *header = new PyList(cc);
-    for(uint32 r = 0; r < cc; r++) {
+    for(uint32 r = 0; r < cc; ++r)
         header->SetItemString(r, row.ColumnName(r));
-    }
+
     args->SetItemString("header", header);
 
     //lines:
     PyList *rowlist = new PyList(cc);
     //add a line entry for the row:
-    for(uint32 r = 0; r < cc; r++) {
+    for(uint32 r = 0; r < cc; ++r)
         rowlist->SetItem(r, DBColumnToPyRep(row, r));
-    }
+
     args->SetItemString("line", rowlist);
 
-    PyObject *res = new PyObject( type, args );
-    return res;
+    return new PyObject( type, args );
 }
 
 PyTuple *DBResultToRowList(DBQueryResult &result, const char *type) {
@@ -278,9 +270,9 @@ PyTuple *DBResultToRowList(DBQueryResult &result, const char *type) {
 
     PyList *cols = new PyList(cc);
     //list off the column names:
-    for(uint32 r = 0; r < cc; r++) {
+    for(uint32 r = 0; r < cc; ++r)
         cols->SetItemString(r, result.ColumnName(r));
-    }
+
     PyTuple *res = new PyTuple(2);
     res->SetItem( 0, cols );
 
@@ -299,7 +291,6 @@ PyTuple *DBResultToRowList(DBQueryResult &result, const char *type) {
 
 PyDict *DBResultToIntRowDict(DBQueryResult &result, uint32 key_index, const char *type) {
     PyDict *res = new PyDict();
-
     //add a line entry for each result row:
     DBResultRow row;
     while(result.GetRow(row)) {
@@ -316,7 +307,6 @@ PyDict *DBResultToIntRowDict(DBQueryResult &result, uint32 key_index, const char
 
 PyDict *DBResultToIntIntDict(DBQueryResult &result) {
     PyDict *res = new PyDict();
-
     //add a line entry for each result row:
     DBResultRow row;
     while(result.GetRow(row)) {
@@ -343,7 +333,7 @@ void DBResultToIntIntDict(DBQueryResult &result, std::map<int32, int32> &into) {
     while(result.GetRow(row)) {
         if(row.IsNull(0))
             continue;   //no working with NULL keys...
-        uint32 k = row.GetUInt(0);
+        int32 k = row.GetInt(0);
         int32 v;
         if(row.IsNull(1))
             v = 0;      //we can deal with assuming NULL == 0
@@ -360,11 +350,11 @@ void DBResultToUIntUIntDict(DBQueryResult &result, std::map<uint32, uint32> &int
         if(row.IsNull(0))
             continue;   //no working with NULL keys...
         uint32 k = row.GetUInt(0);
-        int32 v;
+        uint32 v;
         if(row.IsNull(1))
             v = 0;      //we can deal with assuming NULL == 0
         else
-            v = row.GetInt(1);
+            v = row.GetUInt(1);
         into[k] = v;
     }
 }
@@ -457,9 +447,9 @@ PyTuple *DBResultToPackedRowListTuple( DBQueryResult &result )
 PyDict *DBResultToPackedRowDict( DBQueryResult &result, const char *key )
 {
     uint32 cc = result.ColumnCount();
-    uint32 key_index;
+    uint32 key_index = 0;
 
-    for(key_index = 0; key_index < cc; key_index++)
+    for(key_index = 0; key_index < cc; ++key_index)
         if(strcmp(key, result.ColumnName(key_index)) == 0)
             break;
 
@@ -479,7 +469,7 @@ PyDict *DBResultToPackedRowDict( DBQueryResult &result, uint32 key_index )
     PyDict *res = new PyDict();
 
     DBResultRow row;
-    for( uint32 i = 0; result.GetRow( row ); i++ )
+    for( uint32 i = 0; result.GetRow( row ); ++i )
     {
         res->SetItem( DBColumnToPyRep(row, key_index), CreatePackedRow( row, header ) );
         PyIncRef( header );
