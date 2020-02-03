@@ -109,4 +109,4 @@ sql/tables_old/
 
 # misc shit
 sql/tables.tar.gz
-sql/testScripts/price*
+sql/testScripts/

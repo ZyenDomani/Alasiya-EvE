@@ -1930,7 +1930,7 @@ PyResult CorpRegistryBound::Handle_GetOffices(PyCallArgs &call) {
     }
 
     // this sends header info and # offices rented by corp
-    // Data will be fetched from the subsquent call to SparseRowset (using self.sr.offices in client)
+    // Data will be fetched from the subsequent call to SparseRowset (using self.sr.offices in client)
     CorpOfficeSparseRowset rsp;
     rsp.officeCount = StationDB::GetOfficeCount(m_corpID);
 

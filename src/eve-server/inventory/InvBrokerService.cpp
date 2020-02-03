@@ -175,7 +175,7 @@ PyResult InvBrokerBound::Handle_GetContainerContents(PyCallArgs &call)
             throw PyException(MakeUserError("CantDoThatWithSomeoneElsesStuff"));
     }
 
-	return item->GetMyInventory()->List( flagAnywhere );
+    return item->GetMyInventory()->List( flagAnywhere );
 }
 
 //this is a view into the entire inventory item.  this CAN throw.  find and implement client error msgs here for corp usage
