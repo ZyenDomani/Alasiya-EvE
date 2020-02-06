@@ -4,12 +4,12 @@
 <td style="text-align: center;"><h2>Estimated Progress of Listed Systems</h2></td></tr></table>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:65%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
+<table style="background: #2222EE; width:58%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
 <table style="background: transparent; width:100%"><tr><td style="text-align: center;">
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:65%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>63.5</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:58%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>58.9%</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
@@ -335,11 +335,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <h2> <span class="mw-headline" id="Standings"> Standings </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:32%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>21.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:32%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>31.6</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td><font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -367,9 +367,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 15%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Set Player Standings</td><td class="broken">10%
+<tr><td> - Set Player Standings</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>6Mar14</td></tr>
 <tr><td> - Set Corp Standings</td><td class="broken">10%
@@ -446,9 +446,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>13Nov18</td></tr>
-<tr><td> - Trade Services</td><td class="working">90%
+<tr><td> - Trade Services</td><td class="working">70%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Mostly Complete</font><BR><font color=red>corp trade not coded.</font><BR>27Jun17</td></tr>
 <tr><td> - Repair Services</td><td class="working">90%
@@ -529,14 +529,14 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="green">COMPLETE</font><BR>1Feb14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Agents_Missions"> NPC Agents and Missions </span></h2>
+<h2> <span class="mw-headline" id="Agents_Missions"> Agents </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:67%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:67%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>67.2</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>79.3</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -558,49 +558,123 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=cyan>Only Courier missions at this time.</font><BR>19Nov18</td></tr>
+<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
 <tr><td> - Can View Mission Offer</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=cyan>Only Courier missions at this time.</font><BR>19Nov18</td></tr>
+<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
 <tr><td> - Can Accept Mission Offer</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=cyan>Only Courier missions at this time.</font><BR>19Nov18</td></tr>
+<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
 <tr><td> - Can Complete Mission Offer</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=cyan>Only Courier missions at this time.</font><BR>19Nov18</td></tr>
-<tr><td> - Missions Give Rewards (isk/standings)</td><td class="working">100%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color="green">COMPLETE</font><BR><font color=cyan>Only Courier missions at this time.</font><BR>19Nov18</td></tr>
-<tr><td> - Missions Give LP</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
-<tr><td> - Mission and Deadspace/Encounter creation<BR>(See 'Dungeon Manager' Data Block below for details)</td><td class="broken">10%
-<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
-<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr>
+<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
 <tr><td> - Can Search Agents</td><td class="working">25%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>6Mar14</td></tr>
+<td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
 <tr><td> - Can Search for character by agent</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font><BR>6Mar14</td></tr></table>
+<td><font color=magenta>Skeleton Code Only</font><BR>19Nov18</td></tr>
+</table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> Large Scale Chat System (LSC)  </span></h2>
+<h2> <span class="mw-headline" id="Agents_Missions"> Missions </span></h2>
+<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
+<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: #2222EE; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: transparent; width:15%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>13.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
+<tr><td style="width: 70&amp;;">Service/Action</td>
+<td style="width: 4%;">Status</td>
+<td style="width: 26%;">Comments</td></tr>
+<tr><td> - Missions Give Rewards (isk/standings)</td><td class="working">100%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color="green">COMPLETE</font><BR>19Nov18</td></tr>
+<tr><td> - Missions Give LP</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>19Nov18</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Basic Mission Types</h3></font></td></tr>
+<tr><td> - <font color=lime>Courier Missions</font><BR> Simple delivery where you are requested to move items from one location to another.  No standing loss from opposing faction.</td><td class="working">60%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Mining Missions</font><BR> 2 Types.  Mine specific ore at specific location, or supply agent with mined ore or reprocessed minerals.</td><td class="broken">20%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=yellow>Preliminary Implementation</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Security (Kill) Missions</font><BR> 2 Types.  Destroy ships at given location in space.  Destroy ships in deadspace pockets using acceleration gates.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Trade Missions</font><BR> Provide Agent with requested items at a specific station.  Can be either crafted or bought.  No standing loss from opposing faction.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Storyline Missions</font><BR> Special Missions to gain faction standings with agent giving mission.  Given after 10-15 basic mission completions. Repeatable.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Special Mission Types</h3></font></td></tr>
+<tr><td> - <font color=lime>Tutorial Missions</font><BR> Missions for beginning pilots to learn game basics.  On Hold...May not be implemented on Alasiya.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Research Missions</font><BR> Special Missions given from Research Agents when doing research with that agent.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Data Missions</font><BR> Turn in pirate tags for standings.  Higher Agents may give basic missions for higher rewards.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Cosmos Missions</font><BR> Small Mission Chains, given from CONCORD agents.  Can only be completed once.  Expiration, Failure or Denial forever blocks giving agent.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Anomic (Burner) Missions</font><BR> Given by L4 Security Agents - Can be declined without penalty.  Ship Restrictions.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Arc Missions</font><BR> Large Mission Chains broken into chapters.  7 total Epic Arcs.  Can be repeated every 3 months.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Nov18</td></tr>
+<tr><td> - <font color=lime>Unsorted Missions</font><BR> Custom missions separate from other categories.</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
+<td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>19Nov18</td></tr></table>
+<p><br style="clear:both;" /></p>
+<h2> <span class="mw-headline" id="Chats_-_Local_Corp_Custom_Private"> Large Scale Chat System (LSC) (Rewrite on hold) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -650,24 +724,24 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Mostly Working</font><BR>24Nov17</td></tr>
-<tr><td> - Initiate Private Conversation Chat</td><td class="broken">20%
+<tr><td> - Initiate Private Conversation Chat</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Create Private Chat Channels</td><td class="broken">20%
+<tr><td> - Create Private Chat Channels</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Joining Created Private Chat Channels</td><td class="broken">20%
+<tr><td> - Joining Created Private Chat Channels</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Chat in Private Chat Channels</td><td class="broken">20%
+<tr><td> - Chat in Private Chat Channels</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
 <tr><td> - Load Subscribed Chat Channels Upon Login</td><td class="working">100%
@@ -675,9 +749,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Configure Private Chat Channels</td><td class="broken">20%
+<tr><td> - Configure Private Chat Channels</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
 <tr><td> - Leave Chat Channels</td><td class="working">100%
@@ -685,9 +759,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="green">COMPLETE</font><BR>27Jun17</td></tr>
-<tr><td> - Unsubscribe from Private Chat Channel</td><td class="broken">20%
+<tr><td> - Unsubscribe from Private Chat Channel</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
 <tr><td> - Character and Corporation Lookup (via Search)</td><td class="working">100%
@@ -716,89 +790,89 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Players</h3></font></td></tr>
 <tr><td> - Can Send Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Receive Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can View Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Reply-to Eve-mails</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 81%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=lime>Mostly Working</font><BR><font color=olive>Some Bugs Left</font><BR>7Sep14</td></tr>
+<td><font color=lime>Mostly Working</font><BR><font color=olive>Still Buggy</font><BR>7Sep14</td></tr>
 <tr><td> - Can Send Eve-mails to Groups (like Corp)</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Create new Private Mailing Lists</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Newly Created Private Mailing Lists Saved to DB/Restored from DB</td><td class="broken">0%
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
+<tr><td> - Private Mailing Lists Saved to DB/Restored from DB</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Send/Receive messages in new Private Mailing Lists</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporation Mail</h3></font></td></tr>
 <tr><td> - Can Send Eve-mails</td><td class="working">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Receive Eve-mails</td><td class="working">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can View Eve-mails</td><td class="working">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Reply-to Eve-mails</td><td class="working">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Send Eve-mails to Groups (like Corp)</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Create new Private Mailing Lists</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
-<tr><td> - Newly Created Private Mailing Lists Saved to DB/Restored from DB</td><td class="broken">0%
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
+<tr><td> - Private Mailing Lists Saved to DB/Restored from DB</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Can Send/Receive messages in new Private Mailing Lists</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>2Feb20</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Item_Properties_Window"> Item Properties Window </span></h2>
@@ -828,7 +902,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=pink>Final Testing</font><BR>17Nov17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Market_Details"> Market Details (Rewrite in progress)</span></h2>
+<h2> <span class="mw-headline" id="Market_Details"> Market Details (Rewrite on hold)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:48%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1075,7 +1149,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=pink>Final Testing</font><BR>30May19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Contracts_Window"> Contracts </span></h2>
+<h2> <span class="mw-headline" id="Contracts_Window"> Contracts (Needs Complete Rewrite) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:16.6%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1547,43 +1621,43 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Retrieve Saved Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Delete Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Update Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Corporations</h3></font></td></tr>
 <tr><td> - Save Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Retrieve Saved Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Delete Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 <tr><td> - Update Fittings</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>28May19</td></tr>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="Ship_Navigation_in_Space"> Ship Navigation (Destiny) </span></h2>
@@ -2050,7 +2124,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=yellow>Preliminary Implementation</font><BR>27July15</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (Rewrite in progress)</span></h2>
+<h2> <span class="mw-headline" id="Science_and_Industry"> Science &amp; Industry (Rewrite on hold)</span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:38%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2086,11 +2160,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>30Mar18</td></tr>
-<tr><td> - Gas Mining</td><td class="working">40%
+<tr><td> - Gas Mining</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 40%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td>Mostly Non-Working - very buggy.<BR>6Mar15</td></tr>
+<td><font color="brown">Mostly Non-Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
 <tr><td> - Refining and Reprocessing</td><td class="working">100%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 100%; background:#00DB00"></td>
@@ -2510,9 +2584,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 60%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>20Dec17</td></tr>
-<tr><td> - Viewing Corp History</td><td class="broken">20%
+<tr><td> - Viewing Corp History</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 20%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Viewing Journal</td><td class="working">95%
@@ -2525,9 +2599,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>20Dec17</td></tr>
-<tr><td> - Viewing Bills</td><td class="broken">10%
+<tr><td> - Viewing Bills</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Viewing Assets</td><td class="working">95%
@@ -2545,9 +2619,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=pink>Final Testing</font><BR>20Dec17</td></tr>
-<tr><td> - Declaring War</td><td class="broken">10%
+<tr><td> - Declaring War</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>10Dec17</td></tr>
 <tr><td> - Moving Items In and Out of corp hangars</td><td class="working">95%
@@ -3006,11 +3080,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Complete</font> - <font color=brown>PlayTesting</font><BR>12Feb17</td></tr>
-<tr><td> - Rats find/harass players in space</td><td class="broken">25%
+<tr><td> - Rats find/harass players in space</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=yellow>Preliminary Implementation</font><BR>12Feb17</td></tr>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td> - Rat Wreck Creation</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
@@ -3026,11 +3100,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <h2> <span class="mw-headline" id="Scan_Manager"> Scan Manager </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>67.5</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>80.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -3053,9 +3127,9 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="pink">Final Testing</font><BR>11Dec18</td></tr>
-<tr><td> - Probe Management</td><td class="working">25%
+<tr><td> - Probe Management</td><td class="working">75%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 25%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color="lime">Mostly Complete</font><BR><font color=orange>Testing</font><BR>11Dec18</td></tr>
 </table>
