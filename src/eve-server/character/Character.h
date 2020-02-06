@@ -559,3 +559,13 @@ private:
 
 #endif /* !__CHARACTER__H__INCL__ */
 
+/*{'FullPath': u'UI/Messages', 'messageID': 259712, 'label': u'CharTerminationSecM02Body'}(u'They would occasionally scare the odd passer by.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259713, 'label': u'CharTerminationSecM03Body'}(u'Regarded as almost being a dangerous character.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259714, 'label': u'CharTerminationSecM04Body'}(u'Regarded as being a dangerous character.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259715, 'label': u'CharTerminationSecM05Body'}(u'Regarded as being quite a dangerous character.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259716, 'label': u'CharTerminationSecM06Body'}(u'An effective dispatcher of foes, and those that got in the way.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259717, 'label': u'CharTerminationSecM07Body'}(u'An fairly effective dispatcher of foes, and those that got in the way.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259718, 'label': u'CharTerminationSecM08Body'}(u'A highly effective dispatcher of foes, and those that got in the way.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259719, 'label': u'CharTerminationSecM09Body'}(u'An accomplished expeditor of their adversaries, and those that got in the way.', None, None)
+ * {'FullPath': u'UI/Messages', 'messageID': 259720, 'label': u'CharTerminationSecP01Body'}(u'Liked by some, and trusted by close friends occasionally.', None, None)
+ */

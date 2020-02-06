@@ -471,7 +471,8 @@ void StructureSE::Drop(SystemBubble* pBubble) {
  * {'messageKey': 'CantOnlineTowerLacksPowerResources', 'dataID': 17885226, 'suppressable': False, 'bodyID': 260157, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 404}
  * {'messageKey': 'CantOnlineTowerLacksResources', 'dataID': 17885363, 'suppressable': False, 'bodyID': 260207, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 405}
  * {'messageKey': 'CantOnlineWithinGlobalDisruptor', 'dataID': 17876951, 'suppressable': False, 'bodyID': 257068, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3180}
- *
+ *{'FullPath': u'UI/Messages', 'messageID': 260213, 'label': u'CannotRemoveFromLowShieldTowerBody'}(u'You cannot remove {[item]item.name} from the {[item]type.name} while it is reinforced or has a shield level lower than {[numeric]level}%.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}, u'{[numeric]level}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'level'}})
+ * 
  * {'FullPath': u'UI/Messages', 'messageID': 259215, 'label': u'OnlineRequiredAnchorBody'}(u'The {item} can only be brought online when it is firmly anchored. It cannot be brought online while unanchored, unanchoring or while anchoring.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
  *
  */

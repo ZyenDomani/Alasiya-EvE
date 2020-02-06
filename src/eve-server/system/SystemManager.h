@@ -117,7 +117,7 @@ public:
     void AddNPC(NPC* who);
     void RemoveNPC(NPC* who);
     void AddEntity(SystemEntity* who);
-    void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble
+    void RemoveEntity(SystemEntity* who);   // this also removes SE* from bubble and sig from AnomalyMgr (if applicable)
     void AddClient(Client* pClient, bool count=false, bool jump=false);
     void RemoveClient(Client* pClient, bool count=false, bool jump=false);
     void SetDockCount(Client* pClient, bool docked=false);

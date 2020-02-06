@@ -60,3 +60,6 @@ protected:
 };
 
 #endif
+
+/*{'FullPath': u'UI/Messages', 'messageID': 263643, 'label': u'CannotModifyBookmarkNotCreatorBody'}(u'You cannot modify the location as you did not create it and are not a communication officer.', None, None)
+ */
