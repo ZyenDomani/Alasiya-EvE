@@ -335,7 +335,7 @@ public:
     void DamageRandModule(float chance);
     void ResetShipSystemMgr(SystemManager* pSystem);    // this is to reset system manager for jumps, etc.
     void SaveShip()                                     { m_shipRef->SaveShip(); }
-    void UpdateDrones(std::map<uint32, uint8> &attribs);    // used to update drone settings
+    void UpdateDrones(std::map<int16, int8> &attribs);    // used to update drone settings
 
     //cancel all active modules
     void AbortCycle()                                   { m_shipRef->AbortCycle(); }
@@ -347,6 +347,9 @@ public:
     ShipItemRef GetShipItemRef()                        { return m_shipRef; }
 
     double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
+
+    bool LaunchDrone(InventoryItemRef drone);
+    void ScoopDrone(SystemEntity* pDroneSE);
 
 protected:
     ShipItemRef m_shipRef;
@@ -371,6 +374,9 @@ private:
 
     /*  for POS field */
     std::string m_towerPass;
+
+    /* launched drones */
+    std::map<uint32, InventoryItem*> m_drones;
 
 };
 

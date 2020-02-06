@@ -308,7 +308,7 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
             m_shipMaxAccelTime = (-std::log(0.0001) * m_shipAgility);
         }
 
-    // this needs to distuinguish between fraction change and speedboost disable
+    // this needs to distinguish between fraction change and speedboost disable
     if ((m_userSpeedFraction) and ((!fraction) or (m_prevSpeed) or (fraction != m_userSpeedFraction)))
         m_prevSpeedFraction = m_userSpeedFraction;
     else
@@ -334,7 +334,8 @@ void DestinyManager::SetSpeedFraction(float fraction, bool startMovement) {
             du.fraction = fraction;
         updates.push_back(du.Encode());
     }
-    if ((mySE->IsNPCSE() and !m_hasSentShipUpdates) or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
+    if (((mySE->IsNPCSE() or mySE->IsDroneSE()) and !m_hasSentShipUpdates)
+    or mySE->IsMissileSE() or mySE->IsContainerSE() or mySE->IsWreckSE()) {
         SetBallSpeed ms;   //NPCs and Missiles only.
             ms.entityID = mySE->GetID();
             ms.speed = m_maxSpeed;
@@ -1921,7 +1922,7 @@ void DestinyManager::WarpTo(const GPoint& where, int32 distance/*0*/, bool autoP
             mySE->GetName(), mySE->GetID(), m_targBubble->GetID(), m_stopDistance, m_targetDistance);
 
     // npcs have no warp restrictions (yet)
-    if (mySE->IsNPCSE()) {
+    if (mySE->IsNPCSE() or mySE->IsDroneSE()) {
         m_ballMode = Destiny::Ball::Mode::WARP;
 
         std::vector<PyTuple*> updates;
@@ -2310,7 +2311,7 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
     /*
     if (mySE->IsMissileSE() or mySE->IsNPCSE())
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxVelocity).get_float();
-    else if (mySE->IsShipSE())
+    else if (mySE->IsShipSE() or mySE->IsDroneSE())
         maxSpeed = mySE->GetSelf()->GetAttribute(AttrMaxDirectionalVelocity).get_float();   // this is depreciated.  used as an absolute max speed, accounting for ab/mwd
     else
         ; // make error here?
@@ -2329,6 +2330,7 @@ void DestinyManager::SetMaxVelocity(float maxVelocity)
 
 void DestinyManager::SpeedBoost(bool deactivate/*false*/)
 {
+    /** @todo need to get and factor thrust in somehow */
     // prop mod state changed.  reset ship movement variables and update current movement, if applicable
     m_mass = mySE->GetSelf()->GetAttribute(AttrMass).get_float();
     m_massMKg = m_mass / 1000000; //changes mass from Kg to MillionKg (10^-6)
@@ -2456,7 +2458,7 @@ Battleships 0.155
     if (sRef->HasAttribute(AttrWarpCapacitorNeed))
         m_warpCapacitorNeed = sRef->GetAttribute(AttrWarpCapacitorNeed).get_float();
 
-    if (mySE->IsNPCSE())
+    if (mySE->IsNPCSE() or mySE->IsDroneSE())
         m_maxShipSpeed = sRef->GetAttribute(AttrEntityCruiseSpeed).get_float();
 
     /*  per https://forums.eveonline.com/default.aspx?g=posts&m=3912843   post#103

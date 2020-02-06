@@ -7,12 +7,14 @@
 #include "account/AccountService.h"
 #include "character/Character.h"
 #include "effects/EffectsProcessor.h"
+#include "npc/Drone.h"
 #include "ship/Ship.h"
 #include "ship/modules/GenericModule.h"
 #include "station/Station.h"
 #include "system/DestinyManager.h"
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
+#include "system/SystemBubble.h"
 
 /*
  * ShipItem
@@ -2790,16 +2792,75 @@ void Ship::ApplyBoost(BoostData& bData)
 
     m_boosted = true;
 }
+//{'FullPath': u'UI/Messages', 'messageID': 257802, 'label': u'DronesDroppedBecauseOfBandwidthModificationBody'}(u'The drone control bandwidth of your ship has been modified causing you to lose the ability to control some drones.', None, None)
 
-void Ship::UpdateDrones(std::map<uint32, uint8> &attribs) {
-    // need to get list of current drones in ship as items to update attributes here
-    std::vector<InventoryItemRef> items;
-    m_shipRef->GetMyInventory()->GetItemsByFlag(flagDroneBay, items);
+bool Ship::LaunchDrone(InventoryItemRef drone) {
+    if (GetPilot()->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() <= m_drones.size()) {
+        std::map<std::string, PyRep *> arg;
+        arg["typeID"] = new PyInt(drone->typeID());
+        throw PyException(MakeUserError("NoDroneManagementAbilitiesLeft", arg));
+        //{'FullPath': u'UI/Messages', 'messageID': 259140, 'label': u'NoDroneManagementAbilitiesLeftBody'}(u'You cannot launch {[item]item.name} because you are already controlling {[numeric]limit} drones, as much as you have skill to.', None, {u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+    }
 
-    for (auto cur : items) {
-        cur->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
-        cur->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
-        cur->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
+    // add drone to launched drone map (whether onlined or not)
+    m_drones.emplace(drone->itemID(), drone.get());
+
+    Character* pChar = GetPilot()->GetChar().get();
+    sLog.Magenta("Ship::LaunchDrone()","%s: Launching drone %u",  pChar->name(), drone->itemID());
+
+    drone->Move(GetLocationID(), flagAutoFit, true);
+    drone->ChangeSingleton(true);
+
+    GPoint position(GetPosition());
+    position.MakeRandomPointOnSphere(500.0);
+    drone->SetPosition(position);
+
+    //now we create an entity to represent it.
+    FactionData data = FactionData();
+    data.allianceID = pChar->allianceID();
+    data.corporationID = pChar->corporationID();
+    data.factionID = pChar->warFactionID();
+    data.ownerID = pChar->itemID();
+
+    Drone* pDrone = new Drone(drone, m_services, m_system, data);
+
+    // ship will launch all drones pilot has skill for
+    pDrone->Launch(this);
+    /*
+    AttrDroneBandwidth = 1271,     <-- ship attribute  (total)
+    AttrDroneBandwidthUsed = 1272, <-- drone attribute
+    AttrDroneBandwidthLoad = 1273, <-- ship attribute  (current used)
+    */
+    //  if ship doesnt have bandwidth for drone, it will not online (inert)
+    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
+    load += drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
+    if (load < m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32()) {
+        pDrone->Online();
+        m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
+    } else {
+        std::map<std::string, PyRep *> arg;
+        arg["droneName"] = new PyString(drone->name());
+        arg["droneBandwidthUsed"] = new PyInt(drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32());
+        arg["bandwidthLeft"] = new PyInt(m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32() - m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32());
+        throw PyException(MakeUserError("MaxBandwidthExceeded2", arg));
+    }
+    //{'FullPath': u'UI/Messages', 'messageID': 258031, 'label': u'MaxBandwidthExceededBody'}(u"You don't have enough bandwidth to launch {droneName}. You need {bandwidthNeeded} Mbit/s but {droneName} requires {droneBandwidthUsed} Mbit/s.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}, u'{bandwidthNeeded}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthNeeded'}})
+    //{'FullPath': u'UI/Messages', 'messageID': 258041, 'label': u'MaxBandwidthExceeded2Body'}(u"You don't have enough bandwidth to launch {droneName}. You need {droneBandwidthUsed} Mbit/s but only have {bandwidthLeft} Mbit/s available.", None, {u'{droneName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneName'}, u'{bandwidthLeft}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'bandwidthLeft'}, u'{droneBandwidthUsed}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'droneBandwidthUsed'}})
+
+    return true;
+}
+
+void Ship::ScoopDrone(SystemEntity* pDroneSE) {
+    m_drones.erase(pDroneSE->GetID());
+    pDroneSE->GetDroneSE()->StateChange();
+}
+
+void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
+    // update drones in space with new attrib settings
+    for (auto cur : m_drones) {
+        cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
+        cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
+        cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
         //AttrDroneIsChaotic
     }
 }

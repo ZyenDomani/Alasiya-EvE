@@ -69,6 +69,10 @@ public:
     Client* GetOwner()                                  { return m_pClient; }
     DroneAIMgr* GetAI()                                 { return m_AI; }
 
+    void Launch(Ship* pShipSE);         //add drone entity to system
+    void Online();                      //set speed and begin orbit around launching ship
+    void StateChange(bool online=false);
+
     void SaveDrone();
     void RemoveDrone();
     void SetResists();
@@ -91,15 +95,22 @@ public:
     uint8 GetState()                                    { return m_AI->GetState(); }
     uint32 GetControllerID()                            { return m_controllerID; }
     uint32 GetControllerOwnerID()                       { return m_controllerOwnerID; }
-    uint32 GetTargetID()                                { return m_orbitingID/*m_targMgr->GetFirstTarget()->GetID()*/; }
+    uint32 GetTargetID()                                { return m_targetID/*m_targMgr->GetFirstTarget()->GetID()*/; }
 
+    /* misc methods */
+    void Enable()                                       { m_online = true; }
+    void Disable()                                      { m_online = false; }
+    bool IsEnabled()                                    { return m_online; }
 
 protected:
-    Client* m_pClient;
-    DroneAIMgr* m_AI;
+    Client* m_pClient;          //we do not own this
+    DroneAIMgr* m_AI;           //we do own this
+    Ship* m_pShipSE;              //we do not own this
+    SystemManager* m_system;    //we do not own this
 
 private:
-    uint32 m_orbitingID;
+    bool m_online;              // is drone within ship's control range?
+    uint32 m_targetID;
     uint32 m_controllerID;
     uint32 m_controllerOwnerID;
 

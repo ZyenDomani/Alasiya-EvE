@@ -1481,60 +1481,6 @@ void Client::MoveItem(uint32 itemID, uint32 location, EVEItemFlags flag)
     sItemFactory.UnsetUsingClient();
 }
 
-bool Client::LaunchDrone(InventoryItemRef drone) {
-    if (!sConfig.testing.EnableDrones) {
-        SendNotifyMsg("Drones are disabled.");
-        return false;
-    }
-    if (!IsSolarSystem(m_locationID)) {
-        sLog.Warning("Client::LaunchDrone()","%s: Trying to launch drone when not in space!",  m_char->itemName().c_str());
-        return false;
-    }
-
-    //{'FullPath': u'UI/Messages', 'messageID': 259203, 'label': u'NoDroneManagementAbilitiesBody'}(u'You cannot launch {[item]typeID.nameWithArticle} because you do not have the ability to control any drones.', None, {u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
-
-    sLog.Magenta("Client::LaunchDrone()","%s: Launching drone %u",  m_char->itemName().c_str(), drone->itemID());
-
-    drone->Move(m_locationID, flagAutoFit, true);
-    drone->ChangeSingleton(true);
-
-    GPoint position(pShipSE->GetPosition());
-    position.MakeRandomPointOnSphere(500.0);
-    drone->SetPosition(position);
-
-    //now we create an entity to represent it.
-    FactionData data = FactionData();
-        data.allianceID = m_char->allianceID();
-        data.corporationID = m_char->corporationID();
-        data.factionID = m_char->warFactionID();
-        data.ownerID = m_char->itemID();
-
-    // add drone entity to system, set speed, begin orbit around launching ship
-    Drone* pDrone = new Drone(drone, m_services, m_system, data);
-    m_system->AddEntity(pDrone);
-    OnDroneStateChange du;
-        du.droneID = drone->itemID();
-        du.ownerID = m_char->itemID();
-        du.droneTypeID = drone->typeID();
-        du.controllerID = m_shipId;
-        du.controllerOwnerID = m_char->itemID();
-        du.activityState = DroneAI::State::Idle;  //  pDrone->GetAI()->GetState();
-        du.targetID = 0;
-    PyTuple* up = du.Encode();
-
-    // bubblecast is faster than destiny::update
-    pShipSE->SysBubble()->BubblecastDestinyUpdate(&up, "destiny");
-    //pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
-
-    //pDrone->DestinyMgr()->SetMaxVelocity(500);      //FIXME
-    //pDrone->DestinyMgr()->SetSpeedFraction(0.5f);   //FIXME
-    //pDrone->DestinyMgr()->Orbit(pShipSE, 800);      //FIXME
-
-    m_system->GetAnomMgr()->AddAnomaly(drone);
-
-    return true;
-}
-
 uint32 Client::GetLoyaltyPoints(uint32 corpID) {
     std::map<uint32, uint32>::iterator itr = m_lpMap.find(corpID);
     if (itr != m_lpMap.end())

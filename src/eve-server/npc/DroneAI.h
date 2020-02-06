@@ -48,7 +48,7 @@ namespace DroneAI {
             Unknown           = 8,  // as stated
             Guarding          = 11,
             Assisting         = 12,
-            Incapacicated     = 13  //
+            Incapacitated     = 13  //
         };
     }
 }
@@ -73,7 +73,7 @@ public:
 
     void DisableRepTimers();
 
-    int8 GetState()                                     { return m_state; }
+    int8 GetState();
 
 protected:
     void Attack(SystemEntity* pTarget);
@@ -113,7 +113,7 @@ private:
     Timer m_mainAttackTimer;
     Timer m_shieldBoosterTimer;
     Timer m_armorRepairTimer;
-	Timer m_beginFindTarget;
+    Timer m_beginFindTarget;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;
 };

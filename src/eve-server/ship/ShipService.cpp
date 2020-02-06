@@ -28,6 +28,7 @@
 #include "PyServiceCD.h"
 
 #include "EVEServerConfig.h"
+#include "npc/Drone.h"
 #include "planet/CustomsOffice.h"
 #include "planet/Moon.h"
 #include "pos/Structure.h"
@@ -410,18 +411,27 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
 
         switch (iRef->categoryID()) {
             case EVEDB::invCategories::Drone: {
-                if (iRef->flag() != flagDroneBay) {
-                    // make error here
-                    break;
+                if (!sConfig.testing.EnableDrones) {
+                    throw PyException(MakeCustomError("Drones are disabled."));
                 }
-                // verify player can launch another drone...counter for drones in space not written
-                //  AttrMaxActiveDrones
-                //  im sure there's error msgs about this, but havent found them yet (havent looked)
+                if (pClient->GetChar()->GetAttribute(AttrMaxActiveDrones).get_uint32() < 1) {
+                    std::map<std::string, PyRep *> arg;
+                    arg["typeID"] = new PyInt(iRef->typeID());
+                    throw PyException(MakeUserError("NoDroneManagementAbilities", arg));
+                    //{'FullPath': u'UI/Messages', 'messageID': 259203, 'label': u'NoDroneManagementAbilitiesBody'}(u'You cannot launch {[item]typeID.nameWithArticle} because you do not have the ability to control any drones.', None, {u'{[item]typeID.nameWithArticle}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'nameWithArticle', 'args': 0, 'kwargs': {}, 'variableName': 'typeID'}})
+                }
+                if (iRef->flag() != flagDroneBay) {
+                    std::map<std::string, PyRep *> arg;
+                    arg["item"] = new PyInt(iRef->typeID());
+                    throw PyException(MakeUserError("DropItemNotInDroneBay", arg));
+                    // {'FullPath': u'UI/Messages', 'messageID': 259680, 'label': u'DropItemNotInDroneBayBody'}(u'{[item]item.name} cannot be dropped because it is not in your drone bay.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                }
+
+                /** @todo check char skills to launch this drone */
 
                 // This item is a drone, so launch it into space:
                 if (qty > 1) {
-                    /** @todo  need to check stack and acquire all new itemIDs and put into list */
-                    for (uint8 i = qty++; i < qty; ++i) {
+                    for (uint8 i = 0; i < qty; ++i) {
                         InventoryItemRef newItem = iRef->Split(1);
                         if (newItem.get() == nullptr) {
                             _log(INV__ERROR, "ShipBound::Handle_Drop() - Error splitting item %u. Skipping.", iRef->itemID());
@@ -430,14 +440,14 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                         if (newItem->quantity() > 1)
                             _log(INV__ERROR, "ShipBound::Handle_Drop() - Split item %u qty > 1 (%u).  Continuing.", newItem->itemID(), newItem->quantity());
 
-                        if (pClient->LaunchDrone(newItem)) {
+                        if (pClient->GetShipSE()->LaunchDrone(newItem)) {
                             dropped = true;
                             shipDrop = true;
                             list->AddItem(new PyInt(newItem->itemID()));
                         }
                     }
                 } else {
-                    if (pClient->LaunchDrone(iRef)) {
+                    if (pClient->GetShipSE()->LaunchDrone(iRef)) {
                         dropped = true;
                         shipDrop = true;
                         list->AddItem(new PyInt(iRef->itemID()));
@@ -449,6 +459,9 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                     pClient->SendErrorMsg("This Moon already has a Control Tower in orbit.  Aborting Drop.");
                     return nullptr;
                 }
+
+                //{'FullPath': u'UI/Messages', 'messageID': 259679, 'label': u'DropNeedsPlayerCorpBody'}(u'In order to launch {[item]item.name} you need to be a member of a independent corporation.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
+                //{'FullPath': u'UI/Messages', 'messageID': 256411, 'label': u'CantInHighSecSpaceBody'}(u'You cannot do that as CONCORD currently restricts the launching, anchoring and control of that type of structure within CONCORD-protected space to authorized agents of the empires.', None, None)
 
                 DBSystemDynamicEntity entity = DBSystemDynamicEntity();
                 entity.ownerID = ownerID;
@@ -490,7 +503,7 @@ PyResult ShipBound::Handle_Drop(PyCallArgs &call)
                 // may need separate test for infrastructure hubs
             } break;
             default: {
-                _log(INV__ERROR, "ShipBound::Handle_Drop() - Item %s (cat %u) is neither drone nor structure.", iRef->itemName().c_str(), iRef->categoryID());
+                _log(INV__ERROR, "ShipBound::Handle_Drop() - Item %s (cat %u) is neither drone nor structure.", iRef->name(), iRef->categoryID());
             }
         }
 
@@ -525,66 +538,72 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         return nullptr;
     }
 
-    Client* pClient = call.client;
-    SystemManager* pSystem = call.client->SystemMgr();
-    if (pSystem == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+    Client* pClient(call.client);
+    SystemManager* pSysMgr(pClient->SystemMgr());
+    if ( pSysMgr == nullptr) {
+        codelog(CLIENT__ERROR, "%s: Client has no system manager.", pClient->GetName());
         return PyStatic.NewNone();
     }
-    SystemEntity* pSE = pSystem->GetSE(arg.arg);
+    SystemEntity* pSE = pSysMgr->GetSE(arg.arg);
     if (pSE == nullptr) {
         _log(SERVICE__ERROR, "%s: Unable to find object %u to scoop.", pClient->GetName(), arg.arg);
-        return nullptr;
+        return PyStatic.NewNone();
+        //{'FullPath': u'UI/Messages', 'messageID': 258825, 'label': u'ScoopObjectGoneBody'}(u'{target} is no longer there.', None, {u'{target}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'target'}})
     }
+
+    // check to see if this object is anchored and if so, refuse to scoop it
+    if (pSE->IsContainerSE())
+        if (pSE->GetContSE()->IsAnchored())
+            throw PyException(MakeCustomError("%s is anchored.  Cannot scoop.", pSE->GetName()));
+
+    /** @todo check ownership of this object, ie does this character/corporation own this object? */
+    // check drones for other pilots control
+    if (pSE->IsDroneSE())
+        if (pSE->GetDroneSE()->IsEnabled())
+            if (pSE->GetDroneSE()->GetOwner() != pClient)
+                throw PyException(MakeCustomError("%s is under another pilot's control.  Cannot scoop.", pSE->GetName()));
 
     InventoryItemRef iRef = pSE->GetSelf();
     if (iRef.get() == nullptr) {
-        codelog(CLIENT__ERROR, "%s: Client has no system manager!", call.client->GetName());
+        codelog(CLIENT__ERROR, "ItemRef for %s not found.", arg.arg);
         return PyStatic.NewNone();
     }
-
-    /** @todo check ownership of this object, ie does this character/corporation own this object? */
-    // do we really need to do this for anything except for drones that are under control of another player?
-
-    /** @todo  check to see if this object is anchored and if so, refuse to scoop it */
 
     // Check cargo bay capacity:
     double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
     double volume = iRef->GetAttribute(AttrVolume).get_float();
     if (capacity < volume)
-        throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", iRef->itemName().c_str()));
+        throw PyException(MakeCustomError("%s is too large to fit in remaining Cargo bay capacity.", iRef->name()));
     else {
         // We have enough Cargo bay capacity to hold the item being scooped,
         // so take ownership of it and move it into the cargo bay:
         iRef->ChangeOwner(pClient->GetCharacterID(), true);
         pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagCargoHold);
-        pSystem->RemoveEntity(pSE);
+        pSysMgr->RemoveEntity(pSE);
         // perform data cleanup for structures
         if (pSE->IsPOSSE())
             pSE->GetPOSSE()->Scoop();
+        // perform data cleanup for drones
+        if (pSE->IsDroneSE()) {
+            pSE->GetDroneSE()->SetOwner(pClient);
+            pClient->GetShipSE()->ScoopDrone(pSE);
+        }
+        // delete SE since item is no longer in space
+        SafeDelete(pSE);
     }
 
-    return nullptr;
+    return PyStatic.NewNone();
 }
 
 PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
-    /*
-            [PyString "ScoopDrone"]
-            [PyTuple 1 items]
-              [PyList 3 items]
-                [PyIntegerVar 1540263056]
-                [PyIntegerVar 1540263058]
-                [PyIntegerVar 1530423394]
-                those items are placed into drone hold, then just a RemoveBalls packet after this.
-        */
     Call_SingleIntList args;
     if (!args.Decode(&call.tuple)) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return nullptr;
+        return PyStatic.NewNone();
     }
 
-    Client* pClient = call.client;
-    SystemManager* pSysMgr = pClient->SystemMgr();
+    Client* pClient(call.client);
+    SystemManager* pSysMgr(pClient->SystemMgr());
     std::vector<int32>::const_iterator cur = args.ints.begin();
     for(; cur != args.ints.end(); cur++) {
         SystemEntity* pDroneSE = pSysMgr->GetSE(*cur);
@@ -604,32 +623,27 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagDroneBay);
         double volume = iRef->GetAttribute(AttrVolume).get_float();
         if (capacity < volume)
-            throw PyException(MakeCustomError("%s is too large to fit in remaining Drone bay capacity.", iRef->itemName().c_str()));
+            throw PyException(MakeCustomError("%s is too large to fit in Drone bay remaining space.", iRef->name()));
+        //{'FullPath': u'UI/Messages', 'messageID': 259191, 'label': u'NotEnoughDroneBaySpaceBody'}(u'{[numeric]volume} units would be required to complete this operation. Destination container only has {[numeric]available} units available.', None, {u'{[numeric]volume}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'volume'}, u'{[numeric]available}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'available'}})
+        //{'FullPath': u'UI/Messages', 'messageID': 259210, 'label': u'NotEnoughDroneBaySpaceOverloadBody'}(u'The drone bay is overloaded and cannot be made to fit {item}. It is currently only capable of fitting {maximum} units and it is currently jammed full with {used} units.', None, {u'{maximum}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'maximum'}, u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{used}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'used'}})
+        //{'FullPath': u'UI/Messages', 'messageID': 258737, 'label': u'ShipDronesOverloadedBody'}(u'You cannot do that because you have somehow overloaded your drone bay.', None, None)
+        //{'FullPath': u'UI/Messages', 'messageID': 258904, 'label': u'ShipDronesOverloaded2Body'}(u'You cannot do that because you have somehow overloaded your drone bay. It fits {[numeric]canHave, decimalPlaces=2} units but somehow {[numeric]have, decimalPlaces=2} has been squeezed in.', None, {u'{[numeric]have, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'have'}, u'{[numeric]canHave, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'canHave'}})
+        //{'FullPath': u'UI/Messages', 'messageID': 258499, 'label': u'CannotMixDronesBody'}(u'You can not mix different types of drones in the same group', None, None)
+
         else {
             // We have enough Drone bay capacity to hold the drone,
             // so take ownership of it and move it into the Drone bay:
             iRef->ChangeOwner(pClient->GetCharacterID(), true);
             pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
             pSysMgr->RemoveEntity(pDroneSE);
-
-            // we have to create the stateChange packet by hand here...
-            PyTuple* tuple = new PyTuple(2);
-                tuple->SetItem(0, new PyString("OnDroneStateChange"));
-            PyList* list = new PyList(7);
-                list->SetItem(0, new PyInt(iRef->itemID()));
-                list->SetItem(1, PyStatic.NewNone());
-                list->SetItem(2, PyStatic.NewNone());
-                list->SetItem(3, PyStatic.NewNone());
-                list->SetItem(4, PyStatic.NewNone());
-                list->SetItem(5, PyStatic.NewNone());
-                list->SetItem(6, PyStatic.NewNone());
-            tuple->SetItem(1, list);
-            pClient->GetShipSE()->SysBubble()->BubblecastDestinyUpdate(&tuple, "destiny");
+            pDroneSE->GetDroneSE()->SetOwner(pClient);
+            pClient->GetShipSE()->ScoopDrone(pDroneSE);
+            SafeDelete(pDroneSE);
         }
     }
 
-    // requires *some* return....
-    return new PyDict();
+    // returns error on error else none
+    return PyStatic.NewNone();
 }
 
 PyResult ShipBound::Handle_Jettison(PyCallArgs &call) {

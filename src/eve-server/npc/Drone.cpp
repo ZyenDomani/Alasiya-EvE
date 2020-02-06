@@ -32,29 +32,26 @@
 #include "system/DestinyManager.h"
 #include "npc/Drone.h"
 #include "system/SystemManager.h"
+#include "system/SystemBubble.h"
+#include "system/cosmicMgrs/AnomalyMgr.h"
 
 Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSystem, const FactionData& data)
 : DynamicSystemEntity(drone, services, pSystem),
-  m_AI(new DroneAIMgr(this))
+  m_AI(new DroneAIMgr(this)),
+  m_system(pSystem)
 {
     assert (m_AI != nullptr);
+
+    m_online = false;
 
     m_warID = data.factionID;
     m_allyID = data.allianceID;
     m_corpID = data.corporationID;
     m_ownerID = data.ownerID;
     m_pClient = sEntityList.FindClientByCharID(data.ownerID);
-    m_orbitingID = 0;
-    if (m_pClient != nullptr) {
-        m_controllerID = m_pClient->GetShipID();
-        if (m_pClient->GetShipSE() != nullptr)
-            m_controllerOwnerID = m_pClient->GetShipSE()->GetOwnerID();
-        else
-            m_controllerOwnerID = m_ownerID;
-    } else {
-        m_controllerID = 0;
-        m_controllerOwnerID = 0;
-    }
+    m_targetID = 0;
+    m_controllerID = 0;
+    m_controllerOwnerID = 0;
 
     m_orbitRange = m_self->GetAttribute(AttrOrbitRange).get_float();
     if (m_orbitRange < 1) {
@@ -105,11 +102,9 @@ void Drone::SetOwner(Client* pClient) {
     m_corpID = pClient->GetCorporationID();
     m_allyID = pClient->GetAllianceID();
     m_warID = pClient->GetWarFactionID();
-    m_controllerID = m_pClient->GetShipID();
-    if (m_pClient->GetShipSE() != nullptr)
-        m_controllerOwnerID = m_pClient->GetShipSE()->GetOwnerID();
-    else
-        m_controllerOwnerID = m_ownerID;
+    m_pShipSE = pClient->GetShipSE();
+    m_controllerID = pClient->GetShipID();
+    m_controllerOwnerID = m_pShipSE->GetOwnerID();
 }
 
 void Drone::Process() {
@@ -119,8 +114,10 @@ void Drone::Process() {
 
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
+
     /** @todo (allan) finish drone AI and processing */
-    //m_AI->Process();
+    if (m_online)
+        m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
@@ -128,9 +125,84 @@ void Drone::Process() {
 
 void Drone::Orbit(SystemEntity *who) {
     if (who == nullptr)
-        m_orbitingID = 0;
+        m_targetID = 0;
     else
-        m_orbitingID = who->GetID();
+        m_targetID = who->GetID();
+}
+
+void Drone::SaveDrone() {
+    m_self->SaveItem();
+}
+
+void Drone::RemoveDrone() {
+    /** @todo (Allan) this may need more here */
+    m_self->Delete();
+    delete this;
+}
+
+void Drone::Launch( Ship* pShipSE ) {
+    m_online = true;
+    m_pShipSE = pShipSE;
+
+    m_controllerID = pShipSE->GetID();
+    m_controllerOwnerID = pShipSE->GetOwnerID();
+
+    m_system->AddEntity(this);
+    m_system->GetAnomMgr()->AddAnomaly(m_self);
+}
+
+void Drone::Online() {
+    StateChange(true);
+    
+    // set speed and begin orbit
+    m_destiny->SetMaxVelocity(500);
+    m_destiny->SetSpeedFraction(0.6f);
+    m_destiny->Orbit(m_pShipSE, m_orbitRange);
+}
+
+/*   when drone is scooped up....
+ *
+ *                    [PyTuple 2 items]
+ *                      [PyString "OnDroneStateChange"]
+ *                      [PyList 7 items]
+ *                        [PyIntegerVar 1540263056]
+ *                        [PyNone]
+ *                        [PyNone]
+ *                        [PyNone]
+ *                        [PyNone]
+ *                        [PyNone]
+ *                        [PyNone]
+ */
+
+void Drone::StateChange(bool online/*false*/) {
+    //OnDroneStateChange(droneID, ownerID, controllerID, activityState, droneTypeID, controllerOwnerID, targetID)
+    if (online) {
+        OnDroneStateChange du;
+            du.droneID = m_self->itemID();
+            du.ownerID = m_ownerID;
+            du.droneTypeID = m_self->typeID();
+            du.controllerID = m_controllerID;
+            du.controllerOwnerID = m_controllerOwnerID;
+            du.activityState = m_AI->GetState();
+            du.targetID = m_targetID;
+        PyTuple* up = du.Encode();
+        // bubblecast is faster than destiny::update
+        m_bubble->BubblecastDestinyUpdate(&up, "destiny");
+        //pShipSE->DestinyMgr()->SendSingleDestinyUpdate(&up);
+    } else {
+        PyList* list = new PyList();
+            list->AddItemInt(m_self->itemID());
+            list->AddItem(PyStatic.NewNone());
+            list->AddItem(PyStatic.NewNone());
+            list->AddItem(PyStatic.NewNone());
+            list->AddItem(PyStatic.NewNone());
+            list->AddItem(PyStatic.NewNone());
+            list->AddItem(PyStatic.NewNone());
+        PyTuple* tuple = new PyTuple(2);
+            tuple->SetItem(0, new PyString("OnDroneStateChange"));
+            tuple->SetItem(1, list);
+        m_bubble->BubblecastDestinyUpdate(&tuple, "destiny");
+    }
 }
 
 void Drone::TargetAdded(SystemEntity* who) {
@@ -169,16 +241,6 @@ void Drone::UseArmorRepairer() {
         m_AI->DisableRepTimers();
     /** @todo (allan) Need to send SpecialFX / amount update */
     UpdateDamage();
-}
-
-void Drone::SaveDrone() {
-    m_self->SaveItem();
-}
-
-void Drone::RemoveDrone() {
-    /** @todo (Allan) this may need more here */
-    m_self->Delete();
-    delete this;
 }
 
 PyDict* Drone::MakeSlimItem() {
@@ -309,41 +371,6 @@ void Drone::SetResists() {
     if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
 }
 
-/*{'FullPath': u'UI/Messages', 'messageID': 259652, 'label': u'EntityBrokenCommandBody'}(u'{targetTypeName} seems to be defective and does not respond to the command you are giving it.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259653, 'label': u'EntityDistantCommandBody'}(u'{targetTypeName} is too far away and will not respond to the command you are giving it (must be within {distance} meters from it).', None, {u'{distance}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'distance'}, u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259668, 'label': u'EntityTargetTooDistantBody'}(u'The drones fail to execute your commands as the target {targetTypeName} is not within your {distance} m drone command range.', None, {u'{distance}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'distance'}, u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259694, 'label': u'EntityIncapacitatedCommandBody'}(u'{targetTypeName} is incapacitated due to damage or abandonment and will not respond to the command you are giving it (try scooping it).', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259695, 'label': u'EntityNotYoursToCommandBody'}(u'{targetTypeName} does not respond to your commands.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259698, 'label': u'EntityTargetMustBeTargetedBody'}(u'{targetTypeName} requires the target be locked onto by you, which it is not.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259699, 'label': u'EntityTargetAlreadyHasControlBody'}(u'Control of the {item} cannot be delegated to {whom} because they already have control of it.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{whom}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'whom'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259702, 'label': u'EntityNoTargetDroneManagementAbilitiesBody'}(u'Control of the {item} cannot be delegated to {whom} because they do not have the skill to control any drones.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{whom}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'whom'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259703, 'label': u'EntityNoTargetDroneManagementAbilitiesLeftBody'}(u'Control of the {item} cannot be delegated to {whom} because they only have the skill to control {[numeric]limit} drones and they are already controlling that many.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[numeric]limit}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'limit'}, u'{whom}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'whom'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259704, 'label': u'EntityTargetNotPresentBody'}(u'{targetTypeName} cannot be commanded to work on a target that is no longer present.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259705, 'label': u'EntityUnknownCommandBody'}(u'{targetTypeName} does not recognize the command you are trying to give it.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259706, 'label': u'EntityNotPresentBody'}(u'{targetTypeName} cannot be commanded as it is not actually present.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259711, 'label': u'EntityInvalidTargetBody'}(u'{targetTypeName} can only perform that action on an item of group  {desiredTarget}.', None, {u'{targetTypeName}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetTypeName'}, u'{desiredTarget}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'desiredTarget'}})
- * {'FullPath': u'UI/Messages', 'messageID': 258393, 'label': u'EntityTargetWarpDisruptedBody'}(u'Control of the {[item]item.name} cannot be delegated to someone who the drones cannot warp to.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
- * {'FullPath': u'UI/Messages', 'messageID': 258349, 'label': u'EntityTargetCharInCapsuleBody'}(u'The drone cannot be commanded with respect to {targetChar} because the pilot is in a capsule.', None, {u'{targetChar}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetChar'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259601, 'label': u'EntityTargetCharNotPresentBody'}(u'The drone cannot be commanded with respect to {[character]targetChar.name} because they are not present in this solar system.', None, {u'{[character]targetChar.name}': {'conditionalValues': [], 'variableType': 0, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'targetChar'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259606, 'label': u'EntityHasSkillPrerequisitesBody'}(u'You do not have the required {[numeric]skillCount -> "skill", "skills"} to do that. To command that drone requires having learned the following {[numeric]skillCount -> "skill", "skills"}: {requiredSkills}.', None, {u'{[numeric]skillCount -> "skill", "skills"}': {'conditionalValues': [u'skill', u'skills'], 'variableType': 9, 'propertyName': None, 'args': 320, 'kwargs': {}, 'variableName': 'skillCount'}, u'{requiredSkills}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'requiredSkills'}})
- * {'FullPath': u'UI/Messages', 'messageID': 259607, 'label': u'EntityTargetMustBeFleetMemberBody'}(u'Drones can only accept that command if {targetOwner} is a member of your fleet, which they are not.', None, {u'{targetOwner}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'targetOwner'}})
- */
-/*   when drone is scooped up....
- *
-                    [PyTuple 2 items]
-                      [PyString "OnDroneStateChange"]
-                      [PyList 7 items]
-                        [PyIntegerVar 1540263056]
-                        [PyNone]
-                        [PyNone]
-                        [PyNone]
-                        [PyNone]
-                        [PyNone]
-                        [PyNone]
-                        */
-
-//OnDroneStateChange(droneID, ownerID, controllerID, activityState, droneTypeID, controllerOwnerID, targetID)
-
 /*
  * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
  * 21:59:29 [SvcCall]   Call Arguments:
@@ -356,21 +383,7 @@ void Drone::SetResists() {
  * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
  * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
  *
- *    sLog.White("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
- *    call.Dump(SERVICE__CALLS);
  */
-
-/*
-            [PyString "ChangeDroneSettings"]
-            [PyTuple 1 items]
-              [PyDict 3 kvp]
-                [PyInt 1283]
-                [PyFloat 1]
-                [PyInt 1297]
-                [PyFloat 0]
-                [PyInt 1275]
-                [PyFloat 1]
-        */
 
 /*
     [PyObjectData Name: macho.MachoAddress]

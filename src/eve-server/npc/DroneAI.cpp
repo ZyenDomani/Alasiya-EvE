@@ -101,7 +101,7 @@ void DroneAIMgr::Process() {
      *   Unknown           = 8,  // as stated
      *   Guarding          = 11,
      *   Assisting         = 12,
-     *   Incapacicated     = 13  //
+     *   Incapacitated     = 13  //
      */
 
     // test for drone attributes here - aggressive, focus fire, attack/follow
@@ -132,7 +132,7 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Fleeing:
         case DroneAI::State::Operating:
         case DroneAI::State::Unknown:
-        case DroneAI::State::Incapacicated:
+        case DroneAI::State::Incapacitated:
         case DroneAI::State::Guarding:
         case DroneAI::State::Assisting:
         case DroneAI::State::Combat:
@@ -148,6 +148,20 @@ void DroneAIMgr::Process() {
     }
     if (sConfig.debug.UseProfiling)
         sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
+}
+
+int8 DroneAIMgr::GetState() {
+    switch (m_state) {
+        case DroneAI::State::Invalid:
+        case DroneAI::State::Unknown:
+        case DroneAI::State::Incapacitated:
+            return DroneAI::State::Idle;
+        case DroneAI::State::Guarding:
+        case DroneAI::State::Assisting:
+            return DroneAI::State::Engaged;
+        default:
+            return m_state;
+    }
 }
 
 void DroneAIMgr::SetIdle() {
@@ -285,8 +299,8 @@ void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while fleeing.",
                  m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
-        case DroneAI::State::Incapacicated: {
-            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Incapacicated.",
+        case DroneAI::State::Incapacitated: {
+            _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Incapacitated.",
                  m_pDrone->GetName(), m_pDrone->GetID(), pAgressor->GetName(), pAgressor->GetID());
         } break;
         case DroneAI::State::Guarding: {
@@ -405,8 +419,8 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
 double DroneAIMgr::GetTargetTime()
 {
     double targetTime = (m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
-    float radius = m_pDrone->GetSelf()->GetAttribute(AttrRadius).get_float();
-    if (!targetTime) {
+    if (targetTime < 500) {
+        float radius = m_pDrone->GetSelf()->GetAttribute(AttrRadius).get_float();
         if (radius < 30)
             targetTime = 1500;
         else if (radius < 60)
@@ -445,7 +459,7 @@ std::string DroneAIMgr::GetStateName(int8 stateID)
         case DroneAI::State::Operating:       return "Operating";
         case DroneAI::State::Assisting:       return "Assisting";
         case DroneAI::State::Guarding:        return "Guarding";
-        case DroneAI::State::Incapacicated:   return "Incapacicated";
+        case DroneAI::State::Incapacitated:   return "Incapacitated";
         default:                              return "Invalid";
     }
 }

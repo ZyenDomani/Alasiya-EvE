@@ -252,8 +252,6 @@ public:
 
     double GetPropulsionStrength() const;
 
-    bool LaunchDrone(InventoryItemRef drone);
-
     //destiny stuff...
     void SetDockStationID(uint32 stationID)             { m_dockStationID = stationID; };
     void SetDockPoint(GPoint &pt)                       { m_dockPoint = pt; }
@@ -302,7 +300,7 @@ public:
 
     void SetAutoStop(bool set=false)                    { m_autoStop = set; }
     bool AutoStop()                                     { return m_autoStop; }
-    
+
     //messages and LSC
     // error requires dismissal (click 'ok')
     void SendErrorMsg(const char *fmt, ...);

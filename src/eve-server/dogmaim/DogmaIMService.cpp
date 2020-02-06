@@ -1116,7 +1116,7 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
 
     PyDict* dict = call.tuple->GetItem(0)->AsDict();
 
-    std::map<uint32, uint8> attribs;
+    std::map<int16, int8> attribs;
     for (PyDict::const_iterator itr = dict->begin(); itr != dict->end(); ++itr)
         attribs[PyRep::IntegerValue(itr->first)] = PyRep::IntegerValue(itr->second);
 
