@@ -348,6 +348,7 @@ public:
 
     double CalculateRechargeRate(double Capacity, double RechargeTimeMS, double Current);
 
+    void AbandonDrones();
     bool LaunchDrone(InventoryItemRef drone);
     void ScoopDrone(SystemEntity* pDroneSE);
 

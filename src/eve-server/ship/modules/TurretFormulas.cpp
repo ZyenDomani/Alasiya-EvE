@@ -152,7 +152,8 @@ float TurretFormulas::GetDroneToHit(Drone* pDrone, SystemEntity* pTarget)
         return 3.0f;
     if (rNum < ChanceToHit)
         return (rNum + 0.49);
-    return 0;
+    // drones will have a minimum damage instead of zero
+    return 0.1;
 }
 
 float TurretFormulas::GetSentryToHit(Sentry* pSentry, SystemEntity* pTarget)

@@ -69,21 +69,19 @@ public:
     void TargetLost(SystemEntity *by_who);
 
     void ClearTargets();
-	void ClearAllTargets();
-
-    void DisableRepTimers();
+    void ClearAllTargets();
 
     int8 GetState();
+
+    void SetIdle();
+    void Return();
+    void AssignShip(Ship* pSE)                          { m_assignedShip = pSE; }
 
 protected:
     void Attack(SystemEntity* pTarget);
     void AttackTarget(SystemEntity* pTarget);
-    void SetIdle();
     void SetEngaged(SystemEntity* pTarget);
-    void SetFleeing(SystemEntity* pTarget);
     void CheckDistance(SystemEntity* pTarget);
-
-    double GetTargetTime();
 
     int8 m_state;
     std::string GetStateName(int8 stateID);
@@ -96,8 +94,6 @@ private:
     double m_entityOrbitRange;
     double m_entityChaseRange;
     double m_entityAttackRange;
-    double m_armorRepairChance;
-    double m_shieldBoosterChance;
 
     uint32 m_chaseSpeed;
     uint32 m_cruiseSpeed;
@@ -106,13 +102,12 @@ private:
     uint32 m_shieldBoosterDuration;
 
     Drone* m_pDrone;
+    Ship* m_assignedShip;
 
     TurretFormulas m_formula;
 
     Timer m_processTimer;
     Timer m_mainAttackTimer;
-    Timer m_shieldBoosterTimer;
-    Timer m_armorRepairTimer;
     Timer m_beginFindTarget;
     Timer m_warpScramblerTimer;
     Timer m_webifierTimer;

@@ -15,6 +15,7 @@
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"
+#include <system/SystemManager.h>
 
 /*
  * ShipItem
@@ -2835,7 +2836,7 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
     load += drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
     if (load < m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32()) {
-        pDrone->Online();
+        pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
     } else {
         std::map<std::string, PyRep *> arg;
@@ -2858,12 +2859,23 @@ void Ship::ScoopDrone(SystemEntity* pDroneSE) {
 void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
     // update drones in space with new attrib settings
     for (auto cur : m_drones) {
-        cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
         cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
         cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
+        cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
         //AttrDroneIsChaotic
+        //AttrDroneIsAgressive
     }
 }
+
+void Ship::AbandonDrones() {
+    for (auto cur : m_drones) {
+        SystemEntity* pSE = m_system->GetSE(cur.first);
+        if (pSE != nullptr)
+            if (pSE->IsDroneSE())
+                pSE->GetDroneSE()->Offline();
+    }
+}
+//AttrDroneControlDistance
 
 void Ship::RemoveTarget(SystemEntity* pSE) {
     // target has been unlocked

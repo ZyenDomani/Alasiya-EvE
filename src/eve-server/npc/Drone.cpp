@@ -123,13 +123,6 @@ void Drone::Process() {
         sProfile.AddTime(droneProfile, GetTimeUSeconds() - profileStartTime);
 }
 
-void Drone::Orbit(SystemEntity *who) {
-    if (who == nullptr)
-        m_targetID = 0;
-    else
-        m_targetID = who->GetID();
-}
-
 void Drone::SaveDrone() {
     m_self->SaveItem();
 }
@@ -151,14 +144,25 @@ void Drone::Launch( Ship* pShipSE ) {
     m_system->GetAnomMgr()->AddAnomaly(m_self);
 }
 
-void Drone::Online() {
+void Drone::Online(Ship* pShipSE/*nullptr*/) {
     StateChange(true);
-    
+
+    if (pShipSE == nullptr)
+        pShipSE = m_pShipSE;
+
+    AssignShip(pShipSE);
     // set speed and begin orbit
     m_destiny->SetMaxVelocity(500);
     m_destiny->SetSpeedFraction(0.6f);
-    m_destiny->Orbit(m_pShipSE, m_orbitRange);
+    m_destiny->Orbit(pShipSE, m_orbitRange);
 }
+
+void Drone::Offline() {
+    m_destiny->Stop();
+    AssignShip(nullptr);
+    StateChange();
+}
+
 
 /*   when drone is scooped up....
  *
@@ -219,28 +223,6 @@ void Drone::TargetedAdd(SystemEntity *who) {
 
 void Drone::TargetedLost(SystemEntity* who) {
     /** @todo (Allan) will need code once drones are implemented */
-}
-
-void Drone::UseShieldRecharge() {
-    if (m_self->GetAttribute(AttrShieldCapacity) > m_shieldCharge) {
-        m_shieldCharge += m_self->GetAttribute(AttrEntityShieldBoostAmount).get_float();
-        if (m_shieldCharge > m_self->GetAttribute(AttrShieldCapacity).get_float())
-            m_shieldCharge = m_self->GetAttribute(AttrShieldCapacity).get_float();
-    } else
-        m_AI->DisableRepTimers();
-    /** @todo (allan) Need to send SpecialFX / amount update */
-    UpdateDamage();
-}
-
-void Drone::UseArmorRepairer() {
-    if (m_armorDamage) {
-        m_armorDamage -= m_self->GetAttribute(AttrEntityArmorRepairAmount).get_float();
-        if( m_armorDamage < 0.0 )
-            m_armorDamage = 0.0;
-    } else
-        m_AI->DisableRepTimers();
-    /** @todo (allan) Need to send SpecialFX / amount update */
-    UpdateDamage();
 }
 
 PyDict* Drone::MakeSlimItem() {

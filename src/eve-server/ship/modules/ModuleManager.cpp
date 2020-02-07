@@ -290,6 +290,7 @@ void ModuleManager::UnfitModule(uint32 itemID)
     pMod->Offline();
     if (pMod->IsLoaded()) {
         //{'FullPath': u'UI/Messages', 'messageID': 260011, 'label': u'CannotRemoveModuleWithLoadedChargesBody'}(u'You cannot remove a module while it is still loaded with charges.', None, None)
+        //{'FullPath': u'UI/Messages', 'messageID': 258471, 'label': u'CannotRemoveActivatedModuleBody'}(u'You cannot remove a module while it is still activated.', None, None)
         UnloadCharge(pMod->flag());
     }
     // update available slots

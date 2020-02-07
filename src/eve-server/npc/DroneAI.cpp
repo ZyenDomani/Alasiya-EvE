@@ -38,10 +38,9 @@
 DroneAIMgr::DroneAIMgr(Drone* who)
 : m_state(DroneAI::State::Idle),
   m_pDrone(who),
+  m_assignedShip(nullptr),
   m_mainAttackTimer(0),// dont start timer until we have a target
   m_processTimer(0),
-  m_shieldBoosterTimer(0),  //waiting till engaged
-  m_armorRepairTimer(0),      //waiting till engaged
   m_beginFindTarget(0),
   m_warpScramblerTimer(0),     //not implemented yet
   m_webifierTimer(0),             //not implemented yet
@@ -60,30 +59,12 @@ DroneAIMgr::DroneAIMgr(Drone* who)
 
     // proximityRange (154) tells us how far we "see"
 
-    if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float())
-        m_armorRepairChance = who->GetSelf()->GetAttribute(AttrEntityArmorRepairDelayChanceLarge).get_float();
-
-    if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float())
-        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceSmall).get_float();
-    else if (who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float())
-        m_shieldBoosterChance = who->GetSelf()->GetAttribute(AttrEntityShieldBoostDelayChanceLarge).get_float();
-
     if (m_entityAttackRange < 10000)   // most of these are low...under 6k  that sux for targeting
         m_entityAttackRange *= 3;
 }
 
 void DroneAIMgr::Process() {
     double profileStartTime = GetTimeUSeconds();
-
-    if (m_shieldBoosterTimer.Enabled())
-        if (m_shieldBoosterTimer.Check())
-            m_pDrone->UseShieldRecharge();
-
-    if (m_armorRepairTimer.Enabled())
-        if (m_armorRepairTimer.Check())
-            m_pDrone->UseArmorRepairer();
 
     /* Drone::State definitions   -allan 27Nov19
      *   Invalid
@@ -109,6 +90,9 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Invalid: {
             // check everything in this state.   return to ship?
         } break;
+        case DroneAI::State::Idle: {
+            // orbiting controlling ship
+        } break;
         case DroneAI::State::Engaged: {
             //NOTE: getting our pTarget like this is pretty weak...
             SystemEntity* pTarget = m_pDrone->TargetMgr()->GetFirstTarget(true);
@@ -125,9 +109,10 @@ void DroneAIMgr::Process() {
             CheckDistance(pTarget);
         } break;
 
-        case DroneAI::State::Idle:
-            // do nothing.  orbit controlling ship?
-
+        case DroneAI::State::Departing: { // return to ship.  when close enough, set lazy orbit
+            if (m_pDrone->GetPosition().distance(m_assignedShip->GetPosition()) < m_entityOrbitRange)
+                SetIdle();
+        } break;
         // not sure how im gonna do these...
         case DroneAI::State::Fleeing:
         case DroneAI::State::Operating:
@@ -138,7 +123,6 @@ void DroneAIMgr::Process() {
         case DroneAI::State::Combat:
         case DroneAI::State::Mining:
         case DroneAI::State::Approaching:
-        case DroneAI::State::Departing:
         case DroneAI::State::Departing2:
         case DroneAI::State::Pursuit: {
            // do nothing here yet
@@ -164,6 +148,13 @@ int8 DroneAIMgr::GetState() {
     }
 }
 
+void DroneAIMgr::Return() {
+    m_assignedShip = m_pDrone->GetHomeShip();
+    m_pDrone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
+    m_pDrone->DestinyMgr()->Follow(m_assignedShip, m_entityOrbitRange);
+    m_state = DroneAI::State::Departing;
+}
+
 void DroneAIMgr::SetIdle() {
     if (m_state == DroneAI::State::Idle)
         return;
@@ -172,17 +163,13 @@ void DroneAIMgr::SetIdle() {
          m_pDrone->GetName(), m_pDrone->GetID());
     m_state = DroneAI::State::Idle;
 
-    //should Idle be orbiting controlling ship?
-    m_pDrone->Orbit(nullptr);
-    m_pDrone->DestinyMgr()->Stop();
-    m_pDrone->DestinyMgr()->SetMaxVelocity(m_cruiseSpeed);
+    // orbit assigned ship
+    m_pDrone->Online(m_assignedShip);
 
     m_webifierTimer.Disable();
     m_beginFindTarget.Disable();
     m_mainAttackTimer.Disable();
-    m_armorRepairTimer.Disable();
     m_warpScramblerTimer.Disable();
-    m_shieldBoosterTimer.Disable();
 }
 
 void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
@@ -197,18 +184,6 @@ void DroneAIMgr::SetEngaged(SystemEntity* pTarget) {
     m_pDrone->DestinyMgr()->SetMaxVelocity(MakeRandomFloat(m_cruiseSpeed, (m_chaseSpeed /4)));
     m_pDrone->DestinyMgr()->Orbit(pTarget, m_entityOrbitRange);  //try to get inside orbit range
     m_state = DroneAI::State::Engaged;
-}
-
-void DroneAIMgr::SetFleeing(SystemEntity* pTarget) {
-    if (m_state == DroneAI::State::Fleeing)
-        return;
-    _log(DRONE__AI_TRACE, "Drone %s(%u): SetFleeing: %s(%u) begin fleeing.",
-         m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
-    // actively fleeing
-    //  use superspeed to disengage, then warp.  << both these will need to be written.
-    //  this state is only usable by higher-class npcs.
-    m_pDrone->DestinyMgr()->SetMaxVelocity(m_chaseSpeed);
-    m_state = DroneAI::State::Fleeing;
 }
 
 void DroneAIMgr::CheckDistance(SystemEntity* pSE)
@@ -235,11 +210,6 @@ void DroneAIMgr::CheckDistance(SystemEntity* pSE)
         return;
     }
 
-    if (m_shieldBoosterDuration && (!m_shieldBoosterTimer.Enabled()))
-        m_shieldBoosterTimer.Start(m_shieldBoosterDuration);
-    if (m_armorRepairDuration && (!m_armorRepairTimer.Enabled()))
-        m_armorRepairTimer.Start(m_armorRepairDuration);
-
     if (!m_mainAttackTimer.Enabled())
         m_mainAttackTimer.Start(m_attackSpeed);
 
@@ -255,9 +225,8 @@ void DroneAIMgr::ClearAllTargets() {
 }
 
 void DroneAIMgr::Target(SystemEntity* pTarget) {
-    double targetTime = GetTargetTime();
     bool chase = false;
-	if (!m_pDrone->TargetMgr()->StartTargeting(pTarget, targetTime, (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
+    if (!m_pDrone->TargetMgr()->StartTargeting(pTarget, m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_uint32(), (uint8)m_pDrone->GetSelf()->GetAttribute(AttrMaxAttackTargets).get_int(), m_entityAttackRange, chase)) {
         _log(DRONE__AI_TRACE, "Drone %s(%u): Targeting of %s(%u) failed.  Clear Target and Return to Idle.",
              m_pDrone->GetName(), m_pDrone->GetID(), pTarget->GetName(), pTarget->GetID());
         //ClearAllTargets();
@@ -276,8 +245,6 @@ void DroneAIMgr::Target(SystemEntity* pTarget) {
 }
 
 void DroneAIMgr::Targeted(SystemEntity* pAgressor) {
-    double targetTime = GetTargetTime();
-
     switch(m_state) {
         case DroneAI::State::Idle: {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Targeted by %s(%u) while Idle.",
@@ -363,6 +330,7 @@ void DroneAIMgr::Attack(SystemEntity* pSE)
         if (pSE == nullptr)
             return;
         // Check to see if the target still in the bubble (Client warped out)
+        // fighters/bombers are able to follow.
         if (!m_pDrone->SysBubble()->InBubble(pSE->GetPosition())) {
             _log(DRONE__AI_TRACE, "Drone %s(%u): Target %s(%u) no longer in bubble.  Clear target and move on",
                  m_pDrone->GetName(), m_pDrone->GetID(), pSE->GetName(), pSE->GetID());
@@ -413,35 +381,10 @@ void DroneAIMgr::AttackTarget(SystemEntity* pTarget) {
             );
 
     d *= m_pDrone->GetSelf()->GetAttribute(AttrDamageMultiplier).get_float();
+    d *= sConfig.rates.damageRate;
     pTarget->ApplyDamage(d);
 }
 
-double DroneAIMgr::GetTargetTime()
-{
-    double targetTime = (m_pDrone->GetSelf()->GetAttribute(AttrScanSpeed).get_int());
-    if (targetTime < 500) {
-        float radius = m_pDrone->GetSelf()->GetAttribute(AttrRadius).get_float();
-        if (radius < 30)
-            targetTime = 1500;
-        else if (radius < 60)
-            targetTime = 2500;
-        else if (radius < 150)
-            targetTime = 4000;
-        else if (radius < 280)
-            targetTime = 6000;
-        else if (radius < 550)
-            targetTime = 8000;
-        else
-            targetTime = 13000;
-    }
-    return targetTime;
-}
-
-void DroneAIMgr::DisableRepTimers()
-{
-    m_armorRepairTimer.Disable();
-    m_shieldBoosterTimer.Disable();
-}
 
 std::string DroneAIMgr::GetStateName(int8 stateID)
 {

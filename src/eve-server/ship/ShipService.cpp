@@ -569,6 +569,7 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    //AttrDroneBaySlotsLeft
     // Check cargo bay capacity:
     double capacity = pClient->GetShip()->GetMyInventory()->GetCapacity(flagCargoHold);
     double volume = iRef->GetAttribute(AttrVolume).get_float();

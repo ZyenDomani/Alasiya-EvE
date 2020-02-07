@@ -497,6 +497,8 @@ void Ship::Killed(Damage &fatal_blow) {
         blob << "<items><i t=" << data.victimShipTypeID << " f=0 s=1 d=0 x=1/></items>";
     else {
         AbortCycle();
+        AbandonDrones();
+
         // remove all charges (per packet data)
         GetShipItemRef()->UnloadAllModules();
 
@@ -590,7 +592,7 @@ void Ship::Killed(Damage &fatal_blow) {
 
         // this method will reset char variables to last clone state after being podded.  NOTE  *** NOT TESTED YET ***
         pPilot->ResetAfterPodded();
-	} else {
+    } else {
         PayInsurance();
 
         m_destiny->SendJettisonPacket();
