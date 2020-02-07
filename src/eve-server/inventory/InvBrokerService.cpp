@@ -409,6 +409,11 @@ PyResult InvBrokerBound::Handle_SetLabel(PyCallArgs &call) {
         return PyStatic.NewNone();
     }
 
+    /*
+     * {'FullPath': u'UI/Messages', 'messageID': 258478, 'label': u'SetNameInvalidBody'}(u"You can't rename that type of object.", None, None)
+     * {'FullPath': u'UI/Messages', 'messageID': 258479, 'label': u'SetNameShipMustBePilotBody'}(u'You can only rename ships that you are currently piloting.', None, None)
+     */
+    
     /** @todo if owner is corp, make sure char has permissions to rename corp items  */
     if (IsPlayerCorp(item->ownerID())) {
         if (item->ownerID() != call.client->GetCorporationID()) {

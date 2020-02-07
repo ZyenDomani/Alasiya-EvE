@@ -36,6 +36,7 @@ public:
     static StructureItemRef Spawn( ItemData &data);
 
     virtual void            Delete();
+    virtual void            Rename(std::string name);
     virtual void            AddItem(InventoryItemRef iRef);
     virtual void            RemoveItem(InventoryItemRef iRef);
 
@@ -179,8 +180,9 @@ public:
     // for targetMgr
     bool                        IsReinforced()          { return false; }   /** @todo  finish this...not sure how yet. */
 
-protected:
     void                        SendSlimUpdate();
+    
+protected:
     void                        SendEffectUpdate(int16 effectID, bool active);
 
     PosMgrDB                    m_db;
@@ -259,7 +261,7 @@ private:
      {'FullPath': u'UI/Messages', 'messageID': 256882, 'label': u'CantOnlineDisruptorOutpostProtectingBody'}(u'The sovereignty holder holds an outpost in the solar system. You cannot online the Sovereignty Blockade Unit while this is true.', None, None)
      {'FullPath': u'UI/Messages', 'messageID': 256892, 'label': u'CantAnchorDefenseBunkerNotHereBody'}(u'Defense bunkers must be anchored withing 50 - 100 km of a stargate, station, control tower, or infrastructure hub.', None, None)
      {'FullPath': u'UI/Messages', 'messageID': 257374, 'label': u'StructureNotControllableUntilOnlineBody'}(u'You cannot assume control of the {item} until it has been put online.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
-     
+
 
 
      */

@@ -86,6 +86,8 @@ public:
     virtual bool            IsShipItem()                { return false; }
     virtual bool            IsModuleItem()              { return false; }
 
+    virtual void            Rename(std::string name);
+    
     /* generic access functions handled here */
     Inventory*              GetMyInventory()            { return pInventory; }
 
@@ -116,7 +118,6 @@ public:
     bool                    IsOnline()                  { return GetAttribute(AttrOnline).get_bool(); }
 
     /* public-access generic functions handled in base class. */
-    void                    Rename(std::string name);
     void                    SetPosition(const GPoint pos);     // change coords of item
     void                    SetCustomInfo(const char *ci);
     void                    ChangeOwner(uint32 new_owner, bool notify=false);

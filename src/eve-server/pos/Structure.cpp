@@ -154,6 +154,16 @@ void StructureItem::RemoveItem(InventoryItemRef iRef)
     InventoryItem::RemoveItem(iRef);
 }
 
+void StructureItem::Rename ( std::string name ) {
+    if (mySE->GetPOSSE()->GetState() > EVEPOS::EntityState::Unanchored) {
+        InventoryItem::Rename ( name );
+        mySE->GetPOSSE()->SendSlimUpdate();
+    } else
+        throw PyException(MakeUserError("SetNameObjectMustBeAnchoredInSpace"));
+// {'FullPath': u'UI/Messages', 'messageID': 258480, 'label': u'SetNameObjectMustBeAnchoredInSpaceBody'}(u'You can only rename this type of object if it is anchored in space (and you have a right to do so).', None, None)
+}
+
+
 
 StructureSE::StructureSE(StructureItemRef structure, PyServiceMgr &services, SystemManager* system, const FactionData& data)
 : ObjectSystemEntity(structure, services, system),
@@ -413,13 +423,13 @@ void StructureSE::Process() {
                 // set timer for time to come out of reinforced
                 /*Reinforcement is an established system in EVE where a structure becomes invulnerable for a period of time.
                  * The purpose is for the defending corporation to have a chance to react when their structure is attacked.
-                 * The Customs Office enters reinforced mode when it reaches 25% shield and exits reinforcement somewhere
+                 * The Control Tower enters reinforced mode when it reaches 25% shield and exits reinforcement somewhere
                  * within the time of day, specified by the owner at least 24 hours after it entered reinforcement.
-                 * So if you set the reinforcement time to “23.00 – 01.00” that means that the Customs Office will, if attacked,
+                 * So if you set the reinforcement time to “23.00 – 01.00” that means that the Control Tower will, if attacked,
                  * exit reinforcement at some time between 23.00 and 01.00 the day after the attack was initiated.
-                 * Your corporation will receive notification if your Customs Office enters reinforcement mode and that leaves you
+                 * Your corporation will receive notification if your Control Tower enters reinforcement mode and that leaves you
                  * at least 24 hours to plan the defense.
-                 * In order to reset the reinforcement cycle, the Customs Office Shield must be repaired back above25%;
+                 * In order to reset the reinforcement cycle, the Control Tower Shield must be repaired back above 25%;
                  * note that it exits reinforcement with 0% shield.
                  *
                  */
@@ -472,7 +482,7 @@ void StructureSE::Drop(SystemBubble* pBubble) {
  * {'messageKey': 'CantOnlineTowerLacksResources', 'dataID': 17885363, 'suppressable': False, 'bodyID': 260207, 'messageType': 'notify', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 405}
  * {'messageKey': 'CantOnlineWithinGlobalDisruptor', 'dataID': 17876951, 'suppressable': False, 'bodyID': 257068, 'messageType': 'hint', 'urlAudio': '', 'urlIcon': '', 'titleID': None, 'messageID': 3180}
  *{'FullPath': u'UI/Messages', 'messageID': 260213, 'label': u'CannotRemoveFromLowShieldTowerBody'}(u'You cannot remove {[item]item.name} from the {[item]type.name} while it is reinforced or has a shield level lower than {[numeric]level}%.', None, {u'{[item]item.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'item'}, u'{[item]type.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'type'}, u'{[numeric]level}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'level'}})
- * 
+ *
  * {'FullPath': u'UI/Messages', 'messageID': 259215, 'label': u'OnlineRequiredAnchorBody'}(u'The {item} can only be brought online when it is firmly anchored. It cannot be brought online while unanchored, unanchoring or while anchoring.', None, {u'{item}': {'conditionalValues': [], 'variableType': 10, 'propertyName': None, 'args': 0, 'kwargs': {}, 'variableName': 'item'}})
  *
  */
