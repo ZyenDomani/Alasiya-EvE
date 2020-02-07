@@ -81,21 +81,6 @@ look over and correct loading with partial stacks (see UserError at MM::LoadChar
 
 change AddBalance (et al) to TransferFunds()
 
-integrate UTF8 into code (or make my own class)
-   - same with zlib and gangsta
-   - is zlib even used??
-
-inventory item - populate - effect timestamp
-    - this needs to be tracked/updated for proper effects handing and tracking.
-    - could be a problem with movement being funky
-
-rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
-rename AttributeManager to Godma to follow client naming convention?
-
-update ValidateAddItem() to return >0 on error and use enums to determine/display error
-
-make log/config option for (en/dis)able client massive check.
-
 check client's locationID vs stationID.
     - multiple calls in client test for these as separate values (tested separately)
     - verify our use of these is correct....
@@ -132,9 +117,6 @@ Py* objects that have long int as key need 'delete' called on key when destroyed
 
 InvBrokerBound::Handle_GetInventory incomplete
 
-need to figure out how to load/queue assets for chars (on login or w/e)
-    - this is needed for complete asset menu entries
-
 pi working.  currently rewriting process code  -priority level: lo
     - check/rewrite planet xml code as needed (minor improvement)
     - check if xml is needed or if structs are ok for all uses (improve code bloat)
@@ -160,8 +142,6 @@ petition system missing most calls
     - couple calls as skeleton code
     - notes for ~20 system calls (may be complete)
 
-civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
-
 dungeons - complete current wip code   -priority level: med-hi
 
 belt spawns - rework for better ship group selection   -priority level: med
@@ -179,8 +159,6 @@ contractProxy::GetMyExpiredContractList()
         numCorpRequiresAttention = 0
 AttributeError: 'NoneType' object has no attribute 'contracts'
 
-expanded cargo modules update for specialized holds.   -priority level: low
-
 missions/agents - agents working. courier missions working. currently ~50 missions, all levels.
 next up is security missions.  will need dungeon work for these.   -priority level: hi
 
@@ -189,10 +167,12 @@ anomaly system - working. may need revisit after other systems mature.   -priori
 wh system - started.   k162 for deco only at this time (POC)   -priority level: low
 
 player drones - skeleton started. needs functionality    -priority level: med-hi
-player drone ai - rework started.  needs completion
 drones mass and maxspeed need attention
+drone ai needs:
+  - assigned ship killed, need code to reset
+  - all states except idla
 
-RAM code - implement invention, copy, re, tech    -priority level: hi
+RAM code - implement invention, copy, re, tech    -priority level: low
 
 contact list - no notification when contacts login.  no initial contact status when logging in.  -priority level: lo
 
@@ -234,9 +214,6 @@ alliances?  not yet.  need other shit finished first.
 started coding alliance db
 all alliance calls are skeleton code, except GetEmploymentRecord
 
-npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
-update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: low
-
 m_self is NOT being populated for non-piloted ships.   -priority level: low
 
 market system....this needs a lot of attention
@@ -250,9 +227,6 @@ market system....this needs a lot of attention
 will need to go thru code and zero-initalize structs ( A a = A(); )    -priority level: low-med
  - classes built using xml have a c'tor that zero-initalizes all items in class
  - this is almost complete.  there may be a few more i havent found yet.
-
-system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
-entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
 
 InvBrokerService needs love
 mapservice  needs love
@@ -282,10 +256,6 @@ added notes on scanner groupNames in anomalyMgr code
 ship scanner disables after trying to scan while warping (which tells you it cant be done)
 update conescan (dscan from ship) to use args.  these will determine what is found from scanning (currently shows everything in bubble as POC)
 
-rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
-    - this should be fairly easy to set up
-    - if no faction presence in system, continue with random point
-
 journal - killing rats descriptions are a bit off...gives itemID (no name)
 
 account - alter balance should be changed to xfer funds where applicable
@@ -294,7 +264,47 @@ many unimplemented salvage error msgs noted in prospector.h
 
 attribMap has open db calls
 
+
+*****************  ideas for later
+
+system mail not working.  this would be nice to have, as many systems could(will) use it    -priority level: low
+entire mail/notification system needs looking over, maybe rewrite to allow OnNotificationReceived sent from mail, as it should be.    -priority level: low-med
+
+drone chat window for drone specific msgs (using individual drone as sender)
+player command to show drones targeted by
+
 change warpstate variable in destiny from class (and using naked 'new') to struct?
+
+npc ai - update for better ai. add advanced ai for advanced ship classes   -priority level: low
+update npc ai. wander working. warp in/out working. tracking somewhat wonky.   -priority level: low
+
+
+rats should test for faction signals in system and set origin along that direction (to appear they came from their 'base' in system)
+    - this should be fairly easy to set up
+    - if no faction presence in system, continue with random point
+
+civilian class - non-combatant ships moving from one point to another. skeleton code and notes in class file.   -priority level: low
+
+expanded cargo modules update for specialized holds.   -priority level: low
+
+need to figure out how to load/queue assets for chars (on login or w/e)
+    - this is needed for complete asset menu entries
+
+integrate UTF8 into code (or make my own class)
+   - same with zlib and gangsta
+   - is zlib even used??
+
+inventory item - populate - effect timestamp
+    - this needs to be tracked/updated for proper effects handing and tracking.
+    - could be a problem with movement being funky
+
+rework/refactor SE objects definitions for updated items (FieldSE is not OSE, Containers are not ISEs)
+rename AttributeManager to Godma to follow client naming convention?
+
+update ValidateAddItem() to return >0 on error and use enums to determine/display error
+
+make log/config option for (en/dis)able client massive check.
+
 
 *****************  uk calls
   ** none at this time **  (almost all calls coded, albeit some only skeleton)

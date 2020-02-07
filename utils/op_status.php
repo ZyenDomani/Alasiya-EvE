@@ -1971,11 +1971,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <h2> <span class="mw-headline" id="Drones"> Drones (Rewrite in progress) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:20%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>18.4</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>22.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -1999,68 +1999,73 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone AI </h3></font></td></tr>
-<tr><td> - Passive/Aggressive (toggle - passive: attack only upon command.  aggressive: attack any valid target.)</td><td class="broken">30%
+<tr><td><font color=lime>Passive/Aggressive</font><BR>(toggle - <font color=lime>passive</font>: attack only upon command.  <font color=lime>aggressive</font>: attack any valid target.)</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>2Feb20</td></tr>
-<tr><td> - Attack and Follow (fighters only) - includes warping to chase.</td><td class="broken">0%
+<tr><td><font color=lime>Attack and Follow</font> <font color=yellow>(fighters only)</font><BR>Will chase target in warp.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Assist - engage anything assigned ship activates offensive module on. (passive/aggressive ignored)</td><td class="broken">10%
+<tr><td><font color=lime>Assist</font></td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Guard - automatically retaliate towards any threat to assigned ship.</td><td class="broken">0%
+<tr><td><font color=lime>Guard</font></td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Focus Fire - all drones fire upon same target till destroyed or commanded otherwise.</td><td class="broken">0%
+<tr><td><font color=lime>Mine</font></td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
+<tr><td><font color=lime>Focus Fire</font><BR>All drones fire upon same target till destroyed or commanded otherwise.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 <tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Drone Commands </h3></font></td></tr>
-<tr><td> - Attack</td><td class="broken">30%
+<tr><td><font color=lime>Attack</font><BR>Engage target the assigned ship currently-attacking.<BR>If assigned ship has multiple targets, first locked target is chosen.</td><td class="broken">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font> - <font color=orange>Very Basic.</font><BR>2Feb20</td></tr>
-<tr><td> - Assist</td><td class="broken">10%
+<tr><td><font color=lime>Assist</font><BR>Engage anything assigned ship activates offensive module on. (passive/aggressive ignored)</td><td class="broken">10%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Guard</td><td class="broken">0%
+<tr><td><font color=lime>Guard</font><BR> Retaliate towards any threat to assigned ship.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Mine</td><td class="broken">0%
+<tr><td><font color=lime>Mine</font><BR>Mine assigned asteroid for one cycle, then return and orbit.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Mine Repeatedly</td><td class="broken">0%
+<tr><td><font color=lime>Mine Repeatedly</font><BR>Mine assigned asteroid until depleted or commanded otherwise.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
-<tr><td> - Abandon</td><td class="broken">10%
+<tr><td><font color=lime>Abandon</font><BR>Relinquish control and ownership of drone.</td><td class="working">80%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
-<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td> - Return and orbit</td><td class="working">30%
+<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>2Feb20</td></tr>
+<tr><td><font color=lime>Return and orbit</font><BR>Should I explain this?</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
-<tr><td> - Return To Drone Bay</td><td class="working">30%
+<tr><td><font color=lime>Return To Drone Bay</font><BR>To Be Determined.</td><td class="working">30%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2701,11 +2706,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <h2> <span class="mw-headline" id="POS_Operations"> Player Owned Structures (POS) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:61%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:68%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>68.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:61%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>61.4</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2743,11 +2748,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td style="text-align: left; height: 12px; width: 75%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR>28Dec17</td></tr>
-<tr><td> - Managing Tower Field Access</td><td class="working">95%
+<tr><td> - Managing Tower Field Access</td><td class="broken">5%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1"><tr>
-<td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 12px; width: 5%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
-<td><font color=pink>Final Testing</font><BR>28Dec17</td></tr>
+<td><font color=red>Broken</font><BR><font color=magenta>Needs Work</font><BR>28Dec17</td></tr>
 <tr><td> - Can Add/Remove Fuel and Strontium in Tower Holds</td><td class="working">95%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
