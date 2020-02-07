@@ -1971,11 +1971,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <h2> <span class="mw-headline" id="Drones"> Drones (Rewrite in progress) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+<table style="background: #2222EE; width:18%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:22%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
-<td> &#160;<font color="red"><b>22.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+<table style="background: transparent; width:18%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>18.1</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
 </td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
 <td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
@@ -2070,6 +2070,11 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 30%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=yellow>Preliminary Implementation</font><BR>2Feb20</td></tr>
+<tr><td><font color=lime>Reconnect to Lost Drones</font><BR>Try to reestablish communication with drones previously abandoned or went past ship's drone control range.</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
 <h2> <span class="mw-headline" id="NPC_Combat_Spawning_AI"> NPC AI, Combat &amp; Spawning </span></h2>
