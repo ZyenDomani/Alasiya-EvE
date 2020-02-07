@@ -15,7 +15,7 @@
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></div></div><br /><p><br /><br /></p>
 <table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;"><BR><BR>
-<font color=lightblue>This data is reflection of current Alasiya-EvE code status.<BR><BR>
+<font color=lightblue>This data is reflection of current Alasiya-EvE code status.<BR>If a system is NOT listed here, then it isnt implemented at all.<BR><BR>
 <font color="red">Please Note:</font> <BR>
 Items listed as "<font color=red>NOT IMPLEMENTED</font>" have no code for that system and the server will not respond to requests for that system.<BR>
 Items listed as "<font color=magenta>Skeleton Code Only</font>" has a basic outline coded, but limited or no processing and/or returns. The server will not respond or only partially respond to these requests.<BR>
