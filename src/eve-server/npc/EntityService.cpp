@@ -302,7 +302,7 @@ PyResult EntityBound::Handle_CmdReturnBay(PyCallArgs &call) {
 
     call.client->SendNotifyMsg("Drone Control is not implemented yet.");
 
-    // returns nodeID and timestamp and dict of ?
+    // returns nodeID and timestamp and dict of error msg
     /*
     PyDict* dict = new PyDict();
     PyTuple* tuple = new PyTuple(2);
@@ -327,7 +327,15 @@ PyResult EntityBound::Handle_CmdAbandonDrone(PyCallArgs &call) {
 }
 
 PyResult EntityBound::Handle_CmdReconnectToDrones(PyCallArgs &call) {
- // ret = entity.CmdReconnectToDrones(droneCandidates)
+    // ret = entity.CmdReconnectToDrones(droneCandidates)
+    //     for errStr, dicty in ret.iteritems():
+    // this sends a list of drones in local space owned by calling character
+    /*
+     * 09:09:48 [DroneDump]   Call Arguments:
+     * 09:09:48 [DroneDump]      Tuple: 1 elements
+     * 09:09:48 [DroneDump]       [ 0]   List: 1 elements
+     * 09:09:48 [DroneDump]       [ 0]   [ 0]    Integer: 140007055
+     */
     _log(DRONE__TRACE, "EntityBound::Handle_CmdReconnectToDrones()");
     call.Dump(DRONE__DUMP);
 

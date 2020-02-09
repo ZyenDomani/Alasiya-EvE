@@ -1097,7 +1097,7 @@ bool InventoryItem::Populate( Rsp_CommonGetInfo_Entry& result )
     PySafeDecRef(result.invItem);
     result.time = GetFileTimeNow();
     result.invItem = GetItemRow();
-    // this is for me, to display item name in logs.  not sure if client will react to it being here
+    // this is for me, to display item name in logs.  not sure if client will react to it being here...nope
     result.description = m_itemName;
 
     // updated charge info...again  -allan 8Jan20
@@ -1334,7 +1334,7 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 // new effects system  -allan 4Feb17
 void InventoryItem::AddModifier(fxData data)
 {
-    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+    m_modifiers.emplace(data.math, data);
 }
 
 void InventoryItem::RemoveModifier(fxData data)
@@ -1356,7 +1356,7 @@ void InventoryItem::RemoveModifier(fxData data)
         case FX::Math::PreAssignment:  data.math = FX::Math::PostAssignment;  break;
         case FX::Math::PostAssignment: data.math = FX::Math::PreAssignment;   break;
     }
-    m_modifiers.emplace(std::pair<uint8, fxData>(data.math, data));
+    m_modifiers.emplace(data.math, data);
 }
 
 void InventoryItem::ClearModifiers()

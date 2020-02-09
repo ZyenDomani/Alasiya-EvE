@@ -63,10 +63,8 @@ public:
         PyCallable_REG_CALL(DogmaIMBound, CharGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, ItemGetInfo);
         PyCallable_REG_CALL(DogmaIMBound, GetAllInfo);
-        PyCallable_REG_CALL(DogmaIMBound, GetLocationInfo);
         PyCallable_REG_CALL(DogmaIMBound, DestroyWeaponBank);
         PyCallable_REG_CALL(DogmaIMBound, GetCharacterBaseAttributes);
-        PyCallable_REG_CALL(DogmaIMBound, CheckSendLocationInfo);
         PyCallable_REG_CALL(DogmaIMBound, Activate);
         PyCallable_REG_CALL(DogmaIMBound, Deactivate);
         PyCallable_REG_CALL(DogmaIMBound, Overload);
@@ -104,9 +102,7 @@ public:
     PyCallable_DECL_CALL(ItemGetInfo);
     PyCallable_DECL_CALL(GetAllInfo);
     PyCallable_DECL_CALL(DestroyWeaponBank);
-    PyCallable_DECL_CALL(GetLocationInfo);
     PyCallable_DECL_CALL(GetCharacterBaseAttributes);
-    PyCallable_DECL_CALL(CheckSendLocationInfo);
     PyCallable_DECL_CALL(Activate);
     PyCallable_DECL_CALL(Deactivate);
     PyCallable_DECL_CALL(Overload);
@@ -556,8 +552,8 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     } else  // fixed
         rsp->SetItemString("charInfo", new PyDict());
 
-	/* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
-	if (args.arg2) {
+    /* Setting "shipInfo" in the Dictionary  -fixed 26Mar16 */
+    if (args.arg2) {
         PyDict* shipResult = pClient->GetShip()->GetShipInfo();
         if (shipResult == nullptr) {
             _log(SERVICE__ERROR, "Unable to build ship info for ship %u", pClient->GetShipID());
@@ -581,7 +577,7 @@ PyResult DogmaIMBound::Handle_GetAllInfo(PyCallArgs& call)
     if (is_log_enabled(CLIENT__INFO))
         rsp->Dump(CLIENT__INFO, "     ");
     sItemFactory.UnsetUsingClient();
-	return new PyObject("util.KeyVal", rsp );
+    return new PyObject("util.KeyVal", rsp );
 }
 
 PyResult DogmaIMBound::Handle_LinkWeapons(PyCallArgs& call) {
@@ -1049,51 +1045,8 @@ PyResult DogmaIMBound::Handle_PeelAndLink(PyCallArgs& call) {
     return nullptr;
 }
 
-// dunno what this is
-PyResult DogmaIMBound::Handle_CheckSendLocationInfo(PyCallArgs& call)
-{
-    sLog.Warning("DogmaIMBound::Handle_CheckSendLocationInfo()", "size=%u", call.tuple->size());
-    call.Dump(SHIP__INFO);
-
-    return nullptr;
-}
-
-// dunno what this is
-PyResult DogmaIMBound::Handle_GetLocationInfo(PyCallArgs& call)
-{
-    // oldOwnerID, oldLocationID, oldFlagID = oldInfo = dogmaItem.GetLocationInfo()
-    /*
-     *             [PyTuple 3 items]         << call from client
-     *               [PyString "GetLocationInfo"]
-     *               [PyTuple 0 items]
-     *               [PyDict 0 kvp]
-     *   [PyTuple 1 items]                   << response from server
-     *     [PySubStream 43 bytes]
-     *       [PyTuple 2 items]
-     *         [PySubStruct]
-     *           [PySubStream 32 bytes]
-     *             [PyTuple 2 items]
-     *               [PyString "N=699771:17106"]     << nodeID
-     *               [PyIntegerVar 129503265956883696]   << filetime.  sent in "ClientHasReleasedTheseObjects" packet later
-     *         [PyDict 0 kvp]
-     *   [PyDict 1 kvp]
-     *     [PyString "OID+"]
-     *     [PyDict 1 kvp]
-     *       [PyString "N=699771:17106"]
-     *       [PyIntegerVar 129503265956883696]
-     */
-
-    // dummy right now, don't have any meaningful packet logs
-    // returns nodeID and timestamp
-    PyTuple* tuple = new PyTuple(2);
-    tuple->SetItem(0, new PyString(GetBindStr()));    // node info here
-    tuple->SetItem(1, new PyLong(GetFileTimeNow()));
-    return tuple;
-}
-
 PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
     /*
-     * 21:59:29 L Server: ChangeDroneSettings call made to
      * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
      * 21:59:29 [SvcCall]   Call Arguments:
      * 22:04:44 [SvcCall]       Tuple: 1 elements
@@ -1104,9 +1057,6 @@ PyResult DogmaIMBound::Handle_ChangeDroneSettings(PyCallArgs& call) {
      * 22:04:44 [SvcCall]         [ 0]   [ 1] Value: Integer field: 1
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
      * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
-     *
-     *    sLog.Warning("DogmaIMBound::Handle_ChangeDroneSettings()", "size=%u", call.tuple->size());
-     *    call.Dump(SHIP__INFO);
      */
 
     if (!call.tuple->GetItem(0)->IsDict()) {

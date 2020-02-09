@@ -212,7 +212,7 @@ void SystemBubble::Add(SystemEntity* pSE)
         //    EvE::traceStack();
     }
 
-	if (IsTempItem(pSE->GetID())) {
+    if (IsTempItem(pSE->GetID())) {
         if (!m_players.empty())
             AddBallExclusive(pSE);
     } else if (pSE->HasPilot()) {
@@ -256,18 +256,11 @@ void SystemBubble::Remove(SystemEntity *pSE) {
 
     _log(DESTINY__BUBBLE_TRACE, "SystemBubble::Remove() - Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
 
-    std::map<uint32, SystemEntity*>::iterator itr = m_entities.find(pSE->GetID());
-    if (itr != m_entities.end())
-        m_entities.erase(itr);
-
-    itr = m_dynamicEntities.find(pSE->GetID());
-    if (itr != m_dynamicEntities.end())
-        m_dynamicEntities.erase(itr);
+    m_entities.erase(pSE->GetID());
+    m_dynamicEntities.erase(pSE->GetID());
 
     if (pSE->HasPilot()) {
-        std::map<uint32, Client*>::iterator itr = m_players.find(pSE->GetPilot()->GetCharacterID());
-        if (itr != m_players.end())
-            m_players.erase(itr);
+        m_players.erase(pSE->GetPilot()->GetCharacterID());
         RemoveBalls(pSE);
     }
 
@@ -275,11 +268,8 @@ void SystemBubble::Remove(SystemEntity *pSE) {
     if (!m_players.empty())
         RemoveBall(pSE);
 
-    if (pSE->IsDroneSE()) {
-        std::map<uint32, Drone*>::iterator itr = m_drones.find(pSE->GetID());
-        if (itr != m_drones.end())
-            m_drones.erase(itr);
-    }
+    if (pSE->IsDroneSE())
+        m_drones.erase(pSE->GetID());
 
     if (is_log_enabled(DESTINY__BUBBLE_DEBUG))
         sLog.Warning("SystemBubble::Remove()", "Removing entity %u from bubble %u", pSE->GetID(), m_bubbleID);
