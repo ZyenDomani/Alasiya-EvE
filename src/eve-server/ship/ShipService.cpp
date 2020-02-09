@@ -585,10 +585,8 @@ PyResult ShipBound::Handle_Scoop(PyCallArgs &call) {
         if (pSE->IsPOSSE())
             pSE->GetPOSSE()->Scoop();
         // perform data cleanup for drones
-        if (pSE->IsDroneSE()) {
-            pSE->GetDroneSE()->SetOwner(pClient);
+        if (pSE->IsDroneSE())
             pClient->GetShipSE()->ScoopDrone(pSE);
-        }
         // delete SE since item is no longer in space
         SafeDelete(pSE);
     }
@@ -602,6 +600,7 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
         codelog(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
         return PyStatic.NewNone();
     }
+    // per patch notes, if ship is too far to scoop, it will automagically travel closer till drone is within range, then scoop and stop
 
     Client* pClient(call.client);
     SystemManager* pSysMgr(pClient->SystemMgr());
@@ -636,9 +635,8 @@ PyResult ShipBound::Handle_ScoopDrone(PyCallArgs &call) {
             // so take ownership of it and move it into the Drone bay:
             iRef->ChangeOwner(pClient->GetCharacterID(), true);
             pClient->MoveItem(iRef->itemID(), pClient->GetShipID(), flagDroneBay);
-            pSysMgr->RemoveEntity(pDroneSE);
-            pDroneSE->GetDroneSE()->SetOwner(pClient);
             pClient->GetShipSE()->ScoopDrone(pDroneSE);
+            pSysMgr->RemoveEntity(pDroneSE);
             SafeDelete(pDroneSE);
         }
     }

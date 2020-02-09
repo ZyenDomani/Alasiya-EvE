@@ -29,8 +29,10 @@
 #include "EVEServerConfig.h"
 #include "EntityList.h"
 #include "inventory/AttributeEnum.h"
-#include "system/DestinyManager.h"
 #include "npc/Drone.h"
+#include "system/Container.h"
+#include "system/Damage.h"
+#include "system/DestinyManager.h"
 #include "system/SystemManager.h"
 #include "system/SystemBubble.h"
 #include "system/cosmicMgrs/AnomalyMgr.h"
@@ -39,8 +41,9 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
 : DynamicSystemEntity(drone, services, pSystem),
   m_AI(new DroneAIMgr(this)),
   m_system(pSystem)
-{
-    assert (m_AI != nullptr);
+  {
+      assert (m_AI != nullptr);
+      assert (m_system != nullptr);
 
     m_online = false;
 
@@ -74,11 +77,13 @@ Drone::Drone(InventoryItemRef drone, PyServiceMgr &services, SystemManager* pSys
     m_self->SetAttribute(AttrShieldCharge,        m_self->GetAttribute(AttrShieldCapacity), false);
     m_self->SetAttribute(AttrCapacitorCharge,     m_self->GetAttribute(AttrCapacitorCapacity), false);
 
+    /** @todo update attribs from char skills here....it's not done by Fx system */
+
     m_destiny->UpdateShipVariables();
 
     SetResists();
 
-    /* Gets the value from the NPC and put on our own vars */
+    /* Gets the value from the Drone and put on our own vars */
     m_emDamage = m_self->GetAttribute(AttrEmDamage).get_float(),
     m_kinDamage = m_self->GetAttribute(AttrKineticDamage).get_float(),
     m_therDamage = m_self->GetAttribute(AttrThermalDamage).get_float(),
@@ -142,6 +147,8 @@ void Drone::Launch( Ship* pShipSE ) {
 
     m_system->AddEntity(this);
     m_system->GetAnomMgr()->AddAnomaly(m_self);
+    
+    assert (m_bubble != nullptr);
 }
 
 void Drone::Online(Ship* pShipSE/*nullptr*/) {
@@ -353,19 +360,78 @@ void Drone::SetResists() {
     if (!m_self->HasAttribute(AttrThermalDamageResonance)) m_self->SetAttribute(AttrThermalDamageResonance, EvilOne, false);
 }
 
-/*
- * 21:59:29 L DogmaIMBound::Handle_ChangeDroneSettings(): size=1
- * 21:59:29 [SvcCall]   Call Arguments:
- * 22:04:44 [SvcCall]       Tuple: 1 elements
- * 22:04:44 [SvcCall]         [ 0] Dictionary: 3 entries
- * 22:04:44 [SvcCall]         [ 0]   [ 0] Key: Integer field: 1283 <-- AttrFightersAttackAndFollow
- * 22:04:44 [SvcCall]         [ 0]   [ 0] Value: Integer field: 1
- * 22:04:44 [SvcCall]         [ 0]   [ 1] Key: Integer field: 1275 <-- AttrDroneIsAgressive
- * 22:04:44 [SvcCall]         [ 0]   [ 1] Value: Integer field: 1
- * 22:04:44 [SvcCall]         [ 0]   [ 2] Key: Integer field: 1297 <-- AttrDroneFocusFire
- * 22:04:44 [SvcCall]         [ 0]   [ 2] Value: Integer field: 1
- *
- */
+void Drone::Killed(Damage &fatal_blow) {
+    if ((m_bubble == nullptr) or (m_destiny == nullptr) or (m_system == nullptr))
+        return; // make error here?
+
+    uint32 killerID = 0;
+    Client* pClient(nullptr);
+    SystemEntity *killer(fatal_blow.srcSE);
+
+    if (killer->HasPilot()) {
+        pClient = killer->GetPilot();
+        killerID = pClient->GetCharacterID();
+    } else if (killer->IsDroneSE()) {
+        pClient = sEntityList.FindClientByCharID( killer->GetSelf()->ownerID() );
+        if (pClient == nullptr) {
+            sLog.Error("Drone::Killed()", "killer == IsDrone and pPlayer == nullptr");
+        } else
+            killerID = pClient->GetCharacterID();
+    } else
+        killerID = killer->GetID();
+
+    if (pClient != nullptr) {
+        //award kill bounty.
+        AwardBounty( pClient );
+        if (m_system->GetSystemSecurityRating() > 0)
+            AwardSecurityStatus(m_self, pClient->GetChar().get());  // this awards secStatusChange for npcs in empire space
+    }
+
+    GPoint wreckPosition = m_destiny->GetPosition();
+    if (wreckPosition.isNaN()) {
+        sLog.Error("Drone::Killed()", "Wreck Position is NaN");
+        return;
+    }
+
+    uint32 wreckTypeID = 26972;   //Faction Drone Wreck -- best i can find.
+
+    std::string wreck_name = m_self->itemName();
+    wreck_name += " Wreck";
+    ItemData wreckItemData(wreckTypeID, killerID, m_system->GetID(), flagAutoFit, wreck_name.c_str(), wreckPosition, itoa(m_allyID));
+    WreckContainerRef wreckItemRef = sItemFactory.SpawnWreckContainer( wreckItemData );
+    if (wreckItemRef.get() == nullptr) {
+        sLog.Error("Drone::Killed()", "Creating Wreck Item Failed for %s of type %u", wreck_name.c_str(), wreckTypeID);
+        return;
+    }
+
+    if (is_log_enabled(PHYSICS__TRACE))
+        _log(PHYSICS__TRACE, "Drone::Killed() - Drone %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
+        GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+
+    // add wreck to system's AnomalyMgr
+    m_system->GetAnomMgr()->AddAnomaly(wreckItemRef);
+
+    DBSystemDynamicEntity wreckEntity = DBSystemDynamicEntity();
+        wreckEntity.allianceID = (killer->GetAllianceID() == 0 ? m_allyID : killer->GetAllianceID());
+        wreckEntity.categoryID = EVEDB::invCategories::Celestial;
+        wreckEntity.corporationID = killer->GetCorporationID();
+        wreckEntity.factionID = (killer->GetWarFactionID() == 0 ? m_warID : killer->GetWarFactionID());
+        wreckEntity.groupID = EVEDB::invGroups::Wreck;
+        wreckEntity.itemID = wreckItemRef->itemID();
+        wreckEntity.itemName = wreck_name;
+        wreckEntity.ownerID = killerID;
+        wreckEntity.typeID = wreckTypeID;
+        wreckEntity.x = wreckPosition.x;
+        wreckEntity.y = wreckPosition.y;
+        wreckEntity.z = wreckPosition.z;
+
+    if (!m_system->BuildDynamicEntity(wreckEntity, m_self->itemID())) {
+        sLog.Error("Drone::Killed()", "Spawning Wreck Failed for typeID %u", wreckTypeID);
+        wreckItemRef->Delete();
+        return;
+    }
+    m_destiny->SendJettisonPacket();
+}
 
 /*
     [PyObjectData Name: macho.MachoAddress]

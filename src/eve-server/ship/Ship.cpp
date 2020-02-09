@@ -15,7 +15,7 @@
 #include "system/BubbleManager.h"
 #include "system/SolarSystem.h"
 #include "system/SystemBubble.h"
-#include <system/SystemManager.h>
+#include "system/SystemManager.h"
 
 /*
  * ShipItem
@@ -2835,7 +2835,7 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
     //  if ship doesnt have bandwidth for drone, it will not online (inert)
     uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
     load += drone->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
-    if (load < m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32()) {
+    if (load <= m_shipRef->GetAttribute(AttrDroneBandwidth).get_uint32()) {
         pDrone->GetAI()->SetIdle();
         m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false); // client dont care
     } else {
@@ -2854,6 +2854,9 @@ bool Ship::LaunchDrone(InventoryItemRef drone) {
 void Ship::ScoopDrone(SystemEntity* pDroneSE) {
     m_drones.erase(pDroneSE->GetID());
     pDroneSE->GetDroneSE()->StateChange();
+    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
+    load -= pDroneSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
+    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
 }
 
 void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
@@ -2862,18 +2865,21 @@ void Ship::UpdateDrones(std::map<int16, int8> &attribs) {
         cur.second->SetAttribute(AttrDroneFocusFire, attribs[AttrDroneFocusFire]);
         cur.second->SetAttribute(AttrDroneIsAgressive, attribs[AttrDroneIsAgressive]);
         cur.second->SetAttribute(AttrFightersAttackAndFollow, attribs[AttrFightersAttackAndFollow]);
-        //AttrDroneIsChaotic
-        //AttrDroneIsAgressive
+        //cur.second->SetAttribute(AttrDroneIsChaotic, attribs[AttrDroneIsChaotic]);    // no longer used?
     }
 }
 
 void Ship::AbandonDrones() {
+    uint16 load = m_shipRef->GetAttribute(AttrDroneBandwidthLoad).get_uint32();
     for (auto cur : m_drones) {
         SystemEntity* pSE = m_system->GetSE(cur.first);
         if (pSE != nullptr)
-            if (pSE->IsDroneSE())
+            if (pSE->IsDroneSE()) {
                 pSE->GetDroneSE()->Offline();
+                load -= pSE->GetSelf()->GetAttribute(AttrDroneBandwidthUsed).get_uint32();
+            }
     }
+    m_shipRef->SetAttribute(AttrDroneBandwidthLoad, load, false);
 }
 //AttrDroneControlDistance
 

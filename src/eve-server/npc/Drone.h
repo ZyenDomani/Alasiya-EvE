@@ -41,6 +41,7 @@ class DestinyManager;
 class SystemManager;
 class ServiceDB;
 class NPCAIMgr;
+class Damage;
 
 class Drone
 : public DynamicSystemEntity
@@ -59,6 +60,9 @@ public:
     virtual void EncodeDestiny( Buffer& into );
     virtual void MakeDamageState(DoDestinyDamageState &into);
     virtual PyDict* MakeSlimItem();
+
+    /* virtual functions default to base class and overridden as needed */
+    virtual void Killed(Damage &fatal_blow);
 
     virtual void TargetAdded(SystemEntity *who);
     virtual void TargetLost(SystemEntity *who);
