@@ -264,6 +264,39 @@ many unimplemented salvage error msgs noted in prospector.h
 
 attribMap has open db calls
 
+OSE::Killed() unfinished.
+
+Ethnic Relations skill showinfo window, attributes tab, has:
+  [no messageID: 0]
+    -5
+
+*****************  Fx shit not working or not right
+
+[FxMsg] FxProc::ApplyEffects(8): Ethnic Relations(140000010) - src(Skill:1820) 8500000.000 <PostAssignment> targ(Char:1820) set targ from 0.000 to 8500000.000.
+[FxWarning] FxProc::ApplyEffects(7): Spaceship Command(140000002): target item vector empty for src(Skill:151) - targ(Ship:70).
+[FxDebug] FxProc::ApplyEffects(): Leadership is gang source calling target Self.
+[FxWarning] FxProc::ApplyEffects(7): Leadership(140000004): target item vector empty for src(Gang:566) - targ(Self:564).
+[FxDebug] FxProc::ApplyEffects(): Skirmish Warfare is gang source calling target Self.
+[FxWarning] FxProc::ApplyEffects(7): Skirmish Warfare(140000005): target item vector empty for src(Gang:151) - targ(Self:70).
+[FxDebug] FxProc::ApplyEffects(): Siege Warfare is gang source calling target Self.
+[FxWarning] FxProc::ApplyEffects(7): Siege Warfare(140000006): target item vector empty for src(Gang:337) - targ(Self:263).
+[FxMsg] FxProc::ApplyEffects(7): Ethnic Relations(140000010) - src(Skill:1821) -15.000 <PostPercent> targ(Self:1820) set targ from 10000000.000 to 8500000.000.
+[FxWarning] FxProc::ApplyEffects(7): Mining(140000011): target item vector empty for src(Skill:434) - targ(Ship:77).
+[FxMsg] FxProc::ApplyEffects(7): Mechanics(140000012) - src(Skill:327) 10.000 <PostPercent> targ(Other:9) set targ from 150.000 to 165.000.
+[FxWarning] FxProc::ApplyEffects(7): Repair Systems(140000013): target item vector empty for src(Skill:312) - targ(Ship:73).
+[FxWarning] FxProc::ApplyEffects(7): Afterburner(140000022): target item vector empty for src(Skill:317) - targ(Ship:6).
+[FxWarning] FxProc::ApplyEffects(7): Afterburner(140000022): target item vector empty for src(Skill:66) - targ(Ship:73).
+[FxMsg] FxProc::ApplyEffects(7): Warp Drive Operation(140000023) - src(Skill:319) -20.000 <PostPercent> targ(Other:153) set targ from 0.000 to 0.000.
+[FxDebug] FxProc::ApplyEffects(): Armored Warfare is gang source calling target Self.
+[FxWarning] FxProc::ApplyEffects(7): Armored Warfare(140000025): target item vector empty for src(Gang:335) - targ(Self:265).
+[FxDebug] FxProc::ApplyEffects(): Information Warfare is gang source calling target Self.
+[FxWarning] FxProc::ApplyEffects(7): Information Warfare(140000026): target item vector empty for src(Gang:309) - targ(Self:76).
+[FxMsg] FxProc::ApplyEffects(7): Shield Upgrades(140006875) - src(Skill:323) -10.000 <PostPercent> targ(Ship:30) set targ from 2.000 to 1.800.
+[FxWarning] FxProc::ApplyEffects(7): Allan's Noob Ship(140000029): target item vector empty for src(Skill:1834) - targ(Ship:554).
+[FxMsg] FxProc::ApplyEffects(7): Allan's Noob Ship(140000029) - src(Skill:1836) 10.000 <PostPercent> targ(Ship:64) set targ from 2.269 to 2.496.
+[FxMsg] FxProc::ApplyEffects(7): Allan's Noob Ship(140000029) - src(Skill:1836) 10.000 <PostPercent> targ(Ship:64) set targ from 2.269 to 2.496.
+[FxWarning] FxProc::ApplyEffects(7): Allan's Noob Ship(140000029): target item vector empty for src(Skill:1837) - targ(Ship:68).
+
 
 *****************  ideas for later
 

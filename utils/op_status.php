@@ -4,12 +4,12 @@
 <td style="text-align: center;"><h2>Estimated Progress of Listed Systems</h2></td></tr></table>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: #2222EE; width:58%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
+<table style="background: #2222EE; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table></td></tr></table>
 <table style="background: transparent; width:100%"><tr><td style="text-align: center;">
 </td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
-<table style="background: transparent; width:58%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
-<tr><td> &#160;<font color="red"><b>58.9%</b></font>&#160;&#160;&#160;&#160;
+<table style="background: transparent; width:63%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
+<tr><td> &#160;<font color="red"><b>62.9%</b></font>&#160;&#160;&#160;&#160;
 </td></tr></table></td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
 <table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right">
 <tr><td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;
@@ -1478,7 +1478,105 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="green">COMPLETE</font><BR>1Feb14</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Management_in_Space"> Ship Management </span></h2>
+<h2> <span class="mw-headline" id="fxSystem"> Effects System </span></h2>
+<div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
+<table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: #2222EE; width:70%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
+</td></tr></table></div></div><div id="Current_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 8px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px; -moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
+<table style="background: transparent; width:70%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> &#160;<font color="red"><b>70.0</b></font>&#160;&#160;&#160;&#160;</td></tr></table>
+</td></tr></table></div></div><div id="goal_value_marker" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 11px">
+<table style="background: transparent; border:2px clear; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr>
+<td> <font color="red"><b>100</b></font>&#160;&#160;&#160;&#160;</td></tr></table></div></div><br /><p><br /><br /></p><p><br /></p>
+<table class="statusTable" border="1" style="width: 100%; border-collapse: collapse; border-style: solid;border-width: 1px;border-color: #666;">
+<tr><td style="width: 70&amp;;">Service/Action</td>
+<td style="width: 4%;">Status</td>
+<td style="width: 26%;">Comments</td></tr>
+<tr><td> - Parsing Effects</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fx Source Processing - Location or Item applying the effect</h3></font></td></tr>
+<tr><td> - <font color=lime>Process Self Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Module or Charge</td><td class="working">90%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 90%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Process Skill Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Skill, Implant or Booster</td><td class="working">70%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 70%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Working</font><BR><font color=orange>Testing</font><BR><font color=red>Implants and Boosters not implemented</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Process Ship Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is Ship Subsystem (T3 ships only)</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED<BR>T3 Ships are not implemented.</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Process Group Effects</font><BR>&nbsp;&nbsp;&nbsp;Source is not a source per se, this defines the target selection requirements</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=pink>Final Testing</font><BR>19Jun19</td></tr>
+<!--
+<tr><td> - <font color=lime>Process Gang Effects</font><BR>Fleet Booster Skills</td><td class="broken">10%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=magenta>Skeleton Code Only</font><BR>Actual Fleet Bonuses are hard-coded and do not process thru Fx System.<BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Process Owner Effects</font><BR>Owner Source Unknown at this time</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Process Target Effects</font><BR>Target Source Unknown at this time</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+// -->
+<tr><td colspan=3><font color=white><h3>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Fx Target Processing - Some of these vary depending upon Fx source</h3></font></td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Self</font><BR>Source Item or Location for Group Effects</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Character</font><BR>Character or Character Skills</td><td class="working">95%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 95%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=pink>Final Testing</font><BR>7Feb20</td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Ship</font><BR>Character's Ship</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Target</font><BR>Ship's current target</td><td class="working">50%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Other</font><BR>Character's ship for Skill Source.  Specific Module for Charge Source.</td><td class="working">80%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 80%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Mostly Complete</font><BR><font color=orange>Testing</font><BR>19Jun19</td></tr>
+<tr><td> - <font color=lime>Apply Processed Effects to Charge</font><BR>Loaded Charge on a Module or Module Group</td><td class="working">50%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 50%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=lime>Working</font> - <font color=olive>Needs More Testing</font><BR>19Jun19</td></tr>
+<!--
+<tr><td> - <font color=lime>Apply Processed Effects to Area</font><BR>Area Target Unknown at this time</td><td class="broken">0%
+<table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
+<tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
+<td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
+<td><font color=red>NOT IMPLEMENTED</font><BR>19Jun19</td></tr>
+// -->
+</table>
+<p><br style="clear:both;" /></p>
+<h2> <span class="mw-headline" id="Ship_Management"> Ship Management </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:80%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1601,7 +1699,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=pink>Final Testing</font><BR>20Dec17</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="fittings_manager"> Ship Fittings Manager </span></h2>
+<h2> <span class="mw-headline" id="Ship_Fittings"> Ship Fittings Manager </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:10%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1660,7 +1758,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Navigation_in_Space"> Ship Navigation (Destiny) </span></h2>
+<h2> <span class="mw-headline" id="Ship_Navigation"> Ship Navigation (Destiny) </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:91%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1742,7 +1840,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color="lime">Complete</font> - <font color=red>NOT IMPLEMENTED</font><BR>10Aug16</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Combat_in_Space"> Ship Combat </span></h2>
+<h2> <span class="mw-headline" id="Ship_Combat"> Ship Combat </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -1886,7 +1984,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>10Jan19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Ship_Combat_in_Space"> Ship Module Groups </span></h2>
+<h2> <span class="mw-headline" id="Ship_Modules"> Ship Module Groups </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:87%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
@@ -2024,7 +2122,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <tr><td style="text-align: left; height: 12px; width: 10%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
 <td><font color=magenta>Skeleton Code Only</font><BR>2Feb20</td></tr>
-<tr><td><font color=lime>Focus Fire</font><BR>All drones fire upon same target till destroyed or commanded otherwise.</td><td class="broken">0%
+<tr><td><font color=lime>Focus Fire</font><BR>All drones fire upon (or mine) same target till destroyed or commanded otherwise.</td><td class="broken">0%
 <table style="text-align: left; width: 150px; border: 1px solid black" cellspacing="1">
 <tr><td style="text-align: left; height: 12px; width: 1%; background:#00DB00"></td>
 <td style="text-align: left; height: 15px; background:#ffffff"></td></tr></table></td>
@@ -2218,7 +2316,7 @@ Items listed as "<font color=yellow>Preliminary Implementation</font>" have a ro
 <td><font color=magenta>Skeleton Code Only</font><BR>30May19</td></tr>
 </table>
 <p><br style="clear:both;" /></p>
-<h2> <span class="mw-headline" id="Scan_and_Directional_Probing"> Scanning &amp; Probing </span></h2>
+<h2> <span class="mw-headline" id="Scan_and_Probing"> Scanning &amp; Probing </span></h2>
 <div id="Main_progress_bar_appearance_and_calculation" style="position:relative; width:100%"><div style="position:absolute; width:100%; top: 5px">
 <table style="background: transparent; border:3px solid blue; width:100%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td>
 <table style="background: #2222EE; width:99%; height:50px;-moz-border-radius: 110px; -webkit-border-radius: 110px; border-radius: 110px; text-align:right"><tr><td></td></tr></table>
