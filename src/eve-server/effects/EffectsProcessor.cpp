@@ -457,19 +457,22 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
                         }
                     } break;
                     case Target::Char: {
-                        // ....char skills that require skill in 'srcRef' or defined in 'typeID'
-                        uint16 skillID = srcItemRef->typeID();
-                        if (cur.second.typeID)
-                            skillID = cur.second.typeID;
-                        std::vector<InventoryItemRef> allSkills;
-                        pChar->GetSkillsList(allSkills);
-                        for (auto curSkill : allSkills)
-                            if (curSkill->HasReqSkill(skillID))
-                                itemRefVec.push_back(curSkill);
+                        if (cur.second.typeID) {
+                            // ....char skills that require skill in 'srcRef' or defined in 'typeID'
+                            uint16 skillID = cur.second.typeID;
+                            std::vector<InventoryItemRef> allSkills;
+                            pChar->GetSkillsList(allSkills);
+                            for (auto curSkill : allSkills)
+                                if (curSkill->HasReqSkill(skillID))
+                                    itemRefVec.push_back(curSkill);
+                        } else {
+                            // ....character itself
+                            itemRefVec.push_back(static_cast<InventoryItemRef>(pChar));
+                        }
                     } break;
                     case Target::Other: {
                         // ....ship from 'core' pilot skills (electronics, mechanics, etc)
-                        itemRefVec.push_back(static_cast<InventoryItemRef>(pShip)); //is this right way?
+                        itemRefVec.push_back(static_cast<InventoryItemRef>(pShip));
                     } break;
                     case Target::Charge: {
                         // ....charges
@@ -566,7 +569,12 @@ void FxProc::ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShi
         }
 
         if (itemRefVec.empty()) {
-            //_log(EFFECTS__WARNING, "FxProc::ApplyEffects(): target item vector empty.");
+            _log(EFFECTS__WARNING, "FxProc::ApplyEffects(%i): %s(%u): target item vector empty.", \
+                    cur.first, srcItemRef->itemName().c_str(), srcItemRef->itemID());
+            _log(EFFECTS__WARNING, "Data:  src(%s:%u), targ(%s:%u), grpID:%u, typeID:%u, math:%s.", \
+                    GetSourceName(cur.second.fxSrc), cur.second.srcAttr, \
+                    GetTargLocName(cur.second.targLoc), cur.second.targAttr, \
+                    cur.second.grpID, cur.second.typeID, GetMathMethodName(cur.first));
             continue;
         }
 
