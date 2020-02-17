@@ -26,7 +26,9 @@ public:
     FxProc()        { /* do nothing here */ }
     ~FxProc()       { /* do nothing here */ }
 
+    // pItem is modifier container
     void            ApplyEffects(InventoryItem* pItem, Character* pChar, ShipItem* pShip, bool update=false);
+    // pItem is modifier container
     void            ParseExpression(InventoryItem* pItem, Expression expression, fxData& data, GenericModule* pMod=nullptr);
     int8            GetEnvironmentEnum(const std::string& domain);
     int8            GetAssociationEnum(const std::string& association);
@@ -38,7 +40,10 @@ public:
 
     EvilNumber      CalculateAttributeValue(EvilNumber val1, EvilNumber val2, /*FX::Math*/int8 method);
 
+    void DecodeEffects(const uint16 fxID);
 protected:
+    void EvaluateExpression(const uint16 expID, const char* type);
+    void DecodeExpression(Expression expression, fxData& data);
 
 private:
 

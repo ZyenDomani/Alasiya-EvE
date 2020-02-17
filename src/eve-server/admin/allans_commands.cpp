@@ -494,8 +494,9 @@ PyResult Command_shipinventory(Client* pClient, CommandDB* db, PyServiceMgr* ser
     str << "%s<br>"; //40
     str << "InventoryID %u(%p) (Ship %p) has %u items.<br><br>"; //50
 
+    // update to sort by slot...pilot, lo, mid, hi, rig, subsystem, cargo, {other cargo}
     for (auto cur : invMap)
-        str << cur.first << "(" << cur.second->flag() << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
+        str << cur.first << "(" << sDataMgr.GetFlagName(cur.second->flag()) << "): " << cur.second->itemName() << "<br>"; // 20 + 40 for name (60)
 
     int count = invMap.size();
     int size = count * 60;

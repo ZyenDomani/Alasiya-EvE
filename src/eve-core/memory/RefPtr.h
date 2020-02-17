@@ -60,7 +60,6 @@ public:
     : mRefCount( initRefCount )
     {
         mDeleted = false;
-        //++mRefCount;
     }
 
     /**
@@ -89,7 +88,7 @@ protected:
         assert( mDeleted == false );
         ++mRefCount;
         //assert( mRefCount > 0 );  // RefPtr objects are created with a ref count of 0, then incremented during RefPtr c'tor
-        _log(REFPTR__INC, "IncRef() is %u.", mRefCount);
+        //_log(REFPTR__INC, "IncRef() is %u.", mRefCount);
     }
     /**
      * @brief Decrements reference count of object by one.
@@ -108,7 +107,7 @@ protected:
         assert( mDeleted == false );
         assert( mRefCount > 0 );
         --mRefCount;
-        _log(REFPTR__DEC, "DecRef() is %u.", mRefCount);
+        //_log(REFPTR__DEC, "DecRef() is %u.", mRefCount);
 
         if (mRefCount < 1)
             delete this;
@@ -171,7 +170,7 @@ public:
     /**
      * @brief Destructor, releases reference.
      */
-    ~RefPtr()
+    virtual ~RefPtr()
     {
         if (*this)
             (*this)->DecRef();

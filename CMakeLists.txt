@@ -61,9 +61,11 @@ INCLUDE( "DetectScm" )
 # Intentionally specify the CMAKE_CXX_FLAGS as last to allow user
 # override the setup.
 #
-# Switch to the C++14 standard (minimum C++11 required)
-SET( CMAKE_CXX_FLAGS "-std=gnu++14 ${CMAKE_CXX_FLAGS}" )
+# Switch to the C++11 standard (required)
+SET( CMAKE_CXX_FLAGS "-std=gnu++11 -march=native -fabi-version=6 ${CMAKE_CXX_FLAGS}" )
 # -Wall -Wextra -Weffc++
+# -pg -ggdb -pedantic
+# -fsanitize=thread  -fsanitize=address
 
 #
 # Try to determine the exact source version using SCM.

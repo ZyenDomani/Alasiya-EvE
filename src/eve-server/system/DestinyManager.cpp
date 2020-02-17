@@ -710,6 +710,7 @@ void DestinyManager::MoveObject() {
         m_changeDelay = false;
         m_moveTime = GetTimeMSeconds();
         _log(DESTINY__MOVE_TRACE, "Destiny::MoveObject() - ChangeDelay - %s(%u): stateStamp: %u", mySE->GetName(), mySE->GetID(), m_stateStamp);
+
         return;
     }
 
@@ -752,9 +753,7 @@ void DestinyManager::MoveObject() {
     double timeStamp = 0;   // keep all these timers in seconds.
     // check for moving ship changing heading
     if (m_userSpeedFraction) {
-        if (m_orbiting == Destiny::Ball::Orbit::None)
-            Turn();
-        if (m_orbiting > Destiny::Ball::Orbit::Far)
+        if (!m_orbiting or (m_orbiting > Destiny::Ball::Orbit::Far))
             Turn();
     }
 
@@ -2202,7 +2201,7 @@ void DestinyManager::SetUndockSpeed() {
     m_stop = false;
     m_orbiting = 0;
     m_stateStamp = sEntityList.GetStamp();
-    m_moveTime = GetTimeMSeconds();
+    //m_moveTime = GetTimeMSeconds();
     m_changeDelay = true;   // skip a single tic before making change
     m_shipMaxAccelTime = 0.5f;
     m_prevSpeedFraction = 0.0f;
@@ -2213,23 +2212,21 @@ void DestinyManager::SetUndockSpeed() {
     m_activeSpeedFraction = 1.0f;
     m_currentSpeedFraction = 1.0f;
 
-    if (!mySE->IsMissileSE()) {
-        m_ballMode = Destiny::Ball::Mode::GOTO;
-        std::vector<PyTuple*> updates;
-        SetBallVelocity bv;
-            bv.entityID = mySE->GetID();
-            bv.x = m_velocity.x;
-            bv.y = m_velocity.y;
-            bv.z = m_velocity.z;
-        updates.push_back(bv.Encode());
-        CmdGotoDirection du;
-            du.entityID = mySE->GetID();
-            du.x = m_shipHeading.x;
-            du.y = m_shipHeading.y;
-            du.z = m_shipHeading.z;
-        updates.push_back(du.Encode());
-        SendDestinyUpdate(updates);
-    }
+    m_ballMode = Destiny::Ball::Mode::GOTO;
+    std::vector<PyTuple*> updates;
+    SetBallVelocity bv;
+        bv.entityID = mySE->GetID();
+        bv.x = m_velocity.x;
+        bv.y = m_velocity.y;
+        bv.z = m_velocity.z;
+    updates.push_back(bv.Encode());
+    CmdGotoDirection du;
+        du.entityID = mySE->GetID();
+        du.x = m_shipHeading.x;
+        du.y = m_shipHeading.y;
+        du.z = m_shipHeading.z;
+    updates.push_back(du.Encode());
+    SendDestinyUpdate(updates);
 }
 
 PyResult DestinyManager::AttemptDockOperation() {
@@ -2398,24 +2395,25 @@ void DestinyManager::SpeedBoost(bool deactivate/*false*/)
         }
     }
 
-    /** @todo need to delay sending this till next server update (next tic at earliest) */
+    // for SpeedBoost (prop mods)
     std::vector<PyTuple*> updates;
     SetBallAgility sbagility;
         sbagility.entityID =  mySE->GetID();
         sbagility.agility = m_shipInertia;
-    updates.push_back(sbagility.Encode());
+        updates.push_back(sbagility.Encode());
     SetBallMass sbmass;
         sbmass.entityID = mySE->GetID();
         sbmass.mass = m_mass;
-    updates.push_back(sbmass.Encode());
+        updates.push_back(sbmass.Encode());
     SetBallSpeed sbms;
         sbms.entityID = mySE->GetID();
         sbms.speed = m_maxShipSpeed;
-    updates.push_back(sbms.Encode());
+        updates.push_back(sbms.Encode());
     SendDestinyUpdate(updates);
     m_hasSentShipUpdates = true;    // just in case, as this is re-sent in BeginMovement() (called from Orbit())
 
     SetSpeedFraction(m_userSpeedFraction, true);
+
 }
 
 void DestinyManager::WebbedMe(InventoryItemRef modRef, bool apply/*false*/)

@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:			Allan
-    Thanks to:		avianrr  for the idea
+    Author:	Allan
+    Thanks to:	avianrr  for the idea
 */
 
 #include <ios>
@@ -29,11 +29,13 @@
 #include <fstream>
 
 #include "ConsoleCommands.h"
+#include "../eve-common/EVEVersion.h"
 #include "StatisticMgr.h"
+#include "effects/EffectsProcessor.h"
+#include "inventory/ItemDB.h"
+#include "market/MarketDB.h"
 #include "missions/MissionDataMgr.h"
 #include "threading/Threading.h"
-#include "../eve-common/EVEVersion.h"
-#include "market/MarketDB.h"
 
 
 ConsoleCommand::ConsoleCommand()
@@ -45,9 +47,9 @@ void ConsoleCommand::Initialize(CommandDispatcher* cd)
     m_dbError = false;
     m_haltServer = false;
     pCommand = cd;
-	tv.tv_sec = 0;
-	tv.tv_usec = 0;
-	UpdateStatus();	//initial status setting
+    tv.tv_sec = 0;
+    tv.tv_usec = 0;
+    UpdateStatus();	//initial status setting
     sLog.Blue( "   ConsoleCommand", "Console Commands Initialized." );
     sLog.Yellow( "   ConsoleCommand", "Enter 'h' for current list of supported commands." );
 }
@@ -63,22 +65,22 @@ bool ConsoleCommand::Process() {
     tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(0, &fds);
-	select(1, &fds, nullptr, nullptr, &tv);
-	if (!FD_ISSET(0, &fds)) {
-	    return true;
-	} else {
-		buf = (char*) malloc (BUFLEN);
-	    if (fgets(buf, BUFLEN, stdin)) {
-			if (strncmp(buf, "x", 1) == 0) {
+    select(1, &fds, nullptr, nullptr, &tv);
+    if (!FD_ISSET(0, &fds)) {
+        return true;
+    } else {
+        buf = (char*) malloc (BUFLEN);
+        if (fgets(buf, BUFLEN, stdin)) {
+            if (strncmp(buf, "x", 1) == 0) {
                 sLog.Warning("  Alasiya's EvEMu", "EXIT called.  Breaking out of Main Loop.");
                 m_haltServer = true;
-				free (buf);
-				return false;
-			} else if (strncmp(buf, "h", 1) == 0) {
+                free (buf);
+                return false;
+            } else if (strncmp(buf, "h", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Current Console Commands and Descriptions: ");
-				sLog.Warning("","");
-				sLog.Warning("           (h)elp", " Displays this dialog.");
-				sLog.Warning("          h(e)llo", " Displays the 'Hello World' message.");
+                sLog.Warning("","");
+                sLog.Warning("           (h)elp", " Displays this dialog.");
+                sLog.Warning("          h(e)llo", " Displays the 'Hello World' message.");
                 sLog.Warning("           e(x)it", " Exits the server, saving all loaded items and loging out all connected clients.");
                 sLog.Warning("        (c)lients", " Displays connected clients, showing account, character, and ip.");
                 sLog.Warning("         (s)tatus", " Displays Server's System Status, showing threads, memory, and cpu time.");
@@ -89,39 +91,40 @@ bool ConsoleCommand::Process() {
                 sLog.Warning("           (n)ote", " Broadcasts a message to all clients thru a notification window.");
                 sLog.Warning("        (m)essage", " Broadcasts a message to all clients thru a message window.");
                 sLog.Warning("        (p)rofile", " Prints a profile of current server runtimes.  *Incomplete*");
-				sLog.Warning("          (r)oles", " Prints a list of common roles and their values.");
-				sLog.Warning("       c(o)mmands", " Prints a list of currently loaded Commands and their required role. (long list)");
+                sLog.Warning("          (r)oles", " Prints a list of common roles and their values.");
+                sLog.Warning("       c(o)mmands", " Prints a list of currently loaded Commands and their required role. (long list)");
                 sLog.Warning("           (t)est", " Prints the current test object *varies*");
+                sLog.Warning("        e(f)fects", " Compiles and prints all item effects.");
                 sLog.Warning("        threa(d)s", " Prints a list of current threads.");
                 sLog.Warning("    reload (l)ogs", " Reloads log.ini to change values without restarting server.");
                 sLog.Warning("(q)uery stat data", " Prints current statistic data.");
-			} else if (strncmp(buf, "e", 1) == 0) {
-				sLog.Green("  Alasiya's EvEMu", "Server Hello:");
-				sLog.Magenta("      Server Says", " Hello World!" );
-			} else if (strncmp(buf, "c", 1) == 0) {
+            } else if (strncmp(buf, "e", 1) == 0) {
+                sLog.Green("  Alasiya's EvEMu", "Server Hello:");
+                sLog.Magenta("      Server Says", " Hello World!" );
+            } else if (strncmp(buf, "c", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Client Connection Information");
-				uint8 clients = sEntityList.GetClientCount();
+                uint8 clients = sEntityList.GetClientCount();
                 sLog.Warning("      Connections", " %u Current Clients Online", clients);
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-				if (clients) {
-					std::vector<Client*> list;
-					sEntityList.GetClients(list);
-					for (auto cur : list) {
+                if (clients) {
+                    std::vector<Client*> list;
+                    sEntityList.GetClients(list);
+                    for (auto cur : list) {
                         if (cur->GetChar().get() == nullptr) {
                             sLog.Magenta("      Connections", " Account %u Connected, but no character selected yet.", cur->GetUserID() );
                             continue;
                         } else
                             sLog.Warning("      Connections", " [(%u)%u] %s in %s(%u).  %u Minutes Online.", \
-										 cur->GetUserID(), cur->GetCharacterID(), cur->GetName(), \
-										 cur->GetSystemName().c_str(), cur->GetLocationID(), cur->GetChar()->OnlineTime() );
-					}
-				}
-			} else if (strncmp(buf, "s", 1) == 0) {
-			    std::string state = "";
+                                    cur->GetUserID(), cur->GetCharacterID(), cur->GetName(), \
+                                    cur->GetSystemName().c_str(), cur->GetLocationID(), cur->GetChar()->OnlineTime() );
+                    }
+                }
+            } else if (strncmp(buf, "s", 1) == 0) {
+                std::string state = "";
                 int64 threads = 0;
                 uint8 aThreads = std::thread::hardware_concurrency();
-				float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
-				Status(state, threads, vm, rss, user, kernel);
+                float vm = 0.0f, rss = 0.0f, user = 0.0f, kernel = 0.0f;
+                Status(state, threads, vm, rss, user, kernel);
                 sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | RSS: %.3fMb | VM: %.3fMb | U: %.2f | K: %.2f", \
                         state.data(), threads, aThreads, rss, vm, user, kernel );
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
@@ -129,41 +132,41 @@ bool ConsoleCommand::Process() {
                 if (sConfig.debug.UseProfiling)
                     sLog.Green(" Server Profiling","Enabled.");
                 else
-					sLog.Warning(" Server Profiling","Disabled.");
+                    sLog.Warning(" Server Profiling","Disabled.");
                 if (sConfig.npc.StaticSpawns)
                     sLog.Green("    Static Spawns","Enabled.");
                 else
-					sLog.Warning("    Static Spawns","Disabled.");
+                    sLog.Warning("    Static Spawns","Disabled.");
                 if (sConfig.npc.RoamingSpawns)
                     sLog.Green("   Roaming Spawns","Enabled.");
                 else
-					sLog.Warning("   Roaming Spawns","Disabled.");
+                    sLog.Warning("   Roaming Spawns","Disabled.");
                 if (sConfig.rates.secRate != 1.0)
                     sLog.Green("        SecStatus","Enabled at %.0f%%.", (sConfig.rates.secRate *100) );
                 else
-					sLog.Warning("        SecStatus","Normal.");
+                    sLog.Warning("        SecStatus","Normal.");
                 if (sConfig.rates.npcBountyMultiply != 1.0)
                     sLog.Green("          Bountys","Enabled at %.0f%%.", (sConfig.rates.npcBountyMultiply *100) );
                 else
-					sLog.Warning("          Bountys","Normal.");
+                    sLog.Warning("          Bountys","Normal.");
                 if (sConfig.rates.damageRate != 1.0)
                     sLog.Green("      All Damages","Enabled at %.0f%%.", (sConfig.rates.damageRate *100) );
                 else
-					sLog.Warning("      All Damages","Normal.");
+                    sLog.Warning("      All Damages","Normal.");
                 if (sConfig.rates.missileRoF != 1.0)
                     sLog.Green("      Missile Dmg","Enabled at %.0f%%.", (sConfig.rates.missileRoF *100) );
                 else
-					sLog.Warning("      Missile Dmg","Normal.");
+                    sLog.Warning("      Missile Dmg","Normal.");
                 if (sConfig.rates.turretRoF != 1.0)
                     sLog.Green("      Turret Dmg","Enabled at %.0f%%.", (sConfig.rates.turretRoF *100) );
                 else
                     sLog.Warning("      Turret Dmg","Normal.");
-			} else if (strncmp(buf, "v", 1) == 0) {
+            } else if (strncmp(buf, "v", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Version:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
                 sLog.Warning("       Build Date", " %s", EVEMU_BUILD_DATE );
-			} else if (strncmp(buf, "i", 1) == 0) {
+            } else if (strncmp(buf, "i", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Information:");
                 sLog.Warning("     Server Build", " %.2f", EVE_Build );
                 sLog.Warning("  Server Revision", " %s", EVEMU_REVISION );
@@ -176,18 +179,18 @@ bool ConsoleCommand::Process() {
                 Status(state, threads, vm, rss, user, kernel);
                 sLog.Warning("     Memory Usage", " RSS: %.3fMb  VM: %.3fMb", rss, vm );
                 sLog.Warning("    Server Status", "  S: %s | T: %d(%u) | U: %.2f | K: %.2f", \
-                         state.data(), threads, aThreads, user, kernel );
+                state.data(), threads, aThreads, user, kernel );
                 uint8 w = 0, d = 0, h = 0, m = 0, s = 0;
-				GetUpTime(w, d, h, m, s);
-				if (w)
+                GetUpTime(w, d, h, m, s);
+                if (w)
                     sLog.Warning("    Server UpTime", " %u W, %u D, %u H, %u M, %u S.", w, d, h, m, s );
-				else if (d)
+                else if (d)
                     sLog.Warning("    Server UpTime", " %u D, %u H, %u M, %u S.", d, h, m, s );
-				else if (h)
+                else if (h)
                     sLog.Warning("    Server UpTime", " %u H, %u M, %u S.", h, m, s );
-				else if (m)
+                else if (m)
                     sLog.Warning("    Server UpTime", " %u M, %u S.", m, s );
-				else
+                else
                     sLog.Warning("    Server UpTime", " %u S.", s );
                 //  loaded items
                 sLog.Warning("     Loaded Items", " %u", sItemFactory.Count());
@@ -202,23 +205,23 @@ bool ConsoleCommand::Process() {
                 //  current clients
                 sLog.Warning("      Connections", " %u Current Clients Online.", sEntityList.GetClientCount());
                 sLog.Warning("      Connections", " %u Clients Connected since startup.", sEntityList.GetConnections() );
-			} else if (strncmp(buf, "a", 1) == 0) {
+            } else if (strncmp(buf, "a", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server SaveAll:");
                 //sLog.Error("      Server Save", " Not Avalible Yet." );
-				sItemFactory.SaveItems();
-			} else if (strncmp(buf, "b", 1) == 0) {
+                sItemFactory.SaveItems();
+            } else if (strncmp(buf, "b", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Broadcast:");
                 sLog.Error(" Server Broadcast", " Not Avalible Yet." );
                 //const char* buff = buf +2;
-				//SendMessage(buff);
-			} else if (strncmp(buf, "n", 1) == 0) {
+                //SendMessage(buff);
+            } else if (strncmp(buf, "n", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Notify:");
                 const char* buff = buf +2;
-				std::vector<Client*> list;
-				sEntityList.GetClients(list);
-				for (auto cur : list)
-                    cur->SendNotifyMsg( buff );
-				sLog.Warning("  Console Command", " Notification sent to all online clients." );
+                std::vector<Client*> list;
+                sEntityList.GetClients(list);
+                for (auto cur : list)
+                cur->SendNotifyMsg( buff );
+                sLog.Warning("  Console Command", " Notification sent to all online clients." );
             } else if (strncmp(buf, "m", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Modal Message:");
                 const char* buff = buf +2;
@@ -251,26 +254,30 @@ bool ConsoleCommand::Process() {
                 sProfile.PrintProfile();
             } else if (strncmp(buf, "r", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Common Account Roles:");
-                sLog.Warning("     Acct::Role::DEV", " %" PRIi64 "(%p)", Acct::Role::DEV, Acct::Role::DEV);
-                sLog.Warning("     Acct::Role::STD", " %" PRIi64 "(%p)", Acct::Role::STD, Acct::Role::STD);
-                sLog.Warning("     Acct::Role::VIP", " %" PRIi64 "(%p)", Acct::Role::VIP, Acct::Role::VIP);
-                sLog.Warning("    Acct::Role::VIP+", " %" PRIi64 "(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
-                sLog.Warning("    Acct::Role::VIEW", " %" PRIi64 "(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
-                sLog.Warning("    Acct::Role::BOSS", " %" PRIi64 "(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
-                sLog.Warning("   Acct::Role::SLASH", " %" PRIi64 "(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
-                sLog.Warning(" Acct::Role::CREATOR", " %" PRIi64 "(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
-                sLog.White("", "");
+                sLog.Warning("     Acct::Role::DEV", " %lli(%p)", Acct::Role::DEV, Acct::Role::DEV);
+                sLog.Warning("     Acct::Role::STD", " %lli(%p)", Acct::Role::STD, Acct::Role::STD);
+                sLog.Warning("     Acct::Role::VIP", " %lli(%p)", Acct::Role::VIP, Acct::Role::VIP);
+                sLog.Warning("    Acct::Role::VIP+", " %lli(%p)", Acct::Role::EPLAYER, Acct::Role::EPLAYER);
+                sLog.Warning("    Acct::Role::VIEW", " %lli(%p)", Acct::Role::VIEW, Acct::Role::VIEW);
+                sLog.Warning("    Acct::Role::BOSS", " %lli(%p)", Acct::Role::BOSS, Acct::Role::BOSS);
+                sLog.Warning("   Acct::Role::SLASH", " %lli(%p)", Acct::Role::SLASH, Acct::Role::SLASH);
+                sLog.Warning(" Acct::Role::CREATOR", " %lli(%p)", Acct::Role::CREATOR, Acct::Role::CREATOR);
+                std::printf("\n");     // spacer
                 sLog.Green("  Alasiya's EvEMu", "Common Corp Roles:");
-                sLog.Warning("     Corp::Role::All", " %" PRIi64 "(%p)", Corp::Role::All, Corp::Role::All);
-                sLog.Warning("    Corp::Role::Cont", " %" PRIi64 "(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
-                sLog.Warning("   Corp::Role::Admin", " %" PRIi64 "(%p)", Corp::Role::Admin, Corp::Role::Admin);
-                sLog.Warning("  Corp::Role::Hangar", " %" PRIi64 "(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
-                sLog.Warning(" Corp::Role::Account", " %" PRIi64 "(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
-                sLog.Warning("Corp::Role::Starbase", " %" PRIi64 "(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
+                sLog.Warning("     Corp::Role::All", " %lli(%p)", Corp::Role::All, Corp::Role::All);
+                sLog.Warning("    Corp::Role::Cont", " %lli(%p)", Corp::Role::AllContainer, Corp::Role::AllContainer);
+                sLog.Warning("   Corp::Role::Admin", " %lli(%p)", Corp::Role::Admin, Corp::Role::Admin);
+                sLog.Warning("  Corp::Role::Hangar", " %lli(%p)", Corp::Role::AllHangar, Corp::Role::AllHangar);
+                sLog.Warning(" Corp::Role::Account", " %lli(%p)", Corp::Role::AllAccount, Corp::Role::AllAccount);
+                sLog.Warning("Corp::Role::Starbase", " %lli(%p)", Corp::Role::AllStarbase, Corp::Role::AllStarbase);
             } else if (strncmp(buf, "o", 1) == 0) {
                 pCommand->ListCommands();
             } else if (strncmp(buf, "t", 1) == 0) {
                 Test();
+            } else if (strncmp(buf, "f", 1) == 0) {
+                std::string args(buf);
+                char& num(args.at(1));
+                FxProc(atoi(&num));
             } else if (strncmp(buf, "d", 1) == 0) {
                 uint8 maxCount = sConfig.server.MaxThreadReport;
                 uint16 count = sThread.Count();
@@ -295,31 +302,31 @@ bool ConsoleCommand::Process() {
             } else if (strncmp(buf, "q", 1) == 0) {
                 sLog.Green("  Alasiya's EvEMu", "Server Statistic Data:");
                 sStatMgr.PrintInfo();
-			} else {
-				sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
-			}
-		}
-		free (buf);
-		return true;
-	}
+            } else {
+                sLog.Error("  Alasiya's EvEMu", "Command not recognized: %s", buf);
+            }
+        }
+        free (buf);
+        return true;
+    }
 }
 
 void ConsoleCommand::GetUpTime(uint8& w, uint8& d, uint8& h, uint8& m, uint8& s) {
     uint32 seconds = sEntityList.GetStamp() - 1000;
     float minutes = seconds/60;
     float hours = minutes/60;
-	float days = hours/24;
-	float weeks = days/7;
+    float days = hours/24;
+    float weeks = days/7;
 
     s = fmod(seconds,60);
     m = fmod(minutes,60);
     h = fmod(hours,24);
-	d = fmod(days,7);
-	w = fmod(weeks,4);
+    d = fmod(days,7);
+    w = fmod(weeks,4);
 }
 
 void ConsoleCommand::SendMessage(const char* msg) {
-	// LSCChannel::SendMessage(Client * c, const char * message, bool self)
+    // LSCChannel::SendMessage(Client * c, const char * message, bool self)
     //  this isnt how it works....need more info
 }
 
@@ -330,14 +337,14 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
     int64 num_threads = 0;  //this is saved from OS as long decimal....*sigh*  gotta allocate long int for it or weird shit happens.
     int64 vsize = 0;      //in bytes
     int64 rss = 0;			//in pages
-	float utime = 0.0f, stime = 0.0f;
+    float utime = 0.0f, stime = 0.0f;
 
     // stat seems to give the most reliable results
     std::ifstream ifs ("/proc/self/stat", std::ios_base::in);
     ifs >> ignore >> ignore >> run_state >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore >> ignore
         >> ignore >> ignore >> ignore >> utime >> stime >> ignore >> ignore >> ignore >> ignore >> num_threads
         >> ignore >> ignore >> vsize >> rss;
-	ifs.close();
+    ifs.close();
 
     if (sConfig.debug.IsTestServer)
         _log(SERVER__INFO, "ConsoleCommand::Status() proc/self/stat returns RSS: %i, VM: %u", rss, vsize);
@@ -350,12 +357,10 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
               T is traced or stopped (on a signal),
               W is paging
     */
-	state = run_state;
-	threads = num_threads;
-
-	user = utime /sysconf(_SC_CLK_TCK)/100.0;
-	kernel = stime /sysconf(_SC_CLK_TCK)/100.0;
-
+    state = run_state;
+    threads = num_threads;
+    user = utime /sysconf(_SC_CLK_TCK)/100.0;
+    kernel = stime /sysconf(_SC_CLK_TCK)/100.0;
     vm_usage     = ((vsize / sysconf(_SC_PAGE_SIZE)) /1024.0 /6);
     //rss (in pages) * page_size(in bytes, converted to k), then convert to Mb.
     resident_set = (rss * (sysconf(_SC_PAGE_SIZE) /1024.0) /1024.0);
@@ -365,7 +370,7 @@ void ConsoleCommand::Status(std::string& state, int64& threads, float& vm_usage,
 void ConsoleCommand::Test()
 {
     sLog.Green("  Alasiya's EvEMu", "Server Test:");
-    sLog.Error("     Allan\'s Test", "Nothing Avalible at this time.");
+    sLog.Error("     Allan\'s Test", "Nothing Available at this time.");
 
     // execute code to begin filling missing data in mission db.
     //  first step:  get courier missionIDs
@@ -384,3 +389,70 @@ void ConsoleCommand::UpdateStatus() {
     sStatMgr.Process();
 }
 
+void ConsoleCommand::FxProc(uint8 idx/*0*/) {
+
+    double start = GetTimeMSeconds();
+    sLog.Green("  Alasiya's EvEMu", "FxProcess(%u)", idx);
+
+    // load items from db
+    std::map<uint16, std::string> typeIDs;
+    switch(idx) {
+        case 1: {
+            sLog.Green("        FxProcess", "Parsing Effects for Module Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Module, typeIDs);
+        } break;
+        case 2: {
+            sLog.Green("        FxProcess", "Parsing Effects for Charge Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Charge, typeIDs);
+        } break;
+        case 3: {
+            sLog.Green("        FxProcess", "Parsing Effects for Subsystem Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Subsystem, typeIDs);
+        } break;
+        case 4: {
+            sLog.Green("        FxProcess", "Parsing Effects for Skill Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Skill, typeIDs);
+        } break;
+        case 5: {
+            sLog.Green("        FxProcess", "Parsing Effects for Implant Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Implant, typeIDs); // this is implants and boosters
+        } break;
+        case 6: {
+            sLog.Green("        FxProcess", "Parsing Effects for Ship Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Ship, typeIDs);
+        } break;
+        case 9: {
+            sLog.Green("        FxProcess", "Parsing Effects for All Possible Items.");
+            std::printf("\n");     // spacer
+            ItemDB::GetItems(EVEDB::invCategories::Module, typeIDs);
+            ItemDB::GetItems(EVEDB::invCategories::Charge, typeIDs);
+            ItemDB::GetItems(EVEDB::invCategories::Subsystem, typeIDs);
+            ItemDB::GetItems(EVEDB::invCategories::Skill, typeIDs);
+            ItemDB::GetItems(EVEDB::invCategories::Implant, typeIDs); // this is implants and boosters
+            ItemDB::GetItems(EVEDB::invCategories::Ship, typeIDs);
+        } break;
+        default: {
+            sLog.Green("        FxProcess", "Usage of Item Fx process reporting.");
+            sLog.Green("        FxProcess", "fx where 'x' is a number corresponding to the item category you wish to process.");
+            sLog.Green("        FxProcess", "1=Modules, 2=Charges, 3=Subsystems, 4=Skills, 5=Implants/Boosters, 6=Ships, 9=all");
+            return;
+        }
+    }
+
+    for (auto cur : typeIDs) {
+        sLog.Yellow("CC::FxProc", "Processing %s (%u)", cur.second.c_str(), cur.first);
+        // proc and print skill fx
+        std::vector< TypeEffects > typeEffMap;
+        sFxDataMgr.GetTypeEffect(cur.first, typeEffMap);
+        for (auto cur2: typeEffMap)
+            sFxProc.DecodeEffects(cur2.effectID);
+    }
+
+    sLog.Magenta("CC::FxProc", "- effects processed in %.3fms", (GetTimeMSeconds() - start));
+}

@@ -26,7 +26,8 @@ public:
     ModuleContainer(ShipItem* pShip);
     ~ModuleContainer();
 
-    void Initialize();
+    void LoadOnline();
+    // this will populate the module map for all slots with nullptr
     void ClearModMap();
 
     GenericModule* GetRandModule();
@@ -39,8 +40,14 @@ public:
     void SaveModules();
     void ShipWarping();
     void GetWeapons(std::list<GenericModule*>& weaponList);
-    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec);
-    void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& moduleVec);
+    // low, mid, hi, rig, subsys
+    void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec);
+    // subsys, rig, hi, mid, low
+    void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& modVec);
+    // subsys, rig, low, mid, hi
+    void GetModuleListOfRefsOrdered(std::vector< InventoryItemRef >& modVec);
+    // hi, mid, low, rig, subsys
+    void GetModuleListOfRefsOrderedRev(std::vector<InventoryItemRef>& modVec);
 
     // returns vector of fitted GenericModule* in specified flag's bank
     void GetModulesInBank(EVEItemFlags flag, std::vector<GenericModule*>& modVec);

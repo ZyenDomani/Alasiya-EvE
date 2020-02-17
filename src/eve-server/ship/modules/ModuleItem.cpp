@@ -47,9 +47,6 @@ bool ModuleItem::_Load()
     if ((pClient != nullptr) and pClient->IsCharCreation())
         return true;
 
-    // modules need the Online attribute set.  if it already has it, _Load() will update with current setting
-    SetAttribute(AttrOnline, EvilZero, false);
-
     // load attributes
     if (!InventoryItem::_Load())
         return false;
@@ -57,13 +54,14 @@ bool ModuleItem::_Load()
     return true;
 }
 
+/** @todo this should be part of GM::Online() code */
 void ModuleItem::SetOnline(bool online/*false*/, bool isRig/*false*/) {
     _log(MODULE__DEBUG, "ModuleItem::SetOnline() - set module %s(%u) to %s", \
                     m_itemName.c_str(), m_itemID, (online ? "Online" : "Offline"));
 
-    m_modifiers.clear();
+    //m_modifiers.clear();
     //if (!isRig)   // rigs DO NOT get isOnline attrib set.
-        SetAttribute(AttrOnline, (online?1:0));
+    SetAttribute(AttrOnline, (online?1:0));
 
     Client* pClient = sEntityList.FindClientByCharID(m_ownerID);
     if (pClient == nullptr) {

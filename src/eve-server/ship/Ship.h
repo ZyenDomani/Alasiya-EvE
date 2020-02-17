@@ -104,7 +104,7 @@ public:
     void Jump();
     void Warp();
     void Eject();
-    void Undock();
+    void Undock();      // reset effects, online mods in list, recharge shield and cap (if session change complete)
     void AddModuleToOnlineVec(uint32 modID);
 
     /* begin new module manager interface */
@@ -122,7 +122,7 @@ public:
     void CancelOverloading(uint32 itemID)               { m_ModuleManager->DeOverload(itemID); }
     void ReplaceCharges(EVEItemFlags flag, InventoryItemRef newCharge);
     void RemoveRig(InventoryItemRef iRef);
-    void UpdateModules();
+    void UpdateModules();       // called when undocking to online modules in OnlineModuleList sent from client
     void UpdateModules(EVEItemFlags flag);
     void UnloadModule(uint32 itemID)                    { m_ModuleManager->UnloadModule(itemID); }
     void UnloadAllModules()                             { m_ModuleManager->UnloadAllModules();  }
@@ -222,8 +222,13 @@ protected:
 
 public:
     /* new effects system */
-    void RemoveEffects();
-    void UpdateEffects();
+    // only called by ResetEffects
+    void ClearModuleModifiers();        // this calls OfflineAll() then ClearModifiers() on all modules and their charges
+    // only called by Undock
+    void ResetEffects();                // this clears all modifiers, resets all attributes, then calls ProcessEffects()
+    // called by AggressionManager::GetCriminalTimeStamps
+    void PrepForUndock();               // called by AggresMgr to try saving a bit of runtime by clearing beforehand
+    void ProcessEffects(bool add=false, bool update=false);
     void CharacterBoardingShip()                        { m_ModuleManager->CharacterBoardingShip(); }
 
     /* linking weapons methods */
@@ -267,7 +272,6 @@ private:
     std::vector<uint32> m_onlineModuleVec;      // for onlining modules when undocking
     std::map<GenericModule*, std::list<GenericModule*>> m_linkedWeapons; // masterID/data (slaveIDs)
 
-    void ProcessEffects(bool add=false, bool update=false);
     void ProcessShipEffects(bool update=false);
 
     bool m_isPopped;

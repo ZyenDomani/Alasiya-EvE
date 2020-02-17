@@ -197,7 +197,7 @@ namespace FX {
             // @note  '//*' denotes implemented
             ADD = 1,             //*
             AGGM = 2,            //*
-            AGIM = 3,            //*
+            AGSM = 3,            //*
             AGORSM = 4,          //*
             AGRSM = 5,           //*
             AIM = 6,             //*
@@ -243,13 +243,13 @@ namespace FX {
             LAUNCHDRONE = 46,
             LAUNCHFOFMISSILE = 47,
             LG = 48,             //*
-            LS = 49,             //*
+            SRLG = 49,           //*
             MINE = 50,
             MUL = 51,            //*
             OR = 52,             //*
             POWERBOOST = 53,
             RGGM = 54,           //*
-            RGIM = 55,           //*
+            RGSM = 55,           //*
             RGORSM = 56,         //*
             RGRSM = 57,          //*
             RIM = 58,            //*

@@ -43,6 +43,7 @@ public:
 
     // i dont think this can throw
     bool Initialize();
+    void LoadOnline();
     bool IsSlotOccupied(EVEItemFlags flag);
     uint16 GetAvailableSlotInBank(EVEEffectID slotBank);
 
@@ -116,8 +117,14 @@ public:
     void GetShipRigs(std::vector< uint32 >& modVec);
     void GetShipSubSystems(std::vector< uint32 >& modVec);
     void SortModulesBySlotDec(std::vector< uint32 >& modVec, std::vector< GenericModule* >& pModList);
+    // low, mid, hi, rig, subsys
     void GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec);
-    void GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modVec);
+    // subsys, rig, hi, mid, low
+    void GetModuleListOfRefsDec(std::vector<InventoryItemRef>& modVec);
+    // subsys, rig, low, mid, hi
+    void GetModuleListOfRefsOrdered(std::vector<InventoryItemRef>& modVec);
+    // hi, mid, low, rig, subsys
+    void GetModuleListOfRefsOrderedRev(std::vector<InventoryItemRef>& modVec);
     void GetModuleListByReqSkill(uint16 skillID, std::vector<InventoryItemRef>& modVec);
     void SaveModules();
 

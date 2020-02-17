@@ -20,11 +20,11 @@ ModuleContainer::ModuleContainer(ShipItem* pShip) {
     assert(pShip != nullptr);
 
     // set max slotcount from ship attribs.  as slots are filled, change ship attrib to match available count
-    m_LowSlots = (uint8)pShip->GetAttribute(AttrLowSlots).get_int();
-    m_MediumSlots = (uint8)pShip->GetAttribute(AttrMedSlots).get_int();
-    m_HighSlots = (uint8)pShip->GetAttribute(AttrHiSlots).get_int();
-    m_RigSlots = (uint8)pShip->GetAttribute(AttrRigSlots).get_int();
-    m_SubSystemSlots = (uint8)pShip->GetAttribute(AttrSubSystemSlot).get_int();
+    m_LowSlots = (uint8)pShip->GetAttribute(AttrLowSlots).get_uint32();
+    m_MediumSlots = (uint8)pShip->GetAttribute(AttrMedSlots).get_uint32();
+    m_HighSlots = (uint8)pShip->GetAttribute(AttrHiSlots).get_uint32();
+    m_RigSlots = (uint8)pShip->GetAttribute(AttrRigSlots).get_uint32();
+    m_SubSystemSlots = (uint8)pShip->GetAttribute(AttrSubSystemSlot).get_uint32();
 
     ClearModMap();
 }
@@ -37,8 +37,6 @@ ModuleContainer::~ModuleContainer()
 }
 
 void ModuleContainer::ClearModMap() {
-    // this will populate the module map for all possible slots with null pointer
-
     // modules
     for (uint8 flag = flagLowSlot0; flag < flagFixedSlot; ++flag)
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
@@ -50,13 +48,6 @@ void ModuleContainer::ClearModMap() {
         m_modules.insert(std::pair<uint8, GenericModule*>(flag, nullptr));
 }
 
-void ModuleContainer::Initialize() {
-    for (auto cur : m_modules)
-        if (cur.second != nullptr)
-            if (cur.second->GetAttribute(AttrOnline).get_bool())
-                cur.second->Online();
-}
-
 bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
 {
     std::map<uint8, GenericModule*>::iterator itr = m_modules.find((uint8)flag);
@@ -66,7 +57,7 @@ bool ModuleContainer::AddModule(EVEItemFlags flag, GenericModule* pMod)
     } else
         itr->second = pMod;
 
-    _log(MODULE__TRACE, "ModuleContainer::AddModule() - adding %s at %s.", pMod->GetSelf()->itemName().c_str(), sDataMgr.GetFlagName(flag));
+    _log(MODULE__TRACE, "ModuleContainer::AddModule() - adding %s at %s.", pMod->GetSelf()->name(), sDataMgr.GetFlagName(flag));
 
     // Maintain the Modules Fitted By Group counter for this module group:
     if ( m_ModulesFittedByGroupID.find(pMod->groupID()) != m_ModulesFittedByGroupID.end() )
@@ -83,7 +74,7 @@ bool ModuleContainer::RemoveModule(EVEItemFlags flag) {
     GenericModule* pMod = GetModule(flag);
     if (pMod == nullptr)
         return false;
-    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%s) - removing %s.", sDataMgr.GetFlagName(flag), pMod->GetSelf()->itemName().c_str());
+    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%s) - removing %s.", sDataMgr.GetFlagName(flag), pMod->GetSelf()->name());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -93,7 +84,7 @@ bool ModuleContainer::RemoveModule(uint32 itemID) {
     GenericModule* pMod = GetModule(itemID);
     if (pMod == nullptr)
         return false;
-    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%u) - removing %s.",itemID, pMod->GetSelf()->itemName().c_str());
+    _log(MODULE__TRACE, "ModuleContainer::RemoveModule(%u) - removing %s.",itemID, pMod->GetSelf()->name());
 
     deleteModuleRef(pMod->flag(), pMod);
     return true;
@@ -110,6 +101,7 @@ GenericModule* ModuleContainer::GetModule(EVEItemFlags flag)
 
 GenericModule* ModuleContainer::GetModule(uint32 itemID)
 {
+    // change this to pull item from inventory and get flag?
     std::map<uint8, GenericModule*>::iterator itr = m_modules.begin();
     while (itr != m_modules.end()) {
         if (itr->second != nullptr)
@@ -204,6 +196,17 @@ void ModuleContainer::Process() {
     }
 }
 
+void ModuleContainer::LoadOnline() {
+    // must proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
+    std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
+    while (itr != end) {
+        if (itr->second != nullptr)
+            if (itr->second->GetAttribute(AttrOnline).get_bool())
+                itr->second->Online();
+        ++itr;
+    }
+}
+
 void ModuleContainer::OnlineAll() {
     // must proc modules in order of (subsys -> rig -> high -> mid -> low) for proper fx application
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
@@ -280,21 +283,70 @@ void ModuleContainer::GetWeapons(std::list< GenericModule* >& weaponList)
                 weaponList.push_back(m_modules[flag]);
 }
 
-void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& moduleVec)
+void ModuleContainer::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)
 {
     for (auto cur : m_modules)
         if (cur.second != nullptr)
-            moduleVec.push_back(cur.second->GetSelf());
+            modVec.push_back(cur.second->GetSelf());
 }
 
-void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& moduleVec)
+void ModuleContainer::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modVec)
 {
     std::map<uint8, GenericModule*>::reverse_iterator itr = m_modules.rbegin(), end = m_modules.rend();
     while (itr != end) {
         if (itr->second != nullptr)
-            moduleVec.push_back( itr->second->GetSelf() );
+            modVec.push_back( itr->second->GetSelf() );
         ++itr;
     }
+}
+
+void ModuleContainer::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef >& modVec ) {
+    // this is to list all ship modules by order of fx proc....subsys, rig, low, mid, hi
+    // subsystems
+    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // rigs
+    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // low slots
+    for (uint8 flag = flagLowSlot0; flag < flagMedSlot0; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // mid slots
+    for (uint8 flag = flagMedSlot0; flag < flagHiSlot0; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // hi slots
+    for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+}
+
+void ModuleContainer::GetModuleListOfRefsOrderedRev( std::vector< InventoryItemRef >& modVec ) {
+
+    // this is to list all ship modules by order of fx proc....hi, mid, low, rig, subsys
+    // hi slots
+    for (uint8 flag = flagHiSlot0; flag < flagFixedSlot; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // mid slots
+    for (uint8 flag = flagMedSlot0; flag < flagHiSlot0; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // low slots
+    for (uint8 flag = flagLowSlot0; flag < flagMedSlot0; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // rigs
+    for (uint8 flag = flagRigSlot0; flag < flagRigSlot3; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
+    // subsystems
+    for (uint8 flag = flagSubSystem0; flag < flagSubSystem5; ++flag)
+        if (m_modules[flag] != nullptr)
+            modVec.push_back(m_modules[flag]->GetSelf());
 }
 
 void ModuleContainer::GetModulesInBank(EVEItemFlags flag, std::vector< GenericModule* >& modVec)

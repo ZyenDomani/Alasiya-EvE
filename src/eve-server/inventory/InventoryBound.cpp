@@ -562,6 +562,9 @@ PyRep* InventoryBound::MoveItems(Client* pClient, std::vector< int32 >& items, E
                 throw PyException( MakeCustomError("Ship not found. The %s wasnt moved.  Ref: ServerError 63290", iRef->itemName().c_str()));
 
             if (IsModuleSlot(toFlag)) {
+                if (IsSolarSystem(pShip->locationID()))
+                    throw PyException(MakeCustomError("You cannot exchange module slots in space."));
+                
                 // we are wanting to change slots on a fitted module.
                 pShip->MoveModuleSlot(fromFlag, toFlag);
                 Call_SingleIntegerArg result;

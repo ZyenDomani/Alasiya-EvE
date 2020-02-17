@@ -30,6 +30,7 @@ public:
     static ModuleItemRef Load(uint32 modID);
     static ModuleItemRef Spawn(ItemData &data);
 
+    // this resets modifiers, sets attrOnline, then sends GodmaShipEffect
     void SetOnline(bool online=false, bool isRig=false);
 
 protected:

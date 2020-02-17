@@ -675,7 +675,7 @@ void Client::MoveToLocation(uint32 locationID, const GPoint& pt) {
     m_locationID = locationID;
     // get data for new system.  this checks for stationID sent as locationID, so is safe here.
     sDataMgr.GetSystemInfo(m_locationID, m_SystemData);
-    uint32 stationID = 0;
+    uint32 stationID(0);
     if (IsStation(m_locationID))
         stationID = m_locationID;
 
@@ -919,10 +919,12 @@ void Client::UndockFromStation() {
      * -> GotoDirection(etc, etc) -> SetState (dmg, ego, ball, slim)
      *  ***** 9sec from hitting undock to space view on live. *****
      */
-    SetStateTimer (ClientState::csUndock, ClientTimers::UndockTimer);
     MoveToLocation(m_SystemData.systemID, m_StationData.dockPosition);
     SetInvulTimer(ClientTimers::UndockInvul);
+    SetStateTimer(ClientState::csUndock, ClientTimers::UndockTimer);
     SetSessionTimer();
+
+    m_ship->SetUndocking(false);
 }
 
 void Client::CreateShipSE() {

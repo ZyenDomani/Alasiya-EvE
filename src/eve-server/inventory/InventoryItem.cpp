@@ -1332,19 +1332,13 @@ bool InventoryItem::SkillCheck(InventoryItemRef refItem)
 }
 
 // new effects system  -allan 4Feb17
-void InventoryItem::AddModifier(fxData data)
+void InventoryItem::AddModifier(fxData &data)
 {
     m_modifiers.emplace(data.math, data);
 }
 
-void InventoryItem::RemoveModifier(fxData data)
+void InventoryItem::RemoveModifier(fxData &data)
 {
-    // this isnt right.  need to find and remove ORIGINAL modifier here.
-    auto itr = m_modifiers.equal_range(data.math);
-    for (auto it = itr.first; it != itr.second; ++it)
-        if ((it->second.srcRef == data.srcRef) and (it->second.targAttr == data.targAttr))
-            m_modifiers.erase(it);
-
     switch (data.math) {
         case FX::Math::PreMul:         data.math = FX::Math::PreDiv;          break;
         case FX::Math::PreDiv:         data.math = FX::Math::PreMul;          break;
@@ -1361,8 +1355,11 @@ void InventoryItem::RemoveModifier(fxData data)
 
 void InventoryItem::ClearModifiers()
 {
-    _log(EFFECTS__TRACE, "Resetting modifier map for %s", m_itemName.c_str());
+    _log(EFFECTS__TRACE, "Clearing modifier map for %s", m_itemName.c_str());
     m_modifiers.clear();
-    pAttributeMap->Load(true);
 }
 
+void InventoryItem::ResetAttributes() {
+    _log(EFFECTS__TRACE, "Resetting attrib map for %s", m_itemName.c_str());
+    pAttributeMap->Load(true);
+}

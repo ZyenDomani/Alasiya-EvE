@@ -73,7 +73,7 @@ PyResult AggressionMgrBound::Handle_GetCriminalTimeStamps(PyCallArgs &call)
     if (!arg.Decode(&call.tuple))
     {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return NULL;
+        return nullptr;
     }
 
     return new PyDict();
@@ -86,7 +86,7 @@ PyResult AggressionMgrBound::Handle_CheckLootRightExceptions(PyCallArgs &call)
     if (!arg.Decode(&call.tuple))
     {
         _log(SERVICE__ERROR, "%s: Failed to decode arguments.", GetName());
-        return NULL;
+        return nullptr;
     }
 
     // return true to allow looting
@@ -110,8 +110,10 @@ PyBoundObject *AggressionMgrService::CreateBoundObject(Client *pClient, const Py
     bind_args->Dump(CLIENT__MESSAGE, "    ");
     /*
      * 18:26:21 [ClientMessage] AggressionMgrService bind request for:
-     * 18:26:21 [ClientMessage]     Integer field: 30002547
+     * 18:26:21 [ClientMessage]     Integer field: 30002547     <<-- systemID
      */
 
+    /** create this in bound obj code?  */
+    // this obj is system-wide, per system.  bound object can be used for multiple clients
     return (new AggressionMgrBound(m_manager));
 }

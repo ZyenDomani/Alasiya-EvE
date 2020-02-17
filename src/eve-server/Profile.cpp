@@ -23,12 +23,11 @@ int Profile::Initialize() {
 }
 
 void Profile::AddTime(uint8 key, double value) {
-    if (value < 0.0001)
-        return;
-    if ((sConfig.debug.ProfileTraceTime > 0) and (value > sConfig.debug.ProfileTraceTime *1000)) {
-        sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3f.", GetKeyName(key).c_str(), value);
-        EvE::traceStack();
-    }
+    if (sConfig.debug.ProfileTraceTime > 0)
+        if (value > sConfig.debug.ProfileTraceTime *1000) {
+            sLog.Warning("  Profile Manager", "Long Profile Time on key %s, time %.3f.", GetKeyName(key).c_str(), value);
+            //EvE::traceStack();
+        }
     /*
     destinyProfile     = 1,    *
     mapProfile         = 2,

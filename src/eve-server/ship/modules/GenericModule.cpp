@@ -7,17 +7,12 @@
   */
 
 /*
-# Ship Module Logging:
-MODULE__ERROR=1
-# Charge not found reported in MODULE__WARNING
-MODULE__WARNING=1
-MODULE__MESSAGE=0
-# Mod Create/Populate and Undocking "OnlineModules" list dumped in MODULE__INFO
-MODULE__INFO=1
-# group tests, set module item online/offline, and Salvaging chance msgs in MODULE__DEBUG
-MODULE__DEBUG=1
-# Mod timer setting, Online/Offline calls and Effects msgs reported in MODULE__TRACE
-MODULE__TRACE=1
+MODULE__ERROR
+MODULE__WARNING
+MODULE__MESSAGE
+MODULE__INFO
+MODULE__DEBUG
+MODULE__TRACE
 */
 #include "Client.h"
 #include "ship/modules/GenericModule.h"
@@ -65,13 +60,19 @@ m_launcher(false)
 
 GenericModule::~GenericModule()
 {
-    // i dont think we need this here...
-    //Offline();
+
 }
 
 // this function must NOT throw
+// throwing an error negates further processing
 void GenericModule::Online()
 {
+    if (m_shipRef->GetPilot()->IsDocked() and (!m_shipRef->IsUndocking())) {
+        m_ModuleState = Module::State::Online;
+        SetAttribute(AttrOnline, EvilOne, !m_shipRef->GetPilot()->IsLogin());
+        return;
+    }
+
     if (m_ModuleState == Module::State::Unfitted) {
         _log(MODULE__ERROR, "GenericModule::Online() called for unfitted module %u(%s).",itemID(), m_modRef->name());
         return;
@@ -90,66 +91,41 @@ void GenericModule::Online()
          */
     }
     // check PG and CPU usage to see if we have enough to online this module
-    // throwing an error negates further processing
-    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
+    EvilNumber cpuNeed(m_shipRef->GetAttribute(AttrCpuLoad) + GetAttribute(AttrCpu));
     if (cpuNeed  > m_shipRef->GetAttribute(AttrCpuOutput)) {
+        _log(MODULE__TRACE, "GenericModule::Online() %u(%s) - not enough CPU. (%.1f/%.1f)", \
+                itemID(), m_modRef->name(), cpuNeed.get_float(), m_shipRef->GetAttribute(AttrCpuOutput).get_float());
         if (!m_shipRef->GetPilot()->IsLogin()) {
             m_modRef->SetOnline(false, isRig());
-            float require = GetAttribute(AttrCpu).get_float();
-            float total = m_shipRef->GetAttribute(AttrCpuOutput).get_float();
-            float remaining = total - m_shipRef->GetAttribute(AttrCpuLoad).get_float();
+            float require(GetAttribute(AttrCpu).get_float());
+            float total(m_shipRef->GetAttribute(AttrCpuOutput).get_float());
+            float remaining(total - m_shipRef->GetAttribute(AttrCpuLoad).get_float());
             std::string str = "To bring " + m_modRef->itemName() + " online requires %.2f cpu units, ";
             str += "but only %.2f of the %.2f units that your computer produces are still available.";
             m_shipRef->GetPilot()->SendNotifyMsg(str.c_str(), require, remaining, total);
-            /*
-            std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(typeID());
-            args["require"] = new PyFloat(require);
-            args["remaining"] = new PyFloat(remaining);
-            args["total"] = new PyFloat(total);
-            throw PyException( MakeUserError("NotEnoughCpu", args));
-            */
-            /*u'NotEnoughCpuBody'}
-             * (u'To bring {[item]moduleType.name} online requires {[numeric]require, decimalPlaces=2} cpu units, but only {[numeric]remaining, decimalPlaces=2} of the {[numeric]total, decimalPlaces=2} units that your computer produces are still available.', None,
-             * {u'{[numeric]remaining, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'remaining'},
-             * u'{[item]moduleType.name}': {'conditionalValues': [], 'variableType': 2, 'propertyName': 'name', 'args': 0, 'kwargs': {}, 'variableName': 'moduleType'},
-             * u'{[numeric]total, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'total'},
-             * u'{[numeric]require, decimalPlaces=2}': {'conditionalValues': [], 'variableType': 9, 'propertyName': None, 'args': 512, 'kwargs': {'decimalPlaces': 2}, 'variableName': 'require'}})
-             */
         }
         return;
     }
-    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
+    EvilNumber pgNeed(m_shipRef->GetAttribute(AttrPowerLoad) + GetAttribute(AttrPower));
     if (pgNeed > m_shipRef->GetAttribute(AttrPowerOutput)) {
+        _log(MODULE__TRACE, "GenericModule::Online() %u(%s) - not enough PG. (%.1f/%.1f)", \
+                itemID(), m_modRef->name(), pgNeed.get_float(), m_shipRef->GetAttribute(AttrPowerOutput).get_float());
         if (!m_shipRef->GetPilot()->IsLogin()) {
             m_modRef->SetOnline(false, isRig());
-            float require = GetAttribute(AttrPower).get_float();
-            float total = m_shipRef->GetAttribute(AttrPowerOutput).get_float();
-            float remaining = total - m_shipRef->GetAttribute(AttrPowerLoad).get_float();
+            float require(GetAttribute(AttrPower).get_float());
+            float total(m_shipRef->GetAttribute(AttrPowerOutput).get_float());
+            float remaining(total - m_shipRef->GetAttribute(AttrPowerLoad).get_float());
             std::string str = "To bring " + m_modRef->itemName() + " online requires %.2f power units, ";
             str += "but only %.2f of the %.2f units that your power core produces are still available.";
             m_shipRef->GetPilot()->SendNotifyMsg(str.c_str(), require, remaining, total);
-            /*
-            std::map<std::string, PyRep *> args;
-            args["moduleType"] = new PyInt(typeID());
-            args["require"] = new PyFloat(GetAttribute(AttrPower).get_float());
-            args["remaining"] = new PyFloat(m_shipRef->GetAttribute(AttrPowerOutput).get_float() - m_shipRef->GetAttribute(AttrPowerLoad).get_float());
-            args["total"] = new PyFloat(m_shipRef->GetAttribute(AttrPowerOutput).get_float());
-            throw PyException( MakeUserError("NotEnoughPower", args));
-            */
         }
         return;
     }
 
-    // update available ship resources.
-    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, !m_shipRef->GetPilot()->IsLogin());
-    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, !m_shipRef->GetPilot()->IsLogin());
-
-    // clear map before adding new shit...avoids duplicating
-    //ClearModifiers(); // ClearModifiers DELETES AttrOnline and all ship-modified attribs from the map!!  (elusive error)
     m_modRef->SetOnline(true, isRig());
     m_ModuleState = Module::State::Online;
-    _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f", itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float());
+    _log(MODULE__MESSAGE, "GenericModule::Online() - %u(%s) cpu: %.2f, pg: %.2f, loaded: %s", \
+            itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float(), m_ChargeState == Module::State::Loaded?"true":"false");
 
     ProcessEffects(FX::State::Passive, true);
     ProcessEffects(FX::State::Online, true);
@@ -160,23 +136,28 @@ void GenericModule::Online()
         } else {
             _log(MODULE__MESSAGE, "GenericModule::Online() - module %u(%s) loading charge %s.", itemID(), m_modRef->name(), m_chargeRef->name());
             m_chargeLoaded = true;
-            m_chargeRef->ClearModifiers();
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
                 data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
                 sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
-            }
-            //if (m_shipRef->GetPilot()->IsLogin())
-            //sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+           }
         }
     }
-    // process passive and online effects AFTER charge is loaded and charge effects are applied. (in the case of charge modifying module - elusive error)
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+
+    // update available ship resources.
+    m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed, !m_shipRef->IsUndocking());
+    m_shipRef->SetAttribute(AttrPowerLoad, pgNeed, !m_shipRef->IsUndocking());
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
 
 void GenericModule::Offline()
 {
+    if (m_shipRef->GetPilot()->IsDocked()) {
+        m_ModuleState = Module::State::Offline;
+        SetAttribute(AttrOnline, EvilZero, !m_shipRef->IsUndocking());
+        return;
+    }
     switch(m_ModuleState) {
         case Module::State::Unfitted: {
             m_modRef->SetOnline(false, isRig());
@@ -201,45 +182,33 @@ void GenericModule::Offline()
         }
     }
 
-    m_isWarpSafe = false;
     m_ModuleState = Module::State::Deactivating;
 
     /* code for offlining module before MOD_OFFLINE state is set. */
-    EvilNumber cpuNeed = (m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
-    EvilNumber pgNeed = (m_shipRef->GetAttribute(AttrPowerLoad) - GetAttribute(AttrPower));
+    EvilNumber cpuNeed(m_shipRef->GetAttribute(AttrCpuLoad) - GetAttribute(AttrCpu));
+    EvilNumber pgNeed(m_shipRef->GetAttribute(AttrPowerLoad) - GetAttribute(AttrPower));
     m_shipRef->SetAttribute(AttrCpuLoad, cpuNeed);
     m_shipRef->SetAttribute(AttrPowerLoad, pgNeed);
 
     _log(MODULE__MESSAGE, "GenericModule::Offline() - %u(%s) cpu: %.2f, pg: %.2f",itemID(), m_modRef->name(), cpuNeed.get_float(), pgNeed.get_float());
 
-    // module MUST be cleared before loading fx to remove.
-    m_modRef->ClearModifiers();
     if (m_ChargeState == Module::State::Loaded) {
         if (m_chargeRef.get() == nullptr) {
             _log(MODULE__ERROR, "GenericModule::Offline() - module %u(%s) has ChargeState(CHG_LOADED) but m_chargeRef = NULL.", \
                     itemID(), m_modRef->name());
         } else {
-            m_chargeRef->ClearModifiers();
-            /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-             *    also, DONT reset modifiermap before removing, to use existing, modified data
-             */
             for (auto it : m_chargeRef->type().m_stateFxMap) {
                 fxData data = fxData();
                 data.action = FX::Action::Invalid;
                 data.srcRef = m_chargeRef;
-                sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+                sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
             }
-            //if (m_shipRef->GetPilot()->IsInSpace())
-            sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
         }
     }
 
     ProcessEffects(FX::State::Passive, false);
     ProcessEffects(FX::State::Online, false);
-    /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-     *    also, DONT reset modifiermap before remoing, to use existing, modified data
-     */
-    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+    sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 
     m_ModuleState = Module::State::Offline;
     m_modRef->SetOnline(false, isRig());
@@ -247,18 +216,16 @@ void GenericModule::Offline()
 
 void GenericModule::Overload()
 {
-    // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->m_modifiers.clear();
     ProcessEffects(FX::State::Overloaded, true);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    //m_modRef->ClearModifiers();
 }
 
 void GenericModule::DeOverload()
 {
-    // need to clear item's effectMap here to avoid duplicating.
-    m_modRef->m_modifiers.clear();
     ProcessEffects(FX::State::Overloaded, false);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
+    //m_modRef->ClearModifiers();
 }
 
 void GenericModule::ProcessEffects(int8 state, bool active/*false*/)

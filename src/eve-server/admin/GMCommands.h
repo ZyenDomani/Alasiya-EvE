@@ -5,6 +5,8 @@ COMMAND( spawnn, Acct::Role::ADMIN,
          "(typeID) - Spawn an NPC with the specified type." )
 COMMAND( spawn, Acct::Role::SPAWN,
          "(typeID) - Spawn an NPC with the specified type." )
+COMMAND( unspawn, Acct::Role::SPAWN,
+         "(itemID) - remove and delete itemID" )
 COMMAND( search, Acct::Role::VIP,
          "(text) - Search for items matching the specified query" )
 COMMAND( giveisk, Acct::Role::GMH,

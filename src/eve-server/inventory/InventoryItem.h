@@ -87,7 +87,7 @@ public:
     virtual bool            IsModuleItem()              { return false; }
 
     virtual void            Rename(std::string name);
-    
+
     /* generic access functions handled here */
     Inventory*              GetMyInventory()            { return pInventory; }
 
@@ -280,10 +280,12 @@ public:
      *  returns true if all pass */
     bool SkillCheck(InventoryItemRef refItem);
 
-    // this deletes all attributes, reloads default attribs from itemType and clears m_modifiers
-    void ClearModifiers();    //  when called at the wrong time, this will really fuck up ship attributes.  ;)
-    void AddModifier(fxData data);
-    void RemoveModifier(fxData data);
+    // this clears m_modifiers
+    void ClearModifiers();
+    void AddModifier(fxData &data);
+    void RemoveModifier(fxData &data);
+    // this deletes all attributes, reloads default attribs from itemType and
+    void ResetAttributes();   //  when called at the wrong time, this will really fuck up ship attributes.  ;)
 
     //  if itemType requires skill(skillID) return true else return false
     bool HasReqSkill(const uint16 skillID)              { return m_type.HasReqSkill(skillID); }

@@ -230,7 +230,7 @@ public:
     // move assignment
     PyInt& operator= (PyInt&& oth) = delete;
 
-    
+
     PyRep* Clone() const;
     bool visit( PyVisitor& v ) const;
 
@@ -239,6 +239,7 @@ public:
     int32 hash() const;
 
 protected:
+    virtual ~PyInt()    { /* do we need to do anything here? */ }
     const int32 mValue;
 };
 
@@ -261,6 +262,7 @@ public:
     int32 hash() const;
 
 protected:
+    virtual ~PyLong()    { /* do we need to do anything here? */ }
     const int64 mValue;
 };
 
@@ -283,6 +285,7 @@ public:
     int32 hash() const;
 
 protected:
+    virtual ~PyFloat()    { /* do we need to do anything here? */ }
     const double mValue;
 };
 
@@ -303,6 +306,7 @@ public:
     bool value() const { return mValue; }
 
 protected:
+    virtual ~PyBool()    { /* do we need to do anything here? */ }
     const bool mValue;
 };
 
@@ -321,6 +325,9 @@ public:
     bool visit( PyVisitor& v ) const;
 
     int32 hash() const;
+
+protected:
+    virtual ~PyNone()    { /* do we need to do anything here? */ }
 };
 
 /**
@@ -412,6 +419,7 @@ public:
     int32 hash() const;
 
 protected:
+    virtual ~PyString()    { /* do we need to do anything here? */ }
     const std::string mValue;
     mutable int32 mHashCache;
 };
@@ -458,6 +466,7 @@ public:
     int32 hash() const;
 
 protected:
+    virtual ~PyWString()    { /* do we need to do anything here? */ }
     const std::string mValue;
     mutable int32 mHashCache;
 };
@@ -496,6 +505,7 @@ public:
     const std::string& content() const { return mValue; }
 
 protected:
+    virtual ~PyToken()    { /* do we need to do anything here? */ }
     const std::string mValue;
 };
 
@@ -854,6 +864,7 @@ public:
     PyRep* FindKeyword( const char* keyword ) const;
 
 protected:
+    virtual ~PyObjectEx_Type1()    { /* do we need to do anything here? */ }
     static PyTuple* _CreateHeader( PyToken* type, PyTuple* args, bool enclosed=false );
     static PyTuple* _CreateHeader( PyObjectEx_Type1* args1, PyTuple* args2, bool enclosed=false );
     static PyTuple* _CreateHeader( PyToken* type, PyTuple* args, PyDict* keywords, bool enclosed=false );
@@ -877,6 +888,7 @@ public:
     PyRep* FindKeyword( const char* keyword ) const;
 
 protected:
+    virtual ~PyObjectEx_Type2()    { /* do we need to do anything here? */ }
     static PyTuple* _CreateHeader( PyTuple* args, PyDict* keywords, bool enclosed=false );
     static PyTuple* _CreateHeader( PyToken* args, PyDict* keywords, bool enclosed=false );
 };
@@ -1029,12 +1041,18 @@ class BuiltinSet : public PyObjectEx_Type1
 {
 public:
     BuiltinSet() : PyObjectEx_Type1( new PyToken("collections.defaultdict"), new_tuple(new PyToken("__builtin__.set")) ) {}
+
+protected:
+    virtual ~BuiltinSet()    { /* do we need to do anything here? */ }
 };
 
 class CacheOK : public PyObjectEx_Type1
 {
 public:
     CacheOK() : PyObjectEx_Type1( new PyToken("objectCaching.CacheOK"), new_tuple("CacheOK") ) {}
+
+protected:
+    virtual ~CacheOK()    { /* do we need to do anything here? */ }
 };
 
 

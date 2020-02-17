@@ -26,8 +26,6 @@ COMMAND( addball, Acct::Role::PLAYER,
          "- Sends BubbleManager AddBalls.")
 COMMAND( addball2, Acct::Role::PLAYER,
          "- Sends BubbleManager AddBalls2.")
-COMMAND( unspawn, Acct::Role::SPAWN,
-         "(itemID) - remove and delete itemID" )
 COMMAND( kill, Acct::Role::VIP,
          "(entityID) - insta-pops a destroyable ship, drone, structure, if applicable")
 COMMAND( killallnpcs, Acct::Role::ADMIN,

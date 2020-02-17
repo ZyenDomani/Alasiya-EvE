@@ -198,10 +198,10 @@ void Inventory::AddItem(InventoryItemRef iRef) {
         test = mContents.insert(std::make_pair(iRef->itemID(), iRef));
 
     if (test.second)
-        _log(INV__TRACE, "Inventory::AddItem()  Updated %s(%u) to contain %u of %s(%u) in %s.", \
+        _log(INV__TRACE, "Inventory::AddItem() - Updated %s(%u) to contain (%u) %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->quantity(), iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     else
-        _log(INV__TRACE, "Inventory::AddItem()  %s(%u) already contains %s(%u) in %s.", \
+        _log(INV__TRACE, "Inventory::AddItem() - %s(%u) already contains %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 
@@ -211,10 +211,10 @@ void Inventory::RemoveItem(InventoryItemRef iRef) {
     std::map<uint32, InventoryItemRef>::iterator itr = mContents.find(iRef->itemID());
     if (itr != mContents.end()) {
         mContents.erase(itr);
-        _log(INV__TRACE, "Inventory::RemoveItem()  Updated %s(%u) to no longer contain %s(%u) in %s.", \
+        _log(INV__TRACE, "Inventory::RemoveItem() - Updated %s(%u) to no longer contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
     } else
-        _log(INV__TRACE,"Inventory::RemoveItem()  %s(%u) does not contain %s(%u) in %s.", \
+        _log(INV__TRACE,"Inventory::RemoveItem() - %s(%u) does not contain %s(%u) in %s.", \
                 m_self->name(), m_myID, iRef->name(), iRef->itemID(), sDataMgr.GetFlagName(iRef->flag()));
 }
 

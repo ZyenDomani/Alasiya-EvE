@@ -20,8 +20,8 @@
     Place - Suite 330, Boston, MA 02111-1307, USA, or go to
     http://www.gnu.org/copyleft/lesser.txt.
     ------------------------------------------------------------------------------------
-    Author:			Allan
-    Thanks to:		avianrr  for the idea
+    Author:	Allan
+    Thanks to:	avianrr  for the idea
 */
 
 #ifndef EVEMU_EVESERVER_CONSOLECOMMANDS_H_
@@ -53,7 +53,7 @@ class ConsoleCommand
     void Initialize(CommandDispatcher* cd);
 
     // this calls multiple methods that get/process/save data for running server
-	void UpdateStatus();
+    void UpdateStatus();
     void HaltServer(bool dbError=false)                 { m_haltServer = true; m_dbError = dbError; }
 
     bool Process();
@@ -62,9 +62,9 @@ class ConsoleCommand
     bool IsDbError()                                    { return m_dbError; }
 
 private:
-	  // we do not own any of these...
+    // we do not own any of these...
     LSCChannel* plscc;
-	SystemBubble* pBubbles;
+    SystemBubble* pBubbles;
     SystemManager* pSystems;
     CommandDispatcher* pCommand;
 
@@ -79,6 +79,7 @@ private:
     void Status(std::string& state, int64& threads, float& vm_usage, float& resident_set, float& user, float& kernel);
 
     void Test();
+    void FxProc(uint8 idx=0);
 
 };
 

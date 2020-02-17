@@ -700,7 +700,7 @@ PyResult BeyonceBound::Handle_CmdStop(PyCallArgs &call) {
 PyResult BeyonceBound::Handle_CmdDock(PyCallArgs &call) {
     _log(AUTOPILOT__MESSAGE, "%s called Dock. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return PyStatic.NewNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();
@@ -758,7 +758,7 @@ PyResult BeyonceBound::Handle_CmdStargateJump(PyCallArgs &call) {
 
     _log(AUTOPILOT__MESSAGE, "%s called Jump. AP: %s", call.client->GetName(), (call.client->IsAutoPilot() ? "true" : "false"));
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return PyStatic.NewNone();
     }
     DestinyManager* pDestiny = call.client->GetShipSE()->DestinyMgr();

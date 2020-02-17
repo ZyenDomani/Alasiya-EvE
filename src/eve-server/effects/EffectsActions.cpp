@@ -27,7 +27,7 @@
 
 void FxAction::DoAction(uint8 action, SystemEntity* pSE)
 {
-    using namespace Effects;
+    using namespace FX;
     if (action == Action::dgmActInvalid)
         ; //make error and return
 

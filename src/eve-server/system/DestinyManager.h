@@ -131,7 +131,7 @@ public:
     void Eject();   // avoid numerous other redirect calls
 
     /* TractorBeam */
-	void TractorBeamStop();
+    void TractorBeamStop();
     void TractorBeamStart(SystemEntity* pShipSE, EvilNumber speed);
 
     /* Local Movement */

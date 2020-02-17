@@ -74,6 +74,7 @@ bool ModuleManager::Initialize() {
     if (m_initalized)
         return true;
 
+    _log(MODULE__TRACE, "ModuleManager::Initialize() - ship %s", pShipItem->name() );
     // Load modules, charges, rigs and subsystems into ship's ModuleContainer:
     std::vector<InventoryItemRef> itemVec;
     // this will order by mod, charge, cargo
@@ -118,11 +119,11 @@ bool ModuleManager::Initialize() {
         }
     }
 
-    // this will set module online state to last saved
-    pModuleCont->Initialize();
+    return m_initalized = true;
+}
 
-    m_initalized = true;
-    return m_initalized;
+void ModuleManager::LoadOnline() {
+    pModuleCont->LoadOnline();
 }
 
 void ModuleManager::Process()
@@ -191,9 +192,6 @@ void ModuleManager::UninstallRig(uint32 itemID)
     }
 
     pMod->Offline();
-    if (!sConfig.debug.IsTestServer)
-        pMod->RemoveRig();
-    pModuleCont->RemoveModule(itemID);
     pShipItem->SetAttribute(AttrUpgradeLoad, (pShipItem->GetAttribute(AttrUpgradeLoad) - pMod->GetAttribute(AttrUpgradeCost)));
     pShipItem->SetAttribute(AttrUpgradeSlotsLeft, pShipItem->GetAttribute(AttrUpgradeSlotsLeft) +1);
 
@@ -211,6 +209,10 @@ void ModuleManager::UninstallRig(uint32 itemID)
             } break;
         }
     }
+
+    if (!sConfig.debug.IsTestServer)
+        pMod->RemoveRig();
+    pModuleCont->RemoveModule(itemID);
 }
 
 bool ModuleManager::InstallSubSystem(ModuleItemRef mRef, EVEItemFlags flag)
@@ -260,7 +262,7 @@ void ModuleManager::CheckGroupFitLimited(EVEItemFlags flag, InventoryItemRef iRe
             args["module"]              = new PyInt(iRef->itemID());
             throw PyException( MakeUserError("CantFitTooManyByGroup", args));   // bad msgID in client.
             */
-            throw PyException(MakeCustomError("Group Fit Limited.<br>You are unable to fit the %s to your %s.", iRef->name(), pShipItem->name()));
+            throw PyException(MakeCustomError("Group Fit Limited.<br>You cannot fit the %s to your %s.", iRef->name(), pShipItem->name()));
             /*CantFitTooManyByGroupBody'}(
              * u"You're unable to fit {[item]module.name} to {[item]ship.name}.
              * You can only fit {[numeric]noOfModules} of type {groupName} but already have {[numeric]noOfModulesFitted}.", None,
@@ -401,6 +403,7 @@ void ModuleManager::Online(uint32 itemID)
         _log(MODULE__WARNING, "ModuleManager::Online(itemID) -  %s already Online", pMod->GetSelf()->name());
         if (pShipItem->HasPilot())
             if (pShipItem->GetPilot()->CanThrow()) {
+                // this isnt working right....no msg in client
                 std::map<std::string, PyRep *> args;
                 args["modulename"] = new PyString(pMod->GetSelf()->itemName());
                 throw PyException( MakeUserError("EffectAlreadyActive2", args));
@@ -503,13 +506,14 @@ void ModuleManager::Activate(int32 itemID, uint16 effectID, int32 targetID, int3
     _log(MODULE__TRACE, "ModuleManager::Activate() - %s (%u - %s)  targetID: %i, repeat: %i.", \
                 pMod->GetSelf()->name(), effectID, sFxDataMgr.GetEffectName(effectID).c_str(), targetID, repeat);
 
+    if (effectID == 16) { //16    online
+        pMod->Online();
+        return;
+    }
+
     if (!pMod->isOnline()) {
-        if (effectID == 16) { //16    online
-            pMod->Online();
-        } else {
-            // client wont allow activating an offline module.  this is catchall. (but should never hit)
-            pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
-        }
+        // client wont allow activating an offline module.  this is catchall. (but should never hit)
+        pShipItem->GetPilot()->SendErrorMsg("You cannot activate an offline module. Ref: ServerError 25164");
         return;
     } else if (pDestiny->IsWarping()) {
         if (pMod->HasAttribute(AttrDisallowActivateOnWarp) or !sFxDataMgr.isWarpSafe(effectID))
@@ -537,12 +541,11 @@ void ModuleManager::Deactivate(uint32 itemID, std::string effectName)
     GenericModule* pMod = pModuleCont->GetModule(itemID);
     if (pMod != nullptr) {
         // test for effectName "online", which is sent thru rclick menu in HUD to offline module
-        if (pMod->GetModuleState() == Module::State::Online)
-            if (effectName.compare("online") == 0) {
-                _log(MODULE__TRACE, "ModuleManager::Deactivate() - %s Offlining - '%s'", pMod->GetSelf()->name(), effectName.c_str());
-                pMod->Offline();
-                return;
-            }
+        if (effectName.compare("online") == 0) {
+            _log(MODULE__TRACE, "ModuleManager::Deactivate() - %s Offlining - '%s'", pMod->GetSelf()->name(), effectName.c_str());
+            pMod->Offline();
+            return;
+        }
         if (pMod->GetModuleState() != Module::State::Activated)  // we dont need an error msgs here....this is acceptable, as the module may not be active
             return;
         _log(MODULE__TRACE, "ModuleManager::Deactivate() - %s Deactivating - '%s'", pMod->GetSelf()->name(), effectName.c_str());
@@ -865,14 +868,11 @@ void ModuleManager::UpdateModules(std::vector<uint32> modVec)
     if (is_log_enabled(MODULE__WARNING))
         sLog.Magenta("ModuleManager::UpdateModules()","Needs to be tested");
     // this one is called from BoardShip() and Ship::Undock()
-    GenericModule* pMod(nullptr);
     pShipItem->SetAttribute(AttrCpuLoad,     EvilZero);
     pShipItem->SetAttribute(AttrPowerLoad,   EvilZero);
-    //pShipItem->SetAttribute(AttrUpgradeLoad, EvilZero);  -> rigs do NOT get removed/disabled when changing locations or pilots
-    OfflineAll();   // set all modules to offline.  this verifies the following Online() call will only online previously-set modules.  (elusive error)
+    pShipItem->SetAttribute(AttrUpgradeLoad, EvilZero);
+    //OfflineAll();   // set all modules to offline.  this verifies the following Online() call will only online previously-set modules.  (elusive error)
     if (!modVec.empty()) {
-        //OnlineAll();
-    //} else {
         _log(MODULE__TRACE, "ModuleManager::UpdateModules(modVec)");
         // gotta add rigs and Subsystems to the vector, as they wont be listed in the "modules to online" list when undocking.
         GetShipRigs(modVec);
@@ -963,12 +963,22 @@ void ModuleManager::GetWeapons(std::list< GenericModule* >& weaponList)
 
 void ModuleManager::GetModuleListOfRefsAsc(std::vector<InventoryItemRef>& modVec)
 {
-	pModuleCont->GetModuleListOfRefsAsc(modVec);
+    pModuleCont->GetModuleListOfRefsAsc(modVec);
 }
 
 void ModuleManager::GetModuleListOfRefsDec(std::vector< InventoryItemRef >& modVec)
 {
     pModuleCont->GetModuleListOfRefsDec(modVec);
+}
+
+void ModuleManager::GetModuleListOfRefsOrdered( std::vector< InventoryItemRef >& modVec )
+{
+    pModuleCont->GetModuleListOfRefsOrdered(modVec);
+}
+
+void ModuleManager::GetModuleListOfRefsOrderedRev( std::vector< InventoryItemRef >& modVec ) {
+
+    pModuleCont->GetModuleListOfRefsOrderedRev(modVec);
 }
 
 void ModuleManager::GetModuleListByReqSkill(uint16 skillID, std::vector< InventoryItemRef >& modVec)

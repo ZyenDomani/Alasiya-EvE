@@ -479,9 +479,9 @@ public:
     //  Dynamic Data
 	void                    VisitSystem(uint32 solarSystemID);
 
-    // character skill, implant and booster effects.  parsed on char load.  applied on ship init in space (with all other ship-related effects)
+    // character skill, implant and booster effects.  parsed and applied on undock and ship init in space (with all other ship-related effects)
     // NOTE:  implants and boosters not implemented yet
-    void                    ProcessEffects();
+    void                    ProcessEffects(ShipItem* pShip);
     void                    ResetModifiers();   // this will reset ALL char and skill attribs and modifier maps to default
 
 protected:

@@ -84,6 +84,11 @@ bool ShipItem::_Load()
 
 void ShipItem::Init()
 {
+    // create the module manager if not already done
+    if (m_ModuleManager == nullptr)
+        m_ModuleManager = new ModuleManager(this);
+
+    // pods have 57 attribs and 0 effects
     if (m_type.groupID() == EVEDB::invGroups::Capsule) {
         InitPod();
         return;
@@ -93,12 +98,8 @@ void ShipItem::Init()
         return;
     }
 
-    ClearModifiers();
     InitAttribs();
 
-    // create and initialize the module manager if not already done
-    if (m_ModuleManager == nullptr)
-        m_ModuleManager = new ModuleManager(this);
     m_ModuleManager->Initialize();
 
     // load linked weapons (if available)
@@ -106,12 +107,7 @@ void ShipItem::Init()
 }
 
 void ShipItem::InitPod() {
-    // allocate the module manager, only the first time:
-    if (m_ModuleManager == nullptr) {
-        m_ModuleManager = new ModuleManager(this);
-        m_ModuleManager->Initialize();
-    }
-    // pods have 57 attribs and 0 effects
+    m_ModuleManager->Initialize();
 
     // pod will always be full when activated
     if (m_pilot->IsInSpace())
@@ -120,11 +116,6 @@ void ShipItem::InitPod() {
 
 void ShipItem::LogOut()
 {
-    // remove module effects
-    //m_ModuleManager->OfflineAll();
-    // reset ship effects and save ship data
-    //ProcessEffects();
-
     SaveShip();
 
     pInventory->Unload();
@@ -161,20 +152,11 @@ void ShipItem::SetPlayer(Client* pClient) {
     if (pClient->IsCharCreation())
         return;
 
-    /* to reset for new pilot:
-     * offline all modules
-     * reset ship attribs
-     * add new pilot skills
-     * online all modules
-     */
-
     Init();
-    ProcessEffects(true, IsSolarSystem(m_locationID));
-    // this isnt right....should be whatever previous pilot left, minus adjustments for cap/cpu/pg skills
-    //OnlineAll();
 
-    // this hits ONLY when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
+    // this hits on login and when boarding ship in space.  will not hit on Undock() (location is still station at this point of execution)
     if (IsSolarSystem(m_locationID)) {
+        ProcessEffects(true, true);
         SetFlag(flagAutoFit);
         if (pClient->IsLogin()) {
             if (sConfig.debug.IsTestServer) {
@@ -857,24 +839,23 @@ void ShipItem::Dock() {
     m_isDocking = true;
     DeactivateAllModules();
     m_onlineModuleVec.clear();
+    // remove ship effects and char skill effects for docking.
+    ProcessEffects();
 }
 
 void ShipItem::Undock() {
     m_isUndocking = true;
 
+    //HorribleFittingProblems
+
     if (m_ModuleManager == nullptr) {
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    // apply ship effects, as all variables are set at this point.
-    // this is hacked to reset ship effects, as *something* isnt working right...
-    m_ModuleManager->OfflineAll();
-    UpdateEffects();
-    //ClearModifiers();
-    //ProcessEffects(true, IsSolarSystem(m_locationID));
-    UpdateModules(); //FailedToOnlineModulesOnUndock
 
-    //HorribleFittingProblems
+    // reset all effects, as all variables are set at this point.
+    //ResetEffects();
+    ProcessEffects(true, true/*IsSolarSystem(m_locationID)*/);
 
     if (sConfig.debug.IsTestServer) {
         // Heal Ship completely on test server
@@ -1050,8 +1031,9 @@ InventoryItemRef ShipItem::GetModuleRef(EVEItemFlags flag)
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (m_ModuleManager->GetModule(flag) != nullptr)
-		return (m_ModuleManager->GetModule(flag))->GetSelf();
+    GenericModule* pMod = m_ModuleManager->GetModule(flag);
+    if (pMod != nullptr)
+        return pMod->GetSelf();
 
     return InventoryItemRef(nullptr);
 }
@@ -1062,8 +1044,9 @@ InventoryItemRef ShipItem::GetModuleRef(uint32 modID)
         m_ModuleManager = new ModuleManager(this);
         m_ModuleManager->Initialize();
     }
-    if (m_ModuleManager->GetModule(modID) != nullptr)
-		return (m_ModuleManager->GetModule(modID))->GetSelf();
+    GenericModule* pMod = m_ModuleManager->GetModule(modID);
+    if (pMod != nullptr)
+        return pMod->GetSelf();
 
     return InventoryItemRef(nullptr);
 }
@@ -1297,7 +1280,7 @@ void ShipItem::AddItem(InventoryItemRef iRef)
 
     if (IsModuleSlot(iRef->flag()) and (iRef->categoryID() != EVEDB::invCategories::Charge)) {
         // make singleton
-        iRef->ChangeSingleton( true);
+        iRef->ChangeSingleton(true);
     }
 }
 
@@ -1419,14 +1402,17 @@ uint32 ShipItem::RemoveCharge(EVEItemFlags fromFlag, bool merge/*false*/)
     return 0;
 }
 
-
+// this can throw for now...
 void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
+    // this will never hit.  client checks before call.
+    if (m_ModuleManager->VerifySlotExchange(slot1, slot2))
+        throw PyException(MakeCustomError("Those locations are not compatible."));
+
     // slot1 is occupied, as this is location module is from.
     InventoryItemRef modItemRef1 = GetModuleRef(slot1);
     if (modItemRef1.get() == nullptr) {
         _log(MODULE__TRACE, "ShipItem::MoveModuleSlot - modItemRef1 is null.");
-        m_pilot->SendNotifyMsg("There was an internal error.  The module to move was not found.");
-        return;
+        throw PyException(MakeCustomError("The module to move was not found."));
     }
     InventoryItemRef chargeItemRef1 = m_ModuleManager->GetLoadedChargeOnModule(slot1);
     if (chargeItemRef1.get() != nullptr)
@@ -1441,15 +1427,20 @@ void ShipItem::MoveModuleSlot(EVEItemFlags slot1, EVEItemFlags slot2) {
             m_ModuleManager->UnloadCharge(slot2);
         RemoveItem(modItemRef2);
         AddItemByFlag(slot1, modItemRef2);
+        // due to checks in other move methods, we have to re-add to ship inv here.
+        InventoryItem::AddItem(modItemRef2);
+        m_ModuleManager->Online(slot1);
         if (chargeItemRef2.get() != nullptr)
             m_ModuleManager->LoadCharge(chargeItemRef2, slot1);
     }
 
     AddItemByFlag(slot2, modItemRef1);
+    // due to checks in other move methods, we have to re-add to ship inv here.
+    InventoryItem::AddItem(modItemRef1);
+    m_ModuleManager->Online(slot2);
+
     if (chargeItemRef1.get() != nullptr)
         m_ModuleManager->LoadCharge(chargeItemRef1, slot2);
-
-    UpdateModules(slot1);
 }
 
 void ShipItem::UpdateModules()
@@ -1459,15 +1450,13 @@ void ShipItem::UpdateModules()
      */
     m_ModuleManager->UpdateModules(m_onlineModuleVec);
     m_onlineModuleVec.clear();
+    //FailedToOnlineModulesOnUndock
 }
 
 void ShipItem::UpdateModules(EVEItemFlags flag)
 {
-    // this is placeholder.  it doenst do anything at this time.
-
-	// List of callees to put this function into context as to what it should be doing:
+    // List of callees to put this function into context as to what it should be doing:
     // Ship::AddItem()
-    // Ship::MoveModuleSlot()
     // Client::MoveItem()               - something has been moved into or out of the ship, recheck all modules for... some reason
     m_ModuleManager->UpdateModules(flag);
 }
@@ -2310,61 +2299,108 @@ void ShipItem::LoadLinkedWeapons()
 // new effects system.  wip
 void ShipItem::ProcessEffects(bool add/*false*/, bool update/*false*/)
 {
+    _log(EFFECTS__TRACE, "ShipItem::ProcessEffects()");
+    double start = GetTimeMSeconds();
     /*
     Effects processing order...
-        Boosters   //char effect
-        Implants   //char effect
         Skills     //char effect
+        Implants   //char effect
+        Boosters   //char effect
         Ship       //ship effect
         Subsystem  //module effect
         Rigs       //module effect
-        Low        //module effect
-        Mid        //module effect
         Hi         //module effect
+        Mid        //module effect
+        Low        //module effect
     */
     if (add) {
-        double start = GetTimeMSeconds();
-        // char effects are processed when char is loaded.
-        // apply char effects
-        m_pilot->GetChar()->ResetModifiers();
-        _log(EFFECTS__TRACE, "ShipItem::ProcessEffects() - Processing Char Effects");
-        m_pilot->GetChar()->ProcessEffects();
-        _log(EFFECTS__TRACE, "ShipItem::ProcessEffects() - Applying Char Effects");
-        sFxProc.ApplyEffects(m_pilot->GetChar().get(), m_pilot->GetChar().get(), this, update);
+        m_pilot->GetChar()->ProcessEffects(this);
         ProcessShipEffects(update);
-        _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - %u ship and char effects processed and applied in %.3fms", \
-                (m_pilot->GetChar()->m_modifiers.size() + m_modifiers.size()), (GetTimeMSeconds() - start));
     } else {
-        RemoveEffects();
+        ClearModifiers();
+        ResetAttributes();
+        ClearModuleModifiers();
+        m_pilot->GetChar()->ResetModifiers();
+        std::vector< InventoryItemRef > modVec;
+        m_ModuleManager->GetModuleListOfRefsAsc(modVec);
+        for (auto cur : modVec)
+            cur->ResetAttributes();
+        std::map<EVEItemFlags, InventoryItemRef> charges;
+        m_ModuleManager->GetLoadedCharges(charges);
+        for (auto cur : charges)
+            cur.second->ResetAttributes();
+
+        // do we remove fx here?  nah, we've reset everything at this point.
     }
+
+    _log(EFFECTS__DEBUG, "ShipItem::ProcessEffects() - effects processed and applied in %.3fms", (GetTimeMSeconds() - start));
 }
 
 void ShipItem::ProcessShipEffects(bool update/*false*/)
 {
-    _log(EFFECTS__TRACE, "ShipItem::ProcessEffects():  Processing Ship Effects.");
+    _log(EFFECTS__TRACE, "ShipItem::ProcessShipEffects()");
     for (auto it : m_type.m_stateFxMap) {
         fxData data = fxData();
         data.action = FX::Action::Invalid;
         data.srcRef = static_cast<InventoryItemRef>(this);
         sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(it.second.preExpression), data);
     }
-    _log(EFFECTS__TRACE, "Applying Ship Effects");
-    // apply processed effects
+    // apply processed ship effects
     sFxProc.ApplyEffects(this, m_pilot->GetChar().get(), this, update);
+    //ClearModifiers();
+
+    if (m_isUndocking) {
+        // online modules sent from client (these are onlined in fit window while docked)
+        m_ModuleManager->UpdateModules(m_onlineModuleVec);
+        m_onlineModuleVec.clear();
+        //FailedToOnlineModulesOnUndock
+    } else {
+        // this will set module to last saved online state in the case of BoardShip() and Login()
+        m_ModuleManager->LoadOnline();
+    }
 }
 
-void ShipItem::RemoveEffects()
+void ShipItem::ClearModuleModifiers()
 {
-    //SaveShip();
-    // clear also reloads default attribs
-    ClearModifiers();
+    _log(EFFECTS__TRACE, "ShipItem::ClearModuleModifiers()");
+    //m_ModuleManager->OfflineAll();
+    std::vector< InventoryItemRef > modVec;
+    m_ModuleManager->GetModuleListOfRefsAsc(modVec);
+    for (auto cur : modVec)
+        cur->ClearModifiers();
+    std::map<EVEItemFlags, InventoryItemRef> charges;
+    m_ModuleManager->GetLoadedCharges(charges);
+    for (auto cur : charges)
+        cur.second->ClearModifiers();
 }
 
-void ShipItem::UpdateEffects() {
+void ShipItem::ResetEffects() {
+    _log(EFFECTS__TRACE, "ShipItem::ResetEffects()");
     double start = GetTimeMSeconds();
-    RemoveEffects();
-    ProcessEffects(true, IsSolarSystem(m_locationID));
-    _log(EFFECTS__DEBUG, "ShipItem::UpdateEffects() - Effects updated in %.3fms", (GetTimeMSeconds() - start));
+
+    m_ModuleManager->OfflineAll();
+
+    // reset attributes on char, ship, all modules and charges
+    ResetAttributes();
+    m_pilot->GetChar()->ResetModifiers();
+    std::vector< InventoryItemRef > modVec;
+    m_ModuleManager->GetModuleListOfRefsAsc(modVec);
+    for (auto cur : modVec)
+        cur->ResetAttributes();
+    std::map<EVEItemFlags, InventoryItemRef> charges;
+    m_ModuleManager->GetLoadedCharges(charges);
+    for (auto cur : charges)
+        cur.second->ResetAttributes();
+
+    ProcessEffects(true, true/*IsSolarSystem(m_locationID)*/);
+    _log(EFFECTS__DEBUG, "ShipItem::ResetEffects() - Effects reset in %.3fms", (GetTimeMSeconds() - start));
+}
+
+void ShipItem::PrepForUndock() {
+    //  "Offline" modules (see notes in GM::Online and GM::Offline
+    m_ModuleManager->OfflineAll();
+    // clear fx maps before undock
+    ProcessEffects();
 }
 
 std::string ShipItem::GetShipDNA()

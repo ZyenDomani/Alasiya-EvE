@@ -270,7 +270,8 @@ void ActiveModule::RemoveTarget(SystemEntity* pSE) {
 void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/*0*/)
 {
     if (effectID == 16) {
-        // catchall for elusive online/offline error, but should be caught in Ship::Activate()
+        // catchall for elusive online/offline error, but should be caught in Ship::Activate(), backup in MM::Activate()
+        sLog.Error("AM::Activate()", "effectID 16 got here.");
         Online();
         return;
     }
@@ -337,6 +338,29 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
     m_targMgr = pShip->TargetMgr();
     m_destinyMgr = pShip->DestinyMgr();
 
+    // Do initial cycle immediately while we start timer
+    SetTimer(DoCycle());
+
+    if (!m_timer.Enabled()) {
+        // if the timer wasnt set (for whatever reason), kill activation and return
+        Clear();
+        return;
+    }
+
+    ApplyEffect(FX::State::Active, true);
+    if (IsValidTarget(targetID))
+        ApplyEffect(FX::State::Target, true);
+
+    std::vector<GenericModule*> modules;
+    if (m_linkMaster)
+        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
+    else
+        modules.push_back(this);
+    for (auto cur : modules)
+        cur->GetActiveModule()->ShowEffect(true, false);
+
+    SetModuleState(Module::State::Activated);
+
     switch (groupID()) {
         case EVEDB::invGroups::Afterburner:
         case EVEDB::invGroups::Microwarpdrive: {
@@ -373,7 +397,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                     Clear();
                     throw PyException(MakeUserError("InvalidTargetCanOwner", arg));
                 }
-
             }
         } break;
         case EVEDB::invGroups::Stasis_Web: {
@@ -381,29 +404,6 @@ void ActiveModule::Activate(uint16 effectID, uint32 targetID/*0*/, int16 repeat/
                 m_targetSE->DestinyMgr()->WebbedMe(m_modRef, true);
         } break;
     }
-
-    // Do initial cycle immediately while we start timer
-    SetTimer(DoCycle());
-
-    if (!m_timer.Enabled()) {
-        // if the timer wasnt set (for whatever reason), kill activation and return
-        Clear();
-        return;
-    }
-
-    ApplyEffect(FX::State::Active, true);
-    if (IsValidTarget(targetID))
-        ApplyEffect(FX::State::Target, true);
-
-    std::vector<GenericModule*> modules;
-    if (m_linkMaster)
-        m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
-    else
-        modules.push_back(this);
-    for (auto cur : modules)
-        cur->GetActiveModule()->ShowEffect(true, false);
-
-    SetModuleState(Module::State::Activated);
 
     --m_repeat;
     if (m_repeat < 1)
@@ -590,14 +590,6 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
    //     return;
     }
 
-    ApplyEffect(FX::State::Active, false);
-    if (IsValidTarget(m_targetID)
-    and (m_targetSE != nullptr))
-        ApplyEffect(FX::State::Target, false);
-    else if (m_needsTarget)
-        _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
-                m_modRef->name(), m_targetID, m_targetSE);
-
     std::vector<GenericModule*> modules;
     if (m_linkMaster)
         m_shipRef->GetLinkedWeaponMods(m_modRef->flag(), modules);
@@ -605,6 +597,14 @@ void ActiveModule::DeactivateCycle(bool abort/*false*/)
         modules.push_back(this);
     for (auto cur : modules)
         cur->GetActiveModule()->ShowEffect(false, abort);
+
+    ApplyEffect(FX::State::Active, false);
+    if (IsValidTarget(m_targetID)
+    and (m_targetSE != nullptr))
+        ApplyEffect(FX::State::Target, false);
+    else if (m_needsTarget)
+        _log(MODULE__WARNING, "%s - DeactivateCycle() - need target = true and targetID: %u, targSE: %x", \
+                m_modRef->name(), m_targetID, m_targetSE);
 
     switch (groupID()) {
         case EVEDB::invGroups::Tractor_Beam: {
@@ -763,30 +763,35 @@ void ActiveModule::LoadCharge(InventoryItemRef chargeRef)
      *          [PyInt 203]                     << chargeTypeID
      *          [PyFloat 10000]                 << reloadTime (ms)
      */
-    if (pClient->IsInSpace() and !pClient->IsLogin()) {
-        PyTuple* module = new PyTuple(1);
-            module->SetItem(0, new PyInt(m_modRef->itemID()));
-        PyTuple* tmp = new PyTuple(3);
-            tmp->SetItem(0, module);
-            tmp->SetItem(1, new PyInt(m_chargeRef->typeID()));
-            tmp->SetItem(2, new PyInt(m_reloadTime));
-        pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
-        m_reloadTimer.Start(m_reloadTime);
-    }
+    if (!pClient->IsLogin()) {
+        // GM::Online does this when client logs in...this is to avoid dupe calls
+        // process new charge's effects (load timer will determine if fx are applied based on existing charge)
+        for (auto it : m_chargeRef->type().m_stateFxMap) {
+            fxData data = fxData();
+            data.action = FX::Action::Invalid;
+            data.srcRef = m_chargeRef;
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
+        }
+        if (pClient->IsInSpace()) {
+            PyTuple* module = new PyTuple(1);
+                module->SetItem(0, new PyInt(m_modRef->itemID()));
+            PyTuple* tmp = new PyTuple(3);
+                tmp->SetItem(0, module);
+                tmp->SetItem(1, new PyInt(m_chargeRef->typeID()));
+                tmp->SetItem(2, new PyInt(m_reloadTime));
+            pClient->SendNotification("OnChargeBeingLoadedToModule", "shipid", &tmp, false); //unsequenced.
+            m_reloadTimer.Start(m_reloadTime);
+        } else {
+            // set immediately when docked
+            m_chargeLoaded = true;
+            SetChargeState(Module::State::Loaded);
+        }
 
-    // process new charge's effects (load timer will determine if fx are applied based on existing charge)
-    m_chargeRef->ClearModifiers();
-    for (auto it : m_chargeRef->type().m_stateFxMap) {
-        fxData data = fxData();
-        data.action = FX::Action::Invalid;
-        data.srcRef = m_chargeRef;
-        sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
-    }
-    if (pClient->IsDocked() or (pClient->IsInSpace() and pClient->IsLogin())) {
+    } else {
         m_chargeLoaded = true;
         SetChargeState(Module::State::Loaded);
-        sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
     }
+
     // set quantity and save, as subsequent calls will reset charge attribs
     m_chargeRef->SetAttribute(AttrQuantity, m_chargeRef->quantity(), false);
     m_chargeRef->SaveAttributes();
@@ -807,24 +812,21 @@ void ActiveModule::UnloadCharge()
 
     if (m_chargeRef.get() != nullptr) {
         if (m_chargeRef->HasAttribute(AttrUnfitCapCost)) {
-            float cap = m_shipRef->GetAttribute(AttrCapacitorCharge).get_float();
+            float cap(m_shipRef->GetAttribute(AttrCapacitorCharge).get_float());
             cap -= m_chargeRef->GetAttribute(AttrUnfitCapCost).get_float();
             m_shipRef->SetAttribute(AttrCapacitorCharge, cap);
         }
-        // remove charge effects here
-        m_chargeRef->ClearModifiers();
+
         for (auto it : m_chargeRef->type().m_stateFxMap) {
             fxData data = fxData();
             data.action = FX::Action::Invalid;
             data.srcRef = m_chargeRef;
-            sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+            sFxProc.ParseExpression(m_modRef.get(), sFxDataMgr.GetExpression(it.second.postExpression), data, this);
+            m_modRef->ClearModifiers();
         }
-        /** @todo  this isnt right.  need to remove EXISTING modifier data.....NOT this new data.
-         *    also, DONT reset modifiermap before removing, to use existing, modified data
-         *  NOTE:  i've no clue how to do that yet....
-         */
-        Client* pClient = m_shipRef->GetPilot();
-        sFxProc.ApplyEffects(m_chargeRef.get(), pClient->GetChar().get(), m_shipRef.get(), pClient->IsInSpace());
+
+        // apply to containing module to properly remove effects
+        sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
 
         // unloading charge goes straight to attribMap, to send data to client without changing item qty
         m_chargeRef->GetAttributeMap()->AlterChargeQuantity(0, false);
@@ -851,7 +853,6 @@ void ActiveModule::ConsumeCharge() {
 void ActiveModule::ApplyEffect(int8 state, bool active/*false*/)
 {
     // process and apply module's active effects
-    m_modRef->m_modifiers.clear();
     ProcessEffects(state, active);
     sFxProc.ApplyEffects(m_modRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), true);
 }
@@ -881,6 +882,7 @@ void ActiveModule::UpdateDamage(uint16 attrID, uint16 srcAttrID, InventoryItemRe
     iRef->SetAttribute(attrID, newValue);
 }
 
+// not used
 void ActiveModule::ReprocessCharge()
 {
     if (m_chargeRef.get() == nullptr)
@@ -894,6 +896,7 @@ void ActiveModule::ReprocessCharge()
         sFxProc.ParseExpression(m_chargeRef.get(), sFxDataMgr.GetExpression(it.second.preExpression), data, this);
     } */
     sFxProc.ApplyEffects(m_chargeRef.get(), m_shipRef->GetPilot()->GetChar().get(), m_shipRef.get(), m_shipRef->GetPilot()->IsInSpace());
+    m_chargeRef->ClearModifiers();
 }
 
 bool ActiveModule::CanActivate()

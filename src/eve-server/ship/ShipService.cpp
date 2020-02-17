@@ -128,7 +128,7 @@ PyBoundObject *ShipService::CreateBoundObject(Client *pClient, const PyRep *bind
 /* only called in space */
 PyResult ShipBound::Handle_Board(PyCallArgs &call) {
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return nullptr;
     }
 
@@ -203,7 +203,7 @@ PyResult ShipBound::Handle_Board(PyCallArgs &call) {
 /* only called in space */
 PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return nullptr;
     }
 
@@ -246,7 +246,7 @@ PyResult ShipBound::Handle_Eject(PyCallArgs &call) {
 PyResult ShipBound::Handle_LeaveShip(PyCallArgs &call)
 {
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return nullptr;
     }
 
@@ -277,7 +277,7 @@ PyResult ShipBound::Handle_ActivateShip(PyCallArgs &call) {
     //self.instanceCache, self.instanceFlagQuantityCache, self.wbData = self.remoteShipMgr.ActivateShip(shipID, oldShipID)
 
     if (call.client->IsSessionChange()) {
-        call.client->SendNotifyMsg("Session Change already active.");
+        call.client->SendNotifyMsg("Session Change currently active.");
         return nullptr;
     }
     Call_BoardShip args;

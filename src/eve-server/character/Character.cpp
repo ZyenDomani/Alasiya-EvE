@@ -530,6 +530,8 @@ int8 Character::GetSkillLevel(uint16 skillTypeID, bool zeroForNotInjected /*true
 
 PyRep* Character::GetRAMSkills()
 {
+    /** @todo update this to use char attribs (skills will modify attribs on login) */
+
     /*  this queries RAM skills and is used to display blueprints tab (S&I -> Blueprints)
      *      called by RamProxy::GetRelevantCharSkills()
      *
@@ -561,20 +563,26 @@ PyRep* Character::GetRAMSkills()
 
 void Character::ResetModifiers()
 {
+    _log(EFFECTS__TRACE, "Character::ResetModifiers()");
     ClearModifiers();
+    ResetAttributes();
     std::vector<InventoryItemRef> allSkills;
     GetSkillsList(allSkills);
-    for (auto curSkill : allSkills)
+    for (auto curSkill : allSkills) {
         curSkill->ClearModifiers();
+        curSkill->ResetAttributes();
+    }
 }
 
-void Character::ProcessEffects()
+void Character::ProcessEffects(ShipItem* pShip)
 {
+    _log(EFFECTS__TRACE, "Character::ProcessEffects()");
+    //ResetModifiers();
+
     //  427 total skills.  this should be fairly fast...it is.
     std::vector<InventoryItemRef> allSkills;
     GetSkillsList(allSkills);
 
-    _log(EFFECTS__TRACE, "Character::ParseExpression():  Beginning Character Effects Processing.");
     Effect curEffect = Effect();
     std::vector<TypeEffects> typeFx;
     for (auto curSkill : allSkills) {
@@ -588,6 +596,8 @@ void Character::ProcessEffects()
             sFxProc.ParseExpression(this, sFxDataMgr.GetExpression(curEffect.preExpression), data);
         }
     }
+    // apply processed char effects
+    sFxProc.ApplyEffects(this, this, pShip);
 }
 
 SkillRef Character::GetSkillInTraining() const {

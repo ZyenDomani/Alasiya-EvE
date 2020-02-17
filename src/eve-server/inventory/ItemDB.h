@@ -67,7 +67,8 @@ public:
     static void SaveItems(std::vector< SaveData > &data);
     static void SaveAttributes(bool isChar, std::vector< AttrData > &data);
 
-protected:
+    static void GetItems(uint16 catID, std::map<uint16, std::string> &typeIDs);
+
 };
 
 

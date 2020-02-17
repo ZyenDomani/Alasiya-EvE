@@ -356,3 +356,26 @@ bool ItemDB::DeleteItem(uint32 itemID) {
     return true;
 }
 
+void ItemDB::GetItems ( uint16 catID, std::map< uint16, std::string >& typeIDs ) {
+
+    DBQueryResult res;
+
+    if (!sDatabase.RunQuery(res,
+        "SELECT"
+        "  typeID,"
+        "  typeName"
+        " FROM invTypes "
+        " WHERE groupID IN"
+        "   (SELECT groupID"
+        "    FROM invGroups"
+        "    WHERE categoryID = %u)",
+        catID))
+    {
+        codelog(DATABASE__ERROR, "Failed to query types for catID %u: %s.", catID, res.error.c_str());
+        return;
+    }
+
+    DBResultRow row;
+    while(res.GetRow(row))
+        typeIDs.emplace(row.GetUInt(0), row.GetText(1));
+}
