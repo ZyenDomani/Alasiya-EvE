@@ -22,7 +22,7 @@
     ------------------------------------------------------------------------------------
     Author:        Zhur
     Rewrite:    Allan
-    AI Version: 0.55
+    AI Version: 0.57
 */
 
 /** @todo  ai update ideas
@@ -120,6 +120,18 @@ NPCAIMgr::NPCAIMgr(NPC* who)
     m_sightRange = 20000;
     if (m_maxAttackRange > m_sightRange)
         m_sightRange = m_maxAttackRange *2;
+
+    // ship targets
+    m_maxAttackTargets = m_self->GetAttribute(AttrMaxAttackTargets).get_uint32();
+    if (m_maxAttackTargets < 1)
+        m_maxAttackTargets = 1;
+    m_maxLockedTargets = m_self->GetAttribute(AttrMaxLockedTargets).get_uint32();
+    if (m_maxLockedTargets < 1) {
+        if (m_maxAttackTargets > 1) {
+            m_maxLockedTargets = m_maxAttackTargets;
+        } else
+            m_maxLockedTargets = 1;
+    }
 
     /** @todo change these next 2 (rep and boost) to boolean to avoid timer creation/checks */
 
@@ -240,23 +252,11 @@ void NPCAIMgr::Process() {
 
     if (m_warpOutTimer.Check(false)) {
         // disallow warpout if spawn has active respawn timer (spawn is being chained)
-        if (m_npc->GetSpawnMgr() == nullptr) {
-            WarpOut();
-            return;
-        }
         if (m_npc->GetSpawnMgr()->IsChaining(m_npc->SysBubble()->GetID())) {
             m_state = NPCAI::State::Idle;
             m_warpOutTimer.Disable();
         }
     }
-
-    if (m_shieldBoosterTimer.Enabled())
-        if (m_shieldBoosterTimer.Check())
-            m_npc->UseShieldRecharge();
-
-    if (m_armorRepairTimer.Enabled())
-        if (m_armorRepairTimer.Check())
-            m_npc->UseArmorRepairer();
 
     /* NPCAI::State definitions   -allan 25July15  (UD 1June16)
      *   Idle,       // not doing anything, nothing in sight....idle.  call Wander() to loosely orbit random object in bubble ~10-20k at 1/2 orbit speed
@@ -336,6 +336,20 @@ void NPCAIMgr::Process() {
             // not sure how im gonna do these
         } break;
     }
+
+    if (m_shieldBoosterTimer.Enabled())
+        if (m_shieldBoosterTimer.Check())
+            m_npc->UseShieldRecharge();
+
+    if (m_armorRepairTimer.Enabled())
+        if (m_armorRepairTimer.Check())
+            m_npc->UseArmorRepairer();
+
+}
+
+bool NPCAIMgr::IsFighting() {
+    // more to this here....
+    return (m_state != NPCAI::State::Idle);
 }
 
 void NPCAIMgr::WarpOut()
@@ -381,20 +395,22 @@ void NPCAIMgr::SetWander()
     }
 
     SystemBubble* pBubble = m_npc->SysBubble();
-    if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
-        return; //disallow warpout
 
     // wandering.  nothing to shoot.  look for target.
     if (m_npc->SysBubble()->HasDynamics()) {
+        // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
         SystemEntity* pSE = m_npc->SysBubble()->GetRandomEntity();
         if (pSE == nullptr)
             pSE = m_npc->SystemMgr()->GetSE(sBubbleMgr.GetBeltID(m_npc->SysBubble()->GetID()));
         if (pSE == nullptr) {
             _log(NPC__ERROR, "%s(%u): Wandering:  No Target or beltSE found.", m_npc->GetName(), m_npc->GetID());
+            //disallow warpout if anomaly, incursion or mission rat
+            if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
+                return;
+            // nothing here...leave bubble
             WarpOut();
             return;
         }
-        // pick random entity and loosely orbit it.  if no entity found, orbit center of belt
         m_destiny->SetMaxVelocity(m_orbitSpeed);
         uint16 orbitDistance = MakeRandomInt(10000, 20000);
         m_destiny->Orbit(pSE, orbitDistance);
@@ -425,10 +441,14 @@ void NPCAIMgr::SetIdle() {
     m_shieldBoosterTimer.Disable();
 
     SystemBubble* pBubble = m_npc->SysBubble();
+    //disallow warpout if anomaly, incursion or mission rat
     if (pBubble->IsAnomaly() or pBubble->IsIncursion() or pBubble->IsMission())
-        return; //disallow warpout by NOT setting timer.
+        return;
+
+    //disallow warpout by NOT setting timer.
     if (sConfig.npc.WarpOut > 1)
-        m_warpOutTimer.Start(sConfig.npc.WarpOut *1000); // s to ms
+        if (m_npc->GetSpawnMgr() != nullptr)
+            m_warpOutTimer.Start(sConfig.npc.WarpOut *1000); // s to ms
 }
 
 void NPCAIMgr::SetChasing(SystemEntity* pSE) {
@@ -545,7 +565,7 @@ void NPCAIMgr::Target(SystemEntity* pSE) {
     float targetTime = GetTargetTime();
     bool chase = false;
 
-    if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, m_self->GetAttribute(AttrMaxAttackTargets).get_uint32(), m_sightRange, chase)) {
+    if (!m_npc->TargetMgr()->StartTargeting(pSE, targetTime, m_maxLockedTargets, m_sightRange, chase)) {
         if (chase) {
             _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                         m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -579,7 +599,7 @@ void NPCAIMgr::Targeted(SystemEntity* pSE) {
             SetChasing(pSE);
 
             bool chase = false;
-			if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, m_self->GetAttribute(AttrMaxAttackTargets).get_uint32(), m_sightRange, chase)) {
+            if (!m_npc->TargetMgr()->StartTargeting( pSE, targetTime, m_maxLockedTargets, m_sightRange, chase)) {
                 if (chase) {
                     _log(NPC__AI_TRACE, "%s(%u): Targeting of %s(%u) failed.  Begin Chasing.", \
                             m_npc->GetName(), m_npc->GetID(), pSE->GetName(), pSE->GetID());
@@ -771,7 +791,7 @@ void NPCAIMgr::MissileLaunched(Missile* pMissile)
     float chance = m_self->GetAttribute(AttrEntityDefenderChance).get_float();
     if (sConfig.npc.DefenderMissileChance)
         chance = sConfig.npc.DefenderMissileChance;
-    // check chance to shoot defender missile at incomming missile
+    // check chance to shoot defender missile at incomming missile (working, ??/??/??)
     if (MakeRandomFloat() < chance)
         LaunchMissile(265, pMissile); // defender missile
 }

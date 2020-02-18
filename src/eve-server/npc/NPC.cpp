@@ -44,7 +44,8 @@
 
 NPC::NPC(InventoryItemRef self, PyServiceMgr& services, SystemManager* system, const FactionData& data, SpawnMgr* spawnMgr)
 : DynamicSystemEntity(self, services, system),
-m_spawnMgr(spawnMgr)
+m_spawnMgr(spawnMgr),
+m_AI(new NPCAIMgr(this))
 {
     m_allyID = data.allianceID;
     m_warID = data.factionID;
@@ -73,7 +74,9 @@ m_spawnMgr(spawnMgr)
     m_shieldCharge = m_self->GetAttribute(AttrShieldCharge).get_float();
     m_shieldCapacity = m_self->GetAttribute(AttrShieldCapacity).get_float();
 
-   // _log(NPC__TRACE, "Created NPC object for %s (%u)", m_self.get()->itemName().c_str(), m_self.get()->itemID());
+    _log(NPC__TRACE, "Created NPC object for %s (%u) - Data: O:%u, C:%u, A:%u, W:%u", \
+            m_self.get()->name(), m_self.get()->itemID(), \
+            m_ownerID, m_corpID, m_allyID, m_warID);
 }
 
 NPC::~NPC() {
@@ -86,7 +89,6 @@ bool NPC::Load()
 
     SetResists();
 
-    m_AI = new NPCAIMgr(this);
     return DynamicSystemEntity::Load();
 }
 
@@ -100,7 +102,6 @@ void NPC::Process() {
     /*  Enable base call to Process Targeting and Movement  */
     SystemEntity::Process();
 
-    // make checks here for npc states to avoid calling ai::Process() if we dont have to
     m_AI->Process();
 
     if (sConfig.debug.UseProfiling)
@@ -235,6 +236,7 @@ void NPC::UseShieldRecharge()
         m_self->SetAttribute(AttrShieldCharge, m_shieldCharge);
     } else
         m_AI->DisableRepTimers(true, false);
+
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
@@ -248,6 +250,7 @@ void NPC::UseArmorRepairer()
         m_self->SetAttribute(AttrArmorDamage, m_armorDamage);
     } else
         m_AI->DisableRepTimers(false, true);
+
     // TODO: Need to send SpecialFX / amount update
     UpdateDamage();
 }
@@ -261,6 +264,7 @@ void NPC::UseHullRepairer()
         m_self->SetAttribute(AttrDamage, m_hullDamage);
     } else
         m_AI->DisableRepTimers(false, false);
+
     // TODO: Need to send SpecialFX / amount update
     // gfxBoosterID
     UpdateDamage();
@@ -273,7 +277,7 @@ void NPC::MissileLaunched(Missile* pMissile)
 
 void NPC::SaveNPC()
 {
-	m_self->SaveItem();
+    m_self->SaveItem();
 }
 
 void NPC::RemoveNPC()
@@ -344,7 +348,7 @@ void NPC::Killed(Damage &fatal_blow) {
     }
     uint32 wreckTypeID = sDataMgr.GetWreckID(m_self->typeID());
     if (!IsWreckTypeID(wreckTypeID)) {
-        sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->itemName().c_str(), m_self->typeID());
+        sLog.Error("NPC::Killed()", "Could not get wreckType for %s of type %u", m_self->name(), m_self->typeID());
         // default to generic frigate wreck till i get better checks and/or complete wreck data
         wreckTypeID = 26557;
     }
@@ -360,7 +364,7 @@ void NPC::Killed(Damage &fatal_blow) {
 
     if (is_log_enabled(PHYSICS__TRACE))
         _log(PHYSICS__TRACE, "NPC::Killed() - NPC %s(%u) Position: %.2f,%.2f,%.2f.  Wreck %s(%u) Position: %.2f,%.2f,%.2f.", \
-                GetName(), GetID(), x(), y(), z(), wreckItemRef->itemName().c_str(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
+                GetName(), GetID(), x(), y(), z(), wreckItemRef->name(), wreckItemRef->itemID(), wreckPosition.x, wreckPosition.y, wreckPosition.z);
 
     if (MakeRandomFloat() < sConfig.npc.LootDropChance)
         DropLoot(wreckItemRef, m_self->groupID(), killerID);

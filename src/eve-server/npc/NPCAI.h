@@ -65,13 +65,13 @@ public:
     void TargetLost(SystemEntity* pSE);
 
     void ClearTargets()                                 { m_npc->TargetMgr()->ClearTargets(); }
-	void ClearAllTargets()                              { m_npc->TargetMgr()->ClearAllTargets(); }
+    void ClearAllTargets()                              { m_npc->TargetMgr()->ClearAllTargets(); }
 
     void DisableRepTimers(bool shield, bool armor);
 
     // public methods to enable calls from other classes (namely, TurretFormulas.cpp)
     bool IsIdle()                                       { return (m_state == NPCAI::State::Idle); }
-    bool IsFighting()                                   { return (m_state != NPCAI::State::Idle); }
+    bool IsFighting();
     uint16 GetOptimalRange()                            { return m_optimalRange; }
     uint16 GetSigRes()                                  { return m_sigResolution; }
     uint32 GetFalloff()                                 { return m_falloff; }
@@ -106,17 +106,19 @@ protected:
     std::string GetStateName(int8 stateID);
 
 private:
-    bool m_webber : 1;
-    bool m_warpScram : 1;
-    bool m_isWandering : 1;
-    bool m_useSigRadius : 1;
-    bool m_useTargSwitching : 1;
-    bool m_useSecondTarget : 1;
+    bool m_webber           :1;
+    bool m_warpScram        :1;
+    bool m_isWandering      :1;
+    bool m_useSigRadius     :1;
+    bool m_useTargSwitching :1;
+    bool m_useSecondTarget  :1;
 
     float m_switchTargChance;   //fuzzy logic
     uint16 m_preferedSigRadius;
 
     //these attributes are cached to reduce access times. (much faster but uses more memory)
+    uint8 m_maxAttackTargets;
+    uint8 m_maxLockedTargets;
     uint16 m_maxSpeed;
     uint16 m_attackSpeed;
     uint16 m_missileTypeID;
